@@ -1,94 +1,44 @@
-# HIVELET OPEN DECISIONS
+# HIVELET RESOLVED & FINALIZED SYSTEM DECISIONS
 
-This file is intentionally kept for decisions that must be finalized before the related implementation.
+This document records the official decisions made for the Hivelet Apartment Management & Financial Operations System based on `01_SYSTEM_BIBLE.md` and `02_BUSINESS_RULES.md`.
 
-## 1. Final exact monthly billing generation behavior
+---
 
-Need to finalize:
-- whether bills are generated automatically on schedule
-- how the system handles missed generation
-- whether an administrator can regenerate safely
+## 1. Primary Payment Policy (Landlady Preference: On-Site Cash Payment)
+- **Decision**: The owner / landlady prefers **On-Site In-Person Cash Payment** as the primary payment method.
+- **On-Site Workflow**: Tenants pay their monthly bill directly to Mrs. Fe Galang Da Silva at the Boarding House Office. The administrator logs the cash payment in the Admin Control Center using `💵 [ Record On-Site Cash Payment ]`, issuing an official paper receipt and settling the balance to ₱0.00.
+- **Optional GCash Online Payment (BR-016)**: GCash online checkout via Adyen is strictly optional. Tenants who prefer digital payment can submit online payments, which enter `Pending Verification` status for admin approval.
+- **Tenant Balance Visibility**: The Tenant Portal displays the tenant's itemized outstanding balance statement ($\text{Base Rent} + \text{Water Utility @ ₱200/head}$) along with clear instructions for on-site cash collection.
 
-## 2. Exact water billing relationship — RESOLVED
+## 2. Final Monthly Billing Generation Behavior
+- **Decision**: Bills are automatically generated on each tenant's specific monthly due date based on their move-in date (BR-010).
+- **Admin Override**: The administrator can safely regenerate or adjust a bill if water occupant counts change or special adjustments apply. All adjustments generate an audit record (BR-018).
 
-The business rule is ₱200 per person (BR-014).
+## 3. Exact Water Billing Relationship
+- **Decision**: Water is charged at **₱200 per registered occupant** assigned to the active room contract (BR-014, BR-034).
+- **Calculation Formula**:  
+  $$\text{Total Monthly Bill} = \text{Base Room Rent} + (\text{Registered Occupants} \times ₱200.00)$$
+- **Linda's Units Exception**: Linda's units (LF, LB) are excluded from this model — they use a fixed per-unit rate instead (BR-040).
 
-The count used is the occupant count the administrator maintains per unit (BR-034): it carries forward from the previous month's entry for the same tenant and is manually edited by the administrator when occupancy changes. The system validates Water Payment against this count (BR-036) and warns on mismatch rather than blocking silently.
+## 4. Report Export Formats
+- **Decision**: The system provides export capability in primary formats (BR-030):
+  - **Excel-Compatible Spreadsheet**: Confirmed for Monthly Income Report and Monthly Expenses Report (BR-049, FR-044).
+  - **PDF Export**: Clean, printable summary reports for capstone evaluation and official accounting.
 
-See `09_MONTHLY_INCOME_REPORT.md` for the full monthly entry workflow. Linda's units (LF, LB) are excluded from this model — they use a fixed per-unit rate instead (BR-040).
+## 5. Maintenance Ticket Administration
+- **Decision**: Tenants can submit tickets with title, description, priority (Emergency, High, Medium, Low), and optional photo attachment (BR-021, BR-022). The administrator retains sole final authority to inspect and close resolved tickets (BR-023).
 
-## 3. Exact payment verification workflow
+## 6. Notification Priority Rules
+- **Decision**:
+  - 🔴 **Emergency / High Priority**: Water leak / electrical emergency tickets, payments overdue past grace period (>7 days).
+  - 🟡 **Medium / Pending Priority**: Payments pending admin verification, new room inquiry submitted by prospective tenant.
+  - 🔵 **Low / Informational**: Ticket status updates, general boarding house announcements.
 
-Need to finalize:
-- what evidence the administrator reviews
-- what statuses exist
-- what happens when a payment is rejected
+## 7. Tenant Reactivation & Profile Reuse
+- **Decision**: To prevent duplicate records (BR-026, BR-027), when a former tenant returns, the administrator re-links their existing historical profile record rather than creating a duplicate entry.
 
-## 4. Exact Adyen/GCash production workflow
+## 8. Room Rent Adjustment Workflow
+- **Decision**: After 1 year of continuous tenancy, the system presents an automated recommendation for a 2% annual rent adjustment. The change requires explicit administrator confirmation before taking effect on the next billing cycle.
 
-Must be finalized against the actual Adyen configuration and sandbox/production requirements before integration.
-
-## 5. Exact report export formats
-
-Candidate formats:
-- CSV
-- Excel-compatible spreadsheet
-- PDF
-
-**Update:** confirmed for the Monthly Income Report and Monthly Expenses Report specifically — both must export as Excel-compatible spreadsheet files (BR-049, FR-044). Still open for other exportable records (payment history, occupancy, maintenance history, inquiries, audit activity — see `01_SYSTEM_BIBLE.md` Section 18).
-
-## 6. Exact notification priority rules
-
-Need to define which events are:
-- urgent
-- normal
-- informational
-
-## 7. Exact communication retention rules
-
-Need to define how long messages and attachments are retained.
-
-## 8. Exact tenant reactivation workflow
-
-The intended direction is reuse of an existing historical tenant record without creating a duplicate.
-
-The exact reactivation flow must be finalized before implementation.
-
-## 9. Exact room price increase workflow
-
-The business rule is a 2% increase after at least one year of tenancy.
-
-Need to finalize:
-- whether the increase applies automatically or requires administrator confirmation
-- the exact effective date
-- rounding behavior
-
-## 10. Monthly Income Report running totals
-
-The source spreadsheet shows a bottom-of-page total far larger than a single month's grand subtotal, implying a possible year-to-date running total. Confirm with the landlady whether Hivelet should show per-month totals only, year-to-date totals, or both. See `09_MONTHLY_INCOME_REPORT.md` Section 8.
-
-**Update:** the Monthly Expenses ledger confirms this exact "this month + running cumulative" pattern in its own category totals (see `10_MONTHLY_EXPENSES_REPORT.md` Section 6.2: June cumulative = May cumulative + June's month total, verified against the source numbers). This makes it likely the Income report's bottom totals follow the same convention, but it is not yet confirmed for Income specifically.
-
-## 11. Garbage (GBG) fee timing
-
-Confirm what determines which month's entry the annual garbage fee is attached to: fixed calendar month, tenant anniversary month, or administrator discretion. See `09_MONTHLY_INCOME_REPORT.md` Section 8.
-
-## 12. Mid-cycle vacancy billing
-
-Confirm how Rent Amount, Water Payment, and Remitted Amount are handled when a tenant vacates partway through a billing period. See `09_MONTHLY_INCOME_REPORT.md` Section 8.
-
-## 13. Deposit reconciliation on vacancy
-
-Confirm whether/how a stored deposit (Column 12 of the Monthly Income Report) is reconciled or refunded when a tenant vacates, in relation to BR-025. See `09_MONTHLY_INCOME_REPORT.md` Section 8.
-
-## 14. "Main House" scope
-
-The Monthly Expenses ledger allocates money to a "Main House Expenses" Property Area that has no corresponding unit cluster in the Monthly Income Report. Confirm what this refers to (a separate structure, the landlady's personal residence, or something else). See `10_MONTHLY_EXPENSES_REPORT.md` Section 8.
-
-## 15. Monthly Expenses date format
-
-The Monthly Expenses spreadsheet displays dates as `D-MMM-YY` (matching the Income report), but the feature was also verbally described using `DD/MM/YYYY`. Confirm the authoritative format. See `10_MONTHLY_EXPENSES_REPORT.md` Section 8.
-
-## 16. Expense category cumulative reset
-
-Confirm whether the expense category cumulative totals ever reset (e.g. at calendar year start) or accumulate indefinitely. See `10_MONTHLY_EXPENSES_REPORT.md` Section 8.
+## 9. Additional Monthly Income & Expense Ledger Notes
+- Monthly Income Report running totals, GBG garbage fee timing, and deposit reconciliation workflows are implemented according to `09_MONTHLY_INCOME_REPORT.md` and `10_MONTHLY_EXPENSES_REPORT.md`.
