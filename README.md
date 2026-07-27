@@ -28,6 +28,7 @@ If a requirement is unclear, do not silently invent a major business rule. Recor
 5. Read `docs/05_DATABASE_DESIGN.md`
 6. Read `docs/06_DEVELOPMENT_ROADMAP.md`
 7. Read `docs/07_AI_DEVELOPMENT_INSTRUCTIONS.md`
+8. Read `docs/09_MONTHLY_INCOME_REPORT.md`
 
 The capstone paper should be placed in:
 

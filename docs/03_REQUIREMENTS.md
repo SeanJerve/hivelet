@@ -92,6 +92,24 @@ The system shall record important actions and financial changes.
 ### FR-030 Offline-Ready Access
 The system may provide limited offline-ready access to cached resources and safe previously available data.
 
+### FR-031 Monthly Income Report Layout
+The system shall reproduce the landlady's Monthly Income Report layout: units grouped by cluster (BH, Back Apartment, Penthouse, Front Apartment, Linda) in canonical order, with per-cluster and grand subtotals, per `09_MONTHLY_INCOME_REPORT.md`.
+
+### FR-032 Guided Monthly Payment Entry
+The administrator shall record a monthly payment through a guided form: unit dropdown, calendar date picker, contact/invoice entry, rent amount entry, with rent period, 50% share, and remitted amount computed automatically.
+
+### FR-033 Occupant Count Memory
+The system shall pre-fill a unit's occupant count from the same tenant's previous month entry, editable by the administrator.
+
+### FR-034 Water Payment Validation
+The system shall validate that Water Payment equals Occupants × ₱200 and warn the administrator before saving a mismatched value.
+
+### FR-035 One-Time Onboarding Fields
+The system shall capture Anniversary Date and Deposit once, at tenant onboarding, and reuse them on every subsequent monthly entry without re-entry.
+
+### FR-036 Linda Fixed Billing Flow
+The system shall support a distinct fixed-rate billing flow for Linda's units (LF, LB), separate from the standard per-occupant water model, remitted directly to Linda.
+
 ## Non-Functional Requirements
 
 ### NFR-001 Functional Suitability

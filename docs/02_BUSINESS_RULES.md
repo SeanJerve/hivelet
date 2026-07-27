@@ -150,3 +150,43 @@ Important business records must be exportable for use outside Hivelet.
 The server/database is the authoritative source for current system state.
 
 Client-side cached/offline data must not override authoritative server records.
+
+## BR-032 — Canonical Unit List
+
+The property's rentable units are fixed and grouped into five clusters: BH (Main Rooms: 1a-1h, 2a-2g, 3a-3g), Back Apartment (B1F, B2F, B2B, B3F, B3B), Penthouse (PH), Front Apartment (F1, F2F, F2B), and Linda (LF, LB).
+
+See `09_MONTHLY_INCOME_REPORT.md` for full detail.
+
+## BR-033 — Rent Period Derivation
+
+A tenant's billing period ("Rent For") is derived automatically from their stored Anniversary Date and the current billing cycle. It is not manually typed on each monthly payment entry.
+
+## BR-034 — Occupant Count Carries Forward
+
+A unit's occupant count defaults to the value recorded in the previous month for the same tenant. The administrator may edit it when occupancy changes.
+
+## BR-035 — 50% Share Is Derived
+
+The "50% Share" figure on a monthly payment is always exactly half of the Rent Amount and must be calculated by the system, never entered manually.
+
+## BR-036 — Water Payment Validation
+
+Water Payment must equal Occupants × ₱200 (BR-014). If the administrator enters a mismatched value, the system must warn before saving rather than silently accepting the discrepancy.
+
+## BR-037 — Garbage Fee Frequency
+
+The garbage (GBG) fee is charged once per year per unit, not on every monthly entry.
+
+## BR-038 — Remitted Amount Formula
+
+Remitted Amount = Rent Amount + Water Payment. It is calculated by the system, never entered manually.
+
+## BR-039 — Deposit Equals Initial Rent
+
+A tenant's deposit is set once, at onboarding, equal to the Rent Amount in effect when they moved in.
+
+## BR-040 — Linda's Fixed Billing Exception
+
+Linda's units (LF, LB) are billed on fixed monthly rates rather than the per-occupant water model (BR-014): a flat electricity charge plus a fixed water charge per unit. This total is remitted directly to Linda and kept separate from the standard rent/water subtotal.
+
+See `09_MONTHLY_INCOME_REPORT.md` Section 6 for exact figures.
