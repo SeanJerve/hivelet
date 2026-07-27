@@ -1,0 +1,1083 @@
+==================================================
+ROLE: USER
+--------------------------------------------------
+OKAY SO IM STARTING TO WORK ON NOW ON THE SCRIPT OR THE PROMPT THAT I WILL GIVE TO ANTIGRAVITY FOR THE STARTING OF DEVELOPMENT ON OUR CAPSTONE. I NEED HIM TO UNDERSTAND OUR WHOLE PAPER AND DEVELOP ACCORDINGIGNG TO IT. UNDERSTAND EVERYTHING AND EVERY FUCNTIONALITY THAT IS NEEDED TO BE IN THERE, THE INTERCONENCTEDNESS OF THE SYSTEM EVERYTHING SHOULD EB FLAWSLESS AND EASY NO NEED TO BE COMPLICATED. I JJST WANAT IT TO BE AWARE FIRST OR IF ITS NOT CAPABLE OF DOING THAT THEN WE SHOULD READY A FULL MARKDWON FILE OF ALL THE CONTEXT IT NEEDS UPON DEVELOPING THIS, ITS LIKE A CHEAT SHEET THAT HAS FULL CONTEXT OF THE WHOLE CAPSTONE PROJECT THAT IT CAN USE UPON DDEVELOPING IT. TH POINT HERE REALLY IS IKE READING AND UNDERSTANDING OUR FULL CAPSTONE PAPER AND TRANSLATING IT TO THE NEEDED OR FULL CAPTURE SYSTEM OF OUR PAPER.
+
+I GAVE THE PDF FILE ON THE SOURCES FOR YOUR REFERENCE, ITS NAME IS Hivelet_ A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House.docx.PDF.Show moreShow less
+
+==================================================
+ROLE: ASSISTANT
+--------------------------------------------------
+Yes. Do not start development yet.
+The biggest mistake with AI builders like Antigravity, Lovable, Cursor, Claude, etc. is giving them the research paper directly and assuming they will correctly infer the system. Your paper explains the problem, theory, objectives, and methodology, but developers think in terms of:
+
+
+Actors
+
+
+Roles
+
+
+Permissions
+
+
+Entities
+
+
+Workflows
+
+
+Database relationships
+
+
+Business rules
+
+
+States
+
+
+Edge cases
+
+
+UI screens
+
+
+User journeys
+
+
+The capstone paper only partially describes those.
+What you need is a Development Context Document (basically a System Bible) that translates the entire paper into a software specification.
+
+What Antigravity Needs
+Instead of:
+
+"Read my capstone paper and build it"
+
+You want:
+
+"This is Hivelet. Here is the complete business context, users, workflows, modules, database architecture, permissions, and development requirements. Use this as the single source of truth."
+
+
+My Understanding of Hivelet
+Based on the paper, Hivelet is NOT simply a booking system.
+It is an integrated apartment management platform for Fe Galang Da Silva Boarding House.
+The core philosophy is:
+
+Centralize all apartment operations into a single platform.
+
+Currently they use:
+
+
+spreadsheets
+
+
+paper records
+
+
+messenger chats
+
+
+verbal reports
+
+
+manual payment tracking
+
+
+Hivelet replaces all of these.
+
+Core Users
+1. Administrator
+Usually the landlady or apartment manager.
+Can:
+
+
+Manage rooms
+
+
+Manage beds
+
+
+Manage tenants
+
+
+Manage reservations
+
+
+Manage maintenance requests
+
+
+Record payments
+
+
+Record expenses
+
+
+Generate reports
+
+
+Send notifications
+
+
+
+2. Tenant
+Can:
+
+
+View profile
+
+
+View room assignment
+
+
+View payment history
+
+
+Submit maintenance tickets
+
+
+Track ticket status
+
+
+Receive notifications
+
+
+
+3. Public Visitor
+Can:
+
+
+View apartment information
+
+
+Check room availability
+
+
+Submit reservation inquiry
+
+
+Cannot access internal data.
+
+Core Modules
+According to the objectives, these are mandatory.
+
+Tenant Management
+Purpose:
+Store and manage all tenant information.
+Fields:
+
+
+Full name
+
+
+Contact number
+
+
+Email
+
+
+Emergency contact
+
+
+Room assignment
+
+
+Bed assignment
+
+
+Move-in date
+
+
+Move-out date
+
+
+Status
+
+
+Statuses:
+
+
+Active
+
+
+Pending
+
+
+Vacated
+
+
+
+Room Management
+Purpose:
+Track apartment occupancy.
+Apartment:
+32 units.
+Each room should contain:
+
+
+Room number
+
+
+Capacity
+
+
+Current occupancy
+
+
+Availability status
+
+
+Status:
+
+
+Available
+
+
+Partially Occupied
+
+
+Full
+
+
+Maintenance
+
+
+
+Booking & Reservation Module
+Public users can:
+
+
+View available rooms
+
+
+Submit inquiry
+
+
+Admin can:
+
+
+Review inquiry
+
+
+Approve
+
+
+Reject
+
+
+Reservation Status:
+
+
+Pending
+
+
+Approved
+
+
+Rejected
+
+
+Converted to Tenant
+
+
+
+Financial Tracking Module
+This is extremely important.
+The paper repeatedly emphasizes this.
+Track:
+Tenant Payments
+Fields:
+
+
+Tenant
+
+
+Amount
+
+
+Due Date
+
+
+Date Paid
+
+
+Method
+
+
+Status:
+
+
+Paid
+
+
+Partial
+
+
+Overdue
+
+
+Unpaid
+
+
+
+Expenses
+Examples:
+
+
+Repairs
+
+
+Utilities
+
+
+Maintenance
+
+
+Supplies
+
+
+Fields:
+
+
+Category
+
+
+Amount
+
+
+Date
+
+
+Notes
+
+
+
+Cash Flow
+System automatically computes:
+Income
+minus
+Expenses
+equals
+Net Cash Flow
+
+Optional Online Payment Recording
+Important:
+Your paper does NOT require a full payment gateway.
+The paper repeatedly says:
+
+Optional Online Payment Feature
+
+Meaning:
+Record digital payments.
+Not necessarily process them.
+So Antigravity should NOT waste time building:
+
+
+refund systems
+
+
+banking systems
+
+
+financial reconciliation
+
+
+Simple recording is enough.
+
+Maintenance Ticketing System
+This is another major module.
+Tenant creates ticket.
+Fields:
+
+
+Title
+
+
+Description
+
+
+Category
+
+
+Photo attachment (optional)
+
+
+Categories:
+
+
+Plumbing
+
+
+Electrical
+
+
+Furniture
+
+
+Cleaning
+
+
+Other
+
+
+
+Ticket Status
+
+
+Open
+
+
+In Progress
+
+
+Resolved
+
+
+Closed
+
+
+
+Workflow
+Tenant submits ticket.
+↓
+Admin receives notification.
+↓
+Admin updates status.
+↓
+Tenant sees progress.
+↓
+Ticket resolved.
+
+Notification System
+Triggered when:
+
+
+Reservation approved
+
+
+Reservation rejected
+
+
+Payment recorded
+
+
+Ticket updated
+
+
+New announcement
+
+
+Can be:
+
+
+In-app
+
+
+Email (optional)
+
+
+
+PWA Requirements
+The paper strongly emphasizes this.
+Hivelet must be:
+
+
+Mobile first
+
+
+Responsive
+
+
+Installable
+
+
+PWA-enabled
+
+
+Requirements:
+
+
+Works on phones
+
+
+Works on tablets
+
+
+Works on desktops
+
+
+Add-to-home-screen support
+
+
+Service worker
+
+
+Manifest
+
+
+Offline support:
+Only cached UI.
+Not full offline database operation.
+The paper specifically says:
+Core features still require internet.
+
+Security Requirements
+Mandatory.
+Authentication:
+
+
+Login
+
+
+Logout
+
+
+Role-Based Access Control
+Roles:
+
+
+Admin
+
+
+Tenant
+
+
+Public Visitor
+
+
+Admin can access everything.
+Tenant only their own records.
+Visitors only public pages.
+
+Reports Dashboard
+Admin Dashboard should show:
+Occupancy
+
+
+Total Rooms
+
+
+Occupied
+
+
+Vacant
+
+
+Financial
+
+
+Monthly Income
+
+
+Monthly Expenses
+
+
+Net Cash Flow
+
+
+Maintenance
+
+
+Open Tickets
+
+
+Resolved Tickets
+
+
+Reservations
+
+
+Pending Reservations
+
+
+
+Database Structure
+Major entities:
+Users
+Tenants
+Rooms
+Reservations
+Payments
+Expenses
+Maintenance Tickets
+Notifications
+Announcements
+
+Development Stack
+According to your paper:
+Frontend
+
+
+HTML5
+
+
+Tailwind CSS
+
+
+JavaScript
+
+
+Backend
+
+
+Node.js
+
+
+Express.js
+
+
+Database
+
+
+MySQL
+
+
+Architecture
+
+
+Progressive Web App
+
+
+
+What I Would Do Next
+Before sending anything to Antigravity, create a file called:
+Markdown
+
+==================================================
+ROLE: ASSISTANT
+--------------------------------------------------
+I actually think we're at a point where we should stop thinking like students and start thinking like a software team.
+We're no longer asking, "How do we build Hivelet?"
+We're asking, "How do we manage the development of Hivelet?"
+And those are two very different questions.
+
+My Recommendation: Don't Let One AI Build Everything
+If I were the technical lead on this project, I would not let Antigravity (or Claude, or any single AI) build the entire system from start to finish.
+Instead, I would assign each AI a role.
+🧠 Me (ChatGPT)
+I would be the System Architect.
+Responsibilities:
+
+
+Maintain the System Bible
+
+
+Review architecture decisions
+
+
+Prevent scope creep
+
+
+Review database design
+
+
+Review API design
+
+
+Review code generated by other AIs
+
+
+Ensure everything aligns with the capstone paper
+
+
+Think of me as the software architect and technical reviewer.
+
+🤖 Antigravity
+I would use Antigravity as the Implementation Engineer.
+Responsibilities:
+
+
+Generate the project structure
+
+
+Build components
+
+
+Create pages
+
+
+Generate CRUD functionality
+
+
+Connect frontend and backend
+
+
+Build dashboards
+
+
+Don't let it make architectural decisions.
+Give it the architecture.
+
+🧠 Claude
+Claude is incredibly good at:
+
+
+large codebases
+
+
+maintaining consistency
+
+
+refactoring
+
+
+understanding long context
+
+
+I would use Claude as the Senior Developer.
+For example:
+
+"Here are the last 20 files. Refactor them without changing behavior."
+
+or
+
+"Review this module against the System Bible."
+
+
+So Which Subscription?
+Here's what I would do if I were spending my own money.
+Option A (Best Value)
+Subscribe to Claude Pro.
+Then buy Antigravity if you find it genuinely accelerates implementation.
+Claude will help throughout the entire project—not just code generation, but debugging, reviewing, explaining, and refactoring.
+
+Option B (If Antigravity is exceptional for building)
+Buy Antigravity first.
+Use me for architecture and reviews.
+Use Claude's free tier when needed.
+
+Personally, based on what I've seen so far, I would lean toward:
+
+Claude Pro first, then Antigravity if your budget allows.
+
+Because Claude is useful from day one until your final defense.
+
+But Here's Something Even More Important
+I don't think the System Bible is actually finished.
+I think it's about 70–80% complete.
+Not because it's missing features.
+Because it's missing developer-level specifications.
+
+What's Missing?
+When Antigravity starts building, it will immediately ask itself questions like:
+
+"How should authentication work?"
+
+
+"How are permissions enforced?"
+
+
+"What does the database schema look like?"
+
+
+"What are the API endpoints?"
+
+
+"What does the admin dashboard layout look like?"
+
+
+"What pages exist?"
+
+The current System Bible answers what, but not always exactly how.
+
+I Think We Should Create Four More Documents
+Instead of making one giant document, I'd create a small documentation set.
+📘 1. HIVELET_SYSTEM_BIBLE.md
+Purpose:
+Vision, philosophy, business rules, workflows.
+We already have most of this.
+
+🗂️ 2. DATABASE_DESIGN.md
+Contains:
+
+
+Every table
+
+
+Every column
+
+
+Relationships
+
+
+Foreign keys
+
+
+Constraints
+
+
+Soft delete strategy
+
+
+Indexes
+
+
+Naming conventions
+
+
+This becomes the backend blueprint.
+
+🔌 3. API_SPECIFICATION.md
+Every endpoint.
+For example:
+POST /api/inquiries
+GET /api/rooms
+POST /api/payments
+PATCH /api/tickets/:id
+
+==================================================
+ROLE: USER
+--------------------------------------------------
+well we are not trying to rush we can spend a whole month polishing this document actually so just go ahead and have a conversation with me
+
+==================================================
+ROLE: ASSISTANT
+--------------------------------------------------
+I actually love that you're willing to spend a month on this. I think it's the right decision.
+Most capstone groups do this:
+
+Paper → ERD → UI → Code → Fix bugs → Defense
+
+I think we should do something different.
+I want us to think like we're building software that will actually be used by the landlady after graduation. Every decision should answer one question:
+
+"If the landlady uses this every day, will this make her life easier?"
+
+If the answer is no, we either improve it or remove it.
+
+I think we should stop talking about technology for a while.
+Notice how earlier we were discussing Vue, Express, MySQL, Adyen...
+Those are implementation details.
+They're important, but they're not what makes Hivelet good.
+What makes Hivelet good is the business logic.
+If the business logic is flawless, we can build it in Vue today, React tomorrow, or even Laravel in the future.
+
+Here's what I want us to do.
+I want to become the landlady for a moment.
+Let's pretend it's Monday morning.
+I open Hivelet.
+What is the first thing I want to know?
+Not what I can click.
+What I need to know.
+For example, maybe I immediately care about:
+
+
+Who hasn't paid?
+
+
+Is there anyone waiting for my reply?
+
+
+Are there maintenance issues?
+
+
+Do I have vacant rooms?
+
+
+Did anyone inquire overnight?
+
+
+Did someone pay online while I was asleep?
+
+
+Notice those are questions, not features.
+I think every dashboard widget should answer one question.
+
+Another thing I've been thinking about...
+I don't actually think we're building an "Apartment Management System."
+I think we're building something much more specific.
+We're building a decision support dashboard.
+Think about it.
+Every module we've discussed ultimately helps the landlady decide what to do next.
+
+
+New inquiry → contact them.
+
+
+Overdue payment → remind them.
+
+
+Emergency ticket → fix it first.
+
+
+Vacant room → advertise it.
+
+
+Reserved room → expect move-in.
+
+
+The system is constantly answering:
+
+"What needs my attention today?"
+
+That changes how I would design the dashboard.
+
+Something I noticed in your paper
+One thing I don't want us to blindly copy from the paper is the typical CRUD mentality.
+Most capstone systems become:
+Rooms
+Add
+Edit
+Delete
+
+Tenants
+Add
+Edit
+Delete
+
+Payments
+Add
+Edit
+Delete
+
+==================================================
+ROLE: USER
+--------------------------------------------------
+OKAY ASK ME MORE THINGS TO GIVE YOU CLARITY
+
+==================================================
+ROLE: ASSISTANT
+--------------------------------------------------
+Perfect. This is exactly the phase where I think we should be. Not coding—designing the business.
+I'm not going to ask random questions. I'm going to ask the same kinds of questions a software architect or product owner would ask before development begins. Some of these may seem small, but they often prevent major redesigns later.
+
+🏢 PART 1 — THE BUSINESS ITSELF
+1. What is the rent schedule?
+For example:
+
+
+Every room is due on the 1st of every month?
+
+
+Or each tenant has their own due date based on move-in?
+
+
+This affects the entire payment system.
+
+2. What counts as "late"?
+Example:
+
+
+Due date = 5th
+
+
+On the 6th → Overdue?
+
+
+Or is there a grace period?
+
+3. Can tenants pay partially?
+Example:
+Rent = ₱6,000
+They pay:
+
+
+₱3,000 today
+
+
+₱3,000 next week
+
+
+Should Hivelet support this?
+Or is it strictly full payment only?
+
+4. If someone pays online (GCash), should the payment:
+
+
+automatically become "Paid" after successful verification?
+
+
+or appear as "Pending Verification" until the admin confirms it?
+
+
+I personally lean toward automatic if Adyen confirms the payment, because that's the point of integrating a payment gateway—but I'd like to hear your thoughts.
+
+🛏️ PART 2 — ROOM MANAGEMENT
+5. Can the admin temporarily hide a room from the public website without marking it under maintenance?
+Example:
+The room is technically available.
+But the landlady doesn't want to advertise it yet.
+Should there be a Published / Hidden switch?
+
+6. Can room prices change?
+If yes:
+Do we overwrite the old price?
+Or keep a history?
+For a capstone, I'd probably keep only the current price unless historical pricing is actually useful.
+
+7. Does every room have the same information?
+For example:
+
+
+Room Number
+
+
+Price
+
+
+Capacity
+
+
+Description
+
+
+Photos
+
+
+Amenities
+
+
+Anything else?
+
+👤 PART 3 — TENANTS
+8. When a tenant forgets their password...
+Who resets it?
+
+
+Admin only?
+
+
+Or "Forgot Password" via email?
+
+
+Since accounts are admin-created, I'm leaning toward an admin reset or a secure email reset if email is available.
+
+9. Are tenant accounts permanent?
+Example:
+Sean lives there.
+Moves out.
+Returns two years later.
+Should he log into the same account?
+Or get a new one?
+
+🌐 PART 4 — PUBLIC WEBSITE
+10. When someone submits an inquiry...
+Do they choose a specific room?
+Or simply say:
+
+"I'm interested."
+
+Personally, I think allowing them to inquire about a specific room creates a smoother workflow.
+
+11. Should the website display:
+
+
+exact room prices?
+
+
+or "Contact us for pricing"?
+
+
+
+12. Can someone reserve a room directly online?
+Or is the website only for inquiries?
+I currently think only inquiries is safer and matches your paper.
+
+💰 PART 5 — FINANCE
+13. Expenses
+Should expenses be categorized only?
+Or also assigned to a room when applicable?
+Example:
+Repair
+↓
+Room 12
+
