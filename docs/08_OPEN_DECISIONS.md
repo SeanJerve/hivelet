@@ -35,6 +35,8 @@ Candidate formats:
 - Excel-compatible spreadsheet
 - PDF
 
+**Update:** confirmed for the Monthly Income Report and Monthly Expenses Report specifically — both must export as Excel-compatible spreadsheet files (BR-049, FR-044). Still open for other exportable records (payment history, occupancy, maintenance history, inquiries, audit activity — see `01_SYSTEM_BIBLE.md` Section 18).
+
 ## 6. Exact notification priority rules
 
 Need to define which events are:
@@ -65,6 +67,8 @@ Need to finalize:
 
 The source spreadsheet shows a bottom-of-page total far larger than a single month's grand subtotal, implying a possible year-to-date running total. Confirm with the landlady whether Hivelet should show per-month totals only, year-to-date totals, or both. See `09_MONTHLY_INCOME_REPORT.md` Section 8.
 
+**Update:** the Monthly Expenses ledger confirms this exact "this month + running cumulative" pattern in its own category totals (see `10_MONTHLY_EXPENSES_REPORT.md` Section 6.2: June cumulative = May cumulative + June's month total, verified against the source numbers). This makes it likely the Income report's bottom totals follow the same convention, but it is not yet confirmed for Income specifically.
+
 ## 11. Garbage (GBG) fee timing
 
 Confirm what determines which month's entry the annual garbage fee is attached to: fixed calendar month, tenant anniversary month, or administrator discretion. See `09_MONTHLY_INCOME_REPORT.md` Section 8.
@@ -76,3 +80,15 @@ Confirm how Rent Amount, Water Payment, and Remitted Amount are handled when a t
 ## 13. Deposit reconciliation on vacancy
 
 Confirm whether/how a stored deposit (Column 12 of the Monthly Income Report) is reconciled or refunded when a tenant vacates, in relation to BR-025. See `09_MONTHLY_INCOME_REPORT.md` Section 8.
+
+## 14. "Main House" scope
+
+The Monthly Expenses ledger allocates money to a "Main House Expenses" Property Area that has no corresponding unit cluster in the Monthly Income Report. Confirm what this refers to (a separate structure, the landlady's personal residence, or something else). See `10_MONTHLY_EXPENSES_REPORT.md` Section 8.
+
+## 15. Monthly Expenses date format
+
+The Monthly Expenses spreadsheet displays dates as `D-MMM-YY` (matching the Income report), but the feature was also verbally described using `DD/MM/YYYY`. Confirm the authoritative format. See `10_MONTHLY_EXPENSES_REPORT.md` Section 8.
+
+## 16. Expense category cumulative reset
+
+Confirm whether the expense category cumulative totals ever reset (e.g. at calendar year start) or accumulate indefinitely. See `10_MONTHLY_EXPENSES_REPORT.md` Section 8.

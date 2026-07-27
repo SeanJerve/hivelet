@@ -4,6 +4,8 @@ This document describes the landlady's existing Excel-based Monthly Income Repor
 
 This is the authoritative source for BR-032 through BR-039 (`02_BUSINESS_RULES.md`) and FR-031 through FR-036 (`03_REQUIREMENTS.md`), and resolves Open Decision #2 in `08_OPEN_DECISIONS.md`.
 
+Only the administrator (landlady) creates or edits this report (BR-048), and it must be exportable as an Excel-compatible file (BR-049, FR-044).
+
 ---
 
 ## 1. Purpose

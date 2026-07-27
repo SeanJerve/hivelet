@@ -190,3 +190,43 @@ A tenant's deposit is set once, at onboarding, equal to the Rent Amount in effec
 Linda's units (LF, LB) are billed on fixed monthly rates rather than the per-occupant water model (BR-014): a flat electricity charge plus a fixed water charge per unit. This total is remitted directly to Linda and kept separate from the standard rent/water subtotal.
 
 See `09_MONTHLY_INCOME_REPORT.md` Section 6 for exact figures.
+
+## BR-041 — Expense Property Areas
+
+Every expense is allocated to one or more of five fixed Property Areas: Boarding House, Main House, Front Apartment, Back Apartment, Other Expenses/Personal.
+
+See `10_MONTHLY_EXPENSES_REPORT.md`.
+
+## BR-042 — One Category Per Expense Entry
+
+An expense entry is tagged to exactly one fixed expense category (BR-043), even when its amount is split across multiple Property Areas.
+
+## BR-043 — Fixed Expense Category List
+
+The expense category list (Supplies, Taxes and Licenses, Janitorial and Messengerial Services, Depreciation, Professional Fees, Salaries: Michelle with PhilHealth/SSS/Allowances sub-lines, Communication/Light/Water, Repairs and Maintenance, Fuel and Oil, Others) is fixed and system-wide.
+
+See `10_MONTHLY_EXPENSES_REPORT.md` Section 3.
+
+## BR-044 — Split Expense Allocation
+
+A single expense entry may allocate its amount across more than one Property Area without duplicating its date, supplier description, or category.
+
+## BR-045 — Expense Row Total Is Derived
+
+An expense entry's Total Expenses figure is always the sum of its Property Area allocations and must be calculated by the system, never entered manually.
+
+## BR-046 — Expense Category Totals
+
+Each expense category maintains a "this month" total (sum of entries tagged to it in the current month) and a running cumulative total (previous month's cumulative + this month's total), both calculated by the system.
+
+## BR-047 — Expense Category Reconciliation
+
+The sum of all category "this month" totals (BR-046) must equal the sum of all Property Area bottom totals (BR-041) for the same month.
+
+## BR-048 — Admin-Only Authorship of Income/Expense Ledgers
+
+Only the administrator (landlady) may create or edit Monthly Income Report and Monthly Expenses Report entries. Tenants and public visitors have no access to these ledgers.
+
+## BR-049 — Excel Export of Income/Expense Reports
+
+The Monthly Income Report and Monthly Expenses Report must each be exportable as an Excel-compatible spreadsheet file, reproducing the layouts defined in `09_MONTHLY_INCOME_REPORT.md` and `10_MONTHLY_EXPENSES_REPORT.md`.

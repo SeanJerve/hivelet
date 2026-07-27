@@ -110,6 +110,30 @@ The system shall capture Anniversary Date and Deposit once, at tenant onboarding
 ### FR-036 Linda Fixed Billing Flow
 The system shall support a distinct fixed-rate billing flow for Linda's units (LF, LB), separate from the standard per-occupant water model, remitted directly to Linda.
 
+### FR-037 Monthly Expenses Ledger
+The system shall reproduce the landlady's Monthly Expenses ledger: date, OR/Supplier, one-or-more Property Area allocations, and one fixed expense category per entry, per `10_MONTHLY_EXPENSES_REPORT.md`.
+
+### FR-038 Split Expense Entry
+The administrator shall be able to allocate a single expense entry's amount across more than one Property Area without re-entering its date, supplier, or category.
+
+### FR-039 Automatic Expense Totals
+The system shall automatically compute an expense entry's row total, each Property Area's monthly bottom total, and each category's "this month" total.
+
+### FR-040 Expense Category Cumulative Totals
+The system shall automatically roll each expense category's cumulative total forward from the previous month.
+
+### FR-041 Fixed Expense Category Dropdown
+The system shall present the fixed expense category list (with Salaries sub-lines 6a/6b/6c) as a dropdown when tagging an expense entry.
+
+### FR-042 Expense/Category Reconciliation Check
+The system shall be able to verify that the sum of category "this month" totals equals the sum of Property Area bottom totals for the same month.
+
+### FR-043 Admin-Only Income/Expense Entry
+Only the administrator shall be able to create or edit Monthly Income Report and Monthly Expenses Report entries.
+
+### FR-044 Excel Export of Income/Expense Reports
+The system shall export the Monthly Income Report and Monthly Expenses Report as Excel-compatible spreadsheet files, matching their defined layouts.
+
 ## Non-Functional Requirements
 
 ### NFR-001 Functional Suitability
