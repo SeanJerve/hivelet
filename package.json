@@ -16,7 +16,7 @@
     "vue3",
     "express",
     "typescript",
-    "mysql"
+    "postgresql"
   ],
   "author": "",
   "license": "ISC"

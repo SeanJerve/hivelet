@@ -2,22 +2,18 @@
 
 ## Recommended Architecture
 
-Use a separated full-stack web application:
+Use a separated full-stack web application with the following tech stack:
 
-Frontend:
-- Vue.js
-- Vite
-- TypeScript
-- Tailwind CSS
-- A mature component system where appropriate
-
-Backend:
-- Node.js
-- Express.js
-- TypeScript
-
-Database:
-- MySQL
+| **Software**          | **Version**                  |
+| --------------------- | ---------------------------- |
+| Visual Studio Code    | 1.85+                        |
+| Vue 3 / Tailwind CSS  | Vue 3.x / Tailwind CSS v3.0+ |
+| TypeScript            | 5.0+                         |
+| Express.js            | Latest Stable                |
+| Node.js               | LTS (v20+)                   |
+| PostgreSQL (Supabase) | PostgreSQL 16+               |
+| Google Chrome         | Latest Stable                |
+| Figma                 | Latest Stable                |
 
 Payment:
 - Adyen API for optional GCash payment flow
@@ -38,8 +34,7 @@ The project is a real-time web application that must:
 - integrate with Adyen
 - support relational data
 - remain understandable to the development team
-
-A conventional Vue + Node/Express + MySQL architecture is appropriate for the project scope.
+A conventional Vue + Node/Express + PostgreSQL (Supabase) architecture is appropriate for the project scope.
 
 ## Important Architecture Rule
 
