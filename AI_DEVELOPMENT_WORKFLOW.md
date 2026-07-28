@@ -329,3 +329,21 @@ Always inspect.
 Always verify.
 
 Always return to the source documents.
+
+---
+
+# 10. ACADEMIC AI CODE DOCUMENTATION & MOBILE-FIRST STANDARDS
+
+## Academic AI Transparency Standard
+To satisfy strict institutional academic policies evaluating AI-assisted software engineering:
+1. **File & Component Header Comments:** Every file created or updated must contain an explicit JSDoc / Header comment defining:
+   - Functional purpose & System Bible reference
+   - Architectural rationale
+   - Innovations, custom algorithms, or UI adaptations tailored specifically for Hivelet.
+2. **Inline Logic Comments:** Business rules (e.g., 50% revenue share, ₱200/head water billing, 2% annual price increase history, room-centric model) must be annotated inline.
+
+## Mobile-First & Corporate UI Mandate
+1. **Mobile-First Responsive Design:** All UI components MUST be developed mobile-first using Tailwind responsive breakpoints (`sm`, `md`, `lg`).
+2. **Jira-Inspired Minimalist Aesthetic:** Use clean slate canvas (`#f4f5f7`), crisp card panels (`#ffffff`), dark slate typography (`#172b4d`), and corporate blue accents (`#0c66e4`).
+3. **Strictly No Emojis:** Use clean Lucide SVG icons across all interfaces.
+

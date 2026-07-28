@@ -1,53 +1,56 @@
-# HIVELET FUNCTIONAL WIREFRAME SPECIFICATION
+# HIVELET FUNCTIONAL UI & DESIGN SPECIFICATION
 
-## 1. Wireframe Overview & Objective
+## 1. UI Architecture & Design System
 
 **System Name:** Hivelet  
 **Target Property:** Fe Galang Da Silva Boarding House (3 Floors, 32 Total Units)  
-**Prototype Style:** Low-Fidelity Black & White Blueprint Wireframe (Dashboard Sidebar Layout)  
-**Primary Purpose:** Demonstrate pure system workflows, functional logic, role permissions, hover pop-over ticket details modal, uniform in-place resolved button replacement, payment collection recording with Invoice #, and floating top-right chathead inbox based on `01_SYSTEM_BIBLE.md` through `10_MONTHLY_EXPENSES_REPORT.md`.
+**Design Theme:** Minimalist Corporate Workspace (Jira / Atlassian Space Inspired)  
+**Primary Aesthetic Principles:**
+- **Canvas:** Subtle neutral slate-gray background (`#f4f5f7`).
+- **Cards & Surfaces:** Clean white container surfaces (`#ffffff`) with subtle 1px slate borders (`#dfe1e6`).
+- **Typography:** Crisp dark slate text (`#172b4d`) with neutral slate subtext (`#6b778c`), strictly using standard Inter typography.
+- **Accents:** Atlassian Corporate Blue (`#0c66e4`) for primary action buttons, active navigation states, and key focal points.
+- **Strictly No Emojis / No Flashy Elements:** SVG/Lucide icons strictly replace emojis across all views.
+- **Mobile-First & Responsive Mandate:** Every component must adapt to mobile breakpoints (`sm`, `md`, `lg`), utilizing slide-over navigation drawers, stacked card layouts, and horizontal table scrolling on small viewports.
 
 ---
 
-## 2. Maintenance Dispatch Table Layout
+## 2. Mandatory Academic AI Code Documentation Standard
 
-```
-   [ 🛠️ MAINTENANCE DISPATCH & CLOSURE AUTHORIZATION ]
-   +---------------------------------------------------------------------------------------------------+
-   | Room #             | Issue Description          | Priority  | Date Reported | Details | Closure Action|
-   +---------------------+----------------------------+-----------+---------------+---------+---------------+
-   | Room 108           | Faucet Leaking in bathroom | EMERGENCY | 2026-07-27    | [ ⤢ ]   | [ Close Ticket|
-   +------------------------------------------------------------------------------------+---------------+
-                                                                                |               |
-                                                                                v               v
-                                                                        (Click ⤢ Icon)   (Click Close Ticket)
-                                                                        Opens Hover      Instantly Replaces
-                                                                        Modal Card       in Same Box with:
-                                                                        Floated on Top!  [ ✅ RESOLVED ]
-```
+To comply with strict academic software review policies regarding AI-assisted development:
 
----
-
-## 3. Sidebar Menu Items & Component Specs
-
-| Menu Item | Icon | Component Description |
-| :--- | :--- | :--- |
-| **Overview** | 📊 | Key KPI metrics (Revenue, Occupancy 28/32, Pending Verifications) & 32-Room Visual Matrix |
-| **Tenant Management** | 👥 | Active Tenant Directory, onboarding move-in dates, profile editor |
-| **Booking & Units** | 📅 | **Admin**: Unit Specs, Rates & **Unit Photo Uploader/Editor Modal** (`📷 [ EDIT UNIT PHOTO ]`).<br>**Top Right Chathead**: Floating Messenger Pop-over Widget (`💬 [ 💬 LIVE CHAT INBOX ]`) allowing Landlady to view who is messaging her and reply right on top of the screen! |
-| **Payment & Income** | 💳 | **RECORD MONTHLY PAYMENT UNIT FORM**, 50% Share derivation, and live reflection into the **Monthly Income Report Collection Ledger Table** (with separate **Tenant Name** and **Invoice Number** columns) |
-| **Expenses Ledger** | 🧾 | **MULTI-SUPPLIER EXPENSE FORM** with `➕ [ + Add Another OR / Supplier on Same Date ]` button below the OR/Supplier box. Renders a **Single Merged Date Cell (using Rowspan)** while keeping each supplier on a **separate row and column**! |
-| **Ticketing & Issues** | 🔧 | **Landlady Dispatch Table**:<br>• **Room #**: Plain room number text (`Room 108`).<br>• **`Details` Column**: Click **Icon-Only `⤢` Button** to open a **Hover Pop-over Card right on top**.<br>• **`Closure Action` Column**: Uniform **`[ Close Ticket ]`** buttons (`btn-secondary btn-sm`). Click to **instantly replace in the SAME box** with a **`[ ✅ RESOLVED ]`** tag! |
-| **Settings & Rules** | ⚙️ | System Configuration, Water Billing Rate (₱200/head), Landlady Payment Policy |
-| **Logout System** | 🚪 | Exits current user session and returns to Auth Landing Gate (`#auth-view`) |
+1. **Structured Component Headers:** Every Vue component (`.vue`) and TypeScript utility (`.ts`) MUST include an explicit top comment header detailing:
+   ```typescript
+   /**
+    * @component [Component Name]
+    * @description [Detailed functional purpose]
+    * @systemBibleRef [System Bible section, e.g., Section 5.3 - Financial Calculations]
+    * @rationale [Architectural rationale for component structure & design]
+    * @innovations [Custom logic, UI adaptations, or algorithms tailored for Hivelet]
+    */
+   ```
+2. **Business Rule Inline Comments:** Business rules (e.g., 50% revenue share derivation, ₱200/head water billing rule, 2% annual price increase history, room-centric occupancy model) MUST be explicitly commented inline wherever calculations or state transitions occur.
 
 ---
 
-## 4. How to Preview
+## 3. Core Sidebar Menu & Workspace Modules
 
-Open [`index.html`](file:///c:/Users/Kiel%20Hedrix/Desktop/HIVELET/index.html) in any web browser:
-1. Log in as **Admin** using `⚡ Quick Test`.
-2. Go to **`🔧 Ticketing & Issues`** in the left sidebar.
-3. In the Maintenance Dispatch table:
-   - Click the icon-only **`⤢`** button in the **`Details`** column $\rightarrow$ Opens a **Hover Pop-over Modal right on top** showing full tenant specs, notes, and attached photo!
-   - Click **`[ Close Ticket ]`** (uniform button style on Room 108 and Room 305) $\rightarrow$ Instantly **replaces the button in the same table cell** with a **`[ ✅ RESOLVED ]`** badge!
+| Module ID | Title | Purpose & System Bible Alignment | Primary Component Specs |
+| :--- | :--- | :--- | :--- |
+| `overview` | **Executive Overview** | Section 2 & 5.1: Actionable daily dashboard answering "What money came in/went out?" | KPI Summary Cards, Overdue Attention Alerts, 32-Room Visual Matrix (3 Floors: 101-110, 201-210, 301-312). |
+| `directory` | **Room Directory** | Section 5.2: Room-centric occupancy & pricing model | Operational status filters, base/current price editor modal, price history tracking (2% annual rule). |
+| `tenants` | **Tenant Management** | Section 5.3: Active tenant directory & emergency contacts | Onboarding move-in dates, emergency contact cards, active room assignment links. |
+| `inquiries` | **Inquiry Inbox** | Section 5.4: Centralized prospect inquiries | Public inquiry submission tracking, prospect contact cards, landlady messaging inbox. |
+| `billing` | **Billing & Income** | Section 5.5 & 09_REPORT: Financial collections & receipts | Record Monthly Payment form, Invoice # generator, 50% Share derivation, Collection Ledger. |
+| `expenses` | **Expenses Ledger** | Section 5.6 & 10_REPORT: Operational outgoing expenses | Multi-supplier expense recording form with date-grouped supplier tables. |
+| `tickets` | **Maintenance Dispatch**| Section 5.7: Dispatch & closure authorization | Priority badges (Emergency/High/Medium), Detail hover pop-over modal (`details-modal`), in-place closure status transition. |
+| `audit` | **System Audit Logs** | Section 5.8: Immutable audit history | Server health diagnostics, activity logs, system role permissions inspector. |
+
+---
+
+## 4. Role Switcher Workspaces
+
+The application shell provides a top header bar allowing quick switching between three authentic system perspectives:
+1. **Admin / Landlady Workspace (`admin`):** Full operational, financial, and management workspace.
+2. **Tenant Portal (`tenant`):** Self-service portal for active tenants (Room info, ₱200/head water & rent bill breakdown, ticket submission).
+3. **Public Guest Portal (`public`):** Public property catalog, room availability grid, and direct inquiry form for prospective tenants.
