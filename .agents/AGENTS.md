@@ -29,4 +29,8 @@ You are assisting in the development of a capstone project for Hivelet (Fe Galan
   - **Key Innovations & Adaptations** (explaining how standard open-source web patterns were tailored specifically for Hivelet's operational rules).
 - **In-Code Comments:** Every non-trivial data structure, calculation (e.g., 50% revenue share, ₱200/head water billing rule, 2% annual price increase history), and authorization rule must have explicit code comments for capstone auditability.
 
+### 4. Automatic Git Version Control & Conflict Handling
+- **Proactive Git Sync:** When performing Git operations (`git pull`, `git push`, `git commit`), AI agents must execute and manage the version control workflow safely and automatically.
+- **Automatic Merge Conflict Resolution:** If merge conflicts arise due to teammates simultaneously pushing changes, the AI must automatically inspect the conflicting files, intelligently preserve all teammates' valid work in accordance with the System Bible, resolve conflict markers cleanly, verify that the project builds without errors (`npm run build`), and complete the commit/push process automatically without interrupting the user.
+
 Always prioritize these rules above speed. Precision, academic alignment, code transparency, and corporate UI excellence are the highest priorities for this repository.

@@ -347,3 +347,19 @@ To satisfy strict institutional academic policies evaluating AI-assisted softwar
 2. **Jira-Inspired Minimalist Aesthetic:** Use clean slate canvas (`#f4f5f7`), crisp card panels (`#ffffff`), dark slate typography (`#172b4d`), and corporate blue accents (`#0c66e4`).
 3. **Strictly No Emojis:** Use clean Lucide SVG icons across all interfaces.
 
+---
+
+# 11. AUTOMATIC GIT VERSION CONTROL & MERGE CONFLICT RESOLUTION
+
+## Automatic Version Control Management
+Whenever instructed to execute Git operations (`git pull`, `git push`, `git commit`):
+1. **Automated Pull & Rebase:** Perform `git pull --rebase` or `git pull` to synchronize remote changes safely.
+2. **Automatic Conflict Resolution:** If merge conflicts occur because team members are simultaneously pushing code:
+   - Identify all conflicting files automatically.
+   - Inspect both branches to preserve valid code and business logic from both team members.
+   - Ensure all merged code adheres strictly to `docs/01_SYSTEM_BIBLE.md`.
+   - Resolve conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) cleanly.
+   - Verify that both backend and frontend pass `npm run build`.
+   - Stage, commit, and push the resolved changes automatically without blocking the team.
+
+
