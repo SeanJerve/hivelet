@@ -2,14 +2,14 @@
 /**
  * @component AppHeader
  * @description Master corporate top header for Hivelet, providing global search, workspace branding,
- *              mobile sidebar toggle, and active system role switcher.
+ *              mobile sidebar toggle, and active system role switcher with Vue Router integration.
  * @systemBibleRef Section 4 - User Roles & Authorization Boundaries
  * @rationale Designed after Jira Space top navigation. Features a clean white background, subtle border,
  *              role perspective selector (Admin / Tenant / Public), and instant search input.
- * @innovations Integrated role-switching reactive state into header to allow instant previewing of all 3
- *              capstone user roles without requiring authentic server logins during demonstration.
+ * @innovations Vue Router integration allowing seamless URL slug navigation when switching perspectives.
  */
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { 
   Building2, 
   Search, 
@@ -22,16 +22,29 @@ import {
 } from 'lucide-vue-next';
 
 const props = defineProps<{
-  currentRole: 'admin' | 'tenant' | 'public';
   isMobileSidebarOpen: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:currentRole', role: 'admin' | 'tenant' | 'public'): void;
   (e: 'toggleMobileSidebar'): void;
 }>();
 
+const router = useRouter();
+const route = useRoute();
 const searchQuery = ref('');
+
+// Compute active role based on current URL path
+const currentRole = computed<'admin' | 'tenant' | 'public'>(() => {
+  if (route.path.startsWith('/tenant')) return 'tenant';
+  if (route.path.startsWith('/admin')) return 'admin';
+  return 'public';
+});
+
+const navigateRole = (role: 'admin' | 'tenant' | 'public') => {
+  if (role === 'admin') router.push('/admin/overview');
+  else if (role === 'tenant') router.push('/tenant');
+  else router.push('/public');
+};
 </script>
 
 <template>
@@ -83,42 +96,42 @@ const searchQuery = ref('');
       <!-- Capstone Role Perspective Selector -->
       <div class="flex items-center bg-[#f4f5f7] p-0.5 border border-[#dfe1e6] rounded-sm">
         <button 
-          @click="emit('update:currentRole', 'admin')"
+          @click="navigateRole('admin')"
           :class="[
             'px-2 py-1 text-xs font-medium rounded-2xs flex items-center gap-1.5 transition-all',
             currentRole === 'admin' 
               ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs border border-[#dfe1e6]' 
               : 'text-[#42526e] hover:text-[#172b4d]'
           ]"
-          title="Switch to Admin / Landlady Workspace"
+          title="Switch to Admin / Landlady Workspace (/admin/overview)"
         >
           <ShieldCheck class="w-3.5 h-3.5" />
           <span class="hidden sm:inline">Admin</span>
         </button>
 
         <button 
-          @click="emit('update:currentRole', 'tenant')"
+          @click="navigateRole('tenant')"
           :class="[
             'px-2 py-1 text-xs font-medium rounded-2xs flex items-center gap-1.5 transition-all',
             currentRole === 'tenant' 
               ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs border border-[#dfe1e6]' 
               : 'text-[#42526e] hover:text-[#172b4d]'
           ]"
-          title="Switch to Active Tenant View"
+          title="Switch to Active Tenant View (/tenant)"
         >
           <UserCheck class="w-3.5 h-3.5" />
           <span class="hidden sm:inline">Tenant</span>
         </button>
 
         <button 
-          @click="emit('update:currentRole', 'public')"
+          @click="navigateRole('public')"
           :class="[
             'px-2 py-1 text-xs font-medium rounded-2xs flex items-center gap-1.5 transition-all',
             currentRole === 'public' 
               ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs border border-[#dfe1e6]' 
               : 'text-[#42526e] hover:text-[#172b4d]'
           ]"
-          title="Switch to Public Guest Inquiry View"
+          title="Switch to Public Guest Inquiry View (/public)"
         >
           <Globe class="w-3.5 h-3.5" />
           <span class="hidden sm:inline">Public</span>

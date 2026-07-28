@@ -3,11 +3,11 @@
  * @component AppSidebar
  * @description Left navigation sidebar for Hivelet, inspired directly by Atlassian/Jira space navigation.
  * @systemBibleRef Section 3 & UI Wireframe Specification - Sidebar Menu Items
- * @rationale Provides structured, clean workspace navigation tailored per capstone role.
- *              Includes mobile drawer overlay rules for small devices.
- * @innovations Dynamic sidebar navigation switching between Admin management modules, Tenant portal actions,
- *              and Public room directory based on active role state.
+ * @rationale Provides structured, clean workspace navigation tailored per capstone role with Vue Router.
+ * @innovations Integrated RouterLinks to enable URL-slug-based navigation across all 10 system modules.
  */
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -18,48 +18,52 @@ import {
   Wrench, 
   ShieldCheck, 
   Home, 
-  FileText, 
   PlusCircle, 
   X 
 } from 'lucide-vue-next';
 
 const props = defineProps<{
-  currentRole: 'admin' | 'tenant' | 'public';
-  activeTab: string;
   isMobileSidebarOpen: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:activeTab', tab: string): void;
   (e: 'closeMobileSidebar'): void;
 }>();
 
+const route = useRoute();
+const router = useRouter();
+
+// Compute active role based on URL path
+const currentRole = computed<'admin' | 'tenant' | 'public'>(() => {
+  if (route.path.startsWith('/tenant')) return 'tenant';
+  if (route.path.startsWith('/admin')) return 'admin';
+  return 'public';
+});
+
 // Admin Management Modules aligned with System Bible
 const adminModules = [
-  { id: 'overview', label: 'Executive Overview', icon: LayoutDashboard },
-  { id: 'directory', label: 'Room Directory (32 Units)', icon: Building2 },
-  { id: 'tenants', label: 'Tenant Directory', icon: Users },
-  { id: 'inquiries', label: 'Inquiry Inbox', icon: MessageSquare },
-  { id: 'billing', label: 'Billing & Collections', icon: CreditCard },
-  { id: 'expenses', label: 'Expenses Ledger', icon: Receipt },
-  { id: 'tickets', label: 'Maintenance Dispatch', icon: Wrench },
-  { id: 'audit', label: 'System Audit Logs', icon: ShieldCheck },
+  { path: '/admin/overview', label: 'Executive Overview', icon: LayoutDashboard },
+  { path: '/admin/directory', label: 'Room Directory (32 Units)', icon: Building2 },
+  { path: '/admin/tenants', label: 'Tenant Directory', icon: Users },
+  { path: '/admin/inquiries', label: 'Inquiry Inbox', icon: MessageSquare },
+  { path: '/admin/billing', label: 'Billing & Collections', icon: CreditCard },
+  { path: '/admin/expenses', label: 'Expenses Ledger', icon: Receipt },
+  { path: '/admin/tickets', label: 'Maintenance Dispatch', icon: Wrench },
+  { path: '/admin/audit', label: 'System Audit Logs', icon: ShieldCheck },
 ];
 
 // Tenant Portal Modules
 const tenantModules = [
-  { id: 'tenant-dashboard', label: 'My Room & Billing', icon: Home },
-  { id: 'tenant-tickets', label: 'Report Issue / Ticket', icon: Wrench },
+  { path: '/tenant', label: 'My Room & Billing', icon: Home },
 ];
 
 // Public Portal Modules
 const publicModules = [
-  { id: 'public-rooms', label: 'Property & Units', icon: Building2 },
-  { id: 'public-inquire', label: 'Submit Room Inquiry', icon: PlusCircle },
+  { path: '/public', label: 'Property & Available Units', icon: Building2 },
 ];
 
-const handleSelect = (tabId: string) => {
-  emit('update:activeTab', tabId);
+const navigateTo = (path: string) => {
+  router.push(path);
   emit('closeMobileSidebar');
 };
 </script>
@@ -91,7 +95,7 @@ const handleSelect = (tabId: string) => {
         </div>
 
         <!-- Space Context Header -->
-        <div class="px-2 py-2 mb-3 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs">
+        <div class="px-2.5 py-2 mb-3 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs">
           <p class="text-[10px] font-bold text-[#6b778c] uppercase tracking-wider">WORKSPACE</p>
           <p class="text-xs font-semibold text-[#172b4d] truncate">
             {{ currentRole === 'admin' ? 'Landlady Management Space' : currentRole === 'tenant' ? 'Tenant Account Portal' : 'Public Guest Catalog' }}
@@ -101,46 +105,43 @@ const handleSelect = (tabId: string) => {
         <!-- Admin Workspace Navigation -->
         <div v-if="currentRole === 'admin'" class="space-y-0.5">
           <p class="px-2 py-1 text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">Management Modules</p>
-          <a
+          <button
             v-for="module in adminModules"
-            :key="module.id"
-            @click.prevent="handleSelect(module.id)"
-            href="#"
-            :class="['jira-sidebar-item', activeTab === module.id ? 'active' : '']"
+            :key="module.path"
+            @click="navigateTo(module.path)"
+            :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
           >
             <component :is="module.icon" class="w-4 h-4 shrink-0" />
             <span class="truncate">{{ module.label }}</span>
-          </a>
+          </button>
         </div>
 
         <!-- Tenant Portal Navigation -->
         <div v-else-if="currentRole === 'tenant'" class="space-y-0.5">
           <p class="px-2 py-1 text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">Tenant Self-Service</p>
-          <a
+          <button
             v-for="module in tenantModules"
-            :key="module.id"
-            @click.prevent="handleSelect(module.id)"
-            href="#"
-            :class="['jira-sidebar-item', activeTab === module.id ? 'active' : '']"
+            :key="module.path"
+            @click="navigateTo(module.path)"
+            :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
           >
             <component :is="module.icon" class="w-4 h-4 shrink-0" />
             <span class="truncate">{{ module.label }}</span>
-          </a>
+          </button>
         </div>
 
         <!-- Public Portal Navigation -->
         <div v-else-if="currentRole === 'public'" class="space-y-0.5">
           <p class="px-2 py-1 text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">Guest Directory</p>
-          <a
+          <button
             v-for="module in publicModules"
-            :key="module.id"
-            @click.prevent="handleSelect(module.id)"
-            href="#"
-            :class="['jira-sidebar-item', activeTab === module.id ? 'active' : '']"
+            :key="module.path"
+            @click="navigateTo(module.path)"
+            :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
           >
             <component :is="module.icon" class="w-4 h-4 shrink-0" />
             <span class="truncate">{{ module.label }}</span>
-          </a>
+          </button>
         </div>
       </div>
 
