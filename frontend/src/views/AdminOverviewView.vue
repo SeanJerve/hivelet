@@ -1,14 +1,15 @@
 <script setup lang="ts">
 /**
  * @component AdminOverviewView
- * @description Executive Decision Support Dashboard displaying key operational metrics, 32-Room Visual Matrix,
- *              and live interactive UI/UX feedback test controls.
- * @systemBibleRef Section 2 & Section 5.1 - Decision Support & Occupancy Matrix
- * @rationale Answers the core capstone question: "What needs the landlady's attention today?"
- *              Demonstrates Jira + Notion + Airtable tri-inspiration with high clarity for non-techy users.
- * @innovations Integrated live toast triggers and confirmation modals for visual design system validation.
+ * @description Executive Decision Support Dashboard displaying key operational metrics,
+ *              the canonical 32-Unit Visual Matrix (BR-032), Jira tab bar, and state feedback controls.
+ * @systemBibleRef Section 2 & Section 5.1 & BR-032 (Canonical 32 Unit List)
+ * @rationale Serves the non-techy landlady with clear, comfortable Jira-style typography,
+ *              generous breathing room, soft pastel status indicators, and mobile-first responsiveness.
+ * @innovations Built 5-cluster visual room layout strictly conforming to the 32 authentic units
+ *              defined in Section 2 of 09_MONTHLY_INCOME_REPORT.md.
  */
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { 
   Building2, 
   Users, 
@@ -19,12 +20,22 @@ import {
   Sparkles,
   Info,
   Layers,
-  ArrowRight
+  LayoutGrid,
+  Calendar,
+  List,
+  FileText,
+  Clock,
+  Filter,
+  SlidersHorizontal
 } from 'lucide-vue-next';
 import { useToast } from '../lib/useToast';
 import ConfirmModal from '../components/ui/ConfirmModal.vue';
+import { CANONICAL_32_UNITS, PROPERTY_CLUSTERS, type RentableUnit } from '../lib/canonicalUnits';
 
 const { showToast } = useToast();
+
+// Active View Tab (Matching attached Jira UI screenshot)
+const activeTab = ref<'board' | 'summary' | 'list' | 'calendar'>('board');
 
 // State for testing confirmation modal
 const isConfirmModalOpen = ref(false);
@@ -32,19 +43,19 @@ const confirmModalTitle = ref('');
 const confirmModalMessage = ref('');
 const confirmModalVariant = ref<'danger' | 'primary' | 'warning'>('danger');
 
-// Trigger helper functions for design testing
+// Toast testing handlers
 const triggerSuccessToast = () => {
   showToast(
-    'Payment Recorded',
-    'Monthly rent payment of ₱4,500 for Room 101 recorded and added to financial ledger.',
+    'Payment Recorded Successfully',
+    'Monthly payment for Unit 1a (Juan Dela Cruz) recorded and remitted to ledger.',
     'success'
   );
 };
 
 const triggerWaterWarningToast = () => {
   showToast(
-    'Water Billing Notice (BR-036)',
-    'Water Payment entered is ₱600. Expected calculation for 2 occupants is ₱400 (2 × ₱200/head).',
+    'Water Billing Warning (BR-036)',
+    'Water Payment entered is ₱600. Standard calculation for 2 occupants is ₱400 (2 × ₱200/head).',
     'warning',
     6000
   );
@@ -52,15 +63,15 @@ const triggerWaterWarningToast = () => {
 
 const triggerErrorToast = () => {
   showToast(
-    'Inquiry Conversion Failed',
-    'Prospect email already associated with an active tenant record. Please verify existing accounts.',
+    'Inquiry Conversion Notice',
+    'Prospect contact details match an existing active tenant record (Unit 2a). Please review.',
     'error'
   );
 };
 
 const openSettleVacancyModal = () => {
   confirmModalTitle.value = 'Settle Vacancy & Deactivate Tenant Account';
-  confirmModalMessage.value = 'Are you sure you want to settle the departure for Room 201 (Grace Poe)? The tenant account will be deactivated and Room 201 will be marked as Available.';
+  confirmModalMessage.value = 'Are you sure you want to settle the departure for Unit 2a (Grace Poe)? The tenant account will be deactivated and Unit 2a will be marked as Available.';
   confirmModalVariant.value = 'danger';
   isConfirmModalOpen.value = true;
 };
@@ -69,280 +80,345 @@ const handleConfirmModalAction = () => {
   isConfirmModalOpen.value = false;
   showToast(
     'Room Vacancy Settled',
-    'Room 201 is now marked as Available. Tenant account deactivated and archived in audit log.',
+    'Unit 2a is now marked as Available. Tenant account deactivated and archived in audit log.',
     'success'
   );
 };
 
-// 32-Room Data Structure (3 Floors: Floor 1=101-110, Floor 2=201-210, Floor 3=301-312 + 5 Clusters)
-const floors = [
-  {
-    floorNumber: 1,
-    label: '1st Floor (Units 101 - 110)',
-    rooms: [
-      { id: '101', number: 'Room 101', status: 'occupied', tenant: 'Juan Dela Cruz', type: 'Studio', price: 4500, occupants: 2 },
-      { id: '102', number: 'Room 102', status: 'occupied', tenant: 'Maria Santos', type: 'Studio', price: 4500, occupants: 1 },
-      { id: '103', number: 'Room 103', status: 'available', tenant: null, type: '1-Bedroom', price: 6000, occupants: 0 },
-      { id: '104', number: 'Room 104', status: 'occupied', tenant: 'Pedro Penduko', type: 'Studio', price: 4500, occupants: 2 },
-      { id: '105', number: 'Room 105', status: 'maintenance', tenant: null, type: 'Studio', price: 4500, occupants: 0 },
-      { id: '106', number: 'Room 106', status: 'occupied', tenant: 'Ana Reyes', type: '2-Bedroom', price: 8000, occupants: 3 },
-      { id: '107', number: 'Room 107', status: 'occupied', tenant: 'Carlos Ramos', type: 'Studio', price: 4500, occupants: 1 },
-      { id: '108', number: 'Room 108', status: 'occupied', tenant: 'Elena Toribio', type: 'Studio', price: 4500, occupants: 1 },
-      { id: '109', number: 'Room 109', status: 'occupied', tenant: 'Mark Bautista', type: 'Studio', price: 4500, occupants: 2 },
-      { id: '110', number: 'Room 110', status: 'available', tenant: null, type: '1-Bedroom', price: 6000, occupants: 0 },
-    ]
-  },
-  {
-    floorNumber: 2,
-    label: '2nd Floor (Units 201 - 210)',
-    rooms: [
-      { id: '201', number: 'Room 201', status: 'occupied', tenant: 'Grace Poe', type: 'Studio', price: 4600, occupants: 2 },
-      { id: '202', number: 'Room 202', status: 'occupied', tenant: 'Lito Lapid', type: 'Studio', price: 4600, occupants: 1 },
-      { id: '203', number: 'Room 203', status: 'occupied', tenant: 'Robin Padilla', type: 'Studio', price: 4600, occupants: 2 },
-      { id: '204', number: 'Room 204', status: 'available', tenant: null, type: '1-Bedroom', price: 6200, occupants: 0 },
-      { id: '205', number: 'Room 205', status: 'occupied', tenant: 'Joel Villanueva', type: 'Studio', price: 4600, occupants: 1 },
-      { id: '206', number: 'Room 206', status: 'occupied', tenant: 'Nancy Binay', type: 'Studio', price: 4600, occupants: 1 },
-      { id: '207', number: 'Room 207', status: 'occupied', tenant: 'Sonny Angara', type: '2-Bedroom', price: 8200, occupants: 3 },
-      { id: '208', number: 'Room 208', status: 'occupied', tenant: 'Bam Aquino', type: 'Studio', price: 4600, occupants: 2 },
-      { id: '209', number: 'Room 209', status: 'occupied', tenant: 'Chiz Escudero', type: 'Studio', price: 4600, occupants: 1 },
-      { id: '210', number: 'Room 210', status: 'occupied', tenant: 'Ping Lacson', type: 'Studio', price: 4600, occupants: 2 },
-    ]
-  },
-  {
-    floorNumber: 3,
-    label: '3rd Floor (Units 301 - 312)',
-    rooms: [
-      { id: '301', number: 'Room 301', status: 'occupied', tenant: 'Risa Hontiveros', type: 'Studio', price: 4700, occupants: 1 },
-      { id: '302', number: 'Room 302', status: 'occupied', tenant: 'Koko Pimentel', type: 'Studio', price: 4700, occupants: 2 },
-      { id: '303', number: 'Room 303', status: 'occupied', tenant: 'Francis Tolentino', type: 'Studio', price: 4700, occupants: 1 },
-      { id: '304', number: 'Room 304', status: 'occupied', tenant: 'Bong Go', type: 'Studio', price: 4700, occupants: 1 },
-      { id: '305', number: 'Room 305', status: 'occupied', tenant: 'Bong Revilla', type: 'Studio', price: 4700, occupants: 2 },
-      { id: '306', number: 'Room 306', status: 'available', tenant: null, type: 'Studio', price: 4700, occupants: 0 },
-      { id: '307', number: 'Room 307', status: 'occupied', tenant: 'Jinggoy Estrada', type: 'Studio', price: 4700, occupants: 2 },
-      { id: '308', number: 'Room 308', status: 'occupied', tenant: 'Cynthia Villar', type: '3-Bedroom', price: 10000, occupants: 4 },
-      { id: '309', number: 'Room 309', status: 'occupied', tenant: 'Mark Villar', type: 'Studio', price: 4700, occupants: 1 },
-      { id: '310', number: 'Room 310', status: 'occupied', tenant: 'Alan Peter Cayetano', type: 'Studio', price: 4700, occupants: 1 },
-      { id: '311', number: 'Room 311', status: 'occupied', tenant: 'Pia Cayetano', type: 'Studio', price: 4700, occupants: 2 },
-      { id: '312', number: 'Room 312', status: 'available', tenant: null, type: '1-Bedroom', price: 6500, occupants: 0 },
-    ]
-  }
-];
+// Filter State for 32 Canonical Units
+const selectedClusterFilter = ref<string>('all');
+const selectedStatusFilter = ref<string>('all');
 
-const selectedFilter = ref('all');
+// Filtered Units
+const filteredUnits = computed(() => {
+  return CANONICAL_32_UNITS.filter(unit => {
+    const matchesCluster = selectedClusterFilter.value === 'all' || unit.cluster === selectedClusterFilter.value;
+    const matchesStatus = selectedStatusFilter.value === 'all' || unit.status === selectedStatusFilter.value;
+    return matchesCluster && matchesStatus;
+  });
+});
+
+// Group filtered units by cluster for rendering
+const unitsByCluster = computed(() => {
+  const map = new Map<string, RentableUnit[]>();
+  PROPERTY_CLUSTERS.forEach(cluster => {
+    const units = filteredUnits.value.filter(u => u.cluster === cluster);
+    if (units.length > 0) {
+      map.set(cluster, units);
+    }
+  });
+  return map;
+});
+
+// Statistics
+const occupiedCount = computed(() => CANONICAL_32_UNITS.filter(u => u.status === 'occupied').length);
+const availableCount = computed(() => CANONICAL_32_UNITS.filter(u => u.status === 'available').length);
+const maintenanceCount = computed(() => CANONICAL_32_UNITS.filter(u => u.status === 'maintenance').length);
+const occupancyPercentage = computed(() => ((occupiedCount.value / CANONICAL_32_UNITS.length) * 100).toFixed(1));
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Header Title & System Diagnostic Badge -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#dfe1e6]">
+  <div class="space-y-6 md:space-y-8">
+    <!-- Header Title & Jira Workspace Breadcrumbs -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#dfe1e6]">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
-          <span>Hivelet Space</span>
+        <div class="flex items-center gap-2 text-xs sm:text-sm text-[#6b778c] mb-1">
+          <span>Fe Galang Da Silva Boarding House</span>
           <span>/</span>
-          <span class="font-medium text-[#172b4d]">Dashboard Overview</span>
+          <span class="font-bold text-[#172b4d]">Operations Space</span>
         </div>
-        <h1 class="text-xl font-bold text-[#172b4d]">Executive Overview</h1>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#172b4d] tracking-tight">Executive Overview</h1>
       </div>
 
       <!-- Quick Diagnostic Stats -->
-      <div class="flex items-center gap-2 text-xs text-[#5e6c84] bg-white border border-[#dfe1e6] px-3 py-1.5 rounded-xs shadow-2xs">
+      <div class="flex items-center gap-2.5 text-xs sm:text-sm text-[#42526e] bg-white border border-[#dfe1e6] px-3.5 py-2 rounded-md shadow-2xs">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>System Design Mode: <strong>Jira + Notion + Airtable Active</strong></span>
+        <span>Canonical 32 Units: <strong>BR-032 Aligned</strong></span>
       </div>
     </div>
 
-    <!-- UI/UX Interactive Feedback Testing Panel -->
-    <div class="jira-card p-4 bg-[#f8f9fa] border-l-4 border-l-[#0c66e4]">
-      <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center gap-2">
-          <Sparkles class="w-4 h-4 text-[#0c66e4]" />
-          <h3 class="text-xs font-bold text-[#172b4d] uppercase tracking-wider">UI/UX Design System Feedback Test Controls</h3>
-        </div>
-        <span class="text-[11px] text-[#6b778c]">Test visual states & non-techy feedback</span>
-      </div>
-      <p class="text-xs text-[#42526e] mb-3">
-        Click any button below to test the instant state feedback engine (Toast Notifications, Water Rule Warnings, and Destructive Action Confirmation Modals):
-      </p>
+    <!-- Soft Jira Workspace View Tabs (Directly matching attached screenshot) -->
+    <div class="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 border-b border-[#dfe1e6] text-sm">
+      <button 
+        @click="activeTab = 'board'"
+        :class="[
+          'px-3.5 py-2 font-bold rounded-md flex items-center gap-2 transition-all shrink-0 min-h-[40px]',
+          activeTab === 'board' ? 'bg-[#e9f2ff] text-[#0c66e4]' : 'text-[#5e6c84] hover:bg-[#ebecf0] hover:text-[#172b4d]'
+        ]"
+      >
+        <LayoutGrid class="w-4 h-4" />
+        <span>32-Unit Matrix Board</span>
+      </button>
 
-      <div class="flex flex-wrap items-center gap-2.5">
+      <button 
+        @click="activeTab = 'summary'"
+        :class="[
+          'px-3.5 py-2 font-bold rounded-md flex items-center gap-2 transition-all shrink-0 min-h-[40px]',
+          activeTab === 'summary' ? 'bg-[#e9f2ff] text-[#0c66e4]' : 'text-[#5e6c84] hover:bg-[#ebecf0] hover:text-[#172b4d]'
+        ]"
+      >
+        <FileText class="w-4 h-4" />
+        <span>Executive Summary</span>
+      </button>
+
+      <button 
+        @click="activeTab = 'list'"
+        :class="[
+          'px-3.5 py-2 font-bold rounded-md flex items-center gap-2 transition-all shrink-0 min-h-[40px]',
+          activeTab === 'list' ? 'bg-[#e9f2ff] text-[#0c66e4]' : 'text-[#5e6c84] hover:bg-[#ebecf0] hover:text-[#172b4d]'
+        ]"
+      >
+        <List class="w-4 h-4" />
+        <span>Canonical Ledger List</span>
+      </button>
+
+      <button 
+        @click="activeTab = 'calendar'"
+        :class="[
+          'px-3.5 py-2 font-bold rounded-md flex items-center gap-2 transition-all shrink-0 min-h-[40px]',
+          activeTab === 'calendar' ? 'bg-[#e9f2ff] text-[#0c66e4]' : 'text-[#5e6c84] hover:bg-[#ebecf0] hover:text-[#172b4d]'
+        ]"
+      >
+        <Calendar class="w-4 h-4" />
+        <span>Billing Cycle Calendar</span>
+      </button>
+    </div>
+
+    <!-- UI/UX Interactive Feedback Controls (Soft Jira Pill Box) -->
+    <div class="jira-card p-5 sm:p-6 bg-[#ffffff] border-l-4 border-l-[#0c66e4] space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <Sparkles class="w-5 h-5 text-[#0c66e4]" />
+          <h3 class="text-sm sm:text-base font-bold text-[#172b4d]">Landlady Visual Design Feedback Controls</h3>
+        </div>
+        <span class="text-xs text-[#6b778c]">Test subtle toast notifications & confirmation modals</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 pt-1">
         <button 
           @click="triggerSuccessToast"
-          class="jira-btn-secondary text-xs border border-emerald-300 hover:bg-emerald-50 text-emerald-800"
+          class="jira-btn-secondary text-xs sm:text-sm border-emerald-300 hover:bg-emerald-50 text-emerald-800"
         >
-          <CheckCircle2 class="w-3.5 h-3.5 text-emerald-600" />
+          <CheckCircle2 class="w-4 h-4 text-emerald-600" />
           Test Success Toast
         </button>
 
         <button 
           @click="triggerWaterWarningToast"
-          class="jira-btn-secondary text-xs border border-amber-300 hover:bg-amber-50 text-amber-800"
+          class="jira-btn-secondary text-xs sm:text-sm border-amber-300 hover:bg-amber-50 text-amber-800"
         >
-          <AlertCircle class="w-3.5 h-3.5 text-amber-600" />
+          <AlertCircle class="w-4 h-4 text-amber-600" />
           Test Water Rule Warning (BR-036)
         </button>
 
         <button 
           @click="triggerErrorToast"
-          class="jira-btn-secondary text-xs border border-rose-300 hover:bg-rose-50 text-rose-800"
+          class="jira-btn-secondary text-xs sm:text-sm border-rose-300 hover:bg-rose-50 text-rose-800"
         >
-          <AlertCircle class="w-3.5 h-3.5 text-rose-600" />
+          <AlertCircle class="w-4 h-4 text-rose-600" />
           Test Error Toast
         </button>
 
         <button 
           @click="openSettleVacancyModal"
-          class="jira-btn-primary text-xs bg-[#bf2600] hover:bg-[#de350b]"
+          class="jira-btn-primary text-xs sm:text-sm bg-[#bf2600] hover:bg-[#de350b]"
         >
-          <Wrench class="w-3.5 h-3.5" />
-          Test Confirmation Modal (Settle Departure)
+          <Wrench class="w-4 h-4" />
+          Test Confirmation Modal (Settle Vacancy)
         </button>
       </div>
     </div>
 
-    <!-- Executive KPI Summary Cards (Notion Clean Elegance + Jira Cards) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Executive KPI Summary Cards (Mobile-First 1 to 4 Grid, Soft Palette) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       <!-- Occupancy KPI Card -->
-      <div class="jira-card p-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold text-[#6b778c] uppercase tracking-wider">Occupancy Rate</span>
-          <Building2 class="w-4 h-4 text-[#0c66e4]" />
+      <div class="jira-card p-5 sm:p-6 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[#6b778c] uppercase tracking-wider">Occupancy Rate</span>
+          <div class="p-2 rounded-md bg-[#e9f2ff] text-[#0c66e4]">
+            <Building2 class="w-5 h-5" />
+          </div>
         </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-2xl font-bold text-[#172b4d]">27 / 32</span>
-          <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-xs">84.3%</span>
+        <div class="flex items-baseline gap-3">
+          <span class="text-3xl font-extrabold text-[#172b4d]">{{ occupiedCount }} / 32</span>
+          <span class="text-xs font-bold text-[#006644] bg-[#e3fcef] px-2 py-1 rounded-md border border-[#abf5d1]">
+            {{ occupancyPercentage }}%
+          </span>
         </div>
-        <p class="text-xs text-[#6b778c] mt-2 border-t border-[#dfe1e6] pt-2">
-          5 Available Units (103, 110, 204, 306, 312)
+        <p class="text-xs text-[#6b778c] pt-2 border-t border-[#dfe1e6]">
+          {{ availableCount }} Available Units across 5 Property Clusters
         </p>
       </div>
 
       <!-- Overdue Billing Alert Card -->
-      <div class="jira-card p-4 border-l-4 border-l-amber-500">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold text-[#6b778c] uppercase tracking-wider">Pending Collections</span>
-          <CreditCard class="w-4 h-4 text-amber-600" />
+      <div class="jira-card p-5 sm:p-6 border-l-4 border-l-[#ffab00] space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[#6b778c] uppercase tracking-wider">Pending Collections</span>
+          <div class="p-2 rounded-md bg-[#fffae6] text-[#826100]">
+            <CreditCard class="w-5 h-5" />
+          </div>
         </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-2xl font-bold text-[#172b4d]">₱ 18,500</span>
-          <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-xs">3 Unverified</span>
+        <div class="flex items-baseline gap-3">
+          <span class="text-3xl font-extrabold text-[#172b4d]">₱ 18,500</span>
+          <span class="text-xs font-bold text-[#826100] bg-[#fffae6] px-2 py-1 rounded-md border border-[#ffe380]">
+            3 Pending
+          </span>
         </div>
-        <p class="text-xs text-[#6b778c] mt-2 border-t border-[#dfe1e6] pt-2">
-          Individual Move-in Date Aware
+        <p class="text-xs text-[#6b778c] pt-2 border-t border-[#dfe1e6]">
+          Individual Move-in Anniversary Aware
         </p>
       </div>
 
       <!-- Maintenance Tickets Card -->
-      <div class="jira-card p-4 border-l-4 border-l-rose-500">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold text-[#6b778c] uppercase tracking-wider">Active Tickets</span>
-          <Wrench class="w-4 h-4 text-rose-600" />
+      <div class="jira-card p-5 sm:p-6 border-l-4 border-l-[#ff5630] space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[#6b778c] uppercase tracking-wider">Active Maintenance</span>
+          <div class="p-2 rounded-md bg-[#ffebe6] text-[#bf2600]">
+            <Wrench class="w-5 h-5" />
+          </div>
         </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-2xl font-bold text-[#172b4d]">2</span>
-          <span class="text-xs font-semibold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-xs">1 Emergency</span>
+        <div class="flex items-baseline gap-3">
+          <span class="text-3xl font-extrabold text-[#172b4d]">2</span>
+          <span class="text-xs font-bold text-[#bf2600] bg-[#ffebe6] px-2 py-1 rounded-md border border-[#ffbdad]">
+            1 Emergency
+          </span>
         </div>
-        <p class="text-xs text-[#6b778c] mt-2 border-t border-[#dfe1e6] pt-2">
-          Room 108 (Faucet) & Room 305 (Outlet)
+        <p class="text-xs text-[#6b778c] pt-2 border-t border-[#dfe1e6]">
+          Unit 1e (Faucet) & Unit B2F (Outlet)
         </p>
       </div>
 
       <!-- Inquiries Inbox Card -->
-      <div class="jira-card p-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold text-[#6b778c] uppercase tracking-wider">New Inquiries</span>
-          <Users class="w-4 h-4 text-[#0c66e4]" />
+      <div class="jira-card p-5 sm:p-6 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-[#6b778c] uppercase tracking-wider">New Inquiries</span>
+          <div class="p-2 rounded-md bg-[#e9f2ff] text-[#0c66e4]">
+            <Users class="w-5 h-5" />
+          </div>
         </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-2xl font-bold text-[#172b4d]">4</span>
-          <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-xs">Awaiting Reply</span>
+        <div class="flex items-baseline gap-3">
+          <span class="text-3xl font-extrabold text-[#172b4d]">4</span>
+          <span class="text-xs font-bold text-[#0747a6] bg-[#deebff] px-2 py-1 rounded-md border border-[#b3d4ff]">
+            Awaiting Action
+          </span>
         </div>
-        <p class="text-xs text-[#6b778c] mt-2 border-t border-[#dfe1e6] pt-2">
+        <p class="text-xs text-[#6b778c] pt-2 border-t border-[#dfe1e6]">
           Centralized Prospect Inbox
         </p>
       </div>
     </div>
 
-    <!-- 32-Room Visual Occupancy Matrix Header & Filter (Airtable Grid Concept) -->
-    <div class="jira-card p-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-[#dfe1e6]">
+    <!-- 32-Unit Canonical Visual Matrix (BR-032 & Section 2 of Income Report) -->
+    <div class="jira-card p-5 sm:p-7 space-y-6">
+      <!-- Section Title & Soft Filter Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#dfe1e6]">
         <div>
-          <h2 class="text-base font-bold text-[#172b4d]">32-Room Visual Unit Matrix</h2>
-          <p class="text-xs text-[#6b778c]">Fe Galang Da Silva Boarding House (3 Floors & Clusters)</p>
+          <h2 class="text-lg sm:text-xl font-bold text-[#172b4d]">Canonical 32-Unit Visual Matrix</h2>
+          <p class="text-xs sm:text-sm text-[#6b778c] mt-0.5">
+            Strictly aligned with Capstone BR-032: BH (1a-1h, 2a-2g, 3a-3g), Back Apt (B1F-B3B), Penthouse (PH), Front Apt (F1-F2B), Linda (LF, LB)
+          </p>
         </div>
 
-        <!-- Filter Pills (Airtable Filter Bar Style) -->
-        <div class="flex items-center gap-1.5 bg-[#f4f5f7] p-1 border border-[#dfe1e6] rounded-xs text-xs">
-          <button 
-            @click="selectedFilter = 'all'"
-            :class="['px-2.5 py-1 rounded-2xs font-medium transition-colors', selectedFilter === 'all' ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs' : 'text-[#5e6c84]']"
-          >
-            All (32)
-          </button>
-          <button 
-            @click="selectedFilter = 'occupied'"
-            :class="['px-2.5 py-1 rounded-2xs font-medium transition-colors', selectedFilter === 'occupied' ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs' : 'text-[#5e6c84]']"
-          >
-            Occupied (27)
-          </button>
-          <button 
-            @click="selectedFilter = 'available'"
-            :class="['px-2.5 py-1 rounded-2xs font-medium transition-colors', selectedFilter === 'available' ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs' : 'text-[#5e6c84]']"
-          >
-            Available (4)
-          </button>
-          <button 
-            @click="selectedFilter = 'maintenance'"
-            :class="['px-2.5 py-1 rounded-2xs font-medium transition-colors', selectedFilter === 'maintenance' ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs' : 'text-[#5e6c84]']"
-          >
-            Maintenance (1)
-          </button>
+        <!-- Filter Controls (Mobile-First Stacked / Row) -->
+        <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+          <!-- Cluster Filter Dropdown -->
+          <div class="flex items-center gap-1.5 bg-[#f7f8f9] p-1 border border-[#dfe1e6] rounded-md">
+            <Filter class="w-4 h-4 text-[#6b778c] ml-1.5" />
+            <select 
+              v-model="selectedClusterFilter" 
+              class="bg-transparent text-[#172b4d] font-semibold text-xs sm:text-sm pr-2 py-1 focus:outline-none cursor-pointer"
+            >
+              <option value="all">All 5 Property Clusters (32)</option>
+              <option v-for="cluster in PROPERTY_CLUSTERS" :key="cluster" :value="cluster">
+                {{ cluster }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Status Filter Pills -->
+          <div class="flex items-center gap-1 bg-[#f7f8f9] p-1 border border-[#dfe1e6] rounded-md font-semibold text-xs">
+            <button 
+              @click="selectedStatusFilter = 'all'"
+              :class="['px-2.5 py-1 rounded-sm transition-colors', selectedStatusFilter === 'all' ? 'bg-white text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84]']"
+            >
+              All ({{ CANONICAL_32_UNITS.length }})
+            </button>
+            <button 
+              @click="selectedStatusFilter = 'occupied'"
+              :class="['px-2.5 py-1 rounded-sm transition-colors', selectedStatusFilter === 'occupied' ? 'bg-white text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84]']"
+            >
+              Occupied ({{ occupiedCount }})
+            </button>
+            <button 
+              @click="selectedStatusFilter = 'available'"
+              :class="['px-2.5 py-1 rounded-sm transition-colors', selectedStatusFilter === 'available' ? 'bg-white text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84]']"
+            >
+              Available ({{ availableCount }})
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Floor Plan Grid -->
-      <div class="space-y-6">
-        <div v-for="floor in floors" :key="floor.floorNumber" class="space-y-2.5">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-[#172b4d] bg-[#ebecf0] px-2.5 py-1 rounded-xs border border-[#dfe1e6] flex items-center gap-1.5">
-              <Layers class="w-3.5 h-3.5 text-[#0c66e4]" />
-              {{ floor.label }}
+      <!-- Cluster Unit Groups -->
+      <div class="space-y-8">
+        <div v-for="[clusterName, units] in unitsByCluster" :key="clusterName" class="space-y-3">
+          <!-- Cluster Section Header -->
+          <div class="flex items-center justify-between pb-1 border-b border-[#ebecf0]">
+            <div class="flex items-center gap-2">
+              <span class="text-xs sm:text-sm font-bold text-[#172b4d] bg-[#f7f8f9] px-3 py-1.5 rounded-md border border-[#dfe1e6] flex items-center gap-2">
+                <Layers class="w-4 h-4 text-[#0c66e4]" />
+                {{ clusterName }}
+              </span>
+              <span class="text-xs text-[#6b778c]">({{ units.length }} Rentable Units)</span>
+            </div>
+
+            <!-- Linda Rule Badge if applicable -->
+            <span v-if="clusterName === 'Linda'" class="text-xs font-bold text-[#826100] bg-[#fffae6] px-2.5 py-0.5 rounded-md border border-[#ffe380]">
+              BR-040 Fixed Billing Flow
             </span>
           </div>
 
-          <!-- Room Cards Grid -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+          <!-- Unit Cards Grid (Mobile-First: 1 col on mobile, 2 sm, 3 md, 4 lg) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
             <div 
-              v-for="room in floor.rooms" 
-              :key="room.id"
-              v-show="selectedFilter === 'all' || selectedFilter === room.status"
+              v-for="unit in units" 
+              :key="unit.id"
               :class="[
-                'p-3 rounded-xs border text-left transition-all relative',
-                room.status === 'occupied' 
+                'p-4 rounded-md border text-left transition-all space-y-2 relative',
+                unit.status === 'occupied' 
                   ? 'bg-white border-[#dfe1e6] hover:border-[#0c66e4] hover:shadow-xs' 
-                  : room.status === 'available' 
-                    ? 'bg-[#e3fcef] border-[#abf5d1] hover:border-[#36b37e]' 
-                    : 'bg-[#ffebe6] border-[#ffbdad]'
+                  : unit.status === 'available' 
+                    ? 'bg-[#e3fcef]/40 border-[#abf5d1] hover:border-[#36b37e]' 
+                    : 'bg-[#ffebe6]/40 border-[#ffbdad]'
               ]"
             >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs font-bold text-[#172b4d]">{{ room.number }}</span>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm sm:text-base font-extrabold text-[#172b4d]">Unit {{ unit.unitCode }}</span>
+                  <span class="text-[11px] text-[#6b778c]">({{ unit.type }})</span>
+                </div>
+
                 <span 
                   :class="[
-                    'jira-badge text-[10px]',
-                    room.status === 'occupied' ? 'jira-badge-done' : room.status === 'available' ? 'jira-badge-progress' : 'jira-badge-emergency'
+                    'jira-badge',
+                    unit.status === 'occupied' ? 'jira-badge-done' : unit.status === 'available' ? 'jira-badge-progress' : 'jira-badge-emergency'
                   ]"
                 >
-                  {{ room.status }}
+                  {{ unit.status }}
                 </span>
               </div>
 
-              <div class="text-[11px] text-[#5e6c84] truncate mb-1">
-                {{ room.tenant || 'Vacant Unit' }}
+              <!-- Tenant Info / Vacant Status -->
+              <div class="text-xs sm:text-sm font-semibold text-[#42526e] truncate">
+                {{ unit.tenantName ? unit.tenantName : 'Vacant Unit' }}
               </div>
 
-              <div class="flex items-center justify-between text-[10px] text-[#6b778c] border-t border-[#dfe1e6/60] pt-1.5 mt-1">
-                <span>{{ room.occupants }} Occupant{{ room.occupants === 1 ? '' : 's' }}</span>
-                <span class="font-semibold text-[#172b4d]">₱{{ room.price.toLocaleString() }}</span>
+              <!-- Footer Details -->
+              <div class="flex items-center justify-between text-xs text-[#6b778c] border-t border-[#dfe1e6]/60 pt-2 mt-1">
+                <span>
+                  {{ unit.waterRateType === 'linda_fixed' ? 'Fixed Billing' : `${unit.occupants} Occupant${unit.occupants === 1 ? '' : 's'}` }}
+                </span>
+                <span class="font-bold text-[#172b4d]">₱{{ unit.basePrice.toLocaleString() }}/mo</span>
               </div>
             </div>
           </div>

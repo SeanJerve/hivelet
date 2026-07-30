@@ -3,8 +3,9 @@
  * @component AppSidebar
  * @description Left navigation sidebar for Hivelet, inspired directly by Atlassian/Jira space navigation.
  * @systemBibleRef Section 3 & UI Wireframe Specification - Sidebar Menu Items
- * @rationale Provides structured, clean workspace navigation tailored per capstone role with Vue Router.
- * @innovations Integrated RouterLinks to enable URL-slug-based navigation across all 10 system modules.
+ * @rationale Provides structured, soft workspace navigation with larger Jira-style typography
+ *              and 44px+ touch targets for mobile-first PWA compliance.
+ * @innovations Integrated RouterLinks to enable URL-slug-based navigation across system modules.
  */
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -40,7 +41,7 @@ const currentRole = computed<'admin' | 'tenant' | 'public'>(() => {
   return 'public';
 });
 
-// Admin Management Modules aligned with System Bible
+// Admin Management Modules aligned with System Bible & BR-032
 const adminModules = [
   { path: '/admin/overview', label: 'Executive Overview', icon: LayoutDashboard },
   { path: '/admin/directory', label: 'Room Directory (32 Units)', icon: Building2 },
@@ -74,81 +75,84 @@ const navigateTo = (path: string) => {
     <div 
       v-if="isMobileSidebarOpen" 
       @click="emit('closeMobileSidebar')"
-      class="md:hidden fixed inset-0 bg-[#091e4252] backdrop-blur-xs z-40 transition-opacity"
+      class="md:hidden fixed inset-0 bg-[#091e42]/40 backdrop-blur-xs z-40 transition-opacity"
     ></div>
 
     <!-- Sidebar Container -->
     <aside 
       :class="[
-        'w-64 bg-white border-r border-[#dfe1e6] flex flex-col justify-between z-50 transition-all duration-200 ease-in-out',
-        'fixed md:static inset-y-0 left-0 h-full',
+        'w-72 bg-white border-r border-[#dfe1e6] flex flex-col justify-between z-50 transition-all duration-200 ease-in-out',
+        'fixed md:static inset-y-0 left-0 h-full shadow-xs',
         isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       ]"
     >
-      <div class="p-3 overflow-y-auto">
+      <div class="p-4 overflow-y-auto space-y-4">
         <!-- Mobile Sidebar Close Header -->
-        <div class="md:hidden flex items-center justify-between pb-3 mb-2 border-b border-[#dfe1e6]">
+        <div class="md:hidden flex items-center justify-between pb-3 border-b border-[#dfe1e6]">
           <span class="text-xs font-bold text-[#172b4d] uppercase tracking-wider">Navigation Menu</span>
-          <button @click="emit('closeMobileSidebar')" class="p-1 text-[#6b778c] hover:bg-[#ebecf0] rounded-xs">
-            <X class="w-4 h-4" />
+          <button 
+            @click="emit('closeMobileSidebar')" 
+            class="min-w-[40px] min-h-[40px] flex items-center justify-center text-[#6b778c] hover:bg-[#ebecf0] rounded-md transition-colors"
+          >
+            <X class="w-5 h-5" />
           </button>
         </div>
 
-        <!-- Space Context Header -->
-        <div class="px-2.5 py-2 mb-3 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs">
-          <p class="text-[10px] font-bold text-[#6b778c] uppercase tracking-wider">WORKSPACE</p>
-          <p class="text-xs font-semibold text-[#172b4d] truncate">
-            {{ currentRole === 'admin' ? 'Landlady Management Space' : currentRole === 'tenant' ? 'Tenant Account Portal' : 'Public Guest Catalog' }}
+        <!-- Space Context Header (Jira Soft Pill Box) -->
+        <div class="px-3 py-2.5 bg-[#f7f8f9] border border-[#dfe1e6] rounded-md">
+          <p class="text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">SPACE</p>
+          <p class="text-sm font-bold text-[#172b4d] truncate mt-0.5">
+            {{ currentRole === 'admin' ? 'Landlady Operations Space' : currentRole === 'tenant' ? 'Tenant Account Portal' : 'Public Guest Catalog' }}
           </p>
         </div>
 
         <!-- Admin Workspace Navigation -->
-        <div v-if="currentRole === 'admin'" class="space-y-0.5">
-          <p class="px-2 py-1 text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">Management Modules</p>
+        <div v-if="currentRole === 'admin'" class="space-y-1">
+          <p class="px-2 py-1 text-xs font-bold text-[#6b778c] uppercase tracking-wider">Management Modules</p>
           <button
             v-for="module in adminModules"
             :key="module.path"
             @click="navigateTo(module.path)"
             :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
           >
-            <component :is="module.icon" class="w-4 h-4 shrink-0" />
-            <span class="truncate">{{ module.label }}</span>
+            <component :is="module.icon" class="w-5 h-5 shrink-0" />
+            <span class="truncate font-medium">{{ module.label }}</span>
           </button>
         </div>
 
         <!-- Tenant Portal Navigation -->
-        <div v-else-if="currentRole === 'tenant'" class="space-y-0.5">
-          <p class="px-2 py-1 text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">Tenant Self-Service</p>
+        <div v-else-if="currentRole === 'tenant'" class="space-y-1">
+          <p class="px-2 py-1 text-xs font-bold text-[#6b778c] uppercase tracking-wider">Tenant Self-Service</p>
           <button
             v-for="module in tenantModules"
             :key="module.path"
             @click="navigateTo(module.path)"
             :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
           >
-            <component :is="module.icon" class="w-4 h-4 shrink-0" />
-            <span class="truncate">{{ module.label }}</span>
+            <component :is="module.icon" class="w-5 h-5 shrink-0" />
+            <span class="truncate font-medium">{{ module.label }}</span>
           </button>
         </div>
 
         <!-- Public Portal Navigation -->
-        <div v-else-if="currentRole === 'public'" class="space-y-0.5">
-          <p class="px-2 py-1 text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">Guest Directory</p>
+        <div v-else-if="currentRole === 'public'" class="space-y-1">
+          <p class="px-2 py-1 text-xs font-bold text-[#6b778c] uppercase tracking-wider">Guest Directory</p>
           <button
             v-for="module in publicModules"
             :key="module.path"
             @click="navigateTo(module.path)"
             :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
           >
-            <component :is="module.icon" class="w-4 h-4 shrink-0" />
-            <span class="truncate">{{ module.label }}</span>
+            <component :is="module.icon" class="w-5 h-5 shrink-0" />
+            <span class="truncate font-medium">{{ module.label }}</span>
           </button>
         </div>
       </div>
 
       <!-- Footer Identity Note -->
-      <div class="p-3 border-t border-[#dfe1e6] bg-[#f4f5f7]">
-        <p class="text-[11px] font-medium text-[#6b778c]">Fe Galang Da Silva Boarding House</p>
-        <p class="text-[10px] text-[#8993a4]">32 Total Units • 3 Floors</p>
+      <div class="p-4 border-t border-[#dfe1e6] bg-[#f7f8f9]">
+        <p class="text-xs font-bold text-[#172b4d]">Fe Galang Da Silva Boarding House</p>
+        <p class="text-xs text-[#6b778c] mt-0.5">32 Rentable Units • 5 Clusters</p>
       </div>
     </aside>
   </div>
