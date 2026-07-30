@@ -1,17 +1,21 @@
 # HIVELET FUNCTIONAL UI & DESIGN SPECIFICATION
 
+> **Notice:** Detailed implementation guidelines, tri-inspiration synthesis (Jira + Notion + Airtable), non-techy landlady guidelines, and universal state feedback standards are maintained in [UI_DESIGN_SYSTEM_GUIDELINES.md](file:///c:/Users/seanjerve/OneDrive/Desktop/hivelet/docs/UI_DESIGN_SYSTEM_GUIDELINES.md).
+
 ## 1. UI Architecture & Design System
 
 **System Name:** Hivelet  
 **Target Property:** Fe Galang Da Silva Boarding House (3 Floors, 32 Total Units)  
-**Design Theme:** Minimalist Corporate Workspace (Jira / Atlassian Space Inspired)  
+**Design Theme:** Minimalist Corporate Workspace (Jira + Notion + Airtable Tri-Inspiration)  
 **Primary Aesthetic Principles:**
 - **Canvas:** Subtle neutral slate-gray background (`#f4f5f7`).
 - **Cards & Surfaces:** Clean white container surfaces (`#ffffff`) with subtle 1px slate borders (`#dfe1e6`).
-- **Typography:** Crisp dark slate text (`#172b4d`) with neutral slate subtext (`#6b778c`), strictly using standard Inter typography.
+- **Typography:** Crisp dark slate text (`#172b4d`) with neutral slate subtext (`#6b778c`), strictly using standard Inter typography (Notion-style clarity).
 - **Accents:** Atlassian Corporate Blue (`#0c66e4`) for primary action buttons, active navigation states, and key focal points.
+- **Grids & Ledgers:** Airtable-inspired dense data tables with sticky headers and summary calculation footers.
 - **Strictly No Emojis / No Flashy Elements:** SVG/Lucide icons strictly replace emojis across all views.
 - **Mobile-First & Responsive Mandate:** Every component must adapt to mobile breakpoints (`sm`, `md`, `lg`), utilizing slide-over navigation drawers, stacked card layouts, and horizontal table scrolling on small viewports.
+
 
 ---
 
