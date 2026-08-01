@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "db:setup:local": "tsx database/setup_local_db.ts",
+    "db:verify": "tsx database/setup_local_db.ts --verify-only"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.9",
@@ -17,6 +19,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "pg": "^8.11.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -26,6 +29,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.12.12",
+    "@types/pg": "^8.11.6",
     "tsx": "^4.10.5",
     "typescript": "^5.4.5"
   }

@@ -1,0 +1,38 @@
+# ==============================================================================
+# HIVELET APARTMENT MANAGEMENT SYSTEM - LOCAL DOCKER POSTGRES & WEB GUI
+# ==============================================================================
+# Purpose: Local PostgreSQL 16 Database container & Adminer Web GUI for Hivelet
+# System Bible Reference: docs/04_ARCHITECTURE.md & docs/05_DATABASE_DESIGN.md
+# Rationale: Enables 100% local database development, 3NF schema validation, RLS policy testing,
+#            and visual table inspection via Web Browser at http://localhost:8080.
+# ==============================================================================
+
+services:
+  hivelet_postgres:
+    image: postgres:16-alpine
+    container_name: hivelet_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hivelet_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - hivelet_pgdata:/var/lib/postgresql/data
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./backend/database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+
+  # Web-Based Database Explorer GUI (Open http://localhost:8080 in browser)
+  adminer:
+    image: adminer:latest
+    container_name: hivelet_adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - hivelet_postgres
+
+volumes:
+  hivelet_pgdata:
+    driver: local
