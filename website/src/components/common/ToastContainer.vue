@@ -9,7 +9,7 @@ import { CheckCircle2, Info, AlertTriangle, AlertCircle, X } from 'lucide-vue-ne
 </script>
 
 <template>
-  <div class="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+  <div class="fixed top-4 right-4 z-[110] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
     <TransitionGroup
       enter-active-class="transition duration-300 ease-out transform"
       enter-from-class="translate-x-full opacity-0"

@@ -33,7 +33,7 @@ function handleConfirm() {
 </script>
 
 <template>
-  <div v-if="isConfirmModalOpen && confirmModalData" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+  <div v-if="isConfirmModalOpen && confirmModalData" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-4">
     <div class="jira-card bg-white w-full max-w-md border border-[#dfe1e6] shadow-xl rounded-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
       <!-- Header -->
