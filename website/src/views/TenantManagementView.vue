@@ -39,20 +39,35 @@ const filteredTenants = computed(() => {
 
 const handleOnboardSubmit = () => {
   if (!newTenantName.value) return;
-  addTenant({
-    name: newTenantName.value,
-    room: newTenantRoom.value,
-    phone: newTenantPhone.value || '0917-000-0000',
-    emergency: newTenantEmergency.value || 'N/A',
-    moveInDate: newTenantMoveIn.value,
-    status: 'Active'
-  });
 
-  // Reset form
-  newTenantName.value = '';
-  newTenantPhone.value = '';
-  newTenantEmergency.value = '';
-  showOnboardModal.value = false;
+  requestSecondaryConfirm({
+    title: 'Review & Confirm Tenant Onboarding',
+    message: `Please review the new tenant onboarding profile before assigning to Unit ${newTenantRoom.value}:`,
+    warningLevel: 'info',
+    requiresPin: true,
+    confirmText: 'Confirm & Onboard Tenant',
+    summaryFields: [
+      { label: 'Tenant Full Name', value: newTenantName.value, highlight: true },
+      { label: 'Assigned Unit / Room', value: `Unit ${newTenantRoom.value}` },
+      { label: 'Contact Phone', value: newTenantPhone.value || '0917-000-0000' },
+      { label: 'Emergency Contact', value: newTenantEmergency.value || 'N/A' },
+      { label: 'Official Move-In Date', value: newTenantMoveIn.value }
+    ],
+    onConfirm: () => {
+      addTenant({
+        name: newTenantName.value,
+        room: newTenantRoom.value,
+        phone: newTenantPhone.value || '0917-000-0000',
+        emergency: newTenantEmergency.value || 'N/A',
+        moveInDate: newTenantMoveIn.value,
+        status: 'Active'
+      });
+      newTenantName.value = '';
+      newTenantPhone.value = '';
+      newTenantEmergency.value = '';
+      showOnboardModal.value = false;
+    }
+  });
 };
 
 const openEditModal = (t: TenantProfile) => {
@@ -62,14 +77,34 @@ const openEditModal = (t: TenantProfile) => {
 
 const handleEditSubmit = () => {
   if (!activeTenant.value) return;
-  updateTenant(activeTenant.value.id, {
-    name: activeTenant.value.name,
-    room: activeTenant.value.room,
-    phone: activeTenant.value.phone,
-    emergency: activeTenant.value.emergency,
-    status: activeTenant.value.status
+  const t = activeTenant.value;
+
+  requestSecondaryConfirm({
+    title: 'Review & Confirm Tenant Profile Update',
+    message: `Please review your modified profile details for tenant ${t.name}:`,
+    warningLevel: 'info',
+    requiresPin: true,
+    confirmText: 'Save Tenant Changes',
+    summaryFields: [
+      { label: 'Tenant Name', value: t.name, highlight: true },
+      { label: 'Assigned Room', value: `Unit ${t.room}` },
+      { label: 'Contact Phone', value: t.phone },
+      { label: 'Emergency Contact Details', value: t.emergency },
+      { label: 'Account Status', value: t.status }
+    ],
+    onConfirm: () => {
+      if (activeTenant.value) {
+        updateTenant(activeTenant.value.id, {
+          name: activeTenant.value.name,
+          room: activeTenant.value.room,
+          phone: activeTenant.value.phone,
+          emergency: activeTenant.value.emergency,
+          status: activeTenant.value.status
+        });
+        showEditModal.value = false;
+      }
+    }
   });
-  showEditModal.value = false;
 };
 
 const confirmDelete = (t: TenantProfile) => {

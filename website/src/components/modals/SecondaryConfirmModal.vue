@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { isConfirmModalOpen, confirmModalData } from '@/lib/systemState';
-import { ShieldAlert, Lock, X } from 'lucide-vue-next';
+import { ShieldAlert, Lock, X, CheckSquare } from 'lucide-vue-next';
 
 const enteredPin = ref('');
 const pinError = ref('');
@@ -57,6 +57,24 @@ function handleConfirm() {
       <!-- Body -->
       <div class="p-5 space-y-4 text-xs">
         <p class="text-[#172b4d] leading-relaxed">{{ confirmModalData.message }}</p>
+
+        <!-- Summary Fields Review Card -->
+        <div v-if="confirmModalData.summaryFields && confirmModalData.summaryFields.length > 0" class="border border-[#dfe1e6] rounded-xs overflow-hidden bg-white shadow-xs">
+          <div class="px-3 py-2 bg-[#f4f5f7] border-b border-[#dfe1e6] font-bold text-[#172b4d] flex items-center gap-1.5 text-[11px]">
+            <CheckSquare class="w-3.5 h-3.5 text-[#054e38]" /> Review Your Entered Inputs / Changes
+          </div>
+          <div class="divide-y divide-[#dfe1e6] text-[11px]">
+            <div 
+              v-for="(f, idx) in confirmModalData.summaryFields" 
+              :key="idx" 
+              class="px-3 py-1.5 flex justify-between items-center"
+              :class="{ 'bg-emerald-50/70 font-bold text-emerald-900': f.highlight }"
+            >
+              <span class="text-[#5e6c84] font-medium">{{ f.label }}</span>
+              <span :class="['font-semibold', f.highlight ? 'text-[#054e38] text-xs' : 'text-[#172b4d]']">{{ f.value }}</span>
+            </div>
+          </div>
+        </div>
 
         <!-- PIN Input if required -->
         <div v-if="confirmModalData.requiresPin !== false" class="p-3 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs space-y-2">

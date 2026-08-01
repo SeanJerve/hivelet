@@ -16,11 +16,20 @@ function handleSave() {
 
   const unit = activeAdminEditUnit.value;
   requestSecondaryConfirm({
-    title: `Confirm Unit Modification (${unit.cluster})`,
-    message: `You are making changes to Unit ${unit.unitCode} (${unit.cluster}). This will update base rent to ₱${unit.price.toLocaleString()} and set occupancy status to '${unit.status}'.`,
+    title: `Review & Confirm Unit Specs (${unit.cluster})`,
+    message: `Please review your modified specifications for Unit ${unit.unitCode} (${unit.cluster}):`,
     warningLevel: 'warning',
     requiresPin: true,
     confirmText: 'Confirm & Save Unit Specs',
+    summaryFields: [
+      { label: 'Unit Code & Cluster', value: `Unit ${unit.unitCode} (${unit.cluster})` },
+      { label: 'Unit Category', value: unit.type },
+      { label: 'Base Rent (₱)', value: `₱${unit.price.toLocaleString()}`, highlight: true },
+      { label: 'Max Occupant Limit', value: `${unit.maxOccupants} occupants` },
+      { label: 'Occupancy Status', value: unit.status.toUpperCase() },
+      { label: 'Photo Attachment', value: unit.photo || 'N/A' },
+      { label: 'Description Notes', value: unit.desc ? `${unit.desc.substring(0, 45)}...` : 'None' }
+    ],
     onConfirm: () => {
       updateRoomUnit(unit.unitCode, {
         type: unit.type,

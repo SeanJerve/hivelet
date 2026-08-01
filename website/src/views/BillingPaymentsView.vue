@@ -31,19 +31,39 @@ function onUnitChange(unitCode: string) {
 }
 
 function handleSubmit() {
-  addIncomeRecord({
-    unit: selectedUnitNum.value,
-    date: datePaid.value,
-    invoiceNum: invoiceNum.value,
-    contact: tenantName.value,
-    period: 'Current Period',
-    rent: rentAmount.value,
-    share: calcShare.value,
-    occupants: occupantsCount.value,
-    water: calcWater.value,
-    remitted: calcRemitted.value,
-    paymentMethod: paymentMethod.value,
-    referenceNum: paymentMethod.value === 'Online' ? referenceNum.value || 'GCASH-9948271' : 'N/A'
+  requestSecondaryConfirm({
+    title: 'Review & Confirm Monthly Unit Payment',
+    message: `Please review your payment entry details for Unit ${selectedUnitNum.value} before logging into the collection ledger:`,
+    warningLevel: 'info',
+    requiresPin: true,
+    confirmText: 'Confirm & Log Payment',
+    summaryFields: [
+      { label: 'Target Unit / Room', value: `Unit ${selectedUnitNum.value}` },
+      { label: 'Date Paid', value: datePaid.value },
+      { label: 'Tenant Name', value: tenantName.value },
+      { label: 'Invoice / Ref #', value: invoiceNum.value },
+      { label: 'Base Rent Amount', value: `₱${rentAmount.value.toLocaleString()}` },
+      { label: 'Water Fee (₱200/head)', value: `₱${calcWater.value.toLocaleString()}` },
+      { label: '50% Revenue Share', value: `₱${calcShare.value.toLocaleString()}` },
+      { label: 'Total Remitted Amount', value: `₱${calcRemitted.value.toLocaleString()}`, highlight: true },
+      { label: 'Payment Method', value: paymentMethod.value }
+    ],
+    onConfirm: () => {
+      addIncomeRecord({
+        unit: selectedUnitNum.value,
+        date: datePaid.value,
+        invoiceNum: invoiceNum.value,
+        contact: tenantName.value,
+        period: 'Current Period',
+        rent: rentAmount.value,
+        share: calcShare.value,
+        occupants: occupantsCount.value,
+        water: calcWater.value,
+        remitted: calcRemitted.value,
+        paymentMethod: paymentMethod.value,
+        referenceNum: paymentMethod.value === 'Online' ? referenceNum.value || 'GCASH-9948271' : 'N/A'
+      });
+    }
   });
 }
 

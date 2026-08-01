@@ -32,11 +32,29 @@ function handleCategoryChange(item: ExpenseItem, selectedName: string) {
 }
 
 function handleLogExpenses() {
-  addExpenseGroup({
-    date: expenseDate.value,
-    items: [...supplierItems.value]
+  const totalSum = supplierItems.value.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+  const itemsSummary = supplierItems.value.map(i => `${i.supplier || 'Supplier'} (${i.area}): ₱${i.amount.toLocaleString()} [${i.catName}]`).join(' | ');
+
+  requestSecondaryConfirm({
+    title: 'Review & Confirm Date Expenses',
+    message: `Please review your logged expense entries for date ${expenseDate.value} before logging into the ledger:`,
+    warningLevel: 'info',
+    requiresPin: true,
+    confirmText: 'Confirm & Log Expenses',
+    summaryFields: [
+      { label: 'Expense Log Date', value: expenseDate.value },
+      { label: 'Total Supplier OR Items', value: `${supplierItems.value.length} entry/entries` },
+      { label: 'Suppliers Breakdown', value: itemsSummary },
+      { label: 'Total Expense Amount', value: `₱${totalSum.toLocaleString()}`, highlight: true }
+    ],
+    onConfirm: () => {
+      addExpenseGroup({
+        date: expenseDate.value,
+        items: [...supplierItems.value]
+      });
+      supplierItems.value = [{ supplier: '', area: 'BH', amount: 0, catId: '8', catName: 'Repairs & Maintenance' }];
+    }
   });
-  supplierItems.value = [{ supplier: '', area: 'BH', amount: 0, catId: '8', catName: 'Repairs & Maintenance' }];
 }
 
 function handleDeleteExpense(date: string, item: ExpenseItem) {

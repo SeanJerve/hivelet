@@ -90,12 +90,19 @@ export interface Toast {
   message: string;
 }
 
+export interface SummaryField {
+  label: string;
+  value: string | number;
+  highlight?: boolean;
+}
+
 export interface ConfirmModalData {
   title: string;
   message: string;
   warningLevel?: 'info' | 'warning' | 'danger';
   requiresPin?: boolean;
   confirmText?: string;
+  summaryFields?: SummaryField[];
   onConfirm: () => void;
 }
 

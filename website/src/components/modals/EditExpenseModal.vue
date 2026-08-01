@@ -42,11 +42,18 @@ function handleSave() {
   const foundCat = EXPENSE_CATEGORIES.find(c => c.name === catName.value);
 
   requestSecondaryConfirm({
-    title: 'Confirm Expense Record Update',
-    message: `Are you sure you want to update expense "${supplier.value}" (₱${amount.value.toLocaleString()}) for date ${activeEditExpenseDate.value}?`,
+    title: 'Review & Confirm Expense Update',
+    message: `Please review the modified expense entry details for date ${activeEditExpenseDate.value}:`,
     warningLevel: 'info',
     requiresPin: true,
     confirmText: 'Save Expense Changes',
+    summaryFields: [
+      { label: 'Expense Date', value: activeEditExpenseDate.value },
+      { label: 'Supplier / Description', value: supplier.value },
+      { label: 'Property Area', value: area.value },
+      { label: 'Expense Category', value: catName.value },
+      { label: 'Updated Amount', value: `₱${amount.value.toLocaleString()}`, highlight: true }
+    ],
     onConfirm: () => {
       if (activeEditExpenseItem.value) {
         updateExpenseItem(activeEditExpenseDate.value, activeEditExpenseItem.value.id || '', {

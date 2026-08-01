@@ -9,11 +9,18 @@ const lindaLbWaterRate = ref(200);
 
 function handleSaveConfig() {
   requestSecondaryConfirm({
-    title: 'Confirm Core Business Rules Update',
-    message: `Save operational rules: Standard Water Rate = ₱${standardWaterRate.value}/head, Linda Front = ₱${lindaLfWaterRate.value}, Linda Back = ₱${lindaLbWaterRate.value}?`,
+    title: 'Review & Confirm System Configuration Update',
+    message: 'Please review your modified business rule parameters before saving system configuration:',
     warningLevel: 'warning',
     requiresPin: true,
-    confirmText: 'Save Configuration',
+    confirmText: 'Save System Configuration',
+    summaryFields: [
+      { label: 'Standard Water Billing Rate', value: `₱${standardWaterRate.value}/head per month`, highlight: true },
+      { label: 'Linda Front (LF) Fixed Water', value: `₱${lindaLfWaterRate.value}/month` },
+      { label: 'Linda Back (LB) Fixed Water', value: `₱${lindaLbWaterRate.value}/month` },
+      { label: 'Linda Back (LB) Fixed Electric', value: '₱325.00/month (BR-040)' },
+      { label: 'Revenue Share Structure', value: '50% Gross Rent Remittance Rule' }
+    ],
     onConfirm: () => {
       showToast('success', 'Configuration Saved', 'System business rules & water billing rates updated successfully.');
     }

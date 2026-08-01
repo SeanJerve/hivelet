@@ -42,11 +42,22 @@ function handleSave() {
   if (!activeEditPayment.value) return;
 
   requestSecondaryConfirm({
-    title: 'Confirm Payment Record Update',
-    message: `Are you sure you want to update payment invoice ${invoiceNum.value} for Unit ${selectedUnitNum.value}?`,
+    title: 'Review & Confirm Payment Update',
+    message: `Please review the modified payment details for Invoice ${invoiceNum.value} (Unit ${selectedUnitNum.value}):`,
     warningLevel: 'info',
     requiresPin: true,
     confirmText: 'Save Payment Changes',
+    summaryFields: [
+      { label: 'Unit / Room', value: `Unit ${selectedUnitNum.value}` },
+      { label: 'Date Paid', value: datePaid.value },
+      { label: 'Tenant Name', value: tenantName.value },
+      { label: 'Invoice / Ref #', value: invoiceNum.value },
+      { label: 'Rent Amount', value: `₱${rentAmount.value.toLocaleString()}` },
+      { label: 'Water Fee', value: `₱${calcWater.value.toLocaleString()}` },
+      { label: '50% Revenue Share', value: `₱${calcShare.value.toLocaleString()}` },
+      { label: 'Updated Total Remitted', value: `₱${calcRemitted.value.toLocaleString()}`, highlight: true },
+      { label: 'Payment Method', value: paymentMethod.value }
+    ],
     onConfirm: () => {
       if (activeEditPayment.value) {
         updateIncomeRecord(activeEditPayment.value.id || '', {
