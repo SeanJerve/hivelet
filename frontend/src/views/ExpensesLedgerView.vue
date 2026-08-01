@@ -1,66 +1,104 @@
+<!--
+  @file views/ExpensesLedgerView.vue
+  @description Spec 10 Guided Monthly Expense Ledger with multi-supplier logging and date cell rowspan merging.
+  @systemBibleRef Section 3.3 - Expenses & Financial Ledger
+  @rationale Implements date-grouped expense logs where multiple supplier receipts share a single date rowspan.
+-->
 <script setup lang="ts">
-/**
- * @component ExpensesLedgerView
- * @description Outgoing Operational Expenses Ledger and Multi-Supplier Expense Form.
- * @systemBibleRef Section 5.6 & 10_MONTHLY_EXPENSES_REPORT.md
- * @rationale Records outgoing hardware, maintenance, utility, and operational expenses.
- * @innovations Multi-supplier expense recording logic rendering merged date cells with individual
- *              supplier entries per line as specified in UI Wireframe Spec Section 3.
- */
 import { ref } from 'vue';
-import { Receipt, Plus, Trash2 } from 'lucide-vue-next';
+import { expenseLedger, addExpenseGroup, ExpenseItem } from '@/lib/systemState';
+import { Plus, Download, Receipt } from 'lucide-vue-next';
 
-const expenses = ref([
-  { id: 1, date: '2026-07-25', supplier: 'Bulacan Hardware Supply', category: 'Maintenance & Repairs', description: 'PVC Pipes & Faucet Replacement Parts', amount: 1450, paymentMethod: 'Cash', createdBy: 'Landlady' },
-  { id: 2, date: '2026-07-25', supplier: 'City Electrical Store', category: 'Maintenance & Repairs', description: 'Heavy Duty Circuit Breaker for 3rd Floor', amount: 2800, paymentMethod: 'GCash', createdBy: 'Landlady' },
-  { id: 3, date: '2026-07-15', supplier: 'Meralco / Power Co', category: 'Building Utilities', description: 'Common Area Electric Bill', amount: 4200, paymentMethod: 'Bank Transfer', createdBy: 'Landlady' },
+const expenseDate = ref(new Date().toISOString().split('T')[0]);
+const supplierItems = ref<ExpenseItem[]>([
+  { supplier: 'Wilcon Depot (bh)', area: 'BH', amount: 2500, catId: '8', catName: 'Repairs & Maintenance' }
 ]);
+
+function addSupplierRow() {
+  supplierItems.value.push({ supplier: '', area: 'BH', amount: 0, catId: '7', catName: 'Comm, Light, Water' });
+}
+
+function handleLogExpenses() {
+  addExpenseGroup({
+    date: expenseDate.value,
+    items: [...supplierItems.value]
+  });
+  supplierItems.value = [{ supplier: '', area: 'BH', amount: 0, catId: '8', catName: 'Repairs & Maintenance' }];
+}
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Header Title -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#dfe1e6]">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
-          <span>Hivelet Space</span>
-          <span>/</span>
-          <span class="font-medium text-[#172b4d]">Expenses Ledger</span>
-        </div>
-        <h1 class="text-xl font-bold text-[#172b4d]">Operational Expenses & Outgoing Ledger</h1>
+        <h1 class="text-xl font-bold text-[#172b4d]">Guided Expenses Ledger</h1>
+        <p class="text-xs text-[#5e6c84]">Spec 10 — Multi-Supplier Expense Entry with Merged Date Rowspan</p>
       </div>
-
-      <button class="jira-btn-primary text-xs">
-        <Plus class="w-3.5 h-3.5" />
-        <span>Add Supplier Expense</span>
-      </button>
+      <button class="jira-btn-secondary flex items-center gap-1.5"><Download class="w-3.5 h-3.5" /> Export Expenses Excel</button>
     </div>
 
-    <!-- Expenses Data Table -->
-    <div class="jira-card overflow-hidden">
+    <!-- Multi-Supplier Form -->
+    <div class="jira-card p-6 space-y-4">
+      <h2 class="text-sm font-bold text-[#172b4d] flex items-center gap-2">
+        <Receipt class="w-4 h-4 text-[#0c66e4]" /> Log Date Expenses
+      </h2>
+
+      <form @submit.prevent="handleLogExpenses" class="space-y-3 text-xs">
+        <div class="w-48">
+          <label class="block font-bold text-[#5e6c84] mb-1">Expense Date</label>
+          <input v-model="expenseDate" type="date" class="jira-input" required />
+        </div>
+
+        <div class="space-y-2">
+          <div v-for="(item, idx) in supplierItems" :key="idx" class="grid grid-cols-1 sm:grid-cols-4 gap-2 p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs">
+            <input v-model="item.supplier" type="text" placeholder="OR / Supplier Description" class="jira-input" required />
+            <select v-model="item.area" class="jira-input">
+              <option value="BH">BH Expenses</option>
+              <option value="MainHouse">Main House</option>
+              <option value="FrontApt">Front Apt</option>
+              <option value="BackApt">Back Apt</option>
+              <option value="Other">Other / Personal</option>
+            </select>
+            <input v-model.number="item.amount" type="number" placeholder="Amount (₱)" class="jira-input" required />
+            <input v-model="item.catName" type="text" placeholder="Category Name" class="jira-input" required />
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-2">
+          <button type="button" @click="addSupplierRow" class="jira-btn-secondary flex items-center gap-1">
+            <Plus class="w-3.5 h-3.5" /> Add Another OR / Supplier on Same Date
+          </button>
+          <button type="submit" class="jira-btn-primary">Log Expenses for Date</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Expenses Ledger Table -->
+    <div class="jira-card p-6 space-y-4">
+      <h2 class="text-sm font-bold text-[#172b4d]">Guided Expenses Ledger Table</h2>
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr class="bg-[#f4f5f7] border-b border-[#dfe1e6] text-[#5e6c84] uppercase tracking-wider font-semibold text-[11px]">
-              <th class="py-2.5 px-3">Date</th>
-              <th class="py-2.5 px-3">OR / Supplier Name</th>
-              <th class="py-2.5 px-3">Expense Category</th>
-              <th class="py-2.5 px-3">Description</th>
-              <th class="py-2.5 px-3">Amount</th>
-              <th class="py-2.5 px-3">Payment Method</th>
-              <th class="py-2.5 px-3">Recorded By</th>
+        <table class="w-full text-left text-xs border border-[#dfe1e6]">
+          <thead class="bg-[#f4f5f7] text-[#5e6c84] font-bold border-b border-[#dfe1e6]">
+            <tr>
+              <th class="p-2 border-r border-[#dfe1e6]">Expense Date (Merged)</th>
+              <th class="p-2">OR / Supplier Description</th>
+              <th class="p-2">Area</th>
+              <th class="p-2">Category</th>
+              <th class="p-2">Amount</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#dfe1e6] text-[#172b4d]">
-            <tr v-for="exp in expenses" :key="exp.id" class="hover:bg-[#f7f8f9]">
-              <td class="py-2.5 px-3 font-semibold">{{ exp.date }}</td>
-              <td class="py-2.5 px-3 font-bold text-[#172b4d]">{{ exp.supplier }}</td>
-              <td class="py-2.5 px-3 text-[#5e6c84]">{{ exp.category }}</td>
-              <td class="py-2.5 px-3 text-[#172b4d]">{{ exp.description }}</td>
-              <td class="py-2.5 px-3 font-bold text-rose-700">₱{{ exp.amount.toLocaleString() }}</td>
-              <td class="py-2.5 px-3 text-[#5e6c84]">{{ exp.paymentMethod }}</td>
-              <td class="py-2.5 px-3">{{ exp.createdBy }}</td>
-            </tr>
+          <tbody>
+            <template v-for="group in expenseLedger" :key="group.date">
+              <tr v-for="(item, itemIdx) in group.items" :key="itemIdx" class="border-b border-[#dfe1e6]">
+                <td v-if="itemIdx === 0" :rowspan="group.items.length" class="p-2 font-bold border-r border-[#dfe1e6] bg-[#f4f5f7] align-top">
+                  {{ group.date }}
+                </td>
+                <td class="p-2">{{ item.supplier }}</td>
+                <td class="p-2"><span class="jira-badge bg-slate-100 text-slate-800">{{ item.area }}</span></td>
+                <td class="p-2">{{ item.catName }}</td>
+                <td class="p-2 font-bold text-[#172b4d]">₱{{ item.amount.toLocaleString() }}</td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
