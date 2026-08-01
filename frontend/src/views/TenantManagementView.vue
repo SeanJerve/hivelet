@@ -1,21 +1,21 @@
+<!--
+  @file views/TenantManagementView.vue
+  @description Active Tenant Directory and Onboarding Management module for Hivelet matching canonical unit codes.
+  @systemBibleRef Section 5.3 - tenant_profiles & room_assignments
+  @rationale Tracks individual tenant personal information, emergency contact details, move-in dates, and canonical unit assignments.
+-->
 <script setup lang="ts">
-/**
- * @component TenantManagementView
- * @description Active Tenant Directory and Onboarding Management module for Hivelet.
- * @systemBibleRef Section 5.3 - tenant_profiles & room_assignments
- * @rationale Tracks individual tenant personal information, emergency contact details, move-in dates,
- *              and room assignments.
- * @innovations Supports individual move-in date tracking for grace-period-aware monthly billing logic.
- */
 import { ref } from 'vue';
-import { Users, Search, UserPlus, Phone, Mail, Calendar, ShieldCheck } from 'lucide-vue-next';
+import { Search, UserPlus } from 'lucide-vue-next';
 
 const tenants = ref([
-  { id: 1, name: 'Juan Dela Cruz', room: 'Room 101', phone: '0917-123-4567', emergency: 'Maria Cruz (Mother - 0918-987-6543)', moveInDate: '2025-06-15', status: 'Active' },
-  { id: 2, name: 'Maria Santos', room: 'Room 102', phone: '0918-234-5678', emergency: 'Jose Santos (Father - 0919-876-5432)', moveInDate: '2025-08-01', status: 'Active' },
-  { id: 3, name: 'Pedro Penduko', room: 'Room 104', phone: '0919-345-6789', emergency: 'Clara Penduko (Sister - 0920-765-4321)', moveInDate: '2026-01-10', status: 'Active' },
-  { id: 4, name: 'Ana Reyes', room: 'Room 106', phone: '0920-456-7890', emergency: 'Roberto Reyes (Spouse - 0921-654-3210)', moveInDate: '2024-11-20', status: 'Active' },
-  { id: 5, name: 'Elena Toribio', room: 'Room 108', phone: '0921-567-8901', emergency: 'Sofia Toribio (Aunt - 0922-543-2109)', moveInDate: '2026-03-01', status: 'Active' },
+  { id: 1, name: 'Juan Dela Cruz', room: 'Unit 1a (BH Main)', phone: '0917-123-4567', emergency: 'Maria Cruz (Mother - 0918-987-6543)', moveInDate: '2025-06-15', status: 'Active' },
+  { id: 2, name: 'Maria Santos', room: 'Unit 1b (BH Main)', phone: '0918-234-5678', emergency: 'Jose Santos (Father - 0919-876-5432)', moveInDate: '2025-08-01', status: 'Active' },
+  { id: 3, name: 'Pedro Penduko', room: 'Unit 1d (BH Main)', phone: '0919-345-6789', emergency: 'Clara Penduko (Sister - 0920-765-4321)', moveInDate: '2026-01-10', status: 'Active' },
+  { id: 4, name: 'Ana Reyes', room: 'Unit 1f (BH Main)', phone: '0920-456-7890', emergency: 'Roberto Reyes (Spouse - 0921-654-3210)', moveInDate: '2024-11-20', status: 'Active' },
+  { id: 5, name: 'Felix Go', room: 'Unit 1h (BH Main)', phone: '0921-567-8901', emergency: 'Sofia Toribio (Aunt - 0922-543-2109)', moveInDate: '2026-03-01', status: 'Overdue' },
+  { id: 6, name: 'Mark Villar', room: 'Unit B1F (Back Apt)', phone: '0918-555-0192', emergency: 'Cynthia Villar (Mother - 0918-111-2222)', moveInDate: '2025-05-01', status: 'Active' },
+  { id: 7, name: 'Gayon', room: 'Unit LF (Linda)', phone: '0919-444-5555', emergency: 'Linda Gayon (Self - 0919-000-1111)', moveInDate: '2024-01-01', status: 'Active' },
 ]);
 
 const search = ref('');
@@ -47,7 +47,7 @@ const search = ref('');
         <input 
           v-model="search"
           type="text" 
-          placeholder="Search tenant name, room #, phone..." 
+          placeholder="Search tenant name, unit code, phone..." 
           class="w-full pl-8 pr-3 py-1.5 text-xs bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d] focus:bg-white focus:outline-none"
         />
       </div>
@@ -60,7 +60,7 @@ const search = ref('');
           <thead>
             <tr class="bg-[#f4f5f7] border-b border-[#dfe1e6] text-[#5e6c84] uppercase tracking-wider font-semibold text-[11px]">
               <th class="py-2.5 px-3">Tenant Profile</th>
-              <th class="py-2.5 px-3">Assigned Unit</th>
+              <th class="py-2.5 px-3">Assigned Canonical Unit</th>
               <th class="py-2.5 px-3">Contact Details</th>
               <th class="py-2.5 px-3">Emergency Contact</th>
               <th class="py-2.5 px-3">Move-In Date</th>
@@ -75,7 +75,7 @@ const search = ref('');
               <td class="py-2.5 px-3 text-[#5e6c84]">{{ t.emergency }}</td>
               <td class="py-2.5 px-3">{{ t.moveInDate }}</td>
               <td class="py-2.5 px-3">
-                <span class="jira-badge jira-badge-done">{{ t.status }}</span>
+                <span :class="['jira-badge', t.status === 'Active' ? 'jira-badge-done' : 'jira-badge-emergency']">{{ t.status }}</span>
               </td>
             </tr>
           </tbody>

@@ -2,7 +2,6 @@
   @file components/modals/AdminEditUnitModal.vue
   @description Admin modal for editing unit specs, monthly rates, occupant limits, and unit photo attachments.
   @systemBibleRef Section 3.1 - Room Directory Admin Controls
-  @rationale Gives landlady full administrative control to update rates, occupancy limits, and photos.
 -->
 <script setup lang="ts">
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, rooms } from '@/lib/systemState';
@@ -27,7 +26,7 @@ function handleSave() {
     <div class="jira-card w-full max-w-md shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       <div class="flex items-center justify-between p-4 border-b border-[#dfe1e6] bg-[#f4f5f7]">
         <h3 class="text-sm font-bold text-[#172b4d] flex items-center gap-2">
-          <span>Admin Edit: Room {{ activeAdminEditUnit.num }}</span>
+          <span>Admin Edit: Unit {{ activeAdminEditUnit.unitCode }} ({{ activeAdminEditUnit.cluster }})</span>
         </h3>
         <button @click="closeModal" class="p-1 hover:bg-[#ebecf0] rounded-xs text-[#5e6c84]">
           <X class="w-4 h-4" />
@@ -43,6 +42,8 @@ function handleSave() {
               <option value="1-Bedroom">1-Bedroom</option>
               <option value="2-Bedroom">2-Bedroom</option>
               <option value="3-Bedroom">3-Bedroom</option>
+              <option value="Penthouse Suite">Penthouse Suite</option>
+              <option value="Special Unit">Special Unit</option>
             </select>
           </div>
           <div>
@@ -71,7 +72,7 @@ function handleSave() {
           <label class="block font-bold text-[#5e6c84] mb-1">Unit Photo Filename / URL</label>
           <div class="flex gap-2 items-center">
             <Image class="w-4 h-4 text-[#5e6c84]" />
-            <input v-model="activeAdminEditUnit.photo" type="text" class="jira-input" placeholder="room101_photo.jpg" />
+            <input v-model="activeAdminEditUnit.photo" type="text" class="jira-input" placeholder="room1a_photo.jpg" />
           </div>
         </div>
 

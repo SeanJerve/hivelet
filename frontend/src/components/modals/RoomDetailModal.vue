@@ -2,7 +2,6 @@
   @file components/modals/RoomDetailModal.vue
   @description Room unit details modal displaying base rent, occupant limits, amenities, and inquiry trigger.
   @systemBibleRef Section 3.1 - Room Directory & Unit Showcase
-  @rationale Allows guests, tenants, and admin to view full unit specifications and trigger landlady inquiries.
 -->
 <script setup lang="ts">
 import { isRoomDetailModalOpen, activeRoomDetail, isLiveChatheadOpen, selectedInquirerId } from '@/lib/systemState';
@@ -24,7 +23,7 @@ function handleInquire() {
     <div class="jira-card w-full max-w-lg shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       <div class="flex items-center justify-between p-4 border-b border-[#dfe1e6] bg-[#f4f5f7]">
         <h3 class="text-sm font-bold text-[#172b4d] flex items-center gap-2">
-          <span>Room {{ activeRoomDetail.num }} Details</span>
+          <span>Unit {{ activeRoomDetail.unitCode }} Details</span>
           <span class="jira-badge text-xs bg-blue-100 text-blue-800">{{ activeRoomDetail.type }}</span>
         </h3>
         <button @click="closeModal" class="p-1 hover:bg-[#ebecf0] rounded-xs text-[#5e6c84] transition-colors">
@@ -39,8 +38,8 @@ function handleInquire() {
             <p class="text-lg font-bold text-[#0c66e4]">₱{{ activeRoomDetail.price.toLocaleString() }} <span class="text-xs font-normal text-[#5e6c84]">/ mo</span></p>
           </div>
           <div class="text-right">
-            <p class="text-[#5e6c84]">Floor Level</p>
-            <p class="font-bold text-[#172b4d]">Floor {{ activeRoomDetail.floor }}</p>
+            <p class="text-[#5e6c84]">Cluster / Location</p>
+            <p class="font-bold text-[#172b4d]">{{ activeRoomDetail.cluster }}</p>
           </div>
         </div>
 
@@ -63,8 +62,9 @@ function handleInquire() {
         </div>
 
         <div class="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xs">
-          <p class="font-semibold flex items-center gap-1"><Banknote class="w-3.5 h-3.5" /> Water Billing Rule (BR-014):</p>
-          <p class="mt-0.5">₱200 per registered occupant per month added to monthly remittance.</p>
+          <p class="font-semibold flex items-center gap-1"><Banknote class="w-3.5 h-3.5" /> Water Billing Rule (BR-014 / BR-040):</p>
+          <p v-if="activeRoomDetail.waterRateType === 'linda_fixed'" class="mt-0.5">Linda Unit Exception (BR-040 Fixed Water/Electric Rates).</p>
+          <p v-else class="mt-0.5">₱200 per registered occupant per month added to monthly remittance.</p>
         </div>
       </div>
 

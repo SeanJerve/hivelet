@@ -1,19 +1,17 @@
+<!--
+  @file views/TenantPortalView.vue
+  @description Active Tenant Self-Service Workspace for Hivelet matching canonical unit codes.
+  @systemBibleRef Section 4 - Tenant User Role & Section 5.5 - Water Billing Rate Rule (₱200/head)
+  @rationale Provides tenants with transparency over their assigned room, billing status, and water rate calculations.
+-->
 <script setup lang="ts">
-/**
- * @component TenantPortalView
- * @description Active Tenant Self-Service Workspace for Hivelet.
- * @systemBibleRef Section 4 - Tenant User Role & Section 5.5 - Water Billing Rate Rule (₱200/head)
- * @rationale Provides tenants with transparency over their assigned room, billing status,
- *              water rate calculations, and ticket submissions.
- * @innovations Clear itemized breakdown of base rent plus ₱200/head water billing rule.
- */
 import { ref } from 'vue';
-import { Home, CreditCard, Wrench, Plus, CheckCircle2, DollarSign } from 'lucide-vue-next';
+import { Home, CreditCard } from 'lucide-vue-next';
 
 const tenantData = ref({
   name: 'Juan Dela Cruz',
-  room: 'Room 101',
-  roomType: 'Studio Unit (1st Floor)',
+  room: 'Unit 1a',
+  roomType: 'BH Main Rooms • Studio Unit',
   occupants: 2, // 2 heads
   baseRent: 4500,
   waterRatePerHead: 200, // ₱200 per head
@@ -22,10 +20,6 @@ const tenantData = ref({
   dueDate: '2026-08-05',
   paymentStatus: 'Paid for July'
 });
-
-const tickets = ref([
-  { id: 1, title: 'Faucet dripping', date: '2026-07-27', status: 'In Progress' }
-]);
 </script>
 
 <template>
@@ -54,7 +48,7 @@ const tickets = ref([
 
         <div class="space-y-2 text-xs text-[#172b4d]">
           <div class="flex justify-between">
-            <span class="text-[#5e6c84]">Room Unit:</span>
+            <span class="text-[#5e6c84]">Canonical Unit:</span>
             <strong class="text-[#0c66e4]">{{ tenantData.room }}</strong>
           </div>
           <div class="flex justify-between">

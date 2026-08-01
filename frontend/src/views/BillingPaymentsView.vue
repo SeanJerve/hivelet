@@ -1,6 +1,6 @@
 <!--
   @file views/BillingPaymentsView.vue
-  @description Spec 09 Monthly Payment recorder and auto-updating collection ledger.
+  @description Spec 09 Monthly Payment recorder and auto-updating collection ledger matching canonical unit codes.
   @systemBibleRef Section 3.3 - Billing & Income Collection Ledger
   @rationale Implements 50% revenue share calculation, water billing rules (₱200/head), and auto-reflecting payment ledger.
 -->
@@ -9,11 +9,11 @@ import { ref, computed } from 'vue';
 import { incomeLedger, rooms, addIncomeRecord } from '@/lib/systemState';
 import { Plus, Download, CreditCard } from 'lucide-vue-next';
 
-const selectedUnitNum = ref('204');
+const selectedUnitNum = ref('1a');
 const datePaid = ref(new Date().toISOString().split('T')[0]);
 const tenantName = ref('Juan Dela Cruz');
 const invoiceNum = ref('INV-88392');
-const rentAmount = ref(6500);
+const rentAmount = ref(4500);
 const occupantsCount = ref(2);
 const paymentMethod = ref<'Cash' | 'Online'>('Cash');
 const referenceNum = ref('');
@@ -21,6 +21,15 @@ const referenceNum = ref('');
 const calcShare = computed(() => (rentAmount.value || 0) / 2);
 const calcWater = computed(() => (occupantsCount.value || 0) * 200);
 const calcRemitted = computed(() => (rentAmount.value || 0) + calcWater.value);
+
+function onUnitChange(unitCode: string) {
+  const room = rooms.find(r => r.unitCode === unitCode);
+  if (room) {
+    rentAmount.value = room.price;
+    tenantName.value = room.tenant || '';
+    occupantsCount.value = room.occupants || 1;
+  }
+}
 
 function handleSubmit() {
   addIncomeRecord({
@@ -60,8 +69,8 @@ function handleSubmit() {
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
             <label class="block font-bold text-[#5e6c84] mb-1">Select Unit / Room</label>
-            <select v-model="selectedUnitNum" class="jira-input">
-              <option v-for="r in rooms" :key="r.id" :value="r.num">Room {{ r.num }} ({{ r.type }})</option>
+            <select v-model="selectedUnitNum" @change="onUnitChange(($event.target as HTMLSelectElement).value)" class="jira-input">
+              <option v-for="r in rooms" :key="r.id" :value="r.unitCode">Unit {{ r.unitCode }} ({{ r.cluster }})</option>
             </select>
           </div>
           <div>
@@ -120,7 +129,7 @@ function handleSubmit() {
         <table class="w-full text-left text-xs border border-[#dfe1e6]">
           <thead class="bg-[#f4f5f7] text-[#5e6c84] font-bold border-b border-[#dfe1e6]">
             <tr>
-              <th class="p-2">Rm #</th>
+              <th class="p-2">Unit Code</th>
               <th class="p-2">Date Paid</th>
               <th class="p-2">Tenant Name</th>
               <th class="p-2">Invoice #</th>
@@ -134,7 +143,7 @@ function handleSubmit() {
           </thead>
           <tbody class="divide-y divide-[#dfe1e6]">
             <tr v-for="(rec, idx) in incomeLedger" :key="idx" class="hover:bg-[#f4f5f7]">
-              <td class="p-2 font-bold">{{ rec.unit }}</td>
+              <td class="p-2 font-bold">Unit {{ rec.unit }}</td>
               <td class="p-2">{{ rec.date }}</td>
               <td class="p-2">{{ rec.contact }}</td>
               <td class="p-2 font-mono text-[11px]">{{ rec.invoiceNum }}</td>

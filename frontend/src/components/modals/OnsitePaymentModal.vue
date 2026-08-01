@@ -1,14 +1,14 @@
 <!--
   @file components/modals/OnsitePaymentModal.vue
-  @description Record on-site cash payment modal.
+  @description Record on-site cash payment modal matching canonical unit codes.
 -->
 <script setup lang="ts">
-import { isOnsitePaymentModalOpen, addIncomeRecord } from '@/lib/systemState';
+import { isOnsitePaymentModalOpen, addIncomeRecord, rooms } from '@/lib/systemState';
 import { X, Check } from 'lucide-vue-next';
 import { ref } from 'vue';
 
-const selectedUnit = ref('204');
-const amount = ref(6900);
+const selectedUnit = ref('1a');
+const amount = ref(4900);
 const orNum = ref('OR-100294');
 
 function closeModal() {
@@ -46,9 +46,7 @@ function handleRecord() {
         <div>
           <label class="block font-bold text-[#5e6c84] mb-1">Select Unit / Room</label>
           <select v-model="selectedUnit" class="jira-input">
-            <option value="204">Room 204 — Juan Dela Cruz</option>
-            <option value="108">Room 108 — Felix Go</option>
-            <option value="308">Room 308 — Wally Bayola</option>
+            <option v-for="r in rooms" :key="r.id" :value="r.unitCode">Unit {{ r.unitCode }} ({{ r.cluster }})</option>
           </select>
         </div>
 
