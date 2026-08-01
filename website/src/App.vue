@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import AppNavbar from '@/components/layout/AppNavbar.vue';
+import AppSidebar from '@/components/layout/AppSidebar.vue';
 import MobilePillNavbar from '@/components/layout/MobilePillNavbar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
@@ -8,6 +11,13 @@ import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
 import TicketHoverModal from '@/components/modals/TicketHoverModal.vue';
 import LiveChatheadModal from '@/components/modals/LiveChatheadModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
+
+const route = useRoute();
+const isMobileSidebarOpen = ref(false);
+
+const isWorkspaceRoute = computed(() => {
+  return route.path.startsWith('/admin') || route.path.startsWith('/tenant') || route.path.startsWith('/public');
+});
 </script>
 
 <template>
@@ -15,11 +25,20 @@ import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
     <LoadingScreen />
     <AppNavbar />
     
-    <main class="flex-1">
-      <router-view />
-    </main>
+    <!-- Main Content Container with AppSidebar for Admin, Tenant & Workspace Routes -->
+    <div class="flex flex-1 relative">
+      <AppSidebar 
+        v-if="isWorkspaceRoute"
+        :isMobileSidebarOpen="isMobileSidebarOpen"
+        @closeMobileSidebar="isMobileSidebarOpen = false"
+      />
 
-    <AppFooter />
+      <main :class="['flex-1 overflow-y-auto', isWorkspaceRoute ? 'p-4 md:p-6' : '']">
+        <router-view />
+      </main>
+    </div>
+
+    <AppFooter v-if="!isWorkspaceRoute" />
     <MobilePillNavbar />
 
     <!-- MODAL MOUNT POINTS -->

@@ -1,0 +1,150 @@
+<!--
+  @file views/ExpensesLedgerView.vue
+  @description Spec 10 Guided Monthly Expense Ledger with dropdown category and area selectors for Hivelet website.
+  @systemBibleRef Section 3.3 - Expenses & Financial Ledger
+-->
+<script setup lang="ts">
+import { ref } from 'vue';
+import { expenseLedger, addExpenseGroup, ExpenseItem } from '@/lib/systemState';
+import { Plus, Download, Receipt } from 'lucide-vue-next';
+
+const expenseDate = ref(new Date().toISOString().split('T')[0]);
+
+const EXPENSE_CATEGORIES = [
+  { id: '8', name: 'Repairs & Maintenance' },
+  { id: '7', name: 'Comm, Light, Water (Utilities)' },
+  { id: '1', name: 'Taxes & Licenses' },
+  { id: '2', name: 'Salaries & Wages' },
+  { id: '3', name: 'Supplies & Hardware' },
+  { id: '4', name: 'Capital Outlay / Improvements' },
+  { id: '5', name: 'Miscellaneous' },
+];
+
+const supplierItems = ref<ExpenseItem[]>([
+  { supplier: 'Wilcon Depot (bh)', area: 'BH', amount: 2500, catId: '8', catName: 'Repairs & Maintenance' }
+]);
+
+function addSupplierRow() {
+  supplierItems.value.push({ supplier: '', area: 'BH', amount: 0, catId: '7', catName: 'Comm, Light, Water (Utilities)' });
+}
+
+function handleCategoryChange(item: ExpenseItem, selectedName: string) {
+  const found = EXPENSE_CATEGORIES.find(c => c.name === selectedName);
+  if (found) {
+    item.catId = found.id;
+    item.catName = found.name;
+  }
+}
+
+function handleLogExpenses() {
+  addExpenseGroup({
+    date: expenseDate.value,
+    items: [...supplierItems.value]
+  });
+  supplierItems.value = [{ supplier: '', area: 'BH', amount: 0, catId: '8', catName: 'Repairs & Maintenance' }];
+}
+</script>
+
+<template>
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold text-[#172b4d]">Guided Expenses Ledger</h1>
+        <p class="text-xs text-[#5e6c84]">Spec 10 — Structured Multi-Supplier Expense Entry with Category Dropdowns</p>
+      </div>
+      <button class="jira-btn-secondary border border-[#dfe1e6] hover:bg-[#f4f5f7] px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+        <Download class="w-3.5 h-3.5" /> Export Expenses Excel
+      </button>
+    </div>
+
+    <!-- Multi-Supplier Form -->
+    <div class="jira-card p-6 space-y-4 bg-white border border-[#dfe1e6]">
+      <h2 class="text-sm font-bold text-[#172b4d] flex items-center gap-2">
+        <Receipt class="w-4 h-4 text-[#054e38]" /> Log Date Expenses
+      </h2>
+
+      <form @submit.prevent="handleLogExpenses" class="space-y-3 text-xs">
+        <div class="w-48">
+          <label class="block font-bold text-[#5e6c84] mb-1">Expense Date</label>
+          <input v-model="expenseDate" type="date" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]" required />
+        </div>
+
+        <div class="space-y-2">
+          <div v-for="(item, idx) in supplierItems" :key="idx" class="grid grid-cols-1 sm:grid-cols-4 gap-2 p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs">
+            <div>
+              <label class="block font-semibold text-[10px] text-[#5e6c84] mb-0.5">Supplier / Description</label>
+              <input v-model="item.supplier" type="text" placeholder="e.g. Wilcon Depot" class="w-full p-2 bg-white border border-[#dfe1e6] rounded-xs text-[#172b4d]" required />
+            </div>
+
+            <div>
+              <label class="block font-semibold text-[10px] text-[#5e6c84] mb-0.5">Property Subcategory / Area</label>
+              <select v-model="item.area" class="w-full p-2 bg-white border border-[#dfe1e6] rounded-xs text-[#172b4d]">
+                <option value="BH">BH (Main Rooms)</option>
+                <option value="MainHouse">Main House</option>
+                <option value="FrontApt">Front Apt</option>
+                <option value="BackApt">Back Apt</option>
+                <option value="Other">Other / Personal</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-[10px] text-[#5e6c84] mb-0.5">Expense Category</label>
+              <select 
+                :value="item.catName"
+                @change="handleCategoryChange(item, ($event.target as HTMLSelectElement).value)"
+                class="w-full p-2 bg-white border border-[#dfe1e6] rounded-xs text-[#172b4d]"
+              >
+                <option v-for="cat in EXPENSE_CATEGORIES" :key="cat.id" :value="cat.name">
+                  {{ cat.name }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-[10px] text-[#5e6c84] mb-0.5">Amount (₱)</label>
+              <input v-model.number="item.amount" type="number" placeholder="Amount (₱)" class="w-full p-2 bg-white border border-[#dfe1e6] rounded-xs font-bold text-[#172b4d]" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-2">
+          <button type="button" @click="addSupplierRow" class="jira-btn-secondary border border-[#dfe1e6] hover:bg-[#f4f5f7] px-3 py-1.5 text-xs font-semibold flex items-center gap-1 cursor-pointer">
+            <Plus class="w-3.5 h-3.5" /> Add Another OR / Supplier on Same Date
+          </button>
+          <button type="submit" class="jira-btn-primary bg-[#054e38] hover:bg-[#003626] text-white px-4 py-1.5 text-xs font-semibold cursor-pointer">Log Expenses for Date</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Expenses Ledger Table -->
+    <div class="jira-card p-6 space-y-4 bg-white border border-[#dfe1e6]">
+      <h2 class="text-sm font-bold text-[#172b4d]">Guided Expenses Ledger Table</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border border-[#dfe1e6]">
+          <thead class="bg-[#f4f5f7] text-[#5e6c84] font-bold border-b border-[#dfe1e6]">
+            <tr>
+              <th class="p-2 border-r border-[#dfe1e6]">Expense Date (Merged)</th>
+              <th class="p-2">OR / Supplier Description</th>
+              <th class="p-2">Property Area</th>
+              <th class="p-2">Expense Category</th>
+              <th class="p-2">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="group in expenseLedger" :key="group.date">
+              <tr v-for="(item, itemIdx) in group.items" :key="itemIdx" class="border-b border-[#dfe1e6]">
+                <td v-if="itemIdx === 0" :rowspan="group.items.length" class="p-2 font-bold border-r border-[#dfe1e6] bg-[#f4f5f7] align-top">
+                  {{ group.date }}
+                </td>
+                <td class="p-2 font-medium text-[#172b4d]">{{ item.supplier }}</td>
+                <td class="p-2"><span class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-800">{{ item.area }}</span></td>
+                <td class="p-2"><span class="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-800 border border-blue-200">{{ item.catName }}</span></td>
+                <td class="p-2 font-bold text-[#172b4d]">₱{{ item.amount.toLocaleString() }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>

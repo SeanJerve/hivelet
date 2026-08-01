@@ -215,6 +215,79 @@ export const isOnsitePaymentModalOpen = ref(false);
 export const isTenantLoginModalOpen = ref(false);
 export const isGuestEntryModalOpen = ref(false);
 
+export interface TenantProfile {
+  id: string;
+  name: string;
+  room: string;
+  phone: string;
+  emergency: string;
+  moveInDate: string;
+  status: 'Active' | 'Overdue' | 'Vacated';
+}
+
+export const tenants = reactive<TenantProfile[]>([
+  { id: 't-1', name: 'Juan Dela Cruz', room: '1a', phone: '0917-123-4567', emergency: 'Maria Cruz (Mother - 0918-987-6543)', moveInDate: '2025-06-15', status: 'Active' },
+  { id: 't-2', name: 'Maria Santos', room: '1b', phone: '0918-234-5678', emergency: 'Jose Santos (Father - 0919-876-5432)', moveInDate: '2025-08-01', status: 'Active' },
+  { id: 't-3', name: 'Pedro Penduko', room: '1d', phone: '0919-345-6789', emergency: 'Clara Penduko (Sister - 0920-765-4321)', moveInDate: '2026-01-10', status: 'Active' },
+  { id: 't-4', name: 'Ana Reyes', room: '1f', phone: '0920-456-7890', emergency: 'Roberto Reyes (Spouse - 0921-654-3210)', moveInDate: '2024-11-20', status: 'Active' },
+  { id: 't-5', name: 'Felix Go', room: '1h', phone: '0921-567-8901', emergency: 'Sofia Toribio (Aunt - 0922-543-2109)', moveInDate: '2026-03-01', status: 'Overdue' },
+  { id: 't-6', name: 'Mark Villar', room: 'B1F', phone: '0918-555-0192', emergency: 'Cynthia Villar (Mother - 0918-111-2222)', moveInDate: '2025-05-01', status: 'Active' },
+  { id: 't-7', name: 'Gayon', room: 'LF', phone: '0919-444-5555', emergency: 'Linda Gayon (Self - 0919-000-1111)', moveInDate: '2024-01-01', status: 'Active' },
+]);
+
+export function addTenant(t: Omit<TenantProfile, 'id'>) {
+  const newTenant: TenantProfile = {
+    ...t,
+    id: `t-${Date.now()}`
+  };
+  tenants.unshift(newTenant);
+  // Update assigned room status if applicable
+  const targetRoom = rooms.find(r => r.unitCode === t.room);
+  if (targetRoom) {
+    targetRoom.tenant = t.name;
+    targetRoom.status = 'occupied';
+  }
+}
+
+export function updateTenant(id: string, updated: Partial<TenantProfile>) {
+  const t = tenants.find(x => x.id === id);
+  if (t) {
+    Object.assign(t, updated);
+    if (updated.room && updated.name) {
+      const room = rooms.find(r => r.unitCode === updated.room);
+      if (room) room.tenant = updated.name;
+    }
+  }
+}
+
+export function deleteTenant(id: string) {
+  const idx = tenants.findIndex(x => x.id === id);
+  if (idx !== -1) {
+    const t = tenants[idx];
+    const room = rooms.find(r => r.unitCode === t.room);
+    if (room) {
+      room.tenant = null;
+      room.status = 'available';
+    }
+    tenants.splice(idx, 1);
+  }
+}
+
+export function addRoomUnit(newUnit: Omit<RoomUnit, 'id'>) {
+  const unit: RoomUnit = {
+    ...newUnit,
+    id: `unit-${Date.now()}`
+  };
+  rooms.push(unit);
+}
+
+export function updateRoomUnit(unitCode: string, changes: Partial<RoomUnit>) {
+  const room = rooms.find(r => r.unitCode === unitCode);
+  if (room) {
+    Object.assign(room, changes);
+  }
+}
+
 export function openRoomDetail(room: RoomUnit) {
   activeRoomDetail.value = room;
   isRoomDetailModalOpen.value = true;
@@ -261,3 +334,26 @@ export function sendChatMessage(inquirerId: string, text: string, sender: 'Inqui
     inq.messages.push({ sender, time: timeStr, text });
   }
 }
+
+export function openTenantChat(tenantName: string, unitCode: string) {
+  let existing = activeInquirers.find(i => i.name.toLowerCase() === tenantName.toLowerCase() || i.room === unitCode);
+  if (!existing) {
+    const newId = `tenant-chat-${Date.now()}`;
+    existing = {
+      id: newId,
+      name: tenantName,
+      room: unitCode,
+      type: 'Active Tenant',
+      price: 4500,
+      unread: false,
+      messages: [
+        { sender: 'Landlady', time: '10:00 AM', text: `Hello ${tenantName}, this is Mrs. Fe from Landlady Management. How can I help you today?` }
+      ]
+    };
+    activeInquirers.unshift(existing);
+  }
+  selectedInquirerId.value = existing.id;
+  isLiveChatheadOpen.value = true;
+}
+
+
