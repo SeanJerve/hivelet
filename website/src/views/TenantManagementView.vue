@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Search, UserPlus, Edit, Trash2, MessageSquare } from 'lucide-vue-next';
-import { tenants, rooms, addTenant, updateTenant, deleteTenant, openTenantChat, type TenantProfile } from '@/lib/systemState';
+import { tenants, rooms, addTenant, updateTenant, deleteTenant, openTenantChat, requestSecondaryConfirm, type TenantProfile } from '@/lib/systemState';
 
 
 const search = ref('');
@@ -74,14 +74,21 @@ const handleEditSubmit = () => {
 
 const confirmDelete = (t: TenantProfile) => {
   tenantToDelete.value = t;
-  showDeleteModal.value = true;
+  requestSecondaryConfirm({
+    title: 'Confirm Tenant Eviction / Removal',
+    message: `Are you sure you want to remove tenant ${t.name} from Unit ${t.room}? This will mark Unit ${t.room} as Available.`,
+    warningLevel: 'danger',
+    requiresPin: true,
+    confirmText: 'Confirm Removal',
+    onConfirm: () => {
+      deleteTenant(t.id);
+    }
+  });
 };
 
 const handleDeleteExecute = () => {
   if (tenantToDelete.value) {
-    deleteTenant(tenantToDelete.value.id);
-    tenantToDelete.value = null;
-    showDeleteModal.value = false;
+    confirmDelete(tenantToDelete.value);
   }
 };
 </script>

@@ -4,7 +4,7 @@
   @systemBibleRef Section 3.1 - Room Directory Admin Controls
 -->
 <script setup lang="ts">
-import { isAdminEditUnitModalOpen, activeAdminEditUnit, rooms } from '@/lib/systemState';
+import { isAdminEditUnitModalOpen, activeAdminEditUnit, updateRoomUnit, requestSecondaryConfirm } from '@/lib/systemState';
 import { X, Save, Image } from 'lucide-vue-next';
 
 function closeModal() {
@@ -13,11 +13,26 @@ function closeModal() {
 
 function handleSave() {
   if (!activeAdminEditUnit.value) return;
-  const target = rooms.find(r => r.id === activeAdminEditUnit.value?.id);
-  if (target) {
-    Object.assign(target, activeAdminEditUnit.value);
-  }
-  closeModal();
+
+  const unit = activeAdminEditUnit.value;
+  requestSecondaryConfirm({
+    title: `Confirm Unit Modification (${unit.cluster})`,
+    message: `You are making changes to Unit ${unit.unitCode} (${unit.cluster}). This will update base rent to ₱${unit.price.toLocaleString()} and set occupancy status to '${unit.status}'.`,
+    warningLevel: 'warning',
+    requiresPin: true,
+    confirmText: 'Confirm & Save Unit Specs',
+    onConfirm: () => {
+      updateRoomUnit(unit.unitCode, {
+        type: unit.type,
+        price: unit.price,
+        maxOccupants: unit.maxOccupants,
+        status: unit.status,
+        photo: unit.photo,
+        desc: unit.desc
+      });
+      closeModal();
+    }
+  });
 }
 </script>
 

@@ -5,7 +5,7 @@
 -->
 <script setup lang="ts">
 import { ref } from 'vue';
-import { tickets, openTicketHover, resolveTicket, openTenantChat, type MaintenanceTicket } from '@/lib/systemState';
+import { tickets, openTicketHover, resolveTicket, openTenantChat, requestSecondaryConfirm, type MaintenanceTicket } from '@/lib/systemState';
 import { Maximize2, CheckCircle, PhoneCall, MessageCircle } from 'lucide-vue-next';
 
 const contactModalOpen = ref(false);
@@ -21,6 +21,19 @@ function handleStartTenantChat() {
     openTenantChat(activeContactTicket.value.tenant, activeContactTicket.value.room);
     contactModalOpen.value = false;
   }
+}
+
+function handleCloseTicket(ticket: MaintenanceTicket) {
+  requestSecondaryConfirm({
+    title: 'Confirm Ticket Resolution',
+    message: `Are you sure you want to mark Maintenance Ticket #${ticket.id} (${ticket.issue} - Room ${ticket.room}) as RESOLVED?`,
+    warningLevel: 'info',
+    requiresPin: true,
+    confirmText: 'Resolve & Close Ticket',
+    onConfirm: () => {
+      resolveTicket(ticket.id);
+    }
+  });
 }
 </script>
 
@@ -80,7 +93,7 @@ function handleStartTenantChat() {
                 <span v-if="t.status === 'RESOLVED'" class="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800">
                   ✓ RESOLVED
                 </span>
-                <button v-else @click="resolveTicket(t.id)" class="jira-btn-secondary border border-[#dfe1e6] hover:bg-emerald-50 text-emerald-700 font-bold px-2 py-1 text-xs flex items-center gap-1 cursor-pointer">
+                <button v-else @click="handleCloseTicket(t)" class="jira-btn-secondary border border-[#dfe1e6] hover:bg-emerald-50 text-emerald-700 font-bold px-2 py-1 text-xs flex items-center gap-1 cursor-pointer">
                   <CheckCircle class="w-3.5 h-3.5" /> Close Ticket
                 </button>
               </td>

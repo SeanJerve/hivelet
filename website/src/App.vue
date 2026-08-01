@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
+import ToastContainer from '@/components/common/ToastContainer.vue';
 import AppNavbar from '@/components/layout/AppNavbar.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import MobilePillNavbar from '@/components/layout/MobilePillNavbar.vue';
@@ -11,6 +12,9 @@ import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
 import TicketHoverModal from '@/components/modals/TicketHoverModal.vue';
 import LiveChatheadModal from '@/components/modals/LiveChatheadModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
+import SecondaryConfirmModal from '@/components/modals/SecondaryConfirmModal.vue';
+import EditPaymentModal from '@/components/modals/EditPaymentModal.vue';
+import EditExpenseModal from '@/components/modals/EditExpenseModal.vue';
 
 const route = useRoute();
 const isMobileSidebarOpen = ref(false);
@@ -23,6 +27,7 @@ const isWorkspaceRoute = computed(() => {
 <template>
   <div class="min-h-screen bg-[#f4f5f7] flex flex-col font-sans antialiased text-[#172b4d] relative pb-16 md:pb-0">
     <LoadingScreen />
+    <ToastContainer />
     <AppNavbar />
     
     <!-- Main Content Container with AppSidebar for Admin, Tenant & Workspace Routes -->
@@ -47,5 +52,9 @@ const isWorkspaceRoute = computed(() => {
     <TicketHoverModal />
     <LiveChatheadModal />
     <OnsitePaymentModal />
+    <SecondaryConfirmModal />
+    <EditPaymentModal />
+    <EditExpenseModal />
   </div>
 </template>
+

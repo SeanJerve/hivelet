@@ -5,8 +5,8 @@
 -->
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { incomeLedger, rooms, addIncomeRecord } from '@/lib/systemState';
-import { Plus, Download, CreditCard } from 'lucide-vue-next';
+import { incomeLedger, rooms, addIncomeRecord, openEditPayment, deleteIncomeRecord, requestSecondaryConfirm, IncomeRecord } from '@/lib/systemState';
+import { Plus, Download, CreditCard, Edit2, Trash2 } from 'lucide-vue-next';
 
 const selectedUnitNum = ref('1a');
 const datePaid = ref(new Date().toISOString().split('T')[0]);
@@ -44,6 +44,19 @@ function handleSubmit() {
     remitted: calcRemitted.value,
     paymentMethod: paymentMethod.value,
     referenceNum: paymentMethod.value === 'Online' ? referenceNum.value || 'GCASH-9948271' : 'N/A'
+  });
+}
+
+function handleDelete(rec: IncomeRecord) {
+  requestSecondaryConfirm({
+    title: 'Delete Recorded Payment Entry',
+    message: `Are you sure you want to permanently delete payment invoice ${rec.invoiceNum} (₱${rec.remitted.toLocaleString()}) for Unit ${rec.unit}? This action will adjust financial totals.`,
+    warningLevel: 'danger',
+    requiresPin: true,
+    confirmText: 'Delete Payment Entry',
+    onConfirm: () => {
+      deleteIncomeRecord(rec.id || '');
+    }
   });
 }
 </script>
@@ -140,6 +153,7 @@ function handleSubmit() {
               <th class="p-2">Remitted</th>
               <th class="p-2">Method</th>
               <th class="p-2">Ref #</th>
+              <th class="p-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#dfe1e6]">
@@ -154,6 +168,16 @@ function handleSubmit() {
               <td class="p-2 font-bold text-[#054e38]">₱{{ rec.remitted.toLocaleString() }}</td>
               <td class="p-2"><span class="px-2 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800">{{ rec.paymentMethod }}</span></td>
               <td class="p-2 font-mono text-[10px] text-[#5e6c84]">{{ rec.referenceNum }}</td>
+              <td class="p-2 text-right">
+                <div class="flex justify-end gap-1">
+                  <button @click="openEditPayment(rec)" title="Edit Payment Log" class="p-1 hover:bg-blue-50 text-blue-600 rounded cursor-pointer">
+                    <Edit2 class="w-3.5 h-3.5" />
+                  </button>
+                  <button @click="handleDelete(rec)" title="Delete Payment Log" class="p-1 hover:bg-red-50 text-red-600 rounded cursor-pointer">
+                    <Trash2 class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -161,3 +185,4 @@ function handleSubmit() {
     </div>
   </div>
 </template>
+

@@ -1,12 +1,7 @@
-<!--
-  @file views/ExpensesLedgerView.vue
-  @description Spec 10 Guided Monthly Expense Ledger with dropdown category and area selectors for Hivelet website.
-  @systemBibleRef Section 3.3 - Expenses & Financial Ledger
--->
 <script setup lang="ts">
 import { ref } from 'vue';
-import { expenseLedger, addExpenseGroup, ExpenseItem } from '@/lib/systemState';
-import { Plus, Download, Receipt } from 'lucide-vue-next';
+import { expenseLedger, addExpenseGroup, ExpenseItem, openEditExpense, deleteExpenseItem, requestSecondaryConfirm } from '@/lib/systemState';
+import { Plus, Download, Receipt, Edit2, Trash2 } from 'lucide-vue-next';
 
 const expenseDate = ref(new Date().toISOString().split('T')[0]);
 
@@ -42,6 +37,19 @@ function handleLogExpenses() {
     items: [...supplierItems.value]
   });
   supplierItems.value = [{ supplier: '', area: 'BH', amount: 0, catId: '8', catName: 'Repairs & Maintenance' }];
+}
+
+function handleDeleteExpense(date: string, item: ExpenseItem) {
+  requestSecondaryConfirm({
+    title: 'Delete Logged Expense Entry',
+    message: `Are you sure you want to delete expense "${item.supplier}" (₱${item.amount.toLocaleString()}) logged for ${date}?`,
+    warningLevel: 'danger',
+    requiresPin: true,
+    confirmText: 'Delete Expense Entry',
+    onConfirm: () => {
+      deleteExpenseItem(date, item.id || '');
+    }
+  });
 }
 </script>
 
@@ -128,11 +136,12 @@ function handleLogExpenses() {
               <th class="p-2">Property Area</th>
               <th class="p-2">Expense Category</th>
               <th class="p-2">Amount</th>
+              <th class="p-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             <template v-for="group in expenseLedger" :key="group.date">
-              <tr v-for="(item, itemIdx) in group.items" :key="itemIdx" class="border-b border-[#dfe1e6]">
+              <tr v-for="(item, itemIdx) in group.items" :key="itemIdx" class="border-b border-[#dfe1e6] hover:bg-[#f4f5f7]">
                 <td v-if="itemIdx === 0" :rowspan="group.items.length" class="p-2 font-bold border-r border-[#dfe1e6] bg-[#f4f5f7] align-top">
                   {{ group.date }}
                 </td>
@@ -140,6 +149,16 @@ function handleLogExpenses() {
                 <td class="p-2"><span class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-800">{{ item.area }}</span></td>
                 <td class="p-2"><span class="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-800 border border-blue-200">{{ item.catName }}</span></td>
                 <td class="p-2 font-bold text-[#172b4d]">₱{{ item.amount.toLocaleString() }}</td>
+                <td class="p-2 text-right">
+                  <div class="flex justify-end gap-1">
+                    <button @click="openEditExpense(group.date, item)" title="Edit Expense Log" class="p-1 hover:bg-blue-50 text-blue-600 rounded cursor-pointer">
+                      <Edit2 class="w-3.5 h-3.5" />
+                    </button>
+                    <button @click="handleDeleteExpense(group.date, item)" title="Delete Expense Log" class="p-1 hover:bg-red-50 text-red-600 rounded cursor-pointer">
+                      <Trash2 class="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             </template>
           </tbody>
@@ -148,3 +167,4 @@ function handleLogExpenses() {
     </div>
   </div>
 </template>
+

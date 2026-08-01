@@ -24,6 +24,7 @@ export interface RoomUnit {
 }
 
 export interface IncomeRecord {
+  id?: string;
   unit: string;
   date: string;
   invoiceNum: string;
@@ -39,6 +40,7 @@ export interface IncomeRecord {
 }
 
 export interface ExpenseItem {
+  id?: string;
   supplier: string;
   area: 'BH' | 'MainHouse' | 'FrontApt' | 'BackApt' | 'Other';
   amount: number;
@@ -79,6 +81,65 @@ export interface Inquirer {
   price: number;
   unread: boolean;
   messages: ChatMessage[];
+}
+
+export interface Toast {
+  id: string;
+  type: 'success' | 'info' | 'warning' | 'error';
+  title: string;
+  message: string;
+}
+
+export interface ConfirmModalData {
+  title: string;
+  message: string;
+  warningLevel?: 'info' | 'warning' | 'danger';
+  requiresPin?: boolean;
+  confirmText?: string;
+  onConfirm: () => void;
+}
+
+export const toasts = reactive<Toast[]>([]);
+
+export function showToast(type: Toast['type'], title: string, message: string) {
+  const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  toasts.push({ id, type, title, message });
+  setTimeout(() => {
+    removeToast(id);
+  }, 4000);
+}
+
+export function removeToast(id: string) {
+  const idx = toasts.findIndex(t => t.id === id);
+  if (idx !== -1) {
+    toasts.splice(idx, 1);
+  }
+}
+
+export const isConfirmModalOpen = ref(false);
+export const confirmModalData = ref<ConfirmModalData | null>(null);
+
+export function requestSecondaryConfirm(data: ConfirmModalData) {
+  confirmModalData.value = data;
+  isConfirmModalOpen.value = true;
+}
+
+export const isEditPaymentModalOpen = ref(false);
+export const activeEditPayment = ref<IncomeRecord | null>(null);
+
+export function openEditPayment(record: IncomeRecord) {
+  activeEditPayment.value = JSON.parse(JSON.stringify(record));
+  isEditPaymentModalOpen.value = true;
+}
+
+export const isEditExpenseModalOpen = ref(false);
+export const activeEditExpenseDate = ref<string>('');
+export const activeEditExpenseItem = ref<ExpenseItem | null>(null);
+
+export function openEditExpense(date: string, item: ExpenseItem) {
+  activeEditExpenseDate.value = date;
+  activeEditExpenseItem.value = JSON.parse(JSON.stringify(item));
+  isEditExpenseModalOpen.value = true;
 }
 
 export const isLoadingScreenVisible = ref(true);
@@ -127,19 +188,19 @@ export const rooms = reactive<RoomUnit[]>([
 ]);
 
 export const incomeLedger = reactive<IncomeRecord[]>([
-  { unit: '1a', date: '2026-08-01', invoiceNum: 'INV-80012', contact: 'Juan Dela Cruz', period: 'Aug.1-Aug.31/26', rent: 4500, share: 2250, occupants: 2, water: 400, remitted: 4900, paymentMethod: 'Cash', referenceNum: 'N/A' },
-  { unit: '1b', date: '2026-08-01', invoiceNum: 'INV-80013', contact: 'Maria Santos', period: 'Aug.1-Aug.31/26', rent: 4500, share: 2250, occupants: 1, water: 200, remitted: 4700, paymentMethod: 'Cash', referenceNum: 'N/A' },
-  { unit: 'B1F', date: '2026-08-01', invoiceNum: 'INV-88392', contact: 'Mark Villar', period: 'Aug.5-Sep.4/26', rent: 6500, share: 3250, occupants: 2, water: 400, remitted: 6900, paymentMethod: 'Online', referenceNum: 'GCASH-9948271' },
-  { unit: 'LF', date: '2026-08-01', invoiceNum: 'INV-70091', contact: 'Gayon (Linda Unit)', period: 'Fixed Monthly', rent: 3500, share: 1750, occupants: 1, water: 400, remitted: 3900, paymentMethod: 'Cash', referenceNum: 'N/A' }
+  { id: 'inc-101', unit: '1a', date: '2026-08-01', invoiceNum: 'INV-80012', contact: 'Juan Dela Cruz', period: 'Aug.1-Aug.31/26', rent: 4500, share: 2250, occupants: 2, water: 400, remitted: 4900, paymentMethod: 'Cash', referenceNum: 'N/A' },
+  { id: 'inc-102', unit: '1b', date: '2026-08-01', invoiceNum: 'INV-80013', contact: 'Maria Santos', period: 'Aug.1-Aug.31/26', rent: 4500, share: 2250, occupants: 1, water: 200, remitted: 4700, paymentMethod: 'Cash', referenceNum: 'N/A' },
+  { id: 'inc-103', unit: 'B1F', date: '2026-08-01', invoiceNum: 'INV-88392', contact: 'Mark Villar', period: 'Aug.5-Sep.4/26', rent: 6500, share: 3250, occupants: 2, water: 400, remitted: 6900, paymentMethod: 'Online', referenceNum: 'GCASH-9948271' },
+  { id: 'inc-104', unit: 'LF', date: '2026-08-01', invoiceNum: 'INV-70091', contact: 'Gayon (Linda Unit)', period: 'Fixed Monthly', rent: 3500, share: 1750, occupants: 1, water: 400, remitted: 3900, paymentMethod: 'Cash', referenceNum: 'N/A' }
 ]);
 
 export const expenseLedger = reactive<ExpenseGroup[]>([
   {
     date: '2026-08-01',
     items: [
-      { supplier: 'Wilcon Depot (bh)', area: 'BH', amount: 2500, catId: '8', catName: 'Repairs & Maintenance' },
-      { supplier: 'Electricbill (May26)', area: 'BH', amount: 14964, catId: '7', catName: 'Comm, Light, Water' },
-      { supplier: 'Electricbill (May26)', area: 'MainHouse', amount: 5688, catId: '7', catName: 'Comm, Light, Water' }
+      { id: 'exp-201', supplier: 'Wilcon Depot (bh)', area: 'BH', amount: 2500, catId: '8', catName: 'Repairs & Maintenance' },
+      { id: 'exp-202', supplier: 'Electricbill (May26)', area: 'BH', amount: 14964, catId: '7', catName: 'Comm, Light, Water' },
+      { id: 'exp-203', supplier: 'Electricbill (May26)', area: 'MainHouse', amount: 5688, catId: '7', catName: 'Comm, Light, Water' }
     ]
   }
 ]);
@@ -241,12 +302,12 @@ export function addTenant(t: Omit<TenantProfile, 'id'>) {
     id: `t-${Date.now()}`
   };
   tenants.unshift(newTenant);
-  // Update assigned room status if applicable
   const targetRoom = rooms.find(r => r.unitCode === t.room);
   if (targetRoom) {
     targetRoom.tenant = t.name;
     targetRoom.status = 'occupied';
   }
+  showToast('success', 'Tenant Added', `Tenant ${t.name} assigned to Unit ${t.room}.`);
 }
 
 export function updateTenant(id: string, updated: Partial<TenantProfile>) {
@@ -257,6 +318,7 @@ export function updateTenant(id: string, updated: Partial<TenantProfile>) {
       const room = rooms.find(r => r.unitCode === updated.room);
       if (room) room.tenant = updated.name;
     }
+    showToast('info', 'Tenant Updated', `Updated details for ${t.name}.`);
   }
 }
 
@@ -270,6 +332,7 @@ export function deleteTenant(id: string) {
       room.status = 'available';
     }
     tenants.splice(idx, 1);
+    showToast('warning', 'Tenant Removed', `Tenant ${t.name} evicted/removed. Unit ${t.room} marked Available.`);
   }
 }
 
@@ -279,12 +342,14 @@ export function addRoomUnit(newUnit: Omit<RoomUnit, 'id'>) {
     id: `unit-${Date.now()}`
   };
   rooms.push(unit);
+  showToast('success', 'Unit Added', `Unit ${newUnit.unitCode} added to cluster ${newUnit.cluster}.`);
 }
 
 export function updateRoomUnit(unitCode: string, changes: Partial<RoomUnit>) {
   const room = rooms.find(r => r.unitCode === unitCode);
   if (room) {
     Object.assign(room, changes);
+    showToast('success', 'Unit Modified', `Unit ${unitCode} specifications updated successfully.`);
   }
 }
 
@@ -305,10 +370,16 @@ export function openTicketHover(ticket: MaintenanceTicket) {
 
 export function resolveTicket(ticketId: string) {
   const t = tickets.find(x => x.id === ticketId);
-  if (t) t.status = 'RESOLVED';
+  if (t) {
+    t.status = 'RESOLVED';
+    showToast('success', 'Ticket Resolved', `Maintenance Ticket #${t.id} for Unit ${t.room} marked as RESOLVED.`);
+  }
 }
 
 export function addIncomeRecord(record: IncomeRecord) {
+  if (!record.id) {
+    record.id = `inc-${Date.now()}`;
+  }
   incomeLedger.unshift(record);
   const room = rooms.find(r => r.unitCode === record.unit);
   if (room) {
@@ -316,14 +387,64 @@ export function addIncomeRecord(record: IncomeRecord) {
     room.paid = true;
     room.balance = 0;
   }
+  showToast('success', 'Payment Logged', `Payment ${record.invoiceNum} of ₱${record.remitted.toLocaleString()} recorded for Unit ${record.unit}.`);
+}
+
+export function updateIncomeRecord(id: string, updatedRecord: Partial<IncomeRecord>) {
+  const idx = incomeLedger.findIndex(r => r.id === id || (r.invoiceNum === updatedRecord.invoiceNum));
+  if (idx !== -1) {
+    const existing = incomeLedger[idx];
+    Object.assign(existing, updatedRecord);
+    showToast('info', 'Payment Record Updated', `Payment invoice ${existing.invoiceNum} updated successfully.`);
+  }
+}
+
+export function deleteIncomeRecord(id: string) {
+  const idx = incomeLedger.findIndex(r => r.id === id);
+  if (idx !== -1) {
+    const deleted = incomeLedger[idx];
+    incomeLedger.splice(idx, 1);
+    showToast('warning', 'Payment Record Deleted', `Invoice ${deleted.invoiceNum} for Unit ${deleted.unit} removed from ledger.`);
+  }
 }
 
 export function addExpenseGroup(group: ExpenseGroup) {
+  group.items.forEach(item => {
+    if (!item.id) item.id = `exp-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
+  });
   const existing = expenseLedger.find(g => g.date === group.date);
   if (existing) {
     existing.items.push(...group.items);
   } else {
     expenseLedger.unshift(group);
+  }
+  showToast('success', 'Expense Logged', `${group.items.length} expense items logged for date ${group.date}.`);
+}
+
+export function updateExpenseItem(date: string, itemId: string, updatedItem: Partial<ExpenseItem>) {
+  const group = expenseLedger.find(g => g.date === date);
+  if (group) {
+    const item = group.items.find(i => i.id === itemId);
+    if (item) {
+      Object.assign(item, updatedItem);
+      showToast('info', 'Expense Updated', `Expense ${item.supplier} updated to ₱${item.amount.toLocaleString()}.`);
+    }
+  }
+}
+
+export function deleteExpenseItem(date: string, itemId: string) {
+  const groupIdx = expenseLedger.findIndex(g => g.date === date);
+  if (groupIdx !== -1) {
+    const group = expenseLedger[groupIdx];
+    const itemIdx = group.items.findIndex(i => i.id === itemId);
+    if (itemIdx !== -1) {
+      const removed = group.items[itemIdx];
+      group.items.splice(itemIdx, 1);
+      if (group.items.length === 0) {
+        expenseLedger.splice(groupIdx, 1);
+      }
+      showToast('warning', 'Expense Entry Deleted', `Expense ${removed.supplier} (₱${removed.amount.toLocaleString()}) deleted.`);
+    }
   }
 }
 
@@ -355,5 +476,6 @@ export function openTenantChat(tenantName: string, unitCode: string) {
   selectedInquirerId.value = existing.id;
   isLiveChatheadOpen.value = true;
 }
+
 
 
