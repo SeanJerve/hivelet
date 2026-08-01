@@ -1,441 +1,151 @@
+<!--
+  @file views/AdminOverviewView.vue
+  @description Admin overview matrix featuring 32 canonical property units across 3 floors.
+  @systemBibleRef Section 3.1 & Section 3.2 - Room Matrix & Occupancy Tracking
+  @rationale Renders real-time 32-room grid (Rooms 101-311) with occupancy status tags and modal triggers.
+-->
 <script setup lang="ts">
-/**
- * @component AdminOverviewView
- * @description Executive Decision Support Dashboard displaying key operational metrics,
- *              the canonical 32-Unit Visual Matrix (BR-032), Jira tab bar, and state feedback controls.
- * @systemBibleRef Section 2 & Section 5.1 & BR-032 (Canonical 32 Unit List)
- * @rationale Serves the non-techy landlady with clear, comfortable Jira-style typography,
- *              generous breathing room, soft pastel status indicators, and mobile-first responsiveness.
- * @innovations Built 5-cluster visual room layout strictly conforming to the 32 authentic units
- *              defined in Section 2 of 09_MONTHLY_INCOME_REPORT.md.
- */
-import { ref, computed } from 'vue';
-import { 
-  Building2, 
-  Users, 
-  CreditCard, 
-  Wrench, 
-  AlertCircle, 
-  CheckCircle2, 
-  Sparkles,
-  Info,
-  Layers,
-  LayoutGrid,
-  Calendar,
-  List,
-  FileText,
-  Clock,
-  Filter,
-  SlidersHorizontal
-} from 'lucide-vue-next';
-import { useToast } from '../lib/useToast';
-import ConfirmModal from '../components/ui/ConfirmModal.vue';
-import { CANONICAL_32_UNITS, PROPERTY_CLUSTERS, type RentableUnit } from '../lib/canonicalUnits';
+import { computed } from 'vue';
+import { rooms, openRoomDetail, openAdminEditUnit, isOnsitePaymentModalOpen } from '@/lib/systemState';
+import { Plus, Eye, Edit } from 'lucide-vue-next';
 
-const { showToast } = useToast();
+const floor1Rooms = computed(() => rooms.filter(r => r.floor === 1));
+const floor2Rooms = computed(() => rooms.filter(r => r.floor === 2));
+const floor3Rooms = computed(() => rooms.filter(r => r.floor === 3));
 
-// Active View Tab (Matching attached Jira UI screenshot)
-const activeTab = ref<'board' | 'summary' | 'list' | 'calendar'>('board');
-
-// State for testing confirmation modal
-const isConfirmModalOpen = ref(false);
-const confirmModalTitle = ref('');
-const confirmModalMessage = ref('');
-const confirmModalVariant = ref<'danger' | 'primary' | 'warning'>('danger');
-
-// Toast testing handlers
-const triggerSuccessToast = () => {
-  showToast(
-    'Payment Recorded Successfully',
-    'Monthly payment for Unit 1a (Juan Dela Cruz) recorded and remitted to ledger.',
-    'success'
-  );
-};
-
-const triggerWaterWarningToast = () => {
-  showToast(
-    'Water Billing Warning (BR-036)',
-    'Water Payment entered is ₱600. Standard calculation for 2 occupants is ₱400 (2 × ₱200/head).',
-    'warning',
-    6000
-  );
-};
-
-const triggerErrorToast = () => {
-  showToast(
-    'Inquiry Conversion Notice',
-    'Prospect contact details match an existing active tenant record (Unit 2a). Please review.',
-    'error'
-  );
-};
-
-const openSettleVacancyModal = () => {
-  confirmModalTitle.value = 'Settle Vacancy & Deactivate Tenant Account';
-  confirmModalMessage.value = 'Are you sure you want to settle the departure for Unit 2a (Grace Poe)? The tenant account will be deactivated and Unit 2a will be marked as Available.';
-  confirmModalVariant.value = 'danger';
-  isConfirmModalOpen.value = true;
-};
-
-const handleConfirmModalAction = () => {
-  isConfirmModalOpen.value = false;
-  showToast(
-    'Room Vacancy Settled',
-    'Unit 2a is now marked as Available. Tenant account deactivated and archived in audit log.',
-    'success'
-  );
-};
-
-// Filter State for 32 Canonical Units
-const selectedClusterFilter = ref<string>('all');
-const selectedStatusFilter = ref<string>('all');
-
-// Filtered Units
-const filteredUnits = computed(() => {
-  return CANONICAL_32_UNITS.filter(unit => {
-    const matchesCluster = selectedClusterFilter.value === 'all' || unit.cluster === selectedClusterFilter.value;
-    const matchesStatus = selectedStatusFilter.value === 'all' || unit.status === selectedStatusFilter.value;
-    return matchesCluster && matchesStatus;
-  });
-});
-
-// Group filtered units by cluster for rendering
-const unitsByCluster = computed(() => {
-  const map = new Map<string, RentableUnit[]>();
-  PROPERTY_CLUSTERS.forEach(cluster => {
-    const units = filteredUnits.value.filter(u => u.cluster === cluster);
-    if (units.length > 0) {
-      map.set(cluster, units);
-    }
-  });
-  return map;
-});
-
-// Statistics
-const occupiedCount = computed(() => CANONICAL_32_UNITS.filter(u => u.status === 'occupied').length);
-const availableCount = computed(() => CANONICAL_32_UNITS.filter(u => u.status === 'available').length);
-const maintenanceCount = computed(() => CANONICAL_32_UNITS.filter(u => u.status === 'maintenance').length);
-const occupancyPercentage = computed(() => ((occupiedCount.value / CANONICAL_32_UNITS.length) * 100).toFixed(1));
+const occupiedCount = computed(() => rooms.filter(r => r.status === 'occupied').length);
+const vacantCount = computed(() => rooms.filter(r => r.status === 'available').length);
 </script>
 
 <template>
-  <div class="space-y-6 md:space-y-8">
-    <!-- Header Title & Jira Workspace Breadcrumbs -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#dfe1e6]">
+  <div class="space-y-6">
+    <!-- Header Controls -->
+    <div class="flex flex-wrap justify-between items-center gap-4">
       <div>
-        <div class="flex items-center gap-2 text-xs sm:text-sm text-[#6b778c] mb-1">
-          <span>Fe Galang Da Silva Boarding House</span>
-          <span>/</span>
-          <span class="font-bold text-[#172b4d]">Operations Space</span>
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#172b4d] tracking-tight">Executive Overview</h1>
+        <h1 class="text-xl font-bold text-[#172b4d]">System Overview Dashboard</h1>
+        <p class="text-xs text-[#5e6c84]">Real-Time Operational 32-Room Occupancy Matrix</p>
       </div>
-
-      <!-- Quick Diagnostic Stats -->
-      <div class="flex items-center gap-2.5 text-xs sm:text-sm text-[#42526e] bg-white border border-[#dfe1e6] px-3.5 py-2 rounded-md shadow-2xs">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Canonical 32 Units: <strong>BR-032 Aligned</strong></span>
-      </div>
-    </div>
-
-    <!-- Soft Jira Workspace View Tabs (Directly matching attached screenshot) -->
-    <div class="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 border-b border-[#dfe1e6] text-sm">
-      <button 
-        @click="activeTab = 'board'"
-        :class="[
-          'px-3.5 py-2 font-bold rounded-md flex items-center gap-2 transition-all shrink-0 min-h-[40px]',
-          activeTab === 'board' ? 'bg-[#e9f2ff] text-[#0c66e4]' : 'text-[#5e6c84] hover:bg-[#ebecf0] hover:text-[#172b4d]'
-        ]"
-      >
-        <LayoutGrid class="w-4 h-4" />
-        <span>32-Unit Matrix Board</span>
-      </button>
-
-      <button 
-        @click="activeTab = 'summary'"
-        :class="[
-          'px-3.5 py-2 font-bold rounded-md flex items-center gap-2 transition-all shrink-0 min-h-[40px]',
-          activeTab === 'summary' ? 'bg-[#e9f2ff] text-[#0c66e4]' : 'text-[#5e6c84] hover:bg-[#ebecf0] hover:text-[#172b4d]'
-        ]"
-      >
-        <FileText class="w-4 h-4" />
-        <span>Executive Summary</span>
-      </button>
-
-      <button 
-        @click="activeTab = 'list'"
-        :class="[
-          'px-3.5 py-2 font-bold rounded-md flex items-center gap-2 transition-all shrink-0 min-h-[40px]',
-          activeTab === 'list' ? 'bg-[#e9f2ff] text-[#0c66e4]' : 'text-[#5e6c84] hover:bg-[#ebecf0] hover:text-[#172b4d]'
-        ]"
-      >
-        <List class="w-4 h-4" />
-        <span>Canonical Ledger List</span>
-      </button>
-
-      <button 
-        @click="activeTab = 'calendar'"
-        :class="[
-          'px-3.5 py-2 font-bold rounded-md flex items-center gap-2 transition-all shrink-0 min-h-[40px]',
-          activeTab === 'calendar' ? 'bg-[#e9f2ff] text-[#0c66e4]' : 'text-[#5e6c84] hover:bg-[#ebecf0] hover:text-[#172b4d]'
-        ]"
-      >
-        <Calendar class="w-4 h-4" />
-        <span>Billing Cycle Calendar</span>
+      <button @click="isOnsitePaymentModalOpen = true" class="jira-btn-primary flex items-center gap-1.5">
+        <Plus class="w-4 h-4" /> Record On-Site Cash Payment
       </button>
     </div>
 
-    <!-- UI/UX Interactive Feedback Controls (Soft Jira Pill Box) -->
-    <div class="jira-card p-5 sm:p-6 bg-[#ffffff] border-l-4 border-l-[#0c66e4] space-y-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div class="flex items-center gap-2.5">
-          <Sparkles class="w-5 h-5 text-[#0c66e4]" />
-          <h3 class="text-sm sm:text-base font-bold text-[#172b4d]">Landlady Visual Design Feedback Controls</h3>
-        </div>
-        <span class="text-xs text-[#6b778c]">Test subtle toast notifications & confirmation modals</span>
+    <!-- Top KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="jira-card p-4">
+        <p class="text-xs font-bold text-[#5e6c84] uppercase">Monthly Revenue</p>
+        <p class="text-xl font-bold text-[#0c66e4] mt-1">₱178,500</p>
+        <p class="text-[10px] text-emerald-700 mt-1">+₱12,000 vs last month</p>
       </div>
-
-      <div class="flex flex-wrap items-center gap-3 pt-1">
-        <button 
-          @click="triggerSuccessToast"
-          class="jira-btn-secondary text-xs sm:text-sm border-emerald-300 hover:bg-emerald-50 text-emerald-800"
-        >
-          <CheckCircle2 class="w-4 h-4 text-emerald-600" />
-          Test Success Toast
-        </button>
-
-        <button 
-          @click="triggerWaterWarningToast"
-          class="jira-btn-secondary text-xs sm:text-sm border-amber-300 hover:bg-amber-50 text-amber-800"
-        >
-          <AlertCircle class="w-4 h-4 text-amber-600" />
-          Test Water Rule Warning (BR-036)
-        </button>
-
-        <button 
-          @click="triggerErrorToast"
-          class="jira-btn-secondary text-xs sm:text-sm border-rose-300 hover:bg-rose-50 text-rose-800"
-        >
-          <AlertCircle class="w-4 h-4 text-rose-600" />
-          Test Error Toast
-        </button>
-
-        <button 
-          @click="openSettleVacancyModal"
-          class="jira-btn-primary text-xs sm:text-sm bg-[#bf2600] hover:bg-[#de350b]"
-        >
-          <Wrench class="w-4 h-4" />
-          Test Confirmation Modal (Settle Vacancy)
-        </button>
+      <div class="jira-card p-4">
+        <p class="text-xs font-bold text-[#5e6c84] uppercase">Occupancy Rate</p>
+        <p class="text-xl font-bold text-[#172b4d] mt-1">{{ occupiedCount }} / 32 <span class="text-xs font-normal">({{ ((occupiedCount / 32) * 100).toFixed(1) }}%)</span></p>
+        <p class="text-[10px] text-[#5e6c84] mt-1">{{ vacantCount }} Vacant Units</p>
+      </div>
+      <div class="jira-card p-4">
+        <p class="text-xs font-bold text-[#5e6c84] uppercase">Pending Verifications</p>
+        <p class="text-xl font-bold text-amber-700 mt-1">₱12,400</p>
+        <p class="text-[10px] text-[#5e6c84] mt-1">2 GCash Verifications</p>
+      </div>
+      <div class="jira-card p-4">
+        <p class="text-xs font-bold text-[#5e6c84] uppercase">Maintenance Tickets</p>
+        <p class="text-xl font-bold text-red-700 mt-1">2 Open</p>
+        <p class="text-[10px] text-[#5e6c84] mt-1">1 Emergency Ticket</p>
       </div>
     </div>
 
-    <!-- Executive KPI Summary Cards (Mobile-First 1 to 4 Grid, Soft Palette) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-      <!-- Occupancy KPI Card -->
-      <div class="jira-card p-5 sm:p-6 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-[#6b778c] uppercase tracking-wider">Occupancy Rate</span>
-          <div class="p-2 rounded-md bg-[#e9f2ff] text-[#0c66e4]">
-            <Building2 class="w-5 h-5" />
-          </div>
-        </div>
-        <div class="flex items-baseline gap-3">
-          <span class="text-3xl font-extrabold text-[#172b4d]">{{ occupiedCount }} / 32</span>
-          <span class="text-xs font-bold text-[#006644] bg-[#e3fcef] px-2 py-1 rounded-md border border-[#abf5d1]">
-            {{ occupancyPercentage }}%
-          </span>
-        </div>
-        <p class="text-xs text-[#6b778c] pt-2 border-t border-[#dfe1e6]">
-          {{ availableCount }} Available Units across 5 Property Clusters
-        </p>
-      </div>
-
-      <!-- Overdue Billing Alert Card -->
-      <div class="jira-card p-5 sm:p-6 border-l-4 border-l-[#ffab00] space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-[#6b778c] uppercase tracking-wider">Pending Collections</span>
-          <div class="p-2 rounded-md bg-[#fffae6] text-[#826100]">
-            <CreditCard class="w-5 h-5" />
-          </div>
-        </div>
-        <div class="flex items-baseline gap-3">
-          <span class="text-3xl font-extrabold text-[#172b4d]">₱ 18,500</span>
-          <span class="text-xs font-bold text-[#826100] bg-[#fffae6] px-2 py-1 rounded-md border border-[#ffe380]">
-            3 Pending
-          </span>
-        </div>
-        <p class="text-xs text-[#6b778c] pt-2 border-t border-[#dfe1e6]">
-          Individual Move-in Anniversary Aware
-        </p>
-      </div>
-
-      <!-- Maintenance Tickets Card -->
-      <div class="jira-card p-5 sm:p-6 border-l-4 border-l-[#ff5630] space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-[#6b778c] uppercase tracking-wider">Active Maintenance</span>
-          <div class="p-2 rounded-md bg-[#ffebe6] text-[#bf2600]">
-            <Wrench class="w-5 h-5" />
-          </div>
-        </div>
-        <div class="flex items-baseline gap-3">
-          <span class="text-3xl font-extrabold text-[#172b4d]">2</span>
-          <span class="text-xs font-bold text-[#bf2600] bg-[#ffebe6] px-2 py-1 rounded-md border border-[#ffbdad]">
-            1 Emergency
-          </span>
-        </div>
-        <p class="text-xs text-[#6b778c] pt-2 border-t border-[#dfe1e6]">
-          Unit 1e (Faucet) & Unit B2F (Outlet)
-        </p>
-      </div>
-
-      <!-- Inquiries Inbox Card -->
-      <div class="jira-card p-5 sm:p-6 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-[#6b778c] uppercase tracking-wider">New Inquiries</span>
-          <div class="p-2 rounded-md bg-[#e9f2ff] text-[#0c66e4]">
-            <Users class="w-5 h-5" />
-          </div>
-        </div>
-        <div class="flex items-baseline gap-3">
-          <span class="text-3xl font-extrabold text-[#172b4d]">4</span>
-          <span class="text-xs font-bold text-[#0747a6] bg-[#deebff] px-2 py-1 rounded-md border border-[#b3d4ff]">
-            Awaiting Action
-          </span>
-        </div>
-        <p class="text-xs text-[#6b778c] pt-2 border-t border-[#dfe1e6]">
-          Centralized Prospect Inbox
-        </p>
-      </div>
-    </div>
-
-    <!-- 32-Unit Canonical Visual Matrix (BR-032 & Section 2 of Income Report) -->
-    <div class="jira-card p-5 sm:p-7 space-y-6">
-      <!-- Section Title & Soft Filter Bar -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#dfe1e6]">
-        <div>
-          <h2 class="text-lg sm:text-xl font-bold text-[#172b4d]">Canonical 32-Unit Visual Matrix</h2>
-          <p class="text-xs sm:text-sm text-[#6b778c] mt-0.5">
-            Strictly aligned with Capstone BR-032: BH (1a-1h, 2a-2g, 3a-3g), Back Apt (B1F-B3B), Penthouse (PH), Front Apt (F1-F2B), Linda (LF, LB)
-          </p>
-        </div>
-
-        <!-- Filter Controls (Mobile-First Stacked / Row) -->
-        <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-          <!-- Cluster Filter Dropdown -->
-          <div class="flex items-center gap-1.5 bg-[#f7f8f9] p-1 border border-[#dfe1e6] rounded-md">
-            <Filter class="w-4 h-4 text-[#6b778c] ml-1.5" />
-            <select 
-              v-model="selectedClusterFilter" 
-              class="bg-transparent text-[#172b4d] font-semibold text-xs sm:text-sm pr-2 py-1 focus:outline-none cursor-pointer"
-            >
-              <option value="all">All 5 Property Clusters (32)</option>
-              <option v-for="cluster in PROPERTY_CLUSTERS" :key="cluster" :value="cluster">
-                {{ cluster }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Status Filter Pills -->
-          <div class="flex items-center gap-1 bg-[#f7f8f9] p-1 border border-[#dfe1e6] rounded-md font-semibold text-xs">
-            <button 
-              @click="selectedStatusFilter = 'all'"
-              :class="['px-2.5 py-1 rounded-sm transition-colors', selectedStatusFilter === 'all' ? 'bg-white text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84]']"
-            >
-              All ({{ CANONICAL_32_UNITS.length }})
-            </button>
-            <button 
-              @click="selectedStatusFilter = 'occupied'"
-              :class="['px-2.5 py-1 rounded-sm transition-colors', selectedStatusFilter === 'occupied' ? 'bg-white text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84]']"
-            >
-              Occupied ({{ occupiedCount }})
-            </button>
-            <button 
-              @click="selectedStatusFilter = 'available'"
-              :class="['px-2.5 py-1 rounded-sm transition-colors', selectedStatusFilter === 'available' ? 'bg-white text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84]']"
-            >
-              Available ({{ availableCount }})
-            </button>
-          </div>
+    <!-- 32-ROOM VISUAL MATRIX -->
+    <div class="jira-card p-6 space-y-6">
+      <div class="flex flex-wrap justify-between items-center gap-2 border-b border-[#dfe1e6] pb-3">
+        <h2 class="text-sm font-bold text-[#172b4d]">32-Room Visual Occupancy & Billing Matrix</h2>
+        <div class="flex items-center gap-3 text-xs text-[#5e6c84]">
+          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-emerald-500 rounded-2xs"></span> Settled</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-500 rounded-2xs"></span> Pending</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-2xs"></span> Overdue</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-slate-300 rounded-2xs"></span> Vacant</span>
         </div>
       </div>
 
-      <!-- Cluster Unit Groups -->
-      <div class="space-y-8">
-        <div v-for="[clusterName, units] in unitsByCluster" :key="clusterName" class="space-y-3">
-          <!-- Cluster Section Header -->
-          <div class="flex items-center justify-between pb-1 border-b border-[#ebecf0]">
-            <div class="flex items-center gap-2">
-              <span class="text-xs sm:text-sm font-bold text-[#172b4d] bg-[#f7f8f9] px-3 py-1.5 rounded-md border border-[#dfe1e6] flex items-center gap-2">
-                <Layers class="w-4 h-4 text-[#0c66e4]" />
-                {{ clusterName }}
-              </span>
-              <span class="text-xs text-[#6b778c]">({{ units.length }} Rentable Units)</span>
+      <!-- Floor 1 -->
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold text-[#5e6c84]">1ST FLOOR (ROOMS 101 – 110)</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-10 gap-2">
+          <div
+            v-for="room in floor1Rooms"
+            :key="room.id"
+            :class="[
+              'p-2 border rounded-xs text-xs space-y-1 relative group cursor-pointer transition-shadow hover:shadow-md',
+              room.status === 'occupied' && room.paid ? 'bg-emerald-50 border-emerald-300' :
+              room.status === 'pending' ? 'bg-amber-50 border-amber-300' :
+              room.status === 'overdue' ? 'bg-red-50 border-red-300' : 'bg-[#f4f5f7] border-[#dfe1e6]'
+            ]"
+          >
+            <div class="flex justify-between items-center font-bold">
+              <span>Rm {{ room.num }}</span>
+              <span class="text-[9px] text-[#5e6c84]">{{ room.type }}</span>
             </div>
-
-            <!-- Linda Rule Badge if applicable -->
-            <span v-if="clusterName === 'Linda'" class="text-xs font-bold text-[#826100] bg-[#fffae6] px-2.5 py-0.5 rounded-md border border-[#ffe380]">
-              BR-040 Fixed Billing Flow
-            </span>
+            <p class="text-[10px] text-[#5e6c84] truncate">{{ room.tenant || 'Vacant' }}</p>
+            <div class="flex gap-1 pt-1 border-t border-[#dfe1e6]">
+              <button @click.stop="openRoomDetail(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="View Spec"><Eye class="w-3 h-3 text-[#5e6c84]" /></button>
+              <button @click.stop="openAdminEditUnit(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="Admin Edit"><Edit class="w-3 h-3 text-[#0c66e4]" /></button>
+            </div>
           </div>
+        </div>
+      </div>
 
-          <!-- Unit Cards Grid (Mobile-First: 1 col on mobile, 2 sm, 3 md, 4 lg) -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
-            <div 
-              v-for="unit in units" 
-              :key="unit.id"
-              :class="[
-                'p-4 rounded-md border text-left transition-all space-y-2 relative',
-                unit.status === 'occupied' 
-                  ? 'bg-white border-[#dfe1e6] hover:border-[#0c66e4] hover:shadow-xs' 
-                  : unit.status === 'available' 
-                    ? 'bg-[#e3fcef]/40 border-[#abf5d1] hover:border-[#36b37e]' 
-                    : 'bg-[#ffebe6]/40 border-[#ffbdad]'
-              ]"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm sm:text-base font-extrabold text-[#172b4d]">Unit {{ unit.unitCode }}</span>
-                  <span class="text-[11px] text-[#6b778c]">({{ unit.type }})</span>
-                </div>
+      <!-- Floor 2 -->
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold text-[#5e6c84]">2ND FLOOR (ROOMS 201 – 211)</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-11 gap-2">
+          <div
+            v-for="room in floor2Rooms"
+            :key="room.id"
+            :class="[
+              'p-2 border rounded-xs text-xs space-y-1 relative group cursor-pointer transition-shadow hover:shadow-md',
+              room.status === 'occupied' && room.paid ? 'bg-emerald-50 border-emerald-300' :
+              room.status === 'pending' ? 'bg-amber-50 border-amber-300' :
+              room.status === 'overdue' ? 'bg-red-50 border-red-300' : 'bg-[#f4f5f7] border-[#dfe1e6]'
+            ]"
+          >
+            <div class="flex justify-between items-center font-bold">
+              <span>Rm {{ room.num }}</span>
+              <span class="text-[9px] text-[#5e6c84]">{{ room.type }}</span>
+            </div>
+            <p class="text-[10px] text-[#5e6c84] truncate">{{ room.tenant || 'Vacant' }}</p>
+            <div class="flex gap-1 pt-1 border-t border-[#dfe1e6]">
+              <button @click.stop="openRoomDetail(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="View Spec"><Eye class="w-3 h-3 text-[#5e6c84]" /></button>
+              <button @click.stop="openAdminEditUnit(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="Admin Edit"><Edit class="w-3 h-3 text-[#0c66e4]" /></button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                <span 
-                  :class="[
-                    'jira-badge',
-                    unit.status === 'occupied' ? 'jira-badge-done' : unit.status === 'available' ? 'jira-badge-progress' : 'jira-badge-emergency'
-                  ]"
-                >
-                  {{ unit.status }}
-                </span>
-              </div>
-
-              <!-- Tenant Info / Vacant Status -->
-              <div class="text-xs sm:text-sm font-semibold text-[#42526e] truncate">
-                {{ unit.tenantName ? unit.tenantName : 'Vacant Unit' }}
-              </div>
-
-              <!-- Footer Details -->
-              <div class="flex items-center justify-between text-xs text-[#6b778c] border-t border-[#dfe1e6]/60 pt-2 mt-1">
-                <span>
-                  {{ unit.waterRateType === 'linda_fixed' ? 'Fixed Billing' : `${unit.occupants} Occupant${unit.occupants === 1 ? '' : 's'}` }}
-                </span>
-                <span class="font-bold text-[#172b4d]">₱{{ unit.basePrice.toLocaleString() }}/mo</span>
-              </div>
+      <!-- Floor 3 -->
+      <div class="space-y-2">
+        <h3 class="text-xs font-bold text-[#5e6c84]">3RD FLOOR (ROOMS 301 – 311)</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-11 gap-2">
+          <div
+            v-for="room in floor3Rooms"
+            :key="room.id"
+            :class="[
+              'p-2 border rounded-xs text-xs space-y-1 relative group cursor-pointer transition-shadow hover:shadow-md',
+              room.status === 'occupied' && room.paid ? 'bg-emerald-50 border-emerald-300' :
+              room.status === 'pending' ? 'bg-amber-50 border-amber-300' :
+              room.status === 'overdue' ? 'bg-red-50 border-red-300' : 'bg-[#f4f5f7] border-[#dfe1e6]'
+            ]"
+          >
+            <div class="flex justify-between items-center font-bold">
+              <span>Rm {{ room.num }}</span>
+              <span class="text-[9px] text-[#5e6c84]">{{ room.type }}</span>
+            </div>
+            <p class="text-[10px] text-[#5e6c84] truncate">{{ room.tenant || 'Vacant' }}</p>
+            <div class="flex gap-1 pt-1 border-t border-[#dfe1e6]">
+              <button @click.stop="openRoomDetail(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="View Spec"><Eye class="w-3 h-3 text-[#5e6c84]" /></button>
+              <button @click.stop="openAdminEditUnit(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="Admin Edit"><Edit class="w-3 h-3 text-[#0c66e4]" /></button>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Reusable Confirmation Modal -->
-    <ConfirmModal 
-      :is-open="isConfirmModalOpen"
-      :title="confirmModalTitle"
-      :message="confirmModalMessage"
-      :variant="confirmModalVariant"
-      confirm-text="Deactivate & Settle"
-      cancel-text="Cancel"
-      @confirm="handleConfirmModalAction"
-      @cancel="isConfirmModalOpen = false"
-    />
   </div>
 </template>
