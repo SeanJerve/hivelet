@@ -7,21 +7,27 @@
  *              AppSidebar, responsive mobile drawer state, ToastContainer feedback engine, and RouterView container.
  * @innovations Integrated Vue Router view outlet and universal toast notification engine for landlady feedback.
  */
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import AppHeader from './components/layout/AppHeader.vue';
 import AppSidebar from './components/layout/AppSidebar.vue';
 import ToastContainer from './components/ui/ToastContainer.vue';
 
 const isMobileSidebarOpen = ref(false);
+const route = useRoute();
+
+// Public routes (landing/login/rooms) render their own PublicNavbar and skip the
+// authenticated dashboard chrome entirely.
+const isDashboardRoute = computed(() => !route.meta.public);
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#f4f5f7] text-[#172b4d] flex flex-col font-sans relative">
+  <div v-if="isDashboardRoute" class="min-h-screen bg-[#f4f5f7] text-[#172b4d] flex flex-col font-sans relative">
     <!-- Universal Toast Feedback Container -->
     <ToastContainer />
 
     <!-- Corporate App Top Header Bar -->
-    <AppHeader 
+    <AppHeader
       :is-mobile-sidebar-open="isMobileSidebarOpen"
       @toggle-mobile-sidebar="isMobileSidebarOpen = !isMobileSidebarOpen"
     />
@@ -29,7 +35,7 @@ const isMobileSidebarOpen = ref(false);
     <!-- Main Workspace Layout (Sidebar + RouterView Content Area) -->
     <div class="flex-1 flex overflow-hidden">
       <!-- Jira-Style Left Sidebar -->
-      <AppSidebar 
+      <AppSidebar
         :is-mobile-sidebar-open="isMobileSidebarOpen"
         @close-mobile-sidebar="isMobileSidebarOpen = false"
       />
@@ -42,5 +48,11 @@ const isMobileSidebarOpen = ref(false);
       </main>
     </div>
   </div>
+
+  <!-- Public pages own their full layout (PublicNavbar + content) -->
+  <template v-else>
+    <ToastContainer />
+    <router-view />
+  </template>
 </template>
 

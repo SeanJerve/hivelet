@@ -8,20 +8,20 @@
  *              role perspective selector (Admin / Tenant / Public), and instant search input.
  * @innovations Vue Router integration allowing seamless URL slug navigation when switching perspectives.
  */
-import { computed, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { 
-  Building2, 
-  Search, 
-  Menu, 
-  X, 
-  Plus, 
-  ShieldCheck, 
-  UserCheck, 
-  Globe 
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import {
+  Search,
+  Menu,
+  X,
+  ShieldCheck,
+  UserCheck,
+  LogOut,
 } from 'lucide-vue-next';
+import { useAuthStore } from '../../stores/auth';
+import NotificationBell from '../ui/NotificationBell.vue';
 
-const props = defineProps<{
+defineProps<{
   isMobileSidebarOpen: boolean;
 }>();
 
@@ -30,20 +30,12 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
-const route = useRoute();
+const authStore = useAuthStore();
 const searchQuery = ref('');
 
-// Compute active role based on current URL path
-const currentRole = computed<'admin' | 'tenant' | 'public'>(() => {
-  if (route.path.startsWith('/tenant')) return 'tenant';
-  if (route.path.startsWith('/admin')) return 'admin';
-  return 'public';
-});
-
-const navigateRole = (role: 'admin' | 'tenant' | 'public') => {
-  if (role === 'admin') router.push('/admin/overview');
-  else if (role === 'tenant') router.push('/tenant');
-  else router.push('/public');
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push('/login');
 };
 </script>
 
@@ -91,58 +83,24 @@ const navigateRole = (role: 'admin' | 'tenant' | 'public') => {
       </div>
     </div>
 
-    <!-- Right Section: Role Switcher & Action Button -->
+    <!-- Right Section: Signed-in identity, notifications, logout -->
     <div class="flex items-center gap-2 sm:gap-3">
-      <!-- Capstone Role Perspective Selector -->
-      <div class="flex items-center bg-[#f4f5f7] p-0.5 border border-[#dfe1e6] rounded-sm">
-        <button 
-          @click="navigateRole('admin')"
-          :class="[
-            'px-2 py-1 text-xs font-medium rounded-2xs flex items-center gap-1.5 transition-all',
-            currentRole === 'admin' 
-              ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs border border-[#dfe1e6]' 
-              : 'text-[#42526e] hover:text-[#172b4d]'
-          ]"
-          title="Switch to Admin / Landlady Workspace (/admin/overview)"
-        >
-          <ShieldCheck class="w-3.5 h-3.5" />
-          <span class="hidden sm:inline">Admin</span>
-        </button>
+      <NotificationBell v-if="authStore.profile" />
 
-        <button 
-          @click="navigateRole('tenant')"
-          :class="[
-            'px-2 py-1 text-xs font-medium rounded-2xs flex items-center gap-1.5 transition-all',
-            currentRole === 'tenant' 
-              ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs border border-[#dfe1e6]' 
-              : 'text-[#42526e] hover:text-[#172b4d]'
-          ]"
-          title="Switch to Active Tenant View (/tenant)"
+      <div v-if="authStore.profile" class="flex items-center gap-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-sm pl-2.5 pr-1 py-1">
+        <component :is="authStore.isAdmin ? ShieldCheck : UserCheck" class="w-3.5 h-3.5 text-[#0c66e4]" />
+        <div class="hidden sm:block text-right leading-tight">
+          <p class="text-xs font-semibold text-[#172b4d]">{{ authStore.profile.full_name }}</p>
+          <p class="text-[10px] text-[#6b778c] uppercase tracking-wide">{{ authStore.profile.role }}</p>
+        </div>
+        <button
+          @click="handleLogout"
+          class="p-1.5 text-[#6b778c] hover:text-[#bf2600] hover:bg-[#ffebe6] rounded-xs transition-colors"
+          title="Logout"
         >
-          <UserCheck class="w-3.5 h-3.5" />
-          <span class="hidden sm:inline">Tenant</span>
-        </button>
-
-        <button 
-          @click="navigateRole('public')"
-          :class="[
-            'px-2 py-1 text-xs font-medium rounded-2xs flex items-center gap-1.5 transition-all',
-            currentRole === 'public' 
-              ? 'bg-white text-[#0c66e4] font-semibold shadow-2xs border border-[#dfe1e6]' 
-              : 'text-[#42526e] hover:text-[#172b4d]'
-          ]"
-          title="Switch to Public Guest Inquiry View (/public)"
-        >
-          <Globe class="w-3.5 h-3.5" />
-          <span class="hidden sm:inline">Public</span>
+          <LogOut class="w-4 h-4" />
         </button>
       </div>
-
-      <!-- Quick Action Button -->
-      <button class="jira-btn-primary text-xs">
-        <Plus class="w-3.5 h-3.5" />
-        <span class="hidden xs:inline">Create</span>
-      </button>
     </div>
   </header>
 </template>

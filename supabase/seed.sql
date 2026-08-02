@@ -7,7 +7,10 @@
  *            Adyen GCash pending payments, maintenance tickets, and immutable audit logs.
  */
 
--- Clear existing seed data safely
+-- Clear existing seed data safely (identities/users first: profiles.auth_user_id FKs to auth.users)
+DELETE FROM auth.identities;
+DELETE FROM auth.users;
+
 TRUNCATE audit_logs, notifications, ticket_messages, ticket_attachments, maintenance_tickets,
          expense_property_allocations, monthly_expense_entries, fixed_expense_categories,
          payments, bills, monthly_income_records, inquiry_messages, inquiries,
@@ -24,22 +27,67 @@ INSERT INTO clusters (code, name, display_order) VALUES
 ('Linda', 'Linda Units', 5);
 
 -- ==============================================================================
+-- 1B. SEED REAL SUPABASE AUTH LOGIN CREDENTIALS FOR THE ADMIN + ACTIVE TENANTS
+-- ==============================================================================
+-- Local-dev-only demo password shared by every seeded account below: Hivelet2026!
+-- Each auth user reuses its matching profile's UUID as the auth.users id for easy
+-- cross-referencing while reading the seed. Historical/inactive and prospect profiles
+-- intentionally get NO auth account -- they cannot log in until an admin onboards them.
+INSERT INTO auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    confirmation_token, recovery_token, email_change_token_new, email_change,
+    raw_app_meta_data, raw_user_meta_data, is_super_admin, created_at, updated_at
+) VALUES
+('00000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'authenticated', 'authenticated',
+ 'admin@hivelet.ph', crypt('Hivelet2026!', gen_salt('bf')), NOW(),
+ '', '', '', '',
+ '{"provider":"email","providers":["email"]}', '{}', false, NOW(), NOW()),
+('00000000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222', 'authenticated', 'authenticated',
+ 'mark.cruz@gmail.com', crypt('Hivelet2026!', gen_salt('bf')), NOW(),
+ '', '', '', '',
+ '{"provider":"email","providers":["email"]}', '{}', false, NOW(), NOW()),
+('00000000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'authenticated', 'authenticated',
+ 'sean.jerve@gmail.com', crypt('Hivelet2026!', gen_salt('bf')), NOW(),
+ '', '', '', '',
+ '{"provider":"email","providers":["email"]}', '{}', false, NOW(), NOW()),
+('00000000-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'authenticated', 'authenticated',
+ 'john.lloyd@gmail.com', crypt('Hivelet2026!', gen_salt('bf')), NOW(),
+ '', '', '', '',
+ '{"provider":"email","providers":["email"]}', '{}', false, NOW(), NOW()),
+('00000000-0000-0000-0000-000000000000', '55555555-5555-5555-5555-555555555555', 'authenticated', 'authenticated',
+ 'jaye.casia@gmail.com', crypt('Hivelet2026!', gen_salt('bf')), NOW(),
+ '', '', '', '',
+ '{"provider":"email","providers":["email"]}', '{}', false, NOW(), NOW());
+
+INSERT INTO auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at) VALUES
+(gen_random_uuid(), '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111',
+ '{"sub":"11111111-1111-1111-1111-111111111111","email":"admin@hivelet.ph"}', 'email', NOW(), NOW(), NOW()),
+(gen_random_uuid(), '22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222',
+ '{"sub":"22222222-2222-2222-2222-222222222222","email":"mark.cruz@gmail.com"}', 'email', NOW(), NOW(), NOW()),
+(gen_random_uuid(), '33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333',
+ '{"sub":"33333333-3333-3333-3333-333333333333","email":"sean.jerve@gmail.com"}', 'email', NOW(), NOW(), NOW()),
+(gen_random_uuid(), '44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444',
+ '{"sub":"44444444-4444-4444-4444-444444444444","email":"john.lloyd@gmail.com"}', 'email', NOW(), NOW(), NOW()),
+(gen_random_uuid(), '55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555',
+ '{"sub":"55555555-5555-5555-5555-555555555555","email":"jaye.casia@gmail.com"}', 'email', NOW(), NOW(), NOW());
+
+-- ==============================================================================
 -- 2. SEED PROFILES (Admin, Tenants, Prospects)
 -- ==============================================================================
 INSERT INTO profiles (id, auth_user_id, email, full_name, phone_number, emergency_contact_name, emergency_contact_phone, occupation, role, account_status) VALUES
 -- Administrator / Landlady
-('11111111-1111-1111-1111-111111111111', NULL, 'admin@hivelet.ph', 'Fe Galang Da Silva', '09171234567', 'Boarding House Office', '09171234567', 'Property Owner / Landlady', 'admin', 'active'),
+('11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'admin@hivelet.ph', 'Fe Galang Da Silva', '09171234567', 'Boarding House Office', '09171234567', 'Property Owner / Landlady', 'admin', 'active'),
 
 -- Active Tenants
-('22222222-2222-2222-2222-222222222222', NULL, 'mark.cruz@gmail.com', 'Mark Anthony Cruz', '09189876543', 'Elena Cruz (Mother)', '09181112222', 'Software Engineer', 'tenant', 'active'),
-('33333333-3333-3333-3333-333333333333', NULL, 'sean.jerve@gmail.com', 'Sean Jerve', '09192223333', 'Roberto Jerve (Father)', '09193334444', 'College Student', 'tenant', 'active'),
-('44444444-4444-4444-4444-444444444444', NULL, 'john.lloyd@gmail.com', 'John Lloyd Santos', '09203334444', 'Clarissa Santos (Sister)', '09204445555', 'Graphic Designer', 'tenant', 'active'),
-('55555555-5555-5555-5555-555555555555', NULL, 'jaye.casia@gmail.com', 'Jaye Casia (Linda Tenant)', '09214445555', 'Mariano Casia (Father)', '09215556666', 'Accountant', 'tenant', 'active'),
+('22222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'mark.cruz@gmail.com', 'Mark Anthony Cruz', '09189876543', 'Elena Cruz (Mother)', '09181112222', 'Software Engineer', 'tenant', 'active'),
+('33333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 'sean.jerve@gmail.com', 'Sean Jerve', '09192223333', 'Roberto Jerve (Father)', '09193334444', 'College Student', 'tenant', 'active'),
+('44444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', 'john.lloyd@gmail.com', 'John Lloyd Santos', '09203334444', 'Clarissa Santos (Sister)', '09204445555', 'Graphic Designer', 'tenant', 'active'),
+('55555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555', 'jaye.casia@gmail.com', 'Jaye Casia (Linda Tenant)', '09214445555', 'Mariano Casia (Father)', '09215556666', 'Accountant', 'tenant', 'active'),
 
--- Historical / Vacated Tenant
+-- Historical / Vacated Tenant (no auth account -- must be re-onboarded by admin, BR-027)
 ('66666666-6666-6666-6666-666666666666', NULL, 'miguel.ramos@gmail.com', 'Miguel Ramos', '09225556666', 'Teresa Ramos (Mother)', '09226667777', 'Former Student', 'tenant', 'inactive'),
 
--- Prospective Tenant
+-- Prospective Tenant (no auth account -- prospects don't log in)
 ('77777777-7777-7777-7777-777777777777', NULL, 'rhea.mendoza@gmail.com', 'Rhea Mendoza', '09236667777', NULL, NULL, 'Prospective Tenant', 'prospect', 'active');
 
 -- ==============================================================================

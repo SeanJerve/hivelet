@@ -8,21 +8,21 @@
  */
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Users, 
-  MessageSquare, 
-  CreditCard, 
-  Receipt, 
-  Wrench, 
-  ShieldCheck, 
-  Home, 
-  PlusCircle, 
-  X 
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  MessageSquare,
+  CreditCard,
+  Receipt,
+  Wrench,
+  ShieldCheck,
+  Home,
+  X
 } from 'lucide-vue-next';
+import { useAuthStore } from '../../stores/auth';
 
-const props = defineProps<{
+defineProps<{
   isMobileSidebarOpen: boolean;
 }>();
 
@@ -32,18 +32,19 @@ const emit = defineEmits<{
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
-// Compute active role based on URL path
+// Sidebar module set follows the signed-in profile's actual DB role, not the URL.
 const currentRole = computed<'admin' | 'tenant' | 'public'>(() => {
-  if (route.path.startsWith('/tenant')) return 'tenant';
-  if (route.path.startsWith('/admin')) return 'admin';
+  if (authStore.isAdmin) return 'admin';
+  if (authStore.isTenant) return 'tenant';
   return 'public';
 });
 
 // Admin Management Modules aligned with System Bible
 const adminModules = [
   { path: '/admin/overview', label: 'Executive Overview', icon: LayoutDashboard },
-  { path: '/admin/directory', label: 'Room Directory (32 Units)', icon: Building2 },
+  { path: '/admin/directory', label: 'Room Directory (33 Units)', icon: Building2 },
   { path: '/admin/tenants', label: 'Tenant Directory', icon: Users },
   { path: '/admin/inquiries', label: 'Inquiry Inbox', icon: MessageSquare },
   { path: '/admin/billing', label: 'Billing & Collections', icon: CreditCard },
@@ -55,11 +56,6 @@ const adminModules = [
 // Tenant Portal Modules
 const tenantModules = [
   { path: '/tenant', label: 'My Room & Billing', icon: Home },
-];
-
-// Public Portal Modules
-const publicModules = [
-  { path: '/public', label: 'Property & Available Units', icon: Building2 },
 ];
 
 const navigateTo = (path: string) => {
@@ -129,26 +125,12 @@ const navigateTo = (path: string) => {
             <span class="truncate">{{ module.label }}</span>
           </button>
         </div>
-
-        <!-- Public Portal Navigation -->
-        <div v-else-if="currentRole === 'public'" class="space-y-0.5">
-          <p class="px-2 py-1 text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">Guest Directory</p>
-          <button
-            v-for="module in publicModules"
-            :key="module.path"
-            @click="navigateTo(module.path)"
-            :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
-          >
-            <component :is="module.icon" class="w-4 h-4 shrink-0" />
-            <span class="truncate">{{ module.label }}</span>
-          </button>
-        </div>
       </div>
 
       <!-- Footer Identity Note -->
       <div class="p-3 border-t border-[#dfe1e6] bg-[#f4f5f7]">
         <p class="text-[11px] font-medium text-[#6b778c]">Fe Galang Da Silva Boarding House</p>
-        <p class="text-[10px] text-[#8993a4]">32 Total Units • 3 Floors</p>
+        <p class="text-[10px] text-[#8993a4]">33 Total Units • 3 Floors</p>
       </div>
     </aside>
   </div>

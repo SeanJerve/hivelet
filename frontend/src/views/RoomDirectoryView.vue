@@ -1,40 +1,205 @@
 <script setup lang="ts">
 /**
  * @component RoomDirectoryView
- * @description Comprehensive directory of all 32 room units across 3 floors at Fe Galang Da Silva Boarding House.
+ * @description Comprehensive directory of all canonical room units across 3 floors at Fe Galang Da Silva Boarding House.
  * @systemBibleRef Section 5.2 - Room & Occupancy Model & Section 5.3 - Room Price History (2% Annual Rule)
  * @rationale Enforces the room-centric data model. Manages room capacities, operational statuses, base/current prices,
  *              and historical pricing increase records.
  * @innovations Built a room rate editor drawer/modal with explicit 2% annual price increase history calculation
  *              tracking effective dates and administrative change justifications.
  */
-import { ref } from 'vue';
-import { Building2, Search, Filter, Plus, Edit, Eye, Clock, Check } from 'lucide-vue-next';
+import { ref, computed, onMounted } from 'vue';
+import { Search, Plus, Edit } from 'lucide-vue-next';
+import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../stores/auth';
+import { useToast } from '../lib/useToast';
 
-// 32 Rooms Directory Dataset
-const rooms = ref([
-  { id: '101', number: 'Room 101', floor: 1, type: 'Studio', capacity: 2, basePrice: 4400, currentPrice: 4500, status: 'Occupied', tenant: 'Juan Dela Cruz', availableFrom: '-' },
-  { id: '102', number: 'Room 102', floor: 1, type: 'Studio', capacity: 2, basePrice: 4400, currentPrice: 4500, status: 'Occupied', tenant: 'Maria Santos', availableFrom: '-' },
-  { id: '103', number: 'Room 103', floor: 1, type: '1-Bedroom', capacity: 3, basePrice: 5800, currentPrice: 6000, status: 'Available', tenant: null, availableFrom: 'Immediate' },
-  { id: '104', number: 'Room 104', floor: 1, type: 'Studio', capacity: 2, basePrice: 4400, currentPrice: 4500, status: 'Occupied', tenant: 'Pedro Penduko', availableFrom: '-' },
-  { id: '105', number: 'Room 105', floor: 1, type: 'Studio', capacity: 2, basePrice: 4400, currentPrice: 4500, status: 'Maintenance', tenant: null, availableFrom: '2026-08-05' },
-  { id: '106', number: 'Room 106', floor: 1, type: '2-Bedroom', capacity: 4, basePrice: 7800, currentPrice: 8000, status: 'Occupied', tenant: 'Ana Reyes', availableFrom: '-' },
-  { id: '107', number: 'Room 107', floor: 1, type: 'Studio', capacity: 2, basePrice: 4400, currentPrice: 4500, status: 'Occupied', tenant: 'Carlos Ramos', availableFrom: '-' },
-  { id: '108', number: 'Room 108', floor: 1, type: 'Studio', capacity: 2, basePrice: 4400, currentPrice: 4500, status: 'Occupied', tenant: 'Elena Toribio', availableFrom: '-' },
-  { id: '204', number: 'Room 204', floor: 2, type: '1-Bedroom', capacity: 3, basePrice: 6000, currentPrice: 6200, status: 'Available', tenant: null, availableFrom: 'Immediate' },
-  { id: '306', number: 'Room 306', floor: 3, type: 'Studio', capacity: 2, basePrice: 4600, currentPrice: 4700, status: 'Available', tenant: null, availableFrom: 'Immediate' },
-  { id: '308', number: 'Room 308', floor: 3, type: '3-Bedroom', capacity: 6, basePrice: 9800, currentPrice: 10000, status: 'Occupied', tenant: 'Cynthia Villar', availableFrom: '-' },
-  { id: '312', number: 'Room 312', floor: 3, type: '1-Bedroom', capacity: 3, basePrice: 6300, currentPrice: 6500, status: 'Available', tenant: null, availableFrom: '2026-08-01' },
-]);
+interface RoomRow {
+  id: string;
+  room_number: string;
+  floor: number;
+  cluster_code: string;
+  room_type: string;
+  description: string | null;
+  capacity: number;
+  base_price: number;
+  current_price: number;
+  operational_status: 'Available' | 'Reserved' | 'Occupied' | 'Under Maintenance';
+  visibility_status: 'Published' | 'Hidden';
+  available_from: string | null;
+  is_linda_unit: boolean;
+  clusters?: { name: string } | null;
+}
+
+interface TenantInfo {
+  name: string;
+  occupantCount: number;
+}
+
+const authStore = useAuthStore();
+const { showToast } = useToast();
+
+const rooms = ref<RoomRow[]>([]);
+const tenantByRoom = ref<Record<string, TenantInfo>>({});
+const loading = ref(false);
 
 const search = ref('');
 const selectedFloor = ref('all');
 const showEditModal = ref(false);
 const activeRoom = ref<any>(null);
+const editReason = ref('');
+const saving = ref(false);
 
-const openEditModal = (room: any) => {
+const fetchRooms = async () => {
+  loading.value = true;
+
+  const { data: roomsData, error: roomsError } = await supabase
+    .from('rooms')
+    .select('*, clusters(name)')
+    .order('room_number');
+
+  if (roomsError) {
+    showToast('Failed to Load Rooms', roomsError.message, 'error');
+    loading.value = false;
+    return;
+  }
+  rooms.value = (roomsData as RoomRow[]) || [];
+
+  const { data: assignData, error: assignError } = await supabase
+    .from('room_assignments')
+    .select('room_id, occupant_count, profiles(full_name)')
+    .eq('is_active', true);
+
+  if (assignError) {
+    showToast('Failed to Load Tenant Assignments', assignError.message, 'error');
+  } else {
+    const map: Record<string, TenantInfo> = {};
+    (assignData || []).forEach((a: any) => {
+      map[a.room_id] = {
+        name: a.profiles?.full_name || 'Unassigned',
+        occupantCount: a.occupant_count,
+      };
+    });
+    tenantByRoom.value = map;
+  }
+
+  loading.value = false;
+};
+
+onMounted(fetchRooms);
+
+const filteredRooms = computed(() => {
+  const q = search.value.trim().toLowerCase();
+  return rooms.value.filter((room) => {
+    const floorMatch = selectedFloor.value === 'all' || String(room.floor) === selectedFloor.value;
+    if (!floorMatch) return false;
+
+    if (!q) return true;
+    const tenantName = tenantByRoom.value[room.id]?.name?.toLowerCase() || '';
+    return (
+      room.room_number.toLowerCase().includes(q) ||
+      room.room_type.toLowerCase().includes(q) ||
+      tenantName.includes(q)
+    );
+  });
+});
+
+const statusBadgeClass = (status: string) => {
+  switch (status) {
+    case 'Occupied':
+      return 'jira-badge-done';
+    case 'Available':
+      return 'jira-badge-progress';
+    case 'Reserved':
+      return 'jira-badge-warning';
+    case 'Under Maintenance':
+      return 'jira-badge-emergency';
+    default:
+      return 'jira-badge-todo';
+  }
+};
+
+const openEditModal = (room: RoomRow) => {
   activeRoom.value = { ...room };
+  editReason.value = '';
   showEditModal.value = true;
+};
+
+const closeEditModal = () => {
+  showEditModal.value = false;
+  activeRoom.value = null;
+  editReason.value = '';
+};
+
+const saveRoomEdits = async () => {
+  if (!activeRoom.value) return;
+
+  const original = rooms.value.find((r) => r.id === activeRoom.value.id);
+  if (!original) {
+    closeEditModal();
+    return;
+  }
+
+  const newPrice = Number(activeRoom.value.current_price);
+  if (Number.isNaN(newPrice) || newPrice < 0) {
+    showToast('Invalid Rate', 'Please enter a valid non-negative monthly rate.', 'warning');
+    return;
+  }
+  const priceChanged = newPrice !== Number(original.current_price);
+
+  saving.value = true;
+  try {
+    if (priceChanged) {
+      const { error: historyError } = await supabase.from('room_price_history').insert({
+        room_id: activeRoom.value.id,
+        previous_price: original.current_price,
+        new_price: newPrice,
+        effective_date: new Date().toISOString().slice(0, 10),
+        reason: editReason.value.trim() || 'Manual admin adjustment',
+        created_by: authStore.profile!.id,
+      });
+
+      if (historyError) {
+        showToast('Failed to Log Price History', historyError.message, 'error');
+        return;
+      }
+    }
+
+    const { error: updateError } = await supabase
+      .from('rooms')
+      .update({
+        current_price: newPrice,
+        operational_status: activeRoom.value.operational_status,
+        visibility_status: activeRoom.value.visibility_status,
+        available_from: activeRoom.value.available_from || null,
+      })
+      .eq('id', activeRoom.value.id);
+
+    if (updateError) {
+      showToast('Failed to Update Room', updateError.message, 'error');
+      return;
+    }
+
+    const idx = rooms.value.findIndex((r) => r.id === activeRoom.value.id);
+    if (idx !== -1) {
+      rooms.value[idx] = {
+        ...rooms.value[idx],
+        current_price: newPrice,
+        operational_status: activeRoom.value.operational_status,
+        visibility_status: activeRoom.value.visibility_status,
+        available_from: activeRoom.value.available_from || null,
+      };
+    }
+
+    showToast(
+      'Room Updated',
+      `${activeRoom.value.room_number} specifications saved successfully.`,
+      'success'
+    );
+    closeEditModal();
+  } finally {
+    saving.value = false;
+  }
 };
 </script>
 
@@ -61,10 +226,10 @@ const openEditModal = (room: any) => {
     <div class="jira-card p-3 flex flex-col md:flex-row items-center justify-between gap-3">
       <div class="relative w-full md:w-72">
         <Search class="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#6b778c]" />
-        <input 
+        <input
           v-model="search"
-          type="text" 
-          placeholder="Filter by room #, tenant, type..." 
+          type="text"
+          placeholder="Filter by room #, tenant, type..."
           class="w-full pl-8 pr-3 py-1.5 text-xs bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d] focus:bg-white focus:border-[#0c66e4] focus:outline-none"
         />
       </div>
@@ -97,27 +262,34 @@ const openEditModal = (room: any) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-[#dfe1e6] text-[#172b4d]">
-            <tr 
-              v-for="room in rooms" 
-              :key="room.id" 
+            <tr v-if="loading">
+              <td colspan="8" class="py-6 px-3 text-center text-[#6b778c]">Loading room directory...</td>
+            </tr>
+            <tr v-else-if="filteredRooms.length === 0">
+              <td colspan="8" class="py-6 px-3 text-center text-[#6b778c]">No rooms match your filters.</td>
+            </tr>
+            <tr
+              v-for="room in filteredRooms"
+              :key="room.id"
               class="hover:bg-[#f7f8f9] transition-colors"
             >
-              <td class="py-2.5 px-3 font-bold text-[#172b4d]">{{ room.number }}</td>
+              <td class="py-2.5 px-3 font-bold text-[#172b4d]">Room {{ room.room_number }}</td>
               <td class="py-2.5 px-3">Floor {{ room.floor }}</td>
-              <td class="py-2.5 px-3 text-[#5e6c84]">{{ room.type }}</td>
+              <td class="py-2.5 px-3 text-[#5e6c84]">{{ room.room_type }}</td>
               <td class="py-2.5 px-3">{{ room.capacity }} Persons</td>
-              <td class="py-2.5 px-3 font-semibold">₱{{ room.currentPrice.toLocaleString() }}/mo</td>
+              <td class="py-2.5 px-3 font-semibold">₱{{ Number(room.current_price).toLocaleString() }}/mo</td>
               <td class="py-2.5 px-3">
-                <span 
-                  :class="[
-                    'jira-badge',
-                    room.status === 'Occupied' ? 'jira-badge-done' : room.status === 'Available' ? 'jira-badge-progress' : 'jira-badge-emergency'
-                  ]"
-                >
-                  {{ room.status }}
+                <span :class="['jira-badge', statusBadgeClass(room.operational_status)]">
+                  {{ room.operational_status }}
                 </span>
               </td>
-              <td class="py-2.5 px-3 text-[#5e6c84]">{{ room.tenant || 'Unassigned' }}</td>
+              <td class="py-2.5 px-3 text-[#5e6c84]">
+                <template v-if="tenantByRoom[room.id]">
+                  {{ tenantByRoom[room.id].name }}
+                  <span class="text-[10px] text-[#6b778c]">({{ tenantByRoom[room.id].occupantCount }} occ)</span>
+                </template>
+                <template v-else>Unassigned</template>
+              </td>
               <td class="py-2.5 px-3 text-right">
                 <button @click="openEditModal(room)" class="jira-btn-secondary py-1 px-2 text-[11px]">
                   <Edit class="w-3 h-3" />
@@ -134,31 +306,72 @@ const openEditModal = (room: any) => {
     <div v-if="showEditModal" class="fixed inset-0 bg-[#091e4252] backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <div class="jira-card w-full max-w-md p-5 bg-white shadow-xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-[#dfe1e6]">
-          <h3 class="font-bold text-base text-[#172b4d]">Edit Room Specs — {{ activeRoom?.number }}</h3>
-          <button @click="showEditModal = false" class="text-[#6b778c] hover:text-[#172b4d]">✕</button>
+          <h3 class="font-bold text-base text-[#172b4d]">Edit Room Specs — Room {{ activeRoom?.room_number }}</h3>
+          <button @click="closeEditModal" class="text-[#6b778c] hover:text-[#172b4d]">✕</button>
         </div>
 
         <div class="space-y-3 text-xs">
           <div>
             <label class="block font-semibold text-[#5e6c84] mb-1">Current Monthly Rate (₱)</label>
-            <input 
-              v-model="activeRoom.currentPrice" 
-              type="number" 
-              class="w-full px-3 py-1.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]" 
+            <input
+              v-model="activeRoom.current_price"
+              type="number"
+              min="0"
+              class="w-full px-3 py-1.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]"
             />
           </div>
 
           <div class="p-2.5 bg-[#deebff] border border-[#b3d4ff] rounded-xs text-[#0747a6]">
             <p class="font-bold mb-0.5">2% Annual Increase Rule (Cap):</p>
             <p class="text-[11px]">
-              Recommended annual cap: ₱{{ Math.round(activeRoom.currentPrice * 1.02) }}. All price changes are logged to historical pricing records.
+              Recommended annual cap: ₱{{ Math.round(Number(activeRoom.current_price) * 1.02).toLocaleString() }}. All price changes are logged to historical pricing records.
             </p>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#5e6c84] mb-1">Reason for Rate Change (optional)</label>
+            <input
+              v-model="editReason"
+              type="text"
+              placeholder="e.g. Annual 2% increase adjustment"
+              class="w-full px-3 py-1.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-[#5e6c84] mb-1">Operational Status</label>
+              <select v-model="activeRoom.operational_status" class="w-full px-2 py-1.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]">
+                <option value="Available">Available</option>
+                <option value="Reserved">Reserved</option>
+                <option value="Occupied">Occupied</option>
+                <option value="Under Maintenance">Under Maintenance</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-[#5e6c84] mb-1">Visibility</label>
+              <select v-model="activeRoom.visibility_status" class="w-full px-2 py-1.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]">
+                <option value="Published">Published</option>
+                <option value="Hidden">Hidden</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-[#5e6c84] mb-1">Available From</label>
+            <input
+              v-model="activeRoom.available_from"
+              type="date"
+              class="w-full px-3 py-1.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]"
+            />
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#dfe1e6]">
-          <button @click="showEditModal = false" class="jira-btn-secondary">Cancel</button>
-          <button @click="showEditModal = false" class="jira-btn-primary">Save Specifications</button>
+          <button @click="closeEditModal" class="jira-btn-secondary" :disabled="saving">Cancel</button>
+          <button @click="saveRoomEdits" class="jira-btn-primary" :disabled="saving">
+            {{ saving ? 'Saving...' : 'Save Specifications' }}
+          </button>
         </div>
       </div>
     </div>

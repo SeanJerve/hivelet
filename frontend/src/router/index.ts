@@ -1,12 +1,15 @@
 /**
  * @file router/index.ts
- * @description Vue Router configuration mapping URL slugs to Hivelet system workspace views.
- * @systemBibleRef Section 4 - User Roles & Authorization Boundaries
- * @rationale Establishes explicit URL slug routes for direct URL navigation without requiring authentication guards
- *              during initial UI development and testing.
- * @innovations Clean RESTful slug structure matching capstone system roles (Public, Tenant, Admin sub-modules).
+ * @description Vue Router configuration with auth-gated routes. RLS on the database is the real
+ *              access boundary (docs/04_ARCHITECTURE.md: "the frontend is not a security boundary");
+ *              these guards exist purely for navigation/UX so the wrong portal never even renders.
  */
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+
+import LandingView from '../views/LandingView.vue';
+import LoginView from '../views/LoginView.vue';
+import RoomsCatalogView from '../views/PublicGuestView.vue';
 
 import AdminOverviewView from '../views/AdminOverviewView.vue';
 import RoomDirectoryView from '../views/RoomDirectoryView.vue';
@@ -15,45 +18,57 @@ import InquiriesView from '../views/InquiriesView.vue';
 import BillingPaymentsView from '../views/BillingPaymentsView.vue';
 import ExpensesLedgerView from '../views/ExpensesLedgerView.vue';
 import MaintenanceDispatchView from '../views/MaintenanceDispatchView.vue';
+import AuditLogView from '../views/AuditLogView.vue';
 import TenantPortalView from '../views/TenantPortalView.vue';
-import PublicGuestView from '../views/PublicGuestView.vue';
 
 const routes = [
-  { path: '/', redirect: '/public' },
-  { path: '/public', name: 'PublicGuest', component: PublicGuestView },
-  { path: '/tenant', name: 'TenantPortal', component: TenantPortalView },
+  { path: '/', name: 'Landing', component: LandingView, meta: { public: true } },
+  { path: '/rooms', name: 'RoomsCatalog', component: RoomsCatalogView, meta: { public: true } },
+  { path: '/login', name: 'Login', component: LoginView, meta: { public: true } },
+
+  { path: '/tenant', name: 'TenantPortal', component: TenantPortalView, meta: { requiresAuth: true, role: 'tenant' } },
+
   { path: '/admin', redirect: '/admin/overview' },
-  { path: '/admin/overview', name: 'AdminOverview', component: AdminOverviewView },
-  { path: '/admin/directory', name: 'RoomDirectory', component: RoomDirectoryView },
-  { path: '/admin/tenants', name: 'TenantManagement', component: TenantManagementView },
-  { path: '/admin/inquiries', name: 'Inquiries', component: InquiriesView },
-  { path: '/admin/billing', name: 'BillingPayments', component: BillingPaymentsView },
-  { path: '/admin/expenses', name: 'ExpensesLedger', component: ExpensesLedgerView },
-  { path: '/admin/tickets', name: 'MaintenanceDispatch', component: MaintenanceDispatchView },
-  { 
-    path: '/admin/audit', 
-    name: 'SystemAudit', 
-    component: {
-      template: `
-        <div class="jira-card p-6 space-y-4">
-          <h2 class="text-lg font-bold text-[#172b4d]">System Audit & Activity Logs</h2>
-          <p class="text-xs text-[#5e6c84]">Immutable activity log tracking system actions, financial edits, and authorization events.</p>
-          <div class="p-3 bg-[#f4f5f7] border border-[#dfe1e6] text-xs font-mono text-[#172b4d] rounded-xs space-y-1">
-            <p>[2026-07-28 14:00:00] [SYSTEM] Supabase Database client connection initialized.</p>
-            <p>[2026-07-28 14:05:00] [ADMIN] Payment recorded: INV-2026-0701 for Room 101.</p>
-            <p>[2026-07-28 14:10:00] [TENANT] Issue reported for Room 108: Faucet Leaking.</p>
-          </div>
-        </div>
-      `
-    }
-  },
-  // Catch-all fallback route
-  { path: '/:pathMatch(.*)*', redirect: '/public' }
+  { path: '/admin/overview', name: 'AdminOverview', component: AdminOverviewView, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/directory', name: 'RoomDirectory', component: RoomDirectoryView, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/tenants', name: 'TenantManagement', component: TenantManagementView, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/inquiries', name: 'Inquiries', component: InquiriesView, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/billing', name: 'BillingPayments', component: BillingPaymentsView, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/expenses', name: 'ExpensesLedger', component: ExpensesLedgerView, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/tickets', name: 'MaintenanceDispatch', component: MaintenanceDispatchView, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/admin/audit', name: 'SystemAudit', component: AuditLogView, meta: { requiresAuth: true, role: 'admin' } },
+
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore();
+  if (!authStore.initialized) {
+    await authStore.initialize();
+  }
+
+  if (to.meta.public) {
+    return true;
+  }
+
+  if (!authStore.isAuthenticated) {
+    return { path: '/login' };
+  }
+
+  const requiredRole = to.meta.role as 'admin' | 'tenant' | undefined;
+  if (requiredRole === 'admin' && !authStore.isAdmin) {
+    return { path: authStore.isTenant ? '/tenant' : '/' };
+  }
+  if (requiredRole === 'tenant' && !authStore.isTenant) {
+    return { path: authStore.isAdmin ? '/admin/overview' : '/' };
+  }
+
+  return true;
 });
 
 export default router;
