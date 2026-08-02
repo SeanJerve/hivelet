@@ -66,6 +66,10 @@
       </ul>
 
       <div class="sidebar-footer">
+        <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem;" id="sidebar-login-options">
+          <button class="btn-secondary btn-sm" onclick="openAdminModal(event)" style="width: 100%; text-align: center; font-weight: bold; background: #fff;">🛡️ [ Admin Login ]</button>
+          <button class="btn-secondary btn-sm" onclick="openTenantModal(event)" style="width: 100%; text-align: center; font-weight: bold; background: #fff;">📱 [ Tenant Login ]</button>
+        </div>
         <button class="btn-sidebar-logout" onclick="handleLogout()">[ 🚪 Logout System ]</button>
       </div>
     </aside>
@@ -77,61 +81,91 @@
     <main class="main-viewport" id="main-viewport">
 
       <!-- ====================================================================
-           VIEW 0: AUTHENTICATION LANDING GATE (FULLSCREEN SINGLE CARD)
+           LANDING PAGE TOP NAVBAR WITH LOGIN DROPDOWN
+           ==================================================================== -->
+      <header class="landing-header-bar" id="landing-header-bar">
+        <div class="landing-nav-container">
+          <div class="landing-brand">
+            <span class="brand-badge">H</span>
+            <div>
+              <div class="brand-title">FE GALANG DA SILVA BOARDING HOUSE</div>
+              <div class="brand-sub">32 Rentable Units Operations Portal</div>
+            </div>
+          </div>
+
+          <!-- NAVBAR LOGIN DROPDOWN MENU ONLY -->
+          <div class="landing-login-dropdown-wrapper">
+            <button type="button" class="btn-login-dropdown-trigger" onclick="toggleLoginDropdown(event)" aria-haspopup="true" aria-expanded="false">
+              🔐 Login Options <span class="dropdown-caret">▼</span>
+            </button>
+
+            <div class="landing-dropdown-menu" id="landing-dropdown-menu">
+              <a href="#" class="dropdown-item" onclick="openAdminModal(event)">
+                <span class="dropdown-icon">🛡️</span>
+                <div>
+                  <strong>Admin Login</strong>
+                  <small>Property Owner & Landlady Portal</small>
+                </div>
+              </a>
+              <a href="#" class="dropdown-item" onclick="openTenantModal(event)">
+                <span class="dropdown-icon">📱</span>
+                <div>
+                  <strong>Tenant Login</strong>
+                  <small>Active Residents & Billing Access</small>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ====================================================================
+           VIEW 0: LANDING PAGE FIRST VIEW WITH CENTRAL GUEST BUTTON
            ==================================================================== -->
       <section id="auth-view" class="view-section active">
-        <div class="auth-container" style="max-width: 500px; margin: 3rem auto;">
+        <div class="landing-hero-container">
           
-          <!-- MAIN ADMIN LOGIN WIREFRAME CARD WITH AUTO-FILL TEST BUTTONS -->
-          <div class="wf-box" style="border: 2px solid var(--bw-border); padding: 1.75rem;">
+          <div class="landing-hero-card">
             
-            <!-- SYSTEM HEADER INSIDE CARD -->
-            <div style="text-align: center; margin-bottom: 1.25rem; border-bottom: 2px solid var(--bw-border); padding-bottom: 0.75rem;">
-              <div style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: bold;">FE GALANG DA SILVA BOARDING HOUSE</div>
-              <div style="font-size: 0.8rem; color: var(--bw-text-muted); margin-top: 0.25rem;">[ SYSTEM ENTRY PORTAL ]</div>
+            <div class="landing-hero-badge">
+              FE GALANG DA SILVA BOARDING HOUSE
             </div>
 
-            <!-- ADMIN & STAFF LOGIN FORM -->
-            <div style="margin-bottom: 1.5rem;">
-              <div class="wf-box-title" style="font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                <span>🔐 ADMIN & STAFF LOGIN</span>
-                <button type="button" class="btn-secondary btn-sm" onclick="autoLoginAdmin()">⚡ [ Quick Test ]</button>
+            <h1 class="landing-hero-title">
+              Manageable & Transparent<br>Boarding House Stays.
+            </h1>
+
+            <p class="landing-hero-description">
+              Discover clean studio, 1-bedroom, 2-bedroom, and 3-bedroom units across 3 floors. Private bathrooms, sub-metered electricity, and direct landlady inquiry management.
+            </p>
+
+            <!-- PROMINENT CENTER INQUIRE NOW BUTTON -->
+            <div class="landing-hero-actions">
+              <button type="button" class="btn-hero-guest" onclick="openGuestPortal()">
+                INQUIRE NOW
+              </button>
+              <div class="landing-hero-hint">
+                No login required. Click <strong>INQUIRE NOW</strong> to explore available rooms, rates, and submit inquiries.
               </div>
-              
-              <div style="border: 1px dashed #000; padding: 0.4rem 0.5rem; font-family: var(--font-mono); font-size: 0.75rem; margin-bottom: 1rem;">
-                Demo: Username <code>admin</code> | Password <code>admin123</code>
-              </div>
-
-              <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
-                <div class="form-group">
-                  <label class="form-label" for="admin-username">Username or Staff ID:</label>
-                  <input type="text" id="admin-username" class="form-control" placeholder="admin" required>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="admin-password">Password:</label>
-                  <input type="password" id="admin-password" class="form-control" placeholder="••••••••" required>
-                </div>
-
-                <button type="submit" class="btn-primary">
-                  [ Login to Admin Dashboard ]
-                </button>
-              </form>
             </div>
 
-            <!-- BOTTOM POP-UP TRIGGER BUTTONS FOR TENANT & GUEST -->
-            <div style="border-top: 2px dashed var(--bw-border); padding-top: 1.25rem; text-align: center;">
-              <div style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: bold; margin-bottom: 0.75rem; text-transform: uppercase;">
-                SELECT OTHER USER ENTRY PORTAL:
+            <!-- UNIT QUICK METRICS SUMMARY STRIP -->
+            <div class="landing-units-strip">
+              <div class="strip-item">
+                <strong>32 Units</strong>
+                <span>Total Capacity</span>
               </div>
-
-              <div style="display: flex; gap: 0.75rem;">
-                <button type="button" class="btn-secondary" style="flex: 1;" onclick="openTenantModal()">
-                  📱 [ Tenant Login ]
-                </button>
-                <button type="button" class="btn-secondary" style="flex: 1;" onclick="openGuestModal()">
-                  👤 [ Guest Entry ]
-                </button>
+              <div class="strip-item">
+                <strong>3 Floors</strong>
+                <span>101 - 312 Rooms</span>
+              </div>
+              <div class="strip-item">
+                <strong>₱200 / Head</strong>
+                <span>Water Base Rate</span>
+              </div>
+              <div class="strip-item">
+                <strong>Sub-Metered</strong>
+                <span>Private Utilities</span>
               </div>
             </div>
 
@@ -142,70 +176,188 @@
 
 
       <!-- ====================================================================
-           SECTION 1: OVERVIEW (DASHBOARD METRICS & 32-ROOM MATRIX)
+           SECTION 1: OVERVIEW (ADMIN DASHBOARD & TENANT STATEMENT/PAYMENT)
            ==================================================================== -->
       <section id="overview-section" class="view-section">
         <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div>
             <h1 style="font-family: var(--font-mono); font-size: 1.4rem; font-weight: bold;" id="overview-title-heading">SYSTEM OVERVIEW DASHBOARD</h1>
-            <p style="font-size: 0.85rem; color: var(--bw-text-muted);">Real-Time Operational Matrix & Occupancy Status</p>
+            <p style="font-size: 0.85rem; color: var(--bw-text-muted);" id="overview-subtitle-heading">Real-Time Operational Matrix & Occupancy Status</p>
           </div>
-          <div>
+          <div id="admin-onsite-payment-btn-wrapper">
             <button class="btn-primary btn-sm" onclick="openOnsitePaymentRecordModal()">💵 [ Record On-Site Cash Payment ]</button>
           </div>
         </div>
 
-        <!-- Metrics Summary Wireframe -->
-        <div class="admin-metrics-grid" id="overview-metrics-container">
-          <div class="metric-card">
-            <div class="metric-header">[ MONTHLY REVENUE ]</div>
-            <div class="metric-value">₱178,500</div>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono); margin-top: 0.25rem;">+₱12,000 vs last month</div>
+        <!-- ADMIN DEDICATED OVERVIEW WRAPPER -->
+        <div id="admin-overview-wrapper">
+          <!-- Metrics Summary Wireframe -->
+          <div class="admin-metrics-grid" id="overview-metrics-container">
+            <div class="metric-card">
+              <div class="metric-header">[ MONTHLY REVENUE ]</div>
+              <div class="metric-value">₱178,500</div>
+              <div style="font-size: 0.75rem; font-family: var(--font-mono); margin-top: 0.25rem;">+₱12,000 vs last month</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">[ OCCUPANCY RATE ]</div>
+              <div class="metric-value">28 / 32 <small style="font-size: 0.8rem;">(87.5%)</small></div>
+              <div style="font-size: 0.75rem; font-family: var(--font-mono); margin-top: 0.25rem;">4 Vacant Units</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">[ PENDING VERIFICATIONS ]</div>
+              <div class="metric-value">₱12,400</div>
+              <div style="font-size: 0.75rem; font-family: var(--font-mono); margin-top: 0.25rem;">2 Online GCash Verifications</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">[ MAINTENANCE TICKETS ]</div>
+              <div class="metric-value">2 Open</div>
+              <div style="font-size: 0.75rem; font-family: var(--font-mono); margin-top: 0.25rem;">1 Emergency Plumbing</div>
+            </div>
           </div>
 
-          <div class="metric-card">
-            <div class="metric-header">[ OCCUPANCY RATE ]</div>
-            <div class="metric-value">28 / 32 <small style="font-size: 0.8rem;">(87.5%)</small></div>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono); margin-top: 0.25rem;">4 Vacant Units</div>
-          </div>
+          <!-- 32-ROOM VISUAL MATRIX WIREFRAME -->
+          <div class="wf-box">
+            <div class="wf-box-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+              <span>32-ROOM OCCUPANCY & BILLING MATRIX (CLICK ANY ROOM TO RECORD PAYMENT)</span>
+              <div style="font-size: 0.75rem; font-weight: normal;">
+                [■ Settled] [▧ Pending] [🛈 Overdue] [▢ Vacant]
+              </div>
+            </div>
 
-          <div class="metric-card">
-            <div class="metric-header">[ PENDING VERIFICATIONS ]</div>
-            <div class="metric-value">₱12,400</div>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono); margin-top: 0.25rem;">2 Online GCash Verifications</div>
-          </div>
-
-          <div class="metric-card">
-            <div class="metric-header">[ MAINTENANCE TICKETS ]</div>
-            <div class="metric-value">2 Open</div>
-            <div style="font-size: 0.75rem; font-family: var(--font-mono); margin-top: 0.25rem;">1 Emergency Plumbing</div>
+            <div class="floor-matrix-container" style="margin-top: 1rem;">
+              <!-- Floor 1 -->
+              <div class="floor-row">
+                <div class="floor-label">1ST FLOOR (ROOMS 101 - 110)</div>
+                <div class="floor-rooms-grid" id="admin-matrix-f1"></div>
+              </div>
+              <!-- Floor 2 -->
+              <div class="floor-row">
+                <div class="floor-label">2ND FLOOR (ROOMS 201 - 211)</div>
+                <div class="floor-rooms-grid" id="admin-matrix-f2"></div>
+              </div>
+              <!-- Floor 3 -->
+              <div class="floor-row">
+                <div class="floor-label">3RD FLOOR (ROOMS 301 - 311)</div>
+                <div class="floor-rooms-grid" id="admin-matrix-f3"></div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- 32-ROOM VISUAL MATRIX WIREFRAME -->
-        <div class="wf-box">
-          <div class="wf-box-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-            <span>32-ROOM OCCUPANCY & BILLING MATRIX (CLICK ANY ROOM TO RECORD PAYMENT)</span>
-            <div style="font-size: 0.75rem; font-weight: normal;">
-              [■ Settled] [▧ Pending] [🛈 Overdue] [▢ Vacant]
+        <!-- TENANT DEDICATED OVERVIEW WRAPPER (DUE DATES & INPUT PAYMENT FORM) -->
+        <div id="tenant-overview-wrapper" style="display: none;">
+          <!-- Tenant Monthly Statement & Due Date Card Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;" class="tenant-grid-layout">
+            
+            <!-- MONTHLY PAYMENT & DUE DATE STATEMENT CARD -->
+            <div class="wf-box" style="border: 2px solid var(--bw-border); background: #fff;">
+              <div class="wf-box-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>💳 MONTHLY PAYMENT & DUE DATE STATEMENT</span>
+                <span class="wf-tag" style="background: #000; color: #fff;" id="tenant-due-badge">[ DUE: AUGUST 5, 2026 ]</span>
+              </div>
+              
+              <div style="font-size: 0.85rem; line-height: 1.6;">
+                <div class="bill-line">
+                  <span>Resident Name:</span>
+                  <strong id="tenant-overview-name">Juan Dela Cruz</strong>
+                </div>
+                <div class="bill-line">
+                  <span>Assigned Unit:</span>
+                  <strong id="tenant-overview-room">Room 204 (2nd Floor, 1-Bedroom)</strong>
+                </div>
+                <div class="bill-line">
+                  <span>Payment Due Date:</span>
+                  <strong style="color: #000; text-decoration: underline;" id="tenant-overview-duedate">August 5, 2026 (Due in 4 Days)</strong>
+                </div>
+                <div class="bill-line">
+                  <span>Monthly Base Rent:</span>
+                  <span>₱6,500.00</span>
+                </div>
+                <div class="bill-line">
+                  <span>Water Fee (₱200/head × 2):</span>
+                  <span>₱400.00</span>
+                </div>
+                <div class="bill-line total">
+                  <span>Total Amount Due:</span>
+                  <strong style="font-size: 1.15rem;" id="tenant-overview-total">₱6,900.00</strong>
+                </div>
+              </div>
             </div>
+
+            <!-- TENANT INPUT PAYMENT FORM (DIRECTLY ON OVERVIEW PAGE) -->
+            <div class="wf-box" style="border: 2px solid var(--bw-border); background: var(--bw-box-bg);">
+              <div class="wf-box-title">💵 INPUT / RECORD MONTHLY PAYMENT</div>
+              <p style="font-size: 0.8rem; margin-bottom: 1rem; color: var(--bw-text-muted);">
+                Input your payment details below to submit your payment remittance to the landlady.
+              </p>
+
+              <form id="tenant-overview-payment-form" onsubmit="handleTenantPaymentSubmit(event)">
+                <div class="form-group" style="margin-bottom: 0.75rem;">
+                  <label class="form-label" for="tenant-pay-date">Date Paid:</label>
+                  <input type="date" id="tenant-pay-date" class="form-control" value="2026-08-01" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0.75rem;">
+                  <label class="form-label" for="tenant-pay-amount">Amount Paid (₱):</label>
+                  <input type="number" id="tenant-pay-amount" class="form-control" value="6900" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0.75rem;">
+                  <label class="form-label" for="tenant-pay-method">Payment Method:</label>
+                  <select id="tenant-pay-method" class="form-control" onchange="toggleTenantPayRef()" required style="background: #fff; font-weight: bold;">
+                    <option value="Online" selected>GCash / Online Payment</option>
+                    <option value="Cash">Cash Payment On-Site</option>
+                  </select>
+                </div>
+
+                <div class="form-group" id="tenant-pay-ref-group" style="margin-bottom: 0.75rem;">
+                  <label class="form-label" for="tenant-pay-ref">Reference Number / OR #:</label>
+                  <input type="text" id="tenant-pay-ref" class="form-control" placeholder="e.g. GCASH-9948271" value="GCASH-9948271" required>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0.5rem;">[ 💾 Submit Payment Record to Landlady ]</button>
+              </form>
+            </div>
+
           </div>
 
-          <div class="floor-matrix-container" style="margin-top: 1rem;">
-            <!-- Floor 1 -->
-            <div class="floor-row">
-              <div class="floor-label">1ST FLOOR (ROOMS 101 - 110)</div>
-              <div class="floor-rooms-grid" id="admin-matrix-f1"></div>
-            </div>
-            <!-- Floor 2 -->
-            <div class="floor-row">
-              <div class="floor-label">2ND FLOOR (ROOMS 201 - 211)</div>
-              <div class="floor-rooms-grid" id="admin-matrix-f2"></div>
-            </div>
-            <!-- Floor 3 -->
-            <div class="floor-row">
-              <div class="floor-label">3RD FLOOR (ROOMS 301 - 311)</div>
-              <div class="floor-rooms-grid" id="admin-matrix-f3"></div>
+          <!-- TENANT PAYMENT HISTORY TABLE ON OVERVIEW PAGE -->
+          <div class="wf-box" style="border: 2px solid var(--bw-border);">
+            <div class="wf-box-title">🧾 MY PAYMENT RECORD HISTORY</div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice / Ref #</th>
+                    <th>Date Paid</th>
+                    <th>Billing Period</th>
+                    <th>Amount Paid</th>
+                    <th>Payment Method</th>
+                    <th>Verification Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tenant-payment-history-rows">
+                  <tr>
+                    <td><code>GCASH-9948271</code></td>
+                    <td>2026-08-01</td>
+                    <td>Aug 5 - Sep 4, 2026</td>
+                    <td><strong>₱6,900.00</strong></td>
+                    <td><span class="wf-tag" style="background: #000; color: #fff;">ONLINE GCASH</span></td>
+                    <td><span class="wf-tag" style="background: #e0e0e0; color: #000;" id="tenant-history-status">[ PENDING VERIFICATION ]</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>INV-77102</code></td>
+                    <td>2026-07-05</td>
+                    <td>Jul 5 - Aug 4, 2026</td>
+                    <td><strong>₱6,900.00</strong></td>
+                    <td><span class="wf-tag">CASH ON-SITE</span></td>
+                    <td><span class="wf-tag" style="background: #000; color: #fff;">[ VERIFIED & SETTLED ]</span></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -287,8 +439,14 @@
               </p>
             </div>
 
-            <!-- TOP RIGHT FLOATING CHATHEAD ICON TRIGGER -->
-            <div>
+            <!-- TOP RIGHT LOGIN OPTIONS & FLOATING CHATHEAD ICON TRIGGER -->
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn-secondary btn-sm" onclick="openAdminLoginModal(event)" style="font-weight: bold; background: #fff; border: 2px solid #000; padding: 0.5rem 0.8rem;">
+                🛡️ [ Admin Login ]
+              </button>
+              <button type="button" class="btn-secondary btn-sm" onclick="openTenantLoginModal(event)" style="font-weight: bold; background: #fff; border: 2px solid #000; padding: 0.5rem 0.8rem;">
+                📱 [ Tenant Login ]
+              </button>
               <button class="btn-primary" onclick="toggleFloatingChathead()" style="padding: 0.6rem 1.1rem; border: 2px solid #000; font-weight: bold; background: #000; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
                 💬 <span>[ 💬 LIVE CHAT INBOX ]</span>
                 <span class="wf-tag" style="background: #fff; color: #000; font-size: 0.75rem;" id="chat-unread-badge">2 New</span>
@@ -625,7 +783,146 @@
             ✔ <strong>Optional Payment Method:</strong> GCash Online Checkout via Adyen.<br>
             ✔ <strong>Linda Units (LF, LB):</strong> Fixed rates (LF ₱400 water, LB ₱200 water, ₱325 electric).<br>
             ✔ <strong>Report Exports (BR-049/FR-044):</strong> Excel-compatible CSV/XLSX spreadsheets for Monthly Income & Expenses ledgers.
+      <!-- ====================================================================
+           SECTION 8: TENANT SELF-SERVICE PORTAL (MY ROOM, BILLING & TICKETS)
+           ==================================================================== -->
+      <section id="tenant-portal-section" class="view-section">
+        <!-- Tenant Welcome Header -->
+        <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h1 style="font-family: var(--font-mono); font-size: 1.4rem; font-weight: bold;">🏠 MY TENANT PORTAL — ROOM 204</h1>
+            <p style="font-size: 0.85rem; color: var(--bw-text-muted);">Fe Galang Da Silva Boarding House Resident Workspace</p>
           </div>
+          <div>
+            <span class="wf-tag" style="background: #000; color: #fff; padding: 0.4rem 0.8rem; font-size: 0.8rem;">[ ACTIVE RESIDENT ]</span>
+          </div>
+        </div>
+
+        <!-- Tenant Billing & Room Information Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;" class="tenant-grid-layout">
+          
+          <!-- ROOM & LEASE INFORMATION CARD -->
+          <div class="wf-box" style="border: 2px solid var(--bw-border); background: #fff;">
+            <div class="wf-box-title">📋 LEASE & UNIT DETAILS</div>
+            <div style="font-size: 0.85rem; line-height: 1.6;">
+              <div class="bill-line">
+                <span>Resident Name:</span>
+                <strong id="tenant-portal-name">Juan Dela Cruz</strong>
+              </div>
+              <div class="bill-line">
+                <span>Assigned Unit:</span>
+                <strong>Room 204 (2nd Floor, 1-Bedroom)</strong>
+              </div>
+              <div class="bill-line">
+                <span>Occupants Count:</span>
+                <span>2 Persons</span>
+              </div>
+              <div class="bill-line">
+                <span>Move-in Anniversary:</span>
+                <span>August 5, 2024</span>
+              </div>
+              <div class="bill-line">
+                <span>Electricity Sub-meter:</span>
+                <span>Private Submeter #204</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CURRENT MONTHLY STATEMENT CARD -->
+          <div class="wf-box" style="border: 2px solid var(--bw-border); background: var(--bw-box-bg);">
+            <div class="wf-box-title" style="display: flex; justify-content: space-between;">
+              <span>💳 CURRENT MONTH STATEMENT</span>
+              <span class="wf-tag" style="background: #e0e0e0; color: #000;">[ PENDING VERIFICATION ]</span>
+            </div>
+            
+            <div style="font-size: 0.85rem;">
+              <div class="bill-line">
+                <span>Monthly Base Rent:</span>
+                <span>₱6,500.00</span>
+              </div>
+              <div class="bill-line">
+                <span>Water Fee (₱200/head × 2):</span>
+                <span>₱400.00</span>
+              </div>
+              <div class="bill-line">
+                <span>Electricity (Sub-metered):</span>
+                <span>Sub-meter read pending</span>
+              </div>
+              <div class="bill-line total">
+                <span>Total Amount Due:</span>
+                <strong style="font-size: 1.1rem;">₱6,900.00</strong>
+              </div>
+
+              <div style="margin-top: 1rem; text-align: right;">
+                <button class="btn-primary" onclick="openPaymentModal()">📱 [ Submit Optional GCash Payment ₱6,900 ]</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TENANT PAYMENT RECEIPTS LEDGER TABLE -->
+        <div class="wf-box" style="border: 2px solid var(--bw-border); margin-bottom: 1.5rem;">
+          <div class="wf-box-title">🧾 MY PAYMENT RECEIPT HISTORY</div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Invoice / OR #</th>
+                  <th>Payment Date</th>
+                  <th>Billing Period</th>
+                  <th>Amount Paid</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>INV-88392</code></td>
+                  <td>2026-08-01</td>
+                  <td>Aug 5 - Sep 4, 2026</td>
+                  <td><strong>₱6,900.00</strong></td>
+                  <td><span class="wf-tag" style="background: #000; color: #fff;">GCASH ONLINE</span></td>
+                  <td><span class="wf-tag" style="background: #e0e0e0;">[ PENDING VERIFICATION ]</span></td>
+                </tr>
+                <tr>
+                  <td><code>INV-77102</code></td>
+                  <td>2026-07-05</td>
+                  <td>Jul 5 - Aug 4, 2026</td>
+                  <td><strong>₱6,900.00</strong></td>
+                  <td><span class="wf-tag">CASH ON-SITE</span></td>
+                  <td><span class="wf-tag" style="background: #000; color: #fff;">[ VERIFIED & SETTLED ]</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- REPORT MAINTENANCE ISSUE SECTION -->
+        <div class="wf-box" style="border: 2px solid var(--bw-border);">
+          <div class="wf-box-title">🔧 REPORT MAINTENANCE ISSUE TO LANDLADY</div>
+          <form id="tenant-portal-issue-form" onsubmit="handleIssueSubmit(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="tenant-issue-title">Issue Title:</label>
+                <input type="text" id="tenant-issue-title" class="form-control" placeholder="e.g. Bathroom faucet leaking" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="tenant-issue-priority">Priority Level:</label>
+                <select id="tenant-issue-priority" class="form-control" required>
+                  <option value="Low">Low - General inquiry</option>
+                  <option value="Medium" selected>Medium - Minor repair needed</option>
+                  <option value="High">High - Urgent fixture issue</option>
+                  <option value="Emergency">Emergency - Water leak / Electrical hazard</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="tenant-issue-desc">Full Description:</label>
+              <textarea id="tenant-issue-desc" class="form-control" rows="3" placeholder="Describe the issue clearly for the landlady..." required></textarea>
+            </div>
+            <button type="submit" class="btn-primary" style="width: auto;">[ Submit Issue Ticket to Landlady ]</button>
+          </form>
         </div>
       </section>
 
@@ -840,34 +1137,88 @@
 
 
   <!-- ====================================================================
+       POP-UP MODAL 0: ADMIN & LANDLADY LOGIN POP-UP
+       ==================================================================== -->
+  <div class="modal-backdrop" id="admin-login-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>🛡️ [ ADMIN & LANDLADY LOGIN PORTAL ]</span>
+        <button onclick="closeAdminModal()" style="background: none; border: none; font-weight: bold; cursor: pointer;">[X]</button>
+      </div>
+      <div class="modal-body">
+        <!-- LOGIN INFORMATION & QUICK LOGIN BANNER -->
+        <div style="border: 2px dashed #000; padding: 0.6rem 0.75rem; font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 1.25rem; background: var(--bw-box-bg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <strong style="color: #000;">🛡️ DEMO ADMIN CREDENTIALS:</strong><br>
+            <span>Username: <code>admin</code> | Password: <code>admin123</code></span>
+          </div>
+          <button type="button" class="btn-primary btn-sm" onclick="autoLoginAdmin()" style="background: #000; color: #fff; font-weight: bold; padding: 0.4rem 0.8rem;">
+            ⚡ [ Quick Login (Admin) ]
+          </button>
+        </div>
+
+        <form id="modal-admin-login-form" onsubmit="handleAdminLogin(event)">
+          <div class="form-group">
+            <label class="form-label" for="modal-admin-username">Username or Staff ID:</label>
+            <input type="text" id="modal-admin-username" class="form-control" placeholder="admin" value="admin" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-admin-password">Password:</label>
+            <input type="password" id="modal-admin-password" class="form-control" placeholder="••••••••" value="admin123" required>
+          </div>
+
+          <div class="modal-footer" style="padding: 0; background: none; border: none; margin-top: 1.25rem; display: flex; justify-content: space-between; gap: 0.5rem;">
+            <button type="button" class="btn-secondary" onclick="closeAdminModal()">[ Cancel ]</button>
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn-secondary" onclick="autoLoginAdmin()" style="font-weight: bold;">⚡ [ Quick Login ]</button>
+              <button type="submit" class="btn-primary" style="width: auto;">[ 🛡️ Login to Admin ]</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ====================================================================
        POP-UP MODAL 1: TENANT LOGIN WIREFRAME POP-UP
        ==================================================================== -->
   <div class="modal-backdrop" id="tenant-login-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <span>📱 [ POP-UP: ACTIVE TENANT LOGIN ]</span>
+        <span>📱 [ ACTIVE TENANT LOGIN PORTAL ]</span>
         <button onclick="closeTenantModal()" style="background: none; border: none; font-weight: bold; cursor: pointer;">[X]</button>
       </div>
       <div class="modal-body">
-        <div style="border: 1px dashed #000; padding: 0.35rem 0.5rem; font-family: var(--font-mono); font-size: 0.75rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
-          <span>Demo: Room No <code>204</code> | Pass <code>tenant123</code></span>
-          <button type="button" class="btn-secondary btn-sm" onclick="autoLoginTenant()">⚡ [ Quick Test ]</button>
+        <!-- LOGIN INFORMATION & QUICK LOGIN BANNER -->
+        <div style="border: 2px dashed #000; padding: 0.6rem 0.75rem; font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 1.25rem; background: var(--bw-box-bg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <strong style="color: #000;">📱 DEMO TENANT CREDENTIALS:</strong><br>
+            <span>Room #: <code>204</code> | Password: <code>tenant123</code></span>
+          </div>
+          <button type="button" class="btn-primary btn-sm" onclick="autoLoginTenant()" style="background: #000; color: #fff; font-weight: bold; padding: 0.4rem 0.8rem;">
+            ⚡ [ Quick Login (Tenant) ]
+          </button>
         </div>
 
         <form id="modal-tenant-login-form" onsubmit="handleModalTenantLogin(event)">
           <div class="form-group">
             <label class="form-label" for="modal-tenant-username">Room Number or Account ID:</label>
-            <input type="text" id="modal-tenant-username" class="form-control" placeholder="204" required>
+            <input type="text" id="modal-tenant-username" class="form-control" placeholder="204" value="204" required>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="modal-tenant-password">Password:</label>
-            <input type="password" id="modal-tenant-password" class="form-control" placeholder="••••••••" required>
+            <input type="password" id="modal-tenant-password" class="form-control" placeholder="••••••••" value="tenant123" required>
           </div>
 
-          <div class="modal-footer" style="padding: 0; background: none; border: none; margin-top: 1.25rem;">
+          <div class="modal-footer" style="padding: 0; background: none; border: none; margin-top: 1.25rem; display: flex; justify-content: space-between; gap: 0.5rem;">
             <button type="button" class="btn-secondary" onclick="closeTenantModal()">[ Cancel ]</button>
-            <button type="submit" class="btn-primary" style="width: auto;">[ Login to Tenant Portal ]</button>
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn-secondary" onclick="autoLoginTenant()" style="font-weight: bold;">⚡ [ Quick Login ]</button>
+              <button type="submit" class="btn-primary" style="width: auto;">[ 📱 Login to Tenant ]</button>
+            </div>
           </div>
         </form>
       </div>

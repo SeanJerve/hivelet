@@ -130,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderIncomeLedger();
   initSupplierForm();
   renderExpenseLedger();
+  updateNavigationState();
 });
 
 // TICKETING HOVER MODAL DISPATCH SPECS (FLOATS ON TOP)
@@ -579,22 +580,36 @@ function renderExpenseLedger() {
 }
 
 function handleAdminLogin(e) {
-  e.preventDefault();
-  const usernameInput = document.getElementById('admin-username').value.trim().toLowerCase();
-  const passwordInput = document.getElementById('admin-password').value;
+  if (e) e.preventDefault();
+  const usernameEl = document.getElementById('modal-admin-username') || document.getElementById('admin-username');
+  const passwordEl = document.getElementById('modal-admin-password') || document.getElementById('admin-password');
 
-  if ((usernameInput === 'admin' || usernameInput === 'staff') && passwordInput === 'admin123') {
-    const isSuperAdmin = usernameInput === 'admin';
+  const usernameVal = usernameEl && usernameEl.value.trim() !== '' ? usernameEl.value.trim().toLowerCase() : 'admin';
+  const passwordVal = passwordEl && passwordEl.value !== '' ? passwordEl.value : 'admin123';
+
+  if ((usernameVal === 'admin' || usernameVal === 'staff') && passwordVal === 'admin123') {
+    const isSuperAdmin = usernameVal === 'admin';
     currentUser = {
       name: isSuperAdmin ? 'Fe Galang Da Silva' : 'Staff User',
       role: isSuperAdmin ? 'admin' : 'staff'
     };
 
+    closeAdminModal();
     updateNavigationState();
     switchSidebarSection('overview-section');
   } else {
-    alert('Invalid credentials! Please use "admin" or "staff" with password "admin123".');
+    alert('Invalid credentials! Please use Username "admin" or "staff" with Password "admin123".');
   }
+}
+
+function autoLoginAdmin() {
+  currentUser = {
+    name: 'Fe Galang Da Silva',
+    role: 'admin'
+  };
+  closeAdminModal();
+  updateNavigationState();
+  switchSidebarSection('overview-section');
 }
 
 function openTenantModal() {
@@ -628,11 +643,14 @@ function handleOnsitePaymentSubmit(e) {
 }
 
 function handleModalTenantLogin(e) {
-  e.preventDefault();
-  const tenantUser = document.getElementById('modal-tenant-username').value.trim().toLowerCase();
-  const passwordInput = document.getElementById('modal-tenant-password').value;
+  if (e) e.preventDefault();
+  const usernameEl = document.getElementById('modal-tenant-username') || document.getElementById('tenant-username');
+  const passwordEl = document.getElementById('modal-tenant-password') || document.getElementById('tenant-password');
 
-  if ((tenantUser === '204' || tenantUser === 'juan') && passwordInput === 'tenant123') {
+  const tenantUser = usernameEl && usernameEl.value.trim() !== '' ? usernameEl.value.trim().toLowerCase() : '204';
+  const passwordVal = passwordEl && passwordEl.value !== '' ? passwordEl.value : 'tenant123';
+
+  if ((tenantUser === '204' || tenantUser === 'juan') && passwordVal === 'tenant123') {
     currentUser = {
       name: 'Juan Dela Cruz',
       role: 'tenant',
@@ -641,10 +659,67 @@ function handleModalTenantLogin(e) {
 
     closeTenantModal();
     updateNavigationState();
-    switchSidebarSection('payment-section');
+    switchSidebarSection('overview-section');
   } else {
     alert('Invalid Tenant Credentials! Demo: Room "204" and Password "tenant123".');
   }
+}
+
+function handleTenantPaymentSubmit(e) {
+  if (e) e.preventDefault();
+  const date = document.getElementById('tenant-pay-date').value;
+  const amount = document.getElementById('tenant-pay-amount').value;
+  const method = document.getElementById('tenant-pay-method').value;
+  const ref = document.getElementById('tenant-pay-ref').value;
+
+  const dueBadge = document.getElementById('tenant-due-badge');
+  if (dueBadge) {
+    dueBadge.textContent = '[ PAYMENT SUBMITTED — PENDING VERIFICATION ]';
+    dueBadge.style.background = '#e0e0e0';
+    dueBadge.style.color = '#000';
+  }
+
+  const historyRows = document.getElementById('tenant-payment-history-rows');
+  if (historyRows) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><code>${ref || 'OR-PAYMENT'}</code></td>
+      <td>${date}</td>
+      <td>Aug 5 - Sep 4, 2026</td>
+      <td><strong>₱${parseFloat(amount).toLocaleString()}</strong></td>
+      <td><span class="wf-tag" style="background: #000; color: #fff;">${method.toUpperCase()}</span></td>
+      <td><span class="wf-tag" style="background: #e0e0e0; color: #000;">[ PENDING VERIFICATION ]</span></td>
+    `;
+    historyRows.insertBefore(tr, historyRows.firstChild);
+  }
+
+  alert(`[ MONTHLY PAYMENT SUBMITTED ]\nAmount: ₱${parseFloat(amount).toLocaleString()} (${method})\nReference #: ${ref || 'N/A'}\nYour payment has been logged and sent to Landlady Fe Galang Da Silva for verification.`);
+}
+
+function toggleTenantPayRef() {
+  const method = document.getElementById('tenant-pay-method').value;
+  const refGroup = document.getElementById('tenant-pay-ref-group');
+  const refInput = document.getElementById('tenant-pay-ref');
+  if (refGroup && refInput) {
+    if (method === 'Online') {
+      refGroup.style.display = 'block';
+      refInput.required = true;
+    } else {
+      refGroup.style.display = 'none';
+      refInput.required = false;
+    }
+  }
+}
+
+function autoLoginTenant() {
+  currentUser = {
+    name: 'Juan Dela Cruz',
+    role: 'tenant',
+    room: '204'
+  };
+  closeTenantModal();
+  updateNavigationState();
+  switchSidebarSection('overview-section');
 }
 
 function handleModalGuestEntry(e) {
@@ -663,6 +738,12 @@ function handleModalGuestEntry(e) {
   closeGuestModal();
   updateNavigationState();
   switchSidebarSection('booking-section');
+}
+
+function autoLoginGuest() {
+  const guestNameEl = document.getElementById('modal-guest-name');
+  if (guestNameEl) guestNameEl.value = 'Maria Santos';
+  handleModalGuestEntry(new Event('submit'));
 }
 
 function handleLogout() {
@@ -688,10 +769,12 @@ function updateNavigationState() {
   const nameEl = document.getElementById('sidebar-user-name');
   const roleEl = document.getElementById('sidebar-user-role');
 
+  const navBooking = document.getElementById('nav-item-booking');
   const navTenantMgmt = document.getElementById('nav-item-tenant-mgmt');
   const navExpenses = document.getElementById('nav-item-expenses');
   const navSettings = document.getElementById('nav-item-settings');
   const navPayment = document.getElementById('nav-item-payment');
+  const navTicketing = document.getElementById('nav-item-ticketing');
 
   const bookingHeaderTitle = document.getElementById('booking-header-title');
   const bookingHeaderDesc = document.getElementById('booking-header-desc');
@@ -700,16 +783,31 @@ function updateNavigationState() {
   const adminDispatchBox = document.getElementById('admin-dispatch-ticket-box');
   const ticketingGrid = document.getElementById('ticketing-grid-container');
 
+  const landingHeader = document.getElementById('landing-header-bar');
+  const adminOverviewWrapper = document.getElementById('admin-overview-wrapper');
+  const tenantOverviewWrapper = document.getElementById('tenant-overview-wrapper');
+  const overviewTitle = document.getElementById('overview-title-heading');
+  const overviewSub = document.getElementById('overview-subtitle-heading');
+  const adminOnsiteBtnWrapper = document.getElementById('admin-onsite-payment-btn-wrapper');
+
   if (!currentUser) {
-    sidebar.style.display = 'none';
-    viewport.style.marginLeft = '0';
-    viewport.style.maxWidth = '100%';
+    document.body.classList.remove('authenticated');
+    if (sidebar) sidebar.style.display = 'none';
+    if (viewport) {
+      viewport.style.marginLeft = '0';
+      viewport.style.maxWidth = '100vw';
+    }
+    if (landingHeader) landingHeader.style.display = 'block';
     return;
   }
 
-  sidebar.style.display = 'flex';
-  viewport.style.marginLeft = 'var(--sidebar-width)';
-  viewport.style.maxWidth = 'calc(100vw - var(--sidebar-width))';
+  document.body.classList.add('authenticated');
+  if (sidebar) sidebar.style.display = 'flex';
+  if (viewport) {
+    viewport.style.marginLeft = 'var(--sidebar-width)';
+    viewport.style.maxWidth = 'calc(100vw - var(--sidebar-width))';
+  }
+  if (landingHeader) landingHeader.style.display = 'block';
 
   nameEl.textContent = currentUser.name;
   roleEl.textContent = `Role: ${currentUser.role.toUpperCase()}`;
@@ -726,35 +824,66 @@ function updateNavigationState() {
     }
   }
 
-  // Role-Based Ticketing Section Visibility Rules
+  // Overview Page Workspace Switch (Admin vs Tenant)
+  if (adminOverviewWrapper && tenantOverviewWrapper) {
+    if (isAdmin) {
+      adminOverviewWrapper.style.display = 'block';
+      tenantOverviewWrapper.style.display = 'none';
+      if (overviewTitle) overviewTitle.textContent = 'SYSTEM OVERVIEW DASHBOARD';
+      if (overviewSub) overviewSub.textContent = 'Real-Time Operational Matrix & Occupancy Status';
+      if (adminOnsiteBtnWrapper) adminOnsiteBtnWrapper.style.display = 'block';
+    } else if (currentUser.role === 'tenant') {
+      adminOverviewWrapper.style.display = 'none';
+      tenantOverviewWrapper.style.display = 'block';
+      if (overviewTitle) overviewTitle.textContent = 'RESIDENT OVERVIEW & STATEMENT';
+      if (overviewSub) overviewSub.textContent = 'Room 204 Monthly Payment Statement, Due Date & Direct Remittance Form';
+      if (adminOnsiteBtnWrapper) adminOnsiteBtnWrapper.style.display = 'none';
+    } else {
+      adminOverviewWrapper.style.display = 'none';
+      tenantOverviewWrapper.style.display = 'none';
+    }
+  }
+
+  // Role-Based Ticketing Section Visibility Rules (Submit Maintenance Only for Tenants)
   if (tenantSubmitBox && adminDispatchBox && ticketingGrid) {
     if (isAdmin) {
       tenantSubmitBox.style.display = 'none'; // Landlady sees Maintenance Dispatch Only!
       adminDispatchBox.style.display = 'block';
       ticketingGrid.style.gridTemplateColumns = '1fr';
+    } else if (currentUser.role === 'tenant') {
+      tenantSubmitBox.style.display = 'block'; // Tenant sees Submit Maintenance Ticket ONLY!
+      adminDispatchBox.style.display = 'none'; // REMOVE RIGHT SIDE DISPATCH CARD FOR TENANTS!
+      ticketingGrid.style.gridTemplateColumns = '1fr'; // FULL WIDTH SINGLE CARD
     } else {
-      tenantSubmitBox.style.display = 'block'; // Tenants see Submit Form + Dispatch
-      adminDispatchBox.style.display = 'block';
-      ticketingGrid.style.gridTemplateColumns = '1fr 1fr';
+      tenantSubmitBox.style.display = 'block';
+      adminDispatchBox.style.display = 'none';
+      ticketingGrid.style.gridTemplateColumns = '1fr';
     }
   }
 
   // Role-Based Sidebar Item Visibility Rules
   if (isAdmin) {
-    navTenantMgmt.style.display = 'block';
-    navExpenses.style.display = 'block';
-    navSettings.style.display = 'block';
-    navPayment.style.display = 'block';
+    if (navBooking) navBooking.style.display = 'block';
+    if (navTenantMgmt) navTenantMgmt.style.display = 'block';
+    if (navExpenses) navExpenses.style.display = 'block';
+    if (navSettings) navSettings.style.display = 'block';
+    if (navPayment) navPayment.style.display = 'block';
+    if (navTicketing) navTicketing.style.display = 'block';
   } else if (currentUser.role === 'tenant') {
-    navTenantMgmt.style.display = 'none';
-    navExpenses.style.display = 'none';
-    navSettings.style.display = 'block';
-    navPayment.style.display = 'block';
+    // FOR TENANTS: REMOVE BOOKING & UNITS, PAYMENT AND INCOME, TENANT MGMT, EXPENSES!
+    if (navBooking) navBooking.style.display = 'none';
+    if (navPayment) navPayment.style.display = 'none';
+    if (navTenantMgmt) navTenantMgmt.style.display = 'none';
+    if (navExpenses) navExpenses.style.display = 'none';
+    if (navTicketing) navTicketing.style.display = 'block';
+    if (navSettings) navSettings.style.display = 'block';
   } else if (currentUser.role === 'guest') {
-    navTenantMgmt.style.display = 'none';
-    navExpenses.style.display = 'none';
-    navSettings.style.display = 'none';
-    navPayment.style.display = 'none';
+    if (navBooking) navBooking.style.display = 'block';
+    if (navTenantMgmt) navTenantMgmt.style.display = 'none';
+    if (navExpenses) navExpenses.style.display = 'none';
+    if (navSettings) navSettings.style.display = 'none';
+    if (navPayment) navPayment.style.display = 'none';
+    if (navTicketing) navTicketing.style.display = 'none';
   }
 
   renderPublicRooms('all', 'all');
@@ -1168,3 +1297,65 @@ function handleIssueSubmit(e) {
   alert(`[ TICKET SUBMITTED ]\nTicket "${title}" sent to Administrator.`);
   document.getElementById('tenant-issue-form').reset();
 }
+
+// ====================================================================
+// LANDING NAVBAR LOGIN DROPDOWN & GUEST ACCESS HELPERS
+// ====================================================================
+function toggleLoginDropdown(event) {
+  if (event) event.stopPropagation();
+  const dropdown = document.getElementById('landing-dropdown-menu');
+  if (dropdown) {
+    dropdown.classList.toggle('show');
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('landing-dropdown-menu');
+  const trigger = document.querySelector('.btn-login-dropdown-trigger');
+  if (dropdown && dropdown.classList.contains('show')) {
+    if (!dropdown.contains(e.target) && (!trigger || !trigger.contains(e.target))) {
+      dropdown.classList.remove('show');
+    }
+  }
+});
+
+function openAdminModal(event) {
+  if (event) event.preventDefault();
+  const dropdown = document.getElementById('landing-dropdown-menu');
+  if (dropdown) dropdown.classList.remove('show');
+  const modal = document.getElementById('admin-login-modal');
+  if (modal) modal.classList.add('open');
+}
+
+function closeAdminModal() {
+  const modal = document.getElementById('admin-login-modal');
+  if (modal) modal.classList.remove('open');
+}
+
+function openTenantModal(event) {
+  if (event) event.preventDefault();
+  const dropdown = document.getElementById('landing-dropdown-menu');
+  if (dropdown) dropdown.classList.remove('show');
+  const modal = document.getElementById('tenant-login-modal');
+  if (modal) modal.classList.add('open');
+}
+
+function closeTenantModal() {
+  const modal = document.getElementById('tenant-login-modal');
+  if (modal) modal.classList.remove('open');
+}
+
+function openGuestPortal(event) {
+  if (event) event.preventDefault();
+  const dropdown = document.getElementById('landing-dropdown-menu');
+  if (dropdown) dropdown.classList.remove('show');
+  closeAdminModal();
+  closeTenantModal();
+  currentUser = {
+    name: 'Guest Visitor',
+    role: 'guest'
+  };
+  updateNavigationState();
+  switchSidebarSection('booking-section');
+}
+

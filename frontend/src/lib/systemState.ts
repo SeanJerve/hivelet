@@ -278,6 +278,7 @@ export const activeHoverTicket = ref<MaintenanceTicket | null>(null);
 
 export const isLiveChatheadOpen = ref(false);
 export const selectedInquirerId = ref('inq-1');
+export const selectedPublicInquiryUnit = ref<string>('1c');
 
 export const isOnsitePaymentModalOpen = ref(false);
 export const isTenantLoginModalOpen = ref(false);
