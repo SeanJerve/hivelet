@@ -2,7 +2,7 @@
  * @file seed.sql
  * @description Official Supabase CLI Local Seed Dataset for Hivelet (Fe Galang Da Silva Boarding House).
  * @systemBibleRef docs/01_SYSTEM_BIBLE.md, docs/02_BUSINESS_RULES.md, docs/09_MONTHLY_INCOME_REPORT.md, docs/10_MONTHLY_EXPENSES_REPORT.md
- * @rationale Populates realistic, auditable test data across all 33 canonical room units, 5 clusters,
+ * @rationale Populates realistic, auditable test data across all 32 canonical room units, 4 clusters,
  *            10 expense categories, landlady income ledger, multi-area split expenses, bills, 
  *            Adyen GCash pending payments, maintenance tickets, and immutable audit logs.
  */
@@ -22,9 +22,8 @@ TRUNCATE audit_logs, notifications, ticket_messages, ticket_attachments, mainten
 INSERT INTO clusters (code, name, display_order) VALUES
 ('BH', 'Boarding House (Main Rooms)', 1),
 ('Back Apartment', 'Back Apartment', 2),
-('Penthouse', 'Penthouse', 3),
-('Front Apartment', 'Front Apartment', 4),
-('Linda', 'Linda Units', 5);
+('Front Apartment', 'Front Apartment', 3),
+('Linda', 'Linda Units', 4);
 
 -- ==============================================================================
 -- 1B. SEED REAL SUPABASE AUTH LOGIN CREDENTIALS FOR THE ADMIN + ACTIVE TENANTS
@@ -91,7 +90,7 @@ INSERT INTO profiles (id, auth_user_id, email, full_name, phone_number, emergenc
 ('77777777-7777-7777-7777-777777777777', NULL, 'rhea.mendoza@gmail.com', 'Rhea Mendoza', '09236667777', NULL, NULL, 'Prospective Tenant', 'prospect', 'active');
 
 -- ==============================================================================
--- 3. SEED 33 CANONICAL ROOM UNITS
+-- 3. SEED 32 CANONICAL ROOM UNITS
 -- ==============================================================================
 INSERT INTO rooms (id, room_number, floor, cluster_code, room_type, description, capacity, base_price, current_price, operational_status, visibility_status, is_linda_unit) VALUES
 -- BH Cluster (Main Rooms: 1a-1h, 2a-2g, 3a-3g) - 22 Units
@@ -126,9 +125,6 @@ INSERT INTO rooms (id, room_number, floor, cluster_code, room_type, description,
 ('b0200000-0000-0000-0000-000000000002', 'B2B', 2, 'Back Apartment', 'One-bedroom', 'Back Apartment 2nd Floor Back Unit', 3, 6200.00, 6200.00, 'Available', 'Published', false),
 ('b0300000-0000-0000-0000-000000000001', 'B3F', 3, 'Back Apartment', 'Two-bedroom', 'Back Apartment 3rd Floor Front Unit', 4, 7500.00, 7500.00, 'Available', 'Published', false),
 ('b0300000-0000-0000-0000-000000000002', 'B3B', 3, 'Back Apartment', 'Two-bedroom', 'Back Apartment 3rd Floor Back Unit', 4, 7500.00, 7500.00, 'Available', 'Published', false),
-
--- Penthouse Cluster (1 Unit)
-('c0300000-0000-0000-0000-000000000001', 'PH', 3, 'Penthouse', 'Three-bedroom', 'Penthouse Top Floor Executive Suite', 5, 12000.00, 12000.00, 'Available', 'Published', false),
 
 -- Front Apartment Cluster (3 Units)
 ('d0100000-0000-0000-0000-000000000001', 'F1', 1, 'Front Apartment', 'One-bedroom', 'Front Apartment 1st Floor', 3, 6500.00, 6500.00, 'Available', 'Published', false),

@@ -1,0 +1,1417 @@
+                  
+Hivelet: A Web-Based Apartment Management System for
+
+               Fe Galang Da Silva Boarding House
+
+                An Undergraduate Capstone Project
+                              presented to the
+
+                 Information Technology Department
+                 Bicol University College of Science
+
+                                Legazpi City
+
+                       In Partial Fulfillment of the
+                   Requirements for the Degree of
+         Bachelor of Science in Information Technology
+
+                          Cuario, John Lloyd M.
+                         Loterte, Eljohn Paulo C.
+
+                          Napay, Victor Noel A.
+                       Rebancos, Sean Jerve Ll.
+
+                           Relos, Kiel Hedrix V.
+                                    Republic of the Philippines
+                                            Bicol University
+
+                                         College of Science
+                                              Legazpi City
+
+            RECOMMENDATION FOR THE ORAL DEFENSE
+
+         The undergraduate research project entitled, "Hivelet: A Web-Based
+Apartment Management System for Fe Galang Da Silva Boarding House",
+prepared and submitted by John Lloyd M. Cuario, Eljohn Paulo C. Loterte,
+Victor Noel A. Napay, Sean Jerve Ll. Rebancos, Kiel Hedrix V. Relos, in
+partial fulfillment of the requirements for the degree BACHELOR OF SCIENCE
+IN INFORMATION TECHNOLOGY, is hereby submitted to the research project
+committee for oral examination.
+
+                                  Dr. JAYVEE CHRISTOPHER VIBAR
+                                                      Programming Adviser
+
+      In partial fulfillment of the requirements for the degree Bachelor of Science
+in Information Technology, this research project entitled, "Hivelet: A Web-Based
+Apartment Management System for Fe Galang Da Silva Boarding House",
+prepared and submitted by John Lloyd M. Cuario, Eljohn Paulo C. Loterte,
+Victor Noel A. Napay, Sean Jerve Ll. Rebancos, Kiel Hedrix V. Relos, is
+hereby recommended for Oral Examination.
+
+                                       THESIS COMMITTEE
+
+Prof. Ryan A. Rodriguez, MIT/MCS  Prof. Laarni D. Pancho
+              Panel Member              Panel Member
+
+   Dr. Aris J. Ordonez
+Chairman, Defense Panel
+                         Republic of the Philippines
+                                 Bicol University
+
+                               College of Science
+                                   Legazpi City
+
+              RESULT OF FINAL ORAL DEFENSE
+
+Researchers:   John Lloyd M. Cuario
+                  Eljohn Paulo C. Loterte
+                  Victor Noel A. Napay
+                  Sean Jerve Ll. Rebancos
+                  Kiel Hedrix V. Relos
+
+Title   :  Hivelet: A Web-Based Apartment Management System for
+
+Fe Galang Da Silva Boarding House
+
+Place  :  <Online via Google Meet / CSB2 Room 101>
+
+Date  :  January 1, 2023
+
+Time  :  01:00 PM ­ 03:00 PM
+
+       PANEL OF EXAMINERS                  ACTION
+
+       Dr. Aris J. Ordonez                 ______________________
+              Chairman
+
+Prof. Ryan A. Rodriguez, MIT/MCS           ______________________
+                   Member
+
+       Prof. Laarni D. Pancho              ______________________
+                 Member
+  APPROVAL SHEET
+
+         This research project entitled Hivelet: A Web-Based Apartment
+Management System for Fe Galang Da Silva Boarding House, prepared and
+submitted by John Lloyd M. Cuario, Eljohn Paulo C. Loterte, Victor Noel A.
+Napay, Sean Jerve Ll. Rebancos, Kiel Hedrix V. Relos, in partial fulfillment of
+the requirements for the degree Bachelor of Science in Information
+Technology is hereby accepted.
+
+                             Dr. JAYVEE CHRISTOPHER VIBAR
+                                           Content Adviser
+
+                             Dr. JAYVEE CHRISTOPHER VIBAR
+                                       Programming Adviser
+
+     Dr. Aris J. Ordonez
+  Chairman, Defense Panel
+
+Prof. Ryan A. Rodriguez, MIT/MCS    Prof. Laarni D. Pancho
+              Panel Member                Panel Member
+
+  Accepted and approved for the conferral of the degree Bachelor of
+
+Science in Information Technology.
+
+                                    RYAN A. RODRIGUEZ, MSCS, MIT
+                                      Chairperson, CSIT Department
+
+JOCELYN E. SERRANO, M.Sc.
+           Dean, BUCS
+ABSTRACT
+                   TABLE OF CONTENTS
+
+RECOMMENDATION FOR ORAL DEFENSE                                 page
+                                                                    ii
+
+RESULT OF FINAL ORAL DEFENSE                                    iii
+
+APPROVAL SHEET                                                  iv
+
+CONTENT ADVISER'S CERTIFICATION                                 v
+
+PROGRAMMING ADVISER'S CERTIFICATION                             vi
+
+ACKNOWLEDGEMENT                                                 vii
+
+ABSTRACT                                                        vii
+
+TABLE OF CONTENTS                                               ix
+
+LIST OF TABLES                                                  xii
+
+LIST OF FIGURES                                                 xiii
+
+1 INTRODUCTION                                                  1
+
+1.1 Background of the Study                                     1
+
+1.2 Objectives of the Study                                     4
+
+1.3 Significance of the Study                                   5
+
+1.4 Scope and Delimitations                                     6
+
+2 THEORETICAL FRAMEWORK                                         10
+
+2.1 Review of Related Literature                                10
+
+2.1.1 Structural Inefficiencies in Property Management Systems  10
+
+2.1.2 Management Information Systems as the Structural Foundation  11
+
+2.1.3 Financial Analytics and Operational Decision Support      12
+2.1.4 Digital Communication and Issue Resolution Systems     13
+
+2.1.5 Progressive Web Application as an Integration Enabler  13
+
+2.1.6 Synthesis of Literature                                14
+
+2.2 Gap Bridged by the Study                                 15
+
+2.3 Concept of the Study                                     16
+
+2.4 Definition of Terms                                      17
+
+3 MATERIALS AND METHODS                                      21
+
+3.1 Materials                                                21
+
+3.1.1 Software                                               21
+
+3.1.2 Hardware                                               23
+
+3.2 Software Methodology                                     24
+
+3.2.1 Requirements                                           25
+
+3.2.2 Design                                                 26
+
+3.2.3 Development                                            26
+
+3.2.4 Testing                                                27
+
+3.2.5 Deployment                                             27
+
+3.2.6 Review and Maintenance                                 28
+
+3.3 Evaluation Procedure                                     28
+
+4 RESULTS AND DISCUSSION                                     30
+
+4.1 Objective 1 Title                                        30
+
+4.1.1 Sub-objective Title                                    30
+4.2 Objective 1 Title                                           31
+
+4.2.1 Sub-objective Title                                       31
+
+4.3 Evaluation of the Developed Pet Adoption System             31
+
+Evaluation Results                                              31
+
+Deployment Plan and Strategies                                  32
+
+5 SUMMARY, CONCLUSIONS, AND RECOMMENDATIONS                     33
+
+5.1 Summary                                                     33
+
+5.2 Conclusions                                                 35
+
+5.3 Recommendations                                             35
+
+REFERENCES                                                      35
+
+APPENDICES                                                      65
+
+Appendix A: Letter of Request                                   65
+
+Appendix B: Appointments                                        66
+
+Appendix C: Gantt Chart                                         70
+
+Appendix D: Data Flow Diagram (Context Flow Diagram)            71
+
+Appendix E: Data Flow Diagram (Diagram 0)                       72
+
+Appendix F: Data Flow Diagram (Child Diagrams)                  73
+
+Appendix G: Use Case Diagram of the Proposed System             75
+
+Appendix H: Entity Relationship Diagram of the Proposed System  76
+
+Appendix I: Initial Design of the Proposed System               86
+
+Appendix J: Evaluation Guide                                    10
+Appendix K: User's Manual                                       107
+
+Appendix L: How To Test (Test Cases) <System Name>              108
+
+Appendix M: Source Code                                         110
+
+CURRICULUM VITAEx                                               150
+
+                        LIST OF TABLES
+
+Table 1. Software Requirements                                  28
+
+Table 2. Hardware Requirements                                  29
+
+Table 3. Mobile Testing Hardware Specifications (Baseline)]     30
+
+Table 4. Likert Scale                                           36
+
+Table 5. Summary of Evaluation Results                          45
+
+Table 6. Evaluation Results Based from Functional Suitability   45
+
+Table 7. Evaluation Results Based from Usability                46
+
+Table 8. Evaluation Results Based from Reliability              47
+
+Table 9. Software and Hardware Requirements for Deployment      50
+
+Table 10. Deployment Plan and Strategies                        51
+        LIST OF FIGURES
+
+Figure 1. Management Information System (MIS) framework by Laudon and
+
+Laudon                                                                 13
+
+Figure 2. Conceptual Framework                                         22
+
+Figure 3. Agile Software Development Life Cycle                        31
+                                 1 INTRODUCTION
+
+1.1 Background of the Study
+
+         Administrative processes in apartment management typically involve
+tenant record keeping, financial tracking, and maintenance coordination, which
+become increasingly complex as the number of units increases (Burke, 2026).
+While web-based property management systems have been developed to
+support these functions, their adoption in small-scale residential settings remains
+limited due to operational constraints such as limited infrastructure, technical
+capacity, and resource availability (Mia et al., 2024).
+
+         In small-scale boarding house operations, administrative tasks are still
+managed using standalone spreadsheet files and manual documentation. In
+observed cases within the study context, these records are stored in removable
+storage devices, exposing the system to risks in data integrity such as accidental
+deletion, file corruption, duplication, and lack of version control. In addition,
+tenant concerns and maintenance requests are often communicated through
+informal channels such as messaging applications or verbal reporting, resulting
+in untracked requests, delayed responses, and inconsistent follow-up.
+
+         These conditions reflect fragmented administrative workflows, where
+records, communication, and transactions are managed across separate,
+non-integrated tools. Consequently, property owners may experience difficulties
+in maintaining accurate records, monitoring financial transactions, and ensuring
+                                                                                                           2
+         timely resolution of tenant concerns. Although existing web-based
+property management systems aim to address such inefficiencies through
+centralized data storage and real-time processing (Kotkar et al., 2026), many are
+commonly designed with assumptions aligned to large-scale or commercial
+property environments. These systems typically assume stable infrastructure,
+structured workflows, and dedicated administrative personnel (Ullah et al., 2021),
+which do not reflect the operational conditions of small-scale,
+resource-constrained boarding houses.
+
+         In the Philippine context, these challenges are further reinforced by
+reliance on cash-based transactions, limited access to integrated digital tools,
+and continued dependence on manual record-keeping practices (Mia et al.,
+2024). As a result, many small-scale apartment operations continue to function
+under fragmented and informal administrative processes despite the availability
+of existing digital solutions.
+
+         These limitations are also reflected in local implementations. Magno et al.
+(2024) developed an apartment rental management system to address issues
+such as disorganized data management, difficulty in tracking tenant payments,
+missed billing deadlines, and reliance on paper-based records. Their findings
+demonstrate that digitizing transaction tracking and task organization improves
+administrative efficiency and data accuracy. However, the system primarily
+focuses on financial transactions and task management, without integrating
+communication, booking, and tenant interaction workflows into a unified system.
+                                                                                                           3
+         Similarly, Pavia et al. (2022) developed a property management system
+for Hospitality Management students at Bicol College, demonstrating how digital
+platforms can enhance coordination, record-keeping, and service management
+within a controlled academic environment with predefined workflows and
+institutional support. While the study confirms the effectiveness of system-based
+management, these conditions differ significantly from small-scale boarding
+house operations, where administrative processes are informal, decentralized,
+and constrained by limited resources.
+
+         Taken together, these local studies demonstrate that while digital solutions
+can improve specific aspects of property management, they are often
+implemented either as function-specific systems or within controlled
+environments. As such, they do not fully address the fragmented and
+non-integrated nature of administrative workflows in real-world,
+resource-constrained boarding house settings.
+
+         Many existing systems therefore remain misaligned with the operational
+realities of small-scale, apartment management environments. This reveals a
+critical gap: the absence of an integrated platform that consolidates tenant
+management, financial tracking, communication, and booking within a single,
+context-appropriate system.
+
+         This study proposes Hivelet, a web-based apartment management system
+designed to address these limitations by centralizing administrative processes
+and providing a structured mechanism for managing tenant records, financial
+                                                                                                           4
+transactions, and maintenance concerns within a unified platform, specifically
+tailored for resource-constrained residential settings.
+
+1.2 Objectives of the Study
+
+         The primary objective of this study is to address the mismatch between
+existing property management systems and the operational realities of
+small-scale, resource-constrained boarding houses by designing, developing,
+and evaluating Hivelet, a web-based apartment management system that
+improves administrative workflow integration, communication, and operational
+control. Specifically, the study aims:
+
+    1. To analyze the existing apartment management practices of the Fe
+         Galang Da Silva Apartment to determine the challenges in tenant
+         management, financial tracking, communication, and booking processes,
+         and establish system requirements based on the identified operational
+         gaps and user needs.
+
+    2. To develop the Hivelet system to feature tenant and room management,
+         booking and reservation management, financial tracking with optional
+         online payment recording, a maintenance ticketing and notification
+         system, role-based access control for administrators and tenants, and
+         Progressive Web Application (PWA) support for responsive cross-device
+         accessibility.
+                                                                                                           5
+    3. To pilot test the developed Hivelet system for functionality,
+
+         responsiveness, and operational performance.
+    4. To evaluate and optimize the system based on the ISO/IEC 25010
+
+         software quality model in terms of: Functional suitability, Performance
+         efficiency, Compatibility, Usability, Reliability, Security, Maintainability,
+         Portability
+
+1.3 Significance of the Study
+
+         The development of Hivelet, a web-based apartment management system
+implemented as a Progressive Web Application (PWA), is significant in
+addressing the operational challenges of fragmented and manual administrative
+workflows in small-scale, resource-constrained boarding house environments.
+
+         For property administrators and owners, the study provides a
+centralized system that reduces dependence on manual record-keeping
+practices such as spreadsheets and removable storage devices, which are prone
+to data inconsistency, loss, and duplication. By integrating tenant records,
+financial transactions, and maintenance concerns into a unified platform, the
+system supports more reliable information management and improves
+administrative coordination in environments affected by cash-based transactions
+and limited digital infrastructure.
+                                                                                                           6
+         For tenants, the study improves communication efficiency by providing a
+structured mechanism for submitting and tracking maintenance concerns and
+viewing relevant account information. This reduces reliance on informal
+communication channels such as messaging applications and verbal reporting,
+which often result in delayed responses and untracked requests.
+
+         For future researchers, the study contributes to a localized
+implementation of a Progressive Web Application­based property management
+system designed specifically for small-scale residential contexts. The system
+architecture, integration approach, and evaluation using the ISO/IEC 25010
+model may serve as a reference for further research, particularly in developing
+systems that address the gap between enterprise-level property management
+solutions and resource-constrained residential operations.
+
+1.4 Scope and Delimitations
+
+         This study focuses on the design, development, and evaluation of Hivelet,
+a Progressive Web Application (PWA) created to transition the 32-unit Fe Galang
+Da Silva Apartment near Bicol University from manual, paper-based
+administration to a centralized digital management system. To achieve this,
+Hivelet integrates comprehensive room and tenant management capabilities,
+facilitating seamless onboarding, the secure digital storage of records, real-time
+monitoring of bed availability, and a public-facing booking module that allows
+                                                                                                           7
+prospective renters to submit reservation inquiries without requiring full system
+access. Furthermore, the application features a financial tracking component
+dedicated to monitoring cash flow, expenses, and tenant payments; while this
+primarily supports manual, cash-based transaction recording, it offers an optional
+digital payment submission feature for added convenience. Operational
+communication is also streamlined through a structured issue ticketing system,
+enabling tenants to log maintenance requests that administrators can
+systematically assign, track, and update until resolution.
+
+         Despite these comprehensive features, the scope is bound by specific
+delimitations regarding system accessibility and financial processing: although
+the PWA utilizes cached resources for limited offline access and responsive
+design for diverse devices, core functionalities--such as data encoding, real-time
+synchronization, and booking updates--strictly require an active internet
+connection to maintain data consistency. Additionally, the supplementary online
+payment feature is restricted to basic transaction recording and explicitly
+excludes advanced financial processing capabilities like automated
+reconciliation, refunds, or direct banking integration. Ultimately, to ensure the
+system effectively resolves the apartment's operational inefficiencies, Hivelet will
+be rigorously evaluated against the ISO/IEC 25010 software quality standard,
+with a specific emphasis on measuring its functional suitability, performance
+efficiency, compatibility, usability, reliability, security, maintainability, and
+portability
+                        2 THEORETICAL FRAMEWORK
+
+         This chapter establishes the theoretical and empirical foundation of the
+Hivelet system by synthesizing literature on property management systems,
+Management Information Systems (MIS), financial analytics, digital
+communication systems, and Progressive Web Applications (PWA). Rather than
+treating these domains independently, the study positions them as
+interconnected operational components within apartment management
+environments. The framework argues that inefficiencies in small-scale residential
+operations emerge primarily from fragmented administrative structures, where
+records, financial monitoring, communication, and operational coordination exist
+across disconnected tools and processes. The reviewed literature collectively
+supports the need for an integrated, centralized, and accessible management
+system tailored for resource-constrained apartment environments.
+
+2.1 Review of Related Literature
+
+2.1.1 Fragmentation and Operational Inefficiencies in Property Management
+
+         The increasing complexity of apartment and boarding house operations
+has intensified the need for structured and centralized management systems.
+Existing literature consistently identifies fragmentation of administrative
+workflows as one of the primary operational issues in residential property
+management environments (Ullah et al., 2021; Burke, 2026; Setty, 2022). As the
+number of tenants, transactions, and maintenance activities increases, traditional
+methods such as manual documentation, spreadsheet-based tracking, and
+                                                                                                         11
+         informal communication becomes increasingly difficult to manage
+consistently and accurately.
+
+         Ullah et al. (2021) explain that conventional property management
+practices often suffer from disconnected workflows, documentation
+inconsistencies, and inefficient coordination between operational tasks. Similarly,
+Burke (2026) emphasizes that increasing residential density proportionally
+increases administrative complexity, particularly in areas involving tenant
+monitoring, maintenance coordination, and financial recording. These findings
+collectively suggest that operational inefficiencies are not isolated technical
+issues but structural problems caused by fragmented information handling and
+disconnected administrative processes.
+
+         This condition is further reflected in localized implementations. Magno et
+al. (2024) observed that apartment administrators commonly experience
+difficulties in tracking payments, organizing tenant records, and managing
+paper-based transactions. Their findings demonstrate that digitization improves
+data consistency and transaction monitoring; however, the study also reveals that
+partial digital implementation alone does not fully eliminate fragmentation when
+operational functions remain separated. Likewise, Pavia et al. (2022)
+demonstrate that system-based management improves organizational
+coordination and service operations, yet their implementation operates within a
+controlled institutional environment with predefined workflows and technical
+support, conditions that differ significantly from resource-constrained apartment
+operations.
+                                                                                                         12
+         Collectively, these studies establish that the primary challenge in
+apartment management is not merely the absence of digital systems, but the
+absence of integrated operational structures capable of consolidating
+administrative functions into a unified environment. This reinforces the need for
+centralized information management approaches capable of organizing
+fragmented workflows into cohesive and traceable system processes.
+
+2.1.2 Management Information Systems as the Foundation of Centralization
+
+         This theoretical foundation is grounded in Management Information
+Systems (MIS), which emphasize the transformation of fragmented operational
+data into centralized and actionable information for decision-making. According
+to Laudon and Laudon, MIS functions as an organized system that collects,
+processes, stores, and distributes information to support operational control,
+coordination, and administrative decision-making. Within apartment management
+environments, this framework explains why manual and semi-digital operations
+often become inefficient, as information is typically distributed across isolated
+records, disconnected tools, and inconsistent communication channels.
+
+         This relationship is further illustrated in Figure 1, based on the
+Management Information System (MIS) framework by Laudon and Laudon,
+which demonstrates the flow of data from fragmented operational sources
+through system processing mechanisms, resulting in consolidated and
+meaningful information outputs that support organizational decision-making.
+                                                                                                         13
+
+  Figure 1. Management Information System (MIS) framework by Laudon and Laudon
+         The importance of centralized information processing is further reinforced
+
+by Ghasemaghaei et al. (2018), who emphasize that organizational
+decision-making performance significantly improves when operational data is
+structured, integrated, and analytically accessible. Their findings indicate that
+data analytics competency enables more accurate forecasting, operational
+monitoring, and financial oversight, particularly in environments requiring
+continuous administrative coordination. Similarly, Pressman and Maxim (2020)
+explain that integrated software systems improve consistency, maintainability,
+and operational reliability by reducing redundancy and streamlining data flow
+across system components.
+                                                                                                         14
+         Within apartment management operations, these principles directly
+support the need for centralized architectures capable of integrating tenant
+information, maintenance records, communication logs, and financial
+transactions within a single operational environment. The literature therefore
+positions MIS not simply as a technological concept, but as the structural
+mechanism through which fragmented administrative activities become
+coordinated, traceable, and manageable.
+
+         This theoretical perspective also aligns with findings from property
+management studies which indicate that operational inefficiencies often emerge
+when information systems lack interoperability and centralized accessibility
+(Burke, 2026; Magno et al., 2024). Consequently, the integration of operational
+data within a unified system environment becomes essential for improving
+administrative visibility, reducing redundancy, and supporting informed
+decision-making processes.
+
+2.1.3 Financial Analytics and Administrative Decision Support
+
+         Financial management serves as one of the most critical operational
+components within apartment administration, as payment monitoring, expense
+tracking, and cash flow visibility directly influence managerial decision-making.
+Existing studies consistently emphasize that financial inefficiencies often emerge
+when payment records are maintained through fragmented or manual processes
+(Encarnacion et al., 2025; Magno et al., 2024; Setty, 2022).
+                                                                                                         15
+         Encarnacion et al. (2025) demonstrate that structured digital payment
+monitoring systems significantly improve administrative oversight within student
+boarding house operations by providing organized financial ledgers, payment
+summaries, and transaction visibility. Their findings suggest that centralized
+financial records reduce monitoring inconsistencies and improve forecasting
+accuracy. Similarly, Magno et al. (2024) observed that digital transaction tracking
+improves billing management and minimizes missed payment monitoring
+compared to paper-based systems. Setty (2022) further explains that centralized
+financial management systems improve transparency and reduce administrative
+errors by consolidating transaction records into a unified database environment.
+
+         These findings strongly align with MIS principles regarding centralized
+information processing and structured data accessibility. Ghasemaghaei et al.
+(2018) argue that analytical decision-making depends heavily on the quality,
+consistency, and accessibility of operational data. In apartment management
+contexts, financial analytics therefore functions not merely as a reporting
+mechanism, but as a decision-support component that enables administrators to
+monitor operational performance, identify irregularities, and maintain financial
+accountability.
+
+         Collectively, the literature suggests that financial monitoring becomes
+significantly more effective when integrated into a centralized operational
+framework rather than implemented as a standalone feature. This reinforces the
+necessity of integrating financial analytics within broader apartment management
+                                                                                                         16
+systems to support consistent administrative control and operational
+transparency.
+
+2.1.4 Digital Communication and Structured Issue Resolution
+
+         Beyond financial management, operational efficiency in apartment
+environments is also heavily influenced by communication quality and
+maintenance coordination processes. Existing literature identifies informal
+communication practices as major contributors to delayed responses,
+inconsistent issue tracking, and reduced tenant satisfaction (Jing & Lim, 2021;
+Saputra et al., 2025).
+
+         Jing and Lim (2021) explain that management service quality significantly
+affects residential satisfaction and operational effectiveness within apartment
+environments. Their study highlights that responsiveness, communication
+consistency, and issue resolution efficiency are critical components of effective
+property administration. However, in traditional management settings, tenant
+concerns are often communicated through verbal reporting or messaging
+applications, resulting in undocumented requests and inconsistent follow-up
+procedures.
+
+         To address these issues, Saputra et al. (2025) demonstrate that
+web-based room management systems with structured issue coordination
+mechanisms significantly improve operational accountability and response
+management. By transforming tenant complaints into recorded and traceable
+                                                                                                         17
+maintenance workflows, digital ticketing systems improve monitoring consistency
+and reduce communication gaps between administrators and tenants.
+
+         These findings collectively indicate that communication systems should
+not be treated merely as supplementary features but as integral operational
+components within apartment management environments. Consistent with MIS
+theory, structured communication mechanisms improve information traceability,
+coordination efficiency, and administrative visibility by ensuring that operational
+concerns are documented within centralized system workflows rather than
+dispersed across informal channels.
+
+         The literature therefore supports the integration of maintenance ticketing
+and structured communication modules within unified apartment management
+systems to improve accountability, responsiveness, and operational coordination.
+
+2.1.5 Progressive Web Applications as an Accessibility and Integration
+Framework
+
+         While centralized systems improve operational coordination, effective
+implementation also depends on accessibility across devices and varying
+infrastructure conditions. Progressive Web Applications (PWAs) provide a
+technological framework capable of addressing these accessibility challenges
+within resource-constrained environments (Google, 2018; Biørn-Hansen et al.,
+2019).
+                                                                                                         18
+         Google (2018) describes PWAs as web applications that combine the
+accessibility of browser-based systems with functionalities commonly associated
+with native mobile applications, including responsiveness, offline capability, and
+cross-device compatibility. Similarly, Biørn-Hansen et al. (2019) explain that
+PWAs reduce development complexity by enabling a single application
+architecture to operate consistently across multiple platforms without requiring
+separate native implementations.
+
+         These characteristics are particularly relevant within small-scale
+apartment operations where infrastructure limitations, inconsistent connectivity,
+and device diversity may restrict adoption of conventional enterprise systems.
+Mia et al. (2024) further emphasize that small and medium-sized enterprises in
+the Philippines commonly experience barriers related to infrastructure limitations,
+technical capacity, and resource availability during digital technology adoption.
+This suggests that accessibility and implementation simplicity are critical
+considerations in system deployment within localized operational environments.
+
+         From a systems perspective, PWA architecture functions as the
+technological delivery layer that enables centralized MIS functions to remain
+accessible and operational across varying conditions. Rather than serving solely
+as a development approach, PWAs support the broader objective of operational
+integration by ensuring that administrative tools, communication workflows, and
+financial monitoring systems remain consistently accessible across devices and
+environments.
+                                                                                                         19
+2.1.6 Synthesis of Literature
+
+         The reviewed literature collectively demonstrates that operational
+inefficiencies in apartment management environments primarily emerge from
+fragmented administrative structures rather than the complete absence of digital
+technologies. Property management studies identify persistent issues involving
+disconnected workflows, inconsistent record management, delayed
+communication, and operational redundancy (Burke, 2026; Ullah et al., 2021;
+Magno et al., 2024). MIS literature explains these inefficiencies as consequences
+of fragmented information processing and lack of centralized operational visibility
+(Ghasemaghaei et al., 2018; Pressman & Maxim, 2020).
+
+         Financial analytics studies further establish that structured and centralized
+financial data significantly improves administrative oversight, forecasting
+capability, and operational transparency (Encarnacion et al., 2025; Setty, 2022).
+Similarly, communication and maintenance coordination studies emphasize that
+operational accountability improves when issue resolution processes are
+formalized through structured digital workflows rather than informal
+communication channels (Jing & Lim, 2021; Saputra et al., 2025).
+
+         Meanwhile, PWA literature provides the technological framework that
+enables these integrated operational components to remain accessible within
+environments characterized by limited infrastructure and varying device
+conditions (Google, 2018; Biørn-Hansen et al., 2019; Mia et al., 2024).
+                                                                                                         20
+         Despite their complementarity, these studies are commonly implemented
+in isolation. Existing systems frequently focus on specific operational functions
+such as financial management, communication, or tenant tracking independently,
+resulting in partial solutions that fail to address the interconnected nature of
+apartment management workflows. Consequently, the literature reveals a need
+for an integrated operational framework that centralizes administrative
+processes, formalizes communication, supports financial monitoring, and
+remains accessible within resource-constrained residential environments.
+
+2.2 Gap Bridged by the Study
+
+         Based on the synthesis of literature, a significant research gap emerges
+regarding the absence of an integrated apartment management system
+specifically designed for small-scale and resource-constrained residential
+operations. Existing systems are commonly developed either as
+enterprise-oriented platforms or as isolated functional solutions focusing on
+individual administrative tasks such as payment monitoring, tenant management,
+or maintenance coordination (Magno et al., 2024; Setty, 2022; Saputra et al.,
+2025).
+
+         While these systems demonstrate improvements in specific operational
+areas, they frequently assume stable infrastructure, dedicated administrative
+personnel, and structured operational environments that do not reflect the
+realities of small-scale apartment and boarding house operations (Mia et al.,
+                                                                                                         21
+2024; Burke, 2026). As a result, many administrators continue to rely on
+fragmented workflows involving manual documentation, spreadsheet-based
+records, informal communication channels, and disconnected transaction
+monitoring processes.
+
+         Furthermore, although studies support the importance of centralized
+information systems, financial analytics, structured communication, and
+accessible deployment architectures, few implementations integrate these
+components into a single operational framework tailored for localized,
+resource-constrained residential settings.
+
+         This study addresses this gap through the development of Hivelet, a
+Progressive Web Application-based apartment management system designed
+specifically for small-scale apartment operations. The system integrates
+centralized MIS principles, financial tracking mechanisms, structured issue
+ticketing, tenant management, booking coordination, and accessible cross-device
+deployment within a unified operational environment.
+
+         By consolidating these interconnected administrative functions into a
+single platform, the study transforms fragmented workflows into cohesive,
+traceable, and structured system processes, thereby aligning theoretical
+principles with practical implementation within real-world residential management
+contexts.
+                                                                            22
+
+2.3 Concept of the Study
+
+  This study is grounded on the concept of improving apartment
+
+management by integrating its core processes into a centralized digital platform.
+
+Apartment operations involve interconnected activities such as tenant
+
+management, payment tracking, booking coordination, and maintenance
+
+handling. In traditional setups, these processes are often managed manually and
+
+separately, resulting in delays, inconsistencies, and increased administrative
+
+workload.
+
+  Figure 1 illustrates the study's conceptual framework using the
+
+Input-Process-Output (IPO) model, a standard software engineering approach
+
+that maps how system components interact to transform inputs into outputs.
+
+           Figure 2. Conceptual Framework
+                                                                                                         23
+         In this study, the Input phase consists of the study objectives, review of
+related literature, client interviews, needfinding observations, and analysis of
+existing administrative and payment workflows. These inputs provide both
+theoretical and contextual foundations, allowing the researchers to identify
+operational gaps, user requirements, and system constraints within the
+apartment management environment. The Process phase applies the Agile
+Software Development Life Cycle, integrating iterative stages of planning, design,
+development, testing, deployment, and review. Within this phase, the system
+modules are implemented, including financial tracking (analytics and reports),
+booking management (reservation logic), tenant management (profiles and
+records), and an optional online payment integration using the Adyen API. These
+processes transform identified requirements into a functional and structured
+system aligned with real-world operational needs. The Output phase includes the
+developed Hivelet system, its functional modules, and generated outputs such as
+financial reports, booking records, and transaction receipts. It also includes the
+completed research manuscript, system evaluation results based on ISO/IEC
+25010 standards, and the user manual. These outputs reflect the system's
+effectiveness in improving administrative efficiency, data organization, and
+communication within the apartment management process. Feedback is
+incorporated across all phases, allowing continuous system refinement based on
+user evaluation and operational performance, ensuring that the system remains
+adaptive and responsive to real-world conditions.
+                                                                                                         24
+
+2.4 Definition of Terms
+
+         Hivelet ­ A web-based apartment management system developed as a
+Progressive Web Application (PWA) for the Fe Galang Da Silva Apartment,
+designed to centralize and integrate tenant management, financial tracking,
+booking inquiries, and maintenance issue reporting into a unified operational
+platform that supports small-scale, resource-constrained administrative
+environments.
+
+         Progressive Web Application (PWA) ­ A web-based application
+architecture that enables app-like functionality through browsers, providing
+responsive design, offline capability, and cross-device accessibility without
+requiring installation, making it suitable for low-resource and hybrid operational
+environments.
+
+         Resource-Constrained Environment ­ Refers to small-scale residential
+or boarding house operations characterized by limited financial resources,
+minimal technical infrastructure, and constrained administrative manpower,
+where management processes are typically dependent on hybrid manual and
+basic digital tools rather than fully integrated systems.
+
+         Fragmented Workflow ­ A condition in which administrative processes
+such as tenant management, financial recording, and maintenance reporting are
+handled using disconnected tools (e.g., spreadsheets, paper records, and
+messaging applications), resulting in inconsistent data, delayed coordination, and
+reduced operational efficiency.
+                                                                                                         25
+         Centralized System ­ A system architecture in which all operational data
+and processes are managed within a single integrated platform, enabling
+consistent data storage, real-time access, and unified control over administrative
+functions.
+
+         Small-Scale Apartment Management ­ Refers to the administrative
+operation of residential boarding houses or apartments with limited units, minimal
+staff, and constrained digital infrastructure, where management processes are
+often hybrid, combining manual and basic digital tools.
+
+         Management Information System (MIS) ­ An information system
+framework that processes raw operational data into structured and meaningful
+information to support decision-making, coordination, and control within an
+organization or operational environment.
+
+         Booking Inquiry ­ A system feature that allows prospective tenants to
+submit room availability requests through the platform, which are reviewed and
+processed by administrators for approval or scheduling purposes.
+
+         Financial Tracking ­ A system function that records and monitors tenant
+payments and operational expenses in a structured digital format, ensuring
+accurate financial records and supporting administrative monitoring of income
+and expenditures.
+                                                                                                         26
+         Cash Flow Monitoring ­ The process of generating summarized financial
+reports based on recorded transactions, providing insights into income,
+expenses, and overall financial movement within the apartment system.
+
+         Issue Ticketing System ­ A structured digital mechanism that allows
+tenants to submit maintenance or facility-related concerns, which are then
+tracked, assigned, and resolved by administrators through a centralized workflow
+system.
+
+         User Authentication ­ A security process that verifies the identity of
+users accessing the system to ensure authorized entry and protect sensitive
+operational data.
+
+         Role-Based Access Control (RBAC) ­ A security model that restricts
+system access based on user roles (e.g., admin, tenant), ensuring that users can
+only access functions relevant to their responsibilities.
+
+         Optional Online Payment Feature ­A supplementary system function
+that allows tenants to input or simulate digital payment transactions within the
+platform, without serving as the primary financial processing mechanism of the
+system.
+
+         ISO/IEC 25010 ­ An international software quality standard used to
+evaluate system quality based on attributes such as functional suitability,
+usability, and security, ensuring structured assessment of system performance.
+                         3 MATERIALS AND METHODS
+
+         This chapter presents the strategies, tools, and methods to be utilized in
+the development of the Hivelet system. It also outlines the instruments and
+procedures that will be used in evaluating the system's functionality,
+performance, and user acceptability.
+
+3.1 Materials
+
+         This section presents the details of the materials to be utilized in the
+documentation of the study and in the development of the Hivelet system. These
+materials include both software and hardware components essential for the
+design, development, testing, and deployment of the proposed Progressive Web
+Application (PWA). The software tools include programming languages,
+frameworks, and database technologies, while the hardware consists of the
+physical equipment required for system development and evaluation. A detailed
+discussion of each material, its purpose, and its contribution to the Hivelet
+system is provided in the succeeding subsections.
+3.1.1 Software
+
+         The development of the Hivelet system requires modern front-end and
+back-end technologies to ensure a responsive, accessible, and secure
+Progressive Web Application (PWA) for both property administrators and tenants
+of a small-to-medium apartment system.
+                                                                                             28
+                     Table 1. Software Requirements
+
+Software             Version
+Visual Studio Code   1.85+
+HTML / Tailwind CSS  HTML5 / v3.0+
+Express.js           Latest Stable
+JavaScript           ES6+ / 0.73+
+Node.js              LTS(v18+)
+MySQL                8.0
+
+         The hardware and software requirements should be in a Windows 10 or
+higher to ensure long-term system compatibility, stability, and security.
+
+         As outlined in Table 1, the development will utilize HTML5, Tailwind CSS,
+and JavaScript to create a responsive and mobile-adaptive user interface.
+Node.js and Express.js will serve as the back-end framework responsible for
+handling server-side logic such as booking management, financial tracking, and
+issue ticket processing.
+
+         MySQL will be used as the system's database management tool to store
+and organize structured data such as tenant records, transaction history, and
+system logs.Google Chrome will be the primary browser for development and
+testing due to its reliability and optimization for modern web applications.
+
+         Additionally, Figma will be utilized during the design phase to create user
+interface prototypes for both administrative and tenant modules prior to actual
+system development.
+                                                                                                         29
+3.1.2 Hardware
+
+         To ensure efficient development, testing, and deployment of the Hivelet
+system, specific hardware specifications will be utilized during the development
+process. Since the system follows a Progressive Web Application (PWA)
+architecture, both computer workstations and mobile devices will be required.
+
+Table 2. Workstation Hardware Specifications
+
+Component            Minimum Specification
+Processor            Intel Core i5 or AMD Ryzen 5
+Memory (RAM)         8 GB DDR4
+Storage              256 GB Solid State Drive (SSD)
+Internet Connection  25 Mbps Broadband/Fiber
+
+         As detailed in Table 2, the workstation used for local development,
+database management, and system testing requires an SSD to ensure fast
+processing and smooth execution of development tools.
+
+         For mobile testing, a mid-range Android device will be used to evaluate
+system responsiveness and performance under real-world conditions.
+
+         As shown in Table 3, this baseline mobile setup ensures the development
+team can accurately evaluate the system's UI/UX layout and mobile adaptability
+using modern device standards.
+                                                                                           30
+Table 3. Mobile Testing Hardware Specifications (Baseline)]
+
+Component          Version
+Operating System
+Processor/Chipset  Android 13 or higher
+
+Memory (RAM)       Octa-core (MediaTek Helio G99 or
+Storage            equivalent)
+Display
+                   8 GB
+
+                   256 GB
+
+                   6.78-inch FHD+ (For UI/UX layout
+                   testing)
+
+3.2 Software Methodology
+
+         The researchers will utilize the Agile Software Development Life Cycle
+(SDLC) in the development of the Hivelet system. Agile is an iterative and flexible
+software development approach that emphasizes continuous improvement,
+stakeholder collaboration, and incremental delivery of system components rather
+than a rigid, linear process (Pressman & Maxim, 2020).
+
+         As illustrated in Figure 2, the dynamic and resource-constrained nature of
+small-scale apartment management requires a development approach that can
+adapt to changing operational needs. In this context, Agile is selected as the
+most appropriate methodology as it allows continuous interaction with the
+landlady and management of the Fe Galang Da Silva Apartment, ensuring that
+system features are aligned with actual administrative workflows such as tenant
+management, financial tracking, booking coordination, and maintenance
+handling.
+                                                                                                         31
+
+                          Figure 3. Agile Software Development Life Cycle
+         Unlike traditional SDLC models, Agile supports early identification of
+system issues through iterative cycles of development and testing. This enables
+the researchers to refine system components based on real-time feedback,
+resulting in a more reliable, user-centered, and context-appropriate solution.
+Furthermore, the Agile approach facilitates progressive evaluation of the system
+throughout its development. The system will be assessed using the ISO/IEC
+25010 software quality model encompassing functional suitability, performance
+efficiency, compatibility, usability, reliability, security, maintainability, and
+portability. This ensures that the developed system not only meets user
+requirements but also adheres to established software quality standards.
+                                                                                                         32
+         Additionally, the flexibility of Agile allows the system to be continuously
+improved, modified, and adapted without compromising performance. This is
+particularly important in ensuring that Hivelet remains functional under varying
+conditions such as limited infrastructure, unstable internet connectivity, and
+evolving user needs.
+
+3.2.1 Requirements
+
+         In this phase, the researchers conduct needfinding through direct
+collaboration with the landlady and management of the Fe Galang Da Silva
+Apartment. This aligns with the first objective of the study, which focuses on
+identifying user needs and operational challenges. Data is gathered through
+interviews and observation to examine existing administrative practices, including
+the use of manual ledgers, fragmented financial tracking, and unstructured
+communication for maintenance requests. These findings reveal inefficiencies
+such as inconsistent record-keeping, delayed communication, and lack of
+centralized monitoring. Based on these insights, the researchers define the
+system requirements, scope, and core functionalities of Hivelet. Emphasis is
+placed on the need for a centralized digital platform capable of integrating
+booking, financial tracking, and maintenance management within a unified
+system.
+
+3.2.2 Design
+
+         During the Design phase, the identified requirements are translated into
+system architecture and interface prototypes. The researchers develop
+                                                                                                         33
+wireframes and UI/UX designs using Figma, covering three user roles: public
+users, tenants, and administrators. The system is designed with consideration for
+a resource-constrained environment, characterized by limited infrastructure,
+unstable internet connectivity, and minimal administrative resources. To address
+these constraints, Hivelet is structured as a lightweight Progressive Web
+Application (PWA) with optimized performance, simple navigation, and minimal
+system requirements.
+
+         Workflows for booking, financial monitoring, and maintenance requests
+are mapped and refined through stakeholder feedback to ensure alignment with
+real-world operations.
+
+3.2.3 Development
+
+         This phase corresponds to the second objective of the study, which
+focuses on developing the system. The researchers implement the Hivelet
+system using HTML5, Tailwind CSS, and JavaScript for the front-end interface,
+ensuring responsiveness across devices. The back-end is developed using
+Node.js and Express.js to manage core functionalities such as booking
+processing, financial computations, and maintenance ticket handling. An optional
+online payment feature is implemented as an optional integration to simulate or
+record digital payments without replacing the primary cash-based financial
+workflow. MySQL is used as the database management system to store tenant
+records, transaction data, and system logs. The system is developed
+                                                                                                         34
+incrementally, following Agile principles, allowing continuous refinement based on
+feedback and testing results.
+
+3.2.4 Testing
+
+         Aligned with the third objective, this phase focuses on testing and
+evaluating the system's performance. The researchers conduct unit testing to
+verify individual components such as booking requests, payment tracking, and
+notification features. Integration testing is also performed to ensure seamless
+interaction between system modules, including booking, financial management,
+and maintenance tracking. The optional online payment feature will be tested for
+basic functionality, including transaction recording and user interaction. Testing
+ensures that the system meets functional requirements, maintains reliability, and
+provides a user-friendly experience for both administrators and tenants.
+
+3.2.5 Deployment
+
+         After successful testing, the Hivelet system is deployed to a
+university-managed server environment, where the system will be accessible
+through a designated URL endpoint for real-world usage and evaluation. A pilot
+implementation is conducted with selected users to validate real-world
+performance before full deployment. The researchers perform final system
+configuration, database migration, and environment setup to ensure smooth
+operation.
+                                                                                                         35
+3.2.6 Review and Maintenance
+
+         This phase complements the evaluation procedure by implementing
+refinements and system improvements based on the results gathered from
+testing and ISO/IEC 25010 evaluation. Following Agile principles, identified
+issues related to functional suitability, performance efficiency, compatibility,
+usability, reliability, security, maintainability, and portability are addressed through
+iterative optimization and maintenance activities.
+
+3.3 Evaluation Procedure
+
+         This phase directly supports the fourth objective of the study, which
+focuses on evaluating and optimizing the system using the ISO/IEC 25010
+Software Quality Model. To ensure a realistic measurement of system
+performance and usability, the evaluation will be conducted during actual use in
+the deployment environment, with a specific emphasis on eight key attributes:
+functional suitability, performance efficiency, compatibility, usability, reliability,
+security, maintainability, and portability
+
+         A structured survey questionnaire is administered to the property owner
+and tenants of the Fe Galang Da Silva Apartment. Responses are measured
+using a 5-point Likert scale to assess system effectiveness, user satisfaction, and
+perceived security.
+                                                                                                         36
+         Statistical analysis is conducted to determine the extent to which Hivelet
+improves operational consistency, data reliability, and system security in a
+small-scale apartment setting.
+
+                                        Table 3. Likert Scale
+
+Range  Meaning            Description
+   5
+   4   Strongly Agree             The system has functional
+   3                      completeness of tasks, is effective and
+   2
+   1                                          reliable.
+
+       Agree              The system has somehow functional
+                          completeness of tasks, is somehow
+
+                                    effective and reliable.
+
+       Neutral            The system has slightly functional
+                          completeness of tasks, is slightly
+
+                                  effective and reliable.
+
+       Disagree           The system has slightly no functional
+                          completeness of tasks, is slightly not
+
+                                    effective and reliable.
+
+       Strongly Disagree       The system has no functional
+                          completeness of tasks, is not effective
+
+                                           and reliable.
+                                                                                                         37
+
+                             4 RESULTS AND DISCUSSION
+
+         This chapter presents the results and analysis of findings made in the
+conduct of the study...
+<SPACE>
+
+4.1 Objective 1 Title
+
+         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+sunt in culpa qui officia deserunt mollit anim id est laborum.
+4.1.1 Sub-objective Title
+
+         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.
+
+                                   Figure 2. Sub-objective Title
+         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat.
+                                                                                                         38
+
+4.2 Objective 2 Title
+
+         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+sunt in culpa qui officia deserunt mollit anim id est laborum.
+4.2.1 Sub-objective Title
+
+         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.
+
+4.3 Evaluation of the Developed System
+
+         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Evaluation Results
+
+         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                                                                                                         39
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+sunt in culpa qui officia deserunt mollit anim id est laborum.
+<SPACE>
+
+Deployment Plan and Strategies
+
+         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+sunt in culpa qui officia deserunt mollit anim id est laborum.
+                                                                                                         40
+
+     5 SUMMARY, CONCLUSIONS, AND RECOMMENDATIONS
+
+         This chapter presents the summary, conclusions, and recommendations of
+the study...
+<SPACE>
+
+5.1 Summary
+
+         Based on the objectives of the study, the following results were
+accomplished:
+
+         1. The application was developed to provide a platform for auto shops
+and upgrade the manual process of booking of services. It enables clients to
+experience the best convenience in repairing and conducting maintenance of
+cars. Giving a hassle-free experience in locating auto shops near them, booking
+the services, and providing rescue whenever they have car breakdowns while on
+the road. The application was designed to be user-friendly, interactive, easy to
+learn and accessible through a mobile phone that everyone has.
+
+         2. The features of the system aid various end-users to accomplish
+specific tasks. Auto shop owners have been able to facilitate and manage shop
+personal information, bookings, exchange conversation between customers and
+view transaction history. The auto shop customer was able to book a service
+wherever the customer is located as long as the location has cellular signal.
+Customers were able to exchange conversations with the auto shop owner to
+check and do follow up on the booked services. The customer's feedback and
+                                                                                                         41
+rating helped the auto shop to improve and provide the best service for their
+customer to experience the best quality of service that they are.
+
+         3. The system used ISO/IEC 25010 software product quality which
+was used to evaluate the system's capabilities under the factors of Functional
+Suitability, Usability, and Performance Efficiency. The evaluation conducted was
+responded to by the auto shop owners and auto shop customers. The application
+functionality and features were tested by both auto shop owners and auto shop
+customers. After the testing phase of the application both auto shop owners and
+auto shop customers answered a series of questions under the ISO/IEC 25010.
+The following are the results of the ISO/IEC 25010 characteristics:
+
+                  a. The system's functionality usability has an overall rating of 4.98
+         which means that the application provides ease in using the interface and
+         facilitates the accomplishment of specified tasks and objectives.
+
+b.  Usability got the overall rating of 4.43, which indicates that the application
+has attributes that make it easy to operate and control. It also shows that the
+application is appropriate for their needs.
+
+c.  For Performance Efficiency, the overall rating is 4.15 which shows that the
+application responds and processes the client task immediately. It changes the
+demands placed by the user in an efficient manner.
+
+.
+<SPACE>
+                                                                                                         42
+
+5.2 Conclusions
+
+         Based on the analysis done on the results of the study, the following
+conclusions were drawn:
+
+        1. The proponents...
+<SPACE>
+
+5.3 Recommendations
+
+         Based on the summary and conclusions of the study, the following
+recommendations...
+
+         1. The future researchers...
+                                                                                                         43
+
+                                    REFERENCES
+
+Biørn-Hansen, A., Majchrzak, T. A., & Grønli, T. M. (2019). Progressive webapps:
+         The possible web-native unifier for mobile development. Proceedings of
+         the 13th International Conference on Web Information Systems and
+         Technologies (WEBIST). https://doi.org/10.5220/0007478003440351
+
+Burke, D. (2026). Property management challenges in residential multifamily
+         apartment complexes. American Journal of Industrial and Business
+         Management, 16(1), 1­19. https://doi.org/10.4236/ajibm.2026.161001
+
+Encarnacion, R. E., Laulita, F. A. G., Cruiz, H. J. B., & Quinte, J. L. E. (2025).
+         Design and evaluation of an online payment monitoring system for student
+         boarding houses near a university campus in the Philippines. Proceedings
+         of International Exchange and Innovation Conference on Engineering &
+         Sciences (IEICES), 11, 1225­1231. https://hdl.handle.net/2324/7395667
+
+Google. (2018). Progressive web apps. Google Developers.
+         https://developers.google.com/web/progressive-web-apps
+
+Jing, F., & Lim, C.-K. (2021). An effect of management service quality on
+         residential satisfaction and recommended intention of high-rise
+         apartments. Turkish Journal of Computer and Mathematics Education,
+         12(4), 201­211.
+
+Kotkar, A. R., Kaldate, V. N., Kandekar, R. B., Andhale, S. A., & Wamane, S. J.
+         (2026). Revolutionizing student accommodation: A MERN based rental
+         system for seamless property management. International Journal of
+         Engineering Research & Technology, 15(2), 1­10. https://www.ijert.org/
+
+Magno, J. M., Pelayo, R. S., & Soberano, K. T. (2024). Apartment rental
+         management system for real-time transaction and task organization.
+         International Journal of Multidisciplinary Research and Analysis, 7(7),
+         3287­3294.
+
+Mia, I. B., Jimenez, S., Habaradas, R., Ranieses, J. J., Javier, C., & Enriquez, J.
+         (2024). Digital technology adoption among Philippine micro-, small-, and
+         medium-sized enterprises: Barriers, enablers & challenges during
+         COVID-19. Journal of Business, Ethics and Society, 4(1), 1­17.
+
+Monteverde, A. L., Maderazo, J. J. S., Cruz, K. C. M., & Magnaye, N. A. (2023).
+         A web-based rental house smart finder using rapid application
+         development basis for evaluation of ISO/IEC 25010. International Journal
+         of Metaverse, 1(1), 1­4. https://journals.e-palli.com/home/index.php/ijm
+                                                                                44
+
+Laudon, K., & Laudon, J. (2006). Management information systems: Managing
+
+the  digital  firm  (9th  ed.).  Prentice                        Hall.
+
+https://www.iicseonline.org/management_information_system_2.pdf
+
+Pavia, J. F., Bonilla, K. M. J., Cordovilla, W. J. B., Pama, J. R. N., Baula, C. L., &
+         Bermejo, E. O. (2022). Bicol College property management system for
+         Bachelor of Science in Hospitality Management students: Mock hotel
+         operation. JPAIR Multidisciplinary Research, 50(1), 52­66.
+         https://doi.org/10.7719/jpair.v50i1.820
+
+Saputra, R. G., Susanto, R., & Pradana, A. I. (2025). Implementation of
+         web-based room management system for boarding house operations.
+         Bit-Tech (Binary Digital - Technology), 8(1), 831­840.
+         https://doi.org/10.32877/bt.v8i1.2738
+
+Setty, Y. (2022). Management system for an apartment [Master's capstone
+         project, Governors State University]. OPUS Open Portal to University
+         Scholarship. https://opus.govst.edu/capstones
+
+Thevaraju, D. P., Zakaria, Z., Sukri, K. a. M., & Kasim, S. (2019). Vista Angkasa
+         Apartment Management System. International Journal of Advanced
+         Science Computing and Engineering, 1(2), 76­84.
+         https://doi.org/10.62527/ijasce.1.2.4
+
+Ghasemaghaei, M., Ebrahimi, S., & Hassanein, K. (2018). Data analytics
+         competency for improving firm decision making performance. Journal of
+         Strategic Information Systems, 27(1), 101­113.
+         https://doi.org/10.1016/j.jsis.2017.10.001
+
+Pressman, R. S., & Maxim, B. R. (2020). Software engineering: A practitioner's
+         approach (9th ed.). McGraw-Hill Education.
+                                                              45
+
+APPENDICES
+                                                                        46
+Appendix A: Letter of Request
+                                                                     47
+Appendix B: Appointments
+48
+                                                                     49
+Appendix N: Source Code
+                                                                                            50
+
+                        CURRICULUM VITAE
+
+Name:       
+
+Address:
+Birthday:
+Sex:
+Civil Status:
+Email:
+
+Educational Background
+
+Tertiary:  Bicol University
+           Rizal St. Legazpi City, Albay
+           2019-2023
+
+  
+
+Secondary: Senior High School
+                                   51
+
+               <Address>
+
+               2013-2019
+
+               Junior High School
+
+               <Address>
+
+               2013-2019
+
+Elementary: Elementary School
+
+               <Address>
+
+               2007-2013
+
+Certificates:
+
+               Title
+
+               Date
+
+               Place
+
+               Title
+
+               Date
+
+               Place
+

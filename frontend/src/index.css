@@ -165,3 +165,218 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #a5adba;
 }
+
+/**
+ * ==========================================================================
+ * LUXURY DESIGN SYSTEM -- Public Site & Tenant Portal
+ * ==========================================================================
+ * @description Additive "lux-*" token/component layer for the public marketing
+ *              pages and the signed-in Tenant Portal. Deliberately separate from
+ *              the ".jira-*" system above, which the Admin Dashboard keeps using
+ *              unchanged (per project decision: admin sees the operational
+ *              workspace directly; the luxury real-estate aesthetic is for the
+ *              public-facing site and the tenant's own consumer-style app shell).
+ * @rationale  Warm-neutral, editorial palette (ivory canvas, charcoal text,
+ *             bronze accent, Playfair Display headings) matching a boutique
+ *             real-estate brand look, distinct from the admin's dense
+ *             Jira/Notion/Airtable operational grid.
+ */
+
+:root {
+  --lux-canvas: #f7f4ef;
+  --lux-surface: #ffffff;
+  --lux-text: #221f1b;
+  --lux-text-muted: #6b6459;
+  --lux-border: #e5dfd6;
+  --lux-accent: #8b6f4e;
+  --lux-accent-hover: #6f5738;
+}
+
+.lux-canvas {
+  background-color: var(--lux-canvas);
+  color: var(--lux-text);
+}
+
+.lux-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.lux-eyebrow {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lux-accent);
+}
+
+.lux-card {
+  background-color: var(--lux-surface);
+  border: 1px solid var(--lux-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(34, 31, 27, 0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.lux-card:hover {
+  border-color: #d8cfc0;
+  box-shadow: 0 6px 20px rgba(34, 31, 27, 0.08);
+}
+
+.lux-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--lux-text);
+  color: var(--lux-canvas);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.7rem 1.4rem;
+  border-radius: 2px;
+  border: 1px solid var(--lux-text);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.lux-btn-primary:hover {
+  background-color: var(--lux-accent-hover);
+  border-color: var(--lux-accent-hover);
+}
+
+.lux-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: transparent;
+  color: var(--lux-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.7rem 1.4rem;
+  border-radius: 2px;
+  border: 1px solid var(--lux-border);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.lux-btn-secondary:hover {
+  background-color: var(--lux-canvas);
+  border-color: var(--lux-text);
+}
+
+/* On-hero variant: sits directly on top of a photo, no dark card behind it */
+.lux-btn-on-photo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: rgba(247, 244, 239, 0.96);
+  color: var(--lux-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.5rem;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.lux-btn-on-photo:hover {
+  background-color: #ffffff;
+}
+
+.lux-btn-outline-on-photo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: transparent;
+  color: #ffffff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1.5rem;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.lux-btn-outline-on-photo:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: #ffffff;
+}
+
+.lux-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background-color: var(--lux-canvas);
+  border: 1px solid var(--lux-border);
+  border-radius: 2px;
+  color: var(--lux-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.85rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.lux-input:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: var(--lux-accent);
+}
+
+.lux-label {
+  display: block;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lux-text-muted);
+  margin-bottom: 0.3rem;
+}
+
+/* Room / bill status pills -- muted editorial tones, not bright Jira colors */
+.lux-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.lux-badge-available {
+  background-color: #e7efe6;
+  color: #3f6b3f;
+}
+
+.lux-badge-occupied {
+  background-color: #e7eaf0;
+  color: #3f4e6b;
+}
+
+.lux-badge-reserved {
+  background-color: #f5ede0;
+  color: #8a6a2e;
+}
+
+.lux-badge-maintenance {
+  background-color: #efede9;
+  color: #6b6459;
+}
+
+.lux-divider {
+  border-color: var(--lux-border);
+}

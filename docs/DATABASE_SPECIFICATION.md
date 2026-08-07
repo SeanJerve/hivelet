@@ -23,7 +23,7 @@ Every table, constraint, and rule in this database traces directly back to:
 - **Capstone Manuscript:** System Purpose, Target Property (Fe Galang Da Silva Boarding House), and Scope boundaries.
 - **System Bible (`docs/01_SYSTEM_BIBLE.md`):** Room-centric operational model, user roles, billing rules, and audit requirements.
 - **Business Rules (`docs/02_BUSINESS_RULES.md`):** BR-001 to BR-049.
-- **Income & Expense Specifications (`docs/09_MONTHLY_INCOME_REPORT.md` & `docs/10_MONTHLY_EXPENSES_REPORT.md`):** Canonical 33-unit layout across 5 clusters, 10 fixed expense categories, and split area allocations.
+- **Income & Expense Specifications (`docs/09_MONTHLY_INCOME_REPORT.md` & `docs/10_MONTHLY_EXPENSES_REPORT.md`):** Canonical 32-unit layout across 4 clusters, 10 fixed expense categories, and split area allocations.
 
 ### 1.2 DB-First Security Philosophy
 
@@ -212,21 +212,21 @@ Stores personal and role information for all system users (Landlady Admin, Activ
 ### Module 2: Property & Room Directory
 
 #### 2. `clusters`
-Defines the five canonical property clusters of Fe Galang Da Silva Boarding House.
+Defines the four canonical property clusters of Fe Galang Da Silva Boarding House.
 
 | Column | Type | Constraints | Description & Business Rule Alignment |
 | :--- | :--- | :--- | :--- |
-| `code` | `VARCHAR(50)` | `PRIMARY KEY` | Cluster code: `'BH'`, `'Back Apartment'`, `'Penthouse'`, `'Front Apartment'`, `'Linda'` (BR-032). |
+| `code` | `VARCHAR(50)` | `PRIMARY KEY` | Cluster code: `'BH'`, `'Back Apartment'`, `'Front Apartment'`, `'Linda'` (BR-032). |
 | `name` | `VARCHAR(100)` | `NOT NULL` | Cluster display name. |
-| `display_order` | `INT` | `NOT NULL` | Canonical presentation order (1 to 5). |
+| `display_order` | `INT` | `NOT NULL` | Canonical presentation order (1 to 4). |
 
 #### 3. `rooms`
-Stores the canonical 33 rentable units across the property.
+Stores the canonical 32 rentable units across the property.
 
 | Column | Type | Constraints | Description & Business Rule Alignment |
 | :--- | :--- | :--- | :--- |
 | `id` | `UUID` | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Unique room identifier. |
-| `room_number` | `VARCHAR(20)` | `UNIQUE`, `NOT NULL` | Room number (e.g. `'1a'`, `'B1F'`, `'PH'`, `'LF'`) (BR-002, BR-032). |
+| `room_number` | `VARCHAR(20)` | `UNIQUE`, `NOT NULL` | Room number (e.g. `'1a'`, `'B1F'`, `'LF'`) (BR-002, BR-032). |
 | `floor` | `INT` | `NOT NULL`, `CHECK (floor IN (1, 2, 3))` | Floor level (1, 2, or 3). |
 | `cluster_code` | `VARCHAR(50)` | `REFERENCES clusters(code)` | Foreign key to cluster group. |
 | `room_type` | `room_type_enum` | `ENUM('Studio', 'One-bedroom', 'Two-bedroom', 'Three-bedroom')` | Room architectural layout. |
@@ -305,11 +305,12 @@ Reproduces the landlady's Excel Monthly Income Report ledger with 3NF automated 
 | `remitted_amount` | `NUMERIC(10,2)` | **`GENERATED ALWAYS AS (rent_amount + water_payment) STORED`** | **BR-038:** Total remitted ($\text{Rent} + \text{Water}$), calculated automatically by DB. |
 | `is_linda_billing` | `BOOLEAN` | `DEFAULT FALSE` | Linda fixed billing flag (BR-040). |
 | `linda_electricity_charge`, `linda_water_charge` | `NUMERIC(10,2)` | `DEFAULT 0.00` | Fixed electricity (₱325) & water charges remitted to Linda. |
+| `receipt_sent_at` | `TIMESTAMPTZ` | `NULLABLE` | Set when the administrator sends the tenant an in-app payment confirmation receipt (added 2026-08-07). |
 
 #### 9. `bills` & 10. `payments`
 Tracks itemized monthly tenant statements and payment receipts:
 - `bills` records `due_date`, `grace_period_end_date` (1-week grace period BR-012), and overdue status.
-- `payments` records payment method (`'Cash'`, `'GCash'`, `'Adyen Online'`) and `verification_status` (`'Verified'`, `'Pending Verification'`). Online GCash payments via Adyen enter `Pending Verification` status requiring landlady approval (BR-016, BR-017).
+- `payments` records payment method (`'Cash'`, `'GCash'`, `'Adyen Online'`), `verification_status` (`'Verified'`, `'Pending Verification'`), and `receipt_sent_at` (set when the administrator sends a confirmation receipt). Online GCash payments via Adyen enter `Pending Verification` status requiring landlady approval (BR-016, BR-017) -- inserted server-side by the webhook in `backend/src/routes/payments.ts`, never trusting a client-reported gateway result.
 
 ---
 
@@ -390,7 +391,7 @@ Immutable audit history tracking all administrative and financial changes (BR-01
 | **BR-021** | Ticket Priority | `maintenance_tickets.priority` `ENUM('Emergency', 'High', 'Medium', 'Low')`. |
 | **BR-023** | Ticket Closure Authority | `maintenance_tickets.closed_by` `REFERENCES profiles(id)`. |
 | **BR-026** | Duplicate Prevention | Partial `UNIQUE INDEX idx_single_active_assignment_per_room`. |
-| **BR-032** | Canonical Unit List | `clusters` & `rooms` pre-loaded with 33 canonical units. |
+| **BR-032** | Canonical Unit List | `clusters` & `rooms` pre-loaded with 32 canonical units. |
 | **BR-035** | 50% Share Derivation | `monthly_income_records.fifty_percent_share` `GENERATED ALWAYS AS (rent_amount / 2.0) STORED`. |
 | **BR-038** | Remitted Amount Formula | `monthly_income_records.remitted_amount` `GENERATED ALWAYS AS (rent_amount + water_payment) STORED`. |
 | **BR-039** | Deposit Equals Initial Rent | `room_assignments.deposit_amount` stored once at onboarding. |

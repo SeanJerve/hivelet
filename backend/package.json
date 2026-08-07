@@ -11,6 +11,7 @@
     "db:verify": "tsx database/setup_local_db.ts --verify-only"
   },
   "dependencies": {
+    "@adyen/api-library": "^32.0.0",
     "@supabase/supabase-js": "^2.110.9",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

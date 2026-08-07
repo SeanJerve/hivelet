@@ -87,11 +87,11 @@ async function main() {
 
         // Specific Check Assertions
         let statusNote = '';
-        if (tableName === 'rooms' && count !== 33) {
-          statusNote = `⚠️ Warning: Expected 33 canonical units, found ${count}`;
+        if (tableName === 'rooms' && count !== 32) {
+          statusNote = `⚠️ Warning: Expected 32 canonical units, found ${count}`;
           allPassed = false;
-        } else if (tableName === 'clusters' && count !== 5) {
-          statusNote = `⚠️ Warning: Expected 5 property clusters, found ${count}`;
+        } else if (tableName === 'clusters' && count !== 4) {
+          statusNote = `⚠️ Warning: Expected 4 property clusters, found ${count}`;
           allPassed = false;
         } else if (tableName === 'fixed_expense_categories' && count < 13) {
           statusNote = `⚠️ Warning: Expected 13 categories (10 main + 3 sublines), found ${count}`;

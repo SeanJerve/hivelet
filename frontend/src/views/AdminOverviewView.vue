@@ -3,7 +3,7 @@
  * @component AdminOverviewView
  * @description Executive dashboard answering "what needs the landlady's attention today?"
  *              (System Bible Section 17): current-month cash position, pending verifications,
- *              open maintenance priority, new inquiries, and a live 33-unit occupancy matrix.
+ *              open maintenance priority, new inquiries, and a live 32-unit occupancy matrix.
  * @systemBibleRef Section 17 - Dashboard Philosophy, BR-029 - Current Month Dashboard Default
  */
 import { ref, computed, onMounted } from 'vue';
@@ -211,7 +211,7 @@ const cardTileClass = (status: string) => {
         <ArrowRight class="w-4 h-4 text-[#6b778c]" />
       </div>
 
-      <!-- 33-Unit Visual Occupancy Matrix -->
+      <!-- 32-Unit Visual Occupancy Matrix -->
       <div class="jira-card p-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-[#dfe1e6]">
           <div>

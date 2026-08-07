@@ -153,7 +153,7 @@ Client-side cached/offline data must not override authoritative server records.
 
 ## BR-032 — Canonical Unit List
 
-The property's rentable units are fixed and grouped into five clusters: BH (Main Rooms: 1a-1h, 2a-2g, 3a-3g), Back Apartment (B1F, B2F, B2B, B3F, B3B), Penthouse (PH), Front Apartment (F1, F2F, F2B), and Linda (LF, LB).
+The property's rentable units are fixed and grouped into four clusters: BH (Main Rooms: 1a-1h, 2a-2g, 3a-3g), Back Apartment (B1F, B2F, B2B, B3F, B3B), Front Apartment (F1, F2F, F2B), and Linda (LF, LB).
 
 See `09_MONTHLY_INCOME_REPORT.md` for full detail.
 

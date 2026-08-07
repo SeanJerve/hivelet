@@ -93,7 +93,7 @@ The system shall record important actions and financial changes.
 The system may provide limited offline-ready access to cached resources and safe previously available data.
 
 ### FR-031 Monthly Income Report Layout
-The system shall reproduce the landlady's Monthly Income Report layout: units grouped by cluster (BH, Back Apartment, Penthouse, Front Apartment, Linda) in canonical order, with per-cluster and grand subtotals, per `09_MONTHLY_INCOME_REPORT.md`.
+The system shall reproduce the landlady's Monthly Income Report layout: units grouped by cluster (BH, Back Apartment, Front Apartment, Linda) in canonical order, with per-cluster and grand subtotals, per `09_MONTHLY_INCOME_REPORT.md`.
 
 ### FR-032 Guided Monthly Payment Entry
 The administrator shall record a monthly payment through a guided form: unit dropdown, calendar date picker, contact/invoice entry, rent amount entry, with rent period, 50% share, and remitted amount computed automatically.

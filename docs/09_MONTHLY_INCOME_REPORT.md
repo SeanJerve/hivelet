@@ -16,19 +16,18 @@ The landlady currently tracks rent, water, garbage, and deposits per unit per mo
 
 ## 2. Canonical Unit List
 
-The property's rentable units are fixed and grouped into five clusters, always presented in this order:
+The property's rentable units are fixed and grouped into four clusters, always presented in this order:
 
 | Cluster | Units |
 | --- | --- |
 | **BH (Main Rooms)** | 1a, 1b, 1c, 1d, 1e, 1f, 1g, 1h, 2a, 2b, 2c, 2d, 2e, 2f, 2g, 3a, 3b, 3c, 3d, 3e, 3f, 3g |
 | **Back Apartment** | B1F, B2F, B2B, B3F, B3B |
-| **Penthouse** | PH |
 | **Front Apartment** | F1, F2F, F2B |
 | **Linda** | LF, LB |
 
 A unit may be `VACANT` for a given month — it still appears in the layout with no payment row.
 
-Linda's two units (LF, LB) are billed under a different rule set (see Section 6) and must never be combined into the same subtotal as BH/Back/Front/Penthouse.
+Linda's two units (LF, LB) are billed under a different rule set (see Section 6) and must never be combined into the same subtotal as BH/Back/Front.
 
 ---
 
@@ -39,8 +38,8 @@ The report is organized as a running ledger, not a flat table:
 1. A `YEAR <yyyy>` row starts each year's block.
 2. A `<MONTH> <yyyy>` row starts each month's block.
 3. Each cluster's unit rows follow, in canonical unit order.
-4. Each cluster (BH, Back Apartment, Front Apartment) ends with a **subtotal row**: sum of Rent Amount, Occupants, Water Payment, and Remitted Amount for that cluster. Penthouse has no subtotal while vacant.
-5. A **grand subtotal row** follows, combining BH + Back Apartment + Penthouse + Front Apartment (excluding Linda).
+4. Each cluster (BH, Back Apartment, Front Apartment) ends with a **subtotal row**: sum of Rent Amount, Occupants, Water Payment, and Remitted Amount for that cluster.
+5. A **grand subtotal row** follows, combining BH + Back Apartment + Front Apartment (excluding Linda).
 6. The **Linda** section follows, with its own fixed-rate rows and its own total, remitted directly to Linda (Section 6).
 7. At least one blank row separates each month's block from the next.
 
@@ -100,7 +99,7 @@ Linda's two units (LF, LB) do not follow the standard rent/water model. Instead:
 
 - **Electricity**: fixed ₱325 per unit, every month, regardless of occupants.
 - **Water**: fixed per unit, not per-occupant — ₱400 for LF (Gayon), ₱200 for LB (Jaye Casia).
-- These fixed charges are totaled separately from the BH/Back/Front/Penthouse grand subtotal.
+- These fixed charges are totaled separately from the BH/Back/Front grand subtotal.
 - The Linda total is remitted **directly to Linda**, not pooled with the rest of the monthly remittance.
 
 This is a distinct billing mode from BR-014 (₱200/person water) and must not reuse the same per-occupant calculation path.

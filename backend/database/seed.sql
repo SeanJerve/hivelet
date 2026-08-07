@@ -23,9 +23,8 @@ TRUNCATE audit_logs, notifications, ticket_messages, ticket_attachments, mainten
 INSERT INTO clusters (code, name, display_order) VALUES
 ('BH', 'Boarding House (Main Rooms)', 1),
 ('Back Apartment', 'Back Apartment', 2),
-('Penthouse', 'Penthouse', 3),
-('Front Apartment', 'Front Apartment', 4),
-('Linda', 'Linda Units', 5);
+('Front Apartment', 'Front Apartment', 3),
+('Linda', 'Linda Units', 4);
 
 -- ==============================================================================
 -- 2. SEED PROFILES (Admin, Tenants, Prospects)
@@ -82,9 +81,6 @@ INSERT INTO rooms (id, room_number, floor, cluster_code, room_type, description,
 ('b0200000-0000-0000-0000-000000000002', 'B2B', 2, 'Back Apartment', 'One-bedroom', 'Back Apartment 2nd Floor Back Unit', 3, 6200.00, 6200.00, 'Available', 'Published', false),
 ('b0300000-0000-0000-0000-000000000001', 'B3F', 3, 'Back Apartment', 'Two-bedroom', 'Back Apartment 3rd Floor Front Unit', 4, 7500.00, 7500.00, 'Available', 'Published', false),
 ('b0300000-0000-0000-0000-000000000002', 'B3B', 3, 'Back Apartment', 'Two-bedroom', 'Back Apartment 3rd Floor Back Unit', 4, 7500.00, 7500.00, 'Available', 'Published', false),
-
--- Penthouse Cluster (1 Unit)
-('c0300000-0000-0000-0000-000000000001', 'PH', 3, 'Penthouse', 'Three-bedroom', 'Penthouse Top Floor Executive Suite', 5, 12000.00, 12000.00, 'Available', 'Published', false),
 
 -- Front Apartment Cluster (3 Units)
 ('d0100000-0000-0000-0000-000000000001', 'F1', 1, 'Front Apartment', 'One-bedroom', 'Front Apartment 1st Floor', 3, 6500.00, 6500.00, 'Available', 'Published', false),

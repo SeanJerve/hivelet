@@ -8,10 +8,11 @@
  *              the BR-047 reconciliation check are computed here from the normalized entries.
  */
 import { ref, computed, onMounted } from 'vue';
-import { Receipt, Plus, Trash2, CheckCircle2, AlertTriangle } from 'lucide-vue-next';
+import { Receipt, Plus, Trash2, CheckCircle2, AlertTriangle, Download } from 'lucide-vue-next';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../lib/useToast';
+import { exportMonthlyExpensesExcel } from '../lib/expensesReportExport';
 
 const authStore = useAuthStore();
 const { showToast } = useToast();
@@ -173,6 +174,25 @@ const submitExpense = async () => {
   resetForm();
   await loadAll();
 };
+
+const exporting = ref(false);
+const exportReport = async () => {
+  exporting.value = true;
+  try {
+    await exportMonthlyExpensesExcel({
+      monthLabel,
+      categoryTotals: categoryTotals.value,
+      categoryGrandTotal: categoryGrandTotal.value,
+      areaTotals: areaTotals.value,
+      areaGrandTotal: areaGrandTotal.value,
+      entries: entries.value.filter((e) => isCurrentMonth(e.expense_date)),
+    });
+  } catch (err: any) {
+    showToast('Export Failed', err?.message || 'Could not generate the Excel file.', 'error');
+  } finally {
+    exporting.value = false;
+  }
+};
 </script>
 
 <template>
@@ -186,6 +206,10 @@ const submitExpense = async () => {
         </div>
         <h1 class="text-xl font-bold text-[#172b4d]">Monthly Expenses Ledger</h1>
       </div>
+      <button @click="exportReport" :disabled="exporting" class="jira-btn-secondary text-xs disabled:opacity-50">
+        <Download class="w-3.5 h-3.5" />
+        {{ exporting ? 'Exporting…' : 'Export to Excel' }}
+      </button>
     </div>
 
     <div v-if="loading" class="text-xs text-[#6b778c] p-6 text-center">Loading expenses...</div>

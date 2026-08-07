@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 -- Table: clusters (Canonical Unit Clusters)
 CREATE TABLE IF NOT EXISTS clusters (
-    code VARCHAR(50) PRIMARY KEY, -- 'BH', 'Back Apartment', 'Penthouse', 'Front Apartment', 'Linda'
+    code VARCHAR(50) PRIMARY KEY, -- 'BH', 'Back Apartment', 'Front Apartment', 'Linda'
     name VARCHAR(100) NOT NULL,
     display_order INT NOT NULL
 );
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS clusters (
 -- Table: rooms (32 Canonical Units)
 CREATE TABLE IF NOT EXISTS rooms (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    room_number VARCHAR(20) UNIQUE NOT NULL, -- e.g., '1a', 'B1F', 'PH', 'LF'
+    room_number VARCHAR(20) UNIQUE NOT NULL, -- e.g., '1a', 'B1F', 'LF'
     floor INT NOT NULL CHECK (floor IN (1, 2, 3)),
     cluster_code VARCHAR(50) NOT NULL REFERENCES clusters(code),
     room_type room_type_enum NOT NULL DEFAULT 'Studio',
@@ -218,6 +218,7 @@ CREATE TABLE IF NOT EXISTS monthly_income_records (
     linda_water_charge NUMERIC(10,2) DEFAULT 0.00 CHECK (linda_water_charge >= 0),
     payment_method payment_method_type NOT NULL DEFAULT 'Cash',
     verification_status verification_status_type NOT NULL DEFAULT 'Verified',
+    receipt_sent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -254,6 +255,7 @@ CREATE TABLE IF NOT EXISTS payments (
     paid_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     verified_at TIMESTAMPTZ,
     verified_by UUID REFERENCES profiles(id),
+    receipt_sent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -432,9 +434,30 @@ CREATE POLICY policy_admin_price_history ON room_price_history FOR ALL USING (cu
 DROP POLICY IF EXISTS policy_admin_room_assignments ON room_assignments;
 CREATE POLICY policy_admin_room_assignments ON room_assignments FOR ALL USING (current_user_role() = 'admin');
 
--- BR-048: Admin-Only Authorship of Income and Expense Ledgers (Tenants/Public have ZERO access at DB level!)
+-- BR-048: Admin-Only Authorship of Income and Expense Ledgers (Tenants/Public have ZERO direct
+-- table access at RLS level!). The Tenant Portal's Payment Receipts card instead reads through the
+-- narrow get_my_income_receipts() SECURITY DEFINER function defined below, which exposes only the
+-- caller's own already-sent receipts, never the ledger table itself.
 DROP POLICY IF EXISTS policy_admin_income_ledger ON monthly_income_records;
 CREATE POLICY policy_admin_income_ledger ON monthly_income_records FOR ALL USING (current_user_role() = 'admin');
+
+CREATE OR REPLACE FUNCTION get_my_income_receipts()
+RETURNS TABLE (
+    id UUID,
+    amount NUMERIC,
+    payment_method payment_method_type,
+    reference VARCHAR,
+    paid_on DATE,
+    sent_at TIMESTAMPTZ
+) AS $$
+    SELECT id, remitted_amount, payment_method, invoice_number, date_paid, receipt_sent_at
+    FROM monthly_income_records
+    WHERE tenant_profile_id IN (SELECT id FROM profiles WHERE auth_user_id = auth.uid())
+      AND receipt_sent_at IS NOT NULL
+    ORDER BY receipt_sent_at DESC;
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+GRANT EXECUTE ON FUNCTION get_my_income_receipts() TO authenticated;
 
 DROP POLICY IF EXISTS policy_admin_expense_categories ON fixed_expense_categories;
 CREATE POLICY policy_admin_expense_categories ON fixed_expense_categories FOR SELECT USING (true);

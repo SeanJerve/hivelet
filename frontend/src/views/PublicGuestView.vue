@@ -1,15 +1,18 @@
 <script setup lang="ts">
 /**
  * @component PublicGuestView
- * @description Minimalist Corporate Public Property Catalog & Room Inquiry Portal.
+ * @description Luxury public room catalog & inquiry portal.
  * @systemBibleRef Section 4 - Public Visitor Role & Section 5.4 - Centralized Inquiries
- * @rationale Provides prospective tenants with clear property specifications, room availability grids,
- *              and direct inquiry submission without distracting consumer marketing gimmicks.
- * @innovations Built a clean, mobile-first room availability grid with integrated direct inquiry modal.
+ * @rationale Prospective tenants can browse every published unit, see occupancy status, view room
+ *            details, and submit a direct inquiry without needing an account -- login is admin-issued
+ *            only (System Bible Section 4: visitors "cannot directly reserve or transact online").
+ * @innovations Room-type photography is a curated Unsplash placeholder (no real property photos exist
+ *              in the repo yet) -- swap for real unit photography before production deployment.
  */
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Send, ArrowLeft } from 'lucide-vue-next';
+import { Send, Users, MapPin, CheckCircle2, X } from 'lucide-vue-next';
+import PublicNavbar from '../components/layout/PublicNavbar.vue';
 import { supabase } from '../lib/supabase';
 
 const router = useRouter();
@@ -55,18 +58,24 @@ const availableCount = computed(
   () => publicRooms.value.filter((r) => r.operational_status === 'Available').length
 );
 
+// Placeholder photography keyed by room type -- pending real unit photos.
+const ROOM_TYPE_PHOTOS: Record<string, string> = {
+  Studio: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
+  'One-bedroom': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
+  'Two-bedroom': 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?auto=format&fit=crop&w=800&q=80',
+};
+const roomPhoto = (type: string) => ROOM_TYPE_PHOTOS[type] || ROOM_TYPE_PHOTOS.Studio;
+
 const statusBadgeClass = (status: string) => {
   switch (status) {
     case 'Occupied':
-      return 'jira-badge-done';
+      return 'lux-badge-occupied';
     case 'Available':
-      return 'jira-badge-progress';
+      return 'lux-badge-available';
     case 'Reserved':
-      return 'jira-badge-warning';
-    case 'Under Maintenance':
-      return 'jira-badge-emergency';
+      return 'lux-badge-reserved';
     default:
-      return 'jira-badge-todo';
+      return 'lux-badge-maintenance'; // Under Maintenance
   }
 };
 
@@ -82,12 +91,18 @@ const inquiryForm = ref({
 const inquirySubmitted = ref(false);
 const submitting = ref(false);
 const submitError = ref('');
+const showInquiryModal = ref(false);
 
 const selectRoomForInquiry = (room: PublicRoom) => {
   inquiryForm.value.roomId = room.id;
   inquiryForm.value.roomNumber = room.room_number;
   inquirySubmitted.value = false;
   submitError.value = '';
+  showInquiryModal.value = true;
+};
+
+const closeInquiryModal = () => {
+  showInquiryModal.value = false;
 };
 
 const submitInquiry = async () => {
@@ -122,134 +137,142 @@ const submitInquiry = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white">
-    <div class="space-y-6 max-w-5xl mx-auto p-4 md:p-8">
-    <!-- Back Button -->
-    <button
-      @click="router.push('/')"
-      class="flex items-center gap-1.5 text-xs font-medium text-[#42526e] hover:text-[#0c66e4] transition-colors"
-    >
-      <ArrowLeft class="w-3.5 h-3.5" />
-      <span>Back to Home</span>
-    </button>
+  <div class="lux-canvas min-h-screen">
+    <PublicNavbar variant="solid" />
 
-    <!-- Property Header Banner -->
-    <div class="jira-card p-6 bg-white space-y-2 border-l-4 border-l-[#0c66e4]">
-      <span class="text-xs font-bold text-[#0c66e4] uppercase tracking-wider">Fe Galang Da Silva Boarding House</span>
-      <h1 class="text-2xl font-bold text-[#172b4d]">Available Room Units Directory</h1>
-      <p class="text-xs text-[#5e6c84] max-w-2xl">
-        Centralized apartment management catalog. View verified available units across 3 floors and submit inquiries directly to the landlady.
-      </p>
-    </div>
-
-    <!-- Available Units Grid -->
-    <div class="space-y-4">
-      <h2 class="text-base font-bold text-[#172b4d]">Currently Available Units ({{ availableCount }})</h2>
-
-      <div v-if="loadingRooms" class="jira-card p-6 text-center text-xs text-[#6b778c]">
-        Loading room units...
+    <main class="max-w-6xl mx-auto px-5 md:px-10 py-12 md:py-16 space-y-14">
+      <!-- Header -->
+      <div>
+        <span class="lux-eyebrow">Fe Galang Da Silva Boarding House</span>
+        <h1 class="lux-serif text-3xl md:text-4xl mt-2 text-[var(--lux-text)]">Available Room Units</h1>
+        <p class="text-sm text-[var(--lux-text-muted)] mt-3 max-w-2xl leading-relaxed">
+          Browse all published units across the property, see live occupancy status, and submit an inquiry directly to the administrator.
+        </p>
       </div>
 
-      <div v-else-if="loadRoomsError" class="p-4 bg-[#ffebe6] border border-[#ffbdad] rounded-xs text-[#bf2600] text-xs">
-        Failed to load room units: {{ loadRoomsError }}
-      </div>
+      <!-- Room Grid -->
+      <div class="space-y-6">
+        <h2 class="lux-serif text-xl text-[var(--lux-text)]">{{ availableCount }} Currently Available</h2>
 
-      <div v-else-if="publicRooms.length === 0" class="jira-card p-6 text-center text-xs text-[#6b778c]">
-        No units currently available, please check back soon.
-      </div>
-
-      <template v-else>
-        <div v-if="availableCount === 0" class="p-3 bg-[#deebff] border border-[#b3d4ff] rounded-xs text-[#0747a6] text-xs">
-          No units currently available, please check back soon. Other listed units are shown below for reference.
+        <div v-if="loadingRooms" class="lux-card p-10 text-center text-sm text-[var(--lux-text-muted)]">
+          Loading room units…
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div v-for="room in publicRooms" :key="room.id" class="jira-card p-4 flex flex-col justify-between space-y-3">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <h3 class="font-bold text-base text-[#172b4d]">Room {{ room.room_number }}</h3>
-                <span :class="['jira-badge', statusBadgeClass(room.operational_status)]">
-                  {{ room.operational_status.toUpperCase() }}
+        <div v-else-if="loadRoomsError" class="p-4 bg-[#f7e6e2] border border-[#e3b7ac] rounded text-[#8a3a26] text-sm">
+          Failed to load room units: {{ loadRoomsError }}
+        </div>
+
+        <div v-else-if="publicRooms.length === 0" class="lux-card p-10 text-center text-sm text-[var(--lux-text-muted)]">
+          No units currently published. Please check back soon.
+        </div>
+
+        <template v-else>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="room in publicRooms" :key="room.id" class="lux-card overflow-hidden flex flex-col">
+              <div class="relative aspect-[4/3]">
+                <img :src="roomPhoto(room.room_type)" :alt="`${room.room_type} unit`" class="w-full h-full object-cover" />
+                <span :class="['lux-badge absolute top-3 right-3', statusBadgeClass(room.operational_status)]">
+                  {{ room.operational_status }}
                 </span>
               </div>
-              <p class="text-xs text-[#0c66e4] font-medium mb-2">{{ room.room_type }} • Floor {{ room.floor }}</p>
-              <p class="text-xs text-[#5e6c84] leading-relaxed">{{ room.description }}</p>
-              <p v-if="room.operational_status !== 'Available' && room.available_from" class="text-xs text-[#6b778c] mt-1">
-                Available from {{ room.available_from }}
-              </p>
-            </div>
 
-            <div class="border-t border-[#dfe1e6] pt-3 flex items-center justify-between">
-              <div>
-                <span class="text-[10px] text-[#6b778c] block uppercase font-semibold">Monthly Rate</span>
-                <strong class="text-base font-bold text-[#172b4d]">₱{{ Number(room.current_price).toLocaleString() }}/mo</strong>
+              <div class="p-5 flex flex-col gap-3 flex-1">
+                <div>
+                  <div class="flex items-center justify-between gap-2">
+                    <h3 class="lux-serif text-lg text-[var(--lux-text)]">Room {{ room.room_number }}</h3>
+                    <span class="lux-serif text-base text-[var(--lux-text)]">₱{{ Number(room.current_price).toLocaleString() }}<span class="text-xs text-[var(--lux-text-muted)]">/mo</span></span>
+                  </div>
+                  <div class="flex items-center gap-3 mt-1.5 text-[11px] text-[var(--lux-text-muted)] uppercase tracking-wide">
+                    <span class="flex items-center gap-1"><MapPin class="w-3 h-3" />Floor {{ room.floor }}</span>
+                    <span>{{ room.room_type }}</span>
+                    <span class="flex items-center gap-1"><Users class="w-3 h-3" />{{ room.capacity }} max</span>
+                  </div>
+                </div>
+
+                <p class="text-xs text-[var(--lux-text-muted)] leading-relaxed flex-1">{{ room.description }}</p>
+
+                <p v-if="room.operational_status !== 'Available' && room.available_from" class="text-[11px] text-[var(--lux-accent)]">
+                  Available from {{ room.available_from }}
+                </p>
+
+                <button
+                  v-if="room.operational_status !== 'Reserved'"
+                  @click="selectRoomForInquiry(room)"
+                  class="lux-btn-primary w-full justify-center mt-1"
+                >
+                  Inquire About This Room
+                </button>
+                <span v-else class="text-[11px] text-[var(--lux-text-muted)] italic text-center py-2">Reserved — not accepting inquiries</span>
               </div>
-
-              <button
-                v-if="room.operational_status !== 'Reserved'"
-                @click="selectRoomForInquiry(room)"
-                class="jira-btn-primary text-xs"
-              >
-                Inquire
-              </button>
-              <span v-else class="text-[10px] text-[#6b778c] italic">Reserved — not accepting inquiries</span>
             </div>
           </div>
-        </div>
-      </template>
-    </div>
-
-    <!-- Inquiry Submission Form Card -->
-    <div class="jira-card p-6 bg-white space-y-4 max-w-2xl">
-      <div class="border-b border-[#dfe1e6] pb-3">
-        <h2 class="text-base font-bold text-[#172b4d]">
-          Submit Inquiry{{ inquiryForm.roomNumber ? ` for Room ${inquiryForm.roomNumber}` : '' }}
-        </h2>
-        <p class="text-xs text-[#6b778c]">Your message will be sent directly to the landlady's central inbox.</p>
+        </template>
       </div>
 
-      <div v-if="inquirySubmitted" class="p-4 bg-[#e3fcef] border border-[#abf5d1] rounded-xs text-[#006644] text-xs space-y-1">
-        <strong class="font-bold text-sm">Inquiry Submitted Successfully!</strong>
-        <p>Thank you, {{ inquiryForm.prospectName }}. The landlady will review your message shortly.</p>
+    </main>
+
+    <footer class="border-t border-[var(--lux-border)] px-5 md:px-10 py-8 mt-10">
+      <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[var(--lux-text-muted)]">
+        <button @click="router.push('/')" class="lux-serif text-sm text-[var(--lux-text)]">Hivelet</button>
+        <span>Fe Galang Da Silva Boarding House</span>
       </div>
+    </footer>
 
-      <form v-else @submit.prevent="submitInquiry" class="space-y-3 text-xs">
-        <p v-if="!inquiryForm.roomId" class="p-2.5 bg-[#fffae6] border border-[#f5cd47] rounded-xs text-[#826100]">
-          Select a unit above using "Inquire" before submitting.
-        </p>
-
-        <div v-if="submitError" class="p-3 bg-[#ffebe6] border border-[#ffbdad] rounded-xs text-[#bf2600]">
-          {{ submitError }}
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <!-- Inquiry Popup -->
+    <div v-if="showInquiryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" @click.self="closeInquiryModal">
+      <div class="lux-card bg-[var(--lux-surface)] w-full max-w-lg p-6 md:p-8 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-start justify-between border-b border-[var(--lux-border)] pb-4">
           <div>
-            <label class="block font-semibold text-[#5e6c84] mb-1">Full Name *</label>
-            <input v-model="inquiryForm.prospectName" required type="text" placeholder="e.g. Gabriel Fernandez" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]" />
+            <span class="lux-eyebrow">Get In Touch</span>
+            <h2 class="lux-serif text-xl mt-1 text-[var(--lux-text)]">Submit Inquiry for Room {{ inquiryForm.roomNumber }}</h2>
+            <p class="text-xs text-[var(--lux-text-muted)] mt-1">Your message will be sent directly to the administrator.</p>
+          </div>
+          <button @click="closeInquiryModal" class="text-[var(--lux-text-muted)] hover:text-[var(--lux-text)] shrink-0"><X class="w-4 h-4" /></button>
+        </div>
+
+        <div v-if="inquirySubmitted" class="space-y-4">
+          <div class="p-4 bg-[#e7efe6] border border-[#c3d9c0] rounded text-[#3f6b3f] text-sm flex items-start gap-2.5">
+            <CheckCircle2 class="w-4 h-4 shrink-0 mt-0.5" />
+            <div>
+              <strong class="font-semibold">Inquiry submitted successfully.</strong>
+              <p class="mt-0.5">Thank you, {{ inquiryForm.prospectName }}. The administrator will review your message shortly.</p>
+            </div>
+          </div>
+          <button @click="closeInquiryModal" class="lux-btn-secondary w-full justify-center">Close</button>
+        </div>
+
+        <form v-else @submit.prevent="submitInquiry" class="space-y-4">
+          <div v-if="submitError" class="p-3 bg-[#f7e6e2] border border-[#e3b7ac] rounded text-[#8a3a26] text-xs">
+            {{ submitError }}
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="lux-label">Full Name *</label>
+              <input v-model="inquiryForm.prospectName" required type="text" placeholder="e.g. Gabriel Fernandez" class="lux-input" />
+            </div>
+            <div>
+              <label class="lux-label">Contact Phone *</label>
+              <input v-model="inquiryForm.phone" required type="text" placeholder="e.g. 0917-123-4567" class="lux-input" />
+            </div>
           </div>
 
           <div>
-            <label class="block font-semibold text-[#5e6c84] mb-1">Contact Phone *</label>
-            <input v-model="inquiryForm.phone" required type="text" placeholder="e.g. 0917-123-4567" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]" />
+            <label class="lux-label">Email Address *</label>
+            <input v-model="inquiryForm.email" required type="email" placeholder="e.g. gabriel@gmail.com" class="lux-input" />
           </div>
-        </div>
 
-        <div>
-          <label class="block font-semibold text-[#5e6c84] mb-1">Email Address *</label>
-          <input v-model="inquiryForm.email" required type="email" placeholder="e.g. gabriel@gmail.com" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]" />
-        </div>
+          <div>
+            <label class="lux-label">Message / Questions</label>
+            <textarea v-model="inquiryForm.message" rows="3" placeholder="State your target move-in date, number of occupants, etc..." class="lux-input"></textarea>
+          </div>
 
-        <div>
-          <label class="block font-semibold text-[#5e6c84] mb-1">Message / Questions</label>
-          <textarea v-model="inquiryForm.message" rows="3" placeholder="State your target move-in date, number of occupants, etc..." class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs text-[#172b4d]"></textarea>
-        </div>
-
-        <button type="submit" :disabled="!inquiryForm.roomId || submitting" class="jira-btn-primary w-full justify-center py-2 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-          <Send class="w-3.5 h-3.5" />
-          <span>{{ submitting ? 'Sending...' : 'Send Inquiry Message' }}</span>
-        </button>
-      </form>
-    </div>
+          <button type="submit" :disabled="submitting" class="lux-btn-primary w-full justify-center py-3 disabled:opacity-50 disabled:cursor-not-allowed">
+            <Send class="w-3.5 h-3.5" />
+            <span>{{ submitting ? 'Sending…' : 'Send Inquiry Message' }}</span>
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </template>

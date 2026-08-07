@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@adyen/adyen-web": "^6.42.0",
     "@supabase/supabase-js": "^2.110.9",
+    "exceljs": "^4.4.0",
     "lucide-vue-next": "^0.378.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.27",

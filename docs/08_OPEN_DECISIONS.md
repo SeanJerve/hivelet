@@ -42,3 +42,8 @@ This document records the official decisions made for the Hivelet Apartment Mana
 
 ## 9. Additional Monthly Income & Expense Ledger Notes
 - Monthly Income Report running totals, GBG garbage fee timing, and deposit reconciliation workflows are implemented according to `09_MONTHLY_INCOME_REPORT.md` and `10_MONTHLY_EXPENSES_REPORT.md`.
+
+## 10. Canonical Unit Count: 32 Units, No Penthouse Cluster (2026-08-07)
+- **Conflict found**: The original schema migration, seed data, `DATABASE_SPECIFICATION.md`, `09_MONTHLY_INCOME_REPORT.md`, `03_REQUIREMENTS.md`, and `UI_DESIGN_SYSTEM_GUIDELINES.md` all described a 33-unit property with a 5th "Penthouse (PH)" cluster. This contradicted `docs/reference/manuscript.txt` ("the 32-unit Fe Galang Da Silva Apartment") and `01_SYSTEM_BIBLE.md` Section 5 ("32 total rooms/units"), which never mention a Penthouse.
+- **Decision**: The manuscript is the academic authority (`CAPSTONE_ALIGNMENT_PROTOCOL.md`). The property is **32 units across four clusters**: BH, Back Apartment, Front Apartment, Linda. The Penthouse cluster and its single 'PH' room are removed from the schema, seed data, and all documentation.
+- **Confirmed by**: Project owner, 2026-08-07.

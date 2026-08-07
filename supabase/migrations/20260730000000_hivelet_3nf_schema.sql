@@ -95,12 +95,12 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 -- Table: clusters (Canonical Unit Clusters)
 CREATE TABLE IF NOT EXISTS clusters (
-    code VARCHAR(50) PRIMARY KEY, -- 'BH', 'Back Apartment', 'Penthouse', 'Front Apartment', 'Linda'
+    code VARCHAR(50) PRIMARY KEY, -- 'BH', 'Back Apartment', 'Front Apartment', 'Linda'
     name VARCHAR(100) NOT NULL,
     display_order INT NOT NULL
 );
 
--- Table: rooms (33 Canonical Units)
+-- Table: rooms (32 Canonical Units)
 CREATE TABLE IF NOT EXISTS rooms (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     room_number VARCHAR(20) UNIQUE NOT NULL, -- e.g., '1a', 'B1F', 'PH', 'LF'
