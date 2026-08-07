@@ -1,6 +1,7 @@
 <!--
   @file components/layout/AppFooter.vue
-  @description 1:1 Horizon dark corporate footer with newsletter subscribe, quick links, social media badges, and legal notes.
+  @description Hivelet corporate footer with property information, quick links, and capstone system notes.
+  @systemBibleRef Section 1 - Product Identity & Section 4 - Public Visitor Role
 -->
 <template>
   <footer class="bg-[#0b132b] text-slate-300 pt-16 pb-10 border-t border-white/10 text-xs">
@@ -8,65 +9,57 @@
       <!-- Col 1: Brand & Mission -->
       <div class="space-y-4">
         <div class="flex items-center gap-2.5 text-white font-bold text-xl">
-          <span class="w-8 h-8 rounded-xl bg-white text-[#0b132b] flex items-center justify-center font-mono font-extrabold text-base shadow-md">8</span>
-          <span class="font-display tracking-wide font-extrabold">Horizon</span>
+          <span class="w-8 h-8 rounded-xl bg-[#0c66e4] text-white flex items-center justify-center font-mono font-extrabold text-base shadow-md">H</span>
+          <span class="font-display tracking-wide font-extrabold">Hivelet</span>
         </div>
         <p class="text-slate-400 leading-relaxed text-xs">
-          Our mission is to equip modern boarding house systems with cutting-edge, functional, and stylish stays that elevate every adventure.
+          Fe Galang Da Silva Boarding House Management System. Centralized operational, financial, and inquiry workflows for 32 rentable units in Barangay Sambat, Tanauan City, Batangas.
         </p>
       </div>
 
-      <!-- Col 2: About Links -->
+      <!-- Col 2: Property Quick Links -->
       <div class="space-y-3">
-        <h4 class="font-bold text-white uppercase tracking-wider text-xs">About</h4>
+        <h4 class="font-bold text-white uppercase tracking-wider text-xs">Property Portal</h4>
         <ul class="space-y-2 text-slate-400">
-          <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Career</a></li>
+          <li><a href="#hero" class="hover:text-white transition-colors">Overview</a></li>
+          <li><a href="#rooms" class="hover:text-white transition-colors">Rentable Units</a></li>
+          <li><a href="#rules" class="hover:text-white transition-colors">Utility Rates & Rules</a></li>
+          <li><a href="#inquire" class="hover:text-white transition-colors">Submit Inquiry</a></li>
         </ul>
       </div>
 
-      <!-- Col 3: Support Links -->
+      <!-- Col 3: System Workspaces -->
       <div class="space-y-3">
-        <h4 class="font-bold text-white uppercase tracking-wider text-xs">Support</h4>
+        <h4 class="font-bold text-white uppercase tracking-wider text-xs">Workspaces</h4>
         <ul class="space-y-2 text-slate-400">
-          <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Return</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">FAQ</a></li>
+          <li><router-link to="/" class="hover:text-white transition-colors">Public Portal</router-link></li>
+          <li><router-link to="/tenant" class="hover:text-white transition-colors">Tenant Self-Service</router-link></li>
+          <li><router-link to="/admin" class="hover:text-white transition-colors">Landlady Admin Overview</router-link></li>
         </ul>
       </div>
 
-      <!-- Col 4: Get Updates Subscribe & Social Media Badges -->
+      <!-- Col 4: Location & Direct Inquiry Contact -->
       <div class="space-y-4">
-        <h4 class="font-bold text-white uppercase tracking-wider text-xs">Get Updates</h4>
-        <form @submit.prevent class="flex gap-2">
-          <input 
-            type="email" 
-            placeholder="Enter your email" 
-            class="bg-white/10 text-white text-xs px-3.5 py-2 rounded-lg border border-white/20 placeholder-slate-400 focus:outline-none focus:bg-white/20 w-full" 
-          />
-          <button type="submit" class="bg-white text-[#0b132b] font-bold text-xs px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer">
-            Subscribe
-          </button>
-        </form>
+        <h4 class="font-bold text-white uppercase tracking-wider text-xs">Property Location</h4>
+        <p class="text-slate-400 leading-relaxed text-xs">
+          Barangay Sambat, Tanauan City, Batangas, Philippines.<br />
+          Accessible to local university campuses & industrial centers.
+        </p>
 
-        <!-- Social Media Circle Badges (Horizon Style) -->
+        <!-- Social / Contact Badges -->
         <div class="flex items-center gap-2 pt-2">
-          <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 hover:text-white transition-colors text-xs font-bold font-mono">in</a>
-          <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 hover:text-white transition-colors text-xs font-bold font-mono">X</a>
-          <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 hover:text-white transition-colors text-xs font-bold font-mono">fb</a>
-          <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 hover:text-white transition-colors text-xs font-bold font-mono">dc</a>
-          <a href="#" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 hover:text-white transition-colors text-xs font-bold font-mono">tk</a>
+          <a href="#inquire" class="bg-[#0c66e4] hover:bg-blue-600 text-white font-bold px-3 py-1.5 rounded-md transition-colors text-xs">
+            Inquire Now
+          </a>
         </div>
       </div>
     </div>
 
-    <!-- Bottom Copyright & Legal Links Bar -->
+    <!-- Bottom Copyright Bar -->
     <div class="max-w-7xl mx-auto px-4 md:px-12 pt-8 mt-12 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400 text-xs">
-      <p>© 2026 Horizon. All rights reserved.</p>
+      <p>© 2026 Hivelet. Fe Galang Da Silva Boarding House. All rights reserved.</p>
       <div class="flex items-center gap-6">
-        <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
-        <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+        <span class="text-slate-400">Capstone Academic Study</span>
       </div>
     </div>
   </footer>

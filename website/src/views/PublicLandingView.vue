@@ -1,445 +1,545 @@
 <!--
   @file views/PublicLandingView.vue
-  @description 1:1 Horizon Luxury Booking Landing Page tailored for Fe Galang Da Silva Boarding House (Hivelet).
-  @systemBibleRef Section 4 - Public Visitor Role & Section 5 - Property Catalog
-  @rationale Implements the exact Horizon landing page layout: Hero search, Discover Destination category cards, Top Trending units grid, Most Visited units grid, Spec 09/10 Promo split banners, Partner logo bar, Asymmetric mosaic gallery, and Horizon footer.
+  @description 1:1 guest.html wireframe layout adaptation for Fe Galang Da Silva Boarding House (Hivelet) styled with corporate blue theme.
+  @systemBibleRef Section 4 - Public Visitor Role & Section 5.4 - Centralized Inquiries
+  @rationale Implements the exact guest.html wireframe layout: Hero grid with organic image cutout & floating glass cards, 'Get Updates Live' highlights grid, multi-combination Floor & Unit Type filter chips, 32-unit catalog grid, transparent house rules, and direct inquiry submission form connecting prospects to the Landlady Inbox.
+  @innovations Real-time floor & room type reactive filtering over systemState rooms, direct pre-filling of unit codes in the inquiry form, and automatic inquiry persistence into landlady inbox state.
 -->
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { rooms, isLiveChatheadOpen, selectedInquirerId } from '@/lib/systemState';
-import { PROPERTY_CLUSTERS } from '@/lib/canonicalUnits';
+import { rooms, activeInquirers, isLiveChatheadOpen, selectedInquirerId, RoomUnit } from '@/lib/systemState';
 import { 
-  Search, Star, MapPin, Users, Heart, ArrowUpRight, 
-  ArrowRight, Tag, Percent, Sparkles, Building2 
+  Star, ArrowUpRight, ArrowRight, ShieldCheck, 
+  Zap, Droplets, Send, MessageSquare, CheckCircle2 
 } from 'lucide-vue-next';
 
-const selectedCluster = ref('all');
-const activeTrendingFilter = ref('all');
-const searchUnit = ref('');
-const occupantsFilter = ref('1');
+// Filter state
+const activeFloorFilter = ref('all');
+const activeTypeFilter = ref('all');
+const activeStatusFilter = ref('all');
 
-const trendingRooms = computed(() => {
+// Form state
+const prospectName = ref('');
+const phone = ref('');
+const email = ref('');
+const selectedUnitCode = ref('102');
+const targetMoveInDate = ref('');
+const occupantsCount = ref('1');
+const message = ref('');
+const inquirySubmitted = ref(false);
+
+function getRoomFloor(room: RoomUnit): string {
+  if (room.floorLabel.includes('1st')) return '1';
+  if (room.floorLabel.includes('2nd')) return '2';
+  if (room.floorLabel.includes('3rd')) return '3';
+  return '1';
+}
+
+const filteredRooms = computed(() => {
   return rooms.filter(r => {
-    if (activeTrendingFilter.value === 'all') return true;
-    return r.cluster === activeTrendingFilter.value;
-  }).slice(0, 4);
+    // Floor filter
+    if (activeFloorFilter.value !== 'all') {
+      if (getRoomFloor(r) !== activeFloorFilter.value) return false;
+    }
+    // Type filter
+    if (activeTypeFilter.value !== 'all') {
+      if (r.type !== activeTypeFilter.value) return false;
+    }
+    // Status filter
+    if (activeStatusFilter.value !== 'all') {
+      if (r.status !== activeStatusFilter.value) return false;
+    }
+    return true;
+  });
 });
 
-const mostVisitedRooms = computed(() => {
-  return rooms.filter(r => r.status === 'occupied' || r.status === 'pending').slice(0, 4);
-});
+function selectUnitForInquiry(unitCode: string) {
+  selectedUnitCode.value = unitCode;
+  const el = document.getElementById('inquire');
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
 
-function handleInquire() {
+function handleDirectChat() {
   selectedInquirerId.value = 'inq-1';
+  isLiveChatheadOpen.value = true;
+}
+
+function submitInquiry() {
+  if (!prospectName.value || !phone.value) return;
+
+  const targetRoom = rooms.find(r => r.unitCode === selectedUnitCode.value);
+  const newInquirerId = `inq-${Date.now()}`;
+
+  // Add inquiry into activeInquirers list in systemState
+  activeInquirers.push({
+    id: newInquirerId,
+    name: prospectName.value,
+    room: selectedUnitCode.value,
+    type: targetRoom ? targetRoom.type : 'Studio',
+    price: targetRoom ? targetRoom.price : 4500,
+    unread: true,
+    messages: [
+      {
+        sender: 'Inquirer',
+        time: 'Just now',
+        text: message.value || `Hi Mrs. Fe Galang, I would like to inquire about Unit ${selectedUnitCode.value} for ${occupantsCount.value} occupant(s). Contact: ${phone.value} (${email.value || 'No email'})`
+      }
+    ]
+  });
+
+  inquirySubmitted.value = true;
+  selectedInquirerId.value = newInquirerId;
   isLiveChatheadOpen.value = true;
 }
 </script>
 
 <template>
-  <div class="space-y-16 pb-12 bg-[#f4f5f7] text-[#172b4d]">
+  <div class="space-y-16 pb-16 bg-[#f4f5f7] text-[#172b4d]">
 
     <!-- ====================================================================
-         1. HERO HEADER BANNER & FLOATING BOOKING BAR (HORIZON STYLE)
+         1. HERO SECTION (Patterned after guest.html with Corporate Blue Theme)
          ==================================================================== -->
-    <section class="relative bg-[#0b132b] text-white pt-16 pb-24 px-4 md:px-12 rounded-b-[2.5rem] overflow-hidden shadow-2xl">
-      <!-- High-res interior background image with subtle dark gradient vignette -->
-      <div class="absolute inset-0 bg-gradient-to-b from-[#0b132b]/80 via-[#0b132b]/60 to-[#0b132b] z-10"></div>
-      <img 
-        src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=80" 
-        alt="Hivelet Boarding House Exterior & Interior" 
-        class="absolute inset-0 w-full h-full object-cover opacity-40 transform scale-105"
-      />
-
-      <div class="max-w-7xl mx-auto relative z-20 space-y-12">
-        <!-- Hero Headline -->
-        <div class="max-w-3xl space-y-4 pt-6">
-          <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-xs">
-            <Sparkles class="w-3.5 h-3.5 text-amber-400" />
-            <span class="font-semibold text-slate-200">Official Boarding House System</span>
+    <section id="hero" class="relative bg-gradient-to-br from-[#0b132b] via-[#1e293b] to-[#0b132b] text-white pt-12 pb-20 px-4 md:px-12 rounded-b-[2.5rem] overflow-hidden shadow-2xl">
+      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        <!-- Left Hero Content Column -->
+        <div class="space-y-6">
+          <!-- Star Rating & Verified Location Badge -->
+          <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 text-xs">
+            <Star class="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <span class="font-bold text-slate-100">4.9 Stars</span>
+            <span class="text-slate-400">•</span>
+            <span class="text-slate-300">Verified Boarding House in Sambat, Tanauan City</span>
           </div>
-          <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] font-display">
-            Find Your Best <br class="hidden sm:inline" />Staycation
+
+          <!-- Hero Headline -->
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] font-display">
+            Live Comfortably<br />In Hivelet Stays.
           </h1>
-        </div>
 
-        <!-- Floating Booking Search Card Container (Horizon White Card) -->
-        <div class="bg-white text-[#172b4d] rounded-2xl p-6 shadow-2xl border border-slate-200 space-y-4 max-w-5xl">
-          <!-- Top Row: 3 Input Columns -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-200">
-            <!-- Col 1: Location / Cluster -->
-            <div class="space-y-1">
-              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Location / Cluster</label>
-              <div class="flex items-center gap-2">
-                <MapPin class="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <select v-model="selectedCluster" class="w-full font-bold text-xs bg-transparent focus:outline-none cursor-pointer">
-                  <option value="all">All 5 Property Clusters</option>
-                  <option v-for="c in PROPERTY_CLUSTERS" :key="c" :value="c">{{ c }}</option>
-                </select>
-              </div>
-            </div>
+          <!-- Subtitle -->
+          <p class="text-sm sm:text-base text-slate-300 max-w-xl leading-relaxed">
+            Explore clean, affordable Studio, 1-Bedroom, 2-Bedroom, and 3-Bedroom boarding units across 3 floors. Private bathrooms, sub-metered electrics & direct landlady inquiry.
+          </p>
 
-            <!-- Col 2: Unit Search -->
-            <div class="space-y-1 md:pl-6 pt-3 md:pt-0">
-              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Unit Search</label>
-              <div class="flex items-center gap-2">
-                <Search class="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <input v-model="searchUnit" type="text" placeholder="Unit Code (1a, B1F, PH)" class="w-full font-bold text-xs bg-transparent focus:outline-none" />
-              </div>
-            </div>
-
-            <!-- Col 3: Guests and Rooms -->
-            <div class="space-y-1 md:pl-6 pt-3 md:pt-0">
-              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Guests & Occupants</label>
-              <div class="flex items-center gap-2">
-                <Users class="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <select v-model="occupantsFilter" class="w-full font-bold text-xs bg-transparent focus:outline-none cursor-pointer">
-                  <option value="1">1 Occupant (Single Bed)</option>
-                  <option value="2">2 Occupants (Twin Bed)</option>
-                  <option value="3">3 Occupants (Family Unit)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bottom Row: Filter Pills & Search CTA Button -->
-          <div class="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex flex-wrap items-center gap-2 text-xs">
-              <span class="font-bold text-slate-400 uppercase text-[10px] mr-1">Filters:</span>
-              <button 
-                v-for="cluster in PROPERTY_CLUSTERS" 
-                :key="cluster"
-                @click="selectedCluster = cluster"
-                :class="['px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer', selectedCluster === cluster ? 'bg-[#0b132b] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
-              >
-                {{ cluster }}
-              </button>
-            </div>
-
-            <button @click="handleInquire" class="bg-[#0b132b] hover:bg-slate-800 text-white font-bold px-6 py-2.5 rounded-full text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer">
-              <span>Search Units</span>
+          <!-- CTA Action Buttons -->
+          <div class="pt-2 flex flex-wrap items-center gap-4">
+            <a 
+              href="#inquire" 
+              class="bg-[#0c66e4] hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-xl text-xs sm:text-sm shadow-lg transition-all cursor-pointer inline-flex items-center gap-2"
+            >
+              <span>Inquire Now — Free</span>
               <ArrowRight class="w-4 h-4" />
-            </button>
+            </a>
+
+            <a 
+              href="#rooms" 
+              class="text-xs sm:text-sm font-bold text-blue-400 hover:text-white underline underline-offset-4 transition-colors flex items-center gap-1"
+            >
+              <span>Browse 32 Units</span>
+              <ArrowUpRight class="w-4 h-4" />
+            </a>
           </div>
         </div>
+
+        <!-- Right Visual Area with Photo Cutout & Floating Glass Cards -->
+        <div class="relative h-72 sm:h-96 w-full flex items-center justify-center">
+          <!-- Background Organic Image Cutout Container -->
+          <div class="w-full h-full rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl relative">
+            <img 
+              src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1000&q=80" 
+              alt="Fe Galang Da Silva Boarding House Interior" 
+              class="w-full h-full object-cover opacity-85"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0b132b]/80 via-transparent to-transparent"></div>
+          </div>
+
+          <!-- Floating Glass Card 1: Unit Status Preview (Top Right) -->
+          <div class="absolute -top-4 -right-2 sm:right-2 bg-[#0b132b]/90 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-2xl text-white text-xs w-44 space-y-1">
+            <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+              <span>Status</span>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px]">AVAILABLE</span>
+            </div>
+            <div class="font-extrabold text-base text-white">Unit 204</div>
+            <div class="text-[11px] text-slate-300">Floor 2 • 1-Bedroom</div>
+            <div class="font-extrabold text-sm text-[#38bdf8] pt-1">₱4,200 <span class="text-[10px] font-normal text-slate-400">/ mo</span></div>
+          </div>
+
+          <!-- Floating Glass Card 2: Location Card (Bottom Left) -->
+          <div class="absolute -bottom-4 -left-2 sm:left-2 bg-[#0b132b]/90 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 shadow-2xl text-white text-xs flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-[#0c66e4] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+              FG
+            </div>
+            <div>
+              <div class="font-bold text-xs">Mrs. Fe Galang</div>
+              <div class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Online — Live Inquiry Line</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </section>
 
     <!-- ====================================================================
-         2. DISCOVER YOUR DESTINATION (CATEGORY CARDS GRID)
+         2. HIGHLIGHTS SECTION ("Get Updates Live" Grid - guest.html pattern)
          ==================================================================== -->
-    <section class="max-w-7xl mx-auto px-4 md:px-12 space-y-6">
+    <section id="highlights" class="max-w-7xl mx-auto px-4 md:px-12 space-y-6">
       <div>
-        <h2 class="text-2xl md:text-3xl font-extrabold text-[#172b4d] font-display">Discover your destination</h2>
-        <p class="text-xs text-slate-500 mt-1">Explore our range of property types across 5 canonical property clusters.</p>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-[#172b4d] font-display">Get Updates Live</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Key advantages of Fe Galang Da Silva Boarding House in Sambat, Tanauan City.</p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        <!-- Category Card 1: BH Main Rooms -->
-        <div class="jira-card p-5 hover:shadow-xl transition-all cursor-pointer group space-y-4 bg-white">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-extrabold text-base text-[#172b4d]">BH Main Rooms</h3>
-              <p class="text-xs text-slate-500 font-medium">22 Available Units</p>
-            </div>
-            <div class="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-[#0b132b] group-hover:text-white transition-colors">
-              <ArrowUpRight class="w-4 h-4" />
-            </div>
-          </div>
-          <div class="h-32 rounded-xl overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80" alt="BH Main Rooms" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Highlight Card 1 -->
+        <div class="jira-card p-6 bg-white border border-[#dfe1e6] rounded-xl border-l-4 border-l-[#0c66e4] space-y-2 hover:shadow-lg transition-all">
+          <div class="text-[11px] font-bold text-[#0c66e4] uppercase tracking-wider">Direct Inquiry</div>
+          <h3 class="font-extrabold text-base text-[#172b4d]">Send Inquiries</h3>
+          <p class="text-xs text-[#5e6c84] leading-relaxed">
+            Direct communication line to the landlady with fast turnaround for room viewing and move-in terms.
+          </p>
         </div>
 
-        <!-- Category Card 2: Back Apartments -->
-        <div class="jira-card p-5 hover:shadow-xl transition-all cursor-pointer group space-y-4 bg-white">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-extrabold text-base text-[#172b4d]">Back Apartment</h3>
-              <p class="text-xs text-slate-500 font-medium">5 Available Units</p>
-            </div>
-            <div class="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-[#0b132b] group-hover:text-white transition-colors">
-              <ArrowUpRight class="w-4 h-4" />
-            </div>
-          </div>
-          <div class="h-32 rounded-xl overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80" alt="Back Apartment" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          </div>
+        <!-- Highlight Card 2 -->
+        <div class="jira-card p-6 bg-white border border-[#dfe1e6] rounded-xl border-l-4 border-l-[#0c66e4] space-y-2 hover:shadow-lg transition-all">
+          <div class="text-[11px] font-bold text-[#0c66e4] uppercase tracking-wider">Fair Utility Sub-meters</div>
+          <h3 class="font-extrabold text-base text-[#172b4d]">Transparent Utilities</h3>
+          <p class="text-xs text-[#5e6c84] leading-relaxed">
+            Private sub-metering for electric consumption and standardized water rate at ₱200/head per month.
+          </p>
         </div>
 
-        <!-- Category Card 3: Penthouse Suite -->
-        <div class="jira-card p-5 hover:shadow-xl transition-all cursor-pointer group space-y-4 bg-white">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-extrabold text-base text-[#172b4d]">Penthouse Suite</h3>
-              <p class="text-xs text-slate-500 font-medium">1 Luxury Suite</p>
-            </div>
-            <div class="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-[#0b132b] group-hover:text-white transition-colors">
-              <ArrowUpRight class="w-4 h-4" />
-            </div>
-          </div>
-          <div class="h-32 rounded-xl overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80" alt="Penthouse Suite" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          </div>
-        </div>
-
-        <!-- Category Card 4: Linda Units -->
-        <div class="jira-card p-5 hover:shadow-xl transition-all cursor-pointer group space-y-4 bg-white">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-extrabold text-base text-[#172b4d]">Linda Units</h3>
-              <p class="text-xs text-slate-500 font-medium">2 Fixed Rate Units</p>
-            </div>
-            <div class="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-[#0b132b] group-hover:text-white transition-colors">
-              <ArrowUpRight class="w-4 h-4" />
-            </div>
-          </div>
-          <div class="h-32 rounded-xl overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80" alt="Linda Units" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-          </div>
+        <!-- Highlight Card 3 -->
+        <div class="jira-card p-6 bg-white border border-[#dfe1e6] rounded-xl border-l-4 border-l-[#0c66e4] space-y-2 hover:shadow-lg transition-all">
+          <div class="text-[11px] font-bold text-[#0c66e4] uppercase tracking-wider">Tenant Security</div>
+          <h3 class="font-extrabold text-base text-[#172b4d]">Safe Environment</h3>
+          <p class="text-xs text-[#5e6c84] leading-relaxed">
+            Gated premises with CCTV coverage and quiet residential neighborhood ideal for students & working professionals.
+          </p>
         </div>
       </div>
     </section>
 
     <!-- ====================================================================
-         3. TOP TRENDING UNITS (HORIZONTAL CARDS WITH FAVORITES & PRICING)
+         3. ROOM SHOWCASE & MULTI-COMBINATION FILTER SECTION
          ==================================================================== -->
-    <section class="max-w-7xl mx-auto px-4 md:px-12 space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <section id="rooms" class="max-w-7xl mx-auto px-4 md:px-12 space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="text-2xl md:text-3xl font-extrabold text-[#172b4d] font-display">Top trending units in Hivelet</h2>
-          <p class="text-xs text-slate-500 mt-1">Discover the most sought-after units for an unforgettable boarding house experience.</p>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#172b4d] font-display">Available Boarding Units</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Combine floor and room type filters below to find your ideal unit across 3 floors (32 total units).</p>
+        </div>
+      </div>
+
+      <!-- Multi-Combination Filter Container Box -->
+      <div class="jira-card p-6 bg-white border border-[#dfe1e6] rounded-2xl space-y-4 shadow-sm">
+        <!-- Floor Filter Chips -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <span class="font-bold text-slate-500 w-24">Floor:</span>
+          <button 
+            @click="activeFloorFilter = 'all'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeFloorFilter === 'all' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            All Floors
+          </button>
+          <button 
+            @click="activeFloorFilter = '1'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeFloorFilter === '1' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            1st Floor
+          </button>
+          <button 
+            @click="activeFloorFilter = '2'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeFloorFilter === '2' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            2nd Floor
+          </button>
+          <button 
+            @click="activeFloorFilter = '3'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeFloorFilter === '3' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            3rd Floor
+          </button>
         </div>
 
-        <!-- Tab Filters & See All -->
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-1 bg-slate-200 p-1 rounded-full text-xs">
-            <button 
-              @click="activeTrendingFilter = 'all'"
-              :class="['px-3 py-1 rounded-full font-bold transition-all cursor-pointer', activeTrendingFilter === 'all' ? 'bg-white text-[#172b4d] shadow-xs' : 'text-slate-600']"
-            >
-              All
-            </button>
-            <button 
-              @click="activeTrendingFilter = 'BH (Main Rooms)'"
-              :class="['px-3 py-1 rounded-full font-bold transition-all cursor-pointer', activeTrendingFilter === 'BH (Main Rooms)' ? 'bg-white text-[#172b4d] shadow-xs' : 'text-slate-600']"
-            >
-              BH Main
-            </button>
-            <button 
-              @click="activeTrendingFilter = 'Back Apartment'"
-              :class="['px-3 py-1 rounded-full font-bold transition-all cursor-pointer', activeTrendingFilter === 'Back Apartment' ? 'bg-white text-[#172b4d] shadow-xs' : 'text-slate-600']"
-            >
-              Back Apt
-            </button>
-          </div>
-          <button @click="handleInquire" class="text-xs font-bold text-[#172b4d] hover:underline flex items-center gap-1 cursor-pointer">
-            <span>See All</span> <ArrowRight class="w-3.5 h-3.5" />
+        <!-- Unit Type Filter Chips -->
+        <div class="flex flex-wrap items-center gap-2 text-xs pt-2 border-t border-slate-100">
+          <span class="font-bold text-slate-500 w-24">Unit Type:</span>
+          <button 
+            @click="activeTypeFilter = 'all'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeTypeFilter === 'all' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            All Types
+          </button>
+          <button 
+            @click="activeTypeFilter = 'Studio'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeTypeFilter === 'Studio' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            Studio
+          </button>
+          <button 
+            @click="activeTypeFilter = '1-Bedroom'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeTypeFilter === '1-Bedroom' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            1-Bedroom
+          </button>
+          <button 
+            @click="activeTypeFilter = '2-Bedroom'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeTypeFilter === '2-Bedroom' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            2-Bedroom
+          </button>
+          <button 
+            @click="activeTypeFilter = '3-Bedroom'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeTypeFilter === '3-Bedroom' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            3-Bedroom
+          </button>
+        </div>
+
+        <!-- Availability Status Filter Chips -->
+        <div class="flex flex-wrap items-center gap-2 text-xs pt-2 border-t border-slate-100">
+          <span class="font-bold text-slate-500 w-24">Availability:</span>
+          <button 
+            @click="activeStatusFilter = 'all'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeStatusFilter === 'all' ? 'bg-[#0c66e4] text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200']"
+          >
+            All Statuses
+          </button>
+          <button 
+            @click="activeStatusFilter = 'available'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeStatusFilter === 'available' ? 'bg-emerald-600 text-white shadow-md' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100']"
+          >
+            Available Only
+          </button>
+          <button 
+            @click="activeStatusFilter = 'pending'"
+            :class="['px-3 py-1.5 rounded-full font-bold transition-all cursor-pointer', activeStatusFilter === 'pending' ? 'bg-amber-600 text-white shadow-md' : 'bg-amber-50 text-amber-800 hover:bg-amber-100']"
+          >
+            Reserved / Vacating Soon
           </button>
         </div>
       </div>
 
-      <!-- 4 Unit Cards Row -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <!-- Rentable Units Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div 
-          v-for="room in trendingRooms" 
-          :key="room.id"
-          class="jira-card bg-white overflow-hidden hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
+          v-for="room in filteredRooms" 
+          :key="room.id" 
+          class="jira-card p-5 bg-white border border-[#dfe1e6] rounded-2xl flex flex-col justify-between space-y-4 hover:shadow-xl transition-all group"
         >
-          <div class="h-48 relative overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80" alt="Room Photo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            <button class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-slate-700 hover:text-red-500 transition-colors shadow-md">
-              <Heart class="w-4 h-4" />
-            </button>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-extrabold text-lg text-[#172b4d]">Unit {{ room.unitCode }}</h3>
+              <span 
+                :class="[
+                  'px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider',
+                  room.status === 'available' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                  room.status === 'pending' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                  'bg-slate-100 text-slate-700 border border-slate-300'
+                ]"
+              >
+                {{ room.status.toUpperCase() }}
+              </span>
+            </div>
+
+            <p class="text-xs font-bold text-[#0c66e4]">{{ room.floorLabel }} • {{ room.type }}</p>
+            <p class="text-xs text-[#5e6c84] leading-relaxed line-clamp-3">{{ room.desc }}</p>
+
+            <div class="bg-[#f4f5f7] p-2.5 rounded-lg border border-slate-200 text-[11px] text-[#172b4d] space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500 font-medium">Capacity:</span>
+                <span class="font-bold">Up to {{ room.maxOccupants }} Occupants</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500 font-medium">Utilities:</span>
+                <span class="font-bold">Sub-metered Electric • ₱200/head Water</span>
+              </div>
+            </div>
           </div>
 
-          <div class="p-5 space-y-3">
+          <div class="pt-3 border-t border-[#dfe1e6] flex items-center justify-between">
             <div>
-              <h3 class="font-extrabold text-base text-[#172b4d]">Unit {{ room.unitCode }} ({{ room.type }})</h3>
-              <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                <MapPin class="w-3 h-3 text-slate-400" /> {{ room.floorLabel }}
-              </p>
+              <span class="text-[10px] text-slate-400 block font-semibold uppercase">Monthly Rent</span>
+              <strong class="text-base font-extrabold text-[#172b4d]">₱{{ room.price.toLocaleString() }}/mo</strong>
             </div>
 
-            <div class="flex items-center gap-1.5 text-xs text-slate-600 font-semibold">
-              <Star class="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-              <span>4.9</span>
-              <span class="text-slate-400 font-normal">(124 Reviews)</span>
-            </div>
-
-            <div class="pt-3 border-t border-slate-100 flex items-baseline justify-between">
-              <div>
-                <span class="text-lg font-extrabold text-[#172b4d]">₱{{ room.price.toLocaleString() }}</span>
-                <span class="text-xs text-slate-400 font-normal"> / mo</span>
-                <p class="text-[10px] text-slate-400">Includes ₱200/head water rule</p>
-              </div>
-              <button @click="handleInquire" class="jira-btn-primary text-xs py-1.5 px-3">Inquire</button>
-            </div>
+            <button 
+              @click="selectUnitForInquiry(room.unitCode)" 
+              class="bg-[#0c66e4] hover:bg-blue-600 text-white font-bold px-4 py-2 text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
+            >
+              <span>Inquire Unit {{ room.unitCode }}</span>
+              <ArrowRight class="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ====================================================================
-         4. MOST VISITED UNITS THIS MONTH
+         4. HOUSE RULES & UTILITY GUIDELINES SECTION
          ==================================================================== -->
-    <section class="max-w-7xl mx-auto px-4 md:px-12 space-y-6">
-      <div>
-        <h2 class="text-2xl md:text-3xl font-extrabold text-[#172b4d] font-display">Most visited units this month</h2>
-        <p class="text-xs text-slate-500 mt-1">Trending exceptional boarding house units that captivated occupants this month.</p>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        <div 
-          v-for="room in mostVisitedRooms" 
-          :key="room.id"
-          class="jira-card bg-white overflow-hidden hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
-        >
-          <div class="h-48 relative overflow-hidden bg-slate-100">
-            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80" alt="Room Photo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            <button class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-slate-700 hover:text-red-500 transition-colors shadow-md">
-              <Heart class="w-4 h-4" />
-            </button>
-          </div>
-
-          <div class="p-5 space-y-3">
-            <div>
-              <h3 class="font-extrabold text-base text-[#172b4d]">Unit {{ room.unitCode }} ({{ room.cluster }})</h3>
-              <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                <MapPin class="w-3 h-3 text-slate-400" /> Occupied • {{ room.occupants }} Occupants
-              </p>
-            </div>
-
-            <div class="flex items-center gap-1.5 text-xs text-slate-600 font-semibold">
-              <Star class="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-              <span>4.8</span>
-              <span class="text-slate-400 font-normal">(98 Reviews)</span>
-            </div>
-
-            <div class="pt-3 border-t border-slate-100 flex items-baseline justify-between">
-              <div>
-                <span class="text-lg font-extrabold text-[#172b4d]">₱{{ room.price.toLocaleString() }}</span>
-                <span class="text-xs text-slate-400 font-normal"> / mo</span>
-              </div>
-              <span class="jira-badge bg-emerald-100 text-emerald-800">LEASED</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         5. PROMOTIONAL SPLIT BANNERS (50% REVENUE SHARE & WATER BILLING)
-         ==================================================================== -->
-    <section class="max-w-7xl mx-auto px-4 md:px-12 space-y-6">
-      <div class="flex justify-between items-end">
+    <section id="rules" class="max-w-7xl mx-auto px-4 md:px-12 space-y-6">
+      <div class="jira-card p-8 bg-white border border-[#dfe1e6] rounded-2xl space-y-6 shadow-sm">
         <div>
-          <h2 class="text-2xl md:text-3xl font-extrabold text-[#172b4d] font-display">System Rule Highlights</h2>
-          <p class="text-xs text-slate-500 mt-1">Key operational rules and financial algorithms governing Hivelet.</p>
-        </div>
-        <button @click="handleInquire" class="text-xs font-bold text-[#172b4d] hover:underline flex items-center gap-1 cursor-pointer">
-          <span>See All Rules</span> <ArrowRight class="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Banner 1: 50% Revenue Share (Spec 09) -->
-        <div class="relative rounded-2xl overflow-hidden bg-slate-900 text-white p-8 space-y-6 shadow-xl flex flex-col justify-between">
-          <img src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?auto=format&fit=crop&w=1000&q=80" alt="Finance Banner" class="absolute inset-0 w-full h-full object-cover opacity-30" />
-          <div class="relative z-10 space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500 text-amber-400 flex items-center justify-center font-bold">
-                <Percent class="w-5 h-5" />
-              </span>
-              <span class="text-[10px] font-bold bg-white/20 px-3 py-1 rounded-full uppercase tracking-wider">Spec 09 Ledger</span>
-            </div>
-
-            <div>
-              <p class="text-xs text-slate-300">Spec 09 Monthly Income Distribution Algorithm</p>
-              <h3 class="text-5xl font-extrabold text-white font-display mt-1">50% Share</h3>
-            </div>
-          </div>
-
-          <div class="relative z-10 pt-4 border-t border-white/20 text-xs text-slate-300">
-            Automated equal splitting of monthly base rent between Landlady Fe Galang Da Silva and Property Owner.
-          </div>
+          <h2 class="text-2xl font-extrabold text-[#172b4d]">House Rules & Renting Guidelines</h2>
+          <p class="text-xs text-slate-500 mt-1">Transparent operational rules for all tenants at Fe Galang Da Silva Boarding House.</p>
         </div>
 
-        <!-- Banner 2: ₱200 Water Billing Rule (BR-014) -->
-        <div class="relative rounded-2xl overflow-hidden bg-amber-900 text-white p-8 space-y-6 shadow-xl flex flex-col justify-between">
-          <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1000&q=80" alt="Water Rule Banner" class="absolute inset-0 w-full h-full object-cover opacity-30" />
-          <div class="relative z-10 space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-full bg-yellow-500/20 border border-yellow-400 text-yellow-300 flex items-center justify-center font-bold">
-                <Tag class="w-5 h-5" />
-              </span>
-              <span class="text-[10px] font-bold bg-white/20 px-3 py-1 rounded-full uppercase tracking-wider">BR-014 Rule</span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="p-4 bg-[#f4f5f7] rounded-xl border border-slate-200 space-y-2">
+            <div class="flex items-center gap-2 font-bold text-xs text-[#0c66e4]">
+              <Droplets class="w-4 h-4" />
+              <span>Standard Water Rate</span>
             </div>
-
-            <div>
-              <p class="text-xs text-amber-200">Per Head Utility Sub-metering Calculation</p>
-              <h3 class="text-5xl font-extrabold text-white font-display mt-1">₱200 / Head</h3>
-            </div>
+            <p class="text-xs text-[#5e6c84] leading-relaxed">
+              Water utility is charged at a fixed rate of ₱200 per head/person monthly, automatically added to monthly rent.
+            </p>
           </div>
 
-          <div class="relative z-10 pt-4 border-t border-white/20 text-xs text-amber-200">
-            Fixed monthly water surcharge calculated directly per registered occupant and added to monthly remittance statement.
+          <div class="p-4 bg-[#f4f5f7] rounded-xl border border-slate-200 space-y-2">
+            <div class="flex items-center gap-2 font-bold text-xs text-[#0c66e4]">
+              <Zap class="w-4 h-4" />
+              <span>Private Sub-metered Electricity</span>
+            </div>
+            <p class="text-xs text-[#5e6c84] leading-relaxed">
+              Each unit is equipped with an individual electric sub-meter. Tenants pay only for actual sub-metered consumption based on electric bills.
+            </p>
+          </div>
+
+          <div class="p-4 bg-[#f4f5f7] rounded-xl border border-slate-200 space-y-2">
+            <div class="flex items-center gap-2 font-bold text-xs text-[#0c66e4]">
+              <ShieldCheck class="w-4 h-4" />
+              <span>Due Dates & Grace Period</span>
+            </div>
+            <p class="text-xs text-[#5e6c84] leading-relaxed">
+              Monthly rent due date is determined by move-in date. A 1-week grace period applies before payment is flagged as overdue.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ====================================================================
-         6. CAPSTONE PARTNER & CERTIFICATION LOGO BAR
+         5. DIRECT INQUIRY SUBMISSION FORM SECTION
          ==================================================================== -->
-    <section class="max-w-7xl mx-auto px-4 md:px-12 py-6 border-y border-slate-200">
-      <div class="flex flex-wrap items-center justify-between gap-8 opacity-60 text-xs font-bold tracking-widest text-slate-500 uppercase">
-        <span>BULACAN STATE UNIVERSITY</span>
-        <span>HIVELET SYSTEM BIBLE</span>
-        <span>FE GALANG DA SILVA</span>
-        <span>SPEC 09 LEDGER</span>
-        <span>SPEC 10 EXPENSES</span>
-        <span>BR-040 LINDA FIXED</span>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         7. ASYMMETRIC MOSAIC GALLERY BANNERS
-         ==================================================================== -->
-    <section class="max-w-7xl mx-auto px-4 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Left Column (2 Stacked Banners) -->
-      <div class="space-y-6">
-        <!-- Top Dark Banner -->
-        <div class="bg-[#0b132b] text-white p-6 rounded-2xl space-y-4 shadow-lg flex flex-col justify-between h-44">
-          <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-            <Building2 class="w-4 h-4 text-white" />
+    <section id="inquire" class="max-w-4xl mx-auto px-4 md:px-12">
+      <div class="jira-card p-8 bg-white border border-[#dfe1e6] rounded-2xl space-y-6 shadow-xl">
+        <div class="border-b border-[#dfe1e6] pb-4">
+          <div class="flex items-center gap-2 text-xs font-bold text-[#0c66e4] uppercase tracking-wider mb-1">
+            <MessageSquare class="w-4 h-4" />
+            <span>Direct Landlady Inquiry Inbox</span>
           </div>
+          <h2 class="text-2xl font-extrabold text-[#172b4d]">Submit Direct Booking Inquiry</h2>
+          <p class="text-xs text-[#6b778c] mt-1">
+            Fill out the form below to contact Mrs. Fe Galang directly. Your message will be sent straight to the Landlady Inbox.
+          </p>
+        </div>
+
+        <div v-if="inquirySubmitted" class="p-6 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 space-y-3 text-xs">
+          <div class="flex items-center gap-2">
+            <CheckCircle2 class="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <strong class="font-extrabold text-base">Inquiry Submitted Successfully!</strong>
+          </div>
+          <p class="leading-relaxed">
+            Thank you, <strong>{{ prospectName }}</strong>. Your inquiry for <strong>Unit {{ selectedUnitCode }}</strong> has been delivered directly to Mrs. Fe Galang's Landlady Inbox.
+          </p>
+          <div class="pt-2 flex items-center gap-3">
+            <button 
+              @click="handleDirectChat" 
+              class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer shadow-md"
+            >
+              <MessageSquare class="w-3.5 h-3.5" />
+              <span>Open Live Chat Messenger</span>
+            </button>
+            <button 
+              @click="inquirySubmitted = false" 
+              class="text-emerald-800 hover:underline font-semibold"
+            >
+              Submit Another Inquiry
+            </button>
+          </div>
+        </div>
+
+        <form v-else @submit.prevent="submitInquiry" class="space-y-4 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-bold text-[#5e6c84] mb-1">Full Name *</label>
+              <input 
+                v-model="prospectName" 
+                required 
+                type="text" 
+                placeholder="e.g. Gabriel Fernandez" 
+                class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4]" 
+              />
+            </div>
+
+            <div>
+              <label class="block font-bold text-[#5e6c84] mb-1">Contact Phone Number *</label>
+              <input 
+                v-model="phone" 
+                required 
+                type="text" 
+                placeholder="e.g. 0917-123-4567" 
+                class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4]" 
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block font-bold text-[#5e6c84] mb-1">Email Address</label>
+              <input 
+                v-model="email" 
+                type="email" 
+                placeholder="e.g. gabriel@gmail.com" 
+                class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4]" 
+              />
+            </div>
+
+            <div>
+              <label class="block font-bold text-[#5e6c84] mb-1">Target Unit Selection</label>
+              <select 
+                v-model="selectedUnitCode" 
+                class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-bold focus:outline-none focus:border-[#0c66e4] cursor-pointer"
+              >
+                <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
+                  Unit {{ r.unitCode }} ({{ r.floorLabel }} • {{ r.type }} - ₱{{ r.price.toLocaleString() }}/mo)
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-[#5e6c84] mb-1">Target Move-In Date</label>
+              <input 
+                v-model="targetMoveInDate" 
+                type="date" 
+                class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4]" 
+              />
+            </div>
+          </div>
+
           <div>
-            <h3 class="text-lg font-bold font-display">Explore more to get your comfort zone</h3>
-            <p class="text-xs text-slate-300">Book your perfect stay with us.</p>
+            <label class="block font-bold text-[#5e6c84] mb-1">Message / Questions for Mrs. Fe Galang</label>
+            <textarea 
+              v-model="message" 
+              rows="3" 
+              placeholder="State your preferred viewing time, target lease duration, number of intended occupants..." 
+              class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4]"
+            ></textarea>
           </div>
-          <button @click="handleInquire" class="bg-white text-[#0b132b] font-bold text-xs px-4 py-2 rounded-full flex items-center gap-1.5 w-fit hover:bg-slate-200 transition-colors cursor-pointer">
-            <span>Inquire Now</span> <ArrowRight class="w-3.5 h-3.5" />
+
+          <button 
+            type="submit" 
+            class="w-full bg-[#0c66e4] hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+          >
+            <Send class="w-4 h-4" />
+            <span>Send Direct Inquiry to Landlady Inbox</span>
           </button>
-        </div>
-
-        <!-- Bottom Image Stats Banner -->
-        <div class="relative h-44 rounded-2xl overflow-hidden bg-slate-900 text-white p-6 flex flex-col justify-end shadow-lg">
-          <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80" alt="Units count" class="absolute inset-0 w-full h-full object-cover opacity-40" />
-          <div class="relative z-10">
-            <p class="text-xs text-slate-300">Total Canonical Units Available</p>
-            <p class="text-3xl font-extrabold font-display">32 Units</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column (Large Hero Feature Photo Banner) -->
-      <div class="md:col-span-2 relative h-[23rem] rounded-2xl overflow-hidden bg-slate-900 text-white p-8 flex items-end shadow-xl">
-        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80" alt="Large interior showcase" class="absolute inset-0 w-full h-full object-cover opacity-50" />
-        <div class="relative z-10 max-w-xl space-y-2">
-          <h2 class="text-3xl md:text-5xl font-extrabold font-display leading-tight">
-            Beyond accommodation, creating memories of a lifetime
-          </h2>
-        </div>
+        </form>
       </div>
     </section>
 
