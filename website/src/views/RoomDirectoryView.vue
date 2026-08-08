@@ -5,7 +5,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Search, Plus, Edit } from 'lucide-vue-next';
+import { Search, Plus, Edit, X } from 'lucide-vue-next';
 import { rooms, addRoomUnit, updateRoomUnit, type RoomUnit } from '@/lib/systemState';
 import { PROPERTY_CLUSTERS } from '@/lib/canonicalUnits';
 
@@ -185,10 +185,10 @@ const handleAddUnitSpec = () => {
               <td class="py-3.5 px-4 text-right">
                 <button 
                   @click="openEditModal(unit)" 
-                  class="jira-btn-secondary border border-[#dfe1e6] py-1.5 px-3 text-xs font-semibold hover:bg-[#f4f5f7] cursor-pointer flex items-center gap-1 ml-auto"
+                  title="Edit Unit Specs"
+                  class="p-2 hover:bg-blue-50 text-blue-600 rounded transition-colors cursor-pointer ml-auto flex items-center justify-center border border-[#dfe1e6]"
                 >
-                  <Edit class="w-3.5 h-3.5" />
-                  <span>Edit Rate & Specs</span>
+                  <Edit class="w-4 h-4" />
                 </button>
               </td>
             </tr>
@@ -202,7 +202,7 @@ const handleAddUnitSpec = () => {
       <div class="jira-card w-full max-w-md p-6 bg-white shadow-xl space-y-4 rounded-lg">
         <div class="flex items-center justify-between pb-3 border-b border-[#dfe1e6]">
           <h3 class="font-bold text-lg text-[#172b4d]">Edit Specs — Unit {{ activeUnit.unitCode }}</h3>
-          <button @click="showEditModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer">✕</button>
+          <button @click="showEditModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer" title="Close"><X class="w-4 h-4" /></button>
         </div>
 
         <div class="space-y-4 text-xs sm:text-sm">
@@ -258,7 +258,7 @@ const handleAddUnitSpec = () => {
       <div class="jira-card w-full max-w-md p-6 bg-white shadow-xl space-y-4 rounded-lg">
         <div class="flex items-center justify-between pb-3 border-b border-[#dfe1e6]">
           <h3 class="font-bold text-lg text-[#172b4d]">Add New Unit Specification</h3>
-          <button @click="showAddModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer">✕</button>
+          <button @click="showAddModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer" title="Close"><X class="w-4 h-4" /></button>
         </div>
 
         <form @submit.prevent="handleAddUnitSpec" class="space-y-4 text-xs sm:text-sm">

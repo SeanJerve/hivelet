@@ -160,13 +160,13 @@ function handleDeleteExpense(date: string, item: ExpenseItem) {
           <tbody>
             <template v-for="group in expenseLedger" :key="group.date">
               <tr v-for="(item, itemIdx) in group.items" :key="itemIdx" class="border-b border-[#dfe1e6] hover:bg-[#f4f5f7]">
-                <td v-if="itemIdx === 0" :rowspan="group.items.length" class="p-2 font-bold border-r border-[#dfe1e6] bg-[#f4f5f7] align-top">
+                <td v-if="itemIdx === 0" :rowspan="group.items.length" class="p-2 font-bold border-r border-[#dfe1e6] bg-[#f4f5f7] align-top font-subtle-num">
                   {{ group.date }}
                 </td>
                 <td class="p-2 font-medium text-[#172b4d]">{{ item.supplier }}</td>
                 <td class="p-2"><span class="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-800">{{ item.area }}</span></td>
                 <td class="p-2"><span class="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-800 border border-blue-200">{{ item.catName }}</span></td>
-                <td class="p-2 font-bold text-[#172b4d]">₱{{ item.amount.toLocaleString() }}</td>
+                <td class="p-2 font-bold text-[#172b4d] font-subtle-num">₱{{ item.amount.toLocaleString() }}</td>
                 <td class="p-2 text-right">
                   <div class="flex justify-end gap-1">
                     <button @click="openEditExpense(group.date, item)" title="Edit Expense Log" class="p-1 hover:bg-blue-50 text-blue-600 rounded cursor-pointer">

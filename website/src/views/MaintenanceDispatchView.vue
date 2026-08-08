@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { tickets, openTicketHover, resolveTicket, openTenantChat, requestSecondaryConfirm, type MaintenanceTicket } from '@/lib/systemState';
-import { Maximize2, CheckCircle, PhoneCall, MessageCircle } from 'lucide-vue-next';
+import { Maximize2, CheckCircle, PhoneCall, MessageCircle, X } from 'lucide-vue-next';
 
 const contactModalOpen = ref(false);
 const activeContactTicket = ref<MaintenanceTicket | null>(null);
@@ -111,7 +111,7 @@ function handleCloseTicket(ticket: MaintenanceTicket) {
             <PhoneCall class="w-4 h-4 text-[#054e38]" />
             <span>Quick Contact — Room {{ activeContactTicket.room }}</span>
           </h3>
-          <button @click="contactModalOpen = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer">✕</button>
+          <button @click="contactModalOpen = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer" title="Close"><X class="w-4 h-4" /></button>
         </div>
 
         <div class="space-y-3 text-xs">

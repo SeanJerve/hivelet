@@ -17,8 +17,6 @@ import {
   CreditCard, 
   Receipt, 
   Wrench, 
-  ShieldCheck, 
-  Settings,
   Home, 
   X 
 } from 'lucide-vue-next';
@@ -50,8 +48,6 @@ const adminModules = [
   { path: '/admin/billing', label: 'Billing & Collections', icon: CreditCard },
   { path: '/admin/expenses', label: 'Expenses Ledger', icon: Receipt },
   { path: '/admin/tickets', label: 'Maintenance Dispatch', icon: Wrench },
-  { path: '/admin/settings', label: 'Settings & Business Rules', icon: Settings },
-  { path: '/admin/audit', label: 'System Audit Logs', icon: ShieldCheck },
 ];
 
 // Tenant Portal Modules

@@ -14,9 +14,10 @@ import {
 } from 'lucide-vue-next';
 
 // Filter state
-const activeFloorFilter = ref('all');
+const activeFloorFilter = ref('1');
 const activeTypeFilter = ref('all');
 const activeStatusFilter = ref('all');
+const isCatalogExpanded = ref(true);
 
 // Form state
 const prospectName = ref('');
@@ -224,18 +225,25 @@ function submitInquiry() {
     </section>
 
     <!-- ====================================================================
-         3. ROOM SHOWCASE & MULTI-COMBINATION FILTER SECTION
+         3. ROOM SHOWCASE & COLLAPSIBLE FLOOR SECTIONS
          ==================================================================== -->
     <section id="rooms" class="max-w-7xl mx-auto px-4 md:px-12 space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <h2 class="text-2xl sm:text-3xl font-extrabold text-[#172b4d] font-display">Available Boarding Units</h2>
-          <p class="text-xs sm:text-sm text-slate-500 mt-1">Combine floor and room type filters below to find your ideal unit across 3 floors (32 total units).</p>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Select floor tabs below to view units without endless scrolling.</p>
         </div>
+
+        <button 
+          @click="isCatalogExpanded = !isCatalogExpanded" 
+          class="jira-btn-secondary border border-[#dfe1e6] text-xs px-4 py-2 font-bold flex items-center justify-center gap-2 cursor-pointer w-fit"
+        >
+          <span>{{ isCatalogExpanded ? 'Collapse Units Catalog' : 'Expand Units Catalog' }}</span>
+        </button>
       </div>
 
       <!-- Multi-Combination Filter Container Box -->
-      <div class="jira-card p-6 bg-white border border-[#dfe1e6] rounded-2xl space-y-4 shadow-sm">
+      <div v-if="isCatalogExpanded" class="jira-card p-6 bg-white border border-[#dfe1e6] rounded-2xl space-y-4 shadow-sm">
         <!-- Floor Filter Chips -->
         <div class="flex flex-wrap items-center gap-2 text-xs">
           <span class="font-bold text-slate-500 w-24">Floor:</span>
@@ -333,7 +341,7 @@ function submitInquiry() {
         >
           <div class="space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="font-extrabold text-lg text-[#172b4d]">Unit {{ room.unitCode }}</h3>
+              <h3 class="font-extrabold text-lg text-[#172b4d] font-subtle-num">Unit {{ room.unitCode }}</h3>
               <span 
                 :class="[
                   'px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider',
@@ -352,11 +360,11 @@ function submitInquiry() {
             <div class="bg-[#f4f5f7] p-2.5 rounded-lg border border-slate-200 text-[11px] text-[#172b4d] space-y-1">
               <div class="flex items-center justify-between">
                 <span class="text-slate-500 font-medium">Capacity:</span>
-                <span class="font-bold">Up to {{ room.maxOccupants }} Occupants</span>
+                <span class="font-bold font-subtle-num">Up to {{ room.maxOccupants }} Occupants</span>
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-slate-500 font-medium">Utilities:</span>
-                <span class="font-bold">Sub-metered Electric • ₱200/head Water</span>
+                <span class="font-bold font-subtle-num">Sub-metered Electric • ₱200/head Water</span>
               </div>
             </div>
           </div>
@@ -364,7 +372,7 @@ function submitInquiry() {
           <div class="pt-3 border-t border-[#dfe1e6] flex items-center justify-between">
             <div>
               <span class="text-[10px] text-slate-400 block font-semibold uppercase">Monthly Rent</span>
-              <strong class="text-base font-extrabold text-[#172b4d]">₱{{ room.price.toLocaleString() }}/mo</strong>
+              <strong class="text-base font-extrabold text-[#172b4d] font-subtle-num">₱{{ room.price.toLocaleString() }}/mo</strong>
             </div>
 
             <button 

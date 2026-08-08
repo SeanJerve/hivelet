@@ -27,8 +27,8 @@ import {
   X
 } from 'lucide-vue-next';
 
-// Workspace Active Tab: 'overview' | 'tickets'
-const activeTab = ref<'overview' | 'tickets'>('overview');
+// Workspace Active Tab: 'overview' | 'payments' | 'tickets'
+const activeTab = ref<'overview' | 'payments' | 'tickets'>('overview');
 
 // Resident & Assigned Unit Data
 const tenantData = ref({
@@ -246,26 +246,34 @@ const handleTicketSubmit = () => {
           <h1 class="text-xl font-bold text-[#172b4d]">RESIDENT WORKSPACE</h1>
         </div>
 
-        <!-- Tab Buttons -->
+        <!-- 3 Tab Buttons -->
         <div class="flex items-center bg-[#f4f5f7] p-1 border border-[#dfe1e6] rounded-md gap-1 self-start sm:self-auto">
           <button 
             @click="activeTab = 'overview'"
-            class="px-3 py-1.5 text-xs font-bold rounded transition-colors flex items-center gap-1.5"
+            class="px-3 py-1.5 text-xs font-bold rounded transition-colors flex items-center gap-1.5 cursor-pointer"
             :class="activeTab === 'overview' ? 'bg-white text-[#0c66e4] shadow-sm' : 'text-[#5e6c84] hover:text-[#172b4d]'"
           >
+            <Home class="w-3.5 h-3.5" />
+            <span>Unit Overview</span>
+          </button>
+          <button 
+            @click="activeTab = 'payments'"
+            class="px-3 py-1.5 text-xs font-bold rounded transition-colors flex items-center gap-1.5 cursor-pointer"
+            :class="activeTab === 'payments' ? 'bg-white text-[#0c66e4] shadow-sm' : 'text-[#5e6c84] hover:text-[#172b4d]'"
+          >
             <CreditCard class="w-3.5 h-3.5" />
-            <span>Overview & Statement</span>
+            <span>Payments & Billing</span>
           </button>
           <button 
             @click="activeTab = 'tickets'"
-            class="px-3 py-1.5 text-xs font-bold rounded transition-colors flex items-center gap-1.5 relative"
+            class="px-3 py-1.5 text-xs font-bold rounded transition-colors flex items-center gap-1.5 relative cursor-pointer"
             :class="activeTab === 'tickets' ? 'bg-white text-[#0c66e4] shadow-sm' : 'text-[#5e6c84] hover:text-[#172b4d]'"
           >
             <Wrench class="w-3.5 h-3.5" />
             <span>Maintenance Tickets</span>
             <span 
               v-if="maintenanceTickets.filter(t => t.status !== 'RESOLVED').length > 0"
-              class="px-1.5 py-0.2 text-[10px] bg-[#0c66e4] text-white rounded-full font-bold"
+              class="px-1.5 py-0.2 text-[10px] bg-[#0c66e4] text-white rounded-full font-bold font-subtle-num"
             >
               {{ maintenanceTickets.filter(t => t.status !== 'RESOLVED').length }}
             </span>
@@ -274,7 +282,9 @@ const handleTicketSubmit = () => {
       </div>
       <p class="text-xs text-[#6b778c]">
         {{ activeTab === 'overview' 
-            ? `${tenantData.room} Monthly Payment Statement, Due Date & Direct Remittance Form` 
+            ? `${tenantData.room} Specifications, Occupancy Terms & Balance Summary`
+            : activeTab === 'payments'
+            ? `Submit Payment Remittances & Review Payment History for ${tenantData.room}` 
             : `Submit and Track Maintenance Issue Tickets for ${tenantData.room}` }}
       </p>
     </div>
@@ -290,7 +300,9 @@ const handleTicketSubmit = () => {
           <CheckCircle2 class="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{{ submissionNotice }}</span>
         </div>
-        <button @click="submissionNotice = ''" class="text-emerald-700 hover:text-emerald-900 font-bold ml-2">✕</button>
+        <button @click="submissionNotice = ''" class="text-emerald-700 hover:text-emerald-900 ml-2 p-0.5 rounded cursor-pointer" title="Dismiss">
+          <X class="w-3.5 h-3.5" />
+        </button>
       </div>
 
       <!-- Assigned Unit Specs Banner -->
@@ -384,22 +396,25 @@ const handleTicketSubmit = () => {
             
             <div class="flex justify-between items-center font-bold text-sm border-t-2 border-[#172b4d] pt-2.5 mt-2">
               <span class="text-[#172b4d]">Total Amount Due:</span>
-              <strong class="text-base text-[#0c66e4]">₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>
+              <strong class="text-base text-[#0c66e4] font-subtle-num">₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Right Box: INPUT / RECORD MONTHLY PAYMENT (ONLINE PAYMENT FORM) -->
-        <div class="jira-card p-4 space-y-3 bg-[#f4f5f7] border-2 border-[#172b4d]">
-          <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-2">
-            <h3 class="font-bold text-xs uppercase tracking-wide text-[#172b4d] flex items-center gap-2">
-              <Send class="w-4 h-4 text-[#0c66e4]" />
-              <span>INPUT / RECORD MONTHLY PAYMENT</span>
-            </h3>
-            <span class="px-2 py-0.5 text-[10px] font-bold bg-[#0c66e4] text-white rounded">
-              ONLINE REMITTANCE
-            </span>
-          </div>
+    <!-- TAB 2: PAYMENTS & BILLING -->
+    <div v-if="activeTab === 'payments'" class="space-y-6 animate-fade-in">
+      <div class="jira-card p-6 space-y-4 bg-white border border-[#dfe1e6]">
+        <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-3">
+          <h3 class="font-bold text-sm uppercase tracking-wide text-[#172b4d] flex items-center gap-2">
+            <CreditCard class="w-4 h-4 text-[#0c66e4]" />
+            <span>Submit Payment Remittance</span>
+          </h3>
+          <span class="px-2 py-0.5 text-[10px] font-bold bg-[#0c66e4] text-white rounded">
+            ONLINE REMITTANCE
+          </span>
+        </div>
 
           <p class="text-xs text-[#5e6c84]">
             Input your payment details below to submit your payment remittance to the landlady.
@@ -479,10 +494,10 @@ const handleTicketSubmit = () => {
             <!-- Submit Button -->
             <button 
               type="submit"
-              class="w-full py-2.5 px-4 bg-[#172b4d] hover:bg-[#0c66e4] text-white font-bold text-xs rounded transition-colors flex items-center justify-center gap-2 shadow-sm"
+              class="w-full py-2.5 px-4 bg-[#172b4d] hover:bg-[#0c66e4] text-white font-bold text-xs rounded transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
             >
-              <Send class="w-3.5 h-3.5" />
-              <span>[ 💾 Submit Payment Record to Landlady ]</span>
+              <Send class="w-3 h-3" />
+              <span>Submit Payment Record</span>
             </button>
           </form>
         </div>
@@ -540,7 +555,7 @@ const handleTicketSubmit = () => {
                   >
                     <ShieldCheck v-if="record.status === 'VERIFIED & SETTLED'" class="w-3 h-3 text-emerald-400" />
                     <Clock v-else class="w-3 h-3 text-amber-600" />
-                    [ {{ record.status }} ]
+                    <span>{{ record.status }}</span>
                   </span>
                 </td>
               </tr>
@@ -550,8 +565,8 @@ const handleTicketSubmit = () => {
       </div>
     </div>
 
-    <!-- TAB 2: MAINTENANCE ISSUE TICKETS PAGE -->
-    <div v-else class="space-y-6 animate-fade-in">
+    <!-- TAB 3: MAINTENANCE ISSUE TICKETS PAGE -->
+    <div v-if="activeTab === 'tickets'" class="space-y-6 animate-fade-in">
       <!-- Submission Toast Notice for Ticket -->
       <div 
         v-if="ticketNotice" 
@@ -561,7 +576,9 @@ const handleTicketSubmit = () => {
           <CheckCircle2 class="w-4 h-4 text-[#0c66e4] shrink-0" />
           <span>{{ ticketNotice }}</span>
         </div>
-        <button @click="ticketNotice = ''" class="text-blue-700 hover:text-blue-900 font-bold ml-2">✕</button>
+        <button @click="ticketNotice = ''" class="text-blue-700 hover:text-blue-900 ml-2 p-0.5 rounded cursor-pointer" title="Dismiss">
+          <X class="w-3.5 h-3.5" />
+        </button>
       </div>
 
       <!-- Grid Layout: Submit Ticket Form & Ticket Tracking List -->
@@ -625,7 +642,7 @@ const handleTicketSubmit = () => {
                 >
                   <option value="Medium">Medium Priority</option>
                   <option value="High">High Priority</option>
-                  <option value="Emergency">🚨 EMERGENCY</option>
+                  <option value="Emergency">Emergency Priority</option>
                 </select>
               </div>
             </div>
@@ -685,10 +702,10 @@ const handleTicketSubmit = () => {
             <!-- Submit Button -->
             <button 
               type="submit"
-              class="w-full py-2.5 px-4 bg-[#172b4d] hover:bg-[#0c66e4] text-white font-bold text-xs rounded transition-colors flex items-center justify-center gap-2 shadow-sm"
+              class="w-full py-2.5 px-4 bg-[#172b4d] hover:bg-[#0c66e4] text-white font-bold text-xs rounded transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
             >
-              <Send class="w-3.5 h-3.5" />
-              <span>[ 🛠️ Submit Maintenance Ticket to Landlady ]</span>
+              <Send class="w-3 h-3" />
+              <span>Submit Maintenance Ticket</span>
             </button>
           </form>
         </div>
@@ -769,6 +786,4 @@ const handleTicketSubmit = () => {
 
       </div>
     </div>
-
-  </div>
 </template>

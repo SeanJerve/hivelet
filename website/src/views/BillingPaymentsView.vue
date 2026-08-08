@@ -94,63 +94,89 @@ function handleDelete(rec: IncomeRecord) {
     </div>
 
     <!-- Record Monthly Payment Form -->
-    <div class="jira-card p-6 space-y-4 bg-white border border-[#dfe1e6]">
-      <h2 class="text-sm font-bold text-[#172b4d] flex items-center gap-2">
-        <CreditCard class="w-4 h-4 text-[#054e38]" /> Record Monthly Unit Payment
-      </h2>
+    <div class="jira-card p-6 space-y-6 bg-white border border-[#dfe1e6] rounded-lg shadow-xs">
+      <div class="border-b border-[#dfe1e6] pb-3 flex items-center justify-between">
+        <h2 class="text-base font-bold text-[#172b4d] flex items-center gap-2">
+          <CreditCard class="w-5 h-5 text-[#054e38]" /> Record Monthly Unit Payment
+        </h2>
+        <span class="text-xs text-[#5e6c84]">Log official payment remittance to collection ledger</span>
+      </div>
 
-      <form @submit.prevent="handleSubmit" class="space-y-4 text-xs">
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <form @submit.prevent="handleSubmit" class="space-y-6">
+        <!-- Input Grid Row 1 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs sm:text-sm">
           <div>
-            <label class="block font-bold text-[#5e6c84] mb-1">Select Unit / Room</label>
-            <select v-model="selectedUnitNum" @change="onUnitChange(($event.target as HTMLSelectElement).value)" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]">
+            <label class="block font-bold text-[#42526e] mb-1.5">Select Unit / Room *</label>
+            <select v-model="selectedUnitNum" @change="onUnitChange(($event.target as HTMLSelectElement).value)" class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md font-bold text-[#172b4d] focus:bg-white focus:outline-none">
               <option v-for="r in rooms" :key="r.id" :value="r.unitCode">Unit {{ r.unitCode }} ({{ r.cluster }})</option>
             </select>
           </div>
+
           <div>
-            <label class="block font-bold text-[#5e6c84] mb-1">Date Paid</label>
-            <input v-model="datePaid" type="date" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]" required />
+            <label class="block font-bold text-[#42526e] mb-1.5">Date Paid *</label>
+            <input v-model="datePaid" type="date" class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md font-medium text-[#172b4d] focus:bg-white focus:outline-none" required />
           </div>
+
           <div>
-            <label class="block font-bold text-[#5e6c84] mb-1">Tenant Name</label>
-            <input v-model="tenantName" type="text" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]" required />
+            <label class="block font-bold text-[#42526e] mb-1.5">Tenant Name *</label>
+            <input v-model="tenantName" type="text" class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md font-medium text-[#172b4d] focus:bg-white focus:outline-none" required />
           </div>
+
           <div>
-            <label class="block font-bold text-[#5e6c84] mb-1">Invoice OR / Ref #</label>
-            <input v-model="invoiceNum" type="text" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]" required />
+            <label class="block font-bold text-[#42526e] mb-1.5">Invoice OR / Ref # *</label>
+            <input v-model="invoiceNum" type="text" class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md font-mono text-[#172b4d] focus:bg-white focus:outline-none" required />
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <!-- Input Grid Row 2 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs sm:text-sm">
           <div>
-            <label class="block font-bold text-[#5e6c84] mb-1">Rent Amount (₱)</label>
-            <input v-model.number="rentAmount" type="number" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]" required />
+            <label class="block font-bold text-[#42526e] mb-1.5">Monthly Rent Rate (₱) *</label>
+            <input v-model.number="rentAmount" type="number" class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md font-bold text-[#172b4d] font-subtle-num focus:bg-white focus:outline-none" required />
           </div>
+
           <div>
-            <label class="block font-bold text-[#5e6c84] mb-1">Occupants Count</label>
-            <input v-model.number="occupantsCount" type="number" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]" min="0" required />
+            <label class="block font-bold text-[#42526e] mb-1.5">Occupants Count *</label>
+            <input v-model.number="occupantsCount" type="number" class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md font-bold text-[#172b4d] font-subtle-num focus:bg-white focus:outline-none" min="0" required />
           </div>
+
           <div>
-            <label class="block font-bold text-[#5e6c84] mb-1">Payment Method</label>
-            <select v-model="paymentMethod" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]">
+            <label class="block font-bold text-[#42526e] mb-1.5">Payment Method *</label>
+            <select v-model="paymentMethod" class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md font-medium text-[#172b4d] focus:bg-white focus:outline-none">
               <option value="Cash">Cash Payment</option>
               <option value="Online">Online Payment (GCash)</option>
             </select>
           </div>
+
           <div v-if="paymentMethod === 'Online'">
-            <label class="block font-bold text-[#5e6c84] mb-1">GCash Ref #</label>
-            <input v-model="referenceNum" type="text" class="w-full p-2 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs font-medium text-[#172b4d]" placeholder="GCASH-9948271" />
+            <label class="block font-bold text-[#42526e] mb-1.5">GCash Ref #</label>
+            <input v-model="referenceNum" type="text" class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md font-mono text-[#172b4d] focus:bg-white focus:outline-none" placeholder="GCASH-9948271" />
           </div>
         </div>
 
-        <div class="p-3 bg-[#f4f5f7] border border-[#dfe1e6] rounded-xs flex flex-wrap justify-between items-center gap-3 font-mono text-xs">
-          <div class="flex flex-wrap gap-4">
-            <span>50% Share: <strong>₱{{ calcShare.toLocaleString() }}</strong></span>
-            <span>Water (₱200/head): <strong>₱{{ calcWater.toLocaleString() }}</strong></span>
-            <span>Total Remitted: <strong class="text-[#054e38] underline">₱{{ calcRemitted.toLocaleString() }}</strong></span>
+        <!-- Comprehensive Calculation Summary Box -->
+        <div class="p-4 bg-[#f4f5f7] border border-[#dfe1e6] rounded-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-6 text-xs sm:text-sm font-subtle-num">
+            <div>
+              <span class="text-[#5e6c84] block text-[11px] uppercase font-bold">50% Revenue Share</span>
+              <strong class="text-[#172b4d] text-base">₱{{ calcShare.toLocaleString() }}</strong>
+            </div>
+            <div class="border-l border-[#dfe1e6] pl-6">
+              <span class="text-[#5e6c84] block text-[11px] uppercase font-bold">Water Fee (₱200/head)</span>
+              <strong class="text-[#172b4d] text-base">₱{{ calcWater.toLocaleString() }}</strong>
+            </div>
+            <div class="border-l border-[#dfe1e6] pl-6">
+              <span class="text-[#5e6c84] block text-[11px] uppercase font-bold">Total Remitted</span>
+              <strong class="text-[#054e38] text-lg font-bold">₱{{ calcRemitted.toLocaleString() }}</strong>
+            </div>
           </div>
-          <button type="submit" class="jira-btn-primary bg-[#054e38] hover:bg-[#003626] text-white px-3 py-1.5 text-xs font-semibold flex items-center gap-1 cursor-pointer">
-            <Plus class="w-3.5 h-3.5" /> Record Monthly Payment & Add to Ledger
+
+          <button 
+            type="submit" 
+            class="jira-btn-primary bg-[#054e38] hover:bg-[#003626] text-white px-5 py-2.5 text-xs font-bold rounded-md flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+          >
+            <Plus class="w-4 h-4" />
+            <span>Record Monthly Payment</span>
           </button>
         </div>
       </form>
@@ -178,14 +204,14 @@ function handleDelete(rec: IncomeRecord) {
           </thead>
           <tbody class="divide-y divide-[#dfe1e6]">
             <tr v-for="(rec, idx) in incomeLedger" :key="idx" class="hover:bg-[#f4f5f7]">
-              <td class="p-2 font-bold">Unit {{ rec.unit }}</td>
-              <td class="p-2">{{ rec.date }}</td>
+              <td class="p-2 font-bold font-subtle-num">Unit {{ rec.unit }}</td>
+              <td class="p-2 font-subtle-num">{{ rec.date }}</td>
               <td class="p-2">{{ rec.contact }}</td>
               <td class="p-2 font-mono text-[11px]">{{ rec.invoiceNum }}</td>
-              <td class="p-2">₱{{ rec.rent.toLocaleString() }}</td>
-              <td class="p-2">₱{{ rec.share.toLocaleString() }}</td>
-              <td class="p-2">₱{{ rec.water.toLocaleString() }}</td>
-              <td class="p-2 font-bold text-[#054e38]">₱{{ rec.remitted.toLocaleString() }}</td>
+              <td class="p-2 font-subtle-num">₱{{ rec.rent.toLocaleString() }}</td>
+              <td class="p-2 font-subtle-num">₱{{ rec.share.toLocaleString() }}</td>
+              <td class="p-2 font-subtle-num">₱{{ rec.water.toLocaleString() }}</td>
+              <td class="p-2 font-bold text-[#054e38] font-subtle-num">₱{{ rec.remitted.toLocaleString() }}</td>
               <td class="p-2"><span class="px-2 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800">{{ rec.paymentMethod }}</span></td>
               <td class="p-2 font-mono text-[10px] text-[#5e6c84]">{{ rec.referenceNum }}</td>
               <td class="p-2 text-right">

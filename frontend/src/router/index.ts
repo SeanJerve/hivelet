@@ -6,6 +6,7 @@
  */
 import { createRouter, createWebHistory } from 'vue-router';
 
+import BasisArchivedView from '../views/BasisArchivedView.vue';
 import AdminOverviewView from '../views/AdminOverviewView.vue';
 import RoomDirectoryView from '../views/RoomDirectoryView.vue';
 import TenantManagementView from '../views/TenantManagementView.vue';
@@ -18,36 +19,26 @@ import PublicGuestView from '../views/PublicGuestView.vue';
 import SystemSettingsView from '../views/SystemSettingsView.vue';
 
 const routes = [
-  { path: '/', redirect: '/public' },
-  { path: '/public', name: 'PublicGuest', component: PublicGuestView },
-  { path: '/tenant', name: 'TenantPortal', component: TenantPortalView },
-  { path: '/admin', redirect: '/admin/overview' },
-  { path: '/admin/overview', name: 'AdminOverview', component: AdminOverviewView },
-  { path: '/admin/directory', name: 'RoomDirectory', component: RoomDirectoryView },
-  { path: '/admin/tenants', name: 'TenantManagement', component: TenantManagementView },
-  { path: '/admin/inquiries', name: 'Inquiries', component: InquiriesView },
-  { path: '/admin/billing', name: 'BillingPayments', component: BillingPaymentsView },
-  { path: '/admin/expenses', name: 'ExpensesLedger', component: ExpensesLedgerView },
-  { path: '/admin/tickets', name: 'MaintenanceDispatch', component: MaintenanceDispatchView },
-  { path: '/admin/settings', name: 'SystemSettings', component: SystemSettingsView },
-  { 
-    path: '/admin/audit', 
-    name: 'SystemAudit', 
-    component: {
-      template: `
-        <div class="jira-card p-6 space-y-4">
-          <h2 class="text-lg font-bold text-[#172b4d]">System Audit & Activity Logs</h2>
-          <p class="text-xs text-[#5e6c84]">Immutable activity log tracking system actions, financial edits, and authorization events.</p>
-          <div class="p-3 bg-[#f4f5f7] border border-[#dfe1e6] text-xs font-mono text-[#172b4d] rounded-xs space-y-1">
-            <p>[2026-08-01 14:00:00] [SYSTEM] Centralized system reactive state initialized.</p>
-            <p>[2026-08-01 14:05:00] [ADMIN] Spec 09 Monthly Payment recorded for Room 204.</p>
-            <p>[2026-08-01 14:10:00] [TENANT] Maintenance ticket 108 details expanded.</p>
-          </div>
-        </div>
-      `
-    }
-  },
-  { path: '/:pathMatch(.*)*', redirect: '/public' }
+  { path: '/', name: 'BasisArchive', component: BasisArchivedView },
+  { path: '/basis', redirect: '/' },
+  { path: '/basis/public', name: 'BasisPublicGuest', component: PublicGuestView },
+  { path: '/basis/tenant', name: 'BasisTenantPortal', component: TenantPortalView },
+  { path: '/basis/admin', redirect: '/basis/admin/overview' },
+  { path: '/basis/admin/overview', name: 'BasisAdminOverview', component: AdminOverviewView },
+  { path: '/basis/admin/directory', name: 'BasisRoomDirectory', component: RoomDirectoryView },
+  { path: '/basis/admin/tenants', name: 'BasisTenantManagement', component: TenantManagementView },
+  { path: '/basis/admin/inquiries', name: 'BasisInquiries', component: InquiriesView },
+  { path: '/basis/admin/billing', name: 'BasisBillingPayments', component: BillingPaymentsView },
+  { path: '/basis/admin/expenses', name: 'BasisExpensesLedger', component: ExpensesLedgerView },
+  { path: '/basis/admin/tickets', name: 'BasisMaintenanceDispatch', component: MaintenanceDispatchView },
+  { path: '/basis/admin/settings', name: 'BasisSystemSettings', component: SystemSettingsView },
+  
+  // Legacy alias redirects to basis paths
+  { path: '/public', redirect: '/basis/public' },
+  { path: '/tenant', redirect: '/basis/tenant' },
+  { path: '/admin/:pathMatch(.*)*', redirect: (to: any) => `/basis/admin/${to.params.pathMatch}` },
+  
+  { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
 
 const router = createRouter({

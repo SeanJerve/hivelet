@@ -5,7 +5,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Search, UserPlus, Edit, Trash2, MessageSquare } from 'lucide-vue-next';
+import { Search, UserPlus, Edit, Trash2, MessageSquare, X } from 'lucide-vue-next';
 import { tenants, rooms, addTenant, updateTenant, deleteTenant, openTenantChat, requestSecondaryConfirm, type TenantProfile } from '@/lib/systemState';
 
 
@@ -181,14 +181,14 @@ const handleDeleteExecute = () => {
           <tbody class="divide-y divide-[#dfe1e6] text-[#172b4d]">
             <tr v-for="t in filteredTenants" :key="t.id" class="hover:bg-[#f7f8f9]">
               <td class="py-2.5 px-3 font-bold text-[#172b4d]">{{ t.name }}</td>
-              <td class="py-2.5 px-3 font-semibold text-[#0c66e4]">Unit {{ t.room }}</td>
-              <td class="py-2.5 px-3 text-[#5e6c84]">{{ t.phone }}</td>
+              <td class="py-2.5 px-3 font-semibold text-[#0c66e4] font-subtle-num">Unit {{ t.room }}</td>
+              <td class="py-2.5 px-3 text-[#5e6c84] font-subtle-num">{{ t.phone }}</td>
               <td class="py-2.5 px-3 text-[#5e6c84]">{{ t.emergency }}</td>
-              <td class="py-2.5 px-3">{{ t.moveInDate }}</td>
+              <td class="py-2.5 px-3 font-subtle-num">{{ t.moveInDate }}</td>
               <td class="py-2.5 px-3">
                 <span 
                   :class="[
-                    'px-2 py-0.5 text-xs font-bold rounded-full',
+                    'px-2 py-0.5 text-xs font-bold rounded-full font-subtle-num',
                     t.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
                   ]"
                 >
@@ -196,18 +196,16 @@ const handleDeleteExecute = () => {
                 </span>
               </td>
               <td class="py-2.5 px-3 text-right">
-                <div class="flex items-center justify-end gap-1">
-                  <button @click="openTenantChat(t.name, t.room)" class="px-2 py-1 bg-[#e3fcef] hover:bg-[#abf5d1] text-[#006644] font-bold rounded-md flex items-center gap-1 cursor-pointer text-[11px]" title="Chat with Tenant in Messenger">
-                    <MessageSquare class="w-3.5 h-3.5 text-[#006644]" />
-                    <span>Chat</span>
+                <div class="flex items-center justify-end gap-1.5">
+                  <button @click="openTenantChat(t.name, t.room)" class="p-1.5 hover:bg-emerald-50 text-[#006644] rounded border border-emerald-200 cursor-pointer" title="Direct Chat">
+                    <MessageSquare class="w-3.5 h-3.5" />
                   </button>
-                  <button @click="openEditModal(t)" class="p-1 hover:bg-[#ebecf0] rounded-2xs text-[#0c66e4] cursor-pointer" title="Edit Tenant Profile">
+                  <button @click="openEditModal(t)" class="p-1.5 hover:bg-blue-50 text-[#0c66e4] rounded border border-blue-200 cursor-pointer" title="Edit Tenant Profile">
                     <Edit class="w-3.5 h-3.5" />
                   </button>
-                  <button @click="confirmDelete(t)" class="p-1 hover:bg-[#ffebe6] rounded-2xs text-red-600 cursor-pointer" title="Delete / Offboard Tenant">
+                  <button @click="confirmDelete(t)" class="p-1.5 hover:bg-red-50 text-red-600 rounded border border-red-200 cursor-pointer" title="Offboard Tenant">
                     <Trash2 class="w-3.5 h-3.5" />
                   </button>
-
                 </div>
               </td>
             </tr>
@@ -221,7 +219,7 @@ const handleDeleteExecute = () => {
       <div class="jira-card w-full max-w-md p-6 bg-white shadow-xl space-y-4 rounded-lg">
         <div class="flex items-center justify-between pb-3 border-b border-[#dfe1e6]">
           <h3 class="font-bold text-lg text-[#172b4d]">Onboard New Tenant</h3>
-          <button @click="showOnboardModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer">✕</button>
+          <button @click="showOnboardModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer" title="Close"><X class="w-4 h-4" /></button>
         </div>
 
         <form @submit.prevent="handleOnboardSubmit" class="space-y-4 text-xs sm:text-sm">
@@ -266,7 +264,7 @@ const handleDeleteExecute = () => {
       <div class="jira-card w-full max-w-md p-6 bg-white shadow-xl space-y-4 rounded-lg">
         <div class="flex items-center justify-between pb-3 border-b border-[#dfe1e6]">
           <h3 class="font-bold text-lg text-[#172b4d]">Edit Tenant Profile</h3>
-          <button @click="showEditModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer">✕</button>
+          <button @click="showEditModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1 cursor-pointer" title="Close"><X class="w-4 h-4" /></button>
         </div>
 
         <form @submit.prevent="handleEditSubmit" class="space-y-4 text-xs sm:text-sm">
