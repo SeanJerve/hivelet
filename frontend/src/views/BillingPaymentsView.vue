@@ -11,8 +11,8 @@ import { Plus, Download, CreditCard } from 'lucide-vue-next';
 
 const selectedUnitNum = ref('1a');
 const datePaid = ref(new Date().toISOString().split('T')[0]);
-const tenantName = ref('Juan Dela Cruz');
-const invoiceNum = ref('INV-88392');
+const tenantName = ref('');
+const invoiceNum = ref('');
 const rentAmount = ref(4500);
 const occupantsCount = ref(2);
 const paymentMethod = ref<'Cash' | 'Online'>('Cash');

@@ -1,48 +1,57 @@
+/**
+ * @file server.ts
+ * @description Hivelet API entry point.
+ * @architectureRef 04_ARCHITECTURE.md — Express is the security boundary for
+ *                  every protected operation.
+ */
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
-import apiRouter from './routes/index.js';
-import { errorHandler } from './middleware/errorHandler.js';
-import { testDbConnection } from './config/db.js';
 
-dotenv.config({ path: '../.env' });
-dotenv.config();
+import './types/auth.js'; // registers the Express.Request augmentation
+import { config } from './config/env.js';
+import { reportDbStatus } from './config/db.js';
+import apiRouter from './routes/index.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '5000', 10);
 
-// Middlewares
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true,
-}));
-app.use(morgan('dev'));
-app.use(express.json());
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Same-origin/tooling requests (curl, health probes) send no Origin.
+      if (!origin || config.cors.origins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error(`Origin ${origin} is not permitted by CORS policy.`));
+    },
+    credentials: true,
+  })
+);
+
+app.use(morgan(config.isProduction ? 'combined' : 'dev'));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes
+// Needed for a correct client IP in the audit trail behind the university
+// server's reverse proxy.
+app.set('trust proxy', 1);
+
 app.use('/api', apiRouter);
 
-// 404 Handler
-app.use((_req, res) => {
-  res.status(404).json({
-    success: false,
-    error: {
-      message: 'API Endpoint Not Found',
-      statusCode: 404,
-    },
-  });
-});
-
-// Central Error Handler
+app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Start Server
-app.listen(PORT, async () => {
-  console.log(`🚀 Hivelet Backend Server running on http://localhost:${PORT}`);
-  console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
-  await testDbConnection();
+app.listen(config.port, async () => {
+  console.log(`🚀 Hivelet API on http://localhost:${config.port}`);
+  console.log(`📡 Health:  http://localhost:${config.port}/api/health`);
+  console.log(`🔐 Auth:    POST /api/auth/login`);
+  console.log(`🌐 CORS:    ${config.cors.origins.join(', ')}`);
+  await reportDbStatus();
 });
+
+export default app;

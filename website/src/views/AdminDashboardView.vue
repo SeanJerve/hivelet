@@ -5,11 +5,16 @@
 -->
 <script setup lang="ts">
 import { computed } from 'vue';
-import { rooms, openRoomDetail, openAdminEditUnit, isOnsitePaymentModalOpen } from '@/lib/systemState';
+import { rooms, incomeLedger, tickets, openRoomDetail, openAdminEditUnit, isOnsitePaymentModalOpen } from '@/lib/systemState';
 import { Plus, Eye, Edit, Building2 } from 'lucide-vue-next';
 
 const occupiedCount = computed(() => rooms.filter(r => r.status === 'occupied').length);
 const vacantCount = computed(() => rooms.filter(r => r.status === 'available').length);
+const totalRevenue = computed(() => incomeLedger.reduce((sum, i) => sum + i.remitted, 0));
+const onlinePendingCount = computed(() => incomeLedger.filter(i => i.paymentMethod === 'Online').length);
+const onlinePendingAmount = computed(() => incomeLedger.filter(i => i.paymentMethod === 'Online').reduce((sum, i) => sum + i.remitted, 0));
+const openTicketsCount = computed(() => tickets.filter(t => t.status === 'OPEN').length);
+const emergencyTicketsCount = computed(() => tickets.filter(t => t.status === 'OPEN' && t.priority === 'Emergency').length);
 </script>
 
 <template>
@@ -29,8 +34,8 @@ const vacantCount = computed(() => rooms.filter(r => r.status === 'available').l
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="jira-card p-5 bg-white border border-[#dfe1e6]">
         <p class="text-xs font-bold text-[#5e6c84] uppercase">Monthly Revenue</p>
-        <p class="text-2xl font-extrabold text-[#054e38] mt-1">₱178,500</p>
-        <span class="inline-block mt-2 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">+₱12,000 vs last month</span>
+        <p class="text-2xl font-extrabold text-[#054e38] mt-1">₱{{ totalRevenue.toLocaleString() }}</p>
+        <span class="inline-block mt-2 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">Current Remittances</span>
       </div>
 
       <div class="jira-card p-5 bg-white border border-[#dfe1e6]">
@@ -41,14 +46,14 @@ const vacantCount = computed(() => rooms.filter(r => r.status === 'available').l
 
       <div class="jira-card p-5 bg-white border border-[#dfe1e6]">
         <p class="text-xs font-bold text-[#5e6c84] uppercase">Pending Verifications</p>
-        <p class="text-2xl font-extrabold text-amber-700 mt-1">₱12,400</p>
-        <span class="inline-block mt-2 text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">2 GCash Online Payments</span>
+        <p class="text-2xl font-extrabold text-amber-700 mt-1">₱{{ onlinePendingAmount.toLocaleString() }}</p>
+        <span class="inline-block mt-2 text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">{{ onlinePendingCount }} Online Payments</span>
       </div>
 
       <div class="jira-card p-5 bg-white border border-[#dfe1e6]">
         <p class="text-xs font-bold text-[#5e6c84] uppercase">Maintenance Tickets</p>
-        <p class="text-2xl font-extrabold text-red-700 mt-1">2 Open</p>
-        <span class="inline-block mt-2 text-[10px] font-bold text-red-800 bg-red-100 px-2 py-0.5 rounded-full">1 Emergency Ticket</span>
+        <p class="text-2xl font-extrabold text-red-700 mt-1">{{ openTicketsCount }} Open</p>
+        <span class="inline-block mt-2 text-[10px] font-bold text-red-800 bg-red-100 px-2 py-0.5 rounded-full">{{ emergencyTicketsCount }} Emergency Tickets</span>
       </div>
     </div>
 

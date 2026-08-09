@@ -18,8 +18,9 @@ import {
   Receipt, 
   Wrench, 
   Home, 
-  X 
+  X
 } from 'lucide-vue-next';
+import { isAdmin, isTenant } from '@/lib/authStore';
 
 defineProps<{
   isMobileSidebarOpen?: boolean;
@@ -32,12 +33,19 @@ const emit = defineEmits<{
 const route = useRoute();
 const router = useRouter();
 
-// Compute active role based on URL path
-const currentRole = computed<'admin' | 'tenant' | 'public'>(() => {
-  if (route.path.startsWith('/tenant')) return 'tenant';
-  if (route.path.startsWith('/admin')) return 'admin';
+// Navigation is derived from the authenticated session, not from the URL.
+// Reading the role off the path meant that simply typing /admin rendered the
+// full management menu to anyone — System Bible Section 20 requires the role to
+// come from an authenticated identity.
+const sessionRole = computed<'admin' | 'tenant' | 'public'>(() => {
+  if (isAdmin.value) return 'admin';
+  if (isTenant.value) return 'tenant';
   return 'public';
 });
+
+// Kept as `currentRole` so the existing template bindings continue to read
+// naturally below.
+const currentRole = sessionRole;
 
 // Admin Management Modules aligned with System Bible & BR-032
 const adminModules = [

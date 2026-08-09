@@ -6,17 +6,8 @@
 -->
 <script setup lang="ts">
 import { ref } from 'vue';
+import { tenants } from '@/lib/systemState';
 import { Search, UserPlus } from 'lucide-vue-next';
-
-const tenants = ref([
-  { id: 1, name: 'Juan Dela Cruz', room: 'Unit 1a (BH Main)', phone: '0917-123-4567', emergency: 'Maria Cruz (Mother - 0918-987-6543)', moveInDate: '2025-06-15', status: 'Active' },
-  { id: 2, name: 'Maria Santos', room: 'Unit 1b (BH Main)', phone: '0918-234-5678', emergency: 'Jose Santos (Father - 0919-876-5432)', moveInDate: '2025-08-01', status: 'Active' },
-  { id: 3, name: 'Pedro Penduko', room: 'Unit 1d (BH Main)', phone: '0919-345-6789', emergency: 'Clara Penduko (Sister - 0920-765-4321)', moveInDate: '2026-01-10', status: 'Active' },
-  { id: 4, name: 'Ana Reyes', room: 'Unit 1f (BH Main)', phone: '0920-456-7890', emergency: 'Roberto Reyes (Spouse - 0921-654-3210)', moveInDate: '2024-11-20', status: 'Active' },
-  { id: 5, name: 'Felix Go', room: 'Unit 1h (BH Main)', phone: '0921-567-8901', emergency: 'Sofia Toribio (Aunt - 0922-543-2109)', moveInDate: '2026-03-01', status: 'Overdue' },
-  { id: 6, name: 'Mark Villar', room: 'Unit B1F (Back Apt)', phone: '0918-555-0192', emergency: 'Cynthia Villar (Mother - 0918-111-2222)', moveInDate: '2025-05-01', status: 'Active' },
-  { id: 7, name: 'Gayon', room: 'Unit LF (Linda)', phone: '0919-444-5555', emergency: 'Linda Gayon (Self - 0919-000-1111)', moveInDate: '2024-01-01', status: 'Active' },
-]);
 
 const search = ref('');
 </script>

@@ -8,8 +8,8 @@ import { X, Check } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 const selectedUnit = ref('1a');
-const amount = ref(4900);
-const orNum = ref('OR-100294');
+const amount = ref(0);
+const orNum = ref('');
 
 function closeModal() {
   isOnsitePaymentModalOpen.value = false;

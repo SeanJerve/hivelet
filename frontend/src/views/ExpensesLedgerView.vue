@@ -11,7 +11,7 @@ import { Plus, Download, Receipt } from 'lucide-vue-next';
 
 const expenseDate = ref(new Date().toISOString().split('T')[0]);
 const supplierItems = ref<ExpenseItem[]>([
-  { supplier: 'Wilcon Depot (bh)', area: 'BH', amount: 2500, catId: '8', catName: 'Repairs & Maintenance' }
+  { supplier: '', area: 'BH', amount: 0, catId: '8', catName: 'Repairs & Maintenance' }
 ]);
 
 function addSupplierRow() {

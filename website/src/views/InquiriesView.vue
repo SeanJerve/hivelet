@@ -8,11 +8,18 @@ import { ref } from 'vue';
 import { activeInquirers, isLiveChatheadOpen, selectedInquirerId } from '@/lib/systemState';
 import { ArrowRight, MessageSquare } from 'lucide-vue-next';
 
-const inquiries = ref([
-  { id: 'inq-1', prospectName: 'Maria Santos', room: 'Unit 1c (1-Bedroom)', phone: '0927-111-2222', email: 'maria.santos@gmail.com', date: '2026-07-27', status: 'Pending Review', message: 'Hi! Is Unit 1c still available for move-in next week? We are 2 working professionals.' },
-  { id: 'inq-2', prospectName: 'Alex Gonzaga', room: 'Unit B3F (1-Bedroom)', phone: '0917-333-4444', email: 'alex.g@yahoo.com', date: '2026-07-26', status: 'Replied', message: 'Good morning! Inquiring about Back Apartment B3F deposit requirements.' },
-  { id: 'inq-3', prospectName: 'Jerome Mercado', room: 'Unit 3f (Studio)', phone: '0998-555-6666', email: 'j.mercado@outlook.com', date: '2026-07-25', status: 'Converted', message: 'Inquiring about studio room deposit requirements and water billing policies.' },
-]);
+interface InquiryItem {
+  id: string;
+  prospectName: string;
+  room: string;
+  phone: string;
+  email: string;
+  date: string;
+  status: string;
+  message: string;
+}
+
+const inquiries = ref<InquiryItem[]>([]);
 
 function openReplyChat(inqId: string) {
   // Ensure inquirer exists in activeInquirers store

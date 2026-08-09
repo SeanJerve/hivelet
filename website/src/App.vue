@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { setAuthFailureHandler } from '@/lib/api';
+import { handleAuthFailure } from '@/lib/authStore';
 import LoadingScreen from '@/components/common/LoadingScreen.vue';
 import ToastContainer from '@/components/common/ToastContainer.vue';
 import AppNavbar from '@/components/layout/AppNavbar.vue';
@@ -17,10 +19,31 @@ import EditPaymentModal from '@/components/modals/EditPaymentModal.vue';
 import EditExpenseModal from '@/components/modals/EditExpenseModal.vue';
 
 const route = useRoute();
+const router = useRouter();
 const isMobileSidebarOpen = ref(false);
 
 const isWorkspaceRoute = computed(() => {
   return route.path.startsWith('/admin') || route.path.startsWith('/tenant') || route.path.startsWith('/public');
+});
+
+// The login screen renders its own full-height layout.
+const isAuthRoute = computed(() => route.path === '/login');
+
+/**
+ * Signs the user out when the API rejects the stored token — an expired
+ * session, or an account deactivated since sign-in (BR-025). Without this the
+ * UI would keep rendering an admin shell whose every request returns 401.
+ */
+onMounted(() => {
+  setAuthFailureHandler(() => {
+    handleAuthFailure();
+    if (route.meta.roles) {
+      void router.replace({
+        path: '/login',
+        query: { reason: 'Your session ended. Please sign in again.' },
+      });
+    }
+  });
 });
 </script>
 
@@ -43,8 +66,8 @@ const isWorkspaceRoute = computed(() => {
       </main>
     </div>
 
-    <AppFooter v-if="!isWorkspaceRoute" />
-    <MobilePillNavbar />
+    <AppFooter v-if="!isWorkspaceRoute && !isAuthRoute" />
+    <MobilePillNavbar v-if="!isAuthRoute" />
 
     <!-- MODAL MOUNT POINTS -->
     <RoomDetailModal />

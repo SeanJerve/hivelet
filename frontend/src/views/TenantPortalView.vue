@@ -32,57 +32,46 @@ const activeTab = ref<'overview' | 'tickets'>('overview');
 
 // Resident & Assigned Unit Data
 const tenantData = ref({
-  name: 'Juan Dela Cruz',
-  room: 'Room 204',
-  roomDetails: '2nd Floor, 1-Bedroom',
-  roomType: 'BH Main Rooms • Studio / 1-Bedroom',
-  occupants: 2, // 2 heads
+  name: 'Active Resident',
+  room: 'Unassigned',
+  roomDetails: 'Standard Unit',
+  roomType: 'BH Main Rooms',
+  occupants: 1,
   specs: {
     floorArea: '18 sq.m',
     bathroom: 'Private En-suite',
     aircon: 'Included (Split-type)',
     wifi: 'High-Speed Fiber WiFi',
     electricMeter: 'Individual Sub-meter',
-    waterRatePerHead: 200 // ₱200 per head rule
+    waterRatePerHead: 200
   },
-  baseRent: 6500,
-  waterFee: 400, // 2 heads x ₱200
-  totalAmountDue: 6900,
-  dueDate: 'August 5, 2026',
-  dueBadgeText: 'DUE: AUGUST 5, 2026',
-  dueDaysRemaining: 'Due in 4 Days',
+  baseRent: 0,
+  waterFee: 0,
+  totalAmountDue: 0,
+  dueDate: 'N/A',
+  dueBadgeText: 'NO DUE BILL',
+  dueDaysRemaining: 'Settled',
   landladyGCash: '0917-123-4567',
   landladyName: 'Fe Galang Da Silva'
 });
 
 // Input Payment Form State
-const payDate = ref('2026-08-01');
-const payAmount = ref(6900);
+const payDate = ref(new Date().toISOString().split('T')[0]);
+const payAmount = ref(0);
 const payMethod = ref('GCash / Online Payment');
-const payRef = ref('GCASH-9948271');
+const payRef = ref('');
 const submissionNotice = ref('');
 
 // Payment History Records
-const paymentHistory = ref([
-  {
-    id: 1,
-    invoiceRef: 'GCASH-9948271',
-    datePaid: '2026-08-01',
-    billingPeriod: 'Aug 5 - Sep 4, 2026',
-    amountPaid: 6900,
-    paymentMethod: 'ONLINE GCASH',
-    status: 'PENDING VERIFICATION'
-  },
-  {
-    id: 2,
-    invoiceRef: 'INV-77102',
-    datePaid: '2026-07-05',
-    billingPeriod: 'Jul 5 - Aug 4, 2026',
-    amountPaid: 6900,
-    paymentMethod: 'CASH ON-SITE',
-    status: 'VERIFIED & SETTLED'
-  }
-]);
+const paymentHistory = ref<Array<{
+  id: number;
+  invoiceRef: string;
+  datePaid: string;
+  billingPeriod: string;
+  amountPaid: number;
+  paymentMethod: string;
+  status: string;
+}>>([]);
 
 // Maintenance Ticket Data Structure
 interface MaintenanceTicket {

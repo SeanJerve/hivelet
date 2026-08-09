@@ -6,3 +6,15 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
+
+interface ImportMetaEnv {
+  /**
+   * Base URL of the Hivelet Express API. Only VITE_-prefixed variables reach
+   * the browser bundle — no Supabase key of any kind belongs here.
+   */
+  readonly VITE_API_BASE_URL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

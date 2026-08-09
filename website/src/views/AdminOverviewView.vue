@@ -69,7 +69,7 @@ const vacantCount = computed(() => rooms.filter(r => r.status === 'available').l
           <CreditCard class="w-4 h-4 text-[#054e38]" />
         </div>
         <div class="text-2xl font-bold text-[#054e38] font-subtle-num">
-          ₱{{ totalIncome ? totalIncome.toLocaleString() : '178,500' }}
+          ₱{{ totalIncome ? totalIncome.toLocaleString() : '0' }}
         </div>
         <p class="text-[11px] text-[#5e6c84]">Current period remittances</p>
       </div>
@@ -93,7 +93,7 @@ const vacantCount = computed(() => rooms.filter(r => r.status === 'available').l
           <Receipt class="w-4 h-4 text-amber-700" />
         </div>
         <div class="text-2xl font-bold text-amber-800 font-subtle-num">
-          ₱{{ totalExpenses ? totalExpenses.toLocaleString() : '23,152' }}
+          ₱{{ totalExpenses ? totalExpenses.toLocaleString() : '0' }}
         </div>
         <p class="text-[11px] text-[#5e6c84]">Logged operational expenses</p>
       </div>
