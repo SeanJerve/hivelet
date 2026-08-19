@@ -17,7 +17,8 @@ import { optionalAuth, requirePermission } from '../middleware/auth.js';
 import { PERMISSIONS } from '../config/rbac.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
-import { auditFromRequest } from '../services/auditService.js';
+import { auditFromRequest, clientIp } from '../services/auditService.js';
+import { adyenService } from '../services/adyenService.js';
 
 const router = Router();
 
@@ -177,6 +178,94 @@ router.post(
     });
 
     res.status(201).json({ success: true, data });
+  })
+);
+
+/**
+ * GET /api/public/payments/mock-gateway
+ * Serves a simulated GCash payment authorization screen.
+ */
+router.get(
+  '/public/payments/mock-gateway',
+  asyncHandler(async (req, res) => {
+    const sessionId = req.query.sessionId as string;
+    if (!sessionId) {
+      throw ApiError.validation('Missing sessionId parameter.');
+    }
+
+    const session = adyenService.getCheckoutSession(sessionId);
+    if (!session) {
+      res.status(404).send(`
+        <html>
+          <body style="font-family: sans-serif; padding: 40px; text-align: center;">
+            <h2>Session Expired</h2>
+            <p>This payment session has expired or is invalid. Please return to the tenant portal.</p>
+          </body>
+        </html>
+      `);
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/html');
+    res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>GCash Online Payment Sandbox</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          body { background-color: #f4f5f7; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+          .card { background: white; padding: 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(9, 30, 66, 0.15); width: 100%; max-width: 400px; text-align: center; border: 1px solid #dfe1e6; }
+          .gcash-logo { color: #0052cc; font-size: 24px; font-weight: 800; margin-bottom: 24px; letter-spacing: -0.5px; }
+          .merchant { font-size: 14px; color: #5e6c84; margin-bottom: 8px; }
+          .amount { font-size: 28px; font-weight: bold; color: #172b4d; margin-bottom: 24px; font-feature-settings: "tnum"; }
+          .btn { background-color: #0052cc; color: white; border: none; padding: 12px 24px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; transition: background-color 0.2s; }
+          .btn:hover { background-color: #0747a6; }
+          .cancel { display: block; margin-top: 16px; font-size: 12px; color: #5e6c84; text-decoration: none; }
+          .cancel:hover { text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="gcash-logo">G) GCash <span style="font-size:12px; color:#5e6c84; font-weight:normal;">Sandbox via Adyen</span></div>
+          <div class="merchant">Fe Galang Da Silva Boarding House</div>
+          <div class="amount">₱${session.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+          
+          <form method="POST" action="/api/public/payments/mock-gateway/complete">
+            <input type="hidden" name="sessionId" value="${sessionId}" />
+            <button type="submit" class="btn">Authorize & Pay</button>
+          </form>
+          <a href="http://localhost:5174/tenant/portal?status=cancelled" class="cancel">Cancel Payment</a>
+        </div>
+      </body>
+      </html>
+    `);
+  })
+);
+
+const mockGatewayCompleteSchema = z.object({
+  sessionId: z.string(),
+});
+
+/**
+ * POST /api/public/payments/mock-gateway/complete
+ * Handles redirect response from mock checkout and updates payments to pending verification.
+ */
+router.post(
+  '/public/payments/mock-gateway/complete',
+  asyncHandler(async (req, res) => {
+    const parsed = mockGatewayCompleteSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation('Invalid callback session ID.');
+    }
+
+    const { sessionId } = parsed.data;
+    const ip = clientIp(req);
+
+    const result = await adyenService.completeMockPayment(sessionId, ip);
+
+    // Redirect the browser back to the website workspace portal tab
+    res.redirect(`http://localhost:5174/tenant/portal?status=success&ref=${result.paymentReference}`);
   })
 );
 

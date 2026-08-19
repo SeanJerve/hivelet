@@ -81,6 +81,13 @@ export const config = {
       .map((o) => o.trim())
       .filter(Boolean),
   },
+  adyen: {
+    apiKey: optional('ADYEN_API_KEY', 'mock_api_key_for_testing'),
+    merchantAccount: optional('ADYEN_MERCHANT_ACCOUNT', 'mock_merchant_account'),
+    environment: optional('ADYEN_ENVIRONMENT', 'TEST'),
+    clientKey: optional('ADYEN_CLIENT_KEY', 'mock_client_key'),
+    hmacKey: optional('ADYEN_HMAC_KEY', 'mock_hmac_key'),
+  },
 } as const;
 
 export type AppConfig = typeof config;

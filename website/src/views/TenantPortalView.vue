@@ -6,15 +6,14 @@
   @innovations Dual-tab resident workspace, direct maintenance issue ticketing with photo attachment upload, priority classification badges, and live remittance verification tracking.
 -->
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { currentUser } from '@/lib/authStore';
+import { api } from '@/lib/api';
 import { 
   Home, 
   CreditCard, 
   CheckCircle2, 
   Clock, 
-  QrCode, 
-  Send, 
   FileText, 
   ShieldCheck, 
   User, 
@@ -56,16 +55,15 @@ const tenantData = computed(() => ({
   landladyName: 'Fe Galang Da Silva'
 }));
 
-// Input Payment Form State
-const payDate = ref(new Date().toISOString().split('T')[0]);
-const payAmount = ref(0);
-const payMethod = ref('GCash / Online Payment');
-const payRef = ref('');
 const submissionNotice = ref('');
+
+// Unpaid bills state
+const outstandingBills = ref<any[]>([]);
+const loadingBills = ref(false);
 
 // Payment History Records
 const paymentHistory = ref<Array<{
-  id: number;
+  id: string | number;
   invoiceRef: string;
   datePaid: string;
   billingPeriod: string;
@@ -73,6 +71,97 @@ const paymentHistory = ref<Array<{
   paymentMethod: string;
   status: string;
 }>>([]);
+
+// Load bills and payments from the API on mount (FR-015 / FR-016)
+onMounted(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const statusParam = params.get('status');
+  const refParam = params.get('ref');
+
+  if (statusParam === 'success' && refParam) {
+    submissionNotice.value = `Online GCash payment (Ref: ${refParam}) has been successfully submitted! It is now pending verification by Landlady Fe Galang Da Silva.`;
+    // Clean up query parameters so refreshing doesn't show toast again
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (statusParam === 'cancelled') {
+    alert('Online payment was cancelled.');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  await fetchTenantBills();
+  await fetchTenantPayments();
+});
+
+async function fetchTenantBills() {
+  loadingBills.value = true;
+  try {
+    const data = await api.get<any[]>('/tenant/my-rooms');
+    // Map assigned rooms data
+    if (data && data.length > 0) {
+      const activeRoom = data.find(r => r.is_active);
+      if (activeRoom) {
+        tenantData.value.room = `Unit ${activeRoom.rooms.room_number}`;
+        tenantData.value.roomDetails = activeRoom.rooms.room_type;
+        tenantData.value.roomType = activeRoom.rooms.cluster_code;
+        tenantData.value.occupants = activeRoom.occupant_count;
+        tenantData.value.specs.waterRatePerHead = 200; // BR-014 Standard Water Rate
+      }
+    }
+
+    const billsData = await api.get<any[]>('/tenant/my-bills');
+    outstandingBills.value = billsData ?? [];
+    
+    // Find first unpaid bill to sync "Unit Overview" outstanding balance statement (BR-011)
+    const unpaidBill = billsData?.find(b => b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue');
+    if (unpaidBill) {
+      tenantData.value.baseRent = unpaidBill.rent_amount;
+      tenantData.value.waterFee = unpaidBill.water_amount;
+      tenantData.value.totalAmountDue = unpaidBill.total_amount;
+      tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      tenantData.value.dueBadgeText = unpaidBill.status.toUpperCase();
+      tenantData.value.dueDaysRemaining = 'Awaiting payment';
+    } else {
+      tenantData.value.baseRent = 0;
+      tenantData.value.waterFee = 0;
+      tenantData.value.totalAmountDue = 0;
+      tenantData.value.dueDate = 'N/A';
+      tenantData.value.dueBadgeText = 'NO DUE BILL';
+      tenantData.value.dueDaysRemaining = 'Settled';
+    }
+  } catch (err: any) {
+    console.error('Failed to load tenant bills:', err.message);
+  } finally {
+    loadingBills.value = false;
+  }
+}
+
+async function fetchTenantPayments() {
+  try {
+    const data = await api.get<any[]>('/tenant/my-payments');
+    paymentHistory.value = (data ?? []).map(p => ({
+      id: p.id,
+      invoiceRef: p.transaction_reference || 'Manual Ledger',
+      datePaid: new Date(p.paid_at || p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      billingPeriod: 'Monthly Statement',
+      amountPaid: p.amount,
+      paymentMethod: p.payment_method.toUpperCase(),
+      status: p.verification_status.toUpperCase()
+    }));
+  } catch (err: any) {
+    console.error('Failed to load tenant payments:', err.message);
+  }
+}
+
+/** Initiates checkout redirect by calling the backend Adyen checkout session creator */
+async function payBillOnline(billId: string) {
+  try {
+    const res = await api.post<{ sessionId: string; redirectUrl: string }>('/tenant/payments/checkout', { billId });
+    if (res && res.redirectUrl) {
+      window.location.href = res.redirectUrl;
+    }
+  } catch (err: any) {
+    alert(`Checkout failed: ${err.message}`);
+  }
+}
 
 // Maintenance Ticket Data Structure
 interface MaintenanceTicket {
@@ -125,39 +214,7 @@ const maintenanceTickets = ref<MaintenanceTicket[]>([
   }
 ]);
 
-// Handle Payment Submission
-const handleTenantPaymentSubmit = () => {
-  if (!payAmount.value || payAmount.value <= 0) {
-    alert('Please enter a valid payment amount.');
-    return;
-  }
-  if (payMethod.value !== 'Cash Payment On-Site' && !payRef.value.trim()) {
-    alert('Please provide a Reference Number / OR # for online remittance verification.');
-    return;
-  }
-
-  const isOnline = payMethod.value.includes('GCash') || payMethod.value.includes('Maya') || payMethod.value.includes('Online');
-  const methodBadge = isOnline 
-    ? (payMethod.value.includes('Maya') ? 'ONLINE MAYA' : 'ONLINE GCASH')
-    : 'CASH ON-SITE';
-
-  const newRecord = {
-    id: Date.now(),
-    invoiceRef: payRef.value.trim() || `REF-${Math.floor(100000 + Math.random() * 900000)}`,
-    datePaid: payDate.value,
-    billingPeriod: 'Aug 5 - Sep 4, 2026',
-    amountPaid: Number(payAmount.value),
-    paymentMethod: methodBadge,
-    status: 'PENDING VERIFICATION'
-  };
-
-  paymentHistory.value.unshift(newRecord);
-  submissionNotice.value = `Payment remittance of ₱${Number(payAmount.value).toLocaleString()} submitted via ${payMethod.value}. Sent to Landlady Fe Galang Da Silva for verification!`;
-
-  setTimeout(() => {
-    submissionNotice.value = '';
-  }, 6000);
-};
+// Photo file selection and upload handling
 
 // Handle Photo File Select
 const handlePhotoSelect = (event: Event) => {
@@ -399,100 +456,32 @@ const handleTicketSubmit = () => {
         <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-3">
           <h3 class="font-bold text-sm uppercase tracking-wide text-[#172b4d] flex items-center gap-2">
             <CreditCard class="w-4 h-4 text-[#0c66e4]" />
-            <span>Submit Payment Remittance</span>
+            <span>Outstanding Bills</span>
           </h3>
           <span class="px-2 py-0.5 text-[10px] font-bold bg-[#0c66e4] text-white rounded">
-            ONLINE REMITTANCE
+            ACTIVE BILLING ACTIONS
           </span>
         </div>
 
-          <p class="text-xs text-[#5e6c84]">
-            Input your payment details below to submit your payment remittance to the landlady.
-          </p>
-
-          <form @submit.prevent="handleTenantPaymentSubmit" class="space-y-3">
-            <!-- Date Paid -->
-            <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="tenant-pay-date">Date Paid:</label>
-              <input 
-                id="tenant-pay-date"
-                v-model="payDate"
-                type="date" 
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-medium focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
-                required
-              />
-            </div>
-
-            <!-- Amount Paid -->
-            <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="tenant-pay-amount">Amount Paid (₱):</label>
-              <input 
-                id="tenant-pay-amount"
-                v-model="payAmount"
-                type="number" 
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-bold focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
-                required
-              />
-            </div>
-
-            <!-- Payment Method -->
-            <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="tenant-pay-method">Payment Method:</label>
-              <select 
-                id="tenant-pay-method"
-                v-model="payMethod"
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-bold text-[#172b4d] focus:ring-1 focus:ring-[#0c66e4] focus:outline-none cursor-pointer"
-                required
-              >
-                <option value="GCash / Online Payment">GCash / Online Payment</option>
-                <option value="Maya / Online Bank">Maya / Online Bank</option>
-                <option value="Cash Payment On-Site">Cash Payment On-Site</option>
-              </select>
-            </div>
-
-            <!-- Online Remittance QR Code / Account Panel -->
-            <div 
-              v-if="payMethod.includes('GCash') || payMethod.includes('Maya') || payMethod.includes('Online')"
-              class="p-2.5 bg-blue-50 border border-blue-200 rounded text-xs space-y-1.5"
-            >
-              <div class="flex items-center justify-between font-bold text-[#0c66e4]">
-                <span class="flex items-center gap-1.5">
-                  <QrCode class="w-4 h-4" />
-                  Landlady Remittance Account
-                </span>
-                <span class="text-[10px] bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded">Verified GCash</span>
-              </div>
-              <div class="text-[#172b4d]">
-                Account Name: <strong>{{ tenantData.landladyName }}</strong><br />
-                GCash Number: <strong class="text-[#0c66e4] underline">{{ tenantData.landladyGCash }}</strong>
-              </div>
-            </div>
-
-            <!-- Reference Number -->
-            <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="tenant-pay-ref">Reference Number / OR #:</label>
-              <input 
-                id="tenant-pay-ref"
-                v-model="payRef"
-                type="text" 
-                placeholder="e.g. GCASH-9948271"
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-mono focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
-                :required="payMethod !== 'Cash Payment On-Site'"
-              />
-            </div>
-
-            <!-- Submit Button -->
-            <button 
-              type="submit"
-              class="w-full py-2.5 px-4 bg-[#172b4d] hover:bg-[#0c66e4] text-white font-bold text-xs rounded transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-            >
-              <Send class="w-3 h-3" />
-              <span>Submit Payment Record</span>
-            </button>
-          </form>
+        <div v-if="loadingBills" class="text-xs text-[#5e6c84] py-4">Loading outstanding bills...</div>
+        <div v-else-if="outstandingBills.filter(b => b.status !== 'Paid').length === 0" class="text-xs text-[#5e6c84] py-4">
+          🎉 You have no outstanding bills. All accounts are settled!
         </div>
-
+        <div v-else class="space-y-4">
+          <div v-for="bill in outstandingBills.filter(b => b.status !== 'Paid')" :key="bill.id" class="p-4 border border-[#dfe1e6] rounded bg-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+            <div class="text-xs space-y-1">
+              <div class="font-bold text-[#172b4d]">Due: {{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</div>
+              <div class="text-[#5e6c84]">Base Rent: ₱{{ bill.rent_amount.toLocaleString() }} | Water Fee: ₱{{ bill.water_amount.toLocaleString() }}</div>
+              <div class="font-semibold text-[#0c66e4]">Total Amount: ₱{{ bill.total_amount.toLocaleString() }}</div>
+            </div>
+            <button @click="payBillOnline(bill.id)" class="px-4 py-2 bg-[#172b4d] hover:bg-[#0c66e4] text-white text-xs font-bold rounded flex items-center gap-1.5 cursor-pointer self-start sm:self-auto transition-colors">
+              <CreditCard class="w-3.5 h-3.5" />
+              <span>Pay Online (GCash)</span>
+            </button>
+          </div>
+        </div>
       </div>
+    </div>
 
       <!-- Bottom Box: MY PAYMENT RECORD HISTORY TABLE -->
       <div class="jira-card p-4 space-y-3 bg-white border border-[#dfe1e6]">

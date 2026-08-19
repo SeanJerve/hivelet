@@ -23,6 +23,8 @@ import { resolveTenantScope, isEmptyScope, assertRoomInScope } from '../services
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest } from '../services/auditService.js';
+import { adyenService } from '../services/adyenService.js';
+import { config } from '../config/env.js';
 
 const router = Router();
 
@@ -263,6 +265,69 @@ router.get(
 
     if (error) throw ApiError.internal(error.message);
     res.status(200).json({ success: true, data: data ?? [] });
+  })
+);
+
+const checkoutSchema = z.object({
+  billId: z.string().uuid(),
+});
+
+/**
+ * POST /api/tenant/payments/checkout
+ * Initiates a mock Adyen checkout session for an unpaid bill.
+ * Aligns with BR-016 and BR-017 to direct the resident to checkout.
+ */
+router.post(
+  '/tenant/payments/checkout',
+  requirePermission(PERMISSIONS.PAYMENT_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const parsed = checkoutSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation('Invalid checkout payload.', parsed.error.flatten().fieldErrors);
+    }
+    const { billId } = parsed.data;
+
+    // Validate that the bill exists, belongs to this tenant, and is unpaid
+    const { data: bill, error } = await db
+      .from('bills')
+      .select('id, total_amount, status, tenant_profile_id')
+      .eq('id', billId)
+      .single();
+
+    if (error || !bill) {
+      throw ApiError.notFound('Bill not found.');
+    }
+
+    if (bill.tenant_profile_id !== req.user!.profileId) {
+      throw ApiError.forbidden('You are not authorized to pay this bill.');
+    }
+
+    if (bill.status === 'Paid') {
+      throw ApiError.conflict('This bill is already paid.');
+    }
+
+    // Initialize mock Adyen checkout session
+    const { sessionId, redirectUrl } = adyenService.createMockCheckoutSession(
+      bill.id,
+      req.user!.profileId,
+      bill.total_amount
+    );
+
+    // Create audit entry for checkout initiation
+    await auditFromRequest(req, {
+      action: 'PAYMENT_RECORD',
+      entityType: 'BILL',
+      entityId: bill.id,
+      newValues: { status: 'Checkout Session Initiated', sessionId }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        sessionId,
+        redirectUrl: `http://localhost:${config.port}${redirectUrl}`
+      }
+    });
   })
 );
 
