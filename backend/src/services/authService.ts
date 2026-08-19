@@ -311,4 +311,78 @@ async function recordLoginAudit(user: AuthUser, ipAddress?: string): Promise<voi
   }
 }
 
+export interface RegisterData {
+  email: string;
+  password?: string;
+  fullName: string;
+  phoneNumber?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  occupation?: string;
+  facebookUrl?: string;
+  role?: string;
+}
+
+export async function register(data: RegisterData, ipAddress?: string): Promise<LoginResult> {
+  const email = data.email.trim().toLowerCase();
+  
+  // Check if profile already exists
+  const { data: existing, error: checkError } = await db
+    .from('profiles')
+    .select('id')
+    .ilike('email', email)
+    .maybeSingle();
+
+  if (checkError) {
+    throw ApiError.internal(`Email registration check failed: ${checkError.message}`);
+  }
+  if (existing) {
+    throw ApiError.badRequest('An account with this email address already exists.');
+  }
+
+  // Hash password
+  let passwordHash: string | null = null;
+  if (data.password) {
+    passwordHash = await bcrypt.hash(data.password, config.auth.bcryptRounds);
+  }
+
+  // Insert profile
+  const { data: newProfile, error: insertError } = await db
+    .from('profiles')
+    .insert({
+      email,
+      password_hash: passwordHash,
+      full_name: data.fullName,
+      phone_number: data.phoneNumber || null,
+      emergency_contact_name: data.emergencyContactName || null,
+      emergency_contact_phone: data.emergencyContactPhone || null,
+      occupation: data.occupation || null,
+      facebook_url: data.facebookUrl || null,
+      role: data.role || 'tenant',
+      account_status: 'active'
+    })
+    .select('id, email, full_name, role, account_status')
+    .single();
+
+  if (insertError) {
+    throw ApiError.internal(`Failed to create account profile: ${insertError.message}`);
+  }
+
+  const user: AuthUser = {
+    profileId: newProfile.id,
+    email: newProfile.email,
+    fullName: newProfile.full_name,
+    role: newProfile.role as StoredRole,
+    accountStatus: newProfile.account_status as 'active' | 'inactive',
+  };
+
+  void recordLoginAudit(user, ipAddress);
+
+  return {
+    token: issueToken(user),
+    expiresIn: config.jwt.expiresIn,
+    user,
+  };
+}
+
 export { SAFE_PROFILE_COLUMNS };

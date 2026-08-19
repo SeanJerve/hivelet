@@ -48,8 +48,6 @@ const adminModules = [
   { path: '/admin/directory', label: 'Room Directory (32 Units)', icon: Building2 },
   { path: '/admin/tenants', label: 'Tenant Directory', icon: Users },
   { path: '/admin/inquiries', label: 'Inquiry Inbox', icon: MessageSquare },
-  { path: '/admin/billing', label: 'Billing & Collections', icon: CreditCard },
-  { path: '/admin/billing/history', label: '  • Collection History', icon: Receipt },
   { path: '/admin/expenses', label: 'Expenses Ledger', icon: Receipt },
   { path: '/admin/tickets', label: 'Maintenance Dispatch', icon: Wrench },
   { path: '/admin/settings', label: 'Settings & Business Rules', icon: Settings },

@@ -30,7 +30,10 @@ import InquiriesView from '@/views/InquiriesView.vue';
 import BillingPaymentsView from '@/views/BillingPaymentsView.vue';
 import ExpensesLedgerView from '@/views/ExpensesLedgerView.vue';
 import MaintenanceDispatchView from '@/views/MaintenanceDispatchView.vue';
-import TenantPortalView from '@/views/TenantPortalView.vue';
+import TenantOverviewView from '@/views/TenantOverviewView.vue';
+import TenantPaymentsView from '@/views/TenantPaymentsView.vue';
+import TenantTicketsView from '@/views/TenantTicketsView.vue';
+import TenantProfileView from '@/views/TenantProfileView.vue';
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -47,12 +50,30 @@ const routes: RouteRecordRaw[] = [
   { path: '/public', name: 'PublicGuest', component: PublicGuestView },
   { path: '/login', name: 'Login', component: LoginView },
 
-  // ---- Tenant portal (Section 4 — Tenant) ---------------------------------
+  // ---- Tenant portal (Section 4 — Tenant) — split into 4 focused views ----
   {
     path: '/tenant',
-    name: 'TenantPortal',
-    component: TenantPortalView,
+    name: 'TenantOverview',
+    component: TenantOverviewView,
     meta: { roles: ['tenant', 'admin'], label: 'the tenant portal' },
+  },
+  {
+    path: '/tenant/payments',
+    name: 'TenantPayments',
+    component: TenantPaymentsView,
+    meta: { roles: ['tenant', 'admin'], label: 'tenant payments' },
+  },
+  {
+    path: '/tenant/tickets',
+    name: 'TenantTickets',
+    component: TenantTicketsView,
+    meta: { roles: ['tenant', 'admin'], label: 'tenant tickets' },
+  },
+  {
+    path: '/tenant/profile',
+    name: 'TenantProfile',
+    component: TenantProfileView,
+    meta: { roles: ['tenant', 'admin'], label: 'tenant profile' },
   },
 
   // ---- Administrator workspace (Section 4 — Administrator) ----------------

@@ -8,6 +8,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import {
   login,
+  register,
   getOwnProfile,
   updateOwnProfile,
   changeOwnPassword,
@@ -47,6 +48,44 @@ router.post(
         user: result.user,
         // The frontend uses these to render navigation only. They are a UX
         // convenience — the backend re-checks every permission on every call.
+        permissions: permissionsForRole(result.user.role),
+      },
+    });
+  })
+);
+
+const registerSchema = z.object({
+  email: z.string().email('A valid email address is required.'),
+  password: z.string().min(10, 'Password must be at least 10 characters.'),
+  fullName: z.string().min(2, 'Full name is required.'),
+  phoneNumber: z.string().optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+  occupation: z.string().optional(),
+  facebookUrl: z.string().optional(),
+  role: z.string().optional(),
+});
+
+/**
+ * POST /api/auth/register
+ * Public. Creates a new user profile and returns a JWT.
+ */
+router.post(
+  '/auth/register',
+  asyncHandler(async (req, res) => {
+    const parsed = registerSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation('Invalid registration payload.', parsed.error.flatten().fieldErrors);
+    }
+
+    const result = await register(parsed.data, clientIp(req) ?? undefined);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        token: result.token,
+        expiresIn: result.expiresIn,
+        user: result.user,
         permissions: permissionsForRole(result.user.role),
       },
     });

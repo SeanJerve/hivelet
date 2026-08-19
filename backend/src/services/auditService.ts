@@ -33,7 +33,9 @@ export type AuditAction =
   | 'PAYMENT_CORRECT'
   | 'TICKET_CREATE'
   | 'TICKET_STATUS_CHANGE'
-  | 'TICKET_CLOSE';
+  | 'TICKET_CLOSE'
+  | 'EXPENSE_CREATE'
+  | 'EXPENSE_VOID';
 
 export type AuditEntityType =
   | 'PROFILE'

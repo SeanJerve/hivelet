@@ -58,9 +58,12 @@ const adminModules = [
   { path: '/admin/tickets', label: 'Maintenance Dispatch', icon: Wrench },
 ];
 
-// Tenant Portal Modules
+// Tenant Portal Modules — split into 4 focused self-service views
 const tenantModules = [
-  { path: '/tenant', label: 'My Room & Billing', icon: Home },
+  { path: '/tenant', label: 'Unit Overview', icon: Home },
+  { path: '/tenant/payments', label: 'Payment & Billing', icon: CreditCard },
+  { path: '/tenant/tickets', label: 'Maintenance Tickets', icon: Wrench },
+  { path: '/tenant/profile', label: 'My Profile', icon: Users },
 ];
 
 // Public Portal Modules

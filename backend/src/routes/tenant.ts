@@ -331,4 +331,85 @@ router.post(
   })
 );
 
+/**
+ * GET /api/tenant/my-profile
+ * FR-010 — returns the tenant's own profile data for display and editing.
+ * Only permitted personal fields are exposed; password_hash is never sent.
+ */
+router.get(
+  '/tenant/my-profile',
+  requirePermission(PERMISSIONS.PROFILE_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const { data, error } = await db
+      .from('profiles')
+      .select(
+        'id, email, full_name, phone_number, emergency_contact_name, ' +
+          'emergency_contact_phone, occupation, facebook_url, role, account_status, created_at'
+      )
+      .eq('id', req.user!.profileId)
+      .single();
+
+    if (error) throw ApiError.internal(error.message);
+    if (!data) throw ApiError.notFound('Profile not found.');
+
+    res.status(200).json({ success: true, data });
+  })
+);
+
+/**
+ * Validation schema for tenant-editable fields.
+ * System Bible Section 19: phone, emergency contact, occupation, Facebook.
+ * Full name, email, role, and account status are NOT tenant-editable.
+ */
+const profileUpdateSchema = z.object({
+  phone_number: z.string().max(50).optional().nullable(),
+  emergency_contact_name: z.string().max(150).optional().nullable(),
+  emergency_contact_phone: z.string().max(50).optional().nullable(),
+  occupation: z.string().max(100).optional().nullable(),
+  facebook_url: z.string().max(255).optional().nullable(),
+});
+
+/**
+ * PUT /api/tenant/my-profile
+ * FR-010 — tenant self-service profile update for permitted fields only.
+ * Server-side enforcement: only the 5 allowed columns are written, regardless
+ * of what the client sends. The profile ID comes from the JWT, not the body.
+ */
+router.put(
+  '/tenant/my-profile',
+  requirePermission(PERMISSIONS.PROFILE_UPDATE_OWN),
+  asyncHandler(async (req, res) => {
+    const parsed = profileUpdateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation('Invalid profile payload.', parsed.error.flatten().fieldErrors);
+    }
+
+    const updates = parsed.data;
+
+    const { data, error } = await db
+      .from('profiles')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', req.user!.profileId)
+      .select(
+        'id, email, full_name, phone_number, emergency_contact_name, ' +
+          'emergency_contact_phone, occupation, facebook_url, role, account_status'
+      )
+      .single();
+
+    if (error) throw ApiError.internal(error.message);
+
+    await auditFromRequest(req, {
+      action: 'PROFILE_UPDATE',
+      entityType: 'PROFILE',
+      entityId: req.user!.profileId,
+      newValues: updates,
+    });
+
+    res.status(200).json({ success: true, data });
+  })
+);
+
 export default router;

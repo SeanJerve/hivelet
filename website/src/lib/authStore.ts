@@ -92,6 +92,24 @@ export async function login(email: string, password: string): Promise<SessionUse
   }
 }
 
+export async function registerUser(payload: Record<string, unknown>): Promise<SessionUser> {
+  isAuthenticating.value = true;
+  authError.value = null;
+
+  try {
+    const result = await api.post<LoginResponse>('/auth/register', payload, false);
+    setStoredToken(result.token);
+    applySession(result);
+    return result.user;
+  } catch (error) {
+    if (error instanceof ApiRequestError) authError.value = error.message;
+    else authError.value = 'Account registration failed. Please try again.';
+    throw error;
+  } finally {
+    isAuthenticating.value = false;
+  }
+}
+
 export async function logout(): Promise<void> {
   try {
     await api.post('/auth/logout');
