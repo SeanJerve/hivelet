@@ -119,7 +119,7 @@ function submitInquiry() {
     <!-- ====================================================================
          2. CATEGORY CARDS SHOWCASE (1 Bed Room, 2 Bed Room, 3 Bed Room)
          ==================================================================== -->
-    <section id="categories" class="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 space-y-6">
+    <section id="categories" class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6">
       
       <!-- Container Master Card -->
       <div class="jira-card bg-white p-6 sm:p-8 rounded-3xl border border-[#dfe1e6] shadow-sm space-y-8">
@@ -257,10 +257,10 @@ function submitInquiry() {
     <!-- ====================================================================
          3. KEY ADVANTAGES & HOUSE RULES
          ==================================================================== -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 space-y-6">
+    <section id="rules" class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6">
       <div class="jira-card p-6 sm:p-8 bg-white border border-[#dfe1e6] rounded-3xl space-y-6 shadow-sm">
         <div>
-          <h2 class="text-xl sm:text-2xl font-extrabold text-[#172b4d]">House Rules & Utility Policies</h2>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-[#172b4d] font-display">House Rules & Utility Policies</h2>
           <p class="text-xs text-[#5e6c84] mt-1">Operational standards for all tenants at Fe Galang Da Silva Boarding House.</p>
         </div>
 
@@ -301,7 +301,7 @@ function submitInquiry() {
     <!-- ====================================================================
          4. DIRECT BOOKING INQUIRY CARD (Below House Rules & Utility Policies)
          ==================================================================== -->
-    <section id="inquire" class="max-w-4xl mx-auto px-4 sm:px-6 md:px-12">
+    <section id="inquire" class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
       <div class="jira-card p-6 sm:p-8 bg-white border border-[#dfe1e6] rounded-3xl space-y-6 shadow-md">
         
         <div class="border-b border-[#dfe1e6] pb-4">

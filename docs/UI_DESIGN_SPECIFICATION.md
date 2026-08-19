@@ -10,7 +10,10 @@
 **Primary Aesthetic Principles:**
 - **Canvas:** Subtle neutral slate-gray background (`#f4f5f7`).
 - **Cards & Surfaces:** Clean white container surfaces (`#ffffff`) with subtle 1px slate borders (`#dfe1e6`).
-- **Typography:** Crisp dark slate text (`#172b4d`) with neutral slate subtext (`#6b778c`), strictly using standard Inter typography (Notion-style clarity).
+- **Typography:**
+  - **Headings & Word Titles:** Plus Jakarta Sans (`.font-display`) for bold, modern headings.
+  - **Metrics, Currency, & Numbers:** JetBrains Mono (`.font-mono-num`) with tabular numerals for amounts, counters, unit codes, and statistics.
+  - **Body Text:** Clean slate text (`#172b4d`) with neutral subtext (`#6b778c`).
 - **Accents:** Atlassian Corporate Blue (`#0c66e4`) for primary action buttons, active navigation states, and key focal points.
 - **Grids & Ledgers:** Airtable-inspired dense data tables with sticky headers and summary calculation footers.
 - **Strictly No Emojis / No Flashy Elements:** SVG/Lucide icons strictly replace emojis across all views.

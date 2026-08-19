@@ -71,19 +71,20 @@ function handleNavInquire() {
 
 <template>
   <header
-    class="h-16 bg-[#0b132b] text-white px-4 md:px-12 flex items-center justify-between sticky top-0 z-40 border-b border-white/10 shadow-lg"
+    class="h-16 bg-[#0b132b] text-white sticky top-0 z-40 border-b border-white/10 shadow-lg flex items-center"
   >
-    <!-- Left space / Brand anchor -->
-    <div class="flex items-center gap-4">
-      <router-link to="/" class="text-xs font-semibold text-slate-300 hover:text-white transition-colors">
-        Hivelet
-      </router-link>
-    </div>
+    <div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <!-- Left space / Brand anchor -->
+      <div class="flex items-center gap-4">
+        <router-link to="/" class="text-xs font-semibold text-slate-300 hover:text-white transition-colors">
+          Hivelet
+        </router-link>
+      </div>
 
-    <!-- Right: session control & Inquire Now trigger -->
-    <div class="flex items-center gap-3">
-      <!-- Signed out: a sign-in link and Inquire Now button -->
-      <template v-if="!isAuthenticated">
+      <!-- Right: session control & Inquire Now trigger -->
+      <div class="flex items-center gap-3">
+        <!-- Signed out: a sign-in link and Inquire Now button -->
+        <template v-if="!isAuthenticated">
         <router-link
           to="/login"
           class="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold text-white transition-all hover:bg-white/20"
@@ -185,5 +186,6 @@ function handleNavInquire() {
         </button>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 </template>

@@ -123,8 +123,8 @@ const inactivePercent = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-6 max-w-6xl mx-auto py-2">
-    <!-- Header Controls (Removed Record Cash Payment Button) -->
+  <div class="space-y-6 max-w-6xl mx-auto w-full">
+    <!-- Header Controls -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-4">
       <div>
         <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
@@ -132,8 +132,8 @@ const inactivePercent = computed(() => {
           <span>/</span>
           <span class="font-medium text-[#172b4d]">Dashboard Overview</span>
         </div>
-        <h1 class="text-xl font-bold text-[#172b4d] tracking-tight">Executive Dashboard & Analytics</h1>
-        <p class="text-xs text-[#5e6c84] mt-0.5">Real-time statistics for Fe Galang Da Silva Boarding House — {{ totalRoomsCount }} Property Units</p>
+        <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d] tracking-tight">Executive Dashboard & Analytics</h1>
+        <p class="text-xs text-[#5e6c84] mt-0.5">Real-time statistics for Fe Galang Da Silva Boarding House — <span class="font-mono-num font-bold">{{ totalRoomsCount }}</span> Property Units</p>
       </div>
     </div>
 

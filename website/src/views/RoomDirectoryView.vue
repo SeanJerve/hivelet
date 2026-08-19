@@ -167,7 +167,7 @@ const handleAddUnitSpec = async () => {
 </script>
 
 <template>
-  <div class="space-y-6 max-w-6xl mx-auto">
+  <div class="space-y-6 max-w-6xl mx-auto w-full">
     <!-- Header Title & Breadcrumb -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#dfe1e6]">
       <div>
@@ -176,7 +176,7 @@ const handleAddUnitSpec = async () => {
           <span>/</span>
           <span class="font-medium text-[#172b4d]">Room Directory</span>
         </div>
-        <h1 class="text-xl font-bold text-[#172b4d]">32 Units & Rate Directory</h1>
+        <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">32 Units & Rate Directory</h1>
         <p class="text-xs text-[#5e6c84]">View and configure room specifications, occupancy statuses, and monthly pricing</p>
       </div>
 

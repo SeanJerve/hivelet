@@ -24,7 +24,7 @@ const router = useRouter();
 const isMobileSidebarOpen = ref(false);
 
 const isWorkspaceRoute = computed(() => {
-  return route.path.startsWith('/admin') || route.path.startsWith('/tenant') || route.path.startsWith('/public');
+  return route.path.startsWith('/admin') || route.path.startsWith('/tenant');
 });
 
 // The login screen renders its own full-height layout.
@@ -54,15 +54,15 @@ onMounted(() => {
     <ToastContainer />
     <AppNavbar />
     
-    <!-- Main Content Container with AppSidebar for Admin, Tenant & Workspace Routes -->
-    <div class="flex flex-1 relative">
+    <!-- Main Content Container with AppSidebar for Admin & Tenant Workspace Routes -->
+    <div class="flex flex-1 relative w-full">
       <AppSidebar 
         v-if="isWorkspaceRoute"
         :isMobileSidebarOpen="isMobileSidebarOpen"
         @closeMobileSidebar="isMobileSidebarOpen = false"
       />
 
-      <main :class="['flex-1 overflow-y-auto', isWorkspaceRoute ? 'p-4 md:p-6' : '']">
+      <main :class="['flex-1 overflow-y-auto w-full', isWorkspaceRoute ? 'p-4 sm:p-6 lg:p-8' : '']">
         <router-view />
       </main>
     </div>

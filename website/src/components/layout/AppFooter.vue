@@ -5,7 +5,7 @@
 -->
 <template>
   <footer class="bg-[#0b132b] text-slate-300 pt-16 pb-10 border-t border-white/10 text-xs">
-    <div class="max-w-7xl mx-auto px-4 md:px-12 grid grid-cols-1 md:grid-cols-4 gap-10">
+    <div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10">
       <!-- Col 1: Brand & Mission -->
       <div class="space-y-4">
         <h3 class="font-bold text-white uppercase tracking-wider text-xs">Hivelet</h3>
@@ -19,7 +19,7 @@
         <h4 class="font-bold text-white uppercase tracking-wider text-xs">Property Portal</h4>
         <ul class="space-y-2 text-slate-400">
           <li><a href="#hero" class="hover:text-white transition-colors">Overview</a></li>
-          <li><a href="#rooms" class="hover:text-white transition-colors">Rentable Units</a></li>
+          <li><a href="#categories" class="hover:text-white transition-colors">Rentable Units</a></li>
           <li><a href="#rules" class="hover:text-white transition-colors">Utility Rates & Rules</a></li>
           <li><a href="#inquire" class="hover:text-white transition-colors">Submit Inquiry</a></li>
         </ul>
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Bottom Copyright Bar -->
-    <div class="max-w-7xl mx-auto px-4 md:px-12 pt-8 mt-12 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400 text-xs">
+    <div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 mt-12 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400 text-xs">
       <p>© 2026 Hivelet. Fe Galang Da Silva Boarding House. All rights reserved.</p>
       <div class="flex items-center gap-6">
         <span class="text-slate-400">Capstone Academic Study</span>

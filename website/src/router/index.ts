@@ -49,6 +49,7 @@ const routes: RouteRecordRaw[] = [
   // ---- Public (System Bible Section 4 — Public Visitor) --------------------
   { path: '/', name: 'PublicLanding', component: PublicLandingView },
   { path: '/category/:categorySlug', name: 'CategoryRooms', component: CategoryRoomsView },
+  { path: '/category/:categorySlug/units', name: 'CategoryUnits', component: PublicGuestView },
   { path: '/public', name: 'PublicGuest', component: PublicGuestView },
   { path: '/login', name: 'Login', component: LoginView },
 

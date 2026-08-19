@@ -186,9 +186,9 @@ function handleExport() {
 </script>
 
 <template>
-  <div class="space-y-6 max-w-5xl mx-auto">
+  <div class="space-y-6 max-w-6xl mx-auto w-full">
     <!-- Header with breadcrumbs and Tab Switcher -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#dfe1e6]">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#dfe1e6]">
       <div>
         <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
           <span>Expenses & Accounts</span>
@@ -197,7 +197,7 @@ function handleExport() {
             {{ activeTab === 'record' ? 'Record Expense' : 'Expense History' }}
           </span>
         </div>
-        <h1 class="text-xl font-bold text-[#172b4d]">
+        <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">
           {{ activeTab === 'record' ? 'Record Property Expenses' : 'Guided Expenses Ledger' }}
         </h1>
         <p class="text-xs text-[#5e6c84]">

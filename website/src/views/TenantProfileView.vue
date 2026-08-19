@@ -141,7 +141,7 @@ function handleReset() {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto py-2 space-y-6">
+  <div class="max-w-6xl mx-auto w-full space-y-6">
     <!-- Breadcrumb Header -->
     <div class="border-b border-[#dfe1e6] pb-4">
       <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
@@ -149,7 +149,7 @@ function handleReset() {
         <span>/</span>
         <span class="font-medium text-[#172b4d]">My Profile</span>
       </div>
-      <h1 class="text-xl font-bold text-[#172b4d]">My Profile</h1>
+      <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">My Profile</h1>
       <p class="text-xs text-[#6b778c] mt-0.5">
         Review your account details and keep your contact information current
       </p>

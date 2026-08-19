@@ -193,7 +193,7 @@ function statusClass(status: string) {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto py-2 space-y-6">
+  <div class="max-w-6xl mx-auto w-full space-y-6">
     <!-- Breadcrumb Header -->
     <div class="border-b border-[#dfe1e6] pb-4">
       <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
@@ -201,7 +201,7 @@ function statusClass(status: string) {
         <span>/</span>
         <span class="font-medium text-[#172b4d]">Maintenance</span>
       </div>
-      <h1 class="text-xl font-bold text-[#172b4d]">Maintenance Tickets</h1>
+      <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">Maintenance Tickets</h1>
       <p class="text-xs text-[#6b778c] mt-0.5">
         Report repair requests and track their progress
         <span v-if="activeRoomNumber"> for Unit {{ activeRoomNumber }}</span>

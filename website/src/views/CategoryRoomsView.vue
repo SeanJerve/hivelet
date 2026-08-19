@@ -10,7 +10,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { openInquiryModal } from '@/lib/systemState';
 import { 
-  ArrowLeft, MessageSquare, ShieldCheck, Sparkles
+  ArrowLeft, MessageSquare, ShieldCheck, Sparkles, Home
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -119,7 +119,7 @@ function handleInquireCategory() {
 
 <template>
   <div class="min-h-screen bg-[#f4f5f7] text-[#172b4d] pb-16">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 md:px-12 py-8 space-y-8">
+    <div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
       <!-- Breadcrumbs & Category Identifier -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-4">
@@ -219,14 +219,22 @@ function handleInquireCategory() {
         </div>
       </div>
 
-      <!-- Inquire Button (Outside Card) -->
-      <div class="pt-4 border-t border-[#dfe1e6]">
+      <!-- Action Buttons (View Available Units & Direct Inquire) -->
+      <div class="pt-4 border-t border-[#dfe1e6] flex flex-col sm:flex-row gap-3">
+        <router-link 
+          :to="`/category/${categoryMeta.slug}/units`"
+          class="flex-1 bg-[#0c66e4] hover:bg-blue-600 text-white font-bold py-3.5 sm:py-4 px-6 rounded-xl sm:rounded-2xl text-sm sm:text-base flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer text-center"
+        >
+          <Home class="w-4 h-4" />
+          <span>View Available Units</span>
+        </router-link>
+
         <button 
           type="button"
           @click="handleInquireCategory"
-          class="w-full bg-[#0c66e4] hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+          class="sm:w-auto bg-white hover:bg-[#f4f5f7] text-[#172b4d] border border-[#dfe1e6] font-bold py-3.5 sm:py-4 px-6 rounded-xl sm:rounded-2xl text-sm sm:text-base flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
         >
-          <MessageSquare class="w-4 h-4" />
+          <MessageSquare class="w-4 h-4 text-[#0c66e4]" />
           <span>Inquire {{ categoryMeta.name }}</span>
         </button>
       </div>

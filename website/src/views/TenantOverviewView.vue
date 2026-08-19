@@ -113,7 +113,7 @@ async function fetchTenantData() {
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto py-2 space-y-6">
+  <div class="max-w-6xl mx-auto w-full space-y-6">
     <!-- Breadcrumb Header -->
     <div class="border-b border-[#dfe1e6] pb-4">
       <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
@@ -123,7 +123,7 @@ async function fetchTenantData() {
         <span>/</span>
         <span class="font-semibold text-[#0c66e4]">{{ tenantData.room }}</span>
       </div>
-      <h1 class="text-xl font-bold text-[#172b4d]">Unit Overview</h1>
+      <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">Unit Overview</h1>
       <p class="text-xs text-[#6b778c] mt-0.5">{{ tenantData.room }} specifications, amenities & current billing statement</p>
     </div>
 
