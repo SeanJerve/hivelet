@@ -17,6 +17,7 @@ import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
 import SecondaryConfirmModal from '@/components/modals/SecondaryConfirmModal.vue';
 import EditPaymentModal from '@/components/modals/EditPaymentModal.vue';
 import EditExpenseModal from '@/components/modals/EditExpenseModal.vue';
+import InquiryModal from '@/components/modals/InquiryModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -78,6 +79,7 @@ onMounted(() => {
     <SecondaryConfirmModal />
     <EditPaymentModal />
     <EditExpenseModal />
+    <InquiryModal />
   </div>
 </template>
 

@@ -22,6 +22,7 @@ import { getStoredToken } from '@/lib/api';
 
 import PublicLandingView from '@/views/PublicLandingView.vue';
 import PublicGuestView from '@/views/PublicGuestView.vue';
+import CategoryRoomsView from '@/views/CategoryRoomsView.vue';
 import LoginView from '@/views/LoginView.vue';
 import AdminOverviewView from '@/views/AdminOverviewView.vue';
 import RoomDirectoryView from '@/views/RoomDirectoryView.vue';
@@ -47,6 +48,7 @@ declare module 'vue-router' {
 const routes: RouteRecordRaw[] = [
   // ---- Public (System Bible Section 4 — Public Visitor) --------------------
   { path: '/', name: 'PublicLanding', component: PublicLandingView },
+  { path: '/category/:categorySlug', name: 'CategoryRooms', component: CategoryRoomsView },
   { path: '/public', name: 'PublicGuest', component: PublicGuestView },
   { path: '/login', name: 'Login', component: LoginView },
 

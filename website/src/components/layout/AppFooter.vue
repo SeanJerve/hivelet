@@ -8,10 +8,7 @@
     <div class="max-w-7xl mx-auto px-4 md:px-12 grid grid-cols-1 md:grid-cols-4 gap-10">
       <!-- Col 1: Brand & Mission -->
       <div class="space-y-4">
-        <div class="flex items-center gap-2.5 text-white font-bold text-xl">
-          <span class="w-8 h-8 rounded-xl bg-[#0c66e4] text-white flex items-center justify-center font-mono font-extrabold text-base shadow-md">H</span>
-          <span class="font-display tracking-wide font-extrabold">Hivelet</span>
-        </div>
+        <h3 class="font-bold text-white uppercase tracking-wider text-xs">Hivelet</h3>
         <p class="text-slate-400 leading-relaxed text-xs">
           Fe Galang Da Silva Boarding House Management System. Centralized operational, financial, and inquiry workflows for 32 rentable units in Barangay Sambat, Tanauan City, Batangas.
         </p>
@@ -38,20 +35,13 @@
         </ul>
       </div>
 
-      <!-- Col 4: Location & Direct Inquiry Contact -->
+      <!-- Col 4: Location & Property Address -->
       <div class="space-y-4">
         <h4 class="font-bold text-white uppercase tracking-wider text-xs">Property Location</h4>
         <p class="text-slate-400 leading-relaxed text-xs">
           Barangay Sambat, Tanauan City, Batangas, Philippines.<br />
           Accessible to local university campuses & industrial centers.
         </p>
-
-        <!-- Social / Contact Badges -->
-        <div class="flex items-center gap-2 pt-2">
-          <a href="#inquire" class="bg-[#0c66e4] hover:bg-blue-600 text-white font-bold px-3 py-1.5 rounded-md transition-colors text-xs">
-            Inquire Now
-          </a>
-        </div>
       </div>
     </div>
 
