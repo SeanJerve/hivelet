@@ -37,6 +37,9 @@ export interface IncomeRecord {
   remitted: number;
   paymentMethod: 'Cash' | 'Online';
   referenceNum: string;
+  monthsCovered?: number;
+  dateCoveredStart?: string;
+  dateCoveredEnd?: string;
 }
 
 export interface ExpenseItem {
@@ -162,7 +165,7 @@ export const rooms = reactive<RoomUnit[]>([
   { id: 'bh-1g', unitCode: '1g', cluster: 'BH (Main Rooms)', floorLabel: '1st Floor BH', type: 'Studio', price: 4500, occupants: 0, maxOccupants: 2, status: 'available', tenant: null, paid: true, balance: 0, waterRateType: 'standard', photo: 'room1g_studio.jpg', desc: 'Studio unit near courtyard access.' },
   { id: 'bh-1h', unitCode: '1h', cluster: 'BH (Main Rooms)', floorLabel: '1st Floor BH', type: 'Studio', price: 4500, occupants: 0, maxOccupants: 2, status: 'available', tenant: null, paid: true, balance: 0, waterRateType: 'standard', photo: 'room1h_studio.jpg', desc: 'End hallway Studio unit.' },
 
-  { id: 'bh-2a', unitCode: '2a', cluster: 'BH (Main Rooms)', floorLabel: '2nd Floor BH', type: 'Studio', price: 4600, occupants: 0, maxOccupants: 2, status: 'available', tenant: null, paid: true, balance: 0, waterRateType: 'standard', photo: 'room2a_studio.jpg', desc: '2nd Floor Studio with window balcony view.' },
+  { id: 'bh-2a', unitCode: '2a', cluster: 'BH (Main Rooms)', floorLabel: '2nd Floor BH', type: 'Studio', price: 4600, occupants: 2, maxOccupants: 2, status: 'occupied', tenant: 'Active Resident', paid: true, balance: 0, waterRateType: 'standard', photo: 'room2a_studio.jpg', desc: '2nd Floor Studio with window balcony view.' },
   { id: 'bh-2b', unitCode: '2b', cluster: 'BH (Main Rooms)', floorLabel: '2nd Floor BH', type: 'Studio', price: 4600, occupants: 0, maxOccupants: 2, status: 'available', tenant: null, paid: true, balance: 0, waterRateType: 'standard', photo: 'room2b_studio.jpg', desc: 'Quiet 2nd Floor Studio.' },
   { id: 'bh-2c', unitCode: '2c', cluster: 'BH (Main Rooms)', floorLabel: '2nd Floor BH', type: 'Studio', price: 4600, occupants: 0, maxOccupants: 2, status: 'available', tenant: null, paid: true, balance: 0, waterRateType: 'standard', photo: 'room2c_studio.jpg', desc: 'Well ventilated Studio unit.' },
   { id: 'bh-2d', unitCode: '2d', cluster: 'BH (Main Rooms)', floorLabel: '2nd Floor BH', type: '1-Bedroom', price: 6200, occupants: 0, maxOccupants: 3, status: 'available', tenant: null, paid: true, balance: 0, waterRateType: 'standard', photo: 'room2d_1bed.jpg', desc: 'Available 1-Bedroom unit on 2nd Floor.' },
@@ -194,7 +197,26 @@ export const rooms = reactive<RoomUnit[]>([
   { id: 'linda-lb', unitCode: 'LB', cluster: 'Linda', floorLabel: 'Linda Back', type: 'Special Unit', price: 4800, occupants: 0, maxOccupants: 2, status: 'available', tenant: null, paid: true, balance: 0, waterRateType: 'linda_fixed', photo: 'room_lb.jpg', desc: 'Linda Back Special Unit (BR-040 Fixed Rates).' }
 ]);
 
-export const incomeLedger = reactive<IncomeRecord[]>([]);
+export const incomeLedger = reactive<IncomeRecord[]>([
+  {
+    id: 'inc-default',
+    unit: '2a',
+    date: '2026-08-01',
+    invoiceNum: 'INV-1001',
+    contact: 'Active Resident',
+    period: 'Current Period',
+    rent: 4600,
+    share: 2300,
+    occupants: 2,
+    water: 400,
+    remitted: 5000,
+    paymentMethod: 'Online',
+    referenceNum: 'GCASH-1234567',
+    monthsCovered: 1,
+    dateCoveredStart: '2026-08-01',
+    dateCoveredEnd: '2026-09-01'
+  }
+]);
 
 export const expenseLedger = reactive<ExpenseGroup[]>([]);
 
@@ -229,7 +251,9 @@ export interface TenantProfile {
   status: 'Active' | 'Overdue' | 'Vacated';
 }
 
-export const tenants = reactive<TenantProfile[]>([]);
+export const tenants = reactive<TenantProfile[]>([
+  { id: 't-default', name: 'Active Resident', room: '2a', phone: '0917-888-9999', emergency: 'Jane Doe (0917-111-2222)', moveInDate: '2026-08-01', status: 'Active' }
+]);
 
 export function addTenant(t: Omit<TenantProfile, 'id'>) {
   const newTenant: TenantProfile = {

@@ -5,7 +5,7 @@
  * @systemBibleRef Section 3 & UI Wireframe Specification - Sidebar Menu Items
  * @rationale Provides structured, soft workspace navigation with larger Jira-style typography
  *              and 44px+ touch targets for mobile-first PWA compliance.
- * @innovations Integrated RouterLinks to enable URL-slug-based navigation across system modules.
+ * @innovations Integrated RouterLinks to enable URL-slug-based navigation across system modules, with URL path prefix normalization (/basis) supporting parallel wireframe deployment.
  */
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -29,15 +29,16 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'closeMobileSidebar'): void;
+  (e: 'update:activeTab', tab: string): void;
 }>();
 
 const route = useRoute();
 const router = useRouter();
 
-// Compute active role based on URL path
+// Compute active role based on URL path, normalizing any /basis path prefix
 const currentRole = computed<'admin' | 'tenant' | 'public'>(() => {
-  if (route.path.startsWith('/tenant')) return 'tenant';
-  if (route.path.startsWith('/admin')) return 'admin';
+  if (route.path.startsWith('/tenant') || route.path.startsWith('/basis/tenant')) return 'tenant';
+  if (route.path.startsWith('/admin') || route.path.startsWith('/basis/admin')) return 'admin';
   return 'public';
 });
 
@@ -48,6 +49,7 @@ const adminModules = [
   { path: '/admin/tenants', label: 'Tenant Directory', icon: Users },
   { path: '/admin/inquiries', label: 'Inquiry Inbox', icon: MessageSquare },
   { path: '/admin/billing', label: 'Billing & Collections', icon: CreditCard },
+  { path: '/admin/billing/history', label: '  • Collection History', icon: Receipt },
   { path: '/admin/expenses', label: 'Expenses Ledger', icon: Receipt },
   { path: '/admin/tickets', label: 'Maintenance Dispatch', icon: Wrench },
   { path: '/admin/settings', label: 'Settings & Business Rules', icon: Settings },
@@ -63,6 +65,11 @@ const tenantModules = [
 const publicModules = [
   { path: '/public', label: 'Property & Available Units', icon: Building2 },
 ];
+
+// Normalizing helper to check if a navigation module path matches route.path (with or without /basis prefix)
+const isActive = (modulePath: string) => {
+  return route.path === modulePath || route.path === `/basis${modulePath}`;
+};
 
 const navigateTo = (path: string) => {
   router.push(path);
@@ -114,7 +121,7 @@ const navigateTo = (path: string) => {
             v-for="module in adminModules"
             :key="module.path"
             @click="navigateTo(module.path)"
-            :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
+            :class="['jira-sidebar-item w-full text-left', isActive(module.path) ? 'active' : '']"
           >
             <component :is="module.icon" class="w-5 h-5 shrink-0" />
             <span class="truncate font-medium">{{ module.label }}</span>
@@ -128,7 +135,7 @@ const navigateTo = (path: string) => {
             v-for="module in tenantModules"
             :key="module.path"
             @click="navigateTo(module.path)"
-            :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
+            :class="['jira-sidebar-item w-full text-left', isActive(module.path) ? 'active' : '']"
           >
             <component :is="module.icon" class="w-5 h-5 shrink-0" />
             <span class="truncate font-medium">{{ module.label }}</span>
@@ -142,7 +149,7 @@ const navigateTo = (path: string) => {
             v-for="module in publicModules"
             :key="module.path"
             @click="navigateTo(module.path)"
-            :class="['jira-sidebar-item w-full text-left', route.path === module.path ? 'active' : '']"
+            :class="['jira-sidebar-item w-full text-left', isActive(module.path) ? 'active' : '']"
           >
             <component :is="module.icon" class="w-5 h-5 shrink-0" />
             <span class="truncate font-medium">{{ module.label }}</span>

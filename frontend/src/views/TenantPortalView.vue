@@ -6,7 +6,7 @@
   @innovations Dual-tab resident workspace, direct maintenance issue ticketing with photo attachment upload, priority classification badges, and live remittance verification tracking.
 -->
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { 
   Home, 
   CreditCard, 
@@ -26,33 +26,85 @@ import {
   Image as ImageIcon,
   X
 } from 'lucide-vue-next';
+import { rooms, incomeLedger, addIncomeRecord } from '@/lib/systemState';
 
 // Workspace Active Tab: 'overview' | 'tickets'
 const activeTab = ref<'overview' | 'tickets'>('overview');
 
-// Resident & Assigned Unit Data
-const tenantData = ref({
-  name: 'Active Resident',
-  room: 'Unassigned',
-  roomDetails: 'Standard Unit',
-  roomType: 'BH Main Rooms',
-  occupants: 1,
-  specs: {
-    floorArea: '18 sq.m',
-    bathroom: 'Private En-suite',
-    aircon: 'Included (Split-type)',
-    wifi: 'High-Speed Fiber WiFi',
-    electricMeter: 'Individual Sub-meter',
-    waterRatePerHead: 200
-  },
-  baseRent: 0,
-  waterFee: 0,
-  totalAmountDue: 0,
-  dueDate: 'N/A',
-  dueBadgeText: 'NO DUE BILL',
-  dueDaysRemaining: 'Settled',
-  landladyGCash: '0917-123-4567',
-  landladyName: 'Fe Galang Da Silva'
+// Resolve assigned room dynamically
+const activeRoom = computed(() => {
+  return rooms.find(r => r.tenant === 'Active Resident' || r.unitCode === '2a') || rooms[0];
+});
+
+// Resolve payments dynamically
+const myPayments = computed(() => {
+  return incomeLedger.filter(p => p.unit === activeRoom.value.unitCode);
+});
+
+// Resident & Assigned Unit Data computed dynamically
+const tenantData = computed(() => {
+  const room = activeRoom.value;
+  const payments = myPayments.value;
+  const lastPayment = payments[0]; // unshifted array has latest payment first
+
+  const baseRent = room.price || 4500;
+  const waterFee = (room.occupants || 1) * 200;
+  const totalAmountDue = baseRent + waterFee;
+
+  let dateCoveredStr = 'N/A';
+  let dueDateStr = 'N/A';
+  let dueBadgeText = 'NO DUE BILL';
+  let dueDaysRemaining = 'Settled';
+
+  if (lastPayment && lastPayment.dateCoveredStart && lastPayment.dateCoveredEnd) {
+    dateCoveredStr = `${lastPayment.dateCoveredStart} to ${lastPayment.dateCoveredEnd}`;
+    dueDateStr = lastPayment.dateCoveredEnd;
+    
+    // Calculate days remaining from today to next due date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDateStr);
+    due.setHours(0, 0, 0, 0);
+    
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 0) {
+      dueBadgeText = 'PAID';
+      dueDaysRemaining = `${diffDays} days remaining`;
+    } else if (diffDays === 0) {
+      dueBadgeText = 'DUE TODAY';
+      dueDaysRemaining = 'Due today';
+    } else {
+      dueBadgeText = 'OVERDUE';
+      dueDaysRemaining = `Overdue by ${Math.abs(diffDays)} days`;
+    }
+  }
+
+  return {
+    name: 'Active Resident',
+    room: `Unit ${room.unitCode}`,
+    roomDetails: room.type,
+    roomType: room.cluster,
+    occupants: room.occupants,
+    specs: {
+      floorArea: '18 sq.m',
+      bathroom: 'Private En-suite',
+      aircon: 'Included (Split-type)',
+      wifi: 'High-Speed Fiber WiFi',
+      electricMeter: 'Individual Sub-meter',
+      waterRatePerHead: 200
+    },
+    baseRent,
+    waterFee,
+    totalAmountDue,
+    dueDate: dueDateStr,
+    dueBadgeText,
+    dueDaysRemaining,
+    dateCovered: dateCoveredStr,
+    landladyGCash: '0917-123-4567',
+    landladyName: 'Fe Galang Da Silva'
+  };
 });
 
 // Input Payment Form State
@@ -61,17 +113,6 @@ const payAmount = ref(0);
 const payMethod = ref('GCash / Online Payment');
 const payRef = ref('');
 const submissionNotice = ref('');
-
-// Payment History Records
-const paymentHistory = ref<Array<{
-  id: number;
-  invoiceRef: string;
-  datePaid: string;
-  billingPeriod: string;
-  amountPaid: number;
-  paymentMethod: string;
-  status: string;
-}>>([]);
 
 // Maintenance Ticket Data Structure
 interface MaintenanceTicket {
@@ -136,22 +177,46 @@ const handleTenantPaymentSubmit = () => {
   }
 
   const isOnline = payMethod.value.includes('GCash') || payMethod.value.includes('Maya') || payMethod.value.includes('Online');
-  const methodBadge = isOnline 
-    ? (payMethod.value.includes('Maya') ? 'ONLINE MAYA' : 'ONLINE GCASH')
-    : 'CASH ON-SITE';
+  const refCode = payRef.value.trim() || `REF-${Math.floor(100000 + Math.random() * 900000)}`;
 
-  const newRecord = {
-    id: Date.now(),
-    invoiceRef: payRef.value.trim() || `REF-${Math.floor(100000 + Math.random() * 900000)}`,
-    datePaid: payDate.value,
-    billingPeriod: 'Aug 5 - Sep 4, 2026',
-    amountPaid: Number(payAmount.value),
-    paymentMethod: methodBadge,
-    status: 'PENDING VERIFICATION'
-  };
+  // Determine months covered based on amount
+  const roomPrice = activeRoom.value.price || 4500;
+  const suggestedMonths = Math.round(payAmount.value / roomPrice) || 1;
 
-  paymentHistory.value.unshift(newRecord);
+  // Compute coverage date start/end
+  const lastPayment = myPayments.value[0];
+  let startDateStr = new Date().toISOString().split('T')[0];
+  if (lastPayment && lastPayment.dateCoveredEnd) {
+    startDateStr = lastPayment.dateCoveredEnd;
+  }
+  
+  const start = new Date(startDateStr);
+  start.setMonth(start.getMonth() + suggestedMonths);
+  const endDateStr = start.toISOString().split('T')[0];
+
+  addIncomeRecord({
+    unit: activeRoom.value.unitCode,
+    date: payDate.value,
+    invoiceNum: refCode,
+    contact: 'Active Resident',
+    period: 'Current Period',
+    rent: payAmount.value - (activeRoom.value.occupants * 200),
+    share: (payAmount.value - (activeRoom.value.occupants * 200)) / 2,
+    occupants: activeRoom.value.occupants,
+    water: activeRoom.value.occupants * 200,
+    remitted: payAmount.value,
+    paymentMethod: isOnline ? 'Online' : 'Cash',
+    referenceNum: refCode,
+    monthsCovered: suggestedMonths,
+    dateCoveredStart: startDateStr,
+    dateCoveredEnd: endDateStr
+  });
+
   submissionNotice.value = `Payment remittance of ₱${Number(payAmount.value).toLocaleString()} submitted via ${payMethod.value}. Sent to Landlady Fe Galang Da Silva for verification!`;
+
+  // Reset form fields
+  payAmount.value = 0;
+  payRef.value = '';
 
   setTimeout(() => {
     submissionNotice.value = '';
@@ -362,6 +427,10 @@ const handleTicketSubmit = () => {
               <span class="text-[#5e6c84]">Payment Due Date:</span>
               <strong class="text-[#172b4d] underline font-bold">{{ tenantData.dueDate }} ({{ tenantData.dueDaysRemaining }})</strong>
             </div>
+            <div class="flex justify-between border-b border-emerald-100 pb-1.5 bg-emerald-50/50 p-1.5 rounded">
+              <span class="text-emerald-800 font-semibold">Date Covered (Last Payment):</span>
+              <strong class="text-emerald-900 font-mono font-bold">{{ tenantData.dateCovered }}</strong>
+            </div>
             <div class="flex justify-between border-b border-gray-100 pb-1.5">
               <span class="text-[#5e6c84]">Monthly Base Rent:</span>
               <span>₱{{ tenantData.baseRent.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
@@ -485,7 +554,7 @@ const handleTicketSubmit = () => {
             <FileText class="w-4 h-4 text-[#0c66e4]" />
             <span>MY PAYMENT RECORD HISTORY</span>
           </h3>
-          <span class="text-xs text-[#5e6c84]">Total Remittances Logged: <strong>{{ paymentHistory.length }}</strong></span>
+          <span class="text-xs text-[#5e6c84]">Total Remittances Logged: <strong>{{ myPayments.length }}</strong></span>
         </div>
 
         <div class="overflow-x-auto">
@@ -502,34 +571,37 @@ const handleTicketSubmit = () => {
             </thead>
             <tbody class="divide-y divide-[#dfe1e6]">
               <tr 
-                v-for="record in paymentHistory" 
+                v-for="record in myPayments" 
                 :key="record.id"
                 class="hover:bg-blue-50/40 transition-colors"
               >
                 <td class="p-2.5 font-mono text-[#172b4d] font-bold">
-                  <code>{{ record.invoiceRef }}</code>
+                  <code>{{ record.invoiceNum }} <span v-if="record.referenceNum && record.referenceNum !== 'N/A'" class="text-[10px] text-slate-400 font-normal">({{ record.referenceNum }})</span></code>
                 </td>
-                <td class="p-2.5 text-[#172b4d]">{{ record.datePaid }}</td>
-                <td class="p-2.5 text-[#5e6c84]">{{ record.billingPeriod }}</td>
+                <td class="p-2.5 text-[#172b4d]">{{ record.date }}</td>
+                <td class="p-2.5 text-[#5e6c84]">
+                  <span v-if="record.dateCoveredStart && record.dateCoveredEnd" class="text-emerald-700 font-mono text-[11px] font-semibold">
+                    {{ record.dateCoveredStart }} to {{ record.dateCoveredEnd }} ({{ record.monthsCovered }} Mo.)
+                  </span>
+                  <span v-else class="text-gray-400 text-[11px]">Monthly Payment</span>
+                </td>
                 <td class="p-2.5 font-bold text-[#172b4d]">
-                  ₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+                  ₱{{ record.remitted.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
                 </td>
                 <td class="p-2.5">
                   <span 
                     class="px-2 py-0.5 font-bold text-[10px] rounded"
-                    :class="record.paymentMethod.includes('ONLINE') ? 'bg-[#172b4d] text-white' : 'bg-gray-100 text-[#172b4d] border border-[#dfe1e6]'"
+                    :class="record.paymentMethod === 'Online' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200'"
                   >
-                    {{ record.paymentMethod }}
+                    {{ record.paymentMethod === 'Online' ? 'ONLINE GCASH' : 'CASH ON-SITE' }}
                   </span>
                 </td>
                 <td class="p-2.5">
                   <span 
-                    class="px-2 py-0.5 font-bold text-[10px] rounded flex items-center gap-1 w-fit"
-                    :class="record.status === 'VERIFIED & SETTLED' ? 'bg-[#172b4d] text-white' : 'bg-gray-200 text-gray-800'"
+                    class="px-2 py-0.5 font-bold text-[10px] rounded flex items-center gap-1 w-fit bg-[#172b4d] text-white"
                   >
-                    <ShieldCheck v-if="record.status === 'VERIFIED & SETTLED'" class="w-3 h-3 text-emerald-400" />
-                    <Clock v-else class="w-3 h-3 text-amber-600" />
-                    [ {{ record.status }} ]
+                    <ShieldCheck class="w-3 h-3 text-emerald-400" />
+                    [ VERIFIED &amp; SETTLED ]
                   </span>
                 </td>
               </tr>
