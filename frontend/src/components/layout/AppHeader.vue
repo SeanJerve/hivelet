@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { isMobileSidebarOpen, isLiveChatheadOpen, showToast } from '@/lib/systemState';
+import { isMobileSidebarOpen, showToast } from '@/lib/systemState';
 import { 
   currentUser, 
   isAuthenticated, 
@@ -10,9 +10,7 @@ import {
   logout 
 } from '@/lib/authStore';
 import { 
-  Hexagon, 
   Menu, 
-  MessageCircle, 
   Shield, 
   User, 
   Globe, 
@@ -25,7 +23,7 @@ const router = useRouter();
 
 const isAdminRoute = computed(() => route.path.startsWith('/admin') || route.path.startsWith('/basis'));
 const isTenantRoute = computed(() => route.path.startsWith('/tenant'));
-const isPublicRoute = computed(() => route.path.startsWith('/public') || route.path === '/');
+const isPublicRoute = computed(() => route.path.startsWith('/public') || route.path.startsWith('/category') || route.path === '/');
 
 async function handleSignOut() {
   await logout();
@@ -38,10 +36,10 @@ async function handleSignOut() {
   <header class="sticky top-0 z-40 border-b border-[#e7e5e4] bg-[#fafaf9]/95 backdrop-blur-md">
     <div class="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
       
-      <!-- Left: Mobile Menu Toggle & Brand Logo -->
+      <!-- Left: Mobile Menu Toggle & Brand Text -->
       <div class="flex items-center gap-3">
         <button
-          v-if="isAdminRoute"
+          v-if="isAdminRoute || isTenantRoute"
           @click="isMobileSidebarOpen = true"
           class="lg:hidden p-2 rounded-xl text-[#71717a] hover:text-[#1c1917] hover:bg-[#f5f5f4] transition-colors"
           aria-label="Open sidebar menu"
@@ -49,18 +47,12 @@ async function handleSignOut() {
           <Menu class="size-5" />
         </button>
 
-        <router-link to="/public" class="flex items-center gap-2.5 group">
-          <div class="size-9 rounded-xl bg-[#1e2532] text-[#f59e0b] grid place-items-center shadow-xs group-hover:scale-105 transition-transform">
-            <Hexagon class="size-5 fill-current" />
-          </div>
-          <div>
-            <div class="flex items-center gap-1.5">
-              <span class="font-display font-black text-lg tracking-tight text-[#1c1917]">HIVELET</span>
-              <span class="rounded-md bg-[#fbf6ee] px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-[#8a5814]">
-                EST. 2026
-              </span>
-            </div>
-            <p class="text-[10px] font-medium text-[#71717a] -mt-0.5 hidden sm:block">Fe Galang Da Silva Boarding House</p>
+        <router-link to="/public" class="flex items-center gap-2 group">
+          <div class="flex items-center gap-1.5">
+            <span class="font-display font-black text-xl tracking-tight text-[#1c1917]">HIVELET</span>
+            <span class="rounded-md bg-[#fbf6ee] px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-[#8a5814]">
+              EST. 2026
+            </span>
           </div>
         </router-link>
       </div>
@@ -109,20 +101,8 @@ async function handleSignOut() {
         </router-link>
       </nav>
 
-      <!-- Right: User Profile, Live Chat Button & Sign In / Out -->
+      <!-- Right: User Profile & Sign In / Out -->
       <div class="flex items-center gap-2.5">
-        
-        <!-- Live Chat Button with Badge -->
-        <button
-          @click="isLiveChatheadOpen = !isLiveChatheadOpen"
-          class="relative flex items-center gap-1.5 rounded-xl border border-[#e7e5e4] bg-white px-3 py-1.5 text-xs font-semibold text-[#1c1917] hover:bg-[#f5f5f4] transition-colors shadow-xs"
-        >
-          <MessageCircle class="size-4 text-[#f59e0b]" />
-          <span class="hidden sm:inline">Live Chat</span>
-          <span class="grid size-5 place-items-center rounded-full bg-rose-600 text-[10px] font-bold text-white">
-            3
-          </span>
-        </button>
 
         <!-- Authenticated User Profile & Sign Out -->
         <template v-if="isAuthenticated && currentUser">
