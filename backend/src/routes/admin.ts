@@ -577,7 +577,7 @@ router.get(
     const { data, error } = await db
       .from('payments')
       .select(
-        '*, rooms:room_id (id, room_number), profiles:tenant_profile_id (id, full_name)'
+        '*, rooms:room_id (id, room_number, cluster_code), profiles:tenant_profile_id (id, full_name, phone_number), bills:bill_id (*)'
       )
       .order('paid_at', { ascending: false });
 
@@ -588,14 +588,16 @@ router.get(
 
 const verifySchema = z.object({
   verification_status: z.enum(['Verified', 'Pending Verification', 'Rejected']),
+  rejectionReason: z.string().optional(),
 });
 
 /**
  * PATCH /api/admin/payments/:paymentId/verify
  *
- * BR-016/BR-017 and System Bible Section 12 — an Adyen success does not
+ * BR-016/BR-017 and System Bible Section 12 & 22 — an Adyen success does not
  * auto-clear a payment; the administrator's verification is a required,
- * audited step.
+ * audited step. Upon verification, the bill status is marked 'Paid' and a
+ * synchronized entry is automatically written to monthly_income_records.
  */
 router.patch(
   '/admin/payments/:paymentId/verify',
@@ -608,19 +610,24 @@ router.patch(
 
     const { data: before, error: beforeError } = await db
       .from('payments')
-      .select('id, verification_status, amount, bill_id')
+      .select('id, verification_status, amount, bill_id, room_id, tenant_profile_id, transaction_reference, paid_at')
       .eq('id', req.params.paymentId)
       .maybeSingle<{
         id: string;
         verification_status: string;
         amount: number;
         bill_id: string | null;
+        room_id: string;
+        tenant_profile_id: string;
+        transaction_reference: string | null;
+        paid_at: string;
       }>();
 
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Payment not found.');
 
     const isVerified = parsed.data.verification_status === 'Verified';
+    const isRejected = parsed.data.verification_status === 'Rejected';
 
     const { data: after, error } = await db
       .from('payments')
@@ -636,11 +643,99 @@ router.patch(
     if (error) throw ApiError.internal(error.message);
 
     // System Bible Section 22 — "Payment verified -> financial records update."
-    if (isVerified && before.bill_id) {
-      await db
-        .from('bills')
-        .update({ status: 'Paid', updated_at: new Date().toISOString() })
-        .eq('id', before.bill_id);
+    if (isVerified) {
+      let billData: any = null;
+      if (before.bill_id) {
+        const { data: b } = await db
+          .from('bills')
+          .update({ status: 'Paid', updated_at: new Date().toISOString() })
+          .eq('id', before.bill_id)
+          .select('*')
+          .single();
+        billData = b;
+      }
+
+      // Query tenant profile name
+      const { data: tenantProfile } = await db
+        .from('profiles')
+        .select('full_name')
+        .eq('id', before.tenant_profile_id)
+        .single();
+
+      // Query active room assignment for occupant count
+      const { data: assignment } = await db
+        .from('room_assignments')
+        .select('id, occupant_count')
+        .eq('room_id', before.room_id)
+        .eq('tenant_profile_id', before.tenant_profile_id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      const occupants = assignment?.occupant_count || 1;
+      const rentAmount = billData?.rent_amount || (before.amount - occupants * 200);
+      const waterAmount = billData?.water_amount || (occupants * 200);
+      const fiftyPercentShare = rentAmount / 2;
+
+      const datePaid = new Date(before.paid_at || Date.now());
+      const year = datePaid.getFullYear();
+      const month = datePaid.getMonth() + 1;
+
+      // Check if income record already exists for this transaction reference
+      const { data: existingIncome } = await db
+        .from('monthly_income_records')
+        .select('id')
+        .eq('transaction_reference', before.transaction_reference)
+        .maybeSingle();
+
+      if (!existingIncome && before.transaction_reference) {
+        await db.from('monthly_income_records').insert({
+          room_id: before.room_id,
+          tenant_profile_id: before.tenant_profile_id,
+          assignment_id: assignment?.id || null,
+          year,
+          month,
+          date_paid: datePaid.toISOString().split('T')[0],
+          contact_name: tenantProfile?.full_name || 'Online Resident',
+          invoice_number: before.transaction_reference,
+          rent_period_start: billData?.billing_period_start || null,
+          rent_period_end: billData?.billing_period_end || null,
+          rent_amount: rentAmount,
+          fifty_percent_share: fiftyPercentShare,
+          occupants: occupants,
+          water_payment: waterAmount,
+          remitted_amount: before.amount,
+          payment_method: 'Online',
+          transaction_reference: before.transaction_reference,
+        });
+      }
+
+      // Notify the tenant that their payment is settled
+      await db.from('notifications').insert({
+        recipient_profile_id: before.tenant_profile_id,
+        title: 'Online Payment Verified',
+        message: `Your online payment of ₱${before.amount.toLocaleString()} (Ref: ${before.transaction_reference}) has been verified and settled by the administrator.`,
+        type: 'Payment',
+        priority: 'Low',
+        is_read: false,
+      });
+    } else if (isRejected) {
+      // Revert bill status to 'Due' if it was linked
+      if (before.bill_id) {
+        await db
+          .from('bills')
+          .update({ status: 'Due', updated_at: new Date().toISOString() })
+          .eq('id', before.bill_id);
+      }
+
+      // Notify tenant of rejection
+      await db.from('notifications').insert({
+        recipient_profile_id: before.tenant_profile_id,
+        title: 'Payment Verification Declined',
+        message: `Your online payment submission (Ref: ${before.transaction_reference || 'N/A'}) was declined. Please contact the administrator.`,
+        type: 'Payment',
+        priority: 'High',
+        is_read: false,
+      });
     }
 
     await auditFromRequest(req, {
@@ -648,7 +743,10 @@ router.patch(
       entityType: 'PAYMENT',
       entityId: req.params.paymentId,
       previousValues: { verification_status: before.verification_status },
-      newValues: { verification_status: parsed.data.verification_status },
+      newValues: {
+        verification_status: parsed.data.verification_status,
+        rejectionReason: parsed.data.rejectionReason,
+      },
     });
 
     res.status(200).json({ success: true, data: after });

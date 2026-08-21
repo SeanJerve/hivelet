@@ -15,12 +15,22 @@ import {
   ShieldCheck,
   Clock,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  X,
+  Loader2
 } from 'lucide-vue-next';
 
 // Outstanding bills from DB
 const outstandingBills = ref<any[]>([]);
 const loadingBills = ref(false);
+const payingBillId = ref<string | null>(null);
+
+// Feedback notices from checkout redirection
+const submissionNotice = ref('');
+const cancellationNotice = ref('');
 
 // Payment History Records
 const paymentHistory = ref<Array<{
@@ -58,6 +68,19 @@ const filteredPayments = computed(() => {
 const tenantName = computed(() => currentUser.value?.fullName || 'Active Resident');
 
 onMounted(async () => {
+  // Check for returning payment status from Adyen/GCash checkout redirect
+  const params = new URLSearchParams(window.location.search);
+  const statusParam = params.get('status');
+  const refParam = params.get('ref');
+
+  if (statusParam === 'success' && refParam) {
+    submissionNotice.value = `Online GCash payment (Ref: ${refParam}) has been successfully submitted! It is now pending verification by Landlady Fe Galang Da Silva.`;
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (statusParam === 'cancelled') {
+    cancellationNotice.value = 'Online payment session was cancelled. Your outstanding bill remains active.';
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   await Promise.all([fetchOutstandingBills(), fetchPaymentHistory()]);
 });
 
@@ -83,8 +106,8 @@ async function fetchPaymentHistory() {
       datePaidRaw: p.paid_at || p.created_at,
       billingPeriod: 'Monthly Statement',
       amountPaid: p.amount,
-      paymentMethod: p.payment_method.toUpperCase(),
-      status: p.verification_status.toUpperCase()
+      paymentMethod: (p.payment_method || 'Adyen Online').toUpperCase(),
+      status: (p.verification_status || 'Pending Verification').toUpperCase()
     }));
   } catch (err: any) {
     console.error('Failed to load payments:', err.message);
@@ -93,13 +116,15 @@ async function fetchPaymentHistory() {
 
 /** Initiates checkout redirect by calling the backend Adyen checkout session creator */
 async function payBillOnline(billId: string) {
+  payingBillId.value = billId;
   try {
-    const res = await api.post<{ sessionId: string; redirectUrl: string }>('/tenant/payments/checkout', { billId });
+    const res = await api.post<{ sessionId: string; redirectUrl: string; isLive?: boolean }>('/tenant/payments/checkout', { billId });
     if (res && res.redirectUrl) {
       window.location.href = res.redirectUrl;
     }
   } catch (err: any) {
     alert(`Checkout failed: ${err.message}`);
+    payingBillId.value = null;
   }
 }
 </script>
@@ -115,6 +140,34 @@ async function payBillOnline(billId: string) {
       </div>
       <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">Payment & Billing</h1>
       <p class="text-xs text-[#6b778c] mt-0.5">Submit online payments and review your payment record history</p>
+    </div>
+
+    <!-- Success Feedback Banner -->
+    <div
+      v-if="submissionNotice"
+      class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm rounded-lg flex items-center justify-between shadow-xs animate-in fade-in"
+    >
+      <div class="flex items-center gap-2.5">
+        <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0" />
+        <span class="font-medium">{{ submissionNotice }}</span>
+      </div>
+      <button @click="submissionNotice = ''" class="text-emerald-700 hover:text-emerald-900 ml-3 p-1 rounded cursor-pointer" title="Dismiss">
+        <X class="w-4 h-4" />
+      </button>
+    </div>
+
+    <!-- Cancelled Feedback Banner -->
+    <div
+      v-if="cancellationNotice"
+      class="p-4 bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm rounded-lg flex items-center justify-between shadow-xs animate-in fade-in"
+    >
+      <div class="flex items-center gap-2.5">
+        <AlertCircle class="w-5 h-5 text-amber-600 shrink-0" />
+        <span class="font-medium">{{ cancellationNotice }}</span>
+      </div>
+      <button @click="cancellationNotice = ''" class="text-amber-700 hover:text-amber-900 ml-3 p-1 rounded cursor-pointer" title="Dismiss">
+        <X class="w-4 h-4" />
+      </button>
     </div>
 
     <!-- Outstanding Bills Section -->
@@ -148,19 +201,21 @@ async function payBillOnline(billId: string) {
               Due: {{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}
             </div>
             <div class="text-xs text-[#5e6c84] space-x-3">
-              <span>Base Rent: <strong class="text-[#172b4d]">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
-              <span>Water Fee: <strong class="text-[#172b4d]">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
+              <span>Base Rent: <strong class="text-[#172b4d]">₱{{ Number(bill.rent_amount).toLocaleString() }}</strong></span>
+              <span>Water Fee: <strong class="text-[#172b4d]">₱{{ Number(bill.water_amount).toLocaleString() }}</strong></span>
             </div>
             <div class="text-sm font-bold text-[#0c66e4]">
-              Total: ₱{{ bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+              Total: ₱{{ Number(bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
             </div>
           </div>
           <button
             @click="payBillOnline(bill.id)"
-            class="px-5 py-2.5 bg-[#172b4d] hover:bg-[#0c66e4] text-white text-xs font-bold rounded-lg flex items-center gap-2 cursor-pointer self-start sm:self-auto transition-colors shadow-sm"
+            :disabled="payingBillId === bill.id"
+            class="px-5 py-2.5 bg-[#172b4d] hover:bg-[#0c66e4] disabled:opacity-60 text-white text-xs font-bold rounded-lg flex items-center gap-2 cursor-pointer self-start sm:self-auto transition-colors shadow-sm"
           >
-            <ExternalLink class="w-3.5 h-3.5" />
-            Pay Online (GCash via Adyen)
+            <Loader2 v-if="payingBillId === bill.id" class="w-3.5 h-3.5 animate-spin" />
+            <ExternalLink v-else class="w-3.5 h-3.5" />
+            <span>{{ payingBillId === bill.id ? 'Initiating Gateway...' : 'Pay Online (GCash via Adyen)' }}</span>
           </button>
         </div>
       </div>
@@ -214,7 +269,7 @@ async function payBillOnline(billId: string) {
               </td>
               <td class="p-3 text-[#172b4d] text-xs">{{ record.datePaid }}</td>
               <td class="p-3 font-bold text-[#172b4d] text-xs">
-                ₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+                ₱{{ Number(record.amountPaid).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
               </td>
               <td class="p-3">
                 <span
@@ -229,11 +284,14 @@ async function payBillOnline(billId: string) {
               <td class="p-3">
                 <span
                   class="px-2.5 py-1 font-bold text-[10px] rounded flex items-center gap-1 w-fit"
-                  :class="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'"
+                  :class="record.status.includes('VERIFIED')
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                    : record.status.includes('REJECT')
+                    ? 'bg-red-100 text-red-800 border border-red-200'
+                    : 'bg-amber-100 text-amber-800 border border-amber-200'"
                 >
-                  <ShieldCheck v-if="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'" class="w-3 h-3" />
+                  <ShieldCheck v-if="record.status.includes('VERIFIED')" class="w-3 h-3" />
+                  <XCircle v-else-if="record.status.includes('REJECT')" class="w-3 h-3" />
                   <Clock v-else class="w-3 h-3" />
                   {{ record.status }}
                 </span>
@@ -258,17 +316,22 @@ async function payBillOnline(billId: string) {
           <div class="flex items-center justify-between">
             <span class="font-mono text-xs font-bold text-[#172b4d]">{{ record.invoiceRef }}</span>
             <span
-              class="px-2 py-0.5 font-bold text-[10px] rounded"
-              :class="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'
+              class="px-2 py-0.5 font-bold text-[10px] rounded flex items-center gap-1"
+              :class="record.status.includes('VERIFIED')
                 ? 'bg-emerald-100 text-emerald-800'
+                : record.status.includes('REJECT')
+                ? 'bg-red-100 text-red-800'
                 : 'bg-amber-100 text-amber-800'"
             >
+              <ShieldCheck v-if="record.status.includes('VERIFIED')" class="w-3 h-3" />
+              <XCircle v-else-if="record.status.includes('REJECT')" class="w-3 h-3" />
+              <Clock v-else class="w-3 h-3" />
               {{ record.status }}
             </span>
           </div>
           <div class="flex justify-between text-xs">
             <span class="text-[#5e6c84]">{{ record.datePaid }}</span>
-            <span class="font-bold text-[#172b4d]">₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            <span class="font-bold text-[#172b4d]">₱{{ Number(record.amountPaid).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
           </div>
           <div class="text-xs">
             <span

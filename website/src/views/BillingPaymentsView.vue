@@ -1,24 +1,41 @@
 <!--
   @file views/BillingPaymentsView.vue
-  @description Unified payment entry form and historical ledger page for Hivelet website connected to live database.
-  @systemBibleRef Section 3.3 - Billing & Income Collection Ledger
+  @description Unified payment entry form, online Adyen payment verification queue, and historical ledger page for Hivelet website.
+  @systemBibleRef Section 3.3 (Billing & Income Collection Ledger), Section 12 (Payment Types), Section 22 (System Interactions & Financial Sync)
+  @businessRules BR-014 (Water Fee ₱200/head), BR-016 (Online GCash via Adyen), BR-017 (Payment Verification), BR-048 (Ledger Integrity)
 -->
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { api } from '@/lib/api';
 import { requestSecondaryConfirm, showToast } from '@/lib/systemState';
-import { CreditCard, ArrowRight, Save, Download, ChevronLeft, ChevronRight, Calendar, Trash2 } from 'lucide-vue-next';
+import {
+  CreditCard,
+  ArrowRight,
+  Save,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Trash2,
+  ShieldCheck,
+  Clock,
+  CheckCircle2,
+  Check,
+  X
+} from 'lucide-vue-next';
 
 const route = useRoute();
 
-// Tab state — defaults to 'record' unless query param ?tab=history is present
-const activeTab = ref<'record' | 'history'>(route.query.tab === 'history' ? 'history' : 'record');
+// Tab state — defaults to 'record' unless query param ?tab=verify or ?tab=history is present
+const initialTab = route.query.tab === 'verify' ? 'verify' : route.query.tab === 'history' ? 'history' : 'record';
+const activeTab = ref<'record' | 'verify' | 'history'>(initialTab);
 
 // Shared lists from DB
 const roomsList = ref<any[]>([]);
 const tenantsList = ref<any[]>([]);
 const incomeRecords = ref<any[]>([]);
+const allPayments = ref<any[]>([]);
 const loadingData = ref(false);
 
 // Form state
@@ -44,6 +61,11 @@ const months = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 const years = [2025, 2026, 2027, 2028];
+
+// Filter pending payments for the verification queue
+const pendingPayments = computed(() => {
+  return allPayments.value.filter(p => p.verification_status === 'Pending Verification');
+});
 
 // Synchronize dates initially and update end date
 function updateEndDate() {
@@ -116,14 +138,16 @@ function handleDateChange() {
 async function loadData() {
   loadingData.value = true;
   try {
-    const [rooms, tenants, records] = await Promise.all([
+    const [rooms, tenants, records, payments] = await Promise.all([
       api.get<any[]>('/admin/rooms'),
       api.get<any[]>('/admin/tenants'),
-      api.get<any[]>('/admin/income-records')
+      api.get<any[]>('/admin/income-records'),
+      api.get<any[]>('/admin/payments')
     ]);
     roomsList.value = rooms;
     tenantsList.value = tenants;
     incomeRecords.value = records;
+    allPayments.value = payments;
     if (rooms.length > 0 && !selectedUnitNum.value) {
       selectedUnitNum.value = rooms[0].room_number;
       onUnitChange(rooms[0].room_number);
@@ -226,6 +250,64 @@ async function handleSubmit() {
   });
 }
 
+function handleVerifyPayment(payment: any) {
+  const residentName = payment.profiles?.full_name || 'Resident';
+  const unitCode = payment.rooms?.room_number || payment.room_id;
+  const refNum = payment.transaction_reference || 'N/A';
+  const amount = Number(payment.amount);
+
+  requestSecondaryConfirm({
+    title: 'Approve & Settle Online GCash Payment',
+    message: `Confirm verification for online remittance from ${residentName} (Unit ${unitCode}) in the amount of ₱${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}? This action will mark the bill as Paid and automatically synchronize with the Monthly Income Ledger.`,
+    warningLevel: 'info',
+    requiresPin: true,
+    confirmText: 'Approve & Settle',
+    summaryFields: [
+      { label: 'Resident Name', value: residentName },
+      { label: 'Target Unit', value: `Unit ${unitCode}` },
+      { label: 'Transaction Ref #', value: refNum },
+      { label: 'Payment Method', value: `${payment.payment_method} (${payment.payment_source || 'GCash'})` },
+      { label: 'Settlement Amount', value: `₱${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, highlight: true }
+    ],
+    onConfirm: async () => {
+      try {
+        await api.patch(`/admin/payments/${payment.id}/verify`, {
+          verification_status: 'Verified'
+        });
+        showToast('success', 'Payment Verified & Settled', `Transaction ${refNum} has been verified. Bill marked Paid and recorded in the collection ledger.`);
+        await loadData();
+      } catch (err: any) {
+        alert(`Failed to verify payment: ${err.message}`);
+      }
+    }
+  });
+}
+
+function handleRejectPayment(payment: any) {
+  const residentName = payment.profiles?.full_name || 'Resident';
+  const refNum = payment.transaction_reference || 'N/A';
+  const amount = Number(payment.amount);
+
+  requestSecondaryConfirm({
+    title: 'Decline Online Payment Submission',
+    message: `Are you sure you want to decline online payment ${refNum} (₱${amount.toLocaleString()}) for ${residentName}? The bill will remain unpaid and the resident will be notified.`,
+    warningLevel: 'danger',
+    requiresPin: true,
+    confirmText: 'Decline Submission',
+    onConfirm: async () => {
+      try {
+        await api.patch(`/admin/payments/${payment.id}/verify`, {
+          verification_status: 'Rejected'
+        });
+        showToast('warning', 'Payment Declined', `Payment submission ${refNum} has been declined.`);
+        await loadData();
+      } catch (err: any) {
+        alert(`Failed to decline payment: ${err.message}`);
+      }
+    }
+  });
+}
+
 function handleDelete(id: string, refNum: string, amount: number) {
   requestSecondaryConfirm({
     title: 'Delete Recorded Payment Entry',
@@ -252,21 +334,21 @@ function handleExport() {
 
 <template>
   <div class="space-y-6 max-w-6xl mx-auto w-full">
-    <!-- Header with breadcrumbs and Tab Switcher -->
+    <!-- Header with breadcrumbs and 3-Tab Switcher -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#dfe1e6]">
       <div>
         <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
           <span>Billing & Collections</span>
           <span>/</span>
           <span class="font-medium text-[#172b4d]">
-            {{ activeTab === 'record' ? 'Record Payment' : 'Collection History' }}
+            {{ activeTab === 'record' ? 'Record Payment' : activeTab === 'verify' ? 'Online Verification Queue' : 'Collection History' }}
           </span>
         </div>
         <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">
-          {{ activeTab === 'record' ? 'Record Unit Payment' : 'Collection History Ledger' }}
+          {{ activeTab === 'record' ? 'Record Unit Payment' : activeTab === 'verify' ? 'Online Payment Verification Queue' : 'Collection History Ledger' }}
         </h1>
         <p class="text-xs text-[#5e6c84]">
-          {{ activeTab === 'record' ? 'Log monthly tenant room rents, water billings, and payment coverages' : 'View and manage all historical tenant unit payment records' }}
+          {{ activeTab === 'record' ? 'Log monthly tenant room rents, water billings, and payment coverages' : activeTab === 'verify' ? 'Review, audit, and approve online GCash remittances submitted via Adyen gateway' : 'View and manage all historical tenant unit payment records' }}
         </p>
       </div>
 
@@ -280,6 +362,21 @@ function handleExport() {
           ]"
         >
           Record Payment
+        </button>
+        <button 
+          @click="activeTab = 'verify'"
+          :class="[
+            'px-3 py-1.5 text-xs font-bold rounded transition-colors cursor-pointer flex items-center gap-1.5',
+            activeTab === 'verify' ? 'bg-white text-[#0c66e4] shadow-xs' : 'text-[#5e6c84] hover:text-[#172b4d]'
+          ]"
+        >
+          <span>Online Verification</span>
+          <span 
+            v-if="pendingPayments.length > 0" 
+            class="px-1.5 py-0.2 text-[10px] font-extrabold rounded-full bg-amber-500 text-white"
+          >
+            {{ pendingPayments.length }}
+          </span>
         </button>
         <button 
           @click="activeTab = 'history'"
@@ -398,7 +495,115 @@ function handleExport() {
       </div>
     </div>
 
-    <!-- TAB 2: COLLECTION HISTORY LEDGER -->
+    <!-- TAB 2: ONLINE VERIFICATION QUEUE (ADYEN GCASH) -->
+    <div v-if="activeTab === 'verify'" class="space-y-6">
+      <!-- Policy Alert Banner (BR-016 & BR-017) -->
+      <div class="p-4 bg-blue-50/80 border border-blue-200 rounded-lg flex items-start gap-3 text-xs text-[#172b4d]">
+        <ShieldCheck class="w-5 h-5 text-[#0c66e4] shrink-0 mt-0.5" />
+        <div class="space-y-1">
+          <div class="font-bold text-[#0c66e4]">Payment Verification Workflow (BR-017 & System Bible §12)</div>
+          <p class="text-[#5e6c84]">
+            Online GCash remittances submitted through the Adyen gateway require administrator audit verification. Approving a payment will mark the tenant's bill as <strong class="text-[#172b4d]">Paid</strong>, automatically write a synchronized record into the <strong class="text-[#172b4d]">Collection History Ledger</strong> with 50% revenue share calculations, and notify the resident.
+          </p>
+        </div>
+      </div>
+
+      <!-- Verification Queue Table Card -->
+      <div class="jira-card overflow-hidden bg-white border border-[#dfe1e6] rounded-lg space-y-4 p-6">
+        <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-3">
+          <h2 class="font-bold text-sm text-[#172b4d] flex items-center gap-2">
+            <Clock class="w-4 h-4 text-amber-600" />
+            <span>Pending Online Remittances</span>
+          </h2>
+          <span class="text-xs text-[#5e6c84]">
+            Queue: <strong class="text-[#172b4d]">{{ pendingPayments.length }}</strong> pending review
+          </span>
+        </div>
+
+        <div v-if="loadingData" class="py-8 text-center text-xs text-[#5e6c84]">
+          Loading payment verification queue...
+        </div>
+
+        <div v-else-if="pendingPayments.length === 0" class="py-12 text-center space-y-2">
+          <CheckCircle2 class="w-10 h-10 text-emerald-500 mx-auto" />
+          <h3 class="font-bold text-sm text-[#172b4d]">Verification Queue Cleared</h3>
+          <p class="text-xs text-[#5e6c84]">There are no pending online Adyen payments awaiting verification.</p>
+        </div>
+
+        <!-- Desktop Table -->
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-[#f4f5f7] text-[#5e6c84] font-bold border-b border-[#dfe1e6]">
+              <tr>
+                <th class="p-3">Date Submitted</th>
+                <th class="p-3">Resident Name</th>
+                <th class="p-3">Target Unit</th>
+                <th class="p-3">Remitted Amount</th>
+                <th class="p-3">Method / Gateway</th>
+                <th class="p-3">Transaction Reference</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-center">Audit Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#dfe1e6] text-[#172b4d]">
+              <tr v-for="payment in pendingPayments" :key="payment.id" class="hover:bg-amber-50/30 transition-colors">
+                <td class="p-3 text-[#172b4d] font-subtle-num">
+                  {{ new Date(payment.paid_at || payment.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}
+                </td>
+                <td class="p-3 font-semibold text-[#172b4d]">
+                  {{ payment.profiles?.full_name || 'Resident' }}
+                  <span v-if="payment.profiles?.phone_number" class="block text-[10px] font-normal text-[#5e6c84]">
+                    {{ payment.profiles.phone_number }}
+                  </span>
+                </td>
+                <td class="p-3 font-bold text-[#0c66e4]">
+                  Unit {{ payment.rooms?.room_number || payment.room_id }}
+                </td>
+                <td class="p-3 font-extrabold text-[#172b4d] font-subtle-num text-sm">
+                  ₱{{ Number(payment.amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+                </td>
+                <td class="p-3">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-[#172b4d] text-white">
+                    {{ payment.payment_method }}
+                  </span>
+                </td>
+                <td class="p-3 font-mono text-[11px] text-[#172b4d] font-semibold">
+                  {{ payment.transaction_reference || 'N/A' }}
+                </td>
+                <td class="p-3">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1 w-fit">
+                    <Clock class="w-3 h-3" />
+                    Pending Verification
+                  </span>
+                </td>
+                <td class="p-3 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <button
+                      @click="handleVerifyPayment(payment)"
+                      class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
+                      title="Approve & Settle Payment"
+                    >
+                      <Check class="w-3.5 h-3.5" />
+                      <span>Approve & Settle</span>
+                    </button>
+                    <button
+                      @click="handleRejectPayment(payment)"
+                      class="px-2 py-1 bg-white hover:bg-red-50 text-[#ae2a19] border border-red-200 font-bold text-[11px] rounded flex items-center gap-1 transition-colors cursor-pointer"
+                      title="Decline Payment"
+                    >
+                      <X class="w-3.5 h-3.5" />
+                      <span>Decline</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: COLLECTION HISTORY LEDGER -->
     <div v-if="activeTab === 'history'" class="space-y-6">
       <!-- Header Options Row -->
       <div class="flex justify-end">

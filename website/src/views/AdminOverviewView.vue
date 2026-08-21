@@ -7,7 +7,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { api } from '@/lib/api';
-import { Building2, Users, MessageSquare, CreditCard, Receipt, Wrench, BarChart3, TrendingUp, TrendingDown } from 'lucide-vue-next';
+import { Building2, Users, MessageSquare, CreditCard, Receipt, Wrench, BarChart3, TrendingUp, TrendingDown, Clock } from 'lucide-vue-next';
 
 const router = useRouter();
 const loading = ref(false);
@@ -19,17 +19,19 @@ const dbIncome = ref<any[]>([]);
 const dbExpenses = ref<any[]>([]);
 const dbTickets = ref<any[]>([]);
 const dbInquiries = ref<any[]>([]);
+const dbPayments = ref<any[]>([]);
 
 async function loadAnalytics() {
   loading.value = true;
   try {
-    const [rooms, tenants, income, expenses, tickets, inquiries] = await Promise.all([
+    const [rooms, tenants, income, expenses, tickets, inquiries, payments] = await Promise.all([
       api.get<any[]>('/admin/rooms'),
       api.get<any[]>('/admin/tenants'),
       api.get<any[]>('/admin/income-records'),
       api.get<any[]>('/admin/expense-entries'),
       api.get<any[]>('/admin/tickets'),
-      api.get<any[]>('/admin/inquiries')
+      api.get<any[]>('/admin/inquiries'),
+      api.get<any[]>('/admin/payments')
     ]);
 
     dbRooms.value = rooms;
@@ -38,6 +40,7 @@ async function loadAnalytics() {
     dbExpenses.value = expenses;
     dbTickets.value = tickets;
     dbInquiries.value = inquiries;
+    dbPayments.value = payments;
   } catch (err: any) {
     console.error('Failed to load dashboard analytics:', err.message);
   } finally {
@@ -48,6 +51,12 @@ async function loadAnalytics() {
 onMounted(() => {
   loadAnalytics();
 });
+
+// Pending payment verification counter
+const pendingVerificationPayments = computed(() => {
+  return dbPayments.value.filter(p => p.verification_status === 'Pending Verification');
+});
+const pendingVerificationCount = computed(() => pendingVerificationPayments.value.length);
 
 // 1. Cluster occupancy metrics
 const clusterStats = computed(() => {
@@ -143,6 +152,31 @@ const inactivePercent = computed(() => {
     </div>
 
     <div v-else class="space-y-6">
+      <!-- Pending Online Payment Verification Notice (BR-016 & BR-017) -->
+      <div
+        v-if="pendingVerificationCount > 0"
+        @click="router.push({ path: '/admin/billing', query: { tab: 'verify' } })"
+        class="p-4 bg-amber-50 border border-amber-300 rounded-lg flex items-center justify-between shadow-xs cursor-pointer hover:bg-amber-100/70 transition-all group"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-amber-200/80 text-amber-900 flex items-center justify-center font-bold text-xs shrink-0">
+            <Clock class="w-4 h-4" />
+          </div>
+          <div>
+            <div class="font-bold text-xs sm:text-sm text-[#172b4d] flex items-center gap-2">
+              <span>Action Required: {{ pendingVerificationCount }} Online GCash Payment{{ pendingVerificationCount > 1 ? 's' : '' }} Pending Verification</span>
+              <span class="px-2 py-0.2 text-[10px] font-extrabold rounded-full bg-amber-600 text-white">Adyen Sandbox</span>
+            </div>
+            <p class="text-[11px] text-[#5e6c84] mt-0.5">
+              Tenants have submitted online remittances. Click to review, audit, and approve them in the Verification Queue.
+            </p>
+          </div>
+        </div>
+        <span class="text-xs font-bold text-[#0c66e4] group-hover:underline flex items-center gap-1 shrink-0 ml-3">
+          Review Queue &rarr;
+        </span>
+      </div>
+
       <!-- 4 Top KPI Cards (Configured router navigation on click) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Monthly Revenue -->
