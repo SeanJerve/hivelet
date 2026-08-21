@@ -45,6 +45,7 @@ export interface TenantRecord {
 }
 
 export interface IncomeRecord {
+  id?: string;
   unit: string;
   cluster: Cluster;
   datePaid: string;
@@ -141,17 +142,19 @@ export const incomeRecords = reactive<IncomeRecord[]>(
   CANONICAL_32_UNITS.map((u, i) => {
     const isLinda = u.cluster === 'Linda Units';
     const water = isLinda ? (LINDA_FIXED[u.unitCode]?.water || 200) : u.occupants * WATER_PER_OCCUPANT;
+    const inv = `OR-2026-${String(1040 + i)}`;
     return {
+      id: `INC-MOCK-${inv}`,
       unit: u.unitCode.toUpperCase(),
       cluster: u.cluster,
       datePaid: u.status === 'vacant' ? '—' : `Jul ${((i * 3) % 25) + 1}, 2026`,
       contact: u.tenantName ? `0917-${String(200 + i * 17).padStart(3, '0')}-${String(1000 + i * 37).padStart(4, '0')}` : '—',
-      invoice: `OR-2026-${String(1040 + i)}`,
+      invoice: inv,
       rentFor: 'Jun.26 – Jul.25',
       rent: u.status === 'vacant' ? 0 : u.basePrice,
       occupants: u.occupants,
       water: u.status === 'vacant' ? 0 : water,
-      garbage: u.status === 'vacant' ? 0 : GARBAGE_FEE,
+      garbage: 0,
       anniversary: `${((i * 3) % 25) + 1} ${['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'][i % 6]}`,
       deposit: u.status === 'vacant' ? 0 : u.basePrice * 2,
       linda: isLinda ? LINDA_FIXED[u.unitCode] : undefined,
@@ -343,7 +346,7 @@ export const inquiries = reactive<Inquiry[]>([
 export const DEMO_TENANT = {
   name: "Samantha Cruz",
   unit: "1A",
-  unitLabel: "Room 1A — Floor 1, 1-Bedroom Standard",
+  unitLabel: "Room 1A — Floor 1, Studio Type Apartment",
   phone: "0928-311-2839",
   email: "samantha.1a@gmail.com",
   occupation: "BPO Team Lead",

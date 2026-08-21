@@ -11,9 +11,10 @@ const unit = ref<RoomItem | null>(null);
 const monthlyRate = ref<number>(5000);
 const capacityPax = ref<number>(2);
 const registeredOccupants = ref<number>(1);
-const unitType = ref<string>('1-Bedroom Deluxe');
+const unitType = ref<string>('1-Bedroom Apartment');
 const billingRule = ref<string>('Rent + ₱200 / occupant water');
 const amenitiesText = ref<string>('Private bathroom, Submetered electricity, Study desk');
+const editPhotoUrl = ref<string>('');
 const isSaving = ref(false);
 
 const baseReferencePrice = computed(() => {
@@ -28,11 +29,7 @@ const maxAllowedPrice = computed(() => Math.round(baseReferencePrice.value * 1.0
 const isAboveCap = computed(() => monthlyRate.value > maxAllowedPrice.value);
 
 const unitPhoto = computed(() => {
-  if (!unit.value) return 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70';
-  const canonical = CANONICAL_32_UNITS.find(
-    (u) => u.unitCode.toLowerCase() === unit.value?.unitCode.toLowerCase()
-  );
-  return canonical ? canonical.photo : 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70';
+  return editPhotoUrl.value || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70';
 });
 
 watch(
@@ -45,7 +42,8 @@ watch(
       registeredOccupants.value = newVal.occupants || 1;
       unitType.value = newVal.type;
       billingRule.value = newVal.billingRule || 'Rent + ₱200 / occupant water';
-      amenitiesText.value = 'Private bathroom, Submetered electricity, Study desk';
+      amenitiesText.value = newVal.desc || newVal.amenities.join(', ');
+      editPhotoUrl.value = newVal.photo || '';
     }
   },
   { immediate: true }
@@ -81,6 +79,7 @@ async function handleSave() {
     unit.value.occupants = Number(registeredOccupants.value);
     unit.value.type = unitType.value;
     unit.value.desc = amenitiesText.value;
+    unit.value.photo = editPhotoUrl.value;
 
     showToast(
       'success',
@@ -215,6 +214,20 @@ async function handleSave() {
           <input
             v-model="unitType"
             type="text"
+            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+            required
+          />
+        </div>
+
+        <!-- Photo URL -->
+        <div>
+          <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+            PHOTO URL
+          </label>
+          <input
+            v-model="editPhotoUrl"
+            type="text"
+            placeholder="https://..."
             class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
             required
           />

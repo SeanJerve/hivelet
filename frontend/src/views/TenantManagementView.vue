@@ -42,14 +42,11 @@ const newDeposit = ref(9000);
 const newOccupants = ref(1);
 const newEmergName = ref('');
 const newEmergPhone = ref('');
-const newOccupation = ref('');
 
-// Edit Contact Form
-const editPhone = ref('');
-const editEmail = ref('');
-const editEmergName = ref('');
-const editEmergPhone = ref('');
-const editOccupation = ref('');
+
+// Edit Tenant Assignment Form
+const editUnitCode = ref('');
+const editStatus = ref<'active' | 'vacated'>('active');
 
 async function fetchTenants() {
   isLoading.value = true;
@@ -123,34 +120,40 @@ function openProfile(t: TenantRecord) {
 
 function openEdit(t: TenantRecord) {
   editModalTenant.value = t;
-  editPhone.value = t.phone;
-  editEmail.value = t.email;
-  editEmergName.value = t.emergencyContact.name;
-  editEmergPhone.value = t.emergencyContact.phone;
-  editOccupation.value = t.occupation;
+  editUnitCode.value = t.unitCode.toUpperCase();
+  editStatus.value = t.status as 'active' | 'vacated';
 }
 
 async function saveEdit() {
   if (!editModalTenant.value) return;
+  
+  // Verify unit is not occupied by another active tenant
+  const targetUnit = editUnitCode.value.toLowerCase();
+  const currentTenantId = editModalTenant.value.id;
+  const isOccupiedByOther = tenants.some(t => 
+    t.status === 'active' && 
+    t.unitCode.toLowerCase() === targetUnit && 
+    t.id !== currentTenantId
+  );
+  if (isOccupiedByOther) {
+    showToast('error', 'Unit Already Occupied', `Unit ${editUnitCode.value.toUpperCase()} already has an active tenant.`);
+    return;
+  }
+
   isSubmitting.value = true;
   try {
     try {
       await api.patch(`/admin/tenants/${editModalTenant.value.id}`, {
-        phoneNumber: editPhone.value,
-        emergencyContactName: editEmergName.value,
-        emergencyContactPhone: editEmergPhone.value,
-        occupation: editOccupation.value,
+        roomNumber: editUnitCode.value.toUpperCase(),
+        accountStatus: editStatus.value === 'active' ? 'active' : 'inactive',
       });
-    } catch {
-      // Offline fallback
+    } catch (err) {
+      console.warn('Backend edit save failed:', err);
     }
 
-    editModalTenant.value.phone = editPhone.value;
-    editModalTenant.value.email = editEmail.value;
-    editModalTenant.value.emergencyContact.name = editEmergName.value;
-    editModalTenant.value.emergencyContact.phone = editEmergPhone.value;
-    editModalTenant.value.occupation = editOccupation.value;
-    showToast('success', 'Contact details updated', `Resident info for ${editModalTenant.value.name} updated.`);
+    editModalTenant.value.unitCode = editUnitCode.value.toUpperCase();
+    editModalTenant.value.status = editStatus.value;
+    showToast('success', 'Tenant details updated', `Resident info for ${editModalTenant.value.name} updated.`);
     editModalTenant.value = null;
   } finally {
     isSubmitting.value = false;
@@ -183,6 +186,12 @@ async function confirmVacate() {
 }
 
 async function handleOnboard() {
+  const isOccupied = tenants.some(t => t.status === 'active' && t.unitCode.toLowerCase() === newUnit.value.toLowerCase());
+  if (isOccupied) {
+    showToast('error', 'Unit Already Occupied', `Unit ${newUnit.value.toUpperCase()} already has an active tenant.`);
+    return;
+  }
+
   isSubmitting.value = true;
   try {
     try {
@@ -200,7 +209,7 @@ async function handleOnboard() {
           occupantCount: Number(newOccupants.value) || 1,
           emergencyContactName: newEmergName.value || 'Contact Person',
           emergencyContactPhone: newEmergPhone.value || '0917-000-0000',
-          occupation: newOccupation.value || 'Resident',
+          occupation: 'Resident',
         });
       }
     } catch {
@@ -221,7 +230,7 @@ async function handleOnboard() {
         name: newEmergName.value || 'Contact Person',
         phone: newEmergPhone.value || '0917-000-0000',
       },
-      occupation: newOccupation.value || 'Resident',
+      occupation: 'Resident',
       facebook: `facebook.com/${newName.value.replace(/\s+/g, '').toLowerCase()}`,
       occupants: Number(newOccupants.value) || 1,
     };
@@ -408,10 +417,7 @@ async function handleOnboard() {
             <p class="font-bold text-[11px] uppercase tracking-wider text-[#71717a]">Email</p>
             <p class="text-sm mt-0.5">{{ profileModalTenant.email }}</p>
           </div>
-          <div>
-            <p class="font-bold text-[11px] uppercase tracking-wider text-[#71717a]">Occupation</p>
-            <p class="text-sm mt-0.5">{{ profileModalTenant.occupation }}</p>
-          </div>
+
           <div>
             <p class="font-bold text-[11px] uppercase tracking-wider text-[#71717a]">Occupants</p>
             <p class="text-sm mt-0.5">{{ profileModalTenant.occupants }} registered</p>
@@ -444,7 +450,7 @@ async function handleOnboard() {
       </div>
     </div>
 
-    <!-- Edit Contact Modal -->
+    <!-- Edit Tenant Modal -->
     <div 
       v-if="editModalTenant" 
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
@@ -453,7 +459,7 @@ async function handleOnboard() {
       <div class="surface-card w-full max-w-md shadow-2xl rounded-2xl p-6 bg-white space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
           <div>
-            <h3 class="font-display font-extrabold text-lg text-[#1c1917]">Edit Contact Info</h3>
+            <h3 class="font-display font-extrabold text-lg text-[#1c1917]">Edit Tenant details</h3>
             <p class="text-xs text-[#71717a]">{{ editModalTenant.name }} · Unit {{ editModalTenant.unitCode }}</p>
           </div>
           <button @click="editModalTenant = null" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer">
@@ -463,24 +469,19 @@ async function handleOnboard() {
 
         <form @submit.prevent="saveEdit" class="space-y-4 text-xs">
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Phone</label>
-            <input v-model="editPhone" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Target Unit</label>
+            <select v-model="editUnitCode" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white" required>
+              <option v-for="u in CANONICAL_32_UNITS" :key="u.unitCode" :value="u.unitCode.toUpperCase()">
+                {{ u.unitCode.toUpperCase() }} — {{ u.cluster }}
+              </option>
+            </select>
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Email</label>
-            <input v-model="editEmail" type="email" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
-          </div>
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Occupation</label>
-            <input v-model="editOccupation" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
-          </div>
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Emergency Contact Name</label>
-            <input v-model="editEmergName" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
-          </div>
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Emergency Contact Phone</label>
-            <input v-model="editEmergPhone" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Account Status</label>
+            <select v-model="editStatus" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white" required>
+              <option value="active">Active</option>
+              <option value="vacated">Vacated (Pending)</option>
+            </select>
           </div>
 
           <div class="pt-2 flex justify-end gap-2">
@@ -556,10 +557,7 @@ async function handleOnboard() {
               </option>
             </select>
           </div>
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Occupation</label>
-            <input v-model="newOccupation" placeholder="Software Engineer / Student" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
-          </div>
+
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Occupants Count</label>
             <input v-model.number="newOccupants" type="number" min="1" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
