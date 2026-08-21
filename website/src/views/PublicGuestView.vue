@@ -1,4 +1,4 @@
-<!--
+﻿<!--
   @component PublicGuestView
   @description Available Rentable Units Blueprint Showcase for Fe Galang Da Silva Boarding House.
   @systemBibleRef Section 4 - Public Visitor Role & Section 5 - Property Model & Section 16 - Inquiries
@@ -209,7 +209,7 @@ function submitInquiry() {
           <!-- Floor & Cluster Location -->
           <p class="text-xs font-bold text-[#0c66e4] flex items-center gap-1.5">
             <MapPin class="w-3.5 h-3.5" />
-            <span>{{ activeUnit.floorLabel }} • {{ activeUnit.cluster }}</span>
+            <span>{{ activeUnit.floorLabel }} ΓÇó {{ activeUnit.cluster }}</span>
           </p>
         </div>
 
@@ -411,7 +411,7 @@ function submitInquiry() {
               class="w-full bg-[#0c66e4] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-50"
             >
               <Send class="w-4 h-4" />
-              <span>{{ isSubmitting ? 'Delivering Inquiry…' : `Submit Inquiry for Unit ${activeUnit ? activeUnit.unitCode : ''}` }}</span>
+              <span>{{ isSubmitting ? 'Delivering InquiryΓÇª' : `Submit Inquiry for Unit ${activeUnit ? activeUnit.unitCode : ''}` }}</span>
             </button>
           </div>
         </form>

@@ -1,22 +1,41 @@
+<!--
+  @file views/PublicGuestView.vue
+  @description Public landing page for prospective tenants — unit category explorer,
+               interactive search/filter bar, amenity badge showcase, and inquiry form.
+  @systemBibleRef Section 3 (Public Guest Portal), Section 5 (Property Data)
+  @businessRules BR-001 (32 canonical units), BR-014 (₱200/head water rate)
+  @requirements FR-001 Browse Units, FR-002 Send Inquiry
+  @innovations Interactive search with text, status, and price-ceiling filters added above the
+               unit showcase carousel. Amenity badges rendered from the existing amenities[] array
+               using a per-keyword icon map — no schema changes required.
+-->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { CANONICAL_32_UNITS, HERO_PHOTO, peso, type RentableUnit } from '@/lib/canonicalUnits';
 import { isLiveChatheadOpen, showToast, LANDLADY } from '@/lib/systemState';
 import { api } from '@/lib/api';
-import { 
-  MapPin, 
-  BedDouble, 
-  Building2, 
-  ShieldCheck, 
-  Users, 
-  Droplets, 
-  Wifi, 
-  Check, 
-  ArrowRight, 
+import {
+  MapPin,
+  BedDouble,
+  Building2,
+  ShieldCheck,
+  Users,
+  Droplets,
+  Wifi,
+  Check,
+  ArrowRight,
   MessageCircle,
   X,
   Send,
-  Loader2
+  Loader2,
+  Search,
+  SlidersHorizontal,
+  Wind,
+  Bath,
+  Zap,
+  UtensilsCrossed,
+  Mountain,
+  ParkingSquare,
 } from 'lucide-vue-next';
 
 interface DbRoom {
@@ -61,10 +80,67 @@ const CATEGORIES = [
   },
 ];
 
+/**
+ * Amenity keyword → Lucide icon mapping.
+ * Used to render contextual icon badges on every unit card and detail pane.
+ */
+const AMENITY_ICON_MAP: Record<string, any> = {
+  'aircon': Wind,
+  'air con': Wind,
+  'split-type': Wind,
+  'ceiling fan': Wind,
+  'bathroom': Bath,
+  'private bathroom': Bath,
+  'en-suite': Bath,
+  'submetered': Zap,
+  'electricity': Zap,
+  'wi-fi': Wifi,
+  'wifi': Wifi,
+  'fiber': Wifi,
+  'kitchenette': UtensilsCrossed,
+  'kitchen': UtensilsCrossed,
+  'roof deck': Mountain,
+  'roof': Mountain,
+  'panoramic': Mountain,
+  'parking': ParkingSquare,
+};
+
+/**
+ * Derive up to 5 unique amenity icon+label tuples from a unit's amenity string list.
+ * Keyword matching is case-insensitive.
+ */
+function getAmenityBadges(amenities: string[]): Array<{ icon: any; label: string }> {
+  const seen = new Set<string>();
+  const badges: Array<{ icon: any; label: string }> = [];
+  for (const amenity of amenities) {
+    const lower = amenity.toLowerCase();
+    for (const [keyword, icon] of Object.entries(AMENITY_ICON_MAP)) {
+      if (lower.includes(keyword) && !seen.has(keyword)) {
+        seen.add(keyword);
+        // Use the original amenity text as the label, trimmed for brevity
+        const label = amenity.length > 18 ? amenity.slice(0, 16) + '…' : amenity;
+        badges.push({ icon, label });
+        break;
+      }
+    }
+    if (badges.length >= 5) break;
+  }
+  return badges;
+}
+
 const selectedCategory = ref('1BR');
 const selectedUnitCode = ref('1a');
 const publicRooms = ref<DbRoom[]>([]);
 const isSubmitting = ref(false);
+
+// ---- Search & Filter state ----
+const searchQuery = ref('');
+const statusFilter = ref<'all' | 'vacant' | 'reserved'>('all');
+// Max price ceiling. 0 means "no ceiling".
+const MAX_PRICE_CEILING = 12000;
+const MIN_PRICE_FLOOR = 4500;
+const priceCeiling = ref(MAX_PRICE_CEILING);
+const isFilterOpen = ref(false);
 
 onMounted(async () => {
   try {
@@ -78,11 +154,52 @@ onMounted(async () => {
 });
 
 const currentCat = computed(() => CATEGORIES.find((c) => c.key === selectedCategory.value)!);
-const categoryUnits = computed(() => CANONICAL_32_UNITS.filter(currentCat.value.match));
+
+/** Units in the selected category, then filtered by search / status / price. */
+const categoryUnits = computed(() => {
+  let units = CANONICAL_32_UNITS.filter(currentCat.value.match);
+
+  const q = searchQuery.value.trim().toLowerCase();
+  if (q) {
+    units = units.filter(
+      (u) =>
+        u.unitCode.toLowerCase().includes(q) ||
+        u.cluster.toLowerCase().includes(q) ||
+        u.type.toLowerCase().includes(q) ||
+        u.amenities.some((a) => a.toLowerCase().includes(q))
+    );
+  }
+
+  if (statusFilter.value === 'vacant') {
+    units = units.filter((u) => u.status === 'vacant');
+  } else if (statusFilter.value === 'reserved') {
+    units = units.filter((u) => u.status !== 'vacant');
+  }
+
+  if (priceCeiling.value < MAX_PRICE_CEILING) {
+    units = units.filter((u) => u.basePrice <= priceCeiling.value);
+  }
+
+  return units;
+});
 
 const activeUnit = computed(() => {
-  return categoryUnits.value.find((u) => u.unitCode.toLowerCase() === selectedUnitCode.value.toLowerCase()) || categoryUnits.value[0];
+  return (
+    categoryUnits.value.find(
+      (u) => u.unitCode.toLowerCase() === selectedUnitCode.value.toLowerCase()
+    ) || categoryUnits.value[0]
+  );
 });
+
+const vacantCountInCategory = computed(
+  () => CANONICAL_32_UNITS.filter(currentCat.value.match).filter((u) => u.status === 'vacant').length
+);
+
+function resetFilters() {
+  searchQuery.value = '';
+  statusFilter.value = 'all';
+  priceCeiling.value = MAX_PRICE_CEILING;
+}
 
 // Inquiry Modal State
 const isInquiryOpen = ref(false);
@@ -211,7 +328,7 @@ async function submitInquiry() {
         <button
           v-for="c in CATEGORIES"
           :key="c.key"
-          @click="selectedCategory = c.key; selectedUnitCode = CANONICAL_32_UNITS.filter(c.match)[0]?.unitCode || '1a'"
+          @click="selectedCategory = c.key; selectedUnitCode = CANONICAL_32_UNITS.filter(c.match)[0]?.unitCode || '1a'; resetFilters()"
           :class="[
             'surface-card flex min-h-11 flex-col items-start p-5 text-left transition-all hover:shadow-lg cursor-pointer',
             selectedCategory === c.key ? 'ring-2 ring-[#f59e0b] shadow-md' : ''
@@ -230,7 +347,117 @@ async function submitInquiry() {
       </div>
     </section>
 
-    <!-- Showcase Hero Card & Horizontal Carousel (Screenshot 5) -->
+    <!-- ✨ Search & Filter Bar -->
+    <section class="space-y-3">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <!-- Search Input -->
+        <div class="relative flex-1">
+          <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#71717a] pointer-events-none" />
+          <input
+            v-model="searchQuery"
+            type="search"
+            placeholder="Search by unit code, type, or amenity…"
+            class="w-full min-h-11 pl-10 pr-4 text-sm border border-[#e7e5e4] rounded-xl bg-white text-[#1c1917] placeholder:text-[#71717a] focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/40 focus:border-[#f59e0b] transition-colors"
+          />
+          <button
+            v-if="searchQuery"
+            @click="searchQuery = ''"
+            class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-[#71717a] hover:text-[#1c1917] cursor-pointer"
+          >
+            <X class="size-3.5" />
+          </button>
+        </div>
+
+        <!-- Filter Toggle Button -->
+        <button
+          @click="isFilterOpen = !isFilterOpen"
+          :class="[
+            'min-h-11 inline-flex items-center gap-2 px-4 rounded-xl border text-sm font-semibold transition-all cursor-pointer',
+            isFilterOpen
+              ? 'bg-[#1e2532] text-white border-[#1e2532]'
+              : 'bg-white text-[#1c1917] border-[#e7e5e4] hover:border-[#1c1917]'
+          ]"
+        >
+          <SlidersHorizontal class="size-4" />
+          <span>Filters</span>
+          <span
+            v-if="statusFilter !== 'all' || priceCeiling < MAX_PRICE_CEILING"
+            class="size-2 rounded-full bg-[#f59e0b]"
+          />
+        </button>
+      </div>
+
+      <!-- Expanded Filter Panel -->
+      <div
+        v-if="isFilterOpen"
+        class="surface-card p-5 space-y-5 border border-[#e7e5e4] rounded-xl bg-white"
+      >
+        <div class="grid gap-5 sm:grid-cols-2">
+          <!-- Status Filter -->
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wider text-[#71717a] mb-2.5">Availability</p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="opt in ([{ value: 'all', label: 'All Units' }, { value: 'vacant', label: 'Available Only' }, { value: 'reserved', label: 'Reserved' }] as const)"
+                :key="opt.value"
+                @click="statusFilter = opt.value"
+                :class="[
+                  'min-h-9 px-3.5 text-xs font-semibold rounded-full border transition-colors cursor-pointer',
+                  statusFilter === opt.value
+                    ? 'bg-[#1e2532] text-white border-[#1e2532]'
+                    : 'bg-[#f5f5f4] text-[#1c1917] border-[#e7e5e4] hover:border-[#1c1917]'
+                ]"
+              >
+                {{ opt.label }}
+                <span v-if="opt.value === 'vacant'" class="ml-1 text-emerald-500 font-bold">
+                  ({{ vacantCountInCategory }})
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Max Price Slider -->
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wider text-[#71717a] mb-2.5">
+              Max Monthly Rent: <span class="text-[#1c1917]">{{ priceCeiling >= MAX_PRICE_CEILING ? 'Any' : peso(priceCeiling) }}</span>
+            </p>
+            <input
+              type="range"
+              v-model.number="priceCeiling"
+              :min="MIN_PRICE_FLOOR"
+              :max="MAX_PRICE_CEILING"
+              step="500"
+              class="w-full h-1.5 bg-[#e7e5e4] rounded-full appearance-none cursor-pointer accent-[#f59e0b]"
+            />
+            <div class="flex justify-between text-[11px] text-[#71717a] mt-1">
+              <span>{{ peso(MIN_PRICE_FLOOR) }}</span>
+              <span>{{ peso(MAX_PRICE_CEILING) }}+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reset -->
+        <div class="flex justify-end border-t border-[#e7e5e4] pt-3">
+          <button
+            @click="resetFilters"
+            class="text-xs font-semibold text-[#71717a] hover:text-[#1c1917] underline underline-offset-2 cursor-pointer"
+          >
+            Reset filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Count -->
+      <p class="text-xs text-[#71717a]">
+        Showing <strong class="text-[#1c1917]">{{ categoryUnits.length }}</strong> unit{{ categoryUnits.length !== 1 ? 's' : '' }} in <strong class="text-[#1c1917]">{{ currentCat.title }}</strong>
+        <span v-if="searchQuery || statusFilter !== 'all' || priceCeiling < MAX_PRICE_CEILING">
+          &nbsp;·&nbsp;
+          <button @click="resetFilters" class="underline underline-offset-2 hover:text-[#1c1917] cursor-pointer">Clear filters</button>
+        </span>
+      </p>
+    </section>
+
+    <!-- Showcase Hero Card & Horizontal Carousel -->
     <section v-if="activeUnit" class="space-y-4">
       <div class="surface-card overflow-hidden">
         
@@ -254,6 +481,18 @@ async function submitInquiry() {
                 ]"
               >
                 {{ activeUnit.status === 'vacant' ? 'Available' : 'Reserved' }}
+              </span>
+            </div>
+
+            <!-- ✨ Amenity Badges Overlay on Photo -->
+            <div class="absolute bottom-4 left-4 flex flex-wrap gap-1.5">
+              <span
+                v-for="badge in getAmenityBadges(activeUnit.amenities)"
+                :key="badge.label"
+                class="inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-sm px-2.5 py-1 text-[11px] font-semibold text-white border border-white/10"
+              >
+                <component :is="badge.icon" class="size-3 shrink-0" />
+                {{ badge.label }}
               </span>
             </div>
           </div>
@@ -319,14 +558,14 @@ async function submitInquiry() {
           </div>
         </div>
 
-        <!-- Horizontal Unit Cards Carousel -->
-        <div class="flex gap-3 overflow-x-auto border-t border-[#e7e5e4] bg-[#fafaf9] p-4">
+        <!-- Horizontal Unit Cards Carousel with Amenity Badges -->
+        <div v-if="categoryUnits.length > 0" class="flex gap-3 overflow-x-auto border-t border-[#e7e5e4] bg-[#fafaf9] p-4">
           <button
             v-for="u in categoryUnits"
             :key="u.unitCode"
             @click="selectedUnitCode = u.unitCode"
             :class="[
-              'min-h-11 w-44 shrink-0 rounded-2xl border bg-white p-3.5 text-left transition-all hover:shadow-md cursor-pointer',
+              'min-h-11 w-48 shrink-0 rounded-2xl border bg-white p-3.5 text-left transition-all hover:shadow-md cursor-pointer',
               u.unitCode.toLowerCase() === activeUnit.unitCode.toLowerCase()
                 ? 'border-[#f59e0b] ring-2 ring-[#f59e0b] shadow-sm'
                 : 'border-[#e7e5e4]'
@@ -343,6 +582,34 @@ async function submitInquiry() {
             >
               {{ u.status === 'vacant' ? 'Available' : 'Reserved' }}
             </span>
+
+            <!-- ✨ Amenity badge strip on carousel cards -->
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span
+                v-for="badge in getAmenityBadges(u.amenities).slice(0, 3)"
+                :key="badge.label"
+                class="inline-flex items-center gap-1 rounded-md bg-[#f5f5f4] px-1.5 py-0.5 text-[10px] font-medium text-[#71717a]"
+              >
+                <component :is="badge.icon" class="size-2.5 shrink-0" />
+                {{ badge.label }}
+              </span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Empty state when filters return nothing -->
+        <div
+          v-else
+          class="flex flex-col items-center justify-center py-16 text-center border-t border-[#e7e5e4] bg-[#fafaf9]"
+        >
+          <Search class="size-8 text-[#71717a] mb-3" />
+          <p class="text-sm font-bold text-[#1c1917]">No units match your search</p>
+          <p class="text-xs text-[#71717a] mt-1 mb-4">Try adjusting your filters or clearing the search query.</p>
+          <button
+            @click="resetFilters"
+            class="px-4 py-2 text-xs font-semibold rounded-xl bg-[#1e2532] text-white hover:bg-[#2b3648] transition-colors cursor-pointer"
+          >
+            Clear all filters
           </button>
         </div>
       </div>

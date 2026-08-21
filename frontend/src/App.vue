@@ -13,8 +13,8 @@ import GuestEntryModal from '@/components/modals/GuestEntryModal.vue';
 import TicketHoverModal from '@/components/modals/TicketHoverModal.vue';
 
 const route = useRoute();
-const isAdminSection = computed(() => 
-  route.path.startsWith('/admin') || route.path.startsWith('/basis')
+const isWorkspaceSection = computed(() => 
+  route.path.startsWith('/admin') || route.path.startsWith('/basis') || route.path.startsWith('/tenant')
 );
 </script>
 
@@ -23,8 +23,8 @@ const isAdminSection = computed(() =>
     <AppHeader />
     
     <div class="flex-1 flex w-full max-w-[1600px] mx-auto px-4 sm:px-6">
-      <AppSidebar v-if="isAdminSection" />
-      <main :class="['flex-1 py-6 overflow-y-auto max-w-full min-w-0', isAdminSection ? 'lg:pl-6' : '']">
+      <AppSidebar v-if="isWorkspaceSection" />
+      <main :class="['flex-1 py-6 overflow-y-auto max-w-full min-w-0', isWorkspaceSection ? 'lg:pl-6' : '']">
         <RouterView />
       </main>
     </div>
