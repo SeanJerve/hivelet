@@ -46,6 +46,9 @@ const tenantData = ref({
   },
   baseRent: 4500,
   waterFee: 200,
+  gbgFee: 0,
+  depositAmount: 9000,
+  moveInDate: 'Jan 05, 2023',
   totalAmountDue: 4700,
   dueDate: 'Aug 05, 2026',
   dueBadgeText: 'DUE AUG 05',
@@ -351,7 +354,7 @@ async function fetchTenantData() {
         <!-- Statement Body -->
         <div class="p-6 space-y-5">
           <!-- Resident & Unit Info -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
             <div>
               <span class="text-[#6b778c] text-xs block mb-0.5">Resident Name</span>
               <strong class="text-[#172b4d]">{{ tenantData.name }}</strong>
@@ -359,6 +362,10 @@ async function fetchTenantData() {
             <div>
               <span class="text-[#6b778c] text-xs block mb-0.5">Assigned Unit</span>
               <strong class="text-[#172b4d]">{{ tenantData.room }} ({{ tenantData.roomDetails }})</strong>
+            </div>
+            <div>
+              <span class="text-[#6b778c] text-xs block mb-0.5">Move-in Date</span>
+              <strong class="text-[#172b4d]">{{ tenantData.moveInDate }}</strong>
             </div>
             <div>
               <span class="text-[#6b778c] text-xs block mb-0.5">Payment Due Date</span>
@@ -379,24 +386,47 @@ async function fetchTenantData() {
             </div>
             <div class="flex justify-between items-center py-2 border-b border-gray-100">
               <span class="text-[#5e6c84]">
-                Water Fee (₱{{ tenantData.specs.waterRatePerHead }}/head × {{ tenantData.occupants }})
+                Water Fee (₱{{ tenantData.specs.waterRatePerHead }}/head × {{ tenantData.occupants }} occupant<template v-if="tenantData.occupants > 1">s</template>)
               </span>
               <span class="font-semibold text-[#172b4d]">₱{{ tenantData.waterFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
             </div>
+            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+              <span class="text-[#5e6c84]">Garbage Collection Fee (GBG)</span>
+              <span class="font-semibold text-[#172b4d]">₱{{ tenantData.gbgFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-gray-100 text-xs text-slate-500">
+              <span>Security Deposit (Held on record)</span>
+              <span class="font-medium text-slate-700">₱{{ tenantData.depositAmount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            </div>
           </div>
 
-          <!-- Total -->
-          <div class="flex justify-between items-center border-t-2 border-[#172b4d] pt-4">
-            <span class="font-bold text-[#172b4d] text-base">Total Amount Due</span>
-            <span class="text-2xl font-bold text-[#0c66e4]">
-              ₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+          <!-- Total Amount Due & Action -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between border-t-2 border-[#172b4d] pt-4 gap-3">
+            <div>
+              <span class="font-bold text-[#172b4d] text-base block">Total Amount Due</span>
+              <span class="text-xs text-[#6b778c]">Status: <strong>{{ tenantData.dueDaysRemaining }}</strong></span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-2xl font-black text-[#0c66e4]">
+                ₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+              </span>
+              <router-link to="/tenant/payments" class="px-4 py-2 bg-[#0c66e4] hover:bg-[#0052cc] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-sm transition-colors">
+                <CreditCard class="w-4 h-4" />
+                Pay via GCash / Online
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Status & Remittance Account Note -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#5e6c84]">
+            <span class="flex items-center gap-1.5">
+              <Zap class="w-3.5 h-3.5 text-amber-500" />
+              <span>Electricity Submeter: <strong class="text-[#172b4d]">₱12.50 / kWh</strong> (Billed separately on 25th)</span>
+            </span>
+            <span>
+              Landlady GCash: <strong class="font-mono font-bold text-[#172b4d]">{{ tenantData.landladyGCash }}</strong> ({{ tenantData.landladyName }})
             </span>
           </div>
-
-          <!-- Status Note -->
-          <p class="text-xs text-[#6b778c] pt-1">
-            Status: <strong>{{ tenantData.dueDaysRemaining }}</strong> — Pay via GCash to Landlady {{ tenantData.landladyName }} ({{ tenantData.landladyGCash }})
-          </p>
         </div>
       </div>
     </div>
