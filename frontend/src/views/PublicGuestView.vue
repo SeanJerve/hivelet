@@ -4,7 +4,7 @@
  * @description Public landing and room category overview for Fe Galang Da Silva Boarding House.
  * @systemBibleRef Section 4 - Public Visitor Role & Section 5 - Property Model & Section 16 - Inquiries
  * @rationale Main landing portal displaying property facade hero, category cards with direct navigation,
- *            property highlights, inline rectangular inquiry form, and corporate footer.
+ *            property highlights, inline rectangular inquiry form, proximity map, and corporate footer.
  * @innovations Direct category routing, embedded wide rectangular inquiry section, and dark corporate footer.
  */
 import { ref } from 'vue';
@@ -133,7 +133,7 @@ async function submitInquiry() {
 <template>
   <div class="flex-1 flex flex-col w-full">
     <!-- 100% Full-Width Edge-to-Edge Hero Header Section (No Card / No Rounded Corners) -->
-    <section class="relative w-full overflow-hidden bg-[#1e2532] shadow-sm border-b border-[#dfe1e6]">
+    <section class="relative w-full overflow-hidden bg-[#1e2532] shadow-sm">
       <img
         :src="HERO_PHOTO"
         alt="Facade of Fe Galang Da Silva Boarding House"
@@ -293,7 +293,7 @@ async function submitInquiry() {
       <section id="inquiry-form" class="scroll-mt-20">
         <div class="surface-card w-full max-w-5xl mx-auto rounded-3xl border border-[#dfe1e6] bg-white p-8 sm:p-12 shadow-sm space-y-6">
           
-          <!-- Header (Matching User's Reference Image) -->
+          <!-- Header -->
           <div class="space-y-1">
             <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-[#1c1917] tracking-tight">
               Inquire with the Landlady

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { isMobileSidebarOpen } from '@/lib/systemState';
 import { 
@@ -12,12 +13,16 @@ import {
   X,
   Shield,
   User,
-  Home
+  Home,
+  CreditCard,
+  UserCheck
 } from 'lucide-vue-next';
 
 const route = useRoute();
 
-const NAV = [
+const isTenantSection = computed(() => route.path.startsWith('/tenant'));
+
+const ADMIN_NAV = [
   { to: '/admin/overview', aliases: ['/basis/overview'], label: 'Executive Overview', icon: LayoutDashboard },
   { to: '/admin/directory', aliases: ['/basis/directory'], label: 'Room & Rate Directory', icon: Building2 },
   { to: '/admin/tenants', aliases: ['/basis/tenants'], label: 'Active Tenants', icon: Users },
@@ -27,6 +32,17 @@ const NAV = [
   { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Prospect Inquiries', icon: Inbox },
 ] as const;
 
+const TENANT_NAV = [
+  { to: '/tenant', aliases: ['/tenant/overview'], label: 'Unit Overview', icon: Home },
+  { to: '/tenant/payments', aliases: [], label: 'Payment & Billing', icon: CreditCard },
+  { to: '/tenant/tickets', aliases: [], label: 'Maintenance Tickets', icon: Wrench },
+  { to: '/tenant/profile', aliases: [], label: 'My Profile', icon: UserCheck },
+] as const;
+
+const activeNav = computed(() => isTenantSection.value ? TENANT_NAV : ADMIN_NAV);
+const spaceTitle = computed(() => isTenantSection.value ? 'Tenant Account Portal' : 'Landlady Operations Space');
+const spaceCategory = computed(() => isTenantSection.value ? 'Tenant Self-Service' : 'Management Operations');
+
 const ROLES = [
   { to: '/admin/overview', label: 'Landlady Admin', icon: Shield },
   { to: '/tenant', label: 'Tenant Portal', icon: User },
@@ -34,7 +50,10 @@ const ROLES = [
 ] as const;
 
 function isItemActive(to: string, aliases: readonly string[]) {
-  return route.path === to || aliases.includes(route.path);
+  if (route.path === to) return true;
+  if (aliases.includes(route.path)) return true;
+  if (to === '/tenant' && (route.path === '/tenant' || route.path === '/tenant/overview')) return true;
+  return false;
 }
 
 function closeMobileNav() {
@@ -44,21 +63,31 @@ function closeMobileNav() {
 
 <template>
   <div>
-    <!-- Desktop Sidebar (Screenshot 1) -->
+    <!-- Desktop Sidebar -->
     <aside class="sticky top-20 hidden h-[calc(100dvh-6rem)] w-64 shrink-0 rounded-2xl border border-[#e7e5e4] bg-white p-3 shadow-xs lg:block my-6">
-      <p class="px-3 pb-3 text-[11px] font-extrabold uppercase tracking-widest text-[#71717a]">
-        Operations
+      <!-- Space Context Pill Header -->
+      <div class="px-3 py-2.5 mb-3 bg-[#f5f5f4] border border-[#e7e5e4] rounded-xl">
+        <p class="text-[10px] font-extrabold uppercase tracking-widest text-[#71717a]">
+          SPACE
+        </p>
+        <p class="text-xs font-extrabold text-[#1c1917] truncate mt-0.5">
+          {{ spaceTitle }}
+        </p>
+      </div>
+
+      <p class="px-3 pb-2 text-[11px] font-extrabold uppercase tracking-widest text-[#71717a]">
+        {{ spaceCategory }}
       </p>
 
       <nav class="grid gap-1">
         <router-link
-          v-for="item in NAV"
+          v-for="item in activeNav"
           :key="item.to"
           :to="item.to"
           :class="[
             'flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-semibold transition-all duration-150',
             isItemActive(item.to, item.aliases)
-              ? 'bg-[#fbf6ee] text-[#78350f] font-bold shadow-xs'
+              ? (isTenantSection ? 'bg-[#e9f2ff] text-[#0c66e4] font-bold shadow-xs' : 'bg-[#fbf6ee] text-[#78350f] font-bold shadow-xs')
               : 'text-[#475569] hover:bg-[#f5f5f4] hover:text-[#1c1917]'
           ]"
         >
@@ -66,7 +95,9 @@ function closeMobileNav() {
             :is="item.icon" 
             :class="[
               'size-4 shrink-0 transition-colors',
-              isItemActive(item.to, item.aliases) ? 'text-[#8a5814]' : 'text-[#64748b]'
+              isItemActive(item.to, item.aliases) 
+                ? (isTenantSection ? 'text-[#0c66e4]' : 'text-[#8a5814]') 
+                : 'text-[#64748b]'
             ]" 
           />
           <span>{{ item.label }}</span>
@@ -85,7 +116,7 @@ function closeMobileNav() {
           <div class="flex items-center justify-between pb-4 border-b border-[#e7e5e4]">
             <div>
               <span class="font-display font-black text-base text-[#1c1917]">HIVELET</span>
-              <p class="text-[11px] text-[#71717a]">Operations &amp; Portals</p>
+              <p class="text-[11px] text-[#71717a]">{{ spaceTitle }}</p>
             </div>
             <button 
               @click="closeMobileNav" 
@@ -96,10 +127,16 @@ function closeMobileNav() {
             </button>
           </div>
 
-          <!-- Portals Nav (Mobile Only) -->
+          <!-- Space Pill Box (Mobile) -->
+          <div class="px-3 py-2 bg-[#f5f5f4] border border-[#e7e5e4] rounded-xl">
+            <p class="text-[9px] font-extrabold uppercase tracking-widest text-[#71717a]">Active Space</p>
+            <p class="text-xs font-extrabold text-[#1c1917] truncate mt-0.5">{{ spaceTitle }}</p>
+          </div>
+
+          <!-- Role Portals Nav (Mobile Only) -->
           <div>
             <p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#71717a]">
-              Portals
+              Switch Space
             </p>
             <div class="grid gap-1">
               <router-link
@@ -110,7 +147,7 @@ function closeMobileNav() {
                 :class="[
                   'flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs sm:text-sm font-semibold transition-colors',
                   route.path.startsWith(r.to.split('/')[1])
-                    ? 'bg-[#1e2532] text-white'
+                    ? 'bg-[#1e2532] text-white font-bold'
                     : 'text-[#475569] hover:bg-[#f5f5f4]'
                 ]"
               >
@@ -120,21 +157,21 @@ function closeMobileNav() {
             </div>
           </div>
 
-          <!-- Operations Nav -->
+          <!-- Section Specific Navigation -->
           <div>
             <p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#71717a]">
-              Operations
+              {{ spaceCategory }}
             </p>
             <nav class="grid gap-1">
               <router-link
-                v-for="item in NAV"
+                v-for="item in activeNav"
                 :key="item.to"
                 :to="item.to"
                 @click="closeMobileNav"
                 :class="[
                   'flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs sm:text-sm font-semibold transition-all',
                   isItemActive(item.to, item.aliases)
-                    ? 'bg-[#fbf6ee] text-[#78350f] font-bold'
+                    ? (isTenantSection ? 'bg-[#e9f2ff] text-[#0c66e4] font-bold' : 'bg-[#fbf6ee] text-[#78350f] font-bold')
                     : 'text-[#475569] hover:bg-[#f5f5f4]'
                 ]"
               >
@@ -142,7 +179,9 @@ function closeMobileNav() {
                   :is="item.icon" 
                   :class="[
                     'size-4 shrink-0',
-                    isItemActive(item.to, item.aliases) ? 'text-[#8a5814]' : 'text-[#64748b]'
+                    isItemActive(item.to, item.aliases) 
+                      ? (isTenantSection ? 'text-[#0c66e4]' : 'text-[#8a5814]') 
+                      : 'text-[#64748b]'
                   ]" 
                 />
                 <span>{{ item.label }}</span>
@@ -153,7 +192,7 @@ function closeMobileNav() {
 
         <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4] text-xs text-[#71717a] mt-6">
           <p class="font-bold text-[#1c1917]">Fe Galang Da Silva Boarding House</p>
-          <p class="text-[11px] mt-0.5">Brgy. Sambat, Tanauan City, Batangas</p>
+          <p class="text-[11px] mt-0.5">32 Rentable Units • Tanauan City</p>
         </div>
       </div>
     </div>

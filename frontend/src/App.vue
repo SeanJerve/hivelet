@@ -15,8 +15,8 @@ import TicketHoverModal from '@/components/modals/TicketHoverModal.vue';
 
 const route = useRoute();
 
-const isAdminSection = computed(() => 
-  route.path.startsWith('/admin') || route.path.startsWith('/basis')
+const isWorkspaceSection = computed(() => 
+  route.path.startsWith('/admin') || route.path.startsWith('/basis') || route.path.startsWith('/tenant')
 );
 
 const isPublicPage = computed(() => 
@@ -30,9 +30,9 @@ const isPublicPage = computed(() =>
   <div class="min-h-screen bg-[#fafaf9] text-[#1c1917] flex flex-col font-sans selection:bg-[#f59e0b]/20 selection:text-[#1c1917]">
     <AppHeader />
     
-    <div :class="['flex-1 flex w-full', isAdminSection ? 'max-w-[1600px] mx-auto px-4 sm:px-6' : '']">
-      <AppSidebar v-if="isAdminSection" />
-      <main :class="['flex-1 max-w-full min-w-0 flex flex-col', isAdminSection ? 'py-6 lg:pl-6' : '']">
+    <div :class="['flex-1 flex w-full', isWorkspaceSection ? 'max-w-[1600px] mx-auto px-4 sm:px-6' : '']">
+      <AppSidebar v-if="isWorkspaceSection" />
+      <main :class="['flex-1 max-w-full min-w-0 flex flex-col', isWorkspaceSection ? 'py-6 lg:pl-6 overflow-y-auto' : '']">
         <RouterView />
       </main>
     </div>
@@ -51,4 +51,3 @@ const isPublicPage = computed(() =>
     <TicketHoverModal />
   </div>
 </template>
-

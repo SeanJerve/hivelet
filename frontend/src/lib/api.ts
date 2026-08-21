@@ -42,7 +42,14 @@ export class ApiRequestError extends Error {
 
 export function getStoredToken(): string | null {
   try {
-    return localStorage.getItem(TOKEN_STORAGE_KEY);
+    const sessionToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+    if (sessionToken) return sessionToken;
+    const localToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (localToken) {
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, localToken);
+      return localToken;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -50,8 +57,13 @@ export function getStoredToken(): string | null {
 
 export function setStoredToken(token: string | null): void {
   try {
-    if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
-    else localStorage.removeItem(TOKEN_STORAGE_KEY);
+    if (token) {
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    } else {
+      sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
   } catch {
     // Storage disabled fallback
   }

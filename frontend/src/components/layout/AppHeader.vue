@@ -39,7 +39,7 @@ async function handleSignOut() {
       <!-- Left: Mobile Menu Toggle & Brand Text -->
       <div class="flex items-center gap-3">
         <button
-          v-if="isAdminRoute"
+          v-if="isAdminRoute || isTenantRoute"
           @click="isMobileSidebarOpen = true"
           class="lg:hidden p-2 rounded-xl text-[#71717a] hover:text-[#1c1917] hover:bg-[#f5f5f4] transition-colors"
           aria-label="Open sidebar menu"
