@@ -422,7 +422,6 @@ async function handlePayOnline() {
               Landlady GCash: <strong class="font-mono font-bold text-[#172b4d]">{{ tenantData.landladyGCash }}</strong> ({{ tenantData.landladyName }})
             </span>
           </div>
-          </div>
         </div>
       </div>
     </div>
