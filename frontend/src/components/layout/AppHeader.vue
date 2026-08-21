@@ -1,64 +1,158 @@
-<!--
-  @file components/layout/AppHeader.vue
-  @description Corporate top navigation header featuring role portal mode switcher and live chat inbox trigger.
-  @systemBibleRef Section 4 - Role Navigation & Authorization Boundaries
--->
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { activeRole, isLiveChatheadOpen, activeInquirers } from '@/lib/systemState';
-import { MessageSquare, Shield, User, Home } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { isMobileSidebarOpen, isLiveChatheadOpen, showToast } from '@/lib/systemState';
+import { 
+  currentUser, 
+  isAuthenticated, 
+  isAdmin, 
+  isTenant, 
+  logout 
+} from '@/lib/authStore';
+import { 
+  Hexagon, 
+  Menu, 
+  MessageCircle, 
+  Shield, 
+  User, 
+  Globe, 
+  LogOut, 
+  LogIn 
+} from 'lucide-vue-next';
 
+const route = useRoute();
 const router = useRouter();
 
-function switchRole(role: 'admin' | 'tenant' | 'guest') {
-  activeRole.value = role;
-  if (role === 'admin') router.push('/admin/overview');
-  else if (role === 'tenant') router.push('/tenant');
-  else router.push('/public');
+const isAdminRoute = computed(() => route.path.startsWith('/admin') || route.path.startsWith('/basis'));
+const isTenantRoute = computed(() => route.path.startsWith('/tenant'));
+const isPublicRoute = computed(() => route.path.startsWith('/public') || route.path === '/');
+
+async function handleSignOut() {
+  await logout();
+  showToast('info', 'Signed Out', 'You have been safely signed out.');
+  await router.push('/login');
 }
 </script>
 
 <template>
-  <header class="h-14 bg-[#ffffff] border-b border-[#dfe1e6] px-4 flex items-center justify-between sticky top-0 z-30">
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2 font-bold text-[#172b4d] text-sm tracking-tight">
-        <span class="w-6 h-6 rounded-xs bg-[#0c66e4] text-white flex items-center justify-center text-xs font-mono">H</span>
-        <span>HIVELET</span>
-        <span class="text-[10px] text-[#5e6c84] font-normal uppercase border-l border-[#dfe1e6] pl-2 hidden sm:inline">Fe Galang Da Silva System</span>
+  <header class="sticky top-0 z-40 border-b border-[#e7e5e4] bg-[#fafaf9]/95 backdrop-blur-md">
+    <div class="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      
+      <!-- Left: Mobile Menu Toggle & Brand Logo -->
+      <div class="flex items-center gap-3">
+        <button
+          v-if="isAdminRoute"
+          @click="isMobileSidebarOpen = true"
+          class="lg:hidden p-2 rounded-xl text-[#71717a] hover:text-[#1c1917] hover:bg-[#f5f5f4] transition-colors"
+          aria-label="Open sidebar menu"
+        >
+          <Menu class="size-5" />
+        </button>
+
+        <router-link to="/public" class="flex items-center gap-2.5 group">
+          <div class="size-9 rounded-xl bg-[#1e2532] text-[#f59e0b] grid place-items-center shadow-xs group-hover:scale-105 transition-transform">
+            <Hexagon class="size-5 fill-current" />
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-display font-black text-lg tracking-tight text-[#1c1917]">HIVELET</span>
+              <span class="rounded-md bg-[#fbf6ee] px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-[#8a5814]">
+                EST. 2026
+              </span>
+            </div>
+            <p class="text-[10px] font-medium text-[#71717a] -mt-0.5 hidden sm:block">Fe Galang Da Silva Boarding House</p>
+          </div>
+        </router-link>
       </div>
-    </div>
 
-    <!-- ROLE PORTAL MODE SWITCHER (APPROACH A) -->
-    <div class="flex items-center gap-1 bg-[#f4f5f7] p-1 border border-[#dfe1e6] rounded-xs text-xs">
-      <button
-        @click="switchRole('admin')"
-        :class="['px-2.5 py-1 rounded-xs font-semibold flex items-center gap-1.5 transition-colors', activeRole === 'admin' ? 'bg-[#ffffff] text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84] hover:text-[#172b4d]']"
-      >
-        <Shield class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Landlady</span> Admin
-      </button>
+      <!-- Center: Role Navigation Switcher Pills -->
+      <nav class="hidden md:flex items-center gap-1.5 rounded-2xl bg-[#f5f5f4] p-1 border border-[#e7e5e4]">
+        <router-link
+          v-if="isAdmin"
+          to="/admin/overview"
+          :class="[
+            'flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all',
+            isAdminRoute
+              ? 'bg-white text-[#1c1917] shadow-xs'
+              : 'text-[#71717a] hover:text-[#1c1917]'
+          ]"
+        >
+          <Shield class="size-3.5 text-[#f59e0b]" />
+          <span>Landlady Admin</span>
+        </router-link>
 
-      <button
-        @click="switchRole('tenant')"
-        :class="['px-2.5 py-1 rounded-xs font-semibold flex items-center gap-1.5 transition-colors', activeRole === 'tenant' ? 'bg-[#ffffff] text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84] hover:text-[#172b4d]']"
-      >
-        <User class="w-3.5 h-3.5" /> Tenant <span class="hidden sm:inline">Portal</span>
-      </button>
+        <router-link
+          v-if="isAuthenticated"
+          to="/tenant"
+          :class="[
+            'flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all',
+            isTenantRoute
+              ? 'bg-white text-[#1c1917] shadow-xs'
+              : 'text-[#71717a] hover:text-[#1c1917]'
+          ]"
+        >
+          <User class="size-3.5 text-sky-600" />
+          <span>Tenant Portal</span>
+        </router-link>
 
-      <button
-        @click="switchRole('guest')"
-        :class="['px-2.5 py-1 rounded-xs font-semibold flex items-center gap-1.5 transition-colors', activeRole === 'guest' ? 'bg-[#ffffff] text-[#0c66e4] shadow-2xs' : 'text-[#5e6c84] hover:text-[#172b4d]']"
-      >
-        <Home class="w-3.5 h-3.5" /> Public <span class="hidden sm:inline">Guest</span>
-      </button>
-    </div>
+        <router-link
+          to="/public"
+          :class="[
+            'flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all',
+            isPublicRoute
+              ? 'bg-white text-[#1c1917] shadow-xs'
+              : 'text-[#71717a] hover:text-[#1c1917]'
+          ]"
+        >
+          <Globe class="size-3.5 text-emerald-600" />
+          <span>Public Guest Showcase</span>
+        </router-link>
+      </nav>
 
-    <!-- Live Chat Inbox Button -->
-    <div class="flex items-center gap-2">
-      <button @click="isLiveChatheadOpen = !isLiveChatheadOpen" class="jira-btn-secondary text-xs flex items-center gap-1.5">
-        <MessageSquare class="w-3.5 h-3.5 text-[#0c66e4]" />
-        <span class="hidden sm:inline">Live Chat Inbox</span>
-        <span class="jira-badge bg-[#0c66e4] text-white font-bold ml-1">{{ activeInquirers.length }}</span>
-      </button>
+      <!-- Right: User Profile, Live Chat Button & Sign In / Out -->
+      <div class="flex items-center gap-2.5">
+        
+        <!-- Live Chat Button with Badge -->
+        <button
+          @click="isLiveChatheadOpen = !isLiveChatheadOpen"
+          class="relative flex items-center gap-1.5 rounded-xl border border-[#e7e5e4] bg-white px-3 py-1.5 text-xs font-semibold text-[#1c1917] hover:bg-[#f5f5f4] transition-colors shadow-xs"
+        >
+          <MessageCircle class="size-4 text-[#f59e0b]" />
+          <span class="hidden sm:inline">Live Chat</span>
+          <span class="grid size-5 place-items-center rounded-full bg-rose-600 text-[10px] font-bold text-white">
+            3
+          </span>
+        </button>
+
+        <!-- Authenticated User Profile & Sign Out -->
+        <template v-if="isAuthenticated && currentUser">
+          <div class="hidden sm:flex flex-col text-right">
+            <span class="text-xs font-bold text-[#1c1917] truncate max-w-[130px]">{{ currentUser.fullName }}</span>
+            <span class="text-[10px] text-[#71717a] capitalize">{{ currentUser.role }}</span>
+          </div>
+
+          <button
+            @click="handleSignOut"
+            class="btn-secondary min-h-9 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs"
+            title="Sign Out"
+          >
+            <LogOut class="size-3.5 text-[#71717a]" />
+            <span class="hidden sm:inline">Sign Out</span>
+          </button>
+        </template>
+
+        <!-- Unauthenticated Guest Sign In Button -->
+        <template v-else>
+          <router-link
+            to="/login"
+            class="btn-primary min-h-9 px-3.5 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs"
+          >
+            <LogIn class="size-3.5 text-[#f59e0b]" />
+            <span>Sign In</span>
+          </router-link>
+        </template>
+
+      </div>
     </div>
   </header>
 </template>

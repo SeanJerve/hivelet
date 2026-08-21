@@ -1,165 +1,161 @@
 <script setup lang="ts">
-/**
- * @component AppSidebar
- * @description Left navigation sidebar for Hivelet, inspired directly by Atlassian/Jira space navigation.
- * @systemBibleRef Section 3 & UI Wireframe Specification - Sidebar Menu Items
- * @rationale Provides structured, soft workspace navigation with larger Jira-style typography
- *              and 44px+ touch targets for mobile-first PWA compliance.
- * @innovations Integrated RouterLinks to enable URL-slug-based navigation across system modules, with URL path prefix normalization (/basis) supporting parallel wireframe deployment.
- */
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { isMobileSidebarOpen } from '@/lib/systemState';
 import { 
   LayoutDashboard, 
   Building2, 
   Users, 
-  MessageSquare, 
-  CreditCard, 
-  Receipt, 
+  Wallet,
+  ReceiptText, 
   Wrench, 
-  ShieldCheck, 
-  Settings,
-  Home, 
-  X 
+  Inbox,
+  X,
+  Shield,
+  User,
+  Home
 } from 'lucide-vue-next';
 
-const props = defineProps<{
-  isMobileSidebarOpen?: boolean;
-}>();
-
-const emit = defineEmits<{
-  (e: 'closeMobileSidebar'): void;
-  (e: 'update:activeTab', tab: string): void;
-}>();
-
 const route = useRoute();
-const router = useRouter();
 
-// Compute active role based on URL path, normalizing any /basis path prefix
-const currentRole = computed<'admin' | 'tenant' | 'public'>(() => {
-  if (route.path.startsWith('/tenant') || route.path.startsWith('/basis/tenant')) return 'tenant';
-  if (route.path.startsWith('/admin') || route.path.startsWith('/basis/admin')) return 'admin';
-  return 'public';
-});
+const NAV = [
+  { to: '/admin/overview', aliases: ['/basis/overview'], label: 'Executive Overview', icon: LayoutDashboard },
+  { to: '/admin/directory', aliases: ['/basis/directory'], label: 'Room & Rate Directory', icon: Building2 },
+  { to: '/admin/tenants', aliases: ['/basis/tenants'], label: 'Active Tenants', icon: Users },
+  { to: '/admin/income', aliases: ['/basis/income'], label: 'Income & Collections', icon: Wallet },
+  { to: '/admin/expenses', aliases: ['/basis/expenses'], label: 'Monthly Expenses', icon: ReceiptText },
+  { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Maintenance Dispatch', icon: Wrench },
+  { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Prospect Inquiries', icon: Inbox },
+] as const;
 
-// Admin Management Modules aligned with System Bible & BR-032
-const adminModules = [
-  { path: '/admin/overview', label: 'Executive Overview', icon: LayoutDashboard },
-  { path: '/admin/directory', label: 'Room Directory (32 Units)', icon: Building2 },
-  { path: '/admin/tenants', label: 'Tenant Directory', icon: Users },
-  { path: '/admin/inquiries', label: 'Inquiry Inbox', icon: MessageSquare },
-  { path: '/admin/expenses', label: 'Expenses Ledger', icon: Receipt },
-  { path: '/admin/tickets', label: 'Maintenance Dispatch', icon: Wrench },
-  { path: '/admin/settings', label: 'Settings & Business Rules', icon: Settings },
-  { path: '/admin/audit', label: 'System Audit Logs', icon: ShieldCheck },
-];
+const ROLES = [
+  { to: '/admin/overview', label: 'Landlady Admin', icon: Shield },
+  { to: '/tenant', label: 'Tenant Portal', icon: User },
+  { to: '/public', label: 'Public Guest Showcase', icon: Home },
+] as const;
 
-// Tenant Portal Modules
-const tenantModules = [
-  { path: '/tenant', label: 'My Room & Billing', icon: Home },
-];
+function isItemActive(to: string, aliases: readonly string[]) {
+  return route.path === to || aliases.includes(route.path);
+}
 
-// Public Portal Modules
-const publicModules = [
-  { path: '/public', label: 'Property & Available Units', icon: Building2 },
-];
-
-// Normalizing helper to check if a navigation module path matches route.path (with or without /basis prefix)
-const isActive = (modulePath: string) => {
-  return route.path === modulePath || route.path === `/basis${modulePath}`;
-};
-
-const navigateTo = (path: string) => {
-  router.push(path);
-  emit('closeMobileSidebar');
-};
+function closeMobileNav() {
+  isMobileSidebarOpen.value = false;
+}
 </script>
 
 <template>
   <div>
-    <!-- Mobile Drawer Overlay Backdrop -->
+    <!-- Desktop Sidebar (Screenshot 1) -->
+    <aside class="sticky top-20 hidden h-[calc(100dvh-6rem)] w-64 shrink-0 rounded-2xl border border-[#e7e5e4] bg-white p-3 shadow-xs lg:block my-6">
+      <p class="px-3 pb-3 text-[11px] font-extrabold uppercase tracking-widest text-[#71717a]">
+        Operations
+      </p>
+
+      <nav class="grid gap-1">
+        <router-link
+          v-for="item in NAV"
+          :key="item.to"
+          :to="item.to"
+          :class="[
+            'flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-semibold transition-all duration-150',
+            isItemActive(item.to, item.aliases)
+              ? 'bg-[#fbf6ee] text-[#78350f] font-bold shadow-xs'
+              : 'text-[#475569] hover:bg-[#f5f5f4] hover:text-[#1c1917]'
+          ]"
+        >
+          <component 
+            :is="item.icon" 
+            :class="[
+              'size-4 shrink-0 transition-colors',
+              isItemActive(item.to, item.aliases) ? 'text-[#8a5814]' : 'text-[#64748b]'
+            ]" 
+          />
+          <span>{{ item.label }}</span>
+        </router-link>
+      </nav>
+    </aside>
+
+    <!-- Mobile Drawer Sheet -->
     <div 
       v-if="isMobileSidebarOpen" 
-      @click="emit('closeMobileSidebar')"
-      class="md:hidden fixed inset-0 bg-[#091e42]/40 backdrop-blur-xs z-40 transition-opacity"
-    ></div>
-
-    <!-- Sidebar Container -->
-    <aside 
-      :class="[
-        'w-72 bg-white border-r border-[#dfe1e6] flex flex-col justify-between z-50 transition-all duration-200 ease-in-out',
-        'fixed md:static inset-y-0 left-0 h-full shadow-xs',
-        isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-      ]"
+      class="fixed inset-0 z-50 flex lg:hidden bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+      @click.self="closeMobileNav"
     >
-      <div class="p-4 overflow-y-auto space-y-4">
-        <!-- Mobile Sidebar Close Header -->
-        <div class="md:hidden flex items-center justify-between pb-3 border-b border-[#dfe1e6]">
-          <span class="text-xs font-bold text-[#172b4d] uppercase tracking-wider">Navigation Menu</span>
-          <button 
-            @click="emit('closeMobileSidebar')" 
-            class="min-w-[40px] min-h-[40px] flex items-center justify-center text-[#6b778c] hover:bg-[#ebecf0] rounded-md transition-colors"
-          >
-            <X class="w-5 h-5" />
-          </button>
+      <div class="w-72 bg-white h-full shadow-2xl p-5 flex flex-col justify-between animate-in slide-in-from-left duration-200 overflow-y-auto">
+        <div class="space-y-6">
+          <div class="flex items-center justify-between pb-4 border-b border-[#e7e5e4]">
+            <div>
+              <span class="font-display font-black text-base text-[#1c1917]">HIVELET</span>
+              <p class="text-[11px] text-[#71717a]">Operations &amp; Portals</p>
+            </div>
+            <button 
+              @click="closeMobileNav" 
+              class="p-1.5 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] hover:text-[#1c1917]"
+              aria-label="Close menu"
+            >
+              <X class="size-5" />
+            </button>
+          </div>
+
+          <!-- Portals Nav (Mobile Only) -->
+          <div>
+            <p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#71717a]">
+              Portals
+            </p>
+            <div class="grid gap-1">
+              <router-link
+                v-for="r in ROLES"
+                :key="r.to"
+                :to="r.to"
+                @click="closeMobileNav"
+                :class="[
+                  'flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs sm:text-sm font-semibold transition-colors',
+                  route.path.startsWith(r.to.split('/')[1])
+                    ? 'bg-[#1e2532] text-white'
+                    : 'text-[#475569] hover:bg-[#f5f5f4]'
+                ]"
+              >
+                <component :is="r.icon" class="size-4" />
+                <span>{{ r.label }}</span>
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Operations Nav -->
+          <div>
+            <p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#71717a]">
+              Operations
+            </p>
+            <nav class="grid gap-1">
+              <router-link
+                v-for="item in NAV"
+                :key="item.to"
+                :to="item.to"
+                @click="closeMobileNav"
+                :class="[
+                  'flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs sm:text-sm font-semibold transition-all',
+                  isItemActive(item.to, item.aliases)
+                    ? 'bg-[#fbf6ee] text-[#78350f] font-bold'
+                    : 'text-[#475569] hover:bg-[#f5f5f4]'
+                ]"
+              >
+                <component 
+                  :is="item.icon" 
+                  :class="[
+                    'size-4 shrink-0',
+                    isItemActive(item.to, item.aliases) ? 'text-[#8a5814]' : 'text-[#64748b]'
+                  ]" 
+                />
+                <span>{{ item.label }}</span>
+              </router-link>
+            </nav>
+          </div>
         </div>
 
-        <!-- Space Context Header (Jira Soft Pill Box) -->
-        <div class="px-3 py-2.5 bg-[#f7f8f9] border border-[#dfe1e6] rounded-md">
-          <p class="text-[11px] font-bold text-[#6b778c] uppercase tracking-wider">SPACE</p>
-          <p class="text-sm font-bold text-[#172b4d] truncate mt-0.5">
-            {{ currentRole === 'admin' ? 'Landlady Operations Space' : currentRole === 'tenant' ? 'Tenant Account Portal' : 'Public Guest Catalog' }}
-          </p>
-        </div>
-
-        <!-- Admin Workspace Navigation -->
-        <div v-if="currentRole === 'admin'" class="space-y-1">
-          <p class="px-2 py-1 text-xs font-bold text-[#6b778c] uppercase tracking-wider">Management Modules</p>
-          <button
-            v-for="module in adminModules"
-            :key="module.path"
-            @click="navigateTo(module.path)"
-            :class="['jira-sidebar-item w-full text-left', isActive(module.path) ? 'active' : '']"
-          >
-            <component :is="module.icon" class="w-5 h-5 shrink-0" />
-            <span class="truncate font-medium">{{ module.label }}</span>
-          </button>
-        </div>
-
-        <!-- Tenant Portal Navigation -->
-        <div v-else-if="currentRole === 'tenant'" class="space-y-1">
-          <p class="px-2 py-1 text-xs font-bold text-[#6b778c] uppercase tracking-wider">Tenant Self-Service</p>
-          <button
-            v-for="module in tenantModules"
-            :key="module.path"
-            @click="navigateTo(module.path)"
-            :class="['jira-sidebar-item w-full text-left', isActive(module.path) ? 'active' : '']"
-          >
-            <component :is="module.icon" class="w-5 h-5 shrink-0" />
-            <span class="truncate font-medium">{{ module.label }}</span>
-          </button>
-        </div>
-
-        <!-- Public Portal Navigation -->
-        <div v-else-if="currentRole === 'public'" class="space-y-1">
-          <p class="px-2 py-1 text-xs font-bold text-[#6b778c] uppercase tracking-wider">Guest Directory</p>
-          <button
-            v-for="module in publicModules"
-            :key="module.path"
-            @click="navigateTo(module.path)"
-            :class="['jira-sidebar-item w-full text-left', isActive(module.path) ? 'active' : '']"
-          >
-            <component :is="module.icon" class="w-5 h-5 shrink-0" />
-            <span class="truncate font-medium">{{ module.label }}</span>
-          </button>
+        <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4] text-xs text-[#71717a] mt-6">
+          <p class="font-bold text-[#1c1917]">Fe Galang Da Silva Boarding House</p>
+          <p class="text-[11px] mt-0.5">Brgy. Sambat, Tanauan City, Batangas</p>
         </div>
       </div>
-
-      <!-- Footer Identity Note -->
-      <div class="p-4 border-t border-[#dfe1e6] bg-[#f7f8f9]">
-        <p class="text-xs font-bold text-[#172b4d]">Fe Galang Da Silva Boarding House</p>
-        <p class="text-xs text-[#6b778c] mt-0.5">32 Rentable Units • 5 Clusters</p>
-      </div>
-    </aside>
+    </div>
   </div>
 </template>

@@ -1,185 +1,197 @@
 <script setup lang="ts">
-/**
- * @component RoomDirectoryView
- * @description Canonical Directory of all 32 Rentable Units across 5 Property Clusters (BH, Back Apt, Penthouse, Front Apt, Linda).
- * @systemBibleRef Section 5.2 - Room & Occupancy Model & BR-032 (Canonical 32 Unit List) & BR-040 (Linda Exception)
- * @rationale Enforces the room-centric data model. Manages room capacities, operational statuses, base/current prices,
- *              and 32 canonical unit specifications with soft Jira styling and larger typography.
- * @innovations Integrated canonical unit catalog from canonicalUnits.ts, 2% annual price cap helper,
- *              and touch-friendly mobile data table controls.
- */
-import { ref, computed } from 'vue';
-import { Building2, Search, Filter, Plus, Edit, Eye, Clock, Check, Layers } from 'lucide-vue-next';
-import { CANONICAL_32_UNITS, PROPERTY_CLUSTERS, type RentableUnit } from '../lib/canonicalUnits';
+import { ref, computed, onMounted } from 'vue';
+import { rooms, isAdminEditUnitModalOpen, activeAdminEditUnit, type RoomItem } from '@/lib/systemState';
+import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
+import { api } from '@/lib/api';
+import { Search, Pencil, RefreshCw } from 'lucide-vue-next';
 
-const units = ref<RentableUnit[]>([...CANONICAL_32_UNITS]);
-const search = ref('');
-const selectedCluster = ref('all');
-const showEditModal = ref(false);
-const activeUnit = ref<RentableUnit | null>(null);
+interface ApiRoom {
+  id: string;
+  cluster_code: string;
+  room_number: string;
+  floor: number;
+  room_type: string;
+  capacity: number;
+  current_price: number;
+  operational_status: string;
+  description: string;
+  is_linda_unit: boolean;
+}
 
-const filteredUnits = computed(() => {
-  return units.value.filter(unit => {
-    const matchesSearch = search.value === '' || 
-      unit.unitCode.toLowerCase().includes(search.value.toLowerCase()) ||
-      (unit.tenantName && unit.tenantName.toLowerCase().includes(search.value.toLowerCase())) ||
-      unit.type.toLowerCase().includes(search.value.toLowerCase());
-    const matchesCluster = selectedCluster.value === 'all' || unit.cluster === selectedCluster.value;
-    return matchesSearch && matchesCluster;
+const q = ref('');
+const cluster = ref('All');
+const isLoading = ref(false);
+
+async function fetchRooms() {
+  isLoading.value = true;
+  try {
+    const data = await api.get<ApiRoom[]>('/admin/rooms');
+    if (data && data.length) {
+      data.forEach((r) => {
+        const existing = rooms.find((u) => u.unitCode.toLowerCase() === r.room_number.toLowerCase());
+        if (existing) {
+          existing.price = Number(r.current_price);
+          existing.maxOccupants = r.capacity;
+          existing.desc = r.description || existing.desc;
+          if (r.operational_status === 'Available') existing.status = 'vacant';
+        }
+      });
+    }
+  } catch {
+    // Graceful fallback to reactive store
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  fetchRooms();
+});
+
+const rows = computed(() => {
+  return rooms.filter((u) => {
+    const matchesCluster = cluster.value === 'All' || u.cluster === cluster.value;
+    const query = q.value.toLowerCase().trim();
+    const matchesQuery =
+      !query ||
+      u.unitCode.toLowerCase().includes(query) ||
+      (u.tenant || '').toLowerCase().includes(query) ||
+      u.type.toLowerCase().includes(query);
+    return matchesCluster && matchesQuery;
   });
 });
 
-const openEditModal = (unit: RentableUnit) => {
-  activeUnit.value = { ...unit };
-  showEditModal.value = true;
-};
+function getStatusLabel(status: UnitStatus) {
+  if (status === 'vacant') return 'Vacant';
+  if (status === 'settled') return 'Settled';
+  if (status === 'pending') return 'Pending';
+  if (status === 'overdue') return 'Overdue';
+  return status;
+}
+
+function getStatusBadgeClass(status: UnitStatus) {
+  if (status === 'settled') return 'badge-success';
+  if (status === 'pending') return 'badge-warning';
+  if (status === 'overdue') return 'badge-danger';
+  return 'badge-neutral';
+}
+
+function editUnit(u: RoomItem) {
+  activeAdminEditUnit.value = u;
+  isAdminEditUnitModalOpen.value = true;
+}
 </script>
 
 <template>
-  <div class="space-y-6 md:space-y-8">
-    <!-- Header Title & Breadcrumb -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#dfe1e6]">
+  <div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#e7e5e4] pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs sm:text-sm text-[#6b778c] mb-1">
-          <span>Hivelet Space</span>
-          <span>/</span>
-          <span class="font-bold text-[#172b4d]">Room Directory</span>
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#172b4d] tracking-tight">Canonical 32 Units & Rate Directory</h1>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+          Room &amp; Rate Directory
+        </h1>
+        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+          The canonical unit register across the 5 property clusters.
+        </p>
       </div>
 
-      <button class="jira-btn-primary text-xs sm:text-sm">
-        <Plus class="w-4 h-4" />
-        <span>Add Unit Specification</span>
+      <button
+        @click="fetchRooms"
+        :disabled="isLoading"
+        class="btn-secondary min-h-10 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs self-start sm:self-auto cursor-pointer"
+      >
+        <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
+        <span>Refresh</span>
       </button>
     </div>
 
-    <!-- Filters & Search Bar (Soft Jira Styling) -->
-    <div class="jira-card p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4">
-      <div class="relative w-full md:w-80">
-        <Search class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6b778c]" />
-        <input 
-          v-model="search"
-          type="text" 
-          placeholder="Filter by unit code (1a, B1F, PH), tenant..." 
-          class="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-[#f7f8f9] border border-[#dfe1e6] rounded-md text-[#172b4d] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
-        />
-      </div>
+    <!-- Section Card with Search & Filter and Table -->
+    <div class="surface-card overflow-hidden">
+      
+      <!-- Search & Filter Controls -->
+      <div class="flex flex-col gap-3 border-b border-[#e7e5e4] p-4 sm:flex-row">
+        <div class="relative flex-1">
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
+          <input
+            v-model="q"
+            type="text"
+            placeholder="Search unit code or tenant…"
+            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+          />
+        </div>
 
-      <div class="flex items-center gap-3 w-full md:w-auto">
-        <span class="text-xs sm:text-sm text-[#6b778c] font-bold">Property Cluster:</span>
-        <select 
-          v-model="selectedCluster" 
-          class="text-xs sm:text-sm bg-[#f7f8f9] border border-[#dfe1e6] rounded-md px-3 py-2 text-[#172b4d] font-semibold focus:bg-white focus:outline-none"
+        <select
+          v-model="cluster"
+          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none sm:w-56"
         >
-          <option value="all">All 5 Property Clusters (32 Units)</option>
-          <option v-for="cluster in PROPERTY_CLUSTERS" :key="cluster" :value="cluster">
-            {{ cluster }}
-          </option>
+          <option value="All">All Clusters</option>
+          <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
         </select>
       </div>
-    </div>
 
-    <!-- Mobile-First Responsive Data Table Wrapper -->
-    <div class="jira-card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-xs sm:text-sm">
-          <thead>
-            <tr class="bg-[#f7f8f9] border-b border-[#dfe1e6] text-[#5e6c84] uppercase tracking-wider font-bold text-xs">
-              <th class="py-3.5 px-4">Unit Code</th>
-              <th class="py-3.5 px-4">Cluster / Location</th>
-              <th class="py-3.5 px-4">Unit Type</th>
-              <th class="py-3.5 px-4">Billing Rule</th>
-              <th class="py-3.5 px-4">Current Monthly Rate</th>
-              <th class="py-3.5 px-4">Operational Status</th>
-              <th class="py-3.5 px-4">Assigned Primary Contact</th>
-              <th class="py-3.5 px-4 text-right">Actions</th>
+      <!-- Directory Table -->
+      <div class="max-h-[70vh] overflow-x-auto overflow-y-auto">
+        <table class="w-full min-w-[900px] text-xs sm:text-sm border-collapse">
+          <thead class="sticky top-0 z-10 bg-[#f5f5f4]">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
+              <th class="whitespace-nowrap px-4 py-3 font-bold">UNIT</th>
+              <th class="whitespace-nowrap px-4 py-3 font-bold">CLUSTER</th>
+              <th class="whitespace-nowrap px-4 py-3 font-bold">TYPE</th>
+              <th class="whitespace-nowrap px-4 py-3 font-bold">BILLING RULE</th>
+              <th class="whitespace-nowrap px-4 py-3 font-bold">RATE (₱/MO)</th>
+              <th class="whitespace-nowrap px-4 py-3 font-bold">STATUS</th>
+              <th class="whitespace-nowrap px-4 py-3 font-bold">PRIMARY TENANT</th>
+              <th class="whitespace-nowrap px-4 py-3 font-bold text-right"></th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#dfe1e6] text-[#172b4d]">
+          <tbody>
             <tr 
-              v-for="unit in filteredUnits" 
-              :key="unit.id" 
-              class="hover:bg-[#f7f8f9]/80 transition-colors"
+              v-for="u in rows" 
+              :key="u.unitCode"
+              class="border-b border-[#e7e5e4] last:border-0 hover:bg-[#fafaf9] transition-colors"
             >
-              <td class="py-3.5 px-4 font-extrabold text-[#172b4d] text-sm sm:text-base">
-                Unit {{ unit.unitCode }}
+              <td class="px-4 py-3.5 font-display font-extrabold uppercase text-[#1c1917]">
+                {{ u.unitCode.toUpperCase() }}
               </td>
-              <td class="py-3.5 px-4">
-                <span class="font-semibold text-[#42526e] bg-[#f7f8f9] px-2 py-0.5 rounded-md border border-[#dfe1e6]">
-                  {{ unit.cluster }}
+
+              <td class="whitespace-nowrap px-4 py-3.5 text-[#71717a] font-medium">
+                {{ u.cluster }}
+              </td>
+
+              <td class="whitespace-nowrap px-4 py-3.5 text-[#1c1917]">
+                {{ u.type }}
+              </td>
+
+              <td class="px-4 py-3.5 text-xs text-[#71717a]">
+                {{ u.billingRule }}
+              </td>
+
+              <td class="tabular whitespace-nowrap px-4 py-3.5 font-display font-bold text-[#1c1917]">
+                {{ peso(u.price) }}
+              </td>
+
+              <td class="px-4 py-3.5">
+                <span :class="['badge-soft text-xs capitalize', getStatusBadgeClass(u.status)]">
+                  {{ getStatusLabel(u.status) }}
                 </span>
               </td>
-              <td class="py-3.5 px-4 text-[#5e6c84]">{{ unit.type }}</td>
-              <td class="py-3.5 px-4">
-                <span v-if="unit.waterRateType === 'linda_fixed'" class="text-xs font-bold text-[#826100] bg-[#fffae6] px-2 py-0.5 rounded-md border border-[#ffe380]">
-                  BR-040 Fixed Rates
-                </span>
-                <span v-else class="text-xs text-[#5e6c84]">
-                  Standard (₱200/head water)
-                </span>
+
+              <td class="whitespace-nowrap px-4 py-3.5 text-[#1c1917]">
+                {{ u.tenant || '—' }}
               </td>
-              <td class="py-3.5 px-4 font-bold text-[#172b4d]">
-                ₱{{ unit.basePrice.toLocaleString() }}/mo
-              </td>
-              <td class="py-3.5 px-4">
-                <span 
-                  :class="[
-                    'jira-badge',
-                    unit.status === 'occupied' ? 'jira-badge-done' : unit.status === 'available' ? 'jira-badge-progress' : 'jira-badge-emergency'
-                  ]"
-                >
-                  {{ unit.status }}
-                </span>
-              </td>
-              <td class="py-3.5 px-4 font-semibold text-[#42526e]">
-                {{ unit.tenantName || 'Vacant Unit' }}
-              </td>
-              <td class="py-3.5 px-4 text-right">
+
+              <td class="whitespace-nowrap px-4 py-3.5 text-right">
                 <button 
-                  @click="openEditModal(unit)" 
-                  class="jira-btn-secondary py-1.5 px-3 text-xs font-semibold"
+                  @click="editUnit(u)"
+                  class="btn-secondary min-h-9 px-3.5 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
                 >
-                  <Edit class="w-3.5 h-3.5" />
+                  <Pencil class="size-3.5 text-[#71717a]" />
                   <span>Edit Rate</span>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-      </div>
-    </div>
-
-    <!-- Rate Spec Editor Modal -->
-    <div v-if="showEditModal && activeUnit" class="fixed inset-0 bg-[#091e42]/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div class="jira-card w-full max-w-md p-6 bg-white shadow-xl space-y-4 rounded-lg">
-        <div class="flex items-center justify-between pb-3 border-b border-[#dfe1e6]">
-          <h3 class="font-bold text-lg text-[#172b4d]">Edit Specs — Unit {{ activeUnit.unitCode }}</h3>
-          <button @click="showEditModal = false" class="text-[#6b778c] hover:text-[#172b4d] p-1">✕</button>
-        </div>
-
-        <div class="space-y-4 text-xs sm:text-sm">
-          <div>
-            <label class="block font-bold text-[#42526e] mb-1.5">Current Monthly Base Rent Rate (₱)</label>
-            <input 
-              v-model="activeUnit.basePrice" 
-              type="number" 
-              class="w-full px-3.5 py-2.5 bg-[#f7f8f9] border border-[#dfe1e6] rounded-md text-[#172b4d] font-bold text-base focus:bg-white focus:border-[#0c66e4] focus:outline-none" 
-            />
-          </div>
-
-          <div class="p-3 bg-[#deebff] border border-[#b3d4ff] rounded-md text-[#0747a6]">
-            <p class="font-bold mb-1">2% Annual Price Cap Guidance:</p>
-            <p class="text-xs leading-relaxed">
-              Recommended annual cap for Unit {{ activeUnit.unitCode }}: <strong>₱{{ Math.round(activeUnit.basePrice * 1.02).toLocaleString() }}</strong>. Rate changes are logged in system audit logs.
-            </p>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#dfe1e6]">
-          <button @click="showEditModal = false" class="jira-btn-secondary">Cancel</button>
-          <button @click="showEditModal = false" class="jira-btn-primary">Save Specifications</button>
-        </div>
       </div>
     </div>
   </div>

@@ -30,3 +30,8 @@ yarn-error.log*
 # Database & Upload Scratch Files
 uploads/*
 !uploads/.gitkeep
+
+# Agent / Tool scratch
+.agent/
+.agents/
+

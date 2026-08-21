@@ -1,13 +1,4 @@
 <script setup lang="ts">
-/**
- * @component ConfirmModal
- * @description Standardized Jira/Notion confirmation dialog for destructive or status-altering landlady actions.
- * @systemBibleRef Section 22 & BR-025 - Tenant Deactivation & Action Authorization
- * @rationale Non-techy users require explicit confirmation dialogs containing plain-English impact statements
- *             before committing irreversible or major changes.
- * @innovations High-clarity design with distinct variant styling (danger red vs primary blue),
- *              accessible keyboard escape listener, and transparent backdrop overlay.
- */
 import { AlertTriangle, Info, X } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<{
@@ -33,18 +24,17 @@ const emit = defineEmits<{
   <Teleport to="body">
     <div 
       v-if="isOpen" 
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#091e42]/50 backdrop-blur-xs transition-opacity"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1c1917]/50 backdrop-blur-xs transition-opacity"
       @click.self="emit('cancel')"
     >
-      <div class="jira-card w-full max-w-md bg-white p-5 shadow-xl rounded-md flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
-        <!-- Modal Header -->
+      <div class="surface-card w-full max-w-md p-6 shadow-2xl rounded-2xl flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
         <div class="flex items-start gap-3">
           <div 
             :class="[
-              'p-2 rounded-xs shrink-0',
-              variant === 'danger' ? 'bg-[#ffebe6] text-[#bf2600]' : '',
-              variant === 'warning' ? 'bg-[#fffae6] text-[#826100]' : '',
-              variant === 'primary' ? 'bg-[#deebff] text-[#0747a6]' : ''
+              'p-2.5 rounded-xl shrink-0',
+              variant === 'danger' ? 'bg-[#fef2f2] text-[#991b1b]' : '',
+              variant === 'warning' ? 'bg-[#fffbeb] text-[#92400e]' : '',
+              variant === 'primary' ? 'bg-[#f0f9ff] text-[#075985]' : ''
             ]"
           >
             <AlertTriangle v-if="variant === 'danger' || variant === 'warning'" class="w-5 h-5" />
@@ -52,28 +42,26 @@ const emit = defineEmits<{
           </div>
 
           <div class="flex-1">
-            <h3 class="font-semibold text-base text-[#172b4d] leading-snug">{{ title }}</h3>
-            <p class="text-xs text-[#6b778c] mt-1 leading-relaxed">{{ message }}</p>
+            <h3 class="font-display font-extrabold text-base text-[#1c1917] leading-snug">{{ title }}</h3>
+            <p class="text-xs text-[#71717a] mt-1 leading-relaxed">{{ message }}</p>
           </div>
 
           <button 
-            @click="emit('cancel')"
-            class="text-[#6b778c] hover:text-[#172b4d] p-1 rounded-xs transition-colors"
+            @click="emit('cancel')" 
+            class="w-7 h-7 rounded-full flex items-center justify-center text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4] transition-colors"
           >
             <X class="w-4 h-4" />
           </button>
         </div>
 
-        <!-- Impact Warning Callout -->
-        <div class="bg-[#f4f5f7] border-l-3 border-[#0c66e4] p-3 text-xs text-[#42526e] rounded-r-xs">
-          <span class="font-semibold text-[#172b4d]">Landlady Notice:</span> This action will immediately update the system state and audit logs.
+        <div class="bg-[#fafaf9] border border-[#e7e5e4] p-3 text-xs text-[#57534e] rounded-xl">
+          <span class="font-bold text-[#1c1917]">Notice:</span> This action will update the system state and audit logs immediately.
         </div>
 
-        <!-- Modal Actions -->
-        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-[#dfe1e6]">
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#e7e5e4]">
           <button 
             @click="emit('cancel')" 
-            class="jira-btn-secondary text-xs"
+            class="btn-secondary px-4 text-xs"
           >
             {{ cancelText }}
           </button>
@@ -81,12 +69,12 @@ const emit = defineEmits<{
           <button 
             @click="emit('confirm')" 
             :class="[
-              'text-xs font-semibold px-3 py-1.5 rounded-xs transition-colors shadow-2xs',
+              'text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-xs',
               variant === 'danger' 
-                ? 'bg-[#bf2600] text-white hover:bg-[#de350b]' 
+                ? 'bg-rose-600 text-white hover:bg-rose-700' 
                 : variant === 'warning'
-                  ? 'bg-[#826100] text-white hover:bg-[#a57a00]'
-                  : 'bg-[#0c66e4] text-white hover:bg-[#0052cc]'
+                  ? 'bg-amber-600 text-white hover:bg-amber-700'
+                  : 'btn-primary'
             ]"
           >
             {{ confirmText }}

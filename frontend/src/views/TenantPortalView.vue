@@ -1,835 +1,459 @@
-<!--
-  @file views/TenantPortalView.vue
-  @description Active Tenant Self-Service Workspace for Hivelet with billing overview and Maintenance Issue Ticketing.
-  @systemBibleRef Section 4 - Tenant User Role, Section 5.5 - Water Billing Rate Rule (₱200/head), Section 5.7 - Maintenance Dispatch & Ticketing
-  @rationale Provides active residents with transparent room specs, itemized monthly statement, direct online GCash remittance payment form, and maintenance issue ticketing to the landlady.
-  @innovations Dual-tab resident workspace, direct maintenance issue ticketing with photo attachment upload, priority classification badges, and live remittance verification tracking.
--->
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, onMounted } from 'vue';
+import { DEMO_TENANT, LANDLADY, PAYMENT_HISTORY, maintenanceTickets, showToast, type MaintenanceTicket } from '@/lib/systemState';
+import { peso } from '@/lib/canonicalUnits';
+import { currentUser } from '@/lib/authStore';
+import { api } from '@/lib/api';
 import { 
-  Home, 
-  CreditCard, 
-  CheckCircle2, 
-  Clock, 
-  QrCode, 
-  Send, 
-  FileText, 
   ShieldCheck, 
-  User, 
-  Droplets, 
-  Zap, 
-  Wifi, 
-  Sparkles,
-  Wrench,
-  Paperclip,
-  Image as ImageIcon,
-  X
+  CheckCircle2, 
+  QrCode, 
+  Receipt, 
+  Wrench, 
+  Send,
+  RefreshCw,
+  Loader2 
 } from 'lucide-vue-next';
-import { rooms, incomeLedger, addIncomeRecord } from '@/lib/systemState';
 
-// Workspace Active Tab: 'overview' | 'tickets'
-const activeTab = ref<'overview' | 'tickets'>('overview');
-
-// Resolve assigned room dynamically
-const activeRoom = computed(() => {
-  return rooms.find(r => r.tenant === 'Active Resident' || r.unitCode === '2a') || rooms[0];
-});
-
-// Resolve payments dynamically
-const myPayments = computed(() => {
-  return incomeLedger.filter(p => p.unit === activeRoom.value.unitCode);
-});
-
-// Resident & Assigned Unit Data computed dynamically
-const tenantData = computed(() => {
-  const room = activeRoom.value;
-  const payments = myPayments.value;
-  const lastPayment = payments[0]; // unshifted array has latest payment first
-
-  const baseRent = room.price || 4500;
-  const waterFee = (room.occupants || 1) * 200;
-  const totalAmountDue = baseRent + waterFee;
-
-  let dateCoveredStr = 'N/A';
-  let dueDateStr = 'N/A';
-  let dueBadgeText = 'NO DUE BILL';
-  let dueDaysRemaining = 'Settled';
-
-  if (lastPayment && lastPayment.dateCoveredStart && lastPayment.dateCoveredEnd) {
-    dateCoveredStr = `${lastPayment.dateCoveredStart} to ${lastPayment.dateCoveredEnd}`;
-    dueDateStr = lastPayment.dateCoveredEnd;
-    
-    // Calculate days remaining from today to next due date
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const due = new Date(dueDateStr);
-    due.setHours(0, 0, 0, 0);
-    
-    const diffTime = due.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays > 0) {
-      dueBadgeText = 'PAID';
-      dueDaysRemaining = `${diffDays} days remaining`;
-    } else if (diffDays === 0) {
-      dueBadgeText = 'DUE TODAY';
-      dueDaysRemaining = 'Due today';
-    } else {
-      dueBadgeText = 'OVERDUE';
-      dueDaysRemaining = `Overdue by ${Math.abs(diffDays)} days`;
-    }
-  }
-
-  return {
-    name: 'Active Resident',
-    room: `Unit ${room.unitCode}`,
-    roomDetails: room.type,
-    roomType: room.cluster,
-    occupants: room.occupants,
-    specs: {
-      floorArea: '18 sq.m',
-      bathroom: 'Private En-suite',
-      aircon: 'Included (Split-type)',
-      wifi: 'High-Speed Fiber WiFi',
-      electricMeter: 'Individual Sub-meter',
-      waterRatePerHead: 200
-    },
-    baseRent,
-    waterFee,
-    totalAmountDue,
-    dueDate: dueDateStr,
-    dueBadgeText,
-    dueDaysRemaining,
-    dateCovered: dateCoveredStr,
-    landladyGCash: '0917-123-4567',
-    landladyName: 'Fe Galang Da Silva'
-  };
-});
-
-// Input Payment Form State
-const payDate = ref(new Date().toISOString().split('T')[0]);
-const payAmount = ref(0);
-const payMethod = ref('GCash / Online Payment');
-const payRef = ref('');
-const submissionNotice = ref('');
-
-// Maintenance Ticket Data Structure
-interface MaintenanceTicket {
+interface ApiMyRoom {
   id: string;
-  title: string;
-  category: string;
-  priority: string;
-  description: string;
-  dateSubmitted: string;
-  status: string;
-  photoName: string | null;
-  photoUrl: string | null;
-  assignedTo: string;
+  start_date: string;
+  deposit_amount: number;
+  occupant_count: number;
+  rooms: {
+    id: string;
+    room_number: string;
+    room_type: string;
+    current_price: number;
+    description: string;
+  };
 }
 
-// Maintenance Issue Ticketing State
+interface ApiBill {
+  id: string;
+  rent_amount: number;
+  water_amount: number;
+  total_amount: number;
+  due_date: string;
+  status: string;
+}
+
+interface ApiPayment {
+  id: string;
+  amount: number;
+  payment_method: string;
+  verification_status: string;
+  transaction_reference: string;
+  paid_at: string;
+}
+
+interface ApiTicket {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  priority: 'Low' | 'Medium' | 'High' | 'Emergency';
+  status: string;
+  created_at: string;
+  rooms?: { room_number: string };
+}
+
+const payments = ref([...PAYMENT_HISTORY]);
+const myTickets = ref<MaintenanceTicket[]>(
+  maintenanceTickets.filter((t) => t.unit.toLowerCase() === DEMO_TENANT.unit.toLowerCase())
+);
+const activeRoomId = ref<string | null>(null);
+const currentRoomNumber = ref('1A');
+const currentRentAmount = ref(DEMO_TENANT.rent);
+const currentWaterAmount = ref(DEMO_TENANT.water);
+const currentTotalDue = ref(DEMO_TENANT.amountDue);
+const isLoading = ref(false);
+const isSubmitting = ref(false);
+
+// Remittance Form
+const gcashRef = ref('');
+const remitAmount = ref(String(DEMO_TENANT.amountDue));
+const senderName = ref(currentUser.value?.fullName || DEMO_TENANT.name);
+
+// Ticket Form
 const ticketTitle = ref('');
-const ticketCategory = ref('Plumbing');
-const ticketPriority = ref('Medium');
-const ticketDescription = ref('');
-const ticketPhotoUrl = ref<string | null>(null);
-const ticketPhotoName = ref<string>('');
-const ticketNotice = ref('');
+const ticketCat = ref('Plumbing');
+const ticketPriority = ref<'Low' | 'Medium' | 'High' | 'Emergency'>('Medium');
+const ticketDesc = ref('');
 
-// Maintenance Tickets List
-const maintenanceTickets = ref<MaintenanceTicket[]>([
-  {
-    id: 'TCK-8821',
-    title: 'Bathroom Sink Water Pipe Leak',
-    category: 'Plumbing',
-    priority: 'High',
-    description: 'Water is dripping steadily from the pipe connector under the sink in Room 204. Small pooling on floor.',
-    dateSubmitted: '2026-08-01 09:30 AM',
-    status: 'IN PROGRESS',
-    photoName: 'sink_pipe_leak.jpg',
-    photoUrl: null,
-    assignedTo: 'On-site Maintenance Staff'
-  },
-  {
-    id: 'TCK-7104',
-    title: 'Window Blinds Latch Sticking',
-    category: 'Structural / Furniture',
-    priority: 'Medium',
-    description: 'Left side window blinds lock is hard to latch completely when closing at night.',
-    dateSubmitted: '2026-07-20 02:15 PM',
-    status: 'RESOLVED',
-    photoName: null,
-    photoUrl: null,
-    assignedTo: 'Handyman'
+async function fetchTenantData() {
+  isLoading.value = true;
+  try {
+    const [roomsRes, billsRes, paymentsRes, ticketsRes] = await Promise.all([
+      api.get<ApiMyRoom[]>('/tenant/my-rooms').catch(() => []),
+      api.get<ApiBill[]>('/tenant/my-bills').catch(() => []),
+      api.get<ApiPayment[]>('/tenant/my-payments').catch(() => []),
+      api.get<ApiTicket[]>('/tenant/my-tickets').catch(() => []),
+    ]);
+
+    if (roomsRes && roomsRes.length > 0) {
+      const myRoom = roomsRes[0];
+      activeRoomId.value = myRoom.rooms?.id || myRoom.id;
+      currentRoomNumber.value = myRoom.rooms?.room_number || '1A';
+      currentRentAmount.value = Number(myRoom.rooms?.current_price) || 4500;
+      currentWaterAmount.value = (myRoom.occupant_count || 1) * 200;
+      currentTotalDue.value = currentRentAmount.value + currentWaterAmount.value;
+      remitAmount.value = String(currentTotalDue.value);
+    }
+
+    if (billsRes && billsRes.length > 0) {
+      const latestBill = billsRes[0];
+      currentRentAmount.value = Number(latestBill.rent_amount) || currentRentAmount.value;
+      currentWaterAmount.value = Number(latestBill.water_amount) || currentWaterAmount.value;
+      currentTotalDue.value = Number(latestBill.total_amount) || currentTotalDue.value;
+      remitAmount.value = String(currentTotalDue.value);
+    }
+
+    if (paymentsRes && paymentsRes.length > 0) {
+      payments.value = paymentsRes.map((p) => ({
+        or: p.transaction_reference || `OR-${p.id.slice(0, 8)}`,
+        date: new Date(p.paid_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+        period: 'Monthly Billing',
+        amount: Number(p.amount),
+        method: p.payment_method,
+        status: p.verification_status === 'Verified' ? 'Verified Official' : 'Pending Verification',
+      }));
+    }
+
+    if (ticketsRes && ticketsRes.length > 0) {
+      myTickets.value = ticketsRes.map((t) => ({
+        id: t.id,
+        unit: t.rooms?.room_number || currentRoomNumber.value,
+        title: t.title,
+        category: t.category,
+        priority: t.priority,
+        reported: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+        description: t.description,
+        technician: 'Assigned Handyman',
+        status: t.status === 'Resolved' || t.status === 'Closed' ? 'Resolved' : (t.status === 'In Progress' ? 'In Progress' : 'Open'),
+        photo: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70',
+      }));
+    }
+  } catch {
+    // Offline fallback
+  } finally {
+    isLoading.value = false;
   }
-]);
+}
 
-// Handle Payment Submission
-const handleTenantPaymentSubmit = () => {
-  if (!payAmount.value || payAmount.value <= 0) {
-    alert('Please enter a valid payment amount.');
-    return;
-  }
-  if (payMethod.value !== 'Cash Payment On-Site' && !payRef.value.trim()) {
-    alert('Please provide a Reference Number / OR # for online remittance verification.');
-    return;
-  }
+onMounted(() => {
+  fetchTenantData();
+});
 
-  const isOnline = payMethod.value.includes('GCash') || payMethod.value.includes('Maya') || payMethod.value.includes('Online');
-  const refCode = payRef.value.trim() || `REF-${Math.floor(100000 + Math.random() * 900000)}`;
-
-  // Determine months covered based on amount
-  const roomPrice = activeRoom.value.price || 4500;
-  const suggestedMonths = Math.round(payAmount.value / roomPrice) || 1;
-
-  // Compute coverage date start/end
-  const lastPayment = myPayments.value[0];
-  let startDateStr = new Date().toISOString().split('T')[0];
-  if (lastPayment && lastPayment.dateCoveredEnd) {
-    startDateStr = lastPayment.dateCoveredEnd;
-  }
-  
-  const start = new Date(startDateStr);
-  start.setMonth(start.getMonth() + suggestedMonths);
-  const endDateStr = start.toISOString().split('T')[0];
-
-  addIncomeRecord({
-    unit: activeRoom.value.unitCode,
-    date: payDate.value,
-    invoiceNum: refCode,
-    contact: 'Active Resident',
-    period: 'Current Period',
-    rent: payAmount.value - (activeRoom.value.occupants * 200),
-    share: (payAmount.value - (activeRoom.value.occupants * 200)) / 2,
-    occupants: activeRoom.value.occupants,
-    water: activeRoom.value.occupants * 200,
-    remitted: payAmount.value,
-    paymentMethod: isOnline ? 'Online' : 'Cash',
-    referenceNum: refCode,
-    monthsCovered: suggestedMonths,
-    dateCoveredStart: startDateStr,
-    dateCoveredEnd: endDateStr
-  });
-
-  submissionNotice.value = `Payment remittance of ₱${Number(payAmount.value).toLocaleString()} submitted via ${payMethod.value}. Sent to Landlady Fe Galang Da Silva for verification!`;
-
-  // Reset form fields
-  payAmount.value = 0;
-  payRef.value = '';
-
-  setTimeout(() => {
-    submissionNotice.value = '';
-  }, 6000);
-};
-
-// Handle Photo File Select
-const handlePhotoSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) {
-    const file = target.files[0];
-    ticketPhotoName.value = file.name;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      ticketPhotoUrl.value = e.target?.result as string;
+async function handleRemit() {
+  if (!gcashRef.value.trim()) return;
+  isSubmitting.value = true;
+  try {
+    const newPayment = {
+      or: `GCASH-${gcashRef.value.slice(-6).toUpperCase()}`,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+      period: 'Current Period',
+      amount: Number(remitAmount.value) || currentTotalDue.value,
+      method: 'GCash',
+      status: 'Submitted / Pending Verification',
     };
-    reader.readAsDataURL(file);
+    payments.value.unshift(newPayment);
+    gcashRef.value = '';
+    showToast('success', 'GCash payment submitted', `Ref #${newPayment.or} received. Verification posted to Landlady.`);
+  } finally {
+    isSubmitting.value = false;
   }
-};
+}
 
-// Remove Photo Attachment
-const removePhoto = () => {
-  ticketPhotoUrl.value = null;
-  ticketPhotoName.value = '';
-};
+async function handleCreateTicket() {
+  if (!ticketTitle.value.trim()) return;
+  isSubmitting.value = true;
+  try {
+    if (activeRoomId.value) {
+      try {
+        await api.post('/tenant/tickets', {
+          roomId: activeRoomId.value,
+          title: ticketTitle.value.trim(),
+          description: ticketDesc.value.trim(),
+          category: ticketCat.value,
+          priority: ticketPriority.value,
+        });
+      } catch {
+        // Offline fallback
+      }
+    }
 
-// Handle Maintenance Ticket Submit
-const handleTicketSubmit = () => {
-  if (!ticketTitle.value.trim()) {
-    alert('Please enter an issue title.');
-    return;
+    const newT: MaintenanceTicket = {
+      id: `TCK-${String(1040 + maintenanceTickets.length + 1)}`,
+      unit: currentRoomNumber.value,
+      title: ticketTitle.value,
+      category: ticketCat.value,
+      priority: ticketPriority.value,
+      reported: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+      description: ticketDesc.value,
+      technician: 'Unassigned',
+      status: 'Open',
+      photo: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70',
+    };
+    maintenanceTickets.unshift(newT);
+    myTickets.value.unshift(newT);
+    ticketTitle.value = '';
+    ticketDesc.value = '';
+    showToast('success', 'Maintenance request dispatched', `Ticket #${newT.id} sent directly to Landlady.`);
+  } finally {
+    isSubmitting.value = false;
   }
-  if (!ticketDescription.value.trim()) {
-    alert('Please enter detailed description of the maintenance issue.');
-    return;
-  }
-
-  const newTicket = {
-    id: `TCK-${Math.floor(1000 + Math.random() * 9000)}`,
-    title: ticketTitle.value.trim(),
-    category: ticketCategory.value,
-    priority: ticketPriority.value,
-    description: ticketDescription.value.trim(),
-    dateSubmitted: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-    status: 'OPEN / SUBMITTED',
-    photoName: ticketPhotoName.value || null,
-    photoUrl: ticketPhotoUrl.value || null,
-    assignedTo: 'Landlady Review'
-  };
-
-  maintenanceTickets.value.unshift(newTicket);
-  ticketNotice.value = `Maintenance Issue Ticket "${newTicket.title}" (${newTicket.id}) submitted to Landlady Fe Galang Da Silva!`;
-
-  // Reset form
-  ticketTitle.value = '';
-  ticketCategory.value = 'Plumbing';
-  ticketPriority.value = 'Medium';
-  ticketDescription.value = '';
-  ticketPhotoUrl.value = null;
-  ticketPhotoName.value = '';
-
-  setTimeout(() => {
-    ticketNotice.value = '';
-  }, 6000);
-};
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- Header & Workspace Navigation Tabs -->
-    <div class="pb-3 border-b border-[#dfe1e6]">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
-        <div>
-          <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
-            <span>Tenant Portal</span>
-            <span>/</span>
-            <span class="font-medium text-[#172b4d]">{{ tenantData.name }}</span>
-            <span>/</span>
-            <span class="font-semibold text-[#0c66e4]">{{ tenantData.room }}</span>
-          </div>
-          <h1 class="text-xl font-bold text-[#172b4d]">RESIDENT WORKSPACE</h1>
-        </div>
-
-        <!-- Tab Buttons -->
-        <div class="flex items-center bg-[#f4f5f7] p-1 border border-[#dfe1e6] rounded-md gap-1 self-start sm:self-auto">
-          <button 
-            @click="activeTab = 'overview'"
-            class="px-3 py-1.5 text-xs font-bold rounded transition-colors flex items-center gap-1.5"
-            :class="activeTab === 'overview' ? 'bg-white text-[#0c66e4] shadow-sm' : 'text-[#5e6c84] hover:text-[#172b4d]'"
-          >
-            <CreditCard class="w-3.5 h-3.5" />
-            <span>Overview & Statement</span>
-          </button>
-          <button 
-            @click="activeTab = 'tickets'"
-            class="px-3 py-1.5 text-xs font-bold rounded transition-colors flex items-center gap-1.5 relative"
-            :class="activeTab === 'tickets' ? 'bg-white text-[#0c66e4] shadow-sm' : 'text-[#5e6c84] hover:text-[#172b4d]'"
-          >
-            <Wrench class="w-3.5 h-3.5" />
-            <span>Maintenance Tickets</span>
-            <span 
-              v-if="maintenanceTickets.filter(t => t.status !== 'RESOLVED').length > 0"
-              class="px-1.5 py-0.2 text-[10px] bg-[#0c66e4] text-white rounded-full font-bold"
-            >
-              {{ maintenanceTickets.filter(t => t.status !== 'RESOLVED').length }}
-            </span>
-          </button>
-        </div>
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+      <div>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+          Welcome back, {{ currentUser?.fullName || DEMO_TENANT.name }}
+        </h1>
+        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+          Unit {{ currentRoomNumber }} · Resident Self-Service Portal
+        </p>
       </div>
-      <p class="text-xs text-[#6b778c]">
-        {{ activeTab === 'overview' 
-            ? `${tenantData.room} Monthly Payment Statement, Due Date & Direct Remittance Form` 
-            : `Submit and Track Maintenance Issue Tickets for ${tenantData.room}` }}
-      </p>
+
+      <div class="flex items-center gap-2">
+        <button
+          @click="fetchTenantData"
+          :disabled="isLoading"
+          class="btn-secondary min-h-10 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+        >
+          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
+          <span>Refresh</span>
+        </button>
+
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-800 ring-1 ring-emerald-200">
+          <ShieldCheck class="size-3.5" /> Good Standing
+        </span>
+      </div>
     </div>
 
-    <!-- TAB 1: OVERVIEW & STATEMENT -->
-    <div v-if="activeTab === 'overview'" class="space-y-6 animate-fade-in">
-      <!-- Submission Toast Notice -->
-      <div 
-        v-if="submissionNotice" 
-        class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold rounded flex items-center justify-between shadow-sm animate-fade-in"
-      >
-        <div class="flex items-center gap-2">
-          <CheckCircle2 class="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>{{ submissionNotice }}</span>
-        </div>
-        <button @click="submissionNotice = ''" class="text-emerald-700 hover:text-emerald-900 font-bold ml-2">✕</button>
-      </div>
+    <!-- Unit Visual & Rent Snapshot -->
+    <div class="grid gap-6 lg:grid-cols-3">
+      <div class="surface-card overflow-hidden p-0 lg:col-span-2">
+        <div class="grid sm:grid-cols-2">
+          <img
+            :src="DEMO_TENANT.photo"
+            alt="My Unit"
+            class="h-56 w-full object-cover sm:h-full"
+          />
+          <div class="flex flex-col justify-between p-6 space-y-4">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#8a5814]">Unit Specs &amp; Inclusions</span>
+              <h3 class="font-display font-extrabold text-xl text-[#1c1917] mt-1">Room {{ currentRoomNumber }}</h3>
+              <p class="text-xs text-[#71717a] mt-0.5">Move-in: {{ DEMO_TENANT.moveIn }} · Security Deposit: {{ peso(DEMO_TENANT.deposit) }}</p>
+            </div>
 
-      <!-- Assigned Unit Specs Banner -->
-      <div class="jira-card p-4 space-y-3 bg-white border border-[#dfe1e6]">
-        <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-2">
-          <h3 class="font-bold text-sm text-[#172b4d] flex items-center gap-2">
-            <Home class="w-4 h-4 text-[#0c66e4]" />
-            <span>ASSIGNED UNIT SPECIFICATIONS & AMENITIES</span>
-          </h3>
-          <span class="jira-badge jira-badge-done">Active Occupant</span>
-        </div>
+            <div class="space-y-1.5 text-xs text-[#57534e]">
+              <p v-for="(f, i) in DEMO_TENANT.fixtures.slice(0, 4)" :key="i" class="flex items-center gap-2">
+                <CheckCircle2 class="size-3.5 shrink-0 text-[#f59e0b]" />
+                <span>{{ f }}</span>
+              </p>
+            </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div class="p-2 bg-gray-50 rounded border border-[#dfe1e6]/60">
-            <span class="text-[#6b778c] block font-medium">Canonical Unit</span>
-            <strong class="text-[#0c66e4] font-bold text-sm">{{ tenantData.room }} ({{ tenantData.roomDetails }})</strong>
+            <div class="border-t border-[#e7e5e4] pt-3 flex items-center justify-between text-xs">
+              <span class="text-[#71717a]">Submeter rate</span>
+              <span class="font-bold text-[#1c1917]">₱12.50 / kWh</span>
+            </div>
           </div>
-          <div class="p-2 bg-gray-50 rounded border border-[#dfe1e6]/60">
-            <span class="text-[#6b778c] block font-medium">Unit Classification</span>
-            <span class="font-medium text-[#172b4d]">{{ tenantData.roomType }}</span>
-          </div>
-          <div class="p-2 bg-gray-50 rounded border border-[#dfe1e6]/60">
-            <span class="text-[#6b778c] block font-medium">Registered Occupants</span>
-            <span class="font-semibold text-[#172b4d] flex items-center gap-1">
-              <User class="w-3.5 h-3.5 text-[#0c66e4]" />
-              {{ tenantData.occupants }} Persons
-            </span>
-          </div>
-          <div class="p-2 bg-gray-50 rounded border border-[#dfe1e6]/60">
-            <span class="text-[#6b778c] block font-medium">Floor Area & Bath</span>
-            <span class="font-medium text-[#172b4d]">{{ tenantData.specs.floorArea }} • {{ tenantData.specs.bathroom }}</span>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-4 text-xs text-[#5e6c84] pt-1 border-t border-dashed border-[#dfe1e6]">
-          <span class="flex items-center gap-1">
-            <Zap class="w-3.5 h-3.5 text-amber-500" />
-            Electric: <strong class="text-[#172b4d]">{{ tenantData.specs.electricMeter }}</strong>
-          </span>
-          <span class="flex items-center gap-1">
-            <Droplets class="w-3.5 h-3.5 text-blue-500" />
-            Water Utility: <strong class="text-[#172b4d]">₱{{ tenantData.specs.waterRatePerHead }}/head</strong>
-          </span>
-          <span class="flex items-center gap-1">
-            <Wifi class="w-3.5 h-3.5 text-indigo-500" />
-            Connectivity: <strong class="text-[#172b4d]">{{ tenantData.specs.wifi }}</strong>
-          </span>
-          <span class="flex items-center gap-1">
-            <Sparkles class="w-3.5 h-3.5 text-emerald-500" />
-            Climate: <strong class="text-[#172b4d]">{{ tenantData.specs.aircon }}</strong>
-          </span>
         </div>
       </div>
 
-      <!-- 2-Column Grid: Statement & Input Payment Form -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        
-        <!-- Left Box: MONTHLY PAYMENT & DUE DATE STATEMENT -->
-        <div class="jira-card p-4 space-y-4 bg-white border-2 border-[#172b4d]">
-          <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-2">
-            <h3 class="font-bold text-xs uppercase tracking-wide text-[#172b4d] flex items-center gap-2">
-              <CreditCard class="w-4 h-4 text-[#0c66e4]" />
-              <span>MONTHLY PAYMENT & DUE DATE STATEMENT</span>
-            </h3>
-            <span class="px-2 py-0.5 text-xs font-bold bg-[#172b4d] text-white rounded">
-              [ {{ tenantData.dueBadgeText }} ]
-            </span>
+      <!-- Current Statement Card -->
+      <div class="surface-card flex flex-col justify-between p-6 space-y-4">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs uppercase font-extrabold tracking-wider text-[#71717a]">Current Statement</span>
+            <span class="badge-soft badge-warning">Due Aug 05</span>
           </div>
-
-          <div class="space-y-2.5 text-xs text-[#172b4d]">
-            <div class="flex justify-between border-b border-gray-100 pb-1.5">
-              <span class="text-[#5e6c84]">Resident Name:</span>
-              <strong class="font-semibold">{{ tenantData.name }}</strong>
-            </div>
-            <div class="flex justify-between border-b border-gray-100 pb-1.5">
-              <span class="text-[#5e6c84]">Assigned Unit:</span>
-              <strong class="font-semibold">{{ tenantData.room }} ({{ tenantData.roomDetails }})</strong>
-            </div>
-            <div class="flex justify-between border-b border-gray-100 pb-1.5">
-              <span class="text-[#5e6c84]">Payment Due Date:</span>
-              <strong class="text-[#172b4d] underline font-bold">{{ tenantData.dueDate }} ({{ tenantData.dueDaysRemaining }})</strong>
-            </div>
-            <div class="flex justify-between border-b border-emerald-100 pb-1.5 bg-emerald-50/50 p-1.5 rounded">
-              <span class="text-emerald-800 font-semibold">Date Covered (Last Payment):</span>
-              <strong class="text-emerald-900 font-mono font-bold">{{ tenantData.dateCovered }}</strong>
-            </div>
-            <div class="flex justify-between border-b border-gray-100 pb-1.5">
-              <span class="text-[#5e6c84]">Monthly Base Rent:</span>
-              <span>₱{{ tenantData.baseRent.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-            </div>
-            <div class="flex justify-between border-b border-gray-100 pb-1.5">
-              <span class="text-[#5e6c84]">Water Fee (₱{{ tenantData.specs.waterRatePerHead }}/head × {{ tenantData.occupants }}):</span>
-              <span>₱{{ tenantData.waterFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-            </div>
-            
-            <div class="flex justify-between items-center font-bold text-sm border-t-2 border-[#172b4d] pt-2.5 mt-2">
-              <span class="text-[#172b4d]">Total Amount Due:</span>
-              <strong class="text-base text-[#0c66e4]">₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong>
-            </div>
+          <div class="mt-4">
+            <span class="text-3xl font-display font-black text-[#1c1917]">{{ peso(currentTotalDue) }}</span>
+            <p class="text-xs text-[#71717a] mt-1">Rent: {{ peso(currentRentAmount) }} + Water: {{ peso(currentWaterAmount) }}</p>
           </div>
         </div>
 
-        <!-- Right Box: INPUT / RECORD MONTHLY PAYMENT (ONLINE PAYMENT FORM) -->
-        <div class="jira-card p-4 space-y-3 bg-[#f4f5f7] border-2 border-[#172b4d]">
-          <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-2">
-            <h3 class="font-bold text-xs uppercase tracking-wide text-[#172b4d] flex items-center gap-2">
-              <Send class="w-4 h-4 text-[#0c66e4]" />
-              <span>INPUT / RECORD MONTHLY PAYMENT</span>
-            </h3>
-            <span class="px-2 py-0.5 text-[10px] font-bold bg-[#0c66e4] text-white rounded">
-              ONLINE REMITTANCE
-            </span>
+        <div class="space-y-2 rounded-xl bg-[#f5f5f4] p-4 text-xs">
+          <div class="flex justify-between">
+            <span class="text-[#71717a]">Base Room Rent</span>
+            <span class="font-semibold text-[#1c1917]">{{ peso(currentRentAmount) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-[#71717a]">Water Billing</span>
+            <span class="font-semibold text-[#1c1917]">{{ peso(currentWaterAmount) }}</span>
+          </div>
+          <div class="border-t border-[#e7e5e4] pt-2 flex justify-between font-bold">
+            <span>Total Payable</span>
+            <span class="font-display font-black text-[#8a5814]">{{ peso(currentTotalDue) }}</span>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-[#71717a] text-center">
+          Landlady GCash: <strong class="font-mono font-bold text-[#1c1917]">{{ LANDLADY.gcash }}</strong> ({{ LANDLADY.name }})
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-Column: Remit GCash & Payment History -->
+    <div class="grid gap-6 lg:grid-cols-12">
+      <!-- GCash Remittance Form -->
+      <div class="surface-card p-6 space-y-4 lg:col-span-5">
+        <div class="flex items-center gap-2 pb-3 border-b border-[#e7e5e4]">
+          <QrCode class="size-5 text-[#f59e0b]" />
+          <div>
+            <h3 class="font-display font-extrabold text-base text-[#1c1917]">Remit GCash Payment</h3>
+            <p class="text-xs text-[#71717a]">Submit your transaction reference number.</p>
+          </div>
+        </div>
+
+        <form @submit.prevent="handleRemit" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Sender GCash Account Name</label>
+            <input v-model="senderName" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
           </div>
 
-          <p class="text-xs text-[#5e6c84]">
-            Input your payment details below to submit your payment remittance to the landlady.
-          </p>
+          <div>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Amount Paid (₱)</label>
+            <input v-model="remitAmount" type="number" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold" required />
+          </div>
 
-          <form @submit.prevent="handleTenantPaymentSubmit" class="space-y-3">
-            <!-- Date Paid -->
+          <div>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">GCash Reference Number (13 digits)</label>
+            <input v-model="gcashRef" placeholder="1009 8832 99120" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-mono" required />
+          </div>
+
+          <button type="submit" :disabled="isSubmitting" class="btn-primary min-h-11 w-full gap-2 font-bold shadow-xs cursor-pointer disabled:opacity-50">
+            <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
+            <Send v-else class="size-4" />
+            <span>{{ isSubmitting ? 'Submitting…' : 'Submit Payment for Verification' }}</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Payment History & Receipts -->
+      <div class="surface-card p-6 space-y-4 lg:col-span-7">
+        <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+          <div class="flex items-center gap-2">
+            <Receipt class="size-5 text-[#f59e0b]" />
+            <h3 class="font-display font-extrabold text-base text-[#1c1917]">Payment History &amp; Receipts</h3>
+          </div>
+          <span class="text-xs text-[#71717a]">{{ payments.length }} posted records</span>
+        </div>
+
+        <div class="max-h-[320px] overflow-y-auto space-y-3">
+          <div
+            v-for="(p, idx) in payments"
+            :key="idx"
+            class="flex items-center justify-between p-3.5 rounded-xl border border-[#e7e5e4] bg-white hover:bg-[#fafaf9] transition-colors"
+          >
             <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="tenant-pay-date">Date Paid:</label>
-              <input 
-                id="tenant-pay-date"
-                v-model="payDate"
-                type="date" 
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-medium focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
-                required
-              />
+              <p class="font-mono text-xs font-bold text-[#1c1917]">{{ p.or }}</p>
+              <p class="text-xs text-[#71717a] mt-0.5">{{ p.date }} · Period: {{ p.period }}</p>
             </div>
-
-            <!-- Amount Paid -->
-            <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="tenant-pay-amount">Amount Paid (₱):</label>
-              <input 
-                id="tenant-pay-amount"
-                v-model="payAmount"
-                type="number" 
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-bold focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
-                required
-              />
+            <div class="text-right">
+              <p class="font-display font-bold text-sm text-[#1c1917]">{{ peso(p.amount) }}</p>
+              <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800 mt-0.5">
+                {{ p.status }}
+              </span>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            <!-- Payment Method -->
+    <!-- Maintenance Dispatch Section -->
+    <div class="grid gap-6 lg:grid-cols-12">
+      <!-- Maintenance Form -->
+      <div class="surface-card p-6 space-y-4 lg:col-span-5">
+        <div class="flex items-center gap-2 pb-3 border-b border-[#e7e5e4]">
+          <Wrench class="size-5 text-[#f59e0b]" />
+          <div>
+            <h3 class="font-display font-extrabold text-base text-[#1c1917]">Submit Repair Request</h3>
+            <p class="text-xs text-[#71717a]">Direct notification to Landlady &amp; Handyman.</p>
+          </div>
+        </div>
+
+        <form @submit.prevent="handleCreateTicket" class="space-y-4 text-xs">
+          <div>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Issue Title</label>
+            <input v-model="ticketTitle" placeholder="e.g. Bathroom sink water leak" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="tenant-pay-method">Payment Method:</label>
-              <select 
-                id="tenant-pay-method"
-                v-model="payMethod"
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-bold text-[#172b4d] focus:ring-1 focus:ring-[#0c66e4] focus:outline-none cursor-pointer"
-                required
-              >
-                <option value="GCash / Online Payment">GCash / Online Payment</option>
-                <option value="Maya / Online Bank">Maya / Online Bank</option>
-                <option value="Cash Payment On-Site">Cash Payment On-Site</option>
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Category</label>
+              <select v-model="ticketCat" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white" required>
+                <option value="Plumbing">Plumbing</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Appliances">Appliances</option>
+                <option value="General">General</option>
               </select>
             </div>
 
-            <!-- Online Remittance QR Code / Account Panel -->
-            <div 
-              v-if="payMethod.includes('GCash') || payMethod.includes('Maya') || payMethod.includes('Online')"
-              class="p-2.5 bg-blue-50 border border-blue-200 rounded text-xs space-y-1.5"
-            >
-              <div class="flex items-center justify-between font-bold text-[#0c66e4]">
-                <span class="flex items-center gap-1.5">
-                  <QrCode class="w-4 h-4" />
-                  Landlady Remittance Account
-                </span>
-                <span class="text-[10px] bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded">Verified GCash</span>
-              </div>
-              <div class="text-[#172b4d]">
-                Account Name: <strong>{{ tenantData.landladyName }}</strong><br />
-                GCash Number: <strong class="text-[#0c66e4] underline">{{ tenantData.landladyGCash }}</strong>
-              </div>
-            </div>
-
-            <!-- Reference Number -->
             <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="tenant-pay-ref">Reference Number / OR #:</label>
-              <input 
-                id="tenant-pay-ref"
-                v-model="payRef"
-                type="text" 
-                placeholder="e.g. GCASH-9948271"
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-mono focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
-                :required="payMethod !== 'Cash Payment On-Site'"
-              />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Priority Level</label>
+              <select v-model="ticketPriority" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white font-bold" required>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Emergency">🚨 Emergency</option>
+              </select>
             </div>
+          </div>
 
-            <!-- Submit Button -->
-            <button 
-              type="submit"
-              class="w-full py-2.5 px-4 bg-[#172b4d] hover:bg-[#0c66e4] text-white font-bold text-xs rounded transition-colors flex items-center justify-center gap-2 shadow-sm"
-            >
-              <Send class="w-3.5 h-3.5" />
-              <span>[ 💾 Submit Payment Record to Landlady ]</span>
-            </button>
-          </form>
-        </div>
+          <div>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Description</label>
+            <textarea v-model="ticketDesc" rows="3" placeholder="Please describe what needs repair and when you are home..." class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs resize-none" required></textarea>
+          </div>
 
+          <button type="submit" :disabled="isSubmitting" class="btn-primary min-h-11 w-full gap-2 font-bold shadow-xs cursor-pointer disabled:opacity-50">
+            <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
+            <Wrench v-else class="size-4" />
+            <span>{{ isSubmitting ? 'Dispatching…' : 'Dispatch Maintenance Request' }}</span>
+          </button>
+        </form>
       </div>
 
-      <!-- Bottom Box: MY PAYMENT RECORD HISTORY TABLE -->
-      <div class="jira-card p-4 space-y-3 bg-white border border-[#dfe1e6]">
-        <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-2">
-          <h3 class="font-bold text-xs uppercase tracking-wide text-[#172b4d] flex items-center gap-2">
-            <FileText class="w-4 h-4 text-[#0c66e4]" />
-            <span>MY PAYMENT RECORD HISTORY</span>
-          </h3>
-          <span class="text-xs text-[#5e6c84]">Total Remittances Logged: <strong>{{ myPayments.length }}</strong></span>
+      <!-- My Active Requests -->
+      <div class="surface-card p-6 space-y-4 lg:col-span-7">
+        <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+          <h3 class="font-display font-extrabold text-base text-[#1c1917]">My Active Requests &amp; Tickets</h3>
+          <span class="text-xs text-[#71717a]">{{ myTickets.length }} total</span>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-[#f4f5f7] border-b border-[#dfe1e6] text-[#5e6c84] uppercase tracking-wider">
-                <th class="p-2.5 font-bold">INVOICE / REF #</th>
-                <th class="p-2.5 font-bold">DATE PAID</th>
-                <th class="p-2.5 font-bold">BILLING PERIOD</th>
-                <th class="p-2.5 font-bold">AMOUNT PAID</th>
-                <th class="p-2.5 font-bold">PAYMENT METHOD</th>
-                <th class="p-2.5 font-bold">VERIFICATION STATUS</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[#dfe1e6]">
-              <tr 
-                v-for="record in myPayments" 
-                :key="record.id"
-                class="hover:bg-blue-50/40 transition-colors"
-              >
-                <td class="p-2.5 font-mono text-[#172b4d] font-bold">
-                  <code>{{ record.invoiceNum }} <span v-if="record.referenceNum && record.referenceNum !== 'N/A'" class="text-[10px] text-slate-400 font-normal">({{ record.referenceNum }})</span></code>
-                </td>
-                <td class="p-2.5 text-[#172b4d]">{{ record.date }}</td>
-                <td class="p-2.5 text-[#5e6c84]">
-                  <span v-if="record.dateCoveredStart && record.dateCoveredEnd" class="text-emerald-700 font-mono text-[11px] font-semibold">
-                    {{ record.dateCoveredStart }} to {{ record.dateCoveredEnd }} ({{ record.monthsCovered }} Mo.)
-                  </span>
-                  <span v-else class="text-gray-400 text-[11px]">Monthly Payment</span>
-                </td>
-                <td class="p-2.5 font-bold text-[#172b4d]">
-                  ₱{{ record.remitted.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
-                </td>
-                <td class="p-2.5">
-                  <span 
-                    class="px-2 py-0.5 font-bold text-[10px] rounded"
-                    :class="record.paymentMethod === 'Online' ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200'"
-                  >
-                    {{ record.paymentMethod === 'Online' ? 'ONLINE GCASH' : 'CASH ON-SITE' }}
-                  </span>
-                </td>
-                <td class="p-2.5">
-                  <span 
-                    class="px-2 py-0.5 font-bold text-[10px] rounded flex items-center gap-1 w-fit bg-[#172b4d] text-white"
-                  >
-                    <ShieldCheck class="w-3 h-3 text-emerald-400" />
-                    [ VERIFIED &amp; SETTLED ]
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="space-y-3">
+          <div
+            v-for="t in myTickets"
+            :key="t.id"
+            class="p-4 rounded-xl border border-[#e7e5e4] bg-white space-y-2 hover:bg-[#fafaf9] transition-colors"
+          >
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs font-bold text-[#1c1917]">{{ t.id }}</span>
+                  <span class="badge-soft badge-info text-[10px]">{{ t.priority }}</span>
+                  <span class="text-xs text-[#71717a]">· {{ t.category }}</span>
+                </div>
+                <h4 class="font-bold text-sm text-[#1c1917] mt-1">{{ t.title }}</h4>
+              </div>
+              <span class="badge-soft badge-info text-xs">{{ t.status }}</span>
+            </div>
+            <p class="text-xs text-[#57534e] leading-relaxed p-3 bg-[#f5f5f4] rounded-xl">
+              "{{ t.description }}"
+            </p>
+            <div class="flex items-center justify-between text-xs text-[#71717a] pt-1">
+              <span>Reported: {{ t.reported }}</span>
+              <span>Assigned: <strong class="text-[#1c1917]">{{ t.technician }}</strong></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- TAB 2: MAINTENANCE ISSUE TICKETS PAGE -->
-    <div v-else class="space-y-6 animate-fade-in">
-      <!-- Submission Toast Notice for Ticket -->
-      <div 
-        v-if="ticketNotice" 
-        class="p-3 bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold rounded flex items-center justify-between shadow-sm animate-fade-in"
-      >
-        <div class="flex items-center gap-2">
-          <CheckCircle2 class="w-4 h-4 text-[#0c66e4] shrink-0" />
-          <span>{{ ticketNotice }}</span>
-        </div>
-        <button @click="ticketNotice = ''" class="text-blue-700 hover:text-blue-900 font-bold ml-2">✕</button>
-      </div>
-
-      <!-- Grid Layout: Submit Ticket Form & Ticket Tracking List -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        
-        <!-- Left 5-Cols: SUBMIT MAINTENANCE ISSUE TICKET FORM -->
-        <div class="lg:col-span-5 jira-card p-4 space-y-4 bg-white border-2 border-[#172b4d]">
-          <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-2">
-            <h3 class="font-bold text-xs uppercase tracking-wide text-[#172b4d] flex items-center gap-2">
-              <Wrench class="w-4 h-4 text-[#0c66e4]" />
-              <span>SUBMIT MAINTENANCE ISSUE TICKET</span>
-            </h3>
-            <span class="px-2 py-0.5 text-[10px] font-bold bg-[#172b4d] text-white rounded">
-              DIRECT DISPATCH
-            </span>
-          </div>
-
-          <p class="text-xs text-[#5e6c84]">
-            Report maintenance issues, repair requests, or structural concerns directly to Landlady Fe Galang Da Silva.
-          </p>
-
-          <form @submit.prevent="handleTicketSubmit" class="space-y-3">
-            <!-- Issue Title -->
-            <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="ticket-title">Issue Title:</label>
-              <input 
-                id="ticket-title"
-                v-model="ticketTitle"
-                type="text" 
-                placeholder="e.g. Bathroom Sink Pipe Leak"
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white font-medium focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
-                required
-              />
-            </div>
-
-            <!-- Maintenance Category & Priority Level -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="ticket-category">Category:</label>
-                <select 
-                  id="ticket-category"
-                  v-model="ticketCategory"
-                  class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white text-[#172b4d] font-medium focus:ring-1 focus:ring-[#0c66e4] focus:outline-none cursor-pointer"
-                  required
-                >
-                  <option value="Plumbing">Plumbing</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Appliance">Appliance / Aircon</option>
-                  <option value="Structural / Furniture">Structural / Furniture</option>
-                  <option value="General Maintenance">General Maintenance</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="ticket-priority">Priority Level:</label>
-                <select 
-                  id="ticket-priority"
-                  v-model="ticketPriority"
-                  class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white text-[#172b4d] font-bold focus:ring-1 focus:ring-[#0c66e4] focus:outline-none cursor-pointer"
-                  required
-                >
-                  <option value="Medium">Medium Priority</option>
-                  <option value="High">High Priority</option>
-                  <option value="Emergency">🚨 EMERGENCY</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Details & Description -->
-            <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1" for="ticket-desc">Details & Description:</label>
-              <textarea 
-                id="ticket-desc"
-                v-model="ticketDescription"
-                rows="4"
-                placeholder="Describe the issue in detail (location in room, when it started, severity)..."
-                class="w-full text-xs p-2 border border-[#dfe1e6] rounded bg-white focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
-                required
-              ></textarea>
-            </div>
-
-            <!-- Attach Photo Option -->
-            <div>
-              <label class="block text-xs font-semibold text-[#172b4d] mb-1">Attach Photo (Optional):</label>
-              
-              <div v-if="!ticketPhotoUrl" class="border border-dashed border-[#dfe1e6] rounded p-3 text-center bg-gray-50 hover:bg-blue-50/40 transition-colors">
-                <input 
-                  type="file" 
-                  id="ticket-photo-input" 
-                  accept="image/*"
-                  @change="handlePhotoSelect"
-                  class="hidden" 
-                />
-                <label for="ticket-photo-input" class="cursor-pointer flex flex-col items-center justify-center gap-1">
-                  <ImageIcon class="w-5 h-5 text-[#0c66e4]" />
-                  <span class="text-xs font-medium text-[#172b4d]">Click to upload photo of the issue</span>
-                  <span class="text-[10px] text-[#6b778c]">PNG, JPG, WEBP up to 10MB</span>
-                </label>
-              </div>
-
-              <!-- Photo Preview -->
-              <div v-else class="p-2 bg-blue-50 border border-blue-200 rounded flex items-center justify-between">
-                <div class="flex items-center gap-2 overflow-hidden">
-                  <img :src="ticketPhotoUrl" alt="Ticket Attachment Preview" class="w-10 h-10 object-cover rounded border border-blue-300 shrink-0" />
-                  <div class="truncate text-xs">
-                    <span class="font-bold text-[#172b4d] block truncate">{{ ticketPhotoName }}</span>
-                    <span class="text-[10px] text-emerald-600 font-semibold">Photo Attached</span>
-                  </div>
-                </div>
-                <button 
-                  type="button" 
-                  @click="removePhoto" 
-                  class="p-1 text-gray-500 hover:text-red-600 rounded transition-colors"
-                  title="Remove Photo"
-                >
-                  <X class="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <button 
-              type="submit"
-              class="w-full py-2.5 px-4 bg-[#172b4d] hover:bg-[#0c66e4] text-white font-bold text-xs rounded transition-colors flex items-center justify-center gap-2 shadow-sm"
-            >
-              <Send class="w-3.5 h-3.5" />
-              <span>[ 🛠️ Submit Maintenance Ticket to Landlady ]</span>
-            </button>
-          </form>
-        </div>
-
-        <!-- Right 7-Cols: MY SUBMITTED MAINTENANCE TICKETS LIST -->
-        <div class="lg:col-span-7 jira-card p-4 space-y-4 bg-white border border-[#dfe1e6]">
-          <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-2">
-            <h3 class="font-bold text-xs uppercase tracking-wide text-[#172b4d] flex items-center gap-2">
-              <FileText class="w-4 h-4 text-[#0c66e4]" />
-              <span>MY MAINTENANCE TICKETS TRACKER</span>
-            </h3>
-            <span class="text-xs text-[#5e6c84]">Total Tickets: <strong>{{ maintenanceTickets.length }}</strong></span>
-          </div>
-
-          <div class="space-y-3">
-            <div 
-              v-for="ticket in maintenanceTickets" 
-              :key="ticket.id"
-              class="p-3.5 border rounded-md transition-all space-y-2.5 bg-white hover:border-[#0c66e4] shadow-sm"
-              :class="ticket.priority === 'Emergency' ? 'border-red-300 bg-red-50/20' : 'border-[#dfe1e6]'"
-            >
-              <div class="flex items-start justify-between gap-2">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="font-mono text-xs font-bold text-[#0c66e4]">{{ ticket.id }}</span>
-                    <span 
-                      class="px-2 py-0.5 text-[10px] font-bold rounded"
-                      :class="{
-                        'bg-red-100 text-red-800 border border-red-200': ticket.priority === 'Emergency',
-                        'bg-amber-100 text-amber-900 border border-amber-200': ticket.priority === 'High',
-                        'bg-blue-100 text-blue-900 border border-blue-200': ticket.priority === 'Medium'
-                      }"
-                    >
-                      {{ ticket.priority.toUpperCase() }} PRIORITY
-                    </span>
-                    <span class="px-2 py-0.5 text-[10px] font-semibold bg-gray-100 text-[#5e6c84] rounded">
-                      {{ ticket.category }}
-                    </span>
-                  </div>
-                  <h4 class="font-bold text-sm text-[#172b4d] mt-1">{{ ticket.title }}</h4>
-                </div>
-
-                <span 
-                  class="px-2 py-1 text-[10px] font-bold rounded shrink-0 flex items-center gap-1"
-                  :class="{
-                    'bg-[#172b4d] text-white': ticket.status === 'RESOLVED',
-                    'bg-amber-500 text-white': ticket.status === 'IN PROGRESS',
-                    'bg-blue-600 text-white': ticket.status.includes('OPEN')
-                  }"
-                >
-                  <ShieldCheck v-if="ticket.status === 'RESOLVED'" class="w-3 h-3" />
-                  <Clock v-else class="w-3 h-3" />
-                  [ {{ ticket.status }} ]
-                </span>
-              </div>
-
-              <p class="text-xs text-[#5e6c84] leading-relaxed bg-[#f4f5f7] p-2.5 rounded border border-[#dfe1e6]/60">
-                {{ ticket.description }}
-              </p>
-
-              <div class="flex flex-wrap items-center justify-between text-[11px] text-[#6b778c] pt-1">
-                <span class="flex items-center gap-1">
-                  <Clock class="w-3.5 h-3.5 text-[#5e6c84]" />
-                  Submitted: <strong>{{ ticket.dateSubmitted }}</strong>
-                </span>
-
-                <div class="flex items-center gap-3">
-                  <span v-if="ticket.photoName" class="flex items-center gap-1 text-[#0c66e4] font-semibold">
-                    <Paperclip class="w-3.5 h-3.5" />
-                    {{ ticket.photoName }}
-                  </span>
-                  <span>Assigned: <strong>{{ ticket.assignedTo }}</strong></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
   </div>
 </template>

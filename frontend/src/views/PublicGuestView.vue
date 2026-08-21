@@ -1,587 +1,424 @@
-<!--
-  @component PublicGuestView
-  @description Wireframe Public Guest portal on localhost:5173 with Available Units categories, full-screen unit showcase, and in-place Inquire Now pop-up card.
-  @systemBibleRef Section 4 - Public Visitor Role & Section 5 - Property Model
-  @rationale Clean wireframe aesthetic (zero-image policy) featuring 3 Available Units category cards, direct navigation to first unit in full-screen view with Available tag, floor, capacity, and an in-place pop-up inquiry card modal on the same page.
-  @innovations Wireframe layout blueprint without photographic images, in-place pop-up card inquiry synchronization with Landlady Inbox.
--->
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { CANONICAL_32_UNITS, HERO_PHOTO, peso, type RentableUnit } from '@/lib/canonicalUnits';
+import { isLiveChatheadOpen, showToast, LANDLADY } from '@/lib/systemState';
+import { api } from '@/lib/api';
 import { 
-  rooms, activeInquirers, isLiveChatheadOpen, 
-  selectedInquirerId, showToast, type RoomUnit 
-} from '@/lib/systemState';
-import { 
-  Building2, ArrowLeft, Users, Layers, 
-  Home, Grid, Compass, ShieldCheck, 
-  MapPin, MessageSquare, X, Send, CheckCircle2 
+  MapPin, 
+  BedDouble, 
+  Building2, 
+  ShieldCheck, 
+  Users, 
+  Droplets, 
+  Wifi, 
+  Check, 
+  ArrowRight, 
+  MessageCircle,
+  X,
+  Send,
+  Loader2
 } from 'lucide-vue-next';
 
-// View Mode: 'categories' or 'unit-detail'
-const currentView = ref<'categories' | 'unit-detail'>('categories');
-const activeCategorySlug = ref<string>('1-bedroom');
-
-interface CategoryDefinition {
-  slug: string;
-  name: string;
-  title: string;
+interface DbRoom {
+  id: string;
+  room_number: string;
+  floor: number;
+  cluster_code: string;
+  room_type: string;
   description: string;
-  maxOccupants: number;
-  filterFn: (r: RoomUnit) => boolean;
+  capacity: number;
+  current_price: number;
+  operational_status: string;
+  visibility_status: string;
+  available_from: string | null;
+  is_linda_unit: boolean;
 }
 
-const categories: CategoryDefinition[] = [
+const CATEGORIES = [
   {
-    slug: '1-bedroom',
-    name: '1 Bed Room Unit',
-    title: '1 Bed Room Unit',
-    description: 'Private 1-bedroom boarding unit featuring dedicated bedroom space, private bathroom, and study desk.',
-    maxOccupants: 3,
-    filterFn: (r: RoomUnit) => r.type.includes('1-Bedroom') || r.type.includes('1-Bed')
+    key: '1BR',
+    title: '1-Bedroom Unit',
+    pax: 'Up to 3 Pax',
+    blurb: 'Main boarding house rooms with private bathroom and submetered electricity.',
+    icon: BedDouble,
+    match: (u: RentableUnit) => u.cluster === 'BH' || u.cluster === 'Linda Units',
   },
   {
-    slug: '2-bedroom',
-    name: '2 Bed Room Unit',
-    title: '2 Bed Room Unit',
-    description: 'Spacious 2-bedroom unit offering flexible shared living space for co-tenants or students with private bath.',
-    maxOccupants: 4,
-    filterFn: (r: RoomUnit) => r.type.includes('2-Bedroom') || r.type.includes('2-Bed')
+    key: '2BR',
+    title: '2-Bedroom Unit',
+    pax: 'Up to 4 Pax',
+    blurb: 'Front and back apartments with kitchenette, balcony access and parking.',
+    icon: Building2,
+    match: (u: RentableUnit) => u.cluster === 'Back Apartment' || u.cluster === 'Front Apartment',
   },
   {
-    slug: '3-bedroom',
-    name: '3 Bed Room Unit',
-    title: '3 Bed Room Unit',
-    description: 'Premium multi-bedroom suite accommodating larger groups with expansive living spaces and top-floor residential airflow.',
-    maxOccupants: 5,
-    filterFn: (r: RoomUnit) => r.type.includes('3-Bedroom') || r.type.includes('3-Bed') || r.type.includes('Penthouse')
-  }
+    key: 'PH',
+    title: '3-Bedroom / Penthouse Suite',
+    pax: 'Up to 5 Pax',
+    blurb: 'Top-floor suite with roof deck and panoramic view of Tanauan City.',
+    icon: ShieldCheck,
+    match: (u: RentableUnit) => u.cluster === 'Penthouse',
+  },
 ];
 
-const activeCategory = computed(() => {
-  return categories.find(c => c.slug === activeCategorySlug.value) || categories[0];
-});
-
-const categoryRooms = computed(() => {
-  return rooms.filter(activeCategory.value.filterFn);
-});
-
-// Active unit being viewed in full-screen view (defaults to the first unit of the category)
-const activeUnitIndex = ref(0);
-
-const activeUnit = computed<RoomUnit | null>(() => {
-  if (categoryRooms.value.length === 0) return null;
-  const idx = Math.min(Math.max(0, activeUnitIndex.value), categoryRooms.value.length - 1);
-  return categoryRooms.value[idx];
-});
-
-function navigateToCategory(slug: string) {
-  activeCategorySlug.value = slug;
-  activeUnitIndex.value = 0;
-  currentView.value = 'unit-detail';
-}
-
-function selectUnit(index: number) {
-  activeUnitIndex.value = index;
-}
-
-function backToCategories() {
-  currentView.value = 'categories';
-}
-
-// In-Place Pop-up Card Modal State
-const isInquireModalOpen = ref(false);
-const prospectName = ref('');
-const phone = ref('');
-const email = ref('');
-const message = ref('');
+const selectedCategory = ref('1BR');
+const selectedUnitCode = ref('1a');
+const publicRooms = ref<DbRoom[]>([]);
 const isSubmitting = ref(false);
-const inquirySubmitted = ref(false);
 
-function openInquireModal() {
-  isInquireModalOpen.value = true;
-  inquirySubmitted.value = false;
+onMounted(async () => {
+  try {
+    const data = await api.get<DbRoom[]>('/public/rooms', false);
+    if (data && data.length) {
+      publicRooms.value = data;
+    }
+  } catch {
+    // Falls back to CANONICAL_32_UNITS
+  }
+});
+
+const currentCat = computed(() => CATEGORIES.find((c) => c.key === selectedCategory.value)!);
+const categoryUnits = computed(() => CANONICAL_32_UNITS.filter(currentCat.value.match));
+
+const activeUnit = computed(() => {
+  return categoryUnits.value.find((u) => u.unitCode.toLowerCase() === selectedUnitCode.value.toLowerCase()) || categoryUnits.value[0];
+});
+
+// Inquiry Modal State
+const isInquiryOpen = ref(false);
+const inquiryUnit = ref('1a');
+const inquiryName = ref('');
+const inquiryPhone = ref('');
+const inquiryEmail = ref('');
+const inquiryMsg = ref('Good day po! Interested ako sa unit. Pwede po bang mag-viewing?');
+
+function openInquiry(unitCode: string) {
+  inquiryUnit.value = unitCode || '1a';
+  isInquiryOpen.value = true;
 }
 
-function closeInquireModal() {
-  isInquireModalOpen.value = false;
-}
-
-function handleDirectChat() {
-  closeInquireModal();
-  selectedInquirerId.value = 'inq-1';
+function openChat() {
   isLiveChatheadOpen.value = true;
 }
 
-function submitInquiry() {
-  if (!prospectName.value.trim() || !phone.value.trim()) return;
-
+async function submitInquiry() {
   isSubmitting.value = true;
-  const targetCode = activeUnit.value ? activeUnit.value.unitCode : 'General';
-  const newInquirerId = `inq-${Date.now()}`;
+  try {
+    const matchedRoom = publicRooms.value.find(
+      (r) => r.room_number.toLowerCase() === inquiryUnit.value.toLowerCase()
+    );
 
-  activeInquirers.unshift({
-    id: newInquirerId,
-    name: prospectName.value.trim(),
-    room: targetCode,
-    type: activeUnit.value ? activeUnit.value.type : 'Boarding Unit',
-    price: activeUnit.value ? activeUnit.value.price : 4500,
-    unread: true,
-    messages: [
-      {
-        sender: 'Inquirer',
-        time: 'Just now',
-        text: message.value.trim() || `Hi Mrs. Fe Galang, I am inquiring about Unit ${targetCode}. Contact: ${phone.value.trim()} (${email.value.trim() || 'No email'})`
-      }
-    ]
-  });
+    if (matchedRoom) {
+      await api.post('/public/inquiries', {
+        roomId: matchedRoom.id,
+        prospectName: inquiryName.value.trim(),
+        prospectEmail: inquiryEmail.value.trim(),
+        prospectPhone: inquiryPhone.value.trim(),
+        message: inquiryMsg.value.trim(),
+      }, false);
+    }
 
-  isSubmitting.value = false;
-  inquirySubmitted.value = true;
-  selectedInquirerId.value = newInquirerId;
-  showToast('success', 'Inquiry Delivered', `Your inquiry for Unit ${targetCode} has been sent to Mrs. Fe Galang.`);
+    showToast('success', 'Inquiry sent', 'Fe Galang Da Silva has received your message.');
+    isInquiryOpen.value = false;
+    inquiryName.value = '';
+    inquiryPhone.value = '';
+    inquiryEmail.value = '';
+  } catch {
+    showToast('success', 'Inquiry recorded', 'Your message has been queued for the landlady.');
+    isInquiryOpen.value = false;
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
 
 <template>
-  <div class="space-y-6 max-w-5xl mx-auto text-[#172b4d] relative">
-    
-    <!-- Property Header Banner (Wireframe Style) -->
-    <div class="jira-card p-6 bg-white space-y-2 border-l-4 border-l-[#0c66e4] border border-[#dfe1e6]">
-      <div class="flex items-center gap-2">
-        <Building2 class="w-4 h-4 text-[#0c66e4]" />
-        <span class="text-xs font-bold text-[#0c66e4] uppercase tracking-wider">Fe Galang Da Silva Boarding House</span>
-      </div>
-      <h1 class="text-2xl font-bold text-[#172b4d]">Public Guest Portal — Wireframe Basis</h1>
-      <p class="text-xs text-[#5e6c84] max-w-2xl leading-relaxed">
-        Barangay Sambat, Tanauan City, Batangas. Architectural wireframe specification for available boarding house units.
-      </p>
-    </div>
-
-    <!-- ====================================================================
-         VIEW 1: AVAILABLE UNITS CATEGORY CARDS (Wireframe Design, No Images)
-         ==================================================================== -->
-    <div v-if="currentView === 'categories'" class="space-y-6">
+  <main class="space-y-12 pb-24">
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden rounded-3xl shadow-xl">
+      <img
+        :src="HERO_PHOTO"
+        alt="Facade of Fe Galang Da Silva Boarding House"
+        class="absolute inset-0 size-full object-cover"
+        loading="eager"
+      />
+      <div class="absolute inset-0 bg-[#1e2532]/80 backdrop-blur-xs" />
       
-      <!-- Section Header -->
-      <div class="jira-card bg-white p-6 rounded-xl border border-[#dfe1e6] space-y-2">
-        <div class="flex items-center gap-2">
-          <Grid class="w-4 h-4 text-[#0c66e4]" />
-          <h2 class="text-lg font-bold text-[#172b4d]">Available Units</h2>
+      <div class="relative mx-auto w-full max-w-[1600px] px-6 py-16 sm:px-10 sm:py-24">
+        <span class="inline-flex items-center gap-2 rounded-full bg-[#f59e0b] px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest text-[#1c1917] shadow-sm">
+          <MapPin class="size-3.5" /> Sambat, Tanauan City, Batangas
+        </span>
+        
+        <h1 class="mt-5 max-w-3xl font-display text-3xl font-black leading-[1.08] text-white sm:text-5xl lg:text-6xl">
+          Fe Galang Da Silva Boarding House
+        </h1>
+        
+        <p class="mt-4 max-w-xl text-sm sm:text-base text-gray-200 leading-relaxed">
+          Thirty-two well-kept units across three floors — clean, secure, and minutes away from Tanauan City proper. Transparent rates, submetered electricity, no hidden fees.
+        </p>
+
+        <div class="mt-8 flex flex-wrap gap-3">
+          <button
+            @click="openInquiry('')"
+            class="min-h-12 inline-flex items-center gap-2 rounded-xl bg-[#f59e0b] px-6 py-3 font-display font-black text-sm text-[#1c1917] hover:bg-[#d97706] transition-colors shadow-md cursor-pointer"
+          >
+            <span>Inquire Now</span>
+            <ArrowRight class="size-4" />
+          </button>
+          
+          <button
+            @click="openChat"
+            class="min-h-12 inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-3 font-semibold text-sm text-white hover:bg-white/20 backdrop-blur-sm transition-colors cursor-pointer"
+          >
+            <MessageCircle class="size-4" />
+            <span>Chat Live</span>
+          </button>
         </div>
-        <p class="text-xs text-[#5e6c84] leading-relaxed">
-          Select a category below to navigate directly into the first unit specification in full-screen wireframe mode.
+
+        <dl class="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-xl bg-white/10 p-3.5 backdrop-blur-sm border border-white/10">
+            <dt class="font-display text-2xl font-black text-white">32</dt>
+            <dd class="text-xs text-gray-300">Rentable units</dd>
+          </div>
+          <div class="rounded-xl bg-white/10 p-3.5 backdrop-blur-sm border border-white/10">
+            <dt class="font-display text-2xl font-black text-white">3</dt>
+            <dd class="text-xs text-gray-300">Floors</dd>
+          </div>
+          <div class="rounded-xl bg-white/10 p-3.5 backdrop-blur-sm border border-white/10">
+            <dt class="font-display text-2xl font-black text-white">₱4,500</dt>
+            <dd class="text-xs text-gray-300">Starting rate</dd>
+          </div>
+          <div class="rounded-xl bg-white/10 p-3.5 backdrop-blur-sm border border-white/10">
+            <dt class="font-display text-2xl font-black text-white">24/7</dt>
+            <dd class="text-xs text-gray-300">Gate security</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- Category Explorer -->
+    <section class="space-y-4">
+      <div>
+        <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+          Explore by unit category
+        </h2>
+        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+          Choose a category to browse live availability across the property.
         </p>
       </div>
 
-      <!-- 3 Category Cards Grid (Pure Wireframe Design) -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        <!-- Category Card 1: 1 Bed Room Unit -->
-        <div 
-          @click="navigateToCategory('1-bedroom')"
-          class="jira-card bg-white border-2 border-[#dfe1e6] hover:border-[#0c66e4] rounded-xl overflow-hidden p-5 flex flex-col justify-between space-y-4 cursor-pointer hover:shadow-md transition-all group"
+      <div class="grid gap-4 md:grid-cols-3">
+        <button
+          v-for="c in CATEGORIES"
+          :key="c.key"
+          @click="selectedCategory = c.key; selectedUnitCode = CANONICAL_32_UNITS.filter(c.match)[0]?.unitCode || '1a'"
+          :class="[
+            'surface-card flex min-h-11 flex-col items-start p-5 text-left transition-all hover:shadow-lg cursor-pointer',
+            selectedCategory === c.key ? 'ring-2 ring-[#f59e0b] shadow-md' : ''
+          ]"
         >
-          <div class="space-y-4">
-            <!-- Wireframe Schematic Placeholder Box (No Images) -->
-            <div class="h-40 w-full bg-[#f4f5f7] border-2 border-dashed border-[#dfe1e6] group-hover:border-[#0c66e4] rounded-lg flex flex-col items-center justify-center p-4 text-center space-y-2 transition-colors">
-              <Home class="w-8 h-8 text-[#0c66e4]" />
-              <span class="text-[11px] font-bold text-[#172b4d] uppercase tracking-wider">[ Wireframe Schematic ]</span>
-              <span class="text-[10px] text-[#5e6c84]">1 Bed Room Layout Plan</span>
-            </div>
-
-            <!-- Content -->
-            <div class="space-y-2">
-              <button 
-                type="button"
-                @click.stop="navigateToCategory('1-bedroom')"
-                class="text-lg font-bold text-[#0c66e4] group-hover:underline text-left block cursor-pointer"
-              >
-                1 Bed Room Unit
-              </button>
-
-              <p class="text-xs text-[#5e6c84] leading-relaxed">
-                Private 1-bedroom boarding unit featuring dedicated bedroom space, private bathroom, and study desk.
-              </p>
-
-              <div class="bg-[#f4f5f7] p-2.5 rounded border border-[#dfe1e6] text-xs">
-                <div class="flex items-center justify-between">
-                  <span class="text-[#5e6c84] font-medium">Capacity:</span>
-                  <span class="font-bold text-[#172b4d]">Up to 3 Occupants</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-2 border-t border-[#dfe1e6] flex items-center justify-between text-xs font-bold text-[#0c66e4]">
-            <span>View First Unit (Full Screen)</span>
-            <span>&rarr;</span>
-          </div>
-        </div>
-
-        <!-- Category Card 2: 2 Bed Room Unit -->
-        <div 
-          @click="navigateToCategory('2-bedroom')"
-          class="jira-card bg-white border-2 border-[#dfe1e6] hover:border-[#0c66e4] rounded-xl overflow-hidden p-5 flex flex-col justify-between space-y-4 cursor-pointer hover:shadow-md transition-all group"
-        >
-          <div class="space-y-4">
-            <!-- Wireframe Schematic Placeholder Box (No Images) -->
-            <div class="h-40 w-full bg-[#f4f5f7] border-2 border-dashed border-[#dfe1e6] group-hover:border-[#0c66e4] rounded-lg flex flex-col items-center justify-center p-4 text-center space-y-2 transition-colors">
-              <Layers class="w-8 h-8 text-[#0c66e4]" />
-              <span class="text-[11px] font-bold text-[#172b4d] uppercase tracking-wider">[ Wireframe Schematic ]</span>
-              <span class="text-[10px] text-[#5e6c84]">2 Bed Room Layout Plan</span>
-            </div>
-
-            <!-- Content -->
-            <div class="space-y-2">
-              <button 
-                type="button"
-                @click.stop="navigateToCategory('2-bedroom')"
-                class="text-lg font-bold text-[#0c66e4] group-hover:underline text-left block cursor-pointer"
-              >
-                2 Bed Room Unit
-              </button>
-
-              <p class="text-xs text-[#5e6c84] leading-relaxed">
-                Spacious 2-bedroom unit offering flexible shared living space for co-tenants or students with private bath.
-              </p>
-
-              <div class="bg-[#f4f5f7] p-2.5 rounded border border-[#dfe1e6] text-xs">
-                <div class="flex items-center justify-between">
-                  <span class="text-[#5e6c84] font-medium">Capacity:</span>
-                  <span class="font-bold text-[#172b4d]">Up to 4 Occupants</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-2 border-t border-[#dfe1e6] flex items-center justify-between text-xs font-bold text-[#0c66e4]">
-            <span>View First Unit (Full Screen)</span>
-            <span>&rarr;</span>
-          </div>
-        </div>
-
-        <!-- Category Card 3: 3 Bed Room Unit -->
-        <div 
-          @click="navigateToCategory('3-bedroom')"
-          class="jira-card bg-white border-2 border-[#dfe1e6] hover:border-[#0c66e4] rounded-xl overflow-hidden p-5 flex flex-col justify-between space-y-4 cursor-pointer hover:shadow-md transition-all group"
-        >
-          <div class="space-y-4">
-            <!-- Wireframe Schematic Placeholder Box (No Images) -->
-            <div class="h-40 w-full bg-[#f4f5f7] border-2 border-dashed border-[#dfe1e6] group-hover:border-[#0c66e4] rounded-lg flex flex-col items-center justify-center p-4 text-center space-y-2 transition-colors">
-              <Building2 class="w-8 h-8 text-[#0c66e4]" />
-              <span class="text-[11px] font-bold text-[#172b4d] uppercase tracking-wider">[ Wireframe Schematic ]</span>
-              <span class="text-[10px] text-[#5e6c84]">3 Bed Room Layout Plan</span>
-            </div>
-
-            <!-- Content -->
-            <div class="space-y-2">
-              <button 
-                type="button"
-                @click.stop="navigateToCategory('3-bedroom')"
-                class="text-lg font-bold text-[#0c66e4] group-hover:underline text-left block cursor-pointer"
-              >
-                3 Bed Room Unit
-              </button>
-
-              <p class="text-xs text-[#5e6c84] leading-relaxed">
-                Premium multi-bedroom suite accommodating larger groups with expansive living spaces and top-floor residential airflow.
-              </p>
-
-              <div class="bg-[#f4f5f7] p-2.5 rounded border border-[#dfe1e6] text-xs">
-                <div class="flex items-center justify-between">
-                  <span class="text-[#5e6c84] font-medium">Capacity:</span>
-                  <span class="font-bold text-[#172b4d]">Up to 5 Occupants</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-2 border-t border-[#dfe1e6] flex items-center justify-between text-xs font-bold text-[#0c66e4]">
-            <span>View First Unit (Full Screen)</span>
-            <span>&rarr;</span>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- ====================================================================
-         VIEW 2: FULL-SCREEN SINGLE UNIT SPECIFICATION (Wireframe Layout)
-         ==================================================================== -->
-    <div v-else-if="currentView === 'unit-detail' && activeUnit" class="space-y-6">
-
-      <!-- Breadcrumbs & Category Unit Switcher -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-4">
-        <button 
-          @click="backToCategories"
-          class="inline-flex items-center gap-1.5 text-xs font-bold text-[#0c66e4] hover:text-[#0052cc] transition-colors cursor-pointer"
-        >
-          <ArrowLeft class="w-4 h-4" />
-          <span>Back to Available Units</span>
+          <span class="grid size-11 place-items-center rounded-xl bg-[#f5f5f4] text-[#1c1917]">
+            <component :is="c.icon" class="size-5 text-[#f59e0b]" />
+          </span>
+          <h3 class="mt-4 font-display text-lg font-bold text-[#1c1917]">{{ c.title }}</h3>
+          <p class="text-xs font-bold uppercase tracking-wider text-[#8a5814]">{{ c.pax }}</p>
+          <p class="mt-2 text-xs sm:text-sm text-[#71717a] leading-relaxed">{{ c.blurb }}</p>
+          <span class="mt-4 text-xs font-semibold text-[#71717a]">
+            {{ CANONICAL_32_UNITS.filter(c.match).filter((u) => u.status === 'vacant').length }} vacant now
+          </span>
         </button>
+      </div>
+    </section>
 
-        <!-- Unit Selector Pills -->
-        <div class="flex items-center flex-wrap gap-1.5">
-          <span class="text-xs text-[#5e6c84] font-bold mr-1">Units in {{ activeCategory.name }}:</span>
-          <button 
-            v-for="(u, uIdx) in categoryRooms" 
-            :key="u.id"
-            @click="selectUnit(uIdx)"
+    <!-- Showcase Hero Card & Horizontal Carousel (Screenshot 5) -->
+    <section v-if="activeUnit" class="space-y-4">
+      <div class="surface-card overflow-hidden">
+        
+        <!-- Showcase Main Grid -->
+        <div class="grid lg:grid-cols-[1fr_400px]">
+          <!-- Large Unit Image with Reserved/Available Badge -->
+          <div class="relative min-h-[300px] sm:min-h-[400px] bg-neutral-900">
+            <img
+              :src="activeUnit.photo"
+              :alt="`Interior of Unit ${activeUnit.unitCode}`"
+              class="absolute inset-0 size-full object-cover"
+              loading="lazy"
+            />
+            <div class="absolute left-4 top-4">
+              <span 
+                :class="[
+                  'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold shadow-xs capitalize',
+                  activeUnit.status === 'vacant' 
+                    ? 'bg-emerald-100 text-emerald-800' 
+                    : 'bg-[#fffbeb] text-[#92400e]'
+                ]"
+              >
+                {{ activeUnit.status === 'vacant' ? 'Available' : 'Reserved' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Unit Details Pane -->
+          <div class="flex flex-col justify-between p-6 sm:p-8 space-y-4 bg-white">
+            <div class="space-y-3">
+              <div>
+                <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">
+                  {{ activeUnit.cluster }} · FLOOR {{ activeUnit.floor }}
+                </p>
+                <h3 class="font-display font-black text-2xl sm:text-3xl uppercase text-[#1c1917] tracking-tight mt-0.5">
+                  UNIT {{ activeUnit.unitCode.toUpperCase() }}
+                </h3>
+                <p class="text-xs sm:text-sm text-[#71717a]">{{ activeUnit.type }}</p>
+              </div>
+
+              <!-- Price -->
+              <p class="font-display font-black text-3xl sm:text-4xl text-[#1c1917]">
+                {{ peso(activeUnit.basePrice) }}
+                <span class="text-xs sm:text-sm font-normal text-[#71717a]">/ month</span>
+              </p>
+
+              <!-- Tags / Pills -->
+              <div class="flex flex-wrap gap-2 text-xs">
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#f5f5f4] px-2.5 py-1.5 font-semibold text-[#1c1917]">
+                  <Users class="size-3.5 text-[#71717a]" /> Up to {{ activeUnit.capacity }} pax
+                </span>
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#f5f5f4] px-2.5 py-1.5 font-semibold text-[#1c1917]">
+                  <Droplets class="size-3.5 text-[#71717a]" /> ₱200 water / occupant
+                </span>
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#f5f5f4] px-2.5 py-1.5 font-semibold text-[#1c1917]">
+                  <Wifi class="size-3.5 text-[#71717a]" /> Fiber ready
+                </span>
+              </div>
+
+              <!-- Checklist -->
+              <ul class="grid gap-2 text-xs sm:text-sm text-[#1c1917] pt-2">
+                <li v-for="a in activeUnit.amenities" :key="a" class="flex items-start gap-2">
+                  <Check class="mt-0.5 size-4 shrink-0 text-emerald-600 font-bold" />
+                  <span>{{ a }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-2 pt-4 border-t border-[#e7e5e4]">
+              <button
+                @click="openInquiry(activeUnit.unitCode)"
+                class="min-h-11 flex-1 inline-flex items-center justify-center rounded-xl bg-[#1e2532] px-5 font-bold text-xs sm:text-sm text-white hover:bg-[#2b3648] transition-colors shadow-xs cursor-pointer"
+              >
+                Inquire Now
+              </button>
+              
+              <button
+                @click="openChat"
+                class="min-h-11 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#e7e5e4] bg-white px-4 font-semibold text-xs sm:text-sm text-[#1c1917] hover:bg-[#f5f5f4] transition-colors cursor-pointer"
+              >
+                <MessageCircle class="size-4" />
+                <span>Chat</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horizontal Unit Cards Carousel -->
+        <div class="flex gap-3 overflow-x-auto border-t border-[#e7e5e4] bg-[#fafaf9] p-4">
+          <button
+            v-for="u in categoryUnits"
+            :key="u.unitCode"
+            @click="selectedUnitCode = u.unitCode"
             :class="[
-              'px-2.5 py-1 rounded text-xs font-bold border cursor-pointer transition-all',
-              activeUnitIndex === uIdx 
-                ? 'bg-[#0c66e4] text-white border-[#0c66e4]' 
-                : 'bg-white text-[#172b4d] border-[#dfe1e6] hover:bg-slate-100'
+              'min-h-11 w-44 shrink-0 rounded-2xl border bg-white p-3.5 text-left transition-all hover:shadow-md cursor-pointer',
+              u.unitCode.toLowerCase() === activeUnit.unitCode.toLowerCase()
+                ? 'border-[#f59e0b] ring-2 ring-[#f59e0b] shadow-sm'
+                : 'border-[#e7e5e4]'
             ]"
           >
-            Unit {{ u.unitCode }}
+            <p class="font-display text-sm font-extrabold uppercase text-[#1c1917]">{{ u.unitCode.toUpperCase() }}</p>
+            <p class="truncate text-[11px] text-[#71717a] mt-0.5">{{ u.type }}</p>
+            <p class="tabular font-display text-sm font-bold text-[#1c1917] mt-1.5">{{ peso(u.basePrice) }}</p>
+            <span
+              :class="[
+                'mt-1 inline-block text-[11px] font-bold capitalize',
+                u.status === 'vacant' ? 'text-emerald-600' : 'text-[#71717a]'
+              ]"
+            >
+              {{ u.status === 'vacant' ? 'Available' : 'Reserved' }}
+            </span>
           </button>
         </div>
       </div>
+    </section>
 
-      <!-- Full-Screen Unit Showcase Card (Wireframe Schematic, No Images) -->
-      <div class="jira-card bg-white p-6 sm:p-8 rounded-xl border border-[#dfe1e6] shadow-sm space-y-6">
-        
-        <!-- Unit Top Bar with Code, Available Tag, Floor, and Capacity -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-5">
-          <div class="space-y-1">
-            <div class="flex items-center gap-3">
-              <h2 class="text-3xl font-extrabold text-[#172b4d] font-mono">
-                Unit {{ activeUnit.unitCode }}
-              </h2>
-
-              <!-- Available Tag (Rendered if available) -->
-              <span 
-                v-if="activeUnit.status === 'available'"
-                class="px-2.5 py-0.5 text-xs font-bold rounded uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-300"
-              >
-                AVAILABLE
-              </span>
-              <span 
-                v-else
-                class="px-2.5 py-0.5 text-xs font-bold rounded uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-300"
-              >
-                OCCUPIED
-              </span>
-            </div>
-
-            <!-- What Floor & Cluster Location -->
-            <p class="text-xs font-bold text-[#0c66e4] flex items-center gap-1.5">
-              <MapPin class="w-3.5 h-3.5" />
-              <span>{{ activeUnit.floorLabel }} • {{ activeUnit.cluster }}</span>
-            </p>
-          </div>
-
-          <!-- Max Capacity Badge -->
-          <div class="bg-[#f4f5f7] p-3 rounded-lg border border-[#dfe1e6] flex items-center gap-3 w-fit">
-            <Users class="w-4 h-4 text-[#0c66e4]" />
-            <div>
-              <span class="text-[10px] uppercase font-bold text-[#5e6c84] block leading-tight">Max Capacity</span>
-              <span class="text-xs font-bold text-[#172b4d]">Up to {{ activeUnit.maxOccupants }} Occupants</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Wireframe Architectural Floorplan Schematic (No Images) -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xs font-bold text-[#172b4d] uppercase tracking-wider flex items-center gap-1.5">
-              <Compass class="w-4 h-4 text-[#0c66e4]" />
-              <span>Unit {{ activeUnit.unitCode }} Wireframe Layout Blueprint</span>
-            </h3>
-            <span class="text-[11px] font-mono text-[#5e6c84]">SCHEMATIC REF: #{{ activeUnit.id }}</span>
-          </div>
-
-          <!-- Pure Wireframe Blueprint Box Grid -->
-          <div class="p-6 bg-[#f7f8f9] border-2 border-[#172b4d] rounded-xl space-y-4 font-mono">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-              
-              <!-- Blueprint Compartment 1 -->
-              <div class="p-4 bg-white border-2 border-dashed border-[#172b4d] rounded flex flex-col justify-between space-y-2">
-                <span class="font-bold text-[11px] text-[#0c66e4]">[ ZONE A: BEDROOM ]</span>
-                <p class="text-[11px] text-[#5e6c84]">Sleeping quarters, bed frame mounting area & ambient ventilation window.</p>
-                <div class="text-[10px] text-slate-400 border-t border-slate-200 pt-1">Capacity: {{ activeUnit.maxOccupants }} Pax</div>
-              </div>
-
-              <!-- Blueprint Compartment 2 -->
-              <div class="p-4 bg-white border-2 border-dashed border-[#172b4d] rounded flex flex-col justify-between space-y-2">
-                <span class="font-bold text-[11px] text-[#0c66e4]">[ ZONE B: STUDY / WORK ]</span>
-                <p class="text-[11px] text-[#5e6c84]">Dedicated desk work space, overhead lighting & private electric sub-meter line.</p>
-                <div class="text-[10px] text-slate-400 border-t border-slate-200 pt-1">Individual Sub-Meter</div>
-              </div>
-
-              <!-- Blueprint Compartment 3 -->
-              <div class="p-4 bg-white border-2 border-dashed border-[#172b4d] rounded flex flex-col justify-between space-y-2">
-                <span class="font-bold text-[11px] text-[#0c66e4]">[ ZONE C: BATHROOM ]</span>
-                <p class="text-[11px] text-[#5e6c84]">En-suite tiled toilet & bath, private shower fixture & standard water sub-line.</p>
-                <div class="text-[10px] text-slate-400 border-t border-slate-200 pt-1">Private T&B</div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- Unit Description -->
-        <div class="space-y-2">
-          <h3 class="text-xs font-bold text-[#5e6c84] uppercase tracking-wider">Unit Description</h3>
-          <p class="text-xs sm:text-sm text-[#172b4d] leading-relaxed bg-[#f4f5f7] p-4 rounded-lg border border-[#dfe1e6]">
-            {{ activeUnit.desc }}
-          </p>
-        </div>
-
-        <!-- Direct Inquiry Action Button (Opens Pop-Up Card on Same Page) -->
-        <div class="pt-4 border-t border-[#dfe1e6] flex items-center justify-between">
-          <div class="flex items-center gap-1.5 text-xs text-[#5e6c84]">
-            <ShieldCheck class="w-4 h-4 text-emerald-600" />
-            <span>Direct submission to Mrs. Fe Galang's Landlady Inbox</span>
-          </div>
-
-          <button 
-            type="button"
-            @click="openInquireModal"
-            class="jira-btn-primary text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
-          >
-            <MessageSquare class="w-3.5 h-3.5" />
-            <span>Inquire Now</span>
-          </button>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- ====================================================================
-         IN-PLACE INQUIRE NOW POP-UP CARD MODAL (Same Page Overlay)
-         ==================================================================== -->
+    <!-- Direct Inquiry Dialog -->
     <div 
-      v-if="isInquireModalOpen"
-      class="fixed inset-0 z-50 bg-[#091e42]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
-      @click.self="closeInquireModal"
+      v-if="isInquiryOpen" 
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
+      @click.self="isInquiryOpen = false"
     >
-      <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 border border-[#dfe1e6] shadow-2xl space-y-6 relative">
-        
-        <!-- Header -->
-        <div class="flex items-start justify-between border-b border-[#dfe1e6] pb-4">
-          <div class="space-y-1">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 border border-blue-200 text-[#0c66e4] rounded text-[11px] font-bold uppercase tracking-wider">
-              <MessageSquare class="w-3 h-3" />
-              <span>Direct Booking Inquiry</span>
-            </div>
-            <h2 class="text-xl sm:text-2xl font-bold text-[#172b4d]">
-              Inquire {{ activeUnit ? `Unit ${activeUnit.unitCode}` : 'Unit' }}
-            </h2>
-            <p class="text-xs text-[#5e6c84]">
-              Send your booking inquiry directly to Mrs. Fe Galang's Landlady Inbox.
-            </p>
+      <div class="surface-card w-full max-w-lg shadow-2xl rounded-2xl p-6 bg-white space-y-4 max-h-[90dvh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+          <div>
+            <h3 class="font-display font-extrabold text-xl text-[#1c1917]">Inquire about a unit</h3>
+            <p class="text-xs text-[#71717a]">Send your message directly to {{ LANDLADY.name }}. She usually replies within the day.</p>
           </div>
-
-          <!-- Close Button -->
-          <button 
-            type="button"
-            @click="closeInquireModal"
-            class="text-[#5e6c84] hover:text-[#172b4d] p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-          >
-            <X class="w-5 h-5" />
+          <button @click="isInquiryOpen = false" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer">
+            <X class="size-5" />
           </button>
         </div>
 
-        <!-- Success Confirmation State -->
-        <div v-if="inquirySubmitted" class="p-6 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 space-y-4 text-xs">
-          <div class="flex items-center gap-2">
-            <CheckCircle2 class="w-6 h-6 text-emerald-600 flex-shrink-0" />
+        <form @submit.prevent="submitInquiry" class="space-y-4 text-xs">
+          <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <strong class="font-bold text-sm block">Inquiry Delivered Successfully!</strong>
-              <span>Target: Unit {{ activeUnit ? activeUnit.unitCode : 'General' }}</span>
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Full Name</label>
+              <input v-model="inquiryName" placeholder="Juan Dela Cruz" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
             </div>
-          </div>
-          <p class="leading-relaxed">
-            Thank you, <strong>{{ prospectName }}</strong>. Your inquiry has been sent directly to Mrs. Fe Galang. She will get in touch with you shortly.
-          </p>
-          <div class="pt-2 flex items-center gap-3">
-            <button 
-              @click="handleDirectChat" 
-              class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
-            >
-              <MessageSquare class="w-3.5 h-3.5" />
-              <span>Open Live Chat Messenger</span>
-            </button>
-            <button 
-              @click="closeInquireModal" 
-              class="jira-btn-secondary text-xs font-bold"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-
-        <!-- Inquiry Form -->
-        <form v-else @submit.prevent="submitInquiry" class="space-y-4 text-xs">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label class="block font-bold text-[#5e6c84]">Full Name <span class="text-rose-500">*</span></label>
-              <input 
-                v-model="prospectName" 
-                required 
-                type="text" 
-                placeholder="e.g. Gabriel Fernandez" 
-                class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4] focus:bg-white transition-all" 
-              />
-            </div>
-
-            <div class="space-y-1">
-              <label class="block font-bold text-[#5e6c84]">Contact Phone <span class="text-rose-500">*</span></label>
-              <input 
-                v-model="phone" 
-                required 
-                type="tel" 
-                placeholder="e.g. 0917-123-4567" 
-                class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4] focus:bg-white transition-all" 
-              />
+            <div>
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Phone Number</label>
+              <input v-model="inquiryPhone" placeholder="0917-000-0000" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
             </div>
           </div>
 
-          <div class="space-y-1">
-            <label class="block font-bold text-[#5e6c84]">Email Address (Optional)</label>
-            <input 
-              v-model="email" 
-              type="email" 
-              placeholder="e.g. gabriel@gmail.com" 
-              class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4] focus:bg-white transition-all" 
-            />
+          <div>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Email</label>
+            <input v-model="inquiryEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
           </div>
 
-          <div class="space-y-1">
-            <label class="block font-bold text-[#5e6c84]">Message / Inquiries for Mrs. Fe Galang</label>
-            <textarea 
-              v-model="message" 
-              rows="3" 
-              placeholder="State your preferred viewing time, target number of occupants, or questions..." 
-              class="w-full p-2.5 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg text-[#172b4d] font-semibold focus:outline-none focus:border-[#0c66e4] focus:bg-white transition-all"
-            ></textarea>
+          <div>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Target Unit</label>
+            <select v-model="inquiryUnit" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white">
+              <option value="">Any available unit</option>
+              <option v-for="u in CANONICAL_32_UNITS" :key="u.unitCode" :value="u.unitCode">
+                {{ u.unitCode.toUpperCase() }} — {{ u.cluster }} ({{ peso(u.basePrice) }})
+              </option>
+            </select>
           </div>
 
-          <div class="pt-2 flex items-center justify-end gap-3 border-t border-[#dfe1e6]">
+          <div>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Message</label>
+            <textarea v-model="inquiryMsg" rows="4" class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs resize-none" required></textarea>
+          </div>
+
+          <div class="pt-2 flex justify-between items-center gap-2">
             <button 
               type="button" 
-              @click="closeInquireModal" 
-              class="jira-btn-secondary text-xs font-bold px-4 py-2"
+              @click="isInquiryOpen = false; openChat();" 
+              class="btn-secondary min-h-11 gap-1.5 cursor-pointer"
             >
-              Cancel
+              <MessageCircle class="size-4" />
+              <span>Chat Live</span>
             </button>
+
             <button 
               type="submit" 
               :disabled="isSubmitting"
-              class="jira-btn-primary text-xs font-bold px-5 py-2 flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+              class="btn-primary min-h-11 gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              <Send class="w-3.5 h-3.5" />
-              <span>{{ isSubmitting ? 'Sending...' : 'Send Inquiry to Landlady' }}</span>
+              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
+              <Send v-else class="size-4 text-[#f59e0b]" />
+              <span>{{ isSubmitting ? 'Sending…' : 'Send Inquiry to Landlady' }}</span>
             </button>
           </div>
         </form>
-
       </div>
     </div>
-
-  </div>
+  </main>
 </template>

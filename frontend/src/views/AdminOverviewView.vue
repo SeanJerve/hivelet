@@ -1,211 +1,196 @@
-<!--
-  @file views/AdminOverviewView.vue
-  @description Admin Executive Overview matrix featuring all 32 Canonical Units grouped by the 5 Property Clusters.
-  @systemBibleRef Section 3.1, Section 5, & BR-032 (Canonical 32 Unit List)
-  @rationale Matches RoomDirectoryView and system Bible, rendering all 32 canonical units across the 5 Property Clusters.
--->
 <script setup lang="ts">
-import { computed } from 'vue';
-import { rooms, openRoomDetail, openAdminEditUnit, isOnsitePaymentModalOpen } from '@/lib/systemState';
-import { Plus, Eye, Edit, Building2 } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
+import { 
+  rooms, 
+  isOnsitePaymentModalOpen, 
+  isAdminEditUnitModalOpen, 
+  activeAdminEditUnit, 
+  isRoomDetailModalOpen, 
+  activeRoomDetail,
+  type RoomItem 
+} from '@/lib/systemState';
+import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
+import { 
+  Banknote, 
+  TrendingUp, 
+  Home, 
+  ShieldAlert, 
+  Wrench, 
+  Eye, 
+  Pencil 
+} from 'lucide-vue-next';
 
-const bhRooms = computed(() => rooms.filter(r => r.cluster === 'BH (Main Rooms)'));
-const backAptRooms = computed(() => rooms.filter(r => r.cluster === 'Back Apartment'));
-const penthouseRooms = computed(() => rooms.filter(r => r.cluster === 'Penthouse'));
-const frontAptRooms = computed(() => rooms.filter(r => r.cluster === 'Front Apartment'));
-const lindaRooms = computed(() => rooms.filter(r => r.cluster === 'Linda'));
+const STATUS_STYLE: Record<UnitStatus, string> = {
+  settled: 'border-emerald-200 bg-emerald-50/50',
+  pending: 'border-amber-200 bg-amber-50/50',
+  overdue: 'border-rose-200 bg-rose-50/50',
+  vacant: 'border-[#e7e5e4] bg-[#fafaf9]',
+  maintenance: 'border-[#e7e5e4] bg-[#fafaf9]',
+};
 
-const occupiedCount = computed(() => rooms.filter(r => r.status === 'occupied').length);
-const vacantCount = computed(() => rooms.filter(r => r.status === 'available').length);
+function getUnitsForCluster(clusterName: string) {
+  return rooms.filter((r) => r.cluster === clusterName);
+}
+
+function openSpecs(room: RoomItem) {
+  activeRoomDetail.value = room;
+  isRoomDetailModalOpen.value = true;
+}
+
+function openEdit(room: RoomItem) {
+  activeAdminEditUnit.value = room;
+  isAdminEditUnitModalOpen.value = true;
+}
+
+function getStatusLabel(status: UnitStatus) {
+  if (status === 'vacant') return 'Vacant';
+  if (status === 'settled') return 'Settled';
+  if (status === 'pending') return 'Pending';
+  if (status === 'overdue') return 'Overdue';
+  return status;
+}
+
+function getStatusBadgeClass(status: UnitStatus) {
+  if (status === 'settled') return 'badge-success';
+  if (status === 'pending') return 'badge-warning';
+  if (status === 'overdue') return 'badge-danger';
+  return 'badge-neutral';
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- Header Controls -->
-    <div class="flex flex-wrap justify-between items-center gap-4">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
       <div>
-        <h1 class="text-xl font-bold text-[#172b4d]">System Overview Dashboard</h1>
-        <p class="text-xs text-[#5e6c84]">Executive Matrix matching Canonical 32 Units across 5 Property Clusters</p>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+          Executive Overview
+        </h1>
+        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+          Live operating snapshot for Fe Galang Da Silva Boarding House — July to August 2026 cycle.
+        </p>
       </div>
-      <button @click="isOnsitePaymentModalOpen = true" class="jira-btn-primary flex items-center gap-1.5">
-        <Plus class="w-4 h-4" /> Record On-Site Cash Payment
+
+      <button 
+        @click="isOnsitePaymentModalOpen = true"
+        class="btn-primary min-h-11 gap-2 text-xs self-start sm:self-auto shadow-xs"
+      >
+        <Banknote class="size-4 text-[#f59e0b]" />
+        <span>Record On-Site Cash Payment</span>
       </button>
     </div>
 
-    <!-- Top KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="jira-card p-4">
-        <p class="text-xs font-bold text-[#5e6c84] uppercase">Monthly Revenue</p>
-        <p class="text-xl font-bold text-[#0c66e4] mt-1">₱178,500</p>
-        <p class="text-[10px] text-emerald-700 mt-1">+₱12,000 vs last month</p>
+    <!-- Stat Cards -->
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="surface-card group relative overflow-hidden p-5 transition-shadow hover:shadow-lg">
+        <div class="flex items-start justify-between gap-3">
+          <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Monthly Revenue</p>
+          <span class="rounded-xl p-2 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200">
+            <TrendingUp class="size-4" />
+          </span>
+        </div>
+        <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">{{ peso(178500) }}</p>
+        <p class="mt-1.5 text-xs text-emerald-700 font-semibold">+₱12,000 vs last month</p>
       </div>
-      <div class="jira-card p-4">
-        <p class="text-xs font-bold text-[#5e6c84] uppercase">Occupancy Rate</p>
-        <p class="text-xl font-bold text-[#172b4d] mt-1">{{ occupiedCount }} / 32 <span class="text-xs font-normal">({{ ((occupiedCount / 32) * 100).toFixed(1) }}%)</span></p>
-        <p class="text-[10px] text-[#5e6c84] mt-1">{{ vacantCount }} Vacant Units</p>
+
+      <div class="surface-card group relative overflow-hidden p-5 transition-shadow hover:shadow-lg">
+        <div class="flex items-start justify-between gap-3">
+          <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Occupancy Rate</p>
+          <span class="rounded-xl p-2 bg-sky-50 text-sky-800 ring-1 ring-sky-200">
+            <Home class="size-4" />
+          </span>
+        </div>
+        <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">28 / 32 Units</p>
+        <p class="mt-1.5 text-xs text-[#71717a]">87.5% occupied • 4 vacant</p>
       </div>
-      <div class="jira-card p-4">
-        <p class="text-xs font-bold text-[#5e6c84] uppercase">Pending Verifications</p>
-        <p class="text-xl font-bold text-amber-700 mt-1">₱12,400</p>
-        <p class="text-[10px] text-[#5e6c84] mt-1">2 GCash Verifications</p>
+
+      <div class="surface-card group relative overflow-hidden p-5 transition-shadow hover:shadow-lg">
+        <div class="flex items-start justify-between gap-3">
+          <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Pending GCash</p>
+          <span class="rounded-xl p-2 bg-amber-50 text-amber-800 ring-1 ring-amber-200">
+            <ShieldAlert class="size-4" />
+          </span>
+        </div>
+        <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">{{ peso(12400) }}</p>
+        <p class="mt-1.5 text-xs text-amber-800 font-medium">2 remittances awaiting review</p>
       </div>
-      <div class="jira-card p-4">
-        <p class="text-xs font-bold text-[#5e6c84] uppercase">Maintenance Tickets</p>
-        <p class="text-xl font-bold text-red-700 mt-1">2 Open</p>
-        <p class="text-[10px] text-[#5e6c84] mt-1">1 Emergency Ticket</p>
+
+      <div class="surface-card group relative overflow-hidden p-5 transition-shadow hover:shadow-lg">
+        <div class="flex items-start justify-between gap-3">
+          <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Maintenance Alerts</p>
+          <span class="rounded-xl p-2 bg-rose-50 text-rose-800 ring-1 ring-rose-200">
+            <Wrench class="size-4" />
+          </span>
+        </div>
+        <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">2 Open</p>
+        <p class="mt-1.5 text-xs text-rose-700 font-medium">1 emergency needs dispatch</p>
       </div>
     </div>
 
-    <!-- 32-ROOM VISUAL MATRIX GROUPED BY 5 PROPERTY CLUSTERS -->
-    <div class="jira-card p-6 space-y-6">
-      <div class="flex flex-wrap justify-between items-center gap-2 border-b border-[#dfe1e6] pb-3">
-        <h2 class="text-sm font-bold text-[#172b4d] flex items-center gap-2">
-          <Building2 class="w-4 h-4 text-[#0c66e4]" />
-          <span>Canonical 32-Unit Occupancy Matrix (5 Property Clusters)</span>
-        </h2>
-        <div class="flex items-center gap-3 text-xs text-[#5e6c84]">
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-emerald-500 rounded-2xs"></span> Settled</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-500 rounded-2xs"></span> Pending</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-2xs"></span> Overdue</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-slate-300 rounded-2xs"></span> Vacant</span>
+    <!-- 32-Unit Visual Matrix -->
+    <div class="surface-card overflow-hidden">
+      <header class="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7e5e4] px-5 py-4">
+        <div>
+          <h2 class="font-display text-base font-extrabold text-[#1c1917]">32-Unit Visual Matrix</h2>
+          <p class="text-xs text-[#71717a]">Grouped by property cluster. Colors reflect the current billing cycle.</p>
         </div>
-      </div>
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="badge-soft badge-success">Settled</span>
+          <span class="badge-soft badge-warning">Pending</span>
+          <span class="badge-soft badge-danger">Overdue</span>
+          <span class="badge-soft badge-neutral">Vacant</span>
+        </div>
+      </header>
 
-      <!-- Cluster 1: BH (Main Rooms) - 22 Units -->
-      <div class="space-y-2">
-        <h3 class="text-xs font-bold text-[#5e6c84]">1. BH (MAIN ROOMS) — 22 UNITS (1a–1h, 2a–2g, 3a–3g)</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-6 md:grid-cols-11 gap-2">
-          <div
-            v-for="room in bhRooms"
-            :key="room.id"
-            :class="[
-              'p-2 border rounded-xs text-xs space-y-1 relative group cursor-pointer transition-shadow hover:shadow-md',
-              room.status === 'occupied' && room.paid ? 'bg-emerald-50 border-emerald-300' :
-              room.status === 'pending' ? 'bg-amber-50 border-amber-300' :
-              room.status === 'overdue' ? 'bg-red-50 border-red-300' : 'bg-[#f4f5f7] border-[#dfe1e6]'
-            ]"
-          >
-            <div class="flex justify-between items-center font-bold">
-              <span>Unit {{ room.unitCode }}</span>
-              <span class="text-[9px] text-[#5e6c84]">{{ room.type }}</span>
-            </div>
-            <p class="text-[10px] text-[#5e6c84] truncate">{{ room.tenant || 'Vacant' }}</p>
-            <div class="flex gap-1 pt-1 border-t border-[#dfe1e6]">
-              <button @click.stop="openRoomDetail(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="View Spec"><Eye class="w-3 h-3 text-[#5e6c84]" /></button>
-              <button @click.stop="openAdminEditUnit(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="Admin Edit"><Edit class="w-3 h-3 text-[#0c66e4]" /></button>
-            </div>
+      <div class="space-y-6 p-5">
+        <div v-for="cluster in CLUSTERS" :key="cluster">
+          <div class="mb-3 flex items-baseline gap-2">
+            <h3 class="font-display text-xs sm:text-sm font-extrabold uppercase tracking-wide text-[#1c1917]">{{ cluster }}</h3>
+            <span class="text-xs text-[#71717a]">{{ getUnitsForCluster(cluster).length }} units</span>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <article
+              v-for="u in getUnitsForCluster(cluster)"
+              :key="u.unitCode"
+              :class="[
+                'rounded-2xl border p-4 transition-all hover:shadow-md bg-white',
+                STATUS_STYLE[u.status]
+              ]"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <p class="font-display text-lg font-black uppercase leading-none text-[#1c1917]">{{ u.unitCode }}</p>
+                  <p class="mt-1 text-xs text-[#71717a]">{{ u.type }}</p>
+                </div>
+                <span :class="['badge-soft text-[10px] capitalize', getStatusBadgeClass(u.status)]">
+                  {{ getStatusLabel(u.status) }}
+                </span>
+              </div>
+
+              <p class="mt-3 truncate text-sm font-bold text-[#1c1917]">{{ u.tenant || 'No occupant' }}</p>
+              <p class="tabular text-xs text-[#71717a]">{{ peso(u.price) }} / month</p>
+
+              <div class="mt-3 flex gap-2">
+                <button
+                  @click="openSpecs(u)"
+                  class="btn-secondary min-h-9 flex-1 py-1 px-2 text-xs gap-1 shadow-xs"
+                >
+                  <Eye class="size-3.5 text-[#71717a]" />
+                  <span>Specs</span>
+                </button>
+                <button
+                  @click="openEdit(u)"
+                  class="btn-secondary min-h-9 flex-1 py-1 px-2 text-xs gap-1 shadow-xs"
+                >
+                  <Pencil class="size-3.5 text-[#71717a]" />
+                  <span>Edit</span>
+                </button>
+              </div>
+            </article>
           </div>
         </div>
       </div>
-
-      <!-- Cluster 2: Back Apartment - 5 Units -->
-      <div class="space-y-2">
-        <h3 class="text-xs font-bold text-[#5e6c84]">2. BACK APARTMENT — 5 UNITS (B1F, B2F, B2B, B3F, B3B)</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-          <div
-            v-for="room in backAptRooms"
-            :key="room.id"
-            :class="[
-              'p-2 border rounded-xs text-xs space-y-1 relative group cursor-pointer transition-shadow hover:shadow-md',
-              room.status === 'occupied' && room.paid ? 'bg-emerald-50 border-emerald-300' :
-              room.status === 'pending' ? 'bg-amber-50 border-amber-300' :
-              room.status === 'overdue' ? 'bg-red-50 border-red-300' : 'bg-[#f4f5f7] border-[#dfe1e6]'
-            ]"
-          >
-            <div class="flex justify-between items-center font-bold">
-              <span>Unit {{ room.unitCode }}</span>
-              <span class="text-[9px] text-[#5e6c84]">{{ room.type }}</span>
-            </div>
-            <p class="text-[10px] text-[#5e6c84] truncate">{{ room.tenant || 'Vacant' }}</p>
-            <div class="flex gap-1 pt-1 border-t border-[#dfe1e6]">
-              <button @click.stop="openRoomDetail(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="View Spec"><Eye class="w-3 h-3 text-[#5e6c84]" /></button>
-              <button @click.stop="openAdminEditUnit(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="Admin Edit"><Edit class="w-3 h-3 text-[#0c66e4]" /></button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cluster 3: Penthouse - 1 Unit -->
-      <div class="space-y-2">
-        <h3 class="text-xs font-bold text-[#5e6c84]">3. PENTHOUSE — 1 UNIT (PH)</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div
-            v-for="room in penthouseRooms"
-            :key="room.id"
-            :class="[
-              'p-2 border rounded-xs text-xs space-y-1 relative group cursor-pointer transition-shadow hover:shadow-md',
-              room.status === 'occupied' && room.paid ? 'bg-emerald-50 border-emerald-300' :
-              room.status === 'pending' ? 'bg-amber-50 border-amber-300' :
-              room.status === 'overdue' ? 'bg-red-50 border-red-300' : 'bg-[#f4f5f7] border-[#dfe1e6]'
-            ]"
-          >
-            <div class="flex justify-between items-center font-bold">
-              <span>Unit {{ room.unitCode }}</span>
-              <span class="text-[9px] text-[#5e6c84]">{{ room.type }}</span>
-            </div>
-            <p class="text-[10px] text-[#5e6c84] truncate">{{ room.tenant || 'Vacant' }}</p>
-            <div class="flex gap-1 pt-1 border-t border-[#dfe1e6]">
-              <button @click.stop="openRoomDetail(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="View Spec"><Eye class="w-3 h-3 text-[#5e6c84]" /></button>
-              <button @click.stop="openAdminEditUnit(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="Admin Edit"><Edit class="w-3 h-3 text-[#0c66e4]" /></button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cluster 4: Front Apartment - 3 Units -->
-      <div class="space-y-2">
-        <h3 class="text-xs font-bold text-[#5e6c84]">4. FRONT APARTMENT — 3 UNITS (F1, F2F, F2B)</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <div
-            v-for="room in frontAptRooms"
-            :key="room.id"
-            :class="[
-              'p-2 border rounded-xs text-xs space-y-1 relative group cursor-pointer transition-shadow hover:shadow-md',
-              room.status === 'occupied' && room.paid ? 'bg-emerald-50 border-emerald-300' :
-              room.status === 'pending' ? 'bg-amber-50 border-amber-300' :
-              room.status === 'overdue' ? 'bg-red-50 border-red-300' : 'bg-[#f4f5f7] border-[#dfe1e6]'
-            ]"
-          >
-            <div class="flex justify-between items-center font-bold">
-              <span>Unit {{ room.unitCode }}</span>
-              <span class="text-[9px] text-[#5e6c84]">{{ room.type }}</span>
-            </div>
-            <p class="text-[10px] text-[#5e6c84] truncate">{{ room.tenant || 'Vacant' }}</p>
-            <div class="flex gap-1 pt-1 border-t border-[#dfe1e6]">
-              <button @click.stop="openRoomDetail(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="View Spec"><Eye class="w-3 h-3 text-[#5e6c84]" /></button>
-              <button @click.stop="openAdminEditUnit(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="Admin Edit"><Edit class="w-3 h-3 text-[#0c66e4]" /></button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cluster 5: Linda Units - 2 Units -->
-      <div class="space-y-2">
-        <h3 class="text-xs font-bold text-[#5e6c84]">5. LINDA UNITS — 2 UNITS (LF, LB) [BR-040 FIXED RATES]</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-2 gap-2">
-          <div
-            v-for="room in lindaRooms"
-            :key="room.id"
-            :class="[
-              'p-2 border rounded-xs text-xs space-y-1 relative group cursor-pointer transition-shadow hover:shadow-md',
-              room.status === 'occupied' && room.paid ? 'bg-amber-50 border-amber-300' :
-              room.status === 'pending' ? 'bg-amber-50 border-amber-300' :
-              room.status === 'overdue' ? 'bg-red-50 border-red-300' : 'bg-[#f4f5f7] border-[#dfe1e6]'
-            ]"
-          >
-            <div class="flex justify-between items-center font-bold">
-              <span>Unit {{ room.unitCode }}</span>
-              <span class="text-[9px] text-[#826100] font-bold">Fixed Rates</span>
-            </div>
-            <p class="text-[10px] text-[#5e6c84] truncate">{{ room.tenant || 'Vacant' }}</p>
-            <div class="flex gap-1 pt-1 border-t border-[#dfe1e6]">
-              <button @click.stop="openRoomDetail(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="View Spec"><Eye class="w-3 h-3 text-[#5e6c84]" /></button>
-              <button @click.stop="openAdminEditUnit(room)" class="p-1 hover:bg-[#ffffff] rounded-2xs" title="Admin Edit"><Edit class="w-3 h-3 text-[#0c66e4]" /></button>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 </template>

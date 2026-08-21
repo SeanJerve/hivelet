@@ -1,47 +1,138 @@
-/**
- * @file router/index.ts
- * @description Vue Router configuration mapping URL slugs to Hivelet system workspace views.
- * @systemBibleRef Section 4 - User Roles & Authorization Boundaries
- * @rationale Establishes explicit RESTful URL slugs for Public, Tenant, and Admin sub-modules.
- */
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
+import {
+  currentRole,
+  isAuthenticated,
+  restoreSession,
+  homeRouteForRole,
+  type Role,
+} from '@/lib/authStore';
+import { getStoredToken } from '@/lib/api';
 
-import BasisArchivedView from '../views/BasisArchivedView.vue';
-import AdminOverviewView from '../views/AdminOverviewView.vue';
-import RoomDirectoryView from '../views/RoomDirectoryView.vue';
-import TenantManagementView from '../views/TenantManagementView.vue';
-import InquiriesView from '../views/InquiriesView.vue';
-import ExpensesLedgerView from '../views/ExpensesLedgerView.vue';
-import MaintenanceDispatchView from '../views/MaintenanceDispatchView.vue';
-import TenantPortalView from '../views/TenantPortalView.vue';
-import PublicGuestView from '../views/PublicGuestView.vue';
-import SystemSettingsView from '../views/SystemSettingsView.vue';
+import PublicGuestView from '@/views/PublicGuestView.vue';
+import LoginView from '@/views/LoginView.vue';
+import AdminOverviewView from '@/views/AdminOverviewView.vue';
+import RoomDirectoryView from '@/views/RoomDirectoryView.vue';
+import TenantManagementView from '@/views/TenantManagementView.vue';
+import IncomeCollectionsView from '@/views/IncomeCollectionsView.vue';
+import ExpensesLedgerView from '@/views/ExpensesLedgerView.vue';
+import MaintenanceDispatchView from '@/views/MaintenanceDispatchView.vue';
+import InquiriesView from '@/views/InquiriesView.vue';
+import TenantPortalView from '@/views/TenantPortalView.vue';
 
-const routes = [
-  { path: '/', name: 'BasisArchive', component: BasisArchivedView },
-  { path: '/basis', redirect: '/' },
-  { path: '/basis/public', name: 'BasisPublicGuest', component: PublicGuestView },
-  { path: '/basis/tenant', name: 'BasisTenantPortal', component: TenantPortalView },
-  { path: '/basis/admin', redirect: '/basis/admin/overview' },
-  { path: '/basis/admin/overview', name: 'BasisAdminOverview', component: AdminOverviewView },
-  { path: '/basis/admin/directory', name: 'BasisRoomDirectory', component: RoomDirectoryView },
-  { path: '/basis/admin/tenants', name: 'BasisTenantManagement', component: TenantManagementView },
-  { path: '/basis/admin/inquiries', name: 'BasisInquiries', component: InquiriesView },
-  { path: '/basis/admin/expenses', name: 'BasisExpensesLedger', component: ExpensesLedgerView },
-  { path: '/basis/admin/tickets', name: 'BasisMaintenanceDispatch', component: MaintenanceDispatchView },
-  { path: '/basis/admin/settings', name: 'BasisSystemSettings', component: SystemSettingsView },
-  
-  // Legacy alias redirects to basis paths
-  { path: '/public', redirect: '/basis/public' },
-  { path: '/tenant', redirect: '/basis/tenant' },
-  { path: '/admin/:pathMatch(.*)*', redirect: (to: any) => `/basis/admin/${to.params.pathMatch}` },
-  
-  { path: '/:pathMatch(.*)*', redirect: '/' }
+declare module 'vue-router' {
+  interface RouteMeta {
+    roles?: Role[];
+    label?: string;
+  }
+}
+
+const routes: RouteRecordRaw[] = [
+  // Public
+  { path: '/', name: 'Home', redirect: '/public' },
+  { path: '/public', name: 'PublicGuest', component: PublicGuestView },
+  { path: '/login', name: 'Login', component: LoginView },
+
+  // Tenant Portal
+  {
+    path: '/tenant',
+    name: 'TenantPortal',
+    component: TenantPortalView,
+    meta: { roles: ['tenant', 'admin'], label: 'the Tenant Portal' },
+  },
+
+  // Landlady Admin Workspace
+  { path: '/admin', redirect: '/admin/overview' },
+  {
+    path: '/admin/overview',
+    name: 'AdminOverview',
+    component: AdminOverviewView,
+    meta: { roles: ['admin'], label: 'the Executive Overview' },
+  },
+  {
+    path: '/admin/directory',
+    name: 'RoomDirectory',
+    component: RoomDirectoryView,
+    meta: { roles: ['admin'], label: 'the Room & Rate Directory' },
+  },
+  {
+    path: '/admin/tenants',
+    name: 'TenantManagement',
+    component: TenantManagementView,
+    meta: { roles: ['admin'], label: 'Active Tenants' },
+  },
+  {
+    path: '/admin/income',
+    name: 'IncomeCollections',
+    component: IncomeCollectionsView,
+    meta: { roles: ['admin'], label: 'Income & Collections' },
+  },
+  {
+    path: '/admin/expenses',
+    name: 'ExpensesLedger',
+    component: ExpensesLedgerView,
+    meta: { roles: ['admin'], label: 'Monthly Expenses' },
+  },
+  {
+    path: '/admin/tickets',
+    name: 'MaintenanceDispatch',
+    component: MaintenanceDispatchView,
+    meta: { roles: ['admin'], label: 'Maintenance Dispatch' },
+  },
+  {
+    path: '/admin/inquiries',
+    name: 'Inquiries',
+    component: InquiriesView,
+    meta: { roles: ['admin'], label: 'Prospect Inquiries' },
+  },
+
+  // Legacy basis aliases
+  { path: '/basis', redirect: '/admin/overview' },
+  { path: '/basis/directory', redirect: '/admin/directory' },
+  { path: '/basis/income', redirect: '/admin/income' },
+
+  { path: '/:pathMatch(.*)*', redirect: '/public' },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior: () => ({ top: 0 }),
+});
+
+let sessionRestored = false;
+
+router.beforeEach(async (to) => {
+  if (!sessionRestored) {
+    sessionRestored = true;
+    if (getStoredToken()) {
+      await restoreSession();
+    }
+  }
+
+  const allowedRoles = to.meta.roles;
+
+  if (!allowedRoles || allowedRoles.length === 0) {
+    if (to.name === 'Login' && isAuthenticated.value) {
+      return homeRouteForRole(currentRole.value);
+    }
+    return true;
+  }
+
+  if (!isAuthenticated.value) {
+    return {
+      path: '/login',
+      query: {
+        redirect: to.fullPath,
+        reason: `Please sign in to access ${to.meta.label ?? 'this section'}.`,
+      },
+    };
+  }
+
+  if (!allowedRoles.includes(currentRole.value)) {
+    return homeRouteForRole(currentRole.value);
+  }
+
+  return true;
 });
 
 export default router;
