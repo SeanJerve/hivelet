@@ -27,7 +27,7 @@ export const PHOTOS = [
   "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=70",
   "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=70",
   "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=70",
-  "https://images.unsplash.com/photo-1521477716071-6d9a6a3ff1b5?auto=format&fit=crop&w=1200&q=70",
+  "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1200&q=70",
 ];
 
 export const HERO_PHOTO =

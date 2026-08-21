@@ -294,7 +294,7 @@ export const maintenanceTickets = reactive<MaintenanceTicket[]>([
     description: "Upper hinge screws stripped; door sags and the deadbolt no longer aligns.",
     technician: "Jerome Mercado (Carpentry)",
     status: "Resolved",
-    photo: "https://images.unsplash.com/photo-1521477716071-6d9a6a3ff1b5?auto=format&fit=crop&w=1200&q=70",
+    photo: "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1200&q=70",
   },
   {
     id: "TCK-1035",
