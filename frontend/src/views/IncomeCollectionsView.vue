@@ -1,20 +1,29 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { incomeRecords, isOnsitePaymentModalOpen, rooms, showToast, type IncomeRecord } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { 
   Download, 
   Plus, 
-  FileSpreadsheet, 
   Search, 
   RefreshCw,
   Pencil,
   Trash2,
   ReceiptText,
   X,
-  Loader2
+  Loader2,
+  Clock,
+  ShieldCheck,
+  Check,
+  CreditCard,
+  FileSpreadsheet,
+  Banknote
 } from 'lucide-vue-next';
+
+const route = useRoute();
+const activeTab = ref<'ledger' | 'verify'>('ledger');
 
 interface ApiIncome {
   id: string;
@@ -32,6 +41,18 @@ interface ApiIncome {
   remitted_amount: number;
   payment_method: string;
   rooms?: { room_number: string; cluster_code: string };
+}
+
+interface ApiPendingPayment {
+  id: string;
+  amount: number;
+  payment_method: string;
+  verification_status: string;
+  transaction_reference: string;
+  paid_at: string;
+  profiles?: { full_name: string; phone_number: string };
+  rooms?: { room_number: string; cluster_code: string };
+  bills?: { rent_amount: number; water_amount: number; total_amount: number };
 }
 
 const q = ref('');
@@ -67,11 +88,25 @@ function formatDateForDisplay(dStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
+const pendingPayments = ref<ApiPendingPayment[]>([]);
+
+async function fetchPayments() {
+  try {
+    const data = await api.get<ApiPendingPayment[]>('/admin/payments');
+    if (data && Array.isArray(data)) {
+      pendingPayments.value = data.filter((p) => p.verification_status === 'Pending Verification');
+    }
+  } catch {
+    // Offline fallback
+  }
+}
+
 async function fetchIncome() {
   isLoading.value = true;
   try {
-    const res = await api.get<{ success: boolean; data: ApiIncome[] }>('/admin/income-records');
-    const data = res && res.data ? res.data : [];
+    await fetchPayments();
+    const res = await api.get<{ success: boolean; data: ApiIncome[] } | ApiIncome[]>('/admin/income-records');
+    const data = Array.isArray(res) ? res : (res && res.data ? res.data : []);
     if (data && data.length) {
       data.forEach((item) => {
         const unitNumber = item.rooms?.room_number || '1A';
@@ -105,7 +140,29 @@ async function fetchIncome() {
   }
 }
 
+async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected') {
+  isLoading.value = true;
+  try {
+    await api.patch(`/admin/payments/${paymentId}/verify`, {
+      verification_status: status
+    });
+    if (status === 'Verified') {
+      showToast('success', 'Payment Verified & Settled', 'Income record generated with 50% revenue share calculated.');
+    } else {
+      showToast('warning', 'Payment Rejected', 'Bill remains marked as Due.');
+    }
+    await fetchIncome();
+  } catch (err: any) {
+    showToast('error', 'Verification Error', err.message || 'Action failed.');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 onMounted(() => {
+  if (route.query.tab === 'verify') {
+    activeTab.value = 'verify';
+  }
   fetchIncome();
 });
 
@@ -508,8 +565,122 @@ function exportCSV() {
       </div>
     </div>
 
-    <!-- 4 Summary KPI StatCards -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Tab Navigation -->
+    <div class="flex items-center gap-2 border-b border-[#e7e5e4] pb-px">
+      <button
+        @click="activeTab = 'ledger'"
+        :class="[
+          'px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2',
+          activeTab === 'ledger'
+            ? 'border-[#0c66e4] text-[#0c66e4]'
+            : 'border-transparent text-[#71717a] hover:text-[#1c1917]'
+        ]"
+      >
+        <CreditCard class="size-4" />
+        <span>Collection Ledger</span>
+      </button>
+
+      <button
+        @click="activeTab = 'verify'"
+        :class="[
+          'px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2',
+          activeTab === 'verify'
+            ? 'border-[#0c66e4] text-[#0c66e4]'
+            : 'border-transparent text-[#71717a] hover:text-[#1c1917]'
+        ]"
+      >
+        <Clock class="size-4" />
+        <span>Online Verification (Adyen)</span>
+        <span
+          v-if="pendingPayments.length > 0"
+          class="ml-1.5 px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-500 text-white"
+        >
+          {{ pendingPayments.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- TAB 2: Online Verification Queue -->
+    <div v-if="activeTab === 'verify'" class="space-y-4">
+      <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-xs text-amber-900">
+        <Clock class="size-4 mt-0.5 text-amber-600 shrink-0" />
+        <div>
+          <strong class="font-bold">Online Payment Verification Queue (BR-016 & BR-017)</strong>
+          <p class="text-amber-800 mt-0.5">
+            Adyen GCash remittances require administrator validation. Approving an entry marks the resident's bill as Paid and automatically calculates the 50% revenue cut into the Monthly Income Ledger.
+          </p>
+        </div>
+      </div>
+
+      <div class="surface-card overflow-hidden">
+        <div v-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-[#71717a]">
+          <ShieldCheck class="size-8 mx-auto text-emerald-500 mb-2 opacity-80" />
+          <p class="font-bold text-sm text-[#1c1917]">All Remittances Verified</p>
+          <p class="mt-1">No online transactions currently awaiting administrative approval.</p>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-xs border-collapse">
+            <thead class="bg-[#f5f5f4] text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
+              <tr>
+                <th class="px-4 py-3 font-bold">Resident</th>
+                <th class="px-4 py-3 font-bold">Target Unit</th>
+                <th class="px-4 py-3 font-bold">Amount</th>
+                <th class="px-4 py-3 font-bold">Gateway & Ref #</th>
+                <th class="px-4 py-3 font-bold">Date & Status</th>
+                <th class="px-4 py-3 font-bold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#e7e5e4]">
+              <tr v-for="p in pendingPayments" :key="p.id" class="hover:bg-[#fafaf9]">
+                <td class="px-4 py-3 font-bold text-[#1c1917]">
+                  {{ p.profiles?.full_name || 'Resident' }}
+                  <span class="block text-[11px] font-normal text-[#71717a]">{{ p.profiles?.phone_number || 'No contact' }}</span>
+                </td>
+                <td class="px-4 py-3 font-extrabold uppercase text-[#1c1917]">
+                  Room {{ p.rooms?.room_number || '—' }}
+                </td>
+                <td class="px-4 py-3 font-display font-black text-[#1c1917]">
+                  {{ peso(p.amount) }}
+                </td>
+                <td class="px-4 py-3 font-mono text-[11px] text-[#71717a]">
+                  <span class="font-bold text-[#0c66e4]">{{ p.payment_method }}</span>
+                  <div class="mt-0.5 text-[10px] text-[#57534e]">{{ p.transaction_reference || 'REF-PENDING' }}</div>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 ring-1 ring-amber-200">
+                    <Clock class="size-3" /> PENDING
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <button
+                      @click="verifyPayment(p.id, 'Verified')"
+                      class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <Check class="size-3.5" />
+                      <span>Approve</span>
+                    </button>
+                    <button
+                      @click="verifyPayment(p.id, 'Rejected')"
+                      class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      <X class="size-3.5" />
+                      <span>Decline</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: Collection Ledger -->
+    <div v-else class="space-y-6">
+      <!-- 4 Summary KPI StatCards -->
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div class="surface-card p-5">
         <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Gross Rent</p>
         <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(totalRent) }}</p>
@@ -711,6 +882,7 @@ function exportCSV() {
         </div>
       </div>
     </div>
+  </div>
 
     <!-- Edit Payment Modal -->
     <div 
@@ -861,6 +1033,5 @@ function exportCSV() {
         </div>
       </div>
     </div>
-
   </div>
 </template>

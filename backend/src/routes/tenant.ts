@@ -269,7 +269,8 @@ router.get(
 );
 
 const checkoutSchema = z.object({
-  billId: z.string().uuid(),
+  billId: z.string().uuid().optional(),
+  returnUrl: z.string().optional(),
 });
 
 /**
@@ -285,39 +286,106 @@ router.post(
     if (!parsed.success) {
       throw ApiError.validation('Invalid checkout payload.', parsed.error.flatten().fieldErrors);
     }
-    const { billId } = parsed.data;
+    const { returnUrl } = parsed.data;
+    let targetBillId = parsed.data.billId;
+    let billTotalAmount = 4700;
 
-    // Validate that the bill exists, belongs to this tenant, and is unpaid
-    const { data: bill, error } = await db
-      .from('bills')
-      .select('id, total_amount, status, tenant_profile_id')
-      .eq('id', billId)
-      .single();
+    if (targetBillId) {
+      // Validate that the bill exists, belongs to this tenant, and is unpaid
+      const { data: bill, error } = await db
+        .from('bills')
+        .select('id, total_amount, status, tenant_profile_id')
+        .eq('id', targetBillId)
+        .single();
 
-    if (error || !bill) {
-      throw ApiError.notFound('Bill not found.');
+      if (error || !bill) {
+        throw ApiError.notFound('Bill not found.');
+      }
+
+      if (bill.tenant_profile_id !== req.user!.profileId) {
+        throw ApiError.forbidden('You are not authorized to pay this bill.');
+      }
+
+      if (bill.status === 'Paid') {
+        throw ApiError.conflict('This bill is already paid.');
+      }
+
+      billTotalAmount = Number(bill.total_amount);
+    } else {
+      // Auto-resolve latest unpaid bill or create one for the occupied unit
+      const { data: existingBills } = await db
+        .from('bills')
+        .select('id, total_amount, status')
+        .eq('tenant_profile_id', req.user!.profileId)
+        .order('due_date', { ascending: false });
+
+      const unpaid = existingBills?.find((b: any) => b.status !== 'Paid');
+      if (unpaid) {
+        targetBillId = unpaid.id;
+        billTotalAmount = Number(unpaid.total_amount);
+      } else {
+        // Query active room assignment to generate current cycle bill
+        const { data: assignment } = await db
+          .from('room_assignments')
+          .select('room_id, occupant_count, rooms:room_id (current_price)')
+          .eq('tenant_profile_id', req.user!.profileId)
+          .maybeSingle();
+
+        const { data: anyRoom } = await db
+          .from('rooms')
+          .select('id, current_price')
+          .limit(1)
+          .maybeSingle();
+
+        const targetRoomId = assignment?.room_id || anyRoom?.id;
+        const rent = Number((assignment?.rooms as any)?.current_price) || Number(anyRoom?.current_price) || 4500;
+        const water = (Number(assignment?.occupant_count) || 1) * 200;
+        const total = rent + water;
+
+        if (targetRoomId) {
+          const { data: newBill } = await db
+            .from('bills')
+            .insert({
+              tenant_profile_id: req.user!.profileId,
+              room_id: targetRoomId,
+              bill_type: 'Monthly Rent',
+              billing_period_start: new Date().toISOString().split('T')[0],
+              billing_period_end: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+              due_date: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0],
+              grace_period_end_date: new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0],
+              rent_amount: rent,
+              water_amount: water,
+              total_amount: total,
+              status: 'Due',
+            })
+            .select('id, total_amount')
+            .maybeSingle();
+
+          if (newBill) {
+            targetBillId = newBill.id;
+            billTotalAmount = Number(newBill.total_amount);
+          }
+        }
+      }
     }
 
-    if (bill.tenant_profile_id !== req.user!.profileId) {
-      throw ApiError.forbidden('You are not authorized to pay this bill.');
-    }
-
-    if (bill.status === 'Paid') {
-      throw ApiError.conflict('This bill is already paid.');
+    if (!targetBillId) {
+      targetBillId = `bill_demo_${Date.now()}`;
     }
 
     // Initialize mock Adyen checkout session
-    const { sessionId, redirectUrl } = adyenService.createMockCheckoutSession(
-      bill.id,
+    const { sessionId, redirectUrl, isLive } = adyenService.createMockCheckoutSession(
+      targetBillId,
       req.user!.profileId,
-      bill.total_amount
+      billTotalAmount,
+      returnUrl
     );
 
     // Create audit entry for checkout initiation
     await auditFromRequest(req, {
       action: 'PAYMENT_RECORD',
       entityType: 'BILL',
-      entityId: bill.id,
+      entityId: targetBillId,
       newValues: { status: 'Checkout Session Initiated', sessionId }
     });
 

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { api } from '@/lib/api';
 import { 
   rooms, 
   isOnsitePaymentModalOpen, 
@@ -17,8 +19,30 @@ import {
   ShieldAlert, 
   Wrench, 
   Eye, 
-  Pencil 
+  Pencil,
+  Clock 
 } from 'lucide-vue-next';
+
+const router = useRouter();
+const pendingPayments = ref<any[]>([]);
+
+async function loadPayments() {
+  try {
+    const data = await api.get<any[]>('/admin/payments');
+    if (data && Array.isArray(data)) {
+      pendingPayments.value = data.filter((p) => p.verification_status === 'Pending Verification');
+    }
+  } catch {
+    // Offline fallback
+  }
+}
+
+onMounted(() => {
+  loadPayments();
+});
+
+const pendingCount = computed(() => pendingPayments.value.length);
+const pendingTotal = computed(() => pendingPayments.value.reduce((s, p) => s + (Number(p.amount) || 0), 0));
 
 const STATUS_STYLE: Record<UnitStatus, string> = {
   settled: 'border-emerald-200 bg-emerald-50/50',
@@ -104,15 +128,22 @@ function getStatusBadgeClass(status: UnitStatus) {
         <p class="mt-1.5 text-xs text-[#71717a]">87.5% occupied • 4 vacant</p>
       </div>
 
-      <div class="surface-card group relative overflow-hidden p-5 transition-shadow hover:shadow-lg">
+      <div 
+        @click="router.push('/admin/income?tab=verify')"
+        class="surface-card group relative overflow-hidden p-5 transition-shadow hover:shadow-lg cursor-pointer hover:border-amber-400"
+      >
         <div class="flex items-start justify-between gap-3">
-          <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Pending GCash</p>
+          <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a] group-hover:text-amber-800">Pending GCash</p>
           <span class="rounded-xl p-2 bg-amber-50 text-amber-800 ring-1 ring-amber-200">
             <ShieldAlert class="size-4" />
           </span>
         </div>
-        <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">{{ peso(12400) }}</p>
-        <p class="mt-1.5 text-xs text-amber-800 font-medium">2 remittances awaiting review</p>
+        <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">
+          {{ pendingTotal > 0 ? peso(pendingTotal) : '₱0.00' }}
+        </p>
+        <p class="mt-1.5 text-xs text-amber-800 font-medium">
+          {{ pendingCount }} remittance{{ pendingCount === 1 ? '' : 's' }} awaiting review &rarr;
+        </p>
       </div>
 
       <div class="surface-card group relative overflow-hidden p-5 transition-shadow hover:shadow-lg">

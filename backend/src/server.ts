@@ -22,8 +22,8 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      // Same-origin/tooling requests (curl, health probes) send no Origin.
-      if (!origin || config.cors.origins.includes(origin)) {
+      // Same-origin/tooling requests (curl, form POSTs, health probes) send no Origin or 'null'.
+      if (!origin || origin === 'null' || config.cors.origins.includes(origin) || origin.startsWith('http://localhost:')) {
         callback(null, true);
         return;
       }

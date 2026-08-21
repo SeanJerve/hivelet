@@ -26,6 +26,8 @@ import {
 } from 'lucide-vue-next';
 
 const submissionNotice = ref('');
+const activeBillId = ref<string | null>(null);
+const payingOnline = ref(false);
 
 // Resident & Assigned Unit Data
 const tenantData = ref({
@@ -123,6 +125,7 @@ async function fetchTenantData() {
     const billsData = await api.get<any[]>('/tenant/my-bills');
     const unpaidBill = billsData?.find(b => b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue');
     if (unpaidBill) {
+      activeBillId.value = unpaidBill.id;
       tenantData.value.baseRent = unpaidBill.rent_amount;
       tenantData.value.waterFee = unpaidBill.water_amount;
       tenantData.value.totalAmountDue = unpaidBill.total_amount;
@@ -134,6 +137,23 @@ async function fetchTenantData() {
     console.error('Failed to load tenant data:', err?.message || err);
   } finally {
     loading.value = false;
+  }
+}
+
+async function handlePayOnline() {
+  payingOnline.value = true;
+  try {
+    const res = await api.post<{ sessionId: string; redirectUrl: string }>('/tenant/payments/checkout', {
+      billId: activeBillId.value || undefined,
+      returnUrl: window.location.origin + '/tenant'
+    });
+    if (res && res.redirectUrl) {
+      window.location.href = res.redirectUrl;
+    }
+  } catch (err: any) {
+    alert(`Payment session error: ${err?.message || err}`);
+  } finally {
+    payingOnline.value = false;
   }
 }
 </script>
@@ -178,74 +198,55 @@ async function fetchTenantData() {
         <div class="grid grid-cols-1 lg:grid-cols-12">
           
           <!-- Left Column: Unit Photo Feature Banner -->
-          <div class="lg:col-span-5 relative bg-slate-900 min-h-[240px] lg:min-h-[340px] overflow-hidden group">
+          <div class="lg:col-span-5 relative bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center min-h-[260px] p-6 border-b lg:border-b-0 lg:border-r border-[#dfe1e6]">
             <img
+              v-if="tenantData.photoUrl"
               :src="tenantData.photoUrl"
               :alt="tenantData.room"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+              class="w-full h-full max-h-[280px] object-cover rounded-lg shadow-md"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20"></div>
-            
-            <div class="absolute top-3 left-3 flex items-center gap-2">
-              <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-500 text-white shadow-sm flex items-center gap-1">
-                <CheckCircle2 class="w-3.5 h-3.5" /> Active Occupant
-              </span>
-            </div>
-
-            <div class="absolute bottom-4 left-4 right-4 text-white">
-              <div class="flex items-center gap-1.5 text-xs text-amber-300 font-semibold mb-0.5">
-                <Camera class="w-3.5 h-3.5" /> Assigned Unit Photo
+            <div v-else class="text-center text-white/80 space-y-3">
+              <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mx-auto border border-white/20">
+                <Home class="w-8 h-8 text-white" />
               </div>
-              <h3 class="text-xl font-display font-black text-white">{{ tenantData.room }}</h3>
-              <p class="text-xs text-slate-200">{{ tenantData.roomDetails }}</p>
+              <div>
+                <p class="font-display font-bold text-lg text-white">{{ tenantData.room }}</p>
+                <p class="text-xs text-white/60">{{ tenantData.roomDetails }}</p>
+              </div>
             </div>
           </div>
 
-          <!-- Right Column: Specifications & Inclusions -->
-          <div class="lg:col-span-7 p-6 space-y-5 flex flex-col justify-between">
+          <!-- Right Column: Room Specifications Grid -->
+          <div class="lg:col-span-7 p-6 flex flex-col justify-between space-y-6">
             <div>
-              <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-3 mb-4">
-                <h2 class="font-bold text-sm text-[#172b4d] flex items-center gap-2">
-                  <Home class="w-4 h-4 text-[#0c66e4]" />
-                  Assigned Unit Inclusions &amp; Specs
-                </h2>
-                <span class="text-xs font-semibold text-[#6b778c]">Floor {{ tenantData.floor }}</span>
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <span class="text-xs font-bold text-[#0c66e4] uppercase tracking-wider">Unit Specifications</span>
+                  <h2 class="font-display text-xl font-bold text-[#172b4d]">{{ tenantData.room }}</h2>
+                </div>
+                <span class="px-2.5 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">
+                  Occupied (Active Lease)
+                </span>
               </div>
 
-              <!-- Unit Info Cards Grid -->
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]/70">
-                  <span class="text-[#6b778c] block text-[11px] font-medium">Unit Name</span>
-                  <strong class="text-[#0c66e4] font-bold text-xs">{{ tenantData.room }}</strong>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]">
+                  <span class="text-[#6b778c] block mb-1">Cluster / Wing</span>
+                  <strong class="text-[#172b4d] text-sm">{{ tenantData.roomType }}</strong>
                 </div>
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]/70">
-                  <span class="text-[#6b778c] block text-[11px] font-medium">Cluster</span>
-                  <span class="font-semibold text-xs text-[#172b4d] truncate block">{{ tenantData.roomType }}</span>
+                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]">
+                  <span class="text-[#6b778c] block mb-1">Floor Level</span>
+                  <strong class="text-[#172b4d] text-sm">Floor {{ tenantData.floor }}</strong>
                 </div>
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]/70">
-                  <span class="text-[#6b778c] block text-[11px] font-medium">Registered Occupants</span>
-                  <span class="font-semibold text-xs text-[#172b4d] flex items-center gap-1">
-                    <User class="w-3.5 h-3.5 text-[#0c66e4]" />
-                    {{ tenantData.occupants }} {{ tenantData.occupants === 1 ? 'Person' : 'Persons' }}
-                  </span>
-                </div>
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]/70">
-                  <span class="text-[#6b778c] block text-[11px] font-medium">Floor Area</span>
-                  <span class="font-semibold text-xs text-[#172b4d]">{{ tenantData.specs.floorArea }}</span>
-                </div>
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]/70">
-                  <span class="text-[#6b778c] block text-[11px] font-medium">Bathroom</span>
-                  <span class="font-semibold text-xs text-[#172b4d] truncate block">{{ tenantData.specs.bathroom }}</span>
-                </div>
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]/70">
-                  <span class="text-[#6b778c] block text-[11px] font-medium">Water Billing</span>
-                  <span class="font-semibold text-xs text-[#172b4d]">₱{{ tenantData.specs.waterRatePerHead }}/head</span>
+                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]">
+                  <span class="text-[#6b778c] block mb-1">Current Occupants</span>
+                  <strong class="text-[#172b4d] text-sm">{{ tenantData.occupants }} Person{{ tenantData.occupants > 1 ? 's' : '' }}</strong>
                 </div>
               </div>
             </div>
 
-            <!-- Amenities Badges Row -->
-            <div class="flex flex-wrap items-center gap-4 text-xs text-[#5e6c84] pt-3 border-t border-dashed border-[#dfe1e6]">
+            <!-- Utilities Bar -->
+            <div class="pt-4 border-t border-[#dfe1e6] flex flex-wrap gap-4 text-xs text-[#5e6c84]">
               <span class="flex items-center gap-1.5">
                 <Zap class="w-3.5 h-3.5 text-amber-500" />
                 <span>Electric: <strong class="text-[#172b4d]">{{ tenantData.specs.electricMeter }}</strong></span>
@@ -258,13 +259,8 @@ async function fetchTenantData() {
                 <Wifi class="w-3.5 h-3.5 text-indigo-500" />
                 <span>WiFi: <strong class="text-[#172b4d]">{{ tenantData.specs.wifi }}</strong></span>
               </span>
-              <span class="flex items-center gap-1.5">
-                <Sparkles class="w-3.5 h-3.5 text-emerald-500" />
-                <span>Climate: <strong class="text-[#172b4d]">{{ tenantData.specs.aircon }}</strong></span>
-              </span>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -334,43 +330,10 @@ async function fetchTenantData() {
               Monthly rent due on <strong>{{ tenantData.dueDate }}</strong> via GCash or on-site cash payment.
             </p>
           </div>
-          <span
-            class="text-lg font-black shrink-0"
-            :class="{
-              'text-emerald-600': dueDateCountdown.severity === 'safe',
-              'text-amber-600': dueDateCountdown.severity === 'warning',
-              'text-red-600': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
-            }"
-          >
-            <template v-if="dueDateCountdown.severity === 'overdue'">-{{ Math.abs(dueDateCountdown.daysLeft) }}d</template>
-            <template v-else-if="dueDateCountdown.severity === 'danger'">TODAY</template>
-            <template v-else>{{ dueDateCountdown.daysLeft }}d</template>
-          </span>
         </div>
 
         <!-- Statement Body -->
         <div class="p-6 space-y-5">
-          <!-- Resident & Unit Info -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-            <div>
-              <span class="text-[#6b778c] text-xs block mb-0.5">Resident Name</span>
-              <strong class="text-[#172b4d]">{{ tenantData.name }}</strong>
-            </div>
-            <div>
-              <span class="text-[#6b778c] text-xs block mb-0.5">Assigned Unit</span>
-              <strong class="text-[#172b4d]">{{ tenantData.room }} ({{ tenantData.roomDetails }})</strong>
-            </div>
-            <div>
-              <span class="text-[#6b778c] text-xs block mb-0.5">Payment Due Date</span>
-              <strong class="text-[#172b4d] flex items-center gap-1.5">
-                <Calendar class="w-3.5 h-3.5 text-[#0c66e4]" />
-                {{ tenantData.dueDate }}
-              </strong>
-            </div>
-          </div>
-
-          <div class="border-t border-[#dfe1e6]"></div>
-
           <!-- Line Items -->
           <div class="space-y-3 text-sm">
             <div class="flex justify-between items-center py-2 border-b border-gray-100">
@@ -385,12 +348,23 @@ async function fetchTenantData() {
             </div>
           </div>
 
-          <!-- Total -->
-          <div class="flex justify-between items-center border-t-2 border-[#172b4d] pt-4">
-            <span class="font-bold text-[#172b4d] text-base">Total Amount Due</span>
-            <span class="text-2xl font-bold text-[#0c66e4]">
-              ₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
-            </span>
+          <!-- Total & Pay Online Button -->
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center border-t-2 border-[#172b4d] pt-4 gap-4">
+            <div>
+              <span class="font-bold text-[#172b4d] text-base block">Total Amount Due</span>
+              <span class="text-2xl font-bold text-[#0c66e4]">
+                ₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+              </span>
+            </div>
+            
+            <button
+              @click="handlePayOnline"
+              :disabled="payingOnline"
+              class="px-6 py-3 bg-[#0c66e4] hover:bg-[#0052cc] text-white font-bold text-sm rounded-lg shadow-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <CreditCard class="w-4 h-4" />
+              <span>{{ payingOnline ? 'Opening GCash Gateway...' : 'Pay Online (GCash via Adyen)' }}</span>
+            </button>
           </div>
 
           <!-- Status Note -->
