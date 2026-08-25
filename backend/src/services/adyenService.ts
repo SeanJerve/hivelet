@@ -50,6 +50,56 @@ export const adyenService = {
   },
 
   /**
+   * Initializes a real Adyen Checkout Session via official Adyen v71 REST API.
+   * Automatically falls back to local simulation if Adyen API is unreachable.
+   */
+  async createCheckoutSession(billId: string, tenantProfileId: string, amount: number, returnUrl?: string) {
+    const fallbackReturnUrl = returnUrl || `${config.cors.origins[0] || 'http://localhost:5173'}/tenant/payments`;
+
+    if (this.isLiveConfigured()) {
+      try {
+        const response = await fetch('https://checkout-test.adyen.com/v71/sessions', {
+          method: 'POST',
+          headers: {
+            'x-api-key': config.adyen.apiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            merchantAccount: config.adyen.merchantAccount,
+            amount: {
+              currency: 'PHP',
+              value: Math.round(amount * 100), // minor units (centavos)
+            },
+            countryCode: 'PH',
+            reference: `BILL-${billId.substring(0, 8)}-${Date.now()}`,
+            returnUrl: fallbackReturnUrl,
+            shopperLocale: 'en-US',
+            channel: 'Web',
+          }),
+        });
+
+        const data = (await response.json()) as any;
+        if (response.ok && data.id) {
+          checkoutSessions.set(data.id, { billId, tenantProfileId, amount, returnUrl: fallbackReturnUrl });
+          return {
+            sessionId: data.id,
+            sessionData: data.sessionData,
+            clientKey: config.adyen.clientKey,
+            environment: 'test',
+            isLive: true,
+            redirectUrl: `/api/public/payments/mock-gateway?sessionId=${data.id}`
+          };
+        }
+        console.warn('[Adyen Service] Live session call returned non-200, using local gateway:', data);
+      } catch (err) {
+        console.error('[Adyen Service] Failed connecting to Adyen v71 API, using local gateway:', err);
+      }
+    }
+
+    return this.createMockCheckoutSession(billId, tenantProfileId, amount, fallbackReturnUrl);
+  },
+
+  /**
    * Initializes a GCash checkout session (Hybrid: live or mock sandbox).
    * Creates a transaction session mapping bill & tenant identification to a temporary session token.
    */
@@ -57,7 +107,14 @@ export const adyenService = {
     const sessionId = `adyen_sess_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
     checkoutSessions.set(sessionId, { billId, tenantProfileId, amount, returnUrl });
     const redirectUrl = `/api/public/payments/mock-gateway?sessionId=${sessionId}`;
-    return { sessionId, redirectUrl, isLive: this.isLiveConfigured() };
+    return {
+      sessionId,
+      sessionData: null,
+      clientKey: config.adyen.clientKey,
+      environment: 'test',
+      redirectUrl,
+      isLive: false
+    };
   },
 
   /**
