@@ -211,21 +211,6 @@ router.get(
     const clientBaseUrl = session.returnUrl ? session.returnUrl.split('?')[0] : (process.env.CLIENT_URL || 'http://localhost:5173');
     const cancelUrl = `${session.returnUrl || clientBaseUrl + '/tenant'}?status=cancelled`;
 
-    // Generate dynamic GCash QR Code (encodes the mobile checkout URL)
-    const host = req.get('host') || 'localhost:5000';
-    const mobilePayUrl = `${req.protocol}://${host}/api/public/payments/mock-gateway?sessionId=${sessionId}&mode=mpin`;
-    const qrDataUrl = await QRCode.toDataURL(mobilePayUrl, {
-      errorCorrectionLevel: 'H',
-      margin: 1,
-      width: 280,
-      color: {
-        dark: '#0047ba',
-        light: '#ffffff'
-      }
-    });
-
-    const isMobileMode = req.query.mode === 'mpin' || req.query.view === 'mobile';
-
     res.setHeader('Content-Type', 'text/html');
     res.setHeader(
       'Content-Security-Policy',
@@ -241,562 +226,623 @@ router.get(
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>GCash Payment — Hivelet</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>GCash — Secure Payment Gateway</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
-          * { box-sizing: border-box; margin: 0; padding: 0; }
+          * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
           body {
-            background-color: #fafaf9;
-            font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+            background-color: #f2f4f8;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 32px 20px;
-            color: #1c1917;
-          }
-          .page-wrapper {
-            width: 100%;
-            max-width: 880px;
-          }
-          .top-navbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-          }
-          .brand-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: #1c1917;
-          }
-          .brand-logo {
-            width: 32px;
-            height: 32px;
-            background: #1e2532;
-            color: white;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-family: 'Sora', sans-serif;
-            font-size: 15px;
-          }
-          .brand-name {
-            font-family: 'Sora', sans-serif;
-            font-size: 17px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-          }
-          .gateway-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #71717a;
-            background: #ffffff;
-            border: 1px solid #e7e5e4;
-            padding: 6px 12px;
-            border-radius: 20px;
-          }
-          .secure-dot {
-            width: 7px;
-            height: 7px;
-            background: #10b981;
-            border-radius: 50%;
-          }
-
-          /* Main Card Container (2-Column Grid on Desktop) */
-          .main-card {
-            background: #ffffff;
-            border: 1px solid #e7e5e4;
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(28, 25, 23, 0.04), 0 8px 24px -8px rgba(28, 25, 23, 0.08);
-            overflow: hidden;
-            display: grid;
-            grid-template-columns: 1.15fr 1fr;
-          }
-          @media (max-width: 768px) {
-            .main-card {
-              grid-template-columns: 1fr;
-            }
-          }
-
-          /* Left Column: Order & Billing Summary */
-          .left-column {
-            padding: 32px;
-            background: #fafaf9;
-            border-right: 1px solid #e7e5e4;
-            display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            align-items: center;
+            justify-content: flex-start;
+            color: #172b4d;
           }
-          .merchant-badge {
+
+          /* Top GCash Signature Blue Bar */
+          .gcash-top-bar {
+            width: 100%;
+            background: linear-gradient(135deg, #005ce6 0%, #0047ba 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 92, 230, 0.25);
+          }
+          .gcash-logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+          .gcash-symbol {
+            width: 34px;
+            height: 34px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 20px;
+            color: #005ce6;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          }
+          .gcash-brand-text {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+          }
+          .gcash-secure-tag {
             font-size: 11px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #71717a;
-            margin-bottom: 4px;
-          }
-          .merchant-title {
-            font-family: 'Sora', sans-serif;
-            font-size: 18px;
-            font-weight: 700;
-            color: #1c1917;
-            margin-bottom: 24px;
-            line-height: 1.3;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
           }
 
-          .summary-table {
+          /* Merchant Info Strip */
+          .merchant-strip {
             width: 100%;
-            margin-bottom: 24px;
-          }
-          .summary-row {
+            max-width: 460px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 14px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
+            justify-content: space-between;
+            margin-top: 12px;
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+          }
+          .merchant-name {
             font-size: 13px;
-            color: #71717a;
-            border-bottom: 1px dashed #e7e5e4;
-          }
-          .summary-row.total {
-            border-bottom: none;
-            border-top: 2px solid #e7e5e4;
-            padding-top: 16px;
-            margin-top: 8px;
-          }
-          .summary-row.total .total-label {
-            font-size: 15px;
             font-weight: 700;
-            color: #1c1917;
+            color: #172b4d;
           }
-          .summary-row.total .total-val {
-            font-size: 26px;
+          .merchant-sub {
+            font-size: 11px;
+            color: #6b778c;
+            margin-top: 2px;
+          }
+          .amount-due-badge {
+            text-align: right;
+          }
+          .amount-due-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #6b778c;
+            text-transform: uppercase;
+          }
+          .amount-due-value {
+            font-size: 16px;
             font-weight: 800;
             color: #005ce6;
-            font-family: 'JetBrains Mono', monospace;
           }
 
-          .info-note {
-            background: #ffffff;
-            border: 1px solid #e7e5e4;
-            border-radius: 10px;
-            padding: 14px;
-            font-size: 12px;
-            color: #52525b;
-            line-height: 1.5;
-            margin-top: auto;
-          }
-
-          /* Right Column: Payment Tabs & Controls */
-          .right-column {
-            padding: 32px;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-          }
-
-          /* Mode Switcher Tabs */
-          .mode-tabs {
-            display: flex;
-            background: #f5f5f4;
-            border-radius: 10px;
-            padding: 4px;
+          /* Main Mobile-First Checkout Card */
+          .checkout-container {
+            width: 100%;
+            max-width: 460px;
+            background: white;
+            padding: 24px 22px;
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
             margin-bottom: 24px;
-            gap: 4px;
-          }
-          .tab-btn {
-            flex: 1;
-            padding: 9px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            border: none;
-            background: transparent;
-            color: #71717a;
-            cursor: pointer;
-            border-radius: 7px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.15s ease;
-          }
-          .tab-btn.active {
-            color: #1c1917;
-            background: #ffffff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-            font-weight: 700;
           }
 
-          /* View Panels */
-          .view-panel {
+          /* Steps Panel Visibility */
+          .checkout-step {
             display: none;
+            animation: fadeIn 0.25s ease-in-out forwards;
           }
-          .view-panel.active {
+          .checkout-step.active {
             display: block;
-            animation: fadeIn 0.2s ease-out;
           }
           @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(3px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
           }
 
-          /* Dynamic QR View */
-          .qr-box {
-            text-align: center;
-            margin-bottom: 20px;
-          }
-          .qr-image-wrapper {
-            position: relative;
-            display: inline-block;
-            padding: 12px;
-            background: #ffffff;
-            border: 1px solid #e7e5e4;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-          }
-          .qr-image {
-            width: 200px;
-            height: 200px;
-            display: block;
-          }
-          .qr-center-emblem {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 38px;
-            height: 38px;
-            background: #005ce6;
-            color: white;
-            border: 3px solid white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
+          .step-title {
             font-size: 18px;
-            box-shadow: 0 2px 6px rgba(0, 92, 230, 0.4);
+            font-weight: 800;
+            color: #091e42;
+            margin-bottom: 4px;
           }
-          .qr-expiry {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #b91c1c;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            padding: 4px 10px;
-            border-radius: 20px;
-            margin-top: 10px;
-          }
-
-          .instructions-card {
-            background: #fafaf9;
-            border: 1px solid #e7e5e4;
-            border-radius: 8px;
-            padding: 12px 14px;
-            font-size: 11px;
-            color: #52525b;
-            line-height: 1.5;
+          .step-subtitle {
+            font-size: 12px;
+            color: #5e6c84;
             margin-bottom: 20px;
-          }
-          .instructions-card ol {
-            padding-left: 18px;
-          }
-          .instructions-card li {
-            margin-bottom: 2px;
+            line-height: 1.4;
           }
 
-          /* Buttons */
-          .btn-primary {
-            width: 100%;
-            height: 44px;
-            background: #005ce6;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.15s ease;
+          /* Phone Input Group */
+          .phone-input-group {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 2px 4px rgba(0, 92, 230, 0.2);
+            border: 2px solid #dfe1e6;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fafbfc;
+            transition: all 0.2s;
+            margin-bottom: 16px;
           }
-          .btn-primary:hover {
-            background: #0047b3;
+          .phone-input-group:focus-within {
+            border-color: #005ce6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 92, 230, 0.15);
           }
-          .btn-primary:active {
-            transform: scale(0.99);
+          .country-code {
+            padding: 14px 14px;
+            background: #ebecf0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #172b4d;
+            border-right: 1px solid #dfe1e6;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+          .phone-input {
+            flex: 1;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #172b4d;
+            border: none;
+            outline: none;
+            background: transparent;
+            letter-spacing: 1px;
           }
 
-          /* MPIN Keypad Elements */
-          .pin-indicator {
+          /* OTP 6-Box Grid */
+          .otp-boxes {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             justify-content: center;
-            margin: 16px 0 20px;
+            margin: 20px 0;
           }
-          .pin-dot {
-            width: 14px;
-            height: 14px;
+          .otp-box {
+            width: 48px;
+            height: 54px;
+            border: 2px solid #dfe1e6;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 800;
+            color: #005ce6;
+            outline: none;
+            background: #fafbfc;
+            transition: all 0.2s;
+          }
+          .otp-box:focus {
+            border-color: #005ce6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 92, 230, 0.15);
+          }
+
+          /* MPIN 4-Dot Display */
+          .mpin-display {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 24px 0;
+          }
+          .mpin-dot {
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            border: 2px solid #cbd5e1;
+            border: 2px solid #005ce6;
             background: transparent;
             transition: all 0.15s;
           }
-          .pin-dot.filled {
+          .mpin-dot.filled {
             background: #005ce6;
-            border-color: #005ce6;
-            transform: scale(1.1);
+            transform: scale(1.15);
           }
+
+          /* Virtual Keypad */
           .keypad-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            max-width: 280px;
-            margin: 0 auto 20px;
+            gap: 10px;
+            margin-bottom: 20px;
           }
-          .keypad-btn {
-            height: 42px;
-            border: 1px solid #e7e5e4;
-            background: #fafaf9;
-            border-radius: 8px;
-            font-size: 16px;
+          .keypad-key {
+            padding: 14px 0;
+            background: #f4f5f7;
+            border: 1px solid #dfe1e6;
+            border-radius: 10px;
+            font-size: 20px;
             font-weight: 700;
-            color: #1c1917;
+            color: #172b4d;
             cursor: pointer;
             transition: all 0.1s;
+            user-select: none;
           }
-          .keypad-btn:hover {
-            background: #e7e5e4;
-          }
-          .keypad-btn:active {
+          .keypad-key:active {
+            background: #005ce6;
+            color: white;
             transform: scale(0.96);
           }
 
-          .cancel-row {
-            text-align: center;
+          /* Summary Review Rows */
+          .review-card {
+            background: #f4f5f7;
+            border: 1px solid #dfe1e6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+          }
+          .review-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            padding: 4px 0;
+          }
+          .review-label {
+            color: #5e6c84;
+            font-weight: 500;
+          }
+          .review-value {
+            color: #172b4d;
+            font-weight: 700;
+          }
+          .review-total {
+            border-top: 1px solid #dfe1e6;
+            padding-top: 8px;
+            margin-top: 8px;
+            font-size: 15px;
+            font-weight: 800;
+            color: #005ce6;
+          }
+
+          /* Buttons */
+          .btn-gcash-primary {
+            width: 100%;
+            padding: 15px;
+            background: #005ce6;
+            color: white;
+            border: none;
+            border-radius: 28px;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 92, 230, 0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+          }
+          .btn-gcash-primary:hover {
+            background: #0047ba;
+            box-shadow: 0 6px 16px rgba(0, 92, 230, 0.4);
+          }
+          .btn-gcash-primary:active {
+            transform: scale(0.98);
+          }
+
+          .demo-helper-btn {
+            width: 100%;
+            padding: 8px;
+            background: #ebf3ff;
+            border: 1px dashed #005ce6;
+            color: #005ce6;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 16px;
+            transition: all 0.15s;
+          }
+          .demo-helper-btn:hover {
+            background: #deebff;
+          }
+
+          /* Official Receipt Card */
+          .receipt-icon {
+            width: 64px;
+            height: 64px;
+            background: #e3fcef;
+            color: #00875a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 900;
+            margin: 0 auto 16px auto;
+          }
+
+          .cancel-footer {
             margin-top: 16px;
+            text-align: center;
           }
           .cancel-link {
             font-size: 12px;
-            color: #71717a;
+            color: #6b778c;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
           }
           .cancel-link:hover {
-            color: #b91c1c;
+            color: #172b4d;
             text-decoration: underline;
           }
 
-          .loader-box {
-            display: none;
+          .bsp-footer {
+            margin-top: 20px;
+            font-size: 10px;
+            color: #8993a4;
             text-align: center;
-            padding: 40px 0;
-          }
-          .spinner {
-            width: 38px;
-            height: 38px;
-            border: 3px solid #e7e5e4;
-            border-top: 3px solid #005ce6;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            line-height: 1.4;
           }
         </style>
       </head>
       <body>
-        <div class="page-wrapper">
-          <!-- Top Navigation Header -->
-          <div class="top-navbar">
-            <a href="${cancelUrl}" class="brand-box">
-              <div class="brand-logo">H</div>
-              <div class="brand-name">Hivelet</div>
-            </a>
-            <div class="gateway-badge">
-              <span class="secure-dot"></span>
-              <span>Adyen Payment Gateway</span>
+
+        <!-- GCash Header Bar -->
+        <div class="gcash-top-bar">
+          <div class="gcash-logo-wrapper">
+            <div class="gcash-symbol">G</div>
+            <div class="gcash-brand-text">GCash</div>
+          </div>
+          <div class="gcash-secure-tag">
+            <span>🔒</span>
+            <span>Secure Web Checkout</span>
+          </div>
+        </div>
+
+        <!-- Merchant Summary Banner -->
+        <div class="merchant-strip">
+          <div>
+            <div class="merchant-name">Fe Galang Da Silva Boarding House</div>
+            <div class="merchant-sub">Ref: ${sessionId.substring(0, 16)} • <span id="timer">09:59</span></div>
+          </div>
+          <div class="amount-due-badge">
+            <div class="amount-due-label">Total Due</div>
+            <div class="amount-due-value">₱${session.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+          </div>
+        </div>
+
+        <!-- Checkout Card Container -->
+        <div class="checkout-container">
+
+          <!-- STEP 1: Phone Number -->
+          <div id="step-1" class="checkout-step active">
+            <div class="step-title">Login with GCash</div>
+            <div class="step-subtitle">Enter your 11-digit GCash-registered mobile number to proceed.</div>
+
+            <button type="button" class="demo-helper-btn" onclick="fillDemoPhone()">
+              ✨ Auto-fill Active Tenant Number (+63 906 354 9001)
+            </button>
+
+            <div class="phone-input-group">
+              <div class="country-code">🇵🇭 +63</div>
+              <input
+                type="tel"
+                id="phone-input"
+                class="phone-input"
+                placeholder="9XX XXX XXXX"
+                maxlength="12"
+                value="906 354 9001"
+              >
             </div>
+
+            <button type="button" class="btn-gcash-primary" onclick="goToStep(2)">
+              NEXT
+            </button>
           </div>
 
-          <!-- Main 2-Column Checkout Card -->
-          <div class="main-card">
-            <!-- Left Side: Order & Summary -->
-            <div class="left-column">
-              <div>
-                <div class="merchant-badge">Merchant Payment</div>
-                <div class="merchant-title">Fe Galang Da Silva Boarding House</div>
-
-                <div class="summary-table">
-                  <div class="summary-row">
-                    <span>Payment Method</span>
-                    <strong style="color:#005ce6;">GCash Remittance</strong>
-                  </div>
-                  <div class="summary-row">
-                    <span>Transaction Reference</span>
-                    <span style="font-family:'JetBrains Mono',monospace; font-size:12px;">${sessionId.slice(0, 16)}</span>
-                  </div>
-                  <div class="summary-row">
-                    <span>Convenience Fee</span>
-                    <span style="color:#10b981; font-weight:600;">FREE (₱0.00)</span>
-                  </div>
-                  <div class="summary-row total">
-                    <span class="total-label">Total Amount Due</span>
-                    <span class="total-val">₱${session.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="info-note">
-                <div style="display:flex; align-items:center; gap:6px; font-weight:700; color:#1c1917; margin-bottom:4px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                  <span>Bangko Sentral ng Pilipinas (BSP)</span>
-                </div>
-                Electronic payment clearance processed via Adyen N.V. official acquirer switch.
-              </div>
+          <!-- STEP 2: 6-Digit SMS OTP -->
+          <div id="step-2" class="checkout-step">
+            <div class="step-title">Authentication Code</div>
+            <div class="step-subtitle">
+              We sent a 6-digit code to <strong id="display-phone">+63 906 ••• 9001</strong>.
             </div>
 
-            <!-- Right Side: Interactive Payment Wizard -->
-            <div class="right-column">
-              <!-- Segmented Control Tabs -->
-              <div class="mode-tabs">
-                <button id="tab-qr" type="button" class="tab-btn ${isMobileMode ? '' : 'active'}" onclick="switchView('qr')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
-                  <span>Scan GCash QR</span>
-                </button>
-                <button id="tab-mpin" type="button" class="tab-btn ${isMobileMode ? 'active' : ''}" onclick="switchView('mpin')">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-                  <span>GCash MPIN</span>
-                </button>
-              </div>
+            <button type="button" class="demo-helper-btn" onclick="fillDemoOtp()">
+              ✨ Auto-fill OTP Code (123456)
+            </button>
 
-              <!-- View 1: Dynamic QR Code -->
-              <div id="view-qr" class="view-panel ${isMobileMode ? '' : 'active'}">
-                <div class="qr-box">
-                  <div class="qr-image-wrapper">
-                    <img src="${qrDataUrl}" alt="GCash Dynamic QR" class="qr-image" />
-                    <div class="qr-center-emblem">G</div>
-                  </div>
-                  <div>
-                    <span class="qr-expiry">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      <span>Expires in <span id="timer-display">09:59</span></span>
-                    </span>
-                  </div>
-                </div>
-
-                <div class="instructions-card">
-                  <strong>How to pay:</strong>
-                  <ol>
-                    <li>Open your <strong>GCash App</strong> on your smartphone.</li>
-                    <li>Tap the <strong>QR Scanner</strong> at the bottom bar.</li>
-                    <li>Scan this QR code and verify with your MPIN.</li>
-                  </ol>
-                </div>
-
-                <button type="button" class="btn-primary" onclick="submitPayment()">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Simulate Scan &amp; Authorize</span>
-                </button>
-              </div>
-
-              <!-- View 2: MPIN Input Flow -->
-              <div id="view-mpin" class="view-panel ${isMobileMode ? 'active' : ''}">
-                <div style="text-align:center; margin-bottom: 8px;">
-                  <div style="font-size: 14px; font-weight: 700; color: #1c1917;">Enter 4-Digit MPIN</div>
-                  <div style="font-size: 12px; color: #71717a; margin-top: 2px;">Account: +63 917 ••• 4567</div>
-                </div>
-
-                <div class="pin-indicator">
-                  <div class="pin-dot filled" id="dot-1"></div>
-                  <div class="pin-dot filled" id="dot-2"></div>
-                  <div class="pin-dot filled" id="dot-3"></div>
-                  <div class="pin-dot filled" id="dot-4"></div>
-                </div>
-
-                <div class="keypad-grid">
-                  <button type="button" class="keypad-btn" onclick="pressPin('1')">1</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('2')">2</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('3')">3</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('4')">4</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('5')">5</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('6')">6</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('7')">7</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('8')">8</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('9')">9</button>
-                  <button type="button" class="keypad-btn" onclick="clearPin()">C</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('0')">0</button>
-                  <button type="button" class="keypad-btn" onclick="pressPin('back')">&#9003;</button>
-                </div>
-
-                <button type="button" class="btn-primary" onclick="submitPayment()">
-                  <span>Authorize PHP ${session.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                </button>
-              </div>
-
-              <!-- Loading State -->
-              <div id="loader-box" class="loader-box">
-                <div class="spinner"></div>
-                <div style="font-weight: 700; font-size: 15px; color: #1c1917;">Authorizing Remittance...</div>
-                <div style="font-size: 12px; color: #71717a; margin-top: 4px;">Syncing with Landlady Collections Ledger</div>
-              </div>
-
-              <div class="cancel-row" id="cancel-box">
-                <a href="${cancelUrl}" class="cancel-link">Cancel and return to Portal</a>
-              </div>
+            <div class="otp-boxes">
+              <input type="text" class="otp-box" maxlength="1" id="otp-1" oninput="onOtpInput(1)" value="1">
+              <input type="text" class="otp-box" maxlength="1" id="otp-2" oninput="onOtpInput(2)" value="2">
+              <input type="text" class="otp-box" maxlength="1" id="otp-3" oninput="onOtpInput(3)" value="3">
+              <input type="text" class="otp-box" maxlength="1" id="otp-4" oninput="onOtpInput(4)" value="4">
+              <input type="text" class="otp-box" maxlength="1" id="otp-5" oninput="onOtpInput(5)" value="5">
+              <input type="text" class="otp-box" maxlength="1" id="otp-6" oninput="onOtpInput(6)" value="6">
             </div>
+
+            <div style="font-size: 11px; color: #6b778c; text-align: center; margin-bottom: 18px;">
+              Didn't receive code? <strong style="color: #005ce6;">Resend Code (<span id="resend-sec">48</span>s)</strong>
+            </div>
+
+            <button type="button" class="btn-gcash-primary" onclick="goToStep(3)">
+              SUBMIT CODE
+            </button>
           </div>
+
+          <!-- STEP 3: 4-Digit MPIN -->
+          <div id="step-3" class="checkout-step">
+            <div class="step-title">Enter your 4-Digit MPIN</div>
+            <div class="step-subtitle">Never share your MPIN or One-Time PIN (OTP) with anyone.</div>
+
+            <button type="button" class="demo-helper-btn" onclick="fillDemoMpin()">
+              ✨ Auto-enter MPIN (1234)
+            </button>
+
+            <div class="mpin-display">
+              <div class="mpin-dot filled" id="pdot-1"></div>
+              <div class="mpin-dot filled" id="pdot-2"></div>
+              <div class="mpin-dot filled" id="pdot-3"></div>
+              <div class="mpin-dot filled" id="pdot-4"></div>
+            </div>
+
+            <div class="keypad-grid">
+              <button type="button" class="keypad-key" onclick="typePin('1')">1</button>
+              <button type="button" class="keypad-key" onclick="typePin('2')">2</button>
+              <button type="button" class="keypad-key" onclick="typePin('3')">3</button>
+              <button type="button" class="keypad-key" onclick="typePin('4')">4</button>
+              <button type="button" class="keypad-key" onclick="typePin('5')">5</button>
+              <button type="button" class="keypad-key" onclick="typePin('6')">6</button>
+              <button type="button" class="keypad-key" onclick="typePin('7')">7</button>
+              <button type="button" class="keypad-key" onclick="typePin('8')">8</button>
+              <button type="button" class="keypad-key" onclick="typePin('9')">9</button>
+              <button type="button" class="keypad-key" onclick="clearPin()">C</button>
+              <button type="button" class="keypad-key" onclick="typePin('0')">0</button>
+              <button type="button" class="keypad-key" onclick="backPin()">⌫</button>
+            </div>
+
+            <button type="button" class="btn-gcash-primary" onclick="goToStep(4)">
+              NEXT
+            </button>
+          </div>
+
+          <!-- STEP 4: Review & Final Payment -->
+          <div id="step-4" class="checkout-step">
+            <div class="step-title">YOU ARE ABOUT TO PAY</div>
+            <div class="step-subtitle">Please verify payment details before authorizing.</div>
+
+            <div class="review-card">
+              <div class="review-row">
+                <span class="review-label">Available GCash Balance:</span>
+                <span class="review-value" style="color: #00875a;">₱14,850.00</span>
+              </div>
+              <div class="review-row">
+                <span class="review-label">Pay To:</span>
+                <span class="review-value">Fe Galang Da Silva BH</span>
+              </div>
+              <div class="review-row">
+                <span class="review-label">Room Dues & Water:</span>
+                <span class="review-value">₱${session.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div class="review-row">
+                <span class="review-label">Convenience Fee:</span>
+                <span class="review-value" style="color: #00875a;">FREE (₱0.00)</span>
+              </div>
+              <div class="review-row review-total">
+                <span>Total Payment:</span>
+                <span>₱${session.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+
+            <button type="button" id="pay-btn" class="btn-gcash-primary" onclick="submitFinalPayment()">
+              PAY ₱${session.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </button>
+          </div>
+
+          <!-- STEP 5: Official Success Receipt -->
+          <div id="step-5" class="checkout-step">
+            <div class="receipt-icon">✓</div>
+            <div class="step-title" style="text-align: center; color: #00875a;">Payment Successful!</div>
+            <div class="step-subtitle" style="text-align: center; margin-bottom: 16px;">
+              Your remittance has been authorized and queued for Landlady verification.
+            </div>
+
+            <div class="review-card">
+              <div class="review-row">
+                <span class="review-label">Reference No:</span>
+                <span class="review-value" id="receipt-ref" style="font-family: monospace;">ADYEN-GCASH-XXXX</span>
+              </div>
+              <div class="review-row">
+                <span class="review-label">Merchant:</span>
+                <span class="review-value">Fe Galang Da Silva BH</span>
+              </div>
+              <div class="review-row">
+                <span class="review-label">Amount Paid:</span>
+                <span class="review-value" style="color: #005ce6; font-size: 14px;">₱${session.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div class="review-row">
+                <span class="review-label">Date & Time:</span>
+                <span class="review-value" id="receipt-time">Just now</span>
+              </div>
+            </div>
+
+            <button type="button" class="btn-gcash-primary" onclick="returnToMerchant()">
+              BACK TO RESIDENT PORTAL (<span id="auto-return-timer">3</span>s)
+            </button>
+          </div>
+
+          <!-- Cancellation Link -->
+          <div class="cancel-footer" id="cancel-row">
+            <a href="${cancelUrl}" class="cancel-link">Cancel and return to Portal</a>
+          </div>
+
+        </div>
+
+        <div class="bsp-footer">
+          Bangko Sentral ng Pilipinas (BSP) Regulated Electronic Money Issuer.<br>
+          Connected via Adyen Hybrid Gateway for Fe Galang Da Silva Boarding House.
         </div>
 
         <script>
           const sessionId = '${sessionId}';
-          let currentPin = '1234';
+          let mpinValue = '1234';
+          let redirectTarget = '${clientBaseUrl}/tenant/payments?status=success';
 
-          function switchView(mode) {
-            document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-            document.getElementById('view-' + mode).classList.add('active');
-            document.getElementById('tab-' + mode).classList.add('active');
+          function goToStep(stepNumber) {
+            document.querySelectorAll('.checkout-step').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('step-' + stepNumber);
+            if (target) {
+              target.classList.add('active');
+            }
           }
 
-          function pressPin(digit) {
-            if (digit === 'C') {
-              currentPin = '';
-            } else if (digit === 'back') {
-              currentPin = currentPin.slice(0, -1);
-            } else if (currentPin.length < 4) {
-              currentPin += digit;
+          function fillDemoPhone() {
+            document.getElementById('phone-input').value = '906 354 9001';
+          }
+
+          function fillDemoOtp() {
+            for (let i = 1; i <= 6; i++) {
+              document.getElementById('otp-' + i).value = i.toString();
             }
+          }
+
+          function onOtpInput(index) {
+            if (index < 6) {
+              const next = document.getElementById('otp-' + (index + 1));
+              if (next) next.focus();
+            }
+          }
+
+          function typePin(digit) {
+            if (mpinValue.length < 4) {
+              mpinValue += digit;
+              updatePinDots();
+            }
+          }
+
+          function backPin() {
+            mpinValue = mpinValue.slice(0, -1);
             updatePinDots();
           }
 
           function clearPin() {
-            currentPin = '';
+            mpinValue = '';
+            updatePinDots();
+          }
+
+          function fillDemoMpin() {
+            mpinValue = '1234';
             updatePinDots();
           }
 
           function updatePinDots() {
             for (let i = 1; i <= 4; i++) {
-              const dot = document.getElementById('dot-' + i);
-              if (i <= currentPin.length) {
+              const dot = document.getElementById('pdot-' + i);
+              if (i <= mpinValue.length) {
                 dot.classList.add('filled');
               } else {
                 dot.classList.remove('filled');
@@ -804,11 +850,10 @@ router.get(
             }
           }
 
-          async function submitPayment() {
-            document.querySelectorAll('.view-panel').forEach(v => v.style.display = 'none');
-            document.querySelector('.mode-tabs').style.display = 'none';
-            document.getElementById('cancel-box').style.display = 'none';
-            document.getElementById('loader-box').style.display = 'block';
+          async function submitFinalPayment() {
+            const btn = document.getElementById('pay-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>Processing Authorization...</span>';
 
             try {
               const res = await fetch('/api/public/payments/mock-gateway/complete', {
@@ -820,41 +865,52 @@ router.get(
                 body: JSON.stringify({ sessionId })
               });
               const data = await res.json();
-              if (data && data.redirectUrl) {
+              
+              if (data && data.reference) {
+                document.getElementById('receipt-ref').textContent = data.reference;
+                document.getElementById('receipt-time').textContent = new Date().toLocaleString('en-US', {
+                  month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                redirectTarget = data.redirectUrl || redirectTarget;
+                goToStep(5);
+                startAutoReturnCountdown();
+              } else if (data && data.redirectUrl) {
                 window.location.href = data.redirectUrl;
-                return;
+              } else {
+                window.location.href = redirectTarget;
               }
-              if (!res.ok) {
-                const errMsg = data?.message || data?.error?.message || 'Payment session could not be completed.';
-                alert(errMsg);
-                window.location.href = '${cancelUrl}';
-                return;
-              }
-              window.location.href = '${clientBaseUrl}/tenant/payments?status=success';
             } catch (err) {
-              console.error('Payment complete error:', err);
-              const form = document.createElement('form');
-              form.method = 'POST';
-              form.action = '/api/public/payments/mock-gateway/complete';
-              const input = document.createElement('input');
-              input.type = 'hidden';
-              input.name = 'sessionId';
-              input.value = sessionId;
-              form.appendChild(input);
-              document.body.appendChild(form);
-              form.submit();
+              console.error('Submission failed, direct redirect:', err);
+              window.location.href = redirectTarget;
             }
           }
 
-          // 10-Minute Countdown Timer
-          let timeLeft = 599;
-          const timerEl = document.getElementById('timer-display');
+          function returnToMerchant() {
+            window.location.href = redirectTarget;
+          }
+
+          function startAutoReturnCountdown() {
+            let count = 3;
+            const timerEl = document.getElementById('auto-return-timer');
+            const interval = setInterval(() => {
+              count--;
+              if (timerEl) timerEl.textContent = count;
+              if (count <= 0) {
+                clearInterval(interval);
+                returnToMerchant();
+              }
+            }, 1000);
+          }
+
+          // Top Session Expiry Timer
+          let sessionSeconds = 599;
           setInterval(() => {
-            if (timeLeft <= 0) return;
-            timeLeft--;
-            const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-            const secs = String(timeLeft % 60).padStart(2, '0');
-            timerEl.textContent = mins + ':' + secs;
+            if (sessionSeconds <= 0) return;
+            sessionSeconds--;
+            const mins = String(Math.floor(sessionSeconds / 60)).padStart(2, '0');
+            const secs = String(sessionSeconds % 60).padStart(2, '0');
+            const el = document.getElementById('timer');
+            if (el) el.textContent = mins + ':' + secs;
           }, 1000);
         </script>
       </body>
