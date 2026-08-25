@@ -42,17 +42,18 @@ function handleLogin() {
       <form @submit.prevent="handleLogin" class="space-y-4 text-xs">
         <div>
           <label class="block text-[11px] font-bold uppercase tracking-wider text-[#71717a] mb-1.5">Assigned Unit Code</label>
-          <input type="text" value="2A" class="w-full px-3.5 py-2.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl text-sm font-bold focus:bg-white focus:border-[#f59e0b] focus:outline-none" required />
+          <input type="text" value="2A" class="form-input text-xs font-bold" required />
         </div>
         <div>
           <label class="block text-[11px] font-bold uppercase tracking-wider text-[#71717a] mb-1.5">Password</label>
-          <input type="password" value="tenant123" class="w-full px-3.5 py-2.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl text-sm focus:bg-white focus:border-[#f59e0b] focus:outline-none" required />
+          <input type="password" value="tenant123" class="form-input text-xs" required />
         </div>
 
-        <div class="pt-3 border-t border-[#e7e5e4] flex justify-end gap-3">
-          <button type="button" @click="closeModal" class="btn-secondary px-4">Cancel</button>
-          <button type="submit" class="btn-primary px-5 flex items-center gap-1.5">
-            <LogIn class="w-3.5 h-3.5" /> Login to Portal
+        <div class="pt-3 border-t border-[#e7e5e4] flex justify-end gap-2.5">
+          <button type="button" @click="closeModal" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">
+            <LogIn class="size-3.5" />
+            <span>Login to Portal</span>
           </button>
         </div>
       </form>

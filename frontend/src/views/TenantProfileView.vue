@@ -168,55 +168,62 @@ function handleReset() {
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto w-full space-y-6">
+  <div class="max-w-6xl mx-auto w-full space-y-6">
     <!-- Breadcrumb Header -->
-    <div class="border-b border-[#dfe1e6] pb-4">
-      <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
-        <span>Tenant Portal</span>
-        <span>/</span>
-        <span class="font-medium text-[#172b4d]">My Profile</span>
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+          <span>Tenant Portal</span>
+          <span>/</span>
+          <span class="font-medium text-[#1c1917]">My Profile</span>
+        </div>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Resident Profile</h1>
+        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">Manage your personal details, emergency contacts, and contact information</p>
       </div>
-      <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">Tenant Profile &amp; Settings</h1>
-      <p class="text-xs text-[#6b778c] mt-0.5">
-        Manage your contact details, emergency contacts, occupation, and profile picture
-      </p>
+
+      <div class="flex items-center gap-2">
+        <router-link to="/tenant" class="btn-secondary">
+          <span>Unit Overview</span>
+        </router-link>
+      </div>
     </div>
 
-    <div v-if="loading" class="p-12 text-center bg-white border border-[#dfe1e6] text-[#5e6c84] rounded-lg text-sm">
-      Loading profile...
+    <!-- Loading Skeleton -->
+    <div v-if="loading" class="space-y-4">
+      <SkeletonCard variant="room" :count="2" />
     </div>
 
     <div v-else class="space-y-6">
-      <!-- Success & Error Notices -->
+      <!-- Notices -->
       <div
         v-if="successNotice"
-        class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm rounded-lg flex items-center justify-between shadow-xs animate-in fade-in"
+        class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm rounded-2xl flex items-center justify-between shadow-xs"
       >
         <div class="flex items-center gap-2.5">
-          <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0" />
-          <span class="font-bold">{{ successNotice }}</span>
+          <CheckCircle2 class="size-5 text-emerald-600 shrink-0" />
+          <span class="font-medium">{{ successNotice }}</span>
         </div>
         <button
           @click="successNotice = ''"
-          class="text-emerald-700 hover:text-emerald-900 p-1 rounded cursor-pointer"
+          class="text-emerald-700 hover:text-emerald-900 p-1 rounded-lg cursor-pointer"
           title="Dismiss"
         >
-          <X class="w-4 h-4" />
+          <X class="size-4" />
         </button>
       </div>
 
       <div
         v-if="errorNotice"
-        class="p-4 bg-red-50 border border-red-200 text-red-900 text-sm rounded-lg flex items-start gap-2.5 animate-in fade-in"
+        class="p-4 bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm rounded-2xl flex items-start gap-2.5 shadow-xs"
       >
-        <AlertTriangle class="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+        <AlertTriangle class="size-5 text-rose-600 shrink-0 mt-0.5" />
         <span class="font-bold">{{ errorNotice }}</span>
       </div>
 
       <!-- Avatar & Account Identity Card -->
-      <div class="bg-white border border-[#dfe1e6] rounded-lg p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xs">
+      <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xs">
         <div class="relative group">
-          <div class="w-24 h-24 rounded-full bg-[#172b4d] text-white flex items-center justify-center text-2xl font-black shadow-md overflow-hidden border-4 border-white ring-2 ring-[#dfe1e6]">
+          <div class="size-24 rounded-full bg-[#1e2532] text-white flex items-center justify-center text-2xl font-black shadow-md overflow-hidden border-4 border-white ring-2 ring-[#e7e5e4]">
             <img
               v-if="form.avatar_url"
               :src="form.avatar_url"
@@ -228,10 +235,10 @@ function handleReset() {
 
           <label
             for="avatar-upload-input"
-            class="absolute bottom-0 right-0 p-2 bg-[#0c66e4] text-white rounded-full shadow-md cursor-pointer hover:bg-[#0055cc] transition-colors"
+            class="absolute bottom-0 right-0 p-2 bg-[#1e2532] text-white rounded-full shadow-md cursor-pointer hover:bg-[#2b3648] transition-colors"
             title="Upload photo"
           >
-            <Camera class="w-4 h-4" />
+            <Camera class="size-3.5" />
             <input
               id="avatar-upload-input"
               type="file"
@@ -244,31 +251,31 @@ function handleReset() {
 
         <div class="text-center sm:text-left space-y-1.5 flex-1">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h2 class="text-lg font-bold text-[#172b4d]">{{ form.full_name }}</h2>
-            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 w-fit mx-auto sm:mx-0">
+            <h2 class="font-display font-black text-xl text-[#1c1917]">{{ form.full_name }}</h2>
+            <span class="badge-soft badge-success text-[10px] font-bold w-fit mx-auto sm:mx-0">
               ACTIVE TENANT
             </span>
           </div>
-          <p class="text-xs text-[#6b778c] flex items-center justify-center sm:justify-start gap-1.5">
-            <Mail class="w-3.5 h-3.5 text-[#0c66e4]" /> {{ identity.email }}
+          <p class="text-xs text-[#71717a] flex items-center justify-center sm:justify-start gap-1.5">
+            <Mail class="size-3.5 text-[#0c66e4]" /> {{ identity.email }}
           </p>
-          <p class="text-xs text-[#5e6c84]">
-            Role: <strong class="text-[#172b4d] capitalize">{{ identity.role }}</strong> · Status: <strong class="text-emerald-700 capitalize">{{ identity.account_status }}</strong>
+          <p class="text-xs text-[#71717a]">
+            Role: <strong class="text-[#1c1917] capitalize">{{ identity.role }}</strong> · Status: <strong class="text-emerald-700 capitalize">{{ identity.account_status }}</strong>
           </p>
         </div>
       </div>
 
       <!-- Editable Profile Form -->
-      <form @submit.prevent="handleSave" class="bg-white border border-[#dfe1e6] rounded-lg overflow-hidden shadow-xs">
-        <div class="px-6 py-4 border-b border-[#dfe1e6] bg-[#f7f8f9] flex items-center justify-between">
+      <form @submit.prevent="handleSave" class="surface-card rounded-2xl border border-[#e7e5e4] bg-white overflow-hidden shadow-xs">
+        <div class="px-6 py-4 border-b border-[#e7e5e4] bg-[#fafaf9] flex items-center justify-between">
           <div>
-            <h2 class="font-bold text-sm text-[#172b4d] flex items-center gap-2">
-              <User class="w-4 h-4 text-[#0c66e4]" />
+            <h2 class="font-display font-extrabold text-sm text-[#1c1917] flex items-center gap-2">
+              <User class="size-4 text-[#0c66e4]" />
               Edit Profile Details
             </h2>
-            <p class="text-xs text-[#6b778c] mt-0.5">Update your contact numbers, emergency contact, and links</p>
+            <p class="text-xs text-[#71717a] mt-0.5">Update your contact numbers, emergency contact, and links</p>
           </div>
-          <span class="text-xs font-bold text-[#0c66e4] px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-md">
+          <span class="badge-soft badge-info text-[10px] font-bold">
             Self-Service Enabled
           </span>
         </div>
@@ -276,37 +283,37 @@ function handleReset() {
         <div class="p-6 space-y-6">
           <!-- Full Name & Phone Number -->
           <div>
-            <h3 class="text-xs font-bold text-[#6b778c] uppercase tracking-wider mb-3">Resident Information</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <h3 class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider mb-3">Resident Information</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-[#172b4d] mb-1.5" for="full-name">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="full-name">
                   Full Display Name
                 </label>
                 <div class="relative">
-                  <User class="w-4 h-4 text-[#b3bac5] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <User class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     id="full-name"
                     v-model="form.full_name"
                     type="text"
                     placeholder="Your Full Name"
-                    class="w-full text-sm pl-9 pr-3 py-2.5 border border-[#dfe1e6] rounded-md bg-white text-[#172b4d] font-semibold focus:ring-2 focus:ring-[#0c66e4]/30 focus:border-[#0c66e4] focus:outline-none transition"
+                    class="form-input pl-9.5 text-xs font-semibold"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-[#172b4d] mb-1.5" for="phone">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="phone">
                   Contact Phone Number
                 </label>
                 <div class="relative">
-                  <Phone class="w-4 h-4 text-[#b3bac5] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Phone class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     id="phone"
                     v-model="form.phone_number"
                     type="tel"
                     placeholder="e.g. 0917-123-4567"
-                    class="w-full text-sm pl-9 pr-3 py-2.5 border border-[#dfe1e6] rounded-md bg-white text-[#172b4d] focus:ring-2 focus:ring-[#0c66e4]/30 focus:border-[#0c66e4] focus:outline-none transition"
+                    class="form-input pl-9.5 text-xs"
                     required
                   />
                 </div>
@@ -314,84 +321,84 @@ function handleReset() {
             </div>
           </div>
 
-          <div class="border-t border-[#dfe1e6]"></div>
+          <div class="border-t border-[#e7e5e4]"></div>
 
           <!-- Occupation & Socials -->
           <div>
-            <h3 class="text-xs font-bold text-[#6b778c] uppercase tracking-wider mb-3">Work &amp; Social Profile</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <h3 class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider mb-3">Work &amp; Social Profile</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-[#172b4d] mb-1.5" for="occupation">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="occupation">
                   Occupation / Course &amp; University
                 </label>
                 <div class="relative">
-                  <Briefcase class="w-4 h-4 text-[#b3bac5] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Briefcase class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     id="occupation"
                     v-model="form.occupation"
                     type="text"
                     placeholder="e.g. BS Nursing Student / IT Specialist"
-                    class="w-full text-sm pl-9 pr-3 py-2.5 border border-[#dfe1e6] rounded-md bg-white text-[#172b4d] focus:ring-2 focus:ring-[#0c66e4]/30 focus:border-[#0c66e4] focus:outline-none transition"
+                    class="form-input pl-9.5 text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-[#172b4d] mb-1.5" for="facebook">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="facebook">
                   Facebook Profile Link
                 </label>
                 <div class="relative">
-                  <LinkIcon class="w-4 h-4 text-[#b3bac5] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <LinkIcon class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     id="facebook"
                     v-model="form.facebook_url"
                     type="url"
                     placeholder="https://facebook.com/your.profile"
-                    class="w-full text-sm pl-9 pr-3 py-2.5 border border-[#dfe1e6] rounded-md bg-white text-[#172b4d] focus:ring-2 focus:ring-[#0c66e4]/30 focus:border-[#0c66e4] focus:outline-none transition"
+                    class="form-input pl-9.5 text-xs"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="border-t border-[#dfe1e6]"></div>
+          <div class="border-t border-[#e7e5e4]"></div>
 
           <!-- Emergency Contact -->
           <div>
-            <h3 class="text-xs font-bold text-[#6b778c] uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <LifeBuoy class="w-3.5 h-3.5 text-rose-500" />
+            <h3 class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <LifeBuoy class="size-3.5 text-rose-500" />
               Emergency Contact Person
             </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-[#172b4d] mb-1.5" for="ec-name">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ec-name">
                   Emergency Contact Full Name
                 </label>
                 <div class="relative">
-                  <User class="w-4 h-4 text-[#b3bac5] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <User class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     id="ec-name"
                     v-model="form.emergency_contact_name"
                     type="text"
                     placeholder="Parent / Guardian Name"
-                    class="w-full text-sm pl-9 pr-3 py-2.5 border border-[#dfe1e6] rounded-md bg-white text-[#172b4d] focus:ring-2 focus:ring-[#0c66e4]/30 focus:border-[#0c66e4] focus:outline-none transition"
+                    class="form-input pl-9.5 text-xs"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-[#172b4d] mb-1.5" for="ec-phone">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ec-phone">
                   Emergency Contact Phone Number
                 </label>
                 <div class="relative">
-                  <Phone class="w-4 h-4 text-[#b3bac5] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Phone class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     id="ec-phone"
                     v-model="form.emergency_contact_phone"
                     type="tel"
                     placeholder="e.g. 0918-987-6543"
-                    class="w-full text-sm pl-9 pr-3 py-2.5 border border-[#dfe1e6] rounded-md bg-white text-[#172b4d] focus:ring-2 focus:ring-[#0c66e4]/30 focus:border-[#0c66e4] focus:outline-none transition"
+                    class="form-input pl-9.5 text-xs"
                     required
                   />
                 </div>
@@ -401,8 +408,8 @@ function handleReset() {
         </div>
 
         <!-- Action Bar -->
-        <div class="px-6 py-4 border-t border-[#dfe1e6] bg-[#f7f8f9] flex items-center justify-between gap-3 flex-wrap">
-          <p class="text-xs text-[#6b778c]">
+        <div class="px-6 py-4 border-t border-[#e7e5e4] bg-[#fafaf9] flex items-center justify-between gap-3 flex-wrap">
+          <p class="text-xs text-[#71717a]">
             {{ isDirty ? 'Unsaved profile modifications.' : 'Profile is up to date.' }}
           </p>
           <div class="flex items-center gap-2">
@@ -410,16 +417,17 @@ function handleReset() {
               type="button"
               @click="handleReset"
               :disabled="!isDirty || saving"
-              class="px-4 py-2.5 text-xs font-bold text-[#42526e] bg-white border border-[#dfe1e6] rounded-md hover:bg-[#f4f5f7] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1.5"
+              class="btn-secondary"
             >
-              <RotateCcw class="w-3.5 h-3.5" /> Reset
+              <RotateCcw class="size-3.5" />
+              <span>Reset</span>
             </button>
             <button
               type="submit"
               :disabled="!isDirty || saving"
-              class="px-5 py-2.5 text-xs font-bold text-white bg-[#0c66e4] hover:bg-[#0055cc] rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+              class="btn-primary"
             >
-              <Save class="w-4 h-4" />
+              <Save class="size-3.5" />
               <span>{{ saving ? 'Saving Changes…' : 'Save Profile' }}</span>
             </button>
           </div>

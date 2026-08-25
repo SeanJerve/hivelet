@@ -453,19 +453,19 @@ async function submitInquiry() {
             <button 
               type="button" 
               @click="isInquiryOpen = false; openChat();" 
-              class="btn-secondary min-h-11 gap-1.5 cursor-pointer"
+              class="btn-secondary"
             >
-              <MessageCircle class="size-4" />
+              <MessageCircle class="size-3.5" />
               <span>Chat Live</span>
             </button>
 
             <button 
               type="submit" 
               :disabled="isSubmitting"
-              class="btn-primary min-h-11 gap-1.5 cursor-pointer disabled:opacity-50"
+              class="btn-primary"
             >
-              <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
-              <Send v-else class="size-4 text-[#f59e0b]" />
+              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
+              <Send v-else class="size-3.5 text-[#f59e0b]" />
               <span>{{ isSubmitting ? 'Sending…' : 'Send Inquiry to Landlady' }}</span>
             </button>
           </div>

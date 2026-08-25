@@ -209,11 +209,11 @@ onUnmounted(() => {
 
           <button
             @click="handleSignOut"
-            class="btn-secondary min-h-9 px-3.5 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+            class="btn-secondary"
             title="Sign Out"
           >
             <LogOut class="size-3.5 text-[#71717a]" />
-            <span class="hidden sm:inline font-semibold">Sign Out</span>
+            <span class="hidden sm:inline">Sign Out</span>
           </button>
         </template>
 
@@ -221,7 +221,7 @@ onUnmounted(() => {
         <template v-else>
           <router-link
             to="/login"
-            class="btn-primary min-h-9 px-4 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs font-bold rounded-xl"
+            class="btn-primary"
           >
             <LogIn class="size-3.5 text-[#f59e0b]" />
             <span>Sign In</span>

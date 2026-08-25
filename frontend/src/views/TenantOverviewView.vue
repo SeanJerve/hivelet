@@ -266,16 +266,25 @@ async function handlePayOnline() {
 <template>
   <div class="max-w-6xl mx-auto w-full space-y-6">
     <!-- Breadcrumb Header -->
-    <div class="border-b border-[#dfe1e6] pb-4">
-      <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
-        <span>Tenant Portal</span>
-        <span>/</span>
-        <span class="font-medium text-[#172b4d]">{{ tenantData.name }}</span>
-        <span>/</span>
-        <span class="font-semibold text-[#0c66e4]">{{ tenantData.room }}</span>
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+          <span>Tenant Portal</span>
+          <span>/</span>
+          <span class="font-medium text-[#1c1917]">{{ tenantData.name }}</span>
+          <span>/</span>
+          <span class="font-bold text-[#0c66e4]">{{ tenantData.room }}</span>
+        </div>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Unit Overview</h1>
+        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">{{ tenantData.room }} unit photo, specifications &amp; billing statement</p>
       </div>
-      <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">Unit Overview</h1>
-      <p class="text-xs text-[#6b778c] mt-0.5">{{ tenantData.room }} unit photo, specifications &amp; billing statement</p>
+
+      <div class="flex items-center gap-2">
+        <router-link to="/tenant/payments" class="btn-secondary">
+          <CreditCard class="size-3.5" />
+          <span>Payment History</span>
+        </router-link>
+      </div>
     </div>
 
     <!-- Skeleton Loading -->
@@ -285,139 +294,125 @@ async function handlePayOnline() {
       <!-- Submission Toast Notice -->
       <div
         v-if="submissionNotice"
-        class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm rounded-lg flex items-center justify-between shadow-sm"
+        class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm rounded-2xl flex items-center justify-between shadow-xs"
       >
         <div class="flex items-center gap-2.5">
-          <CheckCircle2 class="w-5 h-5 text-emerald-600 shrink-0" />
+          <CheckCircle2 class="size-5 text-emerald-600 shrink-0" />
           <span class="font-medium">{{ submissionNotice }}</span>
         </div>
-        <button @click="submissionNotice = ''" class="text-emerald-700 hover:text-emerald-900 ml-3 p-1 rounded cursor-pointer" title="Dismiss">
-          <X class="w-4 h-4" />
+        <button @click="submissionNotice = ''" class="text-emerald-700 hover:text-emerald-900 ml-3 p-1 rounded-lg cursor-pointer" title="Dismiss">
+          <X class="size-4" />
         </button>
       </div>
 
-      <!-- Hero Unit Section (Clean Unboxed Layout) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-        
-        <!-- Unit Photo (Clean standalone image frame) -->
-        <div class="lg:col-span-5 h-[240px] sm:h-[260px] rounded-xl overflow-hidden border border-[#dfe1e6] bg-slate-900 shadow-sm relative flex items-center justify-center">
-          <img
-            v-if="tenantData.photoUrl"
-            :src="tenantData.photoUrl"
-            :alt="tenantData.room"
-            class="w-full h-full object-cover"
-          />
-          <div v-else class="text-center text-white/80 space-y-2 p-6">
-            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mx-auto border border-white/20">
-              <Home class="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p class="font-display font-bold text-base text-white">{{ tenantData.room }}</p>
-              <p class="text-xs text-white/60">{{ tenantData.roomDetails }}</p>
+      <!-- Hero Unit Section -->
+      <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <!-- Unit Photo Frame -->
+          <div class="lg:col-span-5 h-[220px] sm:h-[240px] rounded-xl overflow-hidden border border-[#e7e5e4] bg-slate-900 relative flex items-center justify-center">
+            <img
+              v-if="tenantData.photoUrl"
+              :src="tenantData.photoUrl"
+              :alt="tenantData.room"
+              class="w-full h-full object-cover"
+            />
+            <div v-else class="text-center text-white/80 space-y-2 p-6">
+              <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mx-auto border border-white/20">
+                <Home class="size-6 text-white" />
+              </div>
+              <div>
+                <p class="font-display font-bold text-base text-white">{{ tenantData.room }}</p>
+                <p class="text-xs text-white/60">{{ tenantData.roomDetails }}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Room Specifications (Direct layout) -->
-        <div class="lg:col-span-7 flex flex-col justify-center space-y-4">
-          <div class="flex items-center justify-between mb-1">
-            <div>
-              <span class="text-[11px] font-bold text-[#0c66e4] uppercase tracking-wider">Unit Specifications</span>
-              <h2 class="font-display text-2xl font-extrabold text-[#172b4d]">{{ tenantData.room }}</h2>
+          <!-- Room Specifications -->
+          <div class="lg:col-span-7 flex flex-col justify-center space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-[#e7e5e4]">
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#0c66e4]">Unit Specifications</span>
+                <h2 class="font-display text-2xl font-black text-[#1c1917]">{{ tenantData.room }}</h2>
+              </div>
+              <span class="badge-soft badge-success text-xs font-bold">
+                Occupied (Active Lease)
+              </span>
             </div>
-            <span class="px-3 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
-              Occupied (Active Lease)
-            </span>
-          </div>
 
-          <!-- Key-Value Metadata -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 py-2">
-            <div>
-              <span class="text-[11px] font-semibold text-[#6b778c] uppercase tracking-wider block mb-1">Cluster / Wing</span>
-              <span class="text-[#172b4d] font-bold text-base">{{ tenantData.roomType }}</span>
-            </div>
-            <div>
-              <span class="text-[11px] font-semibold text-[#6b778c] uppercase tracking-wider block mb-1">Floor Level</span>
-              <span class="text-[#172b4d] font-bold text-base">Floor {{ tenantData.floor }}</span>
-            </div>
-            <div>
-              <span class="text-[11px] font-semibold text-[#6b778c] uppercase tracking-wider block mb-1">Current Occupants</span>
-              <span class="text-[#172b4d] font-bold text-base">{{ tenantData.occupants }} Person{{ tenantData.occupants > 1 ? 's' : '' }}</span>
+            <!-- Key-Value Metadata -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-1">
+              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
+                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Cluster / Wing</span>
+                <span class="text-[#1c1917] font-display font-bold text-sm">{{ tenantData.roomType }}</span>
+              </div>
+              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
+                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Floor Level</span>
+                <span class="text-[#1c1917] font-display font-bold text-sm">Floor {{ tenantData.floor }}</span>
+              </div>
+              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
+                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Current Occupants</span>
+                <span class="text-[#1c1917] font-display font-bold text-sm">{{ tenantData.occupants }} Person{{ tenantData.occupants > 1 ? 's' : '' }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Monthly Payment & Due Date Statement -->
-      <div class="bg-white border-2 rounded-lg overflow-hidden shadow-xs"
-        :class="{
-          'border-emerald-500': dueDateCountdown.severity === 'paid',
-          'border-[#172b4d]': dueDateCountdown.severity === 'safe',
-          'border-amber-400': dueDateCountdown.severity === 'warning',
-          'border-red-500': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
-        }"
-      >
+      <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white overflow-hidden shadow-xs">
         <!-- Header -->
-        <div class="px-6 py-4 flex items-center justify-between"
-          :class="{
-            'bg-emerald-600': dueDateCountdown.severity === 'paid',
-            'bg-[#172b4d]': dueDateCountdown.severity === 'safe',
-            'bg-amber-500': dueDateCountdown.severity === 'warning',
-            'bg-red-600': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
-          }"
-        >
-          <h2 class="font-bold text-sm text-white flex items-center gap-2">
-            <CreditCard class="w-4 h-4 text-white/80" />
-            Monthly Payment Statement
-          </h2>
-          <span class="px-3 py-1 text-xs font-bold rounded bg-white/20 text-white">
+        <div class="px-6 py-4 flex items-center justify-between border-b border-[#e7e5e4] bg-[#fafaf9]">
+          <div class="flex items-center gap-2">
+            <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
+              <CreditCard class="size-4" />
+            </span>
+            <h2 class="font-display font-extrabold text-base text-[#1c1917]">
+              Monthly Payment Statement
+            </h2>
+          </div>
+          <span :class="[
+            'badge-soft font-bold text-xs',
+            dueDateCountdown.severity === 'paid' ? 'badge-success' :
+            dueDateCountdown.severity === 'warning' ? 'badge-warning' :
+            dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue' ? 'badge-danger' :
+            'badge-info'
+          ]">
             {{ tenantData.dueBadgeText }}
           </span>
         </div>
 
-        <!-- ✨ Dynamic Due-Date Countdown Banner -->
+        <!-- Dynamic Due-Date Countdown Banner -->
         <div
-          class="px-6 py-3 flex items-center gap-3 border-b"
+          class="px-6 py-3.5 flex items-center gap-3 border-b"
           :class="{
-            'bg-emerald-50 border-emerald-200': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
-            'bg-amber-50 border-amber-200': dueDateCountdown.severity === 'warning',
-            'bg-red-50 border-red-200': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
+            'bg-emerald-50/70 border-emerald-200 text-emerald-950': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
+            'bg-amber-50/70 border-amber-200 text-amber-950': dueDateCountdown.severity === 'warning',
+            'bg-rose-50/70 border-rose-200 text-rose-950': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
           }"
         >
           <div
-            class="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+            class="size-8 rounded-full flex items-center justify-center shrink-0"
             :class="{
-              'bg-emerald-100': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
-              'bg-amber-100': dueDateCountdown.severity === 'warning',
-              'bg-red-100': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
+              'bg-emerald-100 text-emerald-700': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
+              'bg-amber-100 text-amber-700': dueDateCountdown.severity === 'warning',
+              'bg-rose-100 text-rose-700': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
             }"
           >
-            <CheckCircle v-if="dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid'" class="w-5 h-5 text-emerald-600" />
-            <Clock v-else-if="dueDateCountdown.severity === 'warning'" class="w-5 h-5 text-amber-600" />
-            <AlertTriangle v-else class="w-5 h-5 text-red-600" />
+            <CheckCircle v-if="dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid'" class="size-4 text-emerald-600" />
+            <Clock v-else-if="dueDateCountdown.severity === 'warning'" class="size-4 text-amber-600" />
+            <AlertTriangle v-else class="size-4 text-rose-600" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-xs font-bold"
-              :class="{
-                'text-emerald-800': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
-                'text-amber-900': dueDateCountdown.severity === 'warning',
-                'text-red-900': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
-              }"
-            >
+            <p class="text-xs font-bold">
               {{ dueDateCountdown.label }}
             </p>
-            <p class="text-[11px]"
-              :class="{
-                'text-emerald-700': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
-                'text-amber-700': dueDateCountdown.severity === 'warning',
-                'text-red-700': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
-              }"
-            >
+            <p class="text-[11px] opacity-80 mt-0.5">
               <span v-if="dueDateCountdown.severity === 'paid'">
-                All monthly dues are paid! Next rent is due on <strong>{{ tenantData.nextDueDateDisplay }}</strong>.
+                All monthly dues are settled. Next rent is due on <strong>{{ tenantData.nextDueDateDisplay }}</strong>.
               </span>
               <span v-else>
-                Monthly rent due on <strong>{{ tenantData.dueDate }}</strong> via GCash or on-site cash payment.
+                Monthly rent due on <strong>{{ tenantData.dueDate }}</strong> via online GCash or on-site cash payment.
               </span>
             </p>
           </div>
@@ -426,63 +421,63 @@ async function handlePayOnline() {
         <!-- Statement Body -->
         <div class="p-6 space-y-5">
           <!-- Resident & Unit Info -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
-              <span class="text-[#6b778c] text-xs block mb-0.5">Resident Name</span>
-              <strong class="text-[#172b4d]">{{ tenantData.name }}</strong>
+              <span class="text-[#71717a] uppercase font-bold text-[10px] block mb-0.5">Resident Name</span>
+              <strong class="text-[#1c1917] font-semibold text-sm">{{ tenantData.name }}</strong>
             </div>
             <div>
-              <span class="text-[#6b778c] text-xs block mb-0.5">Assigned Unit</span>
-              <strong class="text-[#172b4d]">{{ tenantData.room }} ({{ tenantData.roomDetails }})</strong>
+              <span class="text-[#71717a] uppercase font-bold text-[10px] block mb-0.5">Assigned Unit</span>
+              <strong class="text-[#1c1917] font-semibold text-sm">{{ tenantData.room }}</strong>
             </div>
             <div>
-              <span class="text-[#6b778c] text-xs block mb-0.5">Move-in Date</span>
-              <strong class="text-[#172b4d]">{{ tenantData.moveInDate }}</strong>
+              <span class="text-[#71717a] uppercase font-bold text-[10px] block mb-0.5">Move-in Date</span>
+              <strong class="text-[#1c1917] font-semibold text-sm">{{ tenantData.moveInDate }}</strong>
             </div>
             <div>
-              <span class="text-[#6b778c] text-xs block mb-0.5">
+              <span class="text-[#71717a] uppercase font-bold text-[10px] block mb-0.5">
                 {{ dueDateCountdown.severity === 'paid' ? 'Next Due Date' : 'Payment Due Date' }}
               </span>
-              <strong class="text-[#172b4d] flex items-center gap-1.5">
-                <Calendar class="w-3.5 h-3.5 text-[#0c66e4]" />
+              <strong class="text-[#1c1917] font-semibold text-sm flex items-center gap-1.5">
+                <Calendar class="size-3.5 text-[#0c66e4]" />
                 {{ dueDateCountdown.severity === 'paid' ? tenantData.nextDueDateDisplay : tenantData.dueDate }}
               </strong>
             </div>
           </div>
 
-          <div class="border-t border-[#dfe1e6]"></div>
+          <div class="border-t border-[#e7e5e4]"></div>
 
           <!-- Line Items -->
-          <div class="space-y-3 text-sm">
-            <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-[#5e6c84]">Monthly Base Rent</span>
-              <span class="font-semibold text-[#172b4d]">₱{{ tenantData.baseRent.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between items-center py-2 border-b border-[#e7e5e4]/60">
+              <span class="text-[#71717a]">Monthly Base Rent</span>
+              <span class="font-bold tabular text-[#1c1917]">₱{{ tenantData.baseRent.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
             </div>
-            <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-[#5e6c84]">
+            <div class="flex justify-between items-center py-2 border-b border-[#e7e5e4]/60">
+              <span class="text-[#71717a]">
                 Water Fee (₱{{ tenantData.specs.waterRatePerHead }}/head × {{ tenantData.occupants }} occupant<template v-if="tenantData.occupants > 1">s</template>)
               </span>
-              <span class="font-semibold text-[#172b4d]">₱{{ tenantData.waterFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+              <span class="font-bold tabular text-[#1c1917]">₱{{ tenantData.waterFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
             </div>
-            <div class="flex justify-between items-center py-2 border-b border-gray-100">
-              <span class="text-[#5e6c84]">Garbage Collection Fee (GBG)</span>
-              <span class="font-semibold text-[#172b4d]">₱{{ tenantData.gbgFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            <div class="flex justify-between items-center py-2 border-b border-[#e7e5e4]/60">
+              <span class="text-[#71717a]">Garbage Collection Fee (GBG)</span>
+              <span class="font-bold tabular text-[#1c1917]">₱{{ tenantData.gbgFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
             </div>
-            <div class="flex justify-between items-center py-2 border-b border-gray-100 text-xs text-slate-500">
+            <div class="flex justify-between items-center py-2 border-b border-[#e7e5e4]/60 text-[11px] text-[#71717a]">
               <span>Security Deposit (Held on record)</span>
-              <span class="font-medium text-slate-700">₱{{ tenantData.depositAmount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+              <span class="font-semibold tabular text-[#71717a]">₱{{ tenantData.depositAmount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
             </div>
           </div>
 
           <!-- Total & Pay Online Actions -->
-          <div class="flex flex-col sm:flex-row justify-between sm:items-center border-t-2 border-[#172b4d] pt-4 gap-4">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center border-t border-[#e7e5e4] pt-4 gap-4">
             <div>
-              <span class="font-bold text-[#172b4d] text-base block">Total Amount Due</span>
-              <span class="text-2xl font-bold text-[#0c66e4]">
+              <span class="font-bold text-[#71717a] text-[11px] uppercase tracking-wider block">Total Amount Due</span>
+              <span class="text-2xl font-black tabular font-display text-[#1c1917]">
                 ₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
               </span>
-              <span class="text-xs text-[#6b778c] block mt-0.5">
-                Status: <strong>{{ tenantData.dueDaysRemaining }}</strong>
+              <span class="text-xs text-[#71717a] block mt-0.5">
+                Status: <strong class="text-[#1c1917]">{{ tenantData.dueDaysRemaining }}</strong>
                 <span v-if="dueDateCountdown.severity === 'paid' && tenantData.verifiedAt" class="text-emerald-700 font-bold ml-1">
                   (Approved on {{ tenantData.verifiedAt }})
                 </span>
@@ -494,28 +489,28 @@ async function handlePayOnline() {
                 v-if="dueDateCountdown.severity !== 'paid'"
                 @click="handlePayOnline"
                 :disabled="payingOnline"
-                class="px-5 py-2.5 bg-[#0c66e4] hover:bg-[#0052cc] text-white font-bold text-xs rounded-lg shadow-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                class="btn-primary"
               >
-                <CreditCard class="w-4 h-4" />
+                <CreditCard class="size-3.5" />
                 <span>{{ payingOnline ? 'Opening GCash Gateway...' : 'Pay Online (GCash via Adyen)' }}</span>
               </button>
               <router-link
                 to="/tenant/payments"
-                class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5"
+                class="btn-secondary"
               >
                 <span>{{ dueDateCountdown.severity === 'paid' ? 'View Payment History' : 'Manual Remittance' }}</span>
               </router-link>
             </div>
           </div>
 
-          <!-- Status & Remittance Account Note -->
-          <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#5e6c84]">
+          <!-- Electricity & GCash Note -->
+          <div class="p-3.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#71717a]">
             <span class="flex items-center gap-1.5">
-              <Zap class="w-3.5 h-3.5 text-amber-500" />
-              <span>Electricity Submeter: <strong class="text-[#172b4d]">₱12.50 / kWh</strong> (Billed separately on 25th)</span>
+              <Zap class="size-3.5 text-amber-500" />
+              <span>Electricity Submeter: <strong class="text-[#1c1917]">₱12.50 / kWh</strong> (Billed separately on 25th)</span>
             </span>
             <span>
-              Landlady GCash: <strong class="font-mono font-bold text-[#172b4d]">{{ tenantData.landladyGCash }}</strong> ({{ tenantData.landladyName }})
+              Landlady GCash: <strong class="font-mono font-bold text-[#1c1917]">{{ tenantData.landladyGCash }}</strong> ({{ tenantData.landladyName }})
             </span>
           </div>
         </div>

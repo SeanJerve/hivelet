@@ -136,24 +136,36 @@ function handleAdyenSuccess(refId: string) {
 <template>
   <div class="max-w-6xl mx-auto w-full space-y-6">
     <!-- Breadcrumb Header -->
-    <div class="border-b border-[#dfe1e6] pb-4">
-      <div class="flex items-center gap-2 text-xs text-[#6b778c] mb-1">
-        <span>Tenant Portal</span>
-        <span>/</span>
-        <span class="font-medium text-[#172b4d]">{{ tenantName }}</span>
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+          <span>Tenant Portal</span>
+          <span>/</span>
+          <span class="font-medium text-[#1c1917]">{{ tenantName }}</span>
+        </div>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Payment &amp; Billing</h1>
+        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">Submit online payments and review your payment record history</p>
       </div>
-      <h1 class="font-display text-xl sm:text-2xl font-extrabold text-[#172b4d]">Payment &amp; Billing</h1>
-      <p class="text-xs text-[#6b778c] mt-0.5">Submit online payments and review your payment record history</p>
+
+      <div class="flex items-center gap-2">
+        <router-link to="/tenant" class="btn-secondary">
+          <span>Unit Overview</span>
+        </router-link>
+      </div>
     </div>
 
     <!-- Outstanding Bills Section -->
-    <div class="bg-white border border-[#dfe1e6] rounded-lg p-6 space-y-5">
-      <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-3">
-        <h2 class="font-bold text-sm text-[#172b4d] flex items-center gap-2">
-          <CreditCard class="w-4 h-4 text-[#0c66e4]" />
-          Outstanding Bills
-        </h2>
-        <span class="px-2.5 py-1 text-[10px] font-bold bg-[#0c66e4] text-white rounded">
+    <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 space-y-5 shadow-xs">
+      <div class="flex items-center justify-between border-b border-[#e7e5e4] pb-4">
+        <div class="flex items-center gap-2">
+          <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
+            <CreditCard class="size-4" />
+          </span>
+          <h2 class="font-display font-extrabold text-base text-[#1c1917]">
+            Outstanding Bills
+          </h2>
+        </div>
+        <span class="badge-soft badge-info font-bold text-xs">
           ACTIVE BILLING
         </span>
       </div>
@@ -162,127 +174,131 @@ function handleAdyenSuccess(refId: string) {
         <SkeletonCard variant="room" :count="1" />
       </div>
 
-      <div v-else-if="outstandingBills.length === 0" class="py-8 text-center">
-        <ShieldCheck class="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-        <p class="text-sm font-semibold text-[#172b4d]">All Settled</p>
-        <p class="text-xs text-[#5e6c84] mt-1">You have no outstanding bills. All accounts are settled.</p>
+      <div v-else-if="outstandingBills.length === 0" class="py-10 text-center space-y-2">
+        <ShieldCheck class="size-9 text-emerald-500 mx-auto" />
+        <p class="text-sm font-bold text-[#1c1917]">All Accounts Settled</p>
+        <p class="text-xs text-[#71717a]">You have no outstanding bills. All monthly dues are currently paid.</p>
       </div>
 
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-3">
         <div
           v-for="bill in outstandingBills"
           :key="bill.id"
-          class="p-5 border border-[#dfe1e6] rounded-lg bg-[#f7f8f9] flex flex-col sm:flex-row justify-between sm:items-center gap-4"
+          class="p-5 border border-[#e7e5e4] rounded-xl bg-[#fafaf9] flex flex-col sm:flex-row justify-between sm:items-center gap-4"
         >
           <div class="space-y-1.5">
-            <div class="text-sm font-bold text-[#172b4d]">
+            <div class="text-xs font-bold uppercase tracking-wider text-[#71717a]">
               Due: {{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}
             </div>
-            <div class="text-xs text-[#5e6c84] space-x-3">
-              <span>Base Rent: <strong class="text-[#172b4d]">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
-              <span>Water Fee: <strong class="text-[#172b4d]">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
+            <div class="text-xs text-[#71717a] space-x-3">
+              <span>Base Rent: <strong class="text-[#1c1917] tabular">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
+              <span>Water Fee: <strong class="text-[#1c1917] tabular">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
             </div>
-            <div class="text-sm font-bold text-[#0c66e4]">
-              Total: ₱{{ bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+            <div class="text-base font-black tabular font-display text-[#1c1917]">
+              Total Due: ₱{{ bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
             </div>
           </div>
           <button
             @click="openAdyenModal(bill)"
-            class="px-5 py-2.5 bg-[#172b4d] hover:bg-[#0c66e4] text-white text-xs font-bold rounded-lg flex items-center gap-2 cursor-pointer self-start sm:self-auto transition-colors shadow-sm"
+            class="btn-primary"
           >
-            <Sparkles class="w-3.5 h-3.5 text-blue-300" />
-            Pay Online (GCash / Adyen)
+            <Sparkles class="size-3.5 text-blue-300" />
+            <span>Pay Online (GCash / Adyen)</span>
           </button>
         </div>
       </div>
     </div>
 
     <!-- Payment Record History -->
-    <div class="bg-white border border-[#dfe1e6] rounded-lg p-6 space-y-5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#dfe1e6] pb-3">
-        <h2 class="font-bold text-sm text-[#172b4d] flex items-center gap-2">
-          <FileText class="w-4 h-4 text-[#0c66e4]" />
-          My Payment Record History
-        </h2>
+    <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 space-y-5 shadow-xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e7e5e4] pb-4">
+        <div class="flex items-center gap-2">
+          <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
+            <FileText class="size-4" />
+          </span>
+          <h2 class="font-display font-extrabold text-base text-[#1c1917]">
+            My Payment Record History
+          </h2>
+        </div>
 
-        <div class="flex items-center gap-3">
-          <span class="text-xs text-[#5e6c84] hidden md:inline">
-            Showing: <strong>{{ filteredPayments.length }}</strong> of {{ paymentHistory.length }} records
+        <div class="flex items-center gap-2.5">
+          <span class="text-xs text-[#71717a] hidden md:inline">
+            Showing: <strong>{{ filteredPayments.length }}</strong> of {{ paymentHistory.length }}
           </span>
           <!-- Year Filter Dropdown -->
           <div class="relative">
             <select
               v-model="selectedYear"
-              class="appearance-none pl-3 pr-8 py-1.5 text-xs font-bold text-[#172b4d] bg-[#f4f5f7] border border-[#dfe1e6] rounded-md cursor-pointer focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
+              class="appearance-none pl-3.5 pr-8 py-2 text-xs font-bold text-[#1c1917] bg-[#fafaf9] border border-[#e7e5e4] rounded-xl cursor-pointer focus:border-[#f59e0b] focus:outline-none min-h-[38px]"
             >
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
             </select>
-            <ChevronDown class="w-3.5 h-3.5 text-[#6b778c] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown class="size-3.5 text-[#71717a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
           <!-- Sort Order Dropdown -->
           <div class="relative">
             <select
               v-model="sortOrder"
-              class="appearance-none pl-3 pr-8 py-1.5 text-xs font-bold text-[#172b4d] bg-[#f4f5f7] border border-[#dfe1e6] rounded-md cursor-pointer focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
+              class="appearance-none pl-3.5 pr-8 py-2 text-xs font-bold text-[#1c1917] bg-[#fafaf9] border border-[#e7e5e4] rounded-xl cursor-pointer focus:border-[#f59e0b] focus:outline-none min-h-[38px]"
             >
-              <option value="latest">Latest to Oldest</option>
-              <option value="oldest">Oldest to Latest</option>
+              <option value="latest">Latest First</option>
+              <option value="oldest">Oldest First</option>
             </select>
-            <ChevronDown class="w-3.5 h-3.5 text-[#6b778c] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown class="size-3.5 text-[#71717a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
       </div>
 
       <!-- Desktop Table -->
       <div class="overflow-x-auto hidden sm:block">
-        <table class="w-full text-left text-sm border-collapse">
+        <table class="w-full text-left text-xs border-collapse">
           <thead>
-            <tr class="bg-[#f4f5f7] border-b border-[#dfe1e6] text-[#5e6c84] text-xs uppercase tracking-wider">
-              <th class="p-3 font-bold">Invoice / Ref #</th>
-              <th class="p-3 font-bold">Date Paid</th>
-              <th class="p-3 font-bold">Amount Paid</th>
-              <th class="p-3 font-bold">Method</th>
-              <th class="p-3 font-bold">Status</th>
+            <tr class="bg-[#fafaf9] border-b border-[#e7e5e4] text-[#71717a] uppercase tracking-wider font-bold text-[10px]">
+              <th class="p-3.5">Invoice / Ref #</th>
+              <th class="p-3.5">Date Paid</th>
+              <th class="p-3.5">Amount Paid</th>
+              <th class="p-3.5">Method</th>
+              <th class="p-3.5">Status</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#dfe1e6]">
+          <tbody class="divide-y divide-[#e7e5e4]">
             <tr
               v-for="record in filteredPayments"
               :key="record.id"
-              class="hover:bg-blue-50/40 transition-colors"
+              class="hover:bg-[#fafaf9] transition-colors"
             >
-              <td class="p-3 font-mono text-[#172b4d] font-semibold text-xs">
+              <td class="p-3.5 font-mono text-[#1c1917] font-bold">
                 {{ record.invoiceRef }}
               </td>
-              <td class="p-3 text-[#172b4d] text-xs">{{ record.datePaid }}</td>
-              <td class="p-3 font-bold text-[#172b4d] text-xs">
+              <td class="p-3.5 text-[#71717a]">{{ record.datePaid }}</td>
+              <td class="p-3.5 font-bold tabular text-[#1c1917]">
                 ₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
               </td>
-              <td class="p-3">
+              <td class="p-3.5">
                 <span
-                  class="px-2 py-0.5 font-bold text-[10px] rounded"
+                  class="px-2.5 py-0.5 font-bold text-[10px] rounded-full border"
                   :class="record.paymentMethod.includes('ONLINE') || record.paymentMethod.includes('ADYEN')
-                    ? 'bg-[#172b4d] text-white'
-                    : 'bg-gray-100 text-[#172b4d] border border-[#dfe1e6]'"
+                    ? 'bg-[#1e2532] text-white border-transparent'
+                    : 'bg-[#fafaf9] text-[#1c1917] border-[#e7e5e4]'"
                 >
                   {{ record.paymentMethod }}
                 </span>
               </td>
-              <td class="p-3">
+              <td class="p-3.5">
                 <span
-                  class="px-2.5 py-1 font-bold text-[10px] rounded flex items-center gap-1 w-fit"
+                  class="badge-soft text-[10px] font-bold flex items-center gap-1 w-fit"
                   :class="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'"
+                    ? 'badge-success'
+                    : 'badge-warning'"
                 >
-                  <ShieldCheck v-if="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'" class="w-3 h-3" />
-                  <Clock v-else class="w-3 h-3" />
+                  <ShieldCheck v-if="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'" class="size-3" />
+                  <Clock v-else class="size-3" />
                   {{ record.status }}
                 </span>
               </td>
             </tr>
             <tr v-if="filteredPayments.length === 0">
-              <td colspan="5" class="p-6 text-center text-xs text-[#5e6c84]">
+              <td colspan="5" class="p-8 text-center text-xs text-[#71717a]">
                 No payment records found for {{ selectedYear }}.
               </td>
             </tr>
@@ -295,35 +311,35 @@ function handleAdyenSuccess(refId: string) {
         <div
           v-for="record in filteredPayments"
           :key="record.id"
-          class="p-4 border border-[#dfe1e6] rounded-lg bg-[#f7f8f9] space-y-2"
+          class="p-4 border border-[#e7e5e4] rounded-xl bg-[#fafaf9] space-y-2"
         >
           <div class="flex items-center justify-between">
-            <span class="font-mono text-xs font-bold text-[#172b4d]">{{ record.invoiceRef }}</span>
+            <span class="font-mono text-xs font-bold text-[#1c1917]">{{ record.invoiceRef }}</span>
             <span
-              class="px-2 py-0.5 font-bold text-[10px] rounded"
+              class="badge-soft text-[10px] font-bold"
               :class="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'
-                ? 'bg-emerald-100 text-emerald-800'
-                : 'bg-amber-100 text-amber-800'"
+                ? 'badge-success'
+                : 'badge-warning'"
             >
               {{ record.status }}
             </span>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-[#5e6c84]">{{ record.datePaid }}</span>
-            <span class="font-bold text-[#172b4d]">₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            <span class="text-[#71717a]">{{ record.datePaid }}</span>
+            <span class="font-bold tabular text-[#1c1917]">₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
           </div>
           <div class="text-xs">
             <span
-              class="px-2 py-0.5 font-bold text-[10px] rounded"
+              class="px-2 py-0.5 font-bold text-[10px] rounded-full border"
               :class="record.paymentMethod.includes('ONLINE') || record.paymentMethod.includes('ADYEN')
-                ? 'bg-[#172b4d] text-white'
-                : 'bg-gray-100 text-[#172b4d] border border-[#dfe1e6]'"
+                ? 'bg-[#1e2532] text-white border-transparent'
+                : 'bg-white text-[#1c1917] border-[#e7e5e4]'"
             >
               {{ record.paymentMethod }}
             </span>
           </div>
         </div>
-        <div v-if="filteredPayments.length === 0" class="p-6 text-center text-xs text-[#5e6c84]">
+        <div v-if="filteredPayments.length === 0" class="p-6 text-center text-xs text-[#71717a]">
           No payment records found for {{ selectedYear }}.
         </div>
       </div>
