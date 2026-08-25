@@ -913,6 +913,23 @@ router.patch(
       const year = datePaid.getFullYear();
       const month = datePaid.getMonth() + 1;
 
+      let rentPeriodStart = billData?.billing_period_start;
+      let rentPeriodEnd = billData?.billing_period_end;
+
+      if (!rentPeriodStart || !rentPeriodEnd) {
+        const y = datePaid.getFullYear();
+        const m = datePaid.getMonth();
+        const d = datePaid.getDate();
+
+        if (d >= 26) {
+          rentPeriodStart = new Date(Date.UTC(y, m, 26)).toISOString().split('T')[0];
+          rentPeriodEnd = new Date(Date.UTC(y, m + 1, 25)).toISOString().split('T')[0];
+        } else {
+          rentPeriodStart = new Date(Date.UTC(y, m - 1, 26)).toISOString().split('T')[0];
+          rentPeriodEnd = new Date(Date.UTC(y, m, 25)).toISOString().split('T')[0];
+        }
+      }
+
       // Check if income record already exists for this transaction reference
       const { data: existingIncome } = await db
         .from('monthly_income_records')
@@ -930,12 +947,12 @@ router.patch(
           date_paid: datePaid.toISOString().split('T')[0],
           contact_name: tenantProfile?.full_name || 'Online Resident',
           invoice_number: before.transaction_reference,
-          rent_period_start: billData?.billing_period_start || null,
-          rent_period_end: billData?.billing_period_end || null,
+          rent_period_start: rentPeriodStart,
+          rent_period_end: rentPeriodEnd,
           rent_amount: rentAmount,
           occupants: occupants,
           water_payment: waterAmount,
-          payment_method: 'Online',
+          payment_method: 'GCash',
           transaction_reference: before.transaction_reference,
         });
 
