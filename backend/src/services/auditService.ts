@@ -77,11 +77,16 @@ export function clientIp(req: Request): string | null {
  */
 export async function recordAudit(entry: AuditEntry): Promise<void> {
   try {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const safeEntityId = entry.entityId && uuidRegex.test(entry.entityId)
+      ? entry.entityId
+      : '00000000-0000-0000-0000-000000000000';
+
     const { error } = await db.from('audit_logs').insert({
-      actor_profile_id: entry.actorProfileId,
+      actor_profile_id: entry.actorProfileId && uuidRegex.test(entry.actorProfileId) ? entry.actorProfileId : null,
       action: entry.action,
       entity_type: entry.entityType,
-      entity_id: entry.entityId,
+      entity_id: safeEntityId,
       previous_values: entry.previousValues ?? null,
       new_values: entry.newValues ?? null,
       ip_address: entry.ipAddress ?? null,

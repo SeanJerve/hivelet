@@ -227,6 +227,15 @@ router.get(
     const isMobileMode = req.query.mode === 'mpin' || req.query.view === 'mobile';
 
     res.setHeader('Content-Type', 'text/html');
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; " +
+      "style-src 'self' 'unsafe-inline' https: fonts.googleapis.com; " +
+      "font-src 'self' https: fonts.gstatic.com data:; " +
+      "img-src 'self' data: https: blob:; " +
+      "connect-src 'self' http://localhost:* ws://localhost:* https:;"
+    );
     res.status(200).send(`
       <!DOCTYPE html>
       <html lang="en">
@@ -811,13 +820,19 @@ router.get(
                 body: JSON.stringify({ sessionId })
               });
               const data = await res.json();
-              if (data.redirectUrl) {
+              if (data && data.redirectUrl) {
                 window.location.href = data.redirectUrl;
-              } else {
-                window.location.href = '/tenant?status=success';
+                return;
               }
+              if (!res.ok) {
+                const errMsg = data?.message || data?.error?.message || 'Payment session could not be completed.';
+                alert(errMsg);
+                window.location.href = '${cancelUrl}';
+                return;
+              }
+              window.location.href = '${clientBaseUrl}/tenant/payments?status=success';
             } catch (err) {
-              // Fallback form post
+              console.error('Payment complete error:', err);
               const form = document.createElement('form');
               form.method = 'POST';
               form.action = '/api/public/payments/mock-gateway/complete';
@@ -871,7 +886,7 @@ router.post(
 
     const result = await adyenService.completeMockPayment(sessionId, ip);
     const clientBaseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-    const targetUrl = returnUrl || `${clientBaseUrl}/tenant`;
+    const targetUrl = returnUrl || `${clientBaseUrl}/tenant/payments`;
     const delimiter = targetUrl.includes('?') ? '&' : '?';
     const finalRedirectUrl = `${targetUrl}${delimiter}status=success&ref=${result.paymentReference}`;
 

@@ -386,7 +386,7 @@ router.post(
     await auditFromRequest(req, {
       action: 'PAYMENT_RECORD',
       entityType: 'BILL',
-      entityId: targetBillId,
+      entityId: /^[0-9a-fA-F-]{36}$/.test(targetBillId) ? targetBillId : '00000000-0000-0000-0000-000000000000',
       newValues: { status: 'Checkout Session Initiated', sessionId }
     });
 
