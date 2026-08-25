@@ -23,6 +23,7 @@ import {
 } from 'lucide-vue-next';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
+import { showToast } from '@/lib/systemState';
 
 /** Tenant-editable profile fields */
 interface EditableProfile {
@@ -150,8 +151,10 @@ async function handleSave() {
 
     savedSnapshot.value = { ...form.value };
     successNotice.value = 'Your profile details have been saved successfully!';
+    showToast('success', 'Profile Updated', 'Your profile details have been saved successfully.');
   } catch (err: any) {
     errorNotice.value = `Save failed: ${err?.message || err}`;
+    showToast('error', 'Save Failed', err?.message || 'Could not save profile details.');
   } finally {
     saving.value = false;
   }

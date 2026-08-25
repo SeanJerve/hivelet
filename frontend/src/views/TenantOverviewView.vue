@@ -8,6 +8,9 @@
 import { ref, computed, onMounted } from 'vue';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
+import { useToast } from '@/lib/useToast';
+
+const { showToast } = useToast();
 import {
   Home,
   CreditCard,
@@ -96,9 +99,10 @@ onMounted(async () => {
 
   if (statusParam === 'success' && refParam) {
     submissionNotice.value = `Online GCash payment (Ref: ${refParam}) has been successfully submitted! It is now pending verification by Landlady Fe Galang Da Silva.`;
+    showToast('success', 'Payment Submitted', `Online GCash payment (Ref: ${refParam}) submitted for verification.`);
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (statusParam === 'cancelled') {
-    alert('Online payment was cancelled.');
+    showToast('info', 'Payment Cancelled', 'Online payment checkout was cancelled.');
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
@@ -154,7 +158,7 @@ async function handlePayOnline() {
       window.location.href = res.redirectUrl;
     }
   } catch (err: any) {
-    alert(`Payment session error: ${err?.message || err}`);
+    showToast('error', 'Payment Session Error', err?.message || 'Unable to create checkout session.');
   } finally {
     payingOnline.value = false;
   }

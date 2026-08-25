@@ -9,6 +9,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
+import { useToast } from '@/lib/useToast';
 import {
   CreditCard,
   FileText,
@@ -17,6 +18,8 @@ import {
   ChevronDown,
   ExternalLink
 } from 'lucide-vue-next';
+
+const { showToast } = useToast();
 
 // Outstanding bills from DB
 const outstandingBills = ref<any[]>([]);
@@ -99,7 +102,7 @@ async function payBillOnline(billId: string) {
       window.location.href = res.redirectUrl;
     }
   } catch (err: any) {
-    alert(`Checkout failed: ${err?.message || err}`);
+    showToast('error', 'Checkout Error', err?.message || 'Unable to initiate online payment session.');
   }
 }
 </script>
