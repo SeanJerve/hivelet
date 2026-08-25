@@ -161,27 +161,42 @@ async function fetchTenantData() {
       tenantData.value.verifiedAt = '';
       tenantData.value.nextDueDateDisplay = '';
     } else {
-      // Find the latest paid bill
+      // Find the latest paid bill or check payments for a more recent paid period
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
-      if (paidBill && paidBill.status === 'Paid') {
-        activeBillId.value = paidBill.id;
-        tenantData.value.baseRent = paidBill.rent_amount;
-        tenantData.value.waterFee = paidBill.water_amount;
+      
+      // We start with either the paid bill due_date or a default fallback
+      let latestPaidDate = paidBill && paidBill.status === 'Paid' ? new Date(paidBill.due_date) : null;
+
+      // Find the most recent verified payment and see if it represents a later month
+      paymentsData?.forEach((p: any) => {
+        if (p.verification_status === 'Verified') {
+          const payDate = new Date(p.paid_at || p.created_at);
+          // Standardize to the 5th of that paid month
+          const paymentDueMonth = new Date(payDate.getFullYear(), payDate.getMonth(), 5);
+          if (!latestPaidDate || paymentDueMonth > latestPaidDate) {
+            latestPaidDate = paymentDueMonth;
+          }
+        }
+      });
+
+      if (latestPaidDate) {
+        // If we found a latest paid date, base rent & water can default to either the paid bill or standard prices
+        tenantData.value.baseRent = paidBill ? paidBill.rent_amount : tenantData.value.baseRent;
+        tenantData.value.waterFee = paidBill ? paidBill.water_amount : tenantData.value.waterFee;
         tenantData.value.totalAmountDue = 0;
-        tenantData.value.dueDate = new Date(paidBill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        tenantData.value.dueDate = latestPaidDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         tenantData.value.dueBadgeText = 'PAID';
         tenantData.value.dueDaysRemaining = 'Settled';
-        tenantData.value.dueDateRaw = paidBill.due_date;
+        tenantData.value.dueDateRaw = latestPaidDate.toISOString().split('T')[0];
 
-        // Calculate next due date
-        const nextDate = new Date(paidBill.due_date);
+        // Calculate next due date (1 month after the latest paid date)
+        const nextDate = new Date(latestPaidDate);
         nextDate.setMonth(nextDate.getMonth() + 1);
         nextDate.setDate(5);
         tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
         // Find latest verified payment
-        const linkedPayment = paymentsData?.find((p: any) => p.bill_id === paidBill.id && p.verification_status === 'Verified')
-          || paymentsData?.find((p: any) => p.verification_status === 'Verified');
+        const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
         if (linkedPayment?.verified_at) {
           tenantData.value.verifiedAt = new Date(linkedPayment.verified_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         } else {
@@ -197,6 +212,7 @@ async function fetchTenantData() {
         tenantData.value.nextDueDateDisplay = '';
       }
     }
+
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
   } finally {
