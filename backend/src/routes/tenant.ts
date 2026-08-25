@@ -24,6 +24,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { adyenService } from '../services/adyenService.js';
+import { notificationService } from '../services/notificationService.js';
 import { config } from '../config/env.js';
 
 const router = Router();
@@ -199,11 +200,50 @@ router.post(
       newValues: { room_id: input.roomId, priority: input.priority, title: input.title },
     });
 
+    // Notify Landlady about the new maintenance ticket
+    await notificationService.notify({
+      title: `New Maintenance Ticket (${input.priority || 'Medium'})`,
+      message: `Tenant submitted ticket "${input.title}" (Priority: ${input.priority || 'Medium'}).`,
+      type: 'Maintenance',
+      priority: (input.priority as any) || 'Medium',
+      relatedEntityType: 'TICKET',
+      relatedEntityId: data.id,
+    });
+
     res.status(201).json({ success: true, data });
   })
 );
 
 const messageSchema = z.object({ message: z.string().min(1).max(2000) });
+
+/**
+ * GET /api/tenant/tickets/:ticketId/messages
+ * Retrieves conversation thread for tenant's own ticket.
+ */
+router.get(
+  '/tenant/tickets/:ticketId/messages',
+  requirePermission(PERMISSIONS.TICKET_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const { data: ticket } = await db
+      .from('maintenance_tickets')
+      .select('id, tenant_profile_id')
+      .eq('id', req.params.ticketId)
+      .maybeSingle<{ id: string; tenant_profile_id: string }>();
+
+    if (!ticket || ticket.tenant_profile_id !== req.user!.profileId) {
+      throw ApiError.notFound('Ticket not found.');
+    }
+
+    const { data, error } = await db
+      .from('ticket_messages')
+      .select('*, profiles:sender_id (id, full_name, role)')
+      .eq('ticket_id', req.params.ticketId)
+      .order('created_at', { ascending: true });
+
+    if (error) throw ApiError.internal(error.message);
+    res.status(200).json({ success: true, data: data ?? [] });
+  })
+);
 
 /**
  * POST /api/tenant/tickets/:ticketId/messages
@@ -222,9 +262,9 @@ router.post(
     // existence of other tenants' tickets.
     const { data: ticket, error: ticketError } = await db
       .from('maintenance_tickets')
-      .select('id, tenant_profile_id, status')
+      .select('id, title, tenant_profile_id, status')
       .eq('id', req.params.ticketId)
-      .maybeSingle<{ id: string; tenant_profile_id: string; status: string }>();
+      .maybeSingle<{ id: string; title: string; tenant_profile_id: string; status: string }>();
 
     if (ticketError) throw ApiError.internal(ticketError.message);
     if (!ticket || ticket.tenant_profile_id !== req.user!.profileId) {
@@ -245,6 +285,17 @@ router.post(
       .single();
 
     if (error) throw ApiError.internal(error.message);
+
+    // Notify Landlady about the tenant's reply
+    await notificationService.notify({
+      title: 'Tenant Commented on Ticket',
+      message: `Tenant commented on ticket "${ticket.title}": "${parsed.data.message.slice(0, 80)}${parsed.data.message.length > 80 ? '...' : ''}"`,
+      type: 'Maintenance',
+      priority: 'Medium',
+      relatedEntityType: 'TICKET',
+      relatedEntityId: ticket.id,
+    });
+
     res.status(201).json({ success: true, data });
   })
 );
@@ -257,15 +308,42 @@ router.get(
   '/tenant/my-notifications',
   requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
   asyncHandler(async (req, res) => {
-    const { data, error } = await db
-      .from('notifications')
-      .select('id, title, message, type, priority, is_read, related_entity_type, related_entity_id, created_at')
-      .eq('recipient_profile_id', req.user!.profileId)
-      .order('created_at', { ascending: false })
-      .limit(100);
+    const isReadParam = req.query.is_read;
+    const isRead = isReadParam !== undefined ? isReadParam === 'true' : undefined;
+    const type = typeof req.query.type === 'string' ? req.query.type : undefined;
+    const limit = Math.min(Number(req.query.limit ?? 50), 100);
+    const offset = Number(req.query.offset ?? 0);
 
-    if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+    const result = await notificationService.getNotifications(req.user!.profileId, {
+      isRead,
+      type,
+      limit,
+      offset,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result.notifications,
+      totalUnread: result.totalUnread,
+    });
+  })
+);
+
+router.patch(
+  '/tenant/my-notifications/:id/read',
+  requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const ok = await notificationService.markAsRead(req.params.id, req.user!.profileId);
+    res.status(200).json({ success: ok, data: { is_read: true } });
+  })
+);
+
+router.post(
+  '/tenant/my-notifications/mark-all-read',
+  requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const ok = await notificationService.markAllAsRead(req.user!.profileId);
+    res.status(200).json({ success: ok, data: { markedAllRead: true } });
   })
 );
 

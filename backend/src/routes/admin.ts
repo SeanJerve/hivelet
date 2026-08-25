@@ -20,6 +20,7 @@ import { PERMISSIONS } from '../config/rbac.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest } from '../services/auditService.js';
+import { notificationService } from '../services/notificationService.js';
 
 const router = Router();
 
@@ -1759,6 +1760,181 @@ router.get(
 
     if (error) throw ApiError.internal(error.message);
     res.status(200).json({ success: true, data: data ?? [] });
+  })
+);
+
+/* ========================================================================== *
+ * NOTIFICATIONS & REAL-TIME ALERTS — FR-027, Section 16 & 22
+ * ========================================================================== */
+
+router.get(
+  '/admin/notifications',
+  requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const isReadParam = req.query.is_read;
+    const isRead = isReadParam !== undefined ? isReadParam === 'true' : undefined;
+    const type = typeof req.query.type === 'string' ? req.query.type : undefined;
+    const limit = Math.min(Number(req.query.limit ?? 50), 100);
+    const offset = Number(req.query.offset ?? 0);
+
+    const result = await notificationService.getNotifications(req.user!.profileId, {
+      isRead,
+      type,
+      limit,
+      offset,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result.notifications,
+      totalUnread: result.totalUnread,
+    });
+  })
+);
+
+router.get(
+  '/admin/notifications/unread-count',
+  requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const count = await notificationService.getUnreadCount(req.user!.profileId);
+    res.status(200).json({ success: true, data: { unreadCount: count } });
+  })
+);
+
+router.patch(
+  '/admin/notifications/:id/read',
+  requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const ok = await notificationService.markAsRead(req.params.id, req.user!.profileId);
+    res.status(200).json({ success: ok, data: { is_read: true } });
+  })
+);
+
+router.post(
+  '/admin/notifications/mark-all-read',
+  requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const ok = await notificationService.markAllAsRead(req.user!.profileId);
+    res.status(200).json({ success: ok, data: { markedAllRead: true } });
+  })
+);
+
+/* ========================================================================== *
+ * LIVE INQUIRY & TICKET MESSAGING — FR-026, Section 16
+ * ========================================================================== */
+
+router.get(
+  '/admin/inquiries/:id/messages',
+  requirePermission(PERMISSIONS.INQUIRY_READ_ALL),
+  asyncHandler(async (req, res) => {
+    const { data, error } = await db
+      .from('inquiry_messages')
+      .select('*')
+      .eq('inquiry_id', req.params.id)
+      .order('created_at', { ascending: true });
+
+    if (error) throw ApiError.internal(error.message);
+    res.status(200).json({ success: true, data: data ?? [] });
+  })
+);
+
+const postInquiryMessageSchema = z.object({
+  message: z.string().min(1, 'Message body is required.').max(2000),
+});
+
+router.post(
+  '/admin/inquiries/:id/messages',
+  requirePermission(PERMISSIONS.INQUIRY_MANAGE),
+  asyncHandler(async (req, res) => {
+    const parsed = postInquiryMessageSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation(parsed.error.errors.map((e) => e.message).join(', '));
+    }
+
+    const { data: inquiry, error: inqErr } = await db
+      .from('inquiries')
+      .select('id, full_name, email, phone_number')
+      .eq('id', req.params.id)
+      .single();
+
+    if (inqErr || !inquiry) throw ApiError.notFound('Inquiry not found.');
+
+    const { data, error } = await db
+      .from('inquiry_messages')
+      .insert({
+        inquiry_id: req.params.id,
+        sender_id: req.user!.profileId,
+        sender_name: 'Fe Galang Da Silva (Landlady)',
+        message_body: parsed.data.message,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw ApiError.internal(error.message);
+    res.status(201).json({ success: true, data });
+  })
+);
+
+router.get(
+  '/admin/tickets/:id/messages',
+  requirePermission(PERMISSIONS.TICKET_READ_ALL),
+  asyncHandler(async (req, res) => {
+    const { data, error } = await db
+      .from('ticket_messages')
+      .select('*, profiles:sender_id (id, full_name, role)')
+      .eq('ticket_id', req.params.id)
+      .order('created_at', { ascending: true });
+
+    if (error) throw ApiError.internal(error.message);
+    res.status(200).json({ success: true, data: data ?? [] });
+  })
+);
+
+const postTicketMessageSchema = z.object({
+  message: z.string().min(1, 'Message body is required.').max(2000),
+});
+
+router.post(
+  '/admin/tickets/:id/messages',
+  requirePermission(PERMISSIONS.TICKET_COMMENT),
+  asyncHandler(async (req, res) => {
+    const parsed = postTicketMessageSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation(parsed.error.errors.map((e) => e.message).join(', '));
+    }
+
+    const { data: ticket, error: ticketErr } = await db
+      .from('maintenance_tickets')
+      .select('id, title, tenant_profile_id, room_id, rooms:room_id (room_number)')
+      .eq('id', req.params.id)
+      .single();
+
+    if (ticketErr || !ticket) throw ApiError.notFound('Ticket not found.');
+
+    const { data, error } = await db
+      .from('ticket_messages')
+      .insert({
+        ticket_id: req.params.id,
+        sender_id: req.user!.profileId,
+        message_body: parsed.data.message,
+      })
+      .select('*, profiles:sender_id (id, full_name, role)')
+      .single();
+
+    if (error) throw ApiError.internal(error.message);
+
+    // Notify the tenant about the landlady's reply
+    await notificationService.notify({
+      recipientProfileId: ticket.tenant_profile_id,
+      title: 'New Maintenance Ticket Comment',
+      message: `Landlady commented on ticket "${ticket.title}": "${parsed.data.message.slice(0, 80)}${parsed.data.message.length > 80 ? '...' : ''}"`,
+      type: 'Maintenance',
+      priority: 'Medium',
+      relatedEntityType: 'TICKET',
+      relatedEntityId: ticket.id,
+    });
+
+    res.status(201).json({ success: true, data });
   })
 );
 

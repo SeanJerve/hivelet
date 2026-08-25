@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { isMobileSidebarOpen } from '@/lib/systemState';
 import { 
@@ -10,9 +10,18 @@ import {
   logout 
 } from '@/lib/authStore';
 import { 
+  unreadCount, 
+  hasEmergencyUnread, 
+  isPopoverOpen, 
+  startNotificationsHeartbeat, 
+  stopNotificationsHeartbeat 
+} from '@/lib/notificationsStore';
+import NotificationPopover from './NotificationPopover.vue';
+import { 
   Menu, 
   LogOut, 
-  LogIn 
+  LogIn,
+  Bell
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -36,15 +45,36 @@ function toggleSidebar() {
   isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
 }
 
+function toggleNotifications() {
+  isPopoverOpen.value = !isPopoverOpen.value;
+}
+
 async function handleSignOut() {
+  stopNotificationsHeartbeat();
   await logout();
   router.push('/login');
 }
+
+watch(
+  () => isAuthenticated.value,
+  (authed) => {
+    if (authed) {
+      startNotificationsHeartbeat();
+    } else {
+      stopNotificationsHeartbeat();
+    }
+  },
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  stopNotificationsHeartbeat();
+});
 </script>
 
 <template>
   <header class="sticky top-0 z-40 w-full border-b border-[#e7e5e4] bg-white/95 backdrop-blur-md">
-    <div class="max-w-[1600px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
+    <div class="max-w-[1600px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 relative">
       
       <!-- Left: Mobile Menu Toggle & Brand Logo -->
       <div class="flex items-center gap-3">
@@ -74,10 +104,36 @@ async function handleSignOut() {
       </div>
 
       <!-- Right: User Profile & Sign In / Out -->
-      <div class="flex items-center gap-2.5">
+      <div class="flex items-center gap-2 sm:gap-3">
 
-        <!-- Authenticated User Profile & Sign Out -->
+        <!-- Authenticated Notifications & User Profile -->
         <template v-if="isAuthenticated && currentUser">
+          
+          <!-- Notification Bell Button -->
+          <div class="relative">
+            <button
+              @click="toggleNotifications"
+              class="relative p-2 rounded-xl text-[#5e6c84] hover:text-[#172b4d] hover:bg-[#f4f5f7] transition-colors cursor-pointer"
+              :class="{ 'bg-[#f4f5f7] text-[#172b4d]': isPopoverOpen }"
+              aria-label="Open notifications"
+              title="Notifications"
+            >
+              <Bell class="w-5 h-5" />
+              
+              <!-- Unread Badge Indicator -->
+              <span
+                v-if="unreadCount > 0"
+                class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-extrabold text-white rounded-full transition-transform"
+                :class="hasEmergencyUnread ? 'bg-rose-600 animate-pulse' : 'bg-[#0c66e4]'"
+              >
+                {{ unreadCount > 99 ? '99+' : unreadCount }}
+              </span>
+            </button>
+
+            <!-- Popover Dropdown -->
+            <NotificationPopover />
+          </div>
+
           <div class="hidden sm:flex flex-col text-right">
             <span class="text-xs font-bold text-[#1c1917] truncate max-w-[150px]">{{ currentUser.fullName }}</span>
             <span class="text-[10px] text-[#71717a] font-medium capitalize">{{ currentUser.role }}</span>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue';
-import { isLiveChatheadOpen } from '@/lib/systemState';
-import { MessageCircle, Send, X, UserRound } from 'lucide-vue-next';
+import { ref, computed, nextTick, watch, onMounted } from 'vue';
+import { isLiveChatheadOpen, showToast } from '@/lib/systemState';
+import { api } from '@/lib/api';
+import { isAdmin, isAuthenticated } from '@/lib/authStore';
+import { MessageCircle, Send, X, UserRound, Loader2 } from 'lucide-vue-next';
 
 interface Msg {
-  id: number;
+  id: string | number;
   from: 'them' | 'me';
   author: string;
   text: string;
@@ -12,28 +14,30 @@ interface Msg {
 }
 
 interface Thread {
+  id: string;
   name: string;
   unit: string;
-  seed: Msg[];
+  messages: Msg[];
 }
 
-const THREADS: Thread[] = [
+const DEFAULT_THREADS: Thread[] = [
   {
+    id: 'demo-1',
     name: 'Gabriel Fernandez',
-    unit: 'Inquiry — Room 3e',
-    seed: [
+    unit: 'Inquiry — Room 3E',
+    messages: [
       {
         id: 1,
         from: 'them',
         author: 'Gabriel Fernandez',
-        text: 'Good day po! Available pa po ba ang Room 3e this September?',
+        text: 'Good day po! Available pa po ba ang Room 3E this September?',
         time: '9:12 AM',
       },
       {
         id: 2,
         from: 'me',
         author: 'Fe Galang Da Silva',
-        text: 'Good day! Opo, vacant pa ang 3e. ₱6,500/mo plus ₱200 water per occupant.',
+        text: 'Good day! Opo, vacant pa ang 3E. ₱6,500/mo plus ₱200 water per occupant.',
         time: '9:20 AM',
       },
       {
@@ -46,11 +50,12 @@ const THREADS: Thread[] = [
     ],
   },
   {
+    id: 'demo-2',
     name: 'Maria Santos',
     unit: 'Inquiry — Penthouse',
-    seed: [
+    messages: [
       {
-        id: 1,
+        id: 4,
         from: 'them',
         author: 'Maria Santos',
         text: 'Hello po, may parking ba ang Penthouse?',
@@ -58,25 +63,15 @@ const THREADS: Thread[] = [
       },
     ],
   },
-  {
-    name: 'Samantha Cruz',
-    unit: 'Tenant — Room 1A',
-    seed: [
-      {
-        id: 1,
-        from: 'them',
-        author: 'Samantha Cruz',
-        text: "Ma'am, na-submit ko na po ang GCash proof for August.",
-        time: 'Mon',
-      },
-    ],
-  },
 ];
 
+const threads = ref<Thread[]>([...DEFAULT_THREADS]);
 const activeThreadIndex = ref(0);
-const threads = ref<Msg[][]>(THREADS.map((t) => [...t.seed]));
 const draft = ref('');
+const isLoadingMessages = ref(false);
 const chatScrollContainer = ref<HTMLDivElement | null>(null);
+
+const activeThread = computed(() => threads.value[activeThreadIndex.value] || threads.value[0]);
 
 function scrollToBottom() {
   nextTick(() => {
@@ -86,25 +81,109 @@ function scrollToBottom() {
   });
 }
 
-watch([activeThreadIndex, isLiveChatheadOpen], () => {
-  if (isLiveChatheadOpen.value) {
+async function loadInquiries() {
+  if (!isAuthenticated.value || !isAdmin.value) return;
+
+  try {
+    const res = await api.get<any[]>('/admin/inquiries');
+    if (res && Array.isArray(res) && res.length > 0) {
+      const liveThreads: Thread[] = [];
+
+      for (const inq of res.slice(0, 5)) {
+        liveThreads.push({
+          id: inq.id,
+          name: inq.prospect_name || inq.full_name || 'Prospect',
+          unit: `Inquiry — Room ${inq.rooms?.room_number || inq.room_number || 'Unit'}`,
+          messages: [
+            {
+              id: `init-${inq.id}`,
+              from: 'them',
+              author: inq.prospect_name || inq.full_name || 'Prospect',
+              text: inq.message || 'Good day! Inquiring about room availability.',
+              time: inq.created_at ? new Date(inq.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'Recent',
+            }
+          ]
+        });
+      }
+
+      if (liveThreads.length > 0) {
+        threads.value = liveThreads;
+        await loadMessagesForThread(0);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load inquiry threads for chathead:', err);
+  }
+}
+
+async function loadMessagesForThread(index: number) {
+  activeThreadIndex.value = index;
+  const target = threads.value[index];
+  if (!target || target.id.startsWith('demo-') || !isAdmin.value) {
+    scrollToBottom();
+    return;
+  }
+
+  isLoadingMessages.value = true;
+  try {
+    const res = await api.get<any[]>(`/admin/inquiries/${target.id}/messages`);
+    if (res && Array.isArray(res) && res.length > 0) {
+      target.messages = res.map((m) => ({
+        id: m.id,
+        from: m.sender_name?.includes('Landlady') ? 'me' : 'them',
+        author: m.sender_name || 'Prospect',
+        text: m.message_body || m.message,
+        time: new Date(m.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+      }));
+    }
+  } catch {
+    // Graceful fallback to existing messages
+  } finally {
+    isLoadingMessages.value = false;
+    scrollToBottom();
+  }
+}
+
+watch(isLiveChatheadOpen, (open) => {
+  if (open) {
+    loadInquiries();
     scrollToBottom();
   }
 });
 
-function sendMessage() {
+async function sendMessage() {
   const text = draft.value.trim();
   if (!text) return;
-  threads.value[activeThreadIndex.value].push({
+
+  const current = activeThread.value;
+  if (!current) return;
+
+  const newMsg: Msg = {
     id: Date.now(),
     from: 'me',
     author: 'Fe Galang Da Silva',
     text,
-    time: new Date().toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' }),
-  });
+    time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+  };
+
+  current.messages.push(newMsg);
   draft.value = '';
   scrollToBottom();
+
+  if (isAdmin.value && !current.id.startsWith('demo-')) {
+    try {
+      await api.post(`/admin/inquiries/${current.id}/messages`, { message: text });
+    } catch (err) {
+      console.error('Failed to persist inquiry message:', err);
+    }
+  }
 }
+
+onMounted(() => {
+  if (isAdmin.value) {
+    loadInquiries();
+  }
+});
 </script>
 
 <template>
@@ -132,11 +211,11 @@ function sendMessage() {
       <!-- Thread Switcher -->
       <div class="flex gap-1 overflow-x-auto border-b border-[#e7e5e4] bg-[#f5f5f4] px-2 py-2">
         <button
-          v-for="(t, i) in THREADS"
-          :key="t.name"
-          @click="activeThreadIndex = i"
+          v-for="(t, i) in threads"
+          :key="t.id"
+          @click="loadMessagesForThread(i)"
           :class="[
-            'min-h-9 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-colors',
+            'min-h-9 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-colors cursor-pointer',
             activeThreadIndex === i 
               ? 'bg-white text-[#1c1917] shadow-xs font-bold' 
               : 'text-[#71717a] hover:text-[#1c1917]'
@@ -148,12 +227,19 @@ function sendMessage() {
 
       <!-- Messages Stream -->
       <div ref="chatScrollContainer" class="flex-1 space-y-3 overflow-y-auto bg-[#fafaf9] p-3 text-xs">
-        <p class="text-center text-[11px] font-medium text-[#71717a]">
-          {{ THREADS[activeThreadIndex].unit }}
-        </p>
+        <div class="text-center">
+          <p class="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-[11px] font-semibold text-[#5e6c84]">
+            {{ activeThread?.unit || 'Inquiry Thread' }}
+          </p>
+        </div>
+
+        <div v-if="isLoadingMessages" class="py-6 text-center text-[#5e6c84] flex flex-col items-center gap-1">
+          <Loader2 class="w-4 h-4 text-[#0c66e4] animate-spin" />
+          <span class="text-[10px]">Loading messages...</span>
+        </div>
 
         <div 
-          v-for="m in threads[activeThreadIndex]" 
+          v-for="m in activeThread?.messages || []" 
           :key="m.id" 
           :class="['flex gap-2', m.from === 'me' ? 'flex-row-reverse' : '']"
         >
@@ -185,14 +271,14 @@ function sendMessage() {
         <input
           v-model="draft"
           placeholder="Type a reply…"
-          class="min-h-10 flex-1 px-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl text-xs text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none"
+          class="min-h-10 flex-1 px-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl text-xs text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none"
         />
         <button 
           type="submit" 
-          class="grid size-10 place-items-center rounded-xl bg-[#1e2532] text-white hover:bg-[#2b3648] transition-colors shadow-xs shrink-0"
+          class="grid size-10 place-items-center rounded-xl bg-[#0c66e4] text-white hover:bg-[#0055cc] transition-colors shadow-xs shrink-0 cursor-pointer"
           aria-label="Send message"
         >
-          <Send class="size-4 text-[#f59e0b]" />
+          <Send class="size-4 text-white" />
         </button>
       </form>
     </div>
@@ -202,12 +288,10 @@ function sendMessage() {
       v-if="!isLiveChatheadOpen"
       @click="isLiveChatheadOpen = true"
       aria-label="Open live chat"
-      class="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-[#1e2532] text-white shadow-xl transition-transform hover:scale-105"
+      class="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-[#1e2532] text-white shadow-xl transition-transform hover:scale-105 cursor-pointer"
+      title="Inquiry Live Chat"
     >
       <MessageCircle class="size-6 text-[#f59e0b]" />
-      <span class="absolute -right-0.5 -top-0.5 grid size-6 place-items-center rounded-full bg-rose-600 text-xs font-bold text-white ring-2 ring-[#fafaf9]">
-        3
-      </span>
     </button>
   </div>
 </template>

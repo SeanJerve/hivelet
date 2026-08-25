@@ -19,6 +19,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { adyenService } from '../services/adyenService.js';
+import { notificationService } from '../services/notificationService.js';
 import QRCode from 'qrcode';
 
 const router = Router();
@@ -177,6 +178,16 @@ router.post(
       entityType: 'INQUIRY',
       entityId: data.id,
       newValues: { room_id: input.roomId, prospect_name: input.prospectName },
+    });
+
+    // Notify Landlady about the new prospective inquiry
+    await notificationService.notify({
+      title: 'New Prospective Booking Inquiry',
+      message: `${input.prospectName} submitted an inquiry for Room ${room.room_number}.`,
+      type: 'Inquiry',
+      priority: 'Medium',
+      relatedEntityType: 'INQUIRY',
+      relatedEntityId: data.id,
     });
 
     res.status(201).json({ success: true, data });
