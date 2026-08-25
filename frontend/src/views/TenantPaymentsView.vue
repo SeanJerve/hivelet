@@ -45,6 +45,8 @@ const paymentHistory = ref<Array<{
 // Year filter for payment history — BR-015 prevents excessively long lists
 const currentYear = new Date().getFullYear();
 const selectedYear = ref(currentYear);
+const sortOrder = ref<'latest' | 'oldest'>('latest');
+
 const availableYears = computed(() => {
   const years = new Set<number>();
   paymentHistory.value.forEach(p => {
@@ -57,9 +59,15 @@ const availableYears = computed(() => {
 });
 
 const filteredPayments = computed(() => {
-  return paymentHistory.value.filter(p => {
+  const filtered = paymentHistory.value.filter(p => {
     const year = new Date(p.datePaidRaw).getFullYear();
     return year === selectedYear.value;
+  });
+
+  return [...filtered].sort((a, b) => {
+    const timeA = new Date(a.datePaidRaw).getTime();
+    const timeB = new Date(b.datePaidRaw).getTime();
+    return sortOrder.value === 'latest' ? timeB - timeA : timeA - timeB;
   });
 });
 
@@ -195,7 +203,7 @@ function handleAdyenSuccess(refId: string) {
         </h2>
 
         <div class="flex items-center gap-3">
-          <span class="text-xs text-[#5e6c84]">
+          <span class="text-xs text-[#5e6c84] hidden md:inline">
             Showing: <strong>{{ filteredPayments.length }}</strong> of {{ paymentHistory.length }} records
           </span>
           <!-- Year Filter Dropdown -->
@@ -205,6 +213,17 @@ function handleAdyenSuccess(refId: string) {
               class="appearance-none pl-3 pr-8 py-1.5 text-xs font-bold text-[#172b4d] bg-[#f4f5f7] border border-[#dfe1e6] rounded-md cursor-pointer focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
             >
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+            </select>
+            <ChevronDown class="w-3.5 h-3.5 text-[#6b778c] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+          <!-- Sort Order Dropdown -->
+          <div class="relative">
+            <select
+              v-model="sortOrder"
+              class="appearance-none pl-3 pr-8 py-1.5 text-xs font-bold text-[#172b4d] bg-[#f4f5f7] border border-[#dfe1e6] rounded-md cursor-pointer focus:ring-1 focus:ring-[#0c66e4] focus:outline-none"
+            >
+              <option value="latest">Latest to Oldest</option>
+              <option value="oldest">Oldest to Latest</option>
             </select>
             <ChevronDown class="w-3.5 h-3.5 text-[#6b778c] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>

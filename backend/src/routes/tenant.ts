@@ -111,6 +111,25 @@ router.get(
 );
 
 /**
+ * GET /api/tenant/my-income-records
+ * Allow tenants to retrieve their verified income records ledger to determine rent coverage.
+ */
+router.get(
+  '/tenant/my-income-records',
+  requirePermission(PERMISSIONS.PAYMENT_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const { data, error } = await db
+      .from('monthly_income_records')
+      .select('id, rent_period_start, rent_period_end, date_paid, remitted_amount, payment_method, verification_status')
+      .eq('tenant_profile_id', req.user!.profileId)
+      .order('date_paid', { ascending: false });
+
+    if (error) throw ApiError.internal(error.message);
+    res.status(200).json({ success: true, data: data ?? [] });
+  })
+);
+
+/**
  * GET /api/tenant/my-tickets
  * FR-024 — a tenant can view the status of their own tickets.
  */

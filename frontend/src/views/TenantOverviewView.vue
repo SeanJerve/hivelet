@@ -142,13 +142,53 @@ async function fetchTenantData() {
       }
     }
 
-    // Fetch bills and payments for the monthly statement
-    const [billsData, paymentsData] = await Promise.all([
+    // Fetch bills, payments and income records for the monthly statement
+    const [billsData, paymentsData, incomeData] = await Promise.all([
       api.get<any[]>('/tenant/my-bills'),
-      api.get<any[]>('/tenant/my-payments')
+      api.get<any[]>('/tenant/my-payments'),
+      api.get<any[]>('/tenant/my-income-records')
     ]);
 
-    const unpaidBill = billsData?.find((b: any) => b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue');
+    // Find the latest covered date from verified payments and income records
+    let maxCoveredDate: Date | null = null;
+
+    // 1. Check verified payments
+    paymentsData?.forEach((p: any) => {
+      if (p.verification_status === 'Verified') {
+        const payDate = new Date(p.paid_at || p.created_at);
+        // Estimate cover end as the 25th of the payment month
+        const estCoverEnd = new Date(payDate.getFullYear(), payDate.getMonth(), 25);
+        if (!maxCoveredDate || estCoverEnd > maxCoveredDate) {
+          maxCoveredDate = estCoverEnd;
+        }
+      }
+    });
+
+    // 2. Check verified income records coverage (most precise!)
+    incomeData?.forEach((inc: any) => {
+      if (inc.verification_status === 'Verified' && inc.rent_period_end) {
+        const end = new Date(inc.rent_period_end);
+        if (!maxCoveredDate || end > maxCoveredDate) {
+          maxCoveredDate = end;
+        }
+      }
+    });
+
+    const unpaidBill = billsData?.find((b: any) => {
+      if (b.status === 'Paid') return false;
+      if (b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue') {
+        // If the bill due date is <= covered date, it is already settled by a payment
+        if (maxCoveredDate) {
+          const billDue = new Date(b.due_date);
+          if (billDue <= maxCoveredDate) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
+    });
+
     if (unpaidBill) {
       activeBillId.value = unpaidBill.id;
       tenantData.value.baseRent = unpaidBill.rent_amount;
@@ -161,34 +201,32 @@ async function fetchTenantData() {
       tenantData.value.verifiedAt = '';
       tenantData.value.nextDueDateDisplay = '';
     } else {
-      // Find the latest paid bill
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
-      if (paidBill && paidBill.status === 'Paid') {
-        activeBillId.value = paidBill.id;
-        tenantData.value.baseRent = paidBill.rent_amount;
-        tenantData.value.waterFee = paidBill.water_amount;
+      if (maxCoveredDate) {
+        tenantData.value.baseRent = paidBill ? paidBill.rent_amount : tenantData.value.baseRent;
+        tenantData.value.waterFee = paidBill ? paidBill.water_amount : tenantData.value.waterFee;
         tenantData.value.totalAmountDue = 0;
-        tenantData.value.dueDate = new Date(paidBill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        // Represent the paid period by the 5th of that covered month
+        const lastPaidDue = new Date(maxCoveredDate.getFullYear(), maxCoveredDate.getMonth(), 5);
+        tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         tenantData.value.dueBadgeText = 'PAID';
         tenantData.value.dueDaysRemaining = 'Settled';
-        tenantData.value.dueDateRaw = paidBill.due_date;
+        tenantData.value.dueDateRaw = lastPaidDue.toISOString().split('T')[0];
 
-        // Calculate next due date
-        const nextDate = new Date(paidBill.due_date);
+        // Next due date is 1 month after
+        const nextDate = new Date(lastPaidDue);
         nextDate.setMonth(nextDate.getMonth() + 1);
         nextDate.setDate(5);
         tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-        // Find latest verified payment
-        const linkedPayment = paymentsData?.find((p: any) => p.bill_id === paidBill.id && p.verification_status === 'Verified')
-          || paymentsData?.find((p: any) => p.verification_status === 'Verified');
+        const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
         if (linkedPayment?.verified_at) {
           tenantData.value.verifiedAt = new Date(linkedPayment.verified_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         } else {
           tenantData.value.verifiedAt = '';
         }
       } else {
-        // Fallback default
         tenantData.value.dueBadgeText = 'PAID';
         tenantData.value.dueDaysRemaining = 'No outstanding bills';
         tenantData.value.totalAmountDue = 0;
@@ -197,6 +235,7 @@ async function fetchTenantData() {
         tenantData.value.nextDueDateDisplay = '';
       }
     }
+
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
   } finally {
