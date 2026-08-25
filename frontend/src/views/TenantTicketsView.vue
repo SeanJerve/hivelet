@@ -27,6 +27,7 @@ import {
   MessageSquarePlus,
   ListChecks,
 } from 'lucide-vue-next';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 interface TicketRow {
   id: string;
@@ -551,8 +552,8 @@ function statusClass(status: string) {
         </div>
 
         <div class="p-6">
-          <div v-if="loadingTickets" class="py-12 text-center text-sm text-[#5e6c84]">
-            Loading your maintenance tickets…
+          <div v-if="loadingTickets" class="space-y-4">
+            <SkeletonCard variant="room" :count="2" />
           </div>
 
           <div

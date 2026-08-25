@@ -30,6 +30,8 @@ import {
   FileSpreadsheet,
   Banknote
 } from 'lucide-vue-next';
+import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 const route = useRoute();
 const activeTab = ref<'ledger' | 'verify'>('ledger');
@@ -567,7 +569,11 @@ function exportCSV() {
         </div>
       </div>
 
-      <div class="surface-card overflow-hidden">
+      <div v-if="isLoading" class="p-4">
+        <SkeletonTable :columns="6" :rows="4" />
+      </div>
+
+      <div v-else class="surface-card overflow-hidden">
         <div v-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-[#71717a]">
           <ShieldCheck class="size-8 mx-auto text-emerald-500 mb-2 opacity-80" />
           <p class="font-bold text-sm text-[#1c1917]">All Remittances Verified</p>
@@ -699,8 +705,13 @@ function exportCSV() {
         </select>
       </div>
 
+      <!-- SKELETON LOADING STATE -->
+      <div v-if="isLoading" class="p-4">
+        <SkeletonTable :columns="10" :rows="8" />
+      </div>
+
       <!-- Excel-Matched Ledger Table -->
-      <div class="max-h-[70vh] overflow-x-auto overflow-y-auto">
+      <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full text-xs border-collapse">
           <thead class="sticky top-0 z-10 bg-[#f5f5f4]">
             <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">

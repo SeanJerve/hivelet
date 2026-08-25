@@ -233,7 +233,7 @@ function openInteractiveSimulator() {
               class="px-4 py-2 bg-[#172b4d] text-white rounded font-bold hover:bg-black transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <ExternalLink class="w-3.5 h-3.5" />
-              Use Interactive Academic Gateway
+              Use Interactive GCash Gateway
             </button>
           </div>
         </div>
@@ -242,10 +242,10 @@ function openInteractiveSimulator() {
         <div v-else class="space-y-4">
           <div ref="adyenContainerRef" id="adyen-dropin-container" class="min-h-[220px]"></div>
 
-          <!-- Academic Gateway Link -->
+          <!-- Interactive Gateway Link -->
           <div class="p-3 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg flex items-center justify-between">
             <div class="text-[11px] text-[#5e6c84]">
-              <span class="font-bold text-[#172b4d]">Academic Mode:</span> Want the full GCash mobile screen?
+              <span class="font-bold text-[#172b4d]">Simulator Mode:</span> Want the full GCash mobile screen?
             </div>
             <button
               @click="openInteractiveSimulator"

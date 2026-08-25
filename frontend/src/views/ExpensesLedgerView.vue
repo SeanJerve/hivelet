@@ -4,6 +4,8 @@ import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, showToast, typ
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, Pencil, Trash2 } from 'lucide-vue-next';
+import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 interface ApiExpense {
   id: string;
@@ -658,7 +660,12 @@ function exportFilteredExpenses() {
         </div>
       </div>
 
-      <div class="max-h-[70vh] overflow-x-auto overflow-y-auto">
+      <!-- SKELETON LOADING STATE -->
+      <div v-if="isLoading" class="p-4">
+        <SkeletonTable :columns="7" :rows="6" />
+      </div>
+
+      <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[900px] text-xs sm:text-sm border-collapse">
           <thead class="sticky top-0 z-10 bg-[#f5f5f4] border-b border-[#e7e5e4]">
             <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a]">

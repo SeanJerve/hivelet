@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { LogIn, UserPlus, ShieldCheck, AlertCircle, Loader2, Eye, EyeOff, Hexagon } from 'lucide-vue-next';
+import { LogIn, UserPlus, ShieldCheck, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import { login, registerUser, authError, isAuthenticating, homeRouteForRole } from '@/lib/authStore';
 import { showToast } from '@/lib/systemState';
 
@@ -154,14 +154,11 @@ async function handleQuickLogin(account: DemoAccount) {
         
         <!-- Left: Sign In / Register Form -->
         <div class="lg:col-span-6 surface-card p-6 sm:p-8 space-y-6">
-          <div class="flex flex-col items-center text-center">
-            <div class="size-12 rounded-2xl bg-[#1e2532] text-[#f59e0b] grid place-items-center shadow-md mb-3">
-              <Hexagon class="size-7 fill-current" />
-            </div>
+          <div class="text-center space-y-1">
             <h1 class="font-display text-2xl font-extrabold text-[#1c1917]">
               {{ isSignUp ? 'Create a Hivelet Account' : 'Sign in to Hivelet' }}
             </h1>
-            <p class="text-xs text-[#71717a] mt-1">Fe Galang Da Silva Boarding House</p>
+            <p class="text-xs text-[#71717a]">Fe Galang Da Silva Boarding House</p>
           </div>
 
           <!-- Denied Alert -->
@@ -342,7 +339,7 @@ async function handleQuickLogin(account: DemoAccount) {
           </div>
 
           <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1">
-            <p class="font-bold">Capstone Defense Protocol:</p>
+            <p class="font-bold">Account Access Protocol:</p>
             <p>All accounts match credentials seeded in the PostgreSQL database.</p>
           </div>
         </div>
