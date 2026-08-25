@@ -935,7 +935,6 @@ router.patch(
           rent_amount: rentAmount,
           occupants: occupants,
           water_payment: waterAmount,
-          remitted_amount: before.amount,
           payment_method: 'Online',
           transaction_reference: before.transaction_reference,
         });
