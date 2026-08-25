@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { expenseRecords, EXPENSE_CATEGORIES, showToast, type ExpenseRecord } from '@/lib/systemState';
+import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, showToast, type ExpenseRecord } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, Pencil, Trash2 } from 'lucide-vue-next';
@@ -129,38 +129,16 @@ function formatDateForDisplay(dateVal: string | Date): string {
 async function fetchExpenses() {
   isLoading.value = true;
   try {
-    const [expensesData, catData] = await Promise.all([
-      api.get<ApiExpense[]>('/admin/expense-entries').catch(() => []),
+    const [, catData] = await Promise.all([
+      fetchExpenseRecords(),
       api.get<ApiCat[]>('/admin/expense-categories').catch(() => [])
     ]);
 
     if (catData && catData.length) {
       dbCategories.value = catData;
     }
-
-    if (expensesData && expensesData.length) {
-      expensesData.forEach((item) => {
-        const existing = expenseRecords.find((e) => e.id === item.id);
-        if (!existing) {
-          expenseRecords.unshift({
-            id: item.id,
-            date: formatDateForDisplay(item.expense_date),
-            description: item.or_supplier,
-            category: getFrontendCategory(item.category_code),
-            splits: (item.expense_property_allocations && item.expense_property_allocations.length > 0)
-              ? item.expense_property_allocations.map((a) => ({
-                  area: (['Boarding House', 'Main House', 'Front Apt', 'Back Apt', 'Other'].includes(a.property_area)
-                    ? a.property_area
-                    : 'Boarding House') as 'Boarding House' | 'Main House' | 'Front Apt' | 'Back Apt' | 'Other',
-                  amount: Number(a.amount)
-                }))
-              : [{ area: 'Boarding House', amount: Number(item.total_expenses) }]
-          });
-        }
-      });
-    }
   } catch (err) {
-    console.error('Offline / fetchExpenses failed:', err);
+    console.error('fetchExpenses failed:', err);
   } finally {
     isLoading.value = false;
   }
@@ -432,46 +410,23 @@ async function handleEditExpense() {
       'Other': 'Other Expenses / Personal'
     };
 
-    // 1. Delete on backend
-    try {
-      await api.delete(`/admin/expense-entries/${oldId}`);
-    } catch (err) {
-      console.warn('API delete failed during edit, relying on local sync:', err);
+    const payload = {
+      expenseDate: editDate.value,
+      orSupplier: editDesc.value.trim(),
+      categoryCode: getDbCategoryCode(editCategory.value),
+      allocations: editAllocations.value.map(a => ({
+        propertyArea: areaMap[a.area] || 'Boarding House',
+        amount: Number(a.amount) || 0
+      }))
+    };
+
+    if (oldId && !oldId.startsWith('EXP-') && !oldId.startsWith('EXP-NEW-')) {
+      await api.patch(`/admin/expense-entries/${oldId}`, payload);
+    } else {
+      await api.post('/admin/expense-entries', payload);
     }
 
-    // 2. Post new on backend
-    let newId = `EXP-NEW-${Date.now()}`;
-    try {
-      const res = await api.post<any>('/admin/expense-entries', {
-        expenseDate: editDate.value,
-        orSupplier: editDesc.value.trim(),
-        categoryCode: getDbCategoryCode(editCategory.value),
-        allocations: editAllocations.value.map(a => ({
-          propertyArea: areaMap[a.area] || 'Boarding House',
-          amount: Number(a.amount) || 0
-        }))
-      });
-      if (res && res.id) {
-        newId = res.id;
-      }
-    } catch (err) {
-      console.warn('API post failed during edit, relying on local sync:', err);
-    }
-
-    // 3. Update local state
-    const index = expenseRecords.findIndex(e => e.id === oldId);
-    if (index !== -1) {
-      expenseRecords[index] = {
-        id: newId,
-        date: formatDateForDisplay(editDate.value),
-        description: editDesc.value.trim(),
-        category: editCategory.value,
-        splits: editAllocations.value.map(a => ({
-          area: a.area,
-          amount: Number(a.amount) || 0
-        }))
-      };
-    }
+    await fetchExpenseRecords();
 
     isEditOpen.value = false;
     editingExpense.value = null;

@@ -36,7 +36,7 @@ router.get(
   asyncHandler(async (_req, res) => {
     const { data, error } = await db
       .from('rooms')
-      .select('*, clusters:cluster_code (code, name, display_order)')
+      .select('*, clusters:cluster_code (code, name, display_order), room_photos (id, file_url, is_primary, display_order)')
       .order('room_number');
 
     if (error) throw ApiError.internal(error.message);
@@ -55,6 +55,7 @@ const roomInsertSchema = z.object({
   operational_status: z.enum(['Available', 'Reserved', 'Occupied', 'Under Maintenance']).optional(),
   visibility_status: z.enum(['Published', 'Hidden']).optional(),
   is_linda_unit: z.boolean().optional(),
+  photo: z.string().optional(),
 });
 
 /**
@@ -69,16 +70,29 @@ router.post(
       throw ApiError.validation('Invalid room payload.', parsed.error.flatten().fieldErrors);
     }
 
+    const { photo, ...roomFields } = parsed.data;
+
     const { data, error } = await db
       .from('rooms')
       .insert({
-        ...parsed.data,
-        base_price: parsed.data.current_price
+        ...roomFields,
+        base_price: roomFields.current_price
       })
       .select('*')
       .single();
 
     if (error) throw ApiError.internal(error.message);
+
+    if (photo && photo.trim().length > 0) {
+      await db.from('room_photos').insert({
+        room_id: data.id,
+        file_url: photo,
+        caption: 'Room Primary Photo',
+        is_primary: true,
+        display_order: 0,
+        uploaded_by: req.user!.profileId,
+      });
+    }
 
     await auditFromRequest(req, {
       action: 'ROOM_UPDATE',
@@ -93,20 +107,17 @@ router.post(
 
 const roomUpdateSchema = z.object({
   description: z.string().max(2000).nullish(),
+  room_type: z.string().max(100).optional(),
   capacity: z.number().int().min(1).max(20).optional(),
   current_price: z.number().min(0).optional(),
   operational_status: z.enum(['Available', 'Reserved', 'Occupied', 'Under Maintenance']).optional(),
   visibility_status: z.enum(['Published', 'Hidden']).optional(),
   available_from: z.string().nullish(),
+  photo: z.string().optional(),
 });
 
 /**
  * PATCH /api/admin/rooms/:roomId
-
- *
- * A price change writes `room_price_history` rather than overwriting silently —
- * 05_DATABASE_DESIGN.md: "The 2% annual increase rule must be represented
- * transparently rather than silently overwriting history."
  */
 router.patch(
   '/admin/rooms/:roomId',
@@ -126,7 +137,8 @@ router.patch(
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Room not found.');
 
-    const patch: Record<string, unknown> = { ...parsed.data, updated_at: new Date().toISOString() };
+    const { photo, ...roomFields } = parsed.data;
+    const patch: Record<string, unknown> = { ...roomFields, updated_at: new Date().toISOString() };
 
     const { data: after, error } = await db
       .from('rooms')
@@ -136,6 +148,36 @@ router.patch(
       .single();
 
     if (error) throw ApiError.internal(error.message);
+
+    if (photo && photo.trim().length > 0) {
+      const { data: existingPhotos } = await db
+        .from('room_photos')
+        .select('id')
+        .eq('room_id', req.params.roomId);
+
+      if (existingPhotos && existingPhotos.length > 0) {
+        await db
+          .from('room_photos')
+          .update({
+            file_url: photo,
+            caption: 'Room Primary Photo',
+            is_primary: true,
+            uploaded_by: req.user!.profileId,
+          })
+          .eq('id', existingPhotos[0].id);
+      } else {
+        await db
+          .from('room_photos')
+          .insert({
+            room_id: req.params.roomId,
+            file_url: photo,
+            caption: 'Room Primary Photo',
+            is_primary: true,
+            display_order: 0,
+            uploaded_by: req.user!.profileId,
+          });
+      }
+    }
 
     const previousPrice = Number((before as Record<string, unknown>).current_price);
     if (parsed.data.current_price !== undefined && parsed.data.current_price !== previousPrice) {
@@ -158,6 +200,64 @@ router.patch(
     });
 
     res.status(200).json({ success: true, data: after });
+  })
+);
+
+/**
+ * POST /api/admin/rooms/:roomId/photo
+ */
+router.post(
+  '/admin/rooms/:roomId/photo',
+  requirePermission(PERMISSIONS.ROOM_MANAGE),
+  asyncHandler(async (req, res) => {
+    const { photo, caption } = req.body;
+    if (!photo || typeof photo !== 'string') {
+      throw ApiError.badRequest('A photo BLOB or base64 data URL is required.');
+    }
+
+    const { data: room, error: rErr } = await db.from('rooms').select('id').eq('id', req.params.roomId).single();
+    if (rErr || !room) throw ApiError.notFound('Room not found.');
+
+    const { data: existingPhotos } = await db
+      .from('room_photos')
+      .select('id')
+      .eq('room_id', req.params.roomId);
+
+    let savedPhoto;
+    if (existingPhotos && existingPhotos.length > 0) {
+      const { data, error } = await db
+        .from('room_photos')
+        .update({
+          file_url: photo,
+          caption: caption || 'Room Primary Photo',
+          is_primary: true,
+          uploaded_by: req.user!.profileId,
+        })
+        .eq('id', existingPhotos[0].id)
+        .select('*')
+        .single();
+
+      if (error) throw ApiError.internal(error.message);
+      savedPhoto = data;
+    } else {
+      const { data, error } = await db
+        .from('room_photos')
+        .insert({
+          room_id: req.params.roomId,
+          file_url: photo,
+          caption: caption || 'Room Primary Photo',
+          is_primary: true,
+          display_order: 0,
+          uploaded_by: req.user!.profileId,
+        })
+        .select('*')
+        .single();
+
+      if (error) throw ApiError.internal(error.message);
+      savedPhoto = data;
+    }
+
+    res.status(200).json({ success: true, data: savedPhoto });
   })
 );
 
@@ -210,7 +310,7 @@ router.get(
       .select(
         'id, email, full_name, phone_number, emergency_contact_name, emergency_contact_phone, ' +
           'occupation, facebook_url, role, account_status, last_login_at, created_at, ' +
-          'room_assignments (is_active, start_date, rooms (room_number))'
+          'room_assignments (id, is_active, start_date, anniversary_date, deposit_amount, occupant_count, rooms (id, room_number))'
       )
       .in('role', ['tenant', 'prospect'])
       .order('full_name');
@@ -231,6 +331,8 @@ const tenantOnboardSchema = z.object({
   roomNumber: z.string().optional(),
   moveInDate: z.string().optional(),
   depositAmount: z.number().min(0).optional(),
+  occupantCount: z.number().int().min(1).optional(),
+  roommateQty: z.number().int().min(0).optional(),
 });
 
 /**
@@ -248,7 +350,8 @@ router.post(
 
     const { 
       email, fullName, phone, emergencyContactName, emergencyContactPhone, 
-      occupation, facebookUrl, roomNumber, moveInDate, depositAmount 
+      occupation, facebookUrl, roomNumber, moveInDate, depositAmount,
+      occupantCount, roommateQty 
     } = parsed.data;
 
     // Check if profile exists
@@ -293,11 +396,13 @@ router.post(
       const { data: room, error: roomError } = await db
         .from('rooms')
         .select('id')
-        .eq('room_number', roomNumber)
+        .ilike('room_number', roomNumber)
         .maybeSingle();
 
       if (roomError) throw ApiError.internal(roomError.message);
       if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
+
+      const finalOccupants = occupantCount ?? (roommateQty !== undefined ? 1 + roommateQty : 1);
 
       // Create room assignment
       const { error: assignError } = await db
@@ -308,7 +413,7 @@ router.post(
           start_date: moveInDate || new Date().toISOString().slice(0, 10),
           anniversary_date: moveInDate || new Date().toISOString().slice(0, 10),
           deposit_amount: depositAmount || 0.00,
-          occupant_count: 1,
+          occupant_count: finalOccupants,
           is_active: true
         });
 
@@ -341,6 +446,8 @@ const tenantUpdateSchema = z.object({
   facebookUrl: z.string().optional(),
   roomNumber: z.string().optional(),
   accountStatus: z.enum(['active', 'inactive']).optional(),
+  occupantCount: z.number().int().min(1).optional(),
+  roommateQty: z.number().int().min(0).optional(),
 });
 
 /**
@@ -358,8 +465,14 @@ router.patch(
 
     const { 
       fullName, phone, emergencyContactName, emergencyContactPhone, 
-      occupation, facebookUrl, roomNumber, accountStatus 
+      occupation, facebookUrl, roomNumber, accountStatus,
+      occupantCount, roommateQty 
     } = parsed.data;
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.profileId);
+    if (!isUuid) {
+      throw ApiError.notFound(`Tenant profile ${req.params.profileId} not found.`);
+    }
 
     const { data: before, error: beforeError } = await db
       .from('profiles')
@@ -388,8 +501,17 @@ router.patch(
 
     if (error) throw ApiError.internal(error.message);
 
+    const explicitOccupants = occupantCount ?? (roommateQty !== undefined ? 1 + roommateQty : undefined);
+
     // If roomNumber changed, update room assignment!
     if (roomNumber !== undefined) {
+      // Find old active assignments
+      const { data: oldActive } = await db
+        .from('room_assignments')
+        .select('id, room_id, deposit_amount, occupant_count')
+        .eq('tenant_profile_id', req.params.profileId)
+        .eq('is_active', true);
+
       // Deactivate old assignments
       await db
         .from('room_assignments')
@@ -397,31 +519,83 @@ router.patch(
         .eq('tenant_profile_id', req.params.profileId)
         .eq('is_active', true);
 
-      if (roomNumber) {
+      // If old room is now empty, set operational_status to Available
+      if (oldActive && oldActive.length > 0) {
+        for (const old of oldActive) {
+          const { count } = await db
+            .from('room_assignments')
+            .select('id', { count: 'exact', head: true })
+            .eq('room_id', old.room_id)
+            .eq('is_active', true);
+          if (!count || count === 0) {
+            await db.from('rooms').update({ operational_status: 'Available' }).eq('id', old.room_id);
+          }
+        }
+      }
+
+      if (roomNumber && roomNumber !== '—' && roomNumber.toLowerCase() !== 'none') {
         const { data: room, error: roomError } = await db
           .from('rooms')
-          .select('id')
-          .eq('room_number', roomNumber)
+          .select('id, base_price, current_price')
+          .ilike('room_number', roomNumber)
           .maybeSingle();
 
         if (roomError) throw ApiError.internal(roomError.message);
-        if (room) {
-          await db
-            .from('room_assignments')
-            .insert({
-              room_id: room.id,
-              tenant_profile_id: req.params.profileId,
-              start_date: new Date().toISOString().slice(0, 10),
-              anniversary_date: new Date().toISOString().slice(0, 10),
-              is_active: true
-            });
+        if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
 
-          await db
-            .from('rooms')
-            .update({ operational_status: 'Occupied' })
-            .eq('id', room.id);
+        // Check if there are other active assignments on this target room
+        const { data: targetRoomActive } = await db
+          .from('room_assignments')
+          .select('id, tenant_profile_id, profiles (full_name, account_status)')
+          .eq('room_id', room.id)
+          .eq('is_active', true);
+
+        if (targetRoomActive && targetRoomActive.length > 0) {
+          for (const a of targetRoomActive) {
+            if (a.tenant_profile_id !== req.params.profileId) {
+              const prof: any = a.profiles;
+              if (prof?.account_status === 'inactive') {
+                // Stale assignment from inactive tenant, safely deactivate it
+                await db
+                  .from('room_assignments')
+                  .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
+                  .eq('id', a.id);
+              } else {
+                throw ApiError.badRequest(`Unit ${roomNumber.toUpperCase()} is already occupied by active tenant ${prof?.full_name || 'another resident'}.`);
+              }
+            }
+          }
         }
+
+        const prevDeposit = oldActive?.[0]?.deposit_amount ?? (Number(room.current_price || room.base_price || 4500) * 2);
+        const finalOccupants = explicitOccupants ?? oldActive?.[0]?.occupant_count ?? 1;
+
+        const { error: assignError } = await db
+          .from('room_assignments')
+          .insert({
+            room_id: room.id,
+            tenant_profile_id: req.params.profileId,
+            start_date: new Date().toISOString().slice(0, 10),
+            anniversary_date: new Date().toISOString().slice(0, 10),
+            deposit_amount: prevDeposit,
+            occupant_count: finalOccupants,
+            is_active: true
+          });
+
+        if (assignError) throw ApiError.internal(assignError.message);
+
+        await db
+          .from('rooms')
+          .update({ operational_status: 'Occupied' })
+          .eq('id', room.id);
       }
+    } else if (explicitOccupants !== undefined) {
+      // Room number did not change, but occupant count was updated directly
+      await db
+        .from('room_assignments')
+        .update({ occupant_count: explicitOccupants })
+        .eq('tenant_profile_id', req.params.profileId)
+        .eq('is_active', true);
     }
 
     await auditFromRequest(req, {
@@ -486,6 +660,65 @@ router.patch(
     });
 
     res.status(200).json({ success: true, data: after });
+  })
+);
+
+/**
+ * POST /api/admin/tenants/:profileId/vacate
+ * Settle vacancy: deactivates tenant, closes active room assignment, and frees the unit.
+ */
+router.post(
+  '/admin/tenants/:profileId/vacate',
+  requirePermission(PERMISSIONS.TENANT_MANAGE),
+  asyncHandler(async (req, res) => {
+    const { data: profile, error: profileError } = await db
+      .from('profiles')
+      .select('id, full_name, role')
+      .eq('id', req.params.profileId)
+      .maybeSingle<{ id: string; full_name: string; role: string }>();
+
+    if (profileError) throw ApiError.internal(profileError.message);
+    if (!profile) throw ApiError.notFound('Tenant profile not found.');
+
+    // Find active assignment
+    const { data: activeAssignments } = await db
+      .from('room_assignments')
+      .select('id, room_id')
+      .eq('tenant_profile_id', req.params.profileId)
+      .eq('is_active', true);
+
+    // Deactivate assignments
+    await db
+      .from('room_assignments')
+      .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
+      .eq('tenant_profile_id', req.params.profileId)
+      .eq('is_active', true);
+
+    // Free rooms
+    if (activeAssignments && activeAssignments.length > 0) {
+      for (const a of activeAssignments) {
+        await db.from('rooms').update({ operational_status: 'Available' }).eq('id', a.room_id);
+      }
+    }
+
+    // Set profile status to inactive
+    const { data: updatedProfile, error: updateError } = await db
+      .from('profiles')
+      .update({ account_status: 'inactive', updated_at: new Date().toISOString() })
+      .eq('id', req.params.profileId)
+      .select('*')
+      .single();
+
+    if (updateError) throw ApiError.internal(updateError.message);
+
+    await auditFromRequest(req, {
+      action: 'TENANT_DEACTIVATE',
+      entityType: 'PROFILE',
+      entityId: req.params.profileId,
+      newValues: { account_status: 'inactive' }
+    });
+
+    res.status(200).json({ success: true, data: updatedProfile });
   })
 );
 
@@ -769,9 +1002,6 @@ router.get(
 
     const year = req.query.year ? Number(req.query.year) : undefined;
     const month = req.query.month ? Number(req.query.month) : undefined;
-    if (year) query = query.eq('year', year);
-    if (month) query = query.eq('month', month);
-
     const { data, error } = await query;
     if (error) throw ApiError.internal(error.message);
     res.status(200).json({ success: true, data: data ?? [] });
@@ -785,7 +1015,7 @@ const incomeRecordSchema = z.object({
   invoiceNumber: z.string().optional(),
   rentAmount: z.number().min(0),
   occupants: z.number().int().min(1),
-  paymentMethod: z.enum(['Cash', 'Online']),
+  paymentMethod: z.enum(['Cash', 'Online', 'GCash']).default('Cash'),
   transactionReference: z.string().optional(),
   monthsCovered: z.number().int().min(1),
   dateCoveredStart: z.string(),
@@ -802,7 +1032,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const parsed = incomeRecordSchema.safeParse(req.body);
     if (!parsed.success) {
-      throw ApiError.validation('Invalid income payload.', parsed.error.flatten().fieldErrors);
+      throw ApiError.validation('Invalid income record payload.', parsed.error.flatten().fieldErrors);
     }
 
     const {
@@ -811,11 +1041,13 @@ router.post(
       dateCoveredStart, dateCoveredEnd
     } = parsed.data;
 
+    const normalizedMethod = (paymentMethod === 'Online' || paymentMethod === 'GCash') ? 'GCash' : 'Cash';
+
     // Find room
     const { data: room, error: roomError } = await db
       .from('rooms')
       .select('id')
-      .eq('room_number', roomNumber)
+      .ilike('room_number', roomNumber)
       .maybeSingle();
 
     if (roomError) throw ApiError.internal(roomError.message);
@@ -849,13 +1081,11 @@ router.post(
         month,
         date_paid: datePaid,
         contact_name: contactName,
-        invoice_number: invoiceNumber || null,
+        invoice_number: invoiceNumber || `INV-${year}-${Math.floor(1000 + Math.random() * 9000)}`,
         rent_amount: rentAmount,
-        fifty_percent_share: calcShare,
         occupants,
         water_payment: calcWater,
-        remitted_amount: calcRemitted,
-        payment_method: paymentMethod,
+        payment_method: normalizedMethod,
         transaction_reference: transactionReference || null,
         rent_period_start: dateCoveredStart,
         rent_period_end: dateCoveredEnd,
@@ -874,6 +1104,85 @@ router.post(
     });
 
     res.status(201).json({ success: true, data: newRecord });
+  })
+);
+
+/**
+ * PATCH /api/admin/income-records/:id
+ * Updates an income record in-place without voiding/recreating.
+ */
+router.patch(
+  '/admin/income-records/:id',
+  requirePermission(PERMISSIONS.PAYMENT_VERIFY),
+  asyncHandler(async (req, res) => {
+    const { data: before, error: beforeError } = await db
+      .from('monthly_income_records')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (beforeError) throw ApiError.internal(beforeError.message);
+    if (!before) throw ApiError.notFound('Income record not found.');
+
+    const {
+      roomNumber, datePaid, contactName, invoiceNumber, rentAmount,
+      occupants, paymentMethod, transactionReference, monthsCovered,
+      dateCoveredStart, dateCoveredEnd
+    } = req.body;
+
+    let roomId = before.room_id;
+    if (roomNumber) {
+      const { data: room, error: roomError } = await db
+        .from('rooms')
+        .select('id')
+        .ilike('room_number', roomNumber)
+        .maybeSingle();
+      if (roomError) throw ApiError.internal(roomError.message);
+      if (room) roomId = room.id;
+    }
+
+    const rent = rentAmount !== undefined ? Number(rentAmount) : Number(before.rent_amount);
+    const occ = occupants !== undefined ? Number(occupants) : Number(before.occupants || 1);
+    const water = occ * 200;
+
+    const updatePatch: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (roomId) updatePatch.room_id = roomId;
+    if (datePaid) updatePatch.date_paid = datePaid;
+    if (contactName) updatePatch.contact_name = contactName;
+    if (invoiceNumber) updatePatch.invoice_number = invoiceNumber;
+    if (rentAmount !== undefined) updatePatch.rent_amount = rent;
+    if (occupants !== undefined) {
+      updatePatch.occupants = occ;
+      updatePatch.water_payment = water;
+    }
+    if (paymentMethod) {
+      updatePatch.payment_method = (paymentMethod === 'Online' || paymentMethod === 'GCash') ? 'GCash' : 'Cash';
+    }
+    if (transactionReference !== undefined) updatePatch.transaction_reference = transactionReference;
+    if (dateCoveredStart) updatePatch.rent_period_start = dateCoveredStart;
+    if (dateCoveredEnd) updatePatch.rent_period_end = dateCoveredEnd;
+
+    const { data: after, error: updateError } = await db
+      .from('monthly_income_records')
+      .update(updatePatch)
+      .eq('id', req.params.id)
+      .select('*, rooms:room_id (id, room_number, cluster_code)')
+      .single();
+
+    if (updateError) throw ApiError.internal(updateError.message);
+
+    await auditFromRequest(req, {
+      action: 'PAYMENT_CORRECT',
+      entityType: 'PAYMENT',
+      entityId: req.params.id,
+      previousValues: before,
+      newValues: after
+    });
+
+    res.status(200).json({ success: true, data: after });
   })
 );
 
@@ -1003,6 +1312,68 @@ router.post(
 );
 
 /**
+ * PATCH /api/admin/expense-entries/:id
+ * Updates an expense entry in-place.
+ */
+router.patch(
+  '/admin/expense-entries/:id',
+  requirePermission(PERMISSIONS.PAYMENT_VERIFY),
+  asyncHandler(async (req, res) => {
+    const { data: before, error: beforeError } = await db
+      .from('monthly_expense_entries')
+      .select('*')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (beforeError) throw ApiError.internal(beforeError.message);
+    if (!before) throw ApiError.notFound('Expense entry not found.');
+
+    const { expenseDate, orSupplier, categoryCode, allocations } = req.body;
+
+    const totalExpenses = allocations && Array.isArray(allocations)
+      ? allocations.reduce((acc: number, curr: any) => acc + Number(curr.amount || 0), 0)
+      : before.total_expenses;
+
+    const updatePatch: Record<string, unknown> = {
+      updated_at: new Date().toISOString()
+    };
+    if (expenseDate) updatePatch.expense_date = expenseDate;
+    if (orSupplier) updatePatch.or_supplier = orSupplier;
+    if (categoryCode) updatePatch.category_code = categoryCode;
+    if (allocations) updatePatch.total_expenses = totalExpenses;
+
+    const { data: after, error: updateError } = await db
+      .from('monthly_expense_entries')
+      .update(updatePatch)
+      .eq('id', req.params.id)
+      .select('*')
+      .single();
+
+    if (updateError) throw ApiError.internal(updateError.message);
+
+    if (allocations && Array.isArray(allocations)) {
+      await db.from('expense_property_allocations').delete().eq('expense_entry_id', req.params.id);
+      const allocationInserts = allocations.map((a: any) => ({
+        expense_entry_id: req.params.id,
+        property_area: a.propertyArea || a.area,
+        amount: Number(a.amount || 0)
+      }));
+      await db.from('expense_property_allocations').insert(allocationInserts);
+    }
+
+    await auditFromRequest(req, {
+      action: 'EXPENSE_UPDATE',
+      entityType: 'EXPENSE_ENTRY',
+      entityId: req.params.id,
+      previousValues: before,
+      newValues: after
+    });
+
+    res.status(200).json({ success: true, data: after });
+  })
+);
+
+/**
  * DELETE /api/admin/expense-entries/:id
  * Soft-deletes (voids) the expense entry.
  */
@@ -1077,60 +1448,296 @@ router.get(
   })
 );
 
-const ticketStatusSchema = z.object({
-  status: z.enum(['Submitted', 'In Progress', 'Resolved', 'Closed']),
+const ticketCreateSchema = z.object({
+  roomNumber: z.string().optional(),
+  roomId: z.string().optional(),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  category: z.string().optional(),
+  priority: z.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
+  assignedTechnician: z.string().optional(),
+  status: z.enum(['Open', 'Submitted', 'In Progress', 'Resolved', 'Closed']).optional(),
+  setRoomMaintenance: z.boolean().optional(),
 });
 
 /**
- * PATCH /api/admin/tickets/:ticketId/status
- * BR-023 — closing a ticket is the administrator's decision alone. The tenant
- * router deliberately exposes no equivalent route.
+ * POST /api/admin/tickets
  */
-router.patch(
-  '/admin/tickets/:ticketId/status',
+router.post(
+  '/admin/tickets',
   requirePermission(PERMISSIONS.TICKET_MANAGE),
   asyncHandler(async (req, res) => {
-    const parsed = ticketStatusSchema.safeParse(req.body);
+    const parsed = ticketCreateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation('Invalid ticket payload.', parsed.error.flatten().fieldErrors);
+    }
+
+    let roomId = parsed.data.roomId;
+    if (!roomId && parsed.data.roomNumber) {
+      const { data: room } = await db
+        .from('rooms')
+        .select('id')
+        .ilike('room_number', parsed.data.roomNumber)
+        .maybeSingle();
+      if (room) roomId = room.id;
+    }
+
+    if (!roomId) {
+      const { data: firstRoom } = await db.from('rooms').select('id').limit(1).single();
+      roomId = firstRoom?.id;
+    }
+
+    let tenantProfileId: string | null = null;
+    if (roomId) {
+      const { data: assignment } = await db
+        .from('room_assignments')
+        .select('tenant_profile_id')
+        .eq('room_id', roomId)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (assignment) tenantProfileId = assignment.tenant_profile_id;
+    }
+
+    let createStatus = parsed.data.status || 'Submitted';
+    if (createStatus === 'Open') createStatus = 'Submitted';
+
+    const { data: newTicket, error } = await db
+      .from('maintenance_tickets')
+      .insert({
+        room_id: roomId,
+        tenant_profile_id: tenantProfileId,
+        title: parsed.data.title,
+        description: parsed.data.description,
+        category: parsed.data.category || 'General',
+        priority: parsed.data.priority || 'Medium',
+        status: createStatus,
+        assigned_technician: parsed.data.assignedTechnician || 'Unassigned',
+      })
+      .select('*, rooms:room_id (id, room_number), profiles:tenant_profile_id (id, full_name, phone_number)')
+      .single();
+
+    if (error) throw ApiError.internal(error.message);
+
+    if (roomId && (parsed.data.setRoomMaintenance || parsed.data.priority === 'Emergency')) {
+      await db.from('rooms').update({ operational_status: 'Under Maintenance' }).eq('id', roomId);
+    }
+
+    await auditFromRequest(req, {
+      action: 'TICKET_STATUS_CHANGE',
+      entityType: 'TICKET',
+      entityId: newTicket.id,
+      newValues: newTicket,
+    });
+
+    res.status(201).json({ success: true, data: newTicket });
+  })
+);
+
+const ticketUpdateSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  category: z.string().optional(),
+  priority: z.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
+  status: z.enum(['Open', 'Submitted', 'In Progress', 'Resolved', 'Closed']).optional(),
+  assigned_technician: z.string().optional(),
+  assignedTechnician: z.string().optional(),
+  roomNumber: z.string().optional(),
+  roomId: z.string().optional(),
+});
+
+/**
+ * PATCH /api/admin/tickets/:ticketId
+ */
+router.patch(
+  '/admin/tickets/:ticketId',
+  requirePermission(PERMISSIONS.TICKET_MANAGE),
+  asyncHandler(async (req, res) => {
+    const parsed = ticketUpdateSchema.safeParse(req.body);
     if (!parsed.success) {
       throw ApiError.validation('Invalid ticket payload.', parsed.error.flatten().fieldErrors);
     }
 
     const { data: before, error: beforeError } = await db
       .from('maintenance_tickets')
-      .select('id, status')
+      .select('*, rooms:room_id (id, room_number, operational_status)')
       .eq('id', req.params.ticketId)
-      .maybeSingle<{ id: string; status: string }>();
+      .maybeSingle();
 
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Ticket not found.');
 
-    const now = new Date().toISOString();
-    const patch: Record<string, unknown> = { status: parsed.data.status };
+    const patch: Record<string, unknown> = {};
+    if (parsed.data.title !== undefined) patch.title = parsed.data.title;
+    if (parsed.data.description !== undefined) patch.description = parsed.data.description;
+    if (parsed.data.category !== undefined) patch.category = parsed.data.category;
+    if (parsed.data.priority !== undefined) patch.priority = parsed.data.priority;
+    const tech = parsed.data.assigned_technician ?? parsed.data.assignedTechnician;
+    if (tech !== undefined) patch.assigned_technician = tech;
+    
+    if (parsed.data.status !== undefined) {
+      let dbStatus = parsed.data.status;
+      if (dbStatus === 'Open') dbStatus = 'Submitted';
+      patch.status = dbStatus;
+      if (dbStatus === 'Resolved') patch.resolved_at = new Date().toISOString();
+      if (dbStatus === 'Closed') {
+        patch.closed_at = new Date().toISOString();
+        patch.closed_by = req.user!.profileId;
+      }
+    }
 
-    if (parsed.data.status === 'Resolved') patch.resolved_at = now;
-    if (parsed.data.status === 'Closed') {
-      patch.closed_at = now;
-      patch.closed_by = req.user!.profileId;
+    if (parsed.data.roomId) {
+      patch.room_id = parsed.data.roomId;
+    } else if (parsed.data.roomNumber) {
+      const { data: matchedRoom } = await db
+        .from('rooms')
+        .select('id')
+        .ilike('room_number', parsed.data.roomNumber)
+        .maybeSingle();
+      if (matchedRoom) patch.room_id = matchedRoom.id;
     }
 
     const { data: after, error } = await db
       .from('maintenance_tickets')
       .update(patch)
       .eq('id', req.params.ticketId)
-      .select('*')
+      .select('*, rooms:room_id (id, room_number), profiles:tenant_profile_id (id, full_name, phone_number)')
       .single();
 
     if (error) throw ApiError.internal(error.message);
 
+    // Auto-sync Room Operational Status if all tickets for this room are resolved!
+    const targetRoomId = after.room_id || before.room_id;
+    if (targetRoomId && (patch.status === 'Resolved' || patch.status === 'Closed')) {
+      const { data: remainingUnresolved } = await db
+        .from('maintenance_tickets')
+        .select('id')
+        .eq('room_id', targetRoomId)
+        .in('status', ['Submitted', 'In Progress', 'Open']);
+
+      if (!remainingUnresolved || remainingUnresolved.length === 0) {
+        const { data: activeAssign } = await db
+          .from('room_assignments')
+          .select('id')
+          .eq('room_id', targetRoomId)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
+        await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', targetRoomId);
+      }
+    }
+
     await auditFromRequest(req, {
-      action: parsed.data.status === 'Closed' ? 'TICKET_CLOSE' : 'TICKET_STATUS_CHANGE',
+      action: patch.status === 'Closed' ? 'TICKET_CLOSE' : 'TICKET_STATUS_CHANGE',
       entityType: 'TICKET',
       entityId: req.params.ticketId,
-      previousValues: { status: before.status },
-      newValues: { status: parsed.data.status },
+      previousValues: before,
+      newValues: after,
     });
 
     res.status(200).json({ success: true, data: after });
+  })
+);
+
+/**
+ * PATCH /api/admin/tickets/:ticketId/close
+ */
+router.patch(
+  '/admin/tickets/:ticketId/close',
+  requirePermission(PERMISSIONS.TICKET_MANAGE),
+  asyncHandler(async (req, res) => {
+    const { data: before, error: beforeError } = await db
+      .from('maintenance_tickets')
+      .select('*')
+      .eq('id', req.params.ticketId)
+      .maybeSingle();
+
+    if (beforeError) throw ApiError.internal(beforeError.message);
+    if (!before) throw ApiError.notFound('Ticket not found.');
+
+    const now = new Date().toISOString();
+    const { data: after, error } = await db
+      .from('maintenance_tickets')
+      .update({
+        status: 'Resolved',
+        resolved_at: now,
+        closed_at: now,
+        closed_by: req.user!.profileId,
+      })
+      .eq('id', req.params.ticketId)
+      .select('*, rooms:room_id (id, room_number), profiles:tenant_profile_id (id, full_name, phone_number)')
+      .single();
+
+    if (error) throw ApiError.internal(error.message);
+
+    if (before.room_id) {
+      const { data: remainingUnresolved } = await db
+        .from('maintenance_tickets')
+        .select('id')
+        .eq('room_id', before.room_id)
+        .in('status', ['Submitted', 'In Progress', 'Open']);
+
+      if (!remainingUnresolved || remainingUnresolved.length === 0) {
+        const { data: activeAssign } = await db
+          .from('room_assignments')
+          .select('id')
+          .eq('room_id', before.room_id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
+        await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id);
+      }
+    }
+
+    res.status(200).json({ success: true, data: after });
+  })
+);
+
+/**
+ * DELETE /api/admin/tickets/:ticketId
+ */
+router.delete(
+  '/admin/tickets/:ticketId',
+  requirePermission(PERMISSIONS.TICKET_MANAGE),
+  asyncHandler(async (req, res) => {
+    const { data: before, error: beforeError } = await db
+      .from('maintenance_tickets')
+      .select('*')
+      .eq('id', req.params.ticketId)
+      .maybeSingle();
+
+    if (beforeError) throw ApiError.internal(beforeError.message);
+    if (!before) throw ApiError.notFound('Ticket not found.');
+
+    const { error } = await db
+      .from('maintenance_tickets')
+      .delete()
+      .eq('id', req.params.ticketId);
+
+    if (error) throw ApiError.internal(error.message);
+
+    if (before.room_id) {
+      const { data: remainingUnresolved } = await db
+        .from('maintenance_tickets')
+        .select('id')
+        .eq('room_id', before.room_id)
+        .in('status', ['Submitted', 'In Progress', 'Open']);
+
+      if (!remainingUnresolved || remainingUnresolved.length === 0) {
+        const { data: activeAssign } = await db
+          .from('room_assignments')
+          .select('id')
+          .eq('room_id', before.room_id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
+        await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id);
+      }
+    }
+
+    res.status(200).json({ success: true, data: { message: 'Ticket deleted.' } });
   })
 );
 

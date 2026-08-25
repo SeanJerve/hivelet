@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { incomeRecords, isOnsitePaymentModalOpen, rooms, showToast, type IncomeRecord } from '@/lib/systemState';
+import { 
+  incomeRecords, 
+  fetchIncomeRecords, 
+  isOnsitePaymentModalOpen, 
+  rooms, 
+  showToast, 
+  fetchTenants, 
+  formatUnitOccupantsSummary, 
+  type IncomeRecord 
+} from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { 
@@ -104,37 +113,12 @@ async function fetchPayments() {
 async function fetchIncome() {
   isLoading.value = true;
   try {
-    await fetchPayments();
-    const res = await api.get<{ success: boolean; data: ApiIncome[] } | ApiIncome[]>('/admin/income-records');
-    const data = Array.isArray(res) ? res : (res && res.data ? res.data : []);
-    if (data && data.length) {
-      data.forEach((item) => {
-        const unitNumber = item.rooms?.room_number || '1A';
-        const existingIndex = incomeRecords.findIndex((r) => r.invoice === item.invoice_number);
-        const record: IncomeRecord = {
-          id: item.id,
-          unit: unitNumber.toUpperCase(),
-          cluster: item.rooms?.cluster_code === 'BH' ? 'BH' : 'Back Apartment',
-          datePaid: formatDateForDisplay(item.date_paid),
-          contact: item.contact_name,
-          invoice: item.invoice_number || '—',
-          rentFor: `${item.rent_period_start} – ${item.rent_period_end}`,
-          rent: Number(item.rent_amount) || 0,
-          occupants: item.occupants || 1,
-          water: Number(item.water_payment) || 0,
-          garbage: Number(item.gbg_fee) || 0,
-          anniversary: '21 Aug',
-          deposit: (Number(item.rent_amount) || 4500) * 2,
-        };
-        if (existingIndex !== -1) {
-          incomeRecords[existingIndex] = record;
-        } else {
-          incomeRecords.unshift(record);
-        }
-      });
-    }
+    await Promise.allSettled([
+      fetchPayments(),
+      fetchIncomeRecords()
+    ]);
   } catch (err) {
-    console.warn('Fetch income failed, using local offline state:', err);
+    console.warn('Fetch income failed, using local state:', err);
   } finally {
     isLoading.value = false;
   }
@@ -296,6 +280,15 @@ function handleDeleteIncome(id: string, invoice: string, unit: string) {
   );
 }
 
+function handleDeleteFromModal() {
+  if (!editingIncome.value) return;
+  const id = editingIncome.value.id || '';
+  const inv = editingIncome.value.invoice;
+  const u = editingIncome.value.unit;
+  isEditOpen.value = false;
+  handleDeleteIncome(id, inv, u);
+}
+
 async function handleEditIncome() {
   if (!editingIncome.value) return;
   const invalid = Number(editRent.value) < 0 || Number(editWater.value) < 0 || Number(editGarbage.value) < 0;
@@ -306,7 +299,8 @@ async function handleEditIncome() {
 
   const unitUpper = editUnit.value.toUpperCase();
   const room = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
-  const occupants = room ? (room.occupants || 1) : 1;
+  const summary = formatUnitOccupantsSummary(editUnit.value);
+  const occupants = summary.count > 0 ? summary.count : (room?.occupants || 1);
   let waterBaseline = occupants * 200;
   if (unitUpper === 'LF') {
     waterBaseline = 400;
@@ -327,75 +321,36 @@ async function handleEditIncome() {
   }
 
   const oldId = editingIncome.value.id;
-  const oldInvoice = editingIncome.value.invoice;
 
   isSubmitting.value = true;
   try {
-    if (oldId && !oldId.startsWith('INC-MOCK-')) {
-      try {
-        await api.delete(`/admin/income-records/${oldId}`);
-      } catch (err) {
-        console.warn('API delete failed during edit:', err);
-      }
+    const payload = {
+      roomNumber: editUnit.value.toUpperCase(),
+      datePaid: editDate.value,
+      contactName: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || 'Walk-in Resident'),
+      invoiceNumber: editInvoice.value,
+      rentAmount: Number(editRent.value) || 0,
+      occupants: occupants,
+      paymentMethod: editMethod.value === 'Online' ? 'GCash' : 'Cash',
+      transactionReference: editMethod.value === 'Online' ? editReference.value : undefined,
+      monthsCovered: Number(editMonthsCovered.value) || 1,
+      dateCoveredStart: editDateCoveredStart.value,
+      dateCoveredEnd: editDateCoveredEnd.value,
+    };
+
+    if (oldId && !oldId.startsWith('INC-MOCK-') && !oldId.startsWith('INC-NEW-')) {
+      await api.patch(`/admin/income-records/${oldId}`, payload);
+    } else {
+      await api.post('/admin/income-records', payload);
     }
 
-    let newId = `INC-NEW-${Date.now()}`;
-    const room = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
-    const occupants = room ? (room.occupants || 1) : 1;
+    await fetchIncomeRecords();
 
-    try {
-      const allRooms = await api.get<{ id: string; room_number: string }[]>('/admin/rooms');
-      const matched = allRooms.find((rm) => rm.room_number.toLowerCase() === editUnit.value.toLowerCase());
-      if (matched) {
-        const payload = {
-          roomNumber: editUnit.value.toUpperCase(),
-          datePaid: editDate.value,
-          contactName: room?.tenant || 'Walk-in Resident',
-          invoiceNumber: editInvoice.value || `OR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-          rentAmount: Number(editRent.value) || 0,
-          occupants: occupants,
-          paymentMethod: editMethod.value === 'Online' ? 'Online' : 'Cash',
-          transactionReference: editMethod.value === 'Online' ? editReference.value : undefined,
-          monthsCovered: Number(editMonthsCovered.value) || 1,
-          dateCoveredStart: editDateCoveredStart.value,
-          dateCoveredEnd: editDateCoveredEnd.value,
-        };
-        const response = await api.post<any>('/admin/income-records', payload);
-        if (response && response.data && response.data.id) {
-          newId = response.data.id;
-        }
-      }
-    } catch (err) {
-      console.warn('API post failed during edit:', err);
-    }
-
-    const formattedStart = new Date(editDateCoveredStart.value).toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
-    const formattedEnd = new Date(editDateCoveredEnd.value).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-
-    const idx = incomeRecords.findIndex(r => r.id === oldId);
-    if (idx !== -1) {
-      incomeRecords[idx] = {
-        id: newId,
-        unit: editUnit.value.toUpperCase(),
-        cluster: room?.cluster || 'BH',
-        datePaid: formatDateForDisplay(editDate.value),
-        contact: room?.tenant || 'Walk-in Resident',
-        invoice: editInvoice.value || oldInvoice,
-        rentFor: `${formattedStart} – ${formattedEnd}`,
-        rent: Number(editRent.value) || 0,
-        occupants: occupants,
-        water: Number(editWater.value) || 0,
-        garbage: Number(editGarbage.value) || 0,
-        anniversary: new Date(editDate.value).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-        deposit: (room?.price || 4500) * 2,
-      };
-    }
-
+    showToast('success', 'Record Updated', `Ledger entry for Unit ${editUnit.value.toUpperCase()} updated.`);
     isEditOpen.value = false;
     editingIncome.value = null;
-    showToast('success', 'Payment updated', `Updated unit ${editUnit.value.toUpperCase()} payment successfully.`);
   } catch (err: any) {
-    showToast('error', 'Update failed', err.message || 'Server error occurred');
+    showToast('error', 'Update Failed', err?.message || 'Could not update income record.');
   } finally {
     isSubmitting.value = false;
   }
@@ -746,27 +701,26 @@ function exportCSV() {
 
       <!-- Excel-Matched Ledger Table -->
       <div class="max-h-[70vh] overflow-x-auto overflow-y-auto">
-        <table class="w-full min-w-[1300px] text-xs border-collapse">
+        <table class="w-full text-xs border-collapse">
           <thead class="sticky top-0 z-10 bg-[#f5f5f4]">
             <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold">UNIT</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold">CLUSTER</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold">DATE PAID</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold">CONTACT / RESIDENT</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold">INVOICE #</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold">RENT FOR</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold text-right">RENT (₱)</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold text-right">50% SHARE (₱)</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold text-center">OCC.</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold text-right">WATER (₱)</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold text-right">GBG (₱)</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold text-right">TOTAL REMITTED (₱)</th>
-              <th class="whitespace-nowrap px-3.5 py-3 font-bold text-center">ACTIONS</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold">UNIT</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold">CLUSTER</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold">DATE PAID</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold">CONTACT / RESIDENT</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold">INVOICE #</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold">RENT FOR</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold text-right">RENT (₱)</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold text-center">OCC.</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold text-right">WATER (₱)</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold text-right">GBG (₱)</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold text-right">TOTAL REMITTED (₱)</th>
+              <th class="whitespace-nowrap px-3 py-3 font-bold text-center">ACTION</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#e7e5e4]">
             <tr v-if="rows.length === 0">
-              <td colspan="13" class="p-8 text-center text-[#71717a] bg-white">
+              <td colspan="12" class="p-8 text-center text-[#71717a] bg-white">
                 No income collections recorded matching the filters.
               </td>
             </tr>
@@ -776,61 +730,49 @@ function exportCSV() {
               :key="r.unit + r.invoice"
               class="hover:bg-[#fafaf9] transition-colors"
             >
-              <td class="whitespace-nowrap px-3.5 py-3 font-display font-extrabold uppercase text-[#1c1917]">
+              <td class="whitespace-nowrap px-3 py-2.5 font-display font-extrabold uppercase text-[#1c1917]">
                 {{ r.unit }}
               </td>
-              <td class="whitespace-nowrap px-3.5 py-3 text-[#71717a] font-medium">
+              <td class="whitespace-nowrap px-3 py-2.5 text-[#71717a] font-medium">
                 {{ r.cluster }}
               </td>
-              <td class="whitespace-nowrap px-3.5 py-3 text-[#71717a]">
+              <td class="whitespace-nowrap px-3 py-2.5 text-[#71717a]">
                 {{ r.datePaid }}
               </td>
-              <td class="whitespace-nowrap px-3.5 py-3 font-bold text-[#1c1917]">
+              <td class="whitespace-nowrap px-3 py-2.5 font-bold text-[#1c1917]">
                 {{ r.contact }}
               </td>
-              <td class="whitespace-nowrap px-3.5 py-3 font-mono text-xs text-[#71717a]">
+              <td class="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-[#71717a]">
                 {{ r.invoice }}
               </td>
-              <td class="whitespace-nowrap px-3.5 py-3 text-[#71717a]">
+              <td class="whitespace-nowrap px-3 py-2.5 text-[#71717a]">
                 {{ r.rentFor }}
               </td>
-              <td class="tabular whitespace-nowrap px-3.5 py-3 text-right font-display font-bold text-[#1c1917]">
-                {{ peso(r.rent) }}
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right">
+                <span class="font-display font-bold text-[#1c1917] block leading-tight">{{ peso(r.rent) }}</span>
+                <span class="text-[11px] font-bold text-[#8a5814] block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
               </td>
-              <td class="tabular whitespace-nowrap px-3.5 py-3 text-right font-display font-bold text-[#8a5814]">
-                {{ peso(r.rent / 2) }}
-              </td>
-              <td class="whitespace-nowrap px-3.5 py-3 text-center font-bold text-[#1c1917]">
+              <td class="whitespace-nowrap px-3 py-2.5 text-center font-bold text-[#1c1917]">
                 {{ r.occupants }}
               </td>
-              <td class="tabular whitespace-nowrap px-3.5 py-3 text-right font-semibold text-[#1c1917]">
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-semibold text-[#1c1917]">
                 {{ peso(r.water) }}
               </td>
-              <td class="tabular whitespace-nowrap px-3.5 py-3 text-right text-[#71717a]">
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right text-[#71717a]">
                 {{ peso(r.garbage) }}
               </td>
-              <td class="tabular whitespace-nowrap px-3.5 py-3 text-right font-display font-extrabold text-emerald-800">
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-display font-extrabold text-emerald-800">
                 {{ peso((r.rent / 2) + r.water) }}
               </td>
-              <td class="whitespace-nowrap px-3.5 py-3 text-center">
-                <div class="inline-flex items-center justify-center gap-1.5">
-                  <button 
-                    @click="startEditIncome(r)" 
-                    class="btn-secondary min-h-9 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
-                    title="Edit Collection"
-                  >
-                    <Pencil class="size-3.5 text-[#71717a]" />
-                    <span>Edit</span>
-                  </button>
-                  <button 
-                    @click="handleDeleteIncome(r.id || '', r.invoice, r.unit)" 
-                    class="btn-secondary min-h-9 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs hover:border-rose-300 hover:text-rose-600 cursor-pointer"
-                    title="Void Collection"
-                  >
-                    <Trash2 class="size-3.5 text-[#71717a]" />
-                    <span>Delete</span>
-                  </button>
-                </div>
+              <td class="whitespace-nowrap px-3 py-2.5 text-center">
+                <button 
+                  @click="startEditIncome(r)" 
+                  class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer hover:border-[#0c66e4] hover:text-[#0c66e4]"
+                  title="Edit Collection"
+                >
+                  <Pencil class="size-3.5 text-[#71717a]" />
+                  <span>Edit</span>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -838,16 +780,18 @@ function exportCSV() {
           <!-- Table Footer Subtotals -->
           <tfoot class="sticky bottom-0 bg-[#f5f5f4] border-t-2 border-[#d6d3d1] font-display font-bold text-xs text-[#1c1917]">
             <tr>
-              <td colspan="6" class="px-3.5 py-3 uppercase tracking-wider text-[#71717a]">
+              <td colspan="6" class="px-3 py-3 uppercase tracking-wider text-[#71717a]">
                 GRAND TOTALS ({{ rows.length }} ROWS)
               </td>
-              <td class="tabular px-3.5 py-3 text-right font-black">{{ peso(totalRent) }}</td>
-              <td class="tabular px-3.5 py-3 text-right font-black text-[#8a5814]">{{ peso(totalShare) }}</td>
-              <td class="px-3.5 py-3 text-center">—</td>
-              <td class="tabular px-3.5 py-3 text-right font-black">{{ peso(totalWater) }}</td>
-              <td class="tabular px-3.5 py-3 text-right font-black">{{ peso(rows.reduce((s, r) => s + r.garbage, 0)) }}</td>
-              <td class="tabular px-3.5 py-3 text-right font-black text-emerald-800">{{ peso(totalRemitted) }}</td>
-              <td class="px-3.5 py-3 text-center">—</td>
+              <td class="tabular px-3 py-3 text-right">
+                <span class="font-black text-[#1c1917] block leading-tight">{{ peso(totalRent) }}</span>
+                <span class="text-[11px] font-bold text-[#8a5814] block leading-tight mt-0.5">50%: {{ peso(totalShare) }}</span>
+              </td>
+              <td class="px-3 py-3 text-center">—</td>
+              <td class="tabular px-3 py-3 text-right font-black">{{ peso(totalWater) }}</td>
+              <td class="tabular px-3 py-3 text-right font-black">{{ peso(rows.reduce((s, r) => s + r.garbage, 0)) }}</td>
+              <td class="tabular px-3 py-3 text-right font-black text-emerald-800">{{ peso(totalRemitted) }}</td>
+              <td class="px-3 py-3 text-center">—</td>
             </tr>
           </tfoot>
         </table>
@@ -985,13 +929,24 @@ function exportCSV() {
             </div>
           </div>
 
-          <div class="pt-3 border-t border-[#e7e5e4] flex justify-end gap-3">
-            <button type="button" @click="isEditOpen = false" class="btn-secondary px-5 cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="btn-primary px-6 flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
-              <Check v-else class="size-3.5" />
-              <span>Update Collection</span>
+          <div class="pt-4 border-t border-[#e7e5e4] flex items-center justify-between gap-3">
+            <button 
+              type="button" 
+              @click="handleDeleteFromModal" 
+              class="btn-secondary text-rose-700 hover:bg-rose-50 hover:border-rose-300 px-3.5 py-2 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <Trash2 class="size-3.5 text-rose-600" />
+              <span>Delete Record</span>
             </button>
+
+            <div class="flex items-center gap-2">
+              <button type="button" @click="isEditOpen = false" class="btn-secondary px-4 py-2 text-xs cursor-pointer">Cancel</button>
+              <button type="submit" :disabled="isSubmitting" class="btn-primary px-5 py-2 text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
+                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
+                <Check v-else class="size-3.5" />
+                <span>Update Collection</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

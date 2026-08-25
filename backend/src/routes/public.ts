@@ -28,7 +28,8 @@ const router = Router();
  */
 const PUBLIC_ROOM_COLUMNS =
   'id, room_number, floor, cluster_code, room_type, description, capacity, ' +
-  'current_price, operational_status, visibility_status, available_from, is_linda_unit';
+  'current_price, operational_status, visibility_status, available_from, is_linda_unit, ' +
+  'room_photos (id, file_url, is_primary, display_order)';
 
 /**
  * GET /api/public/rooms

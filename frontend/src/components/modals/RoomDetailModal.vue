@@ -38,6 +38,25 @@ function handleInquireDirectly() {
       </div>
 
       <div class="p-6 space-y-4 text-xs text-[#1c1917] max-h-[75vh] overflow-y-auto">
+        
+        <!-- Room Photo Banner -->
+        <div v-if="activeRoomDetail.photo" class="h-44 w-full rounded-xl overflow-hidden relative border border-[#e7e5e4] bg-neutral-900 shadow-2xs">
+          <img 
+            :src="activeRoomDetail.photo" 
+            :alt="`Unit ${activeRoomDetail.unitCode}`"
+            class="size-full object-cover"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-3 left-3 flex items-center gap-2">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-white/90 text-[#1c1917] shadow-xs uppercase tracking-wider backdrop-blur-xs">
+              {{ activeRoomDetail.cluster }}
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#f59e0b] text-white shadow-xs">
+              Floor {{ activeRoomDetail.floor }}
+            </span>
+          </div>
+        </div>
+
         <div class="p-4 rounded-xl bg-[#1e2532] text-white flex justify-between items-end">
           <div>
             <span class="text-[10px] uppercase font-bold tracking-widest text-[#f59e0b]">Unit Showcase</span>

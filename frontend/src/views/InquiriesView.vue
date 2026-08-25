@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { inquiries, rooms, showToast, type Inquiry } from '@/lib/systemState';
+import { inquiries, fetchInquiries as fetchInquiriesState, rooms, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { MessageSquare, Phone, Mail, Send, X, RefreshCw, Loader2 } from 'lucide-vue-next';
@@ -25,26 +25,9 @@ const isSubmitting = ref(false);
 async function fetchInquiries() {
   isLoading.value = true;
   try {
-    const data = await api.get<ApiInquiry[]>('/admin/inquiries');
-    if (data && data.length) {
-      data.forEach((item) => {
-        const unitNumber = item.rooms?.room_number || '1A';
-        const existing = inquiries.find((i) => i.id === item.id);
-        if (!existing) {
-          inquiries.unshift({
-            id: item.id,
-            name: item.prospect_name,
-            unit: unitNumber.toUpperCase(),
-            phone: item.prospect_phone,
-            email: item.prospect_email,
-            date: new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }),
-            message: item.message,
-          });
-        }
-      });
-    }
-  } catch {
-    // Offline fallback
+    await fetchInquiriesState();
+  } catch (err) {
+    console.error('fetchInquiries failed:', err);
   } finally {
     isLoading.value = false;
   }

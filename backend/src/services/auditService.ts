@@ -35,6 +35,7 @@ export type AuditAction =
   | 'TICKET_STATUS_CHANGE'
   | 'TICKET_CLOSE'
   | 'EXPENSE_CREATE'
+  | 'EXPENSE_UPDATE'
   | 'EXPENSE_VOID';
 
 export type AuditEntityType =

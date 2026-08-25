@@ -43,25 +43,25 @@ const routes: RouteRecordRaw[] = [
     path: '/tenant',
     name: 'TenantOverview',
     component: TenantOverviewView,
-    meta: { roles: ['tenant', 'admin'], label: 'the Tenant Portal' },
+    meta: { roles: ['tenant'], label: 'the Tenant Portal' },
   },
   {
     path: '/tenant/payments',
     name: 'TenantPayments',
     component: TenantPaymentsView,
-    meta: { roles: ['tenant', 'admin'], label: 'Tenant Payments' },
+    meta: { roles: ['tenant'], label: 'Tenant Payments' },
   },
   {
     path: '/tenant/tickets',
     name: 'TenantTickets',
     component: TenantTicketsView,
-    meta: { roles: ['tenant', 'admin'], label: 'Tenant Maintenance Tickets' },
+    meta: { roles: ['tenant'], label: 'Tenant Maintenance Tickets' },
   },
   {
     path: '/tenant/profile',
     name: 'TenantProfile',
     component: TenantProfileView,
-    meta: { roles: ['tenant', 'admin'], label: 'Tenant Profile' },
+    meta: { roles: ['tenant'], label: 'Tenant Profile' },
   },
 
   // Landlady Admin Workspace
@@ -130,6 +130,18 @@ router.beforeEach(async (to) => {
     sessionRestored = true;
     if (getStoredToken()) {
       await restoreSession();
+    }
+  }
+
+  // If user is logged in as Admin, lock them strictly to Admin workspace
+  if (isAuthenticated.value && currentRole.value === 'admin') {
+    if (
+      to.path === '/' || 
+      to.path.startsWith('/public') || 
+      to.path.startsWith('/category') || 
+      to.path.startsWith('/tenant')
+    ) {
+      return '/admin/overview';
     }
   }
 

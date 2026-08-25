@@ -43,11 +43,7 @@ const activeNav = computed(() => isTenantSection.value ? TENANT_NAV : ADMIN_NAV)
 const spaceTitle = computed(() => isTenantSection.value ? 'Tenant Account Portal' : 'Landlady Operations Space');
 const spaceCategory = computed(() => isTenantSection.value ? 'Tenant Self-Service' : 'Management Operations');
 
-const ROLES = [
-  { to: '/admin/overview', label: 'Landlady Admin', icon: Shield },
-  { to: '/tenant', label: 'Tenant Portal', icon: User },
-  { to: '/public', label: 'Public Guest Showcase', icon: Home },
-] as const;
+
 
 function isItemActive(to: string, aliases: readonly string[]) {
   if (route.path === to) return true;
@@ -133,29 +129,7 @@ function closeMobileNav() {
             <p class="text-xs font-extrabold text-[#1c1917] truncate mt-0.5">{{ spaceTitle }}</p>
           </div>
 
-          <!-- Role Portals Nav (Mobile Only) -->
-          <div>
-            <p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#71717a]">
-              Switch Space
-            </p>
-            <div class="grid gap-1">
-              <router-link
-                v-for="r in ROLES"
-                :key="r.to"
-                :to="r.to"
-                @click="closeMobileNav"
-                :class="[
-                  'flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs sm:text-sm font-semibold transition-colors',
-                  route.path.startsWith(r.to.split('/')[1])
-                    ? 'bg-[#1e2532] text-white font-bold'
-                    : 'text-[#475569] hover:bg-[#f5f5f4]'
-                ]"
-              >
-                <component :is="r.icon" class="size-4" />
-                <span>{{ r.label }}</span>
-              </router-link>
-            </div>
-          </div>
+
 
           <!-- Section Specific Navigation -->
           <div>

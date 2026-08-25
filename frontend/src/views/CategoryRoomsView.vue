@@ -10,7 +10,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { CANONICAL_32_UNITS, peso, type RentableUnit } from '@/lib/canonicalUnits';
-import { isLiveChatheadOpen, showToast, LANDLADY } from '@/lib/systemState';
+import { isLiveChatheadOpen, showToast, LANDLADY, rooms, fetchRooms } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import { 
   ArrowLeft, 
@@ -41,6 +41,7 @@ interface DbRoom {
   visibility_status: string;
   available_from: string | null;
   is_linda_unit: boolean;
+  room_photos?: { id: string; file_url: string; is_primary: boolean }[];
 }
 
 const route = useRoute();
@@ -112,7 +113,7 @@ function syncFromRoute() {
   selectedCategoryKey.value = key;
 
   const cat = CATEGORIES.find(c => c.key === key) || CATEGORIES[0];
-  const unitsInCat = CANONICAL_32_UNITS.filter(cat.match);
+  const unitsInCat = categoryUnits.value;
   if (unitsInCat.length > 0) {
     const isCurrentInCat = unitsInCat.some(u => u.unitCode.toLowerCase() === selectedUnitCode.value.toLowerCase());
     if (!isCurrentInCat) {
@@ -122,9 +123,8 @@ function syncFromRoute() {
 }
 
 onMounted(async () => {
-  syncFromRoute();
-
   try {
+    await fetchRooms();
     const data = await api.get<DbRoom[]>('/public/rooms', false);
     if (data && data.length) {
       publicRooms.value = data;
@@ -132,14 +132,34 @@ onMounted(async () => {
   } catch {
     // Fallback to CANONICAL_32_UNITS
   }
+  syncFromRoute();
 });
 
 watch(() => [route.params.categorySlug, route.query.category], () => {
   syncFromRoute();
 });
 
+const mergedUnits = computed<RentableUnit[]>(() => {
+  return CANONICAL_32_UNITS.map((u) => {
+    const live = rooms.find((r) => r.unitCode.toLowerCase() === u.unitCode.toLowerCase());
+    if (live) {
+      return {
+        ...u,
+        basePrice: live.price || u.basePrice,
+        type: live.type || u.type,
+        photo: live.photo || u.photo,
+        desc: live.desc || u.desc,
+        cluster: live.cluster || u.cluster,
+        billingRule: live.billingRule || u.billingRule,
+        status: live.status || u.status,
+      };
+    }
+    return u;
+  });
+});
+
 const currentCat = computed(() => CATEGORIES.find((c) => c.key === selectedCategoryKey.value) || CATEGORIES[0]);
-const categoryUnits = computed(() => CANONICAL_32_UNITS.filter(currentCat.value.match));
+const categoryUnits = computed(() => mergedUnits.value.filter(currentCat.value.match));
 
 const activeUnit = computed(() => {
   return categoryUnits.value.find((u) => u.unitCode.toLowerCase() === selectedUnitCode.value.toLowerCase()) || categoryUnits.value[0];

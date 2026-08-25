@@ -7,10 +7,10 @@
  *            property highlights, inline rectangular inquiry form, proximity map, and corporate footer.
  * @innovations Direct category routing, embedded wide rectangular inquiry section, and dark corporate footer.
  */
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { CANONICAL_32_UNITS, HERO_PHOTO, type RentableUnit } from '@/lib/canonicalUnits';
-import { showToast, LANDLADY } from '@/lib/systemState';
+import { showToast, LANDLADY, fetchRooms } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import { 
   MapPin, 
@@ -81,6 +81,10 @@ const CATEGORIES = [
 function navigateToCategory(slug: string) {
   router.push(`/category/${slug}`);
 }
+
+onMounted(() => {
+  fetchRooms();
+});
 
 // Inline Rectangular Inquiry Form State
 const inquiryName = ref('');

@@ -51,7 +51,8 @@ router.get(
         'id, start_date, end_date, anniversary_date, deposit_amount, occupant_count, ' +
           'is_primary_contact, is_active, ' +
           'rooms:room_id (id, room_number, floor, cluster_code, room_type, description, ' +
-          'capacity, current_price, operational_status, available_from, is_linda_unit)'
+          'capacity, current_price, operational_status, available_from, is_linda_unit, ' +
+          'room_photos (id, file_url, is_primary, display_order))'
       )
       .eq('tenant_profile_id', req.user!.profileId)
       .order('start_date', { ascending: false });

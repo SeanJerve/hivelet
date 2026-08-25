@@ -49,9 +49,6 @@
               <router-link to="/public" class="hover:text-white transition-colors">Public Portal</router-link>
             </li>
             <li>
-              <router-link to="/tenant" class="hover:text-white transition-colors">Tenant Self-Service</router-link>
-            </li>
-            <li>
               <router-link to="/admin" class="hover:text-white transition-colors">Landlady Admin Overview</router-link>
             </li>
           </ul>

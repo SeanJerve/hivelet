@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { isOnsitePaymentModalOpen, rooms, incomeRecords, showToast } from '@/lib/systemState';
+import { 
+  isOnsitePaymentModalOpen, 
+  rooms, 
+  incomeRecords, 
+  fetchIncomeRecords, 
+  fetchRooms, 
+  fetchTenants, 
+  formatUnitOccupantsSummary, 
+  showToast 
+} from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { X, Check, Banknote, Loader2, ReceiptText } from 'lucide-vue-next';
+import { X, Check, Banknote, Loader2, ReceiptText, Users } from 'lucide-vue-next';
 
 const selectedUnit = ref('1a');
 const rentAmount = ref(4500);
@@ -37,20 +46,41 @@ function formatDateForDisplay(dStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
-// Auto-calculate water and rent based on room occupants/rates
-watch(selectedUnit, (newVal) => {
-  const room = rooms.find((r) => r.unitCode.toLowerCase() === newVal.toLowerCase());
-  const occupants = room ? (room.occupants || 1) : 1;
-  const isLinda = room?.cluster === 'Linda Units';
+const unitOccupantsSummary = computed(() => {
+  return formatUnitOccupantsSummary(selectedUnit.value);
+});
+
+const currentOccupantsCount = computed(() => {
+  return unitOccupantsSummary.value.count > 0 ? unitOccupantsSummary.value.count : 1;
+});
+
+// Auto-calculate water and rent based on dynamic room occupants and rates
+watch([selectedUnit, monthsCovered], ([newUnit, newMonths]) => {
+  const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
+  const summary = formatUnitOccupantsSummary(newUnit);
+  const occCount = summary.count > 0 ? summary.count : (room?.occupants || 1);
+  const isLinda = room?.cluster === 'Linda Units' || newUnit.toLowerCase() === 'lf' || newUnit.toLowerCase() === 'lb';
+  
+  const mCovered = Math.max(1, Number(newMonths) || 1);
+
   if (isLinda) {
-    waterAmount.value = newVal.toLowerCase() === 'lf' ? 400 : 200;
+    const monthlyLindaWater = newUnit.toLowerCase() === 'lf' ? 400 : 200;
+    waterAmount.value = monthlyLindaWater * mCovered;
   } else {
-    waterAmount.value = occupants * 200;
+    waterAmount.value = occCount * 200 * mCovered;
   }
+
   if (room && room.price) {
-    rentAmount.value = room.price;
+    rentAmount.value = room.price * mCovered;
   }
 }, { immediate: true });
+
+watch(isOnsitePaymentModalOpen, (isOpen) => {
+  if (isOpen) {
+    fetchTenants();
+    fetchRooms();
+  }
+});
 
 // Total amount received calculation
 const totalAmountReceived = computed(() => {
@@ -85,19 +115,23 @@ function closeModal() {
 function triggerRecord() {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase());
   const unitUpper = selectedUnit.value.toUpperCase();
-  const occupants = room ? (room.occupants || 1) : 1;
-  let waterBaseline = occupants * 200;
+  const summary = formatUnitOccupantsSummary(selectedUnit.value);
+  const occCount = summary.count > 0 ? summary.count : (room?.occupants || 1);
+  const mCovered = Math.max(1, Number(monthsCovered.value) || 1);
+
+  let monthlyWaterBaseline = occCount * 200;
   if (unitUpper === 'LF') {
-    waterBaseline = 400;
+    monthlyWaterBaseline = 400;
   } else if (unitUpper === 'LB') {
-    waterBaseline = 200;
+    monthlyWaterBaseline = 200;
   }
+  const totalWaterBaseline = monthlyWaterBaseline * mCovered;
 
   const waterVal = Number(waterAmount.value) || 0;
   
   if (waterVal !== 0) {
-    if (waterVal < waterBaseline) {
-      showToast('error', 'Water Payment Error', `Water payment for ${unitUpper} cannot be lower than the limit of ₱${waterBaseline} for ${occupants} occupant(s) unless it is ₱0.`);
+    if (waterVal < totalWaterBaseline) {
+      showToast('error', 'Water Payment Error', `Water payment for ${unitUpper} cannot be lower than ₱${totalWaterBaseline} for ${occCount} occupant(s) across ${mCovered} month(s) unless it is ₱0.`);
       return;
     }
     if (waterVal % 200 !== 0) {
@@ -110,9 +144,10 @@ function triggerRecord() {
   const formattedEnd = new Date(dateCoveredEnd.value).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 
   const confirmMsg = `
-    Unit: ${selectedUnit.value.toUpperCase()}
+    Unit: ${selectedUnit.value.toUpperCase()} (${summary.text || (room?.tenant || 'Vacant')})
+    Occupants: ${occCount} Registered Headcount
     Rent Amount: ₱${rentAmount.value}
-    Water Payment: ₱${waterAmount.value}
+    Water Payment: ₱${waterAmount.value} (₱200/head rule)
     GBG/Garbage Fee: ₱${gbgFee.value}
     Total Amount: ₱${totalAmountReceived.value}
     Validity Period: ${monthsCovered.value} month(s) (${formattedStart} to ${formattedEnd})
@@ -125,8 +160,6 @@ function triggerRecord() {
     async () => {
       isSubmitting.value = true;
       try {
-        const occupants = room ? (room.occupants || 1) : 1;
-
         let serverRecordId = `INC-NEW-${Date.now()}`;
         try {
           const allRooms = await api.get<{ id: string; room_number: string }[]>('/admin/rooms');
@@ -135,10 +168,10 @@ function triggerRecord() {
             const payload = {
               roomNumber: selectedUnit.value.toUpperCase(),
               datePaid: date.value,
-              contactName: room?.tenant || 'Walk-in Resident',
+              contactName: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || 'Walk-in Resident'),
               invoiceNumber: orNum.value || `OR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
               rentAmount: Number(rentAmount.value) || 0,
-              occupants: occupants,
+              occupants: occCount,
               paymentMethod: paymentMethod.value === 'Online' ? 'Online' : 'Cash',
               transactionReference: paymentMethod.value === 'Online' ? transactionReference.value : undefined,
               monthsCovered: Number(monthsCovered.value) || 1,
@@ -161,11 +194,11 @@ function triggerRecord() {
           unit: selectedUnit.value.toUpperCase(),
           cluster: room?.cluster || 'BH',
           datePaid: formatDateForDisplay(date.value),
-          contact: room?.tenant || 'Walk-in Resident',
+          contact: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || 'Walk-in Resident'),
           invoice: inv,
           rentFor: `${formattedStart} – ${formattedEnd}`,
           rent: Number(rentAmount.value) || 0,
-          occupants: occupants,
+          occupants: occCount,
           water: Number(waterAmount.value) || 0,
           garbage: Number(gbgFee.value) || 0,
           anniversary: new Date(date.value).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
@@ -177,6 +210,8 @@ function triggerRecord() {
           room.paid = true;
           room.balance = 0;
         }
+
+        await Promise.allSettled([fetchIncomeRecords(), fetchRooms(), fetchTenants()]);
 
         showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()} · ₱${totalAmountReceived.value} posted to the ledger.`);
         closeModal();
@@ -212,12 +247,12 @@ function triggerRecord() {
       </div>
 
       <form @submit.prevent="triggerRecord" class="space-y-4 text-xs">
-        <!-- Room/Unit selector -->
+        <!-- Room/Unit selector with dynamic occupants info -->
         <div>
           <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Unit</label>
-          <select v-model="selectedUnit" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none">
+          <select v-model="selectedUnit" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none">
             <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
-              {{ r.unitCode.toUpperCase() }} — {{ r.tenant || 'Vacant' }} ({{ r.cluster }})
+              {{ r.unitCode.toUpperCase() }} — {{ formatUnitOccupantsSummary(r.unitCode).text }} ({{ r.cluster }})
             </option>
           </select>
         </div>
@@ -229,8 +264,21 @@ function triggerRecord() {
             <input v-model.number="rentAmount" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Payment for Water (₱)</label>
-            <input v-model.number="waterAmount" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a]">Payment for Water (₱)</label>
+              <span class="text-[10px] font-semibold text-[#0c66e4]">
+                ₱200 × {{ currentOccupantsCount }} {{ currentOccupantsCount === 1 ? 'occupant' : 'occupants' }}
+              </span>
+            </div>
+            <input v-model.number="waterAmount" type="number" min="0" step="200" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+            <p class="text-[10px] text-[#71717a] mt-1">
+              <span v-if="selectedUnit.toLowerCase() === 'lf' || selectedUnit.toLowerCase() === 'lb'">
+                Fixed Linda utility rule (₱{{ selectedUnit.toLowerCase() === 'lf' ? 400 : 200 }}/mo)
+              </span>
+              <span v-else>
+                Dynamic: <strong class="text-[#1c1917]">{{ currentOccupantsCount }} Headcount</strong> ({{ unitOccupantsSummary.text }})
+              </span>
+            </p>
           </div>
         </div>
 

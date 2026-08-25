@@ -1,15 +1,21 @@
 # Dependencies
 node_modules/
+*/node_modules/
 .pnpm-store/
 
 # Build Output
 dist/
+*/dist/
 build/
+*/build/
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
-.env.local
+.env.*
 *.env
+backend/.env
+frontend/.env
+!*.env.example
 
 # IDE / OS Files
 .DS_Store
@@ -34,4 +40,3 @@ uploads/*
 # Agent / Tool scratch
 .agent/
 .agents/
-

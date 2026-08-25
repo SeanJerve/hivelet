@@ -17,6 +17,7 @@ export interface RentableUnit {
   amenities: string[];
   photo: string;
   waterRateType: "standard" | "linda_fixed";
+  desc?: string;
 }
 
 export const PHOTOS = [
@@ -85,7 +86,7 @@ export const CANONICAL_32_UNITS: RentableUnit[] = [
   // Front Apartment (F1, F2F, F2B)
   { id: "apt-f1", unitCode: "F1", cluster: "Front Apartment", floor: 1, floorLabel: "Floor 1", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 2, status: "settled", tenantName: "Allan Ilagan", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },
   { id: "apt-f2f", unitCode: "F2F", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 10000, capacity: 4, occupants: 3, status: "overdue", tenantName: "Sofia Manalo", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[6], waterRateType: "standard" },
-  { id: "apt-f2b", unitCode: "F2B", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 4, status: "maintenance", tenantName: "Kevin Alcantara", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[7], waterRateType: "standard" },
+  { id: "apt-f2b", unitCode: "F2B", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 4, status: "settled", tenantName: "Kevin Alcantara", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[7], waterRateType: "standard" },
 
   // Linda Units (LF, LB)
   { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Front Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "Rowena Silva", billingRule: "Fixed: ₱325 electricity + ₱400 water (remitted to Linda)", amenities: BH_AMENITIES, photo: PHOTOS[6], waterRateType: "linda_fixed" },

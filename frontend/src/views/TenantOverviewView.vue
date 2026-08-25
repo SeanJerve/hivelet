@@ -117,13 +117,22 @@ async function fetchTenantData() {
     if (data && data.length > 0) {
       const activeRoom = data.find(r => r.is_active) || data[0];
       if (activeRoom) {
-        tenantData.value.room = `Unit ${activeRoom.rooms?.room_number || activeRoom.room_number || '1A'}`;
-        tenantData.value.roomDetails = activeRoom.rooms?.room_type || 'Standard Room';
-        tenantData.value.roomType = activeRoom.rooms?.cluster_code || 'Main Cluster';
+        const roomNum = activeRoom.rooms?.room_number || activeRoom.room_number || '1A';
+        tenantData.value.room = `Unit ${roomNum.toUpperCase()}`;
+        tenantData.value.roomDetails = activeRoom.rooms?.room_type || '1 Bedroom';
+        tenantData.value.roomType = activeRoom.rooms?.cluster_code || 'BH';
         tenantData.value.floor = activeRoom.rooms?.floor || 1;
         tenantData.value.occupants = activeRoom.occupant_count || 1;
-        if (activeRoom.rooms?.photo_url) {
-          tenantData.value.photoUrl = activeRoom.rooms.photo_url;
+        
+        const primaryPhoto = activeRoom.rooms?.room_photos?.find((p: any) => p.is_primary)?.file_url 
+          || activeRoom.rooms?.room_photos?.[0]?.file_url 
+          || activeRoom.rooms?.photo_url;
+        if (primaryPhoto) {
+          tenantData.value.photoUrl = primaryPhoto;
+        }
+
+        if (activeRoom.rooms?.current_price) {
+          tenantData.value.baseRent = Number(activeRoom.rooms.current_price);
         }
       }
     }
