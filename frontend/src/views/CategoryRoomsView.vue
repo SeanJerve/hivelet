@@ -236,7 +236,7 @@ async function submitInquiry() {
       <div class="space-y-1">
         <div class="flex items-center gap-2 text-xs font-bold text-[#8a5814]">
           <MapPin class="size-3.5 text-[#f59e0b]" />
-          <span>Sambat, Tanauan City • Fe Galang Da Silva Boarding House</span>
+          <span>32 Sampaquita St., Old Albay, Legazpi City • Fe Galang Da Silva Boarding House</span>
         </div>
         <h1 class="font-display font-black text-3xl sm:text-4xl text-[#1c1917] tracking-tight">
           {{ currentCat.title }}

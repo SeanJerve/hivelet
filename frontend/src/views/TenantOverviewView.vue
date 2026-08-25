@@ -51,6 +51,9 @@ const tenantData = ref({
   },
   baseRent: 4500,
   waterFee: 200,
+  gbgFee: 0,
+  depositAmount: 9000,
+  moveInDate: 'Jan 05, 2023',
   totalAmountDue: 4700,
   dueDate: 'Aug 05, 2026',
   dueBadgeText: 'DUE AUG 05',
@@ -112,7 +115,7 @@ async function fetchTenantData() {
     // Fetch assigned room info
     const data = await api.get<any[]>('/tenant/my-rooms');
     if (data && data.length > 0) {
-      const activeRoom = data.find(r => r.is_active) || data[0];
+      const activeRoom = data.find((r: any) => r.is_active) || data[0];
       if (activeRoom) {
         const roomNum = activeRoom.rooms?.room_number || activeRoom.room_number || '1A';
         tenantData.value.room = `Unit ${roomNum.toUpperCase()}`;
@@ -136,7 +139,7 @@ async function fetchTenantData() {
 
     // Fetch bills for the monthly statement
     const billsData = await api.get<any[]>('/tenant/my-bills');
-    const unpaidBill = billsData?.find(b => b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue');
+    const unpaidBill = billsData?.find((b: any) => b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue');
     if (unpaidBill) {
       activeBillId.value = unpaidBill.id;
       tenantData.value.baseRent = unpaidBill.rent_amount;
@@ -347,6 +350,31 @@ async function handlePayOnline() {
 
         <!-- Statement Body -->
         <div class="p-6 space-y-5">
+          <!-- Resident & Unit Info -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+            <div>
+              <span class="text-[#6b778c] text-xs block mb-0.5">Resident Name</span>
+              <strong class="text-[#172b4d]">{{ tenantData.name }}</strong>
+            </div>
+            <div>
+              <span class="text-[#6b778c] text-xs block mb-0.5">Assigned Unit</span>
+              <strong class="text-[#172b4d]">{{ tenantData.room }} ({{ tenantData.roomDetails }})</strong>
+            </div>
+            <div>
+              <span class="text-[#6b778c] text-xs block mb-0.5">Move-in Date</span>
+              <strong class="text-[#172b4d]">{{ tenantData.moveInDate }}</strong>
+            </div>
+            <div>
+              <span class="text-[#6b778c] text-xs block mb-0.5">Payment Due Date</span>
+              <strong class="text-[#172b4d] flex items-center gap-1.5">
+                <Calendar class="w-3.5 h-3.5 text-[#0c66e4]" />
+                {{ tenantData.dueDate }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="border-t border-[#dfe1e6]"></div>
+
           <!-- Line Items -->
           <div class="space-y-3 text-sm">
             <div class="flex justify-between items-center py-2 border-b border-gray-100">
@@ -355,35 +383,58 @@ async function handlePayOnline() {
             </div>
             <div class="flex justify-between items-center py-2 border-b border-gray-100">
               <span class="text-[#5e6c84]">
-                Water Fee (₱{{ tenantData.specs.waterRatePerHead }}/head × {{ tenantData.occupants }})
+                Water Fee (₱{{ tenantData.specs.waterRatePerHead }}/head × {{ tenantData.occupants }} occupant<template v-if="tenantData.occupants > 1">s</template>)
               </span>
               <span class="font-semibold text-[#172b4d]">₱{{ tenantData.waterFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
             </div>
+            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+              <span class="text-[#5e6c84]">Garbage Collection Fee (GBG)</span>
+              <span class="font-semibold text-[#172b4d]">₱{{ tenantData.gbgFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-gray-100 text-xs text-slate-500">
+              <span>Security Deposit (Held on record)</span>
+              <span class="font-medium text-slate-700">₱{{ tenantData.depositAmount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            </div>
           </div>
 
-          <!-- Total & Pay Online Button -->
+          <!-- Total & Pay Online Actions -->
           <div class="flex flex-col sm:flex-row justify-between sm:items-center border-t-2 border-[#172b4d] pt-4 gap-4">
             <div>
               <span class="font-bold text-[#172b4d] text-base block">Total Amount Due</span>
               <span class="text-2xl font-bold text-[#0c66e4]">
                 ₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
               </span>
+              <span class="text-xs text-[#6b778c] block mt-0.5">Status: <strong>{{ tenantData.dueDaysRemaining }}</strong></span>
             </div>
             
-            <button
-              @click="handlePayOnline"
-              :disabled="payingOnline"
-              class="px-6 py-3 bg-[#0c66e4] hover:bg-[#0052cc] text-white font-bold text-sm rounded-lg shadow-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              <CreditCard class="w-4 h-4" />
-              <span>{{ payingOnline ? 'Opening GCash Gateway...' : 'Pay Online (GCash via Adyen)' }}</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button
+                @click="handlePayOnline"
+                :disabled="payingOnline"
+                class="px-5 py-2.5 bg-[#0c66e4] hover:bg-[#0052cc] text-white font-bold text-xs rounded-lg shadow-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <CreditCard class="w-4 h-4" />
+                <span>{{ payingOnline ? 'Opening GCash Gateway...' : 'Pay Online (GCash via Adyen)' }}</span>
+              </button>
+              <router-link
+                to="/tenant/payments"
+                class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5"
+              >
+                <span>Manual Remittance</span>
+              </router-link>
+            </div>
           </div>
 
-          <!-- Status Note -->
-          <p class="text-xs text-[#6b778c] pt-1">
-            Status: <strong>{{ tenantData.dueDaysRemaining }}</strong> — Pay via GCash to Landlady {{ tenantData.landladyName }} ({{ tenantData.landladyGCash }})
-          </p>
+          <!-- Status & Remittance Account Note -->
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#5e6c84]">
+            <span class="flex items-center gap-1.5">
+              <Zap class="w-3.5 h-3.5 text-amber-500" />
+              <span>Electricity Submeter: <strong class="text-[#172b4d]">₱12.50 / kWh</strong> (Billed separately on 25th)</span>
+            </span>
+            <span>
+              Landlady GCash: <strong class="font-mono font-bold text-[#172b4d]">{{ tenantData.landladyGCash }}</strong> ({{ tenantData.landladyName }})
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -105,29 +105,28 @@ async function submitInquiry() {
 
   isSubmitting.value = true;
   try {
-    try {
-      const publicRooms = await api.get<any[]>('/public/rooms', false);
-      const defaultRoom = publicRooms && publicRooms.length ? publicRooms[0] : null;
+    const publicRooms = await api.get<any[]>('/public/rooms', false);
+    const defaultRoom = publicRooms && publicRooms.length ? publicRooms[0] : null;
 
-      if (defaultRoom) {
-        await api.post('/public/inquiries', {
-          roomId: defaultRoom.id,
-          prospectName: inquiryName.value.trim(),
-          prospectEmail: inquiryEmail.value.trim() || 'prospect@hivelet.ph',
-          prospectPhone: inquiryPhone.value.trim(),
-          message: inquiryMsg.value.trim(),
-        }, false);
-      }
-    } catch {
-      // In-memory fallback
+    if (!defaultRoom) {
+      showToast('error', 'Inquiry Error', 'No active room available for inquiry submission.');
+      return;
     }
 
-    showToast('success', 'Inquiry Delivered', 'Your message has been sent to Mrs. Fe Galang Da Silva.');
+    await api.post('/public/inquiries', {
+      roomId: defaultRoom.id,
+      prospectName: inquiryName.value.trim(),
+      prospectEmail: inquiryEmail.value.trim() || 'prospect@hivelet.ph',
+      prospectPhone: inquiryPhone.value.trim(),
+      message: inquiryMsg.value.trim(),
+    }, false);
+
+    showToast('success', 'Inquiry Delivered & Saved', 'Your message has been saved to the database and sent to Mrs. Fe Galang Da Silva.');
     inquiryName.value = '';
     inquiryPhone.value = '';
     inquiryEmail.value = '';
-  } catch {
-    showToast('success', 'Inquiry Received', 'Your message has been recorded.');
+  } catch (err: any) {
+    showToast('error', 'Inquiry Submission Failed', err.message || 'Could not save inquiry to server database.');
   } finally {
     isSubmitting.value = false;
   }
@@ -148,7 +147,7 @@ async function submitInquiry() {
       
       <div class="relative mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <span class="inline-flex items-center gap-2 rounded-full bg-[#f59e0b] px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest text-[#1c1917] shadow-sm">
-          <MapPin class="size-3.5" /> Sambat, Tanauan City, Batangas
+          <MapPin class="size-3.5" /> 32 Sampaquita St., Brgy. 4 Sagpon, Old Albay, Legazpi City
         </span>
         
         <h1 class="mt-5 max-w-3xl font-display text-3xl font-black leading-[1.08] text-white sm:text-5xl lg:text-6xl">
@@ -156,7 +155,7 @@ async function submitInquiry() {
         </h1>
         
         <p class="mt-4 max-w-xl text-sm sm:text-base text-gray-200 leading-relaxed">
-          Thirty-two well-kept units across three floors — clean, secure, and minutes away from Tanauan City proper. Transparent rates, submetered electricity, no hidden fees.
+          Thirty-two well-kept units across three floors — clean, secure, and located at 32 Sampaquita Street, Brgy. 4 Sagpon, Old Albay, Legazpi City. Transparent rates, submetered electricity, no hidden fees.
         </p>
 
         <div class="mt-8 flex flex-wrap gap-3">
