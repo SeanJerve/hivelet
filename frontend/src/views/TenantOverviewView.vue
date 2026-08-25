@@ -60,18 +60,23 @@ const tenantData = ref({
   dueDaysRemaining: 'Current Period',
   dueDateRaw: '2026-08-05', // ISO date for countdown calculation
   landladyGCash: '0917-123-4567',
-  landladyName: 'Fe Galang Da Silva'
+  landladyName: 'Fe Galang Da Silva',
+  verifiedAt: '',
+  nextDueDateDisplay: ''
 });
 
 const loading = ref(false);
 
 /**
  * Computed due-date countdown.
- * Returns { daysLeft: number, label: string, severity: 'safe'|'warning'|'danger'|'overdue' }
+ * Returns { daysLeft: number, label: string, severity: 'safe'|'warning'|'danger'|'overdue'|'paid' }
  * Severity drives the color of the badge on the payment card.
  * @businessRule Rent due date is the 5th of every month per boarding house policy.
  */
 const dueDateCountdown = computed(() => {
+  if (tenantData.value.dueBadgeText === 'PAID') {
+    return { daysLeft: 0, label: 'Payment Settled', severity: 'paid' as const };
+  }
   const raw = tenantData.value.dueDateRaw;
   if (!raw) return { daysLeft: 0, label: tenantData.value.dueDaysRemaining, severity: 'safe' as const };
   const due = new Date(raw);
@@ -137,8 +142,12 @@ async function fetchTenantData() {
       }
     }
 
-    // Fetch bills for the monthly statement
-    const billsData = await api.get<any[]>('/tenant/my-bills');
+    // Fetch bills and payments for the monthly statement
+    const [billsData, paymentsData] = await Promise.all([
+      api.get<any[]>('/tenant/my-bills'),
+      api.get<any[]>('/tenant/my-payments')
+    ]);
+
     const unpaidBill = billsData?.find((b: any) => b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue');
     if (unpaidBill) {
       activeBillId.value = unpaidBill.id;
@@ -148,6 +157,45 @@ async function fetchTenantData() {
       tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       tenantData.value.dueBadgeText = unpaidBill.status.toUpperCase();
       tenantData.value.dueDaysRemaining = 'Awaiting payment';
+      tenantData.value.dueDateRaw = unpaidBill.due_date;
+      tenantData.value.verifiedAt = '';
+      tenantData.value.nextDueDateDisplay = '';
+    } else {
+      // Find the latest paid bill
+      const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
+      if (paidBill && paidBill.status === 'Paid') {
+        activeBillId.value = paidBill.id;
+        tenantData.value.baseRent = paidBill.rent_amount;
+        tenantData.value.waterFee = paidBill.water_amount;
+        tenantData.value.totalAmountDue = 0;
+        tenantData.value.dueDate = new Date(paidBill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        tenantData.value.dueBadgeText = 'PAID';
+        tenantData.value.dueDaysRemaining = 'Settled';
+        tenantData.value.dueDateRaw = paidBill.due_date;
+
+        // Calculate next due date
+        const nextDate = new Date(paidBill.due_date);
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        nextDate.setDate(5);
+        tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        // Find latest verified payment
+        const linkedPayment = paymentsData?.find((p: any) => p.bill_id === paidBill.id && p.verification_status === 'Verified')
+          || paymentsData?.find((p: any) => p.verification_status === 'Verified');
+        if (linkedPayment?.verified_at) {
+          tenantData.value.verifiedAt = new Date(linkedPayment.verified_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        } else {
+          tenantData.value.verifiedAt = '';
+        }
+      } else {
+        // Fallback default
+        tenantData.value.dueBadgeText = 'PAID';
+        tenantData.value.dueDaysRemaining = 'No outstanding bills';
+        tenantData.value.totalAmountDue = 0;
+        tenantData.value.dueDateRaw = '';
+        tenantData.value.verifiedAt = '';
+        tenantData.value.nextDueDateDisplay = '';
+      }
     }
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
@@ -283,6 +331,7 @@ async function handlePayOnline() {
       <!-- Monthly Payment & Due Date Statement -->
       <div class="bg-white border-2 rounded-lg overflow-hidden shadow-xs"
         :class="{
+          'border-emerald-500': dueDateCountdown.severity === 'paid',
           'border-[#172b4d]': dueDateCountdown.severity === 'safe',
           'border-amber-400': dueDateCountdown.severity === 'warning',
           'border-red-500': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
@@ -291,6 +340,7 @@ async function handlePayOnline() {
         <!-- Header -->
         <div class="px-6 py-4 flex items-center justify-between"
           :class="{
+            'bg-emerald-600': dueDateCountdown.severity === 'paid',
             'bg-[#172b4d]': dueDateCountdown.severity === 'safe',
             'bg-amber-500': dueDateCountdown.severity === 'warning',
             'bg-red-600': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
@@ -309,7 +359,7 @@ async function handlePayOnline() {
         <div
           class="px-6 py-3 flex items-center gap-3 border-b"
           :class="{
-            'bg-emerald-50 border-emerald-200': dueDateCountdown.severity === 'safe',
+            'bg-emerald-50 border-emerald-200': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
             'bg-amber-50 border-amber-200': dueDateCountdown.severity === 'warning',
             'bg-red-50 border-red-200': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
           }"
@@ -317,19 +367,19 @@ async function handlePayOnline() {
           <div
             class="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
             :class="{
-              'bg-emerald-100': dueDateCountdown.severity === 'safe',
+              'bg-emerald-100': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
               'bg-amber-100': dueDateCountdown.severity === 'warning',
               'bg-red-100': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
             }"
           >
-            <CheckCircle v-if="dueDateCountdown.severity === 'safe'" class="w-5 h-5 text-emerald-600" />
+            <CheckCircle v-if="dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid'" class="w-5 h-5 text-emerald-600" />
             <Clock v-else-if="dueDateCountdown.severity === 'warning'" class="w-5 h-5 text-amber-600" />
             <AlertTriangle v-else class="w-5 h-5 text-red-600" />
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-xs font-bold"
               :class="{
-                'text-emerald-800': dueDateCountdown.severity === 'safe',
+                'text-emerald-800': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
                 'text-amber-900': dueDateCountdown.severity === 'warning',
                 'text-red-900': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
               }"
@@ -338,12 +388,17 @@ async function handlePayOnline() {
             </p>
             <p class="text-[11px]"
               :class="{
-                'text-emerald-700': dueDateCountdown.severity === 'safe',
+                'text-emerald-700': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
                 'text-amber-700': dueDateCountdown.severity === 'warning',
                 'text-red-700': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
               }"
             >
-              Monthly rent due on <strong>{{ tenantData.dueDate }}</strong> via GCash or on-site cash payment.
+              <span v-if="dueDateCountdown.severity === 'paid'">
+                All monthly dues are paid! Next rent is due on <strong>{{ tenantData.nextDueDateDisplay }}</strong>.
+              </span>
+              <span v-else>
+                Monthly rent due on <strong>{{ tenantData.dueDate }}</strong> via GCash or on-site cash payment.
+              </span>
             </p>
           </div>
         </div>
@@ -365,10 +420,12 @@ async function handlePayOnline() {
               <strong class="text-[#172b4d]">{{ tenantData.moveInDate }}</strong>
             </div>
             <div>
-              <span class="text-[#6b778c] text-xs block mb-0.5">Payment Due Date</span>
+              <span class="text-[#6b778c] text-xs block mb-0.5">
+                {{ dueDateCountdown.severity === 'paid' ? 'Next Due Date' : 'Payment Due Date' }}
+              </span>
               <strong class="text-[#172b4d] flex items-center gap-1.5">
                 <Calendar class="w-3.5 h-3.5 text-[#0c66e4]" />
-                {{ tenantData.dueDate }}
+                {{ dueDateCountdown.severity === 'paid' ? tenantData.nextDueDateDisplay : tenantData.dueDate }}
               </strong>
             </div>
           </div>
@@ -404,11 +461,17 @@ async function handlePayOnline() {
               <span class="text-2xl font-bold text-[#0c66e4]">
                 ₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
               </span>
-              <span class="text-xs text-[#6b778c] block mt-0.5">Status: <strong>{{ tenantData.dueDaysRemaining }}</strong></span>
+              <span class="text-xs text-[#6b778c] block mt-0.5">
+                Status: <strong>{{ tenantData.dueDaysRemaining }}</strong>
+                <span v-if="dueDateCountdown.severity === 'paid' && tenantData.verifiedAt" class="text-emerald-700 font-bold ml-1">
+                  (Approved on {{ tenantData.verifiedAt }})
+                </span>
+              </span>
             </div>
             
             <div class="flex flex-wrap items-center gap-2.5">
               <button
+                v-if="dueDateCountdown.severity !== 'paid'"
                 @click="handlePayOnline"
                 :disabled="payingOnline"
                 class="px-5 py-2.5 bg-[#0c66e4] hover:bg-[#0052cc] text-white font-bold text-xs rounded-lg shadow-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
@@ -420,7 +483,7 @@ async function handlePayOnline() {
                 to="/tenant/payments"
                 class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5"
               >
-                <span>Manual Remittance</span>
+                <span>{{ dueDateCountdown.severity === 'paid' ? 'View Payment History' : 'Manual Remittance' }}</span>
               </router-link>
             </div>
           </div>

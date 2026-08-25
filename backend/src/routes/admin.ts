@@ -1115,6 +1115,67 @@ router.post(
 
     if (insertError) throw ApiError.internal(insertError.message);
 
+    // Sync: if this is recorded for an active tenant assignment, check and update their bills
+    if (assign?.tenant_profile_id) {
+      let remainingPayment = Number(rentAmount || 0) + Number(calcWater || 0);
+      
+      const { data: unpaidBills } = await db
+        .from('bills')
+        .select('id, total_amount, status')
+        .eq('tenant_profile_id', assign.tenant_profile_id)
+        .in('status', ['Due', 'Overdue', 'Pending'])
+        .order('due_date', { ascending: true });
+
+      if (unpaidBills && unpaidBills.length > 0) {
+        for (const bill of unpaidBills) {
+          const billAmount = Number(bill.total_amount);
+          if (remainingPayment >= billAmount) {
+            // Update bill status to Paid
+            await db
+              .from('bills')
+              .update({ status: 'Paid', updated_at: new Date().toISOString() })
+              .eq('id', bill.id);
+
+            // Record a payment entry for the tenant to see in their payment history
+            await db.from('payments').insert({
+              bill_id: bill.id,
+              room_id: room.id,
+              tenant_profile_id: assign.tenant_profile_id,
+              amount: billAmount,
+              payment_method: normalizedMethod,
+              payment_source: 'On-Site Cash',
+              verification_status: 'Verified',
+              transaction_reference: transactionReference || `CASH-REC-${Math.floor(100000 + Math.random() * 900000)}`,
+              paid_at: new Date(datePaid).toISOString(),
+              verified_at: new Date().toISOString(),
+              verified_by: req.user!.profileId,
+            });
+
+            remainingPayment -= billAmount;
+          } else {
+            break;
+          }
+        }
+      }
+
+      // If there is still remaining payment or no bills were found, insert it as an unlinked payment
+      if (remainingPayment > 0) {
+        await db.from('payments').insert({
+          bill_id: null,
+          room_id: room.id,
+          tenant_profile_id: assign.tenant_profile_id,
+          amount: remainingPayment,
+          payment_method: normalizedMethod,
+          payment_source: 'On-Site Cash',
+          verification_status: 'Verified',
+          transaction_reference: transactionReference || `CASH-REC-${Math.floor(100000 + Math.random() * 900000)}`,
+          paid_at: new Date(datePaid).toISOString(),
+          verified_at: new Date().toISOString(),
+          verified_by: req.user!.profileId,
+        });
+      }
+    }
+
     await auditFromRequest(req, {
       action: 'PAYMENT_RECORD',
       entityType: 'PAYMENT',
