@@ -111,12 +111,25 @@ function getStageIndex(status: string): number {
   return 0; // Submitted / just filed
 }
 
-function openTimeline(ticket: TicketRow) {
+async function openTimeline(ticket: TicketRow) {
   activeTimelineTicket.value = ticket;
-  // Seed mock notes based on ticket status for demonstration
   timelineNotes.value = seedNotesForTicket(ticket);
   newNoteText.value = '';
   isTimelineOpen.value = true;
+
+  try {
+    const msgs = await api.get<any[]>(`/tenant/tickets/${ticket.id}/messages`);
+    if (msgs && Array.isArray(msgs) && msgs.length > 0) {
+      timelineNotes.value = msgs.map((m) => ({
+        id: m.id,
+        author: m.profiles?.role === 'admin' ? 'Landlady Fe' : 'You (Resident)',
+        text: m.message_body,
+        timestamp: m.created_at,
+      }));
+    }
+  } catch {
+    // Fallback to seeded notes
+  }
 }
 
 function closeTimeline() {
@@ -154,24 +167,22 @@ function seedNotesForTicket(ticket: TicketRow): TicketNote[] {
 }
 
 async function postNote() {
-  if (!newNoteText.value.trim() || !activeTimelineTicket.value) return;
+  const text = newNoteText.value.trim();
+  if (!text || !activeTimelineTicket.value) return;
   savingNote.value = true;
   try {
-    // Attempt to persist to backend; gracefully degrade to local update.
-    try {
-      await api.post(`/tenant/tickets/${activeTimelineTicket.value.id}/notes`, {
-        text: newNoteText.value.trim(),
-      });
-    } catch {
-      // Offline / endpoint not yet wired — note is still added to the local timeline.
-    }
+    const res = await api.post<any>(`/tenant/tickets/${activeTimelineTicket.value.id}/messages`, {
+      message: text,
+    });
     timelineNotes.value.push({
-      id: `note-${Date.now()}`,
+      id: res?.id || `note-${Date.now()}`,
       author: 'You (Resident)',
-      text: newNoteText.value.trim(),
+      text: text,
       timestamp: new Date().toISOString(),
     });
     newNoteText.value = '';
+  } catch (err: any) {
+    console.error('Failed to post ticket comment:', err);
   } finally {
     savingNote.value = false;
   }

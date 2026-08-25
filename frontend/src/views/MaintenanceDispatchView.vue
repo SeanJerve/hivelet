@@ -142,6 +142,47 @@ function getStatusBadgeClass(s: string) {
   return 'badge-warning';
 }
 
+const ticketMessages = ref<any[]>([]);
+const loadingMessages = ref(false);
+const newAdminMessage = ref('');
+const sendingAdminMessage = ref(false);
+
+async function loadTicketMessages(ticketId: string) {
+  loadingMessages.value = true;
+  ticketMessages.value = [];
+  try {
+    const res = await api.get<any[]>(`/admin/tickets/${ticketId}/messages`);
+    if (res && Array.isArray(res)) {
+      ticketMessages.value = res;
+    }
+  } catch {
+    // Non-blocking
+  } finally {
+    loadingMessages.value = false;
+  }
+}
+
+async function handleSendAdminComment() {
+  const text = newAdminMessage.value.trim();
+  if (!text || !editingTicket.value) return;
+
+  sendingAdminMessage.value = true;
+  try {
+    const res = await api.post<any>(`/admin/tickets/${editingTicket.value.id}/messages`, {
+      message: text,
+    });
+    if (res) {
+      ticketMessages.value.push(res);
+      newAdminMessage.value = '';
+      showToast('success', 'Comment sent', 'Resident has been notified of your message.');
+    }
+  } catch (err: any) {
+    showToast('error', 'Failed to send comment', err?.message || 'Could not post message.');
+  } finally {
+    sendingAdminMessage.value = false;
+  }
+}
+
 function openEditModal(t: MaintenanceTicket) {
   editingTicket.value = t;
   editTitle.value = t.title;
@@ -151,7 +192,9 @@ function openEditModal(t: MaintenanceTicket) {
   editStatus.value = t.status;
   editTech.value = t.technician || 'Unassigned';
   editDesc.value = t.description;
+  newAdminMessage.value = '';
   isEditModalOpen.value = true;
+  loadTicketMessages(t.id);
 }
 
 async function handleCreateTicket() {
@@ -534,6 +577,63 @@ function handleDeleteTicketPrompt() {
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Description &amp; Repair Notes</label>
             <textarea v-model="editDesc" rows="3" class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs resize-none focus:border-[#f59e0b] focus:outline-none" placeholder="Details regarding the maintenance request..."></textarea>
+          </div>
+
+          <!-- Resident Communication Dialogue Stream -->
+          <div class="pt-3 border-t border-[#e7e5e4] space-y-2">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a]">
+              Resident Communication &amp; Follow-up Notes
+            </label>
+
+            <!-- Message Stream Box -->
+            <div class="max-h-36 overflow-y-auto rounded-xl border border-[#e7e5e4] bg-[#fafaf9] p-3 space-y-2 text-xs">
+              <div v-if="loadingMessages" class="py-2 text-center text-gray-400 text-[11px]">
+                Loading conversation thread...
+              </div>
+              <div v-else-if="ticketMessages.length === 0" class="py-2 text-center text-gray-400 text-[11px]">
+                No comments on this ticket yet.
+              </div>
+              <div
+                v-for="msg in ticketMessages"
+                :key="msg.id"
+                :class="['flex flex-col', msg.profiles?.role === 'admin' ? 'items-end' : 'items-start']"
+              >
+                <div
+                  :class="[
+                    'max-w-[85%] rounded-xl px-3 py-1.5 text-xs',
+                    msg.profiles?.role === 'admin'
+                      ? 'bg-[#1e2532] text-white'
+                      : 'bg-white border border-[#e7e5e4] text-[#1c1917]'
+                  ]"
+                >
+                  <p class="font-bold text-[10px] opacity-75 mb-0.5">
+                    {{ msg.profiles?.role === 'admin' ? 'You (Landlady)' : (msg.profiles?.full_name || 'Resident') }}
+                  </p>
+                  <p>{{ msg.message_body }}</p>
+                  <p class="text-[9px] opacity-60 text-right mt-0.5">
+                    {{ new Date(msg.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Comment Box -->
+            <div class="flex gap-2">
+              <input
+                v-model="newAdminMessage"
+                @keydown.enter.prevent="handleSendAdminComment"
+                placeholder="Type a follow-up comment for the resident…"
+                class="flex-1 px-3 py-1.5 border border-[#e7e5e4] rounded-xl text-xs bg-white focus:border-[#f59e0b] focus:outline-none"
+              />
+              <button
+                type="button"
+                @click="handleSendAdminComment"
+                :disabled="sendingAdminMessage || !newAdminMessage.trim()"
+                class="px-3 py-1.5 bg-[#1e2532] text-white rounded-xl text-xs font-semibold hover:bg-[#2b3648] disabled:opacity-50 cursor-pointer"
+              >
+                Send
+              </button>
+            </div>
           </div>
 
           <!-- Modal Action Footer -->
