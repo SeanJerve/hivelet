@@ -202,13 +202,14 @@ async function fetchTenantData() {
       tenantData.value.nextDueDateDisplay = '';
     } else {
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
-      if (maxCoveredDate) {
+      const validCoveredDate = maxCoveredDate as Date | null;
+      if (validCoveredDate) {
         tenantData.value.baseRent = paidBill ? paidBill.rent_amount : tenantData.value.baseRent;
         tenantData.value.waterFee = paidBill ? paidBill.water_amount : tenantData.value.waterFee;
         tenantData.value.totalAmountDue = 0;
 
         // Represent the paid period by the 5th of that covered month
-        const lastPaidDue = new Date(maxCoveredDate.getFullYear(), maxCoveredDate.getMonth(), 5);
+        const lastPaidDue = new Date(validCoveredDate.getFullYear(), validCoveredDate.getMonth(), 5);
         tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         tenantData.value.dueBadgeText = 'PAID';
         tenantData.value.dueDaysRemaining = 'Settled';
