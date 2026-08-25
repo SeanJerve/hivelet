@@ -178,7 +178,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
         <button
           @click="fetchRooms"
           :disabled="isLoading"
-          class="btn-secondary min-h-10 px-3.5 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+          class="btn-secondary"
           title="Refresh rooms from database"
         >
           <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />

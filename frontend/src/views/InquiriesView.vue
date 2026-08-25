@@ -77,7 +77,7 @@ async function handleSendReply() {
       <button
         @click="fetchInquiries"
         :disabled="isLoading"
-        class="btn-secondary min-h-11 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs self-start sm:self-auto cursor-pointer"
+        class="btn-secondary"
       >
         <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
         <span>Refresh</span>
@@ -148,7 +148,7 @@ async function handleSendReply() {
         <div class="flex gap-2 pt-2 border-t border-[#e7e5e4]">
           <button
             @click="selectedInquiry = inq"
-            class="btn-secondary min-h-10 flex-1 gap-1.5 text-xs inline-flex items-center justify-center shadow-xs cursor-pointer"
+            class="btn-secondary w-full"
           >
             <MessageSquare class="size-3.5 text-[#71717a]" />
             <span>Reply</span>
@@ -187,8 +187,8 @@ async function handleSendReply() {
           </div>
 
           <div class="pt-2 flex justify-end gap-2">
-            <button type="button" @click="selectedInquiry = null" class="btn-secondary cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="btn-primary gap-1.5 cursor-pointer disabled:opacity-50">
+            <button type="button" @click="selectedInquiry = null" class="btn-secondary">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="btn-primary">
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
               <Send v-else class="size-3.5" />
               <span>Send Reply</span>

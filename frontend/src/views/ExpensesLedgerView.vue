@@ -569,7 +569,7 @@ function exportFilteredExpenses() {
         <button
           @click="fetchExpenses"
           :disabled="isLoading"
-          class="btn-secondary min-h-11 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+          class="btn-secondary"
         >
           <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
@@ -577,9 +577,9 @@ function exportFilteredExpenses() {
 
         <button 
           @click="isAddOpen = true"
-          class="btn-primary min-h-11 gap-2 text-xs shadow-xs cursor-pointer"
+          class="btn-primary"
         >
-          <Plus class="size-4 text-[#f59e0b]" />
+          <Plus class="size-3.5 text-[#f59e0b]" />
           <span>Record Expense</span>
         </button>
       </div>
@@ -888,16 +888,16 @@ function exportFilteredExpenses() {
             <button 
               type="button" 
               @click="addFormEntry" 
-              class="btn-secondary text-xs flex items-center gap-1.5 bg-white border border-[#e7e5e4] hover:bg-[#fafaf9] px-4 py-2 font-semibold cursor-pointer"
+              class="btn-secondary"
             >
-              <Plus class="w-3.5 h-3.5 text-[#f59e0b]" />
+              <Plus class="size-3.5 text-[#f59e0b]" />
               <span>Add Another Item</span>
             </button>
 
             <div class="flex items-center gap-2">
-              <button type="button" @click="isAddOpen = false" class="btn-secondary cursor-pointer">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="btn-primary cursor-pointer disabled:opacity-50 min-w-[100px]">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1 inline" />
+              <button type="button" @click="isAddOpen = false" class="btn-secondary">Cancel</button>
+              <button type="submit" :disabled="isSubmitting" class="btn-primary min-w-[100px]">
+                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
                 <span>Save Entries</span>
               </button>
             </div>

@@ -283,9 +283,9 @@ async function handleSave() {
                 type="button"
                 @click="triggerFileInput"
                 :disabled="isUploadingPhoto"
-                class="btn-secondary min-h-9 px-4 py-1.5 text-xs font-bold gap-2 inline-flex items-center shrink-0 shadow-xs cursor-pointer hover:border-[#0c66e4] hover:text-[#0c66e4] active:scale-95 transition-all"
+                class="btn-secondary shrink-0"
               >
-                <Upload class="size-4" />
+                <Upload class="size-3.5" />
                 <span>Upload Photo</span>
               </button>
             </div>
@@ -423,7 +423,7 @@ async function handleSave() {
           <button
             type="button"
             @click="closeModal"
-            class="btn-secondary min-h-11 px-5 text-xs font-semibold cursor-pointer"
+            class="btn-secondary"
           >
             Cancel
           </button>
@@ -431,10 +431,10 @@ async function handleSave() {
           <button
             type="submit"
             :disabled="isSaving"
-            class="btn-primary min-h-11 px-6 text-xs font-bold gap-1.5 inline-flex items-center shadow-xs cursor-pointer disabled:opacity-50"
+            class="btn-primary"
           >
-            <Loader2 v-if="isSaving" class="size-4 animate-spin" />
-            <Check v-else class="size-4 text-[#f59e0b]" />
+            <Loader2 v-if="isSaving" class="size-3.5 animate-spin" />
+            <Check v-else class="size-3.5 text-white" />
             <span>{{ isSaving ? 'Saving…' : 'Save Changes' }}</span>
           </button>
         </div>

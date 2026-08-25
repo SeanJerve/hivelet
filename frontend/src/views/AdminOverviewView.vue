@@ -291,10 +291,10 @@ const urgentTickets = computed(() => {
         <button 
           @click="refreshAllData"
           :disabled="isRefreshing"
-          class="btn-secondary min-h-11 gap-2 text-xs cursor-pointer shadow-xs"
+          class="btn-secondary"
           title="Refresh Data from Database"
         >
-          <RefreshCw :class="['size-4 text-[#71717a]', isRefreshing && 'animate-spin']" />
+          <RefreshCw :class="['size-3.5 text-[#71717a]', isRefreshing && 'animate-spin']" />
           <span>Sync DB</span>
         </button>
       </div>
@@ -368,7 +368,7 @@ const urgentTickets = computed(() => {
     </div>
 
     <!-- 12-MONTH YEARLY INCOME LINE CHART -->
-    <div class="surface-card overflow-hidden rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs">
+    <div class="surface-card relative rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs">
       <!-- Chart Title & KPI Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#e7e5e4] pb-5">
         <div>
@@ -507,10 +507,18 @@ const urgentTickets = computed(() => {
         <!-- Dynamic Floating Tooltip on Hover -->
         <div 
           v-if="hoveredMonthIndex !== null && chartPoints[hoveredMonthIndex]"
-          class="absolute pointer-events-none z-20 top-2 bg-[#1c1917] text-white p-3 rounded-xl shadow-xl text-xs space-y-1 transition-all duration-150 whitespace-nowrap"
+          class="absolute pointer-events-none z-50 top-1 bg-[#1c1917] text-white p-3 rounded-xl shadow-2xl border border-neutral-700/80 text-xs space-y-1 transition-all duration-150 whitespace-nowrap"
           :style="{
-            left: `${((hoveredMonthIndex + 0.5) / 12) * 100}%`,
-            transform: 'translateX(-50%)'
+            left: hoveredMonthIndex <= 1 
+              ? `${((hoveredMonthIndex + 0.5) / 12) * 100}%` 
+              : hoveredMonthIndex >= 10 
+                ? `${((hoveredMonthIndex + 0.5) / 12) * 100}%` 
+                : `${((hoveredMonthIndex + 0.5) / 12) * 100}%`,
+            transform: hoveredMonthIndex === 0 
+              ? 'translateX(0%)' 
+              : hoveredMonthIndex === 11 
+                ? 'translateX(-100%)' 
+                : 'translateX(-50%)'
           }"
         >
           <div class="flex items-center justify-between gap-3 border-b border-neutral-700 pb-1">

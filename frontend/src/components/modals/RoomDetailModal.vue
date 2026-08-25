@@ -110,11 +110,11 @@ function handleInquireDirectly() {
       </div>
 
       <div class="p-4 px-6 border-t border-[#e7e5e4] flex items-center justify-between">
-        <button @click="closeModal" class="btn-secondary text-xs px-4">
+        <button @click="closeModal" class="btn-secondary">
           Close
         </button>
-        <button @click="handleInquireDirectly" class="btn-primary text-xs px-5 flex items-center gap-1.5">
-          <MessageSquare class="w-3.5 h-3.5 text-[#f59e0b]" />
+        <button @click="handleInquireDirectly" class="btn-primary">
+          <MessageSquare class="size-3.5 text-[#f59e0b]" />
           <span>Inquire to Landlady</span>
         </button>
       </div>

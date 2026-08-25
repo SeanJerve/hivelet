@@ -58,10 +58,10 @@ const emit = defineEmits<{
           <span class="font-bold text-[#1c1917]">Notice:</span> This action will update the system state and audit logs immediately.
         </div>
 
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#e7e5e4]">
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#e7e5e4]">
           <button 
             @click="emit('cancel')" 
-            class="btn-secondary px-4 text-xs"
+            class="btn-secondary"
           >
             {{ cancelText }}
           </button>
@@ -69,11 +69,10 @@ const emit = defineEmits<{
           <button 
             @click="emit('confirm')" 
             :class="[
-              'text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-xs',
               variant === 'danger' 
-                ? 'bg-rose-600 text-white hover:bg-rose-700' 
+                ? 'btn-danger-solid' 
                 : variant === 'warning'
-                  ? 'bg-amber-600 text-white hover:bg-amber-700'
+                  ? 'btn-primary bg-amber-600 hover:bg-amber-700'
                   : 'btn-primary'
             ]"
           >

@@ -210,7 +210,7 @@ async function handleOnboard() {
         <button
           @click="fetchTenants"
           :disabled="isLoading"
-          class="btn-secondary min-h-11 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+          class="btn-secondary"
         >
           <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
@@ -218,9 +218,9 @@ async function handleOnboard() {
 
         <button 
           @click="isOnboardModalOpen = true"
-          class="btn-primary min-h-11 gap-2 text-xs shadow-xs cursor-pointer"
+          class="btn-primary"
         >
-          <UserPlus class="size-4 text-[#f59e0b]" />
+          <UserPlus class="size-3.5 text-[#f59e0b]" />
           <span>Onboard Tenant</span>
         </button>
       </div>
@@ -493,17 +493,17 @@ async function handleOnboard() {
             <button 
               type="button" 
               @click="openVacateFromModal(editModalTenant)" 
-              class="btn-secondary min-h-9 px-3 py-1.5 text-xs text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300 gap-1.5 inline-flex items-center cursor-pointer"
+              class="btn-danger"
             >
               <LogOut class="size-3.5" />
               <span>Vacate Unit</span>
             </button>
 
             <div class="flex items-center gap-2">
-              <button type="button" @click="editModalTenant = null" class="btn-secondary min-h-9 px-3.5 py-1.5 text-xs cursor-pointer">
+              <button type="button" @click="editModalTenant = null" class="btn-secondary">
                 Cancel
               </button>
-              <button type="submit" :disabled="isSubmitting" class="btn-primary min-h-9 px-4 py-1.5 text-xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5">
+              <button type="submit" :disabled="isSubmitting" class="btn-primary">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
                 <Check v-else class="size-3.5" />
                 <span>Save Changes</span>
@@ -529,8 +529,8 @@ async function handleOnboard() {
           This closes the account of <strong>{{ vacateModalTenant.name }}</strong> and marks unit <strong>{{ vacateModalTenant.unitCode }}</strong> as vacant. Deposit settlement will be logged.
         </p>
         <div class="pt-2 flex justify-end gap-2">
-          <button type="button" @click="vacateModalTenant = null" class="btn-secondary cursor-pointer">Cancel</button>
-          <button type="button" :disabled="isSubmitting" @click="confirmVacate" class="btn-primary bg-rose-600 hover:bg-rose-700 cursor-pointer disabled:opacity-50">
+          <button type="button" @click="vacateModalTenant = null" class="btn-secondary">Cancel</button>
+          <button type="button" :disabled="isSubmitting" @click="confirmVacate" class="btn-danger-solid">
             <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
             <span>Settle Vacancy</span>
           </button>
@@ -623,9 +623,9 @@ async function handleOnboard() {
           </div>
 
           <div class="sm:col-span-2 pt-2 flex justify-end gap-2">
-            <button type="button" @click="isOnboardModalOpen = false" class="btn-secondary cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="btn-primary cursor-pointer disabled:opacity-50">
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
+            <button type="button" @click="isOnboardModalOpen = false" class="btn-secondary">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="btn-primary">
+              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
               <span>Onboard Tenant</span>
             </button>
           </div>

@@ -338,8 +338,8 @@ function triggerRecord() {
         </div>
 
         <div class="pt-3 border-t border-[#e7e5e4] flex justify-end gap-3">
-          <button type="button" @click="closeModal" class="btn-secondary px-5 cursor-pointer">Cancel</button>
-          <button type="submit" :disabled="isSubmitting" class="btn-primary px-6 flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
+          <button type="button" @click="closeModal" class="btn-secondary">Cancel</button>
+          <button type="submit" :disabled="isSubmitting" class="btn-primary">
             <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
             <Check v-else class="size-3.5" />
             <span>{{ isSubmitting ? 'Recording…' : 'Record Payment' }}</span>

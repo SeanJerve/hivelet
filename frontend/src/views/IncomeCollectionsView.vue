@@ -496,7 +496,7 @@ function exportCSV() {
         <button
           @click="fetchIncome"
           :disabled="isLoading"
-          class="btn-secondary min-h-11 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+          class="btn-secondary"
         >
           <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
@@ -504,17 +504,17 @@ function exportCSV() {
 
         <button 
           @click="exportCSV"
-          class="btn-secondary min-h-11 px-3.5 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+          class="btn-secondary"
         >
-          <Download class="size-4 text-[#71717a]" />
+          <Download class="size-3.5 text-[#71717a]" />
           <span>Export Excel CSV</span>
         </button>
 
         <button 
           @click="isOnsitePaymentModalOpen = true"
-          class="btn-primary min-h-11 gap-2 text-xs shadow-xs cursor-pointer"
+          class="btn-primary"
         >
-          <Plus class="size-4 text-[#f59e0b]" />
+          <Plus class="size-3.5 text-[#f59e0b]" />
           <span>Record On-Site Payment</span>
         </button>
       </div>
@@ -933,15 +933,15 @@ function exportCSV() {
             <button 
               type="button" 
               @click="handleDeleteFromModal" 
-              class="btn-secondary text-rose-700 hover:bg-rose-50 hover:border-rose-300 px-3.5 py-2 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+              class="btn-danger"
             >
-              <Trash2 class="size-3.5 text-rose-600" />
+              <Trash2 class="size-3.5" />
               <span>Delete Record</span>
             </button>
 
             <div class="flex items-center gap-2">
-              <button type="button" @click="isEditOpen = false" class="btn-secondary px-4 py-2 text-xs cursor-pointer">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="btn-primary px-5 py-2 text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
+              <button type="button" @click="isEditOpen = false" class="btn-secondary">Cancel</button>
+              <button type="submit" :disabled="isSubmitting" class="btn-primary">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
                 <Check v-else class="size-3.5" />
                 <span>Update Collection</span>

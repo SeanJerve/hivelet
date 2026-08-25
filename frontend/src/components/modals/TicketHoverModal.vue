@@ -84,11 +84,12 @@ function handleResolve() {
         <span v-if="activeHoverTicket.status === 'Resolved'" class="badge-soft badge-success px-3 py-1 text-xs font-bold">
           ✓ Resolved
         </span>
-        <button v-else @click="handleResolve" class="btn-primary text-xs px-5 flex items-center gap-1.5">
-          <CheckCircle2 class="size-3.5" /> Close &amp; Resolve Ticket
+        <button v-else @click="handleResolve" class="btn-primary">
+          <CheckCircle2 class="size-3.5" />
+          <span>Close &amp; Resolve Ticket</span>
         </button>
 
-        <button @click="closeModal" class="btn-secondary text-xs px-4">Close Window</button>
+        <button @click="closeModal" class="btn-secondary">Close Window</button>
       </div>
     </div>
   </div>

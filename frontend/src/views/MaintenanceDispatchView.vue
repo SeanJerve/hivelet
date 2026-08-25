@@ -297,7 +297,7 @@ function handleDeleteTicketPrompt() {
         <button
           @click="fetchTickets"
           :disabled="isLoading"
-          class="btn-secondary min-h-11 px-3.5 py-1.5 text-xs gap-2 inline-flex items-center shadow-xs cursor-pointer hover:bg-[#f4f5f7] transition-colors"
+          class="btn-secondary"
           title="Refresh Maintenance Data"
         >
           <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin text-[#0c66e4]' : '']" />
@@ -597,7 +597,7 @@ function handleDeleteTicketPrompt() {
                 type="button"
                 @click="handleSendAdminComment"
                 :disabled="sendingAdminMessage || !newAdminMessage.trim()"
-                class="px-3 py-1.5 bg-[#1e2532] text-white rounded-xl text-xs font-semibold hover:bg-[#2b3648] disabled:opacity-50 cursor-pointer"
+                class="btn-primary shrink-0"
               >
                 Send
               </button>
@@ -609,15 +609,15 @@ function handleDeleteTicketPrompt() {
             <button 
               type="button" 
               @click="handleDeleteTicketPrompt" 
-              class="btn-secondary text-rose-700 hover:bg-rose-50 hover:border-rose-300 px-3.5 py-2 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+              class="btn-danger"
             >
-              <Trash2 class="size-3.5 text-rose-600" />
+              <Trash2 class="size-3.5" />
               <span>Delete Ticket</span>
             </button>
 
             <div class="flex items-center gap-2">
-              <button type="button" @click="isEditModalOpen = false" class="btn-secondary px-4 py-2 text-xs cursor-pointer">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="btn-primary px-5 py-2 text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
+              <button type="button" @click="isEditModalOpen = false" class="btn-secondary">Cancel</button>
+              <button type="submit" :disabled="isSubmitting" class="btn-primary">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
                 <Check v-else class="size-3.5" />
                 <span>Save Changes</span>
@@ -650,14 +650,14 @@ function handleDeleteTicketPrompt() {
           <button 
             type="button" 
             @click="isConfirmOpen = false" 
-            class="btn-secondary cursor-pointer min-w-[100px]"
+            class="btn-secondary min-w-[100px]"
           >
             Cancel
           </button>
           <button 
             type="button" 
             @click="handleConfirmAccept" 
-            class="btn-primary cursor-pointer min-w-[100px]"
+            class="btn-primary min-w-[100px]"
           >
             Confirm
           </button>
