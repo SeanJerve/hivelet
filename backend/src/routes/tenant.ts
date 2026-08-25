@@ -139,7 +139,7 @@ const ticketSchema = z.object({
   category: z.string().min(2).max(60),
   priority: z.enum(['Emergency', 'High', 'Medium', 'Low']),
   attachments: z
-    .array(z.object({ fileUrl: z.string().url(), fileType: z.string().max(80).optional() }))
+    .array(z.object({ fileUrl: z.string().min(1), fileType: z.string().max(80).optional() }))
     .max(10)
     .optional(),
 });

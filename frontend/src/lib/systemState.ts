@@ -567,7 +567,7 @@ export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
           description: t.description || '',
           technician: t.assigned_technician || 'Unassigned',
           status: statusMapped,
-          photo: t.ticket_attachments?.[0]?.file_url || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=70',
+          photo: t.ticket_attachments?.[0]?.file_url || null,
           tenantName: t.profiles?.full_name || 'Resident',
           tenantProfileId: t.tenant_profile_id
         };

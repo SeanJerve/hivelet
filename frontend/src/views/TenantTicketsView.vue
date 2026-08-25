@@ -249,12 +249,17 @@ async function handleTicketSubmit() {
   try {
     if (activeRoomId.value) {
       try {
+        const attachments = ticketPhotoUrl.value
+          ? [{ fileUrl: ticketPhotoUrl.value, fileType: 'image/png' }]
+          : undefined;
+
         await api.post('/tenant/tickets', {
           roomId: activeRoomId.value,
           title: ticketTitle.value.trim(),
           description: ticketDescription.value.trim(),
           category: ticketCategory.value,
           priority: ticketPriority.value,
+          attachments,
         });
       } catch {
         // Fallback for offline mode

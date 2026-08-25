@@ -69,6 +69,15 @@ function handleResolve() {
             "{{ activeHoverTicket.description }}"
           </p>
         </div>
+
+        <div v-if="activeHoverTicket.photo" class="space-y-1">
+          <p class="font-bold text-[#71717a] text-[10px] uppercase">Resident Photo Attachment</p>
+          <div class="rounded-xl border border-[#e7e5e4] p-2 bg-[#fafaf9] flex flex-col items-center">
+            <a :href="activeHoverTicket.photo" target="_blank" rel="noopener noreferrer" class="block overflow-hidden rounded-lg">
+              <img :src="activeHoverTicket.photo" alt="Attached photo" class="max-h-48 w-auto object-contain rounded-lg shadow-xs" />
+            </a>
+          </div>
+        </div>
       </div>
 
       <div class="p-4 px-6 border-t border-[#e7e5e4] flex justify-between items-center">

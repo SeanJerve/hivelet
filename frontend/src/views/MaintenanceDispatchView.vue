@@ -30,15 +30,6 @@ const statusFilter = ref('All');
 const isLoading = ref(false);
 const isSubmitting = ref(false);
 
-// Create Ticket Form State
-const isCreateOpen = ref(false);
-const unit = ref('1a');
-const title = ref('');
-const category = ref('Plumbing');
-const priority = ref<'Low' | 'Medium' | 'High' | 'Emergency'>('Medium');
-const desc = ref('');
-const createTech = ref('Unassigned');
-
 // Edit / Manage Ticket Modal State
 const isEditModalOpen = ref(false);
 const editingTicket = ref<MaintenanceTicket | null>(null);
@@ -197,34 +188,6 @@ function openEditModal(t: MaintenanceTicket) {
   loadTicketMessages(t.id);
 }
 
-async function handleCreateTicket() {
-  isSubmitting.value = true;
-  try {
-    try {
-      await api.post('/admin/tickets', {
-        roomNumber: unit.value.toUpperCase(),
-        title: title.value,
-        description: desc.value,
-        category: category.value,
-        priority: priority.value,
-        assignedTechnician: createTech.value,
-        status: 'Submitted',
-        setRoomMaintenance: priority.value === 'Emergency' || priority.value === 'High',
-      });
-    } catch (err) {
-      console.warn('Backend ticket insert fallback:', err);
-    }
-
-    await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
-    isCreateOpen.value = false;
-    title.value = '';
-    desc.value = '';
-    showToast('success', 'Maintenance ticket created', `Created ticket for Unit ${unit.value.toUpperCase()}.`);
-  } finally {
-    isSubmitting.value = false;
-  }
-}
-
 async function handleSaveEditTicket() {
   if (!editingTicket.value) return;
   isSubmitting.value = true;
@@ -334,19 +297,11 @@ function handleDeleteTicketPrompt() {
         <button
           @click="fetchTickets"
           :disabled="isLoading"
-          class="btn-secondary min-h-11 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+          class="btn-secondary min-h-11 px-3.5 py-1.5 text-xs gap-2 inline-flex items-center shadow-xs cursor-pointer hover:bg-[#f4f5f7] transition-colors"
           title="Refresh Maintenance Data"
         >
-          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
-          <span>Refresh</span>
-        </button>
-
-        <button 
-          @click="isCreateOpen = true"
-          class="btn-primary min-h-11 gap-2 text-xs shadow-xs cursor-pointer"
-        >
-          <Plus class="size-4 text-[#f59e0b]" />
-          <span>New Ticket</span>
+          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin text-[#0c66e4]' : '']" />
+          <span class="font-bold">{{ isLoading ? 'Refreshing Table…' : 'Refresh Table' }}</span>
         </button>
       </div>
     </div>
@@ -579,6 +534,19 @@ function handleDeleteTicketPrompt() {
             <textarea v-model="editDesc" rows="3" class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs resize-none focus:border-[#f59e0b] focus:outline-none" placeholder="Details regarding the maintenance request..."></textarea>
           </div>
 
+          <!-- Resident Photo Attachment (if present) -->
+          <div v-if="editingTicket?.photo" class="space-y-1.5 pt-2 border-t border-[#e7e5e4]">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a]">
+              Resident Photo Attachment
+            </label>
+            <div class="rounded-xl border border-[#e7e5e4] p-3 bg-[#fafaf9] flex flex-col items-center">
+              <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
+                <img :src="editingTicket.photo" alt="Ticket Attachment" class="max-h-52 w-auto object-contain rounded-lg shadow-xs transition-transform group-hover:scale-102" />
+                <span class="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded font-medium">Click to view original</span>
+              </a>
+            </div>
+          </div>
+
           <!-- Resident Communication Dialogue Stream -->
           <div class="pt-3 border-t border-[#e7e5e4] space-y-2">
             <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a]">
@@ -655,84 +623,6 @@ function handleDeleteTicketPrompt() {
                 <span>Save Changes</span>
               </button>
             </div>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Create Ticket Dialog -->
-    <div 
-      v-if="isCreateOpen" 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
-      @click.self="isCreateOpen = false"
-    >
-      <div class="surface-card w-full max-w-md shadow-2xl rounded-2xl p-6 bg-white space-y-4 my-6">
-        <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
-          <div class="flex items-center gap-2">
-            <Plus class="size-5 text-[#f59e0b]" />
-            <h3 class="font-display font-extrabold text-lg text-[#1c1917]">New Maintenance Work Order</h3>
-          </div>
-          <button @click="isCreateOpen = false" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer">
-            <X class="size-5" />
-          </button>
-        </div>
-
-        <form @submit.prevent="handleCreateTicket" class="space-y-4 text-xs">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Unit</label>
-              <select v-model="unit" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold bg-white focus:border-[#f59e0b] focus:outline-none" required>
-                <option v-for="r in rooms" :key="r.id" :value="r.unitCode.toLowerCase()">
-                  {{ r.unitCode.toUpperCase() }} ({{ r.cluster }})
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Priority</label>
-              <select v-model="priority" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white font-bold focus:border-[#f59e0b] focus:outline-none" required>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Emergency">Emergency</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Category</label>
-            <select v-model="category" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white focus:border-[#f59e0b] focus:outline-none" required>
-              <option value="Plumbing">Plumbing</option>
-              <option value="Electrical">Electrical</option>
-              <option value="Carpentry">Carpentry</option>
-              <option value="Aircon / HVAC">Aircon / HVAC</option>
-              <option value="Appliances">Appliances</option>
-              <option value="General">General</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Issue Title</label>
-            <input v-model="title" placeholder="e.g. Bathroom sink water leak" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm focus:border-[#f59e0b] focus:outline-none" required />
-          </div>
-
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Assign Technician</label>
-            <select v-model="createTech" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white focus:border-[#f59e0b] focus:outline-none">
-              <option v-for="tech in TECHNICIANS" :key="tech" :value="tech">{{ tech }}</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Description</label>
-            <textarea v-model="desc" rows="3" placeholder="Provide details regarding the required repair..." class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs resize-none focus:border-[#f59e0b] focus:outline-none" required></textarea>
-          </div>
-
-          <div class="pt-2 flex justify-end gap-2">
-            <button type="button" @click="isCreateOpen = false" class="btn-secondary cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="btn-primary cursor-pointer disabled:opacity-50">
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
-              <span>Create Work Order</span>
-            </button>
           </div>
         </form>
       </div>
