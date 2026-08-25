@@ -914,6 +914,23 @@ router.patch(
       const year = datePaid.getFullYear();
       const month = datePaid.getMonth() + 1;
 
+      let rentPeriodStart = billData?.billing_period_start;
+      let rentPeriodEnd = billData?.billing_period_end;
+
+      if (!rentPeriodStart || !rentPeriodEnd) {
+        const y = datePaid.getFullYear();
+        const m = datePaid.getMonth();
+        const d = datePaid.getDate();
+
+        if (d >= 26) {
+          rentPeriodStart = new Date(Date.UTC(y, m, 26)).toISOString().split('T')[0];
+          rentPeriodEnd = new Date(Date.UTC(y, m + 1, 25)).toISOString().split('T')[0];
+        } else {
+          rentPeriodStart = new Date(Date.UTC(y, m - 1, 26)).toISOString().split('T')[0];
+          rentPeriodEnd = new Date(Date.UTC(y, m, 25)).toISOString().split('T')[0];
+        }
+      }
+
       // Check if income record already exists for this transaction reference
       const { data: existingIncome } = await db
         .from('monthly_income_records')
@@ -922,7 +939,7 @@ router.patch(
         .maybeSingle();
 
       if (!existingIncome && before.transaction_reference) {
-        await db.from('monthly_income_records').insert({
+        const { error: insertError } = await db.from('monthly_income_records').insert({
           room_id: before.room_id,
           tenant_profile_id: before.tenant_profile_id,
           assignment_id: assignment?.id || null,
@@ -931,16 +948,18 @@ router.patch(
           date_paid: datePaid.toISOString().split('T')[0],
           contact_name: tenantProfile?.full_name || 'Online Resident',
           invoice_number: before.transaction_reference,
-          rent_period_start: billData?.billing_period_start || null,
-          rent_period_end: billData?.billing_period_end || null,
+          rent_period_start: rentPeriodStart,
+          rent_period_end: rentPeriodEnd,
           rent_amount: rentAmount,
-          fifty_percent_share: fiftyPercentShare,
           occupants: occupants,
           water_payment: waterAmount,
-          remitted_amount: before.amount,
-          payment_method: 'Online',
+          payment_method: 'GCash',
           transaction_reference: before.transaction_reference,
         });
+
+        if (insertError) {
+          throw ApiError.internal(`Failed to insert monthly income record: ${insertError.message}`);
+        }
       }
 
       // Notify the tenant that their payment is settled
@@ -1096,6 +1115,67 @@ router.post(
       .single();
 
     if (insertError) throw ApiError.internal(insertError.message);
+
+    // Sync: if this is recorded for an active tenant assignment, check and update their bills
+    if (assign?.tenant_profile_id) {
+      let remainingPayment = Number(rentAmount || 0) + Number(calcWater || 0);
+      
+      const { data: unpaidBills } = await db
+        .from('bills')
+        .select('id, total_amount, status')
+        .eq('tenant_profile_id', assign.tenant_profile_id)
+        .in('status', ['Due', 'Overdue', 'Pending'])
+        .order('due_date', { ascending: true });
+
+      if (unpaidBills && unpaidBills.length > 0) {
+        for (const bill of unpaidBills) {
+          const billAmount = Number(bill.total_amount);
+          if (remainingPayment >= billAmount) {
+            // Update bill status to Paid
+            await db
+              .from('bills')
+              .update({ status: 'Paid', updated_at: new Date().toISOString() })
+              .eq('id', bill.id);
+
+            // Record a payment entry for the tenant to see in their payment history
+            await db.from('payments').insert({
+              bill_id: bill.id,
+              room_id: room.id,
+              tenant_profile_id: assign.tenant_profile_id,
+              amount: billAmount,
+              payment_method: normalizedMethod,
+              payment_source: 'On-Site Cash',
+              verification_status: 'Verified',
+              transaction_reference: transactionReference || `CASH-REC-${Math.floor(100000 + Math.random() * 900000)}`,
+              paid_at: new Date(datePaid).toISOString(),
+              verified_at: new Date().toISOString(),
+              verified_by: req.user!.profileId,
+            });
+
+            remainingPayment -= billAmount;
+          } else {
+            break;
+          }
+        }
+      }
+
+      // If there is still remaining payment or no bills were found, insert it as an unlinked payment
+      if (remainingPayment > 0) {
+        await db.from('payments').insert({
+          bill_id: null,
+          room_id: room.id,
+          tenant_profile_id: assign.tenant_profile_id,
+          amount: remainingPayment,
+          payment_method: normalizedMethod,
+          payment_source: 'On-Site Cash',
+          verification_status: 'Verified',
+          transaction_reference: transactionReference || `CASH-REC-${Math.floor(100000 + Math.random() * 900000)}`,
+          paid_at: new Date(datePaid).toISOString(),
+          verified_at: new Date().toISOString(),
+          verified_by: req.user!.profileId,
+        });
+      }
+    }
 
     await auditFromRequest(req, {
       action: 'PAYMENT_RECORD',
