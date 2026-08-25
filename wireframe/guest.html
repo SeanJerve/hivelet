@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hivelet — Boarding House & Guest Booking Portal</title>
+  <meta name="description" content="Discover affordable studio, 1-bedroom, 2-bedroom and 3-bedroom boarding house units at Fe Galang Da Silva Boarding House in Bulacan.">
+  <link rel="stylesheet" href="guest.css">
+</head>
+<body class="gate-locked">
+
+  <!-- ====================================================================
+       INITIAL FULLSCREEN WELCOME GATE WITH FLOATING PILL TICKER SCROLLING RIGHT
+       ==================================================================== -->
+  <div class="welcome-gate-screen" id="welcome-gate">
+    
+    <div class="gate-center-content">
+      <div class="gate-badge">
+        <span>🐝</span> FE GALANG DA SILVA BOARDING HOUSE
+      </div>
+
+      <h1 class="gate-title">
+        Welcome to Your<br>Next Home.
+      </h1>
+
+      <p class="gate-subtitle">
+        Discover clean, comfortable Studio, 1-Bedroom, 2-Bedroom, and 3-Bedroom units in Bulacan with private bathrooms &amp; transparent sub-metered utilities.
+      </p>
+
+      <button class="btn-inquire-gate" onclick="unlockWelcomeGate()">
+        Inquire Now ✨
+      </button>
+    </div>
+
+    <!-- COMPACT FLOATING PILL TICKER SCROLLING RIGHT -->
+    <div class="gate-floating-ticker">
+      <div class="gate-ticker-track" id="ticker-track">
+        <!-- Dynamically shuffled and rendered by guest.js -->
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ====================================================================
+       TOP NAVIGATION BAR
+       ==================================================================== -->
+  <header class="navbar">
+    <div class="container nav-container">
+      
+      <!-- BRAND LOGO WITH YELLOW BADGE inspired by reference header -->
+      <a href="#hero" class="brand-logo">
+        <span class="logo-badge">🐝</span>
+        <span>Hivelet</span>
+      </a>
+
+      <!-- NAV LINKS -->
+      <ul class="nav-links">
+        <li><a href="#hero" class="nav-link active">Home</a></li>
+        <li><a href="#highlights" class="nav-link">Features</a></li>
+        <li><a href="#rooms" class="nav-link">Available Units</a></li>
+        <li><a href="#rules" class="nav-link">House Rules</a></li>
+      </ul>
+
+      <!-- NAV ACTIONS WITH GUEST AUTH (SIGN UP / LOG IN) -->
+      <div class="nav-actions">
+        <div id="nav-auth-container">
+          <button class="btn-yellow" onclick="openGuestAuthModal('login')">Log in / Sign up</button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- ====================================================================
+       HERO SECTION — MATCHING REFERENCE DESIGN LAYOUT
+       ==================================================================== -->
+  <section class="hero-section" id="hero">
+    <div class="container hero-grid">
+      
+      <!-- LEFT CONTENT COLUMN -->
+      <div>
+        
+        <!-- STAR RATING BADGE -->
+        <div class="rating-badge">
+          <span class="star-icon">★</span>
+          <span><strong>4.9 Stars</strong> — Read Our <a href="#rooms" style="color: var(--text-main); font-weight: 700;">Tenant Stories</a></span>
+        </div>
+
+        <!-- HERO HEADLINE -->
+        <h1 class="hero-title">
+          Live Comfortably<br>In Hivelet Stays.
+        </h1>
+
+        <!-- SUBTITLE -->
+        <p class="hero-subtitle">
+          Explore clean, affordable Studio, 1-Bedroom, 2-Bedroom, and 3-Bedroom units across 3 floors. Private bathrooms, sub-metered electrics &amp; direct landlady inquiry.
+        </p>
+
+        <!-- CTA BUTTONS -->
+        <div class="hero-buttons">
+          <button class="btn-yellow" onclick="openInquiryModal()">
+            Inquire Now — Free
+          </button>
+          <a href="#rooms" class="btn-link" style="font-weight: 700; text-decoration: underline;">
+            Browse Units ↗
+          </a>
+        </div>
+
+      </div>
+
+      <!-- RIGHT VISUAL COLUMN WITH ORGANIC CUTOUT & FLOATING GLASS CARDS -->
+      <div class="hero-visual-area">
+        
+        <!-- ORGANIC BACKGROUND SHAPE & ROOM PHOTO -->
+        <div class="hero-cutout-bg">
+          <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80" alt="Hivelet Boarding House Interior" class="hero-cutout-img" />
+        </div>
+
+        <!-- FLOATING GLASS CARD 1 (VIP / ONLINE STATUS) -->
+        <div class="glass-card card-vip">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Status</span>
+            <span class="badge-tag">AVAILABLE</span>
+          </div>
+          <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; margin-bottom: 0.25rem;">
+            Room 204
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            1-Bedroom • Floor 2
+          </div>
+          <div style="font-family: var(--font-display); font-weight: 800; font-size: 1rem; color: var(--text-main);">
+            ₱6,500 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">/ mo</span>
+          </div>
+        </div>
+
+        <!-- FLOATING GLASS CARD 2 (LOCATION & RATING) -->
+        <div class="glass-card card-location">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">📍 Location</span>
+            <span style="font-size: 0.75rem; font-weight: 700; color: #EAB308;">★ 5.0</span>
+          </div>
+          <div style="font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;">
+            Fe Galang House ✔
+          </div>
+        </div>
+
+        <!-- FLOATING GLASS CARD 3 (DIRECT LANDLADY CHAT) -->
+        <div class="glass-card card-chat">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #0F172A; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+              FG
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.875rem;">Mrs. Fe Galang</div>
+              <div style="font-size: 0.75rem; color: #16A34A; font-weight: 600;">● Online — Fast Reply</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ====================================================================
+       LOWER HIGHLIGHTS SECTION — MATCHING "GET UPDATES LIVE" GRID IN REFERENCE
+       ==================================================================== -->
+  <section class="highlights-section" id="highlights">
+    <div class="container">
+      
+      <h2 class="section-headline">
+        Get Updates<br>Live
+      </h2>
+
+      <div class="highlights-grid">
+        
+        <!-- CARD 1 -->
+        <div class="highlight-card">
+          <div class="highlight-label">Direct Inquiry</div>
+          <h3 class="highlight-title">Send Inquiries</h3>
+          <p class="highlight-desc">
+            Direct communication line to the landlady with fast turnaround for room viewing and move-in terms.
+          </p>
+        </div>
+
+        <!-- CARD 2 -->
+        <div class="highlight-card">
+          <div class="highlight-label">Fair Utility Sub-meters</div>
+          <h3 class="highlight-title">Transparent Utilities</h3>
+          <p class="highlight-desc">
+            Private sub-metering for electric consumption and standardized water rate at ₱200/head per month.
+          </p>
+        </div>
+
+        <!-- CARD 3 -->
+        <div class="highlight-card">
+          <div class="highlight-label">Tenant Security</div>
+          <h3 class="highlight-title">Safe Environment</h3>
+          <p class="highlight-desc">
+            Gated premises with CCTV coverage and quiet residential neighborhood ideal for students &amp; professionals.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ====================================================================
+       ROOM SHOWCASE & MULTI-COMBINATION FILTER SECTION
+       ==================================================================== -->
+  <section class="rooms-section" id="rooms">
+    <div class="container">
+      
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 800;">
+          Available Boarding Units
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Combine floor and room type filters below to find your ideal unit.
+        </p>
+      </div>
+
+      <!-- MULTI-COMBINATION FILTER BAR -->
+      <div class="filter-container-box">
+        
+        <!-- FLOOR FILTERS -->
+        <div class="filter-group-row">
+          <span class="filter-label">Floor:</span>
+          <button class="btn-filter-chip active" data-filter-category="floor" data-value="all" onclick="toggleFilterChip('floor', 'all', this)">All Floors</button>
+          <button class="btn-filter-chip" data-filter-category="floor" data-value="1" onclick="toggleFilterChip('floor', '1', this)">1st Floor</button>
+          <button class="btn-filter-chip" data-filter-category="floor" data-value="2" onclick="toggleFilterChip('floor', '2', this)">2nd Floor</button>
+          <button class="btn-filter-chip" data-filter-category="floor" data-value="3" onclick="toggleFilterChip('floor', '3', this)">3rd Floor</button>
+        </div>
+
+        <!-- UNIT TYPE FILTERS -->
+        <div class="filter-group-row">
+          <span class="filter-label">Unit Type:</span>
+          <button class="btn-filter-chip active" data-filter-category="type" data-value="all" onclick="toggleFilterChip('type', 'all', this)">All Types</button>
+          <button class="btn-filter-chip" data-filter-category="type" data-value="Studio" onclick="toggleFilterChip('type', 'Studio', this)">Studio (₱5.0k-₱5.4k)</button>
+          <button class="btn-filter-chip" data-filter-category="type" data-value="1-Bedroom" onclick="toggleFilterChip('type', '1-Bedroom', this)">1-Bedroom (₱6.5k-₱6.8k)</button>
+          <button class="btn-filter-chip" data-filter-category="type" data-value="2-Bedroom" onclick="toggleFilterChip('type', '2-Bedroom', this)">2-Bedroom (₱8.5k-₱9.0k)</button>
+          <button class="btn-filter-chip" data-filter-category="type" data-value="3-Bedroom" onclick="toggleFilterChip('type', '3-Bedroom', this)">3-Bedroom (₱11.0k-₱12.0k)</button>
+        </div>
+
+        <!-- AVAILABILITY TOGGLE -->
+        <div class="filter-group-row">
+          <span class="filter-label">Status:</span>
+          <button class="btn-filter-chip active" data-filter-category="status" onclick="toggleStatusFilter('all', this)">Show All</button>
+          <button class="btn-filter-chip" data-filter-category="status" onclick="toggleStatusFilter('available', this)">● Available Only</button>
+        </div>
+
+      </div>
+
+      <!-- ROOM GRID GENERATED BY JS -->
+      <div class="room-grid" id="guest-room-grid"></div>
+
+    </div>
+  </section>
+
+
+  <!-- ====================================================================
+       HOUSE RULES & GUIDELINES SECTION
+       ==================================================================== -->
+  <section class="rules-section" id="rules">
+    <div class="container">
+      
+      <div style="text-align: center; max-width: 640px; margin: 0 auto;">
+        <span style="font-family: var(--font-display); font-weight: 700; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em;">
+          Community Guidelines
+        </span>
+        <h2 style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; margin-top: 0.25rem;">
+          House Rules &amp; Guidelines
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem;">
+          We maintain a peaceful, secure, and well-managed environment for all our residents.
+        </p>
+      </div>
+
+      <div class="rules-grid">
+        
+        <!-- RULE 1 -->
+        <div class="rule-card">
+          <div class="rule-icon-wrap">🔑</div>
+          <h3 class="rule-title">1 Month Rent &amp; Deposit</h3>
+          <p class="rule-text">
+            Standard move-in requires 1 month advance rent + 1 month security deposit. Monthly rent is due on the 1st day of every month.
+          </p>
+          <span class="rule-tag">Payment Terms</span>
+        </div>
+
+        <!-- RULE 2 -->
+        <div class="rule-card">
+          <div class="rule-icon-wrap">⚡</div>
+          <h3 class="rule-title">Sub-metered Electric &amp; Water</h3>
+          <p class="rule-text">
+            Each unit is equipped with a private electric sub-meter. Water rate is standardized at ₱200 per head monthly.
+          </p>
+          <span class="rule-tag">Utilities Policy</span>
+        </div>
+
+        <!-- RULE 3 -->
+        <div class="rule-card">
+          <div class="rule-icon-wrap">🌙</div>
+          <h3 class="rule-title">Quiet Hours &amp; Visiting Policy</h3>
+          <p class="rule-text">
+            Strict quiet hours from 10:00 PM to 6:00 AM. Outside guests are permitted in common areas until 9:00 PM daily.
+          </p>
+          <span class="rule-tag">Resident Comfort</span>
+        </div>
+
+        <!-- RULE 4 -->
+        <div class="rule-card">
+          <div class="rule-icon-wrap">🧹</div>
+          <h3 class="rule-title">Cleanliness &amp; Repairs</h3>
+          <p class="rule-text">
+            Tenants are expected to keep their en-suite bathrooms and rooms clean. Report maintenance issues directly via ticketing.
+          </p>
+          <span class="rule-tag">Maintenance</span>
+        </div>
+
+        <!-- RULE 5 -->
+        <div class="rule-card">
+          <div class="rule-icon-wrap">🔒</div>
+          <h3 class="rule-title">Safety &amp; Gate Locking</h3>
+          <p class="rule-text">
+            Main premises gate is locked at 10:00 PM for security. Residents receive key/RFID access for night entry.
+          </p>
+          <span class="rule-tag">Building Security</span>
+        </div>
+
+        <!-- RULE 6 -->
+        <div class="rule-card">
+          <div class="rule-icon-wrap">🚭</div>
+          <h3 class="rule-title">Non-Smoking Premises</h3>
+          <p class="rule-text">
+            Smoking or vaping is strictly prohibited inside rooms, en-suite bathrooms, and indoor hallways.
+          </p>
+          <span class="rule-tag">Health &amp; Safety</span>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ====================================================================
+       GUEST AUTHENTICATION MODAL (LOGIN & SIGN UP TABS)
+       ==================================================================== -->
+  <div class="modal-backdrop" id="auth-modal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeGuestAuthModal()">&times;</button>
+
+      <!-- NOTICE FOR INQUIRING WITHOUT AN ACCOUNT -->
+      <div id="auth-modal-notice" style="display: none; background: #FEF3C7; color: #92400E; padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; margin-bottom: 1.25rem;">
+        🔒 Account Required: Please log in or create an account to inquire about a unit.
+      </div>
+
+      <!-- AUTH TABS -->
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tab-btn-signup" onclick="switchAuthTab('signup')">📝 Create Account</button>
+        <button class="auth-tab-btn" id="tab-btn-login" onclick="switchAuthTab('login')">🔑 Log In</button>
+      </div>
+
+      <!-- SIGN UP FORM -->
+      <form id="auth-form-signup" onsubmit="handleGuestSignUp(event)">
+        <h3 style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; margin-bottom: 0.25rem;">
+          Join Hivelet Guest Portal
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Create a free account to track your room inquiries and viewings.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-name">Full Name:</label>
+          <input type="text" id="signup-name" class="form-input" placeholder="e.g. Maria Santos" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-contact">Email or Mobile Number:</label>
+          <input type="text" id="signup-contact" class="form-input" placeholder="0917-123-4567 or maria@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-pref">Preferred Unit Type:</label>
+          <select id="signup-pref" class="form-input">
+            <option value="Studio">Studio Unit (₱5,000/mo)</option>
+            <option value="1-Bedroom">1-Bedroom Unit (₱6,500/mo)</option>
+            <option value="2-Bedroom">2-Bedroom Unit (₱8,500/mo)</option>
+            <option value="3-Bedroom">3-Bedroom Unit (₱11,000/mo)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-pass">Create Password:</label>
+          <input type="password" id="signup-pass" class="form-input" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-yellow" style="width: 100%; justify-content: center; font-size: 1rem; margin-top: 0.5rem;">
+          Create Guest Account →
+        </button>
+
+        <div class="auth-switch-text">
+          Already have an account? <span class="auth-switch-link" onclick="switchAuthTab('login')">Log in here</span>
+        </div>
+      </form>
+
+      <!-- LOG IN FORM -->
+      <form id="auth-form-login" onsubmit="handleGuestLogin(event)" style="display: none;">
+        <h3 style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; margin-bottom: 0.25rem;">
+          Guest Account Login
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          Enter your registered email or mobile number to continue.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="login-contact">Email or Mobile Number:</label>
+          <input type="text" id="login-contact" class="form-input" placeholder="0917-123-4567 or maria@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-pass">Password:</label>
+          <input type="password" id="login-pass" class="form-input" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-yellow" style="width: 100%; justify-content: center; font-size: 1rem; margin-top: 0.5rem;">
+          Log In to Guest Portal →
+        </button>
+
+        <div class="auth-switch-text">
+          Don't have an account? <span class="auth-switch-link" onclick="switchAuthTab('signup')">Sign up here</span>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+
+  <!-- ====================================================================
+       HIGH-END 2-COLUMN GUEST INQUIRY MODAL WITH PHOTO SLIDESHOW
+       ==================================================================== -->
+  <div class="modal-backdrop" id="inquiry-modal">
+    <div class="modal-card modal-card-wide">
+      <button class="modal-close" onclick="closeInquiryModal()">&times;</button>
+
+      <div class="modal-split-grid">
+        
+        <!-- LEFT COLUMN: PHOTO GALLERY SLIDESHOW & UNIT DETAILS -->
+        <div class="modal-left-col">
+          
+          <!-- SLIDESHOW CONTAINER WITH CONTROLS -->
+          <div class="slideshow-box">
+            <img id="slideshow-img" src="" alt="Unit Photo Slideshow" class="slideshow-img" />
+            <div class="slideshow-controls">
+              <button type="button" class="slideshow-arrow" onclick="prevSlide()">&lsaquo;</button>
+              <button type="button" class="slideshow-arrow" onclick="nextSlide()">&rsaquo;</button>
+            </div>
+            <div class="slideshow-counter" id="slideshow-counter">Photo 1 of 4</div>
+          </div>
+
+          <!-- UNIT DETAILS SUMMARY -->
+          <div class="modal-unit-details">
+            <div id="modal-unit-badge-wrap" style="margin-bottom: 0.4rem;"></div>
+            <h3 id="modal-room-title" style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.2rem;">
+              Unit Details
+            </h3>
+            
+            <div id="modal-unit-price-display" class="modal-price-tag"></div>
+
+            <div class="modal-specs-pills" id="modal-specs-pills">
+              <!-- Dynamically rendered by guest.js -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: INQUIRY FORM & CONTACT INPUTS -->
+        <div class="modal-right-col">
+          <div style="margin-bottom: 1.25rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Instant Inquiry</span>
+            <h4 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; margin-top: 0.1rem;">Send Message to Landlady</h4>
+            <p style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.25rem;">
+              Submitting opens a direct live chat line with Mrs. Fe Galang Da Silva.
+            </p>
+          </div>
+
+          <form id="inquiry-form" onsubmit="submitGuestInquiry(event)">
+            <input type="hidden" id="modal-hidden-room" value="General">
+            <input type="hidden" id="modal-hidden-type" value="Boarding Unit">
+
+            <div class="form-group">
+              <label class="form-label" for="inquiry-name">Your Full Name:</label>
+              <input type="text" id="inquiry-name" class="form-input" placeholder="e.g. Maria Santos" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inquiry-phone">Mobile Number:</label>
+              <input type="tel" id="inquiry-phone" class="form-input" placeholder="e.g. 0917-123-4567" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="inquiry-msg">Target Move-in Date / Questions:</label>
+              <textarea id="inquiry-msg" class="form-input" rows="3" placeholder="Hello Mrs. Fe! I would like to schedule a viewing for this unit..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-yellow" style="width: 100%; justify-content: center; font-size: 0.95rem; padding: 0.85rem 1rem;">
+              Submit &amp; Open Live Chat →
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ====================================================================
+       LIVE LANDLADY CHAT CONVERSATION DRAWER
+       ==================================================================== -->
+  <div class="modal-backdrop" id="chat-modal">
+    <div class="chat-modal-card">
+      
+      <!-- CHAT HEADER -->
+      <div class="chat-header">
+        <div class="chat-landlady-info">
+          <div class="chat-landlady-avatar">FG</div>
+          <div>
+            <div style="font-weight: 800; font-size: 1rem;">Mrs. Fe Galang Da Silva</div>
+            <div style="font-size: 0.75rem; color: #4ADE80; font-weight: 600;">● Online — Direct Inquiry Line</div>
+          </div>
+        </div>
+        <button onclick="closeLandladyChatModal()" style="background: none; border: none; color: #FFF; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- CHAT MESSAGES THREAD -->
+      <div class="chat-messages-area" id="chat-messages-list">
+        <!-- Rendered dynamically after inquiry submission -->
+      </div>
+
+      <!-- CHAT INPUT BAR -->
+      <form onsubmit="sendFollowupChatMessage(event)" class="chat-input-bar">
+        <input type="text" id="chat-user-input" class="chat-input-field" placeholder="Type a follow-up message to Mrs. Fe..." required>
+        <button type="submit" class="btn-yellow" style="padding: 0.65rem 1.25rem;">Send</button>
+      </form>
+
+    </div>
+  </div>
+
+
+  <!-- ====================================================================
+       MODERN FOOTER WITH GOOGLE MAP EMBED & QUICK LINKS
+       ==================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      
+      <div class="footer-grid">
+        
+        <!-- COLUMN 1: BRAND & CONTACT INFO -->
+        <div class="footer-col">
+          <div class="footer-brand">
+            <span class="logo-badge">🐝</span>
+            <span class="footer-brand-title">Hivelet Stays</span>
+          </div>
+          <p class="footer-desc">
+            Fe Galang Da Silva Boarding House. Premium, affordable studio and multi-bedroom units in Bulacan with private sub-metering.
+          </p>
+          <div class="footer-contact-item">📞 0917-123-4567</div>
+          <div class="footer-contact-item">✉️ inquire@hiveletboarding.ph</div>
+          <div class="footer-contact-item">🕒 Inquiries: 8:00 AM – 7:00 PM Daily</div>
+        </div>
+
+        <!-- COLUMN 2: QUICK NAVIGATION LINKS -->
+        <div class="footer-col">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="#hero">Home &amp; Welcome</a></li>
+            <li><a href="#highlights">House Features</a></li>
+            <li><a href="#rooms">Available Units</a></li>
+            <li><a href="#rules">House Rules &amp; Guidelines</a></li>
+          </ul>
+        </div>
+
+        <!-- COLUMN 3: UNIT TYPES & PRICING -->
+        <div class="footer-col">
+          <h4 class="footer-heading">Boarding Units</h4>
+          <ul class="footer-links">
+            <li><span class="footer-pricing-tag">Studio Unit</span> — ₱5,000 / mo</li>
+            <li><span class="footer-pricing-tag">1-Bedroom Unit</span> — ₱6,500 / mo</li>
+            <li><span class="footer-pricing-tag">2-Bedroom Unit</span> — ₱8,500 / mo</li>
+            <li><span class="footer-pricing-tag">3-Bedroom Unit</span> — ₱11,000 / mo</li>
+            <li style="margin-top: 0.5rem; font-size: 0.78rem; color: #94A3B8;">* Water: ₱200/head • Private Electric Sub-meter</li>
+          </ul>
+        </div>
+
+        <!-- COLUMN 4: EMBEDDED GOOGLE MAP LOCATION -->
+        <div class="footer-col">
+          <h4 class="footer-heading">📍 Property Location &amp; Map</h4>
+          <p style="font-size: 0.8rem; color: #94A3B8; margin-bottom: 0.75rem;">
+            Fe Galang Da Silva Boarding House, Malolos, Bulacan, Philippines
+          </p>
+          <!-- EMBEDDED LOCATION MAP IFRAME (Replace src URL below with your exact location pin) -->
+          <div class="footer-map-container">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3856.8839078652936!2d120.8122!3d14.8527!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3396522c0d0d0d0d%3A0x0!2zMTTCsDUxJzA5LjciTiAxMjDCsDQ4JNDMuOSJF!5e0!3m2!1sen!2sph!4v1620000000000!5m2!1sen!2sph"
+              width="100%" 
+              height="150" 
+              style="border:0; border-radius: 12px; filter: grayscale(0.15) contrast(1.05);" 
+              allowfullscreen="" 
+              loading="lazy"
+              title="Fe Galang Da Silva Boarding House Location Map">
+            </iframe>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER BOTTOM WITH EASY DEVELOPMENT ADMIN ACCESS LINK -->
+      <div class="footer-bottom">
+        <p>© 2026 Hivelet — Fe Galang Da Silva Boarding House</p>
+        <p><a href="index.html" style="color: var(--accent-yellow); text-decoration: underline; font-weight: 700;">⚡ Switch to Admin System Portal Wireframe ↗</a></p>
+      </div>
+
+  <!-- ====================================================================
+       FLOATING CHATHEAD & TOAST NOTIFICATION POPUP
+       ==================================================================== -->
+  <div id="floating-chat-head" class="floating-chat-head" onclick="toggleLandladyChatModal()">
+    <div class="chat-head-icon">💬</div>
+    <div class="chat-head-badge" id="chat-head-unread-badge" style="display: none;">1</div>
+    <span class="chat-head-label">Chat with Landlady</span>
+  </div>
+
+  <div id="guest-toast-notification" class="guest-toast-notification">
+    <div class="toast-icon">💬</div>
+    <div style="flex: 1;">
+      <div class="toast-title" id="toast-title">New Reply from Mrs. Fe Galang</div>
+      <div class="toast-body" id="toast-body">"Hello Maria! Room 204 is available for viewing..."</div>
+    </div>
+    <button type="button" class="toast-close" onclick="closeToastNotification()">&times;</button>
+  </div>
+
+  <script src="guest.js"></script>
+</body>
+</html>
