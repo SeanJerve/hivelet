@@ -60,7 +60,21 @@ const filteredPayments = computed(() => {
 
 const tenantName = computed(() => currentUser.value?.fullName || 'Active Resident');
 
+const isInitiatingPayment = ref(false);
+
 onMounted(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const statusParam = params.get('status');
+  const refParam = params.get('ref');
+
+  if (statusParam === 'success') {
+    showToast('success', 'Payment Submitted', refParam ? `GCash payment ${refParam} submitted and is pending verification.` : 'Payment submitted successfully.');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (statusParam === 'cancelled') {
+    showToast('warning', 'Payment Cancelled', 'Online payment checkout was cancelled.');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   await Promise.all([fetchOutstandingBills(), fetchPaymentHistory()]);
 });
 
@@ -96,13 +110,18 @@ async function fetchPaymentHistory() {
 
 /** Initiates checkout redirect by calling the backend Adyen checkout session creator */
 async function payBillOnline(billId: string) {
+  isInitiatingPayment.value = true;
   try {
-    const res = await api.post<{ sessionId: string; redirectUrl: string }>('/tenant/payments/checkout', { billId });
+    const res = await api.post<{ sessionId: string; redirectUrl: string }>('/tenant/payments/checkout', {
+      billId,
+      returnUrl: window.location.origin + '/tenant/payments'
+    });
     if (res && res.redirectUrl) {
       window.location.href = res.redirectUrl;
     }
   } catch (err: any) {
     showToast('error', 'Checkout Error', err?.message || 'Unable to initiate online payment session.');
+    isInitiatingPayment.value = false;
   }
 }
 </script>
