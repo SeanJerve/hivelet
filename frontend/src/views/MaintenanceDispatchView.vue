@@ -24,6 +24,8 @@ import {
   ReceiptText,
   Check
 } from 'lucide-vue-next';
+import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 const q = ref('');
 const statusFilter = ref('All');
@@ -352,8 +354,13 @@ function handleDeleteTicketPrompt() {
         </select>
       </div>
 
+      <!-- SKELETON LOADING STATE -->
+      <div v-if="isLoading" class="p-4">
+        <SkeletonTable :columns="8" :rows="6" />
+      </div>
+
       <!-- Maintenance Tickets Table -->
-      <div class="max-h-[70vh] overflow-x-auto overflow-y-auto">
+      <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full text-xs sm:text-sm border-collapse">
           <thead class="sticky top-0 z-10 bg-[#f5f5f4]">
             <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">

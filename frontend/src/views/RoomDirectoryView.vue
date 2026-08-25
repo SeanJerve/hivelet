@@ -18,6 +18,8 @@ import {
   type RoomItem 
 } from '@/lib/systemState';
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
+import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import { 
   Search, 
   Pencil, 
@@ -266,8 +268,16 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
       </select>
     </div>
 
+    <!-- SKELETON LOADING STATE -->
+    <div v-if="isLoading" class="space-y-6">
+      <div v-if="viewMode === 'matrix'" class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <SkeletonCard variant="room" :count="8" />
+      </div>
+      <SkeletonTable v-else :columns="7" :rows="8" />
+    </div>
+
     <!-- VIEW MODE 1: VISUAL MATRIX VIEW (Live Unit Matrix moved from Overview) -->
-    <div v-if="viewMode === 'matrix'" class="space-y-6">
+    <div v-else-if="viewMode === 'matrix'" class="space-y-6">
       <div 
         v-for="clusterName in activeClusters" 
         :key="clusterName"

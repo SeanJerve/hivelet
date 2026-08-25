@@ -12,6 +12,7 @@ import { useRouter } from 'vue-router';
 import { CANONICAL_32_UNITS, HERO_PHOTO, type RentableUnit } from '@/lib/canonicalUnits';
 import { showToast, LANDLADY, fetchRooms } from '@/lib/systemState';
 import { api } from '@/lib/api';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import { 
   MapPin, 
   BedDouble, 
@@ -31,6 +32,7 @@ import {
 } from 'lucide-vue-next';
 
 const router = useRouter();
+const isLoading = ref(true);
 
 const CATEGORIES = [
   {
@@ -68,7 +70,7 @@ const CATEGORIES = [
     slug: '3-bedroom',
     title: '3-Bedroom / Penthouse Suite',
     pax: 'Up to 5 Pax',
-    blurb: 'Top-floor suites and 3-bedroom penthouse with roof deck and panoramic view of Tanauan City.',
+    blurb: 'Top-floor suites and 3-bedroom penthouse with roof deck and panoramic view of Legazpi City.',
     icon: ShieldCheck,
     match: (u: RentableUnit) => 
       u.unitCode.toLowerCase().startsWith('3') || 
@@ -82,8 +84,12 @@ function navigateToCategory(slug: string) {
   router.push(`/category/${slug}`);
 }
 
-onMounted(() => {
-  fetchRooms();
+onMounted(async () => {
+  try {
+    await fetchRooms();
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 // Inline Rectangular Inquiry Form State
@@ -147,7 +153,7 @@ async function submitInquiry() {
       
       <div class="relative mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <span class="inline-flex items-center gap-2 rounded-full bg-[#f59e0b] px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest text-[#1c1917] shadow-sm">
-          <MapPin class="size-3.5" /> 32 Sampaquita St., Brgy. 4 Sagpon, Old Albay, Legazpi City
+          <MapPin class="size-3.5" /> 32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines
         </span>
         
         <h1 class="mt-5 max-w-3xl font-display text-3xl font-black leading-[1.08] text-white sm:text-5xl lg:text-6xl">
@@ -155,7 +161,7 @@ async function submitInquiry() {
         </h1>
         
         <p class="mt-4 max-w-xl text-sm sm:text-base text-gray-200 leading-relaxed">
-          Thirty-two well-kept units across three floors — clean, secure, and located at 32 Sampaquita Street, Brgy. 4 Sagpon, Old Albay, Legazpi City. Transparent rates, submetered electricity, no hidden fees.
+          Thirty-two well-kept units across three floors — clean, secure, and located at 32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines. Transparent rates, submetered electricity, no hidden fees.
         </p>
 
         <div class="mt-8 flex flex-wrap gap-3">
@@ -190,7 +196,7 @@ async function submitInquiry() {
     </section>
 
     <!-- 1. Category Explorer (Centered) -->
-    <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
+    <div id="categories" class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20">
       <section class="space-y-6">
         <div>
           <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
@@ -201,7 +207,11 @@ async function submitInquiry() {
           </p>
         </div>
 
-        <div class="grid gap-5 md:grid-cols-3">
+        <div v-if="isLoading" class="grid gap-5 md:grid-cols-3">
+          <SkeletonCard variant="category" :count="3" />
+        </div>
+
+        <div v-else class="grid gap-5 md:grid-cols-3">
           <div
             v-for="c in CATEGORIES"
             :key="c.key"
@@ -241,7 +251,7 @@ async function submitInquiry() {
     </div>
 
     <!-- 2. Why Choose Hivelet Section (100% Full-Width Edge-to-Edge Banner) -->
-    <section class="w-full bg-white py-16 sm:py-20 shadow-xs">
+    <section id="about-us" class="w-full bg-white py-16 sm:py-20 shadow-xs scroll-mt-20">
       <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-10">
         <div class="max-w-3xl space-y-2">
           <span class="text-xs font-extrabold uppercase tracking-widest text-[#0c66e4]">
@@ -292,7 +302,7 @@ async function submitInquiry() {
     </section>
 
     <!-- 3. Rectangular Inquiry Form Section (Centered) -->
-    <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-16">
+    <div id="inquire-now" class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
       <section id="inquiry-form" class="scroll-mt-20">
         <div class="surface-card w-full max-w-5xl mx-auto rounded-3xl border border-[#dfe1e6] bg-white p-8 sm:p-12 shadow-sm space-y-6">
           
@@ -382,7 +392,7 @@ async function submitInquiry() {
     </div>
 
     <!-- 4. Location & Proximity Map Section (100% Full-Width Edge-to-Edge with Top Spacing) -->
-    <section class="w-full bg-white pt-16 sm:pt-20 pb-0 shadow-xs mt-8 sm:mt-12 space-y-8">
+    <section id="location" class="w-full bg-white pt-16 sm:pt-20 pb-0 shadow-xs mt-8 sm:mt-12 space-y-8 scroll-mt-20">
       <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-2">
         <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-[#0c66e4]">
           <Compass class="size-3.5" />

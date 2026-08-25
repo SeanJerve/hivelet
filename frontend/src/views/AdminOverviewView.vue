@@ -21,6 +21,9 @@ import {
   type RoomItem 
 } from '@/lib/systemState';
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
+import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import Skeleton from '@/components/ui/Skeleton.vue';
 import { 
   TrendingUp, 
   Home, 
@@ -40,6 +43,7 @@ import {
 const router = useRouter();
 const pendingPayments = ref<any[]>([]);
 const isRefreshing = ref(false);
+const isInitialLoading = ref(true);
 const hoveredMonthIndex = ref<number | null>(null);
 
 async function loadPayments() {
@@ -65,6 +69,7 @@ async function refreshAllData() {
     ]);
   } finally {
     isRefreshing.value = false;
+    isInitialLoading.value = false;
   }
 }
 
@@ -301,7 +306,11 @@ const urgentTickets = computed(() => {
     </div>
 
     <!-- Dynamic KPI Stat Cards (4 Cards) -->
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div v-if="isInitialLoading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <SkeletonCard variant="metric" :count="4" />
+    </div>
+
+    <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div 
         class="surface-card relative overflow-hidden p-5"
       >

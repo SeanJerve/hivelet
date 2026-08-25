@@ -20,6 +20,7 @@ import {
   Sparkles
 } from 'lucide-vue-next';
 import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 const { showToast } = useToast();
 
@@ -157,7 +158,9 @@ function handleAdyenSuccess(refId: string) {
         </span>
       </div>
 
-      <div v-if="loadingBills" class="text-sm text-[#5e6c84] py-6 text-center">Loading outstanding bills...</div>
+      <div v-if="loadingBills" class="py-2">
+        <SkeletonCard variant="room" :count="1" />
+      </div>
 
       <div v-else-if="outstandingBills.length === 0" class="py-8 text-center">
         <ShieldCheck class="w-8 h-8 text-emerald-500 mx-auto mb-2" />

@@ -4,6 +4,7 @@ import { inquiries, fetchInquiries as fetchInquiriesState, rooms, showToast, typ
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { MessageSquare, Phone, Mail, Send, X, RefreshCw, Loader2 } from 'lucide-vue-next';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 interface ApiInquiry {
   id: string;
@@ -107,8 +108,13 @@ async function handleSendReply() {
       </div>
     </div>
 
+    <!-- SKELETON LOADING STATE -->
+    <div v-if="isLoading" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <SkeletonCard variant="room" :count="6" />
+    </div>
+
     <!-- Leads Grid -->
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <div 
         v-for="inq in inquiries" 
         :key="inq.id"

@@ -11,6 +11,7 @@ import { api } from '@/lib/api';
 import { useToast } from '@/lib/useToast';
 
 const { showToast } = useToast();
+import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
 import {
   Home,
   CreditCard,
@@ -277,10 +278,8 @@ async function handlePayOnline() {
       <p class="text-xs text-[#6b778c] mt-0.5">{{ tenantData.room }} unit photo, specifications &amp; billing statement</p>
     </div>
 
-    <!-- Loading -->
-    <div v-if="loading" class="p-12 text-center bg-white border border-[#dfe1e6] text-[#5e6c84] rounded-lg text-sm">
-      Loading unit overview...
-    </div>
+    <!-- Skeleton Loading -->
+    <SkeletonDetail v-if="loading" />
 
     <div v-else class="space-y-6">
       <!-- Submission Toast Notice -->
@@ -297,72 +296,53 @@ async function handlePayOnline() {
         </button>
       </div>
 
-      <!-- Hero Unit Card: Photo + Specifications Grid -->
-      <div class="bg-white border border-[#dfe1e6] rounded-lg overflow-hidden shadow-xs">
-        <div class="grid grid-cols-1 lg:grid-cols-12">
-          
-          <!-- Left Column: Unit Photo Feature Banner -->
-          <div class="lg:col-span-5 relative bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center min-h-[260px] p-6 border-b lg:border-b-0 lg:border-r border-[#dfe1e6]">
-            <img
-              v-if="tenantData.photoUrl"
-              :src="tenantData.photoUrl"
-              :alt="tenantData.room"
-              class="w-full h-full max-h-[280px] object-cover rounded-lg shadow-md"
-            />
-            <div v-else class="text-center text-white/80 space-y-3">
-              <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mx-auto border border-white/20">
-                <Home class="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <p class="font-display font-bold text-lg text-white">{{ tenantData.room }}</p>
-                <p class="text-xs text-white/60">{{ tenantData.roomDetails }}</p>
-              </div>
+      <!-- Hero Unit Section (Clean Unboxed Layout) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        
+        <!-- Unit Photo (Clean standalone image frame) -->
+        <div class="lg:col-span-5 h-[240px] sm:h-[260px] rounded-xl overflow-hidden border border-[#dfe1e6] bg-slate-900 shadow-sm relative flex items-center justify-center">
+          <img
+            v-if="tenantData.photoUrl"
+            :src="tenantData.photoUrl"
+            :alt="tenantData.room"
+            class="w-full h-full object-cover"
+          />
+          <div v-else class="text-center text-white/80 space-y-2 p-6">
+            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mx-auto border border-white/20">
+              <Home class="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p class="font-display font-bold text-base text-white">{{ tenantData.room }}</p>
+              <p class="text-xs text-white/60">{{ tenantData.roomDetails }}</p>
             </div>
           </div>
+        </div>
 
-          <!-- Right Column: Room Specifications Grid -->
-          <div class="lg:col-span-7 p-6 flex flex-col justify-between space-y-6">
+        <!-- Room Specifications (Direct layout) -->
+        <div class="lg:col-span-7 flex flex-col justify-center space-y-4">
+          <div class="flex items-center justify-between mb-1">
             <div>
-              <div class="flex items-center justify-between mb-4">
-                <div>
-                  <span class="text-xs font-bold text-[#0c66e4] uppercase tracking-wider">Unit Specifications</span>
-                  <h2 class="font-display text-xl font-bold text-[#172b4d]">{{ tenantData.room }}</h2>
-                </div>
-                <span class="px-2.5 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">
-                  Occupied (Active Lease)
-                </span>
-              </div>
-
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]">
-                  <span class="text-[#6b778c] block mb-1">Cluster / Wing</span>
-                  <strong class="text-[#172b4d] text-sm">{{ tenantData.roomType }}</strong>
-                </div>
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]">
-                  <span class="text-[#6b778c] block mb-1">Floor Level</span>
-                  <strong class="text-[#172b4d] text-sm">Floor {{ tenantData.floor }}</strong>
-                </div>
-                <div class="p-3 bg-[#f7f8f9] rounded-lg border border-[#dfe1e6]">
-                  <span class="text-[#6b778c] block mb-1">Current Occupants</span>
-                  <strong class="text-[#172b4d] text-sm">{{ tenantData.occupants }} Person{{ tenantData.occupants > 1 ? 's' : '' }}</strong>
-                </div>
-              </div>
+              <span class="text-[11px] font-bold text-[#0c66e4] uppercase tracking-wider">Unit Specifications</span>
+              <h2 class="font-display text-2xl font-extrabold text-[#172b4d]">{{ tenantData.room }}</h2>
             </div>
+            <span class="px-3 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
+              Occupied (Active Lease)
+            </span>
+          </div>
 
-            <!-- Utilities Bar -->
-            <div class="pt-4 border-t border-[#dfe1e6] flex flex-wrap gap-4 text-xs text-[#5e6c84]">
-              <span class="flex items-center gap-1.5">
-                <Zap class="w-3.5 h-3.5 text-amber-500" />
-                <span>Electric: <strong class="text-[#172b4d]">{{ tenantData.specs.electricMeter }}</strong></span>
-              </span>
-              <span class="flex items-center gap-1.5">
-                <Droplets class="w-3.5 h-3.5 text-blue-500" />
-                <span>Water: <strong class="text-[#172b4d]">₱{{ tenantData.specs.waterRatePerHead }}/head</strong></span>
-              </span>
-              <span class="flex items-center gap-1.5">
-                <Wifi class="w-3.5 h-3.5 text-indigo-500" />
-                <span>WiFi: <strong class="text-[#172b4d]">{{ tenantData.specs.wifi }}</strong></span>
-              </span>
+          <!-- Key-Value Metadata -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 py-2">
+            <div>
+              <span class="text-[11px] font-semibold text-[#6b778c] uppercase tracking-wider block mb-1">Cluster / Wing</span>
+              <span class="text-[#172b4d] font-bold text-base">{{ tenantData.roomType }}</span>
+            </div>
+            <div>
+              <span class="text-[11px] font-semibold text-[#6b778c] uppercase tracking-wider block mb-1">Floor Level</span>
+              <span class="text-[#172b4d] font-bold text-base">Floor {{ tenantData.floor }}</span>
+            </div>
+            <div>
+              <span class="text-[11px] font-semibold text-[#6b778c] uppercase tracking-wider block mb-1">Current Occupants</span>
+              <span class="text-[#172b4d] font-bold text-base">{{ tenantData.occupants }} Person{{ tenantData.occupants > 1 ? 's' : '' }}</span>
             </div>
           </div>
         </div>

@@ -12,6 +12,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { CANONICAL_32_UNITS, peso, type RentableUnit } from '@/lib/canonicalUnits';
 import { isLiveChatheadOpen, showToast, LANDLADY, rooms, fetchRooms } from '@/lib/systemState';
 import { api } from '@/lib/api';
+import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -27,6 +29,8 @@ import {
   Building2,
   ShieldCheck
 } from 'lucide-vue-next';
+
+const isLoading = ref(true);
 
 interface DbRoom {
   id: string;
@@ -83,7 +87,7 @@ const CATEGORIES = [
     slug: '3-bedroom',
     title: '3-Bedroom / Penthouse Suite',
     pax: 'Up to 5 Pax',
-    blurb: 'Top-floor suites and 3-bedroom penthouse with roof deck and panoramic view of Tanauan City.',
+    blurb: 'Top-floor suites and 3-bedroom penthouse with roof deck and panoramic view of Legazpi City.',
     icon: ShieldCheck,
     match: (u: RentableUnit) => 
       u.unitCode.toLowerCase().startsWith('3') || 
@@ -131,6 +135,8 @@ onMounted(async () => {
     }
   } catch {
     // Fallback to CANONICAL_32_UNITS
+  } finally {
+    isLoading.value = false;
   }
   syncFromRoute();
 });
@@ -236,7 +242,7 @@ async function submitInquiry() {
       <div class="space-y-1">
         <div class="flex items-center gap-2 text-xs font-bold text-[#8a5814]">
           <MapPin class="size-3.5 text-[#f59e0b]" />
-          <span>32 Sampaquita St., Old Albay, Legazpi City • Fe Galang Da Silva Boarding House</span>
+          <span>32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines • Fe Galang Da Silva Boarding House</span>
         </div>
         <h1 class="font-display font-black text-3xl sm:text-4xl text-[#1c1917] tracking-tight">
           {{ currentCat.title }}
@@ -247,8 +253,13 @@ async function submitInquiry() {
       </div>
     </div>
 
+    <!-- Loading Skeleton -->
+    <div v-if="isLoading" class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+      <SkeletonDetail />
+    </div>
+
     <!-- 100% Full-Width Edge-to-Edge Showcase Section (Frameless, No Dividing Lines) -->
-    <section v-if="activeUnit" class="w-full bg-white shadow-xs mt-4">
+    <section v-else-if="activeUnit" class="w-full bg-white shadow-xs mt-4">
       <div class="max-w-[1400px] mx-auto w-full">
         <!-- Showcase Main Grid -->
         <div class="grid lg:grid-cols-[1fr_420px]">

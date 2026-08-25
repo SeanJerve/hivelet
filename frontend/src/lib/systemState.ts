@@ -227,9 +227,11 @@ export const PAYMENT_HISTORY = [
 
 export const LANDLADY = {
   name: "Fe Galang Da Silva",
-  gcash: "0917-123-4567",
+  gcash: "09494150382",
+  phone: "09494150382",
+  facebook: "https://www.facebook.com/michelle.millete.16",
   property: "Fe Galang Da Silva Boarding House",
-  address: "Brgy. Sambat, Tanauan City, Batangas",
+  address: "32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
 };
 
 // Global Modals State
