@@ -16,10 +16,15 @@ import {
   ShieldCheck,
   Clock,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Sparkles
 } from 'lucide-vue-next';
+import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
 
 const { showToast } = useToast();
+
+// Selected bill for Adyen Web Component Checkout Modal
+const selectedBillForAdyen = ref<any | null>(null);
 
 // Outstanding bills from DB
 const outstandingBills = ref<any[]>([]);
@@ -108,21 +113,14 @@ async function fetchPaymentHistory() {
   }
 }
 
-/** Initiates checkout redirect by calling the backend Adyen checkout session creator */
-async function payBillOnline(billId: string) {
-  isInitiatingPayment.value = true;
-  try {
-    const res = await api.post<{ sessionId: string; redirectUrl: string }>('/tenant/payments/checkout', {
-      billId,
-      returnUrl: window.location.origin + '/tenant/payments'
-    });
-    if (res && res.redirectUrl) {
-      window.location.href = res.redirectUrl;
-    }
-  } catch (err: any) {
-    showToast('error', 'Checkout Error', err?.message || 'Unable to initiate online payment session.');
-    isInitiatingPayment.value = false;
-  }
+function openAdyenModal(bill: any) {
+  selectedBillForAdyen.value = bill;
+}
+
+function handleAdyenSuccess(refId: string) {
+  selectedBillForAdyen.value = null;
+  fetchOutstandingBills();
+  fetchPaymentHistory();
 }
 </script>
 
@@ -178,11 +176,11 @@ async function payBillOnline(billId: string) {
             </div>
           </div>
           <button
-            @click="payBillOnline(bill.id)"
+            @click="openAdyenModal(bill)"
             class="px-5 py-2.5 bg-[#172b4d] hover:bg-[#0c66e4] text-white text-xs font-bold rounded-lg flex items-center gap-2 cursor-pointer self-start sm:self-auto transition-colors shadow-sm"
           >
-            <ExternalLink class="w-3.5 h-3.5" />
-            Pay Online (GCash via Adyen)
+            <Sparkles class="w-3.5 h-3.5 text-blue-300" />
+            Pay Online (GCash / Adyen)
           </button>
         </div>
       </div>
@@ -308,5 +306,13 @@ async function payBillOnline(billId: string) {
         </div>
       </div>
     </div>
+
+    <!-- Official Adyen Web Checkout Modal -->
+    <AdyenPaymentModal
+      v-if="selectedBillForAdyen"
+      :bill="selectedBillForAdyen"
+      @close="selectedBillForAdyen = null"
+      @success="handleAdyenSuccess"
+    />
   </div>
 </template>

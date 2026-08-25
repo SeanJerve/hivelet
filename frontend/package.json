@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@adyen/adyen-web": "^6.44.0",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.475.0",
     "pinia": "^2.3.1",

@@ -22,7 +22,7 @@ import { PERMISSIONS } from '../config/rbac.js';
 import { resolveTenantScope, isEmptyScope, assertRoomInScope } from '../services/scopeService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
-import { auditFromRequest } from '../services/auditService.js';
+import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { adyenService } from '../services/adyenService.js';
 import { config } from '../config/env.js';
 
@@ -374,8 +374,8 @@ router.post(
       targetBillId = `bill_demo_${Date.now()}`;
     }
 
-    // Initialize mock Adyen checkout session
-    const { sessionId, redirectUrl, isLive } = adyenService.createMockCheckoutSession(
+    // Initialize Adyen checkout session (Hybrid: live or mock sandbox)
+    const sessionRes = await adyenService.createCheckoutSession(
       targetBillId,
       req.user!.profileId,
       billTotalAmount,
@@ -387,15 +387,51 @@ router.post(
       action: 'PAYMENT_RECORD',
       entityType: 'BILL',
       entityId: /^[0-9a-fA-F-]{36}$/.test(targetBillId) ? targetBillId : '00000000-0000-0000-0000-000000000000',
-      newValues: { status: 'Checkout Session Initiated', sessionId }
+      newValues: { status: 'Checkout Session Initiated', sessionId: sessionRes.sessionId, isLive: sessionRes.isLive }
     });
 
     res.status(200).json({
       success: true,
       data: {
-        sessionId,
-        redirectUrl: `http://localhost:${config.port}${redirectUrl}`
+        sessionId: sessionRes.sessionId,
+        sessionData: sessionRes.sessionData,
+        clientKey: sessionRes.clientKey,
+        environment: sessionRes.environment,
+        redirectUrl: `http://localhost:${config.port}${sessionRes.redirectUrl}`,
+        isLive: sessionRes.isLive
       }
+    });
+  })
+);
+
+const verifySessionSchema = z.object({
+  sessionId: z.string(),
+  resultCode: z.string().optional(),
+  pspReference: z.string().optional(),
+});
+
+/**
+ * POST /api/tenant/payments/adyen/verify-session
+ * Completes Adyen Component session and registers payment in Pending Verification.
+ */
+router.post(
+  '/tenant/payments/adyen/verify-session',
+  requirePermission(PERMISSIONS.PAYMENT_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const parsed = verifySessionSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw ApiError.validation('Invalid verification payload.', parsed.error.flatten().fieldErrors);
+    }
+    const { sessionId, pspReference } = parsed.data;
+    const ip = clientIp(req);
+
+    const result = await adyenService.completeMockPayment(sessionId, ip);
+    res.status(200).json({
+      success: true,
+      data: {
+        paymentReference: pspReference || result.paymentReference,
+        status: 'Pending Verification',
+      },
     });
   })
 );
