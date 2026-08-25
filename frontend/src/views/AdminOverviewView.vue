@@ -199,11 +199,10 @@ const peakMonth = computed(() => {
   return highest;
 });
 
-// SVG Chart Path Generation
-const chartSvgWidth = 800;
+// SVG Chart Path Generation (12-column aligned)
+const chartSvgWidth = 1200;
 const chartSvgHeight = 220;
-const chartPaddingX = 40;
-const chartPaddingY = 30;
+const chartPaddingY = 32;
 
 const maxGross = computed(() => {
   const max = Math.max(...yearly12MonthsData.value.map(d => d.grossIncome), 50000);
@@ -211,12 +210,13 @@ const maxGross = computed(() => {
 });
 
 const chartPoints = computed(() => {
-  const innerW = chartSvgWidth - (chartPaddingX * 2);
+  const totalMonths = yearly12MonthsData.value.length || 12;
+  const colWidth = chartSvgWidth / totalMonths;
   const innerH = chartSvgHeight - (chartPaddingY * 2);
-  const stepX = innerW / (yearly12MonthsData.value.length - 1);
 
   return yearly12MonthsData.value.map((d, i) => {
-    const x = chartPaddingX + (i * stepX);
+    // Center of each of the 12 columns
+    const x = (i + 0.5) * colWidth;
     const y = chartSvgHeight - chartPaddingY - ((d.grossIncome / maxGross.value) * innerH);
     return { ...d, x, y };
   });
@@ -403,10 +403,10 @@ const urgentTickets = computed(() => {
       </div>
 
       <!-- SVG Line Chart Canvas -->
-      <div class="relative mt-6 w-full overflow-x-auto">
+      <div class="relative mt-6 w-full">
         <svg 
           :viewBox="`0 0 ${chartSvgWidth} ${chartSvgHeight}`" 
-          class="w-full h-56 min-w-[650px] overflow-visible"
+          class="w-full h-56 overflow-visible"
         >
           <defs>
             <!-- Area Gradient Fill -->
@@ -425,16 +425,16 @@ const urgentTickets = computed(() => {
           </defs>
 
           <!-- Horizontal Grid Lines -->
-          <g class="grid-lines" opacity="0.6">
+          <g class="grid-lines" opacity="0.5">
             <line 
               v-for="tick in 4" 
               :key="tick"
-              :x1="chartPaddingX" 
+              :x1="chartPoints[0]?.x ?? 50" 
               :y1="chartPaddingY + ((tick - 1) * ((chartSvgHeight - chartPaddingY * 2) / 3))"
-              :x2="chartSvgWidth - chartPaddingX" 
+              :x2="chartPoints[chartPoints.length - 1]?.x ?? (chartSvgWidth - 50)" 
               :y2="chartPaddingY + ((tick - 1) * ((chartSvgHeight - chartPaddingY * 2) / 3))"
               stroke="#e7e5e4" 
-              stroke-dasharray="3 3"
+              stroke-dasharray="4 4"
               stroke-width="1"
             />
           </g>
@@ -490,11 +490,11 @@ const urgentTickets = computed(() => {
               {{ pt.month }}
             </text>
 
-            <!-- Invisible hit target for hover -->
+            <!-- Invisible hit target for hover spanning the column -->
             <rect 
-              :x="pt.x - 20" 
+              :x="idx * (chartSvgWidth / 12)" 
               :y="0" 
-              width="40" 
+              :width="chartSvgWidth / 12" 
               :height="chartSvgHeight" 
               fill="transparent" 
               class="cursor-pointer"
@@ -507,9 +507,10 @@ const urgentTickets = computed(() => {
         <!-- Dynamic Floating Tooltip on Hover -->
         <div 
           v-if="hoveredMonthIndex !== null && chartPoints[hoveredMonthIndex]"
-          class="absolute pointer-events-none z-20 top-2 bg-[#1c1917] text-white p-3 rounded-xl shadow-xl text-xs space-y-1 transition-all duration-150"
+          class="absolute pointer-events-none z-20 top-2 bg-[#1c1917] text-white p-3 rounded-xl shadow-xl text-xs space-y-1 transition-all duration-150 whitespace-nowrap"
           :style="{
-            left: `${Math.min(Math.max(chartPoints[hoveredMonthIndex].x - 80, 20), chartSvgWidth - 180)}px`
+            left: `${((hoveredMonthIndex + 0.5) / 12) * 100}%`,
+            transform: 'translateX(-50%)'
           }"
         >
           <div class="flex items-center justify-between gap-3 border-b border-neutral-700 pb-1">
