@@ -802,7 +802,7 @@ function exportCSV() {
     <div class="surface-card p-6 space-y-3">
       <div class="flex items-center gap-2">
         <FileSpreadsheet class="size-5 text-[#f59e0b]" />
-        <h3 class="font-display font-extrabold text-base text-[#1c1917]">Linda Units Fixed Charge Schedule (BR-040)</h3>
+        <h3 class="font-display font-extrabold text-base text-[#1c1917]">Linda Units Fixed Charge Schedule</h3>
       </div>
       <p class="text-xs text-[#71717a] leading-relaxed">
         Linda units follow fixed municipal utility billing rules rather than submetered rates.

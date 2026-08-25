@@ -921,7 +921,7 @@ router.patch(
         .maybeSingle();
 
       if (!existingIncome && before.transaction_reference) {
-        await db.from('monthly_income_records').insert({
+        const { error: insertError } = await db.from('monthly_income_records').insert({
           room_id: before.room_id,
           tenant_profile_id: before.tenant_profile_id,
           assignment_id: assignment?.id || null,
@@ -933,13 +933,16 @@ router.patch(
           rent_period_start: billData?.billing_period_start || null,
           rent_period_end: billData?.billing_period_end || null,
           rent_amount: rentAmount,
-          fifty_percent_share: fiftyPercentShare,
           occupants: occupants,
           water_payment: waterAmount,
           remitted_amount: before.amount,
           payment_method: 'Online',
           transaction_reference: before.transaction_reference,
         });
+
+        if (insertError) {
+          throw ApiError.internal(`Failed to insert monthly income record: ${insertError.message}`);
+        }
       }
 
       // Notify the tenant that their payment is settled
