@@ -115,7 +115,7 @@ async function fetchTenantData() {
     // Fetch assigned room info
     const data = await api.get<any[]>('/tenant/my-rooms');
     if (data && data.length > 0) {
-      const activeRoom = data.find(r => r.is_active) || data[0];
+      const activeRoom = data.find((r: any) => r.is_active) || data[0];
       if (activeRoom) {
         const roomNum = activeRoom.rooms?.room_number || activeRoom.room_number || '1A';
         tenantData.value.room = `Unit ${roomNum.toUpperCase()}`;
@@ -139,7 +139,7 @@ async function fetchTenantData() {
 
     // Fetch bills for the monthly statement
     const billsData = await api.get<any[]>('/tenant/my-bills');
-    const unpaidBill = billsData?.find(b => b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue');
+    const unpaidBill = billsData?.find((b: any) => b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue');
     if (unpaidBill) {
       activeBillId.value = unpaidBill.id;
       tenantData.value.baseRent = unpaidBill.rent_amount;
