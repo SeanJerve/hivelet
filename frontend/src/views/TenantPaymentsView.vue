@@ -17,7 +17,10 @@ import {
   Clock,
   ChevronDown,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Search,
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-vue-next';
 import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -30,6 +33,7 @@ const selectedBillForAdyen = ref<any | null>(null);
 // Outstanding bills from DB
 const outstandingBills = ref<any[]>([]);
 const loadingBills = ref(false);
+const searchQuery = ref('');
 
 // Payment History Records
 const paymentHistory = ref<Array<{
@@ -60,9 +64,17 @@ const availableYears = computed(() => {
 });
 
 const filteredPayments = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
   const filtered = paymentHistory.value.filter(p => {
     const year = new Date(p.datePaidRaw).getFullYear();
-    return year === selectedYear.value;
+    const matchesYear = year === selectedYear.value;
+    if (!matchesYear) return false;
+    if (!q) return true;
+    return (
+      p.invoiceRef.toLowerCase().includes(q) ||
+      p.paymentMethod.toLowerCase().includes(q) ||
+      p.status.toLowerCase().includes(q)
+    );
   });
 
   return [...filtered].sort((a, b) => {
@@ -134,131 +146,125 @@ function handleAdyenSuccess(refId: string) {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto w-full space-y-6">
+  <div class="space-y-6">
     <!-- Breadcrumb Header -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
       <div>
         <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
-          <span>Tenant Portal</span>
+          <span>Tenant</span>
           <span>/</span>
-          <span class="font-medium text-[#1c1917]">{{ tenantName }}</span>
+          <span class="font-bold text-[#1c1917]">Payment &amp; Billing</span>
         </div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Payment &amp; Billing</h1>
-        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">Submit online payments and review your payment record history</p>
+        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">Submit online GCash payments and inspect verified rental receipt records.</p>
       </div>
 
       <div class="flex items-center gap-2">
-        <router-link to="/tenant" class="btn-secondary">
-          <span>Unit Overview</span>
-        </router-link>
-      </div>
-    </div>
-
-    <!-- Outstanding Bills Section -->
-    <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 space-y-5 shadow-xs">
-      <div class="flex items-center justify-between border-b border-[#e7e5e4] pb-4">
-        <div class="flex items-center gap-2">
-          <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
-            <CreditCard class="size-4" />
-          </span>
-          <h2 class="font-display font-extrabold text-base text-[#1c1917]">
-            Outstanding Bills
-          </h2>
-        </div>
-        <span class="badge-soft badge-info font-bold text-xs">
-          ACTIVE BILLING
-        </span>
-      </div>
-
-      <div v-if="loadingBills" class="py-2">
-        <SkeletonCard variant="room" :count="1" />
-      </div>
-
-      <div v-else-if="outstandingBills.length === 0" class="py-10 text-center space-y-2">
-        <ShieldCheck class="size-9 text-emerald-500 mx-auto" />
-        <p class="text-sm font-bold text-[#1c1917]">All Accounts Settled</p>
-        <p class="text-xs text-[#71717a]">You have no outstanding bills. All monthly dues are currently paid.</p>
-      </div>
-
-      <div v-else class="space-y-3">
-        <div
-          v-for="bill in outstandingBills"
-          :key="bill.id"
-          class="p-5 border border-[#e7e5e4] rounded-xl bg-[#fafaf9] flex flex-col sm:flex-row justify-between sm:items-center gap-4"
+        <button
+          @click="fetchOutstandingBills(); fetchPaymentHistory();"
+          :disabled="loadingBills"
+          class="btn-secondary"
         >
-          <div class="space-y-1.5">
-            <div class="text-xs font-bold uppercase tracking-wider text-[#71717a]">
-              Due: {{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}
-            </div>
-            <div class="text-xs text-[#71717a] space-x-3">
-              <span>Base Rent: <strong class="text-[#1c1917] tabular">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
-              <span>Water Fee: <strong class="text-[#1c1917] tabular">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
-            </div>
-            <div class="text-base font-black tabular font-display text-[#1c1917]">
-              Total Due: ₱{{ bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
-            </div>
-          </div>
-          <button
-            @click="openAdyenModal(bill)"
-            class="btn-primary"
-          >
-            <Sparkles class="size-3.5 text-blue-300" />
-            <span>Pay Online (GCash / Adyen)</span>
-          </button>
-        </div>
+          <RefreshCw :class="['size-3.5 text-[#71717a]', loadingBills ? 'animate-spin text-[#0c66e4]' : '']" />
+          <span>Refresh</span>
+        </button>
       </div>
     </div>
 
-    <!-- Payment Record History -->
-    <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 space-y-5 shadow-xs">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e7e5e4] pb-4">
-        <div class="flex items-center gap-2">
-          <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
-            <FileText class="size-4" />
-          </span>
-          <h2 class="font-display font-extrabold text-base text-[#1c1917]">
-            My Payment Record History
-          </h2>
-        </div>
+    <!-- Outstanding Bills Status Section -->
+    <div v-if="loadingBills" class="py-2">
+      <SkeletonCard variant="room" :count="1" />
+    </div>
 
-        <div class="flex items-center gap-2.5">
-          <span class="text-xs text-[#71717a] hidden md:inline">
-            Showing: <strong>{{ filteredPayments.length }}</strong> of {{ paymentHistory.length }}
-          </span>
-          <!-- Year Filter Dropdown -->
-          <div class="relative">
-            <select
-              v-model="selectedYear"
-              class="appearance-none pl-3.5 pr-8 py-2 text-xs font-bold text-[#1c1917] bg-[#fafaf9] border border-[#e7e5e4] rounded-xl cursor-pointer focus:border-[#f59e0b] focus:outline-none min-h-[38px]"
-            >
-              <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
-            </select>
-            <ChevronDown class="size-3.5 text-[#71717a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-          <!-- Sort Order Dropdown -->
-          <div class="relative">
-            <select
-              v-model="sortOrder"
-              class="appearance-none pl-3.5 pr-8 py-2 text-xs font-bold text-[#1c1917] bg-[#fafaf9] border border-[#e7e5e4] rounded-xl cursor-pointer focus:border-[#f59e0b] focus:outline-none min-h-[38px]"
-            >
-              <option value="latest">Latest First</option>
-              <option value="oldest">Oldest First</option>
-            </select>
-            <ChevronDown class="size-3.5 text-[#71717a] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+    <div v-else-if="outstandingBills.length === 0" class="p-4 bg-emerald-50/90 border border-emerald-200 rounded-2xl flex items-center justify-between shadow-2xs">
+      <div class="flex items-center gap-3">
+        <ShieldCheck class="size-5 text-emerald-600 shrink-0" />
+        <div>
+          <p class="text-xs font-bold text-emerald-950">All Rent Accounts Settled</p>
+          <p class="text-[11px] text-emerald-800">You have no outstanding bills. Your next monthly statement will be issued on the 5th.</p>
         </div>
       </div>
+      <span class="badge-soft badge-success text-xs font-bold shrink-0">
+        Paid Up to Date
+      </span>
+    </div>
 
-      <!-- Desktop Table -->
-      <div class="overflow-x-auto hidden sm:block">
+    <!-- Active Outstanding Bill Action Card -->
+    <div v-else class="space-y-3">
+      <div
+        v-for="bill in outstandingBills"
+        :key="bill.id"
+        class="surface-card p-6 border-amber-300 bg-amber-50/20 flex flex-col sm:flex-row justify-between sm:items-center gap-5 shadow-xs"
+      >
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="badge-soft badge-warning font-bold text-xs">
+              OUTSTANDING INVOICE
+            </span>
+            <span class="text-xs text-[#71717a]">
+              Due: <strong class="text-[#1c1917]">{{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}</strong>
+            </span>
+          </div>
+          <p class="text-2xl font-black tabular font-display text-[#1c1917]">
+            ₱{{ bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+          </p>
+          <p class="text-xs text-[#71717a] space-x-3">
+            <span>Base Rent: <strong class="text-[#1c1917] tabular">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
+            <span>·</span>
+            <span>Water Fee: <strong class="text-[#1c1917] tabular">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
+          </p>
+        </div>
+
+        <button
+          @click="openAdyenModal(bill)"
+          class="btn-primary"
+        >
+          <CreditCard class="size-4 text-white" />
+          <span>Pay Online (GCash via Adyen)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Payment Record History (Matching Admin Table Register Style) -->
+    <div class="surface-card overflow-hidden">
+      <!-- Filter Bar (Identical to Admin Income & Expenses) -->
+      <div class="flex flex-col gap-3 border-b border-[#e7e5e4] p-4 sm:flex-row">
+        <div class="relative flex-1">
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search invoice ref #, payment method, or status…"
+            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+          />
+        </div>
+
+        <select
+          v-model="selectedYear"
+          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
+        >
+          <option v-for="year in availableYears" :key="year" :value="year">{{ year }} Records</option>
+        </select>
+
+        <select
+          v-model="sortOrder"
+          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
+        >
+          <option value="latest">Latest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+      </div>
+
+      <!-- Single-Tier Atlassian Data Table -->
+      <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
-            <tr class="bg-[#fafaf9] border-b border-[#e7e5e4] text-[#71717a] uppercase tracking-wider font-bold text-[10px]">
-              <th class="p-3.5">Invoice / Ref #</th>
-              <th class="p-3.5">Date Paid</th>
-              <th class="p-3.5">Amount Paid</th>
-              <th class="p-3.5">Method</th>
-              <th class="p-3.5">Status</th>
+            <tr class="bg-[#f5f5f4] border-b border-[#e7e5e4] text-[#71717a] uppercase tracking-wide font-bold text-[11px]">
+              <th class="px-4 py-3">Invoice / Ref #</th>
+              <th class="px-4 py-3">Date Paid</th>
+              <th class="px-4 py-3">Amount Paid</th>
+              <th class="px-4 py-3">Payment Method</th>
+              <th class="px-4 py-3">Verification Status</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#e7e5e4]">
@@ -267,81 +273,36 @@ function handleAdyenSuccess(refId: string) {
               :key="record.id"
               class="hover:bg-[#fafaf9] transition-colors"
             >
-              <td class="p-3.5 font-mono text-[#1c1917] font-bold">
+              <td class="px-4 py-3.5 font-mono text-[#1c1917] font-bold">
                 {{ record.invoiceRef }}
               </td>
-              <td class="p-3.5 text-[#71717a]">{{ record.datePaid }}</td>
-              <td class="p-3.5 font-bold tabular text-[#1c1917]">
+              <td class="px-4 py-3.5 text-[#71717a]">{{ record.datePaid }}</td>
+              <td class="px-4 py-3.5 font-black tabular font-display text-[#1c1917] text-sm">
                 ₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
               </td>
-              <td class="p-3.5">
-                <span
-                  class="px-2.5 py-0.5 font-bold text-[10px] rounded-full border"
-                  :class="record.paymentMethod.includes('ONLINE') || record.paymentMethod.includes('ADYEN')
-                    ? 'bg-[#1e2532] text-white border-transparent'
-                    : 'bg-[#fafaf9] text-[#1c1917] border-[#e7e5e4]'"
-                >
+              <td class="px-4 py-3.5">
+                <span class="badge-soft badge-blue font-bold text-xs">
                   {{ record.paymentMethod }}
                 </span>
               </td>
-              <td class="p-3.5">
+              <td class="px-4 py-3.5">
                 <span
-                  class="badge-soft text-[10px] font-bold flex items-center gap-1 w-fit"
+                  class="badge-soft text-xs font-bold"
                   :class="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'
                     ? 'badge-success'
                     : 'badge-warning'"
                 >
-                  <ShieldCheck v-if="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'" class="size-3" />
-                  <Clock v-else class="size-3" />
                   {{ record.status }}
                 </span>
               </td>
             </tr>
             <tr v-if="filteredPayments.length === 0">
               <td colspan="5" class="p-8 text-center text-xs text-[#71717a]">
-                No payment records found for {{ selectedYear }}.
+                No payment records found for year {{ selectedYear }}.
               </td>
             </tr>
           </tbody>
         </table>
-      </div>
-
-      <!-- Mobile Card Layout -->
-      <div class="sm:hidden space-y-3">
-        <div
-          v-for="record in filteredPayments"
-          :key="record.id"
-          class="p-4 border border-[#e7e5e4] rounded-xl bg-[#fafaf9] space-y-2"
-        >
-          <div class="flex items-center justify-between">
-            <span class="font-mono text-xs font-bold text-[#1c1917]">{{ record.invoiceRef }}</span>
-            <span
-              class="badge-soft text-[10px] font-bold"
-              :class="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'
-                ? 'badge-success'
-                : 'badge-warning'"
-            >
-              {{ record.status }}
-            </span>
-          </div>
-          <div class="flex justify-between text-xs">
-            <span class="text-[#71717a]">{{ record.datePaid }}</span>
-            <span class="font-bold tabular text-[#1c1917]">₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-          </div>
-          <div class="text-xs">
-            <span
-              class="px-2 py-0.5 font-bold text-[10px] rounded-full border"
-              :class="record.paymentMethod.includes('ONLINE') || record.paymentMethod.includes('ADYEN')
-                ? 'bg-[#1e2532] text-white border-transparent'
-                : 'bg-white text-[#1c1917] border-[#e7e5e4]'"
-            >
-              {{ record.paymentMethod }}
-            </span>
-          </div>
-        </div>
-        <div v-if="filteredPayments.length === 0" class="p-6 text-center text-xs text-[#71717a]">
-          No payment records found for {{ selectedYear }}.
-        </div>
       </div>
     </div>
 

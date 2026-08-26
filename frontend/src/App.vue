@@ -8,7 +8,6 @@ import ToastContainer from '@/components/ui/ToastContainer.vue';
 import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
 import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
-import LiveChatheadModal from '@/components/modals/LiveChatheadModal.vue';
 import TenantLoginModal from '@/components/modals/TenantLoginModal.vue';
 import GuestEntryModal from '@/components/modals/GuestEntryModal.vue';
 import TicketHoverModal from '@/components/modals/TicketHoverModal.vue';
@@ -27,12 +26,12 @@ const isPublicPage = computed(() =>
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#fafaf9] text-[#1c1917] flex flex-col font-sans selection:bg-[#f59e0b]/20 selection:text-[#1c1917]">
+  <div class="min-h-screen bg-[#fafaf9] text-[#1c1917] flex flex-col font-sans selection:bg-[#0c66e4]/10 selection:text-[#1c1917]">
     <AppHeader />
     
     <div :class="['flex-1 flex w-full', isWorkspaceSection ? 'max-w-[1600px] mx-auto px-4 sm:px-6' : '']">
       <AppSidebar v-if="isWorkspaceSection" />
-      <main :class="['flex-1 max-w-full min-w-0 flex flex-col', isWorkspaceSection ? 'py-6 lg:pl-6 overflow-y-auto' : '']">
+      <main :class="['flex-1 max-w-full min-w-0 flex flex-col', isWorkspaceSection ? 'py-6 lg:pl-6' : '']">
         <RouterView />
       </main>
     </div>
@@ -45,7 +44,6 @@ const isPublicPage = computed(() =>
     <AdminEditUnitModal />
     <RoomDetailModal />
     <OnsitePaymentModal />
-    <LiveChatheadModal />
     <TenantLoginModal />
     <GuestEntryModal />
     <TicketHoverModal />

@@ -152,46 +152,49 @@ function openInteractiveSimulator() {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-    <div class="bg-white border border-[#dfe1e6] rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh]">
+  <div 
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in"
+    @click.self="emit('close')"
+  >
+    <div class="surface-card w-full max-w-lg shadow-2xl overflow-hidden rounded-2xl bg-white flex flex-col max-h-[92vh] border border-[#e7e5e4]">
       
       <!-- Header -->
-      <div class="bg-[#f4f5f7] border-b border-[#dfe1e6] p-4 flex items-center justify-between">
+      <div class="bg-[#fafaf9] border-b border-[#e7e5e4] p-4 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4] flex items-center justify-center font-bold">
-            <Lock class="w-4 h-4" />
+          <div class="size-8 rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 flex items-center justify-center font-bold">
+            <Lock class="size-4" />
           </div>
           <div>
-            <h2 class="text-sm font-bold text-[#172b4d] flex items-center gap-2">
+            <h2 class="text-sm font-extrabold text-[#1c1917] flex items-center gap-2">
               Adyen Online Checkout
-              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+              <span class="badge-soft badge-success text-[10px] font-extrabold">
                 SANDBOX TEST
               </span>
             </h2>
-            <p class="text-xs text-[#5e6c84]">Official Adyen v71 Sessions Integration</p>
+            <p class="text-xs text-[#71717a]">Official Adyen v71 Sessions Integration</p>
           </div>
         </div>
         <button
           @click="emit('close')"
-          class="p-1.5 text-[#6b778c] hover:text-[#172b4d] hover:bg-slate-200 rounded-md transition-colors cursor-pointer"
+          class="grid size-8 place-items-center rounded-full text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4] transition-colors cursor-pointer"
         >
-          <X class="w-4 h-4" />
+          <X class="size-4" />
         </button>
       </div>
 
       <!-- Bill Summary Card -->
-      <div class="p-4 bg-[#091e42]/[0.02] border-b border-[#dfe1e6] space-y-2">
+      <div class="p-4 bg-[#fafaf9] border-b border-[#e7e5e4] space-y-2">
         <div class="flex justify-between items-center text-xs">
-          <span class="text-[#5e6c84]">Billing Target:</span>
-          <span class="font-bold text-[#172b4d]">Unit {{ props.bill.room_number || '204' }} — Monthly Dues</span>
+          <span class="text-[#71717a]">Billing Target:</span>
+          <span class="font-bold text-[#1c1917]">Unit {{ props.bill.room_number || '204' }} — Monthly Dues</span>
         </div>
         <div class="flex justify-between items-center text-xs">
-          <span class="text-[#5e6c84]">Base Rent + Water Fee:</span>
-          <span class="text-[#172b4d]">₱{{ props.bill.rent_amount.toLocaleString() }} + ₱{{ props.bill.water_amount.toLocaleString() }}</span>
+          <span class="text-[#71717a]">Base Rent + Water Fee:</span>
+          <span class="text-[#1c1917]">₱{{ props.bill.rent_amount.toLocaleString() }} + ₱{{ props.bill.water_amount.toLocaleString() }}</span>
         </div>
-        <div class="flex justify-between items-center text-sm font-extrabold text-[#0c66e4] pt-1 border-t border-[#dfe1e6]">
+        <div class="flex justify-between items-center text-sm font-extrabold text-[#0c66e4] pt-1.5 border-t border-[#e7e5e4]">
           <span>Total Remittance Due:</span>
-          <span>₱{{ props.bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+          <span class="tabular font-display text-base font-black">₱{{ props.bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
         </div>
       </div>
 
@@ -200,40 +203,40 @@ function openInteractiveSimulator() {
         
         <!-- Loading State -->
         <div v-if="isLoading" class="py-12 flex flex-col items-center justify-center text-center space-y-3">
-          <Loader2 class="w-8 h-8 text-[#0c66e4] animate-spin" />
-          <p class="text-xs font-semibold text-[#172b4d]">Connecting to Adyen Test Gateway...</p>
-          <p class="text-[11px] text-[#5e6c84]">Initializing encrypted merchant checkout session</p>
+          <Loader2 class="size-8 text-[#0c66e4] animate-spin" />
+          <p class="text-xs font-bold text-[#1c1917]">Connecting to Adyen Test Gateway...</p>
+          <p class="text-[11px] text-[#71717a]">Initializing encrypted merchant checkout session</p>
         </div>
 
         <!-- Success Completed State -->
         <div v-else-if="isCompleted" class="py-8 text-center space-y-3">
-          <CheckCircle2 class="w-12 h-12 text-emerald-600 mx-auto" />
-          <h3 class="text-base font-bold text-[#172b4d]">Payment Submitted Successfully</h3>
-          <p class="text-xs text-[#5e6c84] max-w-sm mx-auto">
-            Your payment reference <strong class="font-mono text-[#172b4d]">{{ paymentRef }}</strong> has been recorded. It is now awaiting verification by Landlady Fe Galang Da Silva.
+          <CheckCircle2 class="size-12 text-emerald-600 mx-auto" />
+          <h3 class="text-base font-bold text-[#1c1917]">Payment Submitted Successfully</h3>
+          <p class="text-xs text-[#71717a] max-w-sm mx-auto">
+            Your payment reference <strong class="font-mono text-[#1c1917]">{{ paymentRef }}</strong> has been recorded. It is now awaiting verification by Landlady Fe Galang Da Silva.
           </p>
           <button
             @click="emit('close')"
-            class="mt-4 px-6 py-2 bg-[#0c66e4] text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+            class="btn-primary mt-4"
           >
             Done &amp; Return to Portal
           </button>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="errorMessage" class="p-4 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 space-y-3">
-          <div class="flex items-center gap-2 font-bold">
-            <AlertCircle class="w-4 h-4" />
+        <div v-else-if="errorMessage" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 space-y-3">
+          <div class="flex items-center gap-2 font-bold text-rose-900">
+            <AlertCircle class="size-4" />
             Adyen Connection Notice
           </div>
           <p>{{ errorMessage }}</p>
           <div class="pt-2">
             <button
               @click="openInteractiveSimulator"
-              class="px-4 py-2 bg-[#172b4d] text-white rounded font-bold hover:bg-black transition-colors cursor-pointer flex items-center gap-1.5"
+              class="btn-dark gap-1.5"
             >
-              <ExternalLink class="w-3.5 h-3.5" />
-              Use Interactive GCash Gateway
+              <ExternalLink class="size-3.5" />
+              <span>Use Interactive GCash Gateway</span>
             </button>
           </div>
         </div>
@@ -243,30 +246,30 @@ function openInteractiveSimulator() {
           <div ref="adyenContainerRef" id="adyen-dropin-container" class="min-h-[220px]"></div>
 
           <!-- Interactive Gateway Link -->
-          <div class="p-3 bg-[#f4f5f7] border border-[#dfe1e6] rounded-lg flex items-center justify-between">
-            <div class="text-[11px] text-[#5e6c84]">
-              <span class="font-bold text-[#172b4d]">Simulator Mode:</span> Want the full GCash mobile screen?
+          <div class="p-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl flex items-center justify-between">
+            <div class="text-[11px] text-[#71717a]">
+              <span class="font-bold text-[#1c1917]">Simulator Mode:</span> Want the full GCash mobile screen?
             </div>
             <button
               @click="openInteractiveSimulator"
               class="text-xs font-bold text-[#0c66e4] hover:underline flex items-center gap-1 cursor-pointer"
             >
-              Open GCash Simulator
-              <ExternalLink class="w-3 h-3" />
+              <span>Open GCash Simulator</span>
+              <ExternalLink class="size-3" />
             </button>
           </div>
         </div>
       </div>
 
       <!-- Footer Security Note -->
-      <div class="bg-[#f4f5f7] border-t border-[#dfe1e6] px-4 py-3 flex items-center justify-between text-[10px] text-[#6b778c]">
+      <div class="bg-[#fafaf9] border-t border-[#e7e5e4] px-4 py-3 flex items-center justify-between text-[10px] text-[#71717a]">
         <div class="flex items-center gap-1.5">
-          <ShieldCheck class="w-3.5 h-3.5 text-emerald-600" />
+          <ShieldCheck class="size-3.5 text-emerald-600" />
           <span>PCI-DSS Level 1 Encrypted • Merchant: <strong>HiveletECOM</strong></span>
         </div>
         <button
           @click="emit('close')"
-          class="text-[#172b4d] font-bold hover:underline cursor-pointer"
+          class="btn-secondary min-h-8 h-8 px-3 text-xs"
         >
           Cancel
         </button>

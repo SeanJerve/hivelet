@@ -28,11 +28,45 @@ import {
   GraduationCap,
   Navigation,
   Footprints,
-  Compass
+  Compass,
+  ChevronDown,
+  HelpCircle
 } from 'lucide-vue-next';
 
 const router = useRouter();
 const isLoading = ref(true);
+const openFaqIndex = ref<number | null>(0);
+
+function toggleFaq(index: number) {
+  openFaqIndex.value = openFaqIndex.value === index ? null : index;
+}
+
+const FAQS = [
+  {
+    q: 'How does the monthly water fee work?',
+    a: 'Per Fe Galang Da Silva Boarding House policy, water is billed at a fixed standard rate of ₱200 per head/occupant monthly. This is computed dynamically according to the number of registered occupants residing in the unit.'
+  },
+  {
+    q: 'How is electricity metered and billed?',
+    a: 'Each of the 32 rentable units is fitted with an individual electric submeter. Readings are recorded on the 25th of every month and billed at actual consumption rate (₱12.50 / kWh).'
+  },
+  {
+    q: 'What payment methods does the boarding house accept?',
+    a: 'Tenants can pay online conveniently via GCash through our integrated Adyen payment gateway, or pay directly on-site in cash to Landlady Fe Galang Da Silva.'
+  },
+  {
+    q: 'What are the curfew hours and security policies?',
+    a: 'The property has a secure gated perimeter with an evening curfew of 10:00 PM for tenant safety. All registered tenants hold key access for necessary late arrivals or academic schedules.'
+  },
+  {
+    q: 'What are the move-in requirements and advance deposit?',
+    a: 'Standard move-in requires 1 month advance rent and 1 month security deposit, a valid government/student ID, and completion of the resident profile registration form.'
+  },
+  {
+    q: 'Are visitors and guests allowed inside the rooms?',
+    a: 'Daytime visitors are permitted in designated common receiving areas between 8:00 AM and 8:00 PM. Overnight visitors must be registered with the landlady in advance.'
+  }
+];
 
 const CATEGORIES = [
   {
@@ -140,58 +174,61 @@ async function submitInquiry() {
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col w-full">
-    <!-- 100% Full-Width Edge-to-Edge Hero Header Section (No Card / No Rounded Corners) -->
-    <section class="relative w-full overflow-hidden bg-[#1e2532] shadow-sm">
-      <img
-        :src="HERO_PHOTO"
-        alt="Facade of Fe Galang Da Silva Boarding House"
-        class="absolute inset-0 size-full object-cover"
-        loading="eager"
-      />
-      <div class="absolute inset-0 bg-[#1e2532]/85 backdrop-blur-xs" />
-      
-      <div class="relative mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <span class="inline-flex items-center gap-2 rounded-full bg-[#f59e0b] px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest text-[#1c1917] shadow-sm">
-          <MapPin class="size-3.5" /> 32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines
-        </span>
+  <div class="flex-1 flex flex-col w-full bg-[#f4f5f7]">
+    <!-- Academic Clean Property Hero Header Section -->
+    <section class="w-full bg-[#1e2532] text-white border-b border-[#334155] shadow-xs">
+      <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         
-        <h1 class="mt-5 max-w-3xl font-display text-3xl font-black leading-[1.08] text-white sm:text-5xl lg:text-6xl">
-          Fe Galang Da Silva Boarding House
-        </h1>
-        
-        <p class="mt-4 max-w-xl text-sm sm:text-base text-gray-200 leading-relaxed">
-          Thirty-two well-kept units across three floors — clean, secure, and located at 32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines. Transparent rates, submetered electricity, no hidden fees.
-        </p>
-
-        <div class="mt-8 flex flex-wrap gap-3">
-          <button
-            @click="scrollToInquiry"
-            class="min-h-12 inline-flex items-center gap-2 rounded-xl bg-[#f59e0b] px-6 py-3 font-display font-black text-sm text-[#1c1917] hover:bg-[#d97706] transition-colors shadow-md cursor-pointer"
-          >
-            <span>Inquire Now</span>
-            <ArrowRight class="size-4" />
-          </button>
+        <div class="inline-flex items-center gap-2 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider mb-4">
+          <MapPin class="size-3.5 text-blue-400" />
+          <span>32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City</span>
         </div>
 
-        <dl class="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
-          <div class="rounded-xl bg-white/10 p-3.5 backdrop-blur-sm border border-white/10">
-            <dt class="font-display text-2xl font-black text-white">32</dt>
-            <dd class="text-xs text-gray-300">Rentable units</dd>
+        <h1 class="font-display text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+          Fe Galang Da Silva Boarding House
+        </h1>
+
+        <p class="mt-3 max-w-2xl text-sm sm:text-base text-slate-300 leading-relaxed">
+          Canonical 32-unit residential boarding house across 3 floors and 5 property clusters. Verified individual electric submeters, ₱200/head monthly water rule, and secure gated perimeter.
+        </p>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            @click="scrollToInquiry"
+            class="btn-primary min-h-11 px-6 text-sm"
+          >
+            <span>Inquire Directly</span>
+            <ArrowRight class="size-4 text-white" />
+          </button>
+          
+          <a
+            href="#categories"
+            class="btn-secondary min-h-11 px-5 text-sm bg-white/10 text-white border-white/20 hover:bg-white/20"
+          >
+            <span>Browse Unit Inventory</span>
+          </a>
+        </div>
+
+        <!-- 4 Key Property Metrics -->
+        <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl">
+          <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
+            <p class="text-xs text-slate-400 font-bold uppercase">Total Inventory</p>
+            <p class="font-display text-2xl font-black text-white mt-1">32 Units</p>
           </div>
-          <div class="rounded-xl bg-white/10 p-3.5 backdrop-blur-sm border border-white/10">
-            <dt class="font-display text-2xl font-black text-white">3</dt>
-            <dd class="text-xs text-gray-300">Floors</dd>
+          <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
+            <p class="text-xs text-slate-400 font-bold uppercase">Property Floors</p>
+            <p class="font-display text-2xl font-black text-white mt-1">3 Floors</p>
           </div>
-          <div class="rounded-xl bg-white/10 p-3.5 backdrop-blur-sm border border-white/10">
-            <dt class="font-display text-2xl font-black text-white">₱4,500</dt>
-            <dd class="text-xs text-gray-300">Starting rate</dd>
+          <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
+            <p class="text-xs text-slate-400 font-bold uppercase">Starting Base Rate</p>
+            <p class="font-display text-2xl font-black text-blue-400 mt-1">₱4,500/mo</p>
           </div>
-          <div class="rounded-xl bg-white/10 p-3.5 backdrop-blur-sm border border-white/10">
-            <dt class="font-display text-2xl font-black text-white">24/7</dt>
-            <dd class="text-xs text-gray-300">Gate security</dd>
+          <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
+            <p class="text-xs text-slate-400 font-bold uppercase">Water Billing Rule</p>
+            <p class="font-display text-2xl font-black text-emerald-400 mt-1">₱200/head</p>
           </div>
-        </dl>
+        </div>
+
       </div>
     </section>
 
@@ -222,8 +259,8 @@ async function submitInquiry() {
             class="surface-card group flex min-h-11 flex-col items-start p-6 text-left transition-all hover:shadow-xl hover:-translate-y-0.5 cursor-pointer rounded-2xl border border-[#dfe1e6] bg-white relative overflow-hidden"
           >
             <div class="flex items-center justify-between w-full">
-              <span class="grid size-12 place-items-center rounded-xl bg-[#f5f5f4] text-[#1c1917] group-hover:bg-[#1e2532] group-hover:text-[#f59e0b] transition-colors">
-                <component :is="c.icon" class="size-6 text-[#f59e0b] group-hover:text-[#f59e0b]" />
+              <span class="grid size-12 place-items-center rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 group-hover:bg-[#0c66e4] group-hover:text-white transition-colors">
+                <component :is="c.icon" class="size-6" />
               </span>
               <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
                 {{ CANONICAL_32_UNITS.filter(c.match).filter((u) => u.status === 'vacant').length }} Vacant
@@ -250,52 +287,47 @@ async function submitInquiry() {
       </section>
     </div>
 
-    <!-- 2. Why Choose Hivelet Section (100% Full-Width Edge-to-Edge Banner) -->
-    <section id="about-us" class="w-full bg-white py-16 sm:py-20 shadow-xs scroll-mt-20">
+    <!-- 2. Frequently Asked Questions (FAQ Section) -->
+    <section id="faqs" class="w-full bg-white py-16 sm:py-20 shadow-xs scroll-mt-20">
       <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-10">
         <div class="max-w-3xl space-y-2">
-          <span class="text-xs font-extrabold uppercase tracking-widest text-[#0c66e4]">
-            Why Choose Hivelet
+          <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-[#0c66e4]">
+            <HelpCircle class="size-3.5" />
+            Frequently Asked Questions
           </span>
           <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-[#1c1917] tracking-tight">
-            Designed for Quiet & Secure Boarding
+            Boarding House Policies &amp; Guidelines
           </h2>
           <p class="text-xs sm:text-sm text-[#71717a] leading-relaxed">
-            Managed directly by Mrs. Fe Galang Da Silva with strict adherence to house rules, clear individual submetering, and prompt maintenance response.
+            Standard operating guidelines, individual utilities submetering, security curfews, and payment methods for Fe Galang Da Silva Boarding House.
           </p>
         </div>
 
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="p-6 rounded-2xl bg-[#fafaf9] border border-[#e7e5e4] space-y-3 hover:border-amber-300 transition-colors">
-            <div class="size-11 rounded-xl bg-amber-50 border border-amber-200 grid place-items-center text-[#f59e0b]">
-              <Sparkles class="size-5" />
-            </div>
-            <h3 class="font-display font-bold text-base text-[#1c1917]">Clean & Well-Maintained</h3>
-            <p class="text-xs text-[#71717a] leading-relaxed">Tiled bathrooms, fresh paint, and regular common area sanitization.</p>
-          </div>
+        <div class="grid gap-3.5 max-w-4xl">
+          <div 
+            v-for="(faq, idx) in FAQS" 
+            :key="idx"
+            class="surface-card rounded-2xl border border-[#e7e5e4] bg-[#fafaf9] overflow-hidden transition-all"
+          >
+            <button
+              type="button"
+              @click="toggleFaq(idx)"
+              class="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-white transition-colors"
+            >
+              <span class="font-display font-extrabold text-sm sm:text-base text-[#1c1917]">
+                {{ faq.q }}
+              </span>
+              <span class="size-8 rounded-xl bg-white border border-[#e7e5e4] grid place-items-center shrink-0 text-[#71717a]">
+                <ChevronDown :class="['size-4 transition-transform duration-200', openFaqIndex === idx ? 'rotate-180 text-[#0c66e4]' : '']" />
+              </span>
+            </button>
 
-          <div class="p-6 rounded-2xl bg-[#fafaf9] border border-[#e7e5e4] space-y-3 hover:border-blue-300 transition-colors">
-            <div class="size-11 rounded-xl bg-blue-50 border border-blue-200 grid place-items-center text-[#0c66e4]">
-              <KeyRound class="size-5" />
+            <div 
+              v-if="openFaqIndex === idx"
+              class="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-[#57534e] leading-relaxed border-t border-[#e7e5e4]/60 pt-4 bg-white animate-in fade-in duration-150"
+            >
+              {{ faq.a }}
             </div>
-            <h3 class="font-display font-bold text-base text-[#1c1917]">Secure Gate Access</h3>
-            <p class="text-xs text-[#71717a] leading-relaxed">Gated perimeter with dedicated tenant access and evening curfew security.</p>
-          </div>
-
-          <div class="p-6 rounded-2xl bg-[#fafaf9] border border-[#e7e5e4] space-y-3 hover:border-emerald-300 transition-colors">
-            <div class="size-11 rounded-xl bg-emerald-50 border border-emerald-200 grid place-items-center text-emerald-600">
-              <Wifi class="size-5" />
-            </div>
-            <h3 class="font-display font-bold text-base text-[#1c1917]">High-Speed Fiber Ready</h3>
-            <p class="text-xs text-[#71717a] leading-relaxed">Reliable broadband connectivity suited for online schooling and remote work.</p>
-          </div>
-
-          <div class="p-6 rounded-2xl bg-[#fafaf9] border border-[#e7e5e4] space-y-3 hover:border-indigo-300 transition-colors">
-            <div class="size-11 rounded-xl bg-indigo-50 border border-indigo-200 grid place-items-center text-indigo-600">
-              <CheckCircle2 class="size-5" />
-            </div>
-            <h3 class="font-display font-bold text-base text-[#1c1917]">Direct Landlady Support</h3>
-            <p class="text-xs text-[#71717a] leading-relaxed">Transparent billing ledgers, no hidden surcharges, and swift dispatch.</p>
           </div>
         </div>
       </div>
@@ -379,10 +411,10 @@ async function submitInquiry() {
               <button 
                 type="submit" 
                 :disabled="isSubmitting"
-                class="w-full sm:w-auto min-h-12 px-8 rounded-2xl bg-[#1e2532] hover:bg-[#2b3648] text-white font-bold text-sm inline-flex items-center justify-center gap-2.5 cursor-pointer shadow-md transition-all disabled:opacity-50"
+                class="btn-primary min-h-12 px-8 text-sm"
               >
                 <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
-                <Send v-else class="size-4 text-[#f59e0b]" />
+                <Send v-else class="size-4 text-white" />
                 <span>{{ isSubmitting ? 'Sending…' : 'Send Inquiry to Landlady' }}</span>
               </button>
             </div>

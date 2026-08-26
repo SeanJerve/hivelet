@@ -31,7 +31,9 @@ import {
   CheckCircle2, 
   Clock, 
   AlertCircle, 
-  Wrench 
+  Wrench,
+  ChevronDown,
+  ShieldCheck
 } from 'lucide-vue-next';
 
 type ViewMode = 'matrix' | 'table';
@@ -40,12 +42,15 @@ const q = ref('');
 const cluster = ref('All');
 const selectedStatus = ref<string>('All');
 const viewMode = ref<ViewMode>('matrix');
-const isLoading = ref(false);
+const isLoading = ref(true);
 
 async function fetchRooms() {
   isLoading.value = true;
   try {
-    await Promise.all([fetchRoomsState(), fetchTenants()]);
+    await Promise.all([
+      fetchRoomsState(),
+      fetchTenants()
+    ]);
   } catch (err) {
     console.error('fetchRooms failed:', err);
   } finally {
@@ -106,6 +111,14 @@ function getStatusLabel(status: UnitStatus) {
   return status;
 }
 
+function getStatusIcon(status: UnitStatus) {
+  if (status === 'settled') return ShieldCheck;
+  if (status === 'pending') return Clock;
+  if (status === 'overdue') return AlertCircle;
+  if (status === 'maintenance') return Wrench;
+  return Home;
+}
+
 function getStatusBadgeClass(status: UnitStatus) {
   if (status === 'settled') return 'badge-success';
   if (status === 'pending') return 'badge-warning';
@@ -136,6 +149,11 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
       <div>
+        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+          <span>Admin</span>
+          <span>/</span>
+          <span class="font-bold text-[#1c1917]">Room &amp; Rate Directory</span>
+        </div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
           Room &amp; Rate Directory
         </h1>
@@ -147,14 +165,14 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
       <!-- Quick Actions -->
       <div class="flex items-center gap-3">
         <!-- View Mode Switcher -->
-        <div class="inline-flex rounded-xl border border-[#e7e5e4] bg-white p-1 shadow-2xs">
+        <div class="h-10 inline-flex items-center rounded-xl border border-[#e7e5e4] bg-[#f5f5f4] p-1 shadow-2xs">
           <button
             type="button"
             @click="viewMode = 'matrix'"
             :class="[
-              'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer',
+              'h-8 inline-flex items-center gap-1.5 rounded-lg px-3.5 text-xs font-bold transition-all cursor-pointer',
               viewMode === 'matrix' 
-                ? 'bg-[#1c1917] text-white shadow-xs' 
+                ? 'bg-white text-[#0c66e4] shadow-xs' 
                 : 'text-[#71717a] hover:text-[#1c1917]'
             ]"
           >
@@ -166,9 +184,9 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
             type="button"
             @click="viewMode = 'table'"
             :class="[
-              'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer',
+              'h-8 inline-flex items-center gap-1.5 rounded-lg px-3.5 text-xs font-bold transition-all cursor-pointer',
               viewMode === 'table' 
-                ? 'bg-[#1c1917] text-white shadow-xs' 
+                ? 'bg-white text-[#0c66e4] shadow-xs' 
                 : 'text-[#71717a] hover:text-[#1c1917]'
             ]"
           >
@@ -181,58 +199,62 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
           @click="fetchRooms"
           :disabled="isLoading"
           class="btn-secondary"
-          title="Refresh rooms from database"
+          title="Refresh Directory"
         >
-          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
-          <span>Sync DB</span>
+          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin text-[#0c66e4]' : '']" />
+          <span>Refresh</span>
         </button>
       </div>
     </div>
 
-    <!-- Inventory Quick Stats Bar -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <!-- Inventory Quick Stats Bar (Standardized surface-card p-5 size) -->
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div 
         @click="selectedStatus = 'All'"
         :class="[
-          'surface-card p-3.5 rounded-xl border transition-all cursor-pointer hover:shadow-xs',
-          selectedStatus === 'All' ? 'border-[#1c1917] ring-1 ring-[#1c1917]' : 'border-[#e7e5e4]'
+          'surface-card p-5 cursor-pointer transition-all hover:shadow-xs',
+          selectedStatus === 'All' ? 'ring-2 ring-[#0c66e4]' : ''
         ]"
       >
-        <p class="text-[11px] font-bold uppercase tracking-wider text-[#71717a]">Total Inventory</p>
-        <p class="text-xl font-extrabold text-[#1c1917] mt-0.5">{{ totalCount }} Units</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Inventory</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">32 Units</p>
+        <p class="mt-1 text-xs text-[#71717a]">Across 5 clusters &amp; 3 floors</p>
       </div>
 
       <div 
         @click="selectedStatus = 'settled'"
         :class="[
-          'surface-card p-3.5 rounded-xl border transition-all cursor-pointer hover:shadow-xs',
-          selectedStatus === 'settled' ? 'border-emerald-600 ring-1 ring-emerald-600 bg-emerald-50/40' : 'border-[#e7e5e4]'
+          'surface-card p-5 cursor-pointer transition-all hover:shadow-xs',
+          selectedStatus === 'settled' ? 'ring-2 ring-emerald-600' : ''
         ]"
       >
-        <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Occupied / Settled</p>
-        <p class="text-xl font-extrabold text-emerald-950 mt-0.5">{{ occupiedCount }} Units</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-emerald-800">Occupied / Settled</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-emerald-950">{{ occupiedCount }} Units</p>
+        <p class="mt-1 text-xs text-emerald-700">Active resident leases</p>
       </div>
 
       <div 
         @click="selectedStatus = 'vacant'"
         :class="[
-          'surface-card p-3.5 rounded-xl border transition-all cursor-pointer hover:shadow-xs',
-          selectedStatus === 'vacant' ? 'border-sky-600 ring-1 ring-sky-600 bg-sky-50/40' : 'border-[#e7e5e4]'
+          'surface-card p-5 cursor-pointer transition-all hover:shadow-xs',
+          selectedStatus === 'vacant' ? 'ring-2 ring-sky-600' : ''
         ]"
       >
-        <p class="text-[11px] font-bold uppercase tracking-wider text-sky-800">Vacant / Available</p>
-        <p class="text-xl font-extrabold text-sky-950 mt-0.5">{{ vacantCount }} Units</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-sky-800">Vacant / Available</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-sky-950">{{ vacantCount }} Units</p>
+        <p class="mt-1 text-xs text-sky-700">Ready for occupancy</p>
       </div>
 
       <div 
         @click="selectedStatus = 'maintenance'"
         :class="[
-          'surface-card p-3.5 rounded-xl border transition-all cursor-pointer hover:shadow-xs',
-          selectedStatus === 'maintenance' ? 'border-purple-600 ring-1 ring-purple-600 bg-purple-50/40' : 'border-[#e7e5e4]'
+          'surface-card p-5 cursor-pointer transition-all hover:shadow-xs',
+          selectedStatus === 'maintenance' ? 'ring-2 ring-purple-600' : ''
         ]"
       >
-        <p class="text-[11px] font-bold uppercase tracking-wider text-purple-800">Under Maintenance</p>
-        <p class="text-xl font-extrabold text-purple-950 mt-0.5">{{ maintenanceCount }} Units</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-purple-800">Under Maintenance</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-purple-950">{{ maintenanceCount }} Units</p>
+        <p class="mt-1 text-xs text-purple-700">Active repair work orders</p>
       </div>
     </div>
 
@@ -244,13 +266,13 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
           v-model="q"
           type="text"
           placeholder="Search by unit code, resident name, or unit type…"
-          class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+          class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
         />
       </div>
 
       <select
         v-model="cluster"
-        class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none sm:w-56 cursor-pointer"
+        class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-56 cursor-pointer"
       >
         <option value="All">All Clusters (5)</option>
         <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
@@ -258,7 +280,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
 
       <select
         v-model="selectedStatus"
-        class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none sm:w-48 cursor-pointer"
+        class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-48 cursor-pointer"
       >
         <option value="All">All Statuses</option>
         <option value="settled">Settled / Occupied</option>

@@ -1,9 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { isLiveChatheadOpen, showToast } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import { isAdmin, isAuthenticated } from '@/lib/authStore';
 import { MessageCircle, Send, X, UserRound, Loader2 } from 'lucide-vue-next';
+
+const route = useRoute();
+const showFloatingTrigger = computed(() => {
+  if (isLiveChatheadOpen.value) return false;
+  // Hide completely from admin and tenant workspace layouts
+  if (route.path.startsWith('/admin') || route.path.startsWith('/basis') || route.path.startsWith('/tenant')) {
+    return false;
+  }
+  return true;
+});
 
 interface Msg {
   id: string | number;
@@ -283,15 +294,15 @@ onMounted(() => {
       </form>
     </div>
 
-    <!-- Floating Chat Trigger Button (when chat is closed) -->
+    <!-- Floating Chat Trigger Button (when chat is closed and on public pages) -->
     <button
-      v-if="!isLiveChatheadOpen"
+      v-if="showFloatingTrigger"
       @click="isLiveChatheadOpen = true"
       aria-label="Open live chat"
-      class="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-[#1e2532] text-white shadow-xl transition-transform hover:scale-105 cursor-pointer"
+      class="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-[#0c66e4] text-white shadow-xl transition-transform hover:scale-105 cursor-pointer"
       title="Inquiry Live Chat"
     >
-      <MessageCircle class="size-6 text-[#f59e0b]" />
+      <MessageCircle class="size-6 text-white" />
     </button>
   </div>
 </template>

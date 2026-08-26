@@ -141,19 +141,19 @@ onUnmounted(() => {
 
     <!-- Popover Card -->
     <div 
-      class="fixed sm:absolute right-2 sm:right-0 top-16 z-50 w-[calc(100vw-1rem)] sm:w-[420px] max-h-[calc(100vh-5rem)] bg-white rounded-xl border border-[#dfe1e6] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+      class="fixed sm:absolute right-2 sm:right-0 top-16 z-50 w-[calc(100vw-1rem)] sm:w-[420px] max-h-[calc(100vh-5rem)] bg-white rounded-2xl border border-[#e7e5e4] shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
     >
       <!-- Header -->
-      <div class="px-4 py-3.5 border-b border-[#dfe1e6] bg-[#fafbfc] flex items-center justify-between">
+      <div class="px-4 py-3.5 border-b border-[#e7e5e4] bg-[#fafaf9] flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <h3 class="font-bold text-sm text-[#172b4d]">Notifications</h3>
+          <h3 class="font-bold text-sm text-[#1c1917]">Notifications</h3>
           <span 
             v-if="unreadCount > 0"
             class="px-2 py-0.5 text-[10px] font-extrabold bg-[#0c66e4] text-white rounded-full"
           >
             {{ unreadCount }} new
           </span>
-          <span v-else class="text-[11px] text-[#5e6c84] font-medium">
+          <span v-else class="text-[11px] text-[#71717a] font-medium">
             All caught up
           </span>
         </div>
@@ -165,21 +165,21 @@ onUnmounted(() => {
             class="p-1.5 text-xs text-[#0c66e4] hover:bg-blue-50 rounded-lg font-semibold flex items-center gap-1 transition-colors cursor-pointer"
             title="Mark all as read"
           >
-            <CheckCheck class="w-3.5 h-3.5" />
+            <CheckCheck class="size-3.5" />
             <span class="text-[11px]">Mark all read</span>
           </button>
           
           <button
             @click="isPopoverOpen = false"
-            class="p-1.5 text-[#6b778c] hover:text-[#172b4d] hover:bg-[#ebecf0] rounded-lg transition-colors cursor-pointer"
+            class="grid size-7 place-items-center rounded-full text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4] transition-colors cursor-pointer"
           >
-            <X class="w-4 h-4" />
+            <X class="size-3.5" />
           </button>
         </div>
       </div>
 
       <!-- Filter Tabs -->
-      <div class="flex items-center gap-1 px-3 py-2 border-b border-[#dfe1e6] bg-white overflow-x-auto">
+      <div class="flex items-center gap-1 px-3 py-2 border-b border-[#e7e5e4] bg-white overflow-x-auto">
         <button
           v-for="tab in ([
             { key: 'all', label: 'All' },
@@ -191,10 +191,10 @@ onUnmounted(() => {
           :key="tab.key"
           @click="activeFilter = tab.key"
           :class="[
-            'px-2.5 py-1 text-xs font-semibold rounded-md transition-colors whitespace-nowrap cursor-pointer',
+            'px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer',
             activeFilter === tab.key
-              ? 'bg-[#172b4d] text-white'
-              : 'text-[#5e6c84] hover:bg-[#f4f5f7] hover:text-[#172b4d]'
+              ? 'bg-[#0c66e4] text-white font-bold'
+              : 'text-[#71717a] hover:bg-[#f5f5f4] hover:text-[#1c1917]'
           ]"
         >
           {{ tab.label }}
@@ -202,19 +202,19 @@ onUnmounted(() => {
       </div>
 
       <!-- Notifications List Stream -->
-      <div class="flex-1 overflow-y-auto divide-y divide-[#f4f5f7] max-h-[440px]">
+      <div class="flex-1 overflow-y-auto divide-y divide-[#e7e5e4]/60 max-h-[440px]">
         
         <!-- Loading State -->
-        <div v-if="isLoading" class="py-12 text-center text-xs text-[#5e6c84] flex flex-col items-center gap-2">
-          <Loader2 class="w-5 h-5 text-[#0c66e4] animate-spin" />
+        <div v-if="isLoading" class="py-12 text-center text-xs text-[#71717a] flex flex-col items-center gap-2">
+          <Loader2 class="size-5 text-[#0c66e4] animate-spin" />
           <span>Refreshing notifications...</span>
         </div>
 
         <!-- Empty State -->
         <div v-else-if="filteredNotifications.length === 0" class="py-12 px-4 text-center">
-          <ShieldCheck class="w-10 h-10 text-emerald-500 mx-auto mb-2 opacity-80" />
-          <p class="text-xs font-bold text-[#172b4d]">No notifications found</p>
-          <p class="text-[11px] text-[#5e6c84] mt-1">
+          <ShieldCheck class="size-10 text-emerald-500 mx-auto mb-2 opacity-80" />
+          <p class="text-xs font-bold text-[#1c1917]">No notifications found</p>
+          <p class="text-[11px] text-[#71717a] mt-1">
             {{ activeFilter === 'unread' ? 'You have read all your notifications.' : 'No alerts in this category.' }}
           </p>
         </div>
@@ -225,38 +225,38 @@ onUnmounted(() => {
           :key="item.id"
           @click="handleNotificationClick(item)"
           :class="[
-            'p-3.5 flex items-start gap-3 hover:bg-[#f7f8f9] transition-colors cursor-pointer group relative',
-            !item.is_read ? 'bg-[#f4f8ff]/70' : 'bg-white'
+            'p-3.5 flex items-start gap-3 hover:bg-[#fafaf9] transition-colors cursor-pointer group relative',
+            !item.is_read ? 'bg-blue-50/40' : 'bg-white'
           ]"
         >
           <!-- Unread Dot Indicator -->
           <span 
             v-if="!item.is_read"
-            class="absolute left-1.5 top-5 w-1.5 h-1.5 rounded-full bg-[#0c66e4]"
+            class="absolute left-1.5 top-5 size-1.5 rounded-full bg-[#0c66e4]"
           />
 
           <!-- Category Icon -->
           <div 
             :class="[
-              'w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 mt-0.5',
+              'size-8 rounded-xl border flex items-center justify-center shrink-0 mt-0.5',
               getIconColorForType(item.type, item.priority)
             ]"
           >
-            <component :is="getIconForType(item.type)" class="w-4 h-4" />
+            <component :is="getIconForType(item.type)" class="size-4" />
           </div>
 
           <!-- Content Details -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-1 mb-0.5">
-              <span class="text-xs font-bold text-[#172b4d] truncate group-hover:text-[#0c66e4] transition-colors">
+              <span class="text-xs font-bold text-[#1c1917] truncate group-hover:text-[#0c66e4] transition-colors">
                 {{ item.title }}
               </span>
-              <span class="text-[10px] text-[#6b778c] shrink-0 whitespace-nowrap">
+              <span class="text-[10px] text-[#71717a] shrink-0 whitespace-nowrap">
                 {{ formatRelativeTime(item.created_at) }}
               </span>
             </div>
 
-            <p class="text-xs text-[#5e6c84] line-clamp-2 leading-relaxed">
+            <p class="text-xs text-[#71717a] line-clamp-2 leading-relaxed">
               {{ item.message }}
             </p>
 
@@ -274,7 +274,7 @@ onUnmounted(() => {
               >
                 HIGH
               </span>
-              <span class="text-[10px] text-[#6b778c] font-medium">
+              <span class="text-[10px] text-[#71717a] font-medium">
                 {{ item.type }}
               </span>
             </div>
@@ -283,7 +283,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Footer -->
-      <div class="px-4 py-2.5 bg-[#fafbfc] border-t border-[#dfe1e6] flex items-center justify-between text-[11px] text-[#6b778c]">
+      <div class="px-4 py-2.5 bg-[#fafaf9] border-t border-[#e7e5e4] flex items-center justify-between text-[11px] text-[#71717a]">
         <span>Hivelet Real-time Alerts</span>
         <button
           @click="fetchNotifications"

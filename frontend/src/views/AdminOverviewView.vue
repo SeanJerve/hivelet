@@ -18,6 +18,7 @@ import {
   fetchIncomeRecords,
   fetchExpenseRecords,
   fetchMaintenanceTickets,
+  isOnsitePaymentModalOpen,
   type RoomItem 
 } from '@/lib/systemState';
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
@@ -37,7 +38,9 @@ import {
   DollarSign, 
   CheckCircle2, 
   AlertTriangle,
-  ChevronRight
+  ChevronRight,
+  Plus,
+  ReceiptText
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -45,6 +48,7 @@ const pendingPayments = ref<any[]>([]);
 const isRefreshing = ref(false);
 const isInitialLoading = ref(true);
 const hoveredMonthIndex = ref<number | null>(null);
+const isFabOpen = ref(false);
 
 async function loadPayments() {
   try {
@@ -206,8 +210,8 @@ const peakMonth = computed(() => {
 
 // SVG Chart Path Generation (12-column aligned)
 const chartSvgWidth = 1200;
-const chartSvgHeight = 220;
-const chartPaddingY = 32;
+const chartSvgHeight = 260;
+const chartPaddingY = 36;
 
 const maxGross = computed(() => {
   const max = Math.max(...yearly12MonthsData.value.map(d => d.grossIncome), 50000);
@@ -281,9 +285,14 @@ const urgentTickets = computed(() => {
 
 <template>
   <div class="space-y-6">
-    <!-- Header -->
+    <!-- Breadcrumb Header -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
       <div>
+        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+          <span>Admin</span>
+          <span>/</span>
+          <span class="font-bold text-[#1c1917]">Executive Overview</span>
+        </div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
           Executive Overview
         </h1>
@@ -292,7 +301,24 @@ const urgentTickets = computed(() => {
         </p>
       </div>
 
-      <div class="flex items-center gap-3">
+      <!-- Quick Action Buttons: Desktop Primary Actions & Compact Refresh -->
+      <div class="hidden sm:flex items-center gap-2.5 sm:justify-end">
+        <button 
+          @click="isOnsitePaymentModalOpen = true"
+          class="btn-primary"
+        >
+          <Plus class="size-3.5 text-white" />
+          <span>Record On-Site Payment</span>
+        </button>
+
+        <router-link 
+          to="/admin/expenses"
+          class="btn-secondary"
+        >
+          <ReceiptText class="size-3.5 text-[#0c66e4]" />
+          <span>Record Expense</span>
+        </router-link>
+
         <button 
           @click="refreshAllData"
           :disabled="isRefreshing"
@@ -300,7 +326,7 @@ const urgentTickets = computed(() => {
           title="Refresh Data from Database"
         >
           <RefreshCw :class="['size-3.5 text-[#71717a]', isRefreshing && 'animate-spin']" />
-          <span>Sync DB</span>
+          <span>Refresh</span>
         </button>
       </div>
     </div>
@@ -411,11 +437,11 @@ const urgentTickets = computed(() => {
         </div>
       </div>
 
-      <!-- SVG Line Chart Canvas -->
+      <!-- SVG Line Chart Canvas with Embedded Money & Status Labels -->
       <div class="relative mt-6 w-full">
         <svg 
           :viewBox="`0 0 ${chartSvgWidth} ${chartSvgHeight}`" 
-          class="w-full h-56 overflow-visible"
+          class="w-full h-64 overflow-visible"
         >
           <defs>
             <!-- Area Gradient Fill -->
@@ -439,9 +465,9 @@ const urgentTickets = computed(() => {
               v-for="tick in 4" 
               :key="tick"
               :x1="chartPoints[0]?.x ?? 50" 
-              :y1="chartPaddingY + ((tick - 1) * ((chartSvgHeight - chartPaddingY * 2) / 3))"
+              :y1="chartPaddingY + ((tick - 1) * ((chartSvgHeight - chartPaddingY * 2 - 40) / 3))"
               :x2="chartPoints[chartPoints.length - 1]?.x ?? (chartSvgWidth - 50)" 
-              :y2="chartPaddingY + ((tick - 1) * ((chartSvgHeight - chartPaddingY * 2) / 3))"
+              :y2="chartPaddingY + ((tick - 1) * ((chartSvgHeight - chartPaddingY * 2 - 40) / 3))"
               stroke="#e7e5e4" 
               stroke-dasharray="4 4"
               stroke-width="1"
@@ -464,7 +490,7 @@ const urgentTickets = computed(() => {
             stroke-linejoin="round"
           />
 
-          <!-- Data Points & Interactive Hit Targets -->
+          <!-- Data Points & Interactive Hit Targets with Embedded X-Axis Labels -->
           <g v-for="(pt, idx) in chartPoints" :key="pt.month">
             <!-- Vertical guide on hover -->
             <line 
@@ -492,11 +518,31 @@ const urgentTickets = computed(() => {
             <!-- Month Label on X-Axis -->
             <text 
               :x="pt.x" 
-              :y="chartSvgHeight - 8" 
+              :y="chartSvgHeight - 38" 
               text-anchor="middle" 
-              class="text-[11px] font-bold fill-[#71717a]"
+              class="text-[12px] font-extrabold fill-[#1c1917]"
             >
               {{ pt.month }}
+            </text>
+
+            <!-- Money Amount directly under Month -->
+            <text 
+              :x="pt.x" 
+              :y="chartSvgHeight - 22" 
+              text-anchor="middle" 
+              class="text-[11px] font-extrabold fill-[#0c66e4]"
+            >
+              {{ peso(pt.grossIncome) }}
+            </text>
+
+            <!-- Status (Ledger / Run-rate) directly under Money -->
+            <text 
+              :x="pt.x" 
+              :y="chartSvgHeight - 8" 
+              text-anchor="middle" 
+              :class="['text-[9px] font-bold', pt.isProjected ? 'fill-[#a1a1aa]' : 'fill-emerald-700']"
+            >
+              {{ pt.isProjected ? 'Run-rate' : 'Ledger' }}
             </text>
 
             <!-- Invisible hit target for hover spanning the column -->
@@ -546,28 +592,6 @@ const urgentTickets = computed(() => {
             <span class="text-neutral-400">50% Landlady Share:</span>
             <span class="font-semibold text-emerald-400">{{ peso(chartPoints[hoveredMonthIndex].landladyShare) }}</span>
           </div>
-        </div>
-      </div>
-
-      <!-- 12-Month Micro Data Grid -->
-      <div class="mt-4 pt-4 border-t border-[#e7e5e4] grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-12 gap-2 text-center">
-        <div 
-          v-for="(d, i) in yearly12MonthsData" 
-          :key="d.month"
-          :class="[
-            'p-2 rounded-xl border transition-all cursor-pointer text-xs',
-            hoveredMonthIndex === i 
-              ? 'border-[#0c66e4] bg-blue-50/50 ring-1 ring-[#0c66e4]' 
-              : 'border-[#e7e5e4]/80 bg-[#fafaf9] hover:bg-white'
-          ]"
-          @mouseenter="hoveredMonthIndex = i"
-          @mouseleave="hoveredMonthIndex = null"
-        >
-          <p class="font-extrabold text-[#71717a] text-[10px] uppercase">{{ d.month }}</p>
-          <p class="font-display font-bold text-[#1c1917] mt-0.5 text-[11px]">{{ peso(d.grossIncome) }}</p>
-          <span :class="['text-[9px] font-semibold block mt-0.5', d.isProjected ? 'text-[#a1a1aa]' : 'text-emerald-700']">
-            {{ d.isProjected ? 'Run-rate' : 'Ledger' }}
-          </span>
         </div>
       </div>
     </div>
@@ -659,7 +683,7 @@ const urgentTickets = computed(() => {
         </div>
       </div>
 
-      <!-- Cluster Performance & Occupancy Matrix -->
+      <!-- Cluster Performance & Occupancy Matrix (Informative Static Breakdown) -->
       <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between border-b border-[#e7e5e4] pb-4">
@@ -672,7 +696,7 @@ const urgentTickets = computed(() => {
               </p>
             </div>
             <button 
-              @click="router.push('/admin/rooms')"
+              @click="router.push('/admin/directory')"
               class="text-xs font-bold text-[#0c66e4] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>View Directory</span>
@@ -680,13 +704,12 @@ const urgentTickets = computed(() => {
             </button>
           </div>
 
-          <!-- Cluster Rows -->
-          <div class="mt-5 space-y-4">
+          <!-- Cluster Rows (Clean Informative Cards without Page Jump) -->
+          <div class="mt-5 space-y-3.5">
             <div 
               v-for="c in clusterPerformance" 
               :key="c.name"
-              class="p-3.5 rounded-xl border border-[#e7e5e4] bg-[#fafaf9] hover:bg-white hover:border-[#0c66e4] transition-all cursor-pointer"
-              @click="router.push('/admin/rooms')"
+              class="p-3.5 rounded-xl border border-[#e7e5e4] bg-[#fafaf9]"
             >
               <div class="flex items-center justify-between">
                 <div>
@@ -728,91 +751,63 @@ const urgentTickets = computed(() => {
       </div>
     </div>
 
-    <!-- RECENT ACTIVITY: RECENT COLLECTIONS & URGENT MAINTENANCE TICKETS -->
-    <div class="grid gap-6 lg:grid-cols-2">
-      
-      <!-- Recent Verified Collections -->
-      <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-5 shadow-xs">
-        <div class="flex items-center justify-between border-b border-[#e7e5e4] pb-3 mb-3">
-          <div class="flex items-center gap-2">
-            <CheckCircle2 class="size-4 text-emerald-600" />
-            <h3 class="font-display text-sm font-extrabold text-[#1c1917]">
-              Recent Verified Rental Receipts
-            </h3>
+    <!-- Mobile Floating Action Speed-Dial Button (FAB) -->
+    <div class="sm:hidden">
+      <!-- Backdrop overlay when speed dial is open -->
+      <div 
+        v-if="isFabOpen" 
+        class="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-40 animate-in fade-in duration-150" 
+        @click="isFabOpen = false" 
+      />
+
+      <!-- Speed Dial Actions and FAB Trigger -->
+      <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 translate-y-4 scale-90"
+          enter-to-class="transform opacity-100 translate-y-0 scale-100"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0 scale-100"
+          leave-to-class="transform opacity-0 translate-y-4 scale-90"
+        >
+          <div v-if="isFabOpen" class="flex flex-col items-end gap-2.5 mb-1">
+            <!-- Action 1: Record Expense -->
+            <button
+              @click="isFabOpen = false; router.push('/admin/expenses');"
+              class="px-4 py-2.5 rounded-xl bg-white text-[#1c1917] font-extrabold text-xs shadow-xl border border-[#e7e5e4] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
+            >
+              <span>Record Expense</span>
+            </button>
+
+            <!-- Action 2: Record On-Site Payment -->
+            <button
+              @click="isFabOpen = false; isOnsitePaymentModalOpen = true;"
+              class="px-4 py-2.5 rounded-xl bg-white text-[#1c1917] font-extrabold text-xs shadow-xl border border-[#e7e5e4] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
+            >
+              <span>Record On-Site Payment</span>
+            </button>
           </div>
-          <button 
-            @click="router.push('/admin/income')" 
-            class="text-xs font-semibold text-[#0c66e4] hover:underline"
-          >
-            All Receipts &rarr;
-          </button>
-        </div>
+        </Transition>
 
-        <div v-if="recentIncomeRecords.length > 0" class="divide-y divide-[#e7e5e4]">
-          <div 
-            v-for="rec in recentIncomeRecords" 
-            :key="rec.id"
-            class="py-2.5 flex items-center justify-between text-xs"
-          >
-            <div>
-              <p class="font-bold text-[#1c1917]">{{ rec.contact }}</p>
-              <p class="text-[11px] text-[#71717a]">{{ rec.unit }} · {{ rec.datePaid }} · {{ rec.paymentMethod }}</p>
-            </div>
-            <div class="text-right">
-              <p class="font-display font-extrabold text-[#1c1917]">{{ peso(rec.totalRemitted || rec.rent) }}</p>
-              <span class="badge-soft badge-success text-[9px]">Verified</span>
-            </div>
-          </div>
-        </div>
-
-        <div v-else class="p-6 text-center text-xs text-[#71717a]">
-          No rental collections recorded yet this period.
-        </div>
-      </div>
-
-      <!-- Urgent & Active Maintenance Dispatches -->
-      <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-5 shadow-xs">
-        <div class="flex items-center justify-between border-b border-[#e7e5e4] pb-3 mb-3">
-          <div class="flex items-center gap-2">
-            <Wrench class="size-4 text-rose-600" />
-            <h3 class="font-display text-sm font-extrabold text-[#1c1917]">
-              Open Maintenance Tickets
-            </h3>
-          </div>
-          <button 
-            @click="router.push('/admin/maintenance')" 
-            class="text-xs font-semibold text-[#0c66e4] hover:underline"
-          >
-            Dispatch Board &rarr;
-          </button>
-        </div>
-
-        <div v-if="urgentTickets.length > 0" class="divide-y divide-[#e7e5e4]">
-          <div 
-            v-for="t in urgentTickets" 
-            :key="t.id"
-            class="py-2.5 flex items-center justify-between text-xs cursor-pointer hover:bg-[#fafaf9] rounded-lg px-1 transition-colors"
-            @click="router.push('/admin/maintenance')"
-          >
-            <div>
-              <p class="font-bold text-[#1c1917]">{{ t.title }}</p>
-              <p class="text-[11px] text-[#71717a]">Unit {{ t.unit }} · Reported {{ t.reported }}</p>
-            </div>
-            <div class="text-right">
-              <span :class="[
-                'badge-soft text-[9px] font-bold',
-                t.priority === 'Emergency' || t.priority === 'High' ? 'badge-danger' : 'badge-warning'
-              ]">
-                {{ t.priority }}
-              </span>
-              <span class="text-[10px] text-[#71717a] block mt-0.5">{{ t.status }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div v-else class="p-6 text-center text-xs text-emerald-700">
-          ✓ All maintenance tickets have been resolved.
-        </div>
+        <!-- Main FAB Trigger Button -->
+        <button
+          @click="isFabOpen = !isFabOpen"
+          :class="[
+            'size-14 rounded-full shadow-2xl transition-all flex items-center justify-center cursor-pointer border-2 border-white',
+            isFabOpen 
+              ? 'bg-[#0c66e4] text-white ring-4 ring-blue-200' 
+              : 'bg-white text-[#1c1917] ring-4 ring-stone-200 hover:bg-[#0c66e4] hover:text-white hover:ring-blue-200 active:bg-[#0055cc] active:text-white'
+          ]"
+          title="Quick Actions"
+          aria-label="Quick Actions Menu"
+        >
+          <Plus 
+            :class="[
+              'size-7 transition-transform duration-200',
+              isFabOpen ? 'rotate-45' : ''
+            ]" 
+          />
+        </button>
       </div>
     </div>
   </div>

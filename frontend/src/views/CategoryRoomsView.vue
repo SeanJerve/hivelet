@@ -352,7 +352,7 @@ async function submitInquiry() {
               :class="[
                 'group overflow-hidden rounded-2xl border bg-white text-left transition-all hover:shadow-lg cursor-pointer flex flex-col',
                 u.unitCode.toLowerCase() === activeUnit.unitCode.toLowerCase()
-                  ? 'border-2 border-[#f59e0b] shadow-md ring-2 ring-amber-100'
+                  ? 'border-2 border-[#0c66e4] shadow-md ring-2 ring-blue-100'
                   : 'border-[#dfe1e6] hover:border-gray-300'
               ]"
             >
@@ -465,7 +465,7 @@ async function submitInquiry() {
               class="btn-primary"
             >
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
-              <Send v-else class="size-3.5 text-[#f59e0b]" />
+              <Send v-else class="size-3.5 text-white" />
               <span>{{ isSubmitting ? 'Sending…' : 'Send Inquiry to Landlady' }}</span>
             </button>
           </div>

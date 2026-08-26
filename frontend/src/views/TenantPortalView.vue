@@ -267,8 +267,8 @@ async function handleCreateTicket() {
           <span>Refresh</span>
         </button>
 
-        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-800 ring-1 ring-emerald-200">
-          <ShieldCheck class="size-3.5" /> Good Standing
+        <span class="badge-soft badge-success text-xs font-bold">
+          Good Standing
         </span>
       </div>
     </div>

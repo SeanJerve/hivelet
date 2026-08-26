@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { isTicketHoverModalOpen, activeHoverTicket, resolveTicket } from '@/lib/systemState';
-import { X, CheckCircle2, Wrench, User } from 'lucide-vue-next';
+import { X, CheckCircle2, Wrench, User, AlertTriangle, Clock } from 'lucide-vue-next';
 
 function closeModal() {
   isTicketHoverModalOpen.value = false;
@@ -20,7 +20,7 @@ function handleResolve() {
       
       <div class="flex items-center justify-between p-6 pb-4 border-b border-[#e7e5e4]">
         <div class="flex items-center gap-2.5">
-          <div class="grid size-9 place-items-center rounded-xl bg-[#fbf6ee] text-[#8a5814]">
+          <div class="size-9 rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 flex items-center justify-center">
             <Wrench class="size-5" />
           </div>
           <div>
@@ -30,8 +30,8 @@ function handleResolve() {
             <p class="text-xs text-[#71717a]">ID: {{ activeHoverTicket.id }} • {{ activeHoverTicket.reported }}</p>
           </div>
         </div>
-        <button @click="closeModal" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4]">
-          <X class="size-5" />
+        <button @click="closeModal" class="grid size-8 place-items-center rounded-full text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4] cursor-pointer">
+          <X class="size-4" />
         </button>
       </div>
 
@@ -42,9 +42,9 @@ function handleResolve() {
             <p class="text-[#71717a] mt-0.5">Reported: {{ activeHoverTicket.reported }} · {{ activeHoverTicket.category }}</p>
           </div>
           <span :class="[
-            'badge-soft px-2.5 py-1 text-xs font-bold',
+            'badge-soft text-xs font-bold',
             activeHoverTicket.priority === 'Emergency' ? 'badge-danger' :
-            activeHoverTicket.priority === 'High' ? 'badge-warning' : 'badge-info'
+            activeHoverTicket.priority === 'High' ? 'badge-warning' : 'badge-blue'
           ]">
             {{ activeHoverTicket.priority }} Priority
           </span>
@@ -81,11 +81,11 @@ function handleResolve() {
       </div>
 
       <div class="p-4 px-6 border-t border-[#e7e5e4] flex justify-between items-center">
-        <span v-if="activeHoverTicket.status === 'Resolved'" class="badge-soft badge-success px-3 py-1 text-xs font-bold">
-          ✓ Resolved
+        <span v-if="activeHoverTicket.status === 'Resolved'" class="badge-soft badge-success text-xs font-bold">
+          Resolved
         </span>
         <button v-else @click="handleResolve" class="btn-primary">
-          <CheckCircle2 class="size-3.5" />
+          <CheckCircle2 class="size-3.5 text-white" />
           <span>Close &amp; Resolve Ticket</span>
         </button>
 

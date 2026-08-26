@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router';
 import { isRoomDetailModalOpen, activeRoomDetail, isLiveChatheadOpen, selectedInquirerId, selectedPublicInquiryUnit } from '@/lib/systemState';
-import { X, MessageSquare, Building2, Check, Banknote } from 'lucide-vue-next';
+import { isAdmin } from '@/lib/authStore';
+import { X, MessageSquare, Building2, Check, ShieldCheck, Clock, Wrench, Home } from 'lucide-vue-next';
+
+const route = useRoute();
 
 function closeModal() {
   isRoomDetailModalOpen.value = false;
@@ -14,33 +18,45 @@ function handleInquireDirectly() {
   selectedInquirerId.value = 'inq-1';
   isLiveChatheadOpen.value = true;
 }
+
+function getStatusBadgeClass(status?: string) {
+  if (status === 'settled' || status === 'occupied') return 'badge-success';
+  if (status === 'pending') return 'badge-warning';
+  if (status === 'overdue') return 'badge-danger';
+  if (status === 'maintenance') return 'badge-purple';
+  return 'badge-neutral';
+}
 </script>
 
 <template>
-  <div v-if="isRoomDetailModalOpen && activeRoomDetail" class="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1917]/50 backdrop-blur-xs p-4 overflow-y-auto">
-    <div class="surface-card w-full max-w-lg shadow-2xl overflow-hidden rounded-2xl animate-in fade-in zoom-in-95 duration-150 my-6">
+  <div 
+    v-if="isRoomDetailModalOpen && activeRoomDetail" 
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
+    @click.self="closeModal"
+  >
+    <div class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl animate-in fade-in zoom-in-95 duration-150 my-6 bg-white border border-[#e7e5e4]">
       
       <div class="flex items-center justify-between p-6 pb-4 border-b border-[#e7e5e4]">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-[#fbf6ee] text-[#f59e0b] flex items-center justify-center">
-            <Building2 class="w-5 h-5" />
+          <div class="size-9 rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 flex items-center justify-center">
+            <Building2 class="size-5" />
           </div>
           <div>
             <h3 class="font-display font-extrabold text-lg text-[#1c1917]">
               Unit {{ activeRoomDetail.unitCode.toUpperCase() }} Specifications
             </h3>
-            <p class="text-xs text-[#71717a]">{{ activeRoomDetail.cluster }} • {{ activeRoomDetail.floorLabel }}</p>
+            <p class="text-xs text-[#71717a]">{{ activeRoomDetail.cluster }} · {{ activeRoomDetail.floorLabel || `Floor ${activeRoomDetail.floor}` }}</p>
           </div>
         </div>
-        <button @click="closeModal" class="w-8 h-8 rounded-full flex items-center justify-center text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4]">
-          <X class="w-4 h-4" />
+        <button @click="closeModal" class="p-1.5 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer" aria-label="Close dialog">
+          <X class="size-5" />
         </button>
       </div>
 
       <div class="p-6 space-y-4 text-xs text-[#1c1917] max-h-[75vh] overflow-y-auto">
         
         <!-- Room Photo Banner -->
-        <div v-if="activeRoomDetail.photo" class="h-44 w-full rounded-xl overflow-hidden relative border border-[#e7e5e4] bg-neutral-900 shadow-2xs">
+        <div v-if="activeRoomDetail.photo" class="h-48 w-full rounded-xl overflow-hidden relative border border-[#e7e5e4] bg-neutral-900 shadow-2xs">
           <img 
             :src="activeRoomDetail.photo" 
             :alt="`Unit ${activeRoomDetail.unitCode}`"
@@ -48,10 +64,10 @@ function handleInquireDirectly() {
           />
           <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
           <div class="absolute bottom-3 left-3 flex items-center gap-2">
-            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-white/90 text-[#1c1917] shadow-xs uppercase tracking-wider backdrop-blur-xs">
+            <span class="badge-soft badge-neutral bg-white/95 font-bold uppercase tracking-wider">
               {{ activeRoomDetail.cluster }}
             </span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#f59e0b] text-white shadow-xs">
+            <span class="badge-soft badge-blue bg-white/95 font-bold">
               Floor {{ activeRoomDetail.floor }}
             </span>
           </div>
@@ -59,7 +75,7 @@ function handleInquireDirectly() {
 
         <div class="p-4 rounded-xl bg-[#1e2532] text-white flex justify-between items-end">
           <div>
-            <span class="text-[10px] uppercase font-bold tracking-widest text-[#f59e0b]">Unit Showcase</span>
+            <span class="text-[10px] uppercase font-bold tracking-widest text-blue-400">Unit Showcase</span>
             <h4 class="font-display font-bold text-xl text-white mt-0.5">Unit {{ activeRoomDetail.unitCode.toUpperCase() }}</h4>
             <p class="text-xs text-[#a1a1aa] mt-0.5">{{ activeRoomDetail.type }} • Up to {{ activeRoomDetail.maxOccupants }} Pax</p>
           </div>
@@ -76,9 +92,13 @@ function handleInquireDirectly() {
               ₱{{ activeRoomDetail.price.toLocaleString() }} <span class="text-xs font-normal text-[#71717a]">/ month</span>
             </p>
           </div>
-          <div class="p-3.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl">
-            <p class="text-[#71717a] text-[10px] font-bold uppercase">Availability</p>
-            <p class="font-bold text-[#1c1917] mt-0.5 capitalize">{{ activeRoomDetail.status }}</p>
+          <div class="p-3.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl flex flex-col justify-between">
+            <p class="text-[#71717a] text-[10px] font-bold uppercase">Operational Status</p>
+            <div class="mt-0.5">
+              <span :class="['badge-soft text-xs capitalize font-extrabold', getStatusBadgeClass(activeRoomDetail.status)]">
+                {{ activeRoomDetail.status }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -98,24 +118,21 @@ function handleInquireDirectly() {
             <div class="flex items-center gap-1.5"><Check class="w-3.5 h-3.5 text-emerald-600 font-bold" /> Submetered Electricity</div>
           </div>
         </div>
-
-        <div class="p-3.5 bg-[#fffbeb] border border-[#fde68a] text-[#92400e] rounded-xl space-y-1">
-          <p class="font-bold flex items-center gap-1.5 text-xs">
-            <Banknote class="w-3.5 h-3.5 text-[#f59e0b]" /> Utility Billing Rules:
-          </p>
-          <p class="text-xs">
-            Water is billed at ₱200 per registered occupant monthly. Electricity is submetered per room based on actual consumption.
-          </p>
-        </div>
       </div>
 
-      <div class="p-4 px-6 border-t border-[#e7e5e4] flex items-center justify-between">
-        <button @click="closeModal" class="btn-secondary">
-          Close
+      <!-- Footer Actions -->
+      <div class="p-4 px-6 border-t border-[#e7e5e4] flex items-center justify-end gap-3">
+        <!-- If opened by a guest on the public showcase, show Inquire button -->
+        <button 
+          v-if="!isAdmin && !route.path.startsWith('/admin')"
+          @click="handleInquireDirectly" 
+          class="btn-primary"
+        >
+          <MessageSquare class="size-3.5 text-white" />
+          <span>Inquire Directly</span>
         </button>
-        <button @click="handleInquireDirectly" class="btn-primary">
-          <MessageSquare class="size-3.5 text-[#f59e0b]" />
-          <span>Inquire to Landlady</span>
+        <button @click="closeModal" class="btn-secondary">
+          Close Specs
         </button>
       </div>
     </div>

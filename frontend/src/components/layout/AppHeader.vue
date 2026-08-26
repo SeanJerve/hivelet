@@ -4,7 +4,7 @@
  * @description Solid white navbar with public section navigation & authenticated notification center.
  * @systemBibleRef Section 1 - Product Identity, Section 4 - Public Visitor Role & Section 16 - Notifications
  */
-import { ref, computed, onUnmounted, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { isMobileSidebarOpen } from '@/lib/systemState';
 import { 
@@ -15,23 +15,30 @@ import {
   logout 
 } from '@/lib/authStore';
 import { 
-  unreadCount, 
-  hasEmergencyUnread, 
-  isPopoverOpen, 
-  startNotificationsHeartbeat, 
-  stopNotificationsHeartbeat 
-} from '@/lib/notificationsStore';
-import NotificationPopover from './NotificationPopover.vue';
-import { 
   Menu, 
   LogOut, 
   LogIn,
-  Bell
+  User,
+  ChevronDown
 } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
 const isMobilePublicNavOpen = ref(false);
+const isProfilePopoverOpen = ref(false);
+
+const userInitials = computed(() => {
+  const name = currentUser.value?.fullName || 'User';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+});
+
+const userRoleLabel = computed(() => {
+  if (isAdmin.value) return 'Admin';
+  if (isTenant.value) return 'Tenant';
+  return 'Guest';
+});
 
 const isAdminRoute = computed(() => 
   route.path.startsWith('/admin') || route.path.startsWith('/basis')
@@ -57,10 +64,6 @@ function toggleSidebar() {
   isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
 }
 
-function toggleNotifications() {
-  isPopoverOpen.value = !isPopoverOpen.value;
-}
-
 function scrollToSection(sectionId: string) {
   if (route.path === '/public' || route.path === '/') {
     const el = document.getElementById(sectionId);
@@ -78,27 +81,26 @@ function scrollToSection(sectionId: string) {
   }
 }
 
+let popoverTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function handleMouseEnter() {
+  if (popoverTimeout) clearTimeout(popoverTimeout);
+  isProfilePopoverOpen.value = true;
+}
+
+function handleMouseLeave() {
+  if (popoverTimeout) clearTimeout(popoverTimeout);
+  popoverTimeout = setTimeout(() => {
+    isProfilePopoverOpen.value = false;
+  }, 180);
+}
+
 async function handleSignOut() {
-  stopNotificationsHeartbeat();
+  if (popoverTimeout) clearTimeout(popoverTimeout);
+  isProfilePopoverOpen.value = false;
   await logout();
   router.push('/login');
 }
-
-watch(
-  () => isAuthenticated.value,
-  (authed) => {
-    if (authed) {
-      startNotificationsHeartbeat();
-    } else {
-      stopNotificationsHeartbeat();
-    }
-  },
-  { immediate: true }
-);
-
-onUnmounted(() => {
-  stopNotificationsHeartbeat();
-});
 </script>
 
 <template>
@@ -128,18 +130,7 @@ onUnmounted(() => {
         </button>
 
         <router-link :to="brandRoute" class="flex items-center gap-2 group">
-          <div class="flex items-center gap-1.5">
-            <span class="font-display font-black text-xl tracking-tight text-[#1c1917]">HIVELET</span>
-            <span v-if="isAdminRoute || isAdmin" class="rounded-md bg-[#fbf6ee] px-2 py-0.5 text-[10px] font-extrabold uppercase text-[#8a5814] border border-[#fde68a]">
-              LANDLADY ADMIN
-            </span>
-            <span v-else-if="isTenantRoute || isTenant" class="rounded-md bg-[#e9f2ff] px-2 py-0.5 text-[10px] font-extrabold uppercase text-[#0c66e4] border border-[#bfdbfe]">
-              TENANT SPACE
-            </span>
-            <span v-else class="rounded-md bg-[#fbf6ee] px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-[#8a5814]">
-              EST. 2026
-            </span>
-          </div>
+          <span class="font-display font-black text-xl tracking-tight text-[#1c1917]">HIVELET</span>
         </router-link>
       </div>
 
@@ -152,10 +143,10 @@ onUnmounted(() => {
           Category Section
         </button>
         <button
-          @click="scrollToSection('about-us')"
+          @click="scrollToSection('faqs')"
           class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-[#1c1917] hover:text-[#0c66e4] hover:bg-[#f5f5f4] transition-all cursor-pointer"
         >
-          About Us
+          FAQs
         </button>
         <button
           @click="scrollToSection('inquire-now')"
@@ -174,47 +165,95 @@ onUnmounted(() => {
       <!-- Right: User Profile & Sign In / Out -->
       <div class="flex items-center gap-2 sm:gap-3">
 
-        <!-- Authenticated Notifications & User Profile -->
+        <!-- Authenticated User Profile & Dropdown Avatar -->
         <template v-if="isAuthenticated && currentUser">
-          
-          <!-- Notification Bell Button -->
-          <div class="relative">
+          <!-- Avatar Button with Dropdown Arrow (Desktop & Mobile) -->
+          <div 
+            class="relative py-1"
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+          >
             <button
-              @click="toggleNotifications"
-              class="relative p-2 rounded-xl text-[#5e6c84] hover:text-[#172b4d] hover:bg-[#f4f5f7] transition-colors cursor-pointer"
-              :class="{ 'bg-[#f4f5f7] text-[#172b4d]': isPopoverOpen }"
-              aria-label="Open notifications"
-              title="Notifications"
+              @click="isProfilePopoverOpen = !isProfilePopoverOpen"
+              class="flex items-center gap-1.5 p-1 rounded-xl hover:bg-[#f5f5f4] transition-colors cursor-pointer group"
+              title="Account Menu"
+              aria-label="User Account Menu"
             >
-              <Bell class="w-5 h-5" />
-              
-              <!-- Unread Badge Indicator -->
-              <span
-                v-if="unreadCount > 0"
-                class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-extrabold text-white rounded-full transition-transform"
-                :class="hasEmergencyUnread ? 'bg-rose-600 animate-pulse' : 'bg-[#0c66e4]'"
-              >
-                {{ unreadCount > 99 ? '99+' : unreadCount }}
-              </span>
+              <div class="size-9 rounded-full bg-gradient-to-tr from-[#0c66e4] to-sky-400 p-0.5 shadow-xs group-hover:ring-2 group-hover:ring-[#0c66e4]/40 transition-all flex items-center justify-center">
+                <span class="w-full h-full rounded-full bg-[#0c66e4] flex items-center justify-center text-[11px] font-black tracking-wider text-white">
+                  {{ userInitials }}
+                </span>
+              </div>
+              <ChevronDown :class="['size-3.5 text-[#71717a] transition-transform duration-150', isProfilePopoverOpen && 'rotate-180']" />
             </button>
 
-            <!-- Popover Dropdown -->
-            <NotificationPopover />
-          </div>
+            <!-- Transparent click-outside backdrop (mobile) -->
+            <div 
+              v-if="isProfilePopoverOpen" 
+              class="fixed inset-0 z-40 sm:hidden" 
+              @click="isProfilePopoverOpen = false"
+            />
 
-          <div class="hidden sm:flex flex-col text-right">
-            <span class="text-xs font-bold text-[#1c1917] truncate max-w-[150px]">{{ currentUser.fullName }}</span>
-            <span class="text-[10px] text-[#71717a] font-medium capitalize">{{ currentUser.role }}</span>
-          </div>
+            <!-- Interactive Popover Modal (School Portal Style) with Subtle Animation -->
+            <Transition
+              enter-active-class="transition-all duration-200 ease-out"
+              enter-from-class="opacity-0 -translate-y-2 scale-95"
+              enter-to-class="opacity-100 translate-y-0 scale-100"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="opacity-100 translate-y-0 scale-100"
+              leave-to-class="opacity-0 -translate-y-2 scale-95"
+            >
+              <div
+                v-if="isProfilePopoverOpen"
+                class="absolute right-0 top-12 z-50 w-72 sm:w-80 rounded-2xl border border-[#e7e5e4] bg-white p-5 shadow-2xl origin-top-right"
+                @mouseenter="handleMouseEnter"
+                @mouseleave="handleMouseLeave"
+              >
+                <!-- Centered Profile Header with Circular Avatar -->
+                <div class="flex flex-col items-center text-center pb-4 border-b border-[#e7e5e4]">
+                  <div class="size-16 rounded-full ring-4 ring-blue-100 border-2 border-white shadow-md bg-gradient-to-tr from-[#0c66e4] to-sky-400 flex items-center justify-center text-white text-lg font-black tracking-wider">
+                    {{ userInitials }}
+                  </div>
+                  <p class="font-display font-black text-sm text-[#1c1917] mt-3">
+                    {{ isTenant ? currentUser.fullName : 'Administrator' }}
+                  </p>
+                  <p class="text-xs text-[#71717a] truncate max-w-[240px] mt-0.5">
+                    {{ currentUser.email }}
+                  </p>
+                  <span class="badge-soft badge-blue text-[10px] font-extrabold uppercase mt-2.5">
+                    {{ isTenant ? 'Active Resident' : 'Landlady Administrator' }}
+                  </span>
+                </div>
 
-          <button
-            @click="handleSignOut"
-            class="btn-secondary"
-            title="Sign Out"
-          >
-            <LogOut class="size-3.5 text-[#71717a]" />
-            <span class="hidden sm:inline">Sign Out</span>
-          </button>
+                <!-- Quick Action Navigation Links -->
+                <div class="py-3 space-y-1">
+                  <router-link
+                    v-if="isTenant"
+                    to="/tenant/profile"
+                    @click="isProfilePopoverOpen = false"
+                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#1c1917] hover:bg-[#f5f5f4] transition-colors"
+                  >
+                    <User class="size-4 text-[#0c66e4]" />
+                    <span>My Profile</span>
+                  </router-link>
+
+                  <button
+                    @click="handleSignOut"
+                    class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                  >
+                    <LogOut class="size-4 text-rose-600" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+
+                <!-- Discreet Footer -->
+                <div class="pt-3 border-t border-[#e7e5e4] flex items-center justify-between text-[10px] text-[#a1a1aa]">
+                  <span>Hivelet Portal</span>
+                  <span>Fe Galang Da Silva BH</span>
+                </div>
+              </div>
+            </Transition>
+          </div>
         </template>
 
         <!-- Unauthenticated Guest Sign In Button -->
@@ -223,7 +262,7 @@ onUnmounted(() => {
             to="/login"
             class="btn-primary"
           >
-            <LogIn class="size-3.5 text-[#f59e0b]" />
+            <LogIn class="size-3.5 text-white" />
             <span>Sign In</span>
           </router-link>
         </template>
@@ -243,10 +282,10 @@ onUnmounted(() => {
         Category Section
       </button>
       <button
-        @click="scrollToSection('about-us'); isMobilePublicNavOpen = false"
+        @click="scrollToSection('faqs'); isMobilePublicNavOpen = false"
         class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-[#1c1917] hover:bg-[#f5f5f4] hover:text-[#0c66e4] transition-all cursor-pointer"
       >
-        About Us
+        FAQs
       </button>
       <button
         @click="scrollToSection('inquire-now'); isMobilePublicNavOpen = false"

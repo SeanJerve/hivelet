@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, showToast, type TenantRecord } from '@/lib/systemState';
 import { peso, CANONICAL_32_UNITS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Eye, Pencil, LogOut, X, AlertTriangle, RefreshCw, Loader2, Users, User, Check } from 'lucide-vue-next';
+import { Search, UserPlus, Eye, Pencil, LogOut, X, AlertTriangle, RefreshCw, Loader2, Users, User, Check, ShieldCheck, Clock } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 
 const q = ref('');
@@ -171,8 +171,8 @@ async function handleOnboard() {
       depositAmount: Number(newDeposit.value) || 9000,
       occupantCount: finalOccupants,
       roommateQty: finalRoommateQty,
-      emergencyContactName: newEmergName.value || 'Contact Person',
-      emergencyContactPhone: newEmergPhone.value || '0917-000-0000',
+      emergencyContactName: newEmergName.value.trim() || 'Emergency Contact',
+      emergencyContactPhone: newEmergPhone.value.trim() || '—',
       occupation: 'Resident',
     });
 
@@ -196,9 +196,14 @@ async function handleOnboard() {
 
 <template>
   <div class="space-y-6">
-    <!-- Page Header (Screenshot 4) -->
+    <!-- Page Header -->
     <div class="flex flex-col gap-3 border-b border-[#e7e5e4] pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
+        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+          <span>Admin</span>
+          <span>/</span>
+          <span class="font-bold text-[#1c1917]">Active Tenants</span>
+        </div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
           Active Tenant Directory
         </h1>
@@ -221,7 +226,7 @@ async function handleOnboard() {
           @click="isOnboardModalOpen = true"
           class="btn-primary"
         >
-          <UserPlus class="size-3.5 text-[#f59e0b]" />
+          <UserPlus class="size-3.5 text-white" />
           <span>Onboard Tenant</span>
         </button>
       </div>
@@ -237,17 +242,17 @@ async function handleOnboard() {
             v-model="q"
             type="text"
             placeholder="Search name, unit or phone…"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
           />
         </div>
 
-        <div class="flex items-center gap-1.5 self-start sm:self-auto bg-[#fafaf9] p-1 border border-[#e7e5e4] rounded-xl text-xs">
+        <div class="h-10 inline-flex items-center gap-1 self-start sm:self-auto bg-[#f5f5f4] p-1 border border-[#e7e5e4] rounded-xl text-xs">
           <button
             type="button"
             @click="statusFilter = 'all'"
             :class="[
-              'px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer',
-              statusFilter === 'all' ? 'bg-white text-[#1c1917] shadow-xs font-bold' : 'text-[#71717a] hover:text-[#1c1917]'
+              'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
+              statusFilter === 'all' ? 'bg-white text-[#0c66e4] shadow-xs' : 'text-[#71717a] hover:text-[#1c1917]'
             ]"
           >
             All ({{ tenants.length }})
@@ -256,8 +261,8 @@ async function handleOnboard() {
             type="button"
             @click="statusFilter = 'active'"
             :class="[
-              'px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer',
-              statusFilter === 'active' ? 'bg-white text-emerald-700 shadow-xs font-bold' : 'text-[#71717a] hover:text-[#1c1917]'
+              'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
+              statusFilter === 'active' ? 'bg-white text-[#0c66e4] shadow-xs' : 'text-[#71717a] hover:text-[#1c1917]'
             ]"
           >
             Active ({{ activeCount }})
@@ -266,8 +271,8 @@ async function handleOnboard() {
             type="button"
             @click="statusFilter = 'vacated'"
             :class="[
-              'px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer',
-              statusFilter === 'vacated' ? 'bg-white text-stone-700 shadow-xs font-bold' : 'text-[#71717a] hover:text-[#1c1917]'
+              'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
+              statusFilter === 'vacated' ? 'bg-white text-[#0c66e4] shadow-xs' : 'text-[#71717a] hover:text-[#1c1917]'
             ]"
           >
             Past / Vacated ({{ vacatedCount }})
@@ -317,17 +322,15 @@ async function handleOnboard() {
               <td class="whitespace-nowrap px-4 py-3.5">
                 <span 
                   v-if="(t.roommateQty ?? (t.occupants - 1)) > 0"
-                  class="badge-soft badge-info text-xs font-bold inline-flex items-center gap-1.5 px-2.5 py-1"
+                  class="badge-soft badge-blue text-xs font-bold"
                 >
-                  <Users class="size-3 text-[#0c66e4]" />
-                  <span>Yes ({{ t.roommateQty ?? (t.occupants - 1) }} {{ (t.roommateQty ?? (t.occupants - 1)) === 1 ? 'roommate' : 'roommates' }})</span>
+                  Yes ({{ t.roommateQty ?? (t.occupants - 1) }} {{ (t.roommateQty ?? (t.occupants - 1)) === 1 ? 'roommate' : 'roommates' }})
                 </span>
                 <span 
                   v-else 
-                  class="badge-soft badge-neutral text-xs text-[#71717a] inline-flex items-center gap-1.5 px-2.5 py-1"
+                  class="badge-soft badge-neutral text-xs font-bold"
                 >
-                  <User class="size-3 text-[#a1a1aa]" />
-                  <span>No (Solo)</span>
+                  Solo (1 Pax)
                 </span>
               </td>
 
@@ -351,11 +354,11 @@ async function handleOnboard() {
               <td class="px-4 py-3.5">
                 <span 
                   :class="[
-                    'badge-soft text-xs',
-                    t.status === 'active' ? 'badge-success' : 'badge-warning'
+                    'badge-soft text-xs font-bold',
+                    t.status === 'active' ? 'badge-success' : 'badge-neutral'
                   ]"
                 >
-                  {{ t.status === 'active' ? 'Active' : 'Pending' }}
+                  {{ t.status === 'active' ? 'Active' : 'Vacated' }}
                 </span>
               </td>
 
@@ -409,8 +412,8 @@ async function handleOnboard() {
               Resident Profile
             </span>
             <span :class="[
-              'badge-soft text-[10px] font-bold px-2 py-0.5 rounded-md',
-              editModalTenant.status === 'active' ? 'badge-success' : 'badge-warning'
+              'badge-soft text-xs font-bold',
+              editModalTenant.status === 'active' ? 'badge-success' : 'badge-neutral'
             ]">
               {{ editModalTenant.status === 'active' ? 'Active Resident' : 'Past / Vacated' }}
             </span>
@@ -600,13 +603,6 @@ async function handleOnboard() {
             <p class="text-xs text-[#71717a] pb-3">Resident will occupy unit alone (1 Headcount).</p>
           </div>
 
-          <div class="sm:col-span-2 p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-900 text-xs flex items-center justify-between">
-            <span class="font-medium">Total Registered Occupants:</span>
-            <strong class="font-display font-extrabold text-sm">
-              {{ newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1 }} Headcount (₱{{ (newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1) * 200 }}/mo water fee)
-            </strong>
-          </div>
-
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Move-in Date</label>
             <input v-model="newMoveIn" type="date" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
@@ -620,15 +616,26 @@ async function handleOnboard() {
             <input v-model.number="newDeposit" type="number" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Emergency Contact Name</label>
-            <input v-model="newEmergName" placeholder="Maria Santos" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Emergency Contact Name (Optional)</label>
+            <input v-model="newEmergName" placeholder="Maria Santos (optional)" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" />
           </div>
           <div class="sm:col-span-2">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Emergency Contact Phone</label>
-            <input v-model="newEmergPhone" placeholder="0928-000-0000" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Emergency Contact Phone (Optional)</label>
+            <input v-model="newEmergPhone" placeholder="0928-000-0000 (optional)" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" />
           </div>
 
-          <div class="sm:col-span-2 pt-2 flex justify-end gap-2">
+          <!-- Concluded Summary Banner (Positioned directly above modal action buttons) -->
+          <div class="sm:col-span-2 p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-blue-950 text-xs flex items-center justify-between shadow-2xs">
+            <div class="flex items-center gap-2">
+              <span class="size-2 rounded-full bg-[#0c66e4]"></span>
+              <span class="font-medium">Total Registered Headcount:</span>
+            </div>
+            <strong class="font-display font-extrabold text-sm text-[#0c66e4]">
+              {{ newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1 }} Pax · ₱{{ (newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1) * 200 }}/mo water fee
+            </strong>
+          </div>
+
+          <div class="sm:col-span-2 pt-2 flex justify-end gap-2.5">
             <button type="button" @click="isOnboardModalOpen = false" class="btn-secondary">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="btn-primary">
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />

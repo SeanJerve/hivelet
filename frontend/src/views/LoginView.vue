@@ -180,7 +180,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 type="text"
                 required
                 placeholder="Juan Dela Cruz"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
               />
             </div>
 
@@ -194,7 +194,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 autocomplete="username"
                 required
                 placeholder="you@email.com"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
               />
             </div>
 
@@ -206,7 +206,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 v-model="phoneNumber"
                 type="text"
                 placeholder="0917-000-0000"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
               />
             </div>
 
@@ -221,7 +221,7 @@ async function handleQuickLogin(account: DemoAccount) {
                   autocomplete="current-password"
                   required
                   placeholder="••••••••"
-                  class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 pr-11 text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+                  class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 pr-11 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
@@ -245,7 +245,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 type="password"
                 required
                 placeholder="••••••••"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
               />
             </div>
 
@@ -264,7 +264,7 @@ async function handleQuickLogin(account: DemoAccount) {
               class="btn-primary min-h-11 w-full gap-2 text-sm font-bold shadow-xs justify-center"
             >
               <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" />
-              <component :is="isSignUp ? UserPlus : LogIn" v-else class="size-4 text-[#f59e0b]" />
+              <component :is="isSignUp ? UserPlus : LogIn" v-else class="size-4 text-white" />
               {{ isAuthenticating ? (isSignUp ? 'Creating account…' : 'Signing in…') : (isSignUp ? 'Create Account' : 'Sign in') }}
             </button>
           </form>
@@ -329,7 +329,7 @@ async function handleQuickLogin(account: DemoAccount) {
                       @click="handleQuickLogin(acc)"
                       class="btn-primary min-h-8 px-3 py-1 text-xs gap-1 inline-flex items-center shadow-xs cursor-pointer"
                     >
-                      <LogIn class="size-3 text-[#f59e0b]" />
+                      <LogIn class="size-3 text-white" />
                       <span>Sign In</span>
                     </button>
                   </td>

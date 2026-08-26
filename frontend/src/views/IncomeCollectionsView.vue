@@ -28,7 +28,8 @@ import {
   Check,
   CreditCard,
   FileSpreadsheet,
-  Banknote
+  Banknote,
+  ChevronDown
 } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -483,9 +484,14 @@ function exportCSV() {
 
 <template>
   <div class="space-y-6">
-    <!-- Header -->
+    <!-- Header with Breadcrumbs -->
     <div class="flex flex-col gap-3 border-b border-[#e7e5e4] pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
+        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+          <span>Admin</span>
+          <span>/</span>
+          <span class="font-bold text-[#1c1917]">Income &amp; Collections</span>
+        </div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
           Monthly Income &amp; Collections Ledger
         </h1>
@@ -516,13 +522,40 @@ function exportCSV() {
           @click="isOnsitePaymentModalOpen = true"
           class="btn-primary"
         >
-          <Plus class="size-3.5 text-[#f59e0b]" />
+          <Plus class="size-3.5 text-white" />
           <span>Record On-Site Payment</span>
         </button>
       </div>
     </div>
 
-    <!-- Tab Navigation -->
+    <!-- 4 Summary KPI StatCards (Always Visible at Top) -->
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="surface-card p-5">
+        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Gross Rent</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(totalRent) }}</p>
+        <p class="mt-1 text-xs text-[#71717a]">Before 50% share derivation</p>
+      </div>
+
+      <div class="surface-card p-5">
+        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">50% Owner Share</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#8a5814]">{{ peso(totalShare) }}</p>
+        <p class="mt-1 text-xs text-amber-800 font-medium">Automatic gross rent cut</p>
+      </div>
+
+      <div class="surface-card p-5">
+        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Water Collections</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(totalWater) }}</p>
+        <p class="mt-1 text-xs text-[#71717a]">₱200 / head monthly rule</p>
+      </div>
+
+      <div class="surface-card p-5">
+        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Remitted</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-emerald-800">{{ peso(totalRemitted) }}</p>
+        <p class="mt-1 text-xs text-emerald-700 font-medium">50% Share + Total Water</p>
+      </div>
+    </div>
+
+    <!-- Tab Navigation (Positioned below KPI cards per user requirement) -->
     <div class="flex items-center gap-2 border-b border-[#e7e5e4] pb-px">
       <button
         @click="activeTab = 'ledger'"
@@ -550,7 +583,7 @@ function exportCSV() {
         <span>Online Verification (Adyen)</span>
         <span
           v-if="pendingPayments.length > 0"
-          class="ml-1.5 px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-500 text-white"
+          class="badge-soft badge-warning text-[10px] font-extrabold ml-1.5"
         >
           {{ pendingPayments.length }}
         </span>
@@ -562,7 +595,7 @@ function exportCSV() {
       <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-xs text-amber-900">
         <Clock class="size-4 mt-0.5 text-amber-600 shrink-0" />
         <div>
-          <strong class="font-bold">Online Payment Verification Queue (BR-016 & BR-017)</strong>
+          <strong class="font-bold">Online Payment Verification Queue (BR-016 &amp; BR-017)</strong>
           <p class="text-amber-800 mt-0.5">
             Adyen GCash remittances require administrator validation. Approving an entry marks the resident's bill as Paid and automatically calculates the 50% revenue cut into the Monthly Income Ledger.
           </p>
@@ -587,8 +620,8 @@ function exportCSV() {
                 <th class="px-4 py-3 font-bold">Resident</th>
                 <th class="px-4 py-3 font-bold">Target Unit</th>
                 <th class="px-4 py-3 font-bold">Amount</th>
-                <th class="px-4 py-3 font-bold">Gateway & Ref #</th>
-                <th class="px-4 py-3 font-bold">Date & Status</th>
+                <th class="px-4 py-3 font-bold">Gateway &amp; Ref #</th>
+                <th class="px-4 py-3 font-bold">Date &amp; Status</th>
                 <th class="px-4 py-3 font-bold text-right">Actions</th>
               </tr>
             </thead>
@@ -609,8 +642,8 @@ function exportCSV() {
                   <div class="mt-0.5 text-[10px] text-[#57534e]">{{ p.transaction_reference || 'REF-PENDING' }}</div>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 ring-1 ring-amber-200">
-                    <Clock class="size-3" /> PENDING
+                  <span class="badge-soft badge-warning text-xs font-bold">
+                    Pending Verification
                   </span>
                 </td>
                 <td class="px-4 py-3 text-right">
@@ -640,32 +673,6 @@ function exportCSV() {
 
     <!-- TAB 1: Collection Ledger -->
     <div v-else class="space-y-6">
-      <!-- 4 Summary KPI StatCards -->
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Gross Rent</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(totalRent) }}</p>
-        <p class="mt-1 text-xs text-[#71717a]">Before 50% share derivation</p>
-      </div>
-
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">50% Owner Share</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#8a5814]">{{ peso(totalShare) }}</p>
-        <p class="mt-1 text-xs text-amber-800 font-medium">Automatic gross rent cut</p>
-      </div>
-
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Water Collections</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(totalWater) }}</p>
-        <p class="mt-1 text-xs text-[#71717a]">₱200 / head monthly rule</p>
-      </div>
-
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Remitted</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-emerald-800">{{ peso(totalRemitted) }}</p>
-        <p class="mt-1 text-xs text-emerald-700 font-medium">50% Share + Total Water</p>
-      </div>
-    </div>
 
     <!-- Ledger Table Container -->
     <div class="surface-card overflow-hidden">
@@ -677,13 +684,13 @@ function exportCSV() {
             v-model="q"
             type="text"
             placeholder="Search unit, resident or OR #…"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
           />
         </div>
 
         <select
           v-model="selectedCluster"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none sm:w-44"
+          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
         >
           <option value="All">All Clusters</option>
           <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
@@ -691,14 +698,14 @@ function exportCSV() {
 
         <select
           v-model="filterMonth"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none sm:w-44"
+          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
         >
           <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
         </select>
 
         <select
           v-model="filterYear"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none sm:w-36"
+          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-36 cursor-pointer"
         >
           <option value="All">All Years</option>
           <option v-for="y in yearsList" :key="y" :value="y">{{ y === 'All' ? 'All Years' : y }}</option>
@@ -823,7 +830,9 @@ function exportCSV() {
         <div class="p-4 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] space-y-1">
           <div class="flex justify-between items-center">
             <span class="font-display font-bold text-sm text-[#1c1917]">Linda Front (LF)</span>
-            <span class="badge-soft badge-info text-[10px]">Fixed Billing</span>
+            <span class="badge-soft badge-blue text-xs font-bold">
+              Fixed Billing
+            </span>
           </div>
           <p class="text-xs text-[#71717a]">Water: <strong>₱400.00 / month</strong> · Electricity: Submetered actual</p>
         </div>
@@ -831,7 +840,9 @@ function exportCSV() {
         <div class="p-4 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] space-y-1">
           <div class="flex justify-between items-center">
             <span class="font-display font-bold text-sm text-[#1c1917]">Linda Back (LB)</span>
-            <span class="badge-soft badge-info text-[10px]">Fixed Billing</span>
+            <span class="badge-soft badge-blue text-xs font-bold">
+              Fixed Billing
+            </span>
           </div>
           <p class="text-xs text-[#71717a]">Water: <strong>₱200.00 / month</strong> · Electric: <strong>₱325.00 fixed / month</strong></p>
         </div>
@@ -849,7 +860,7 @@ function exportCSV() {
         
         <div class="flex justify-between items-start border-b border-[#e7e5e4] pb-3">
           <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-[#fbf6ee] text-[#8a5814]">
+            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200">
               <Banknote class="size-5" />
             </div>
             <div>
@@ -866,7 +877,7 @@ function exportCSV() {
           <!-- Room/Unit selector -->
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Unit</label>
-            <select v-model="editUnit" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none">
+            <select v-model="editUnit" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none">
               <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
                 {{ r.unitCode.toUpperCase() }} — {{ r.tenant || 'Vacant' }} ({{ r.cluster }})
               </option>
@@ -877,11 +888,11 @@ function exportCSV() {
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Amount for Rent (₱)</label>
-              <input v-model.number="editRent" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+              <input v-model.number="editRent" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Payment for Water (₱)</label>
-              <input v-model.number="editWater" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+              <input v-model.number="editWater" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
             </div>
           </div>
 
@@ -889,11 +900,11 @@ function exportCSV() {
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">GBG Fee (₱)</label>
-              <input v-model.number="editGarbage" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+              <input v-model.number="editGarbage" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">OR / Receipt Number</label>
-              <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-mono text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+              <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-mono text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
             </div>
           </div>
 
@@ -901,14 +912,14 @@ function exportCSV() {
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Payment Method</label>
-              <select v-model="editMethod" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none">
+              <select v-model="editMethod" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none">
                 <option value="Cash">Cash</option>
                 <option value="Online">Online Payment</option>
               </select>
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" :class="{ 'opacity-40': editMethod !== 'Online' }">Transaction Reference #</label>
-              <input v-model="editReference" type="text" placeholder="Gcash / Bank Ref #" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none disabled:opacity-40 disabled:bg-[#f5f5f4]" :disabled="editMethod !== 'Online'" :required="editMethod === 'Online'" />
+              <input v-model="editReference" type="text" placeholder="Gcash / Bank Ref #" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none disabled:opacity-40 disabled:bg-[#f5f5f4]" :disabled="editMethod !== 'Online'" :required="editMethod === 'Online'" />
             </div>
           </div>
 
@@ -916,11 +927,11 @@ function exportCSV() {
           <div class="grid gap-4 sm:grid-cols-3">
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Months Covered</label>
-              <input v-model.number="editMonthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+              <input v-model.number="editMonthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Covered Period Start</label>
-              <input v-model="editDateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+              <input v-model="editDateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Covered Period End</label>
@@ -932,7 +943,7 @@ function exportCSV() {
           <div class="grid gap-4 sm:grid-cols-2 pt-2">
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Date Received</label>
-              <input v-model="editDate" type="date" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+              <input v-model="editDate" type="date" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
             </div>
             <div class="bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-3.5 flex flex-col justify-center">
               <span class="text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Total Amount (₱)</span>

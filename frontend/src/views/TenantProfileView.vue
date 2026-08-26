@@ -10,20 +10,19 @@ import { ref, computed, onMounted } from 'vue';
 import {
   User,
   Mail,
-  Phone,
-  Briefcase,
-  Link as LinkIcon,
   Save,
   CheckCircle2,
   AlertTriangle,
   X,
   LifeBuoy,
   Camera,
-  RotateCcw
+  RotateCcw,
+  ShieldCheck
 } from 'lucide-vue-next';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { showToast } from '@/lib/systemState';
+import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 /** Tenant-editable profile fields */
 interface EditableProfile {
@@ -168,23 +167,17 @@ function handleReset() {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto w-full space-y-6">
+  <div class="space-y-6">
     <!-- Breadcrumb Header -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
       <div>
         <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
-          <span>Tenant Portal</span>
+          <span>Tenant</span>
           <span>/</span>
-          <span class="font-medium text-[#1c1917]">My Profile</span>
+          <span class="font-bold text-[#1c1917]">My Profile</span>
         </div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Resident Profile</h1>
-        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">Manage your personal details, emergency contacts, and contact information</p>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <router-link to="/tenant" class="btn-secondary">
-          <span>Unit Overview</span>
-        </router-link>
+        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">Manage your personal contact details, emergency info, and account profile.</p>
       </div>
     </div>
 
@@ -252,8 +245,8 @@ function handleReset() {
         <div class="text-center sm:text-left space-y-1.5 flex-1">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
             <h2 class="font-display font-black text-xl text-[#1c1917]">{{ form.full_name }}</h2>
-            <span class="badge-soft badge-success text-[10px] font-bold w-fit mx-auto sm:mx-0">
-              ACTIVE TENANT
+            <span class="badge-soft badge-success text-[11px] font-bold w-fit mx-auto sm:mx-0">
+              Active Tenant
             </span>
           </div>
           <p class="text-xs text-[#71717a] flex items-center justify-center sm:justify-start gap-1.5">
@@ -275,9 +268,6 @@ function handleReset() {
             </h2>
             <p class="text-xs text-[#71717a] mt-0.5">Update your contact numbers, emergency contact, and links</p>
           </div>
-          <span class="badge-soft badge-info text-[10px] font-bold">
-            Self-Service Enabled
-          </span>
         </div>
 
         <div class="p-6 space-y-6">
@@ -289,34 +279,28 @@ function handleReset() {
                 <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="full-name">
                   Full Display Name
                 </label>
-                <div class="relative">
-                  <User class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="full-name"
-                    v-model="form.full_name"
-                    type="text"
-                    placeholder="Your Full Name"
-                    class="form-input pl-9.5 text-xs font-semibold"
-                    required
-                  />
-                </div>
+                <input
+                  id="full-name"
+                  v-model="form.full_name"
+                  type="text"
+                  placeholder="Your Full Name"
+                  class="form-input text-xs font-semibold"
+                  required
+                />
               </div>
 
               <div>
                 <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="phone">
                   Contact Phone Number
                 </label>
-                <div class="relative">
-                  <Phone class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="phone"
-                    v-model="form.phone_number"
-                    type="tel"
-                    placeholder="e.g. 0917-123-4567"
-                    class="form-input pl-9.5 text-xs"
-                    required
-                  />
-                </div>
+                <input
+                  id="phone"
+                  v-model="form.phone_number"
+                  type="tel"
+                  placeholder="e.g. 0917-123-4567"
+                  class="form-input text-xs"
+                  required
+                />
               </div>
             </div>
           </div>
@@ -331,32 +315,26 @@ function handleReset() {
                 <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="occupation">
                   Occupation / Course &amp; University
                 </label>
-                <div class="relative">
-                  <Briefcase class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="occupation"
-                    v-model="form.occupation"
-                    type="text"
-                    placeholder="e.g. BS Nursing Student / IT Specialist"
-                    class="form-input pl-9.5 text-xs"
-                  />
-                </div>
+                <input
+                  id="occupation"
+                  v-model="form.occupation"
+                  type="text"
+                  placeholder="e.g. BS Nursing Student / IT Specialist"
+                  class="form-input text-xs"
+                />
               </div>
 
               <div>
                 <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="facebook">
                   Facebook Profile Link
                 </label>
-                <div class="relative">
-                  <LinkIcon class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="facebook"
-                    v-model="form.facebook_url"
-                    type="url"
-                    placeholder="https://facebook.com/your.profile"
-                    class="form-input pl-9.5 text-xs"
-                  />
-                </div>
+                <input
+                  id="facebook"
+                  v-model="form.facebook_url"
+                  type="url"
+                  placeholder="https://facebook.com/your.profile"
+                  class="form-input text-xs"
+                />
               </div>
             </div>
           </div>
@@ -374,34 +352,28 @@ function handleReset() {
                 <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ec-name">
                   Emergency Contact Full Name
                 </label>
-                <div class="relative">
-                  <User class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="ec-name"
-                    v-model="form.emergency_contact_name"
-                    type="text"
-                    placeholder="Parent / Guardian Name"
-                    class="form-input pl-9.5 text-xs"
-                    required
-                  />
-                </div>
+                <input
+                  id="ec-name"
+                  v-model="form.emergency_contact_name"
+                  type="text"
+                  placeholder="Parent / Guardian Name"
+                  class="form-input text-xs"
+                  required
+                />
               </div>
 
               <div>
                 <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ec-phone">
                   Emergency Contact Phone Number
                 </label>
-                <div class="relative">
-                  <Phone class="size-4 text-[#71717a] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="ec-phone"
-                    v-model="form.emergency_contact_phone"
-                    type="tel"
-                    placeholder="e.g. 0918-987-6543"
-                    class="form-input pl-9.5 text-xs"
-                    required
-                  />
-                </div>
+                <input
+                  id="ec-phone"
+                  v-model="form.emergency_contact_phone"
+                  type="tel"
+                  placeholder="e.g. 0918-987-6543"
+                  class="form-input text-xs"
+                  required
+                />
               </div>
             </div>
           </div>
@@ -427,7 +399,7 @@ function handleReset() {
               :disabled="!isDirty || saving"
               class="btn-primary"
             >
-              <Save class="size-3.5" />
+              <Save class="size-3.5 text-white" />
               <span>{{ saving ? 'Saving Changes…' : 'Save Profile' }}</span>
             </button>
           </div>

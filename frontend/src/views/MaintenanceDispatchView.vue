@@ -22,7 +22,11 @@ import {
   RefreshCw, 
   Loader2, 
   ReceiptText,
-  Check
+  Check,
+  ChevronDown,
+  AlertTriangle,
+  Clock,
+  AlertCircle
 } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -284,9 +288,14 @@ function handleDeleteTicketPrompt() {
 
 <template>
   <div class="space-y-6">
-    <!-- Header -->
+    <!-- Header with Breadcrumbs -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
       <div>
+        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+          <span>Admin</span>
+          <span>/</span>
+          <span class="font-bold text-[#1c1917]">Maintenance Dispatch</span>
+        </div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
           Maintenance Dispatch Board
         </h1>
@@ -331,7 +340,7 @@ function handleDeleteTicketPrompt() {
 
     <!-- Table Section -->
     <div class="surface-card overflow-hidden">
-      <!-- Search & Status Filter -->
+      <!-- Filter Bar -->
       <div class="flex flex-col gap-3 border-b border-[#e7e5e4] p-4 sm:flex-row">
         <div class="relative flex-1">
           <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
@@ -339,13 +348,13 @@ function handleDeleteTicketPrompt() {
             v-model="q"
             type="text"
             placeholder="Search title, unit code or technician…"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none"
+            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
           />
         </div>
 
         <select
           v-model="statusFilter"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-3 text-xs sm:text-sm text-[#1c1917] focus:border-[#f59e0b] focus:outline-none sm:w-56"
+          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-56 cursor-pointer"
         >
           <option value="All">All Statuses</option>
           <option value="Open">Open</option>
@@ -393,19 +402,15 @@ function handleDeleteTicketPrompt() {
                 <p class="text-xs text-[#71717a]">{{ t.category }}</p>
               </td>
               <td class="whitespace-nowrap px-4 py-3">
-                <span :class="['badge-soft text-xs font-bold whitespace-nowrap inline-flex items-center', getPriorityBadgeClass(t.priority)]">
+                <span :class="['badge-soft text-xs font-bold whitespace-nowrap', getPriorityBadgeClass(t.priority)]">
                   {{ t.priority }}
                 </span>
               </td>
               <td class="whitespace-nowrap px-4 py-3 text-xs text-[#71717a]">{{ t.reported }}</td>
               <td class="whitespace-nowrap px-4 py-3 text-[#1c1917] font-medium">{{ t.technician }}</td>
               <td class="whitespace-nowrap px-4 py-3">
-                <span :class="['badge-soft text-xs font-bold whitespace-nowrap inline-flex items-center gap-1', getStatusBadgeClass(t.status)]">
-                  <span 
-                    class="size-1.5 rounded-full shrink-0" 
-                    :class="t.status === 'Resolved' ? 'bg-emerald-500' : t.status === 'In Progress' ? 'bg-sky-500' : 'bg-amber-500'"
-                  ></span>
-                  <span>{{ t.status }}</span>
+                <span :class="['badge-soft text-xs font-bold whitespace-nowrap', getStatusBadgeClass(t.status)]">
+                  {{ t.status }}
                 </span>
               </td>
               <td class="whitespace-nowrap px-4 py-3 text-center">
@@ -430,10 +435,10 @@ function handleDeleteTicketPrompt() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
       @click.self="isEditModalOpen = false"
     >
-      <div class="surface-card w-full max-w-xl shadow-2xl rounded-2xl p-6 bg-white space-y-4 my-6">
+      <div class="surface-card w-full max-w-2xl shadow-2xl rounded-2xl p-6 bg-white space-y-4 my-6">
         <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
           <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-[#fbf6ee] text-[#8a5814]">
+            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200">
               <Wrench class="size-5" />
             </div>
             <div>
@@ -467,7 +472,7 @@ function handleDeleteTicketPrompt() {
               @click="handleQuickResolve"
               class="btn-primary px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
             >
-              <CheckCircle2 class="size-3.5 text-[#f59e0b]" />
+              <CheckCircle2 class="size-3.5 text-white" />
               <span>Close / Resolve</span>
             </button>
             <span v-else class="text-xs font-bold text-emerald-700 inline-flex items-center gap-1">
@@ -480,14 +485,14 @@ function handleDeleteTicketPrompt() {
           <!-- Issue Title -->
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Issue Title</label>
-            <input v-model="editTitle" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#f59e0b] focus:outline-none" required />
+            <input v-model="editTitle" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
           </div>
 
           <!-- Unit Code & Category -->
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Unit</label>
-              <select v-model="editUnit" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold bg-white focus:border-[#f59e0b] focus:outline-none" required>
+              <select v-model="editUnit" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold bg-white focus:border-[#0c66e4] focus:outline-none" required>
                 <option v-for="r in rooms" :key="r.id" :value="r.unitCode.toLowerCase()">
                   {{ r.unitCode.toUpperCase() }} ({{ r.cluster }})
                 </option>
@@ -495,7 +500,7 @@ function handleDeleteTicketPrompt() {
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Category</label>
-              <select v-model="editCategory" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white focus:border-[#f59e0b] focus:outline-none" required>
+              <select v-model="editCategory" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white focus:border-[#0c66e4] focus:outline-none" required>
                 <option value="Plumbing">Plumbing</option>
                 <option value="Electrical">Electrical</option>
                 <option value="Carpentry">Carpentry</option>
@@ -510,7 +515,7 @@ function handleDeleteTicketPrompt() {
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Priority</label>
-              <select v-model="editPriority" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white font-bold focus:border-[#f59e0b] focus:outline-none" required>
+              <select v-model="editPriority" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white font-bold focus:border-[#0c66e4] focus:outline-none" required>
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
@@ -519,7 +524,7 @@ function handleDeleteTicketPrompt() {
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Status</label>
-              <select v-model="editStatus" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white font-bold focus:border-[#f59e0b] focus:outline-none" required>
+              <select v-model="editStatus" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white font-bold focus:border-[#0c66e4] focus:outline-none" required>
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Resolved">Resolved</option>
@@ -530,7 +535,7 @@ function handleDeleteTicketPrompt() {
           <!-- Assigned Technician -->
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Assigned Technician</label>
-            <select v-model="editTech" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white focus:border-[#f59e0b] focus:outline-none">
+            <select v-model="editTech" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white focus:border-[#0c66e4] focus:outline-none">
               <option v-for="tech in TECHNICIANS" :key="tech" :value="tech">{{ tech }}</option>
             </select>
           </div>
@@ -538,7 +543,7 @@ function handleDeleteTicketPrompt() {
           <!-- Description -->
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Description &amp; Repair Notes</label>
-            <textarea v-model="editDesc" rows="3" class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs resize-none focus:border-[#f59e0b] focus:outline-none" placeholder="Details regarding the maintenance request..."></textarea>
+            <textarea v-model="editDesc" rows="3" class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs resize-none focus:border-[#0c66e4] focus:outline-none" placeholder="Details regarding the maintenance request..."></textarea>
           </div>
 
           <!-- Resident Photo Attachment (if present) -->
@@ -598,7 +603,7 @@ function handleDeleteTicketPrompt() {
                 v-model="newAdminMessage"
                 @keydown.enter.prevent="handleSendAdminComment"
                 placeholder="Type a follow-up comment for the resident…"
-                class="flex-1 px-3 py-1.5 border border-[#e7e5e4] rounded-xl text-xs bg-white focus:border-[#f59e0b] focus:outline-none"
+                class="flex-1 px-3 py-1.5 border border-[#e7e5e4] rounded-xl text-xs bg-white focus:border-[#0c66e4] focus:outline-none"
               />
               <button
                 type="button"

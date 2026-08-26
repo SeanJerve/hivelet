@@ -3,7 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
 import { peso, CANONICAL_32_UNITS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { X, Check, Loader2, Upload, ChevronDown, Users } from 'lucide-vue-next';
+import { X, Check, Loader2, Upload, ChevronDown, Users, ShieldCheck, Home } from 'lucide-vue-next';
 
 const unit = ref<RoomItem | null>(null);
 
@@ -207,9 +207,9 @@ async function handleSave() {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
     @click.self="closeModal"
   >
-    <!-- Modal Card (Screenshot 2) -->
+    <!-- Modal Card -->
     <div
-      class="surface-card w-full max-w-lg shadow-2xl overflow-hidden rounded-2xl bg-white animate-in fade-in zoom-in-95 duration-150 my-6"
+      class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white animate-in fade-in zoom-in-95 duration-150 my-6 border border-[#e7e5e4]"
     >
       <!-- Header -->
       <div class="flex items-center justify-between p-6 pb-4 border-b border-[#e7e5e4]">
@@ -264,10 +264,10 @@ async function handleSave() {
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
 
               <div class="absolute bottom-3 left-3 flex items-center gap-2">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-white/90 text-[#1c1917] shadow-xs uppercase tracking-wider backdrop-blur-xs">
+                <span class="badge-soft badge-neutral bg-white/95 font-bold uppercase tracking-wider backdrop-blur-xs">
                   {{ unit.cluster }}
                 </span>
-                <span v-if="editPhotoUrl.startsWith('data:')" class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-600 text-white shadow-xs">
+                <span v-if="editPhotoUrl.startsWith('data:')" class="badge-soft badge-success bg-white/95 font-bold">
                   New Photo Selected
                 </span>
               </div>
@@ -302,7 +302,7 @@ async function handleSave() {
             type="number"
             min="0"
             step="100"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-base font-bold text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-base font-bold text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
             required
           />
         </div>
@@ -339,7 +339,7 @@ async function handleSave() {
             </div>
 
             <span :class="[
-              'badge-soft text-[10px] font-bold px-2.5 py-1 rounded-md shrink-0',
+              'badge-soft text-xs font-bold shrink-0',
               occupantsSummary.count > 0 ? 'badge-success' : 'badge-neutral'
             ]">
               {{ occupantsSummary.count > 0 ? 'Occupied' : 'Vacant' }}
@@ -357,7 +357,7 @@ async function handleSave() {
             <div class="relative">
               <select
                 v-model="unitType"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm font-semibold text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
+                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm font-semibold text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
                 required
               >
                 <option v-for="opt in UNIT_TYPE_CHOICES" :key="opt" :value="opt">
@@ -378,7 +378,7 @@ async function handleSave() {
             <div class="relative">
               <select
                 v-model="editStatus"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm font-semibold text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
+                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm font-semibold text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
                 required
               >
                 <option v-for="opt in OPERATIONAL_STATUS_OPTIONS" :key="opt" :value="opt">
@@ -400,7 +400,7 @@ async function handleSave() {
           <input
             v-model="billingRule"
             type="text"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
             required
           />
         </div>
@@ -413,7 +413,7 @@ async function handleSave() {
           <textarea
             v-model="amenitiesText"
             rows="3"
-            class="w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] p-3 text-xs leading-relaxed text-[#1c1917] focus:bg-white focus:border-[#f59e0b] focus:outline-none transition-colors resize-none"
+            class="w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] p-3 text-xs leading-relaxed text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors resize-none"
             placeholder="Separate items with commas..."
           ></textarea>
         </div>

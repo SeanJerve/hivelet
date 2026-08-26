@@ -6,10 +6,12 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/useToast';
 
+const router = useRouter();
 const { showToast } = useToast();
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
 import {
@@ -27,11 +29,15 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle,
+  RefreshCw,
+  Wrench,
+  Plus
 } from 'lucide-vue-next';
 
 const submissionNotice = ref('');
 const activeBillId = ref<string | null>(null);
 const payingOnline = ref(false);
+const isFabOpen = ref(false);
 
 // Resident & Assigned Unit Data
 const tenantData = ref({
@@ -67,6 +73,11 @@ const tenantData = ref({
 });
 
 const loading = ref(false);
+
+const tenantFirstName = computed(() => {
+  const full = tenantData.value.name || currentUser.value?.fullName || 'Resident';
+  return full.split(' ')[0];
+});
 
 /**
  * Computed due-date countdown.
@@ -264,31 +275,57 @@ async function handlePayOnline() {
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto w-full space-y-6">
-    <!-- Breadcrumb Header -->
+  <div class="space-y-6">
+    <!-- Breadcrumb & Welcome Greeting Header -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
       <div>
         <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
           <span>Tenant Portal</span>
           <span>/</span>
-          <span class="font-medium text-[#1c1917]">{{ tenantData.name }}</span>
-          <span>/</span>
-          <span class="font-bold text-[#0c66e4]">{{ tenantData.room }}</span>
+          <span class="font-bold text-[#1c1917]">Unit Overview</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Unit Overview</h1>
-        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">{{ tenantData.room }} unit photo, specifications &amp; billing statement</p>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+          Welcome back, {{ tenantFirstName }}!
+        </h1>
+        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">
+          Unit {{ tenantData.room }} · Assigned specifications, photo showcase, and active billing statement.
+        </p>
       </div>
 
-      <div class="flex items-center gap-2">
-        <router-link to="/tenant/payments" class="btn-secondary">
-          <CreditCard class="size-3.5" />
-          <span>Payment History</span>
+      <!-- Quick Action Buttons: Desktop Primary Actions & Compact Refresh -->
+      <div class="hidden sm:flex items-center gap-2.5 sm:justify-end">
+        <router-link 
+          to="/tenant/tickets" 
+          class="btn-primary"
+        >
+          <Wrench class="size-3.5 text-white" />
+          <span>Submit Maintenance Ticket</span>
         </router-link>
+
+        <router-link 
+          to="/tenant/payments" 
+          class="btn-secondary"
+        >
+          <CreditCard class="size-3.5 text-[#0c66e4]" />
+          <span>Payment &amp; Billing History</span>
+        </router-link>
+
+        <button
+          @click="fetchTenantData"
+          :disabled="loading"
+          class="btn-secondary"
+          title="Refresh Account Data"
+        >
+          <RefreshCw :class="['size-3.5 text-[#71717a]', loading ? 'animate-spin text-[#0c66e4]' : '']" />
+          <span>Refresh</span>
+        </button>
       </div>
     </div>
 
     <!-- Skeleton Loading -->
-    <SkeletonDetail v-if="loading" />
+    <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <SkeletonDetail />
+    </div>
 
     <div v-else class="space-y-6">
       <!-- Submission Toast Notice -->
@@ -305,215 +342,279 @@ async function handlePayOnline() {
         </button>
       </div>
 
-      <!-- Hero Unit Section -->
-      <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          
-          <!-- Unit Photo Frame -->
-          <div class="lg:col-span-5 h-[220px] sm:h-[240px] rounded-xl overflow-hidden border border-[#e7e5e4] bg-slate-900 relative flex items-center justify-center">
-            <img
-              v-if="tenantData.photoUrl"
-              :src="tenantData.photoUrl"
-              :alt="tenantData.room"
-              class="w-full h-full object-cover"
-            />
-            <div v-else class="text-center text-white/80 space-y-2 p-6">
-              <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mx-auto border border-white/20">
-                <Home class="size-6 text-white" />
-              </div>
-              <div>
-                <p class="font-display font-bold text-base text-white">{{ tenantData.room }}</p>
-                <p class="text-xs text-white/60">{{ tenantData.roomDetails }}</p>
-              </div>
-            </div>
+      <!-- 4 Top KPI Stat Cards (Matching Admin Overview Style) -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="surface-card p-5">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Assigned Unit</p>
+            <span class="rounded-xl p-2 bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200">
+              <Home class="size-4" />
+            </span>
           </div>
+          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">{{ tenantData.room }}</p>
+          <p class="mt-1.5 text-xs text-[#71717a] font-medium">{{ tenantData.roomDetails }} · Floor {{ tenantData.floor }}</p>
+        </div>
 
-          <!-- Room Specifications -->
-          <div class="lg:col-span-7 flex flex-col justify-center space-y-4">
-            <div class="flex items-center justify-between pb-2 border-b border-[#e7e5e4]">
-              <div>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#0c66e4]">Unit Specifications</span>
-                <h2 class="font-display text-2xl font-black text-[#1c1917]">{{ tenantData.room }}</h2>
-              </div>
-              <span class="badge-soft badge-success text-xs font-bold">
-                Occupied (Active Lease)
-              </span>
-            </div>
-
-            <!-- Key-Value Metadata -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-1">
-              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
-                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Cluster / Wing</span>
-                <span class="text-[#1c1917] font-display font-bold text-sm">{{ tenantData.roomType }}</span>
-              </div>
-              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
-                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Floor Level</span>
-                <span class="text-[#1c1917] font-display font-bold text-sm">Floor {{ tenantData.floor }}</span>
-              </div>
-              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
-                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Current Occupants</span>
-                <span class="text-[#1c1917] font-display font-bold text-sm">{{ tenantData.occupants }} Person{{ tenantData.occupants > 1 ? 's' : '' }}</span>
-              </div>
-            </div>
+        <div class="surface-card p-5">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Monthly Base Rent</p>
+            <span class="rounded-xl p-2 bg-amber-50 text-[#8a5814] ring-1 ring-amber-200">
+              <CreditCard class="size-4" />
+            </span>
           </div>
+          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">₱{{ tenantData.baseRent.toLocaleString() }}</p>
+          <p class="mt-1.5 text-xs text-amber-800 font-medium">Standard rate · Submetered Power</p>
+        </div>
+
+        <div class="surface-card p-5">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Water Allocation</p>
+            <span class="rounded-xl p-2 bg-sky-50 text-sky-800 ring-1 ring-sky-200">
+              <Droplets class="size-4" />
+            </span>
+          </div>
+          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">₱{{ tenantData.waterFee.toLocaleString() }}</p>
+          <p class="mt-1.5 text-xs text-sky-700 font-medium">₱200 / registered occupant monthly</p>
+        </div>
+
+        <div class="surface-card p-5">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Account Status</p>
+            <span :class="[
+              'rounded-xl p-2 ring-1',
+              dueDateCountdown.severity === 'paid' ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-rose-50 text-rose-800 ring-rose-200'
+            ]">
+              <CheckCircle v-if="dueDateCountdown.severity === 'paid'" class="size-4" />
+              <AlertTriangle v-else class="size-4" />
+            </span>
+          </div>
+          <p class="tabular mt-3 font-display text-3xl font-black leading-tight" :class="dueDateCountdown.severity === 'paid' ? 'text-emerald-800' : 'text-rose-800'">
+            {{ dueDateCountdown.severity === 'paid' ? 'Settled' : '₱' + tenantData.totalAmountDue.toLocaleString() }}
+          </p>
+          <p class="mt-1.5 text-xs font-medium" :class="dueDateCountdown.severity === 'paid' ? 'text-emerald-700' : 'text-rose-700'">
+            {{ dueDateCountdown.severity === 'paid' ? 'Next Due: ' + (tenantData.nextDueDateDisplay || 'Upcoming Period') : tenantData.dueDaysRemaining }}
+          </p>
         </div>
       </div>
 
-      <!-- Monthly Payment & Due Date Statement -->
-      <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white overflow-hidden shadow-xs">
-        <!-- Header -->
-        <div class="px-6 py-4 flex items-center justify-between border-b border-[#e7e5e4] bg-[#fafaf9]">
-          <div class="flex items-center gap-2">
-            <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
-              <CreditCard class="size-4" />
-            </span>
-            <h2 class="font-display font-extrabold text-base text-[#1c1917]">
-              Monthly Payment Statement
-            </h2>
-          </div>
-          <span :class="[
-            'badge-soft font-bold text-xs',
-            dueDateCountdown.severity === 'paid' ? 'badge-success' :
-            dueDateCountdown.severity === 'warning' ? 'badge-warning' :
-            dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue' ? 'badge-danger' :
-            'badge-info'
-          ]">
-            {{ tenantData.dueBadgeText }}
-          </span>
-        </div>
-
-        <!-- Dynamic Due-Date Countdown Banner -->
-        <div
-          class="px-6 py-3.5 flex items-center gap-3 border-b"
-          :class="{
-            'bg-emerald-50/70 border-emerald-200 text-emerald-950': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
-            'bg-amber-50/70 border-amber-200 text-amber-950': dueDateCountdown.severity === 'warning',
-            'bg-rose-50/70 border-rose-200 text-rose-950': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
-          }"
-        >
-          <div
-            class="size-8 rounded-full flex items-center justify-center shrink-0"
-            :class="{
-              'bg-emerald-100 text-emerald-700': dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid',
-              'bg-amber-100 text-amber-700': dueDateCountdown.severity === 'warning',
-              'bg-rose-100 text-rose-700': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue',
-            }"
-          >
-            <CheckCircle v-if="dueDateCountdown.severity === 'safe' || dueDateCountdown.severity === 'paid'" class="size-4 text-emerald-600" />
-            <Clock v-else-if="dueDateCountdown.severity === 'warning'" class="size-4 text-amber-600" />
-            <AlertTriangle v-else class="size-4 text-rose-600" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-bold">
-              {{ dueDateCountdown.label }}
-            </p>
-            <p class="text-[11px] opacity-80 mt-0.5">
-              <span v-if="dueDateCountdown.severity === 'paid'">
-                All monthly dues are settled. Next rent is due on <strong>{{ tenantData.nextDueDateDisplay }}</strong>.
+      <!-- 2-Column Section: Unit Specs & Monthly Payment Statement -->
+      <div class="grid gap-6 lg:grid-cols-12">
+        
+        <!-- Left: Unit Photo & Specifications (7 of 12 cols) -->
+        <div class="lg:col-span-7 surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs flex flex-col justify-between space-y-5">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#0c66e4]">Unit Details</span>
+                <h2 class="font-display text-lg font-black text-[#1c1917]">{{ tenantData.room }} Specifications</h2>
+              </div>
+              <span class="badge-soft badge-success text-xs font-bold">
+                Active Resident Lease
               </span>
-              <span v-else>
-                Monthly rent due on <strong>{{ tenantData.dueDate }}</strong> via online GCash or on-site cash payment.
-              </span>
-            </p>
-          </div>
-        </div>
+            </div>
 
-        <!-- Statement Body -->
-        <div class="p-6 space-y-5">
-          <!-- Resident & Unit Info -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-            <div>
-              <span class="text-[#71717a] uppercase font-bold text-[10px] block mb-0.5">Resident Name</span>
-              <strong class="text-[#1c1917] font-semibold text-sm">{{ tenantData.name }}</strong>
-            </div>
-            <div>
-              <span class="text-[#71717a] uppercase font-bold text-[10px] block mb-0.5">Assigned Unit</span>
-              <strong class="text-[#1c1917] font-semibold text-sm">{{ tenantData.room }}</strong>
-            </div>
-            <div>
-              <span class="text-[#71717a] uppercase font-bold text-[10px] block mb-0.5">Move-in Date</span>
-              <strong class="text-[#1c1917] font-semibold text-sm">{{ tenantData.moveInDate }}</strong>
-            </div>
-            <div>
-              <span class="text-[#71717a] uppercase font-bold text-[10px] block mb-0.5">
-                {{ dueDateCountdown.severity === 'paid' ? 'Next Due Date' : 'Payment Due Date' }}
-              </span>
-              <strong class="text-[#1c1917] font-semibold text-sm flex items-center gap-1.5">
-                <Calendar class="size-3.5 text-[#0c66e4]" />
-                {{ dueDateCountdown.severity === 'paid' ? tenantData.nextDueDateDisplay : tenantData.dueDate }}
-              </strong>
-            </div>
-          </div>
-
-          <div class="border-t border-[#e7e5e4]"></div>
-
-          <!-- Line Items -->
-          <div class="space-y-2 text-xs">
-            <div class="flex justify-between items-center py-2 border-b border-[#e7e5e4]/60">
-              <span class="text-[#71717a]">Monthly Base Rent</span>
-              <span class="font-bold tabular text-[#1c1917]">₱{{ tenantData.baseRent.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b border-[#e7e5e4]/60">
-              <span class="text-[#71717a]">
-                Water Fee (₱{{ tenantData.specs.waterRatePerHead }}/head × {{ tenantData.occupants }} occupant<template v-if="tenantData.occupants > 1">s</template>)
-              </span>
-              <span class="font-bold tabular text-[#1c1917]">₱{{ tenantData.waterFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b border-[#e7e5e4]/60">
-              <span class="text-[#71717a]">Garbage Collection Fee (GBG)</span>
-              <span class="font-bold tabular text-[#1c1917]">₱{{ tenantData.gbgFee.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b border-[#e7e5e4]/60 text-[11px] text-[#71717a]">
-              <span>Security Deposit (Held on record)</span>
-              <span class="font-semibold tabular text-[#71717a]">₱{{ tenantData.depositAmount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-            </div>
-          </div>
-
-          <!-- Total & Pay Online Actions -->
-          <div class="flex flex-col sm:flex-row justify-between sm:items-center border-t border-[#e7e5e4] pt-4 gap-4">
-            <div>
-              <span class="font-bold text-[#71717a] text-[11px] uppercase tracking-wider block">Total Amount Due</span>
-              <span class="text-2xl font-black tabular font-display text-[#1c1917]">
-                ₱{{ tenantData.totalAmountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
-              </span>
-              <span class="text-xs text-[#71717a] block mt-0.5">
-                Status: <strong class="text-[#1c1917]">{{ tenantData.dueDaysRemaining }}</strong>
-                <span v-if="dueDateCountdown.severity === 'paid' && tenantData.verifiedAt" class="text-emerald-700 font-bold ml-1">
-                  (Approved on {{ tenantData.verifiedAt }})
+            <!-- Unit Photo Frame -->
+            <div class="h-52 w-full rounded-xl overflow-hidden border border-[#e7e5e4] bg-slate-900 relative">
+              <img
+                v-if="tenantData.photoUrl"
+                :src="tenantData.photoUrl"
+                :alt="tenantData.room"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="size-full flex items-center justify-center text-white/80 space-y-2 p-6">
+                <Home class="size-8 text-white/60" />
+              </div>
+              <div class="absolute bottom-3 left-3 flex items-center gap-2">
+                <span class="badge-soft badge-neutral bg-white/95 font-bold uppercase tracking-wider">
+                  {{ tenantData.roomType }}
                 </span>
-              </span>
+                <span class="badge-soft badge-blue bg-white/95 font-bold">
+                  Floor {{ tenantData.floor }}
+                </span>
+              </div>
             </div>
-            
-            <div class="flex flex-wrap items-center gap-2.5">
-              <button
-                v-if="dueDateCountdown.severity !== 'paid'"
-                @click="handlePayOnline"
-                :disabled="payingOnline"
-                class="btn-primary"
-              >
-                <CreditCard class="size-3.5" />
-                <span>{{ payingOnline ? 'Opening GCash Gateway...' : 'Pay Online (GCash via Adyen)' }}</span>
-              </button>
-              <router-link
-                to="/tenant/payments"
-                class="btn-secondary"
-              >
-                <span>{{ dueDateCountdown.severity === 'paid' ? 'View Payment History' : 'Manual Remittance' }}</span>
-              </router-link>
+
+            <!-- Metadata Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
+                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Floor Area</span>
+                <span class="text-[#1c1917] font-display font-bold text-xs sm:text-sm">{{ tenantData.specs.floorArea }}</span>
+              </div>
+              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
+                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Bathroom</span>
+                <span class="text-[#1c1917] font-display font-bold text-xs sm:text-sm">{{ tenantData.specs.bathroom }}</span>
+              </div>
+              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
+                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Occupancy</span>
+                <span class="text-[#1c1917] font-display font-bold text-xs sm:text-sm">{{ tenantData.occupants }} Registered</span>
+              </div>
+            </div>
+
+            <!-- Unit Amenities Chips -->
+            <div class="space-y-2">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-[#71717a]">Standard Amenities &amp; Inclusions</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#57534e]">
+                <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Private T&amp;B Shower</div>
+                <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Bed &amp; Mattress Base</div>
+                <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Submetered Power (₱12.50/kWh)</div>
+                <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> ₱200/Head Water Rate</div>
+              </div>
             </div>
           </div>
 
-          <!-- Electricity & GCash Note -->
-          <div class="p-3.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#71717a]">
-            <span class="flex items-center gap-1.5">
-              <Zap class="size-3.5 text-amber-500" />
-              <span>Electricity Submeter: <strong class="text-[#1c1917]">₱12.50 / kWh</strong> (Billed separately on 25th)</span>
-            </span>
-            <span>
-              Landlady GCash: <strong class="font-mono font-bold text-[#1c1917]">{{ tenantData.landladyGCash }}</strong> ({{ tenantData.landladyName }})
-            </span>
+          <div class="pt-3 border-t border-[#e7e5e4] flex items-center justify-between text-xs text-[#71717a]">
+            <span>Resident: <strong class="text-[#1c1917]">{{ tenantData.name }}</strong></span>
+            <span>Move-in: <strong class="text-[#1c1917]">{{ tenantData.moveInDate }}</strong></span>
           </div>
         </div>
+
+        <!-- Right: Monthly Payment Statement (5 of 12 cols) -->
+        <div class="lg:col-span-5 surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs flex flex-col justify-between space-y-5">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+              <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#0c66e4]">Billing Statement</span>
+                <h2 class="font-display text-lg font-black text-[#1c1917]">Monthly Statement</h2>
+              </div>
+              <span :class="[
+                'badge-soft font-bold text-xs',
+                dueDateCountdown.severity === 'paid' ? 'badge-success' : 'badge-warning'
+              ]">
+                {{ tenantData.dueBadgeText }}
+              </span>
+            </div>
+
+            <!-- Dynamic Countdown Alert Banner -->
+            <div
+              class="p-3.5 rounded-xl border flex items-center gap-3"
+              :class="{
+                'bg-emerald-50 border-emerald-200 text-emerald-950': dueDateCountdown.severity === 'paid' || dueDateCountdown.severity === 'safe',
+                'bg-amber-50 border-amber-200 text-amber-950': dueDateCountdown.severity === 'warning',
+                'bg-rose-50 border-rose-200 text-rose-950': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue'
+              }"
+            >
+              <CheckCircle2 v-if="dueDateCountdown.severity === 'paid' || dueDateCountdown.severity === 'safe'" class="size-5 text-emerald-600 shrink-0" />
+              <AlertTriangle v-else class="size-5 text-rose-600 shrink-0" />
+              <div>
+                <p class="text-xs font-bold">{{ dueDateCountdown.label }}</p>
+                <p class="text-[11px] opacity-80 mt-0.5">
+                  <span v-if="dueDateCountdown.severity === 'paid'">
+                    All dues are cleared. Next rent due on <strong>{{ tenantData.nextDueDateDisplay }}</strong>.
+                  </span>
+                  <span v-else>
+                    Due date on <strong>{{ tenantData.dueDate }}</strong>.
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Breakdown Matrix -->
+            <div class="space-y-2.5 pt-2">
+              <div class="flex items-center justify-between text-xs text-[#57534e]">
+                <span>Room {{ tenantData.room }} Base Rental</span>
+                <span class="font-bold text-[#1c1917] tabular">₱{{ tenantData.baseRent.toLocaleString() }}.00</span>
+              </div>
+              <div class="flex items-center justify-between text-xs text-[#57534e]">
+                <span class="flex items-center gap-1.5">
+                  Water Allocation
+                  <span class="text-[10px] text-[#71717a]">({{ tenantData.occupants }} × ₱200/head)</span>
+                </span>
+                <span class="font-bold text-[#1c1917] tabular">₱{{ tenantData.waterFee.toLocaleString() }}.00</span>
+              </div>
+              <div class="flex items-center justify-between text-xs text-[#57534e]">
+                <span>Garbage Collection Fee</span>
+                <span class="font-semibold text-emerald-700">Included (₱0)</span>
+              </div>
+              <div class="flex items-center justify-between text-xs text-[#57534e]">
+                <span>Electric Submeter</span>
+                <span class="font-semibold text-sky-700">Separate Bill</span>
+              </div>
+              <div class="border-t border-[#e7e5e4] pt-2.5 flex items-center justify-between">
+                <span class="font-bold text-xs text-[#1c1917]">Total Amount Due</span>
+                <span class="font-display font-black text-xl tabular text-[#1c1917]">₱{{ tenantData.totalAmountDue.toLocaleString() }}.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="pt-4 border-t border-[#e7e5e4] space-y-3">
+            <button
+              v-if="dueDateCountdown.severity !== 'paid'"
+              @click="handlePayOnline"
+              :disabled="payingOnline"
+              class="btn-primary w-full justify-center min-h-11"
+            >
+              <CreditCard class="size-3.5 text-white" />
+              <span>{{ payingOnline ? 'Opening Gateway…' : 'Pay Online (GCash via Adyen)' }}</span>
+            </button>
+
+            <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4] text-[11px] text-[#71717a] space-y-0.5 text-center">
+              <p>Landlady GCash: <strong class="text-[#1c1917] font-mono">{{ tenantData.landladyGCash }}</strong></p>
+              <p>Account Name: <strong>{{ tenantData.landladyName }}</strong></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Floating Action Speed-Dial Button (FAB) -->
+    <div class="sm:hidden">
+      <!-- Backdrop overlay when speed dial is open -->
+      <div 
+        v-if="isFabOpen" 
+        class="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-40 animate-in fade-in duration-150" 
+        @click="isFabOpen = false" 
+      />
+
+      <!-- Speed Dial Actions and FAB Trigger -->
+      <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="transform opacity-0 translate-y-4 scale-90"
+          enter-to-class="transform opacity-100 translate-y-0 scale-100"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="transform opacity-100 translate-y-0 scale-100"
+          leave-to-class="transform opacity-0 translate-y-4 scale-90"
+        >
+          <div v-if="isFabOpen" class="flex flex-col items-end gap-2.5 mb-1">
+            <!-- Action 1: Payment and Billing -->
+            <button
+              @click="isFabOpen = false; router.push('/tenant/payments');"
+              class="px-4 py-2.5 rounded-xl bg-white text-[#1c1917] font-extrabold text-xs shadow-xl border border-[#e7e5e4] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
+            >
+              <span>Payment &amp; Billing</span>
+            </button>
+
+            <!-- Action 2: Submit Maintenance Ticket -->
+            <button
+              @click="isFabOpen = false; router.push('/tenant/tickets');"
+              class="px-4 py-2.5 rounded-xl bg-white text-[#1c1917] font-extrabold text-xs shadow-xl border border-[#e7e5e4] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
+            >
+              <span>Submit Maintenance Ticket</span>
+            </button>
+          </div>
+        </Transition>
+
+        <!-- Main FAB Trigger Button -->
+        <button
+          @click="isFabOpen = !isFabOpen"
+          :class="[
+            'size-14 rounded-full shadow-2xl transition-all flex items-center justify-center cursor-pointer border-2 border-white',
+            isFabOpen 
+              ? 'bg-[#0c66e4] text-white ring-4 ring-blue-200' 
+              : 'bg-white text-[#1c1917] ring-4 ring-stone-200 hover:bg-[#0c66e4] hover:text-white hover:ring-blue-200 active:bg-[#0055cc] active:text-white'
+          ]"
+          title="Quick Actions"
+          aria-label="Quick Actions Menu"
+        >
+          <Plus 
+            :class="[
+              'size-7 transition-transform duration-200',
+              isFabOpen ? 'rotate-45' : ''
+            ]" 
+          />
+        </button>
       </div>
     </div>
   </div>
