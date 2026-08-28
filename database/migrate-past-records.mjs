@@ -265,14 +265,20 @@ async function run() {
           continue;
         }
 
-        // Parse Tenant Info: e.g. "Lobby Toor OR#4627"
-        let tenantName = cell2;
+        // Parse Tenant Info: e.g. "Lobby Toor OR#4627", "Alberto Mestiola INVOICE#5109", "Mireel Fatima ParcareyINV.#5092"
+        let tenantName = cell2.trim();
         let invoiceNum = null;
         
-        const orMatch = cell2.match(/(.*)\b(OR#|OR|O#|OR #)(\d+)(.*)/i);
-        if (orMatch) {
-          tenantName = orMatch[1].trim();
-          invoiceNum = orMatch[2].trim() + orMatch[3].trim() + (orMatch[4] ? orMatch[4].trim() : '');
+        const match = cell2.match(/^(.*?)(?:(?<=[a-z\s])|\b)(INVOICE\s*#|INVOICE\s*|INV\.\s*#|INV\s*#|INV\.\s*|OR\s*#|OR\s+|OR(?=\d)|O\s*#)(\d+.*)$/i);
+        if (match) {
+          tenantName = match[1].trim();
+          let prefix = match[2].trim().toUpperCase();
+          let numPart = match[3].trim();
+          if (!prefix.includes('#') && !prefix.endsWith('.')) {
+            prefix = prefix + '#';
+          }
+          invoiceNum = `${prefix}${numPart}`;
+          if (!tenantName) tenantName = cell2.trim();
         }
 
         // If tenant name is empty, skip

@@ -125,27 +125,35 @@ interface MonthIncomeData {
   isProjected: boolean;
 }
 
+const selectedChartYear = ref('2026');
+const chartYearsList = ['2026', '2025', '2024'];
+
 const yearly12MonthsData = computed<MonthIncomeData[]>(() => {
   const currentMonthNum = new Date().getMonth() + 1; // 1-12
+  const targetYear = parseInt(selectedChartYear.value, 10);
 
   return MONTH_NAMES.map((name, idx) => {
     const monthNum = idx + 1;
     
-    // Find all income records for this month in year 2026
+    // Find all income records for this month in the targetYear
     const matchingRecords = incomeRecords.filter((r) => {
-      if (r.datePaid) {
-        const parts = r.datePaid.split(' ');
-        if (parts[0] === name) return true;
+      if (r.datePaid && r.datePaid !== '—') {
         const d = new Date(r.datePaid);
-        if (!isNaN(d.getTime()) && d.getMonth() === idx) return true;
+        if (!isNaN(d.getTime())) {
+          return d.getFullYear() === targetYear && d.getMonth() === idx;
+        }
       }
       return false;
     });
 
-    // Find expense records for this month
+    // Find expense records for this month in targetYear
     const matchingExpenses = expenseRecords.filter((e) => {
-      const parts = (e.date || '').split(' ');
-      if (parts[0] === name) return true;
+      if (e.date && e.date !== '—') {
+        const d = new Date(e.date);
+        if (!isNaN(d.getTime())) {
+          return d.getFullYear() === targetYear && d.getMonth() === idx;
+        }
+      }
       return false;
     });
 
@@ -153,7 +161,7 @@ const yearly12MonthsData = computed<MonthIncomeData[]>(() => {
 
     if (matchingRecords.length > 0) {
       const grossIncome = matchingRecords.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0);
-      const landladyShare = matchingRecords.reduce((sum, r) => sum + Number(r.fiftyPercentShare || (r.rent / 2) || 0), 0);
+      const landladyShare = matchingRecords.reduce((sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0), 0);
       const waterIncome = matchingRecords.reduce((sum, r) => sum + Number(r.water || 0), 0);
       return {
         month: name,
@@ -167,20 +175,21 @@ const yearly12MonthsData = computed<MonthIncomeData[]>(() => {
       };
     }
 
-    // Baseline projected run-rate for ongoing/upcoming months
-    const projectedGross = baseMonthlyRunRate.value > 0 ? baseMonthlyRunRate.value : 43500;
+    // If future month in 2026 (Aug-Dec 2026), baseline projected run-rate based on active rooms capacity
+    const isFutureIn2026 = targetYear === 2026 && monthNum > 7;
+    const projectedGross = isFutureIn2026 ? (baseMonthlyRunRate.value > 0 ? baseMonthlyRunRate.value : 242000) : 0;
     const projectedShare = Math.round(projectedGross * 0.5);
-    const projectedExpenses = recordedExpenses > 0 ? recordedExpenses : Math.round(projectedGross * 0.22);
+    const projectedExpenses = recordedExpenses > 0 ? recordedExpenses : (isFutureIn2026 ? Math.round(projectedGross * 0.15) : 0);
 
     return {
       month: name,
       monthNum,
       grossIncome: projectedGross,
       landladyShare: projectedShare,
-      waterIncome: 2400,
+      waterIncome: isFutureIn2026 ? 10400 : 0,
       expenses: projectedExpenses,
       noi: projectedGross - projectedExpenses,
-      isProjected: monthNum > currentMonthNum
+      isProjected: isFutureIn2026
     };
   });
 });
@@ -416,11 +425,28 @@ const urgentTickets = computed(() => {
             </h2>
           </div>
           <p class="text-xs text-[#71717a] mt-0.5">
-            Gross monthly remittance projections and verified ledger collections across FY 2026.
+            Gross monthly remittance projections and verified ledger collections across FY {{ selectedChartYear }}.
           </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-4 text-xs">
+        <div class="flex flex-wrap items-center gap-3 text-xs">
+          <!-- Fiscal Year Switcher -->
+          <div class="inline-flex rounded-xl bg-[#f5f5f4] p-1 border border-[#e7e5e4]">
+            <button
+              v-for="yr in chartYearsList"
+              :key="yr"
+              @click="selectedChartYear = yr"
+              :class="[
+                'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                selectedChartYear === yr
+                  ? 'bg-[#0c66e4] text-white shadow-xs'
+                  : 'text-[#71717a] hover:text-[#1c1917]'
+              ]"
+            >
+              FY {{ yr }}
+            </button>
+          </div>
+
           <div class="bg-[#fafaf9] px-3 py-1.5 rounded-xl border border-[#e7e5e4]">
             <span class="text-[#71717a]">Annual Run-Rate: </span>
             <span class="font-display font-bold text-[#1c1917]">{{ peso(totalAnnualProjectedRevenue) }}</span>
