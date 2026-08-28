@@ -18,6 +18,7 @@ import IncomeCollectionsView from '@/views/IncomeCollectionsView.vue';
 import ExpensesLedgerView from '@/views/ExpensesLedgerView.vue';
 import MaintenanceDispatchView from '@/views/MaintenanceDispatchView.vue';
 import InquiriesView from '@/views/InquiriesView.vue';
+import AuditLogsView from '@/views/AuditLogsView.vue';
 import TenantOverviewView from '@/views/TenantOverviewView.vue';
 import TenantPaymentsView from '@/views/TenantPaymentsView.vue';
 import TenantTicketsView from '@/views/TenantTicketsView.vue';
@@ -107,6 +108,12 @@ const routes: RouteRecordRaw[] = [
     name: 'Inquiries',
     component: InquiriesView,
     meta: { roles: ['admin'], label: 'Prospect Inquiries' },
+  },
+  {
+    path: '/admin/audit-logs',
+    name: 'AdminAuditLogs',
+    component: AuditLogsView,
+    meta: { roles: ['admin'], label: 'System Audit Trail' },
   },
 
   // Legacy basis aliases

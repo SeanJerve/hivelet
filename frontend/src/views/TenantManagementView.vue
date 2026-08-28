@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { tenants, fetchTenants as fetchTenantsState, fetchRooms, showToast, type TenantRecord } from '@/lib/systemState';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, showToast, type TenantRecord } from '@/lib/systemState';
 import { peso, CANONICAL_32_UNITS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Eye, Pencil, LogOut, X, AlertTriangle, RefreshCw, Loader2, Users, User, Check, ShieldCheck, Clock } from 'lucide-vue-next';
+import { Search, UserPlus, Eye, Pencil, LogOut, X, AlertTriangle, RefreshCw, Loader2, Users, User, Check, ShieldCheck, Clock, TrendingUp } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 
+const route = useRoute();
 const q = ref('');
 const isLoading = ref(false);
 const isSubmitting = ref(false);
@@ -33,10 +35,59 @@ const editStatus = ref<'active' | 'vacated'>('active');
 const editHasRoommates = ref<'no' | 'yes'>('no');
 const editRoommateQty = ref<number>(0);
 
+/**
+ * Check 2% Annual Rent Escalation policy recommendation (Open Decisions #8, System Bible Section 6)
+ * Eligible if continuous tenure >= 12 months.
+ */
+function checkAnnualEscalation(t: TenantRecord) {
+  if (t.status !== 'active') return { eligible: false, months: 0, currentRent: 0, suggestedRent: 0, escalationAmount: 0 };
+  
+  let moveIn: Date;
+  if (t.moveInDate && !isNaN(Date.parse(t.moveInDate))) {
+    moveIn = new Date(t.moveInDate);
+  } else {
+    moveIn = new Date('2024-01-01');
+  }
+
+  const now = new Date();
+  const diffMonths = (now.getFullYear() - moveIn.getFullYear()) * 12 + (now.getMonth() - moveIn.getMonth());
+  const isEligible = diffMonths >= 12;
+
+  const room = rooms.find(r => r.unitCode.toLowerCase() === t.unitCode.toLowerCase());
+  const currentRent = room?.price || 9000;
+  const suggestedRent = Math.round(currentRent * 1.02);
+
+  return {
+    eligible: isEligible,
+    months: Math.max(0, diffMonths),
+    currentRent,
+    suggestedRent,
+    escalationAmount: suggestedRent - currentRent
+  };
+}
+
+function checkInquiryConversion() {
+  if (route.query.convertInquiryId) {
+    newName.value = String(route.query.name || '');
+    newPhone.value = String(route.query.phone || '');
+    newEmail.value = String(route.query.email || '');
+    if (route.query.unit) {
+      newUnit.value = String(route.query.unit).toLowerCase();
+    }
+    const targetUnit = CANONICAL_32_UNITS.find(u => u.unitCode.toLowerCase() === newUnit.value.toLowerCase());
+    if (targetUnit) {
+      newDeposit.value = targetUnit.basePrice;
+    }
+    isOnboardModalOpen.value = true;
+    showToast('info', 'Inquiry Pre-filled', `Details loaded from prospect inquiry for ${newName.value}.`);
+  }
+}
+
 async function fetchTenants() {
   isLoading.value = true;
   try {
     await fetchTenantsState();
+    await fetchRooms();
   } catch (err) {
     console.error('fetchTenants failed:', err);
   } finally {
@@ -46,6 +97,11 @@ async function fetchTenants() {
 
 onMounted(() => {
   fetchTenants();
+  checkInquiryConversion();
+});
+
+watch(() => route.query.convertInquiryId, () => {
+  checkInquiryConversion();
 });
 
 const statusFilter = ref<'all' | 'active' | 'vacated'>('all');
@@ -306,11 +362,20 @@ async function handleOnboard() {
               :key="t.id"
               class="border-b border-[#e7e5e4] last:border-0 hover:bg-[#fafaf9] transition-colors"
             >
-              <!-- RESIDENT (Name + Email + Phone stacked for compact layout) -->
+              <!-- RESIDENT (Name + Email + Phone stacked for compact layout + 2% Escalation indicator) -->
               <td class="px-4 py-3.5">
                 <p class="font-bold text-[#1c1917]">{{ t.name }}</p>
                 <p class="text-xs text-[#71717a]">{{ t.email }}</p>
                 <p class="tabular font-mono text-[11px] text-[#71717a] mt-0.5">{{ t.phone }}</p>
+                <div v-if="checkAnnualEscalation(t).eligible" class="mt-1">
+                  <span 
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-800 text-[10px] font-bold ring-1 ring-amber-200"
+                    title="Resident has completed 12+ months of tenure. +2% annual escalation recommended per policy."
+                  >
+                    <TrendingUp class="size-3 text-amber-700" />
+                    <span>+2% Annual Review</span>
+                  </span>
+                </div>
               </td>
 
               <!-- UNIT -->
@@ -448,6 +513,27 @@ async function handleOnboard() {
               <p class="font-mono text-[10px] text-[#71717a]">{{ editModalTenant.emergencyContact.phone }}</p>
             </div>
           </div>
+        </div>
+
+        <!-- 2% Annual Rent Escalation Policy Callout (Open Decisions #8) -->
+        <div 
+          v-if="checkAnnualEscalation(editModalTenant).eligible" 
+          class="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs space-y-1.5"
+        >
+          <div class="flex items-center justify-between text-amber-950 font-bold">
+            <span class="flex items-center gap-1.5">
+              <TrendingUp class="size-3.5 text-amber-700" />
+              2% Annual Rent Escalation Recommendation (Open Decision #8)
+            </span>
+            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-200/70 text-amber-900">
+              {{ checkAnnualEscalation(editModalTenant).months }} Mos Tenure
+            </span>
+          </div>
+          <p class="text-[11px] text-amber-900 leading-relaxed">
+            Resident has completed 12+ months. Standard policy recommends adjusting baseline monthly rate from 
+            <strong>{{ peso(checkAnnualEscalation(editModalTenant).currentRent) }}</strong> to 
+            <strong>{{ peso(checkAnnualEscalation(editModalTenant).suggestedRent) }}</strong> (+{{ peso(checkAnnualEscalation(editModalTenant).escalationAmount) }}).
+          </p>
         </div>
 
         <!-- Section 2: Edit Assignment & Roommate Details -->

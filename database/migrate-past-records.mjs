@@ -398,6 +398,13 @@ async function run() {
       let expenseDate = null;
       if (typeof row[0] === 'number') {
         expenseDate = excelDateToJSDate(row[0]);
+        if (expenseDate) {
+          const parts = expenseDate.split('-');
+          const yr = parseInt(parts[0], 10);
+          if (yr < 2024 || yr > 2026) {
+            expenseDate = `${expActiveYear}-${String(expActiveMonth).padStart(2, '0')}-${parts[2] || '01'}`;
+          }
+        }
       } else {
         expenseDate = `${expActiveYear}-${String(expActiveMonth).padStart(2, '0')}-01`;
       }

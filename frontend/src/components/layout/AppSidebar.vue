@@ -13,7 +13,8 @@ import {
   X,
   Home,
   CreditCard,
-  UserCheck
+  UserCheck,
+  ShieldCheck
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -34,6 +35,7 @@ const ADMIN_NAV = computed(() => [
   { to: '/admin/expenses', aliases: ['/basis/expenses'], label: 'Monthly Expenses', icon: ReceiptText, badge: null, badgeColor: '' },
   { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Maintenance Dispatch', icon: Wrench, badge: urgentTicketsCount.value > 0 ? urgentTicketsCount.value : null, badgeColor: 'bg-rose-500 text-white' },
   { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Prospect Inquiries', icon: Inbox, badge: inquiriesCount.value > 0 ? inquiriesCount.value : null, badgeColor: 'bg-[#0c66e4] text-white' },
+  { to: '/admin/audit-logs', aliases: ['/admin/audit'], label: 'System Audit Trail', icon: ShieldCheck, badge: null, badgeColor: '' },
 ]);
 
 const TENANT_NAV = computed(() => [

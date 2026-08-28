@@ -1014,17 +1014,33 @@ router.get(
   '/admin/income-records',
   requirePermission(PERMISSIONS.INCOME_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    let query = db
-      .from('monthly_income_records')
-      .select('*, rooms:room_id (id, room_number, cluster_code)')
-      .is('voided_at', null)
-      .order('date_paid', { ascending: false });
-
     const year = req.query.year ? Number(req.query.year) : undefined;
     const month = req.query.month ? Number(req.query.month) : undefined;
-    const { data, error } = await query;
-    if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+
+    let allData: any[] = [];
+    let from = 0;
+    const batchSize = 1000;
+
+    while (true) {
+      let query = db
+        .from('monthly_income_records')
+        .select('*, rooms:room_id (id, room_number, cluster_code)')
+        .is('voided_at', null)
+        .order('date_paid', { ascending: false })
+        .range(from, from + batchSize - 1);
+
+      if (year) query = query.eq('year', year);
+      if (month) query = query.eq('month', month);
+
+      const { data, error } = await query;
+      if (error) throw ApiError.internal(error.message);
+      if (!data || data.length === 0) break;
+      allData = allData.concat(data);
+      if (data.length < batchSize) break;
+      from += batchSize;
+    }
+
+    res.status(200).json({ success: true, data: allData });
   })
 );
 
@@ -1309,18 +1325,37 @@ router.delete(
 router.get(
   '/admin/expense-entries',
   requirePermission(PERMISSIONS.EXPENSE_LEDGER_READ),
-  asyncHandler(async (_req, res) => {
-    const { data, error } = await db
-      .from('monthly_expense_entries')
-      .select(
-        '*, fixed_expense_categories:category_code (code, name, parent_code), ' +
-          'expense_property_allocations (id, property_area, amount)'
-      )
-      .is('voided_at', null)
-      .order('expense_date', { ascending: false });
+  asyncHandler(async (req, res) => {
+    const year = req.query.year ? Number(req.query.year) : undefined;
 
-    if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+    let allData: any[] = [];
+    let from = 0;
+    const batchSize = 1000;
+
+    while (true) {
+      let query = db
+        .from('monthly_expense_entries')
+        .select(
+          '*, fixed_expense_categories:category_code (code, name, parent_code), ' +
+            'expense_property_allocations (id, property_area, amount)'
+        )
+        .is('voided_at', null)
+        .order('expense_date', { ascending: false })
+        .range(from, from + batchSize - 1);
+
+      if (year) {
+        query = query.gte('expense_date', `${year}-01-01`).lte('expense_date', `${year}-12-31`);
+      }
+
+      const { data, error } = await query;
+      if (error) throw ApiError.internal(error.message);
+      if (!data || data.length === 0) break;
+      allData = allData.concat(data);
+      if (data.length < batchSize) break;
+      from += batchSize;
+    }
+
+    res.status(200).json({ success: true, data: allData });
   })
 );
 

@@ -73,6 +73,8 @@ export interface IncomeRecord {
   roomId?: string;
   cluster: Cluster;
   datePaid: string;
+  year?: number;
+  month?: number;
   contact: string;
   invoice: string;
   rentFor: string;
@@ -98,6 +100,9 @@ export interface ExpenseSplit {
 export interface ExpenseRecord {
   id: string;
   date: string;
+  rawDate?: string;
+  year?: number;
+  month?: number;
   description: string;
   category: string;
   categoryCode?: string;
@@ -469,6 +474,8 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
           unit,
           roomId: inc.room_id,
           cluster,
+          year: inc.year ? Number(inc.year) : (inc.date_paid ? new Date(inc.date_paid).getFullYear() : 2026),
+          month: inc.month ? Number(inc.month) : (inc.date_paid ? new Date(inc.date_paid).getMonth() + 1 : 1),
           datePaid: datePaidFormatted,
           contact: inc.contact_name || 'Resident',
           invoice: inc.invoice_number || `INV-${inc.year || 2026}-${String(inc.month || 1).padStart(2, '0')}`,
@@ -511,8 +518,9 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
           ? `${exp.category_code} — ${exp.fixed_expense_categories.name}`
           : EXPENSE_CATEGORIES.find(c => c.startsWith(`${exp.category_code} —`)) || `${exp.category_code} — Expense`;
         
-        const dateFormatted = exp.expense_date 
-          ? new Date(exp.expense_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        const dObj = exp.expense_date ? new Date(exp.expense_date) : null;
+        const dateFormatted = dObj && !isNaN(dObj.getTime())
+          ? dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : '—';
 
         const splits: ExpenseSplit[] = (exp.expense_property_allocations || []).map((a: any) => ({
@@ -524,6 +532,9 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
         return {
           id: exp.id,
           date: dateFormatted,
+          rawDate: exp.expense_date || '',
+          year: dObj && !isNaN(dObj.getTime()) ? dObj.getFullYear() : undefined,
+          month: dObj && !isNaN(dObj.getTime()) ? dObj.getMonth() + 1 : undefined,
           description: exp.or_supplier || 'Expense',
           category: categoryName,
           categoryCode: exp.category_code,

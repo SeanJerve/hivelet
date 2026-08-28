@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, rooms, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
@@ -11,12 +12,15 @@ import {
   RefreshCw, 
   Loader2, 
   User, 
+  UserPlus,
   Building2, 
   CheckCircle2, 
   MessageSquare,
   Search,
   Check
 } from 'lucide-vue-next';
+
+const router = useRouter();
 
 interface MessageBubble {
   id: string | number;
@@ -236,12 +240,32 @@ async function handleSendReply() {
             </div>
           </div>
 
-          <!-- Unit Info Tag -->
-          <div v-if="activeUnit" class="text-right hidden sm:block">
-            <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#71717a]">Target Unit</span>
-            <p class="font-display font-bold text-xs text-[#1c1917]">
-              Room {{ activeUnit.unitCode.toUpperCase() }} ({{ peso(activeUnit.price) }}/mo)
-            </p>
+          <!-- Unit Info & Conversion Action -->
+          <div class="flex items-center gap-3">
+            <div v-if="activeUnit" class="text-right hidden sm:block">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#71717a]">Target Unit</span>
+              <p class="font-display font-bold text-xs text-[#1c1917]">
+                Room {{ activeUnit.unitCode.toUpperCase() }} ({{ peso(activeUnit.price) }}/mo)
+              </p>
+            </div>
+
+            <button
+              @click="router.push({
+                path: '/admin/tenants',
+                query: {
+                  convertInquiryId: activeInquiry.id,
+                  name: activeInquiry.name,
+                  phone: activeInquiry.phone,
+                  email: activeInquiry.email,
+                  unit: activeInquiry.unit
+                }
+              })"
+              class="btn-primary text-xs flex items-center gap-1.5 shadow-xs"
+              title="Pre-fill inquiry details into the tenant onboarding form"
+            >
+              <UserPlus class="size-3.5 text-white" />
+              <span>Convert to Tenant</span>
+            </button>
           </div>
         </div>
 

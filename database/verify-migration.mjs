@@ -3,18 +3,24 @@ import { readFileSync } from 'fs';
 
 function loadEnv() {
   const env = {};
-  try {
-    const raw = readFileSync('../.env', 'utf8');
-    for (const line of raw.split('\n')) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
-      const idx = trimmed.indexOf('=');
-      if (idx === -1) continue;
-      env[trimmed.slice(0, idx).trim()] = trimmed.slice(idx + 1).trim();
-    }
-  } catch (err) {
-    console.error('Could not read .env', err);
+  const paths = ['./.env', '../.env', './backend/.env', '../backend/.env'];
+  let raw = '';
+  for (const p of paths) {
+    try {
+      raw = readFileSync(p, 'utf8');
+      break;
+    } catch {}
+  }
+  if (!raw) {
+    console.error('Could not find .env file');
     process.exit(1);
+  }
+  for (const line of raw.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const idx = trimmed.indexOf('=');
+    if (idx === -1) continue;
+    env[trimmed.slice(0, idx).trim()] = trimmed.slice(idx + 1).trim();
   }
   return env;
 }
