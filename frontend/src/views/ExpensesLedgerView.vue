@@ -60,7 +60,7 @@ const monthsList = [
   { val: 'Dec', label: 'December' },
 ];
 
-const yearsList = ['All', '2025', '2026', '2027', '2028', '2029'];
+const yearsList = ['All', '2026', '2025', '2024'];
 
 // New Expense Form Entries (At least one default entry)
 const date = ref(new Date().toISOString().split('T')[0]);

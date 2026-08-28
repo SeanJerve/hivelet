@@ -75,6 +75,7 @@ const isSubmitting = ref(false);
 // Month and Year Filters
 const filterMonth = ref('All');
 const filterYear = ref('All');
+const viewMode = ref<'grouped' | 'flat'>('grouped');
 
 const monthsList = [
   { val: 'All', label: 'All Months' },
@@ -92,7 +93,7 @@ const monthsList = [
   { val: 'Dec', label: 'December' },
 ];
 
-const yearsList = ['All', '2025', '2026', '2027', '2028', '2029'];
+const yearsList = ['All', '2026', '2025', '2024'];
 
 function formatDateForDisplay(dStr: string): string {
   const d = new Date(dStr);
@@ -189,9 +190,76 @@ const rows = computed(() => {
 });
 
 const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
-const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.rent / 2), 0));
+const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'BH' ? (r.rent / 2) : 0), 0));
 const totalWater = computed(() => rows.value.reduce((s, r) => s + r.water, 0));
-const totalRemitted = computed(() => rows.value.reduce((s, r) => s + (r.rent / 2) + r.water, 0));
+const totalGarbage = computed(() => rows.value.reduce((s, r) => s + r.garbage, 0));
+const totalRemitted = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'BH' ? (r.rent / 2) : r.rent) + r.water, 0));
+
+// Grouped rows matching Excel's 5 physical sub-sections
+const clusterGroups = computed(() => {
+  const definitions = [
+    { 
+      key: 'BH', 
+      label: 'Main House ("BH")', 
+      desc: '22 Rentable Rooms · 50% Linda & Fe Co-Ownership Revenue Share', 
+      isCoOwned: true, 
+      units: ['1A', '1B', '1C', '1D', '1E', '1F', '1G', '1H', '2A', '2B', '2C', '2D', '2E', '2F', '2G', '3A', '3B', '3C', '3D', '3E', '3F', '3G'] 
+    },
+    { 
+      key: 'Back Apartment', 
+      label: 'Back Apartment', 
+      desc: '5 Self-Contained Units · 100% Single Owner Revenue', 
+      isCoOwned: false, 
+      units: ['B1F', 'B2F', 'B2B', 'B3F', 'B3B'] 
+    },
+    { 
+      key: 'Penthouse', 
+      label: 'Penthouse', 
+      desc: '1 Top-Floor Suite (PH)', 
+      isCoOwned: false, 
+      units: ['PH'] 
+    },
+    { 
+      key: 'Front Apartment', 
+      label: 'Front Apartment', 
+      desc: '3 Multi-Room Apartments · High-Capacity Units', 
+      isCoOwned: false, 
+      units: ['F1', 'F2F', 'F2B'] 
+    },
+    { 
+      key: 'Linda', 
+      label: 'Linda Commercial & Annex', 
+      desc: '2 Commercial Spaces (*LF, *LB) · Submeter Electric Reimbursement', 
+      isCoOwned: false, 
+      units: ['LF', 'LB', '*LF', '*LB'] 
+    }
+  ];
+
+  return definitions.map(def => {
+    const groupRecords = rows.value.filter(r => {
+      const u = r.unit.toUpperCase();
+      return def.units.includes(u) || r.cluster === def.key;
+    });
+
+    const gRent = groupRecords.reduce((sum, r) => sum + r.rent, 0);
+    const gShare = def.isCoOwned ? gRent / 2 : 0;
+    const gOccupants = groupRecords.reduce((sum, r) => sum + r.occupants, 0);
+    const gWater = groupRecords.reduce((sum, r) => sum + r.water, 0);
+    const gGarbage = groupRecords.reduce((sum, r) => sum + r.garbage, 0);
+    const gRemitted = groupRecords.reduce((sum, r) => sum + (def.isCoOwned ? (r.rent / 2) : r.rent) + r.water, 0);
+
+    return {
+      ...def,
+      records: groupRecords,
+      totalRent: gRent,
+      totalShare: gShare,
+      totalOccupants: gOccupants,
+      totalWater: gWater,
+      totalGarbage: gGarbage,
+      totalRemitted: gRemitted
+    };
+  }).filter(g => g.records.length > 0);
+});
 
 // Custom Confirmation Modal state
 const isConfirmOpen = ref(false);
@@ -710,6 +778,36 @@ function exportCSV() {
           <option value="All">All Years</option>
           <option v-for="y in yearsList" :key="y" :value="y">{{ y === 'All' ? 'All Years' : y }}</option>
         </select>
+
+        <!-- View Mode Segmented Switcher -->
+        <div class="inline-flex rounded-xl bg-[#f5f5f4] p-1 border border-[#e7e5e4] shrink-0 self-center">
+          <button
+            @click="viewMode = 'grouped'"
+            :class="[
+              'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
+              viewMode === 'grouped'
+                ? 'bg-white text-[#0c66e4] shadow-xs'
+                : 'text-[#71717a] hover:text-[#1c1917]'
+            ]"
+            title="Spreadsheet Cluster Sections"
+          >
+            <FileSpreadsheet class="size-3.5" />
+            <span class="hidden md:inline">Spreadsheet View</span>
+          </button>
+          <button
+            @click="viewMode = 'flat'"
+            :class="[
+              'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
+              viewMode === 'flat'
+                ? 'bg-white text-[#0c66e4] shadow-xs'
+                : 'text-[#71717a] hover:text-[#1c1917]'
+            ]"
+            title="Unified Single Ledger Table"
+          >
+            <Banknote class="size-3.5" />
+            <span class="hidden md:inline">Flat Ledger</span>
+          </button>
+        </div>
       </div>
 
       <!-- SKELETON LOADING STATE -->
@@ -717,7 +815,129 @@ function exportCSV() {
         <SkeletonTable :columns="10" :rows="8" />
       </div>
 
-      <!-- Excel-Matched Ledger Table -->
+      <!-- VIEW MODE 1: SPREADSHEET CLUSTER-GROUPED TABLES -->
+      <div v-else-if="viewMode === 'grouped'" class="p-4 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div v-if="clusterGroups.length === 0" class="p-12 text-center text-xs text-[#71717a] bg-white rounded-2xl border border-[#e7e5e4]">
+          No income collections recorded matching the active filters.
+        </div>
+
+        <div 
+          v-else
+          v-for="group in clusterGroups" 
+          :key="group.key"
+          class="rounded-2xl border border-[#e7e5e4] bg-white overflow-hidden shadow-xs space-y-0"
+        >
+          <!-- Cluster Section Header -->
+          <div class="px-4 py-3 bg-[#f8fafc] border-b border-[#e7e5e4] flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="size-2.5 rounded-full" :class="group.isCoOwned ? 'bg-amber-500' : 'bg-[#0c66e4]'"></span>
+              <div>
+                <h4 class="font-display font-extrabold text-sm text-[#1c1917]">{{ group.label }}</h4>
+                <p class="text-[11px] text-[#71717a]">{{ group.desc }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="badge-soft badge-blue font-bold">{{ group.records.length }} records</span>
+              <span v-if="group.isCoOwned" class="badge-soft badge-warning font-bold">50% Revenue Share Active</span>
+            </div>
+          </div>
+
+          <!-- Cluster Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse">
+              <thead class="bg-[#fafaf9] text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
+                <tr>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold">RM #</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold">DATE PAID</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold">TENANT &amp; OR #</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold">RENT PERIOD</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">RENT (₱)</th>
+                  <th v-if="group.isCoOwned" class="whitespace-nowrap px-3 py-2.5 font-bold text-right text-amber-800">50% SHARE (₱)</th>
+                  <th v-if="group.key === 'Linda'" class="whitespace-nowrap px-3 py-2.5 font-bold text-right text-sky-800">ELECTRIC (₱)</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-center">HEADS</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">WATER (₱)</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">GBG (₱)</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">REMITTED (₱)</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-center">ACTION</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#e7e5e4]">
+                <tr 
+                  v-for="r in group.records" 
+                  :key="r.id || (r.unit + r.invoice)"
+                  class="hover:bg-[#fcfbf9] transition-colors"
+                >
+                  <td class="whitespace-nowrap px-3 py-2 font-display font-extrabold uppercase text-[#1c1917]">
+                    {{ r.unit }}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-2 text-[#71717a]">
+                    {{ r.datePaid }}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-2 font-bold text-[#1c1917]">
+                    {{ r.contact }}
+                    <span v-if="r.invoice" class="block font-mono text-[10px] font-normal text-[#71717a]">{{ r.invoice }}</span>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-2 text-[#71717a]">
+                    {{ r.rentFor }}
+                  </td>
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-bold text-[#1c1917]">
+                    {{ peso(r.rent) }}
+                  </td>
+                  <td v-if="group.isCoOwned" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-amber-800 bg-amber-50/40">
+                    {{ peso(r.rent / 2) }}
+                  </td>
+                  <td v-if="group.key === 'Linda'" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-sky-800 bg-sky-50/40">
+                    {{ peso(r.linda?.electricity || 0) }}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-2 text-center font-bold text-[#1c1917]">
+                    {{ r.occupants }}
+                  </td>
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-[#1c1917]">
+                    {{ peso(r.water) }}
+                  </td>
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right text-[#71717a]">
+                    {{ peso(r.garbage) }}
+                  </td>
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-extrabold text-emerald-800">
+                    {{ peso(group.isCoOwned ? (r.rent / 2) + r.water : r.rent + r.water) }}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-2 text-center">
+                    <button 
+                      @click="startEditIncome(r)" 
+                      class="btn-secondary min-h-7 px-2.5 py-0.5 text-xs gap-1 inline-flex items-center shadow-xs cursor-pointer hover:border-[#0c66e4] hover:text-[#0c66e4]"
+                      title="Edit Collection"
+                    >
+                      <Pencil class="size-3 text-[#71717a]" />
+                      <span>Edit</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+
+              <!-- Cluster Subtotal Row -->
+              <tfoot class="bg-[#f8fafc] border-t-2 border-[#e2e8f0] font-display font-bold text-xs text-[#1c1917]">
+                <tr>
+                  <td colspan="4" class="px-3 py-2.5 uppercase tracking-wider text-[#64748b]">
+                    {{ group.label }} SUB-TOTAL ({{ group.records.length }} UNITS)
+                  </td>
+                  <td class="tabular px-3 py-2.5 text-right font-black text-[#1c1917]">{{ peso(group.totalRent) }}</td>
+                  <td v-if="group.isCoOwned" class="tabular px-3 py-2.5 text-right font-black text-amber-800">{{ peso(group.totalShare) }}</td>
+                  <td v-if="group.key === 'Linda'" class="tabular px-3 py-2.5 text-right font-black text-sky-800">
+                    {{ peso(group.records.reduce((s, r) => s + (r.linda?.electricity || 0), 0)) }}
+                  </td>
+                  <td class="px-3 py-2.5 text-center font-bold">{{ group.totalOccupants }}</td>
+                  <td class="tabular px-3 py-2.5 text-right font-black">{{ peso(group.totalWater) }}</td>
+                  <td class="tabular px-3 py-2.5 text-right font-black text-[#71717a]">{{ peso(group.totalGarbage) }}</td>
+                  <td class="tabular px-3 py-2.5 text-right font-black text-emerald-800">{{ peso(group.totalRemitted) }}</td>
+                  <td class="px-3 py-2.5 text-center">—</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW MODE 2: UNIFIED FLAT LEDGER TABLE -->
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full text-xs border-collapse">
           <thead class="sticky top-0 z-10 bg-[#f5f5f4]">
@@ -768,7 +988,7 @@ function exportCSV() {
               </td>
               <td class="tabular whitespace-nowrap px-3 py-2.5 text-right">
                 <span class="font-display font-bold text-[#1c1917] block leading-tight">{{ peso(r.rent) }}</span>
-                <span class="text-[11px] font-bold text-[#8a5814] block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
+                <span v-if="r.cluster === 'BH'" class="text-[11px] font-bold text-[#8a5814] block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
               </td>
               <td class="whitespace-nowrap px-3 py-2.5 text-center font-bold text-[#1c1917]">
                 {{ r.occupants }}
@@ -780,7 +1000,7 @@ function exportCSV() {
                 {{ peso(r.garbage) }}
               </td>
               <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-display font-extrabold text-emerald-800">
-                {{ peso((r.rent / 2) + r.water) }}
+                {{ peso((r.cluster === 'BH' ? (r.rent / 2) : r.rent) + r.water) }}
               </td>
               <td class="whitespace-nowrap px-3 py-2.5 text-center">
                 <button 
@@ -803,11 +1023,11 @@ function exportCSV() {
               </td>
               <td class="tabular px-3 py-3 text-right">
                 <span class="font-black text-[#1c1917] block leading-tight">{{ peso(totalRent) }}</span>
-                <span class="text-[11px] font-bold text-[#8a5814] block leading-tight mt-0.5">50%: {{ peso(totalShare) }}</span>
+                <span class="text-[11px] font-bold text-[#8a5814] block leading-tight mt-0.5">50% BH Share: {{ peso(totalShare) }}</span>
               </td>
-              <td class="px-3 py-3 text-center">—</td>
+              <td class="px-3 py-3 text-center font-black">{{ rows.reduce((s, r) => s + r.occupants, 0) }}</td>
               <td class="tabular px-3 py-3 text-right font-black">{{ peso(totalWater) }}</td>
-              <td class="tabular px-3 py-3 text-right font-black">{{ peso(rows.reduce((s, r) => s + r.garbage, 0)) }}</td>
+              <td class="tabular px-3 py-3 text-right font-black">{{ peso(totalGarbage) }}</td>
               <td class="tabular px-3 py-3 text-right font-black text-emerald-800">{{ peso(totalRemitted) }}</td>
               <td class="px-3 py-3 text-center">—</td>
             </tr>
