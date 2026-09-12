@@ -1,0 +1,58 @@
+sequenceDiagram
+    autonumber
+    actor Tenant as Active Tenant
+    actor Admin as Landlady (Admin)
+    participant Client as Frontend (Vue 3 SPA)
+    participant API as API Layer (Express.js)
+    participant Service as Domain Services (Billing & Payment)
+    participant DB as PostgreSQL Database
+
+    Note over Admin, DB: PHASE 1: Automated Monthly Billing Generation (BR-010, BR-014)
+    Admin->>Client: Triggers Monthly Billing Batch
+    Client->>API: POST /api/admin/bills/generate-monthly
+    API->>Service: generateMonthlyBills(clusterCode, period)
+    Service->>DB: Query active room_assignments (occupant_count, room_id, rates)
+    DB-->>Service: Returns active leases & occupant counts
+    Service->>DB: Query system_settings (key: 'water_rate_per_occupant')
+    DB-->>Service: Returns 200.00
+    Service->>Service: Compute water_amount = occupant_count * 200.00
+    Service->>Service: Compute total_amount = base_rent + water_amount
+    Service->>DB: INSERT INTO bills (rent_amount, water_amount, total_amount, status='Due')
+    DB-->>Service: Bills Created Successfully
+    Service-->>API: Batch Complete
+    API-->>Client: HTTP 201 Created
+
+    Note over Tenant, DB: PHASE 2: Tenant Payment Submission (GCash Proof)
+    Tenant->>Client: Selects Due Bill, Enters GCash Ref No. & Uploads Screenshot
+    Client->>API: POST /api/tenant/payments/submit
+    API->>Service: submitPaymentProof(billId, refNo, amount, proofUrl)
+    Service->>DB: INSERT INTO payments (amount, payment_method='GCash', transaction_reference=refNo, verification_status='Pending Verification')
+    Service->>DB: INSERT INTO notifications (recipient=Admin, title='New GCash Payment Submitted')
+    DB-->>Service: Payment Record Created (Pending)
+    Service-->>API: Payment Queued
+    API-->>Client: HTTP 200 OK ("Submitted for Verification")
+
+    Note over Admin, DB: PHASE 3: Admin Verification & 50% Share Ledger Sync (BR-017, BR-035)
+    Admin->>Client: Opens Admin Verification Queue
+    Client->>API: GET /api/admin/payments/pending
+    API->>DB: SELECT * FROM payments WHERE verification_status = 'Pending Verification'
+    DB-->>Client: Displays Tenant Name, Bill ID, GCash Ref, and Screenshot
+    Admin->>Admin: Verifies funds deposited in personal GCash app / SMS
+    Admin->>Client: Clicks [ Verify & Confirm Payment ]
+    Client->>API: POST /api/admin/payments/:id/verify
+    API->>Service: verifyPayment(paymentId, adminId)
+    
+    rect rgb(240, 245, 255)
+    Note over Service, DB: Atomic Database Transaction
+    Service->>DB: UPDATE payments SET verification_status='Verified', verified_at=NOW(), verified_by=adminId
+    Service->>DB: UPDATE bills SET status='Paid' WHERE id=payment.bill_id
+    Service->>Service: Compute fifty_percent_share = rent_amount * 0.50
+    Service->>DB: INSERT INTO monthly_income_records (rent_amount, fifty_percent_share, water_payment, remitted_amount, payment_method='GCash')
+    Service->>DB: INSERT INTO audit_logs (action='PAYMENT_VERIFIED', actor=adminId, entity='PAYMENT')
+    Service->>DB: INSERT INTO notifications (recipient=Tenant, title='Payment Verified & Settled')
+    end
+
+    DB-->>Service: Transaction Committed
+    Service-->>API: Success Response
+    API-->>Client: HTTP 200 OK ("Payment Verified & Income Ledger Updated")
+    Client-->>Admin: Updates UI (Green Verified Badge, Statement Settled)

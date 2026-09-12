@@ -1,0 +1,72 @@
+graph TB
+    %% External Entities
+    PROSPECT["Public Visitor"]
+    TENANT["Active Tenant"]
+    ADMIN["Administrator (Landlady)"]
+
+    %% Processes
+    P1(("1.0<br/>Manage Public<br/>Inquiries & Catalog"))
+    P2(("2.0<br/>Manage Tenancy<br/>& Occupancy"))
+    P3(("3.0<br/>Process Billing<br/>& Payments"))
+    P4(("4.0<br/>Manage Operational<br/>Expenses"))
+    P5(("5.0<br/>Process Maintenance<br/>Tickets"))
+    P6(("6.0<br/>Generate Financial<br/>Reports & Analytics"))
+
+    %% Data Stores (Mapped 1:1 to ERD)
+    D1[("D1: Room Catalog<br/>(rooms, clusters, photos, price_history)")]
+    D2[("D2: User Profiles<br/>(profiles)")]
+    D3[("D3: Room Assignments<br/>(room_assignments)")]
+    D4[("D4: Inquiries Store<br/>(inquiries, messages)")]
+    D5[("D5: Tenant Bills<br/>(bills)")]
+    D6[("D6: Payment Records<br/>(payments)")]
+    D7[("D7: Monthly Income Ledger<br/>(monthly_income_records)")]
+    D8[("D8: Expenses Ledger<br/>(fixed_categories, entries, allocations)")]
+    D9[("D9: Maintenance Tickets<br/>(tickets, attachments, messages)")]
+    D10[("D10: Audit Logs<br/>(audit_logs)")]
+    D11[("D11: System Parameters<br/>(system_settings)")]
+    D12[("D12: Notifications<br/>(notifications)")]
+
+    %% Process 1.0 Flows
+    PROSPECT -->|Search / Submit Inquiry| P1
+    D1 -->|Read Room Availability| P1
+    P1 -->|Write Inquiry Details| D4
+    P1 -->|Dispatch Alert| D12
+
+    %% Process 2.0 Flows
+    ADMIN -->|Approve Onboarding| P2
+    D4 -->|Fetch Prospect Details| P2
+    P2 -->|Create Tenant Profile| D2
+    P2 -->|Assign Room & Headcount| D3
+    P2 -->|Update Room Status to Occupied| D1
+    P2 -->|Log Onboarding Action| D10
+
+    %% Process 3.0 Flows
+    D3 -->|Read Occupants Headcount| P3
+    D1 -->|Read Base Rent| P3
+    D11 -->|Read P200 Water Rate| P3
+    P3 -->|Generate Bill (Rent + Water)| D5
+    TENANT -->|Submit GCash Ref & Proof| P3
+    ADMIN -->|Record Cash / Verify GCash| P3
+    P3 -->|Write Payment (Pending / Verified)| D6
+    P3 -->|Update Bill to Paid| D5
+    P3 -->|Record 50% Share Income| D7
+    P3 -->|Log Verification Event| D10
+    P3 -->|Send Receipt Notice| D12
+
+    %% Process 4.0 Flows
+    ADMIN -->|Record Official Receipts & Cluster Splits| P4
+    P4 -->|Write Categorized Expenses| D8
+    P4 -->|Log Expense Action| D10
+
+    %% Process 5.0 Flows
+    TENANT -->|Submit Issue & Upload Photo| P5
+    P5 -->|Write Ticket & Attachments| D9
+    P5 -->|Dispatch Ticket Notice| D12
+    ADMIN -->|Assign Tech & Close Ticket| P5
+    P5 -->|Update Ticket Status| D9
+    P5 -->|Log Closure Action| D10
+
+    %% Process 6.0 Flows
+    D7 -->|Read Income & 50% Shares| P6
+    D8 -->|Read Categorized Expenses| P6
+    P6 -->|Display Monthly Income & Expense Reports| ADMIN

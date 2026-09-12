@@ -1,0 +1,20 @@
+graph LR
+    %% External Entities
+    PROSPECT["Public Visitor / Prospect"]
+    TENANT["Active Tenant"]
+    ADMIN["Boarding House Administrator<br/>(Mrs. Fe Galang Da Silva)"]
+
+    %% System Boundary (Process 0.0)
+    SYSTEM(("0.0<br/><b>HIVELET</b><br/>Boarding House Management &<br/>Financial Operations System"))
+
+    %% Prospect Flows
+    PROSPECT -->|Room Availability Queries<br/>Inquiry Submission & Contact Info| SYSTEM
+    SYSTEM -->|Catalog Room Details & Availability<br/>Inquiry Status & Response Messages| PROSPECT
+
+    %% Tenant Flows
+    TENANT -->|Authentication Credentials<br/>GCash Reference No. & Receipt Proof<br/>Maintenance Tickets & Photos| SYSTEM
+    SYSTEM -->|Itemized Bills (Rent + P200 Water)<br/>Payment Verification Confirmation<br/>Ticket Status Updates & Notices| TENANT
+
+    %% Admin Flows
+    ADMIN -->|On-Site Cash Payment Entries<br/>GCash Verification Approvals / Rejections<br/>Room Rate & 2% Annual Adjustments<br/>Expense Receipts & Property Allocations<br/>Maintenance Technician Assignments| SYSTEM
+    SYSTEM -->|Pending Payment Verification Queue<br/>New Inquiry Notifications<br/>Emergency / High Priority Maintenance Alerts<br/>Monthly Income & Expense Ledgers (50% Share)<br/>Immutable System Audit Logs| ADMIN

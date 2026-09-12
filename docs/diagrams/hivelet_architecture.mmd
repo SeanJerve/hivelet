@@ -1,0 +1,68 @@
+graph TB
+    subgraph CLIENT_TIER ["1. Presentation Layer (Frontend Client SPA & PWA)"]
+        direction TB
+        PWA_CACHE["PWA Service Worker & Cache Storage<br/>(Offline Assets, Statements, Directory & Contacts)"]
+        
+        UI_PUBLIC["Public Website & Catalog<br/>(Room Directory, Inquiry Form)"]
+        UI_TENANT["Tenant Self-Service Portal<br/>(Bills, GCash Upload, Maintenance)"]
+        UI_ADMIN["Admin Control Center<br/>(Occupancy, Guided Billing, Reports)"]
+        
+        STATE_STORE["Client State & Routing<br/>(Reactive Stores, Vue Router RBAC Guards)"]
+    end
+
+    subgraph API_TIER ["2. API & Routing Layer (Node.js / Express.js)"]
+        direction TB
+        AUTH_MW["Security & Auth Middleware<br/>(JWT Token Validator, RBAC 'admin'/'tenant')"]
+        API_ROUTER["RESTful API Route Controllers<br/>(/auth, /rooms, /bills, /payments, /tickets)"]
+        VAL_ERR["Validation & Error Handler<br/>(Input Sanitizer, ApiError Formatter)"]
+    end
+
+    subgraph SERVICE_TIER ["3. Business Logic & Domain Services (Modular Monolith)"]
+        direction TB
+        SRV_BILLING["Billing & Share Service<br/>(Rent, P200/head Water, 50% Share Split)"]
+        SRV_PAYMENT["Payment Verification Service<br/>(Cash Settlement & GCash Verification Queue)"]
+        SRV_OCCUPANCY["Occupancy & Room Service<br/>(33 Units, Leases, 2% Annual Review)"]
+        SRV_TICKET["Maintenance Ticketing Service<br/>(Issue Priorities & Status Progression)"]
+        SRV_INQUIRY["Inquiry Conversion Service<br/>(Public Inquiries -> Tenant Onboarding)"]
+        SRV_AUDIT["Audit Trail Service<br/>(Immutable System Event Logging)"]
+    end
+
+    subgraph DATA_TIER ["4. Data Persistence Layer (PostgreSQL / Supabase)"]
+        direction TB
+        DB_AUTH["Identity & RBAC Tables<br/>(profiles)"]
+        DB_CATALOG["Catalog & Leases<br/>(clusters, rooms, price_history, assignments)"]
+        DB_FINANCE["Financial Ledgers<br/>(bills, payments, monthly_income_records)"]
+        DB_EXPENSE["Expense Tables<br/>(fixed_categories, entries, allocations)"]
+        DB_OPS["Operations & Audit<br/>(tickets, attachments, audit_logs, settings)"]
+    end
+
+    subgraph EXT_TIER ["5. External Services & Defined Integration Interfaces"]
+        direction TB
+        EXT_GCASH["GCash / Payment Interface<br/>(Manual Verification Queue & Sandbox PoC)"]
+        EXT_STORAGE["Media Storage Interface<br/>(Room Photos & Maintenance Attachments)"]
+    end
+
+    %% PWA Cache connections to all 3 client views
+    PWA_CACHE -.->|Cached Catalog| UI_PUBLIC
+    PWA_CACHE -.->|Cached Statements & Dues| UI_TENANT
+    PWA_CACHE -.->|Cached Directory & Contacts| UI_ADMIN
+
+    %% Flow Connections to State Store
+    UI_PUBLIC --> STATE_STORE
+    UI_TENANT --> STATE_STORE
+    UI_ADMIN --> STATE_STORE
+    STATE_STORE -->|HTTP/REST with JWT| AUTH_MW
+
+    AUTH_MW --> API_ROUTER
+    API_ROUTER --> VAL_ERR
+    VAL_ERR --> SERVICE_TIER
+
+    SRV_BILLING --> DB_FINANCE
+    SRV_PAYMENT --> DB_FINANCE
+    SRV_PAYMENT -.-> EXT_GCASH
+    SRV_OCCUPANCY --> DB_CATALOG
+    SRV_TICKET --> DB_OPS
+    SRV_TICKET -.-> EXT_STORAGE
+    SRV_INQUIRY --> DB_CATALOG
+    SRV_INQUIRY --> DB_AUTH
+    SRV_AUDIT --> DB_OPS
