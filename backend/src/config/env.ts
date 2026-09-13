@@ -34,6 +34,18 @@ function optional(name: string, fallback: string): string {
   return value && value.trim() ? value.trim() : fallback;
 }
 
+/**
+ * Reads whichever of two environment variables is set, preferring the first.
+ * Used where a credential has been renamed and both spellings must keep working.
+ */
+function either(preferred: string, legacy: string): string {
+  const value = process.env[preferred] ?? process.env[legacy];
+  if (!value || !value.trim()) {
+    throw new Error(`[config] Set ${preferred} (or ${legacy}) in your .env`);
+  }
+  return value.trim();
+}
+
 const nodeEnv = optional('NODE_ENV', 'development');
 const jwtSecret = required('JWT_SECRET');
 
@@ -70,15 +82,36 @@ export const config = {
   isProduction: nodeEnv === 'production',
   port: parseInt(optional('PORT', '5000'), 10),
 
+  /**
+   * Supabase credentials.
+   *
+   * Migrated on 2026-09-13 from the legacy JWT keys (`anon` / `service_role`) to
+   * Supabase's current format (`sb_publishable_...` / `sb_secret_...`). The legacy
+   * pair had been published in `.env.example` in a public repository since
+   * 2026-08-25 and was disabled at the project level as the remediation - there is
+   * no "reset" for legacy keys any more, so migrating and disabling is the fix.
+   *
+   * Either name is accepted for each so a stale `.env` does not break the boot,
+   * but the new names are preferred and the new formats are what production uses.
+   */
   supabase: {
     url: required('SUPABASE_URL'),
-    anonKey: required('SUPABASE_ANON_KEY'),
+
     /**
-     * Bypasses row level security. This is the ONLY credential the API uses for
-     * data access, and it must never reach the browser (04_ARCHITECTURE.md:
-     * "Secrets must never be exposed to the frontend").
+     * Publishable key. Safe in a browser IF row-level security is configured -
+     * and here it is deliberately more locked down than that: `anon` holds no
+     * grant on any of the 21 tables, so this key can read nothing at all.
+     * Verified 2026-09-13: permission denied on every table tested.
+     * Used only by the health check, to assert that the lockdown still holds.
      */
-    serviceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
+    anonKey: either('SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_ANON_KEY'),
+
+    /**
+     * Secret key. Bypasses row level security. This is the ONLY credential the
+     * API uses for data access, and it must never reach the browser
+     * (04_ARCHITECTURE.md: "Secrets must never be exposed to the frontend").
+     */
+    serviceRoleKey: either('SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY'),
   },
 
   jwt: {
