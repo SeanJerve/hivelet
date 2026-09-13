@@ -316,3 +316,74 @@ RLS state and row counts.
 
 **The ERD, data dictionary and 3NF proof will be built from its output, saved as
 `database/live_schema.csv`, and not from `FULL_DATABASE_SCHEMA.sql`.**
+
+---
+
+# Third addendum — the full run succeeded, and a third drift found by reading
+
+**2026-09-13, third production run.** `APPLY_PHASE2.sql` completed. Confirmed by reading the live
+catalogue afterwards:
+
+| Migration | Live evidence |
+| :--- | :--- |
+| `005` | 6 ledger foreign keys are `RESTRICT`; `payments.bill_id` still `SET NULL` |
+| `006` | `profiles.email` is nullable; `idx_profiles_phone_login` and `profiles_login_identifier_required` present |
+| `007` | `PH` is on floor 4; `rooms_floor_check` reads `CHECK (floor >= 1 AND floor <= 4)` |
+| `008` | `property_areas` holds 5 rows, 2 non-rental; FK from `expense_property_allocations` is `RESTRICT` and its key type matches the `property_area_type` enum |
+| `009` | The `deposit_amount` comment is in place and reads "ADVANCE RENT, not a refundable security deposit" |
+| `010` | `replace_expense_allocations(uuid, jsonb)` present, `search_path` pinned, `EXECUTE` held only by `postgres` and `service_role` |
+
+**All 21 tables present.** `005`–`010` are now live. Nothing in this record's earlier sections
+should be read as still pending.
+
+## Drift 3 — `fifty_percent_share` and `remitted_amount` are GENERATED columns
+
+Found while preparing the Phase 2 data dictionary, by reading `pg_attribute.attgenerated`.
+
+| | |
+| :--- | :--- |
+| `FULL_DATABASE_SCHEMA.sql:268, :272` says | `NUMERIC(10,2) NOT NULL DEFAULT 0.00` |
+| Production actually has | `NUMERIC(10,2)` **`GENERATED ALWAYS AS (rent_amount / 2.0) STORED`** and **`GENERATED ALWAYS AS (rent_amount + water_payment) STORED`**, both nullable |
+
+This is the **first drift found by reading rather than by a production failure**, which is the
+correction the second addendum said was the part worth fixing. The sweep that found it —
+"every column with a generation expression or a column-referencing default" — is now one of the three
+mechanical sweeps recorded in `PHASE2_NORMALIZATION_PROOF.md` section 1.
+
+### It falsifies defect #5
+
+The register has carried, since Phase 1:
+
+> `fifty_percent_share` / `remitted_amount` computed but **never written** — every row stores `0.00`
+
+The first clause is true: `backend/src/routes/admin.ts:922` assigns `fiftyPercentShare` and the
+variable is never read again — dead code. The second clause is **false**. Measured across all 937
+live non-void rows:
+
+| Check | Result |
+| :--- | ---: |
+| `fifty_percent_share = 0` | **0 rows** |
+| `fifty_percent_share = round(rent_amount / 2, 2)` | **937 of 937** |
+| `remitted_amount = 0` | **0 rows** |
+| `remitted_amount = rent_amount + water_payment` | **937 of 937** |
+
+PostgreSQL maintains both columns. The defect is much smaller than recorded: dead code to delete,
+moving no money. **Any Phase 3 insert must omit both columns** — a generated column cannot be
+written, and naming it in an `INSERT` is an error.
+
+## Migrations 011 and 012 — written, NOT applied
+
+Neither has been run against any database. Both were produced after the third run.
+
+| Migration | Purpose | Risk if deferred |
+| :--- | :--- | :--- |
+| `011_security_posture_corrections.sql` | Forced RLS on `property_areas`; makes migration `002`'s `current_user_role()` revoke actually take effect by revoking from `PUBLIC`; pins `search_path` on all four public functions | Low today. `anon` holds no grant on `property_areas`, so the missing RLS is a lost second layer rather than an open door. The `SECURITY DEFINER` function stays callable by `anon`. |
+| `012_penthouse_area_and_cluster_routing.sql` | Adds the `Penthouse` property area (OD-15); moves the cluster-to-area mapping onto `clusters.expense_area` so many clusters can share one area; routes `Linda` to `Back Apartment` | Penthouse, LF and LB costs continue to have nowhere to be booked. |
+
+**`012` has an ordering constraint.** `ALTER TYPE ... ADD VALUE` cannot be used in the same
+transaction that adds it, so the file commits the enum change before seeding the row. Run the file
+whole; do not wrap it in a single outer transaction.
+
+**`012` also requires a code change, applied second, not first:** add `'Penthouse'` to
+`PROPERTY_AREAS` in `backend/src/config/propertyAreas.ts`. Adding it while the database still has
+five areas would let the API accept a value the foreign key rejects.

@@ -114,3 +114,63 @@ year-on-year expense reports comparable.
 ---
 
 *Phase 2 artifact. Companion to `PHASE1_LOCKED_DECISIONS.md`, which it extends and never contradicts.*
+
+---
+
+# Addendum — closed later the same day (2026-09-13)
+
+## OD-15 — CLOSED. Penthouse gets its own category; Linda books to Back Apartment
+
+Asked of the owner during the Phase 2 deliverables round. Their answer:
+
+> "the expense can be put to front, back, boarding house, main house and penthouse. the penthouse is
+> another separate category since its a large unit so its own category, and linda is on the back
+> category."
+
+**Resolution.** A **sixth** Property Area, `Penthouse`, with `is_rental_expense = TRUE` — the
+penthouse is let to tenants, so its upkeep is an operating cost. The `Linda` cluster books to the
+existing `Back Apartment` area. `Other Expenses / Personal` is retained: it holds ₱1,995,503.25 of
+recorded history and was not part of the question.
+
+**Schema impact — `012_penthouse_area_and_cluster_routing.sql`, written, not yet applied.**
+
+The migration does one thing the question did not obviously call for, and the reason matters.
+Migration `008` put `cluster_code` on `property_areas`, which can only express *one area to one
+cluster*. The owner's answer is *many clusters to one area* — both `Back Apartment` and `Linda` book
+to `Back Apartment`. That cannot be written down in a column on the wrong side of the relationship
+without either inventing a duplicate area row or leaving `Linda` unmapped, which is exactly the state
+the database was already in. So `012` adds `clusters.expense_area` (N:1), populates it for all five
+clusters, and drops the superseded `property_areas.cluster_code`. Keeping both would be a stored
+redundancy able to disagree with itself — the kind of finding the 3NF proof has to survive.
+
+Final mapping:
+
+| Cluster | Units | Books costs to |
+| :--- | :-: | :--- |
+| `BH` | 22 | Boarding House |
+| `Back Apartment` | 5 | Back Apartment |
+| `Linda` | 2 | **Back Apartment** |
+| `Front Apartment` | 3 | Front Apartment |
+| `Penthouse` | 1 | **Penthouse** (new) |
+
+Every cluster now routes somewhere; `012` sets the column `NOT NULL` to keep it that way.
+
+## OD-14 — still open, and now measured
+
+The owner reconfirmed **11 / 11 / 10 / 1** twice. The live `rooms.floor` data says **12 / 11 / 9 / 1**.
+Both total 33 and the error is symmetrical, so exactly one row's `floor` is wrong. **No migration was
+written** — see `CONTINUE_HERE.md`.
+
+## OD-17 — NEWLY OPEN. Is `LF` a Linda unit or a Front Apartment unit?
+
+The owner stated three times that "Linda Front" should not exist and that the unit belongs to the
+Front Apartment. They also stated that the Front Apartment "consists of 3 units, 1 ground and 2 on
+the 2nd floor" — which `F1`, `F2B` and `F2F` already satisfy, so moving `LF` in would make four.
+
+`LF` cannot simply be removed. It is a real, separately let unit with **31 income records**, its own
+tenant, and its own ₱400 fixed water charge distinct from `LB`'s ₱200. Its cluster determines which
+expense bucket its costs land in once `012` is applied, so this must be settled before the expense
+reports are considered final.
+
+**No room row was reclassified.** Changing a unit's cluster on a contradictory instruction would move
+real money between reporting buckets across 31 historical records.
