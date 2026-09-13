@@ -1,3 +1,4 @@
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'Inter, Segoe UI, Helvetica, sans-serif','fontSize':'15px','primaryColor':'#eef2ff','primaryTextColor':'#1e1b4b','primaryBorderColor':'#6366f1','lineColor':'#64748b','attributeBackgroundColorOdd':'#ffffff','attributeBackgroundColorEven':'#f8fafc'}}}%%
 erDiagram
 
     PROFILES                ||--o{ ROOM_ASSIGNMENTS       : "holds"

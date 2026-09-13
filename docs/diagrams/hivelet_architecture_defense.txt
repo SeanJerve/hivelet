@@ -1,3 +1,4 @@
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'Inter, Segoe UI, Helvetica, sans-serif','fontSize':'15px','primaryColor':'#f8fafc','primaryTextColor':'#0f172a','primaryBorderColor':'#94a3b8','lineColor':'#64748b','tertiaryColor':'#ffffff','clusterBkg':'#fcfcfd','clusterBorder':'#cbd5e1'}, 'flowchart': {'curve':'basis','nodeSpacing':45,'rankSpacing':70,'padding':14}}}%%
 graph LR
 
     subgraph T1 ["TIER 1 &nbsp; Presentation"]
@@ -12,7 +13,7 @@ graph LR
         SRV["Modular Monolith<br/>auth &middot; scope &middot; audit<br/>notification &middot; settings &middot; billing"]
     end
 
-    subgraph TG ["THE GATE"]
+    subgraph TG ["&nbsp; THE HUMAN GATE &nbsp;"]
         GATE["ADMINISTRATOR<br/>VERIFICATION<br/>BR-017<br/><br/>only a human with<br/>payment:verify can<br/>move a bill to Paid"]
     end
 

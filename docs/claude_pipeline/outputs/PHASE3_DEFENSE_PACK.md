@@ -20,6 +20,12 @@ Bicol University College of Science | Capstone Project 2 | Group 4
 
 All rendered at 3x into `docs/diagrams/rendered/` — drop the PNGs straight into slides.
 
+**Prefer SVG over PNG where your tool allows it.** The `.png` files soften when scaled up on a
+projector; SVG stays sharp at any size. Paste-ready Mermaid source for every diagram — themed,
+copy and go — is in **`docs/diagrams/DIAGRAM_SOURCE.md`**, for mermaid.live, Mermaid Chart or
+Mermaid AI. If you regenerate a diagram there, paste the result back into the matching `.mmd`
+file so the repository stays the source of truth.
+
 | Section | Use on screen | File |
 | :-- | :--- | :--- |
 | 3 | **Architecture, defense view** — five tiers left-to-right, adapter and gate highlighted | `hivelet_architecture_defense.png` |
@@ -195,34 +201,68 @@ report that than not have looked."*
 
 ## §5 — Process and data flow diagrams  ·  ~2 min
 
-**Slide:** Level 0 context, then Level 1.
+**Slides:** `hivelet_dfd_context.png`, then `hivelet_dfd_level1.png`.
 
-> "Our Level 0 context diagram shows three external entities — the Prospect, the Active Tenant and
-> the Administrator — around a single process.
+> [!IMPORTANT]
+> **This diagram is not the one you submitted, and you must say so before anyone notices.**
+> The submitted Level 1 showed **6 processes**; this shows **7 processes and 12 data stores**.
+> A panelist comparing the two will spot it. Explaining the change yourself turns a
+> discrepancy into evidence that you checked your own work; being asked about it does not.
+
+### Open by naming the change
+
+> "Before I walk this, one thing: our Level 1 diagram has changed since submission. It had six
+> processes; it now has seven. I want to explain why, because we found the reason ourselves.
 >
-> Our Level 1 decomposes into **seven processes and twelve data stores**. That is a change from what
-> we submitted: the original showed six processes, and it did not balance. Two of our Level 0 outputs
-> had no Level 1 process producing them, and the authentication credentials crossing the boundary
-> landed nowhere at all, because the process that consumed them had been dropped. We restored
-> **Process 7.0, Authenticate and Authorize Users**, and added the missing return flows, so now every
-> data store is read as well as written and every boundary output has a producer."
+> **The submitted pair did not balance.** In data flow diagramming, every output promised at
+> the system boundary in the Level 0 context diagram must have a Level 1 process that actually
+> produces it. Ours did not. The Level 0 promised **eleven** distinct outputs to our three
+> external entities; the Level 1 delivered **one**.
+>
+> When we traced it, we found two concrete faults.
+>
+> **First, six of our twelve data stores were write-only.** Nothing in the Level 1 ever read
+> from them. Data went in and nothing came out, so the outputs the context diagram promised had
+> no producer.
+>
+> **Second, we had deleted a process without replacing it.** The original laboratory DFD
+> modelled 'Authenticate and Authorize Users' as Process 5. When we modernised the diagram, that
+> process disappeared — but the 'Authentication Credentials' flow still crossed the system
+> boundary from all three external entities. Three inputs arriving at a process that no longer
+> existed.
+>
+> So we restored it as **Process 7.0, Authenticate and Authorize Users**, which maps to a real
+> file — `authService.ts` — and added the missing return flows. Now every data store is read as
+> well as written, and every Level 0 output has a Level 1 process producing it. The diagram
+> balances."
 
-**Then walk one subprocess — use Process 3.0, because it is the one the panel's recommendation touches:**
+**If asked whether that was a mistake:** yes, and say it plainly. *"It was. The submitted
+version promised outputs it could not produce. We would rather show you the corrected diagram
+and explain the correction than defend one we know does not balance."*
+
+### Then walk one subprocess — use Process 3.0
+
+It is the one the panel's recommendation touches, so it carries Section 3 and 4 forward.
 
 > "Let me walk **Process 3.0, Process Billing and Payments**.
 >
-> It reads the room catalogue and the tenancy records to know who occupies what and at what rate. It
-> computes the bill: rent from the unit's current price, plus water. Water is **occupant count times a
-> configurable rate** — it reads that rate from our system settings table rather than hardcoding it,
-> and the two Linda units take a fixed monthly charge instead, which is business rule BR-040.
+> It reads the room catalogue and the tenancy records to know who occupies what and at what
+> rate. It computes the bill: rent from the unit's current price, plus water. Water is
+> **occupant count times a configurable rate**, read from our system settings table rather than
+> hardcoded — and the two Linda units take a fixed monthly charge instead, which is business
+> rule BR-040.
 >
-> It writes to the Bills store. When money arrives — cash at the door, or GCash through the adapter —
-> it writes to the Payments store as **Pending Verification**.
+> It writes to the Bills store. When money arrives — cash at the door, or GCash through the
+> adapter — it writes to the Payments store as **Pending Verification**.
 >
-> Then it stops, and waits for a human. When the administrator verifies, the process updates the
-> bill to Paid, writes the income ledger entry, and writes an immutable audit record. Those last
-> steps are what make the ledger defensible: every financial change has a named actor, a timestamp,
-> and a before-and-after snapshot."
+> Then it stops, and waits for a human. When the administrator verifies, the process updates
+> the bill to Paid, writes the income ledger entry, and writes an immutable audit record. Those
+> last steps are what make the ledger defensible: every financial change has a named actor, a
+> timestamp, and a before-and-after snapshot."
+
+**Numbers for this section:** 7 processes, 12 data stores, 3 external entities (Prospect,
+Active Tenant, Administrator). The legacy laboratory DFD had 5 processes and 6 stores — that is
+the *original*, not the submitted one, and the two are different diagrams.
 
 ---
 
