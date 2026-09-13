@@ -1,0 +1,408 @@
+section,item,detail
+0. Custom types,account_status_type,"'active', 'inactive'"
+0. Custom types,bill_status_type,"'Pending', 'Due', 'Overdue', 'Paid', 'Partially Paid'"
+0. Custom types,bill_type_enum,"'Rent', 'Water', 'Combined', 'Other'"
+0. Custom types,inquiry_status_type,"'Pending', 'Contacted', 'Converted', 'Closed'"
+0. Custom types,operational_status_type,"'Available', 'Reserved', 'Occupied', 'Under Maintenance'"
+0. Custom types,payment_method_type,"'Cash', 'GCash', 'Bank Transfer', 'Adyen Online'"
+0. Custom types,property_area_type,"'Boarding House', 'Main House', 'Front Apartment', 'Back Apartment', 'Other Expenses / Personal'"
+0. Custom types,room_type_enum,"'Studio', 'One-bedroom', 'Two-bedroom', 'Three-bedroom'"
+0. Custom types,ticket_priority_type,"'Emergency', 'High', 'Medium', 'Low'"
+0. Custom types,ticket_status_type,"'Submitted', 'In Progress', 'Resolved', 'Closed'"
+0. Custom types,user_role_type,"'admin', 'tenant', 'prospect'"
+0. Custom types,verification_status_type,"'Verified', 'Pending Verification', 'Rejected'"
+0. Custom types,visibility_status_type,"'Published', 'Hidden'"
+1. Columns,audit_logs.action,character varying(100) NOT NULL
+1. Columns,audit_logs.actor_profile_id,uuid NULL
+1. Columns,audit_logs.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,audit_logs.entity_id,uuid NOT NULL
+1. Columns,audit_logs.entity_type,character varying(100) NOT NULL
+1. Columns,audit_logs.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,audit_logs.ip_address,character varying(50) NULL
+1. Columns,audit_logs.new_values,jsonb NULL
+1. Columns,audit_logs.previous_values,jsonb NULL
+1. Columns,bills.bill_type,bill_type_enum NOT NULL DEFAULT 'Combined'::bill_type_enum
+1. Columns,bills.billing_period_end,date NOT NULL
+1. Columns,bills.billing_period_start,date NOT NULL
+1. Columns,bills.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,bills.due_date,date NOT NULL
+1. Columns,bills.grace_period_end_date,date NOT NULL
+1. Columns,bills.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,bills.rent_amount,"numeric(10,2) NOT NULL DEFAULT 0.00"
+1. Columns,bills.room_id,uuid NOT NULL
+1. Columns,bills.status,bill_status_type NOT NULL DEFAULT 'Pending'::bill_status_type
+1. Columns,bills.tenant_profile_id,uuid NOT NULL
+1. Columns,bills.total_amount,"numeric(10,2) NOT NULL"
+1. Columns,bills.updated_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,bills.water_amount,"numeric(10,2) NOT NULL DEFAULT 0.00"
+1. Columns,clusters.code,character varying(50) NOT NULL
+1. Columns,clusters.display_order,integer NOT NULL
+1. Columns,clusters.name,character varying(100) NOT NULL
+1. Columns,expense_property_allocations.amount,"numeric(10,2) NOT NULL"
+1. Columns,expense_property_allocations.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,expense_property_allocations.expense_entry_id,uuid NOT NULL
+1. Columns,expense_property_allocations.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,expense_property_allocations.property_area,property_area_type NOT NULL
+1. Columns,fixed_expense_categories.code,character varying(20) NOT NULL
+1. Columns,fixed_expense_categories.display_order,integer NOT NULL
+1. Columns,fixed_expense_categories.name,character varying(255) NOT NULL
+1. Columns,fixed_expense_categories.parent_code,character varying(20) NULL
+1. Columns,inquiries.converted_tenant_id,uuid NULL
+1. Columns,inquiries.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,inquiries.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,inquiries.message,text NOT NULL
+1. Columns,inquiries.prospect_email,character varying(255) NOT NULL
+1. Columns,inquiries.prospect_name,character varying(255) NOT NULL
+1. Columns,inquiries.prospect_phone,character varying(50) NOT NULL
+1. Columns,inquiries.room_id,uuid NOT NULL
+1. Columns,inquiries.status,inquiry_status_type NOT NULL DEFAULT 'Pending'::inquiry_status_type
+1. Columns,inquiries.updated_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,inquiry_messages.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,inquiry_messages.inquiry_id,uuid NOT NULL
+1. Columns,inquiry_messages.message_body,text NOT NULL
+1. Columns,inquiry_messages.sender_id,uuid NULL
+1. Columns,inquiry_messages.sender_name,character varying(255) NOT NULL
+1. Columns,inquiry_messages.sent_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,maintenance_tickets.assigned_technician,character varying(160) NULL
+1. Columns,maintenance_tickets.category,character varying(100) NOT NULL DEFAULT 'General Repair'::character varying
+1. Columns,maintenance_tickets.closed_at,timestamp with time zone NULL
+1. Columns,maintenance_tickets.closed_by,uuid NULL
+1. Columns,maintenance_tickets.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,maintenance_tickets.description,text NOT NULL
+1. Columns,maintenance_tickets.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,maintenance_tickets.priority,ticket_priority_type NOT NULL DEFAULT 'Medium'::ticket_priority_type
+1. Columns,maintenance_tickets.resolved_at,timestamp with time zone NULL
+1. Columns,maintenance_tickets.room_id,uuid NOT NULL
+1. Columns,maintenance_tickets.status,ticket_status_type NOT NULL DEFAULT 'Submitted'::ticket_status_type
+1. Columns,maintenance_tickets.tenant_profile_id,uuid NOT NULL
+1. Columns,maintenance_tickets.title,character varying(255) NOT NULL
+1. Columns,monthly_expense_entries.category_code,character varying(20) NOT NULL
+1. Columns,monthly_expense_entries.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,monthly_expense_entries.created_by,uuid NULL
+1. Columns,monthly_expense_entries.expense_date,date NOT NULL
+1. Columns,monthly_expense_entries.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,monthly_expense_entries.or_supplier,text NOT NULL
+1. Columns,monthly_expense_entries.total_expenses,"numeric(10,2) NOT NULL DEFAULT 0.00"
+1. Columns,monthly_expense_entries.updated_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,monthly_expense_entries.void_reason,text NULL
+1. Columns,monthly_expense_entries.voided_at,timestamp with time zone NULL
+1. Columns,monthly_expense_entries.voided_by,uuid NULL
+1. Columns,monthly_income_records.assignment_id,uuid NULL
+1. Columns,monthly_income_records.contact_name,character varying(255) NOT NULL
+1. Columns,monthly_income_records.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,monthly_income_records.date_paid,date NOT NULL
+1. Columns,monthly_income_records.fifty_percent_share,"numeric(10,2) NULL DEFAULT (rent_amount / 2.0)"
+1. Columns,monthly_income_records.gbg_fee,"numeric(10,2) NOT NULL DEFAULT 0.00"
+1. Columns,monthly_income_records.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,monthly_income_records.invoice_number,character varying(100) NOT NULL
+1. Columns,monthly_income_records.is_linda_billing,boolean NULL DEFAULT false
+1. Columns,monthly_income_records.linda_electricity_charge,"numeric(10,2) NULL DEFAULT 0.00"
+1. Columns,monthly_income_records.linda_water_charge,"numeric(10,2) NULL DEFAULT 0.00"
+1. Columns,monthly_income_records.month,integer NOT NULL
+1. Columns,monthly_income_records.occupants,integer NOT NULL
+1. Columns,monthly_income_records.payment_method,payment_method_type NOT NULL DEFAULT 'Cash'::payment_method_type
+1. Columns,monthly_income_records.remitted_amount,"numeric(10,2) NULL DEFAULT (rent_amount + water_payment)"
+1. Columns,monthly_income_records.rent_amount,"numeric(10,2) NOT NULL"
+1. Columns,monthly_income_records.rent_period_end,date NOT NULL
+1. Columns,monthly_income_records.rent_period_start,date NOT NULL
+1. Columns,monthly_income_records.room_id,uuid NOT NULL
+1. Columns,monthly_income_records.tenant_profile_id,uuid NULL
+1. Columns,monthly_income_records.transaction_reference,character varying(120) NULL
+1. Columns,monthly_income_records.updated_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,monthly_income_records.verification_status,verification_status_type NOT NULL DEFAULT 'Verified'::verification_status_type
+1. Columns,monthly_income_records.void_reason,text NULL
+1. Columns,monthly_income_records.voided_at,timestamp with time zone NULL
+1. Columns,monthly_income_records.voided_by,uuid NULL
+1. Columns,monthly_income_records.water_payment,"numeric(10,2) NOT NULL DEFAULT 0.00"
+1. Columns,monthly_income_records.year,integer NOT NULL
+1. Columns,notifications.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,notifications.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,notifications.is_read,boolean NULL DEFAULT false
+1. Columns,notifications.message,text NOT NULL
+1. Columns,notifications.priority,ticket_priority_type NOT NULL DEFAULT 'Low'::ticket_priority_type
+1. Columns,notifications.recipient_profile_id,uuid NOT NULL
+1. Columns,notifications.related_entity_id,uuid NULL
+1. Columns,notifications.related_entity_type,character varying(100) NULL
+1. Columns,notifications.title,character varying(255) NOT NULL
+1. Columns,notifications.type,character varying(100) NOT NULL DEFAULT 'System'::character varying
+1. Columns,payments.amount,"numeric(10,2) NOT NULL"
+1. Columns,payments.bill_id,uuid NULL
+1. Columns,payments.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,payments.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,payments.paid_at,timestamp with time zone NOT NULL DEFAULT now()
+1. Columns,payments.payment_method,payment_method_type NOT NULL DEFAULT 'Cash'::payment_method_type
+1. Columns,payments.payment_source,character varying(100) NOT NULL DEFAULT 'On-Site Cash'::character varying
+1. Columns,payments.room_id,uuid NOT NULL
+1. Columns,payments.tenant_profile_id,uuid NOT NULL
+1. Columns,payments.transaction_reference,character varying(255) NULL
+1. Columns,payments.verification_status,verification_status_type NOT NULL DEFAULT 'Verified'::verification_status_type
+1. Columns,payments.verified_at,timestamp with time zone NULL
+1. Columns,payments.verified_by,uuid NULL
+1. Columns,profiles.account_status,account_status_type NOT NULL DEFAULT 'active'::account_status_type
+1. Columns,profiles.auth_user_id,uuid NULL
+1. Columns,profiles.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,profiles.email,character varying(255) NULL
+1. Columns,profiles.emergency_contact_name,character varying(255) NULL
+1. Columns,profiles.emergency_contact_phone,character varying(50) NULL
+1. Columns,profiles.facebook_url,text NULL
+1. Columns,profiles.failed_login_count,integer NOT NULL DEFAULT 0
+1. Columns,profiles.full_name,character varying(255) NOT NULL
+1. Columns,profiles.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,profiles.last_login_at,timestamp with time zone NULL
+1. Columns,profiles.locked_until,timestamp with time zone NULL
+1. Columns,profiles.occupation,character varying(100) NULL
+1. Columns,profiles.password_changed_at,timestamp with time zone NULL
+1. Columns,profiles.password_hash,character varying(255) NULL
+1. Columns,profiles.phone_number,character varying(50) NULL
+1. Columns,profiles.role,user_role_type NOT NULL DEFAULT 'tenant'::user_role_type
+1. Columns,profiles.updated_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,property_areas.cluster_code,character varying(50) NULL
+1. Columns,property_areas.code,property_area_type NOT NULL
+1. Columns,property_areas.display_order,integer NOT NULL DEFAULT 0
+1. Columns,property_areas.is_rental_expense,boolean NOT NULL DEFAULT true
+1. Columns,property_areas.name,character varying(150) NOT NULL
+1. Columns,property_areas.notes,text NULL
+1. Columns,room_assignments.anniversary_date,date NOT NULL
+1. Columns,room_assignments.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,room_assignments.deposit_amount,"numeric(10,2) NOT NULL DEFAULT 0.00"
+1. Columns,room_assignments.end_date,date NULL
+1. Columns,room_assignments.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,room_assignments.is_active,boolean NULL DEFAULT true
+1. Columns,room_assignments.is_primary_contact,boolean NULL DEFAULT true
+1. Columns,room_assignments.occupant_count,integer NOT NULL DEFAULT 1
+1. Columns,room_assignments.room_id,uuid NOT NULL
+1. Columns,room_assignments.start_date,date NOT NULL
+1. Columns,room_assignments.tenant_profile_id,uuid NOT NULL
+1. Columns,room_assignments.updated_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,room_photos.caption,character varying(255) NULL
+1. Columns,room_photos.created_at,timestamp with time zone NOT NULL DEFAULT now()
+1. Columns,room_photos.display_order,integer NOT NULL DEFAULT 0
+1. Columns,room_photos.file_url,text NOT NULL
+1. Columns,room_photos.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,room_photos.is_primary,boolean NOT NULL DEFAULT false
+1. Columns,room_photos.room_id,uuid NOT NULL
+1. Columns,room_photos.uploaded_by,uuid NULL
+1. Columns,room_price_history.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,room_price_history.created_by,uuid NULL
+1. Columns,room_price_history.effective_date,date NOT NULL DEFAULT CURRENT_DATE
+1. Columns,room_price_history.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,room_price_history.new_price,"numeric(10,2) NOT NULL"
+1. Columns,room_price_history.previous_price,"numeric(10,2) NOT NULL"
+1. Columns,room_price_history.reason,text NULL
+1. Columns,room_price_history.room_id,uuid NOT NULL
+1. Columns,rooms.available_from,date NULL
+1. Columns,rooms.base_price,"numeric(10,2) NOT NULL"
+1. Columns,rooms.capacity,integer NOT NULL
+1. Columns,rooms.cluster_code,character varying(50) NOT NULL
+1. Columns,rooms.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,rooms.current_price,"numeric(10,2) NOT NULL"
+1. Columns,rooms.description,text NULL
+1. Columns,rooms.floor,integer NOT NULL
+1. Columns,rooms.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,rooms.is_linda_unit,boolean NULL DEFAULT false
+1. Columns,rooms.operational_status,operational_status_type NOT NULL DEFAULT 'Available'::operational_status_type
+1. Columns,rooms.room_number,character varying(20) NOT NULL
+1. Columns,rooms.room_type,room_type_enum NOT NULL DEFAULT 'Studio'::room_type_enum
+1. Columns,rooms.updated_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,rooms.visibility_status,visibility_status_type NOT NULL DEFAULT 'Published'::visibility_status_type
+1. Columns,system_settings.business_rule,character varying(20) NULL
+1. Columns,system_settings.description,text NULL
+1. Columns,system_settings.key,character varying(80) NOT NULL
+1. Columns,system_settings.label,character varying(160) NOT NULL
+1. Columns,system_settings.updated_at,timestamp with time zone NOT NULL DEFAULT now()
+1. Columns,system_settings.updated_by,uuid NULL
+1. Columns,system_settings.value,text NOT NULL
+1. Columns,system_settings.value_type,character varying(20) NOT NULL DEFAULT 'number'::character varying
+1. Columns,ticket_attachments.file_type,character varying(50) NULL DEFAULT 'image/jpeg'::character varying
+1. Columns,ticket_attachments.file_url,text NOT NULL
+1. Columns,ticket_attachments.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,ticket_attachments.ticket_id,uuid NOT NULL
+1. Columns,ticket_attachments.uploaded_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,ticket_messages.created_at,timestamp with time zone NULL DEFAULT now()
+1. Columns,ticket_messages.id,uuid NOT NULL DEFAULT gen_random_uuid()
+1. Columns,ticket_messages.message_body,text NOT NULL
+1. Columns,ticket_messages.sender_id,uuid NOT NULL
+1. Columns,ticket_messages.ticket_id,uuid NOT NULL
+2. CHECK constraints,bills.bills_rent_amount_check,CHECK ((rent_amount >= (0)::numeric))
+2. CHECK constraints,bills.bills_total_amount_check,CHECK ((total_amount >= (0)::numeric))
+2. CHECK constraints,bills.bills_water_amount_check,CHECK ((water_amount >= (0)::numeric))
+2. CHECK constraints,expense_property_allocations.expense_property_allocations_amoun,CHECK ((amount >= (0)::numeric))
+2. CHECK constraints,monthly_expense_entries.monthly_expense_entries_total_expenses_,CHECK ((total_expenses >= (0)::numeric))
+2. CHECK constraints,monthly_income_records.monthly_income_records_gbg_fee_check,CHECK ((gbg_fee >= (0)::numeric))
+2. CHECK constraints,monthly_income_records.monthly_income_records_linda_electricity,CHECK ((linda_electricity_charge >= (0)::numeric))
+2. CHECK constraints,monthly_income_records.monthly_income_records_linda_water_charg,CHECK ((linda_water_charge >= (0)::numeric))
+2. CHECK constraints,monthly_income_records.monthly_income_records_month_check,CHECK (((month >= 1) AND (month <= 12)))
+2. CHECK constraints,monthly_income_records.monthly_income_records_occupants_check,CHECK ((occupants >= 0))
+2. CHECK constraints,monthly_income_records.monthly_income_records_rent_amount_check,CHECK ((rent_amount >= (0)::numeric))
+2. CHECK constraints,monthly_income_records.monthly_income_records_water_payment_che,CHECK ((water_payment >= (0)::numeric))
+2. CHECK constraints,payments.payments_amount_check,CHECK ((amount > (0)::numeric))
+2. CHECK constraints,profiles.profiles_login_identifier_required,CHECK (((password_hash IS NULL) OR (email IS NOT NULL) OR (phone_number IS NOT NULL)))
+2. CHECK constraints,room_assignments.room_assignments_deposit_amount_check,CHECK ((deposit_amount >= (0)::numeric))
+2. CHECK constraints,room_assignments.room_assignments_occupant_count_check,CHECK ((occupant_count >= 1))
+2. CHECK constraints,room_price_history.room_price_history_new_price_check,CHECK ((new_price >= (0)::numeric))
+2. CHECK constraints,room_price_history.room_price_history_previous_price_check,CHECK ((previous_price >= (0)::numeric))
+2. CHECK constraints,rooms.rooms_base_price_check,CHECK ((base_price >= (0)::numeric))
+2. CHECK constraints,rooms.rooms_capacity_check,CHECK ((capacity > 0))
+2. CHECK constraints,rooms.rooms_current_price_check,CHECK ((current_price >= (0)::numeric))
+2. CHECK constraints,rooms.rooms_floor_check,CHECK (((floor >= 1) AND (floor <= 4)))
+3. Foreign keys,audit_logs.actor_profile_id,NO ACTION -> profiles
+3. Foreign keys,bills.room_id,RESTRICT -> rooms
+3. Foreign keys,bills.tenant_profile_id,RESTRICT -> profiles
+3. Foreign keys,expense_property_allocations.expense_entry_id,CASCADE -> monthly_expense_entries
+3. Foreign keys,expense_property_allocations.property_area,RESTRICT -> property_areas
+3. Foreign keys,fixed_expense_categories.parent_code,NO ACTION -> fixed_expense_categories
+3. Foreign keys,inquiries.converted_tenant_id,NO ACTION -> profiles
+3. Foreign keys,inquiries.room_id,CASCADE -> rooms
+3. Foreign keys,inquiry_messages.inquiry_id,CASCADE -> inquiries
+3. Foreign keys,inquiry_messages.sender_id,NO ACTION -> profiles
+3. Foreign keys,maintenance_tickets.closed_by,NO ACTION -> profiles
+3. Foreign keys,maintenance_tickets.room_id,NO ACTION -> rooms
+3. Foreign keys,maintenance_tickets.tenant_profile_id,NO ACTION -> profiles
+3. Foreign keys,monthly_expense_entries.category_code,NO ACTION -> fixed_expense_categories
+3. Foreign keys,monthly_expense_entries.created_by,NO ACTION -> profiles
+3. Foreign keys,monthly_expense_entries.voided_by,NO ACTION -> profiles
+3. Foreign keys,monthly_income_records.assignment_id,NO ACTION -> room_assignments
+3. Foreign keys,monthly_income_records.room_id,RESTRICT -> rooms
+3. Foreign keys,monthly_income_records.tenant_profile_id,RESTRICT -> profiles
+3. Foreign keys,monthly_income_records.voided_by,NO ACTION -> profiles
+3. Foreign keys,notifications.recipient_profile_id,CASCADE -> profiles
+3. Foreign keys,payments.bill_id,SET NULL -> bills
+3. Foreign keys,payments.room_id,RESTRICT -> rooms
+3. Foreign keys,payments.tenant_profile_id,RESTRICT -> profiles
+3. Foreign keys,payments.verified_by,NO ACTION -> profiles
+3. Foreign keys,profiles.auth_user_id,CASCADE -> users
+3. Foreign keys,property_areas.cluster_code,NO ACTION -> clusters
+3. Foreign keys,room_assignments.room_id,CASCADE -> rooms
+3. Foreign keys,room_assignments.tenant_profile_id,CASCADE -> profiles
+3. Foreign keys,room_photos.room_id,CASCADE -> rooms
+3. Foreign keys,room_photos.uploaded_by,NO ACTION -> profiles
+3. Foreign keys,room_price_history.created_by,NO ACTION -> profiles
+3. Foreign keys,room_price_history.room_id,CASCADE -> rooms
+3. Foreign keys,rooms.cluster_code,NO ACTION -> clusters
+3. Foreign keys,system_settings.updated_by,NO ACTION -> profiles
+3. Foreign keys,ticket_attachments.ticket_id,CASCADE -> maintenance_tickets
+3. Foreign keys,ticket_messages.sender_id,NO ACTION -> profiles
+3. Foreign keys,ticket_messages.ticket_id,CASCADE -> maintenance_tickets
+4. PK / UNIQUE,audit_logs.audit_logs_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,bills.bills_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,clusters.clusters_pkey,PRIMARY KEY (code)
+4. PK / UNIQUE,expense_property_allocations.expense_property_allocations_expen,"UNIQUE (expense_entry_id, property_area)"
+4. PK / UNIQUE,expense_property_allocations.expense_property_allocations_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,fixed_expense_categories.fixed_expense_categories_pkey,PRIMARY KEY (code)
+4. PK / UNIQUE,inquiries.inquiries_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,inquiry_messages.inquiry_messages_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,maintenance_tickets.maintenance_tickets_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,monthly_expense_entries.monthly_expense_entries_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,monthly_income_records.monthly_income_records_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,notifications.notifications_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,payments.payments_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,profiles.profiles_auth_user_id_key,UNIQUE (auth_user_id)
+4. PK / UNIQUE,profiles.profiles_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,property_areas.property_areas_pkey,PRIMARY KEY (code)
+4. PK / UNIQUE,room_assignments.room_assignments_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,room_photos.room_photos_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,room_price_history.room_price_history_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,rooms.rooms_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,rooms.rooms_room_number_key,UNIQUE (room_number)
+4. PK / UNIQUE,system_settings.system_settings_pkey,PRIMARY KEY (key)
+4. PK / UNIQUE,ticket_attachments.ticket_attachments_pkey,PRIMARY KEY (id)
+4. PK / UNIQUE,ticket_messages.ticket_messages_pkey,PRIMARY KEY (id)
+5. Indexes,audit_logs_pkey,CREATE UNIQUE INDEX audit_logs_pkey ON public.audit_logs USING btree (id)
+5. Indexes,bills_pkey,CREATE UNIQUE INDEX bills_pkey ON public.bills USING btree (id)
+5. Indexes,clusters_pkey,CREATE UNIQUE INDEX clusters_pkey ON public.clusters USING btree (code)
+5. Indexes,expense_property_allocations_expense_entry_id_property_area_key,"CREATE UNIQUE INDEX expense_property_allocations_expense_entry_id_property_area_key ON public.expense_property_allocations USING btree (expense_entry_id, property_area)"
+5. Indexes,expense_property_allocations_pkey,CREATE UNIQUE INDEX expense_property_allocations_pkey ON public.expense_property_allocations USING btree (id)
+5. Indexes,fixed_expense_categories_pkey,CREATE UNIQUE INDEX fixed_expense_categories_pkey ON public.fixed_expense_categories USING btree (code)
+5. Indexes,idx_allocations_entry,CREATE INDEX idx_allocations_entry ON public.expense_property_allocations USING btree (expense_entry_id)
+5. Indexes,idx_bills_room,CREATE INDEX idx_bills_room ON public.bills USING btree (room_id)
+5. Indexes,idx_bills_status_due,"CREATE INDEX idx_bills_status_due ON public.bills USING btree (status, due_date)"
+5. Indexes,idx_bills_tenant,CREATE INDEX idx_bills_tenant ON public.bills USING btree (tenant_profile_id)
+5. Indexes,idx_expense_active,CREATE INDEX idx_expense_active ON public.monthly_expense_entries USING btree (expense_date) WHERE (voided_at IS NULL)
+5. Indexes,idx_expense_alloc_area,CREATE INDEX idx_expense_alloc_area ON public.expense_property_allocations USING btree (property_area)
+5. Indexes,idx_income_active,"CREATE INDEX idx_income_active ON public.monthly_income_records USING btree (year, month) WHERE (voided_at IS NULL)"
+5. Indexes,idx_income_room,CREATE INDEX idx_income_room ON public.monthly_income_records USING btree (room_id)
+5. Indexes,idx_inquiries_room,CREATE INDEX idx_inquiries_room ON public.inquiries USING btree (room_id)
+5. Indexes,idx_inquiries_status,CREATE INDEX idx_inquiries_status ON public.inquiries USING btree (status)
+5. Indexes,idx_inquiry_messages_inquiry,CREATE INDEX idx_inquiry_messages_inquiry ON public.inquiry_messages USING btree (inquiry_id)
+5. Indexes,idx_maintenance_tickets_room,CREATE INDEX idx_maintenance_tickets_room ON public.maintenance_tickets USING btree (room_id)
+5. Indexes,idx_maintenance_tickets_tenant,CREATE INDEX idx_maintenance_tickets_tenant ON public.maintenance_tickets USING btree (tenant_profile_id)
+5. Indexes,idx_notifications_recipient,"CREATE INDEX idx_notifications_recipient ON public.notifications USING btree (recipient_profile_id, is_read)"
+5. Indexes,idx_payments_bill,CREATE INDEX idx_payments_bill ON public.payments USING btree (bill_id)
+5. Indexes,idx_payments_room,CREATE INDEX idx_payments_room ON public.payments USING btree (room_id)
+5. Indexes,idx_payments_tenant,CREATE INDEX idx_payments_tenant ON public.payments USING btree (tenant_profile_id)
+5. Indexes,idx_price_history_room,CREATE INDEX idx_price_history_room ON public.room_price_history USING btree (room_id)
+5. Indexes,idx_profiles_email_lower,CREATE UNIQUE INDEX idx_profiles_email_lower ON public.profiles USING btree (lower((email)::text)) WHERE (email IS NOT NULL)
+5. Indexes,idx_profiles_phone_login,CREATE UNIQUE INDEX idx_profiles_phone_login ON public.profiles USING btree (normalize_ph_phone((phone_number)::text)) WHERE ((phone_number IS NOT NULL) AND (password_hash IS NOT NULL))
+5. Indexes,idx_profiles_role_status,"CREATE INDEX idx_profiles_role_status ON public.profiles USING btree (role, account_status)"
+5. Indexes,idx_room_assignments_room_active,"CREATE INDEX idx_room_assignments_room_active ON public.room_assignments USING btree (room_id, is_active)"
+5. Indexes,idx_room_assignments_tenant_active,"CREATE INDEX idx_room_assignments_tenant_active ON public.room_assignments USING btree (tenant_profile_id, is_active)"
+5. Indexes,idx_room_photos_one_primary,CREATE UNIQUE INDEX idx_room_photos_one_primary ON public.room_photos USING btree (room_id) WHERE is_primary
+5. Indexes,idx_room_photos_room,"CREATE INDEX idx_room_photos_room ON public.room_photos USING btree (room_id, display_order)"
+5. Indexes,idx_single_active_assignment_per_room,CREATE UNIQUE INDEX idx_single_active_assignment_per_room ON public.room_assignments USING btree (room_id) WHERE (is_active = true)
+5. Indexes,idx_ticket_attachments_ticket,CREATE INDEX idx_ticket_attachments_ticket ON public.ticket_attachments USING btree (ticket_id)
+5. Indexes,idx_ticket_messages_ticket,CREATE INDEX idx_ticket_messages_ticket ON public.ticket_messages USING btree (ticket_id)
+5. Indexes,inquiries_pkey,CREATE UNIQUE INDEX inquiries_pkey ON public.inquiries USING btree (id)
+5. Indexes,inquiry_messages_pkey,CREATE UNIQUE INDEX inquiry_messages_pkey ON public.inquiry_messages USING btree (id)
+5. Indexes,maintenance_tickets_pkey,CREATE UNIQUE INDEX maintenance_tickets_pkey ON public.maintenance_tickets USING btree (id)
+5. Indexes,monthly_expense_entries_pkey,CREATE UNIQUE INDEX monthly_expense_entries_pkey ON public.monthly_expense_entries USING btree (id)
+5. Indexes,monthly_income_records_pkey,CREATE UNIQUE INDEX monthly_income_records_pkey ON public.monthly_income_records USING btree (id)
+5. Indexes,notifications_pkey,CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)
+5. Indexes,payments_pkey,CREATE UNIQUE INDEX payments_pkey ON public.payments USING btree (id)
+5. Indexes,profiles_auth_user_id_key,CREATE UNIQUE INDEX profiles_auth_user_id_key ON public.profiles USING btree (auth_user_id)
+5. Indexes,profiles_pkey,CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)
+5. Indexes,property_areas_pkey,CREATE UNIQUE INDEX property_areas_pkey ON public.property_areas USING btree (code)
+5. Indexes,room_assignments_pkey,CREATE UNIQUE INDEX room_assignments_pkey ON public.room_assignments USING btree (id)
+5. Indexes,room_photos_pkey,CREATE UNIQUE INDEX room_photos_pkey ON public.room_photos USING btree (id)
+5. Indexes,room_price_history_pkey,CREATE UNIQUE INDEX room_price_history_pkey ON public.room_price_history USING btree (id)
+5. Indexes,rooms_pkey,CREATE UNIQUE INDEX rooms_pkey ON public.rooms USING btree (id)
+5. Indexes,rooms_room_number_key,CREATE UNIQUE INDEX rooms_room_number_key ON public.rooms USING btree (room_number)
+5. Indexes,system_settings_pkey,CREATE UNIQUE INDEX system_settings_pkey ON public.system_settings USING btree (key)
+5. Indexes,ticket_attachments_pkey,CREATE UNIQUE INDEX ticket_attachments_pkey ON public.ticket_attachments USING btree (id)
+5. Indexes,ticket_messages_pkey,CREATE UNIQUE INDEX ticket_messages_pkey ON public.ticket_messages USING btree (id)
+6. Functions,current_user_role," -> user_role_type"
+6. Functions,normalize_ph_phone,raw text -> text
+6. Functions,replace_expense_allocations,"p_entry_id uuid, p_allocations jsonb -> integer"
+6. Functions,update_expense_entry_total," -> trigger"
+7. Triggers,expense_property_allocations.trg_update_expense_total,CREATE TRIGGER trg_update_expense_total AFTER INSERT OR DELETE OR UPDATE ON public.expense_property_allocations FOR EACH ROW EXECUTE FUNCTION update_expense_entry_total()
+8. RLS,audit_logs,"enabled, forced, 0 policies"
+8. RLS,bills,"enabled, forced, 0 policies"
+8. RLS,clusters,"enabled, forced, 0 policies"
+8. RLS,expense_property_allocations,"enabled, forced, 0 policies"
+8. RLS,fixed_expense_categories,"enabled, forced, 0 policies"
+8. RLS,inquiries,"enabled, forced, 0 policies"
+8. RLS,inquiry_messages,"enabled, forced, 0 policies"
+8. RLS,maintenance_tickets,"enabled, forced, 0 policies"
+8. RLS,monthly_expense_entries,"enabled, forced, 0 policies"
+8. RLS,monthly_income_records,"enabled, forced, 0 policies"
+8. RLS,notifications,"enabled, forced, 0 policies"
+8. RLS,payments,"enabled, forced, 0 policies"
+8. RLS,profiles,"enabled, forced, 0 policies"
+8. RLS,property_areas,"DISABLED, 0 policies"
+8. RLS,room_assignments,"enabled, forced, 0 policies"
+8. RLS,room_photos,"enabled, forced, 0 policies"
+8. RLS,room_price_history,"enabled, forced, 0 policies"
+8. RLS,rooms,"enabled, forced, 0 policies"
+8. RLS,system_settings,"enabled, forced, 0 policies"
+8. RLS,ticket_attachments,"enabled, forced, 0 policies"
+8. RLS,ticket_messages,"enabled, forced, 0 policies"
+9. Row counts,audit_logs,1733
+9. Row counts,bills,2
+9. Row counts,clusters,5
+9. Row counts,expense_property_allocations,1327
+9. Row counts,fixed_expense_categories,13
+9. Row counts,inquiries,2
+9. Row counts,inquiry_messages,2
+9. Row counts,maintenance_tickets,5
+9. Row counts,monthly_expense_entries,1262
+9. Row counts,monthly_income_records,937
+9. Row counts,notifications,14
+9. Row counts,payments,15
+9. Row counts,profiles,45
+9. Row counts,property_areas,5
+9. Row counts,room_assignments,48
+9. Row counts,room_photos,1
+9. Row counts,room_price_history,0
+9. Row counts,rooms,33
+9. Row counts,system_settings,6
+9. Row counts,ticket_attachments,2
+9. Row counts,ticket_messages,2

@@ -1,15 +1,47 @@
 # CONTINUE HERE — Hivelet Claude Pipeline Handoff
 
-**Last session: 2026-09-13. Phase 1 is COMPLETE and verified. Phase 2 is IN PROGRESS.**
+**Last session: 2026-09-13. Phase 1 COMPLETE. Phase 2 IN PROGRESS — migrations part-applied.**
 
-> **Phase 2 status.** The STEP 0 alignment is done and seven open decisions were closed — see
-> **`docs/claude_pipeline/PHASE2_LOCKED_DECISIONS.md`**, which is binding canon alongside
-> `PHASE1_LOCKED_DECISIONS.md`. Migrations `005`–`009` are written in `database/migrations/`, and are
-> **verified against PostgreSQL 16 but NOT applied to Supabase** — see
-> `database/migrations/VERIFICATION.md` for what was actually exercised, and for a data-loss risk
-> that `008` introduces on one API path which should be fixed before it is applied. Three new questions opened (OD-14 floor-1 count, OD-15 missing
-> Penthouse/Linda expense areas, OD-16 grace period vs no-late-payment); OD-02 and OD-10 remain.
-> The ERD, data dictionary and 3NF proof — the main Phase 2 deliverables — are still to be produced.
+> ### Exact state of the live Supabase database
+>
+> | Migration | Status |
+> | :--- | :--- |
+> | `005_ledger_fk_restrict` | **APPLIED** |
+> | `006_profiles_optional_login` | **APPLIED** |
+> | `007_rooms_floor_correction` | **APPLIED** — `PH` is on level 4 |
+> | `008_property_areas_lookup` | **NOT APPLIED** — rolled back twice, now fixed |
+> | `009_advance_rent_and_whole_month_billing` | **NOT APPLIED** |
+> | `010_atomic_expense_allocations` | **NOT APPLIED** |
+>
+> **Next action: run `database/migrations/APPLY_PHASE2.sql`.** It is idempotent — `005`–`007`
+> re-apply as no-ops and it continues from `008`. The Supabase MCP server is authenticated and
+> connected, so a session that has its tools can apply and verify this directly.
+>
+> ### Read this before trusting the schema file
+>
+> **`database/FULL_DATABASE_SCHEMA.sql` does NOT describe the live database.** Two undocumented
+> differences have been found, each by a migration failing in production after passing every local
+> test — `rooms_floor_check` (broke `007`, SQLSTATE 23514) and the `property_area_type` enum (broke
+> `008`, SQLSTATE 42883, and falsified that migration's stated premise). Neither appears anywhere in
+> this repository.
+>
+> Two found by accident means the count is not two. **`database/live_schema.csv` (407 rows, exported
+> 2026-09-13) is the source of truth for the schema**, not the `.sql` file. Every known difference is
+> reproduced in `database/migrations/_TEST_FIXTURE_production_drift.sql`; a migration not tested
+> against that fixture has not been tested. Full account in `database/migrations/VERIFICATION.md`.
+>
+> ### Scope has widened since Phase 1
+>
+> The owner granted full authority on 2026-09-13: **frontend changes, backend changes and applying
+> migrations to Supabase are all in scope now.** The Phase 1 "frontend is READ-ONLY" constraint no
+> longer applies. Frontend fixes have already been made and are committed.
+>
+> Seven open decisions were closed — see `PHASE2_LOCKED_DECISIONS.md`, binding canon alongside
+> `PHASE1_LOCKED_DECISIONS.md`. Three new questions opened (OD-14 floor-1 count, OD-15 Penthouse and
+> Linda have no expense area, OD-16 grace period vs no-late-payment); OD-02 and OD-10 remain.
+>
+> The ERD, data dictionary and 3NF proof — the main Phase 2 deliverables — are **still to be
+> produced**, and must be built from `live_schema.csv`.
 
 This file exists so a new Claude session, on any machine, can pick up exactly where the last one
 stopped. Claude's conversation history and its memory files are stored per-machine and do **not**
@@ -29,23 +61,30 @@ travel with the repository — this document and the artifacts beside it are wha
 You are Claude, Principal Backend Architect, Systems Modeling Specialist, and Lead Database Engineer
 for Hivelet Group 4 (Fe Galang Da Silva Boarding House, Bicol University Capstone Project 2).
 
-Read these four files in order before doing anything else:
+Read these in order before doing anything else:
 1. docs/claude_pipeline/CONTINUE_HERE.md            <- current state and what to do next
 2. docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md  <- settled decisions; binding canon
 3. docs/claude_pipeline/PHASE2_LOCKED_DECISIONS.md  <- Phase 2 closures; binding canon
-4. docs/claude_pipeline/CLAUDE_PIPELINE.md          <- the master pipeline spec
+4. database/migrations/VERIFICATION.md              <- what is verified, and two schema-drift failures
+5. docs/claude_pipeline/CLAUDE_PIPELINE.md          <- the master pipeline spec
 
 Constraints that still apply:
-- frontend/ and website/ are STRICTLY READ-ONLY. Backend, database and docs only.
-- The Supabase database is live. Never DROP or wipe. Never edit database/FULL_DATABASE_SCHEMA.sql.
+- The Supabase database is LIVE. Never DROP or wipe. Never edit database/FULL_DATABASE_SCHEMA.sql.
   All schema changes are incremental migrations in database/migrations/.
+- Do NOT trust database/FULL_DATABASE_SCHEMA.sql. It has been wrong about the live schema twice.
+  database/live_schema.csv is the source of truth.
 - STEP 0 applies: stop and ask me before producing final artifacts if anything is ambiguous.
+  Ask about real-world facts only - make the engineering calls yourself.
 
-Phase 1 is finished and Phase 2 is part-way. Read
-docs/claude_pipeline/PHASE2_LOCKED_DECISIONS.md as well - it closes seven open decisions and is
-binding. Migrations 005-009 are written but UNAPPLIED. Continue Phase 2 using
-docs/claude_pipeline/prompts/PROMPT_2_ERD_AND_DATABASE.md, whose remaining deliverables are the
-Crow's Foot ERD, the data dictionary and the 3NF proof.
+No longer a constraint: the frontend is NOT read-only any more. I granted full authority over
+frontend, backend and applying migrations to Supabase.
+
+First: apply database/migrations/APPLY_PHASE2.sql (idempotent; 005-007 are already live, it
+continues from 008) and verify the result. The Supabase MCP server is authenticated, so use it.
+
+Then continue Phase 2 with docs/claude_pipeline/prompts/PROMPT_2_ERD_AND_DATABASE.md. Its remaining
+deliverables are the Crow's Foot ERD, the data dictionary and the 3NF proof - all built from
+database/live_schema.csv, not from the schema file.
 ```
 
 ---
