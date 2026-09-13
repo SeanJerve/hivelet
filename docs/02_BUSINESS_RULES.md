@@ -59,9 +59,13 @@ A payment is overdue beginning on the day after its due date.
 
 ## BR-012 — Grace Period
 
-A one-week grace period may apply to an overdue payment depending on the situation.
+**There is no grace period.** Payment is due on the due date and late payment is not accepted.
 
-The system must distinguish overdue status from grace-period status.
+> **ERRATA (2026-09-13, OD-16).** This rule previously read *"A one-week grace period may apply to an overdue payment depending on the situation"*, and the system was seeded with `grace_period_days = 7` accordingly. **That was never a rule of this business.** The owner has confirmed it was introduced during the original build of the website and then documented as though it were policy, which is how it came to carry a BR- number. It is consistent with OD-03, which established that a departing tenant owes the full month and that late payment is not accepted.
+>
+> Migration `016` sets `grace_period_days` to `0`. The key is kept rather than deleted so this rule stays traceable to a value and so billing code reads the policy from one place instead of a literal — if a grace window is ever granted, it is a settings change, not a deploy.
+>
+> `bills.grace_period_end_date` is retained and now equals `due_date` for every bill issued from that date. **Bills issued earlier keep the window they were issued under** (BR-003): a bill's terms are the terms it was issued on, and `isOverdue()` honours each bill's own stored window rather than applying today's policy retroactively.
 
 ## BR-013 — Full Payment
 
@@ -187,13 +191,17 @@ A tenant's deposit is set once, at onboarding, equal to the Rent Amount in effec
 
 ## BR-040 — Linda's Fixed Billing Exception
 
-Linda's units (LF, LB) are billed on fixed monthly rates rather than the per-occupant water model (BR-014): a flat electricity charge plus a fixed water charge per unit. This total is remitted directly to Linda and kept separate from the standard rent/water subtotal.
+Linda's units (LF, LB) are billed a **fixed monthly water charge** rather than the per-occupant water model (BR-014): **LF ₱400/month, LB ₱200/month**. This is remitted directly to Linda and kept separate from the standard rent/water subtotal.
+
+> **ERRATA (2026-09-13, OD-18).** This rule previously read "a flat electricity charge **plus** a fixed water charge per unit". **The flat electricity charge is retired.** It was a workaround for units without their own electricity meter, not a rate belonging to a unit, and the client has confirmed that unmetered electricity will not be recorded in this system. `system_settings.linda_lb_electricity_charge` was deleted by migration `017`. Historical figures remain in `monthly_income_records.linda_electricity_charge` — 31 rows against LF totalling ₱12,035.76 — and are preserved read-only under BR-003. Only the fixed **water** half of this rule survives.
 
 See `09_MONTHLY_INCOME_REPORT.md` Section 6 for exact figures.
 
 ## BR-041 — Expense Property Areas
 
-Every expense is allocated to one or more of five fixed Property Areas: Boarding House, Main House, Front Apartment, Back Apartment, Other Expenses/Personal.
+Every expense is allocated to one or more of **six** fixed Property Areas: Boarding House, Main House, Front Apartment, Back Apartment, **Penthouse**, Other Expenses/Personal.
+
+> **ERRATA (2026-09-13, OD-15).** This rule previously said **five**. The client confirmed that the Penthouse is booked as its own expense category, since it is a single large unit whose costs were previously folded in elsewhere or lost. Migration `012` added it. Of the six, **Main House** and **Other Expenses / Personal** are non-rental (`is_rental_expense = FALSE`) and are excluded from net rental income (OD-05).
 
 See `10_MONTHLY_EXPENSES_REPORT.md`.
 

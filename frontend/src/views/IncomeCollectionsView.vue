@@ -1043,9 +1043,11 @@ function exportCSV() {
         <h3 class="font-display font-extrabold text-base text-[#1c1917]">Linda Units Fixed Charge Schedule</h3>
       </div>
       <p class="text-xs text-[#71717a] leading-relaxed">
-        The two Linda units sit in the separate structure beside the red gate and follow fixed
-        utility billing rather than submetered rates. They are not part of the Front Apartment,
-        whose income is never remitted to Linda.
+        The two Linda units sit in the separate structure beside the red gate and are billed a
+        fixed monthly water charge instead of the per-occupant rate. They are not part of the
+        Front Apartment, whose income is never remitted to Linda. The flat electricity charge
+        that once applied to unmetered units was retired in September 2026 and is not recorded
+        for new periods; historical figures remain visible on past entries.
       </p>
 
       <div class="grid gap-4 sm:grid-cols-2 pt-2">
@@ -1056,7 +1058,7 @@ function exportCSV() {
               Fixed Billing
             </span>
           </div>
-          <p class="text-xs text-[#71717a]">Water: <strong>₱400.00 / month</strong> · Electric: <strong>₱325.00 minimum</strong>, submetered actual above that</p>
+          <p class="text-xs text-[#71717a]">Water: <strong>₱400.00 / month</strong></p>
         </div>
 
         <div class="p-4 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] space-y-1">
@@ -1066,7 +1068,7 @@ function exportCSV() {
               Fixed Billing
             </span>
           </div>
-          <p class="text-xs text-[#71717a]">Water: <strong>₱200.00 / month</strong> · Electric: <strong>none on record</strong></p>
+          <p class="text-xs text-[#71717a]">Water: <strong>₱200.00 / month</strong></p>
         </div>
       </div>
     </div>

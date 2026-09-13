@@ -5,8 +5,9 @@
  *
  * WHY THIS EXISTS
  * ---------------
- * `system_settings` holds six correctly seeded keys and was, until this file, read by
- * **zero lines of backend code** (defect 1). Every value it is supposed to supply was
+ * `system_settings` was, until this file, read by **zero lines of backend code** (defect 1).
+ * It holds five keys today - a sixth, `linda_lb_electricity_charge`, was retired by migration
+ * `017`. Every value it is supposed to supply was
  * hardcoded somewhere else instead:
  *
  *   - the water rate as `occupants * 200`  (`admin.ts:910, 1103, 1243`, `tenant.ts:440`)
@@ -32,14 +33,19 @@
  */
 import { db } from '../config/db.js';
 
-/** Keys seeded in `system_settings`. Adding one here does not create it in the database. */
+/**
+ * Keys present in `system_settings`. Adding one here does not create it in the database.
+ *
+ * `linda_lb_electricity_charge` was removed by migration `017`. The flat charge it held was a
+ * workaround for units with no electricity meter, not a rate belonging to a unit, and the client
+ * confirmed on 2026-09-13 that unmetered electricity is out of scope for this system (OD-18).
+ */
 export const SETTING_KEYS = {
   WATER_RATE_PER_OCCUPANT: 'water_rate_per_occupant',
   GRACE_PERIOD_DAYS: 'grace_period_days',
   REVENUE_SHARE_PERCENT: 'revenue_share_percent',
   LINDA_LF_WATER: 'linda_lf_water_charge',
-  LINDA_LB_WATER: 'linda_lb_water_charge',
-  LINDA_LB_ELECTRICITY: 'linda_lb_electricity_charge'
+  LINDA_LB_WATER: 'linda_lb_water_charge'
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -142,10 +148,12 @@ export function getRevenueSharePercent(): Promise<number> {
  * P400/month and `LB` exactly P200/month. Returns `null` for any other room, which means
  * "this unit is not on fixed water billing - use the per-occupant rate".
  *
- * There is deliberately **no electricity accessor**. `linda_lb_electricity_charge` names LB,
- * but the ledger charges electricity to `LF` in 31 of 31 months and to `LB` in none, and the
- * owner's own spreadsheet agrees with the ledger. Until the client resolves that (OD-18),
- * wiring it into billing would move money on a value known to be disputed.
+ * There is deliberately **no electricity accessor, and there will not be one.** The flat
+ * electricity charge was retired by migration `017` (OD-18): it existed for units without
+ * their own meter, and the client confirmed on 2026-09-13 that unmetered electricity will not
+ * be recorded in this system. Historical figures remain in
+ * `monthly_income_records.linda_electricity_charge` and are read-only - BR-040's fixed *water*
+ * rule is the half that survives.
  */
 export async function getLindaFixedWaterCharge(roomNumber: string): Promise<number | null> {
   const code = (roomNumber || '').trim().toUpperCase();

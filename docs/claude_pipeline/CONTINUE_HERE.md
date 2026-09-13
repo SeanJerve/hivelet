@@ -18,6 +18,7 @@
 > | `014_codify_production_only_objects` | **APPLIED** — a no-op in production, as intended |
 > | `015_correct_front_apartment_floor` | **APPLIED** — floors are now 11 / 11 / 10 / 1, closing OD-14 |
 > | `016_no_grace_period` | **APPLIED** — `grace_period_days` is 0, closing OD-16 |
+> | `017_retire_linda_fixed_electricity` | **APPLIED** — the fixed ₱325 is retired, closing OD-18 |
 >
 > `005`–`010` were verified individually against the live catalogue, not assumed — the evidence table
 > is in the third addendum of `database/migrations/VERIFICATION.md`. **`APPLY_PHASE2.sql` does not
@@ -201,7 +202,7 @@ State these honestly; never claim any as already fixed.
 | 15 | ~~`replace_expense_allocations()` inserts uncast `text` into an enum column, so every expense-entry allocation edit 500s~~ **FIXED by `013`**, verified against production | live catalogue | done |
 | 16 | ~~BR-045's trigger and BR-044's unique key existed **only in the production database**~~ **FIXED by `014`.** Both are now created by a migration, so a rebuilt database gets them | live catalogue | done |
 | 18 | **NEW, FIXED.** `POST /api/tenant/payments/checkout` billed against **an arbitrary room** (`rooms LIMIT 1`) at a hardcoded ₱4,500 when the tenant had no assignment, used `bill_type: 'Monthly Rent'` which is not a valid enum value (so the insert failed with 22P02 every time), discarded the insert error, and seeded the total at ₱4,700 | `tenant.ts` | done |
-| 17 | **NEW.** The Linda fixed electricity charge is attributed to `LB` in `system_settings` and was shown that way in the UI; 31 months of ledger data and the owner's spreadsheet both say it is `LF`. UI corrected; the setting deliberately left alone. See OD-18 | `monthly_income_records`; source workbook | 3 |
+| 17 | ~~The Linda fixed electricity charge is attributed to the wrong unit~~ **RESOLVED by `017`.** It was neither unit's rate — it was a workaround for unmetered units, and is retired. History preserved | live catalogue | done |
 
 ---
 
@@ -212,7 +213,6 @@ settled both — full account in `PHASE2_LOCKED_DECISIONS.md`, second addendum.
 
 | ID | Item | Why it matters | Gate |
 | :-- | :--- | :--- | :-- |
-| **OD-18** | **The Linda fixed electricity charge is recorded against the wrong unit.** `system_settings.linda_lb_electricity_charge = 325` says **LB**. The ledger says **LF**: charged in 31 of 31 months (min ₱325, max ₱2,285.76), while LB is charged in **0 of 31**. The owner's spreadsheet agrees with the ledger. | The setting is read by zero lines of backend code today (defect 1), so nothing is mis-billing yet — but it would the moment `billingService` is wired up in Phase 3. | 3 |
 | **OD-02** | GBG garbage fee timing — fixed calendar month, unit anniversary month, or administrator discretion | — | 3 |
 | **OD-10** | Tenant-submitted payments (form F-12) — does the form stay, and does `payment:submit:own` get added | — | 3 |
 

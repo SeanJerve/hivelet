@@ -278,7 +278,29 @@ the 7-day window they were issued under. A bill's terms are the terms it was iss
 back-dating them to tidy a column would falsify the record. `isOverdue()` honours a bill's own stored
 window for exactly this reason.
 
-## OD-18 — does not block Phase 3
+## OD-18 — CLOSED. The fixed electricity charge is retired, not reassigned
+
+The client answered on 2026-09-13, and the answer was neither unit:
+
+> "we can remove the fixed 325 since that was just for the units that doesn't have an electricity
+> meter. also we don't have to worry about the electricity recording for those that doesn't have a
+> meter, since on excel we can't control and change that, and in the future when the client uses
+> this website system to record they will not include that anymore — that's outside our scope."
+
+So the ₱325 was a workaround for unmetered units, not a rate belonging to LF or LB. The contradiction
+in the register — setting says LB, ledger says LF — dissolves: it was never properly a per-unit rate
+at all. **Retired by migration `017`**, which deletes the settings key and re-documents
+`monthly_income_records.linda_electricity_charge` as historical-only.
+
+**The 31 historical rows totalling ₱12,035.76 are preserved** (BR-003). They are real money that was
+really collected; the column is read for past periods and never written for new ones. Verified after
+the migration: 31 rows, ₱12,035.76, intact.
+
+**BR-040 is errata** — it described "a flat electricity charge plus a fixed water charge per unit".
+Only the fixed **water** half survives: LF ₱400/month, LB ₱200/month, both corroborated by the ledger
+and the owner's spreadsheet.
+
+### Superseded note (kept for the record)
 
 Confirmed with the owner that the disputed ₱325 Linda electricity charge can wait. It does not gate
 billing, because billing needs the **water** figures, and those are correct and corroborated: across
