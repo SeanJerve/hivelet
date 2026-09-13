@@ -32,6 +32,63 @@ business rule — the owner sets rates by hand); the property is **33 units, not
 
 ---
 
+## 0.5 What CANNOT come from this document — Sean must hand these over
+
+This file is committed to a **public** repository, so it holds no secrets and no
+access. Reading it is not enough to run the system. These five things pass
+person-to-person, and nothing in the repo can substitute for them.
+
+| # | What | Why the doc cannot do it |
+| :-- | :--- | :--- |
+| 1 | **Supabase project access.** Invite the teammate at Supabase → Project Settings → Team. | Without membership he cannot open the API page at all, so "create your own secret key" is impossible. Either invite him, or send him a key you created for him. |
+| 2 | **Adyen Customer Area access**, or the four values directly: `ADYEN_API_KEY`, `ADYEN_MERCHANT_ACCOUNT`, `ADYEN_CLIENT_KEY`, and an HMAC key. | Same reason. The API key is only visible once, at creation. |
+| 3 | **`credentials/creds.txt`** | Gitignored, and `npm run check:api` fails without it. |
+| 4 | **`.env`**, or at least the Supabase and Adyen values. `JWT_SECRET` he should generate himself. | Gitignored by design. |
+| 5 | **A second Adyen webhook** — see the warning below. | Requires clicking in the Adyen Customer Area. |
+
+### Two people cannot share one webhook
+
+An Adyen webhook points at exactly **one** URL. If both machines run their own
+Cloudflare tunnel, only the machine named in the webhook receives notifications —
+the other will complete a GCash payment at Adyen and see nothing appear in the
+ledger, with no error anywhere.
+
+Two ways out, and the second is better:
+
+- **Take turns.** Whoever is demonstrating edits the webhook URL to their tunnel.
+- **Create a second Standard webhook** in Adyen, pointing at the second tunnel.
+  **It gets its OWN HMAC key.** That key must go in *that machine's* `ADYEN_HMAC_KEY`.
+  Copying Sean's key into the teammate's `.env` makes every notification fail
+  signature verification, which looks exactly like a broken integration.
+
+### The tunnel URL changes every restart
+
+`cloudflared tunnel --url http://localhost:5000` gets a **new random address each
+time it starts** — after a reboot, a power cut, or closing the terminal. The old
+URL stops resolving and Adyen's notifications go nowhere.
+
+**After any restart: copy the new URL and update it in Adyen** (Developers →
+Webhooks → your webhook → Server configuration), then press **Test** and confirm
+a 200. Two minutes, and the payment demo silently does not work without it.
+
+Check the tunnel is actually carrying traffic:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}
+" https://<your-tunnel>/api/health
+# 200 = the API is reachable from the internet
+
+curl -s -o /dev/null -w "%{http_code}
+" -X POST -H "Content-Type: application/json"   -d '{}' https://<your-tunnel>/api/public/payments/adyen/webhook
+# 401 = correct. The endpoint is alive and refusing an unsigned call.
+```
+
+On Windows the first run raises a **Windows Defender Firewall** prompt for
+`cloudflared.exe`. Allow it — the tunnel cannot accept the return connection
+otherwise. It is asked once per machine.
+
+---
+
 ## 1. What a fresh environment needs
 
 You asked what to set up beyond the Supabase MCP and Adyen. Here is the complete list.
