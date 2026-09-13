@@ -659,3 +659,18 @@ Only the two questions that need the client, both about the building rather than
   ₱325 electric charge no other unit has.
 
 No room row has been reclassified and no floor moved.
+
+## Post-application housekeeping
+
+`database/live_schema.csv` was refreshed against the catalogue after the four migrations, so the
+stated source of truth is not itself stale. The deltas: `property_area_type` gains `Penthouse`;
+`clusters.expense_area` appears as a column and a `RESTRICT` foreign key;
+`property_areas.cluster_code` and its foreign key are gone; `property_areas` reads
+`enabled, forced, 0 policies`; the area count is 6; and the four functions now carry their
+`SECURITY DEFINER` and pinned-`search_path` state. Still 407 rows.
+
+**Supabase security advisor, after `011`:** the three WARN findings are gone —
+`function_search_path_mutable` (was 3), `anon_security_definer_function_executable`, and
+`authenticated_security_definer_function_executable`. What remains is 21 × `rls_enabled_no_policy`
+at INFO, which is the intended design and is argued in `PHASE2_SECURITY_AND_RLS.md` §2.1.
+`property_areas` is now among those 21; before `011` it was excluded because RLS was off entirely.

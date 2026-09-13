@@ -5,7 +5,7 @@ section,item,detail
 0. Custom types,inquiry_status_type,"'Pending', 'Contacted', 'Converted', 'Closed'"
 0. Custom types,operational_status_type,"'Available', 'Reserved', 'Occupied', 'Under Maintenance'"
 0. Custom types,payment_method_type,"'Cash', 'GCash', 'Bank Transfer', 'Adyen Online'"
-0. Custom types,property_area_type,"'Boarding House', 'Main House', 'Front Apartment', 'Back Apartment', 'Other Expenses / Personal'"
+0. Custom types,property_area_type,"'Boarding House', 'Main House', 'Front Apartment', 'Back Apartment', 'Other Expenses / Personal', 'Penthouse'"
 0. Custom types,room_type_enum,"'Studio', 'One-bedroom', 'Two-bedroom', 'Three-bedroom'"
 0. Custom types,ticket_priority_type,"'Emergency', 'High', 'Medium', 'Low'"
 0. Custom types,ticket_status_type,"'Submitted', 'In Progress', 'Resolved', 'Closed'"
@@ -37,6 +37,7 @@ section,item,detail
 1. Columns,bills.water_amount,"numeric(10,2) NOT NULL DEFAULT 0.00"
 1. Columns,clusters.code,character varying(50) NOT NULL
 1. Columns,clusters.display_order,integer NOT NULL
+1. Columns,clusters.expense_area,property_area_type NOT NULL
 1. Columns,clusters.name,character varying(100) NOT NULL
 1. Columns,expense_property_allocations.amount,"numeric(10,2) NOT NULL"
 1. Columns,expense_property_allocations.created_at,timestamp with time zone NULL DEFAULT now()
@@ -156,7 +157,6 @@ section,item,detail
 1. Columns,profiles.phone_number,character varying(50) NULL
 1. Columns,profiles.role,user_role_type NOT NULL DEFAULT 'tenant'::user_role_type
 1. Columns,profiles.updated_at,timestamp with time zone NULL DEFAULT now()
-1. Columns,property_areas.cluster_code,character varying(50) NULL
 1. Columns,property_areas.code,property_area_type NOT NULL
 1. Columns,property_areas.display_order,integer NOT NULL DEFAULT 0
 1. Columns,property_areas.is_rental_expense,boolean NOT NULL DEFAULT true
@@ -248,6 +248,7 @@ section,item,detail
 3. Foreign keys,audit_logs.actor_profile_id,NO ACTION -> profiles
 3. Foreign keys,bills.room_id,RESTRICT -> rooms
 3. Foreign keys,bills.tenant_profile_id,RESTRICT -> profiles
+3. Foreign keys,clusters.expense_area,RESTRICT -> property_areas
 3. Foreign keys,expense_property_allocations.expense_entry_id,CASCADE -> monthly_expense_entries
 3. Foreign keys,expense_property_allocations.property_area,RESTRICT -> property_areas
 3. Foreign keys,fixed_expense_categories.parent_code,NO ACTION -> fixed_expense_categories
@@ -271,7 +272,6 @@ section,item,detail
 3. Foreign keys,payments.tenant_profile_id,RESTRICT -> profiles
 3. Foreign keys,payments.verified_by,NO ACTION -> profiles
 3. Foreign keys,profiles.auth_user_id,CASCADE -> users
-3. Foreign keys,property_areas.cluster_code,NO ACTION -> clusters
 3. Foreign keys,room_assignments.room_id,CASCADE -> rooms
 3. Foreign keys,room_assignments.tenant_profile_id,CASCADE -> profiles
 3. Foreign keys,room_photos.room_id,CASCADE -> rooms
@@ -359,10 +359,10 @@ section,item,detail
 5. Indexes,system_settings_pkey,CREATE UNIQUE INDEX system_settings_pkey ON public.system_settings USING btree (key)
 5. Indexes,ticket_attachments_pkey,CREATE UNIQUE INDEX ticket_attachments_pkey ON public.ticket_attachments USING btree (id)
 5. Indexes,ticket_messages_pkey,CREATE UNIQUE INDEX ticket_messages_pkey ON public.ticket_messages USING btree (id)
-6. Functions,current_user_role," -> user_role_type"
-6. Functions,normalize_ph_phone,raw text -> text
-6. Functions,replace_expense_allocations,"p_entry_id uuid, p_allocations jsonb -> integer"
-6. Functions,update_expense_entry_total," -> trigger"
+6. Functions,current_user_role," -> user_role_type [SECURITY DEFINER] [search_path=pg_catalog, public]"
+6. Functions,normalize_ph_phone,"raw text -> text [search_path=pg_catalog, public]"
+6. Functions,replace_expense_allocations,"p_entry_id uuid, p_allocations jsonb -> integer [search_path=pg_catalog, public]"
+6. Functions,update_expense_entry_total," -> trigger [search_path=pg_catalog, public]"
 7. Triggers,expense_property_allocations.trg_update_expense_total,CREATE TRIGGER trg_update_expense_total AFTER INSERT OR DELETE OR UPDATE ON public.expense_property_allocations FOR EACH ROW EXECUTE FUNCTION update_expense_entry_total()
 8. RLS,audit_logs,"enabled, forced, 0 policies"
 8. RLS,bills,"enabled, forced, 0 policies"
@@ -377,7 +377,7 @@ section,item,detail
 8. RLS,notifications,"enabled, forced, 0 policies"
 8. RLS,payments,"enabled, forced, 0 policies"
 8. RLS,profiles,"enabled, forced, 0 policies"
-8. RLS,property_areas,"DISABLED, 0 policies"
+8. RLS,property_areas,"enabled, forced, 0 policies"
 8. RLS,room_assignments,"enabled, forced, 0 policies"
 8. RLS,room_photos,"enabled, forced, 0 policies"
 8. RLS,room_price_history,"enabled, forced, 0 policies"
@@ -398,7 +398,7 @@ section,item,detail
 9. Row counts,notifications,14
 9. Row counts,payments,15
 9. Row counts,profiles,45
-9. Row counts,property_areas,5
+9. Row counts,property_areas,6
 9. Row counts,room_assignments,48
 9. Row counts,room_photos,1
 9. Row counts,room_price_history,0
