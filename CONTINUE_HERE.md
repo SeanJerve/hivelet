@@ -76,13 +76,11 @@ Check the tunnel is actually carrying traffic:
 ```bash
 TUNNEL=https://your-tunnel.trycloudflare.com
 
-curl -s -o /dev/null -w "%{http_code}
-" "$TUNNEL/api/health"
 # 200 = the API is reachable from the internet
+curl -s -o /dev/null -w "%{http_code}\n" "$TUNNEL/api/health"
 
-curl -s -o /dev/null -w "%{http_code}
-" -X POST \n  -H "Content-Type: application/json" -d '{}' \n  "$TUNNEL/api/public/payments/adyen/webhook"
-# 401 = correct. The endpoint is alive and refusing an unsigned call.
+# 401 = correct: the endpoint is alive and refusing an unsigned call
+curl -s -o /dev/null -w "%{http_code}\n" -X POST -H "Content-Type: application/json" -d '{}' "$TUNNEL/api/public/payments/adyen/webhook"
 ```
 
 On Windows the first run raises a **Windows Defender Firewall** prompt for
