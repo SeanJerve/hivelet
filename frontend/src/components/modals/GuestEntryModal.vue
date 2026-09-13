@@ -49,7 +49,7 @@ function handleGuestEntry() {
           <label class="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Mobile Contact (Optional)</label>
           <input 
             type="tel" 
-            value="0917-123-4567" 
+            placeholder="0917-123-4567" 
             class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors" 
           />
         </div>

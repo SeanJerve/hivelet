@@ -31,52 +31,19 @@ interface Thread {
   messages: Msg[];
 }
 
-const DEFAULT_THREADS: Thread[] = [
-  {
-    id: 'demo-1',
-    name: 'Gabriel Fernandez',
-    unit: 'Inquiry — Room 3E',
-    messages: [
-      {
-        id: 1,
-        from: 'them',
-        author: 'Gabriel Fernandez',
-        text: 'Good day po! Available pa po ba ang Room 3E this September?',
-        time: '9:12 AM',
-      },
-      {
-        id: 2,
-        from: 'me',
-        author: 'Fe Galang Da Silva',
-        text: 'Good day! Opo, vacant pa ang 3E. ₱6,500/mo plus ₱200 water per occupant.',
-        time: '9:20 AM',
-      },
-      {
-        id: 3,
-        from: 'them',
-        author: 'Gabriel Fernandez',
-        text: 'Salamat po! Pwede po bang mag-viewing this Saturday, 10 AM?',
-        time: '9:22 AM',
-      },
-    ],
-  },
-  {
-    id: 'demo-2',
-    name: 'Maria Santos',
-    unit: 'Inquiry — Penthouse',
-    messages: [
-      {
-        id: 4,
-        from: 'them',
-        author: 'Maria Santos',
-        text: 'Hello po, may parking ba ang Penthouse?',
-        time: 'Yesterday',
-      },
-    ],
-  },
-];
-
-const threads = ref<Thread[]>([...DEFAULT_THREADS]);
+/**
+ * No seeded conversations.
+ *
+ * Two invented threads used to sit here - "Gabriel Fernandez" asking about Room
+ * 3E and "Maria Santos" asking about the Penthouse - complete with replies
+ * attributed to Fe Galang Da Silva that she never wrote, quoting a rent and a
+ * water rate. They showed until live inquiries loaded, and stayed forever if the
+ * fetch failed. Putting words in the landlady's mouth in her own inbox is not a
+ * loading state.
+ */
+const threads = ref<Thread[]>([]);
+/** Set when inquiries could not be loaded. */
+const threadsError = ref<string | null>(null);
 const activeThreadIndex = ref(0);
 const draft = ref('');
 const isLoadingMessages = ref(false);
@@ -117,20 +84,21 @@ async function loadInquiries() {
         });
       }
 
+      threads.value = liveThreads;
       if (liveThreads.length > 0) {
-        threads.value = liveThreads;
         await loadMessagesForThread(0);
       }
     }
-  } catch (err) {
-    console.error('Failed to load inquiry threads for chathead:', err);
+  } catch (err: unknown) {
+    threads.value = [];
+    threadsError.value = err instanceof Error ? err.message : 'Inquiries could not be loaded.';
   }
 }
 
 async function loadMessagesForThread(index: number) {
   activeThreadIndex.value = index;
   const target = threads.value[index];
-  if (!target || target.id.startsWith('demo-') || !isAdmin.value) {
+  if (!target || !isAdmin.value) {
     scrollToBottom();
     return;
   }
@@ -240,13 +208,27 @@ onMounted(() => {
       <div ref="chatScrollContainer" class="flex-1 space-y-3 overflow-y-auto bg-background p-3 text-xs">
         <div class="text-center">
           <p class="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-[11px] font-semibold text-[#5e6c84]">
-            {{ activeThread?.unit || 'Inquiry Thread' }}
+            {{ activeThread?.unit || 'Inquiries' }}
           </p>
         </div>
 
         <div v-if="isLoadingMessages" class="py-6 text-center text-[#5e6c84] flex flex-col items-center gap-1">
           <Loader2 class="w-4 h-4 text-primary animate-spin" />
           <span class="text-[10px]">Loading messages...</span>
+        </div>
+
+        <!-- Empty and error states, so an inbox with nothing in it says so. -->
+        <div v-if="threadsError" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800">
+          <p class="font-bold text-rose-900">Inquiries could not be loaded.</p>
+          <p class="mt-1">{{ threadsError }}</p>
+        </div>
+        <div
+          v-else-if="threads.length === 0"
+          class="py-10 flex flex-col items-center justify-center gap-2 text-center text-muted-foreground"
+        >
+          <UserRound class="size-7" />
+          <p class="text-xs font-semibold">No inquiries yet</p>
+          <p class="text-[11px]">Messages from the public listing arrive here.</p>
         </div>
 
         <div 

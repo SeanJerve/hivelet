@@ -84,7 +84,7 @@ const filteredPayments = computed(() => {
   });
 });
 
-const tenantName = computed(() => currentUser.value?.fullName || 'Active Resident');
+const tenantName = computed(() => currentUser.value?.fullName || 'Resident');
 
 const isInitiatingPayment = ref(false);
 
@@ -121,13 +121,19 @@ async function fetchPaymentHistory() {
     const data = await api.get<any[]>('/tenant/my-payments');
     paymentHistory.value = (data ?? []).map(p => ({
       id: p.id,
-      invoiceRef: p.transaction_reference || 'Manual Ledger',
+      // A cash payment recorded by hand genuinely has no gateway reference, so
+      // this label describes the absence rather than inventing a number.
+      invoiceRef: p.transaction_reference || 'No reference (recorded manually)',
       datePaid: new Date(p.paid_at || p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
       datePaidRaw: p.paid_at || p.created_at,
       billingPeriod: 'Monthly Statement',
       amountPaid: Number(p.amount) || 0,
-      paymentMethod: (p.payment_method || 'GCASH').toUpperCase(),
-      status: (p.verification_status || 'VERIFIED').toUpperCase()
+      // Neither is guessed. `|| 'GCASH'` showed a payment of unknown method as
+      // GCash - every one of the 937 historical records is Cash - and
+      // `|| 'VERIFIED'` displayed a payment with no verification status as
+      // settled, which is the single thing BR-017 exists to prevent.
+      paymentMethod: (p.payment_method || 'UNKNOWN').toUpperCase(),
+      status: (p.verification_status || 'PENDING VERIFICATION').toUpperCase()
     }));
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
