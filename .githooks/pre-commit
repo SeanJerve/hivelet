@@ -1,0 +1,4 @@
+#!/bin/sh
+# Blocks commits containing credential material. See scripts/check-secrets.mjs.
+# Installed by: npm run hooks:install
+exec node scripts/check-secrets.mjs

@@ -40,3 +40,10 @@ uploads/*
 # Agent / Tool scratch
 .agent/
 .agents/
+
+# Credentials & seeded demo accounts
+# Untracked 2026-09-13: both files held plaintext passwords for accounts that
+# exist in the live database, in a public repository. Kept locally for the demo,
+# never committed again.
+credentials/
+database/seeded-tenant-credentials.json
