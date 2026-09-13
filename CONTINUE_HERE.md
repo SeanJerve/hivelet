@@ -32,6 +32,80 @@ business rule — the owner sets rates by hand); the property is **33 units, not
 
 ---
 
+## 0.4 FASTEST PATH — Loyd's machine, one file, five minutes
+
+**If Sean has sent you a file called `loyd.env`, do this and skip section 1.**
+
+```bash
+git clone https://github.com/SeanJerve/hivelet.git
+cd hivelet
+npm run install:all
+npm run hooks:install
+# put the file Sean sent at the repository root and rename it:
+#   loyd.env  ->  .env      (root, beside package.json - NOT in backend/)
+```
+
+That file already contains all sixteen variables, correct and complete, including
+the Supabase project URL, the shared publishable key, the secret key named **`loyd`**
+in Supabase (yours alone — if it leaks Sean deletes that one key and nobody else is
+touched), and every Adyen value.
+
+**Change two lines before your first run:**
+
+1. `JWT_SECRET` — generate your own. The command is in a comment directly above it:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+   ```
+   Tokens are signed and verified by the same backend, so it does not need to match
+   anyone else's.
+2. `ADYEN_HMAC_KEY` — yours, from the second Adyen webhook you create (see below).
+   **Do not keep Sean's.** His key belongs to his webhook; using it here makes every
+   notification fail signature verification, which looks exactly like a broken
+   integration and is miserable to debug.
+
+**Then:**
+
+```bash
+npm run dev:backend      # :5000
+npm run dev:frontend     # :5173
+```
+
+**Prove it works — three checks, in this order:**
+
+```bash
+# 1. the database is reachable AND the lockdown is genuinely in force.
+#    "enforced" is the ONLY passing value; "unverified" means your publishable
+#    key was rejected before it reached PostgreSQL, so nothing was tested.
+curl -s http://localhost:5000/api/health
+
+# 2. 26 endpoint and RBAC checks. Needs credentials/creds.txt - ask Sean for it.
+cd backend && npm run check:api
+
+# 3. the HMAC implementation, 23 checks, no network needed
+npm run check:adyen
+```
+
+If all three pass you are fully set up. Two common stumbles:
+
+- **`check:api` fails immediately** → `credentials/creds.txt` is missing. It is
+  gitignored; Sean has to send it. The scripts read the first `Email:`/`Password:`
+  pair as the administrator and the **last** `Password:` as the shared tenant one.
+- **`rlsLockdown` says `unverified`** → the publishable key is wrong or stale.
+
+**One thing a pasted key cannot give you:** ask Sean to add you to the **Supabase
+project** as well. `.mcp.json` points the Supabase MCP at the project and it
+authenticates against *your own* Supabase account, so without membership your Claude
+cannot query the live catalogue — and checking claims against the database rather
+than the documents is rule 3 above. It is the difference between verifying and
+guessing.
+
+**The Adyen webhook is not optional.** It is the only thing in the system that writes
+an online payment. Until you have created your own and pointed it at your own tunnel,
+a tenant can complete a GCash payment at Adyen and nothing will ever reach the
+ledger — with no error anywhere. See "Two people cannot share one webhook" below.
+
+---
+
 ## 0.5 What CANNOT come from this document — Sean must hand these over
 
 This file is committed to a **public** repository, so it holds no secrets and no
