@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, showToast, type ExpenseRecord } from '@/lib/systemState';
+import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
@@ -23,7 +23,7 @@ interface ApiCat {
 }
 
 interface FormExpenseAllocation {
-  area: 'Boarding House' | 'Main House' | 'Front Apt' | 'Back Apt' | 'Other';
+  area: PropertyArea;
   amount: string;
 }
 
@@ -231,13 +231,6 @@ function submitAddExpense() {
     async () => {
       isSubmitting.value = true;
       try {
-        const areaMap: Record<string, string> = {
-          'Boarding House': 'Boarding House',
-          'Main House': 'Main House',
-          'Front Apt': 'Front Apartment',
-          'Back Apt': 'Back Apartment',
-          'Other': 'Other Expenses / Personal'
-        };
 
         // Save each item individually
         await Promise.all(
@@ -248,7 +241,7 @@ function submitAddExpense() {
                 orSupplier: entry.desc.trim(),
                 categoryCode: getDbCategoryCode(entry.category),
                 allocations: entry.allocations.map(a => ({
-                  propertyArea: areaMap[a.area] || 'Boarding House',
+                  propertyArea: a.area,
                   amount: Number(a.amount) || 0
                 }))
               });
@@ -306,7 +299,8 @@ function getAreaAmount(e: ExpenseRecord, areaName: 'Boarding House' | 'Main Hous
 // Helper to get sum of splits for Apts & Other
 function getAptsOtherAmount(e: ExpenseRecord): number {
   return e.splits
-    .filter(s => s.area === 'Front Apt' || s.area === 'Back Apt' || s.area === 'Other')
+    .filter(s => s.area === 'Front Apartment' || s.area === 'Back Apartment'
+             || s.area === 'Other Expenses / Personal')
     .reduce((sum, s) => sum + s.amount, 0);
 }
 
@@ -338,7 +332,7 @@ const editDate = ref('');
 const editDesc = ref('');
 const editCategory = ref('');
 const editAllocations = ref<{
-  area: 'Boarding House' | 'Main House' | 'Front Apt' | 'Back Apt' | 'Other';
+  area: PropertyArea;
   amount: string;
 }[]>([]);
 
@@ -412,20 +406,13 @@ async function handleEditExpense() {
     const oldId = editingExpense.value.id;
     const oldDesc = editingExpense.value.description;
     
-    const areaMap: Record<string, string> = {
-      'Boarding House': 'Boarding House',
-      'Main House': 'Main House',
-      'Front Apt': 'Front Apartment',
-      'Back Apt': 'Back Apartment',
-      'Other': 'Other Expenses / Personal'
-    };
 
     const payload = {
       expenseDate: editDate.value,
       orSupplier: editDesc.value.trim(),
       categoryCode: getDbCategoryCode(editCategory.value),
       allocations: editAllocations.value.map(a => ({
-        propertyArea: areaMap[a.area] || 'Boarding House',
+        propertyArea: a.area,
         amount: Number(a.amount) || 0
       }))
     };
@@ -853,10 +840,10 @@ function exportFilteredExpenses() {
                           required
                         >
                           <option value="Boarding House">Boarding House</option>
-                          <option value="Main House">Main House</option>
-                          <option value="Front Apt">Front Apt</option>
-                          <option value="Back Apt">Back Apt</option>
-                          <option value="Other">Other</option>
+                          <option value="Main House">Main House (personal)</option>
+                          <option value="Front Apartment">Front Apt</option>
+                          <option value="Back Apartment">Back Apt</option>
+                          <option value="Other Expenses / Personal">Other (personal)</option>
                         </select>
                       </div>
 
@@ -1022,10 +1009,10 @@ function exportFilteredExpenses() {
                       required
                     >
                       <option value="Boarding House">Boarding House</option>
-                      <option value="Main House">Main House</option>
-                      <option value="Front Apt">Front Apt</option>
-                      <option value="Back Apt">Back Apt</option>
-                      <option value="Other">Other</option>
+                      <option value="Main House">Main House (personal)</option>
+                      <option value="Front Apartment">Front Apt</option>
+                      <option value="Back Apartment">Back Apt</option>
+                      <option value="Other Expenses / Personal">Other (personal)</option>
                     </select>
                   </div>
 

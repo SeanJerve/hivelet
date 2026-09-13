@@ -1,7 +1,10 @@
-# Migration Verification Record — `005`–`009`
+# Migration Verification Record — `005`–`010`
 
 **Run 2026-09-13 against PostgreSQL 16 (`postgres:16-alpine`) in a throwaway container.**
 Not run against Supabase. These migrations remain **unapplied to the live database**.
+
+Live-data preconditions *were* checked directly against production, read-only, with
+`database/check-migration-preconditions.mjs`. **No blockers.**
 
 ## Method
 
@@ -93,3 +96,74 @@ docker cp database/FULL_DATABASE_SCHEMA.sql hivelet-verify:/tmp/base.sql
 docker exec hivelet-verify psql -U postgres -d hivelet -v ON_ERROR_STOP=1 -f /tmp/base.sql
 # then copy and apply database/migrations/001..009 in order
 ```
+
+---
+
+## Migration `010` — atomicity, proven
+
+`010` adds `public.replace_expense_allocations(uuid, jsonb)`, a plpgsql function that replaces an
+entry's allocations inside a single transaction. The claim it makes is that a rejected insert can no
+longer destroy the allocations that were already there. That was tested directly.
+
+An entry was seeded with the real two-way split — ₱14,964.13 Boarding House and ₱5,688.67 Main
+House — and then a replacement was attempted whose payload contained `'Front Apt'`, a non-canonical
+value:
+
+```
+ERROR: insert or update on table "expense_property_allocations"
+       violates foreign key constraint "expense_property_allocations_property_area_fkey"
+DETAIL: Key (property_area)=(Front Apt) is not present in table "property_areas".
+```
+
+**Both original rows survived, unchanged.** Under the previous two-round-trip code the delete would
+already have committed and the entry would have been left with nothing.
+
+A valid replacement then inserted 3 rows, and `total_expenses` was recomputed to `300.00` from the
+allocations themselves — rental `255.50`, personal `44.50`.
+
+## Live production preconditions, checked read-only
+
+`database/check-migration-preconditions.mjs` reads the live database and writes nothing. Run
+2026-09-13:
+
+| Check | Result |
+| :--- | :--- |
+| Credentialed accounts sharing a phone (after `+63` folding) | none |
+| Case-insensitive email collisions | none |
+| Credentialed accounts with neither email nor phone | none |
+| Stored `property_area` values outside the canonical five | none, across **1,327** allocations |
+| `bills` / `payments` / `monthly_income_records` | 2 / 15 / 937 rows — `RESTRICT` affects DELETE only, so conversion touches none |
+| `PH` current floor | 3 → becomes 4 |
+
+**Verdict: no blockers. `005`–`010` can be applied as written.**
+
+### What the live data revealed about OD-05
+
+Totals across all 1,327 allocations (paginated past PostgREST's 1,000-row default, which silently
+truncates and would have understated this):
+
+| | |
+| :--- | ---: |
+| Boarding House | ₱2,253,574.74 |
+| Front Apartment | ₱87,411.27 |
+| Back Apartment | ₱49,609.99 |
+| **Operating total** | **₱2,390,596.00** |
+| Main House | ₱1,437,487.22 |
+| Other Expenses / Personal | ₱1,995,503.25 |
+| **Personal total** | **₱3,432,990.47** |
+| Ledger face value | ₱5,823,586.47 |
+
+**58.9% of the expense ledger is personal, not operating cost.** The admin overview computed
+`noi = grossIncome - totalExpenses`, subtracting all of it, so Net Operating Income was understated
+by ₱3.43M across the recorded history. Fixed in `frontend/src/views/AdminOverviewView.vue` and
+`frontend/src/lib/systemState.ts`; the personal figure is now displayed separately rather than
+dropped.
+
+## Applying to Supabase
+
+`database/migrations/APPLY_PHASE2.sql` concatenates `005`–`010` in order with a header. Paste it into
+the Supabase SQL Editor and Run. It was tested by applying it, whole, to a fresh database built from
+`FULL_DATABASE_SCHEMA.sql` + `001`–`004`, then applying it a second time: zero errors both times.
+
+DDL cannot be applied through PostgREST even with the `service_role` key, so the SQL Editor (or a
+direct Postgres connection string) is the only route.

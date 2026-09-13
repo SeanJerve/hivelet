@@ -17,6 +17,11 @@ import { z } from 'zod';
 import { db } from '../config/db.js';
 import { requireAuth, requireAdmin, requirePermission } from '../middleware/auth.js';
 import { PERMISSIONS } from '../config/rbac.js';
+import {
+  PROPERTY_AREAS,
+  normalizePropertyArea,
+  type PropertyArea
+} from '../config/propertyAreas.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest } from '../services/auditService.js';
@@ -568,7 +573,13 @@ router.patch(
           }
         }
 
-        const prevDeposit = oldActive?.[0]?.deposit_amount ?? (Number(room.current_price || room.base_price || 4500) * 2);
+        // `deposit_amount` is ADVANCE RENT, not a refundable security deposit - this business
+        // collects no separate damage or security sum (OD-04, confirmed 2026-09-13). The previous
+        // default here was `current_price * 2`, the familiar one-month-advance-plus-one-month-
+        // deposit arrangement, which invented a figure that was never collected and wrote it into
+        // a financial record. Carry forward what the tenant actually had; otherwise leave it at
+        // zero for the administrator to enter. Never fabricate money.
+        const prevDeposit = Number(oldActive?.[0]?.deposit_amount ?? 0);
         const finalOccupants = explicitOccupants ?? oldActive?.[0]?.occupant_count ?? 1;
 
         const { error: assignError } = await db
@@ -1360,7 +1371,16 @@ router.get(
 );
 
 const expenseAllocationSchema = z.object({
-  propertyArea: z.string(),
+  // Accepts a canonical area or a known short form, and normalises it. Anything unresolvable is
+  // rejected here, BEFORE any write - which is what keeps the PATCH handler below from deleting an
+  // entry's allocations and then failing to insert the replacements (migration 008 added the
+  // foreign key that would reject them).
+  propertyArea: z
+    .string()
+    .transform(normalizePropertyArea)
+    .refine((a): a is PropertyArea => a !== null, {
+      message: `Property area must be one of: ${PROPERTY_AREAS.join(', ')}`
+    }),
   amount: z.number().min(0)
 });
 
@@ -1446,8 +1466,32 @@ router.patch(
 
     const { expenseDate, orSupplier, categoryCode, allocations } = req.body;
 
-    const totalExpenses = allocations && Array.isArray(allocations)
-      ? allocations.reduce((acc: number, curr: any) => acc + Number(curr.amount || 0), 0)
+    // Normalise and validate EVERY allocation before touching a single row. The replacement below
+    // is atomic, but rejecting a bad payload up front gives the caller a 400 that names the problem
+    // instead of a database foreign-key error.
+    let normalizedAllocations: { property_area: PropertyArea; amount: number }[] | null = null;
+    if (allocations !== undefined) {
+      if (!Array.isArray(allocations) || allocations.length === 0) {
+        throw ApiError.validation('allocations must be a non-empty array.');
+      }
+      normalizedAllocations = allocations.map((a: any, i: number) => {
+        const area = normalizePropertyArea(a?.propertyArea ?? a?.area);
+        if (!area) {
+          throw ApiError.validation(
+            `allocations[${i}].propertyArea is not a recognised Property Area. ` +
+            `Expected one of: ${PROPERTY_AREAS.join(', ')}.`
+          );
+        }
+        const amount = Number(a?.amount ?? 0);
+        if (!Number.isFinite(amount) || amount < 0) {
+          throw ApiError.validation(`allocations[${i}].amount must be a number of at least 0.`);
+        }
+        return { property_area: area, amount };
+      });
+    }
+
+    const totalExpenses = normalizedAllocations
+      ? normalizedAllocations.reduce((acc, curr) => acc + curr.amount, 0)
       : before.total_expenses;
 
     const updatePatch: Record<string, unknown> = {
@@ -1456,7 +1500,7 @@ router.patch(
     if (expenseDate) updatePatch.expense_date = expenseDate;
     if (orSupplier) updatePatch.or_supplier = orSupplier;
     if (categoryCode) updatePatch.category_code = categoryCode;
-    if (allocations) updatePatch.total_expenses = totalExpenses;
+    if (normalizedAllocations) updatePatch.total_expenses = totalExpenses;
 
     const { data: after, error: updateError } = await db
       .from('monthly_expense_entries')
@@ -1467,14 +1511,15 @@ router.patch(
 
     if (updateError) throw ApiError.internal(updateError.message);
 
-    if (allocations && Array.isArray(allocations)) {
-      await db.from('expense_property_allocations').delete().eq('expense_entry_id', req.params.id);
-      const allocationInserts = allocations.map((a: any) => ({
-        expense_entry_id: req.params.id,
-        property_area: a.propertyArea || a.area,
-        amount: Number(a.amount || 0)
-      }));
-      await db.from('expense_property_allocations').insert(allocationInserts);
+    if (normalizedAllocations) {
+      // Atomic delete-and-reinsert inside one database transaction
+      // (database/migrations/010_atomic_expense_allocations.sql). Doing this as two PostgREST
+      // round trips meant a rejected insert left the entry with no allocations at all.
+      const { error: replaceError } = await db.rpc('replace_expense_allocations', {
+        p_entry_id: req.params.id,
+        p_allocations: normalizedAllocations
+      });
+      if (replaceError) throw ApiError.internal(replaceError.message);
     }
 
     await auditFromRequest(req, {

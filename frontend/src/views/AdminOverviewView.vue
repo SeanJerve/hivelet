@@ -227,7 +227,10 @@ interface MonthIncomeData {
   grossIncome: number;
   landladyShare: number;
   waterIncome: number;
+  /** Operating expenses only. Personal/Main House costs are excluded (OD-05). */
   expenses: number;
+  /** Non-rental costs recorded in the same ledger. Shown for transparency, never subtracted. */
+  personalExpenses: number;
   noi: number;
   isProjected: boolean;
 }
@@ -238,7 +241,13 @@ const live12MonthsData = computed<MonthIncomeData[]>(() => {
     const monthNum = idx + 1;
     const matchingRecords = live2026IncomeRecords.value.filter(r => r.month === monthNum);
     const matchingExpenses = live2026ExpenseRecords.value.filter(e => e.month === monthNum);
-    const recordedExpenses = matchingExpenses.reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
+    // Only the rental portion may be subtracted from income. "Main House" is Mrs. Fe's own
+    // residence and "Other / Personal" is personal by definition (OD-05, confirmed 2026-09-13).
+    // Falls back to totalAmount only for records that carry no allocation breakdown at all.
+    const recordedExpenses = matchingExpenses.reduce(
+      (sum, e) => sum + Number(e.rentalAmount ?? e.totalAmount ?? 0), 0);
+    const recordedPersonal = matchingExpenses.reduce(
+      (sum, e) => sum + Number(e.personalAmount ?? 0), 0);
 
     if (matchingRecords.length > 0) {
       const grossIncome = matchingRecords.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0);
@@ -251,6 +260,7 @@ const live12MonthsData = computed<MonthIncomeData[]>(() => {
         landladyShare,
         waterIncome,
         expenses: recordedExpenses,
+        personalExpenses: recordedPersonal,
         noi: grossIncome - recordedExpenses,
         isProjected: false
       };
@@ -269,6 +279,7 @@ const live12MonthsData = computed<MonthIncomeData[]>(() => {
       landladyShare: projectedShare,
       waterIncome: isFutureIn2026 ? 10400 : 0,
       expenses: projectedExpenses,
+      personalExpenses: recordedPersonal,
       noi: projectedGross - projectedExpenses,
       isProjected: isFutureIn2026
     };
@@ -334,8 +345,17 @@ const historicalAnnualWaterTotal = computed(() => {
   return historicalIncomeRecords.value.reduce((sum, r) => sum + Number(r.water || 0), 0);
 });
 
+// Operating expenses of the rental business. Excludes Main House (Mrs. Fe's own residence) and
+// Other / Personal, which are recorded in the same ledger but are not a cost of the business
+// (OD-05, confirmed 2026-09-13). Subtracting them understated Net Operating Income.
 const historicalAnnualExpenseTotal = computed(() => {
-  return historicalExpenseRecords.value.reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
+  return historicalExpenseRecords.value.reduce(
+    (sum, e) => sum + Number(e.rentalAmount ?? e.totalAmount ?? 0), 0);
+});
+
+// The non-rental remainder, reported alongside so the ledger still reconciles to its face value.
+const historicalAnnualPersonalTotal = computed(() => {
+  return historicalExpenseRecords.value.reduce((sum, e) => sum + Number(e.personalAmount ?? 0), 0);
 });
 
 const historicalAnnualNOI = computed(() => {
@@ -352,7 +372,11 @@ const historical12MonthsData = computed<MonthIncomeData[]>(() => {
     const grossIncome = matchingRecords.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0);
     const landladyShare = matchingRecords.reduce((sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0), 0);
     const waterIncome = matchingRecords.reduce((sum, r) => sum + Number(r.water || 0), 0);
-    const expenses = matchingExpenses.reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
+    // Operating expenses only - see the note in live12MonthsData (OD-05).
+    const expenses = matchingExpenses.reduce(
+      (sum, e) => sum + Number(e.rentalAmount ?? e.totalAmount ?? 0), 0);
+    const personalExpenses = matchingExpenses.reduce(
+      (sum, e) => sum + Number(e.personalAmount ?? 0), 0);
 
     return {
       month: name,
@@ -361,6 +385,7 @@ const historical12MonthsData = computed<MonthIncomeData[]>(() => {
       landladyShare,
       waterIncome,
       expenses,
+      personalExpenses,
       noi: grossIncome - expenses,
       isProjected: false
     };
@@ -568,7 +593,7 @@ function exportHistoricalCSV() {
 
   const csvContent = 'data:text/csv;charset=utf-8,' + [
     [`HIVELET FINANCIAL AUDIT REPORT - FISCAL YEAR ${year}`],
-    [`Gross Inflow: ${historicalAnnualGrossTotal.value}`, `Landlady 50% Share: ${historicalAnnualLandladyShare.value}`, `Total Expenses: ${historicalAnnualExpenseTotal.value}`, `Net Operating Income: ${historicalAnnualNOI.value}`],
+    [`Gross Inflow: ${historicalAnnualGrossTotal.value}`, `Landlady 50% Share: ${historicalAnnualLandladyShare.value}`, `Operating Expenses: ${historicalAnnualExpenseTotal.value}`, `Personal (not deducted): ${historicalAnnualPersonalTotal.value}`, `Net Operating Income: ${historicalAnnualNOI.value}`],
     [],
     headers,
     ...incomeRows,
@@ -1074,7 +1099,17 @@ function exportHistoricalCSV() {
 
                   <div class="flex justify-between text-[10px] text-[#71717a] px-0.5">
                     <span>Revenue: {{ peso(d.grossIncome) }}</span>
-                    <span>Expenses: {{ peso(d.expenses) }}</span>
+                    <span
+                      :title="d.personalExpenses > 0
+                        ? `Operating expenses only. A further ${peso(d.personalExpenses)} of personal (Main House / Other) cost is recorded this month and is not subtracted from rental income.`
+                        : 'Operating expenses only.'"
+                    >Operating: {{ peso(d.expenses) }}</span>
+                  </div>
+                  <div
+                    v-if="d.personalExpenses > 0"
+                    class="flex justify-end text-[10px] text-[#a1a1aa] px-0.5 -mt-0.5"
+                  >
+                    <span>Personal (not deducted): {{ peso(d.personalExpenses) }}</span>
                   </div>
                 </div>
               </div>
@@ -1225,6 +1260,13 @@ function exportHistoricalCSV() {
             </p>
             <p class="mt-1.5 text-xs text-rose-600 font-semibold">
               {{ historicalExpenseRecords.length }} categorized expense entries
+            </p>
+            <p
+              v-if="historicalAnnualPersonalTotal > 0"
+              class="mt-1 text-[11px] leading-snug text-[#71717a]"
+              title="Main House is the owner's own residence and Other / Personal is personal by definition. Both are recorded in the same ledger but are not a cost of running the boarding house, so they are not subtracted from rental income."
+            >
+              Excludes {{ peso(historicalAnnualPersonalTotal) }} personal (Main House / Other)
             </p>
           </div>
 
@@ -1456,7 +1498,17 @@ function exportHistoricalCSV() {
 
                   <div class="flex justify-between text-[10px] text-[#71717a] px-0.5">
                     <span>Revenue: <strong class="text-[#172b4d]">{{ peso(d.grossIncome) }}</strong></span>
-                    <span>Expenses: <strong class="text-rose-700">{{ peso(d.expenses) }}</strong></span>
+                    <span
+                      :title="d.personalExpenses > 0
+                        ? `Operating expenses only. A further ${peso(d.personalExpenses)} of personal (Main House / Other) cost is recorded this month and is not subtracted from rental income.`
+                        : 'Operating expenses only.'"
+                    >Operating: <strong class="text-rose-700">{{ peso(d.expenses) }}</strong></span>
+                  </div>
+                  <div
+                    v-if="d.personalExpenses > 0"
+                    class="flex justify-end text-[10px] text-[#a1a1aa] px-0.5 -mt-0.5"
+                  >
+                    <span>Personal (not deducted): {{ peso(d.personalExpenses) }}</span>
                   </div>
                 </div>
               </div>

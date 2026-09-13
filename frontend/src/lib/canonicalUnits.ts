@@ -5,7 +5,8 @@ export interface RentableUnit {
   id: string;
   unitCode: string;
   cluster: Cluster;
-  floor: 1 | 2 | 3;
+  /** 1-3 are residential floors; 4 is the rooftop penthouse level occupied only by PH. */
+  floor: 1 | 2 | 3 | 4;
   floorLabel: string;
   type: string;
   basePrice: number;
@@ -81,7 +82,7 @@ export const CANONICAL_32_UNITS: RentableUnit[] = [
   { id: "apt-b3b", unitCode: "B3B", cluster: "Back Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 8500, capacity: 4, occupants: 0, status: "vacant", tenantName: null, billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[6], waterRateType: "standard" },
 
   // Penthouse (PH)
-  { id: "apt-ph", unitCode: "PH", cluster: "Penthouse", floor: 3, floorLabel: "Floor 3", type: "3-Bedroom Penthouse Suite", basePrice: 12000, capacity: 5, occupants: 4, status: "settled", tenantName: "Precious Landicho", billingRule: "Rent + ₱200 / occupant water", amenities: [...APT_AMENITIES, "Roof deck", "Panoramic Tanauan view"], photo: PHOTOS[3], waterRateType: "standard" },
+  { id: "apt-ph", unitCode: "PH", cluster: "Penthouse", floor: 4, floorLabel: "Rooftop (Level 4)", type: "3-Bedroom Penthouse Suite", basePrice: 12000, capacity: 5, occupants: 4, status: "settled", tenantName: "Precious Landicho", billingRule: "Rent + ₱200 / occupant water", amenities: [...APT_AMENITIES, "Roof deck", "Panoramic Tanauan view"], photo: PHOTOS[3], waterRateType: "standard" },
 
   // Front Apartment (F1, F2F, F2B)
   { id: "apt-f1", unitCode: "F1", cluster: "Front Apartment", floor: 1, floorLabel: "Floor 1", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 2, status: "settled", tenantName: "Allan Ilagan", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },

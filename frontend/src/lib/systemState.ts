@@ -27,7 +27,8 @@ export interface RoomItem {
   id: string;
   unitCode: string;
   cluster: Cluster;
-  floor: 1 | 2 | 3;
+  /** 1-3 are residential floors; 4 is the rooftop penthouse level occupied only by PH. */
+  floor: 1 | 2 | 3 | 4;
   floorLabel: string;
   type: string;
   price: number;
@@ -91,9 +92,37 @@ export interface IncomeRecord {
   totalRemitted?: number;
 }
 
+/**
+ * The five Property Areas of the expense ledger. These are the exact strings stored in
+ * `expense_property_allocations.property_area` and seeded into the `property_areas` lookup
+ * (database/migrations/008_property_areas_lookup.sql).
+ */
+export type PropertyArea =
+  | 'Boarding House'
+  | 'Main House'
+  | 'Front Apartment'
+  | 'Back Apartment'
+  | 'Other Expenses / Personal';
+
+/**
+ * Areas that are NOT a cost of running the boarding house and must never be subtracted from
+ * rental income. "Main House" is Mrs. Fe's own residence (OD-05, confirmed 2026-09-13); it shares
+ * utility bills with the business, which is why single entries split across two areas.
+ *
+ * Mirrors `property_areas.is_rental_expense = FALSE` in the database. Keep the two in step.
+ */
+export const NON_RENTAL_AREAS: readonly PropertyArea[] = [
+  'Main House',
+  'Other Expenses / Personal'
+] as const;
+
+export function isRentalArea(area: string): boolean {
+  return !NON_RENTAL_AREAS.includes(area as PropertyArea);
+}
+
 export interface ExpenseSplit {
   id?: string;
-  area: 'Boarding House' | 'Main House' | 'Front Apt' | 'Back Apt' | 'Other';
+  area: PropertyArea;
   amount: number;
 }
 
@@ -106,7 +135,12 @@ export interface ExpenseRecord {
   description: string;
   category: string;
   categoryCode?: string;
+  /** Sum of every allocation on this entry, personal included. The face value of the receipt. */
   totalAmount?: number;
+  /** Operating cost of the rental business only. This is the figure to subtract from income. */
+  rentalAmount?: number;
+  /** Non-rental portion (Main House, Other/Personal). Reported, never subtracted from income. */
+  personalAmount?: number;
   splits: ExpenseSplit[];
 }
 
@@ -315,8 +349,11 @@ export async function fetchRooms(): Promise<RoomItem[]> {
         const cluster = mapClusterName(clusterCode);
         const unitCode = (r.room_number || '').toUpperCase();
         const isLinda = r.is_linda_unit || cluster === 'Linda Units';
-        const floor = (r.floor || 1) as 1 | 2 | 3;
-        const floorLabel = floor === 1 ? 'Ground Floor' : floor === 2 ? 'Second Floor' : 'Third Floor';
+        const floor = (r.floor || 1) as 1 | 2 | 3 | 4;
+        const floorLabel = floor === 1 ? 'Ground Floor'
+          : floor === 2 ? 'Second Floor'
+          : floor === 3 ? 'Third Floor'
+          : 'Rooftop (Level 4)';
         const isOccupied = (r.operational_status || '').toLowerCase() === 'occupied';
 
         return {
@@ -529,6 +566,19 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
           amount: Number(a.amount || 0)
         }));
 
+        const effectiveSplits: ExpenseSplit[] = splits.length > 0
+          ? splits
+          : [{ area: 'Boarding House', amount: Number(exp.total_expenses || 0) }];
+
+        // Split the receipt into the part that is a cost of the rental business and the part that
+        // is not. Only the former may be subtracted from rental income (OD-05).
+        const rentalAmount = effectiveSplits
+          .filter(sp => isRentalArea(sp.area))
+          .reduce((sum, sp) => sum + Number(sp.amount || 0), 0);
+        const personalAmount = effectiveSplits
+          .filter(sp => !isRentalArea(sp.area))
+          .reduce((sum, sp) => sum + Number(sp.amount || 0), 0);
+
         return {
           id: exp.id,
           date: dateFormatted,
@@ -539,7 +589,9 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
           category: categoryName,
           categoryCode: exp.category_code,
           totalAmount: Number(exp.total_expenses || 0),
-          splits: splits.length > 0 ? splits : [{ area: 'Boarding House', amount: Number(exp.total_expenses || 0) }]
+          rentalAmount,
+          personalAmount,
+          splits: effectiveSplits
         };
       });
 
