@@ -1,6 +1,13 @@
 # CONTINUE HERE — Hivelet Claude Pipeline Handoff
 
-**Last session: 2026-09-13. Phase 1 is COMPLETE and verified. Phase 2 has not started.**
+**Last session: 2026-09-13. Phase 1 is COMPLETE and verified. Phase 2 is IN PROGRESS.**
+
+> **Phase 2 status.** The STEP 0 alignment is done and seven open decisions were closed — see
+> **`docs/claude_pipeline/PHASE2_LOCKED_DECISIONS.md`**, which is binding canon alongside
+> `PHASE1_LOCKED_DECISIONS.md`. Migrations `005`–`009` are written in `database/migrations/` and are
+> **not yet applied to any database**. Three new questions opened (OD-14 floor-1 count, OD-15 missing
+> Penthouse/Linda expense areas, OD-16 grace period vs no-late-payment); OD-02 and OD-10 remain.
+> The ERD, data dictionary and 3NF proof — the main Phase 2 deliverables — are still to be produced.
 
 This file exists so a new Claude session, on any machine, can pick up exactly where the last one
 stopped. Claude's conversation history and its memory files are stored per-machine and do **not**
@@ -20,10 +27,11 @@ travel with the repository — this document and the artifacts beside it are wha
 You are Claude, Principal Backend Architect, Systems Modeling Specialist, and Lead Database Engineer
 for Hivelet Group 4 (Fe Galang Da Silva Boarding House, Bicol University Capstone Project 2).
 
-Read these three files in order before doing anything else:
-1. docs/claude_pipeline/CONTINUE_HERE.md      <- current state and what to do next
-2. docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md  <- every settled decision; treat as binding canon
-3. docs/claude_pipeline/CLAUDE_PIPELINE.md    <- the master pipeline spec
+Read these four files in order before doing anything else:
+1. docs/claude_pipeline/CONTINUE_HERE.md            <- current state and what to do next
+2. docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md  <- settled decisions; binding canon
+3. docs/claude_pipeline/PHASE2_LOCKED_DECISIONS.md  <- Phase 2 closures; binding canon
+4. docs/claude_pipeline/CLAUDE_PIPELINE.md          <- the master pipeline spec
 
 Constraints that still apply:
 - frontend/ and website/ are STRICTLY READ-ONLY. Backend, database and docs only.
@@ -31,7 +39,11 @@ Constraints that still apply:
   All schema changes are incremental migrations in database/migrations/.
 - STEP 0 applies: stop and ask me before producing final artifacts if anything is ambiguous.
 
-Phase 1 is finished. Begin Phase 2 using docs/claude_pipeline/prompts/PROMPT_2_ERD_AND_DATABASE.md.
+Phase 1 is finished and Phase 2 is part-way. Read
+docs/claude_pipeline/PHASE2_LOCKED_DECISIONS.md as well - it closes seven open decisions and is
+binding. Migrations 005-009 are written but UNAPPLIED. Continue Phase 2 using
+docs/claude_pipeline/prompts/PROMPT_2_ERD_AND_DATABASE.md, whose remaining deliverables are the
+Crow's Foot ERD, the data dictionary and the 3NF proof.
 ```
 
 ---
@@ -83,25 +95,47 @@ Full detail lives in `PHASE1_LOCKED_DECISIONS.md`. Summary:
 
 ---
 
-## Phase 2 starts here
+## Phase 2 — what is done and what remains
 
-Use `docs/claude_pipeline/prompts/PROMPT_2_ERD_AND_DATABASE.md`. Three decisions carry straight in:
+**Done and committed** (migrations are written; **none has been applied to any database**):
 
-- **`profiles.email` → nullable**, with the uniqueness constraint converted to a **partial unique
-  index** so multiple NULLs remain legal.
-- **`005_ledger_fk_restrict.sql`** — move `bills`, `payments` and `monthly_income_records`
-  (`room_id`, `tenant_profile_id`) from `ON DELETE CASCADE` to `RESTRICT`. Safe: soft-delete already
-  exists via `profiles.account_status` and `rooms.operational_status`, and the migration touches zero
-  rows. Keep CASCADE for genuine child records (`room_photos`, `ticket_attachments`,
-  `inquiry_messages`, `ticket_messages`, `expense_property_allocations`).
-- **`rooms.floor` reconciliation** — correct `PH` to the rooftop level and align the per-unit floor
-  values to the owner-confirmed 11 / 11 / 10 / 1.
+| Migration | What it does | Decision |
+| :--- | :--- | :--- |
+| `005_ledger_fk_restrict.sql` | Six ledger FKs → `ON DELETE RESTRICT`. Locates constraints by column, not assumed name. Touches zero rows. | Phase 1 handoff |
+| `006_profiles_optional_login.sql` | `profiles.email` nullable; drops the redundant raw-email unique constraint; `phone_number` as alternate login identifier, unique on digits and scoped to credentialed rows. | OD-09 |
+| `007_rooms_floor_correction.sql` | `PH` → rooftop level 4. Corrects **only** `PH`. | OD-13 |
+| `008_property_areas_lookup.sql` | Five-row `property_areas` lookup + FK; marks Main House and Other/Personal **non-rental**. | OD-05 |
+| `009_advance_rent_and_whole_month_billing.sql` | `COMMENT`s only. `deposit_amount` is advance rent, not a deposit; rent is never prorated. | OD-04, OD-03 |
+
+Also done: `PROMPT_2_ERD_AND_DATABASE.md` reconciled to locked canon (it predated Phase 1 alignment and
+contradicted it in five places), and `PHASE2_LOCKED_DECISIONS.md` written.
+
+**One correction to the Phase 1 handoff, for the record.** It said the email uniqueness constraint
+"must become a partial unique index so multiple NULLs remain legal". That reasoning is wrong —
+PostgreSQL `UNIQUE` already permits multiple NULLs (`NULLS DISTINCT`), so dropping `NOT NULL` was the
+only change required. The partial index is kept for efficiency and intent, not correctness.
+
+**Remaining Phase 2 deliverables** — the substance of `PROMPT_2_ERD_AND_DATABASE.md`, none started:
+
+1. The Crow's Foot ERD in Mermaid, covering all 20 tables plus `property_areas` (21).
+2. The formal data dictionary for `rooms`, `bills`, `payments`, `monthly_income_records`, `audit_logs`.
+3. The written 1NF / 2NF / 3NF proof.
+4. The RLS and security posture write-up.
+
+**Before any of that, someone should apply `005`–`009`** against a scratch database and confirm they
+run clean. They are written defensively — each is one transaction ending in an assertion — but they
+have never been executed. `008` will refuse if a stored `property_area` is not one of the five
+canonical strings; `006` will refuse if two credentialed accounts share a phone number.
 
 ---
 
 ## Known defects — established, not yet fixed
 
 State these honestly; never claim any as already fixed.
+
+> **Status note.** Defects **6**, **9** and **10** now have migrations written for them (`005`, `007`).
+> Written is not applied. Until someone runs them against the database, all three are still live
+> defects and must be described that way.
 
 | # | Defect | Evidence | Phase |
 | :-- | :--- | :--- | :-- |

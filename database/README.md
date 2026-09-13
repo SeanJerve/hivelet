@@ -9,7 +9,7 @@ even with the `service_role` key, so they must be run through the SQL editor:
 
 1. Open the Supabase dashboard → your project → **SQL Editor** → **New query**
 2. Paste the contents of one migration file, then **Run**
-3. Repeat in order: `001` → `002` → `003` → `004` → `005` → `006` → `007`
+3. Repeat in order: `001` → `002` → `003` → `004` → `005` → `006` → `007` → `008` → `009`
 
 ## Migrations
 
@@ -22,6 +22,8 @@ even with the `service_role` key, so they must be run through the SQL editor:
 | `005_ledger_fk_restrict.sql` | Moves the six ledger foreign keys on `bills`, `payments` and `monthly_income_records` from `ON DELETE CASCADE` to `RESTRICT`, so financial history cannot be erased by a cascade that never reaches `auditService`. Touches zero rows. | Phase 2; defect 6 |
 | `006_profiles_optional_login.sql` | Makes `profiles.email` nullable, drops the now-redundant raw-email unique constraint, makes the case-insensitive index partial, and adds `phone_number` as an alternate login identifier. A tenant may now exist as a billable record with no credentials at all. | OD-09; §7b |
 | `007_rooms_floor_correction.sql` | Corrects `PH` from `floor = 3` to the rooftop level 4. Does **not** guess at the one remaining floor-1 unit the owner's survey places on floor 3. | OD-13; defect 10 |
+| `008_property_areas_lookup.sql` | Replaces the free-text `property_area` with a five-row lookup and a foreign key, and marks Main House and Other/Personal as **non-rental** so they can be excluded from net rental income. | OD-05 |
+| `009_advance_rent_and_whole_month_billing.sql` | Comments only. Corrects the meaning of `deposit_amount` to advance rent (there is no security deposit) and records that rent is never prorated. | OD-04, OD-03 |
 
 ## Why the lockdown matters
 
@@ -93,3 +95,25 @@ tally stays 11 / 11 / 10 / 1 on the owner's survey either way.
 `frontend/src/lib/canonicalUnits.ts:8` declares `floor: 1 | 2 | 3`, a type that cannot represent
 level 4, and `:84` still carries `PH` as `floor: 3, floorLabel: "Floor 3"`. The frontend is outside
 the scope of this work — flagged for Eljohn (Frontend / UI-UX), not changed.
+
+### `008` and `009` — the two decisions behind them
+
+**`008` encodes a money rule, not a tidy-up.** "Main House" is Mrs. Fe's own residence, confirmed
+2026-09-13. Those rows are personal household costs sharing a book with the business. Shared utility
+bills are split across both areas — `docs/10_MONTHLY_EXPENSES_REPORT.md` §5 shows one electric bill
+at ₱14,964.13 Boarding House / ₱5,688.67 Main House — so treating Main House as a business expense
+understates net rental income every time. `property_areas.is_rental_expense` is what lets the report
+subtract only the boarding-house half. Any net-income query must filter on it.
+
+`008` refuses to apply if a stored `property_area` is not one of the five canonical strings, naming
+the offenders. Reconcile them and re-run.
+
+**`009` changes nothing.** It is `COMMENT` statements only. It exists because `deposit_amount` does
+not hold a deposit — it holds advance rent, and it is never refunded. Without the comment the next
+person to read the schema builds a refund workflow for money that is never given back. The column is
+not renamed because the frontend reads it and the frontend is out of scope here.
+
+Known defect recorded by `009` and deliberately left for Phase 3:
+`backend/src/routes/admin.ts:571` defaults a missing deposit to `current_price * 2`, the familiar
+"one month advance plus one month deposit" arrangement. With no security deposit in this business
+that default is wrong. Correcting it moves money, so it belongs with the `billingService` extraction.
