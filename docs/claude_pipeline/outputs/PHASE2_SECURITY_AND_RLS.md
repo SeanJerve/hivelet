@@ -146,10 +146,25 @@ The Supabase advisor independently reports it as
 `anon_security_definer_function_executable` (WARN): the function is callable by `anon` over
 `/rest/v1/rpc/current_user_role`.
 
-**Severity, stated fairly: low.** The function reads the caller's role from the Supabase Auth JWT;
-called by `anon` there is no JWT, so it returns nothing useful. It discloses no data. But it is a
-`SECURITY DEFINER` function reachable by unauthenticated callers, and that is a category of thing
-that should never be true by accident.
+**And the function fails open.** Its body was read back from production:
+
+```sql
+SELECT role INTO u_role FROM profiles WHERE auth_user_id = auth.uid() LIMIT 1;
+IF u_role IS NULL THEN
+    -- Default to 'admin' in local development environment
+    RETURN 'admin'::user_role_type;
+END IF;
+```
+
+A caller it cannot identify is answered **`admin`**. The comment says this was for local development;
+it is running in production.
+
+**Severity, stated fairly: low — today.** Nothing consults this function: there are zero RLS policies,
+and role resolution happens in Express middleware against the verified JWT. It discloses no data, and
+an `anon` caller gets the string `admin` back rather than any privilege. But it is a `SECURITY
+DEFINER` function, reachable by unauthenticated callers, that answers "who is this?" with "an
+administrator" whenever it does not know. **The day anyone writes the first RLS policy using it, that
+becomes a full authentication bypass.** It should be revoked before that day, not after.
 
 Fix: `REVOKE ALL ON FUNCTION … FROM PUBLIC`, then grant `EXECUTE` to `service_role` explicitly. The
 same treatment is applied to `normalize_ph_phone(text)`, which has no business being a public RPC
