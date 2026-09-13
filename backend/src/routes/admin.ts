@@ -27,6 +27,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee } from '../services/billingService.js';
+import { money, occupantCount, isoDate, shortText } from '../utils/validators.js';
 
 const router = Router();
 
@@ -1239,6 +1240,29 @@ router.post(
  * PATCH /api/admin/income-records/:id
  * Updates an income record in-place without voiding/recreating.
  */
+/**
+ * Body schema for an income-record edit.
+ *
+ * This route previously read `req.body` directly and passed `rentAmount` through
+ * `Number()`. `Number('abc')` is NaN, and PostgreSQL sorts NaN above every
+ * numeric - so `CHECK (rent_amount >= 0)` would have ACCEPTED it, and the two
+ * GENERATED columns derived from it, plus every SUM over the ledger, would have
+ * become NaN from that row onward. See `utils/validators.ts`.
+ */
+const incomeRecordPatchSchema = z.object({
+  roomNumber: shortText(20).optional(),
+  datePaid: isoDate.optional(),
+  contactName: shortText(255).optional(),
+  invoiceNumber: shortText(100).optional(),
+  rentAmount: money.optional(),
+  occupants: occupantCount.optional(),
+  paymentMethod: z.enum(['Cash', 'GCash', 'Bank Transfer', 'Adyen Online']).optional(),
+  transactionReference: shortText(120).optional(),
+  monthsCovered: z.number().int().min(1).max(60).optional(),
+  dateCoveredStart: isoDate.optional(),
+  dateCoveredEnd: isoDate.optional()
+}).strict();
+
 router.patch(
   '/admin/income-records/:id',
   requirePermission(PERMISSIONS.PAYMENT_VERIFY),
@@ -1252,11 +1276,18 @@ router.patch(
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Income record not found.');
 
+    const parsedBody = incomeRecordPatchSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      throw ApiError.validation(
+        'Invalid income record payload.',
+        parsedBody.error.flatten().fieldErrors
+      );
+    }
     const {
       roomNumber, datePaid, contactName, invoiceNumber, rentAmount,
       occupants, paymentMethod, transactionReference, monthsCovered,
       dateCoveredStart, dateCoveredEnd
-    } = req.body;
+    } = parsedBody.data;
 
     let roomId = before.room_id;
     if (roomNumber) {
@@ -1296,7 +1327,18 @@ router.patch(
       updatePatch.water_payment = water;
     }
     if (paymentMethod) {
-      updatePatch.payment_method = (paymentMethod === 'Online' || paymentMethod === 'GCash') ? 'GCash' : 'Cash';
+      // The schema already constrains this to the four values of
+      // `payment_method_type`, so it is written through unchanged.
+      //
+      // It used to read:
+      //   (paymentMethod === 'Online' || paymentMethod === 'GCash') ? 'GCash' : 'Cash'
+      // which collapsed four methods into two. 'Online' is not a value of the
+      // enum at all, so that branch was dead - and 'Bank Transfer' and 'Adyen
+      // Online' both fell through to the else and were silently rewritten as
+      // 'Cash'. Editing any other field on a record paid by bank transfer would
+      // have changed how that payment was recorded. TypeScript surfaced it the
+      // moment the body was given a real schema.
+      updatePatch.payment_method = paymentMethod;
     }
     if (transactionReference !== undefined) updatePatch.transaction_reference = transactionReference;
     if (dateCoveredStart) updatePatch.rent_period_start = dateCoveredStart;
@@ -1493,7 +1535,26 @@ router.patch(
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Expense entry not found.');
 
-    const { expenseDate, orSupplier, categoryCode, allocations } = req.body;
+    const parsedEntry = z.object({
+      expenseDate: isoDate.optional(),
+      orSupplier: shortText(500).optional(),
+      categoryCode: shortText(20).optional(),
+      // Allocation shape is checked here; each property_area is then normalised
+      // to a canonical value below before anything is written.
+      allocations: z.array(z.object({
+        propertyArea: z.string().optional(),
+        area: z.string().optional(),
+        amount: money
+      })).min(1, 'at least one allocation is required').optional()
+    }).strict().safeParse(req.body);
+
+    if (!parsedEntry.success) {
+      throw ApiError.validation(
+        'Invalid expense entry payload.',
+        parsedEntry.error.flatten().fieldErrors
+      );
+    }
+    const { expenseDate, orSupplier, categoryCode, allocations } = parsedEntry.data;
 
     // Normalise and validate EVERY allocation before touching a single row. The replacement below
     // is atomic, but rejecting a bad payload up front gives the caller a 400 that names the problem
