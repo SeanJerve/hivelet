@@ -170,7 +170,7 @@ makes several of the 1NF and 3NF claims in the companion document hold by constr
 | `inquiry_status_type` | `Pending`, `Contacted`, `Converted`, `Closed` |
 | `operational_status_type` | `Available`, `Reserved`, `Occupied`, `Under Maintenance` |
 | `payment_method_type` | `Cash`, `GCash`, `Bank Transfer`, `Adyen Online` |
-| `property_area_type` | `Boarding House`, `Main House`, `Front Apartment`, `Back Apartment`, `Other Expenses / Personal` |
+| `property_area_type` | `Boarding House`, `Main House`, `Front Apartment`, `Back Apartment`, `Other Expenses / Personal` — **`Penthouse` becomes a sixth value once `012` is applied** |
 | `room_type_enum` | `Studio`, `One-bedroom`, `Two-bedroom`, `Three-bedroom` |
 | `ticket_priority_type` | `Emergency`, `High`, `Medium`, `Low` |
 | `ticket_status_type` | `Submitted`, `In Progress`, `Resolved`, `Closed` |
@@ -364,6 +364,40 @@ its insert lists.
 
 ---
 
+## 6b. The room roster, corroborated against the owner's own books
+
+`INCOME AND EXPENSES PAST RECORDS/Michelles-BH-Report-Income-and-Expenses-fr-Yr-2024-up.xlsx`
+is the landlady's actual ledger, and its *Monthly Income* sheet is organised by unit. Read directly
+from the file, its section headers and unit rows are:
+
+| Section in the spreadsheet | Units listed | Count |
+| :--- | :--- | :-- |
+| `BH` | `1a`–`1h`, `2a`–`2g`, `3a`–`3g` | 22 |
+| `Back Apartment` | `B1F`, `B2F`, `B2B`, `B3F`, `B3B` | 5 |
+| `Pent House` | `PH` | 1 |
+| `Front Apartment` | `F1`, `F2F`, `F2B` | 3 |
+| `Linda` | `*LF`, `*LB` | 2 |
+| | **Total** | **33** |
+
+**This matches `clusters` and `rooms` in the live database exactly** — the same 33 unit codes in the
+same five groups. It is independent corroboration of BR-032 (the canonical unit list) and of the
+errata decision to publish 33 rather than the System Bible's 32.
+
+Two things it establishes that nothing else in the project did:
+
+1. **`LF` and `LB` are both Linda units in the owner's own books**, listed under the `Linda` header
+   and marked with an asterisk whose footnote reads *"Rent remitted to Linda directly"*. `LF` also
+   carries a separate electric charge (₱325) that no other unit has. This bears directly on OD-17 —
+   see §7.
+2. **The spreadsheet records no floor for any unit.** A full-text search of the workbook finds three
+   incidental mentions of "3rd floor", all of them inside expense descriptions
+   (`Labor (Randy Millete) 3rd floor ceiling back`). There is no floor column, no storey grouping and
+   no per-unit level anywhere. This matters for OD-14: the floor values in `rooms.floor` have no
+   documentary source to be checked against, which is consistent with defect 10 — they were populated
+   for development, not surveyed.
+
+---
+
 ## 7. What this document does not settle
 
 Two items are genuinely open and are recorded rather than papered over.
@@ -380,16 +414,46 @@ Locked canon publishes **11 / 11 / 10 / 1** and the owner reconfirmed that distr
 | 4 | 1 | `PH` |
 
 Both total 33. The discrepancy is symmetrical — one unit too many on the ground floor, one too few
-on the third — so **exactly one row's `floor` is wrong**, and which one is not yet established. No
-migration has been written to move it: guessing would corrupt the one artifact whose purpose is to
-describe the building truthfully. The ERD and data dictionary above are unaffected, because neither
-asserts a per-floor count.
+on the third — so **exactly one row's `floor` is wrong**, and which one is not yet established.
+
+The distribution itself is not in dispute; **11 / 11 / 10 / 1 is locked canon and the owner has
+reconfirmed it.** What is missing is which single `rooms.floor` value to change, and that cannot be
+derived:
+
+- Every unit code except `LF` and `LB` encodes its own level (`1a`–`1h`, `B1F`, `F1` on the ground;
+  `2a`–`2g`, `B2B`, `B2F`, `F2B`, `F2F` on the second; `3a`–`3g`, `B3B`, `B3F` on the third), so the
+  codes alone produce 12 / 11 / 9 / 1.
+- **The owner's ledger records no floor for any unit** (§6b) — there is no floor column anywhere in
+  the workbook. So there is no document to check the database against.
+- `rooms.floor` was populated for development rather than surveyed (defect 10), so the stored values
+  carry no authority of their own.
+
+**No migration has been written to move a unit.** Every candidate correction is arithmetically valid
+and they disagree about which room is where; guessing would corrupt the one artifact whose purpose is
+to describe the building truthfully. The ERD and data dictionary above are unaffected, because
+neither asserts a per-floor count. **This closes with one walk of the ground and third floors** —
+listing which units are on each — and nothing short of that will close it.
 
 **OD-15 — closed by the owner, not yet applied.**
 The owner confirmed on 2026-09-13 that the Penthouse gets **its own** expense category and that
 Linda's costs book to **Back Apartment**. Migration `012` implements both and is written but
 **not applied** — see §8. Until it is, `property_areas` holds five rows, the `Penthouse` and `Linda`
 clusters route nowhere, and the diagram above reflects that live state rather than the intended one.
+
+**OD-17 — is `LF` a Linda unit or a Front Apartment unit?**
+The owner has said the unit should not be called "Linda Front" and belongs with the Front Apartment.
+**The owner's own ledger says otherwise**, and that evidence is now on the record (§6b): the
+*Monthly Income* sheet lists `*LF` and `*LB` together under a `Linda` header, against a footnote
+reading *"Rent remitted to Linda directly"*, and `LF` carries a ₱325 electric charge no other unit
+has. Reclassifying `LF` to the Front Apartment would put the database at odds with the book it was
+built to reconcile with, and would move its costs from the Back bucket to the Front one under `012`.
+
+**No room row has been reclassified.** `LF` is a real, separately let unit with 31 income records, its
+own tenant and its own fixed charges; moving it on an instruction the source records contradict would
+shift real money between reporting buckets across those records. The question to put to the client is
+narrower than "which cluster": *the books say LF's rent is remitted to Linda directly — is that still
+the arrangement, or has it changed?* If it has, the reclassification is correct and a migration is
+trivial. If it has not, the database is already right and it is the label that misleads.
 
 ---
 
@@ -412,6 +476,30 @@ three defects the testing found *in these migrations* — is the fourth addendum
 `'Penthouse'` to `PROPERTY_AREAS`). **Apply the migration first** — adding the value to the
 TypeScript list while the database still has five areas would let the API accept an area the
 foreign key rejects.
+
+---
+
+---
+
+## 9. What in this document changes once `011`–`014` are applied
+
+**This document describes the live database as it stands, with `005`–`010` applied and `011`–`014`
+not.** That is deliberate — an ERD that describes a state the database is not in is worse than no
+ERD. But it means the following statements have a shelf life, and whoever applies those migrations
+must revise them here rather than let the document quietly go stale:
+
+| Section | Says today | Becomes true after |
+| :--- | :--- | :--- |
+| §2 ERD, §3 enums, §4 | `property_area_type` has **5** values; `property_areas` holds 5 rows | `012` — 6 values, 6 rows, 4 of them rental |
+| §2 ERD relationships | `CLUSTERS ||--o{ PROPERTY_AREAS : "books_costs_to"` via `property_areas.cluster_code` | `012` — the column is dropped and the edge reverses: `PROPERTY_AREAS ||--o{ CLUSTERS` via `clusters.expense_area`, which is `NOT NULL`, so **every cluster routes somewhere** |
+| §2 ERD `PROPERTY_AREAS` block | has a `cluster_code` FK attribute | `012` — remove it; add `expense_area` to the `CLUSTERS` block |
+| §5 integrity machinery | lists the trigger and the composite unique key as existing | `014` — they become objects this repository creates, not production-only ones |
+| `PHASE2_SECURITY_AND_RLS.md` §4.1 | `property_areas` is outside the RLS lockdown | `011` — 21 of 21 tables forced |
+
+The ERD source `docs/diagrams/hivelet_erd.mmd` needs the same two edits, and re-rendering.
+
+**Nothing in §4's data dictionaries changes** — `011`–`014` touch no column of `rooms`, `bills`,
+`payments`, `monthly_income_records` or `audit_logs`.
 
 ---
 

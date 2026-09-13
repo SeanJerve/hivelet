@@ -93,7 +93,14 @@ permission checks are declarative at the route boundary rather than scattered th
 ## 4. Findings from this phase
 
 Three, all found by reading the live catalogue rather than the schema file. All three are fixed by
-`database/migrations/011_security_posture_corrections.sql` — **written, and not yet applied.**
+`database/migrations/011_security_posture_corrections.sql` — **written and tested, not yet applied.**
+
+> **A fourth finding, from testing rather than reading, is not a security defect but belongs in the
+> same list because it is live.** `replace_expense_allocations()` inserts uncast `text` into the
+> `property_area_type` enum column, so **`PATCH /api/admin/expense-entries/:id` returns 500 on every
+> allocation edit** (`42804`). It fails safely — the transaction rolls back and the entry keeps its
+> allocations, verified — but the feature does not work. Fixed by migration `013`. Full account in
+> the fourth addendum of `database/migrations/VERIFICATION.md`.
 
 ### 4.1 `property_areas` is outside the lockdown — the only table that is
 
@@ -263,9 +270,15 @@ function and a pinned `search_path` on all four.
    mistaken `GRANT` is not a breach.
 4. **Authorisation lives in 39 declarative permissions across three roles**, checked at the route
    boundary, because the single trusted data tier means the database cannot make that decision.
-5. **Three real findings were produced by this phase**, one of which — a `REVOKE` that has never
-   done anything since migration `002` — had been in the repository unnoticed and passing review the
-   whole time.
+5. **Three real security findings were produced by this phase**, one of which — a `REVOKE` that has
+   never done anything since migration `002` — had been in the repository unnoticed and passing
+   review the whole time. Naming the roles instead of `PUBLIC` looks right, reads right in review,
+   and does nothing.
+6. **Testing found what reading could not.** Applying `011`–`014` to a database built to resemble
+   production surfaced six further defects, including one live one: the RPC that makes expense edits
+   atomic has never worked against the real column type. The lesson the project had already written
+   down twice — test against production's shape, not the repository's — only paid out when it was
+   actually followed.
 
 ---
 
