@@ -9,6 +9,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
+import { LANDLADY } from '@/lib/systemState';
 import { useToast } from '@/lib/useToast';
 
 const router = useRouter();
@@ -39,35 +40,42 @@ const activeBillId = ref<string | null>(null);
 const payingOnline = ref(false);
 const isFabOpen = ref(false);
 
-// Resident & Assigned Unit Data
+/**
+ * Resident and assigned-unit data. Everything starts empty.
+ *
+ * This object used to be seeded with a complete fictional tenancy - Unit 1A on
+ * the ground floor, 4,500 rent, a 9,000 deposit, a move-in of Jan 05 2023, a due
+ * date of Aug 05 2026 - and the loader below only overwrites the fields the API
+ * happens to return. Anything it did not return stayed fictional and was
+ * displayed to the resident as their own tenancy.
+ *
+ * Two of the seeds were worse than cosmetic. `landladyGCash` was
+ * '0917-123-4567', a number that is not the landlady's, shown on the page that
+ * tells a resident where to send money. And the unit specs asserted a private
+ * en-suite, split-type aircon, fibre wifi and an individual electricity
+ * sub-meter for every unit in the property - the system holds none of those
+ * facts, and it does not model electricity at all.
+ */
 const tenantData = ref({
-  name: currentUser.value?.fullName || 'Active Resident',
-  room: 'Unit 1A',
-  roomDetails: 'BH Main Rooms (Ground Floor)',
-  roomType: 'Main Cluster',
-  floor: 1,
-  occupants: 1,
-  photoUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80',
-  specs: {
-    floorArea: '18 sq.m',
-    bathroom: 'Private En-suite',
-    aircon: 'Included (Split-type)',
-    wifi: 'High-Speed Fiber WiFi',
-    electricMeter: 'Individual Sub-meter',
-    waterRatePerHead: 200 // BR-014 Standard Water Rate ₱200/head
-  },
-  baseRent: 4500,
-  waterFee: 200,
+  name: currentUser.value?.fullName || '',
+  room: '',
+  roomDetails: '',
+  roomType: '',
+  floor: 0,
+  occupants: 0,
+  photoUrl: '',
+  baseRent: 0,
+  waterFee: 0,
   gbgFee: 0,
-  depositAmount: 9000,
-  moveInDate: 'Jan 05, 2023',
-  totalAmountDue: 4700,
-  dueDate: 'Aug 05, 2026',
-  dueBadgeText: 'DUE AUG 05',
-  dueDaysRemaining: 'Current Period',
-  dueDateRaw: '2026-08-05', // ISO date for countdown calculation
-  landladyGCash: '0917-123-4567',
-  landladyName: 'Fe Galang Da Silva',
+  depositAmount: 0,
+  moveInDate: '',
+  totalAmountDue: 0,
+  dueDate: '',
+  dueBadgeText: '',
+  dueDaysRemaining: '',
+  dueDateRaw: '',
+  landladyGCash: LANDLADY.gcash,
+  landladyName: LANDLADY.name,
   verifiedAt: '',
   nextDueDateDisplay: ''
 });
@@ -83,7 +91,11 @@ const tenantFirstName = computed(() => {
  * Computed due-date countdown.
  * Returns { daysLeft: number, label: string, severity: 'safe'|'warning'|'danger'|'overdue'|'paid' }
  * Severity drives the color of the badge on the payment card.
- * @businessRule Rent due date is the 5th of every month per boarding house policy.
+ * @businessRule BR-033 - the cycle runs from each tenancy's own anniversary
+ *               date, not from a fixed day of the month. The due date shown here
+ *               comes from the bill the backend raised; this only counts down to
+ *               it. (The previous note here claimed "the 5th of every month",
+ *               which is not what the system does.)
  */
 const dueDateCountdown = computed(() => {
   if (tenantData.value.dueBadgeText === 'PAID') {
@@ -437,16 +449,16 @@ async function handlePayOnline() {
             <!-- Metadata Grid -->
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
               <div class="p-3 bg-background rounded-xl border border-border">
-                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Floor Area</span>
-                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.specs.floorArea }}</span>
+                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Room Type</span>
+                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.roomDetails || '—' }}</span>
               </div>
               <div class="p-3 bg-background rounded-xl border border-border">
-                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Bathroom</span>
-                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.specs.bathroom }}</span>
+                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Cluster</span>
+                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.roomType || '—' }}</span>
               </div>
               <div class="p-3 bg-background rounded-xl border border-border">
                 <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Occupancy</span>
-                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.occupants }} Registered</span>
+                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.occupants > 0 ? tenantData.occupants + ' registered' : '—' }}</span>
               </div>
             </div>
 
@@ -464,7 +476,7 @@ async function handlePayOnline() {
 
           <div class="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
             <span>Resident: <strong class="text-foreground">{{ tenantData.name }}</strong></span>
-            <span>Move-in: <strong class="text-foreground">{{ tenantData.moveInDate }}</strong></span>
+            <span>Move-in: <strong class="text-foreground">{{ tenantData.moveInDate || 'not on file' }}</strong></span>
           </div>
         </div>
 

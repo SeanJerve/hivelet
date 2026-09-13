@@ -83,13 +83,21 @@ async function fetchProfile() {
       account_status: data?.account_status || 'active',
     };
 
+    // A blank field stays blank.
+    //
+    // These defaults used to be invented values - 'Maria Da Silva' as the
+    // emergency contact, '0918-987-6543' as her number, a facebook.com URL - and
+    // the form saves whatever it holds. A resident who opened this page and
+    // pressed Save wrote all six fabrications into their own record as fact,
+    // including an emergency contact who does not exist. Guidance belongs in the
+    // input placeholder, which is never submitted.
     form.value = {
-      full_name: data?.full_name || currentUser.value?.fullName || 'Active Resident',
-      phone_number: data?.phone_number || '0917-123-4567',
-      emergency_contact_name: data?.emergency_contact_name || 'Maria Da Silva',
-      emergency_contact_phone: data?.emergency_contact_phone || '0918-987-6543',
-      occupation: data?.occupation || 'College Student / Professional',
-      facebook_url: data?.facebook_url || 'https://facebook.com/hivelet.resident',
+      full_name: data?.full_name || currentUser.value?.fullName || '',
+      phone_number: data?.phone_number || '',
+      emergency_contact_name: data?.emergency_contact_name || '',
+      emergency_contact_phone: data?.emergency_contact_phone || '',
+      occupation: data?.occupation || '',
+      facebook_url: data?.facebook_url || '',
       avatar_url: data?.avatar_url || '',
     };
     savedSnapshot.value = { ...form.value };

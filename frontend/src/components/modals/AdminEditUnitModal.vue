@@ -3,7 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
 import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { X, Check, Loader2, Upload, ChevronDown, Users, ShieldCheck, Home } from 'lucide-vue-next';
+import { X, Check, Loader2, Upload, ChevronDown, Users, ShieldCheck, Home, ImageOff } from 'lucide-vue-next';
 
 const unit = ref<RoomItem | null>(null);
 
@@ -64,7 +64,8 @@ const uploadedFileName = ref<string>('');
 const uploadedFileSize = ref<string>('');
 
 const unitPhoto = computed(() => {
-  return editPhotoUrl.value || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70';
+  // No stock photograph stands in for a unit that has none on file.
+  return editPhotoUrl.value || '';
 });
 
 watch(
@@ -257,10 +258,18 @@ async function handleSave() {
           <div class="relative group rounded-2xl overflow-hidden border border-border bg-background transition-all">
             <div class="h-44 w-full relative bg-neutral-900">
               <img
+                v-if="unitPhoto"
                 :src="unitPhoto"
                 :alt="`Unit ${unit.unitCode}`"
                 class="size-full object-cover"
               />
+              <div
+                v-else
+                class="size-full flex flex-col items-center justify-center gap-2 text-white/70"
+              >
+                <ImageOff class="size-7" />
+                <span class="text-[11px] font-semibold">No photo on file — upload one below</span>
+              </div>
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
 
               <div class="absolute bottom-3 left-3 flex items-center gap-2">

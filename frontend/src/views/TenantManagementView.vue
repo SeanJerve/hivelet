@@ -205,12 +205,16 @@ async function handleOnboard() {
       phone: newPhone.value.trim(),
       roomNumber: newUnit.value.toUpperCase(),
       moveInDate: newMoveIn.value,
-      depositAmount: Number(newDeposit.value) || 9000,
+      // A blank field is sent blank. The API takes all three as optional and
+      // stores NULL, so there is no reason to invent values here - and these were
+      // written to the live record as fact: a 9,000 advance rent the landlady
+      // never entered, an emergency contact literally named "Emergency Contact"
+      // with "-" for a phone number, and an occupation of "Resident" for everyone.
+      depositAmount: Number(newDeposit.value) || 0,
       occupantCount: finalOccupants,
       roommateQty: finalRoommateQty,
-      emergencyContactName: newEmergName.value.trim() || 'Emergency Contact',
-      emergencyContactPhone: newEmergPhone.value.trim() || '—',
-      occupation: 'Resident',
+      emergencyContactName: newEmergName.value.trim(),
+      emergencyContactPhone: newEmergPhone.value.trim(),
     });
 
     await fetchTenants();

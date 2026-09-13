@@ -198,7 +198,9 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       <div class="p-4 bg-background border-b border-border space-y-2">
         <div class="flex justify-between items-center text-xs">
           <span class="text-muted-foreground">Billing Target:</span>
-          <span class="font-bold text-foreground">Unit {{ props.bill.room_number || '204' }} — Monthly Dues</span>
+          <span class="font-bold text-foreground">
+            {{ props.bill.room_number ? 'Unit ' + props.bill.room_number + ' — ' : '' }}Monthly Dues
+          </span>
         </div>
         <div class="flex justify-between items-center text-xs">
           <span class="text-muted-foreground">Base Rent + Water Fee:</span>

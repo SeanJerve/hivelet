@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { DEMO_TENANT, LANDLADY, PAYMENT_HISTORY, maintenanceTickets, showToast, type MaintenanceTicket } from '@/lib/systemState';
+import { LANDLADY, maintenanceTickets, showToast, type MaintenanceTicket } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
@@ -13,7 +13,8 @@ import {
   Send,
   RefreshCw,
   Loader2,
-  ExternalLink 
+  ExternalLink,
+  ImageOff
 } from 'lucide-vue-next';
 
 interface ApiMyRoom {
@@ -27,6 +28,9 @@ interface ApiMyRoom {
     room_type: string;
     current_price: number;
     description: string;
+    capacity?: number;
+    floor?: number;
+    room_photos?: { file_url: string; is_primary: boolean; display_order: number }[];
   };
 }
 
@@ -59,28 +63,60 @@ interface ApiTicket {
   rooms?: { room_number: string };
 }
 
-const payments = ref(PAYMENT_HISTORY);
+/**
+ * Starts empty.
+ *
+ * This was seeded with `PAYMENT_HISTORY` - four invented receipts (OR-2026-1032
+ * and friends) all marked Verified. A resident whose payments failed to load, or
+ * who had never paid, was shown four settled payments that did not exist.
+ */
+const payments = ref<{ or: string; date: string; period: string; amount: number; method: string; status: string }[]>([]);
 const myTickets = ref<MaintenanceTicket[]>([]);
 const isLoading = ref(false);
 const isSubmitting = ref(false);
 const isInitiatingAdyen = ref(false);
-const currentRoomNumber = ref('204');
+// No unit '204' exists in this property - the units are 1a-3g, B1F, F1, LF, LB
+// and PH. These placeholders showed a resident a unit number, a rent and a total
+// due that were all invented, before any data had loaded.
+const currentRoomNumber = ref('');
 const activeRoomId = ref('');
 const activeBillId = ref<string | null>(null);
-const currentRentAmount = ref(4500);
-const currentWaterAmount = ref(200);
-const currentTotalDue = ref(4700);
+const currentRentAmount = ref(0);
+const currentWaterAmount = ref(0);
+const currentTotalDue = ref(0);
+
+/** Real tenancy facts, from `/tenant/my-rooms`. Empty until they load. */
+const moveInDate = ref('');
+const advanceRentAmount = ref(0);
+const unitPhotoUrl = ref('');
+const unitDescription = ref('');
+const unitCapacity = ref(0);
+const unitOccupants = ref(0);
+const unitFloor = ref(0);
+const loadError = ref<string | null>(null);
 
 // Remittance Form
 const gcashRef = ref('');
-const remitAmount = ref('4700');
-const senderName = ref(currentUser.value?.fullName || 'Mark Cruz');
+// Both are submitted with a remittance, so neither may be invented. `senderName`
+// defaulted to 'Mark Cruz' - a name belonging to nobody - and `remitAmount` to a
+// figure unrelated to what the resident actually owes.
+const remitAmount = ref('');
+const senderName = ref(currentUser.value?.fullName || '');
 
 // Ticket Form
 const ticketTitle = ref('');
 const ticketCat = ref('Plumbing');
 const ticketPriority = ref<'Low' | 'Medium' | 'High' | 'Emergency'>('Medium');
 const ticketDesc = ref('');
+
+/** `YYYY-MM-DD` as something a resident reads. Empty in, empty out. */
+function formatDate(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(d.getTime())
+    ? ''
+    : d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+}
 
 async function fetchTenantData() {
   isLoading.value = true;
@@ -94,28 +130,43 @@ async function fetchTenantData() {
 
     if (roomsRes && roomsRes.length > 0) {
       const activeR = roomsRes[0];
-      activeRoomId.value = activeR.rooms?.id || '';
-      currentRoomNumber.value = activeR.rooms?.room_number || '204';
-      currentRentAmount.value = Number(activeR.rooms?.current_price) || 4500;
-      currentWaterAmount.value = (Number(activeR.occupant_count) || 1) * 200;
-      currentTotalDue.value = currentRentAmount.value + currentWaterAmount.value;
-      remitAmount.value = String(currentTotalDue.value);
+      const room = activeR.rooms;
+      activeRoomId.value = room?.id || '';
+      currentRoomNumber.value = room?.room_number || '';
+      currentRentAmount.value = Number(room?.current_price) || 0;
+      unitDescription.value = room?.description || '';
+      unitCapacity.value = Number(room?.capacity) || 0;
+      unitFloor.value = Number(room?.floor) || 0;
+      unitOccupants.value = Number(activeR.occupant_count) || 0;
+      moveInDate.value = activeR.start_date || '';
+      advanceRentAmount.value = Number(activeR.deposit_amount) || 0;
+
+      // The unit's own photograph, not a stock image of someone else's room.
+      const photos = room?.room_photos ?? [];
+      const primary = photos.find((ph) => ph.is_primary) ?? photos[0];
+      unitPhotoUrl.value = primary?.file_url || '';
+
+      // Water is NOT computed here. It was `occupant_count * 200`, which restated
+      // a rate that lives in `system_settings` and is applied by the backend's
+      // billingService - two copies that could disagree. The bill below is the
+      // authority; until it loads, the water figure stays zero rather than guessed.
+      currentTotalDue.value = currentRentAmount.value;
     }
 
     if (billsRes && billsRes.length > 0) {
       const unpaidBill = billsRes.find((b: any) => b.status !== 'Paid');
       if (unpaidBill) {
         activeBillId.value = unpaidBill.id;
-        currentRentAmount.value = Number(unpaidBill.rent_amount) || currentRentAmount.value;
-        currentWaterAmount.value = Number(unpaidBill.water_amount) || currentWaterAmount.value;
-        currentTotalDue.value = Number(unpaidBill.total_amount) || currentTotalDue.value;
-        remitAmount.value = String(currentTotalDue.value);
+        currentRentAmount.value = Number(unpaidBill.rent_amount) || 0;
+        currentWaterAmount.value = Number(unpaidBill.water_amount) || 0;
+        currentTotalDue.value = Number(unpaidBill.total_amount) || 0;
+        remitAmount.value = currentTotalDue.value > 0 ? String(currentTotalDue.value) : '';
       } else {
         activeBillId.value = null;
       }
     }
 
-    if (paymentsRes && paymentsRes.length > 0) {
+    if (Array.isArray(paymentsRes)) {
       payments.value = paymentsRes.map((p) => ({
         or: p.transaction_reference || `OR-${p.id.slice(0, 8)}`,
         date: new Date(p.paid_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
@@ -135,13 +186,19 @@ async function fetchTenantData() {
         priority: t.priority as any,
         reported: new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
         description: t.description,
-        technician: 'Assigned Handyman',
+        // The system does not assign technicians, and no photograph is attached to
+        // a ticket by this endpoint. Both used to be invented - every ticket showed
+        // "Assigned Handyman" and the same stock photograph of an unrelated room,
+        // presented as the resident's own reported fault.
+        technician: '',
         status: t.status === 'Resolved' || t.status === 'Closed' ? 'Resolved' : (t.status === 'In Progress' ? 'In Progress' : 'Open'),
-        photo: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70',
+        photo: '',
       }));
     }
-  } catch {
-    // Offline fallback
+  } catch (err: unknown) {
+    // Surfaced, not swallowed. A silent catch here left whatever was on screen in
+    // place and gave the resident no reason to doubt it.
+    loadError.value = err instanceof Error ? err.message : 'Your details could not be loaded.';
   } finally {
     isLoading.value = false;
   }
@@ -233,9 +290,11 @@ async function handleCreateTicket() {
       priority: ticketPriority.value,
       reported: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
       description: ticketDesc.value,
-      technician: 'Unassigned',
+      technician: '',
       status: 'Open',
-      photo: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70',
+      // No photograph is attached by this form, so none is claimed. This used to
+      // put the same stock image on every ticket a resident raised.
+      photo: '',
     };
     maintenanceTickets.unshift(newT);
     myTickets.value.unshift(newT);
@@ -261,10 +320,10 @@ async function handleCreateTicket() {
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
       <div>
         <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-          Welcome back, {{ currentUser?.fullName || DEMO_TENANT.name }}
+          Welcome back, {{ currentUser?.fullName || 'Resident' }}
         </h1>
         <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
-          Unit {{ currentRoomNumber }} · Resident Self-Service Portal
+          {{ currentRoomNumber ? 'Unit ' + currentRoomNumber + ' · ' : '' }}Resident Self-Service Portal
         </p>
       </div>
 
@@ -278,38 +337,91 @@ async function handleCreateTicket() {
           <span>Refresh</span>
         </button>
 
-        <span class="badge-soft badge-success text-xs font-bold">
-          Good Standing
+        <!-- Was an unconditional "Good Standing" badge: it said the same thing to
+             a resident with an overdue bill as to one with none. -->
+        <span
+          v-if="currentTotalDue > 0"
+          class="badge-soft badge-warning text-xs font-bold"
+        >
+          {{ peso(currentTotalDue) }} due
+        </span>
+        <span v-else-if="!isLoading && !loadError" class="badge-soft badge-success text-xs font-bold">
+          Nothing outstanding
         </span>
       </div>
+    </div>
+
+    <div
+      v-if="loadError"
+      class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800"
+    >
+      <p class="font-bold text-rose-900">Your details could not be loaded.</p>
+      <p class="mt-1">{{ loadError }}</p>
+      <p class="mt-2 text-rose-700">
+        Nothing below has been filled in with sample figures, so no number on this page
+        is a guess.
+      </p>
+      <button @click="fetchTenantData" class="btn-dark mt-3">Try again</button>
     </div>
 
     <!-- Unit Visual & Rent Snapshot -->
     <div class="grid gap-6 lg:grid-cols-3">
       <div class="surface-card overflow-hidden p-0 lg:col-span-2">
         <div class="grid sm:grid-cols-2">
+          <!-- The unit's own photograph when one is on file. Previously a stock
+               photograph of an unrelated apartment, shown to every resident. -->
           <img
-            :src="DEMO_TENANT.photo"
-            alt="My Unit"
+            v-if="unitPhotoUrl"
+            :src="unitPhotoUrl"
+            :alt="currentRoomNumber ? 'Unit ' + currentRoomNumber : 'My unit'"
             class="h-56 w-full object-cover sm:h-full"
           />
+          <div
+            v-else
+            class="h-56 w-full sm:h-full bg-muted flex flex-col items-center justify-center gap-2 text-muted-foreground"
+          >
+            <ImageOff class="size-7" />
+            <span class="text-[11px] font-semibold">No photo on file for this unit</span>
+          </div>
           <div class="flex flex-col justify-between p-6 space-y-4">
             <div>
               <span class="text-[10px] font-extrabold uppercase tracking-widest text-accent-ink">Unit Specs &amp; Inclusions</span>
-              <h3 class="font-display font-extrabold text-xl text-foreground mt-1">Room {{ currentRoomNumber }}</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">Move-in: {{ DEMO_TENANT.moveIn }} · Security Deposit: {{ peso(DEMO_TENANT.deposit) }}</p>
-            </div>
-
-            <div class="space-y-1.5 text-xs text-foreground-soft">
-              <p v-for="(f, i) in DEMO_TENANT.fixtures.slice(0, 4)" :key="i" class="flex items-center gap-2">
-                <CheckCircle2 class="size-3.5 shrink-0 text-accent" />
-                <span>{{ f }}</span>
+              <h3 class="font-display font-extrabold text-xl text-foreground mt-1">
+                {{ currentRoomNumber ? 'Room ' + currentRoomNumber : 'No unit assigned' }}
+              </h3>
+              <p class="text-xs text-muted-foreground mt-0.5">
+                <span v-if="moveInDate">Move-in: {{ formatDate(moveInDate) }}</span>
+                <!-- OD-04: this sum is ADVANCE RENT, not a refundable deposit.
+                     Labelling it "Security Deposit" described a different
+                     financial instrument from the one the system holds. -->
+                <span v-if="advanceRentAmount > 0">
+                  {{ moveInDate ? ' · ' : '' }}Advance rent: {{ peso(advanceRentAmount) }}
+                </span>
+                <span v-if="!moveInDate && advanceRentAmount === 0">Tenancy details not on file</span>
               </p>
             </div>
 
-            <div class="border-t border-border pt-3 flex items-center justify-between text-xs">
-              <span class="text-muted-foreground">Submeter rate</span>
-              <span class="font-bold text-foreground">₱12.50 / kWh</span>
+            <!-- The unit's own description. Replaces six invented "fixtures" -
+                 a heater outlet, a built-in wardrobe, a laundry schedule - that
+                 were shown identically for every unit in the property. -->
+            <div class="space-y-1.5 text-xs text-foreground-soft">
+              <p v-if="unitDescription" class="flex items-start gap-2">
+                <CheckCircle2 class="size-3.5 shrink-0 text-accent mt-0.5" />
+                <span>{{ unitDescription }}</span>
+              </p>
+              <p v-if="unitFloor > 0" class="flex items-center gap-2">
+                <CheckCircle2 class="size-3.5 shrink-0 text-accent" />
+                <span>Floor {{ unitFloor }}</span>
+              </p>
+              <p v-if="unitCapacity > 0" class="flex items-center gap-2">
+                <CheckCircle2 class="size-3.5 shrink-0 text-accent" />
+                <span>{{ unitOccupants }} of {{ unitCapacity }} occupant slots in use</span>
+              </p>
+            </div>
+
+            <div v-if="currentRentAmount > 0" class="border-t border-border pt-3 flex items-center justify-between text-xs">
+              <span class="text-muted-foreground">Monthly rent</span>
+              <span class="font-bold text-foreground">{{ peso(currentRentAmount) }}</span>
             </div>
           </div>
         </div>
@@ -537,7 +649,8 @@ async function handleCreateTicket() {
             </p>
             <div class="flex items-center justify-between text-xs text-muted-foreground pt-1">
               <span>Reported: {{ t.reported }}</span>
-              <span>Assigned: <strong class="text-foreground">{{ t.technician }}</strong></span>
+              <span v-if="t.technician">Assigned: <strong class="text-foreground">{{ t.technician }}</strong></span>
+              <span v-else class="text-muted-foreground">Not yet assigned</span>
             </div>
           </div>
         </div>

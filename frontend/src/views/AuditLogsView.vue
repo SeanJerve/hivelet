@@ -59,69 +59,33 @@ interface AuditRecord {
 
 const auditLogs = ref<AuditRecord[]>([]);
 const isLoading = ref(false);
+/** Set when the trail could not be loaded. Never replaced with sample rows. */
+const loadError = ref<string | null>(null);
 const searchQuery = ref('');
 const categoryFilter = ref<string>('all');
 const expandedRowId = ref<string | null>(null);
 const rowLimit = ref<number>(100);
 
+/**
+ * Loads the audit trail.
+ *
+ * On failure this shows an error. It used to substitute four invented audit
+ * entries - a financial correction, a cash collection, an expense, an onboarding -
+ * each attributed to "Fe Galang Da Silva" with an invented IP address, so an API
+ * hiccup rendered a fabricated audit trail that was indistinguishable from the
+ * real one. The audit log is the one view whose entire claim is that it records
+ * what actually happened; inventing rows for it is worse than showing nothing.
+ */
 async function fetchAuditLogs() {
   isLoading.value = true;
+  loadError.value = null;
   try {
     const res = await api.get<AuditRecord[]>(`/admin/audit-logs?limit=${rowLimit.value}`);
-    if (res && Array.isArray(res)) {
-      auditLogs.value = res;
-    } else {
-      auditLogs.value = [];
-    }
-  } catch (err: any) {
-    console.error('Failed to fetch audit logs:', err);
-    // Offline simulated fallback logs for capstone demonstration
-    auditLogs.value = [
-      {
-        id: 'aud-001',
-        action: 'FINANCIAL_CORRECTION',
-        entity_table: 'monthly_income_records',
-        entity_id: 'inc-rec-2026-08-1a',
-        old_values: { rent_amount: 8500, occupants: 1, water_amount: 200 },
-        new_values: { rent_amount: 9000, occupants: 2, water_amount: 400 },
-        ip_address: '192.168.1.102',
-        created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-        profiles: { id: 'prof-admin-01', full_name: 'Fe Galang Da Silva', role: 'admin' }
-      },
-      {
-        id: 'aud-002',
-        action: 'ONSITE_CASH_COLLECTION',
-        entity_table: 'monthly_income_records',
-        entity_id: 'inc-rec-2026-08-2b',
-        old_values: null,
-        new_values: { unit: '2B', tenant: 'Angelo Cruz', amount_remitted: 9400, or_number: 'OR-8921' },
-        ip_address: '192.168.1.102',
-        created_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-        profiles: { id: 'prof-admin-01', full_name: 'Fe Galang Da Silva', role: 'admin' }
-      },
-      {
-        id: 'aud-003',
-        action: 'EXPENSE_ENTRY_CREATED',
-        entity_table: 'monthly_expense_entries',
-        entity_id: 'exp-2026-08-019',
-        old_values: null,
-        new_values: { supplier: 'Ace Hardware', category: 'Repairs & Maintenance', amount: 3450.00, split: 'Boarding House (100%)' },
-        ip_address: '192.168.1.102',
-        created_at: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
-        profiles: { id: 'prof-admin-01', full_name: 'Fe Galang Da Silva', role: 'admin' }
-      },
-      {
-        id: 'aud-004',
-        action: 'TENANT_ONBOARDED',
-        entity_table: 'tenants',
-        entity_id: 'ten-2026-new-04',
-        old_values: null,
-        new_values: { name: 'Maria Santos', unit: '3A', deposit: 9000, move_in: '2026-08-21' },
-        ip_address: '192.168.1.102',
-        created_at: new Date(Date.now() - 1000 * 60 * 1440).toISOString(),
-        profiles: { id: 'prof-admin-01', full_name: 'Fe Galang Da Silva', role: 'admin' }
-      }
-    ];
+    auditLogs.value = Array.isArray(res) ? res : [];
+  } catch (err: unknown) {
+    auditLogs.value = [];
+    loadError.value =
+      err instanceof Error ? err.message : 'The audit trail could not be loaded.';
   } finally {
     isLoading.value = false;
   }
@@ -386,6 +350,20 @@ function exportAuditCSV() {
       </div>
 
       <!-- Loading Skeleton -->
+      <!-- The trail could not be loaded. Shown instead of sample rows, on purpose. -->
+      <div
+        v-if="loadError"
+        class="m-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800"
+      >
+        <p class="font-bold text-rose-900">The audit trail could not be loaded.</p>
+        <p class="mt-1">{{ loadError }}</p>
+        <p class="mt-2 text-rose-700">
+          Nothing is shown below rather than sample data, so what you see here is always
+          the real record.
+        </p>
+        <button @click="fetchAuditLogs" class="btn-dark mt-3">Try again</button>
+      </div>
+
       <div v-if="isLoading" class="p-4">
         <SkeletonTable :columns="6" :rows="8" />
       </div>
@@ -441,14 +419,14 @@ function exportAuditCSV() {
                     <div class="size-5 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[10px]">
                       {{ (l.profiles?.full_name || 'A').charAt(0).toUpperCase() }}
                     </div>
-                    <span class="font-bold text-foreground">{{ l.profiles?.full_name || 'Fe Galang Da Silva' }}</span>
-                    <span class="text-[10px] font-semibold text-muted-foreground">({{ l.profiles?.role || 'admin' }})</span>
+                    <span class="font-bold text-foreground">{{ l.profiles?.full_name || 'System (no signed-in actor)' }}</span>
+                    <span class="text-[10px] font-semibold text-muted-foreground">({{ l.profiles?.role || 'system' }})</span>
                   </div>
                 </td>
 
                 <!-- IP -->
                 <td class="py-3 px-4 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
-                  {{ l.ip_address || '127.0.0.1' }}
+                  {{ l.ip_address || 'not recorded' }}
                 </td>
 
                 <!-- Diff Toggle -->
@@ -473,7 +451,7 @@ function exportAuditCSV() {
                         Audit State Transition Record (ID: {{ l.id }})
                       </span>
                       <span class="text-[11px] text-muted-foreground font-normal">
-                        User Agent: {{ l.user_agent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }}
+                        User Agent: {{ l.user_agent || 'not recorded' }}
                       </span>
                     </div>
 
