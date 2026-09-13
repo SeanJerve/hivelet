@@ -4,6 +4,18 @@
 
 ---
 
+> [!IMPORTANT]
+> **Reconciled against Phase 1 locked canon on 2026-09-13.**
+> This prompt was authored *before* the Phase 1 STEP 0 alignment and originally contradicted the
+> settled decisions in five places — "3 clusters", the banned "Main / Annex A / Annex B" names,
+> a 2% annual rate escalation, co-ownership framing of `fifty_percent_share`, and the superseded
+> `BR-001`–`BR-007` pillar numbering. Those passages are corrected below.
+>
+> **`docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md` outranks this file.** If anything here still
+> disagrees with it, the locked decisions win — report the conflict rather than following this prompt.
+
+---
+
 ### ROLE & DIRECTIVES FOR CLAUDE
 You are the **Lead Database Administrator & Data Architect** for Group 4 (Hivelet), collaborating directly with DBA John Lloyd Cuario.
 Your task is to audit, refine, and produce the comprehensive **Database Architecture, Third Normal Form (3NF) Relational Schema, Data Dictionary, and Crow's Foot Entity-Relationship Diagram (ERD)**.
@@ -17,11 +29,12 @@ Your task is to audit, refine, and produce the comprehensive **Database Architec
 
 ### BACKGROUND & SOURCE DOCUMENTS
 Before analyzing or generating database artifacts, inspect:
-1. `docs/01_SYSTEM_BIBLE.md` (33 units, 3 clusters, ₱200/head water, 50% revenue share, 2% rate history, room-centric logic).
+1. `docs/01_SYSTEM_BIBLE.md` (33 rentable units across **5 clusters**, configurable per-occupant water rate seeded at ₱200, room-centric tenancy).
+   Note: the System Bible says "32" at `:146`; the live seed has 33. The count is an errata item, already settled at **33**.
 2. `docs/05_DATABASE_DESIGN.md` (Active schema documentation).
 3. `docs/module_01_submission/03_DATABASE_SCHEMA_AND_DATA_DICTIONARY.md` (Detailed data dictionary and schema breakdown).
 4. `database/` directory (Active SQL schema, migrations, and seed scripts).
-5. `docs/claude_pipeline/diagrams/reference_dfds/` (Check data stores $D_1$ to $D_6$ in `DFD.png` and ensure all data flows are backed by concrete physical tables).
+5. `docs/claude_pipeline/outputs/PHASE1_DFD_TRACEABILITY.md` — Phase 1 modernized the legacy lab DFD into **7 processes and 12 data stores** (the legacy `DFD.png` showed 5 and 6). Reconcile against the Phase 1 store list, not the lab images, and ensure every store is backed by concrete physical tables.
 
 ---
 
@@ -46,11 +59,13 @@ Generate or update the comprehensive Crow's Foot ERD using Mermaid syntax (`erDi
 Ensure the ERD captures:
 1. **Core Domains:**
    - **Identity & RBAC:** `profiles` (Admin, Tenant, System roles, bcrypt hash, failed login lockout).
-   - **Property Catalog & Clusters:** `clusters` (Main, Annex A, Annex B), `rooms` (33 units), `room_photos`, `room_price_history` (2% annual adjustment logs).
+   - **Property Catalog & Clusters:** `clusters` (**BH (Main Rooms) 22, Back Apartment 5, Front Apartment 3, Penthouse 1, Linda 2**), `rooms` (33 units across three residential floors plus a rooftop penthouse level — 11 / 11 / 10 / 1), `room_photos`, `room_price_history` (manual rate changes with effective date and the administrator who made them).
+     ⚠ "Main Building / Annex A / Annex B" are **not** cluster names and must never appear. In the family's usage "Annex" denotes a *floor*.
    - **Tenancy & Leases:** `room_assignments` (active/past leases, move-in/move-out dates, headcount).
    - **Inquiries:** `inquiries`, `inquiry_messages` (public visitor leads, unit preferences, status).
    - **Billing & Settlement:** `bills` (rent + dynamic water charge), `payments` (supports on-site cash and optional Adyen Online GCash, `verification_status` ENUM ('Pending Verification', 'Verified', 'Rejected'), `transaction_reference`, `payment_method`, `payment_source`, `proof_receipt_url`).
-   - **Co-Ownership & Financials:** `monthly_income_records` (gross, expenses, net income, 50% co-owner share, water payments, Linda water charges), `fixed_expense_categories` (1..10 standardized categories), `monthly_expense_entries`, `expense_property_allocations`.
+   - **Income & Expense Ledgers:** `monthly_income_records` (gross, expenses, net income, `fifty_percent_share`, water payments, Linda water charges), `fixed_expense_categories` (13 seeded rows incl. `6a`/`6b`/`6c` sub-lines), `monthly_expense_entries`, `expense_property_allocations`.
+     ⚠ **Editorial constraint (binding).** `fifty_percent_share` is described **only** as a system-computed figure equal to half the row's Rent Amount, retained so the ledger reconciles line-for-line with Column 6 of the historical spreadsheet. Do **not** model a co-owner/owner/party entity; do **not** use "co-ownership", "co-owner" or "50/50"; do **not** state or imply any purpose, recipient or external use. State the arithmetic and stop.
    - **Maintenance Operations:** `maintenance_tickets` (priority, status, assigned technician), `ticket_attachments`, `ticket_messages`.
    - **Governance & Dynamic Parameters:** `audit_logs` (immutable event ledger with JSONB state diffs), `system_settings` (dynamic `water_rate_per_occupant` configurable parameter, plus Linda flat rates `linda_lf_water_charge` and `linda_lb_water_charge`).
 2. **Exact Crow's Foot Cardinalities:**
@@ -67,7 +82,7 @@ Provide the formal data dictionary table for key entities (`rooms`, `bills`, `pa
 - Data Type & Precision (e.g., `UUID`, `VARCHAR(255)`, `DECIMAL(12,2)`, `TIMESTAMPTZ`, `JSONB`)
 - Nullability & Defaults
 - Constraints (`CHECK`, `UNIQUE`, `FOREIGN KEY`)
-- Business Description & Reference to System Bible (`BR-001` to `BR-007`)
+- Business Description & canonical rule reference. The authoritative namespace is `docs/02_BUSINESS_RULES.md` (**BR-001 … BR-049**). The seven pipeline pillars are **ARCH-001 … ARCH-007** and are never cited with a `BR-` prefix.
 
 #### 4. Security & RLS Policy Enforcement
 Document the database security posture:
