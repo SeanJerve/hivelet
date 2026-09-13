@@ -316,6 +316,14 @@ router.post(
       relatedEntityId: ticket.id,
     });
 
+    // BR-028 - a tenant's message on their own ticket is part of the record too.
+    await auditFromRequest(req, {
+      action: 'TICKET_MESSAGE_SEND',
+      entityType: 'TICKET',
+      entityId: req.params.ticketId,
+      newValues: { messageId: data?.id }
+    });
+
     res.status(201).json({ success: true, data });
   })
 );

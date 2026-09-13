@@ -47,3 +47,6 @@ uploads/*
 # never committed again.
 credentials/
 database/seeded-tenant-credentials.json
+
+# Database backups - contain tenant personal data, never commit
+backups/

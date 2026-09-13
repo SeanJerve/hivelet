@@ -264,6 +264,14 @@ router.post(
       savedPhoto = data;
     }
 
+    // BR-028 - a photo upload changes what the public directory shows for a unit.
+    await auditFromRequest(req, {
+      action: 'ROOM_PHOTO_UPLOAD',
+      entityType: 'ROOM',
+      entityId: req.params.roomId,
+      newValues: { roomId: req.params.roomId, uploadedBy: req.user?.profileId }
+    });
+
     res.status(200).json({ success: true, data: savedPhoto });
   })
 );
@@ -1852,6 +1860,16 @@ router.patch(
 
     if (error) throw ApiError.internal(error.message);
 
+    // BR-028 - closing a ticket is a state change made by a named actor, and
+    // belongs in the event ledger like every other mutation.
+    await auditFromRequest(req, {
+      action: 'TICKET_CLOSE',
+      entityType: 'TICKET',
+      entityId: req.params.ticketId,
+      previousValues: before,
+      newValues: after
+    });
+
     if (before.room_id) {
       const { data: remainingUnresolved } = await db
         .from('maintenance_tickets')
@@ -1898,6 +1916,17 @@ router.delete(
       .eq('id', req.params.ticketId);
 
     if (error) throw ApiError.internal(error.message);
+
+    // BR-028 - this is the only hard DELETE an administrator can perform, so the
+    // audit entry is the ONLY remaining record that the ticket ever existed.
+    // `previousValues` carries the whole row deliberately.
+    await auditFromRequest(req, {
+      action: 'TICKET_DELETE',
+      entityType: 'TICKET',
+      entityId: req.params.ticketId,
+      previousValues: before,
+      newValues: null
+    });
 
     if (before.room_id) {
       const { data: remainingUnresolved } = await db
@@ -2052,6 +2081,14 @@ router.post(
       .single();
 
     if (error) throw ApiError.internal(error.message);
+    // BR-028 - correspondence with a tenant or prospect is part of the record.
+    await auditFromRequest(req, {
+      action: 'INQUIRY_MESSAGE_SEND',
+      entityType: 'INQUIRY',
+      entityId: req.params.id,
+      newValues: { messageId: data?.id }
+    });
+
     res.status(201).json({ success: true, data });
   })
 );
@@ -2113,6 +2150,14 @@ router.post(
       priority: 'Medium',
       relatedEntityType: 'TICKET',
       relatedEntityId: ticket.id,
+    });
+
+    // BR-028 - correspondence with a tenant or prospect is part of the record.
+    await auditFromRequest(req, {
+      action: 'TICKET_MESSAGE_SEND',
+      entityType: 'TICKET',
+      entityId: req.params.id,
+      newValues: { messageId: data?.id }
     });
 
     res.status(201).json({ success: true, data });

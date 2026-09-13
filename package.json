@@ -11,7 +11,8 @@
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "verify:rbac": "node database/verify-rbac.mjs",
     "check:secrets": "node scripts/check-secrets.mjs --all",
-    "hooks:install": "git config core.hooksPath .githooks && echo \"pre-commit secret scanner installed\""
+    "hooks:install": "git config core.hooksPath .githooks && echo \"pre-commit secret scanner installed\"",
+    "backup": "node scripts/backup-database.mjs"
   },
   "keywords": [
     "hivelet",
