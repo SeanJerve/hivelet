@@ -74,12 +74,14 @@ a 200. Two minutes, and the payment demo silently does not work without it.
 Check the tunnel is actually carrying traffic:
 
 ```bash
+TUNNEL=https://your-tunnel.trycloudflare.com
+
 curl -s -o /dev/null -w "%{http_code}
-" https://<your-tunnel>/api/health
+" "$TUNNEL/api/health"
 # 200 = the API is reachable from the internet
 
 curl -s -o /dev/null -w "%{http_code}
-" -X POST -H "Content-Type: application/json"   -d '{}' https://<your-tunnel>/api/public/payments/adyen/webhook
+" -X POST \n  -H "Content-Type: application/json" -d '{}' \n  "$TUNNEL/api/public/payments/adyen/webhook"
 # 401 = correct. The endpoint is alive and refusing an unsigned call.
 ```
 
