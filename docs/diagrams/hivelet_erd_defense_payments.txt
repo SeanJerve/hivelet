@@ -1,0 +1,30 @@
+erDiagram
+
+    ROOMS    ||--o{ PAYMENTS : "credited_to  ON DELETE RESTRICT"
+    PROFILES ||--o{ PAYMENTS : "remitted_by  ON DELETE RESTRICT"
+    BILLS    ||--o{ PAYMENTS : "settled_by   ON DELETE SET NULL"
+    PROFILES ||--o{ PAYMENTS : "VERIFIED_BY  the human gate"
+
+    PAYMENTS {
+        uuid bill_id "D-3  NULLABLE, SET NULL - a payment outlives its bill"
+        uuid room_id "D-4  RESTRICT - financial history is undeletable"
+        uuid tenant_profile_id "D-4  RESTRICT"
+        payment_method_type payment_method "D-1  Cash, GCash, Bank Transfer, Adyen Online"
+        varchar payment_source "D-1  the channel the money arrived through"
+        varchar transaction_reference "D-1  ANY gateway reference - not Adyen-shaped"
+        verification_status_type verification_status "D-2  Verified / Pending Verification / Rejected"
+        uuid verified_by "D-2  the administrator who settled it - BR-017"
+        timestamptz verified_at "D-2  when the human decided"
+    }
+
+    BILLS {
+        uuid id "the demand for money"
+    }
+
+    ROOMS {
+        varchar room_number "the unit"
+    }
+
+    PROFILES {
+        varchar full_name "payer, or verifying administrator"
+    }

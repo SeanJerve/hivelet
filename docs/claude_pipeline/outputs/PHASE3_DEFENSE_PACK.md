@@ -18,17 +18,32 @@ Bicol University College of Science | Capstone Project 2 | Group 4
 
 ## Slide assets
 
-| Section | Diagram | File |
-| :-- | :--- | :--- |
-| 3 | **Architecture, defense view** — five tiers, adapter and gate highlighted | `docs/diagrams/rendered/hivelet_architecture_defense.png` |
-| 3 | Architecture, full — every component, implemented vs planned | `…/hivelet_architecture.png` |
-| 4 | **ERD, defense view** — 7 entities, changes marked D-1…D-4 | `…/hivelet_erd_defense.png` |
-| 4 | ERD, full — all 21 tables | `…/hivelet_erd.png` |
-| 5 | Level 0 context / Level 1 DFD | `…/hivelet_dfd_context.png`, `…/hivelet_dfd_level1.png` |
-| 5 | Payment sequence | `…/hivelet_sequence_payment.png` |
+All rendered at 3x into `docs/diagrams/rendered/` — drop the PNGs straight into slides.
 
-Use the **defense view** on the slide and keep the full version as the next slide or a printout. If a
-panelist wants the whole picture, you turn to it rather than squinting at it.
+| Section | Use on screen | File |
+| :-- | :--- | :--- |
+| 3 | **Architecture, defense view** — five tiers left-to-right, adapter and gate highlighted | `hivelet_architecture_defense.png` |
+| 3 | *Backup:* architecture, full component map | `hivelet_architecture.png` |
+| 4 | **ERD overview** — 12 entities, cardinalities and delete policies, no attribute clutter | `hivelet_erd_defense_overview.png` |
+| 4 | **PAYMENTS close-up** — the four changes D-1…D-4, large type | `hivelet_erd_defense_payments.png` |
+| 4 | *Backup:* ERD defense view with attributes; full 21-table ERD | `hivelet_erd_defense.png`, `hivelet_erd.png` |
+| 5 | Level 0 context, then Level 1 | `hivelet_dfd_context.png`, `hivelet_dfd_level1.png` |
+| 5 | *Optional:* payment sequence | `hivelet_sequence_payment.png` |
+
+### If you are recording a video, read this
+
+**Section 4 needs two shots, not one.** The full ERD has 21 tables and even the
+seven-entity version puts nine attribute rows on screen at once — at 16:9 the type is too
+small to read, and a viewer cannot zoom a video the way a panelist can lean into a slide.
+
+So: open on **`hivelet_erd_defense_overview.png`** while you say what the schema *is* — 21
+tables, the delete policy, where money lives. Then cut to
+**`hivelet_erd_defense_payments.png`** and stay there for the rest of the section. That
+second image is where D-1 through D-4 are legible, and it is what you talk over.
+
+The same applies to Section 3: `hivelet_architecture_defense.png` is built wide and shallow
+specifically so it fills a 16:9 frame. **Do not use the full architecture map on camera** —
+it is a reference document, not a slide.
 
 ---
 

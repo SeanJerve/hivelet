@@ -1,0 +1,20 @@
+erDiagram
+
+    CLUSTERS                ||--|{ ROOMS                  : "groups (5 clusters, 33 units)"
+    PROPERTY_AREAS          ||--o{ CLUSTERS               : "absorbs_costs_of"
+    ROOMS                   ||--o{ ROOM_ASSIGNMENTS       : "let_under"
+    PROFILES                ||--o{ ROOM_ASSIGNMENTS       : "holds"
+
+    ROOMS                   ||--o{ BILLS                  : "invoiced_for  RESTRICT"
+    PROFILES                ||--o{ BILLS                  : "billed_to     RESTRICT"
+    BILLS                   ||--o{ PAYMENTS               : "settled_by    SET NULL"
+    ROOMS                   ||--o{ PAYMENTS               : "credited_to   RESTRICT"
+    PROFILES                ||--o{ PAYMENTS               : "remitted_by   RESTRICT"
+
+    ROOMS                   ||--o{ MONTHLY_INCOME_RECORDS : "earns         RESTRICT"
+    MONTHLY_EXPENSE_ENTRIES ||--|{ EXPENSE_ALLOCATIONS    : "splits_into"
+    PROPERTY_AREAS          ||--o{ EXPENSE_ALLOCATIONS    : "absorbs  is_rental_expense"
+
+    PROFILES                ||--o{ AUDIT_LOGS             : "performed_by  BR-028"
+    ROOMS                   ||--o{ MAINTENANCE_TICKETS    : "reported_for"
+    ROOMS                   ||--o{ INQUIRIES              : "enquired_about"
