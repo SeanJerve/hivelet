@@ -19,6 +19,7 @@ import {
   CLUSTERS
 } from './canonicalUnits';
 import { api } from './api';
+import { isAdmin, isAuthenticated } from './authStore';
 import { useToast } from './useToast';
 
 const { showToast: triggerToast } = useToast();
@@ -364,9 +365,13 @@ function mapOperationalStatus(status: string): UnitStatus {
  */
 export async function fetchRooms(): Promise<RoomItem[]> {
   try {
-    const isGuest = activeRole.value === 'guest';
-    const endpoint = isGuest ? '/public/rooms' : '/admin/rooms';
-    const data = await api.get<any[]>(endpoint, !isGuest);
+    // The endpoint follows the SIGNED-IN role, not the `activeRole` ref, which
+    // defaults to 'admin' and therefore sent tenants and guests to /admin/rooms.
+    // Anyone who is not an administrator reads the published room list, which is
+    // what the public listing uses and what they are entitled to see.
+    const useAdmin = isAuthenticated.value && isAdmin.value;
+    const endpoint = useAdmin ? '/admin/rooms' : '/public/rooms';
+    const data = await api.get<any[]>(endpoint, useAdmin);
 
     if (Array.isArray(data) && data.length > 0) {
       const mapped: RoomItem[] = data.map((r) => {
@@ -424,6 +429,10 @@ export async function fetchRooms(): Promise<RoomItem[]> {
  * Loads all tenants from the backend Supabase API and syncs reactive `tenants`
  */
 export async function fetchTenants(): Promise<TenantRecord[]> {
+  // Administrator-only endpoint: a refused call here is audited as
+  // AUTH_ACCESS_DENIED, so it is not attempted at all.
+  if (!isAuthenticated.value || !isAdmin.value) return [];
+
   try {
     const data = await api.get<any[]>('/admin/tenants');
     if (Array.isArray(data)) {
@@ -517,6 +526,10 @@ export function formatUnitOccupantsSummary(unitCode: string): { text: string; co
  * Loads all monthly income records from Supabase and syncs reactive `incomeRecords`
  */
 export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
+  // Administrator-only endpoint: a refused call here is audited as
+  // AUTH_ACCESS_DENIED, so it is not attempted at all.
+  if (!isAuthenticated.value || !isAdmin.value) return [];
+
   try {
     const res = await api.get<any>('/admin/income-records');
     const records = Array.isArray(res) ? res : res?.data || [];
@@ -572,6 +585,10 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
  * Loads all expense entries and categories from Supabase and syncs reactive `expenseRecords`
  */
 export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
+  // Administrator-only endpoint: a refused call here is audited as
+  // AUTH_ACCESS_DENIED, so it is not attempted at all.
+  if (!isAuthenticated.value || !isAdmin.value) return [];
+
   try {
     const res = await api.get<any[]>('/admin/expense-entries');
     if (Array.isArray(res)) {
@@ -633,6 +650,10 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
  * Loads all maintenance tickets from Supabase and syncs reactive `maintenanceTickets`
  */
 export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
+  // Administrator-only endpoint: a refused call here is audited as
+  // AUTH_ACCESS_DENIED, so it is not attempted at all.
+  if (!isAuthenticated.value || !isAdmin.value) return [];
+
   try {
     const res = await api.get<any[]>('/admin/tickets');
     if (Array.isArray(res)) {
@@ -676,6 +697,10 @@ export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
  * Loads all inquiries from Supabase and syncs reactive `inquiries`
  */
 export async function fetchInquiries(): Promise<Inquiry[]> {
+  // Administrator-only endpoint: a refused call here is audited as
+  // AUTH_ACCESS_DENIED, so it is not attempted at all.
+  if (!isAuthenticated.value || !isAdmin.value) return [];
+
   try {
     const res = await api.get<any[]>('/admin/inquiries');
     if (Array.isArray(res)) {
@@ -711,6 +736,9 @@ export async function fetchInquiries(): Promise<Inquiry[]> {
  * Master initialization function to synchronize all reactive data with Supabase
  */
 export async function initSystemState(): Promise<void> {
+  // These are all administrator endpoints. Calling them as anyone else is not a
+  // degraded experience, it is a refused request that gets audited.
+  if (!isAuthenticated.value || !isAdmin.value) return;
   if (isStateLoading.value) return;
   isStateLoading.value = true;
 
@@ -731,7 +759,30 @@ export async function initSystemState(): Promise<void> {
   }
 }
 
-// Auto-trigger initialization in browser environments
-if (typeof window !== 'undefined') {
-  initSystemState();
-}
+/**
+ * NOTHING IS FETCHED AT MODULE LOAD.
+ *
+ * This file used to call `initSystemState()` the moment it was imported, before
+ * anyone had signed in and regardless of who they were. That fired six
+ * admin-only requests on every page load in the application:
+ *
+ *   /admin/rooms  /admin/tenants  /admin/income-records
+ *   /admin/expense-entries  /admin/tickets  /admin/inquiries
+ *
+ * For a signed-in tenant each came back 403, so the resident portal produced 48
+ * console errors on a four-page walk. Two consequences, and the second is the
+ * serious one.
+ *
+ * First, it looked broken to anyone who opened the developer tools.
+ *
+ * Second, the API audits a refused request as `AUTH_ACCESS_DENIED`. Every
+ * tenant, on every page view, was writing six rows into the immutable audit
+ * trail that read as if they had tried to reach the landlady's ledger. The
+ * audit log is append-only by design - migration 002 revokes DELETE from every
+ * role, including the API's own - so that noise is permanent and cannot be
+ * cleaned up afterwards. A trail full of false intrusion attempts is worse than
+ * no trail, because it trains its reader to ignore it.
+ *
+ * Views now ask for what they need, and `initSystemState()` refuses to run for
+ * anyone who is not an administrator.
+ */

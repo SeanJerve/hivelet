@@ -225,7 +225,7 @@ interface MonthIncomeData {
   month: string;
   monthNum: number;
   grossIncome: number;
-  landladyShare: number;
+  halfOfRentShare: number;
   waterIncome: number;
   /** Operating expenses only. Personal/Main House costs are excluded (OD-05). */
   expenses: number;
@@ -251,13 +251,13 @@ const live12MonthsData = computed<MonthIncomeData[]>(() => {
 
     if (matchingRecords.length > 0) {
       const grossIncome = matchingRecords.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0);
-      const landladyShare = matchingRecords.reduce((sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0), 0);
+      const halfOfRentShare = matchingRecords.reduce((sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0), 0);
       const waterIncome = matchingRecords.reduce((sum, r) => sum + Number(r.water || 0), 0);
       return {
         month: name,
         monthNum,
         grossIncome,
-        landladyShare,
+        halfOfRentShare,
         waterIncome,
         expenses: recordedExpenses,
         personalExpenses: recordedPersonal,
@@ -276,7 +276,7 @@ const live12MonthsData = computed<MonthIncomeData[]>(() => {
       month: name,
       monthNum,
       grossIncome: projectedGross,
-      landladyShare: projectedShare,
+      halfOfRentShare: projectedShare,
       waterIncome: isFutureIn2026 ? 10400 : 0,
       expenses: projectedExpenses,
       personalExpenses: recordedPersonal,
@@ -287,7 +287,7 @@ const live12MonthsData = computed<MonthIncomeData[]>(() => {
 });
 
 const totalAnnualLiveRevenue = computed(() => live12MonthsData.value.reduce((sum, d) => sum + d.grossIncome, 0));
-const totalAnnualLiveShare = computed(() => live12MonthsData.value.reduce((sum, d) => sum + d.landladyShare, 0));
+const totalAnnualLiveShare = computed(() => live12MonthsData.value.reduce((sum, d) => sum + d.halfOfRentShare, 0));
 const averageMonthlyLiveIncome = computed(() => Math.round(totalAnnualLiveRevenue.value / 12));
 
 const livePeakMonth = computed(() => {
@@ -337,7 +337,7 @@ const historicalAnnualGrossTotal = computed(() => {
   return historicalIncomeRecords.value.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0);
 });
 
-const historicalAnnualLandladyShare = computed(() => {
+const historicalAnnualHalfOfRentShare = computed(() => {
   return historicalIncomeRecords.value.reduce((sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0), 0);
 });
 
@@ -370,7 +370,7 @@ const historical12MonthsData = computed<MonthIncomeData[]>(() => {
     const matchingExpenses = historicalExpenseRecords.value.filter(e => e.month === monthNum);
 
     const grossIncome = matchingRecords.reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0);
-    const landladyShare = matchingRecords.reduce((sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0), 0);
+    const halfOfRentShare = matchingRecords.reduce((sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0), 0);
     const waterIncome = matchingRecords.reduce((sum, r) => sum + Number(r.water || 0), 0);
     // Operating expenses only - see the note in live12MonthsData (OD-05).
     const expenses = matchingExpenses.reduce(
@@ -382,7 +382,7 @@ const historical12MonthsData = computed<MonthIncomeData[]>(() => {
       month: name,
       monthNum,
       grossIncome,
-      landladyShare,
+      halfOfRentShare,
       waterIncome,
       expenses,
       personalExpenses,
@@ -593,7 +593,7 @@ function exportHistoricalCSV() {
 
   const csvContent = 'data:text/csv;charset=utf-8,' + [
     [`HIVELET FINANCIAL AUDIT REPORT - FISCAL YEAR ${year}`],
-    [`Gross Inflow: ${historicalAnnualGrossTotal.value}`, `Landlady 50% Share: ${historicalAnnualLandladyShare.value}`, `Operating Expenses: ${historicalAnnualExpenseTotal.value}`, `Personal (not deducted): ${historicalAnnualPersonalTotal.value}`, `Net Operating Income: ${historicalAnnualNOI.value}`],
+    [`Gross Inflow: ${historicalAnnualGrossTotal.value}`, `50% Share (half of Rent Amount): ${historicalAnnualHalfOfRentShare.value}`, `Operating Expenses: ${historicalAnnualExpenseTotal.value}`, `Personal (not deducted): ${historicalAnnualPersonalTotal.value}`, `Net Operating Income: ${historicalAnnualNOI.value}`],
     [],
     headers,
     ...incomeRows,
@@ -1043,8 +1043,8 @@ function exportHistoricalCSV() {
                 <span class="font-bold text-white">{{ peso(chartPoints[hoveredMonthIndex].grossIncome) }}</span>
               </div>
               <div class="flex items-center justify-between gap-4 text-[11px]">
-                <span class="text-neutral-400">50% Landlady Share:</span>
-                <span class="font-semibold text-emerald-400">{{ peso(chartPoints[hoveredMonthIndex].landladyShare) }}</span>
+                <span class="text-neutral-400">50% Share:</span>
+                <span class="font-semibold text-emerald-400">{{ peso(chartPoints[hoveredMonthIndex].halfOfRentShare) }}</span>
               </div>
             </div>
           </div>
@@ -1254,16 +1254,16 @@ function exportHistoricalCSV() {
             </p>
           </div>
 
-          <!-- Card 2: 50% Landlady Share -->
+          <!-- Card 2: 50% Share -->
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">50% Landlady Share</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">50% Share</p>
               <span class="rounded-xl p-2 bg-blue-50 text-blue-800 ring-1 ring-blue-200">
                 <DollarSign class="size-4" />
               </span>
             </div>
             <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-primary">
-              {{ peso(historicalAnnualLandladyShare) }}
+              {{ peso(historicalAnnualHalfOfRentShare) }}
             </p>
             <p class="mt-1.5 text-xs text-muted-foreground">
               BR-032 compliant 50% profit allocation
@@ -1446,8 +1446,8 @@ function exportHistoricalCSV() {
                 <span class="font-bold text-white">{{ peso(chartPoints[hoveredMonthIndex].grossIncome) }}</span>
               </div>
               <div class="flex items-center justify-between gap-4 text-[11px]">
-                <span class="text-neutral-400">50% Landlady Share:</span>
-                <span class="font-semibold text-emerald-400">{{ peso(chartPoints[hoveredMonthIndex].landladyShare) }}</span>
+                <span class="text-neutral-400">50% Share:</span>
+                <span class="font-semibold text-emerald-400">{{ peso(chartPoints[hoveredMonthIndex].halfOfRentShare) }}</span>
               </div>
               <div class="flex items-center justify-between gap-4 text-[11px]">
                 <span class="text-neutral-400">Expenses:</span>
@@ -1606,7 +1606,7 @@ function exportHistoricalCSV() {
             </div>
 
             <div class="mt-6 pt-4 border-t border-border-strong flex items-center justify-between text-xs text-muted-foreground">
-              <span>Verified Revenue Share: <strong>{{ peso(historicalAnnualLandladyShare) }}</strong></span>
+              <span>50% Share (half of Rent Amount): <strong>{{ peso(historicalAnnualHalfOfRentShare) }}</strong></span>
               <span class="text-emerald-700 font-semibold">100% Reconciled with Excel</span>
             </div>
           </div>

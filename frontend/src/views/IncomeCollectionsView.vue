@@ -190,10 +190,37 @@ const rows = computed(() => {
 });
 
 const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
+/**
+ * Half of Rent Amount, summed over BH rows only. BR-035.
+ *
+ * The scope matters and was not stated anywhere on screen: this is not half of
+ * the whole ledger. Half of every row's rent is P3,886,125; this figure is
+ * P2,343,375 because only the Boarding House cluster carries the column in the
+ * landlady's spreadsheet. The card now says so.
+ *
+ * Described only as a system-computed figure equal to half the row's Rent
+ * Amount, retained so the ledger reconciles with the historical spreadsheet.
+ */
 const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'BH' ? (r.rent / 2) : 0), 0));
 const totalWater = computed(() => rows.value.reduce((s, r) => s + r.water, 0));
 const totalGarbage = computed(() => rows.value.reduce((s, r) => s + r.garbage, 0));
-const totalRemitted = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'BH' ? (r.rent / 2) : r.rent) + r.water, 0));
+/**
+ * The spreadsheet's own bottom line: BH rows at half their rent, every other
+ * cluster at full rent, plus water throughout.
+ *
+ * CAREFUL - this is NOT `monthly_income_records.remitted_amount`. That column is
+ * `GENERATED ALWAYS AS (rent_amount + water_payment)` per BR-038 and sums to
+ * P8,086,250; this figure is P5,742,875. Two different quantities were both
+ * being called "Total Remitted", one on screen and one in the database, and a
+ * panelist comparing the two would have found a P2.3M discrepancy with no
+ * explanation. Both are now shown, each labelled with the arithmetic it performs.
+ */
+const totalSpreadsheetLine = computed(() =>
+  rows.value.reduce((s, r) => s + (r.cluster === 'BH' ? (r.rent / 2) : r.rent) + r.water, 0)
+);
+
+/** BR-038, matching the generated column exactly: Rent Amount + Water Payment. */
+const totalRemitted = computed(() => rows.value.reduce((s, r) => s + r.rent + r.water, 0));
 
 // Grouped rows matching Excel's 5 physical sub-sections
 const clusterGroups = computed(() => {
@@ -564,7 +591,7 @@ function exportCSV() {
           Monthly Income &amp; Collections Ledger
         </h1>
         <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
-          Excel-matched canonical revenue ledger with automatic 50% gross rent share and water billing allocation.
+          The canonical revenue ledger, reconciled line-for-line with the historical spreadsheet. The 50% column is computed by the system as half of each row's Rent Amount.
         </p>
       </div>
 
@@ -604,10 +631,14 @@ function exportCSV() {
         <p class="mt-1 text-xs text-muted-foreground">Before 50% share derivation</p>
       </div>
 
+      <!-- BR-035 wording is fixed: this is a system-computed figure equal to half
+           the row's Rent Amount, retained for parity with the historical
+           spreadsheet. It names no recipient and describes no destination. The
+           card previously read "50% Owner Share - Automatic gross rent cut". -->
       <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">50% Owner Share</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">50% Share · BH rows</p>
         <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-accent-ink">{{ peso(totalShare) }}</p>
-        <p class="mt-1 text-xs text-amber-800 font-medium">Automatic gross rent cut</p>
+        <p class="mt-1 text-xs text-amber-800 font-medium">Half of Rent Amount, computed by the system</p>
       </div>
 
       <div class="surface-card p-5">
@@ -619,7 +650,14 @@ function exportCSV() {
       <div class="surface-card p-5">
         <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Remitted</p>
         <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-emerald-800">{{ peso(totalRemitted) }}</p>
-        <p class="mt-1 text-xs text-emerald-700 font-medium">50% Share + Total Water</p>
+        <p class="mt-1 text-xs text-emerald-700 font-medium">Rent + Water (BR-038)</p>
+        <!-- The spreadsheet's own bottom line is a different sum and used to be
+             displayed under the "Total Remitted" heading, which is the name of a
+             database column holding the other figure. -->
+        <p class="mt-2 pt-2 border-t border-border text-xs text-muted-foreground">
+          Spreadsheet line: <strong class="text-foreground">{{ peso(totalSpreadsheetLine) }}</strong>
+          <span class="block text-[11px] text-muted-foreground-soft">BH at half rent, other clusters at full rent, plus water</span>
+        </p>
       </div>
     </div>
 
