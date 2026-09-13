@@ -766,7 +766,7 @@ function exportHistoricalCSV() {
       </div>
 
       <!-- 12-Month Inflow Trajectory Chart Card Skeleton -->
-      <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-6">
+      <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-5">
           <div class="space-y-2">
             <Skeleton className="h-5 w-64 rounded" />
@@ -790,7 +790,7 @@ function exportHistoricalCSV() {
 
       <!-- 2-Column Cash Flow & Cluster Matrix Skeleton -->
       <div class="grid gap-6 lg:grid-cols-2">
-        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 space-y-4">
           <div class="flex items-center justify-between border-b border-border-strong pb-4">
             <div class="space-y-1.5">
               <Skeleton className="h-5 w-44 rounded" />
@@ -809,7 +809,7 @@ function exportHistoricalCSV() {
           </div>
         </div>
 
-        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 space-y-4">
           <div class="flex items-center justify-between border-b border-border-strong pb-4">
             <div class="space-y-1.5">
               <Skeleton className="h-5 w-52 rounded" />
@@ -895,8 +895,21 @@ function exportHistoricalCSV() {
             <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">
               {{ openTicketsCount }} Open
             </p>
-            <p class="mt-1.5 text-xs text-rose-700 font-medium">
-              {{ emergencyTicketsCount > 0 ? `${emergencyTicketsCount} urgent needs dispatch` : 'All tickets handled' }}
+            <!-- The headline counts OPEN tickets; this line used to report on
+                 EMERGENCY tickets, so "2 Open" sat above "All tickets handled". -->
+            <p
+              :class="[
+                'mt-1.5 text-xs font-medium',
+                emergencyTicketsCount > 0 ? 'text-rose-700' : openTicketsCount > 0 ? 'text-amber-700' : 'text-emerald-700'
+              ]"
+            >
+              {{
+                emergencyTicketsCount > 0
+                  ? `${emergencyTicketsCount} urgent, needs dispatch`
+                  : openTicketsCount > 0
+                    ? `${openTicketsCount} awaiting a technician`
+                    : 'All tickets handled'
+              }}
             </p>
           </div>
         </div>
@@ -1041,10 +1054,15 @@ function exportHistoricalCSV() {
         <div class="grid gap-6 lg:grid-cols-2">
           
           <!-- Live Cash Flow (Jan-Jun 2026) -->
-          <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between border-b border-border-strong pb-4">
-                <div>
+              <!-- `flex-wrap` plus `min-w-0`: this row could not wrap, so at 390px
+                   the legend forced the whole card 32px wider than the viewport.
+                   `body` carries `overflow-x: hidden`, which hid the sideways scroll
+                   and silently CLIPPED the figures instead - every Net Operating
+                   Income read "P201,0". -->
+              <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 border-b border-border-strong pb-4">
+                <div class="min-w-0">
                   <h2 class="font-display text-base font-extrabold text-ink-navy">
                     Operating Cash Flow (FY 2026)
                   </h2>
@@ -1052,7 +1070,7 @@ function exportHistoricalCSV() {
                     Monthly revenue inflow compared with operational expenses.
                   </p>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 shrink-0">
                   <span class="inline-flex items-center gap-1.5 text-xs text-emerald-800 font-bold mr-2">
                     <span class="size-2.5 rounded-sm bg-emerald-600"></span> Inflow
                   </span>
@@ -1107,7 +1125,7 @@ function exportHistoricalCSV() {
                   </div>
                   <div
                     v-if="d.personalExpenses > 0"
-                    class="flex justify-end text-[10px] text-muted-foreground-soft px-0.5 -mt-0.5"
+                    class="flex flex-wrap justify-end text-[10px] text-muted-foreground-soft px-0.5 -mt-0.5"
                   >
                     <span>Personal (not deducted): {{ peso(d.personalExpenses) }}</span>
                   </div>
@@ -1115,9 +1133,11 @@ function exportHistoricalCSV() {
               </div>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-border-strong flex items-center justify-between">
+            <!-- Two buttons plus a label do not fit on one 390px line; without
+                 wrapping they pushed the card past the viewport edge. -->
+            <div class="mt-6 pt-4 border-t border-border-strong flex flex-wrap items-center justify-between gap-2">
               <span class="text-xs text-muted-foreground">Direct ledgers:</span>
-              <div class="flex gap-2">
+              <div class="flex flex-wrap gap-2">
                 <button @click="router.push('/admin/income')" class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1 cursor-pointer">
                   <span>Income Ledger</span>
                   <ChevronRight class="size-3" />
@@ -1131,7 +1151,7 @@ function exportHistoricalCSV() {
           </div>
 
           <!-- Live Cluster Occupancy Matrix -->
-          <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between border-b border-border-strong pb-4">
                 <div>
@@ -1198,9 +1218,12 @@ function exportHistoricalCSV() {
               </div>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-border-strong flex items-center justify-between text-xs text-muted-foreground">
-              <span>Total Operational Capacity: <strong>33 Units</strong></span>
-              <span class="text-emerald-700 font-semibold">Active Inventory Fully Synchronized</span>
+            <div class="mt-6 pt-4 border-t border-border-strong flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <!-- The unit count is read from the live room list rather than written
+                   into the markup, and the second span used to read "Active Inventory
+                   Fully Synchronized" - a reassurance that measured nothing. -->
+              <span class="whitespace-nowrap">Total operational capacity: <strong>{{ totalRoomsCount }} units</strong></span>
+              <span class="whitespace-nowrap text-emerald-700 font-semibold">{{ occupiedRoomsCount }} occupied · {{ totalRoomsCount - occupiedRoomsCount }} vacant</span>
             </div>
           </div>
         </div>
@@ -1438,7 +1461,7 @@ function exportHistoricalCSV() {
         <div class="grid gap-6 lg:grid-cols-2">
           
           <!-- Historical Cash Flow (All 12 Months) -->
-          <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between border-b border-border-strong pb-4">
                 <div>
@@ -1506,7 +1529,7 @@ function exportHistoricalCSV() {
                   </div>
                   <div
                     v-if="d.personalExpenses > 0"
-                    class="flex justify-end text-[10px] text-muted-foreground-soft px-0.5 -mt-0.5"
+                    class="flex flex-wrap justify-end text-[10px] text-muted-foreground-soft px-0.5 -mt-0.5"
                   >
                     <span>Personal (not deducted): {{ peso(d.personalExpenses) }}</span>
                   </div>
@@ -1521,7 +1544,7 @@ function exportHistoricalCSV() {
           </div>
 
           <!-- Historical Cluster Contribution Matrix -->
-          <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between border-b border-border-strong pb-4">
                 <div>
@@ -1592,7 +1615,7 @@ function exportHistoricalCSV() {
         <!-- ================================================================== *
          * SECTION 4: HISTORICAL TENANT ROSTER FOR FY {selectedArchiveYear}
          * ================================================================== -->
-        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-4">
             <div>
               <div class="flex items-center gap-2">
@@ -1704,7 +1727,7 @@ function exportHistoricalCSV() {
         <!-- ================================================================== *
          * SECTION 5: 33-UNIT HISTORICAL ROOM UTILIZATION DIRECTORY
          * ================================================================== -->
-        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-4">
             <div>
               <div class="flex items-center gap-2">
@@ -1792,7 +1815,7 @@ function exportHistoricalCSV() {
         <!-- ================================================================== *
          * SECTION 6: DEEP HISTORICAL LEDGER DRILLDOWNS (TABBED & COLLAPSIBLE)
          * ================================================================== -->
-        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-4 sm:p-6 shadow-xs min-w-0 space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-4">
             <div>
               <div class="flex items-center gap-2">

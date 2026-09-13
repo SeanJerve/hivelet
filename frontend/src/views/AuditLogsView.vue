@@ -277,16 +277,26 @@ function exportAuditCSV() {
         </p>
       </div>
 
+      <!--
+        This card read "100.0% — Non-repudiation audit standard", and the 100.0%
+        was a hardcoded literal. A percentage of nothing, on the one page whose
+        whole value is that it can be trusted. It now states a property that is
+        actually true and provable: migration 002 runs
+        `REVOKE UPDATE, DELETE ON public.audit_logs FROM anon, authenticated,
+        service_role`, so not even the API's own privileged role can alter or
+        remove an audit row. Verified by attempting a delete, which PostgreSQL
+        refuses with 42501.
+      -->
       <div class="surface-card p-5">
         <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          <span>Integrity Verification</span>
+          <span>Tamper Resistance</span>
           <ShieldCheck class="size-4 text-primary" />
         </div>
         <p class="font-display text-3xl font-black text-primary mt-3">
-          100.0%
+          Append-only
         </p>
         <p class="text-xs text-muted-foreground mt-1">
-          Non-repudiation audit standard
+          UPDATE and DELETE are revoked from every role, including the API's own (BR-028)
         </p>
       </div>
     </div>

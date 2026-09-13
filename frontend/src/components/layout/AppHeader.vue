@@ -27,10 +27,17 @@ const router = useRouter();
 const isMobilePublicNavOpen = ref(false);
 const isProfilePopoverOpen = ref(false);
 
+/** Honorifics are not names. "Mrs. Fe Galang Da Silva" was initialled "MS". */
+const HONORIFICS = new Set(['mr', 'mrs', 'ms', 'miss', 'dr', 'engr', 'atty', 'sr', 'jr', 'prof']);
+
 const userInitials = computed(() => {
   const name = currentUser.value?.fullName || 'User';
-  const parts = name.trim().split(' ');
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w && !HONORIFICS.has(w.replace(/\./g, '').toLowerCase()));
   if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return name.slice(0, 2).toUpperCase();
 });
 
