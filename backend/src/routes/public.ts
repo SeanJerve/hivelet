@@ -10,6 +10,7 @@
  * balances, or internal pricing history, because System Bible Section 4 says a
  * public visitor "cannot access private tenant information".
  */
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../config/db.js';
@@ -947,6 +948,35 @@ router.post(
   '/public/payments/adyen/webhook',
   asyncHandler(async (req, res) => {
     const hmacKey = config.adyen.hmacKey;
+
+    // Basic Auth, if configured. Adyen recommends this alongside HMAC and the two
+    // do different jobs: this stops an unauthenticated request reaching the
+    // handler at all; HMAC proves the payload is genuinely Adyen's and unaltered.
+    // Compared in constant time so a wrong password cannot be narrowed down by
+    // measuring how long the rejection takes.
+    const wantUser = config.adyen.webhookUser;
+    const wantPass = config.adyen.webhookPassword;
+    if (wantUser || wantPass) {
+      const header = req.headers.authorization ?? '';
+      const [scheme, encoded] = header.split(' ');
+      let ok = false;
+      if (scheme === 'Basic' && encoded) {
+        const decoded = Buffer.from(encoded, 'base64').toString('utf8');
+        const idx = decoded.indexOf(':');
+        const user = idx >= 0 ? decoded.slice(0, idx) : '';
+        const pass = idx >= 0 ? decoded.slice(idx + 1) : '';
+        const digest = (v: string) => createHmac('sha256', 'basic').update(v).digest();
+        ok =
+          timingSafeEqual(digest(user), digest(wantUser)) &&
+          timingSafeEqual(digest(pass), digest(wantPass));
+      }
+      if (!ok) {
+        console.error('[adyen-webhook] Basic Auth failed');
+        res.setHeader('WWW-Authenticate', 'Basic realm="adyen-webhook"');
+        res.status(401).json({ success: false, error: 'Unauthorized.' });
+        return;
+      }
+    }
 
     // Refuse to run unauthenticated. Without a real key every signature check
     // would fail anyway - but failing closed and saying so is better than

@@ -140,6 +140,21 @@ export const config = {
     environment: optional('ADYEN_ENVIRONMENT', 'TEST'),
     clientKey: optional('ADYEN_CLIENT_KEY', 'mock_client_key'),
     hmacKey: optional('ADYEN_HMAC_KEY', 'mock_hmac_key'),
+
+    /**
+     * Basic Auth credentials for the notification webhook.
+     *
+     * Adyen's own guidance is to protect a webhook endpoint with Basic Auth AND
+     * HMAC, and the two do different jobs. Basic Auth stops an unauthenticated
+     * request reaching the handler at all - cheap, and it keeps noise out of the
+     * logs. HMAC proves the payload genuinely came from Adyen and was not altered
+     * in transit. Neither replaces the other.
+     *
+     * Optional: leave both blank and the endpoint still verifies HMAC, which is
+     * the check that actually matters.
+     */
+    webhookUser: optional('ADYEN_WEBHOOK_USER', ''),
+    webhookPassword: optional('ADYEN_WEBHOOK_PASSWORD', ''),
   },
 } as const;
 
