@@ -760,7 +760,7 @@ graph TB
     API_ROUTER -.-> SRV_FIN_REPORT
 
     %% ---------- Known Phase 2 debt, drawn honestly ----------
-    API_ROUTER -.->|"Current reality: 131 of 158 DB calls still inline in route handlers - admin.ts is 2056 lines"| DB_GATE
+    API_ROUTER -.->|"Current reality: 131 of 164 DB calls still inline in route handlers - admin.ts is 2263 lines"| DB_GATE
 
     %% ---------- Tier 3 to the access-control boundary ----------
     SRV_AUTH --> DB_GATE

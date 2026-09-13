@@ -108,8 +108,8 @@ Tier 1 Presentation is **Vue 3 + Vite + Pinia + vue-router + vite-plugin-pwa** â
 - **Planned, extracted in Phase 3 (8):** `billingService`, `paymentService`, `occupancyService`,
   `ticketService`, `inquiryService`, `settingsService`, `expenseService`, `financialReportService`
 
-Every diagram and table must visually distinguish planned from implemented. 131 of 158 DB calls (83%)
-currently sit in route handlers; `backend/src/routes/admin.ts` alone is 2,056 lines.
+Every diagram and table must visually distinguish planned from implemented. 131 of 164 DB calls (80%)
+currently sit in route handlers; `backend/src/routes/admin.ts` alone is 2,263 lines.
 
 ## 6. BR-035 `fifty_percent_share` â€” EDITORIAL CONSTRAINT
 

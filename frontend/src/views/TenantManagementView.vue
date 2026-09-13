@@ -23,7 +23,11 @@ const newPhone = ref('');
 const newUnit = ref('1a');
 const newMoveIn = ref('2026-08-21');
 const newAnniv = ref('2026-08-21');
-const newDeposit = ref(9000);
+// BR-039: the advance rent equals the rent in effect at move-in. It is pre-filled
+// from the unit's LIVE price the moment a unit is chosen (see the watcher below),
+// so the administrator sees and confirms the figure rather than the API
+// substituting one. It started at a flat 9,000, which belonged to no unit.
+const newDeposit = ref(0);
 const newHasRoommates = ref<'no' | 'yes'>('no');
 const newRoommateQty = ref<number>(1);
 const newEmergName = ref('');
@@ -47,6 +51,21 @@ const editRoommateQty = ref<number>(0);
  * kept, the automation never existed.
  */
 
+/**
+ * Pre-fills the advance rent from the selected unit's current price. BR-039.
+ *
+ * Reads the LIVE room list rather than the hardcoded CANONICAL_UNITS table, whose
+ * `basePrice` is a second copy that drifts as soon as the landlady changes a rate.
+ * The administrator can still overwrite it - this fills the field, it does not
+ * decide the amount.
+ */
+function syncDepositToUnit() {
+  const live = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.value.toLowerCase());
+  if (live && Number(live.price) > 0) {
+    newDeposit.value = Number(live.price);
+  }
+}
+
 function checkInquiryConversion() {
   if (route.query.convertInquiryId) {
     newName.value = String(route.query.name || '');
@@ -55,10 +74,7 @@ function checkInquiryConversion() {
     if (route.query.unit) {
       newUnit.value = String(route.query.unit).toLowerCase();
     }
-    const targetUnit = CANONICAL_UNITS.find(u => u.unitCode.toLowerCase() === newUnit.value.toLowerCase());
-    if (targetUnit) {
-      newDeposit.value = targetUnit.basePrice;
-    }
+    syncDepositToUnit();
     isOnboardModalOpen.value = true;
     showToast('info', 'Inquiry Pre-filled', `Details loaded from prospect inquiry for ${newName.value}.`);
   }
@@ -80,6 +96,8 @@ onMounted(() => {
   fetchTenants();
   checkInquiryConversion();
 });
+
+watch(newUnit, syncDepositToUnit);
 
 watch(() => route.query.convertInquiryId, () => {
   checkInquiryConversion();
@@ -653,7 +671,13 @@ async function handleOnboard() {
             <input v-model="newAnniv" type="date" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Deposit Amount (₱)</label>
+            <!-- OD-04: this sum is ADVANCE RENT. This business collects no separate
+                 refundable security deposit, and calling it one described a financial
+                 instrument the property does not use. -->
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+              Advance Rent (₱)
+              <span class="normal-case font-medium text-muted-foreground-soft">— one month, pre-filled from the unit's rate</span>
+            </label>
             <input v-model.number="newDeposit" type="number" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold" required />
           </div>
           <div>

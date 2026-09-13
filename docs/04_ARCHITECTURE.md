@@ -76,7 +76,7 @@ Domain logic organized by business capability inside a single deployable process
 | `expenseService.ts` | Expense entry and cluster allocation | Planned (Phase 3) |
 | `financialReportService.ts` | Income-versus-expense aggregation | Planned (Phase 3) |
 
-**The measured gap.** Of 158 database calls in `backend/src/`, **131 (83%) sit in route handlers** rather than in services, and `backend/src/routes/admin.ts` alone is **2,056 lines**. The Phase 3 extraction moves that logic behind the eight planned service interfaces without changing behaviour.
+**The measured gap.** Of 164 database calls in `backend/src/`, **131 (80%) sit in route handlers** rather than in services, and `backend/src/routes/admin.ts` alone is **2,263 lines**. *(Recounted 2026-09-13.)* The Phase 3 extraction moves that logic behind the eight planned service interfaces without changing behaviour.
 
 ### Tier 4 — Data Persistence
 
@@ -217,7 +217,7 @@ Stated here so that no reader mistakes an intention for an implementation. Every
 | D-6 | Foreign keys are 17 `CASCADE`, 4 `SET NULL`, 0 `RESTRICT` on financial tables | `database/FULL_DATABASE_SCHEMA.sql` | Phase 2 — proposed migration `005_ledger_fk_restrict.sql` moving `room_id` and `tenant_profile_id` on `bills`, `payments` and `monthly_income_records` to `RESTRICT`. Soft-delete already exists (`profiles.account_status`, `rooms.operational_status`), so the change is safe. |
 | D-7 | No `BEGIN`/`COMMIT` transaction exists anywhere in `backend/src` | Repository-wide search returns zero matches | Phase 3 — atomic multi-table writes are a **design target**, not current behaviour |
 | D-8 | Two payment endpoints are unauthenticated | `backend/src/routes/public.ts:202` (`GET /public/payments/mock-gateway`) and `:853` (`POST /public/payments/mock-gateway/complete`) | Phase 3 hardening |
-| D-9 | 131 of 158 database calls sit in route handlers; `admin.ts` is 2,056 lines | `backend/src/routes/` | Phase 3 service extraction |
+| D-9 | 131 of 164 database calls sit in route handlers; `admin.ts` is 2,263 lines | `backend/src/routes/` | Phase 3 service extraction |
 
 No performance figure is asserted anywhere in this document. Claims of "256MB RAM", "sub-50ms" and "100% data consistency" appearing in earlier submissions are unsubstantiated and are withdrawn; see errata item E-16.
 

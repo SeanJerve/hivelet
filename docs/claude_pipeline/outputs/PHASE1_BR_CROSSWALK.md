@@ -83,16 +83,16 @@ Peso amounts are written `PHP`.
 | --- | --- | --- | --- | --- |
 | **BR-010** | Due Date | The monthly due date derives from the move-in date and the billing relationship. | Carrier columns exist — `room_assignments.anniversary_date` (`FULL_DATABASE_SCHEMA.sql:158`), `bills.due_date` (`:221`) — and onboarding seeds the anniversary from the move-in date (`backend/src/routes/admin.ts:415`). No scheduled generator derives a due date from it; the one bill-creating path hardcodes `now + 5 days` (`backend/src/routes/tenant.ts:452`). | Partial |
 | **BR-011** | Overdue | A payment is overdue beginning the day after its due date. | `bills.status` (`FULL_DATABASE_SCHEMA.sql:223`) carries an `Overdue` value that is read at `backend/src/routes/admin.ts:1143`, but no code transitions a bill into it. | Not enforced |
-| **BR-012** | Grace Period | A one-week grace period may apply; grace must be distinguishable from overdue. | Configured correctly at `system_settings.grace_period_days = '7'` (`FULL_DATABASE_SCHEMA.sql:458`) against carrier column `bills.grace_period_end_date` (`:222`). The only code that sets that column writes `now + 10 days` (`backend/src/routes/tenant.ts:453`), contradicting both the seeded value and the rule. | Violated |
+| **BR-012** | Grace Period | A one-week grace period may apply; grace must be distinguishable from overdue. | The only code setting `bills.grace_period_end_date` wrote `now + 10 days`, contradicting both the seeded 7 and the rule. **CLOSED 2026-09-13:** `billingService.computeBillPeriod()` reads `grace_period_days` through `settingsService`, and migration `016` set that value to **0** per OD-16 — the owner confirmed this property grants no grace period, so `grace_period_end_date` equals `due_date`. The rule's "may apply" is honoured: a grace window is one settings row away, and today it is deliberately zero. | **Enforced** |
 | **BR-013** | Full Payment | Full payment is the expected workflow; partial payment is an explicitly recorded exception. | The settlement loop consumes a running remainder against the oldest unpaid bills (`backend/src/routes/admin.ts:1135-1150`) with no full-amount assertion and no "exceptional arrangement" flag. | Not enforced |
-| **BR-014** | Water Fee | Water is charged per registered occupant at the configured rate. | Configured correctly at `system_settings.water_rate_per_occupant = '200'` (`FULL_DATABASE_SCHEMA.sql:454`). **That row is read by zero lines of `backend/src`** — the rate is hardcoded as `occupants * 200` at `backend/src/routes/admin.ts:910`, `:1103` and `:1243`. PHP 200 is the seeded default of a configurable parameter, not a constant of the system. | Violated |
+| **BR-014** | Water Fee | Water is charged per registered occupant at the configured rate. | Configured at `system_settings.water_rate_per_occupant = '200'`. At the time of writing that row was read by zero lines of `backend/src` and the rate was hardcoded as `occupants * 200` in three admin handlers. **CLOSED 2026-09-13.** `services/settingsService.ts` is a typed cached reader over the table and `services/billingService.ts` applies the values through it. No hardcoded rate or grace window remains in `backend/src`. `computeWaterFee()` reads the rate, and units LF and LB take their fixed charges (BR-040) through the same service. PHP 200 is the seeded default of a configurable parameter, and it is now genuinely configurable. | **Satisfied** |
 | **BR-015** | Electricity | Electricity flows through the private electric company; Hivelet records but does not generate it. | Correct by omission — no electricity billing engine exists. The only electricity column is the Linda exception carrier `monthly_income_records.linda_electricity_charge` (`FULL_DATABASE_SCHEMA.sql:277`). | Enforced |
 | **BR-016** | Online Payment | GCash online payment is optional, delivered through Adyen, and follows the verification workflow. | Decoupled adapter `backend/src/services/adyenService.ts:37`; tenant checkout entry point `POST /api/tenant/payments/checkout` (`backend/src/routes/tenant.ts:379-380`); business-rule header at `adyenService.ts:6`. | Enforced |
 | **BR-017** | Payment Verification | An online payment stays pending until the administrator confirms it. | `payments.verification_status` (`FULL_DATABASE_SCHEMA.sql:240`); the adapter inserts `'Pending Verification'` explicitly (`backend/src/services/adyenService.ts:202`); the sovereign admin gate is `PATCH /api/admin/payments/:paymentId/verify` behind `PAYMENT_VERIFY` (`backend/src/routes/admin.ts:836-838`). The column default is `'Verified'` — correct for on-site cash, but unforgiving of any future insert path that omits the field. | Enforced |
 | **BR-018** | Payment Correction | A financial correction writes an audit record holding previous and updated values. | `audit_logs.previous_values JSONB` / `new_values JSONB` (`FULL_DATABASE_SCHEMA.sql:434-435`); writer `recordAudit` (`backend/src/services/auditService.ts:78`) and its request-bound wrapper `auditFromRequest` (`:104`), invoked on every ledger mutation. | Enforced |
 | **BR-019** | Report Recalculation | A confirmed correction must propagate into active reports and analytics. | No recalculation or aggregate-refresh code exists in `backend/src`; report totals are derived client-side from raw rows returned by `GET /api/admin/income-records` (`backend/src/routes/admin.ts:1013-1015`). | Not enforced |
 | **BR-038** | Remitted Amount Formula | Remitted Amount = Rent Amount + Water Payment, system-computed, never typed. | Carrier column `monthly_income_records.remitted_amount` (`FULL_DATABASE_SCHEMA.sql:272`). **CORRECTED 2026-09-13.** An earlier revision recorded this as Violated on the reasoning that the column is absent from the INSERT payload. Both columns are `GENERATED ALWAYS AS ... STORED` in the live database - `fifty_percent_share` as `(rent_amount / 2.0)` and `remitted_amount` as `(rent_amount + water_payment)`, confirmed from `information_schema.columns` where `is_generated = 'ALWAYS'` for both. PostgreSQL derives them on every write and **rejects any INSERT or UPDATE that names them**, so their absence from the INSERT payload is required, not an omission. Verified across all 937 live rows: none is zero and none disagrees with its formula. The rule is satisfied by the strongest available mechanism: the value cannot be typed, cannot drift from the formula, and cannot be overridden by application code. | **Satisfied** |
-| **BR-039** | Deposit Equals Initial Rent | The deposit is set once at onboarding, equal to the rent in effect at move-in. | Carrier column `room_assignments.deposit_amount` (`FULL_DATABASE_SCHEMA.sql:159`). Onboarding accepts whatever the client sends, defaulting to zero (`backend/src/routes/admin.ts:416`), and the reassignment fallback computes `current_price * 2` behind a hardcoded `4500` floor (`:571`). Neither expression equals "the Rent Amount in effect when they moved in". | Violated |
+| **BR-039** | Deposit Equals Initial Rent | The deposit is set once at onboarding, equal to the rent in effect at move-in. | Carrier column `room_assignments.deposit_amount` (`FULL_DATABASE_SCHEMA.sql:159`). Onboarding accepts whatever the client sends. **Partly addressed 2026-09-13:** the reassignment fallback that computed `current_price * 2` behind a hardcoded `4500` floor is gone — it invented money that was never collected and wrote it into a financial record; the tenant's actual prior figure is carried forward instead. The onboarding form now pre-fills the field from the unit's **live** price, so the administrator sees and confirms the correct amount. **Still Violated, deliberately recorded as such:** the API itself does not enforce the equality, and a rule is not enforced until the code refuses a figure that contradicts it. *(Note OD-04: this sum is ADVANCE RENT — this business collects no separate refundable security deposit, and the field is now labelled accordingly.)* | **Violated** |
 
 ### 1.4 The landlady's income ledger — BR-029 .. BR-037, BR-040
 
@@ -137,22 +137,43 @@ Peso amounts are written `PHP`.
 
 | Status | Count | Rules |
 | --- | --- | --- |
-| **Enforced** | 23 | BR-001, BR-002, BR-004, BR-005, BR-006, BR-007, BR-015, BR-016, BR-017, BR-018, BR-021, BR-022, BR-023, BR-024, BR-027, BR-028, BR-031, BR-032, BR-042, BR-043, BR-044, BR-045, BR-048 |
+| **Enforced** | 27 | BR-001, BR-002, BR-004, BR-005, BR-006, BR-007, BR-012, BR-014, BR-015, BR-016, BR-017, BR-018, BR-021, BR-022, BR-023, BR-024, BR-027, BR-028, BR-031, BR-032, BR-035, BR-038, BR-042, BR-043, BR-044, BR-045, BR-048 |
 | **Partial** | 10 | BR-003, BR-008, BR-009, BR-010, BR-020, BR-025, BR-026, BR-033, BR-034, BR-041 |
 | **Schema only** | 2 | BR-037, BR-040 |
 | **Not enforced** | 9 | BR-011, BR-013, BR-019, BR-029, BR-030, BR-036, BR-046, BR-047, BR-049 |
-| **Violated** | 5 | BR-012, BR-014, BR-035, BR-038, BR-039 |
+| **Violated** | 1 | BR-039 |
 | | **49** | |
 
-The five **Violated** rules share one root cause and therefore one remedy. `system_settings` holds
-six correctly seeded, correctly labelled parameter rows (`FULL_DATABASE_SCHEMA.sql:452-460`) and is
-read by **zero lines** of `backend/src`; route handlers carry literal constants instead. All five
-failures — a 10-day grace period against a seeded 7, a hardcoded PHP 200 water rate, and three
-derived money columns that are computed and then dropped before the INSERT — are instances of the
-same architectural defect: **131 of 158 database calls (83%) currently sit inside route handlers
-rather than behind a service boundary**, with `backend/src/routes/admin.ts` alone running to
-2,056 lines. The Phase 3 extraction of `billingService.ts` from those handlers, reading
-`system_settings` once at the boundary, closes BR-012, BR-014, BR-035, BR-038 and BR-039 together.
+*Recounted 2026-09-13. This table read **5 Violated** until that date.*
+
+**What happened to the other four, recorded honestly rather than quietly deleted.**
+
+Two were never violations at all. **BR-035** and **BR-038** were marked Violated on the reasoning
+that `fifty_percent_share` and `remitted_amount` never appear in an INSERT. They cannot: both are
+`GENERATED ALWAYS AS … STORED`, so PostgreSQL derives them and rejects any write naming them. All
+937 live rows are correct. The remediation this crosswalk originally proposed — adding both columns
+to the INSERT payloads — would have broken every income-record write in the system. That is worth
+saying out loud, because it is the clearest argument for verifying a finding against the database
+before acting on it.
+
+Two were real and are now closed. **BR-012** and **BR-014** shared one root cause: `system_settings`
+held six correctly seeded parameter rows that **zero lines** of `backend/src` read, while route
+handlers carried literal constants — a 10-day grace window against a seeded 7, and a hardcoded
+PHP 200 water rate in three handlers. `services/settingsService.ts` and `services/billingService.ts`
+close both. There is no hardcoded rate left in the backend, and `grace_period_days` is now **0**
+rather than 7, per OD-16 and migration `016`, because the owner confirmed the property grants no
+grace period.
+
+**BR-039 remains the one genuine violation.** The rule says the advance rent equals the rent in
+effect at move-in; the API still accepts whatever it is sent. The onboarding form now pre-fills the
+field from the unit's live price so the administrator sees and confirms the correct figure, and the
+`current_price * 2` fallback behind a hardcoded 4,500 floor is gone — it invented money that was
+never collected. But the rule is not yet *enforced*, and it should not be called enforced until the
+API itself refuses a figure that contradicts it.
+
+The architectural root of all of this is unchanged: **131 of 164 database calls (80%) still sit
+inside route handlers** rather than behind a service boundary, with `backend/src/routes/admin.ts`
+running to 2,263 lines.
 
 ---
 

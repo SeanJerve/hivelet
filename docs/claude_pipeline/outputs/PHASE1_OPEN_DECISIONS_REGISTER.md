@@ -118,14 +118,20 @@ remaining items require a decision from Mrs. Fe Galang Da Silva rather than from
 team; they should be gathered into a single client consultation rather than raised piecemeal. The
 three items closed on 2026-09-13 (**OD-11**, **OD-12** and **OD-13**) are recorded in Section 2.
 
-**What this register is not.** None of the ten items above is a defect. Defects already
-identified against the codebase â€” the six seeded `system_settings` rows read by zero lines of
-backend code, the hardcoded water rate and grace period, the derived money columns computed and then
-dropped before the INSERT, the absence of any `BEGIN` / `COMMIT` transaction in `backend/src`, and
-the two unguarded payment endpoints at `backend/src/routes/public.ts:198-202` and `:852-853` â€”
-have known remedies and are scheduled as Phase 2 and Phase 3 work. They are registered in the Gap
-Register of `PHASE1_TRACEABILITY_MATRIX.md`, Section 5.1, with a phase and a one-line remediation each,
-and carry their verified `file:line` evidence in `PHASE1_BR_CROSSWALK.md` Section 1. They are not here. This register holds only questions whose answers the group does not have.
+**What this register is not.** None of the ten items above is a defect. The defects identified
+against the codebase have known remedies and are tracked elsewhere. Their status as of
+**2026-09-13**:
+
+| Defect | Status |
+| :--- | :--- |
+| The six seeded `system_settings` rows read by zero lines of backend code, and the hardcoded water rate and grace period | **Closed.** `settingsService.ts` and `billingService.ts`; `grace_period_days` is now 0 per OD-16 and migration `016` |
+| The derived money columns "computed and then dropped before the INSERT" | **Withdrawn — never a defect.** `fifty_percent_share` and `remitted_amount` are `GENERATED ALWAYS AS … STORED`; PostgreSQL derives them and rejects any write naming them. All 937 live rows are correct |
+| The two unguarded payment endpoints in `public.ts` | **Closed.** Both refuse to serve wherever a gateway is configured; the webhook that replaced them is HMAC-verified |
+| The absence of any `BEGIN` / `COMMIT` transaction in `backend/src` | **Still open.** supabase-js cannot open a transaction; `replace_expense_allocations` is a database function for exactly that reason |
+
+They are registered in the Gap Register of `PHASE1_TRACEABILITY_MATRIX.md`, Section 5.1, with a
+phase and a one-line remediation each, and carry their verified `file:line` evidence in
+`PHASE1_BR_CROSSWALK.md` Section 1. They are not here. This register holds only questions whose answers the group does not have.
 
 ---
 
