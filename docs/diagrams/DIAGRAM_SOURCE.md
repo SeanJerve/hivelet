@@ -6,6 +6,37 @@ Every diagram in this project, as code you can paste straight into
 **[mermaid.live](https://mermaid.live)**, Mermaid Chart, Mermaid AI, or any editor that
 renders Mermaid.
 
+
+## Regenerating the PNGs
+
+The rendered images under `docs/diagrams/rendered/` were previously exported at roughly
+800px wide, which is why they looked soft when projected. They are now rendered with
+`@mermaid-js/mermaid-cli` at a page width and scale chosen per diagram, giving 3,900 to
+5,400 pixels across.
+
+```bash
+npm install @mermaid-js/mermaid-cli          # in a scratch directory, not the project
+mmdc -i docs/diagrams/<name>.mmd -o docs/diagrams/rendered/<name>.png -w <width> -s <scale> -b white
+```
+
+| Diagram | `-w` | `-s` | Result |
+| :--- | --: | --: | :--- |
+| `hivelet_erd` | 1800 | 3 | 5352 x 1800 |
+| `hivelet_dfd_level1` | 1800 | 3 | 5352 x 1812 |
+| `hivelet_erd_defense` | 1600 | 3 | 4752 x 1842 |
+| `hivelet_architecture` | 1600 | 3 | 4752 x 1158 |
+| `hivelet_sequence_payment` | 1200 | 4 | 4736 x 2448 |
+| `hivelet_architecture_defense` | 1000 | 4 | 3936 x 744 |
+| `hivelet_erd_defense_overview` | 1000 | 4 | 3936 x 1568 |
+| `hivelet_erd_defense_payments` | 1000 | 4 | 3936 x 1996 |
+| `hivelet_dfd_context` | 1000 | 4 | 3936 x 4068 |
+
+`-w` is the page width mermaid lays out against, so it changes how the diagram wraps; `-s`
+only multiplies the pixels. Dense diagrams get a wider page so their labels are not cramped;
+slide-shaped ones keep their natural layout and just get more pixels. All nine were verified
+to render without a parse error at these settings.
+
+
 ---
 
 ## How to use this
@@ -971,19 +1002,22 @@ graph LR
 %%   (BR-014, BR-036). Units LF and LB are excluded from the per-occupant model
 %%   and carry fixed per-unit charges (BR-040). The grace period is
 %%   system_settings.grace_period_days, seeded at 7 (BR-012).
-%%   As of this revision the system_settings table holds six correctly seeded
-%%   keys and is read by ZERO lines of backend/src. The rate is hardcoded as
-%%   occupants * 200 at backend/src/routes/admin.ts:910, :1103 and :1243, and a
-%%   10-day grace period is hardcoded at backend/src/routes/tenant.ts:453, which
-%%   contradicts the seeded 7 and BR-012. The three D11 edges are therefore
-%%   drawn DOTTED: they are the specified logical design and a Phase 3
-%%   remediation target, not as-built behaviour.
-%%   Related known defect, stated rather than drawn around:
-%%   fifty_percent_share and remitted_amount are computed at
-%%   backend/src/routes/admin.ts:911 but are absent from the INSERT, so every
-%%   monthly_income_records row currently persists 0.00. The edge
-%%   "Write Monthly Income Ledger Row" into D7 is correct as a logical flow; the
-%%   defective field population is Phase 3 work.
+%%   STATUS as of 2026-09-13: this is now as-built. services/settingsService.ts
+%%   is a typed cached reader over system_settings, and services/billingService.ts
+%%   applies the rate through it. The three hardcoded occupants * 200 sites in
+%%   admin.ts and the hardcoded grace window in tenant.ts are gone; there is no
+%%   hardcoded rate left in backend/src. grace_period_days is 0, not the 7 seeded
+%%   originally - migration 016 set it, per OD-16, because this property has no
+%%   grace period. The public listing reads the rate over GET /api/public/rates
+%%   rather than restating it in markup.
+%%   A NOTE ON fifty_percent_share AND remitted_amount, because an earlier
+%%   revision of this comment was WRONG about them. It claimed both columns
+%%   persist 0.00 because they are absent from the INSERT. They are absent from
+%%   the INSERT by necessity: both are GENERATED ALWAYS AS ... STORED, so
+%%   PostgreSQL derives them and a write would be rejected. Verified across all
+%%   937 live rows - none is zero, and none disagrees with its formula
+%%   (share = rent/2, remitted = rent + water). The edge "Write Monthly Income
+%%   Ledger Row" into D7 is correct, and there is no defect here to disclose.
 %% ---------------------------------------------------------------------------
 %% SETTLEMENT POSTURE
 %%   On-site cash settlement is PRIMARY (BR-015). The Adyen GCash redirect is
@@ -1181,59 +1215,70 @@ sequenceDiagram
     actor Admin as Landlady (Admin)
     participant Client as Frontend (Vue 3 SPA)
     participant API as API Layer and Route Handlers (Express.js)
-    participant Service as adyenService.ts (Tier 3, IMPLEMENTED)
-    participant Gateway as Adyen Checkout API - GCash (developer sandbox or live)
+    participant Service as adyenService.ts (Tier 3)
+    participant Gateway as Adyen Checkout API - GCash (developer sandbox)
+    participant Hook as adyenWebhookHandler.ts (Tier 5)
     participant DB as PostgreSQL Database
 
-    Note over Admin, DB: STAGE 1 - Bill Availability (BR-010, BR-014)
+    Note over Admin, DB: STAGE 1 - Bill Availability (BR-010, BR-014, BR-033)
     Tenant->>Client: Opens Statements
     Client->>API: GET /api/tenant/my-bills - tenant.ts:70
     API->>DB: SELECT bills scoped to this tenant
     DB-->>Client: Due bills with rent and water components
-    Note over API, DB: PLANNED Phase 3 - no monthly billing batch endpoint exists today. A bill is created only as a side effect of checkout at tenant.ts:445, the water charge is the hardcoded literal 200 at tenant.ts:440 rather than system_settings.water_rate_per_occupant, and the grace window is hardcoded to 10 days at tenant.ts:453 against the seeded 7. Closed by billingService.ts and settingsService.ts.
+    Note over API, DB: The water charge comes from system_settings.water_rate_per_occupant through settingsService and billingService. There is no hardcoded rate in the backend. The billing period runs from each tenancy's own anniversary date (BR-033), and the grace window is zero days (OD-16).
 
     Note over Tenant, DB: STAGE 2 - Adyen GCash Checkout (BR-016)
-    Tenant->>Client: Selects a due bill and chooses GCash
-    Client->>API: POST /api/tenant/payments/checkout - tenant.ts:380
+    Tenant->>Client: Selects a due bill and chooses to pay online
+    Client->>API: POST /api/tenant/payments/checkout
     API->>Service: createCheckoutSession(billId, tenantProfileId, amount, returnUrl)
-    Service->>Service: isLiveConfigured() selects sandbox or live credentials - adyenService.ts:42
-    Service->>Gateway: POST https://checkout-test.adyen.com/v71/sessions - adyenService.ts:61
-    Gateway-->>Service: Checkout session id and session data
+    Service->>Service: isLiveConfigured() - credentials present, so a real session is required
+    Service->>Gateway: POST https://checkout-test.adyen.com/v71/sessions
+    Gateway-->>Service: Session id and sessionData
     Service-->>API: Session returned
-    API-->>Client: Session handed to the Adyen Drop-in (@adyen/adyen-web)
-    Client->>Gateway: Tenant completes the hosted GCash payment
-    Gateway-->>Client: Authorization result and PSP reference
-    Client->>API: POST /api/tenant/payments/adyen/verify-session - tenant.ts:515
-    API->>Service: Complete the session against the gateway result
-    Service->>DB: INSERT INTO payments (payment_method='Adyen Online', payment_source='GCash Sandbox', verification_status='Pending Verification') - adyenService.ts:203
-    Service->>DB: INSERT INTO audit_logs (actor=tenant, entity='PAYMENT')
-    Service-->>API: Payment queued for administrator verification
-    API-->>Client: HTTP 200 OK ("Submitted for Verification")
-    Note over Tenant, Gateway: On-site in-person cash settlement remains the PRIMARY method (BR-015). Adyen GCash is the optional digital alternative. Because the account is a developer sandbox account, posting to checkout-test.adyen.com is correct behaviour. Honest caveats - @adyen/api-library is declared in backend/package.json but never imported, the adapter calls the Checkout API over HTTP directly, and the two public gateway-return endpoints in public.ts carry no guard (Phase 3 hardening).
+    API-->>Client: Session handed to the Adyen Drop-in (@adyen/adyen-web v6)
+    Note over Service, Gateway: If Adyen refuses or cannot be reached, this raises an error. It previously fell through to a locally rendered checkout page that wrote a Pending Verification payment, so a gateway outage silently became a payment in the landlady's queue.
+    Tenant->>Gateway: Completes the hosted GCash payment inside the Drop-in
+    Gateway-->>Client: onPaymentCompleted - resultCode and sessionResult ONLY
 
-    Note over Admin, DB: STAGE 3 - Administrator Verification and Ledger Write (BR-017, BR-035)
+    Note over Client, DB: STAGE 3 - Two independent returns. Only one of them writes.
+    Client->>API: POST /api/tenant/payments/adyen/verify-session (sessionId, sessionResult)
+    API->>Service: confirmCheckout(sessionId, sessionResult, tenantProfileId)
+    Service->>Gateway: GET /v71/sessions/SESSION_ID with sessionResult (server-to-server, our API key)
+    Gateway-->>Service: status - completed, refused, expired
+    Service-->>Client: Confirmation for the payer. NO PAYMENT IS WRITTEN HERE.
+    Note over Client, Service: The browser never learns the pspReference - Adyen Web v6 whitelists seven keys into onPaymentCompleted and that is not one of them. A row written here could not be reconciled against the webhook, so the same payment was banked twice. The browser return is now read-only.
+
+    Gateway->>Hook: POST /api/public/payments/adyen/webhook (signed notification)
+    Hook->>Hook: HTTP Basic Auth, then HMAC-SHA256 over the 8-field payload, constant-time compare
+    Hook->>DB: SELECT payments WHERE transaction_reference = pspReference
+    Note over Hook, DB: Idempotent by pspReference. Adyen retries until it receives that acknowledgement, so the same event WILL arrive more than once in normal operation.
+    Hook->>DB: INSERT INTO payments (payment_method='Adyen Online', verification_status='Pending Verification', transaction_reference=pspReference)
+    Hook->>DB: INSERT INTO audit_logs (actor=NULL, entity='PAYMENT', new_values includes pspReference)
+    Hook-->>Gateway: responds with the literal accepted acknowledgement
+    Note over Hook, DB: This is the ONLY code path that writes an online payment. A verified, successful AUTHORISATION still does not settle a bill - it queues a human decision (BR-017).
+
+    Note over Admin, DB: STAGE 4 - Administrator Verification and Ledger Write (BR-017, BR-035)
     Admin->>Client: Opens the verification queue
-    Client->>API: GET /api/admin/payments - admin.ts:807
+    Client->>API: GET /api/admin/payments
     API->>DB: SELECT payments WHERE verification_status = 'Pending Verification'
     DB-->>Client: Tenant name, room, amount and gateway reference
-    Admin->>Admin: Confirms the funds arrived in the GCash app or by SMS
-    Admin->>Client: Clicks [ Verify and Confirm Payment ]
-    Client->>API: PATCH /api/admin/payments/:paymentId/verify - admin.ts:836
+    Admin->>Admin: Confirms the funds arrived
+    Admin->>Client: Clicks Verify and Confirm Payment
+    Client->>API: PATCH /api/admin/payments/:paymentId/verify
 
     rect rgb(240, 245, 255)
-    Note over API, DB: PLANNED Phase 3 - these writes are sequential. No BEGIN/COMMIT transaction exists anywhere in backend/src today, and the handler owns them directly - 131 of 158 database calls still sit in route handlers. Atomicity is owned by paymentService.ts.
+    Note over API, DB: OPEN GAP - these writes are sequential. No BEGIN/COMMIT exists in backend/src, because supabase-js cannot open a transaction. replace_expense_allocations is the only atomic multi-row write and it is a database function for exactly that reason.
     API->>DB: UPDATE payments SET verification_status='Verified', verified_at=NOW(), verified_by=adminId
     API->>DB: UPDATE bills SET status='Paid' WHERE id = payment.bill_id
-    API->>API: Compute fifty_percent_share = rent_amount / 2 - admin.ts:911
-    API->>DB: INSERT INTO monthly_income_records (rent_amount, occupants, water_payment, payment_method='GCash') - admin.ts:942
-    Note over API, DB: DISCLOSED DEFECT - fifty_percent_share and remitted_amount are computed at admin.ts:911 and admin.ts:1102-1104 but are absent from both INSERT payloads - this one at admin.ts:942-958 and the manual-entry one at admin.ts:1112-1129 - so every monthly_income_records row currently stores 0.00. Phase 3, together with the billingService.ts extraction.
+    API->>DB: INSERT INTO monthly_income_records (rent_amount, occupants, water_payment, invoice_number, ...)
+    Note over API, DB: fifty_percent_share and remitted_amount are NOT in this payload, and must not be. Both are GENERATED ALWAYS AS ... STORED - the database derives them from rent_amount and water_payment. Verified across all 937 live rows - zero are zero, and zero disagree with the formula.
     API->>DB: INSERT INTO audit_logs (action='PAYMENT_VERIFY', actor=adminId, entity='PAYMENT')
     API->>DB: INSERT INTO notifications (recipient=Tenant, title='Payment Verified')
     end
 
     DB-->>API: Writes complete
     API-->>Client: HTTP 200 OK ("Payment Verified and Income Ledger Updated")
-    Client-->>Admin: Updates UI (Green Verified Badge, Statement Settled)
+    Client-->>Admin: Updates UI (Verified badge, statement settled)
 ```
 
 ---

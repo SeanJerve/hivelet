@@ -189,7 +189,7 @@ that multiple NULL emails remain legal.
 | 2 | Water rate hardcoded `occupants * 200` | `admin.ts:910, 1103, 1243` | 3 |
 | 3 | Share hardcoded `rentAmount / 2` | `admin.ts:911, 1102` | 3 |
 | 4 | Grace period hardcoded to 10 days, contradicting seeded `grace_period_days = 7` and BR-012 | `tenant.ts:453` | 3 |
-| 5 | `fifty_percent_share` / `remitted_amount` computed but **never written** — every row stores `0.00` | `admin.ts:911` | 3 |
+| 5 | ~~`fifty_percent_share` / `remitted_amount` computed but **never written** — every row stores `0.00`~~ **WITHDRAWN 2026-09-13.** Both are `GENERATED ALWAYS AS … STORED`; PostgreSQL maintains them and rejects any write naming them. All 937 live rows are correct. The residual issue is one unused variable at `admin.ts:922`. See `PHASE2_ERD_AND_DATA_DICTIONARY.md` section 6, which verifies this against all 937 live rows. | `information_schema.columns` | **Withdrawn** |
 | 6 | FKs are 17 CASCADE / 4 SET NULL / **0 RESTRICT**; `DEEP_TECHNICAL…md:41` claims RESTRICT | schema | 2 — migration `005_ledger_fk_restrict.sql` |
 | 7 | No `BEGIN`/`COMMIT` transaction anywhere in `backend/src` — atomicity is a design target, not a fact | — | 3 |
 | 8 | Two payment endpoints unauthenticated | `routes/public.ts` | 3 |

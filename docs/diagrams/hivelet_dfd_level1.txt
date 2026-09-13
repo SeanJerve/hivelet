@@ -55,19 +55,20 @@
 %%   (BR-014, BR-036). Units LF and LB are excluded from the per-occupant model
 %%   and carry fixed per-unit charges (BR-040). The grace period is
 %%   system_settings.grace_period_days, seeded at 7 (BR-012).
-%%   As of this revision the system_settings table holds six correctly seeded
-%%   keys and is read by ZERO lines of backend/src. The rate is hardcoded as
-%%   occupants * 200 at backend/src/routes/admin.ts:910, :1103 and :1243, and a
-%%   10-day grace period is hardcoded at backend/src/routes/tenant.ts:453, which
-%%   contradicts the seeded 7 and BR-012. The three D11 edges are therefore
-%%   drawn DOTTED: they are the specified logical design and a Phase 3
-%%   remediation target, not as-built behaviour.
-%%   Related known defect, stated rather than drawn around:
-%%   fifty_percent_share and remitted_amount are computed at
-%%   backend/src/routes/admin.ts:911 but are absent from the INSERT, so every
-%%   monthly_income_records row currently persists 0.00. The edge
-%%   "Write Monthly Income Ledger Row" into D7 is correct as a logical flow; the
-%%   defective field population is Phase 3 work.
+%%   STATUS as of 2026-09-13: this is now as-built. services/settingsService.ts
+%%   is a typed cached reader over system_settings and services/billingService.ts
+%%   applies the rate through it. The three hardcoded occupants * 200 sites in
+%%   admin.ts and the hardcoded grace window in tenant.ts are gone; no hardcoded
+%%   rate remains in backend/src. grace_period_days is 0, not the 7 originally
+%%   seeded - migration 016 set it, per OD-16, because this property has no
+%%   grace period.
+%%   A CORRECTION, because an earlier revision of this comment was WRONG:
+%%   it claimed fifty_percent_share and remitted_amount persist 0.00 because
+%%   they are absent from the INSERT. They are absent by necessity - both are
+%%   GENERATED ALWAYS AS ... STORED, so PostgreSQL derives them and REJECTS any
+%%   write naming them. Verified across all 937 live rows: none is zero and none
+%%   disagrees with its formula. The edge "Write Monthly Income Ledger Row" into
+%%   D7 is correct, and there is no defect here to disclose.
 %% ---------------------------------------------------------------------------
 %% SETTLEMENT POSTURE
 %%   On-site cash settlement is PRIMARY (BR-015). The Adyen GCash redirect is
