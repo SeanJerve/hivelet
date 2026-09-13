@@ -76,8 +76,10 @@ RLS is the floor, not the mechanism. Real authorisation is `backend/src/config/r
 
 - **39 named permissions** in a `resource:action:scope` namespace — `payment:verify`,
   `bill:read:own`, `room:manage`, `inquiry:convert`, and so on.
-- **Three roles** — `prospect`, `tenant`, `admin` — each mapped to a frozen permission set
-  (`ROLE_PERMISSIONS`, with `Set` lookups for the hot path).
+- **Four roles** — `guest`, `prospect`, `tenant`, `admin` — each mapped to a frozen permission set
+  (`ROLE_PERMISSIONS`, with `Set` lookups for the hot path). `guest` is the unauthenticated caller;
+  the other three are the values `profiles.role` can actually hold (`StoredRole`). Describing this
+  as a two-role admin/tenant check, as the submitted documents did, understates it — see errata E-14.
 - Routes declare what they need: `requirePermission(PERMISSIONS.PAYMENT_VERIFY)`.
 
 The `:own` scopes are what make tenant isolation work (BR-024). A tenant carrying `bill:read:own`
@@ -293,7 +295,7 @@ Confirmed after `011` was applied on 2026-09-13: the first query returns 21 rows
    architecture does not use. Say so before being asked.
 3. **Two mechanisms, deliberately redundant** — no grants *and* forced RLS — so that a single
    mistaken `GRANT` is not a breach.
-4. **Authorisation lives in 39 declarative permissions across three roles**, checked at the route
+4. **Authorisation lives in 39 declarative permissions across four roles**, checked at the route
    boundary, because the single trusted data tier means the database cannot make that decision.
 5. **Three real security findings were produced by this phase**, one of which — a `REVOKE` that has
    never done anything since migration `002` — had been in the repository unnoticed and passing

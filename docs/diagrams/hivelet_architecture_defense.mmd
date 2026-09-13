@@ -1,0 +1,48 @@
+graph LR
+
+    subgraph T1 ["TIER 1 &nbsp; Presentation"]
+        UI["Vue 3 SPA<br/>Public &middot; Tenant &middot; Admin<br/><i>holds no database credential</i>"]
+    end
+
+    subgraph T2 ["TIER 2 &nbsp; API &amp; Security"]
+        SEC["Helmet &middot; CORS &middot; JWT<br/>requirePermission<br/>39 permissions, 4 roles"]
+    end
+
+    subgraph T3 ["TIER 3 &nbsp; Domain Services"]
+        SRV["Modular Monolith<br/>auth &middot; scope &middot; audit<br/>notification &middot; settings &middot; billing"]
+    end
+
+    subgraph TG ["THE GATE"]
+        GATE["ADMINISTRATOR<br/>VERIFICATION<br/>BR-017<br/><br/>only a human with<br/>payment:verify can<br/>move a bill to Paid"]
+    end
+
+    subgraph T4 ["TIER 4 &nbsp; Data"]
+        DB["Supabase PostgreSQL<br/>21 tables<br/>forced RLS on all 21<br/>service_role only"]
+    end
+
+    subgraph T5 ["TIER 5 &nbsp; Pluggable Payment Gateway Adapter &nbsp; &mdash; &nbsp; exists because of the panel's recommendation"]
+        direction LR
+        ADAPTER["adyenService.ts<br/><i>the ONLY file that<br/>knows Adyen exists</i>"]
+        LIVE["Adyen v71<br/>Checkout Sessions"]
+        FALLBACK["Local settlement<br/>path"]
+        ADAPTER -->|"isLiveConfigured&lpar;&rpar; true"| LIVE
+        ADAPTER -->|"isLiveConfigured&lpar;&rpar; false"| FALLBACK
+    end
+
+    CASH["On-site CASH<br/><b>PRIMARY route</b><br/><i>independent of Tier 5</i>"]
+
+    UI --> SEC --> SRV --> GATE --> DB
+    SRV --> ADAPTER
+    LIVE -.->|"Pending Verification"| GATE
+    FALLBACK -.->|"Pending Verification"| GATE
+    CASH ==> GATE
+
+    classDef tier fill:#f8fafc,stroke:#475569,stroke-width:1.5px,color:#0f172a
+    classDef adapter fill:#fef3c7,stroke:#b45309,stroke-width:3px,color:#7c2d12
+    classDef gate fill:#dcfce7,stroke:#15803d,stroke-width:3px,color:#14532d
+    classDef cash fill:#e0f2fe,stroke:#0369a1,stroke-width:2.5px,color:#0c4a6e
+
+    class UI,SEC,SRV,DB tier
+    class ADAPTER,LIVE,FALLBACK adapter
+    class GATE gate
+    class CASH cash

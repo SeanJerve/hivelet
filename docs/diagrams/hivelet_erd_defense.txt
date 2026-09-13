@@ -1,0 +1,83 @@
+erDiagram
+
+    PROFILES                ||--o{ ROOM_ASSIGNMENTS       : "holds"
+    ROOMS                   ||--o{ ROOM_ASSIGNMENTS       : "let_under"
+    ROOMS                   ||--o{ BILLS                  : "invoiced_for"
+    PROFILES                ||--o{ BILLS                  : "billed_to"
+    BILLS                   ||--o{ PAYMENTS               : "settled_by  (SET NULL)"
+    ROOMS                   ||--o{ PAYMENTS               : "credited_to (RESTRICT)"
+    PROFILES                ||--o{ PAYMENTS               : "remitted_by (RESTRICT)"
+    PROFILES                ||--o{ PAYMENTS               : "VERIFIED_BY"
+    ROOMS                   ||--o{ MONTHLY_INCOME_RECORDS : "earns       (RESTRICT)"
+    PROFILES                ||--o{ MONTHLY_INCOME_RECORDS : "attributed_to (RESTRICT)"
+    PROFILES                ||--o{ AUDIT_LOGS             : "performed_by"
+
+    PAYMENTS {
+        uuid id PK "CHANGED FOR R-01 - gateway-agnostic settlement record"
+        uuid bill_id FK "D-3 NULLABLE, ON DELETE SET NULL - a payment outlives its bill"
+        uuid room_id FK "D-4 ON DELETE RESTRICT - financial history is undeletable"
+        uuid tenant_profile_id FK "D-4 ON DELETE RESTRICT"
+        numeric amount "CHECK amount GREATER THAN 0"
+        payment_method_type payment_method "D-1 Cash, GCash, Bank Transfer, Adyen Online"
+        varchar payment_source "D-1 channel the money arrived through"
+        varchar transaction_reference "D-1 ANY gateway reference - not Adyen-shaped"
+        verification_status_type verification_status "D-2 Verified, Pending Verification, Rejected"
+        uuid verified_by FK "D-2 the administrator who settled it - BR-017"
+        timestamptz verified_at "D-2 when the human decided"
+        timestamptz paid_at "when the money was tendered"
+    }
+
+    BILLS {
+        uuid id PK "Surrogate key"
+        uuid room_id FK "D-4 ON DELETE RESTRICT"
+        uuid tenant_profile_id FK "D-4 ON DELETE RESTRICT"
+        date due_date "BR-010"
+        date grace_period_end_date "equals due_date - there is NO grace period, OD-16"
+        numeric rent_amount "from rooms.current_price"
+        numeric water_amount "BR-014 occupants x configured rate, or Linda fixed"
+        numeric total_amount "rent plus water"
+        bill_status_type status "Pending, Due, Overdue, Paid, Partially Paid"
+    }
+
+    MONTHLY_INCOME_RECORDS {
+        uuid id PK "The ledger that reconciles with the spreadsheet"
+        uuid room_id FK "D-4 ON DELETE RESTRICT"
+        numeric rent_amount "Rent collected"
+        numeric water_payment "Water collected"
+        numeric fifty_percent_share "GENERATED ALWAYS AS rent_amount / 2.0 - BR-035"
+        numeric remitted_amount "GENERATED ALWAYS AS rent_amount + water_payment - BR-038"
+        timestamptz voided_at "Soft-void only - rows are never deleted, BR-003"
+    }
+
+    AUDIT_LOGS {
+        uuid id PK "Immutable event ledger - BR-028"
+        uuid actor_profile_id FK "Who acted"
+        varchar action "PAYMENT_VERIFY, EXPENSE_CREATE, ..."
+        jsonb previous_values "State before"
+        jsonb new_values "State after"
+        timestamptz created_at "Append-only"
+    }
+
+    ROOMS {
+        uuid id PK "33 units across 5 clusters"
+        varchar room_number UK "Natural key - 1a to 3g, B1F, F1, LF, LB, PH"
+        varchar cluster_code FK "BH, Back Apartment, Front Apartment, Penthouse, Linda"
+        int floor "11 / 11 / 10 / 1 - CHECK between 1 and 4"
+        numeric current_price "Set manually - no automatic escalation"
+    }
+
+    PROFILES {
+        uuid id PK "Tenant or administrator"
+        varchar email "NULLABLE - a portal login is optional, OD-09"
+        varchar phone_number "Alternate login identifier"
+        varchar password_hash "NULL means an administrator-managed tenant"
+        user_role_type role "admin, tenant, prospect"
+    }
+
+    ROOM_ASSIGNMENTS {
+        uuid id PK "The tenancy"
+        date anniversary_date "Drives the billing cycle - BR-033"
+        numeric deposit_amount "ADVANCE RENT, not a refundable deposit - OD-04"
+        int occupant_count "Drives the water charge - BR-014"
+        bool is_active "At most one active per room, enforced by a partial unique index"
+    }
