@@ -34,19 +34,21 @@ export interface RentableUnit {
   desc?: string;
 }
 
-export const PHOTOS = [
-  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=70",
-  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70",
-  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=70",
-  "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1200&q=70",
-  "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=70",
-  "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=70",
-  "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=70",
-  "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1200&q=70",
-];
+/**
+ * No stock photography.
+ *
+ * These were eight Unsplash images of unrelated apartments, dealt round-robin to
+ * the 33 units and shown on the public listing as photographs of this property.
+ * Thirty-two of the thirty-three units have no photograph on file; the interface
+ * now says so instead of showing someone else's room.
+ *
+ * A unit's real photographs live in `rooms.room_photos` and arrive from the API.
+ * An empty string here means "nothing on file", and every view that renders a
+ * unit photo checks for it.
+ */
+export const PHOTOS: readonly string[] = [];
 
-export const HERO_PHOTO =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=75";
+export const HERO_PHOTO = "";
 
 const BH_AMENITIES = ["Private bathroom", "Submetered electricity", "Ceiling fan", "Study desk", "Wi-Fi ready"];
 const APT_AMENITIES = [
@@ -69,51 +71,51 @@ const APT_AMENITIES = [
  */
 export const CANONICAL_UNITS: RentableUnit[] = [
   // 1st Floor BH (1A - 1H)
-  { id: "bh-1a", unitCode: "1a", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "Studio Type Apartment", basePrice: 4500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[0], waterRateType: "standard" },
-  { id: "bh-1b", unitCode: "1b", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[1], waterRateType: "standard" },
-  { id: "bh-1c", unitCode: "1c", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5500, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[2], waterRateType: "standard" },
-  { id: "bh-1d", unitCode: "1d", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 6000, capacity: 3, occupants: 1, status: "pending", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[3], waterRateType: "standard" },
-  { id: "bh-1e", unitCode: "1e", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "Studio Type Apartment", basePrice: 6500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[4], waterRateType: "standard" },
-  { id: "bh-1f", unitCode: "1f", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },
-  { id: "bh-1g", unitCode: "1g", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 1, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[6], waterRateType: "standard" },
-  { id: "bh-1h", unitCode: "1h", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[7], waterRateType: "standard" },
+  { id: "bh-1a", unitCode: "1a", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "Studio Type Apartment", basePrice: 4500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-1b", unitCode: "1b", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-1c", unitCode: "1c", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5500, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-1d", unitCode: "1d", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 6000, capacity: 3, occupants: 1, status: "pending", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-1e", unitCode: "1e", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "Studio Type Apartment", basePrice: 6500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-1f", unitCode: "1f", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-1g", unitCode: "1g", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 1, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-1h", unitCode: "1h", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
 
   // 2nd Floor BH (2A - 2G)
-  { id: "bh-2a", unitCode: "2a", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "Studio Type Apartment", basePrice: 6000, capacity: 2, occupants: 0, status: "vacant", tenantName: null, billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[0], waterRateType: "standard" },
-  { id: "bh-2b", unitCode: "2b", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[1], waterRateType: "standard" },
-  { id: "bh-2c", unitCode: "2c", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[2], waterRateType: "standard" },
-  { id: "bh-2d", unitCode: "2d", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 1, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[3], waterRateType: "standard" },
-  { id: "bh-2e", unitCode: "2e", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "Studio Type Apartment", basePrice: 5500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[4], waterRateType: "standard" },
-  { id: "bh-2f", unitCode: "2f", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 6000, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },
-  { id: "bh-2g", unitCode: "2g", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 6500, capacity: 3, occupants: 1, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[6], waterRateType: "standard" },
+  { id: "bh-2a", unitCode: "2a", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "Studio Type Apartment", basePrice: 6000, capacity: 2, occupants: 0, status: "vacant", tenantName: null, billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-2b", unitCode: "2b", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-2c", unitCode: "2c", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-2d", unitCode: "2d", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 1, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-2e", unitCode: "2e", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "Studio Type Apartment", basePrice: 5500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-2f", unitCode: "2f", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 6000, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-2g", unitCode: "2g", cluster: "BH", floor: 2, floorLabel: "Floor 2", type: "1-Bedroom Apartment", basePrice: 6500, capacity: 3, occupants: 1, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
 
   // 3rd Floor BH (3A - 3G)
-  { id: "bh-3a", unitCode: "3a", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "Studio Type Apartment", basePrice: 4500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[7], waterRateType: "standard" },
-  { id: "bh-3b", unitCode: "3b", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 3, status: "pending", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[0], waterRateType: "standard" },
-  { id: "bh-3c", unitCode: "3c", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 5500, capacity: 3, occupants: 1, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[1], waterRateType: "standard" },
-  { id: "bh-3d", unitCode: "3d", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 6000, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[2], waterRateType: "standard" },
-  { id: "bh-3e", unitCode: "3e", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "Studio Type Apartment", basePrice: 6500, capacity: 2, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[3], waterRateType: "standard" },
-  { id: "bh-3f", unitCode: "3f", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 1, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[4], waterRateType: "standard" },
-  { id: "bh-3g", unitCode: "3g", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },
+  { id: "bh-3a", unitCode: "3a", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "Studio Type Apartment", basePrice: 4500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-3b", unitCode: "3b", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 3, status: "pending", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-3c", unitCode: "3c", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 5500, capacity: 3, occupants: 1, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-3d", unitCode: "3d", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 6000, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-3e", unitCode: "3e", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "Studio Type Apartment", basePrice: 6500, capacity: 2, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-3f", unitCode: "3f", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 1, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-3g", unitCode: "3g", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
 
   // Back Apartment (B1F, B2F, B2B, B3F, B3B)
-  { id: "apt-b1f", unitCode: "B1F", cluster: "Back Apartment", floor: 1, floorLabel: "Floor 1", type: "2-Bedroom Apartment", basePrice: 7000, capacity: 4, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[2], waterRateType: "standard" },
-  { id: "apt-b2f", unitCode: "B2F", cluster: "Back Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[3], waterRateType: "standard" },
-  { id: "apt-b2b", unitCode: "B2B", cluster: "Back Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 7500, capacity: 4, occupants: 4, status: "pending", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[4], waterRateType: "standard" },
-  { id: "apt-b3f", unitCode: "B3F", cluster: "Back Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },
-  { id: "apt-b3b", unitCode: "B3B", cluster: "Back Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 8500, capacity: 4, occupants: 0, status: "vacant", tenantName: null, billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[6], waterRateType: "standard" },
+  { id: "apt-b1f", unitCode: "B1F", cluster: "Back Apartment", floor: 1, floorLabel: "Floor 1", type: "2-Bedroom Apartment", basePrice: 7000, capacity: 4, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "apt-b2f", unitCode: "B2F", cluster: "Back Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "apt-b2b", unitCode: "B2B", cluster: "Back Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 7500, capacity: 4, occupants: 4, status: "pending", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "apt-b3f", unitCode: "B3F", cluster: "Back Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "apt-b3b", unitCode: "B3B", cluster: "Back Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 8500, capacity: 4, occupants: 0, status: "vacant", tenantName: null, billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
 
   // Penthouse (PH)
-  { id: "apt-ph", unitCode: "PH", cluster: "Penthouse", floor: 4, floorLabel: "Rooftop (Level 4)", type: "3-Bedroom Penthouse Suite", basePrice: 12000, capacity: 5, occupants: 4, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: [...APT_AMENITIES, "Roof deck", "Panoramic Tanauan view"], photo: PHOTOS[3], waterRateType: "standard" },
+  { id: "apt-ph", unitCode: "PH", cluster: "Penthouse", floor: 4, floorLabel: "Rooftop (Level 4)", type: "3-Bedroom Penthouse Suite", basePrice: 12000, capacity: 5, occupants: 4, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: [...APT_AMENITIES, "Roof deck", "Panoramic Tanauan view"], photo: "", waterRateType: "standard" },
 
   // Front Apartment (F1, F2F, F2B)
-  { id: "apt-f1", unitCode: "F1", cluster: "Front Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },
-  { id: "apt-f2f", unitCode: "F2F", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 10000, capacity: 4, occupants: 3, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[6], waterRateType: "standard" },
-  { id: "apt-f2b", unitCode: "F2B", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 4, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[7], waterRateType: "standard" },
+  { id: "apt-f1", unitCode: "F1", cluster: "Front Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "apt-f2f", unitCode: "F2F", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 10000, capacity: 4, occupants: 3, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "apt-f2b", unitCode: "F2B", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 4, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
 
   // Linda Units (LF, LB)
-  { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Fixed: ₱400 water + ₱325 minimum electricity (remitted to Linda)", amenities: BH_AMENITIES, photo: PHOTOS[6], waterRateType: "linda_fixed" },
-  { id: "linda-lb", unitCode: "LB", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 5500, capacity: 2, occupants: 1, status: "pending", tenantName: "", billingRule: "Fixed: ₱200 water (remitted to Linda); no electricity on record", amenities: BH_AMENITIES, photo: PHOTOS[7], waterRateType: "linda_fixed" },
+  { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Fixed: ₱400 water + ₱325 minimum electricity (remitted to Linda)", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
+  { id: "linda-lb", unitCode: "LB", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 5500, capacity: 2, occupants: 1, status: "pending", tenantName: "", billingRule: "Fixed: ₱200 water (remitted to Linda); no electricity on record", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
 ];
 
 export const CLUSTERS: Cluster[] = [

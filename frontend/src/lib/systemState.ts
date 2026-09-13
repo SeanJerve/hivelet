@@ -218,7 +218,11 @@ export const rooms = reactive<RoomItem[]>(
     billingRule: u.billingRule,
     amenities: u.amenities,
     photo: u.photo,
-    desc: `${u.type} in ${u.cluster}. Includes private bathroom, submetered electricity, and Wi-Fi.`
+    // The unit's real description arrives from the API (`rooms.description`).
+    // Until it does, say only what is structurally true. This used to assert a
+    // private bathroom, submetered electricity and Wi-Fi for all 33 units - three
+    // facts the system does not hold for any of them, shown to prospects.
+    desc: `${u.type} in ${u.cluster}.`
   }))
 );
 

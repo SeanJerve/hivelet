@@ -87,6 +87,7 @@ await check('public', '/health', null);
 await checkLockdown();
 await check('public', '/public/rooms', null);
 await check('public', '/public/clusters', null);
+await check('public', '/public/rates', null);
 
 // ---- admin --------------------------------------------------------------
 const adminToken = await login(adminEmail, adminPass);

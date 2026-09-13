@@ -27,7 +27,8 @@ import {
   Loader2,
   BedDouble,
   Building2,
-  ShieldCheck
+  ShieldCheck,
+  ImageOff
 } from 'lucide-vue-next';
 
 const isLoading = ref(true);
@@ -46,6 +47,42 @@ interface DbRoom {
   available_from: string | null;
   is_linda_unit: boolean;
   room_photos?: { id: string; file_url: string; is_primary: boolean }[];
+}
+
+/**
+ * Publicly quotable rates, from `/public/rates`.
+ *
+ * The water figure used to be the string "PHP 200 water / occupant" written into
+ * the template. That number lives in `system_settings` and is applied by the
+ * backend's billingService, so a hardcoded copy quoted a prospective tenant a
+ * price that would stop matching the moment the landlady changed the setting.
+ */
+const waterRatePerOccupant = ref<number | null>(null);
+const lindaFixedWaterCharge = ref<number | null>(null);
+
+/** Never states a figure it has not been given. */
+function waterLabel(rateType: string): string {
+  if (rateType === 'linda_fixed') {
+    return lindaFixedWaterCharge.value !== null
+      ? `${peso(lindaFixedWaterCharge.value)} fixed water`
+      : 'Fixed water charge';
+  }
+  return waterRatePerOccupant.value !== null
+    ? `${peso(waterRatePerOccupant.value)} water / occupant`
+    : 'Water charged per occupant';
+}
+
+async function loadRates() {
+  try {
+    const r = await api.get<{ waterRatePerOccupant: number; lindaFixedWaterCharge: number | null }>(
+      '/public/rates',
+      false
+    );
+    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+    lindaFixedWaterCharge.value = r?.lindaFixedWaterCharge ?? null;
+  } catch {
+    // Leave both null: the labels fall back to wording that quotes no figure.
+  }
 }
 
 const route = useRoute();
@@ -128,13 +165,15 @@ function syncFromRoute() {
 
 onMounted(async () => {
   try {
-    await fetchRooms();
+    await Promise.all([fetchRooms(), loadRates()]);
     const data = await api.get<DbRoom[]>('/public/rooms', false);
     if (data && data.length) {
       publicRooms.value = data;
     }
   } catch {
-    // Fallback to CANONICAL_UNITS
+    // The listing falls back to the canonical unit structure - unit codes,
+    // clusters, floors and capacities, which do not change - but never to
+    // invented prices, photos or occupancy.
   } finally {
     isLoading.value = false;
   }
@@ -266,11 +305,22 @@ async function submitInquiry() {
           <!-- Large Unit Image with Reserved/Available Badge -->
           <div class="relative min-h-[340px] sm:min-h-[440px] bg-neutral-900 overflow-hidden">
             <img
+              v-if="activeUnit.photo"
               :src="activeUnit.photo"
               :alt="`Interior of Unit ${activeUnit.unitCode}`"
               class="absolute inset-0 size-full object-cover transition-opacity duration-300"
               loading="eager"
             />
+            <!-- Only one of the 33 units has a photograph on file. The rest used
+                 to borrow a stock image of an unrelated apartment. -->
+            <div
+              v-else
+              class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-sunken text-muted-foreground"
+            >
+              <ImageOff class="size-10" />
+              <span class="text-sm font-semibold">No photo yet</span>
+              <span class="text-xs">Ask about a viewing to see this unit in person</span>
+            </div>
             <div class="absolute left-5 top-5 z-10">
               <span 
                 :class="[
@@ -310,20 +360,38 @@ async function submitInquiry() {
                   <Users class="size-3.5 text-muted-foreground" /> Up to {{ activeUnit.capacity }} pax
                 </span>
                 <span class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground">
-                  <Droplets class="size-3.5 text-muted-foreground" /> {{ activeUnit.waterRateType === 'linda_fixed' ? 'Fixed utilities' : '₱200 water / occupant' }}
+                  <Droplets class="size-3.5 text-muted-foreground" /> {{ waterLabel(activeUnit.waterRateType) }}
                 </span>
-                <span class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground">
-                  <Wifi class="size-3.5 text-muted-foreground" /> Fiber ready
+                <span
+                  v-if="activeUnit.floor"
+                  class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground"
+                >
+                  <Building2 class="size-3.5 text-muted-foreground" /> Floor {{ activeUnit.floor }}
                 </span>
               </div>
 
-              <!-- Checklist -->
-              <ul class="grid gap-2 text-xs sm:text-sm text-foreground pt-2">
-                <li v-for="a in activeUnit.amenities" :key="a" class="flex items-start gap-2">
-                  <Check class="mt-0.5 size-4 shrink-0 text-emerald-600 font-bold" />
-                  <span>{{ a }}</span>
-                </li>
-              </ul>
+              <!-- The unit's own description, as the landlady recorded it. -->
+              <p v-if="activeUnit.desc" class="text-xs sm:text-sm text-foreground-soft pt-1 leading-relaxed">
+                {{ activeUnit.desc }}
+              </p>
+
+              <!-- Cluster amenities. Labelled as typical rather than promised per
+                   unit: the system stores no amenity list, so this is a
+                   description of the cluster, not a guarantee about this room. -->
+              <div v-if="activeUnit.amenities?.length" class="pt-2">
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-2">
+                  Typical for this cluster
+                </p>
+                <ul class="grid gap-2 text-xs sm:text-sm text-foreground">
+                  <li v-for="a in activeUnit.amenities" :key="a" class="flex items-start gap-2">
+                    <Check class="mt-0.5 size-4 shrink-0 text-emerald-600 font-bold" />
+                    <span>{{ a }}</span>
+                  </li>
+                </ul>
+                <p class="text-[11px] text-muted-foreground mt-2">
+                  Ask about a viewing to confirm what this unit includes.
+                </p>
+              </div>
             </div>
 
             <!-- Action Buttons -->
@@ -359,11 +427,19 @@ async function submitInquiry() {
               <!-- Room Photo -->
               <div class="relative w-full aspect-[4/3] bg-neutral-900 overflow-hidden">
                 <img 
+                  v-if="u.photo"
                   :src="u.photo" 
                   :alt="`Room ${u.unitCode}`"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                 />
+                <div
+                  v-else
+                  class="w-full h-full flex flex-col items-center justify-center gap-1.5 bg-surface-sunken text-muted-foreground"
+                >
+                  <ImageOff class="size-6" />
+                  <span class="text-[11px] font-semibold">No photo yet</span>
+                </div>
                 <div class="absolute left-2.5 top-2.5">
                   <span 
                     :class="[

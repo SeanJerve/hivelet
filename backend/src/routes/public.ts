@@ -18,6 +18,7 @@ import { optionalAuth, requirePermission } from '../middleware/auth.js';
 import { PERMISSIONS } from '../config/rbac.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
+import { getWaterRatePerOccupant, getLindaFixedWaterCharge } from '../services/settingsService.js';
 import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { adyenService } from '../services/adyenService.js';
@@ -102,6 +103,34 @@ router.get(
 
     if (error) throw ApiError.internal(error.message);
     res.status(200).json({ success: true, data: data ?? [] });
+  })
+);
+
+/**
+ * GET /api/public/rates
+ *
+ * The publicly quotable rates, read from `system_settings`.
+ *
+ * Exists because the public listing hardcoded "PHP 200 water / occupant" in the
+ * template. That figure lives in `system_settings.water_rate_per_occupant` and
+ * is applied by `billingService`, so a hardcoded copy on the marketing page is a
+ * second source that drifts silently the moment the landlady changes the rate -
+ * quoting a prospective tenant a price the system will not bill them.
+ *
+ * Only rates a visitor may see. Nothing here is tenant- or ledger-specific.
+ */
+router.get(
+  '/public/rates',
+  optionalAuth,
+  requirePermission(PERMISSIONS.PROPERTY_VIEW_PUBLIC),
+  asyncHandler(async (_req, res) => {
+    const waterRatePerOccupant = await getWaterRatePerOccupant();
+    const lindaFixedWaterCharge = await getLindaFixedWaterCharge('LF');
+
+    res.status(200).json({
+      success: true,
+      data: { waterRatePerOccupant, lindaFixedWaterCharge },
+    });
   })
 );
 

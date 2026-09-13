@@ -9,8 +9,8 @@
  */
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { CANONICAL_UNITS, HERO_PHOTO, type RentableUnit } from '@/lib/canonicalUnits';
-import { showToast, LANDLADY, fetchRooms } from '@/lib/systemState';
+import { type RentableUnit } from '@/lib/canonicalUnits';
+import { showToast, LANDLADY, fetchRooms, rooms } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import { 
@@ -76,7 +76,7 @@ const CATEGORIES = [
     pax: 'Up to 3 Pax',
     blurb: 'Main boarding house 1-bedroom rooms with private bathroom and submetered electricity.',
     icon: BedDouble,
-    match: (u: RentableUnit) => 
+    match: (u: { unitCode: string; cluster: string; type: string }) => 
       (u.unitCode.toLowerCase().startsWith('1') || u.cluster === 'Linda Units') &&
       !u.unitCode.toLowerCase().startsWith('2') &&
       !u.unitCode.toLowerCase().startsWith('3') &&
@@ -93,7 +93,7 @@ const CATEGORIES = [
     pax: 'Up to 4 Pax',
     blurb: 'Front and back apartments and spacious 2-bedroom units with kitchenette and parking slot.',
     icon: Building2,
-    match: (u: RentableUnit) => 
+    match: (u: { unitCode: string; cluster: string; type: string }) => 
       u.unitCode.toLowerCase().startsWith('2') || 
       u.type.toLowerCase().includes('2-bedroom') || 
       u.cluster === 'Back Apartment' || 
@@ -106,7 +106,7 @@ const CATEGORIES = [
     pax: 'Up to 5 Pax',
     blurb: 'Top-floor suites and 3-bedroom penthouse with roof deck and panoramic view of Legazpi City.',
     icon: ShieldCheck,
-    match: (u: RentableUnit) => 
+    match: (u: { unitCode: string; cluster: string; type: string }) => 
       u.unitCode.toLowerCase().startsWith('3') || 
       u.type.toLowerCase().includes('3-bedroom') || 
       u.cluster === 'Penthouse' || 
@@ -117,6 +117,17 @@ const CATEGORIES = [
 function navigateToCategory(slug: string) {
   router.push(`/category/${slug}`);
 }
+
+/**
+ * The live unit list, from `/public/rooms` via `fetchRooms()`.
+ *
+ * The vacancy and total counts on this page used to be computed from
+ * `CANONICAL_UNITS`, a hardcoded table whose `status` field never changes. A
+ * prospective tenant was shown a vacancy count that had no connection to the
+ * property's actual occupancy, on the page whose whole purpose is to say what is
+ * free. The database knows: 32 Occupied, 1 Available at the time of writing.
+ */
+const liveUnits = rooms;
 
 onMounted(async () => {
   try {
@@ -138,8 +149,16 @@ function scrollToInquiry() {
 }
 
 async function submitInquiry() {
-  if (!inquiryName.value.trim() || !inquiryPhone.value.trim()) {
-    showToast('error', 'Required Fields', 'Please provide your full name and contact number.');
+  // `inquiries.prospect_email` is NOT NULL in the database, so the form asks for
+  // an address rather than inventing one. It previously sent
+  // 'prospect@hivelet.ph' whenever the field was blank, which put an address the
+  // landlady cannot reply to on an inquiry she is expected to answer.
+  if (!inquiryName.value.trim() || !inquiryPhone.value.trim() || !inquiryEmail.value.trim()) {
+    showToast('error', 'Required Fields', 'Please provide your full name, contact number and email address.');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inquiryEmail.value.trim())) {
+    showToast('error', 'Check your email', 'That does not look like an email address.');
     return;
   }
 
@@ -156,7 +175,9 @@ async function submitInquiry() {
     await api.post('/public/inquiries', {
       roomId: defaultRoom.id,
       prospectName: inquiryName.value.trim(),
-      prospectEmail: inquiryEmail.value.trim() || 'prospect@hivelet.ph',
+      // Sent blank when blank. This used to substitute 'prospect@hivelet.ph',
+      // writing a fake address into the inquiry the landlady would try to reply to.
+      prospectEmail: inquiryEmail.value.trim(),
       prospectPhone: inquiryPhone.value.trim(),
       message: inquiryMsg.value.trim(),
     }, false);
@@ -263,7 +284,7 @@ async function submitInquiry() {
                 <component :is="c.icon" class="size-6" />
               </span>
               <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                {{ CANONICAL_UNITS.filter(c.match).filter((u) => u.status === 'vacant').length }} Vacant
+                {{ liveUnits.filter(c.match).filter((u) => u.status === 'vacant').length }} Vacant
               </span>
             </div>
 
@@ -275,7 +296,7 @@ async function submitInquiry() {
             
             <div class="mt-5 pt-4 border-t border-border w-full flex items-center justify-between text-xs">
               <span class="font-semibold text-muted-foreground">
-                {{ CANONICAL_UNITS.filter(c.match).length }} Total Units
+                {{ liveUnits.filter(c.match).length }} Total Units
               </span>
               <span class="font-bold text-primary group-hover:text-primary-strong flex items-center gap-1.5 transition-colors">
                 <span>View All Rooms</span>
@@ -382,11 +403,12 @@ async function submitInquiry() {
             <!-- Row 2: Email -->
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-                EMAIL
+                EMAIL <span class="text-rose-600">*</span>
               </label>
               <input 
                 v-model="inquiryEmail" 
                 type="email" 
+                required
                 placeholder="you@email.com" 
                 class="min-h-12 w-full px-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
               />

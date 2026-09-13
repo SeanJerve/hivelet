@@ -45,7 +45,11 @@ const monthlyRate = ref<number>(5000);
 const unitType = ref<string>('1 Bedroom');
 const editStatus = ref<'Available' | 'Occupied' | 'Reserved' | 'Under Maintenance'>('Available');
 const billingRule = ref<string>('Rent + ₱200 / occupant water');
-const amenitiesText = ref<string>('Private bathroom, Submetered electricity, Study desk');
+// Empty by default. This field is written straight to `rooms.description` on
+// save, so a default of 'Private bathroom, Submetered electricity, Study desk'
+// meant that opening a unit and pressing Save could overwrite the unit's real
+// description with a sentence describing no unit in particular.
+const amenitiesText = ref<string>('');
 const editPhotoUrl = ref<string>('');
 const isSaving = ref(false);
 
