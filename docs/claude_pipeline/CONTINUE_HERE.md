@@ -111,7 +111,12 @@ I have full authority over frontend, backend and applying migrations to Supabase
 Migrations 005-015 are all applied and verified - there is no database work pending.
 The floor distribution is 11 / 11 / 10 / 1 and OD-14 and OD-17 are closed.
 
-Begin Phase 3 with docs/claude_pipeline/prompts/PROMPT_3_BACKEND_SERVICES.md.
+Begin Phase 3 with docs/claude_pipeline/prompts/PROMPT_3_BACKEND_SERVICES.md. That prompt has
+already been reconciled to locked canon - read its banner first; it lists six contradictions and
+four false claims about the codebase that were corrected, and the schema facts that would otherwise
+make its INSERT instructions fail.
+
+OD-16 gates billingService specifically. Everything else in Phase 3 can proceed without it.
 ```
 
 ---
@@ -123,6 +128,7 @@ Begin Phase 3 with docs/claude_pipeline/prompts/PROMPT_3_BACKEND_SERVICES.md.
 | `docs/claude_pipeline/outputs/PHASE2_ERD_AND_DATA_DICTIONARY.md` | Crow's Foot ERD over all 21 tables, cardinality justifications, FK delete policy, enum catalogue, and full data dictionaries for `rooms`, `bills`, `payments`, `monthly_income_records`, `audit_logs` |
 | `docs/claude_pipeline/outputs/PHASE2_NORMALIZATION_PROOF.md` | 1NF / 2NF / 3NF proof, per-table verdict, every derived column classified by who guarantees it |
 | `docs/claude_pipeline/outputs/PHASE2_SECURITY_AND_RLS.md` | RLS and security posture, three new findings, the open gaps |
+| `docs/claude_pipeline/prompts/PROMPT_3_BACKEND_SERVICES.md` | **Reconciled to canon.** Six contradictions and four false claims about the codebase corrected before Phase 3 starts |
 | `docs/diagrams/hivelet_erd.mmd` (+ `.txt`) | The ERD source. Rendered clean under `mermaid@11.17.2` |
 | `database/migrations/011_…sql` … `014_…sql` | Tested against a production-like database over three passes, then **applied to production and verified** |
 | `database/migrations/_TEST_FIXTURE_production_drift.sql` | Rewritten: now reproduces all **seven** known drifts, not two |
