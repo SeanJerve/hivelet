@@ -239,6 +239,50 @@ logins for one person.
 
 ---
 
+## 6b. The credential exposure, and what it says about the posture
+
+**On 2026-09-13 an audit of this repository found that the live Supabase
+`service_role` key, the live anon key, and the JWT signing secret had all been
+committed to a public GitHub repository in `.env.example`, and had been there
+since 2026-08-25.** Separately, `credentials/creds.txt` and
+`database/seeded-tenant-credentials.json` held plaintext passwords that were
+tested and found to still open **44 of 44 accounts**, including the administrator.
+
+This belongs in a security document, not a footnote, because it is the most
+important thing that document can say.
+
+### What it defeated
+
+Everything in sections 2 and 3. The deny-by-default lockdown is real and it is
+correctly built — but `service_role` carries `rolbypassrls = true`, so a holder of
+that key reads and writes every row in all 21 tables regardless of how the
+policies are configured. The JWT secret is worse for the application: anyone
+holding it can mint a token claiming any role, which defeats the 39-permission
+model no matter how carefully that model is written.
+
+**A correct access-control design protects nothing once its keys are public.**
+That is the lesson, and it is worth more than a clean-looking document.
+
+### What was done
+
+| Action | Status |
+| :--- | :--- |
+| JWT secret rotated to 48 random bytes | done |
+| The leaked JWT secret hard-refused in **every** environment (the previous guard only fired in production, the one environment this project has never run in) | done |
+| Migrated to Supabase's current key format; legacy JWT keys disabled at the project level, which revokes them in every clone of the repository at once | done |
+| All 44 account passwords rotated; verified 0 accounts open to any published password | done |
+| Both credential files untracked and gitignored | done |
+| `scripts/check-secrets.mjs` + a shared pre-commit hook, because nothing was watching for three weeks | done |
+
+### Why git history was not rewritten
+
+Deliberately. The keys had been public for three weeks and had to be assumed
+compromised regardless, so scrubbing history would have broken every clone while
+changing nothing about the exposure. **Rotation is the remediation; history
+rewriting is theatre.**
+
+---
+
 ## 7. Gaps that remain open, stated honestly
 
 Not fixed by `011`, and not to be described as fixed.
@@ -297,11 +341,15 @@ Confirmed after `011` was applied on 2026-09-13: the first query returns 21 rows
    mistaken `GRANT` is not a breach.
 4. **Authorisation lives in 39 declarative permissions across four roles**, checked at the route
    boundary, because the single trusted data tier means the database cannot make that decision.
-5. **Three real security findings were produced by this phase**, one of which — a `REVOKE` that has
+5. **The keys were public for three weeks** (§6b), which defeated every control
+   above until they were rotated. A correct design protects nothing once its
+   credentials leak, and saying so is more useful than a document that does not
+   mention it.
+6. **Three real security findings were produced by this phase**, one of which — a `REVOKE` that has
    never done anything since migration `002` — had been in the repository unnoticed and passing
    review the whole time. Naming the roles instead of `PUBLIC` looks right, reads right in review,
    and does nothing.
-6. **Testing found what reading could not.** Applying `011`–`014` to a database built to resemble
+7. **Testing found what reading could not.** Applying `011`–`014` to a database built to resemble
    production surfaced six further defects, including one live one: the RPC that makes expense edits
    atomic has never worked against the real column type. The lesson the project had already written
    down twice — test against production's shape, not the repository's — only paid out when it was
