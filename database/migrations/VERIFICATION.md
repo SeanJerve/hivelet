@@ -167,3 +167,68 @@ the Supabase SQL Editor and Run. It was tested by applying it, whole, to a fresh
 
 DDL cannot be applied through PostgREST even with the `service_role` key, so the SQL Editor (or a
 direct Postgres connection string) is the only route.
+
+---
+
+# Addendum — the first production run failed, and why the verification missed it
+
+**2026-09-13. `APPLY_PHASE2.sql` was run against Supabase and stopped at migration `007`:**
+
+```
+ERROR: 23514: new row for relation "rooms" violates check constraint "rooms_floor_check"
+DETAIL: Failing row contains (..., PH, 4, Penthouse, ...)
+```
+
+## What happened to the database
+
+`005` and `006` committed. `007` failed and **rolled back cleanly**. `008`, `009` and `010` never ran,
+because the editor stops at the first error. Confirmed afterwards by reading the live database:
+`PH` still on floor 3, no `property_areas` table, no `replace_expense_allocations` function.
+
+Nothing was left half-applied. That is the per-migration `BEGIN`/`COMMIT` doing its job, and it is the
+reason a failure here cost a re-run rather than a repair.
+
+## Why the verification did not catch it
+
+**The test database was built from `database/FULL_DATABASE_SCHEMA.sql`. The live database is not.**
+
+Production carries a CHECK constraint, `rooms_floor_check`, capping `rooms.floor` at 3. That
+constraint appears **nowhere in this repository** — not in the master schema file, not in migrations
+`001`–`004`. It was applied out of band. The schema file declares `floor INTEGER NOT NULL DEFAULT 1`
+and defines exactly one CHECK constraint in the whole file, so a database built from it has nothing
+stopping `floor = 4`.
+
+Migration `007` even said so in its own comments: *"`rooms.floor` is a plain INTEGER NOT NULL DEFAULT
+1 with no CHECK constraint, so level 4 is accepted."* That was a true statement about the file and a
+false statement about the database, and every test run inherited the same blind spot. The behavioural
+tests were sound; the fixture was wrong.
+
+**The correction to the method:** a migration bound for production must be tested against a database
+that reproduces production, not against the repo's idea of it. `007` was re-verified against a
+container built from the schema file **plus** the real `rooms_floor_check`, which reproduced the
+23514 failure exactly before the fix, and passed after it.
+
+## The fix
+
+`007` now finds any CHECK constraint on `rooms` whose definition mentions `floor` — by definition, not
+by name, so it works whatever the constraint is called and whether or not it exists — reports what it
+replaced, drops it, and installs `CHECK (floor BETWEEN 1 AND 4)` before touching the row.
+
+Verified against the drifted database:
+
+| Test | Result |
+| :--- | :--- |
+| Reports the constraint it replaces | `CHECK (((floor >= 1) AND (floor <= 3)))` |
+| `PH` reaches level 4 | yes |
+| Re-run on its own output | clean, idempotent |
+| `floor = 5` still rejected | **rejected** — the constraint still constrains |
+| `005`, `006`, `008`, `009`, `010` on the drifted schema | all clean |
+
+## What this means for the rest of Phase 2
+
+`FULL_DATABASE_SCHEMA.sql` is **not** an accurate description of the live database, and one instance of
+drift means there may be more — other CHECK constraints, triggers, indexes or columns applied out of
+band and never written back.
+
+The ERD, data dictionary and 3NF proof are meant to document the real system. They will be built from
+`DRIFT_DIAGNOSTIC.sql`, which reads the live catalogue directly, rather than from the schema file.

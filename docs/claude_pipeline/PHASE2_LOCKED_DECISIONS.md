@@ -100,6 +100,10 @@ year-on-year expense reports comparable.
 
 ---
 
+| D-4 | **Schema drift.** `rooms_floor_check` exists in the live database and nowhere in this repository, so `FULL_DATABASE_SCHEMA.sql` does not describe production. It broke migration `007` on first application. One instance implies there may be more. | `database/migrations/VERIFICATION.md` addendum | fixed in `007`; the file itself is still inaccurate and the ERD must be built from `DRIFT_DIAGNOSTIC.sql` |
+
+---
+
 ## Still open from Phase 1
 
 | ID | Item | Gate |

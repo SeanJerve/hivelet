@@ -1,18 +1,31 @@
 -- =============================================================================
 -- APPLY_PHASE2.sql  —  Hivelet Phase 2 migrations 005-010, in order
 -- =============================================================================
--- Generated 2026-09-13. Paste this whole file into the Supabase SQL Editor and Run.
+-- Regenerated 2026-09-13 after a failed first run. Paste the whole file into the
+-- Supabase SQL Editor and Run.
 --
--- Each migration below is its own BEGIN/COMMIT and ends with an assertion, so they
--- apply as six sequential transactions. If one fails it rolls back on its own and
--- the ones before it stay applied - re-running the file afterwards is safe, because
--- every migration here is idempotent.
+-- SAFE TO RE-RUN AFTER THE FAILED ATTEMPT. On the first attempt 005 and 006
+-- committed, 007 failed and rolled back, and 008-010 never executed. Every
+-- migration here is idempotent, so running the file again re-applies 005 and 006
+-- as no-ops and continues from 007.
 --
--- Verified 2026-09-13 against PostgreSQL 16 loaded with FULL_DATABASE_SCHEMA.sql,
--- applied twice to confirm idempotency. See VERIFICATION.md.
+-- WHY 007 FAILED THE FIRST TIME - and what it taught us.
+-- The live database carries a CHECK constraint, `rooms_floor_check`, capping
+-- `rooms.floor` at 3. That constraint exists NOWHERE in this repository: not in
+-- FULL_DATABASE_SCHEMA.sql, not in migrations 001-004. It was applied out of band,
+-- so the master schema file does not describe the live database.
 --
--- Live-data preconditions were checked against the production database on the same
--- day with database/check-migration-preconditions.mjs and reported NO BLOCKERS:
+-- The original 007 went straight to the UPDATE on the evidence of that file and
+-- hit 23514. The transaction rolled it back cleanly and nothing was left
+-- half-applied - which is exactly what these migrations are written to do.
+--
+-- 007 now relaxes the constraint to `floor BETWEEN 1 AND 4` before touching the
+-- row, and reports whatever definition it replaced so the drift is recorded.
+-- Re-verified against a database deliberately built WITH the production
+-- constraint, not just from the schema file.
+--
+-- Live-data preconditions re-checked 2026-09-13 with
+-- database/check-migration-preconditions.mjs: NO BLOCKERS.
 --   * no credentialed account shares a phone number (after +63 folding)
 --   * no case-insensitive email collisions
 --   * every credentialed account has at least one identifier
@@ -21,12 +34,17 @@
 -- WHAT CHANGES, in one line each:
 --   005  six ledger foreign keys -> ON DELETE RESTRICT (financial history cannot cascade away)
 --   006  profiles.email nullable; phone becomes an alternate login identifier
---   007  PH moves to the rooftop level 4
+--   007  rooms_floor_check relaxed to 1-4; PH moves to the rooftop level 4
 --   008  property_areas lookup + foreign key; Main House and Other marked NON-RENTAL
 --   009  comments only: deposit_amount is advance rent; rent is never prorated
 --   010  replace_expense_allocations() so allocation edits are atomic
 --
 -- ORDER MATTERS: 010 depends on 008.
+--
+-- AFTER RUNNING THIS, please run DRIFT_DIAGNOSTIC.sql in the same editor and send
+-- the result. The schema file is known to be wrong and the remaining Phase 2
+-- deliverables - the ERD, the data dictionary, the 3NF proof - must describe the
+-- real database rather than a stale file.
 -- =============================================================================
 
 
@@ -357,18 +375,30 @@ COMMIT;
 -- the only penthouse and it occupies a rooftop level of its own. Corrected here
 -- as an incremental migration; the master schema file is never edited.
 --
+-- SCHEMA DRIFT — why this migration has a step 1 at all.
+-- The first version of this file went straight to the UPDATE, on the evidence of
+-- `FULL_DATABASE_SCHEMA.sql`, which declares `floor INTEGER NOT NULL DEFAULT 1`
+-- with no CHECK. Applying it to the live database failed:
+--
+--   ERROR 23514: new row for relation "rooms" violates check constraint "rooms_floor_check"
+--
+-- The live database carries a `rooms_floor_check` constraint that **exists
+-- nowhere in this repository** — not in the master schema file, not in migrations
+-- `001`-`004`. It was applied out of band. It almost certainly caps `floor` at 3,
+-- which was correct until the penthouse was confirmed to sit on a fourth level.
+--
+-- The transaction rolled the failure back cleanly and nothing was left half-done,
+-- which is the behaviour these migrations are written for. Step 1 now relaxes the
+-- constraint to the real building before touching the row, and reports whatever
+-- definition it replaced so the drift is recorded rather than silently erased.
+--
 -- SCOPE LIMIT — read this before assuming the floor data is now correct.
 -- The owner's authoritative survey is 11 / 11 / 10 / 1. After this migration the
 -- seeded per-unit values yield 12 / 11 / 9 / 1: one unit sits on floor 1 in the
--- data that the survey places on floor 3. That unit has NOT been identified, and
--- this migration deliberately does not guess at it. Correcting the wrong row
--- would put a false floor on a real unit in a live database.
---
--- The two candidates are LF and LB. Every other floor-1 unit encodes its floor
--- in its own room_number — 1a-1h, B1F ("Back, floor 1, Front"), F1 ("Front,
--- floor 1") — whereas "Linda Front" and "Linda Back" encode position, not level.
--- Resolution is tracked as a follow-up; the PUBLISHED tally stays 11 / 11 / 10 / 1
--- on the owner's survey regardless, per locked canon.
+-- data that the survey places on floor 3. LF and LB were confirmed on floor 1 on
+-- 2026-09-13, so every floor-1 unit is now accounted for and each encodes its own
+-- level — which points at the survey being one out, not the data. Tracked as
+-- OD-14. This migration does not guess; it corrects only `PH`.
 --
 -- Apply AFTER 001-006. Idempotent; safe to re-run.
 -- =============================================================================
@@ -376,9 +406,50 @@ COMMIT;
 BEGIN;
 
 -- -----------------------------------------------------------------------------
--- 1. Move the penthouse to level 4.
---     `rooms.floor` is a plain INTEGER NOT NULL DEFAULT 1 with no CHECK
---     constraint, so level 4 is accepted without a constraint change.
+-- 1. Make room for a fourth level.
+--
+--    Finds any CHECK constraint on `rooms` whose definition mentions `floor`,
+--    regardless of name, reports it, drops it, and installs one that matches the
+--    building as surveyed. Doing this by definition rather than by name means the
+--    migration works whether the live constraint is called `rooms_floor_check` or
+--    something else, and whether or not it exists at all (a database built purely
+--    from the repo has none).
+-- -----------------------------------------------------------------------------
+DO $$
+DECLARE
+  r RECORD;
+  found BOOLEAN := FALSE;
+BEGIN
+  FOR r IN
+    SELECT con.conname, pg_get_constraintdef(con.oid) AS definition
+      FROM pg_constraint con
+      JOIN pg_class     rel ON rel.oid = con.conrelid
+      JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
+     WHERE nsp.nspname = 'public'
+       AND rel.relname = 'rooms'
+       AND con.contype = 'c'
+       AND pg_get_constraintdef(con.oid) ILIKE '%floor%'
+  LOOP
+    found := TRUE;
+    RAISE NOTICE 'Migration 007: replacing CHECK constraint % -> %', r.conname, r.definition;
+    EXECUTE format('ALTER TABLE public.rooms DROP CONSTRAINT %I', r.conname);
+  END LOOP;
+
+  IF NOT found THEN
+    RAISE NOTICE 'Migration 007: no pre-existing floor CHECK constraint found; adding one.';
+  END IF;
+END $$;
+
+ALTER TABLE public.rooms
+  ADD CONSTRAINT rooms_floor_check
+  CHECK (floor BETWEEN 1 AND 4);
+
+COMMENT ON COLUMN public.rooms.floor IS
+  'Building level. 1-3 are residential floors; 4 is the rooftop level occupied '
+  'only by the penthouse (PH). Owner-confirmed 2026-09-13 (OD-13).';
+
+-- -----------------------------------------------------------------------------
+-- 2. Move the penthouse to level 4.
 -- -----------------------------------------------------------------------------
 UPDATE public.rooms
    SET floor       = 4,
@@ -389,8 +460,8 @@ UPDATE public.rooms
    AND floor IS DISTINCT FROM 4;
 
 -- -----------------------------------------------------------------------------
--- 2. Verify the penthouse, and report the resulting tally without failing on
---    the known outstanding discrepancy.
+-- 3. Verify the penthouse, and report the resulting tally without failing on
+--    the known outstanding discrepancy (OD-14).
 -- -----------------------------------------------------------------------------
 DO $$
 DECLARE
@@ -409,10 +480,9 @@ BEGIN
     INTO tally
     FROM (SELECT floor, COUNT(*) AS cnt FROM public.rooms GROUP BY floor) t;
 
-  RAISE NOTICE 'Migration 007 OK: PH is on level 4. Seeded tally is now [%].', tally;
+  RAISE NOTICE 'Migration 007 OK: PH is on level 4. Tally is now [%].', tally;
   RAISE NOTICE 'Owner survey is 1 => 11, 2 => 11, 3 => 10, 4 => 1. One floor-1 '
-               'unit is still unreconciled (candidates: LF, LB) and is tracked '
-               'as a follow-up, not corrected here.';
+               'unit remains unreconciled (OD-14) and is not corrected here.';
 END $$;
 
 COMMIT;
