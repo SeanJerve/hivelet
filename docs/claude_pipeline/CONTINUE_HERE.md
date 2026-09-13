@@ -12,8 +12,10 @@
 > | `008_property_areas_lookup` | **APPLIED** — 5 areas, 2 non-rental |
 > | `009_advance_rent_and_whole_month_billing` | **APPLIED** |
 > | `010_atomic_expense_allocations` | **APPLIED** |
-> | `011_security_posture_corrections` | **WRITTEN, NOT APPLIED** — needs a human to run |
-> | `012_penthouse_area_and_cluster_routing` | **WRITTEN, NOT APPLIED** — needs a human to run |
+> | `011_security_posture_corrections` | **WRITTEN + TESTED, NOT APPLIED** — needs a human to run |
+> | `012_penthouse_area_and_cluster_routing` | **WRITTEN + TESTED, NOT APPLIED** — needs a human to run |
+> | `013_fix_replace_allocations_enum_cast` | **WRITTEN + TESTED, NOT APPLIED** — fixes a LIVE production defect |
+> | `014_codify_production_only_objects` | **WRITTEN + TESTED, NOT APPLIED** — a no-op in production; repairs any rebuilt database |
 >
 > `005`–`010` were verified individually against the live catalogue, not assumed — the evidence table
 > is in the third addendum of `database/migrations/VERIFICATION.md`. **`APPLY_PHASE2.sql` does not
@@ -22,24 +24,51 @@
 > **`011` and `012` could not be applied from the session that wrote them** — the environment refused
 > the write with `[Production Deploy]`. They are ready to run as-is.
 >
-> ### Two things to do first, in this order
+> ### THERE IS A BROKEN FEATURE IN PRODUCTION RIGHT NOW
 >
-> 1. **Run `database/migrations/011_security_posture_corrections.sql`.** Low risk, touches zero rows
+> **`PATCH /api/admin/expense-entries/:id` fails with a 500 whenever the request changes an entry's
+> allocations** — that is, editing the split of any expense entry. It has been broken since the
+> atomic-allocation code shipped.
+>
+> Cause: migration `010`'s `replace_expense_allocations()` inserts `elem ->> 'property_area'`, which
+> is `text`, into a column that is the enum `property_area_type` in production. PostgreSQL will not
+> cast text to an enum implicitly, so every call raises `42804`. The live function definition was
+> read back from production and confirmed.
+>
+> **It fails safely — verified, not assumed.** The exception rolls the function's `DELETE` back with
+> it, so the entry keeps the allocations it had. No data has been lost. Fixed by `013`.
+>
+> ### Three things to do first, in this order
+>
+> 1. **Run `database/migrations/013_fix_replace_allocations_enum_cast.sql`.** This is the urgent one —
+>    it repairs the broken feature above. It self-verifies behaviourally: it creates a test entry,
+>    replaces its allocations, checks a bad label is refused with the originals intact, then cleans up.
+> 2. **Run `database/migrations/011_security_posture_corrections.sql`.** Low risk, touches zero rows
 >    of business data. Fixes a `REVOKE` that has never worked since migration `002` and brings the one
 >    table missing forced RLS into line.
-> 2. **Run `database/migrations/012_penthouse_area_and_cluster_routing.sql`, then** add `'Penthouse'`
+> 3. **Run `database/migrations/012_penthouse_area_and_cluster_routing.sql`, then** add `'Penthouse'`
 >    to `PROPERTY_AREAS` in `backend/src/config/propertyAreas.ts`. **That order matters** — adding it
 >    to the TypeScript list first would let the API accept a value the foreign key rejects.
 >    Run `012` whole; it deliberately commits the enum change before using it, and must not be
 >    wrapped in one outer transaction.
+> 4. **Run `database/migrations/014_codify_production_only_objects.sql`.** A no-op against production
+>    — both objects are already there. It exists so that a database rebuilt from this repository gets
+>    the expense-total trigger (BR-045) and the composite unique key (BR-044), which until now lived
+>    **only** inside the production database.
+>
+> All three were applied in order to a throwaway PostgreSQL 16 built to resemble production, replayed
+> twice more to prove idempotency, and exercised behaviourally. Full record in
+> `database/migrations/VERIFICATION.md`, fourth addendum.
 >
 > ### Read this before trusting the schema file
 >
-> **`database/FULL_DATABASE_SCHEMA.sql` does NOT describe the live database.** Three undocumented
-> differences are now known. The first two were each found by a migration failing in production
-> (`rooms_floor_check`, SQLSTATE 23514; the `property_area_type` enum, SQLSTATE 42883). **The third
-> was found by reading** — `fifty_percent_share` and `remitted_amount` are `GENERATED ALWAYS AS …
-> STORED` columns, not the plain `DEFAULT 0.00` columns the file declares.
+> **`database/FULL_DATABASE_SCHEMA.sql` does NOT describe the live database.** **SEVEN** undocumented
+> differences are now known — the fixture previously claimed to hold "every known difference" and held
+> two. The worst are: the schema file contains **zero `CREATE TYPE` statements** while production
+> defines **13 enum types across 17 columns**; and `update_expense_entry_total()` with its trigger —
+> the object that makes BR-045 true — **exists only in the production database** and in no file in
+> this repository. Restore production from the repo and expense totals silently stop tracking their
+> allocations. All seven are now reproduced by `_TEST_FIXTURE_production_drift.sql`.
 >
 > **`database/live_schema.csv` (407 rows, exported 2026-09-13) is the source of truth**, not the
 > `.sql` file. Every known difference is reproduced in
@@ -73,21 +102,24 @@ Read these in order before doing anything else:
 1. docs/claude_pipeline/CONTINUE_HERE.md            <- current state and what to do next
 2. docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md  <- settled decisions; binding canon
 3. docs/claude_pipeline/PHASE2_LOCKED_DECISIONS.md  <- Phase 2 closures; binding canon
-4. database/migrations/VERIFICATION.md              <- what is verified, and three schema drifts
+4. database/migrations/VERIFICATION.md              <- what is verified, and seven schema drifts
 5. docs/claude_pipeline/CLAUDE_PIPELINE.md          <- the master pipeline spec
 
 Constraints that still apply:
 - The Supabase database is LIVE. Never DROP or wipe. Never edit database/FULL_DATABASE_SCHEMA.sql.
   All schema changes are incremental migrations in database/migrations/.
-- Do NOT trust database/FULL_DATABASE_SCHEMA.sql. It has been wrong about the live schema three
-  times. database/live_schema.csv is the source of truth.
+- Do NOT trust database/FULL_DATABASE_SCHEMA.sql. It has been wrong about the live schema in seven
+  known ways. database/live_schema.csv is the source of truth, and
+  database/migrations/_TEST_FIXTURE_production_drift.sql reproduces all seven locally.
 - STEP 0 applies: stop and ask me before producing final artifacts if anything is ambiguous.
   Ask about real-world facts only - make the engineering calls yourself.
 
 I have full authority over frontend, backend and applying migrations to Supabase.
 
-First: apply migrations 011 and 012 (in that order), then add 'Penthouse' to PROPERTY_AREAS in
-backend/src/config/propertyAreas.ts. Verify the result against the live catalogue.
+First: apply migrations 013, 011, 012 and 014 in that order. 013 is urgent - it repairs
+PATCH /api/admin/expense-entries/:id, which currently 500s on any allocation edit. Then add
+'Penthouse' to PROPERTY_AREAS in backend/src/config/propertyAreas.ts (AFTER 012, not before).
+Verify the result against the live catalogue.
 
 Then begin Phase 3 with docs/claude_pipeline/prompts/PROMPT_3_BACKEND_SERVICES.md.
 ```
@@ -102,7 +134,8 @@ Then begin Phase 3 with docs/claude_pipeline/prompts/PROMPT_3_BACKEND_SERVICES.m
 | `docs/claude_pipeline/outputs/PHASE2_NORMALIZATION_PROOF.md` | 1NF / 2NF / 3NF proof, per-table verdict, every derived column classified by who guarantees it |
 | `docs/claude_pipeline/outputs/PHASE2_SECURITY_AND_RLS.md` | RLS and security posture, three new findings, the open gaps |
 | `docs/diagrams/hivelet_erd.mmd` (+ `.txt`) | The ERD source. Rendered clean under `mermaid@11.17.2` |
-| `database/migrations/011_…sql`, `012_…sql` | Written, not applied — see above |
+| `database/migrations/011_…sql` … `014_…sql` | Written and tested against a production-like database, three passes; **not applied** — see above |
+| `database/migrations/_TEST_FIXTURE_production_drift.sql` | Rewritten: now reproduces all **seven** known drifts, not two |
 
 **Do not add `%%` comment lines to `hivelet_erd.mmd`.** This version of the Mermaid CLI collapses
 them into the first token and the file stops parsing (`Expecting 'ER_DIAGRAM', got '%'`). Provenance
@@ -168,6 +201,8 @@ State these honestly; never claim any as already fixed.
 | 12 | **NEW.** `rooms.is_linda_unit` is transitively determined by `cluster_code` — the one genuine 3NF violation | `PHASE2_NORMALIZATION_PROOF.md` §4.3 | 3 |
 | 13 | **NEW.** `property_areas` is the only table without forced RLS | fixed by `011`, not yet applied | 2 |
 | 14 | **NEW.** Migration `002`'s `REVOKE … FROM anon, authenticated` on `current_user_role()` has never done anything — `EXECUTE` is held via `PUBLIC` | fixed by `011`, not yet applied | 2 |
+| 15 | **NEW, LIVE, HIGH.** `replace_expense_allocations()` inserts uncast `text` into an enum column, so **every expense-entry allocation edit 500s** (`42804`). Fails safely — the transaction rolls back and the originals survive, verified | fixed by `013`, not yet applied | 2 |
+| 16 | **NEW.** `update_expense_entry_total()` + its trigger (BR-045) and `UNIQUE (expense_entry_id, property_area)` (BR-044) existed **only in the production database**, in no file in this repository | codified by `014`, not yet applied | 2 |
 
 ---
 

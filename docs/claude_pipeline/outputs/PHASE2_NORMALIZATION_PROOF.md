@@ -142,6 +142,13 @@ it is why the 2NF section of this proof is short rather than laboured.
 `UNIQUE (expense_entry_id, property_area)` — the rule that one expense entry may charge a given
 Property Area at most once (BR-044).
 
+> **Provenance warning.** That constraint exists in **production** and appears nowhere in
+> `FULL_DATABASE_SCHEMA.sql` — it is drift 7, found during this phase by an `ON CONFLICT` clause
+> failing with `42P10` on a database built from the repository. The entire 2NF argument below rests
+> on a constraint that no file in this repository creates. It is now reproduced by
+> `_TEST_FIXTURE_production_drift.sql`, but **it still needs a migration of its own** so that a
+> rebuilt database has it. Recorded as a Phase 3 item.
+
 2NF must be checked against that candidate key. Its non-key attributes:
 
 | Attribute | Depends on | Full or partial? |

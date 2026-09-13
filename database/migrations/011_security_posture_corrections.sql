@@ -90,13 +90,42 @@ GRANT EXECUTE ON FUNCTION public.normalize_ph_phone(text) TO service_role;
 -- returns are unchanged - its body calls only pg_catalog built-ins. The index
 -- built on it is reindexed below regardless, because an index over a function
 -- whose definition has been altered is worth rebuilding rather than trusting.
-ALTER FUNCTION public.current_user_role()                      SET search_path = pg_catalog, public;
-ALTER FUNCTION public.normalize_ph_phone(text)                 SET search_path = pg_catalog, public;
-ALTER FUNCTION public.update_expense_entry_total()             SET search_path = pg_catalog, public;
--- replace_expense_allocations() already pins search_path = public (migration 010).
--- Re-stated here so all four functions are set from one place and the intent is
--- not split across migrations.
-ALTER FUNCTION public.replace_expense_allocations(uuid, jsonb) SET search_path = pg_catalog, public;
+--
+-- This iterates the catalogue rather than naming the four functions. Naming them
+-- was the first version of this migration and it FAILED under test: migration
+-- 002 does not create current_user_role() on every database, so an unconditional
+-- ALTER aborted the whole transaction with 42883 on a database where the
+-- function was simply absent. Asking the catalogue is correct whatever is there,
+-- and it also covers any function added later without editing this file.
+DO $mig011b$
+DECLARE
+  r record;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS sig
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+     WHERE n.nspname = 'public'
+       AND p.prokind = 'f'
+       AND (p.proconfig IS NULL OR NOT EXISTS (
+             SELECT 1 FROM unnest(p.proconfig) cfg WHERE cfg LIKE 'search\_path=%'))
+       -- Skip anything owned by an extension. On Supabase, pgcrypto and
+       -- uuid-ossp live in the `extensions` schema and this is moot; on a test
+       -- database built from FULL_DATABASE_SCHEMA.sql they land in `public`,
+       -- and an earlier version of this loop altered 44 of them. Extension
+       -- objects belong to the extension: altering them is out of scope here
+       -- and can be undone or conflict on ALTER EXTENSION UPDATE.
+       AND NOT EXISTS (
+             SELECT 1 FROM pg_depend d
+              WHERE d.objid = p.oid
+                AND d.classid = 'pg_proc'::regclass
+                AND d.deptype = 'e')
+  LOOP
+    EXECUTE format('ALTER FUNCTION %s SET search_path = pg_catalog, public', r.sig);
+    RAISE NOTICE '011: pinned search_path on %', r.sig;
+  END LOOP;
+END
+$mig011b$;
 
 COMMIT;
 
@@ -107,26 +136,36 @@ REINDEX INDEX public.idx_profiles_phone_login;
 -- ============================================================================
 -- Verification
 -- ============================================================================
-DO $mig011b$
+DO $mig011c$
 DECLARE
   v_rls           boolean;
   v_forced        boolean;
-  v_anon_can_exec boolean;
+  v_anon_can_exec boolean := false;
   v_unpinned      int;
 BEGIN
   SELECT relrowsecurity, relforcerowsecurity INTO v_rls, v_forced
     FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
    WHERE n.nspname = 'public' AND c.relname = 'property_areas';
 
-  SELECT has_function_privilege('anon', 'public.current_user_role()', 'EXECUTE')
-    INTO v_anon_can_exec;
+  -- Only ask about the function if it exists on this database. Migration 002
+  -- does not create it everywhere.
+  SELECT coalesce(bool_or(has_function_privilege('anon', p.oid, 'EXECUTE')), false)
+    INTO v_anon_can_exec
+    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+   WHERE n.nspname = 'public' AND p.proname = 'current_user_role';
 
+  -- Same exclusion as the loop above: extension-owned functions are not ours.
   SELECT count(*) INTO v_unpinned
     FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
    WHERE n.nspname = 'public'
      AND p.prokind = 'f'
      AND (p.proconfig IS NULL OR NOT EXISTS (
-           SELECT 1 FROM unnest(p.proconfig) cfg WHERE cfg LIKE 'search\_path=%'));
+           SELECT 1 FROM unnest(p.proconfig) cfg WHERE cfg LIKE 'search\_path=%'))
+     AND NOT EXISTS (
+           SELECT 1 FROM pg_depend d
+            WHERE d.objid = p.oid
+              AND d.classid = 'pg_proc'::regclass
+              AND d.deptype = 'e');
 
   RAISE NOTICE '011 VERIFY: property_areas RLS enabled=%, forced=%', v_rls, v_forced;
   RAISE NOTICE '011 VERIFY: anon can execute current_user_role() = %', v_anon_can_exec;
@@ -144,4 +183,4 @@ BEGIN
 
   RAISE NOTICE '011 OK';
 END
-$mig011b$;
+$mig011c$;

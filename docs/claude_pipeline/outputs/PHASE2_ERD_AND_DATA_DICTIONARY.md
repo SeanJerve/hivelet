@@ -13,17 +13,26 @@ is reproduced in `database/live_schema.csv` (407 rows, produced by
 `database/migrations/DRIFT_DIAGNOSTIC.sql`).
 
 **`database/FULL_DATABASE_SCHEMA.sql` was not used as a source, and must not be cited as one.**
-It has now been wrong about production three separate times:
+It is now known to be wrong about production in **seven** separate ways:
 
 | # | What the file says | What production actually has | How it was found |
 | :-- | :--- | :--- | :--- |
 | 1 | `rooms.floor` has no CHECK constraint | `rooms_floor_check` capped `floor` at 3 | Migration `007` failed, SQLSTATE 23514 |
 | 2 | `expense_property_allocations.property_area` is `VARCHAR(100)` | It is the enum `property_area_type` | Migration `008` failed, SQLSTATE 42883 |
-| 3 | `fifty_percent_share` and `remitted_amount` are `NUMERIC(10,2) NOT NULL DEFAULT 0.00` | Both are **`GENERATED ALWAYS AS (…) STORED`** | Found by reading `pg_attribute.attgenerated` while preparing §5 of this document |
+| 3 | `fifty_percent_share` and `remitted_amount` are `NUMERIC(10,2) NOT NULL DEFAULT 0.00` | Both are **`GENERATED ALWAYS AS (…) STORED`** | Reading `pg_attribute.attgenerated` |
+| 4 | Every enum-typed column is declared `VARCHAR`; the file contains **zero `CREATE TYPE`** statements | **13 enum types across 17 columns** | Reading `pg_type` — drift 2 was never a special case |
+| 5 | No trigger anywhere | `update_expense_entry_total()` + `trg_update_expense_total` | Comparing function and trigger lists |
+| 6 | No `current_user_role()` | It exists, created out of band | Comparing function lists |
+| 7 | No composite unique key on the allocations | `UNIQUE (expense_entry_id, property_area)` | An `ON CONFLICT` clause failing under behavioural test |
 
-Drift 3 is new, and it is the first one found by **reading rather than by a production failure**.
-It is recorded in `database/migrations/VERIFICATION.md`. It also **falsifies a standing entry in the
-defect register** — see §6.
+Drifts 3–7 were all found during this phase, and **four of the five by reading rather than by a
+production failure** — the correction of method that `VERIFICATION.md`'s second addendum called for.
+Drift 3 **falsifies a standing entry in the defect register** (§6). Drift 5 is the most serious as a
+continuity risk: the object that makes BR-045 true exists only inside the production database.
+Drift 7 matters because that composite key is the entire subject of the 2NF proof.
+
+All seven are now reproduced by `database/migrations/_TEST_FIXTURE_production_drift.sql`, which
+previously claimed to hold "every known difference" and held two.
 
 ---
 
@@ -390,8 +399,14 @@ Both were blocked from being applied automatically and need a human to run them.
 
 | Migration | What it does | Status |
 | :--- | :--- | :--- |
-| `011_security_posture_corrections.sql` | Enables forced RLS on `property_areas`; makes the `current_user_role()` revoke actually take effect; pins `search_path` on all four public functions. | **Written, not applied.** Detail in `PHASE2_SECURITY_AND_RLS.md`. |
-| `012_penthouse_area_and_cluster_routing.sql` | Adds the `Penthouse` property area; moves the cluster→area mapping onto `clusters.expense_area` so many clusters can share one area; routes `Linda` → `Back Apartment`. | **Written, not applied.** Closes OD-15. |
+| `013_fix_replace_allocations_enum_cast.sql` | **Repairs a live production defect.** `replace_expense_allocations()` inserts uncast `text` into the `property_area_type` enum column, so `PATCH /api/admin/expense-entries/:id` has been returning 500 on every allocation edit (`42804`). It fails safely — the transaction rolls back and the originals survive — but the feature does not work. | **Written and tested, not applied. Run this first.** |
+| `011_security_posture_corrections.sql` | Enables forced RLS on `property_areas`; makes the `current_user_role()` revoke actually take effect; pins `search_path` on our public functions. | **Written and tested, not applied.** Detail in `PHASE2_SECURITY_AND_RLS.md`. |
+| `012_penthouse_area_and_cluster_routing.sql` | Adds the `Penthouse` property area; moves the cluster→area mapping onto `clusters.expense_area` so many clusters can share one area; routes `Linda` → `Back Apartment`. | **Written and tested, not applied.** Closes OD-15. |
+
+All three were applied in order to a throwaway PostgreSQL 16 built from the seven-drift fixture,
+replayed twice more to prove idempotency, and exercised behaviourally. The full record — including
+three defects the testing found *in these migrations* — is the fourth addendum of
+`database/migrations/VERIFICATION.md`.
 
 `012` also requires a matching one-line change to `backend/src/config/propertyAreas.ts` (add
 `'Penthouse'` to `PROPERTY_AREAS`). **Apply the migration first** — adding the value to the

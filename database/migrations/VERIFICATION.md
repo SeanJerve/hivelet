@@ -387,3 +387,196 @@ whole; do not wrap it in a single outer transaction.
 **`012` also requires a code change, applied second, not first:** add `'Penthouse'` to
 `PROPERTY_AREAS` in `backend/src/config/propertyAreas.ts`. Adding it while the database still has
 five areas would let the API accept a value the foreign key rejects.
+
+---
+
+# Fourth addendum — 011/012/013 tested properly, and what that turned up
+
+**2026-09-13.** Migrations `011` and `012` could not be applied to Supabase from the session that
+wrote them (the environment refused the production write), so they were instead tested the way this
+record has twice said migrations must be: against a throwaway PostgreSQL 16 built to resemble
+production, not the repository.
+
+**Testing them found four defects that reading had not.** Three were in the new migrations. The
+fourth is live in production right now.
+
+## The fixture was badly incomplete — seven drifts, not two
+
+`_TEST_FIXTURE_production_drift.sql` claimed to hold "every known difference". It held two. Building
+a database from it and comparing against `live_schema.csv` found five more:
+
+| # | Drift | How found | Consequence if unreproduced |
+| :-- | :--- | :--- | :--- |
+| 1 | `rooms_floor_check` capping floor at 3 | `007` failed in production, 23514 | — |
+| 2 | `property_area` is an enum | `008` failed in production, 42883 | — |
+| 3 | **All thirteen enums.** `FULL_DATABASE_SCHEMA.sql` contains **zero `CREATE TYPE`** statements; production defines 13 enum types across 17 columns, every one declared `VARCHAR` in the repo | Reading `pg_type` | Drift 2 was never a special case. **No migration touching any enum column had ever been genuinely tested.** |
+| 4 | `fifty_percent_share` / `remitted_amount` are `GENERATED ALWAYS AS … STORED` | Reading `pg_attribute.attgenerated` | Falsified defect #5 |
+| 5 | `update_expense_entry_total()` + `trg_update_expense_total` exist in production and **nowhere in the repository** | Comparing function and trigger lists | A database rebuilt from the repo has **no triggers at all**, so BR-045 silently stops holding |
+| 6 | `current_user_role()` exists in production, created out of band | Comparing function lists | The revoke path in `011` was untestable |
+| 7 | `UNIQUE (expense_entry_id, property_area)` | An `ON CONFLICT` clause failing with 42P10 under behavioural test | **The only composite candidate key in the schema.** It enforces BR-044, and the entire 2NF section of the normalization proof is about it |
+
+All seven are now reproduced by the fixture. A database built from it has 13 enum types, 18
+enum-typed columns, 2 generated columns, 1 trigger and the composite unique key — matching production.
+
+Drift 5 deserves emphasis beyond testing: **`update_expense_entry_total` is the object that makes
+BR-045 true, and it exists in exactly one place in the world — the production database.** It is not
+in the schema file, not in any migration, not in any backup script in this repository. Restore
+production from the repo and expense totals quietly stop tracking their allocations.
+
+## Defects found in the new migrations, and fixed
+
+| # | Defect | Fix |
+| :-- | :--- | :--- |
+| A | `011` named `current_user_role()` in an unconditional `ALTER FUNCTION`. On a database where migration `002` had not created it, the whole transaction aborted with 42883. | `011` now iterates `pg_proc` instead of naming functions. |
+| B | That iteration then pinned `search_path` on **44 pgcrypto and uuid-ossp functions**. On Supabase those live in the `extensions` schema so production was unaffected, but altering extension-owned objects is out of scope and can be undone by `ALTER EXTENSION UPDATE`. | `011` now excludes anything with a `pg_depend` entry of `deptype = 'e'`. Verified: 0 extension functions touched. |
+| C | `008` stopped being replayable once `012` dropped `property_areas.cluster_code` — a static `INSERT` naming a dropped column fails at **parse** time, so no runtime guard can save it. Its verification also asserted `COUNT(*) = 5`, which the sixth area from `012` broke. | `008` seeds without `cluster_code` and populates it through dynamic SQL only while the column exists. Its assertion now checks **the five areas it is responsible for**, not the size of the table. A migration's verification must not turn every later addition into a false failure. |
+
+## Defect found in production: `replace_expense_allocations` has never worked
+
+This is the important one.
+
+Migration `010` added the RPC that makes an expense-entry edit atomic — the fix for D-2. Its INSERT
+reads `elem ->> 'property_area'`, which yields **`text`**. In production that column is the enum
+`property_area_type`, and PostgreSQL does not implicitly cast text to an enum:
+
+```
+ERROR: 42804: column "property_area" is of type property_area_type but expression is of type text
+CONTEXT: PL/pgSQL function replace_expense_allocations(uuid,jsonb) line 23 at SQL statement
+```
+
+`backend/src/routes/admin.ts` routes **every** allocation edit through this RPC, so
+**`PATCH /api/admin/expense-entries/:id` has been failing with a 500 whenever the payload contains
+allocations**, ever since that code shipped. The live function definition was read back from
+production and confirmed to contain the uncast expression.
+
+**It fails safely, and this was verified rather than assumed.** The exception aborts the function's
+transaction, so the `DELETE` rolls back with it and the entry keeps the allocations it had. Measured:
+after a rejected call the entry still held 3 rows totalling 175.00, unchanged. The feature is broken;
+the ledger is not.
+
+The verification for `010` missed it for the third instance of the same reason: it tested against a
+database built from `FULL_DATABASE_SCHEMA.sql`, where the column is `VARCHAR(100)` and uncast text
+inserts perfectly well.
+
+**Fixed by `013_fix_replace_allocations_enum_cast.sql`**, which reads the column's real type from the
+catalogue and casts to it — correct whether the column is the enum or a varchar, the same technique
+that repaired `008`.
+
+## Test results
+
+Built from `FULL_DATABASE_SCHEMA.sql` + `001`–`004` + the seven-drift fixture, on
+`postgres:16-alpine`.
+
+| Test | Result |
+| :--- | :--- |
+| `001`–`013` applied in order, fresh database | **clean** |
+| Whole sequence replayed a 2nd time | **clean** |
+| Whole sequence replayed a 3rd time | **clean** |
+| Extension functions altered by `011` | **0** |
+| Tables without forced RLS after `011` | **none** (21 of 21) |
+| `anon` can execute `current_user_role()` after `011` | **false** |
+| Our functions with a mutable `search_path` after `011` | **none** |
+| Property areas after `012` | **6, of which 4 rental** |
+| Clusters routing nowhere after `012` | **0** |
+| `PH` floor | **4** |
+
+### Behaviour actually exercised
+
+| Test | Expected | Result |
+| :--- | :--- | :--- |
+| Allocate an expense to `Penthouse` | allowed | **allowed** |
+| Allocate to `Front Apt` | refused | **refused** — 22P02, invalid enum label |
+| Trigger recomputes `total_expenses` from allocations | 1,234.50 | **1,234.50** |
+| Rental / personal split via `is_rental_expense` | 1,000.00 / 234.50 | **1,000.00 / 234.50** |
+| Duplicate `(entry, area)` pair | refused | **refused** — BR-044 unique key |
+| `replace_expense_allocations` with a valid 3-area payload | 3 rows, total recomputed | **3 rows, 175.00; rental 150.00 / personal 25.00** |
+| The same function with a bad label | refused, originals intact | **refused; 3 rows / 175.00 survived** |
+| Delete a property area still in use | refused | **refused** — `clusters_expense_area_fkey` |
+| `rooms.floor = 5` | refused | **refused** — the constraint still constrains |
+| Write to a generated column | refused | **refused** — cannot insert a non-DEFAULT value into `fifty_percent_share` |
+
+That last row is the direct confirmation that any Phase 3 insert must omit both generated columns.
+
+## One known limitation
+
+`FULL_DATABASE_SCHEMA.sql` is **not replayable over a database that has had `012` applied**: its
+`clusters` seed does not supply `expense_area`, which `012` makes `NOT NULL`. This is accepted rather
+than worked around — a bootstrap schema is not a migration, and replaying one over a live migrated
+database is not an operation this project should support. Migrations `001`–`013` replay cleanly,
+which is the invariant that matters.
+
+## Reproducing
+
+```bash
+docker run -d --name hivelet-verify -e POSTGRES_PASSWORD=verify -e POSTGRES_DB=hivelet postgres:16-alpine
+docker exec hivelet-verify sh -c 'until pg_isready -q -U postgres; do sleep 1; done'
+docker exec hivelet-verify psql -U postgres -d hivelet -c \
+  "CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS;"
+# then apply, in order:
+#   FULL_DATABASE_SCHEMA.sql, 001-004, _TEST_FIXTURE_production_drift.sql, 005-013
+```
+
+
+---
+
+# Fifth addendum — 014, and two more portability defects testing found
+
+## Migration 014 — the production-only objects are now in version control
+
+Drifts 5 and 7 were not just testing problems. Two objects that **enforce business rules** existed in
+the production database and in no file anywhere:
+
+- `update_expense_entry_total()` + `trg_update_expense_total` — this **is** BR-045.
+- `UNIQUE (expense_entry_id, property_area)` — this **is** BR-044, and it is the only composite
+  candidate key in the schema, which the whole 2NF proof is an argument about.
+
+Reproducing them in the test fixture made migrations testable. It did **not** make a rebuilt database
+correct. `014_codify_production_only_objects.sql` does that: it creates both, guarded and idempotent,
+so it is a **no-op against production** and a repair against anything rebuilt from this repository.
+
+It refuses to add the unique key if the live data would violate it, reporting the number of offending
+pairs rather than failing on a constraint error.
+
+Verified on both paths:
+
+| Path | Result |
+| :--- | :--- |
+| Objects already present (the production case) | no-op; reports "already present"; self-test still passes |
+| Repo-built database with neither object | both created; trigger and key present afterwards |
+| Trigger recomputes `total_expenses` on INSERT | 200.00 as expected |
+| Trigger recomputes on DELETE | 120.00 as expected |
+| Duplicate `(entry, area)` pair | **refused** |
+| Re-run | clean |
+
+## Two portability defects in 012, found by building without the fixture
+
+Running the sequence against a database built from the repository **alone** — no fixture, so
+`property_area` is `VARCHAR(100)` and no enum exists — broke `012` twice:
+
+| Defect | Error | Fix |
+| :--- | :--- | :--- |
+| `ALTER TYPE public.property_area_type ADD VALUE 'Penthouse'` ran unconditionally | `42704: type "public.property_area_type" does not exist` | Guarded on the type existing. Where the column is a varchar there is nothing to extend and the seed works unchanged. |
+| `ADD COLUMN expense_area public.property_area_type` hardcoded the enum as the column type | `42704` again | The type is now read from `property_areas.code` and the column built to match — the same technique that repaired `008`. |
+
+Both matter because `008` deliberately builds `property_areas.code` to match whatever the referencing
+column turned out to be. A later migration that then hardcodes one of the two possibilities undoes
+that care. `012` now adapts the same way `008` does.
+
+`012` produces an identical end state on both database shapes: 6 property areas, 0 clusters routing
+nowhere, and `Linda` → `Back Apartment`.
+
+## Final state of the test suite
+
+Built from `FULL_DATABASE_SCHEMA.sql` + `001`–`004` + the seven-drift fixture + `005`–`014`:
+
+| Run | Result |
+| :--- | :--- |
+| Pass 1 (fresh) | **15 files clean** |
+| Pass 2 (full replay) | **15 files clean** |
+| Pass 3 (full replay) | **15 files clean** |
+| Repo-only build with no fixture, `001`–`014` | **clean** |
+
+**Summary of what testing these three migrations found:** three defects in the migrations themselves
+(`011` aborting on an absent function, `011` altering 44 extension functions, `008` becoming
+unreplayable), two portability defects in `012`, and **one live production defect** —
+`replace_expense_allocations` failing on every call. None of these were visible by reading.

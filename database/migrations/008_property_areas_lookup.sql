@@ -102,27 +102,58 @@ COMMENT ON COLUMN public.property_areas.is_rental_expense IS
 -- -----------------------------------------------------------------------------
 -- 2. Seed. Unquoted string literals are of unknown type and coerce to whatever
 --    code turned out to be, so this works for an enum or a varchar alike.
+--
+--    The seed does NOT name cluster_code. Migration 012 drops that column,
+--    having moved the cluster-to-area mapping onto clusters.expense_area where a
+--    many-clusters-to-one-area relationship can actually be expressed. A static
+--    INSERT naming a dropped column fails at parse time, so no runtime guard can
+--    save it - replaying 008 after 012 (which happens if APPLY_PHASE2.sql is
+--    pasted again) would fail with 42703. The column is therefore populated
+--    separately, through dynamic SQL, and only while it still exists.
 -- -----------------------------------------------------------------------------
-INSERT INTO public.property_areas (code, name, cluster_code, is_rental_expense, display_order, notes)
+INSERT INTO public.property_areas (code, name, is_rental_expense, display_order, notes)
 VALUES
-  ('Boarding House',            'Boarding House Expenses',   'BH',              TRUE,  1,
+  ('Boarding House',            'Boarding House Expenses',   TRUE,  1,
    'Maps to the BH (Main Rooms) cluster.'),
-  ('Main House',                'Main House Expenses',        NULL,             FALSE, 2,
+  ('Main House',                'Main House Expenses',       FALSE, 2,
    'The owner personal residence. Confirmed 2026-09-13 (OD-05). Not a rental '
    'cost; excluded from net rental income. Shares utility bills with the boarding '
    'house, which is why single entries split across two areas.'),
-  ('Front Apartment',           'Front Apartment Expenses',  'Front Apartment', TRUE,  3,
+  ('Front Apartment',           'Front Apartment Expenses',  TRUE,  3,
    'Maps to the Front Apartment cluster.'),
-  ('Back Apartment',            'Back Apartment Expenses',   'Back Apartment',  TRUE,  4,
+  ('Back Apartment',            'Back Apartment Expenses',   TRUE,  4,
    'Maps to the Back Apartment cluster.'),
-  ('Other Expenses / Personal', 'Other Expenses / Personal',  NULL,             FALSE, 5,
+  ('Other Expenses / Personal', 'Other Expenses / Personal', FALSE, 5,
    'Non-rental by definition. Excluded from net rental income.')
 ON CONFLICT (code) DO UPDATE
 SET name              = EXCLUDED.name,
-    cluster_code      = EXCLUDED.cluster_code,
     is_rental_expense = EXCLUDED.is_rental_expense,
     display_order     = EXCLUDED.display_order,
     notes             = EXCLUDED.notes;
+
+-- Populate cluster_code only while the column exists (i.e. before 012).
+DO $seedcluster$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = 'property_areas'
+       AND column_name = 'cluster_code'
+  ) THEN
+    EXECUTE $x$
+      UPDATE public.property_areas SET cluster_code = m.cluster_code
+        FROM (VALUES
+          ('Boarding House',  'BH'),
+          ('Front Apartment', 'Front Apartment'),
+          ('Back Apartment',  'Back Apartment')
+        ) AS m(code, cluster_code)
+       WHERE public.property_areas.code::text = m.code
+    $x$;
+    RAISE NOTICE 'Migration 008: cluster_code populated for 3 areas.';
+  ELSE
+    RAISE NOTICE 'Migration 008: property_areas.cluster_code absent (012 applied) - skipped.';
+  END IF;
+END
+$seedcluster$;
 
 -- -----------------------------------------------------------------------------
 -- 3. Refuse to constrain live data that would not satisfy the constraint.
@@ -165,25 +196,39 @@ CREATE INDEX IF NOT EXISTS idx_expense_alloc_area
 -- -----------------------------------------------------------------------------
 -- 5. Verify.
 -- -----------------------------------------------------------------------------
+-- The assertion is about THE FIVE AREAS THIS MIGRATION SEEDS, not about the size
+-- of the table. An earlier version asserted `COUNT(*) = 5` and broke the moment
+-- 012 added a sixth: replaying 008 then failed with "expected 5, found 6". A
+-- migration's verification must state what that migration is responsible for,
+-- or it turns every later addition into a false failure.
 DO $mig$
 DECLARE
-  area_count    INTEGER;
+  seeded_cnt    INTEGER;
   nonrental_cnt INTEGER;
+  total_cnt     INTEGER;
 BEGIN
-  SELECT COUNT(*) INTO area_count    FROM public.property_areas;
-  SELECT COUNT(*) INTO nonrental_cnt FROM public.property_areas WHERE NOT is_rental_expense;
+  SELECT COUNT(*) INTO seeded_cnt FROM public.property_areas
+   WHERE code::text IN ('Boarding House', 'Main House', 'Front Apartment',
+                        'Back Apartment', 'Other Expenses / Personal');
 
-  IF area_count <> 5 THEN
-    RAISE EXCEPTION 'Migration 008 failed: expected 5 property areas, found %.', area_count;
+  SELECT COUNT(*) INTO nonrental_cnt FROM public.property_areas
+   WHERE NOT is_rental_expense
+     AND code::text IN ('Main House', 'Other Expenses / Personal');
+
+  SELECT COUNT(*) INTO total_cnt FROM public.property_areas;
+
+  IF seeded_cnt <> 5 THEN
+    RAISE EXCEPTION 'Migration 008 failed: expected its 5 seeded property areas, found %.', seeded_cnt;
   END IF;
   IF nonrental_cnt <> 2 THEN
     RAISE EXCEPTION
-      'Migration 008 failed: expected 2 non-rental areas (Main House, Other/Personal), found %.',
+      'Migration 008 failed: Main House and Other/Personal must both be non-rental, found % of 2.',
       nonrental_cnt;
   END IF;
 
-  RAISE NOTICE 'Migration 008 OK: 5 property areas, 2 of them non-rental, '
-               'allocations now joined to the lookup by foreign key.';
+  RAISE NOTICE 'Migration 008 OK: its 5 areas present (% in the table overall), '
+               'Main House and Other/Personal non-rental, allocations joined to '
+               'the lookup by foreign key.', total_cnt;
 END
 $mig$;
 

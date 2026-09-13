@@ -41,7 +41,24 @@
 -- ---------------------------------------------------------------------------
 -- Step 1 - extend the enum. Must commit before the value can be used.
 -- ---------------------------------------------------------------------------
-ALTER TYPE public.property_area_type ADD VALUE IF NOT EXISTS 'Penthouse';
+-- Guarded, because the enum only exists in production. On a database built from
+-- FULL_DATABASE_SCHEMA.sql the column is VARCHAR(100) and migration 008 builds
+-- property_areas.code to match it, so there is no type to extend and the seed in
+-- step 2 works unchanged. An unguarded ALTER TYPE here failed with 42704 on
+-- exactly such a database during testing.
+DO $mig012enum$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace
+     WHERE n.nspname = 'public' AND t.typname = 'property_area_type'
+  ) THEN
+    ALTER TYPE public.property_area_type ADD VALUE IF NOT EXISTS 'Penthouse';
+    RAISE NOTICE '012: property_area_type extended with Penthouse';
+  ELSE
+    RAISE NOTICE '012: property_area_type not present - column is not an enum, nothing to extend';
+  END IF;
+END
+$mig012enum$;
 
 
 -- ---------------------------------------------------------------------------
@@ -68,9 +85,40 @@ ON CONFLICT (code) DO UPDATE
       display_order     = EXCLUDED.display_order,
       notes             = EXCLUDED.notes;
 
--- 2b. Add the correctly-sided mapping column.
-ALTER TABLE public.clusters
-  ADD COLUMN IF NOT EXISTS expense_area public.property_area_type;
+-- 2b. Add the correctly-sided mapping column, typed to match the key it will
+--     reference. property_areas.code is the enum in production and VARCHAR(100)
+--     on a database built from FULL_DATABASE_SCHEMA.sql, because migration 008
+--     builds it to match the referencing column. Hardcoding the enum here failed
+--     with 42704 on such a database during testing, so the type is read rather
+--     than assumed - the same technique that repaired 008.
+DO $mig012col$
+DECLARE
+  v_code_type text;
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = 'clusters' AND column_name = 'expense_area'
+  ) THEN
+    RAISE NOTICE '012: clusters.expense_area already present';
+    RETURN;
+  END IF;
+
+  SELECT format_type(a.atttypid, a.atttypmod)
+    INTO v_code_type
+    FROM pg_attribute a
+    JOIN pg_class c     ON c.oid = a.attrelid
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+   WHERE n.nspname = 'public' AND c.relname = 'property_areas' AND a.attname = 'code'
+     AND a.attnum > 0 AND NOT a.attisdropped;
+
+  IF v_code_type IS NULL THEN
+    RAISE EXCEPTION '012: property_areas.code not found - run migration 008 first';
+  END IF;
+
+  EXECUTE format('ALTER TABLE public.clusters ADD COLUMN expense_area %s', v_code_type);
+  RAISE NOTICE '012: clusters.expense_area added as %', v_code_type;
+END
+$mig012col$;
 
 DO $mig012a$
 BEGIN
