@@ -242,8 +242,13 @@ router.get(
       return;
     }
 
-    const clientBaseUrl = session.returnUrl ? session.returnUrl.split('?')[0] : (process.env.CLIENT_URL || 'http://localhost:5173');
-    const cancelUrl = `${session.returnUrl || clientBaseUrl + '/tenant'}?status=cancelled`;
+    // Both go through safeReturnUrl. The previous version read process.env.CLIENT_URL
+    // directly, which pointed at port 5174 - the dev server of a `website/` folder that
+    // no longer exists - so cancelling a checkout sent the payer to a dead port. It also
+    // bypassed the origin check that the rest of this flow relies on.
+    const cancelBase = safeReturnUrl(session.returnUrl, defaultReturnUrl());
+    const clientBaseUrl = cancelBase.split('?')[0].replace(/\/tenant(\/payments)?$/, '');
+    const cancelUrl = `${cancelBase.split('?')[0]}?status=cancelled`;
     const host = req.get('host') || 'localhost:5000';
     const mobilePayUrl = `${req.protocol}://${host}/api/public/payments/mock-gateway?sessionId=${sessionId}&view=mobile`;
     const qrDataUrl = await QRCode.toDataURL(mobilePayUrl, {
