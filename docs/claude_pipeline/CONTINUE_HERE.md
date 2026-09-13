@@ -21,8 +21,8 @@
 > is in the third addendum of `database/migrations/VERIFICATION.md`. **`APPLY_PHASE2.sql` does not
 > need to be run again.**
 >
-> **`011` and `012` could not be applied from the session that wrote them** — the environment refused
-> the write with `[Production Deploy]`. They are ready to run as-is.
+> **`011`–`014` could not be applied from the session that wrote them** — the environment refused the
+> write with `[Production Deploy]`. They are written, tested, and ready to run as-is.
 >
 > ### THERE IS A BROKEN FEATURE IN PRODUCTION RIGHT NOW
 >
@@ -38,7 +38,7 @@
 > **It fails safely — verified, not assumed.** The exception rolls the function's `DELETE` back with
 > it, so the entry keeps the allocations it had. No data has been lost. Fixed by `013`.
 >
-> ### Three things to do first, in this order
+> ### Four things to do first, in this order
 >
 > 1. **Run `database/migrations/013_fix_replace_allocations_enum_cast.sql`.** This is the urgent one —
 >    it repairs the broken feature above. It self-verifies behaviourally: it creates a test entry,
@@ -56,7 +56,7 @@
 >    the expense-total trigger (BR-045) and the composite unique key (BR-044), which until now lived
 >    **only** inside the production database.
 >
-> All three were applied in order to a throwaway PostgreSQL 16 built to resemble production, replayed
+> All four were applied in order to a throwaway PostgreSQL 16 built to resemble production, replayed
 > twice more to prove idempotency, and exercised behaviourally. Full record in
 > `database/migrations/VERIFICATION.md`, fourth addendum.
 >
