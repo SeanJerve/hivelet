@@ -46,6 +46,95 @@ person-to-person, and nothing in the repo can substitute for them.
 | 4 | **`.env`**, or at least the Supabase and Adyen values. `JWT_SECRET` he should generate himself. | Gitignored by design. |
 | 5 | **A second Adyen webhook** — see the warning below. | Requires clicking in the Adyen Customer Area. |
 
+### The 16 variables, sorted by how much care each needs
+
+All sixteen are read by the backend; none is decorative. What differs is the damage
+each does if it leaks.
+
+**Tier A — not secrets. Post these in the group chat freely.**
+
+| Variable | Value | Why it is safe |
+| :--- | :--- | :--- |
+| `PORT` | `5000` | — |
+| `NODE_ENV` | `development` | — |
+| `JWT_EXPIRES_IN` | `7d` | — |
+| `CLIENT_URL` | `http://localhost:5173` | — |
+| `CORS_ORIGINS` | `http://localhost:5173,http://localhost:5174` | — |
+| `ADYEN_ENVIRONMENT` | `TEST` | — |
+| `SUPABASE_URL` | `https://<project-ref>.supabase.co` | Identifies the project; authorises nothing. |
+| `ADYEN_MERCHANT_ACCOUNT` | e.g. `HiveletECOM` | An identifier, not a credential. |
+| `ADYEN_CLIENT_KEY` | `test_…` | **Designed** to ship inside browser JavaScript. Restricted by allowed origins, so it is useless from anywhere else. |
+| `SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` | Publishable by design, and in this project it is powerless besides: migration 002 leaves it with no grant on any table. Verify with the health check — `enforced` means it genuinely cannot read. |
+
+**Tier B — each person generates their own. Never share, never copy.**
+
+| Variable | How |
+| :--- | :--- |
+| `JWT_SECRET` | `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
+
+Each machine signs and verifies its own tokens, so they do not need to match. Sharing
+one only widens the blast radius if a laptop is lost.
+
+**Tier C — real secrets. These are the ones to be careful with.**
+
+| Variable | What it lets the holder do |
+| :--- | :--- |
+| `SUPABASE_SECRET_KEY` | **Bypasses row-level security completely.** Read and write every row in the live ledger — 937 income records and the owner's real financial history. The most dangerous value in the project. |
+| `ADYEN_API_KEY` | Create checkout sessions against the merchant account. |
+| `ADYEN_HMAC_KEY` | Forge a notification our webhook would accept as genuine, which is the one path that writes a payment. |
+| `ADYEN_WEBHOOK_USER` / `ADYEN_WEBHOOK_PASSWORD` | Reach the webhook handler. Less severe than the HMAC key, since HMAC still has to verify. |
+
+### Is a group chat good enough for Tier C?
+
+Honestly: it is the weak point, and worth two minutes of care rather than pretending
+otherwise. A group chat is a **persistent, searchable, cloud-backed** log. The
+credentials that leaked in this project leaked because they sat somewhere durable that
+later became visible.
+
+Four things that reduce the risk without slowing anyone down:
+
+1. **Issue one Supabase secret key per person, named for them.** Then a single leak is
+   revoked by deleting that one key, instead of rotating everything and breaking every
+   teammate mid-defense. This is the single biggest improvement available.
+2. **Send Tier C in one message, and delete it once each person confirms they have it.**
+   Deletion is imperfect, but a message that is gone cannot be found by someone scrolling
+   the history in six months.
+3. **Never screenshot a key.** Screenshots land in camera rolls and sync to cloud
+   backups, which is exactly how the earlier exposure outlived the file it came from.
+4. **Revoke everything after the defense.** Supabase → delete the keys; Adyen → revoke the
+   API credential. It takes a minute and closes the whole thing out.
+
+**One value the teammate does NOT need from you:** if he creates his own second Adyen
+webhook (see below), he generates his **own** `ADYEN_HMAC_KEY` and
+`ADYEN_WEBHOOK_PASSWORD`. Only `ADYEN_API_KEY` has to be shared.
+
+### A message you can paste, with the blanks marked
+
+```
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_<paste>
+SUPABASE_SECRET_KEY=sb_secret_<paste - YOUR OWN key, not a shared one>
+
+JWT_SECRET=<generate your own, do not use mine>
+JWT_EXPIRES_IN=7d
+
+ADYEN_API_KEY=<paste>
+ADYEN_MERCHANT_ACCOUNT=<paste>
+ADYEN_CLIENT_KEY=test_<paste>
+ADYEN_ENVIRONMENT=TEST
+
+ADYEN_HMAC_KEY=<from YOUR OWN webhook, generated when you create it>
+ADYEN_WEBHOOK_USER=<choose one, set the same value in Adyen>
+ADYEN_WEBHOOK_PASSWORD=<choose one, set the same value in Adyen>
+
+PORT=5000
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+CORS_ORIGINS=http://localhost:5173,http://localhost:5174
+```
+
+Save it as `.env` at the repository root — not in `backend/`, which is not read.
+
 ### Two people cannot share one webhook
 
 An Adyen webhook points at exactly **one** URL. If both machines run their own
