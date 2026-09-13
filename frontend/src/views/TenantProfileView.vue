@@ -167,15 +167,15 @@ function handleReset() {
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Tenant</span>
           <span>/</span>
-          <span class="font-bold text-[#1c1917]">My Profile</span>
+          <span class="font-bold text-foreground">My Profile</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Resident Profile</h1>
-        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">Manage your personal contact details, emergency info, and account profile.</p>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Resident Profile</h1>
+        <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">Manage your personal contact details, emergency info, and account profile.</p>
       </div>
     </div>
 
@@ -212,9 +212,9 @@ function handleReset() {
       </div>
 
       <!-- Avatar & Account Identity Card -->
-      <div class="surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xs">
+      <div class="surface-card rounded-2xl border border-border bg-white p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xs">
         <div class="relative group">
-          <div class="size-24 rounded-full bg-[#1e2532] text-white flex items-center justify-center text-2xl font-black shadow-md overflow-hidden border-4 border-white ring-2 ring-[#e7e5e4]">
+          <div class="size-24 rounded-full bg-neutral-dark text-white flex items-center justify-center text-2xl font-black shadow-md overflow-hidden border-4 border-white ring-2 ring-border">
             <img
               v-if="form.avatar_url"
               :src="form.avatar_url"
@@ -226,7 +226,7 @@ function handleReset() {
 
           <label
             for="avatar-upload-input"
-            class="absolute bottom-0 right-0 p-2 bg-[#1e2532] text-white rounded-full shadow-md cursor-pointer hover:bg-[#2b3648] transition-colors"
+            class="absolute bottom-0 right-0 p-2 bg-neutral-dark text-white rounded-full shadow-md cursor-pointer hover:bg-neutral-dark-strong transition-colors"
             title="Upload photo"
           >
             <Camera class="size-3.5" />
@@ -242,39 +242,39 @@ function handleReset() {
 
         <div class="text-center sm:text-left space-y-1.5 flex-1">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h2 class="font-display font-black text-xl text-[#1c1917]">{{ form.full_name }}</h2>
+            <h2 class="font-display font-black text-xl text-foreground">{{ form.full_name }}</h2>
             <span class="badge-soft badge-success text-[11px] font-bold w-fit mx-auto sm:mx-0">
               Active Tenant
             </span>
           </div>
-          <p class="text-xs text-[#71717a] flex items-center justify-center sm:justify-start gap-1.5">
-            <Mail class="size-3.5 text-[#0c66e4]" /> {{ identity.email }}
+          <p class="text-xs text-muted-foreground flex items-center justify-center sm:justify-start gap-1.5">
+            <Mail class="size-3.5 text-primary" /> {{ identity.email }}
           </p>
-          <p class="text-xs text-[#71717a]">
-            Role: <strong class="text-[#1c1917] capitalize">{{ identity.role }}</strong> · Status: <strong class="text-emerald-700 capitalize">{{ identity.account_status }}</strong>
+          <p class="text-xs text-muted-foreground">
+            Role: <strong class="text-foreground capitalize">{{ identity.role }}</strong> · Status: <strong class="text-emerald-700 capitalize">{{ identity.account_status }}</strong>
           </p>
         </div>
       </div>
 
       <!-- Editable Profile Form -->
-      <form @submit.prevent="handleSave" class="surface-card rounded-2xl border border-[#e7e5e4] bg-white overflow-hidden shadow-xs">
-        <div class="px-6 py-4 border-b border-[#e7e5e4] bg-[#fafaf9] flex items-center justify-between">
+      <form @submit.prevent="handleSave" class="surface-card rounded-2xl border border-border bg-white overflow-hidden shadow-xs">
+        <div class="px-6 py-4 border-b border-border bg-background flex items-center justify-between">
           <div>
-            <h2 class="font-display font-extrabold text-sm text-[#1c1917] flex items-center gap-2">
-              <User class="size-4 text-[#0c66e4]" />
+            <h2 class="font-display font-extrabold text-sm text-foreground flex items-center gap-2">
+              <User class="size-4 text-primary" />
               Edit Profile Details
             </h2>
-            <p class="text-xs text-[#71717a] mt-0.5">Update your contact numbers, emergency contact, and links</p>
+            <p class="text-xs text-muted-foreground mt-0.5">Update your contact numbers, emergency contact, and links</p>
           </div>
         </div>
 
         <div class="p-6 space-y-6">
           <!-- Full Name & Phone Number -->
           <div>
-            <h3 class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider mb-3">Resident Information</h3>
+            <h3 class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider mb-3">Resident Information</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="full-name">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="full-name">
                   Full Display Name
                 </label>
                 <input
@@ -288,7 +288,7 @@ function handleReset() {
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="phone">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="phone">
                   Contact Phone Number
                 </label>
                 <input
@@ -303,14 +303,14 @@ function handleReset() {
             </div>
           </div>
 
-          <div class="border-t border-[#e7e5e4]"></div>
+          <div class="border-t border-border"></div>
 
           <!-- Occupation & Socials -->
           <div>
-            <h3 class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider mb-3">Work &amp; Social Profile</h3>
+            <h3 class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider mb-3">Work &amp; Social Profile</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="occupation">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="occupation">
                   Occupation / Course &amp; University
                 </label>
                 <input
@@ -323,7 +323,7 @@ function handleReset() {
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="facebook">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="facebook">
                   Facebook Profile Link
                 </label>
                 <input
@@ -337,17 +337,17 @@ function handleReset() {
             </div>
           </div>
 
-          <div class="border-t border-[#e7e5e4]"></div>
+          <div class="border-t border-border"></div>
 
           <!-- Emergency Contact -->
           <div>
-            <h3 class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <h3 class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
               <LifeBuoy class="size-3.5 text-rose-500" />
               Emergency Contact Person
             </h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ec-name">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ec-name">
                   Emergency Contact Full Name
                 </label>
                 <input
@@ -361,7 +361,7 @@ function handleReset() {
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ec-phone">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ec-phone">
                   Emergency Contact Phone Number
                 </label>
                 <input
@@ -378,8 +378,8 @@ function handleReset() {
         </div>
 
         <!-- Action Bar -->
-        <div class="px-6 py-4 border-t border-[#e7e5e4] bg-[#fafaf9] flex items-center justify-between gap-3 flex-wrap">
-          <p class="text-xs text-[#71717a]">
+        <div class="px-6 py-4 border-t border-border bg-background flex items-center justify-between gap-3 flex-wrap">
+          <p class="text-xs text-muted-foreground">
             {{ isDirty ? 'Unsaved profile modifications.' : 'Profile is up to date.' }}
           </p>
           <div class="flex items-center gap-2">

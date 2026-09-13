@@ -50,7 +50,7 @@ const isPublicPage = computed(() =>
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#fafaf9] text-[#1c1917] flex flex-col font-sans selection:bg-[#0c66e4]/10 selection:text-[#1c1917]">
+  <div class="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/10 selection:text-foreground">
     <!-- Offline status notification banner (BR-031, System Bible Section 21) -->
     <div 
       v-if="isOffline" 

@@ -104,7 +104,7 @@ async function handleSignOut() {
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 w-full bg-white border-b border-[#e7e5e4] shadow-xs">
+  <header class="sticky top-0 z-40 w-full bg-white border-b border-border shadow-xs">
     <div class="max-w-[1600px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 relative">
       
       <!-- Left: Mobile Menu Toggle & Brand Logo -->
@@ -113,7 +113,7 @@ async function handleSignOut() {
         <button
           v-if="!isPublicRoute"
           @click="toggleSidebar"
-          class="flex lg:hidden p-2 rounded-xl text-[#71717a] hover:bg-[#f5f5f4] hover:text-[#1c1917] transition-colors cursor-pointer"
+          class="flex lg:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           aria-label="Toggle navigation"
         >
           <Menu class="size-5" />
@@ -123,14 +123,14 @@ async function handleSignOut() {
         <button
           v-if="isPublicRoute"
           @click="isMobilePublicNavOpen = !isMobilePublicNavOpen"
-          class="flex md:hidden p-2 rounded-xl text-[#71717a] hover:bg-[#f5f5f4] hover:text-[#1c1917] transition-colors cursor-pointer"
+          class="flex md:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           aria-label="Toggle navigation menu"
         >
           <Menu class="size-5" />
         </button>
 
         <router-link :to="brandRoute" class="flex items-center gap-2 group">
-          <span class="font-display font-black text-xl tracking-tight text-[#1c1917]">HIVELET</span>
+          <span class="font-display font-black text-xl tracking-tight text-foreground">HIVELET</span>
         </router-link>
       </div>
 
@@ -138,25 +138,25 @@ async function handleSignOut() {
       <nav v-if="isPublicRoute" class="hidden md:flex items-center gap-1 sm:gap-2">
         <button
           @click="scrollToSection('categories')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-[#1c1917] hover:text-[#0c66e4] hover:bg-[#f5f5f4] transition-all cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground hover:text-primary hover:bg-muted transition-all cursor-pointer"
         >
           Category Section
         </button>
         <button
           @click="scrollToSection('faqs')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-[#1c1917] hover:text-[#0c66e4] hover:bg-[#f5f5f4] transition-all cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground hover:text-primary hover:bg-muted transition-all cursor-pointer"
         >
           FAQs
         </button>
         <button
           @click="scrollToSection('inquire-now')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-[#1c1917] hover:text-[#0c66e4] hover:bg-[#f5f5f4] transition-all cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground hover:text-primary hover:bg-muted transition-all cursor-pointer"
         >
           Inquire Now
         </button>
         <button
           @click="scrollToSection('location')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-[#1c1917] hover:text-[#0c66e4] hover:bg-[#f5f5f4] transition-all cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground hover:text-primary hover:bg-muted transition-all cursor-pointer"
         >
           Location
         </button>
@@ -175,16 +175,16 @@ async function handleSignOut() {
           >
             <button
               @click="isProfilePopoverOpen = !isProfilePopoverOpen"
-              class="flex items-center gap-1.5 p-1 rounded-xl hover:bg-[#f5f5f4] transition-colors cursor-pointer group"
+              class="flex items-center gap-1.5 p-1 rounded-xl hover:bg-muted transition-colors cursor-pointer group"
               title="Account Menu"
               aria-label="User Account Menu"
             >
-              <div class="size-9 rounded-full bg-gradient-to-tr from-[#0c66e4] to-sky-400 p-0.5 shadow-xs group-hover:ring-2 group-hover:ring-[#0c66e4]/40 transition-all flex items-center justify-center">
-                <span class="w-full h-full rounded-full bg-[#0c66e4] flex items-center justify-center text-[11px] font-black tracking-wider text-white">
+              <div class="size-9 rounded-full bg-gradient-to-tr from-primary to-sky-400 p-0.5 shadow-xs group-hover:ring-2 group-hover:ring-primary/40 transition-all flex items-center justify-center">
+                <span class="w-full h-full rounded-full bg-primary flex items-center justify-center text-[11px] font-black tracking-wider text-white">
                   {{ userInitials }}
                 </span>
               </div>
-              <ChevronDown :class="['size-3.5 text-[#71717a] transition-transform duration-150', isProfilePopoverOpen && 'rotate-180']" />
+              <ChevronDown :class="['size-3.5 text-muted-foreground transition-transform duration-150', isProfilePopoverOpen && 'rotate-180']" />
             </button>
 
             <!-- Transparent click-outside backdrop (mobile) -->
@@ -205,19 +205,19 @@ async function handleSignOut() {
             >
               <div
                 v-if="isProfilePopoverOpen"
-                class="absolute right-0 top-12 z-50 w-72 sm:w-80 rounded-2xl border border-[#e7e5e4] bg-white p-5 shadow-2xl origin-top-right"
+                class="absolute right-0 top-12 z-50 w-72 sm:w-80 rounded-2xl border border-border bg-white p-5 shadow-2xl origin-top-right"
                 @mouseenter="handleMouseEnter"
                 @mouseleave="handleMouseLeave"
               >
                 <!-- Centered Profile Header with Circular Avatar -->
-                <div class="flex flex-col items-center text-center pb-4 border-b border-[#e7e5e4]">
-                  <div class="size-16 rounded-full ring-4 ring-blue-100 border-2 border-white shadow-md bg-gradient-to-tr from-[#0c66e4] to-sky-400 flex items-center justify-center text-white text-lg font-black tracking-wider">
+                <div class="flex flex-col items-center text-center pb-4 border-b border-border">
+                  <div class="size-16 rounded-full ring-4 ring-blue-100 border-2 border-white shadow-md bg-gradient-to-tr from-primary to-sky-400 flex items-center justify-center text-white text-lg font-black tracking-wider">
                     {{ userInitials }}
                   </div>
-                  <p class="font-display font-black text-sm text-[#1c1917] mt-3">
+                  <p class="font-display font-black text-sm text-foreground mt-3">
                     {{ isTenant ? currentUser.fullName : 'Administrator' }}
                   </p>
-                  <p class="text-xs text-[#71717a] truncate max-w-[240px] mt-0.5">
+                  <p class="text-xs text-muted-foreground truncate max-w-[240px] mt-0.5">
                     {{ currentUser.email }}
                   </p>
                   <span class="badge-soft badge-blue text-[10px] font-extrabold uppercase mt-2.5">
@@ -231,9 +231,9 @@ async function handleSignOut() {
                     v-if="isTenant"
                     to="/tenant/profile"
                     @click="isProfilePopoverOpen = false"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#1c1917] hover:bg-[#f5f5f4] transition-colors"
+                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-muted transition-colors"
                   >
-                    <User class="size-4 text-[#0c66e4]" />
+                    <User class="size-4 text-primary" />
                     <span>My Profile</span>
                   </router-link>
 
@@ -247,7 +247,7 @@ async function handleSignOut() {
                 </div>
 
                 <!-- Discreet Footer -->
-                <div class="pt-3 border-t border-[#e7e5e4] flex items-center justify-between text-[10px] text-[#a1a1aa]">
+                <div class="pt-3 border-t border-border flex items-center justify-between text-[10px] text-muted-foreground-soft">
                   <span>Hivelet Portal</span>
                   <span>Fe Galang Da Silva BH</span>
                 </div>
@@ -273,29 +273,29 @@ async function handleSignOut() {
     <!-- Mobile Public Navigation Dropdown Drawer -->
     <div
       v-if="isPublicRoute && isMobilePublicNavOpen"
-      class="md:hidden border-t border-[#e7e5e4] bg-white px-4 py-3 space-y-1 shadow-md animate-in slide-in-from-top duration-150"
+      class="md:hidden border-t border-border bg-white px-4 py-3 space-y-1 shadow-md animate-in slide-in-from-top duration-150"
     >
       <button
         @click="scrollToSection('categories'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-[#1c1917] hover:bg-[#f5f5f4] hover:text-[#0c66e4] transition-all cursor-pointer"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary transition-all cursor-pointer"
       >
         Category Section
       </button>
       <button
         @click="scrollToSection('faqs'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-[#1c1917] hover:bg-[#f5f5f4] hover:text-[#0c66e4] transition-all cursor-pointer"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary transition-all cursor-pointer"
       >
         FAQs
       </button>
       <button
         @click="scrollToSection('inquire-now'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-[#1c1917] hover:bg-[#f5f5f4] hover:text-[#0c66e4] transition-all cursor-pointer"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary transition-all cursor-pointer"
       >
         Inquire Now
       </button>
       <button
         @click="scrollToSection('location'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-[#1c1917] hover:bg-[#f5f5f4] hover:text-[#0c66e4] transition-all cursor-pointer"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary transition-all cursor-pointer"
       >
         Location
       </button>

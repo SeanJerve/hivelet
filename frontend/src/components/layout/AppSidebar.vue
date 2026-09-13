@@ -34,7 +34,7 @@ const ADMIN_NAV = computed(() => [
   { to: '/admin/income', aliases: ['/basis/income'], label: 'Income & Collections', icon: Wallet, badge: null, badgeColor: '' },
   { to: '/admin/expenses', aliases: ['/basis/expenses'], label: 'Monthly Expenses', icon: ReceiptText, badge: null, badgeColor: '' },
   { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Maintenance Dispatch', icon: Wrench, badge: urgentTicketsCount.value > 0 ? urgentTicketsCount.value : null, badgeColor: 'bg-rose-500 text-white' },
-  { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Prospect Inquiries', icon: Inbox, badge: inquiriesCount.value > 0 ? inquiriesCount.value : null, badgeColor: 'bg-[#0c66e4] text-white' },
+  { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Prospect Inquiries', icon: Inbox, badge: inquiriesCount.value > 0 ? inquiriesCount.value : null, badgeColor: 'bg-primary text-white' },
   { to: '/admin/audit-logs', aliases: ['/admin/audit'], label: 'System Audit Trail', icon: ShieldCheck, badge: null, badgeColor: '' },
 ]);
 
@@ -63,8 +63,8 @@ function closeMobileNav() {
 <template>
   <div>
     <!-- Desktop Sidebar -->
-    <aside class="sticky top-20 hidden h-[calc(100dvh-6rem)] w-64 shrink-0 rounded-2xl border border-[#e7e5e4] bg-white p-3 shadow-xs lg:block my-6">
-      <p class="px-3 py-2 text-[11px] font-extrabold uppercase tracking-widest text-[#71717a]">
+    <aside class="sticky top-20 hidden h-[calc(100dvh-6rem)] w-64 shrink-0 rounded-2xl border border-border bg-white p-3 shadow-xs lg:block my-6">
+      <p class="px-3 py-2 text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">
         {{ spaceCategory }}
       </p>
 
@@ -76,8 +76,8 @@ function closeMobileNav() {
           :class="[
             'flex min-h-11 items-center justify-between rounded-xl px-3.5 text-sm font-semibold transition-all duration-150',
             isItemActive(item.to, item.aliases)
-              ? 'bg-[#e9f2ff] text-[#0c66e4] font-bold shadow-xs'
-              : 'text-[#475569] hover:bg-[#f5f5f4] hover:text-[#1c1917]'
+              ? 'bg-primary-soft text-primary font-bold shadow-xs'
+              : 'text-[#475569] hover:bg-muted hover:text-foreground'
           ]"
         >
           <div class="flex items-center gap-3">
@@ -86,7 +86,7 @@ function closeMobileNav() {
               :class="[
                 'size-4 shrink-0 transition-colors',
                 isItemActive(item.to, item.aliases) 
-                  ? 'text-[#0c66e4]' 
+                  ? 'text-primary' 
                   : 'text-[#64748b]'
               ]" 
             />
@@ -128,13 +128,13 @@ function closeMobileNav() {
         >
           <div class="w-72 bg-white h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto">
             <div class="space-y-6">
-              <div class="flex items-center justify-between pb-4 border-b border-[#e7e5e4]">
+              <div class="flex items-center justify-between pb-4 border-b border-border">
                 <div>
-                  <span class="font-display font-black text-base text-[#1c1917]">HIVELET</span>
+                  <span class="font-display font-black text-base text-foreground">HIVELET</span>
                 </div>
                 <button 
                   @click="closeMobileNav" 
-                  class="p-1.5 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] hover:text-[#1c1917] cursor-pointer"
+                  class="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
                   aria-label="Close menu"
                 >
                   <X class="size-5" />
@@ -143,7 +143,7 @@ function closeMobileNav() {
 
               <!-- Section Specific Navigation -->
               <div>
-                <p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-[#71717a]">
+                <p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                   {{ spaceCategory }}
                 </p>
                 <nav class="grid gap-1">
@@ -155,8 +155,8 @@ function closeMobileNav() {
                     :class="[
                       'flex min-h-11 items-center justify-between rounded-xl px-3 text-xs sm:text-sm font-semibold transition-all',
                       isItemActive(item.to, item.aliases)
-                        ? 'bg-[#e9f2ff] text-[#0c66e4] font-bold'
-                        : 'text-[#475569] hover:bg-[#f5f5f4]'
+                        ? 'bg-primary-soft text-primary font-bold'
+                        : 'text-[#475569] hover:bg-muted'
                     ]"
                   >
                     <div class="flex items-center gap-3">
@@ -165,7 +165,7 @@ function closeMobileNav() {
                         :class="[
                           'size-4 shrink-0',
                           isItemActive(item.to, item.aliases) 
-                            ? 'text-[#0c66e4]' 
+                            ? 'text-primary' 
                             : 'text-[#64748b]'
                         ]" 
                       />
@@ -183,8 +183,8 @@ function closeMobileNav() {
               </div>
             </div>
 
-            <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4] text-xs text-[#71717a] mt-6">
-              <p class="font-bold text-[#1c1917]">Fe Galang Da Silva Boarding House</p>
+            <div class="p-3 bg-background rounded-xl border border-border text-xs text-muted-foreground mt-6">
+              <p class="font-bold text-foreground">Fe Galang Da Silva Boarding House</p>
               <p class="text-[11px] mt-0.5">33 Rentable Units • Legazpi City</p>
             </div>
           </div>

@@ -231,17 +231,17 @@ function triggerRecord() {
   >
     <div class="surface-card w-full max-w-2xl shadow-2xl p-6 space-y-4 rounded-2xl bg-white animate-in fade-in zoom-in-95 duration-150 my-6">
       
-      <div class="flex justify-between items-start border-b border-[#e7e5e4] pb-3">
+      <div class="flex justify-between items-start border-b border-border pb-3">
         <div class="flex items-center gap-2.5">
-          <div class="grid size-9 place-items-center rounded-xl bg-[#fbf6ee] text-[#8a5814]">
+          <div class="grid size-9 place-items-center rounded-xl bg-[#fbf6ee] text-accent-ink">
             <Banknote class="size-5" />
           </div>
           <div>
-            <h3 class="font-display font-extrabold text-base text-[#1c1917]">Record On-Site Payment</h3>
-            <p class="text-xs text-[#71717a]">Logs a cash or online remittance received from a tenant.</p>
+            <h3 class="font-display font-extrabold text-base text-foreground">Record On-Site Payment</h3>
+            <p class="text-xs text-muted-foreground">Logs a cash or online remittance received from a tenant.</p>
           </div>
         </div>
-        <button @click="closeModal" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer">
+        <button @click="closeModal" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
           <X class="size-5" />
         </button>
       </div>
@@ -249,8 +249,8 @@ function triggerRecord() {
       <form @submit.prevent="triggerRecord" class="space-y-4 text-xs">
         <!-- Room/Unit selector with dynamic occupants info -->
         <div>
-          <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Unit</label>
-          <select v-model="selectedUnit" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none">
+          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Unit</label>
+          <select v-model="selectedUnit" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none">
             <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
               {{ r.unitCode.toUpperCase() }} — {{ formatUnitOccupantsSummary(r.unitCode).text }} ({{ r.cluster }})
             </option>
@@ -260,23 +260,23 @@ function triggerRecord() {
         <!-- Rent Amount & Water Payment Row -->
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Amount for Rent (₱)</label>
-            <input v-model.number="rentAmount" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Amount for Rent (₱)</label>
+            <input v-model.number="rentAmount" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
           </div>
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a]">Payment for Water (₱)</label>
-              <span class="text-[10px] font-semibold text-[#0c66e4]">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">Payment for Water (₱)</label>
+              <span class="text-[10px] font-semibold text-primary">
                 ₱200 × {{ currentOccupantsCount }} {{ currentOccupantsCount === 1 ? 'occupant' : 'occupants' }}
               </span>
             </div>
-            <input v-model.number="waterAmount" type="number" min="0" step="200" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
-            <p class="text-[10px] text-[#71717a] mt-1">
+            <input v-model.number="waterAmount" type="number" min="0" step="200" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
+            <p class="text-[10px] text-muted-foreground mt-1">
               <span v-if="selectedUnit.toLowerCase() === 'lf' || selectedUnit.toLowerCase() === 'lb'">
                 Fixed Linda utility rule (₱{{ selectedUnit.toLowerCase() === 'lf' ? 400 : 200 }}/mo)
               </span>
               <span v-else>
-                Dynamic: <strong class="text-[#1c1917]">{{ currentOccupantsCount }} Headcount</strong> ({{ unitOccupantsSummary.text }})
+                Dynamic: <strong class="text-foreground">{{ currentOccupantsCount }} Headcount</strong> ({{ unitOccupantsSummary.text }})
               </span>
             </p>
           </div>
@@ -285,59 +285,59 @@ function triggerRecord() {
         <!-- GBG Fee & OR Receipt Number Row -->
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">GBG Fee (₱)</label>
-            <input v-model.number="gbgFee" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">GBG Fee (₱)</label>
+            <input v-model.number="gbgFee" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">OR / Receipt Number</label>
-            <input v-model="orNum" type="text" placeholder="OR-2026-1055" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-mono text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">OR / Receipt Number</label>
+            <input v-model="orNum" type="text" placeholder="OR-2026-1055" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-mono text-foreground focus:border-primary focus:outline-none" required />
           </div>
         </div>
 
         <!-- Payment Method & Online Reference Number Row -->
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Payment Method</label>
-            <select v-model="paymentMethod" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Payment Method</label>
+            <select v-model="paymentMethod" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none">
               <option value="Cash">Cash</option>
               <option value="Online">Online Payment</option>
             </select>
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" :class="{ 'opacity-40': paymentMethod !== 'Online' }">Transaction Reference #</label>
-            <input v-model="transactionReference" type="text" placeholder="Gcash / Bank Ref #" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none disabled:opacity-40 disabled:bg-[#f5f5f4]" :disabled="paymentMethod !== 'Online'" :required="paymentMethod === 'Online'" />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" :class="{ 'opacity-40': paymentMethod !== 'Online' }">Transaction Reference #</label>
+            <input v-model="transactionReference" type="text" placeholder="Gcash / Bank Ref #" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:bg-muted" :disabled="paymentMethod !== 'Online'" :required="paymentMethod === 'Online'" />
           </div>
         </div>
 
         <!-- Rent Validity / Duration Details Row -->
         <div class="grid gap-4 sm:grid-cols-3">
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Months Covered</label>
-            <input v-model.number="monthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Months Covered</label>
+            <input v-model.number="monthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Covered Period Start</label>
-            <input v-model="dateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Covered Period Start</label>
+            <input v-model="dateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Covered Period End</label>
-            <input :value="dateCoveredEnd" type="date" class="min-h-11 w-full px-3.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl text-sm text-[#71717a] focus:outline-none" disabled />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Covered Period End</label>
+            <input :value="dateCoveredEnd" type="date" class="min-h-11 w-full px-3.5 bg-background border border-border rounded-xl text-sm text-muted-foreground focus:outline-none" disabled />
           </div>
         </div>
 
         <!-- Date Received & Read-Only Total Amount calculation -->
         <div class="grid gap-4 sm:grid-cols-2 pt-2">
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Date Received</label>
-            <input v-model="date" type="date" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Date Received</label>
+            <input v-model="date" type="date" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
           </div>
-          <div class="bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-3.5 flex flex-col justify-center">
-            <span class="text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Total Amount Received (₱)</span>
+          <div class="bg-background border border-border rounded-2xl p-3.5 flex flex-col justify-center">
+            <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Amount Received (₱)</span>
             <span class="font-display font-black text-lg text-emerald-800 pt-0.5">{{ peso(totalAmountReceived) }}</span>
           </div>
         </div>
 
-        <div class="pt-3 border-t border-[#e7e5e4] flex justify-end gap-3">
+        <div class="pt-3 border-t border-border flex justify-end gap-3">
           <button type="button" @click="closeModal" class="btn-secondary">Cancel</button>
           <button type="submit" :disabled="isSubmitting" class="btn-primary">
             <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
@@ -359,35 +359,35 @@ function triggerRecord() {
           <div class="w-12 h-12 rounded-full bg-[#fef3c7] text-[#d97706] flex items-center justify-center">
             <ReceiptText class="w-6 h-6" />
           </div>
-          <h3 class="font-display font-extrabold text-lg text-[#1c1917]">Confirm Payment Collection</h3>
+          <h3 class="font-display font-extrabold text-lg text-foreground">Confirm Payment Collection</h3>
           
-          <div class="w-full text-left bg-[#fafaf9] border border-[#e7e5e4] rounded-xl p-3.5 text-xs text-[#1c1917] space-y-1.5 leading-relaxed font-semibold">
-            <div class="flex justify-between border-b border-[#e7e5e4]/50 pb-1">
-              <span class="text-[#71717a] font-medium">Unit:</span>
+          <div class="w-full text-left bg-background border border-border rounded-xl p-3.5 text-xs text-foreground space-y-1.5 leading-relaxed font-semibold">
+            <div class="flex justify-between border-b border-border/50 pb-1">
+              <span class="text-muted-foreground font-medium">Unit:</span>
               <span class="font-extrabold uppercase">{{ selectedUnit.toUpperCase() }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-[#71717a] font-medium">Amount for Rent:</span>
+              <span class="text-muted-foreground font-medium">Amount for Rent:</span>
               <span class="font-bold">{{ peso(rentAmount) }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-[#71717a] font-medium">Payment for Water:</span>
+              <span class="text-muted-foreground font-medium">Payment for Water:</span>
               <span class="font-bold">{{ peso(waterAmount) }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-[#71717a] font-medium">GBG / Garbage Fee:</span>
+              <span class="text-muted-foreground font-medium">GBG / Garbage Fee:</span>
               <span class="font-bold">{{ peso(gbgFee) }}</span>
             </div>
-            <div class="flex justify-between border-t border-[#e7e5e4]/50 pt-1 font-extrabold text-emerald-800">
+            <div class="flex justify-between border-t border-border/50 pt-1 font-extrabold text-emerald-800">
               <span>Total Received:</span>
               <span>{{ peso(totalAmountReceived) }}</span>
             </div>
             <div class="flex justify-between pt-1">
-              <span class="text-[#71717a] font-medium">Validity Period:</span>
+              <span class="text-muted-foreground font-medium">Validity Period:</span>
               <span class="font-semibold text-right">{{ monthsCovered }} month(s)<br/>({{ formatDateForDisplay(dateCoveredStart) }} – {{ formatDateForDisplay(dateCoveredEnd) }})</span>
             </div>
-            <div class="flex justify-between border-t border-[#e7e5e4]/50 pt-1">
-              <span class="text-[#71717a] font-medium">Payment Method:</span>
+            <div class="flex justify-between border-t border-border/50 pt-1">
+              <span class="text-muted-foreground font-medium">Payment Method:</span>
               <span class="font-semibold">{{ paymentMethod }} {{ paymentMethod === 'Online' ? `(Ref: ${transactionReference})` : '' }}</span>
             </div>
           </div>

@@ -202,10 +202,10 @@ onMounted(() => {
     <!-- Chat Drawer / Modal Window -->
     <div 
       v-if="isLiveChatheadOpen" 
-      class="fixed bottom-4 right-4 z-[60] flex h-[560px] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-[#e7e5e4] bg-white shadow-2xl animate-in slide-in-from-bottom-5 duration-200"
+      class="fixed bottom-4 right-4 z-[60] flex h-[560px] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-2xl animate-in slide-in-from-bottom-5 duration-200"
     >
       <!-- Chat Header -->
-      <header class="flex items-center justify-between gap-2 border-b border-[#e7e5e4] bg-[#1e2532] px-4 py-3 text-white">
+      <header class="flex items-center justify-between gap-2 border-b border-border bg-neutral-dark px-4 py-3 text-white">
         <div>
           <p class="font-display text-sm font-extrabold">Inquiry Inbox</p>
           <p class="text-[11px] text-gray-300">Hivelet Live Chat</p>
@@ -220,7 +220,7 @@ onMounted(() => {
       </header>
 
       <!-- Thread Switcher -->
-      <div class="flex gap-1 overflow-x-auto border-b border-[#e7e5e4] bg-[#f5f5f4] px-2 py-2">
+      <div class="flex gap-1 overflow-x-auto border-b border-border bg-muted px-2 py-2">
         <button
           v-for="(t, i) in threads"
           :key="t.id"
@@ -228,8 +228,8 @@ onMounted(() => {
           :class="[
             'min-h-9 whitespace-nowrap rounded-lg px-3 text-xs font-semibold transition-colors cursor-pointer',
             activeThreadIndex === i 
-              ? 'bg-white text-[#1c1917] shadow-xs font-bold' 
-              : 'text-[#71717a] hover:text-[#1c1917]'
+              ? 'bg-white text-foreground shadow-xs font-bold' 
+              : 'text-muted-foreground hover:text-foreground'
           ]"
         >
           {{ t.name.split(' ')[0] }}
@@ -237,7 +237,7 @@ onMounted(() => {
       </div>
 
       <!-- Messages Stream -->
-      <div ref="chatScrollContainer" class="flex-1 space-y-3 overflow-y-auto bg-[#fafaf9] p-3 text-xs">
+      <div ref="chatScrollContainer" class="flex-1 space-y-3 overflow-y-auto bg-background p-3 text-xs">
         <div class="text-center">
           <p class="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-[11px] font-semibold text-[#5e6c84]">
             {{ activeThread?.unit || 'Inquiry Thread' }}
@@ -245,7 +245,7 @@ onMounted(() => {
         </div>
 
         <div v-if="isLoadingMessages" class="py-6 text-center text-[#5e6c84] flex flex-col items-center gap-1">
-          <Loader2 class="w-4 h-4 text-[#0c66e4] animate-spin" />
+          <Loader2 class="w-4 h-4 text-primary animate-spin" />
           <span class="text-[10px]">Loading messages...</span>
         </div>
 
@@ -254,20 +254,20 @@ onMounted(() => {
           :key="m.id" 
           :class="['flex gap-2', m.from === 'me' ? 'flex-row-reverse' : '']"
         >
-          <span class="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-[#f5f5f4] text-[#1c1917] border border-[#e7e5e4]">
-            <UserRound class="size-3.5 text-[#71717a]" />
+          <span class="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-muted text-foreground border border-border">
+            <UserRound class="size-3.5 text-muted-foreground" />
           </span>
 
           <div
             :class="[
               'max-w-[75%] rounded-2xl px-3 py-2 text-xs leading-relaxed',
               m.from === 'me'
-                ? 'rounded-br-xs bg-[#1e2532] text-white'
-                : 'rounded-bl-xs border border-[#e7e5e4] bg-white text-[#1c1917] shadow-xs'
+                ? 'rounded-br-xs bg-neutral-dark text-white'
+                : 'rounded-bl-xs border border-border bg-white text-foreground shadow-xs'
             ]"
           >
             <p>{{ m.text }}</p>
-            <p :class="['mt-1 text-[10px]', m.from === 'me' ? 'text-gray-300' : 'text-[#71717a]']">
+            <p :class="['mt-1 text-[10px]', m.from === 'me' ? 'text-gray-300' : 'text-muted-foreground']">
               {{ m.time }}
             </p>
           </div>
@@ -277,16 +277,16 @@ onMounted(() => {
       <!-- Message Composer -->
       <form
         @submit.prevent="sendMessage"
-        class="flex items-center gap-2 border-t border-[#e7e5e4] bg-white p-2"
+        class="flex items-center gap-2 border-t border-border bg-white p-2"
       >
         <input
           v-model="draft"
           placeholder="Type a reply…"
-          class="min-h-10 flex-1 px-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl text-xs text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none"
+          class="min-h-10 flex-1 px-3 bg-background border border-border rounded-xl text-xs text-foreground focus:bg-white focus:border-primary focus:outline-none"
         />
         <button 
           type="submit" 
-          class="grid size-10 place-items-center rounded-xl bg-[#0c66e4] text-white hover:bg-[#0055cc] transition-colors shadow-xs shrink-0 cursor-pointer"
+          class="grid size-10 place-items-center rounded-xl bg-primary text-white hover:bg-[#0055cc] transition-colors shadow-xs shrink-0 cursor-pointer"
           aria-label="Send message"
         >
           <Send class="size-4 text-white" />
@@ -299,7 +299,7 @@ onMounted(() => {
       v-if="showFloatingTrigger"
       @click="isLiveChatheadOpen = true"
       aria-label="Open live chat"
-      class="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-[#0c66e4] text-white shadow-xl transition-transform hover:scale-105 cursor-pointer"
+      class="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-primary text-white shadow-xl transition-transform hover:scale-105 cursor-pointer"
       title="Inquiry Live Chat"
     >
       <MessageCircle class="size-6 text-white" />

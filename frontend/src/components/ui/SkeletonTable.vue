@@ -20,16 +20,16 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="w-full bg-white border border-[#dfe1e6] rounded-xl overflow-hidden shadow-xs">
+  <div class="w-full bg-white border border-border-strong rounded-xl overflow-hidden shadow-xs">
     <!-- Table Header Placeholder -->
-    <div v-if="showHeader" class="bg-[#f4f5f7] border-b border-[#dfe1e6] px-6 py-3.5 flex items-center justify-between gap-4">
+    <div v-if="showHeader" class="bg-surface-sunken border-b border-border-strong px-6 py-3.5 flex items-center justify-between gap-4">
       <div v-for="c in columns" :key="'th-' + c" class="flex-1">
         <Skeleton className="h-3.5 w-20 rounded" />
       </div>
     </div>
 
     <!-- Table Rows Placeholder -->
-    <div class="divide-y divide-[#dfe1e6]">
+    <div class="divide-y divide-border-strong">
       <div
         v-for="r in rows"
         :key="'tr-' + r"

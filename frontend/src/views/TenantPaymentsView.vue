@@ -148,15 +148,15 @@ function handleAdyenSuccess(refId: string) {
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Tenant</span>
           <span>/</span>
-          <span class="font-bold text-[#1c1917]">Payment &amp; Billing</span>
+          <span class="font-bold text-foreground">Payment &amp; Billing</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Payment &amp; Billing</h1>
-        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">Submit online GCash payments and inspect verified rental receipt records.</p>
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Payment &amp; Billing</h1>
+        <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">Submit online GCash payments and inspect verified rental receipt records.</p>
       </div>
 
       <div class="flex items-center gap-2">
@@ -165,7 +165,7 @@ function handleAdyenSuccess(refId: string) {
           :disabled="loadingBills"
           class="btn-secondary"
         >
-          <RefreshCw :class="['size-3.5 text-[#71717a]', loadingBills ? 'animate-spin text-[#0c66e4]' : '']" />
+          <RefreshCw :class="['size-3.5 text-muted-foreground', loadingBills ? 'animate-spin text-primary' : '']" />
           <span>Refresh</span>
         </button>
       </div>
@@ -201,17 +201,17 @@ function handleAdyenSuccess(refId: string) {
             <span class="badge-soft badge-warning font-bold text-xs">
               OUTSTANDING INVOICE
             </span>
-            <span class="text-xs text-[#71717a]">
-              Due: <strong class="text-[#1c1917]">{{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}</strong>
+            <span class="text-xs text-muted-foreground">
+              Due: <strong class="text-foreground">{{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}</strong>
             </span>
           </div>
-          <p class="text-2xl font-black tabular font-display text-[#1c1917]">
+          <p class="text-2xl font-black tabular font-display text-foreground">
             ₱{{ bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
           </p>
-          <p class="text-xs text-[#71717a] space-x-3">
-            <span>Base Rent: <strong class="text-[#1c1917] tabular">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
+          <p class="text-xs text-muted-foreground space-x-3">
+            <span>Base Rent: <strong class="text-foreground tabular">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
             <span>·</span>
-            <span>Water Fee: <strong class="text-[#1c1917] tabular">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
+            <span>Water Fee: <strong class="text-foreground tabular">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
           </p>
         </div>
 
@@ -228,27 +228,27 @@ function handleAdyenSuccess(refId: string) {
     <!-- Payment Record History (Matching Admin Table Register Style) -->
     <div class="surface-card overflow-hidden">
       <!-- Filter Bar (Identical to Admin Income & Expenses) -->
-      <div class="flex flex-col gap-3 border-b border-[#e7e5e4] p-4 sm:flex-row">
+      <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
         <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Search invoice ref #, payment method, or status…"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
           />
         </div>
 
         <select
           v-model="selectedYear"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
+          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
         >
           <option v-for="year in availableYears" :key="year" :value="year">{{ year }} Records</option>
         </select>
 
         <select
           v-model="sortOrder"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
+          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
         >
           <option value="latest">Latest First</option>
           <option value="oldest">Oldest First</option>
@@ -259,7 +259,7 @@ function handleAdyenSuccess(refId: string) {
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
-            <tr class="bg-[#f5f5f4] border-b border-[#e7e5e4] text-[#71717a] uppercase tracking-wide font-bold text-[11px]">
+            <tr class="bg-muted border-b border-border text-muted-foreground uppercase tracking-wide font-bold text-[11px]">
               <th class="px-4 py-3">Invoice / Ref #</th>
               <th class="px-4 py-3">Date Paid</th>
               <th class="px-4 py-3">Amount Paid</th>
@@ -267,17 +267,17 @@ function handleAdyenSuccess(refId: string) {
               <th class="px-4 py-3">Verification Status</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#e7e5e4]">
+          <tbody class="divide-y divide-border">
             <tr
               v-for="record in filteredPayments"
               :key="record.id"
-              class="hover:bg-[#fafaf9] transition-colors"
+              class="hover:bg-background transition-colors"
             >
-              <td class="px-4 py-3.5 font-mono text-[#1c1917] font-bold">
+              <td class="px-4 py-3.5 font-mono text-foreground font-bold">
                 {{ record.invoiceRef }}
               </td>
-              <td class="px-4 py-3.5 text-[#71717a]">{{ record.datePaid }}</td>
-              <td class="px-4 py-3.5 font-black tabular font-display text-[#1c1917] text-sm">
+              <td class="px-4 py-3.5 text-muted-foreground">{{ record.datePaid }}</td>
+              <td class="px-4 py-3.5 font-black tabular font-display text-foreground text-sm">
                 ₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
               </td>
               <td class="px-4 py-3.5">
@@ -297,7 +297,7 @@ function handleAdyenSuccess(refId: string) {
               </td>
             </tr>
             <tr v-if="filteredPayments.length === 0">
-              <td colspan="5" class="p-8 text-center text-xs text-[#71717a]">
+              <td colspan="5" class="p-8 text-center text-xs text-muted-foreground">
                 No payment records found for year {{ selectedYear }}.
               </td>
             </tr>

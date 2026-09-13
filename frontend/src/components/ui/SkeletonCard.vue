@@ -22,7 +22,7 @@ withDefaults(defineProps<Props>(), {
     <div
       v-for="i in count"
       :key="i"
-      class="rounded-2xl border border-[#e7e5e4] bg-white p-5 shadow-xs space-y-4 overflow-hidden"
+      class="rounded-2xl border border-border bg-white p-5 shadow-xs space-y-4 overflow-hidden"
     >
       <!-- Variant: Room Card -->
       <template v-if="variant === 'room'">
@@ -52,7 +52,7 @@ withDefaults(defineProps<Props>(), {
           <Skeleton className="h-4 w-full rounded" />
           <Skeleton className="h-4 w-4/5 rounded" />
         </div>
-        <div class="pt-4 border-t border-[#e7e5e4] flex items-center justify-between">
+        <div class="pt-4 border-t border-border flex items-center justify-between">
           <Skeleton className="h-4 w-24 rounded" />
           <Skeleton className="h-4 w-28 rounded" />
         </div>

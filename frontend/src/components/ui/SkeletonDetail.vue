@@ -12,7 +12,7 @@ import Skeleton from './Skeleton.vue';
     <!-- Top Hero Banner Skeleton -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
       <!-- Media Frame Placeholder -->
-      <div class="lg:col-span-5 h-[240px] sm:h-[260px] rounded-xl overflow-hidden border border-[#dfe1e6] bg-slate-200/80 animate-pulse" />
+      <div class="lg:col-span-5 h-[240px] sm:h-[260px] rounded-xl overflow-hidden border border-border-strong bg-slate-200/80 animate-pulse" />
 
       <!-- Specs & Metadata Placeholder -->
       <div class="lg:col-span-7 flex flex-col justify-center space-y-5">
@@ -43,7 +43,7 @@ import Skeleton from './Skeleton.vue';
     </div>
 
     <!-- Secondary Payment Card / Details Skeleton -->
-    <div class="bg-white border border-[#dfe1e6] rounded-xl p-6 space-y-6 shadow-xs">
+    <div class="bg-white border border-border-strong rounded-xl p-6 space-y-6 shadow-xs">
       <div class="flex items-center justify-between pb-4 border-b border-slate-100">
         <Skeleton className="h-6 w-48 rounded" />
         <Skeleton className="h-6 w-24 rounded-full" />

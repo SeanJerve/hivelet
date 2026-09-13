@@ -168,43 +168,43 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in"
     @click.self="emit('close')"
   >
-    <div class="surface-card w-full max-w-lg shadow-2xl overflow-hidden rounded-2xl bg-white flex flex-col max-h-[92vh] border border-[#e7e5e4]">
+    <div class="surface-card w-full max-w-lg shadow-2xl overflow-hidden rounded-2xl bg-white flex flex-col max-h-[92vh] border border-border">
       
       <!-- Header -->
-      <div class="bg-[#fafaf9] border-b border-[#e7e5e4] p-4 flex items-center justify-between">
+      <div class="bg-background border-b border-border p-4 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="size-8 rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 flex items-center justify-center font-bold">
+          <div class="size-8 rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 flex items-center justify-center font-bold">
             <Lock class="size-4" />
           </div>
           <div>
-            <h2 class="text-sm font-extrabold text-[#1c1917] flex items-center gap-2">
+            <h2 class="text-sm font-extrabold text-foreground flex items-center gap-2">
               Adyen Online Checkout
               <span class="badge-soft badge-success text-[10px] font-extrabold">
                 SANDBOX TEST
               </span>
             </h2>
-            <p class="text-xs text-[#71717a]">Official Adyen v71 Sessions Integration</p>
+            <p class="text-xs text-muted-foreground">Official Adyen v71 Sessions Integration</p>
           </div>
         </div>
         <button
           @click="emit('close')"
-          class="grid size-8 place-items-center rounded-full text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4] transition-colors cursor-pointer"
+          class="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted border border-border transition-colors cursor-pointer"
         >
           <X class="size-4" />
         </button>
       </div>
 
       <!-- Bill Summary Card -->
-      <div class="p-4 bg-[#fafaf9] border-b border-[#e7e5e4] space-y-2">
+      <div class="p-4 bg-background border-b border-border space-y-2">
         <div class="flex justify-between items-center text-xs">
-          <span class="text-[#71717a]">Billing Target:</span>
-          <span class="font-bold text-[#1c1917]">Unit {{ props.bill.room_number || '204' }} — Monthly Dues</span>
+          <span class="text-muted-foreground">Billing Target:</span>
+          <span class="font-bold text-foreground">Unit {{ props.bill.room_number || '204' }} — Monthly Dues</span>
         </div>
         <div class="flex justify-between items-center text-xs">
-          <span class="text-[#71717a]">Base Rent + Water Fee:</span>
-          <span class="text-[#1c1917]">₱{{ props.bill.rent_amount.toLocaleString() }} + ₱{{ props.bill.water_amount.toLocaleString() }}</span>
+          <span class="text-muted-foreground">Base Rent + Water Fee:</span>
+          <span class="text-foreground">₱{{ props.bill.rent_amount.toLocaleString() }} + ₱{{ props.bill.water_amount.toLocaleString() }}</span>
         </div>
-        <div class="flex justify-between items-center text-sm font-extrabold text-[#0c66e4] pt-1.5 border-t border-[#e7e5e4]">
+        <div class="flex justify-between items-center text-sm font-extrabold text-primary pt-1.5 border-t border-border">
           <span>Total Remittance Due:</span>
           <span class="tabular font-display text-base font-black">₱{{ props.bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
         </div>
@@ -215,20 +215,20 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
         
         <!-- Loading State -->
         <div v-if="isLoading" class="py-12 flex flex-col items-center justify-center text-center space-y-3">
-          <Loader2 class="size-8 text-[#0c66e4] animate-spin" />
-          <p class="text-xs font-bold text-[#1c1917]">Connecting to Adyen Test Gateway...</p>
-          <p class="text-[11px] text-[#71717a]">Initializing encrypted merchant checkout session</p>
+          <Loader2 class="size-8 text-primary animate-spin" />
+          <p class="text-xs font-bold text-foreground">Connecting to Adyen Test Gateway...</p>
+          <p class="text-[11px] text-muted-foreground">Initializing encrypted merchant checkout session</p>
         </div>
 
         <!-- Success Completed State -->
         <div v-else-if="isCompleted" class="py-8 text-center space-y-3">
           <CheckCircle2 class="size-12 text-emerald-600 mx-auto" />
-          <h3 class="text-base font-bold text-[#1c1917]">Adyen confirmed your payment</h3>
-          <p v-if="isRecorded" class="text-xs text-[#71717a] max-w-sm mx-auto">
+          <h3 class="text-base font-bold text-foreground">Adyen confirmed your payment</h3>
+          <p v-if="isRecorded" class="text-xs text-muted-foreground max-w-sm mx-auto">
             It has been recorded and is now awaiting verification by Landlady Fe Galang Da Silva.
             It will appear in your payment history once she has verified it.
           </p>
-          <p v-else class="text-xs text-[#71717a] max-w-sm mx-auto">
+          <p v-else class="text-xs text-muted-foreground max-w-sm mx-auto">
             The gateway is sending us the signed confirmation now, and the record usually
             appears within a few seconds. It will then await verification by Landlady
             Fe Galang Da Silva. Nothing further is needed from you.
@@ -262,7 +262,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       </div>
 
       <!-- Footer Security Note -->
-      <div class="bg-[#fafaf9] border-t border-[#e7e5e4] px-4 py-3 flex items-center justify-between text-[10px] text-[#71717a]">
+      <div class="bg-background border-t border-border px-4 py-3 flex items-center justify-between text-[10px] text-muted-foreground">
         <div class="flex items-center gap-1.5">
           <ShieldCheck class="size-3.5 text-emerald-600" />
           <span>Card and wallet details are entered in Adyen's fields and never reach Hivelet's servers</span>

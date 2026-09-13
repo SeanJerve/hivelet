@@ -231,7 +231,7 @@ async function submitInquiry() {
       <div class="flex items-center justify-between pb-2">
         <router-link 
           to="/public" 
-          class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#0c66e4] hover:text-[#0052cc] transition-colors cursor-pointer"
+          class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-primary hover:text-primary-strong transition-colors cursor-pointer"
         >
           <ArrowLeft class="size-4" />
           <span>Back to All Categories</span>
@@ -240,14 +240,14 @@ async function submitInquiry() {
 
       <!-- Category Header -->
       <div class="space-y-1">
-        <div class="flex items-center gap-2 text-xs font-bold text-[#8a5814]">
-          <MapPin class="size-3.5 text-[#f59e0b]" />
+        <div class="flex items-center gap-2 text-xs font-bold text-accent-ink">
+          <MapPin class="size-3.5 text-accent" />
           <span>32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines • Fe Galang Da Silva Boarding House</span>
         </div>
-        <h1 class="font-display font-black text-3xl sm:text-4xl text-[#1c1917] tracking-tight">
+        <h1 class="font-display font-black text-3xl sm:text-4xl text-foreground tracking-tight">
           {{ currentCat.title }}
         </h1>
-        <p class="text-xs sm:text-sm text-[#71717a] max-w-2xl leading-relaxed">
+        <p class="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
           {{ currentCat.blurb }} Showing all {{ categoryUnits.length }} units in this category. Click any unit card below to inspect details.
         </p>
       </div>
@@ -289,36 +289,36 @@ async function submitInquiry() {
           <div class="flex flex-col justify-between p-6 sm:p-8 space-y-4 bg-white">
             <div class="space-y-3.5">
               <div>
-                <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">
+                <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
                   {{ activeUnit.cluster }} · FLOOR {{ activeUnit.floor }}
                 </p>
-                <h3 class="font-display font-black text-3xl sm:text-4xl uppercase text-[#1c1917] tracking-tight mt-0.5">
+                <h3 class="font-display font-black text-3xl sm:text-4xl uppercase text-foreground tracking-tight mt-0.5">
                   UNIT {{ activeUnit.unitCode.toUpperCase() }}
                 </h3>
-                <p class="text-xs sm:text-sm text-[#0c66e4] font-semibold">{{ activeUnit.type }}</p>
+                <p class="text-xs sm:text-sm text-primary font-semibold">{{ activeUnit.type }}</p>
               </div>
 
               <!-- Price -->
-              <p class="font-display font-black text-3xl sm:text-4xl text-[#1c1917]">
+              <p class="font-display font-black text-3xl sm:text-4xl text-foreground">
                 {{ peso(activeUnit.basePrice) }}
-                <span class="text-xs sm:text-sm font-normal text-[#71717a]">/ month</span>
+                <span class="text-xs sm:text-sm font-normal text-muted-foreground">/ month</span>
               </p>
 
               <!-- Tags / Pills -->
               <div class="flex flex-wrap gap-2 text-xs">
-                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#f5f5f4] border border-[#dfe1e6] px-3 py-1.5 font-semibold text-[#1c1917]">
-                  <Users class="size-3.5 text-[#71717a]" /> Up to {{ activeUnit.capacity }} pax
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground">
+                  <Users class="size-3.5 text-muted-foreground" /> Up to {{ activeUnit.capacity }} pax
                 </span>
-                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#f5f5f4] border border-[#dfe1e6] px-3 py-1.5 font-semibold text-[#1c1917]">
-                  <Droplets class="size-3.5 text-[#71717a]" /> {{ activeUnit.waterRateType === 'linda_fixed' ? 'Fixed utilities' : '₱200 water / occupant' }}
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground">
+                  <Droplets class="size-3.5 text-muted-foreground" /> {{ activeUnit.waterRateType === 'linda_fixed' ? 'Fixed utilities' : '₱200 water / occupant' }}
                 </span>
-                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#f5f5f4] border border-[#dfe1e6] px-3 py-1.5 font-semibold text-[#1c1917]">
-                  <Wifi class="size-3.5 text-[#71717a]" /> Fiber ready
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground">
+                  <Wifi class="size-3.5 text-muted-foreground" /> Fiber ready
                 </span>
               </div>
 
               <!-- Checklist -->
-              <ul class="grid gap-2 text-xs sm:text-sm text-[#1c1917] pt-2">
+              <ul class="grid gap-2 text-xs sm:text-sm text-foreground pt-2">
                 <li v-for="a in activeUnit.amenities" :key="a" class="flex items-start gap-2">
                   <Check class="mt-0.5 size-4 shrink-0 text-emerald-600 font-bold" />
                   <span>{{ a }}</span>
@@ -330,7 +330,7 @@ async function submitInquiry() {
             <div class="pt-4">
               <button
                 @click="openInquiry(activeUnit.unitCode)"
-                class="w-full min-h-12 inline-flex items-center justify-center rounded-xl bg-[#1e2532] px-6 py-3 font-bold text-sm text-white hover:bg-[#2b3648] transition-colors shadow-xs cursor-pointer"
+                class="w-full min-h-12 inline-flex items-center justify-center rounded-xl bg-neutral-dark px-6 py-3 font-bold text-sm text-white hover:bg-neutral-dark-strong transition-colors shadow-xs cursor-pointer"
               >
                 Inquire for Unit {{ activeUnit.unitCode.toUpperCase() }}
               </button>
@@ -339,8 +339,8 @@ async function submitInquiry() {
         </div>
 
         <!-- Non-Scrolling Wrap Grid with Image on Every Room -->
-        <div class="bg-[#fafaf9] p-4 sm:p-8">
-          <div class="text-xs font-extrabold uppercase tracking-wider text-[#71717a] mb-4">
+        <div class="bg-background p-4 sm:p-8">
+          <div class="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-4">
             Select a Unit to Inspect ({{ categoryUnits.length }} Units Available):
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -352,8 +352,8 @@ async function submitInquiry() {
               :class="[
                 'group overflow-hidden rounded-2xl border bg-white text-left transition-all hover:shadow-lg cursor-pointer flex flex-col',
                 u.unitCode.toLowerCase() === activeUnit.unitCode.toLowerCase()
-                  ? 'border-2 border-[#0c66e4] shadow-md ring-2 ring-blue-100'
-                  : 'border-[#dfe1e6] hover:border-gray-300'
+                  ? 'border-2 border-primary shadow-md ring-2 ring-blue-100'
+                  : 'border-border-strong hover:border-gray-300'
               ]"
             >
               <!-- Room Photo -->
@@ -381,14 +381,14 @@ async function submitInquiry() {
               <!-- Room Info -->
               <div class="p-3.5 flex flex-col justify-between flex-1 space-y-2">
                 <div>
-                  <p class="font-display text-sm font-extrabold uppercase text-[#1c1917] group-hover:text-[#0c66e4] transition-colors">
+                  <p class="font-display text-sm font-extrabold uppercase text-foreground group-hover:text-primary transition-colors">
                     UNIT {{ u.unitCode.toUpperCase() }}
                   </p>
-                  <p class="truncate text-[11px] text-[#71717a] mt-0.5">{{ u.type }}</p>
+                  <p class="truncate text-[11px] text-muted-foreground mt-0.5">{{ u.type }}</p>
                 </div>
-                <div class="pt-2 flex items-center justify-between border-t border-[#f5f5f4]">
-                  <span class="tabular font-display text-xs font-bold text-[#1c1917]">{{ peso(u.basePrice) }}<span class="text-[10px] font-normal text-[#71717a]">/mo</span></span>
-                  <span class="text-[10px] font-bold text-[#0c66e4]">View Unit</span>
+                <div class="pt-2 flex items-center justify-between border-t border-muted">
+                  <span class="tabular font-display text-xs font-bold text-foreground">{{ peso(u.basePrice) }}<span class="text-[10px] font-normal text-muted-foreground">/mo</span></span>
+                  <span class="text-[10px] font-bold text-primary">View Unit</span>
                 </div>
               </div>
             </button>
@@ -407,12 +407,12 @@ async function submitInquiry() {
       @click.self="isInquiryOpen = false"
     >
       <div class="surface-card w-full max-w-lg shadow-2xl rounded-2xl p-6 bg-white space-y-4 max-h-[90dvh] overflow-y-auto">
-        <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+        <div class="flex items-center justify-between pb-3 border-b border-border">
           <div>
-            <h3 class="font-display font-extrabold text-xl text-[#1c1917]">Inquire about a unit</h3>
-            <p class="text-xs text-[#71717a]">Send your message directly to {{ LANDLADY.name }}. She usually replies within the day.</p>
+            <h3 class="font-display font-extrabold text-xl text-foreground">Inquire about a unit</h3>
+            <p class="text-xs text-muted-foreground">Send your message directly to {{ LANDLADY.name }}. She usually replies within the day.</p>
           </div>
-          <button @click="isInquiryOpen = false" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer">
+          <button @click="isInquiryOpen = false" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
             <X class="size-5" />
           </button>
         </div>
@@ -420,23 +420,23 @@ async function submitInquiry() {
         <form @submit.prevent="submitInquiry" class="space-y-4 text-xs">
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Full Name</label>
-              <input v-model="inquiryName" placeholder="Juan Dela Cruz" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Full Name</label>
+              <input v-model="inquiryName" placeholder="Juan Dela Cruz" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Phone Number</label>
-              <input v-model="inquiryPhone" placeholder="0917-000-0000" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Phone Number</label>
+              <input v-model="inquiryPhone" placeholder="0917-000-0000" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
             </div>
           </div>
 
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Email</label>
-            <input v-model="inquiryEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Email</label>
+            <input v-model="inquiryEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
           </div>
 
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Target Unit</label>
-            <select v-model="inquiryUnit" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
+            <select v-model="inquiryUnit" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white">
               <option value="">Any available unit</option>
               <option v-for="u in categoryUnits" :key="u.unitCode" :value="u.unitCode">
                 {{ u.unitCode.toUpperCase() }} — {{ u.cluster }} ({{ peso(u.basePrice) }})
@@ -445,8 +445,8 @@ async function submitInquiry() {
           </div>
 
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Message</label>
-            <textarea v-model="inquiryMsg" rows="4" class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs resize-none" required></textarea>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Message</label>
+            <textarea v-model="inquiryMsg" rows="4" class="w-full p-3 border border-border rounded-xl text-xs resize-none" required></textarea>
           </div>
 
           <div class="pt-2 flex justify-between items-center gap-2">

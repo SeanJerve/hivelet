@@ -616,31 +616,31 @@ function exportHistoricalCSV() {
     <!-- ====================================================================== *
      * HEADER: DYNAMIC BREADCRUMB & CONTROLS
      * ====================================================================== -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#dfe1e6] pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border-strong pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span v-if="!isHistoricalMode" class="font-bold text-[#172b4d]">Executive Overview (FY {{ CURRENT_YEAR }})</span>
+          <span v-if="!isHistoricalMode" class="font-bold text-ink-navy">Executive Overview (FY {{ CURRENT_YEAR }})</span>
           <template v-else>
-            <button @click="exitHistoricalMode" class="hover:text-[#0c66e4] underline font-medium cursor-pointer">
+            <button @click="exitHistoricalMode" class="hover:text-primary underline font-medium cursor-pointer">
               Live Operations
             </button>
             <span>/</span>
-            <span class="font-bold text-[#0c66e4]">Historical Fiscal Archive (FY {{ selectedArchiveYear }})</span>
+            <span class="font-bold text-primary">Historical Fiscal Archive (FY {{ selectedArchiveYear }})</span>
           </template>
         </div>
         
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#172b4d] tracking-tight flex items-center gap-3">
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-ink-navy tracking-tight flex items-center gap-3">
           <span v-if="!isHistoricalMode">Executive Operations Overview</span>
           <span v-else class="flex items-center gap-2.5">
             <span>Historical Fiscal Archive</span>
-            <span class="text-xs px-2.5 py-1 rounded-md bg-[#0c66e4] text-white font-black tracking-wider uppercase">
+            <span class="text-xs px-2.5 py-1 rounded-md bg-primary text-white font-black tracking-wider uppercase">
               FY {{ selectedArchiveYear }}
             </span>
           </span>
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
           <template v-if="!isHistoricalMode">
             Live operations, current FY {{ CURRENT_YEAR }} run-rates, verified remittances, and property performance.
           </template>
@@ -659,24 +659,24 @@ function exportHistoricalCSV() {
             type="button"
             class="btn-secondary flex items-center justify-between gap-1 w-full min-h-[38px] px-2.5 text-xs font-bold cursor-pointer"
           >
-            <Calendar class="size-3.5 text-[#0c66e4] shrink-0" />
+            <Calendar class="size-3.5 text-primary shrink-0" />
             <span class="flex-1 text-center font-extrabold">{{ isHistoricalMode ? selectedArchiveYear : '2026' }}</span>
-            <ChevronDown class="size-3.5 text-[#71717a] shrink-0 transition-transform duration-200 group-hover:rotate-180" />
+            <ChevronDown class="size-3.5 text-muted-foreground shrink-0 transition-transform duration-200 group-hover:rotate-180" />
           </button>
 
           <!-- Hover Dropdown Menu (Exact Width & Symmetrical Icon Alignment) -->
           <div
             class="absolute left-0 right-0 top-full pt-1 w-full hidden group-hover:block z-50 animate-in fade-in zoom-in-95 duration-100"
           >
-            <div class="rounded-xl bg-white p-1 shadow-xl border border-[#dfe1e6] space-y-0.5">
+            <div class="rounded-xl bg-white p-1 shadow-xl border border-border-strong space-y-0.5">
               <!-- Live 2026 -->
               <button
                 @click="exitHistoricalMode"
                 :class="[
                   'w-full h-8 px-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-between gap-1 cursor-pointer',
                   !isHistoricalMode 
-                    ? 'bg-[#0c66e4] text-white shadow-xs' 
-                    : 'text-[#172b4d] hover:bg-[#f4f5f7]'
+                    ? 'bg-primary text-white shadow-xs' 
+                    : 'text-ink-navy hover:bg-surface-sunken'
                 ]"
               >
                 <span class="size-3.5 shrink-0"></span>
@@ -694,8 +694,8 @@ function exportHistoricalCSV() {
                 :class="[
                   'w-full h-8 px-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-between gap-1 cursor-pointer',
                   isHistoricalMode && selectedArchiveYear === yr 
-                    ? 'bg-[#0c66e4] text-white shadow-xs' 
-                    : 'text-[#172b4d] hover:bg-[#f4f5f7]'
+                    ? 'bg-primary text-white shadow-xs' 
+                    : 'text-ink-navy hover:bg-surface-sunken'
                 ]"
               >
                 <span class="size-3.5 shrink-0"></span>
@@ -722,7 +722,7 @@ function exportHistoricalCSV() {
             to="/admin/expenses"
             class="btn-secondary"
           >
-            <ReceiptText class="size-3.5 text-[#0c66e4]" />
+            <ReceiptText class="size-3.5 text-primary" />
             <span>Record Expense</span>
           </router-link>
 
@@ -732,7 +732,7 @@ function exportHistoricalCSV() {
             class="btn-secondary"
             title="Refresh Data from Database"
           >
-            <RefreshCw :class="['size-3.5 text-[#71717a]', isRefreshing && 'animate-spin']" />
+            <RefreshCw :class="['size-3.5 text-muted-foreground', isRefreshing && 'animate-spin']" />
             <span>Refresh</span>
           </button>
         </template>
@@ -743,7 +743,7 @@ function exportHistoricalCSV() {
             class="btn-secondary"
             title="Export full financial audit report for this year as CSV"
           >
-            <Download class="size-3.5 text-[#0c66e4]" />
+            <Download class="size-3.5 text-primary" />
             <span>Export FY {{ selectedArchiveYear }} Report</span>
           </button>
 
@@ -766,8 +766,8 @@ function exportHistoricalCSV() {
       </div>
 
       <!-- 12-Month Inflow Trajectory Chart Card Skeleton -->
-      <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-5">
+      <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-5">
           <div class="space-y-2">
             <Skeleton className="h-5 w-64 rounded" />
             <Skeleton className="h-3.5 w-80 max-w-full rounded" />
@@ -790,8 +790,8 @@ function exportHistoricalCSV() {
 
       <!-- 2-Column Cash Flow & Cluster Matrix Skeleton -->
       <div class="grid gap-6 lg:grid-cols-2">
-        <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs space-y-4">
-          <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-border-strong pb-4">
             <div class="space-y-1.5">
               <Skeleton className="h-5 w-44 rounded" />
               <Skeleton className="h-3.5 w-64 max-w-full rounded" />
@@ -799,7 +799,7 @@ function exportHistoricalCSV() {
             <Skeleton className="h-6 w-24 rounded-lg" />
           </div>
           <div class="space-y-3 pt-2">
-            <div v-for="i in 5" :key="i" class="p-3 rounded-xl border border-[#dfe1e6] bg-[#fafaf9] space-y-2">
+            <div v-for="i in 5" :key="i" class="p-3 rounded-xl border border-border-strong bg-background space-y-2">
               <div class="flex justify-between">
                 <Skeleton className="h-3.5 w-24 rounded" />
                 <Skeleton className="h-3.5 w-16 rounded" />
@@ -809,8 +809,8 @@ function exportHistoricalCSV() {
           </div>
         </div>
 
-        <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs space-y-4">
-          <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-border-strong pb-4">
             <div class="space-y-1.5">
               <Skeleton className="h-5 w-52 rounded" />
               <Skeleton className="h-3.5 w-64 max-w-full rounded" />
@@ -818,7 +818,7 @@ function exportHistoricalCSV() {
             <Skeleton className="h-6 w-20 rounded-lg" />
           </div>
           <div class="space-y-3 pt-2">
-            <div v-for="i in 5" :key="i" class="p-3 rounded-xl border border-[#dfe1e6] bg-[#fafaf9] space-y-2">
+            <div v-for="i in 5" :key="i" class="p-3 rounded-xl border border-border-strong bg-background space-y-2">
               <div class="flex justify-between">
                 <Skeleton className="h-3.5 w-32 rounded" />
                 <Skeleton className="h-3.5 w-20 rounded" />
@@ -846,38 +846,38 @@ function exportHistoricalCSV() {
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">FY 2026 Collections</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">FY 2026 Collections</p>
               <span class="rounded-xl p-2 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200">
                 <TrendingUp class="size-4" />
               </span>
             </div>
-            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#172b4d]">{{ peso(monthlyRevenue) }}</p>
+            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">{{ peso(monthlyRevenue) }}</p>
             <p class="mt-1.5 text-xs text-emerald-700 font-semibold">Live verified collections ledger</p>
           </div>
 
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Current Occupancy</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Current Occupancy</p>
               <span class="rounded-xl p-2 bg-sky-50 text-sky-800 ring-1 ring-sky-200">
                 <Home class="size-4" />
               </span>
             </div>
-            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#172b4d]">
+            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">
               {{ occupiedRoomsCount }} / {{ totalRoomsCount }} Units
             </p>
-            <p class="mt-1.5 text-xs text-[#71717a]">
+            <p class="mt-1.5 text-xs text-muted-foreground">
               {{ occupancyPercentage }}% occupied • {{ vacantRoomsCount }} vacant<template v-if="maintenanceRoomsCount > 0"> • {{ maintenanceRoomsCount }} maintenance</template>
             </p>
           </div>
 
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Pending Remittances</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Pending Remittances</p>
               <span class="rounded-xl p-2 bg-amber-50 text-amber-800 ring-1 ring-amber-200">
                 <ShieldAlert class="size-4" />
               </span>
             </div>
-            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#172b4d]">
+            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">
               {{ pendingTotal > 0 ? peso(pendingTotal) : '₱0.00' }}
             </p>
             <p class="mt-1.5 text-xs text-amber-800 font-medium">
@@ -887,12 +887,12 @@ function exportHistoricalCSV() {
 
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Maintenance Alerts</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Maintenance Alerts</p>
               <span class="rounded-xl p-2 bg-rose-50 text-rose-800 ring-1 ring-rose-200">
                 <Wrench class="size-4" />
               </span>
             </div>
-            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#172b4d]">
+            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">
               {{ openTicketsCount }} Open
             </p>
             <p class="mt-1.5 text-xs text-rose-700 font-medium">
@@ -902,30 +902,30 @@ function exportHistoricalCSV() {
         </div>
 
         <!-- 12-MONTH INCOME TRAJECTORY (FY 2026) -->
-        <div class="surface-card relative rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-5">
+        <div class="surface-card relative rounded-2xl border border-border-strong bg-white p-6 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-5">
             <div>
               <div class="flex items-center gap-2">
-                <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
+                <span class="p-1.5 rounded-lg bg-primary/10 text-primary">
                   <TrendingUp class="size-4" />
                 </span>
-                <h2 class="font-display text-lg font-black text-[#172b4d]">
+                <h2 class="font-display text-lg font-black text-ink-navy">
                   12-Month Inflow Trajectory &amp; Run-Rate (FY 2026)
                 </h2>
               </div>
-              <p class="text-xs text-[#71717a] mt-0.5">
+              <p class="text-xs text-muted-foreground mt-0.5">
                 Verified remittances from active ledgers (Jan–Jul) with capacity run-rate projections for upcoming months.
               </p>
             </div>
 
             <div class="flex flex-wrap items-center gap-3 text-xs">
-              <div class="bg-[#fafaf9] px-3 py-1.5 rounded-xl border border-[#dfe1e6]">
-                <span class="text-[#71717a]">Annual Run-Rate: </span>
-                <span class="font-display font-bold text-[#172b4d]">{{ peso(totalAnnualLiveRevenue) }}</span>
+              <div class="bg-background px-3 py-1.5 rounded-xl border border-border-strong">
+                <span class="text-muted-foreground">Annual Run-Rate: </span>
+                <span class="font-display font-bold text-ink-navy">{{ peso(totalAnnualLiveRevenue) }}</span>
               </div>
-              <div class="bg-[#fafaf9] px-3 py-1.5 rounded-xl border border-[#dfe1e6]">
-                <span class="text-[#71717a]">Monthly Avg: </span>
-                <span class="font-display font-bold text-[#0c66e4]">{{ peso(averageMonthlyLiveIncome) }}</span>
+              <div class="bg-background px-3 py-1.5 rounded-xl border border-border-strong">
+                <span class="text-muted-foreground">Monthly Avg: </span>
+                <span class="font-display font-bold text-primary">{{ peso(averageMonthlyLiveIncome) }}</span>
               </div>
               <div class="bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
                 <span class="text-emerald-800 font-bold">Peak: {{ livePeakMonth.month }} ({{ peso(livePeakMonth.grossIncome) }})</span>
@@ -986,13 +986,13 @@ function exportHistoricalCSV() {
                   :stroke-width="hoveredMonthIndex === idx ? 3.5 : 2.5"
                   class="transition-all duration-150 cursor-pointer"
                 />
-                <text :x="pt.x" :y="chartSvgHeight - 38" text-anchor="middle" class="text-[12px] font-extrabold fill-[#172b4d]">
+                <text :x="pt.x" :y="chartSvgHeight - 38" text-anchor="middle" class="text-[12px] font-extrabold fill-ink-navy">
                   {{ pt.month }}
                 </text>
-                <text :x="pt.x" :y="chartSvgHeight - 22" text-anchor="middle" class="text-[11px] font-extrabold fill-[#0c66e4]">
+                <text :x="pt.x" :y="chartSvgHeight - 22" text-anchor="middle" class="text-[11px] font-extrabold fill-primary">
                   {{ peso(pt.grossIncome) }}
                 </text>
-                <text :x="pt.x" :y="chartSvgHeight - 8" text-anchor="middle" :class="['text-[9px] font-bold', pt.isProjected ? 'fill-[#a1a1aa]' : 'fill-emerald-700']">
+                <text :x="pt.x" :y="chartSvgHeight - 8" text-anchor="middle" :class="['text-[9px] font-bold', pt.isProjected ? 'fill-muted-foreground-soft' : 'fill-emerald-700']">
                   {{ pt.isProjected ? 'Run-rate' : 'Verified' }}
                 </text>
                 <rect 
@@ -1011,7 +1011,7 @@ function exportHistoricalCSV() {
             <!-- Tooltip -->
             <div 
               v-if="hoveredMonthIndex !== null && chartPoints[hoveredMonthIndex]"
-              class="absolute pointer-events-none z-50 top-1 bg-[#172b4d] text-white p-3 rounded-xl shadow-2xl border border-neutral-700/80 text-xs space-y-1 transition-all duration-150 whitespace-nowrap"
+              class="absolute pointer-events-none z-50 top-1 bg-ink-navy text-white p-3 rounded-xl shadow-2xl border border-neutral-700/80 text-xs space-y-1 transition-all duration-150 whitespace-nowrap"
               :style="{
                 left: `${((hoveredMonthIndex + 0.5) / 12) * 100}%`,
                 transform: hoveredMonthIndex === 0 ? 'translateX(0%)' : hoveredMonthIndex === 11 ? 'translateX(-100%)' : 'translateX(-50%)'
@@ -1041,14 +1041,14 @@ function exportHistoricalCSV() {
         <div class="grid gap-6 lg:grid-cols-2">
           
           <!-- Live Cash Flow (Jan-Jun 2026) -->
-          <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-4">
+              <div class="flex items-center justify-between border-b border-border-strong pb-4">
                 <div>
-                  <h2 class="font-display text-base font-extrabold text-[#172b4d]">
+                  <h2 class="font-display text-base font-extrabold text-ink-navy">
                     Operating Cash Flow (FY 2026)
                   </h2>
-                  <p class="text-xs text-[#71717a] mt-0.5">
+                  <p class="text-xs text-muted-foreground mt-0.5">
                     Monthly revenue inflow compared with operational expenses.
                   </p>
                 </div>
@@ -1061,7 +1061,7 @@ function exportHistoricalCSV() {
                   </span>
                   <button 
                     @click="isLiveCashFlowOpen = !isLiveCashFlowOpen"
-                    class="p-1 rounded-lg hover:bg-[#f4f5f7] text-[#71717a] hover:text-[#172b4d] transition-all cursor-pointer"
+                    class="p-1 rounded-lg hover:bg-surface-sunken text-muted-foreground hover:text-ink-navy transition-all cursor-pointer"
                     :title="isLiveCashFlowOpen ? 'Collapse Cash Flow' : 'Expand Cash Flow'"
                   >
                     <ChevronDown :class="['size-4 transition-transform duration-200', isLiveCashFlowOpen ? 'rotate-180' : '']" />
@@ -1076,13 +1076,13 @@ function exportHistoricalCSV() {
                   class="space-y-1.5"
                 >
                   <div class="flex items-center justify-between text-xs">
-                    <span class="font-extrabold text-[#172b4d]">{{ d.month }} 2026</span>
-                    <span class="text-[#71717a]">
+                    <span class="font-extrabold text-ink-navy">{{ d.month }} 2026</span>
+                    <span class="text-muted-foreground">
                       Net Operating Income: <strong class="text-emerald-800">{{ peso(d.noi) }}</strong>
                     </span>
                   </div>
 
-                  <div class="grid grid-cols-2 gap-2 h-3.5 bg-[#f4f5f7] rounded-lg p-0.5">
+                  <div class="grid grid-cols-2 gap-2 h-3.5 bg-surface-sunken rounded-lg p-0.5">
                     <div class="relative h-full bg-[#f0fdf4] rounded-sm overflow-hidden flex justify-end">
                       <div 
                         class="h-full bg-emerald-600 rounded-sm transition-all duration-300"
@@ -1097,7 +1097,7 @@ function exportHistoricalCSV() {
                     </div>
                   </div>
 
-                  <div class="flex justify-between text-[10px] text-[#71717a] px-0.5">
+                  <div class="flex justify-between text-[10px] text-muted-foreground px-0.5">
                     <span>Revenue: {{ peso(d.grossIncome) }}</span>
                     <span
                       :title="d.personalExpenses > 0
@@ -1107,7 +1107,7 @@ function exportHistoricalCSV() {
                   </div>
                   <div
                     v-if="d.personalExpenses > 0"
-                    class="flex justify-end text-[10px] text-[#a1a1aa] px-0.5 -mt-0.5"
+                    class="flex justify-end text-[10px] text-muted-foreground-soft px-0.5 -mt-0.5"
                   >
                     <span>Personal (not deducted): {{ peso(d.personalExpenses) }}</span>
                   </div>
@@ -1115,8 +1115,8 @@ function exportHistoricalCSV() {
               </div>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-[#dfe1e6] flex items-center justify-between">
-              <span class="text-xs text-[#71717a]">Direct ledgers:</span>
+            <div class="mt-6 pt-4 border-t border-border-strong flex items-center justify-between">
+              <span class="text-xs text-muted-foreground">Direct ledgers:</span>
               <div class="flex gap-2">
                 <button @click="router.push('/admin/income')" class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1 cursor-pointer">
                   <span>Income Ledger</span>
@@ -1131,28 +1131,28 @@ function exportHistoricalCSV() {
           </div>
 
           <!-- Live Cluster Occupancy Matrix -->
-          <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-4">
+              <div class="flex items-center justify-between border-b border-border-strong pb-4">
                 <div>
-                  <h2 class="font-display text-base font-extrabold text-[#172b4d]">
+                  <h2 class="font-display text-base font-extrabold text-ink-navy">
                     Cluster Occupancy &amp; Contribution Matrix
                   </h2>
-                  <p class="text-xs text-[#71717a] mt-0.5">
+                  <p class="text-xs text-muted-foreground mt-0.5">
                     Capacity utilization and active revenue across the 5 property clusters.
                   </p>
                 </div>
                 <div class="flex items-center gap-2">
                   <button 
                     @click="router.push('/admin/directory')"
-                    class="text-xs font-bold text-[#0c66e4] hover:underline flex items-center gap-1 cursor-pointer mr-2"
+                    class="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer mr-2"
                   >
                     <span>Directory</span>
                     <ChevronRight class="size-3" />
                   </button>
                   <button 
                     @click="isLiveClusterMatrixOpen = !isLiveClusterMatrixOpen"
-                    class="p-1 rounded-lg hover:bg-[#f4f5f7] text-[#71717a] hover:text-[#172b4d] transition-all cursor-pointer"
+                    class="p-1 rounded-lg hover:bg-surface-sunken text-muted-foreground hover:text-ink-navy transition-all cursor-pointer"
                     :title="isLiveClusterMatrixOpen ? 'Collapse Clusters' : 'Expand Clusters'"
                   >
                     <ChevronDown :class="['size-4 transition-transform duration-200', isLiveClusterMatrixOpen ? 'rotate-180' : '']" />
@@ -1164,19 +1164,19 @@ function exportHistoricalCSV() {
                 <div 
                   v-for="c in liveClusterPerformance" 
                   :key="c.name"
-                  class="p-3.5 rounded-xl border border-[#dfe1e6] bg-[#fafaf9]"
+                  class="p-3.5 rounded-xl border border-border-strong bg-background"
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <h3 class="font-display text-xs font-black uppercase text-[#172b4d]">
+                      <h3 class="font-display text-xs font-black uppercase text-ink-navy">
                         {{ c.name }}
                       </h3>
-                      <p class="text-[11px] text-[#71717a] mt-0.5">
+                      <p class="text-[11px] text-muted-foreground mt-0.5">
                         {{ c.occupied }} of {{ c.total }} units occupied ({{ c.vacant }} vacant)
                       </p>
                     </div>
                     <div class="text-right">
-                      <span class="font-display font-extrabold text-sm text-[#172b4d] block">
+                      <span class="font-display font-extrabold text-sm text-ink-navy block">
                         {{ peso(c.revenue) }}
                       </span>
                       <span :class="[
@@ -1188,9 +1188,9 @@ function exportHistoricalCSV() {
                     </div>
                   </div>
 
-                  <div class="mt-2.5 h-2 w-full bg-[#dfe1e6] rounded-full overflow-hidden">
+                  <div class="mt-2.5 h-2 w-full bg-border-strong rounded-full overflow-hidden">
                     <div 
-                      class="h-full bg-[#0c66e4] rounded-full transition-all duration-300"
+                      class="h-full bg-primary rounded-full transition-all duration-300"
                       :style="{ width: `${c.rate}%` }"
                     ></div>
                   </div>
@@ -1198,7 +1198,7 @@ function exportHistoricalCSV() {
               </div>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-[#dfe1e6] flex items-center justify-between text-xs text-[#71717a]">
+            <div class="mt-6 pt-4 border-t border-border-strong flex items-center justify-between text-xs text-muted-foreground">
               <span>Total Operational Capacity: <strong>33 Units</strong></span>
               <span class="text-emerald-700 font-semibold">Active Inventory Fully Synchronized</span>
             </div>
@@ -1218,12 +1218,12 @@ function exportHistoricalCSV() {
           <!-- Card 1: Gross Remittance -->
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">FY {{ selectedArchiveYear }} Gross Inflow</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">FY {{ selectedArchiveYear }} Gross Inflow</p>
               <span class="rounded-xl p-2 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200">
                 <TrendingUp class="size-4" />
               </span>
             </div>
-            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#172b4d]">
+            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">
               {{ peso(historicalAnnualGrossTotal) }}
             </p>
             <p class="mt-1.5 text-xs text-emerald-700 font-semibold">
@@ -1234,15 +1234,15 @@ function exportHistoricalCSV() {
           <!-- Card 2: 50% Landlady Share -->
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">50% Landlady Share</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">50% Landlady Share</p>
               <span class="rounded-xl p-2 bg-blue-50 text-blue-800 ring-1 ring-blue-200">
                 <DollarSign class="size-4" />
               </span>
             </div>
-            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#0c66e4]">
+            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-primary">
               {{ peso(historicalAnnualLandladyShare) }}
             </p>
-            <p class="mt-1.5 text-xs text-[#71717a]">
+            <p class="mt-1.5 text-xs text-muted-foreground">
               BR-032 compliant 50% profit allocation
             </p>
           </div>
@@ -1250,7 +1250,7 @@ function exportHistoricalCSV() {
           <!-- Card 3: Total Expenses -->
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Operational Expenses</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Operational Expenses</p>
               <span class="rounded-xl p-2 bg-rose-50 text-rose-800 ring-1 ring-rose-200">
                 <ReceiptText class="size-4" />
               </span>
@@ -1263,7 +1263,7 @@ function exportHistoricalCSV() {
             </p>
             <p
               v-if="historicalAnnualPersonalTotal > 0"
-              class="mt-1 text-[11px] leading-snug text-[#71717a]"
+              class="mt-1 text-[11px] leading-snug text-muted-foreground"
               title="Main House is the owner's own residence and Other / Personal is personal by definition. Both are recorded in the same ledger but are not a cost of running the boarding house, so they are not subtracted from rental income."
             >
               Excludes {{ peso(historicalAnnualPersonalTotal) }} personal (Main House / Other)
@@ -1273,7 +1273,7 @@ function exportHistoricalCSV() {
           <!-- Card 4: Net Operating Income -->
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Net Operating Income (NOI)</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Net Operating Income (NOI)</p>
               <span :class="[
                 'rounded-xl p-2 ring-1',
                 historicalAnnualNOI >= 0 ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-rose-50 text-rose-800 ring-rose-200'
@@ -1288,37 +1288,37 @@ function exportHistoricalCSV() {
             ]">
               {{ peso(historicalAnnualNOI) }}
             </p>
-            <p class="mt-1.5 text-xs text-[#71717a]">
+            <p class="mt-1.5 text-xs text-muted-foreground">
               Inflow minus operating outflows
             </p>
           </div>
         </div>
 
         <!-- 12-MONTH HISTORICAL INCOME CURVE -->
-        <div class="surface-card relative rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-5">
+        <div class="surface-card relative rounded-2xl border border-border-strong bg-white p-6 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-5">
             <div>
               <div class="flex items-center gap-2">
-                <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
+                <span class="p-1.5 rounded-lg bg-primary/10 text-primary">
                   <TrendingUp class="size-4" />
                 </span>
-                <h2 class="font-display text-lg font-black text-[#172b4d]">
+                <h2 class="font-display text-lg font-black text-ink-navy">
                   12-Month Inflow Trajectory (FY {{ selectedArchiveYear }})
                 </h2>
               </div>
-              <p class="text-xs text-[#71717a] mt-0.5">
+              <p class="text-xs text-muted-foreground mt-0.5">
                 Exact monthly gross remittances collected from tenants across Jan–Dec {{ selectedArchiveYear }}.
               </p>
             </div>
 
             <div class="flex flex-wrap items-center gap-3 text-xs">
-              <div class="bg-[#fafaf9] px-3 py-1.5 rounded-xl border border-[#dfe1e6]">
-                <span class="text-[#71717a]">Annual Total: </span>
-                <span class="font-display font-bold text-[#172b4d]">{{ peso(historicalAnnualGrossTotal) }}</span>
+              <div class="bg-background px-3 py-1.5 rounded-xl border border-border-strong">
+                <span class="text-muted-foreground">Annual Total: </span>
+                <span class="font-display font-bold text-ink-navy">{{ peso(historicalAnnualGrossTotal) }}</span>
               </div>
-              <div class="bg-[#fafaf9] px-3 py-1.5 rounded-xl border border-[#dfe1e6]">
-                <span class="text-[#71717a]">Monthly Average: </span>
-                <span class="font-display font-bold text-[#0c66e4]">{{ peso(historicalAverageMonthlyIncome) }}</span>
+              <div class="bg-background px-3 py-1.5 rounded-xl border border-border-strong">
+                <span class="text-muted-foreground">Monthly Average: </span>
+                <span class="font-display font-bold text-primary">{{ peso(historicalAverageMonthlyIncome) }}</span>
               </div>
               <div class="bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
                 <span class="text-emerald-800 font-bold">Peak: {{ historicalPeakMonth.month }} ({{ peso(historicalPeakMonth.grossIncome) }})</span>
@@ -1379,10 +1379,10 @@ function exportHistoricalCSV() {
                   :stroke-width="hoveredMonthIndex === idx ? 3.5 : 2.5"
                   class="transition-all duration-150 cursor-pointer"
                 />
-                <text :x="pt.x" :y="chartSvgHeight - 38" text-anchor="middle" class="text-[12px] font-extrabold fill-[#172b4d]">
+                <text :x="pt.x" :y="chartSvgHeight - 38" text-anchor="middle" class="text-[12px] font-extrabold fill-ink-navy">
                   {{ pt.month }}
                 </text>
-                <text :x="pt.x" :y="chartSvgHeight - 22" text-anchor="middle" class="text-[11px] font-extrabold fill-[#0c66e4]">
+                <text :x="pt.x" :y="chartSvgHeight - 22" text-anchor="middle" class="text-[11px] font-extrabold fill-primary">
                   {{ peso(pt.grossIncome) }}
                 </text>
                 <text :x="pt.x" :y="chartSvgHeight - 8" text-anchor="middle" class="text-[9px] font-bold fill-emerald-700">
@@ -1404,7 +1404,7 @@ function exportHistoricalCSV() {
             <!-- Floating Tooltip -->
             <div 
               v-if="hoveredMonthIndex !== null && chartPoints[hoveredMonthIndex]"
-              class="absolute pointer-events-none z-50 top-1 bg-[#172b4d] text-white p-3 rounded-xl shadow-2xl border border-neutral-700/80 text-xs space-y-1 transition-all duration-150 whitespace-nowrap"
+              class="absolute pointer-events-none z-50 top-1 bg-ink-navy text-white p-3 rounded-xl shadow-2xl border border-neutral-700/80 text-xs space-y-1 transition-all duration-150 whitespace-nowrap"
               :style="{
                 left: `${((hoveredMonthIndex + 0.5) / 12) * 100}%`,
                 transform: hoveredMonthIndex === 0 ? 'translateX(0%)' : hoveredMonthIndex === 11 ? 'translateX(-100%)' : 'translateX(-50%)'
@@ -1438,14 +1438,14 @@ function exportHistoricalCSV() {
         <div class="grid gap-6 lg:grid-cols-2">
           
           <!-- Historical Cash Flow (All 12 Months) -->
-          <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-4">
+              <div class="flex items-center justify-between border-b border-border-strong pb-4">
                 <div>
-                  <h2 class="font-display text-base font-extrabold text-[#172b4d]">
+                  <h2 class="font-display text-base font-extrabold text-ink-navy">
                     Historical Cash Flow (FY {{ selectedArchiveYear }})
                   </h2>
-                  <p class="text-xs text-[#71717a] mt-0.5">
+                  <p class="text-xs text-muted-foreground mt-0.5">
                     Monthly income inflow compared with maintenance, bills, and operational expenses.
                   </p>
                 </div>
@@ -1458,7 +1458,7 @@ function exportHistoricalCSV() {
                   </span>
                   <button 
                     @click="isHistoricalCashFlowOpen = !isHistoricalCashFlowOpen"
-                    class="p-1 rounded-lg hover:bg-[#f4f5f7] text-[#71717a] hover:text-[#172b4d] transition-all cursor-pointer"
+                    class="p-1 rounded-lg hover:bg-surface-sunken text-muted-foreground hover:text-ink-navy transition-all cursor-pointer"
                     :title="isHistoricalCashFlowOpen ? 'Collapse Cash Flow' : 'Expand Cash Flow'"
                   >
                     <ChevronDown :class="['size-4 transition-transform duration-200', isHistoricalCashFlowOpen ? 'rotate-180' : '']" />
@@ -1471,17 +1471,17 @@ function exportHistoricalCSV() {
                 <div 
                   v-for="d in historical12MonthsData" 
                   :key="d.month"
-                  class="p-2.5 rounded-xl border border-[#dfe1e6] bg-[#fafaf9] space-y-1.5"
+                  class="p-2.5 rounded-xl border border-border-strong bg-background space-y-1.5"
                 >
                   <div class="flex items-center justify-between text-xs">
-                    <span class="font-extrabold text-[#172b4d]">{{ d.month }} {{ selectedArchiveYear }}</span>
+                    <span class="font-extrabold text-ink-navy">{{ d.month }} {{ selectedArchiveYear }}</span>
                     <span class="text-xs">
                       Net: <strong :class="d.noi >= 0 ? 'text-emerald-800' : 'text-rose-700'">{{ peso(d.noi) }}</strong>
                     </span>
                   </div>
 
                   <!-- Dual Progress Bar -->
-                  <div class="grid grid-cols-2 gap-2 h-3 bg-white rounded-lg p-0.5 border border-[#dfe1e6]">
+                  <div class="grid grid-cols-2 gap-2 h-3 bg-white rounded-lg p-0.5 border border-border-strong">
                     <div class="relative h-full bg-[#f0fdf4] rounded-sm overflow-hidden flex justify-end">
                       <div 
                         class="h-full bg-emerald-600 rounded-sm transition-all duration-300"
@@ -1496,8 +1496,8 @@ function exportHistoricalCSV() {
                     </div>
                   </div>
 
-                  <div class="flex justify-between text-[10px] text-[#71717a] px-0.5">
-                    <span>Revenue: <strong class="text-[#172b4d]">{{ peso(d.grossIncome) }}</strong></span>
+                  <div class="flex justify-between text-[10px] text-muted-foreground px-0.5">
+                    <span>Revenue: <strong class="text-ink-navy">{{ peso(d.grossIncome) }}</strong></span>
                     <span
                       :title="d.personalExpenses > 0
                         ? `Operating expenses only. A further ${peso(d.personalExpenses)} of personal (Main House / Other) cost is recorded this month and is not subtracted from rental income.`
@@ -1506,7 +1506,7 @@ function exportHistoricalCSV() {
                   </div>
                   <div
                     v-if="d.personalExpenses > 0"
-                    class="flex justify-end text-[10px] text-[#a1a1aa] px-0.5 -mt-0.5"
+                    class="flex justify-end text-[10px] text-muted-foreground-soft px-0.5 -mt-0.5"
                   >
                     <span>Personal (not deducted): {{ peso(d.personalExpenses) }}</span>
                   </div>
@@ -1514,31 +1514,31 @@ function exportHistoricalCSV() {
               </div>
             </div>
 
-            <div class="mt-4 pt-3 border-t border-[#dfe1e6] flex items-center justify-between text-xs text-[#71717a]">
+            <div class="mt-4 pt-3 border-t border-border-strong flex items-center justify-between text-xs text-muted-foreground">
               <span>Annual Inflow: <strong>{{ peso(historicalAnnualGrossTotal) }}</strong></span>
               <span>Annual Outflow: <strong>{{ peso(historicalAnnualExpenseTotal) }}</strong></span>
             </div>
           </div>
 
           <!-- Historical Cluster Contribution Matrix -->
-          <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between border-b border-[#dfe1e6] pb-4">
+              <div class="flex items-center justify-between border-b border-border-strong pb-4">
                 <div>
-                  <h2 class="font-display text-base font-extrabold text-[#172b4d]">
+                  <h2 class="font-display text-base font-extrabold text-ink-navy">
                     Cluster Contribution Matrix (FY {{ selectedArchiveYear }})
                   </h2>
-                  <p class="text-xs text-[#71717a] mt-0.5">
+                  <p class="text-xs text-muted-foreground mt-0.5">
                     Annual revenue contribution and unit participation across property clusters.
                   </p>
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="text-xs px-2 py-0.5 rounded-md bg-[#f4f5f7] border border-[#dfe1e6] font-bold text-[#71717a] mr-1">
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-surface-sunken border border-border-strong font-bold text-muted-foreground mr-1">
                     5 Clusters
                   </span>
                   <button 
                     @click="isHistoricalClusterMatrixOpen = !isHistoricalClusterMatrixOpen"
-                    class="p-1 rounded-lg hover:bg-[#f4f5f7] text-[#71717a] hover:text-[#172b4d] transition-all cursor-pointer"
+                    class="p-1 rounded-lg hover:bg-surface-sunken text-muted-foreground hover:text-ink-navy transition-all cursor-pointer"
                     :title="isHistoricalClusterMatrixOpen ? 'Collapse Matrix' : 'Expand Matrix'"
                   >
                     <ChevronDown :class="['size-4 transition-transform duration-200', isHistoricalClusterMatrixOpen ? 'rotate-180' : '']" />
@@ -1551,19 +1551,19 @@ function exportHistoricalCSV() {
                 <div 
                   v-for="c in historicalClusterPerformance" 
                   :key="c.name"
-                  class="p-3.5 rounded-xl border border-[#dfe1e6] bg-[#fafaf9]"
+                  class="p-3.5 rounded-xl border border-border-strong bg-background"
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <h3 class="font-display text-xs font-black uppercase text-[#172b4d]">
+                      <h3 class="font-display text-xs font-black uppercase text-ink-navy">
                         {{ c.name }}
                       </h3>
-                      <p class="text-[11px] text-[#71717a] mt-0.5">
+                      <p class="text-[11px] text-muted-foreground mt-0.5">
                         {{ c.recordCount }} recorded payments across {{ c.uniqueRooms }} unit{{ c.uniqueRooms === 1 ? '' : 's' }}
                       </p>
                     </div>
                     <div class="text-right">
-                      <span class="font-display font-extrabold text-sm text-[#172b4d] block">
+                      <span class="font-display font-extrabold text-sm text-ink-navy block">
                         {{ peso(c.revenue) }}
                       </span>
                       <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md inline-block mt-0.5 bg-blue-100 text-blue-800">
@@ -1572,9 +1572,9 @@ function exportHistoricalCSV() {
                     </div>
                   </div>
 
-                  <div class="mt-2.5 h-2 w-full bg-[#dfe1e6] rounded-full overflow-hidden">
+                  <div class="mt-2.5 h-2 w-full bg-border-strong rounded-full overflow-hidden">
                     <div 
-                      class="h-full bg-[#0c66e4] rounded-full transition-all duration-300"
+                      class="h-full bg-primary rounded-full transition-all duration-300"
                       :style="{ width: `${c.shareOfTotal}%` }"
                     ></div>
                   </div>
@@ -1582,7 +1582,7 @@ function exportHistoricalCSV() {
               </div>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-[#dfe1e6] flex items-center justify-between text-xs text-[#71717a]">
+            <div class="mt-6 pt-4 border-t border-border-strong flex items-center justify-between text-xs text-muted-foreground">
               <span>Verified Revenue Share: <strong>{{ peso(historicalAnnualLandladyShare) }}</strong></span>
               <span class="text-emerald-700 font-semibold">100% Reconciled with Excel</span>
             </div>
@@ -1592,18 +1592,18 @@ function exportHistoricalCSV() {
         <!-- ================================================================== *
          * SECTION 4: HISTORICAL TENANT ROSTER FOR FY {selectedArchiveYear}
          * ================================================================== -->
-        <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-4">
             <div>
               <div class="flex items-center gap-2">
-                <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
+                <span class="p-1.5 rounded-lg bg-primary/10 text-primary">
                   <Users class="size-4" />
                 </span>
-                <h2 class="font-display text-base font-extrabold text-[#172b4d]">
+                <h2 class="font-display text-base font-extrabold text-ink-navy">
                   Historical Tenant Directory &amp; Roster (FY {{ selectedArchiveYear }})
                 </h2>
               </div>
-              <p class="text-xs text-[#71717a] mt-0.5">
+              <p class="text-xs text-muted-foreground mt-0.5">
                 Every tenant who resided and remitted payments in FY {{ selectedArchiveYear }}, mapped from verified records.
               </p>
             </div>
@@ -1611,24 +1611,24 @@ function exportHistoricalCSV() {
             <!-- Search & Controls -->
             <div class="flex flex-wrap items-center gap-2 text-xs">
               <div class="relative min-w-[180px]">
-                <Search class="size-3.5 absolute left-2.5 top-2.5 text-[#71717a]" />
+                <Search class="size-3.5 absolute left-2.5 top-2.5 text-muted-foreground" />
                 <input 
                   v-model="historicalSearchQuery" 
                   type="text" 
                   placeholder="Search tenant or unit..."
-                  class="w-full pl-8 pr-3 py-1.5 rounded-xl border border-[#dfe1e6] bg-[#fafaf9] text-xs focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-[#0c66e4]"
+                  class="w-full pl-8 pr-3 py-1.5 rounded-xl border border-border-strong bg-background text-xs focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <select 
                 v-model="historicalClusterFilter"
-                class="px-2.5 py-1.5 rounded-xl border border-[#dfe1e6] bg-[#fafaf9] text-xs focus:bg-white focus:outline-hidden cursor-pointer"
+                class="px-2.5 py-1.5 rounded-xl border border-border-strong bg-background text-xs focus:bg-white focus:outline-hidden cursor-pointer"
               >
                 <option value="All">All Clusters</option>
                 <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
               </select>
 
-              <span class="px-2.5 py-1 rounded-xl bg-[#f4f5f7] text-[#71717a] font-bold">
+              <span class="px-2.5 py-1 rounded-xl bg-surface-sunken text-muted-foreground font-bold">
                 {{ historicalTenantRoster.length }} Residents
               </span>
 
@@ -1645,10 +1645,10 @@ function exportHistoricalCSV() {
           </div>
 
           <!-- Roster Table (Scrollable Viewport with Sticky Header) -->
-          <div v-show="isTenantRosterOpen" class="overflow-x-auto max-h-[360px] overflow-y-auto rounded-xl border border-[#dfe1e6]">
+          <div v-show="isTenantRosterOpen" class="overflow-x-auto max-h-[360px] overflow-y-auto rounded-xl border border-border-strong">
             <table class="w-full text-left text-xs border-collapse">
-              <thead class="sticky top-0 bg-[#fafaf9] z-10 shadow-xs">
-                <tr class="border-b border-[#dfe1e6] text-[#71717a] font-bold">
+              <thead class="sticky top-0 bg-background z-10 shadow-xs">
+                <tr class="border-b border-border-strong text-muted-foreground font-bold">
                   <th class="py-2.5 px-3">Tenant Name</th>
                   <th class="py-2.5 px-3">Unit Code</th>
                   <th class="py-2.5 px-3">Cluster</th>
@@ -1658,41 +1658,41 @@ function exportHistoricalCSV() {
                   <th class="py-2.5 px-3">Invoice / OR Reference</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-[#dfe1e6]">
+              <tbody class="divide-y divide-border-strong">
                 <tr 
                   v-for="t in historicalTenantRoster" 
                   :key="`${t.name}-${t.unit}`"
-                  class="hover:bg-[#fafaf9] transition-colors"
+                  class="hover:bg-background transition-colors"
                 >
-                  <td class="py-2.5 px-3 font-bold text-[#172b4d]">
+                  <td class="py-2.5 px-3 font-bold text-ink-navy">
                     {{ t.name }}
                   </td>
                   <td class="py-2.5 px-3">
-                    <span class="px-2 py-0.5 rounded-md bg-[#f4f5f7] border border-[#dfe1e6] font-mono font-bold text-[#172b4d]">
+                    <span class="px-2 py-0.5 rounded-md bg-surface-sunken border border-border-strong font-mono font-bold text-ink-navy">
                       {{ t.unit }}
                     </span>
                   </td>
-                  <td class="py-2.5 px-3 text-[#71717a]">
+                  <td class="py-2.5 px-3 text-muted-foreground">
                     {{ t.cluster }}
                   </td>
                   <td class="py-2.5 px-3 text-center">
-                    <span class="px-2 py-0.5 rounded-full bg-blue-50 text-[#0c66e4] font-bold text-[10px] ring-1 ring-blue-200">
+                    <span class="px-2 py-0.5 rounded-full bg-blue-50 text-primary font-bold text-[10px] ring-1 ring-blue-200">
                       {{ t.monthsCount }} Payment{{ t.monthsCount === 1 ? '' : 's' }}
                     </span>
                   </td>
-                  <td class="py-2.5 px-3 text-[#71717a] text-[11px]">
+                  <td class="py-2.5 px-3 text-muted-foreground text-[11px]">
                     {{ t.activeMonths.join(', ') }}
                   </td>
-                  <td class="py-2.5 px-3 text-right font-display font-extrabold text-[#172b4d]">
+                  <td class="py-2.5 px-3 text-right font-display font-extrabold text-ink-navy">
                     {{ peso(t.totalRemitted) }}
                   </td>
-                  <td class="py-2.5 px-3 font-mono text-[11px] text-[#71717a]">
+                  <td class="py-2.5 px-3 font-mono text-[11px] text-muted-foreground">
                     {{ t.invoiceSample }}
                   </td>
                 </tr>
 
                 <tr v-if="historicalTenantRoster.length === 0">
-                  <td colspan="7" class="py-8 text-center text-[#71717a]">
+                  <td colspan="7" class="py-8 text-center text-muted-foreground">
                     No tenants match your search filter for FY {{ selectedArchiveYear }}.
                   </td>
                 </tr>
@@ -1704,24 +1704,24 @@ function exportHistoricalCSV() {
         <!-- ================================================================== *
          * SECTION 5: 33-UNIT HISTORICAL ROOM UTILIZATION DIRECTORY
          * ================================================================== -->
-        <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-4">
             <div>
               <div class="flex items-center gap-2">
-                <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
+                <span class="p-1.5 rounded-lg bg-primary/10 text-primary">
                   <Building2 class="size-4" />
                 </span>
-                <h2 class="font-display text-base font-extrabold text-[#172b4d]">
+                <h2 class="font-display text-base font-extrabold text-ink-navy">
                   33-Unit Historical Revenue &amp; Occupancy Directory (FY {{ selectedArchiveYear }})
                 </h2>
               </div>
-              <p class="text-xs text-[#71717a] mt-0.5">
+              <p class="text-xs text-muted-foreground mt-0.5">
                 Annual revenue and active occupancy months generated by each unit in FY {{ selectedArchiveYear }}.
               </p>
             </div>
 
             <div class="flex items-center gap-2 text-xs">
-              <span class="px-3 py-1 rounded-xl bg-[#fafaf9] border border-[#dfe1e6] text-[#71717a] font-bold">
+              <span class="px-3 py-1 rounded-xl bg-background border border-border-strong text-muted-foreground font-bold">
                 33 Canonical Units
               </span>
 
@@ -1738,10 +1738,10 @@ function exportHistoricalCSV() {
           </div>
 
           <!-- Unit Utilization Grid Table (Scrollable Viewport with Sticky Header) -->
-          <div v-show="isUnitDirectoryOpen" class="overflow-x-auto max-h-[360px] overflow-y-auto rounded-xl border border-[#dfe1e6]">
+          <div v-show="isUnitDirectoryOpen" class="overflow-x-auto max-h-[360px] overflow-y-auto rounded-xl border border-border-strong">
             <table class="w-full text-left text-xs border-collapse">
-              <thead class="sticky top-0 bg-[#fafaf9] z-10 shadow-xs">
-                <tr class="border-b border-[#dfe1e6] text-[#71717a] font-bold">
+              <thead class="sticky top-0 bg-background z-10 shadow-xs">
+                <tr class="border-b border-border-strong text-muted-foreground font-bold">
                   <th class="py-2.5 px-3">Unit</th>
                   <th class="py-2.5 px-3">Cluster</th>
                   <th class="py-2.5 px-3">Floor</th>
@@ -1751,22 +1751,22 @@ function exportHistoricalCSV() {
                   <th class="py-2.5 px-3 text-right">Total FY Revenue</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-[#dfe1e6]">
+              <tbody class="divide-y divide-border-strong">
                 <tr 
                   v-for="u in historicalRoomUtilization" 
                   :key="u.unitCode"
-                  class="hover:bg-[#fafaf9] transition-colors"
+                  class="hover:bg-background transition-colors"
                 >
-                  <td class="py-2.5 px-3 font-mono font-black text-[#172b4d]">
+                  <td class="py-2.5 px-3 font-mono font-black text-ink-navy">
                     {{ u.unitCode }}
                   </td>
-                  <td class="py-2.5 px-3 text-[#71717a]">
+                  <td class="py-2.5 px-3 text-muted-foreground">
                     {{ u.cluster }}
                   </td>
-                  <td class="py-2.5 px-3 text-[#71717a]">
+                  <td class="py-2.5 px-3 text-muted-foreground">
                     {{ u.floorLabel }}
                   </td>
-                  <td class="py-2.5 px-3 text-center font-bold text-[#172b4d]">
+                  <td class="py-2.5 px-3 text-center font-bold text-ink-navy">
                     {{ u.activeMonths }} / 12 mos
                   </td>
                   <td class="py-2.5 px-3 text-center">
@@ -1777,10 +1777,10 @@ function exportHistoricalCSV() {
                       {{ u.occupancyRate }}%
                     </span>
                   </td>
-                  <td class="py-2.5 px-3 text-right text-[#71717a]">
+                  <td class="py-2.5 px-3 text-right text-muted-foreground">
                     {{ peso(u.averageMonthlyRevenue) }}
                   </td>
-                  <td class="py-2.5 px-3 text-right font-display font-extrabold text-[#172b4d]">
+                  <td class="py-2.5 px-3 text-right font-display font-extrabold text-ink-navy">
                     {{ peso(u.totalRevenue) }}
                   </td>
                 </tr>
@@ -1792,30 +1792,30 @@ function exportHistoricalCSV() {
         <!-- ================================================================== *
          * SECTION 6: DEEP HISTORICAL LEDGER DRILLDOWNS (TABBED & COLLAPSIBLE)
          * ================================================================== -->
-        <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-4">
+        <div class="surface-card rounded-2xl border border-border-strong bg-white p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-strong pb-4">
             <div>
               <div class="flex items-center gap-2">
-                <span class="p-1.5 rounded-lg bg-[#0c66e4]/10 text-[#0c66e4]">
+                <span class="p-1.5 rounded-lg bg-primary/10 text-primary">
                   <FileSpreadsheet class="size-4" />
                 </span>
-                <h2 class="font-display text-base font-extrabold text-[#172b4d]">
+                <h2 class="font-display text-base font-extrabold text-ink-navy">
                   Deep Ledger Drilldown (FY {{ selectedArchiveYear }})
                 </h2>
               </div>
-              <p class="text-xs text-[#71717a] mt-0.5">
+              <p class="text-xs text-muted-foreground mt-0.5">
                 Audit every raw line entry matching the Excel archive workbook with 100% mathematical fidelity.
               </p>
             </div>
 
             <!-- Tab Switcher & Collapse Controls -->
             <div class="flex flex-wrap items-center gap-2">
-              <div class="inline-flex rounded-xl bg-[#f4f5f7] p-1 border border-[#dfe1e6] text-xs">
+              <div class="inline-flex rounded-xl bg-surface-sunken p-1 border border-border-strong text-xs">
                 <button
                   @click="historicalLedgerTab = 'income'"
                   :class="[
                     'px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5',
-                    historicalLedgerTab === 'income' ? 'bg-[#0c66e4] text-white shadow-xs' : 'text-[#71717a] hover:text-[#172b4d]'
+                    historicalLedgerTab === 'income' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-ink-navy'
                   ]"
                 >
                   <span>Income Ledger</span>
@@ -1828,7 +1828,7 @@ function exportHistoricalCSV() {
                   @click="historicalLedgerTab = 'expenses'"
                   :class="[
                     'px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5',
-                    historicalLedgerTab === 'expenses' ? 'bg-[#0c66e4] text-white shadow-xs' : 'text-[#71717a] hover:text-[#172b4d]'
+                    historicalLedgerTab === 'expenses' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-ink-navy'
                   ]"
                 >
                   <span>Expense Ledger</span>
@@ -1852,10 +1852,10 @@ function exportHistoricalCSV() {
 
           <div v-show="isDeepLedgerOpen">
             <!-- TAB 1: INCOME LEDGER (Scrollable with Sticky Header) -->
-            <div v-if="historicalLedgerTab === 'income'" class="overflow-x-auto max-h-[380px] overflow-y-auto rounded-xl border border-[#dfe1e6]">
+            <div v-if="historicalLedgerTab === 'income'" class="overflow-x-auto max-h-[380px] overflow-y-auto rounded-xl border border-border-strong">
               <table class="w-full text-left text-xs border-collapse">
-                <thead class="sticky top-0 bg-[#fafaf9] z-10 shadow-xs">
-                  <tr class="border-b border-[#dfe1e6] text-[#71717a] font-bold">
+                <thead class="sticky top-0 bg-background z-10 shadow-xs">
+                  <tr class="border-b border-border-strong text-muted-foreground font-bold">
                     <th class="py-2.5 px-3">Date Paid</th>
                     <th class="py-2.5 px-3">Unit</th>
                     <th class="py-2.5 px-3">Tenant Name</th>
@@ -1867,31 +1867,31 @@ function exportHistoricalCSV() {
                     <th class="py-2.5 px-3">Invoice #</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-[#dfe1e6]">
+                <tbody class="divide-y divide-border-strong">
                   <tr 
                     v-for="r in historicalIncomeRecords" 
                     :key="r.id"
-                    class="hover:bg-[#fafaf9] transition-colors"
+                    class="hover:bg-background transition-colors"
                   >
-                    <td class="py-2 px-3 text-[#71717a] whitespace-nowrap">{{ r.datePaid }}</td>
-                    <td class="py-2 px-3 font-mono font-bold text-[#172b4d]">{{ r.unit }}</td>
-                    <td class="py-2 px-3 font-medium text-[#172b4d]">{{ r.contact }}</td>
-                    <td class="py-2 px-3 text-[#71717a] text-[11px]">{{ r.rentFor }}</td>
-                    <td class="py-2 px-3 text-right text-[#71717a]">{{ peso(r.rent) }}</td>
+                    <td class="py-2 px-3 text-muted-foreground whitespace-nowrap">{{ r.datePaid }}</td>
+                    <td class="py-2 px-3 font-mono font-bold text-ink-navy">{{ r.unit }}</td>
+                    <td class="py-2 px-3 font-medium text-ink-navy">{{ r.contact }}</td>
+                    <td class="py-2 px-3 text-muted-foreground text-[11px]">{{ r.rentFor }}</td>
+                    <td class="py-2 px-3 text-right text-muted-foreground">{{ peso(r.rent) }}</td>
                     <td class="py-2 px-3 text-right font-medium text-blue-700">{{ peso(r.fiftyPercentShare || 0) }}</td>
-                    <td class="py-2 px-3 text-right text-[#71717a]">{{ peso(r.water) }}</td>
+                    <td class="py-2 px-3 text-right text-muted-foreground">{{ peso(r.water) }}</td>
                     <td class="py-2 px-3 text-right font-bold text-emerald-800">{{ peso(r.totalRemitted || r.rent) }}</td>
-                    <td class="py-2 px-3 font-mono text-[11px] text-[#71717a]">{{ r.invoice }}</td>
+                    <td class="py-2 px-3 font-mono text-[11px] text-muted-foreground">{{ r.invoice }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
             <!-- TAB 2: EXPENSE LEDGER (Scrollable with Sticky Header) -->
-            <div v-else class="overflow-x-auto max-h-[380px] overflow-y-auto rounded-xl border border-[#dfe1e6]">
+            <div v-else class="overflow-x-auto max-h-[380px] overflow-y-auto rounded-xl border border-border-strong">
               <table class="w-full text-left text-xs border-collapse">
-                <thead class="sticky top-0 bg-[#fafaf9] z-10 shadow-xs">
-                  <tr class="border-b border-[#dfe1e6] text-[#71717a] font-bold">
+                <thead class="sticky top-0 bg-background z-10 shadow-xs">
+                  <tr class="border-b border-border-strong text-muted-foreground font-bold">
                     <th class="py-2.5 px-3">Date</th>
                     <th class="py-2.5 px-3">OR / Supplier</th>
                     <th class="py-2.5 px-3">Category</th>
@@ -1899,20 +1899,20 @@ function exportHistoricalCSV() {
                     <th class="py-2.5 px-3 text-right">Total Amount</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-[#dfe1e6]">
+                <tbody class="divide-y divide-border-strong">
                   <tr 
                     v-for="e in historicalExpenseRecords" 
                     :key="e.id"
-                    class="hover:bg-[#fafaf9] transition-colors"
+                    class="hover:bg-background transition-colors"
                   >
-                    <td class="py-2 px-3 text-[#71717a] whitespace-nowrap">{{ e.date }}</td>
-                    <td class="py-2 px-3 font-medium text-[#172b4d]">{{ e.description }}</td>
+                    <td class="py-2 px-3 text-muted-foreground whitespace-nowrap">{{ e.date }}</td>
+                    <td class="py-2 px-3 font-medium text-ink-navy">{{ e.description }}</td>
                     <td class="py-2 px-3">
-                      <span class="px-2 py-0.5 rounded-md bg-[#f4f5f7] border border-[#dfe1e6] text-[11px] text-[#172b4d]">
+                      <span class="px-2 py-0.5 rounded-md bg-surface-sunken border border-border-strong text-[11px] text-ink-navy">
                         {{ e.category }}
                       </span>
                     </td>
-                    <td class="py-2 px-3 text-[11px] text-[#71717a]">
+                    <td class="py-2 px-3 text-[11px] text-muted-foreground">
                       <span v-for="(s, sIdx) in e.splits" :key="sIdx" class="mr-2">
                         {{ s.area }}: <strong>{{ peso(s.amount) }}</strong>
                       </span>
@@ -1950,7 +1950,7 @@ function exportHistoricalCSV() {
             <button
               v-if="!isHistoricalMode"
               @click="isFabOpen = false; router.push('/admin/expenses');"
-              class="px-4 py-2.5 rounded-xl bg-white text-[#172b4d] font-extrabold text-xs shadow-xl border border-[#dfe1e6] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] transition-all cursor-pointer select-none whitespace-nowrap"
+              class="px-4 py-2.5 rounded-xl bg-white text-ink-navy font-extrabold text-xs shadow-xl border border-border-strong hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer select-none whitespace-nowrap"
             >
               <span>Record Expense</span>
             </button>
@@ -1958,7 +1958,7 @@ function exportHistoricalCSV() {
             <button
               v-if="!isHistoricalMode"
               @click="isFabOpen = false; isOnsitePaymentModalOpen = true;"
-              class="px-4 py-2.5 rounded-xl bg-white text-[#172b4d] font-extrabold text-xs shadow-xl border border-[#dfe1e6] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] transition-all cursor-pointer select-none whitespace-nowrap"
+              class="px-4 py-2.5 rounded-xl bg-white text-ink-navy font-extrabold text-xs shadow-xl border border-border-strong hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer select-none whitespace-nowrap"
             >
               <span>Record Payment</span>
             </button>
@@ -1966,7 +1966,7 @@ function exportHistoricalCSV() {
             <button
               v-if="isHistoricalMode"
               @click="isFabOpen = false; exportHistoricalCSV();"
-              class="px-4 py-2.5 rounded-xl bg-white text-[#172b4d] font-extrabold text-xs shadow-xl border border-[#dfe1e6] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] transition-all cursor-pointer select-none whitespace-nowrap"
+              class="px-4 py-2.5 rounded-xl bg-white text-ink-navy font-extrabold text-xs shadow-xl border border-border-strong hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer select-none whitespace-nowrap"
             >
               <span>Export FY {{ selectedArchiveYear }} CSV</span>
             </button>
@@ -1978,8 +1978,8 @@ function exportHistoricalCSV() {
           :class="[
             'size-14 rounded-full shadow-2xl transition-all flex items-center justify-center cursor-pointer border-2 border-white',
             isFabOpen 
-              ? 'bg-[#0c66e4] text-white ring-4 ring-blue-200' 
-              : 'bg-white text-[#172b4d] ring-4 ring-stone-200 hover:bg-[#0c66e4] hover:text-white hover:ring-blue-200'
+              ? 'bg-primary text-white ring-4 ring-blue-200' 
+              : 'bg-white text-ink-navy ring-4 ring-stone-200 hover:bg-primary hover:text-white hover:ring-blue-200'
           ]"
           title="Quick Actions"
           aria-label="Quick Actions Menu"

@@ -345,29 +345,29 @@ function priorityClass(priority: string) {
     case 'Medium':
       return 'bg-blue-50 text-blue-900 border-blue-200';
     default:
-      return 'bg-[#f4f5f7] text-[#5e6c84] border-[#dfe1e6]';
+      return 'bg-surface-sunken text-[#5e6c84] border-border-strong';
   }
 }
 
 function statusClass(status: string) {
   if (RESOLVED_STATES.includes(status)) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
   if (status === 'In Progress') return 'bg-amber-50 text-amber-900 border-amber-200';
-  return 'bg-[#e9f2ff] text-[#0c66e4] border-[#b3d4ff]';
+  return 'bg-primary-soft text-primary border-[#b3d4ff]';
 }
 </script>
 
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Tenant</span>
           <span>/</span>
-          <span class="font-bold text-[#1c1917]">Maintenance Tickets</span>
+          <span class="font-bold text-foreground">Maintenance Tickets</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">Maintenance Tickets</h1>
-        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Maintenance Tickets</h1>
+        <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">
           Report repair requests and track their progress
           <span v-if="activeRoomNumber"> for Unit {{ activeRoomNumber }}</span>
         </p>
@@ -375,7 +375,7 @@ function statusClass(status: string) {
 
       <div class="flex items-center gap-2">
         <button @click="fetchTickets" :disabled="loadingTickets" class="btn-secondary">
-          <RefreshCw :class="['size-3.5 text-[#71717a]', loadingTickets ? 'animate-spin text-[#0c66e4]' : '']" />
+          <RefreshCw :class="['size-3.5 text-muted-foreground', loadingTickets ? 'animate-spin text-primary' : '']" />
           <span>Refresh</span>
         </button>
       </div>
@@ -401,13 +401,13 @@ function statusClass(status: string) {
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
       <!-- Submit Ticket Form -->
-      <div class="lg:col-span-5 surface-card rounded-2xl border border-[#e7e5e4] bg-white overflow-hidden shadow-xs h-full flex flex-col">
-        <div class="px-6 py-4 border-b border-[#e7e5e4] bg-[#fafaf9]">
-          <h2 class="font-display font-extrabold text-sm text-[#1c1917] flex items-center gap-2">
-            <Wrench class="size-4 text-[#0c66e4]" />
+      <div class="lg:col-span-5 surface-card rounded-2xl border border-border bg-white overflow-hidden shadow-xs h-full flex flex-col">
+        <div class="px-6 py-4 border-b border-border bg-background">
+          <h2 class="font-display font-extrabold text-sm text-foreground flex items-center gap-2">
+            <Wrench class="size-4 text-primary" />
             Submit a Maintenance Ticket
           </h2>
-          <p class="text-xs text-[#71717a] mt-1">
+          <p class="text-xs text-muted-foreground mt-1">
             Reported directly to Landlady Fe Galang Da Silva.
           </p>
         </div>
@@ -423,7 +423,7 @@ function statusClass(status: string) {
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ticket-title">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ticket-title">
                 Issue Title
               </label>
               <input
@@ -438,7 +438,7 @@ function statusClass(status: string) {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ticket-category">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ticket-category">
                   Category
                 </label>
                 <select
@@ -455,7 +455,7 @@ function statusClass(status: string) {
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ticket-priority">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ticket-priority">
                   Priority
                 </label>
                 <select
@@ -472,7 +472,7 @@ function statusClass(status: string) {
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" for="ticket-desc">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ticket-desc">
                 Details &amp; Description
               </label>
               <textarea
@@ -480,19 +480,19 @@ function statusClass(status: string) {
                 v-model="ticketDescription"
                 rows="4"
                 placeholder="Describe the issue — where it is in the unit, when it started, and how severe it is."
-                class="w-full p-3 border border-[#e7e5e4] rounded-xl text-xs bg-white text-[#1c1917] leading-relaxed focus:border-[#0c66e4] focus:outline-none transition resize-y"
+                class="w-full p-3 border border-border rounded-xl text-xs bg-white text-foreground leading-relaxed focus:border-primary focus:outline-none transition resize-y"
                 required
               ></textarea>
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
-                Attach Photo <span class="font-normal text-[#71717a]">(optional)</span>
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+                Attach Photo <span class="font-normal text-muted-foreground">(optional)</span>
               </label>
 
               <div
                 v-if="!ticketPhotoUrl"
-                class="border-2 border-dashed border-[#e7e5e4] rounded-xl p-5 text-center bg-[#fafaf9] hover:bg-blue-50/40 hover:border-[#0c66e4]/40 transition-colors"
+                class="border-2 border-dashed border-border rounded-xl p-5 text-center bg-background hover:bg-blue-50/40 hover:border-primary/40 transition-colors"
               >
                 <input
                   id="ticket-photo-input"
@@ -505,9 +505,9 @@ function statusClass(status: string) {
                   for="ticket-photo-input"
                   class="cursor-pointer flex flex-col items-center justify-center gap-1.5"
                 >
-                  <ImageIcon class="size-6 text-[#0c66e4]" />
-                  <span class="text-xs font-bold text-[#1c1917]">Click to upload a photo</span>
-                  <span class="text-[11px] text-[#71717a]">PNG, JPG or WEBP up to 10MB</span>
+                  <ImageIcon class="size-6 text-primary" />
+                  <span class="text-xs font-bold text-foreground">Click to upload a photo</span>
+                  <span class="text-[11px] text-muted-foreground">PNG, JPG or WEBP up to 10MB</span>
                 </label>
               </div>
 
@@ -522,7 +522,7 @@ function statusClass(status: string) {
                     class="size-12 object-cover rounded-lg border border-[#b3d4ff] shrink-0"
                   />
                   <div class="truncate">
-                    <span class="text-xs font-bold text-[#1c1917] block truncate">
+                    <span class="text-xs font-bold text-foreground block truncate">
                       {{ ticketPhotoName }}
                     </span>
                     <span class="text-[11px] text-emerald-700 font-semibold">Photo attached</span>
@@ -531,7 +531,7 @@ function statusClass(status: string) {
                 <button
                   type="button"
                   @click="removePhoto"
-                  class="p-1 text-[#71717a] hover:text-rose-600 hover:bg-white rounded-lg transition-colors cursor-pointer shrink-0"
+                  class="p-1 text-muted-foreground hover:text-rose-600 hover:bg-white rounded-lg transition-colors cursor-pointer shrink-0"
                   title="Remove photo"
                 >
                   <X class="size-4" />
@@ -552,38 +552,38 @@ function statusClass(status: string) {
       </div>
 
       <!-- Ticket Tracker (Matching Admin Table Style) -->
-      <div class="lg:col-span-7 surface-card rounded-2xl border border-[#e7e5e4] bg-white overflow-hidden shadow-xs h-full flex flex-col">
-        <div class="px-6 py-4 border-b border-[#e7e5e4] bg-[#fafaf9] flex items-center justify-between gap-3 flex-wrap">
+      <div class="lg:col-span-7 surface-card rounded-2xl border border-border bg-white overflow-hidden shadow-xs h-full flex flex-col">
+        <div class="px-6 py-4 border-b border-border bg-background flex items-center justify-between gap-3 flex-wrap">
           <div class="flex items-center gap-2">
-            <h2 class="font-display font-extrabold text-sm text-[#1c1917] flex items-center gap-2">
-              <FileText class="size-4 text-[#0c66e4]" />
+            <h2 class="font-display font-extrabold text-sm text-foreground flex items-center gap-2">
+              <FileText class="size-4 text-primary" />
               My Ticket Tracker
             </h2>
-            <span class="text-xs text-[#71717a]">
+            <span class="text-xs text-muted-foreground">
               ({{ filteredTickets.length }} ticket{{ filteredTickets.length === 1 ? '' : 's' }})
             </span>
           </div>
-          <span class="text-xs text-[#71717a]">
-            <strong class="text-[#1c1917]">{{ openCount }}</strong> open ·
-            <strong class="text-[#1c1917]">{{ resolvedCount }}</strong> resolved
+          <span class="text-xs text-muted-foreground">
+            <strong class="text-foreground">{{ openCount }}</strong> open ·
+            <strong class="text-foreground">{{ resolvedCount }}</strong> resolved
           </span>
         </div>
 
         <!-- Filter Bar (Identical to Admin Dispatch / Maintenance Tickets) -->
-        <div class="flex flex-col gap-3 border-b border-[#e7e5e4] p-4 sm:flex-row">
+        <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
           <div class="relative flex-1">
-            <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
+            <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Search title, category or description…"
-              class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+              class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
             />
           </div>
 
           <select
             v-model="statusFilter"
-            class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
+            class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
           >
             <option value="All">All Tickets</option>
             <option value="Open">Open Only</option>
@@ -600,9 +600,9 @@ function statusClass(status: string) {
             v-else-if="filteredTickets.length === 0"
             class="py-12 text-center space-y-2"
           >
-            <Inbox class="size-8 text-[#71717a]/50 mx-auto" />
-            <p class="text-sm font-bold text-[#1c1917]">No tickets to show</p>
-            <p class="text-xs text-[#71717a]">
+            <Inbox class="size-8 text-muted-foreground/50 mx-auto" />
+            <p class="text-sm font-bold text-foreground">No tickets to show</p>
+            <p class="text-xs text-muted-foreground">
               {{
                 statusFilter === 'All'
                   ? 'Submit a ticket using the form and it will appear here.'
@@ -615,19 +615,19 @@ function statusClass(status: string) {
             <article
               v-for="ticket in filteredTickets"
               :key="ticket.id"
-              class="border border-[#e7e5e4] rounded-2xl overflow-hidden hover:border-[#0c66e4]/40 transition-colors bg-white shadow-xs"
+              class="border border-border rounded-2xl overflow-hidden hover:border-primary/40 transition-colors bg-white shadow-xs"
             >
               <!-- Clickable Header Row: Toggles Collapsible State -->
               <div
                 @click="toggleTicketExpanded(ticket.id)"
-                class="px-5 py-3.5 flex items-start justify-between gap-4 border-b border-[#e7e5e4] cursor-pointer hover:bg-[#fafaf9] transition-colors select-none group"
+                class="px-5 py-3.5 flex items-start justify-between gap-4 border-b border-border cursor-pointer hover:bg-background transition-colors select-none group"
               >
                 <div class="min-w-0">
-                  <h3 class="font-display font-extrabold text-sm text-[#1c1917] group-hover:text-[#0c66e4] transition-colors leading-snug">
+                  <h3 class="font-display font-extrabold text-sm text-foreground group-hover:text-primary transition-colors leading-snug">
                     {{ ticket.title }}
                   </h3>
-                  <p class="text-xs text-[#71717a] mt-0.5">
-                    <span v-if="ticket.id" class="font-mono font-bold text-[#71717a]">#{{ ticket.id.slice(0, 8) }} · </span>
+                  <p class="text-xs text-muted-foreground mt-0.5">
+                    <span v-if="ticket.id" class="font-mono font-bold text-muted-foreground">#{{ ticket.id.slice(0, 8) }} · </span>
                     Submitted {{ formatDate(ticket.created_at) }}
                     <span v-if="ticket.rooms"> · Unit {{ ticket.rooms.room_number }}</span>
                   </p>
@@ -642,11 +642,11 @@ function statusClass(status: string) {
                   >
                     {{ ticket.status === 'Open' ? 'Submitted' : ticket.status }}
                   </span>
-                  <div class="p-1 rounded-lg text-[#71717a] group-hover:text-[#1c1917] transition-colors">
+                  <div class="p-1 rounded-lg text-muted-foreground group-hover:text-foreground transition-colors">
                     <ChevronDown
                       :class="[
                         'size-4 transition-transform duration-200',
-                        isTicketExpanded(ticket.id) ? 'rotate-180 text-[#0c66e4]' : ''
+                        isTicketExpanded(ticket.id) ? 'rotate-180 text-primary' : ''
                       ]"
                     />
                   </div>
@@ -656,13 +656,13 @@ function statusClass(status: string) {
               <!-- Collapsible Body & Footer -->
               <div v-show="isTicketExpanded(ticket.id)">
                 <!-- Body: description -->
-                <div class="px-5 py-3.5 bg-[#fafaf9]">
-                  <p class="text-xs text-[#57534e] leading-relaxed">{{ ticket.description }}</p>
+                <div class="px-5 py-3.5 bg-background">
+                  <p class="text-xs text-foreground-soft leading-relaxed">{{ ticket.description }}</p>
                 </div>
 
                 <!-- Footer: classification metadata + View Timeline button -->
                 <div
-                  class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-[#e7e5e4] bg-white"
+                  class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-border bg-white"
                 >
                   <span
                     :class="[
@@ -689,7 +689,7 @@ function statusClass(status: string) {
                     @click.stop="openTimeline(ticket)"
                     class="btn-secondary ml-auto text-xs py-1 px-3 min-h-9 h-9"
                   >
-                    <ListChecks class="size-3.5 text-[#0c66e4]" />
+                    <ListChecks class="size-3.5 text-primary" />
                     <span>Timeline</span>
                     <ChevronRight class="size-3" />
                   </button>
@@ -708,18 +708,18 @@ function statusClass(status: string) {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
     @click.self="closeTimeline"
   >
-    <div class="surface-card bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-6 overflow-hidden border border-[#e7e5e4]">
+    <div class="surface-card bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-6 overflow-hidden border border-border">
       <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-[#e7e5e4] bg-[#fafaf9] flex items-start justify-between gap-4 sticky top-0">
+      <div class="px-6 py-4 border-b border-border bg-background flex items-start justify-between gap-4 sticky top-0">
         <div class="min-w-0">
-          <h3 class="font-display font-extrabold text-base text-[#1c1917] truncate">{{ activeTimelineTicket.title }}</h3>
-          <p class="text-xs text-[#71717a] mt-0.5">
+          <h3 class="font-display font-extrabold text-base text-foreground truncate">{{ activeTimelineTicket.title }}</h3>
+          <p class="text-xs text-muted-foreground mt-0.5">
             Progress Timeline · #{{ activeTimelineTicket.id.slice(0, 8) }}
           </p>
         </div>
         <button
           @click="closeTimeline"
-          class="p-1.5 rounded-lg text-[#71717a] hover:bg-[#e7e5e4] cursor-pointer shrink-0"
+          class="p-1.5 rounded-lg text-muted-foreground hover:bg-border cursor-pointer shrink-0"
         >
           <X class="size-4" />
         </button>
@@ -728,7 +728,7 @@ function statusClass(status: string) {
       <div class="p-6 space-y-6">
         <!-- 5-Stage Progress Stepper -->
         <div>
-          <p class="text-xs font-bold text-[#71717a] uppercase tracking-wider mb-4">Repair Progress</p>
+          <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Repair Progress</p>
           <div class="space-y-0">
             <div
               v-for="(stage, index) in TIMELINE_STAGES"
@@ -741,8 +741,8 @@ function statusClass(status: string) {
                   :class="[
                     'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors',
                     index <= getStageIndex(activeTimelineTicket.status)
-                      ? 'bg-[#0c66e4] border-[#0c66e4] text-white'
-                      : 'bg-white border-[#e7e5e4] text-[#71717a]'
+                      ? 'bg-primary border-primary text-white'
+                      : 'bg-white border-border text-muted-foreground'
                   ]"
                 >
                   <CheckCircle2 v-if="index <= getStageIndex(activeTimelineTicket.status)" class="size-4" />
@@ -752,7 +752,7 @@ function statusClass(status: string) {
                   v-if="index < TIMELINE_STAGES.length - 1"
                   :class="[
                     'w-0.5 flex-1 min-h-[28px]',
-                    index < getStageIndex(activeTimelineTicket.status) ? 'bg-[#0c66e4]' : 'bg-[#e7e5e4]'
+                    index < getStageIndex(activeTimelineTicket.status) ? 'bg-primary' : 'bg-border'
                   ]"
                 />
               </div>
@@ -762,7 +762,7 @@ function statusClass(status: string) {
                 <p
                   :class="[
                     'text-xs sm:text-sm font-bold leading-tight',
-                    index <= getStageIndex(activeTimelineTicket.status) ? 'text-[#1c1917]' : 'text-[#71717a]'
+                    index <= getStageIndex(activeTimelineTicket.status) ? 'text-foreground' : 'text-muted-foreground'
                   ]"
                 >
                   {{ stage.label }}
@@ -774,7 +774,7 @@ function statusClass(status: string) {
                 <p
                   :class="[
                     'text-xs mt-0.5',
-                    index <= getStageIndex(activeTimelineTicket.status) ? 'text-[#57534e]' : 'text-[#71717a]'
+                    index <= getStageIndex(activeTimelineTicket.status) ? 'text-foreground-soft' : 'text-muted-foreground'
                   ]"
                 >
                   {{ stage.desc }}
@@ -784,11 +784,11 @@ function statusClass(status: string) {
           </div>
         </div>
 
-        <div class="border-t border-[#e7e5e4]" />
+        <div class="border-t border-border" />
 
         <!-- Notes / Comment Feed -->
         <div>
-          <p class="text-xs font-bold text-[#71717a] uppercase tracking-wider mb-3">Activity &amp; Notes</p>
+          <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Activity &amp; Notes</p>
 
           <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
             <div
@@ -796,13 +796,13 @@ function statusClass(status: string) {
               :key="note.id"
               class="flex gap-3"
             >
-              <div class="size-7 rounded-full bg-[#1e2532] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+              <div class="size-7 rounded-full bg-neutral-dark text-white text-[10px] font-bold flex items-center justify-center shrink-0">
                 {{ note.author[0] }}
               </div>
-              <div class="flex-1 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl px-3.5 py-2.5">
-                <p class="text-xs font-bold text-[#1c1917]">{{ note.author }}</p>
-                <p class="text-xs text-[#57534e] mt-0.5 leading-relaxed">{{ note.text }}</p>
-                <p class="text-[10px] text-[#71717a] mt-1">{{ formatDateTime(note.timestamp) }}</p>
+              <div class="flex-1 bg-background border border-border rounded-xl px-3.5 py-2.5">
+                <p class="text-xs font-bold text-foreground">{{ note.author }}</p>
+                <p class="text-xs text-foreground-soft mt-0.5 leading-relaxed">{{ note.text }}</p>
+                <p class="text-[10px] text-muted-foreground mt-1">{{ formatDateTime(note.timestamp) }}</p>
               </div>
             </div>
           </div>

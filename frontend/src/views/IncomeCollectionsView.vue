@@ -553,17 +553,17 @@ function exportCSV() {
 <template>
   <div class="space-y-6">
     <!-- Header with Breadcrumbs -->
-    <div class="flex flex-col gap-3 border-b border-[#e7e5e4] pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-[#1c1917]">Income &amp; Collections</span>
+          <span class="font-bold text-foreground">Income &amp; Collections</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
           Monthly Income &amp; Collections Ledger
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
           Excel-matched canonical revenue ledger with automatic 50% gross rent share and water billing allocation.
         </p>
       </div>
@@ -574,7 +574,7 @@ function exportCSV() {
           :disabled="isLoading"
           class="btn-secondary"
         >
-          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
+          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
         </button>
 
@@ -582,7 +582,7 @@ function exportCSV() {
           @click="exportCSV"
           class="btn-secondary"
         >
-          <Download class="size-3.5 text-[#71717a]" />
+          <Download class="size-3.5 text-muted-foreground" />
           <span>Export Excel CSV</span>
         </button>
 
@@ -599,39 +599,39 @@ function exportCSV() {
     <!-- 4 Summary KPI StatCards (Always Visible at Top) -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Gross Rent</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(totalRent) }}</p>
-        <p class="mt-1 text-xs text-[#71717a]">Before 50% share derivation</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Gross Rent</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(totalRent) }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">Before 50% share derivation</p>
       </div>
 
       <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">50% Owner Share</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#8a5814]">{{ peso(totalShare) }}</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">50% Owner Share</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-accent-ink">{{ peso(totalShare) }}</p>
         <p class="mt-1 text-xs text-amber-800 font-medium">Automatic gross rent cut</p>
       </div>
 
       <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Water Collections</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(totalWater) }}</p>
-        <p class="mt-1 text-xs text-[#71717a]">₱200 / head monthly rule</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Water Collections</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(totalWater) }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">₱200 / head monthly rule</p>
       </div>
 
       <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Remitted</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Remitted</p>
         <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-emerald-800">{{ peso(totalRemitted) }}</p>
         <p class="mt-1 text-xs text-emerald-700 font-medium">50% Share + Total Water</p>
       </div>
     </div>
 
     <!-- Tab Navigation (Positioned below KPI cards per user requirement) -->
-    <div class="flex items-center gap-2 border-b border-[#e7e5e4] pb-px">
+    <div class="flex items-center gap-2 border-b border-border pb-px">
       <button
         @click="activeTab = 'ledger'"
         :class="[
           'px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2',
           activeTab === 'ledger'
-            ? 'border-[#0c66e4] text-[#0c66e4]'
-            : 'border-transparent text-[#71717a] hover:text-[#1c1917]'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-muted-foreground hover:text-foreground'
         ]"
       >
         <CreditCard class="size-4" />
@@ -643,8 +643,8 @@ function exportCSV() {
         :class="[
           'px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2',
           activeTab === 'verify'
-            ? 'border-[#0c66e4] text-[#0c66e4]'
-            : 'border-transparent text-[#71717a] hover:text-[#1c1917]'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-muted-foreground hover:text-foreground'
         ]"
       >
         <Clock class="size-4" />
@@ -675,15 +675,15 @@ function exportCSV() {
       </div>
 
       <div v-else class="surface-card overflow-hidden">
-        <div v-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-[#71717a]">
+        <div v-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-muted-foreground">
           <ShieldCheck class="size-8 mx-auto text-emerald-500 mb-2 opacity-80" />
-          <p class="font-bold text-sm text-[#1c1917]">All Remittances Verified</p>
+          <p class="font-bold text-sm text-foreground">All Remittances Verified</p>
           <p class="mt-1">No online transactions currently awaiting administrative approval.</p>
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-xs border-collapse">
-            <thead class="bg-[#f5f5f4] text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
+            <thead class="bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
               <tr>
                 <th class="px-4 py-3 font-bold">Resident</th>
                 <th class="px-4 py-3 font-bold">Target Unit</th>
@@ -693,21 +693,21 @@ function exportCSV() {
                 <th class="px-4 py-3 font-bold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[#e7e5e4]">
-              <tr v-for="p in pendingPayments" :key="p.id" class="hover:bg-[#fafaf9]">
-                <td class="px-4 py-3 font-bold text-[#1c1917]">
+            <tbody class="divide-y divide-border">
+              <tr v-for="p in pendingPayments" :key="p.id" class="hover:bg-background">
+                <td class="px-4 py-3 font-bold text-foreground">
                   {{ p.profiles?.full_name || 'Resident' }}
-                  <span class="block text-[11px] font-normal text-[#71717a]">{{ p.profiles?.phone_number || 'No contact' }}</span>
+                  <span class="block text-[11px] font-normal text-muted-foreground">{{ p.profiles?.phone_number || 'No contact' }}</span>
                 </td>
-                <td class="px-4 py-3 font-extrabold uppercase text-[#1c1917]">
+                <td class="px-4 py-3 font-extrabold uppercase text-foreground">
                   Room {{ p.rooms?.room_number || '—' }}
                 </td>
-                <td class="px-4 py-3 font-display font-black text-[#1c1917]">
+                <td class="px-4 py-3 font-display font-black text-foreground">
                   {{ peso(p.amount) }}
                 </td>
-                <td class="px-4 py-3 font-mono text-[11px] text-[#71717a]">
-                  <span class="font-bold text-[#0c66e4]">{{ p.payment_method }}</span>
-                  <div class="mt-0.5 text-[10px] text-[#57534e]">{{ p.transaction_reference || 'REF-PENDING' }}</div>
+                <td class="px-4 py-3 font-mono text-[11px] text-muted-foreground">
+                  <span class="font-bold text-primary">{{ p.payment_method }}</span>
+                  <div class="mt-0.5 text-[10px] text-foreground-soft">{{ p.transaction_reference || 'REF-PENDING' }}</div>
                 </td>
                 <td class="px-4 py-3">
                   <span class="badge-soft badge-warning text-xs font-bold">
@@ -745,20 +745,20 @@ function exportCSV() {
     <!-- Ledger Table Container -->
     <div class="surface-card overflow-hidden">
       <!-- Filter Bar -->
-      <div class="flex flex-col gap-3 border-b border-[#e7e5e4] p-4 sm:flex-row">
+      <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
         <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             v-model="q"
             type="text"
             placeholder="Search unit, resident or OR #…"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
           />
         </div>
 
         <select
           v-model="selectedCluster"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
+          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
         >
           <option value="All">All Clusters</option>
           <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
@@ -766,28 +766,28 @@ function exportCSV() {
 
         <select
           v-model="filterMonth"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-44 cursor-pointer"
+          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
         >
           <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
         </select>
 
         <select
           v-model="filterYear"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-36 cursor-pointer"
+          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-36 cursor-pointer"
         >
           <option value="All">All Years</option>
           <option v-for="y in yearsList" :key="y" :value="y">{{ y === 'All' ? 'All Years' : y }}</option>
         </select>
 
         <!-- View Mode Segmented Switcher -->
-        <div class="inline-flex rounded-xl bg-[#f5f5f4] p-1 border border-[#e7e5e4] shrink-0 self-center">
+        <div class="inline-flex rounded-xl bg-muted p-1 border border-border shrink-0 self-center">
           <button
             @click="viewMode = 'grouped'"
             :class="[
               'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
               viewMode === 'grouped'
-                ? 'bg-white text-[#0c66e4] shadow-xs'
-                : 'text-[#71717a] hover:text-[#1c1917]'
+                ? 'bg-white text-primary shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             ]"
             title="Spreadsheet Cluster Sections"
           >
@@ -799,8 +799,8 @@ function exportCSV() {
             :class="[
               'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
               viewMode === 'flat'
-                ? 'bg-white text-[#0c66e4] shadow-xs'
-                : 'text-[#71717a] hover:text-[#1c1917]'
+                ? 'bg-white text-primary shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             ]"
             title="Unified Single Ledger Table"
           >
@@ -817,7 +817,7 @@ function exportCSV() {
 
       <!-- VIEW MODE 1: SPREADSHEET CLUSTER-GROUPED TABLES -->
       <div v-else-if="viewMode === 'grouped'" class="p-4 space-y-6 max-h-[75vh] overflow-y-auto">
-        <div v-if="clusterGroups.length === 0" class="p-12 text-center text-xs text-[#71717a] bg-white rounded-2xl border border-[#e7e5e4]">
+        <div v-if="clusterGroups.length === 0" class="p-12 text-center text-xs text-muted-foreground bg-white rounded-2xl border border-border">
           No income collections recorded matching the active filters.
         </div>
 
@@ -825,15 +825,15 @@ function exportCSV() {
           v-else
           v-for="group in clusterGroups" 
           :key="group.key"
-          class="rounded-2xl border border-[#e7e5e4] bg-white overflow-hidden shadow-xs space-y-0"
+          class="rounded-2xl border border-border bg-white overflow-hidden shadow-xs space-y-0"
         >
           <!-- Cluster Section Header -->
-          <div class="px-4 py-3 bg-[#f8fafc] border-b border-[#e7e5e4] flex flex-wrap items-center justify-between gap-2">
+          <div class="px-4 py-3 bg-[#f8fafc] border-b border-border flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2.5">
-              <span class="size-2.5 rounded-full" :class="group.hasShareColumn ? 'bg-amber-500' : 'bg-[#0c66e4]'"></span>
+              <span class="size-2.5 rounded-full" :class="group.hasShareColumn ? 'bg-amber-500' : 'bg-primary'"></span>
               <div>
-                <h4 class="font-display font-extrabold text-sm text-[#1c1917]">{{ group.label }}</h4>
-                <p class="text-[11px] text-[#71717a]">{{ group.desc }}</p>
+                <h4 class="font-display font-extrabold text-sm text-foreground">{{ group.label }}</h4>
+                <p class="text-[11px] text-muted-foreground">{{ group.desc }}</p>
               </div>
             </div>
             <div class="flex items-center gap-2 text-xs">
@@ -845,7 +845,7 @@ function exportCSV() {
           <!-- Cluster Table -->
           <div class="overflow-x-auto">
             <table class="w-full text-xs border-collapse">
-              <thead class="bg-[#fafaf9] text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
+              <thead class="bg-background text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
                 <tr>
                   <th class="whitespace-nowrap px-3 py-2.5 font-bold">RM #</th>
                   <th class="whitespace-nowrap px-3 py-2.5 font-bold">DATE PAID</th>
@@ -861,26 +861,26 @@ function exportCSV() {
                   <th class="whitespace-nowrap px-3 py-2.5 font-bold text-center">ACTION</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-[#e7e5e4]">
+              <tbody class="divide-y divide-border">
                 <tr 
                   v-for="r in group.records" 
                   :key="r.id || (r.unit + r.invoice)"
                   class="hover:bg-[#fcfbf9] transition-colors"
                 >
-                  <td class="whitespace-nowrap px-3 py-2 font-display font-extrabold uppercase text-[#1c1917]">
+                  <td class="whitespace-nowrap px-3 py-2 font-display font-extrabold uppercase text-foreground">
                     {{ r.unit }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-[#71717a]">
+                  <td class="whitespace-nowrap px-3 py-2 text-muted-foreground">
                     {{ r.datePaid }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-2 font-bold text-[#1c1917]">
+                  <td class="whitespace-nowrap px-3 py-2 font-bold text-foreground">
                     {{ r.contact }}
-                    <span v-if="r.invoice" class="block font-mono text-[10px] font-normal text-[#71717a]">{{ r.invoice }}</span>
+                    <span v-if="r.invoice" class="block font-mono text-[10px] font-normal text-muted-foreground">{{ r.invoice }}</span>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-[#71717a]">
+                  <td class="whitespace-nowrap px-3 py-2 text-muted-foreground">
                     {{ r.rentFor }}
                   </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-bold text-[#1c1917]">
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-bold text-foreground">
                     {{ peso(r.rent) }}
                   </td>
                   <td v-if="group.hasShareColumn" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-amber-800 bg-amber-50/40">
@@ -889,13 +889,13 @@ function exportCSV() {
                   <td v-if="group.key === 'Linda'" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-sky-800 bg-sky-50/40">
                     {{ peso(r.linda?.electricity || 0) }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-center font-bold text-[#1c1917]">
+                  <td class="whitespace-nowrap px-3 py-2 text-center font-bold text-foreground">
                     {{ r.occupants }}
                   </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-[#1c1917]">
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-foreground">
                     {{ peso(r.water) }}
                   </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right text-[#71717a]">
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right text-muted-foreground">
                     {{ peso(r.garbage) }}
                   </td>
                   <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-extrabold text-emerald-800">
@@ -904,10 +904,10 @@ function exportCSV() {
                   <td class="whitespace-nowrap px-3 py-2 text-center">
                     <button 
                       @click="startEditIncome(r)" 
-                      class="btn-secondary min-h-7 px-2.5 py-0.5 text-xs gap-1 inline-flex items-center shadow-xs cursor-pointer hover:border-[#0c66e4] hover:text-[#0c66e4]"
+                      class="btn-secondary min-h-7 px-2.5 py-0.5 text-xs gap-1 inline-flex items-center shadow-xs cursor-pointer hover:border-primary hover:text-primary"
                       title="Edit Collection"
                     >
-                      <Pencil class="size-3 text-[#71717a]" />
+                      <Pencil class="size-3 text-muted-foreground" />
                       <span>Edit</span>
                     </button>
                   </td>
@@ -915,19 +915,19 @@ function exportCSV() {
               </tbody>
 
               <!-- Cluster Subtotal Row -->
-              <tfoot class="bg-[#f8fafc] border-t-2 border-[#e2e8f0] font-display font-bold text-xs text-[#1c1917]">
+              <tfoot class="bg-[#f8fafc] border-t-2 border-[#e2e8f0] font-display font-bold text-xs text-foreground">
                 <tr>
                   <td colspan="4" class="px-3 py-2.5 uppercase tracking-wider text-[#64748b]">
                     {{ group.label }} SUB-TOTAL ({{ group.records.length }} UNITS)
                   </td>
-                  <td class="tabular px-3 py-2.5 text-right font-black text-[#1c1917]">{{ peso(group.totalRent) }}</td>
+                  <td class="tabular px-3 py-2.5 text-right font-black text-foreground">{{ peso(group.totalRent) }}</td>
                   <td v-if="group.hasShareColumn" class="tabular px-3 py-2.5 text-right font-black text-amber-800">{{ peso(group.totalShare) }}</td>
                   <td v-if="group.key === 'Linda'" class="tabular px-3 py-2.5 text-right font-black text-sky-800">
                     {{ peso(group.records.reduce((s, r) => s + (r.linda?.electricity || 0), 0)) }}
                   </td>
                   <td class="px-3 py-2.5 text-center font-bold">{{ group.totalOccupants }}</td>
                   <td class="tabular px-3 py-2.5 text-right font-black">{{ peso(group.totalWater) }}</td>
-                  <td class="tabular px-3 py-2.5 text-right font-black text-[#71717a]">{{ peso(group.totalGarbage) }}</td>
+                  <td class="tabular px-3 py-2.5 text-right font-black text-muted-foreground">{{ peso(group.totalGarbage) }}</td>
                   <td class="tabular px-3 py-2.5 text-right font-black text-emerald-800">{{ peso(group.totalRemitted) }}</td>
                   <td class="px-3 py-2.5 text-center">—</td>
                 </tr>
@@ -940,8 +940,8 @@ function exportCSV() {
       <!-- VIEW MODE 2: UNIFIED FLAT LEDGER TABLE -->
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full text-xs border-collapse">
-          <thead class="sticky top-0 z-10 bg-[#f5f5f4]">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
+          <thead class="sticky top-0 z-10 bg-muted">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
               <th class="whitespace-nowrap px-3 py-3 font-bold">UNIT</th>
               <th class="whitespace-nowrap px-3 py-3 font-bold">CLUSTER</th>
               <th class="whitespace-nowrap px-3 py-3 font-bold">DATE PAID</th>
@@ -956,9 +956,9 @@ function exportCSV() {
               <th class="whitespace-nowrap px-3 py-3 font-bold text-center">ACTION</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#e7e5e4]">
+          <tbody class="divide-y divide-border">
             <tr v-if="rows.length === 0">
-              <td colspan="12" class="p-8 text-center text-[#71717a] bg-white">
+              <td colspan="12" class="p-8 text-center text-muted-foreground bg-white">
                 No income collections recorded matching the filters.
               </td>
             </tr>
@@ -966,37 +966,37 @@ function exportCSV() {
               v-else
               v-for="r in rows" 
               :key="r.unit + r.invoice"
-              class="hover:bg-[#fafaf9] transition-colors"
+              class="hover:bg-background transition-colors"
             >
-              <td class="whitespace-nowrap px-3 py-2.5 font-display font-extrabold uppercase text-[#1c1917]">
+              <td class="whitespace-nowrap px-3 py-2.5 font-display font-extrabold uppercase text-foreground">
                 {{ r.unit }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-[#71717a] font-medium">
+              <td class="whitespace-nowrap px-3 py-2.5 text-muted-foreground font-medium">
                 {{ r.cluster }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-[#71717a]">
+              <td class="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
                 {{ r.datePaid }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 font-bold text-[#1c1917]">
+              <td class="whitespace-nowrap px-3 py-2.5 font-bold text-foreground">
                 {{ r.contact }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-[#71717a]">
+              <td class="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-muted-foreground">
                 {{ r.invoice }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-[#71717a]">
+              <td class="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
                 {{ r.rentFor }}
               </td>
               <td class="tabular whitespace-nowrap px-3 py-2.5 text-right">
-                <span class="font-display font-bold text-[#1c1917] block leading-tight">{{ peso(r.rent) }}</span>
-                <span v-if="r.cluster === 'BH'" class="text-[11px] font-bold text-[#8a5814] block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
+                <span class="font-display font-bold text-foreground block leading-tight">{{ peso(r.rent) }}</span>
+                <span v-if="r.cluster === 'BH'" class="text-[11px] font-bold text-accent-ink block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-center font-bold text-[#1c1917]">
+              <td class="whitespace-nowrap px-3 py-2.5 text-center font-bold text-foreground">
                 {{ r.occupants }}
               </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-semibold text-[#1c1917]">
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-semibold text-foreground">
                 {{ peso(r.water) }}
               </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right text-[#71717a]">
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right text-muted-foreground">
                 {{ peso(r.garbage) }}
               </td>
               <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-display font-extrabold text-emerald-800">
@@ -1005,10 +1005,10 @@ function exportCSV() {
               <td class="whitespace-nowrap px-3 py-2.5 text-center">
                 <button 
                   @click="startEditIncome(r)" 
-                  class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer hover:border-[#0c66e4] hover:text-[#0c66e4]"
+                  class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer hover:border-primary hover:text-primary"
                   title="Edit Collection"
                 >
-                  <Pencil class="size-3.5 text-[#71717a]" />
+                  <Pencil class="size-3.5 text-muted-foreground" />
                   <span>Edit</span>
                 </button>
               </td>
@@ -1016,14 +1016,14 @@ function exportCSV() {
           </tbody>
 
           <!-- Table Footer Subtotals -->
-          <tfoot class="sticky bottom-0 bg-[#f5f5f4] border-t-2 border-[#d6d3d1] font-display font-bold text-xs text-[#1c1917]">
+          <tfoot class="sticky bottom-0 bg-muted border-t-2 border-[#d6d3d1] font-display font-bold text-xs text-foreground">
             <tr>
-              <td colspan="6" class="px-3 py-3 uppercase tracking-wider text-[#71717a]">
+              <td colspan="6" class="px-3 py-3 uppercase tracking-wider text-muted-foreground">
                 GRAND TOTALS ({{ rows.length }} ROWS)
               </td>
               <td class="tabular px-3 py-3 text-right">
-                <span class="font-black text-[#1c1917] block leading-tight">{{ peso(totalRent) }}</span>
-                <span class="text-[11px] font-bold text-[#8a5814] block leading-tight mt-0.5">50% BH Share: {{ peso(totalShare) }}</span>
+                <span class="font-black text-foreground block leading-tight">{{ peso(totalRent) }}</span>
+                <span class="text-[11px] font-bold text-accent-ink block leading-tight mt-0.5">50% BH Share: {{ peso(totalShare) }}</span>
               </td>
               <td class="px-3 py-3 text-center font-black">{{ rows.reduce((s, r) => s + r.occupants, 0) }}</td>
               <td class="tabular px-3 py-3 text-right font-black">{{ peso(totalWater) }}</td>
@@ -1039,10 +1039,10 @@ function exportCSV() {
     <!-- Linda Units Separate Reference Card (BR-040) -->
     <div class="surface-card p-6 space-y-3">
       <div class="flex items-center gap-2">
-        <FileSpreadsheet class="size-5 text-[#f59e0b]" />
-        <h3 class="font-display font-extrabold text-base text-[#1c1917]">Linda Units Fixed Charge Schedule</h3>
+        <FileSpreadsheet class="size-5 text-accent" />
+        <h3 class="font-display font-extrabold text-base text-foreground">Linda Units Fixed Charge Schedule</h3>
       </div>
-      <p class="text-xs text-[#71717a] leading-relaxed">
+      <p class="text-xs text-muted-foreground leading-relaxed">
         The two Linda units sit in the separate structure beside the red gate and are billed a
         fixed monthly water charge instead of the per-occupant rate. They are not part of the
         Front Apartment, whose income is never remitted to Linda. The flat electricity charge
@@ -1051,24 +1051,24 @@ function exportCSV() {
       </p>
 
       <div class="grid gap-4 sm:grid-cols-2 pt-2">
-        <div class="p-4 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] space-y-1">
+        <div class="p-4 rounded-xl bg-background border border-border space-y-1">
           <div class="flex justify-between items-center">
-            <span class="font-display font-bold text-sm text-[#1c1917]">Linda (LF)</span>
+            <span class="font-display font-bold text-sm text-foreground">Linda (LF)</span>
             <span class="badge-soft badge-blue text-xs font-bold">
               Fixed Billing
             </span>
           </div>
-          <p class="text-xs text-[#71717a]">Water: <strong>₱400.00 / month</strong></p>
+          <p class="text-xs text-muted-foreground">Water: <strong>₱400.00 / month</strong></p>
         </div>
 
-        <div class="p-4 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] space-y-1">
+        <div class="p-4 rounded-xl bg-background border border-border space-y-1">
           <div class="flex justify-between items-center">
-            <span class="font-display font-bold text-sm text-[#1c1917]">Linda (LB)</span>
+            <span class="font-display font-bold text-sm text-foreground">Linda (LB)</span>
             <span class="badge-soft badge-blue text-xs font-bold">
               Fixed Billing
             </span>
           </div>
-          <p class="text-xs text-[#71717a]">Water: <strong>₱200.00 / month</strong></p>
+          <p class="text-xs text-muted-foreground">Water: <strong>₱200.00 / month</strong></p>
         </div>
       </div>
     </div>
@@ -1082,17 +1082,17 @@ function exportCSV() {
     >
       <div class="surface-card w-full max-w-2xl shadow-2xl p-6 space-y-4 rounded-2xl bg-white my-6">
         
-        <div class="flex justify-between items-start border-b border-[#e7e5e4] pb-3">
+        <div class="flex justify-between items-start border-b border-border pb-3">
           <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200">
+            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200">
               <Banknote class="size-5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-base text-[#1c1917]">Edit Payment Collection</h3>
-              <p class="text-xs text-[#71717a]">Modify the rent and utility allocations for this collection record.</p>
+              <h3 class="font-display font-extrabold text-base text-foreground">Edit Payment Collection</h3>
+              <p class="text-xs text-muted-foreground">Modify the rent and utility allocations for this collection record.</p>
             </div>
           </div>
-          <button @click="isEditOpen = false" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer">
+          <button @click="isEditOpen = false" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
             <X class="size-5" />
           </button>
         </div>
@@ -1100,8 +1100,8 @@ function exportCSV() {
         <form @submit.prevent="handleEditIncome" class="space-y-4 text-xs">
           <!-- Room/Unit selector -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Unit</label>
-            <select v-model="editUnit" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Unit</label>
+            <select v-model="editUnit" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none">
               <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
                 {{ r.unitCode.toUpperCase() }} — {{ r.tenant || 'Vacant' }} ({{ r.cluster }})
               </option>
@@ -1111,71 +1111,71 @@ function exportCSV() {
           <!-- Rent Amount & Water Payment Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Amount for Rent (₱)</label>
-              <input v-model.number="editRent" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Amount for Rent (₱)</label>
+              <input v-model.number="editRent" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Payment for Water (₱)</label>
-              <input v-model.number="editWater" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Payment for Water (₱)</label>
+              <input v-model.number="editWater" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
             </div>
           </div>
 
           <!-- GBG Fee & OR Receipt Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">GBG Fee (₱)</label>
-              <input v-model.number="editGarbage" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-bold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">GBG Fee (₱)</label>
+              <input v-model.number="editGarbage" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">OR / Receipt Number</label>
-              <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm font-mono text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">OR / Receipt Number</label>
+              <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-mono text-foreground focus:border-primary focus:outline-none" required />
             </div>
           </div>
 
           <!-- Payment Method & Online Reference Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Payment Method</label>
-              <select v-model="editMethod" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Payment Method</label>
+              <select v-model="editMethod" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none">
                 <option value="Cash">Cash</option>
                 <option value="Online">Online Payment</option>
               </select>
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5" :class="{ 'opacity-40': editMethod !== 'Online' }">Transaction Reference #</label>
-              <input v-model="editReference" type="text" placeholder="Gcash / Bank Ref #" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none disabled:opacity-40 disabled:bg-[#f5f5f4]" :disabled="editMethod !== 'Online'" :required="editMethod === 'Online'" />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" :class="{ 'opacity-40': editMethod !== 'Online' }">Transaction Reference #</label>
+              <input v-model="editReference" type="text" placeholder="Gcash / Bank Ref #" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:bg-muted" :disabled="editMethod !== 'Online'" :required="editMethod === 'Online'" />
             </div>
           </div>
 
           <!-- Rent Validity / Duration Details Row -->
           <div class="grid gap-4 sm:grid-cols-3">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Months Covered</label>
-              <input v-model.number="editMonthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Months Covered</label>
+              <input v-model.number="editMonthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Covered Period Start</label>
-              <input v-model="editDateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Covered Period Start</label>
+              <input v-model="editDateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Covered Period End</label>
-              <input :value="editDateCoveredEnd" type="date" class="min-h-11 w-full px-3.5 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl text-sm text-[#71717a] focus:outline-none" disabled />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Covered Period End</label>
+              <input :value="editDateCoveredEnd" type="date" class="min-h-11 w-full px-3.5 bg-background border border-border rounded-xl text-sm text-muted-foreground focus:outline-none" disabled />
             </div>
           </div>
 
           <!-- Date Received & Read-Only Total Amount calculation -->
           <div class="grid gap-4 sm:grid-cols-2 pt-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Date Received</label>
-              <input v-model="editDate" type="date" class="min-h-11 w-full px-3.5 bg-white border border-[#e7e5e4] rounded-xl text-sm text-[#1c1917] focus:border-[#0c66e4] focus:outline-none" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Date Received</label>
+              <input v-model="editDate" type="date" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
             </div>
-            <div class="bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl p-3.5 flex flex-col justify-center">
-              <span class="text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Total Amount (₱)</span>
+            <div class="bg-background border border-border rounded-2xl p-3.5 flex flex-col justify-center">
+              <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Amount (₱)</span>
               <span class="font-display font-black text-lg text-emerald-800 pt-0.5">{{ peso(editTotal) }}</span>
             </div>
           </div>
 
-          <div class="pt-4 border-t border-[#e7e5e4] flex items-center justify-between gap-3">
+          <div class="pt-4 border-t border-border flex items-center justify-between gap-3">
             <button 
               type="button" 
               @click="handleDeleteFromModal" 
@@ -1209,9 +1209,9 @@ function exportCSV() {
           <div class="w-12 h-12 rounded-full bg-[#fef3c7] text-[#d97706] flex items-center justify-center">
             <ReceiptText class="w-6 h-6" />
           </div>
-          <h3 class="font-display font-extrabold text-lg text-[#1c1917]">{{ confirmTitle }}</h3>
+          <h3 class="font-display font-extrabold text-lg text-foreground">{{ confirmTitle }}</h3>
           
-          <div class="w-full text-left bg-[#fafaf9] border border-[#e7e5e4] rounded-xl p-3.5 text-xs text-[#1c1917] space-y-1 leading-relaxed whitespace-pre-line font-semibold">
+          <div class="w-full text-left bg-background border border-border rounded-xl p-3.5 text-xs text-foreground space-y-1 leading-relaxed whitespace-pre-line font-semibold">
             {{ confirmMessage }}
           </div>
         </div>

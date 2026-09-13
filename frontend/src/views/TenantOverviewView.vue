@@ -277,17 +277,17 @@ async function handlePayOnline() {
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb & Welcome Greeting Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Tenant Portal</span>
           <span>/</span>
-          <span class="font-bold text-[#1c1917]">Unit Overview</span>
+          <span class="font-bold text-foreground">Unit Overview</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
           Welcome back, {{ tenantFirstName }}!
         </h1>
-        <p class="text-xs sm:text-sm text-[#71717a] mt-0.5">
+        <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">
           Unit {{ tenantData.room }} · Assigned specifications, photo showcase, and active billing statement.
         </p>
       </div>
@@ -306,7 +306,7 @@ async function handlePayOnline() {
           to="/tenant/payments" 
           class="btn-secondary"
         >
-          <CreditCard class="size-3.5 text-[#0c66e4]" />
+          <CreditCard class="size-3.5 text-primary" />
           <span>Payment &amp; Billing History</span>
         </router-link>
 
@@ -316,7 +316,7 @@ async function handlePayOnline() {
           class="btn-secondary"
           title="Refresh Account Data"
         >
-          <RefreshCw :class="['size-3.5 text-[#71717a]', loading ? 'animate-spin text-[#0c66e4]' : '']" />
+          <RefreshCw :class="['size-3.5 text-muted-foreground', loading ? 'animate-spin text-primary' : '']" />
           <span>Refresh</span>
         </button>
       </div>
@@ -346,40 +346,40 @@ async function handlePayOnline() {
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div class="surface-card p-5">
           <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Assigned Unit</p>
-            <span class="rounded-xl p-2 bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Assigned Unit</p>
+            <span class="rounded-xl p-2 bg-blue-50 text-primary ring-1 ring-blue-200">
               <Home class="size-4" />
             </span>
           </div>
-          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">{{ tenantData.room }}</p>
-          <p class="mt-1.5 text-xs text-[#71717a] font-medium">{{ tenantData.roomDetails }} · Floor {{ tenantData.floor }}</p>
+          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-foreground">{{ tenantData.room }}</p>
+          <p class="mt-1.5 text-xs text-muted-foreground font-medium">{{ tenantData.roomDetails }} · Floor {{ tenantData.floor }}</p>
         </div>
 
         <div class="surface-card p-5">
           <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Monthly Base Rent</p>
-            <span class="rounded-xl p-2 bg-amber-50 text-[#8a5814] ring-1 ring-amber-200">
+            <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Monthly Base Rent</p>
+            <span class="rounded-xl p-2 bg-amber-50 text-accent-ink ring-1 ring-amber-200">
               <CreditCard class="size-4" />
             </span>
           </div>
-          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">₱{{ tenantData.baseRent.toLocaleString() }}</p>
+          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-foreground">₱{{ tenantData.baseRent.toLocaleString() }}</p>
           <p class="mt-1.5 text-xs text-amber-800 font-medium">Standard rate · Submetered Power</p>
         </div>
 
         <div class="surface-card p-5">
           <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Water Allocation</p>
+            <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Water Allocation</p>
             <span class="rounded-xl p-2 bg-sky-50 text-sky-800 ring-1 ring-sky-200">
               <Droplets class="size-4" />
             </span>
           </div>
-          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-[#1c1917]">₱{{ tenantData.waterFee.toLocaleString() }}</p>
+          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-foreground">₱{{ tenantData.waterFee.toLocaleString() }}</p>
           <p class="mt-1.5 text-xs text-sky-700 font-medium">₱200 / registered occupant monthly</p>
         </div>
 
         <div class="surface-card p-5">
           <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Account Status</p>
+            <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Account Status</p>
             <span :class="[
               'rounded-xl p-2 ring-1',
               dueDateCountdown.severity === 'paid' ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-rose-50 text-rose-800 ring-rose-200'
@@ -401,12 +401,12 @@ async function handlePayOnline() {
       <div class="grid gap-6 lg:grid-cols-12">
         
         <!-- Left: Unit Photo & Specifications (7 of 12 cols) -->
-        <div class="lg:col-span-7 surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs flex flex-col justify-between space-y-5">
+        <div class="lg:col-span-7 surface-card rounded-2xl border border-border bg-white p-6 shadow-xs flex flex-col justify-between space-y-5">
           <div class="space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+            <div class="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#0c66e4]">Unit Details</span>
-                <h2 class="font-display text-lg font-black text-[#1c1917]">{{ tenantData.room }} Specifications</h2>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-primary">Unit Details</span>
+                <h2 class="font-display text-lg font-black text-foreground">{{ tenantData.room }} Specifications</h2>
               </div>
               <span class="badge-soft badge-success text-xs font-bold">
                 Active Resident Lease
@@ -414,7 +414,7 @@ async function handlePayOnline() {
             </div>
 
             <!-- Unit Photo Frame -->
-            <div class="h-52 w-full rounded-xl overflow-hidden border border-[#e7e5e4] bg-slate-900 relative">
+            <div class="h-52 w-full rounded-xl overflow-hidden border border-border bg-slate-900 relative">
               <img
                 v-if="tenantData.photoUrl"
                 :src="tenantData.photoUrl"
@@ -436,24 +436,24 @@ async function handlePayOnline() {
 
             <!-- Metadata Grid -->
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
-              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
-                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Floor Area</span>
-                <span class="text-[#1c1917] font-display font-bold text-xs sm:text-sm">{{ tenantData.specs.floorArea }}</span>
+              <div class="p-3 bg-background rounded-xl border border-border">
+                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Floor Area</span>
+                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.specs.floorArea }}</span>
               </div>
-              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
-                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Bathroom</span>
-                <span class="text-[#1c1917] font-display font-bold text-xs sm:text-sm">{{ tenantData.specs.bathroom }}</span>
+              <div class="p-3 bg-background rounded-xl border border-border">
+                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Bathroom</span>
+                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.specs.bathroom }}</span>
               </div>
-              <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4]">
-                <span class="text-[10px] font-extrabold text-[#71717a] uppercase tracking-wider block mb-1">Occupancy</span>
-                <span class="text-[#1c1917] font-display font-bold text-xs sm:text-sm">{{ tenantData.occupants }} Registered</span>
+              <div class="p-3 bg-background rounded-xl border border-border">
+                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Occupancy</span>
+                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.occupants }} Registered</span>
               </div>
             </div>
 
             <!-- Unit Amenities Chips -->
             <div class="space-y-2">
-              <p class="text-[10px] font-bold uppercase tracking-wider text-[#71717a]">Standard Amenities &amp; Inclusions</p>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#57534e]">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Standard Amenities &amp; Inclusions</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-foreground-soft">
                 <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Private T&amp;B Shower</div>
                 <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Bed &amp; Mattress Base</div>
                 <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Submetered Power (₱12.50/kWh)</div>
@@ -462,19 +462,19 @@ async function handlePayOnline() {
             </div>
           </div>
 
-          <div class="pt-3 border-t border-[#e7e5e4] flex items-center justify-between text-xs text-[#71717a]">
-            <span>Resident: <strong class="text-[#1c1917]">{{ tenantData.name }}</strong></span>
-            <span>Move-in: <strong class="text-[#1c1917]">{{ tenantData.moveInDate }}</strong></span>
+          <div class="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+            <span>Resident: <strong class="text-foreground">{{ tenantData.name }}</strong></span>
+            <span>Move-in: <strong class="text-foreground">{{ tenantData.moveInDate }}</strong></span>
           </div>
         </div>
 
         <!-- Right: Monthly Payment Statement (5 of 12 cols) -->
-        <div class="lg:col-span-5 surface-card rounded-2xl border border-[#e7e5e4] bg-white p-6 shadow-xs flex flex-col justify-between space-y-5">
+        <div class="lg:col-span-5 surface-card rounded-2xl border border-border bg-white p-6 shadow-xs flex flex-col justify-between space-y-5">
           <div class="space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+            <div class="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#0c66e4]">Billing Statement</span>
-                <h2 class="font-display text-lg font-black text-[#1c1917]">Monthly Statement</h2>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-primary">Billing Statement</span>
+                <h2 class="font-display text-lg font-black text-foreground">Monthly Statement</h2>
               </div>
               <span :class="[
                 'badge-soft font-bold text-xs',
@@ -510,34 +510,34 @@ async function handlePayOnline() {
 
             <!-- Breakdown Matrix -->
             <div class="space-y-2.5 pt-2">
-              <div class="flex items-center justify-between text-xs text-[#57534e]">
+              <div class="flex items-center justify-between text-xs text-foreground-soft">
                 <span>Room {{ tenantData.room }} Base Rental</span>
-                <span class="font-bold text-[#1c1917] tabular">₱{{ tenantData.baseRent.toLocaleString() }}.00</span>
+                <span class="font-bold text-foreground tabular">₱{{ tenantData.baseRent.toLocaleString() }}.00</span>
               </div>
-              <div class="flex items-center justify-between text-xs text-[#57534e]">
+              <div class="flex items-center justify-between text-xs text-foreground-soft">
                 <span class="flex items-center gap-1.5">
                   Water Allocation
-                  <span class="text-[10px] text-[#71717a]">({{ tenantData.occupants }} × ₱200/head)</span>
+                  <span class="text-[10px] text-muted-foreground">({{ tenantData.occupants }} × ₱200/head)</span>
                 </span>
-                <span class="font-bold text-[#1c1917] tabular">₱{{ tenantData.waterFee.toLocaleString() }}.00</span>
+                <span class="font-bold text-foreground tabular">₱{{ tenantData.waterFee.toLocaleString() }}.00</span>
               </div>
-              <div class="flex items-center justify-between text-xs text-[#57534e]">
+              <div class="flex items-center justify-between text-xs text-foreground-soft">
                 <span>Garbage Collection Fee</span>
                 <span class="font-semibold text-emerald-700">Included (₱0)</span>
               </div>
-              <div class="flex items-center justify-between text-xs text-[#57534e]">
+              <div class="flex items-center justify-between text-xs text-foreground-soft">
                 <span>Electric Submeter</span>
                 <span class="font-semibold text-sky-700">Separate Bill</span>
               </div>
-              <div class="border-t border-[#e7e5e4] pt-2.5 flex items-center justify-between">
-                <span class="font-bold text-xs text-[#1c1917]">Total Amount Due</span>
-                <span class="font-display font-black text-xl tabular text-[#1c1917]">₱{{ tenantData.totalAmountDue.toLocaleString() }}.00</span>
+              <div class="border-t border-border pt-2.5 flex items-center justify-between">
+                <span class="font-bold text-xs text-foreground">Total Amount Due</span>
+                <span class="font-display font-black text-xl tabular text-foreground">₱{{ tenantData.totalAmountDue.toLocaleString() }}.00</span>
               </div>
             </div>
           </div>
 
           <!-- Bottom Action Buttons -->
-          <div class="pt-4 border-t border-[#e7e5e4] space-y-3">
+          <div class="pt-4 border-t border-border space-y-3">
             <button
               v-if="dueDateCountdown.severity !== 'paid'"
               @click="handlePayOnline"
@@ -548,8 +548,8 @@ async function handlePayOnline() {
               <span>{{ payingOnline ? 'Opening Gateway…' : 'Pay Online (GCash via Adyen)' }}</span>
             </button>
 
-            <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4] text-[11px] text-[#71717a] space-y-0.5 text-center">
-              <p>Landlady GCash: <strong class="text-[#1c1917] font-mono">{{ tenantData.landladyGCash }}</strong></p>
+            <div class="p-3 bg-background rounded-xl border border-border text-[11px] text-muted-foreground space-y-0.5 text-center">
+              <p>Landlady GCash: <strong class="text-foreground font-mono">{{ tenantData.landladyGCash }}</strong></p>
               <p>Account Name: <strong>{{ tenantData.landladyName }}</strong></p>
             </div>
           </div>
@@ -581,7 +581,7 @@ async function handlePayOnline() {
             <!-- Action 1: Payment and Billing -->
             <button
               @click="isFabOpen = false; router.push('/tenant/payments');"
-              class="px-4 py-2.5 rounded-xl bg-white text-[#1c1917] font-extrabold text-xs shadow-xl border border-[#e7e5e4] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
+              class="px-4 py-2.5 rounded-xl bg-white text-foreground font-extrabold text-xs shadow-xl border border-border hover:bg-primary hover:text-white hover:border-primary active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
             >
               <span>Payment &amp; Billing</span>
             </button>
@@ -589,7 +589,7 @@ async function handlePayOnline() {
             <!-- Action 2: Submit Maintenance Ticket -->
             <button
               @click="isFabOpen = false; router.push('/tenant/tickets');"
-              class="px-4 py-2.5 rounded-xl bg-white text-[#1c1917] font-extrabold text-xs shadow-xl border border-[#e7e5e4] hover:bg-[#0c66e4] hover:text-white hover:border-[#0c66e4] active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
+              class="px-4 py-2.5 rounded-xl bg-white text-foreground font-extrabold text-xs shadow-xl border border-border hover:bg-primary hover:text-white hover:border-primary active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
             >
               <span>Submit Maintenance Ticket</span>
             </button>
@@ -602,8 +602,8 @@ async function handlePayOnline() {
           :class="[
             'size-14 rounded-full shadow-2xl transition-all flex items-center justify-center cursor-pointer border-2 border-white',
             isFabOpen 
-              ? 'bg-[#0c66e4] text-white ring-4 ring-blue-200' 
-              : 'bg-white text-[#1c1917] ring-4 ring-stone-200 hover:bg-[#0c66e4] hover:text-white hover:ring-blue-200 active:bg-[#0055cc] active:text-white'
+              ? 'bg-primary text-white ring-4 ring-blue-200' 
+              : 'bg-white text-foreground ring-4 ring-stone-200 hover:bg-primary hover:text-white hover:ring-blue-200 active:bg-[#0055cc] active:text-white'
           ]"
           title="Quick Actions"
           aria-label="Quick Actions Menu"

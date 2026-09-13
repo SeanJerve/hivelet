@@ -553,17 +553,17 @@ function exportFilteredExpenses() {
 <template>
   <div class="space-y-6">
     <!-- Header with Breadcrumbs & Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-[#1c1917]">Monthly Expenses</span>
+          <span class="font-bold text-foreground">Monthly Expenses</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
           Monthly Operating Expenses
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
           Property disbursements categorized and allocated by property area.
         </p>
       </div>
@@ -574,7 +574,7 @@ function exportFilteredExpenses() {
           :disabled="isLoading"
           class="btn-secondary"
         >
-          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
+          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
         </button>
 
@@ -583,7 +583,7 @@ function exportFilteredExpenses() {
           class="btn-secondary"
           title="Export CSV"
         >
-          <Download class="size-3.5 text-[#71717a]" />
+          <Download class="size-3.5 text-muted-foreground" />
           <span>Export Excel CSV</span>
         </button>
 
@@ -600,41 +600,41 @@ function exportFilteredExpenses() {
     <!-- Stat Cards -->
     <div class="grid gap-4 sm:grid-cols-3">
       <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Operating Expenses</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(totalJuly) }}</p>
-        <p class="mt-1 text-xs text-[#71717a]">Disbursed in selected period</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Operating Expenses</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(totalJuly) }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">Disbursed in selected period</p>
       </div>
 
       <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Utilities Subtotal</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(utilitiesTotal) }}</p>
-        <p class="mt-1 text-xs text-[#71717a]">Water District, Power &amp; Fuel</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Utilities Subtotal</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(utilitiesTotal) }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">Water District, Power &amp; Fuel</p>
       </div>
 
       <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Repairs &amp; Janitorial</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">{{ peso(repairsTotal) }}</p>
-        <p class="mt-1 text-xs text-[#71717a]">Plumbing, fixtures &amp; cleaning</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Repairs &amp; Janitorial</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(repairsTotal) }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">Plumbing, fixtures &amp; cleaning</p>
       </div>
     </div>
 
     <!-- Table Section -->
     <div class="surface-card overflow-hidden">
       <!-- Filter Bar -->
-      <div class="flex flex-col gap-3 border-b border-[#e7e5e4] p-4 sm:flex-row">
+      <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
         <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             v-model="q"
             type="text"
             placeholder="Search description, receipt # or category…"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
           />
         </div>
 
         <select
           v-model="selectedCategory"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-48 cursor-pointer"
+          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-48 cursor-pointer"
         >
           <option value="All">All Categories</option>
           <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
@@ -642,14 +642,14 @@ function exportFilteredExpenses() {
 
         <select
           v-model="filterMonth"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-36 cursor-pointer"
+          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-36 cursor-pointer"
         >
           <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
         </select>
 
         <select
           v-model="filterYear"
-          class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-28 cursor-pointer"
+          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-28 cursor-pointer"
         >
           <option v-for="y in yearsList" :key="y" :value="y">{{ y === 'All' ? 'All Years' : y }}</option>
         </select>
@@ -662,8 +662,8 @@ function exportFilteredExpenses() {
 
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[900px] text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-[#f5f5f4] border-b border-[#e7e5e4]">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a]">
+          <thead class="sticky top-0 z-10 bg-muted border-b border-border">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-muted-foreground">
               <th class="whitespace-nowrap px-4 py-3 font-bold pl-6">DESCRIPTION / VOUCHER</th>
               <th class="whitespace-nowrap px-4 py-3 font-bold">CATEGORY</th>
               <th class="whitespace-nowrap px-4 py-3 font-bold text-right">BOARDING HOUSE (₱)</th>
@@ -676,7 +676,7 @@ function exportFilteredExpenses() {
           
           <tbody v-if="groupedExpenses.length === 0">
             <tr>
-              <td colspan="7" class="p-8 text-center text-[#71717a] bg-white">
+              <td colspan="7" class="p-8 text-center text-muted-foreground bg-white">
                 No expense entries found matching the criteria.
               </td>
             </tr>
@@ -684,11 +684,11 @@ function exportFilteredExpenses() {
 
           <tbody v-for="group in groupedExpenses" :key="group.dateStr" v-else>
             <!-- Date Group Header -->
-            <tr class="bg-[#fafaf9] border-y border-[#e7e5e4]">
-              <td colspan="6" class="px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-[#71717a] pl-6">
+            <tr class="bg-background border-y border-border">
+              <td colspan="6" class="px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-muted-foreground pl-6">
                 {{ group.dateStr }}
               </td>
-              <td class="tabular px-4 py-2.5 text-right text-xs font-black text-[#1c1917]">
+              <td class="tabular px-4 py-2.5 text-right text-xs font-black text-foreground">
                 Daily: {{ peso(group.dayTotal) }}
               </td>
             </tr>
@@ -696,34 +696,34 @@ function exportFilteredExpenses() {
             <tr 
               v-for="e in group.records" 
               :key="e.id"
-              class="border-b border-[#e7e5e4] last:border-b-0 hover:bg-[#fafaf9] transition-colors"
+              class="border-b border-border last:border-b-0 hover:bg-background transition-colors"
             >
-              <td class="px-4 py-3.5 font-semibold text-[#1c1917] pl-6">{{ e.description }}</td>
-              <td class="whitespace-nowrap px-4 py-3.5 text-xs text-[#71717a]">{{ e.category }}</td>
+              <td class="px-4 py-3.5 font-semibold text-foreground pl-6">{{ e.description }}</td>
+              <td class="whitespace-nowrap px-4 py-3.5 text-xs text-muted-foreground">{{ e.category }}</td>
               
               <!-- Boarding House Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-[#1c1917]">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-foreground">
                 {{ getAreaAmount(e, 'Boarding House') ? peso(getAreaAmount(e, 'Boarding House')) : '—' }}
               </td>
               
               <!-- Main House Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-[#1c1917]">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-foreground">
                 {{ getAreaAmount(e, 'Main House') ? peso(getAreaAmount(e, 'Main House')) : '—' }}
               </td>
               
               <!-- Apts & Other Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-[#1c1917]">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-foreground">
                 {{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e)) : '—' }}
               </td>
               
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-display font-bold text-[#1c1917]">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-display font-bold text-foreground">
                 {{ peso(getExpenseTotal(e)) }}
               </td>
               
               <td class="whitespace-nowrap px-4 py-3.5 text-center">
                 <button 
                   @click="startEditExpense(e)" 
-                  class="btn-secondary min-h-8 px-2.5 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer hover:border-[#0c66e4] hover:text-[#0c66e4]"
+                  class="btn-secondary min-h-8 px-2.5 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer hover:border-primary hover:text-primary"
                   title="Edit Expense"
                 >
                   <Pencil class="size-3.5" />
@@ -742,32 +742,32 @@ function exportFilteredExpenses() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
       @click.self="isAddOpen = false"
     >
-      <div class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white border border-[#e7e5e4] animate-in fade-in zoom-in-95 duration-150 my-6">
+      <div class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white border border-border animate-in fade-in zoom-in-95 duration-150 my-6">
         
         <!-- Modal Header -->
-        <div class="flex items-center justify-between p-6 pb-4 border-b border-[#e7e5e4]">
+        <div class="flex items-center justify-between p-6 pb-4 border-b border-border">
           <div class="flex items-center gap-2.5">
-            <div class="size-9 rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 flex items-center justify-center">
+            <div class="size-9 rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 flex items-center justify-center">
               <ReceiptText class="size-5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-lg text-[#1c1917]">
+              <h3 class="font-display font-extrabold text-lg text-foreground">
                 Record Operating Expenses
               </h3>
-              <p class="text-xs text-[#71717a]">Batch record property expenses and area cost splits</p>
+              <p class="text-xs text-muted-foreground">Batch record property expenses and area cost splits</p>
             </div>
           </div>
-          <button @click="isAddOpen = false" class="p-1.5 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer" aria-label="Close modal">
+          <button @click="isAddOpen = false" class="p-1.5 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer" aria-label="Close modal">
             <X class="size-5" />
           </button>
         </div>
 
         <form @submit.prevent="submitAddExpense">
-          <div class="p-6 space-y-4 text-xs text-[#1c1917] max-h-[70vh] overflow-y-auto">
+          <div class="p-6 space-y-4 text-xs text-foreground max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
             <div class="w-full sm:w-64">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">Expense Date</label>
-              <input v-model="date" type="date" class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-xs text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Expense Date</label>
+              <input v-model="date" type="date" class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-xs text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors" required />
             </div>
 
             <!-- Dynamic Entries List -->
@@ -775,11 +775,11 @@ function exportFilteredExpenses() {
               <div 
                 v-for="(entry, index) in formEntries" 
                 :key="index" 
-                class="relative p-4 bg-[#fafaf9] border border-[#e7e5e4] rounded-2xl space-y-3"
+                class="relative p-4 bg-background border border-border rounded-2xl space-y-3"
               >
                 <!-- Header with Item Index and Remove Item Button -->
-                <div class="flex items-center justify-between pb-2 border-b border-[#e7e5e4]/70">
-                  <span class="font-display font-extrabold text-xs text-[#1c1917]">
+                <div class="flex items-center justify-between pb-2 border-b border-border/70">
+                  <span class="font-display font-extrabold text-xs text-foreground">
                     Expense Item #{{ index + 1 }}
                   </span>
                   <button 
@@ -797,20 +797,20 @@ function exportFilteredExpenses() {
                 <!-- Description & Category Row -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label class="block font-bold text-[10px] uppercase tracking-wider text-[#71717a] mb-1.5">Description &amp; Receipt #</label>
+                    <label class="block font-bold text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Description &amp; Receipt #</label>
                     <input 
                       v-model="entry.desc" 
                       placeholder="e.g. OR #88240 — supplies" 
-                      class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-white px-3.5 text-xs text-[#1c1917] focus:border-[#0c66e4] focus:outline-none transition-colors" 
+                      class="min-h-11 w-full rounded-xl border border-border bg-white px-3.5 text-xs text-foreground focus:border-primary focus:outline-none transition-colors" 
                       required 
                     />
                   </div>
 
                   <div>
-                    <label class="block font-bold text-[10px] uppercase tracking-wider text-[#71717a] mb-1.5">Expense Category</label>
+                    <label class="block font-bold text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Expense Category</label>
                     <select 
                       v-model="entry.category" 
-                      class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-white px-3.5 text-xs font-medium text-[#1c1917] focus:border-[#0c66e4] focus:outline-none transition-colors cursor-pointer" 
+                      class="min-h-11 w-full rounded-xl border border-border bg-white px-3.5 text-xs font-medium text-foreground focus:border-primary focus:outline-none transition-colors cursor-pointer" 
                       required
                     >
                       <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
@@ -819,24 +819,24 @@ function exportFilteredExpenses() {
                 </div>
 
                 <!-- Allocations / Splits Section -->
-                <div class="border-t border-[#e7e5e4]/70 pt-3 space-y-2.5">
+                <div class="border-t border-border/70 pt-3 space-y-2.5">
                   <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold text-[#71717a] uppercase tracking-wider">Property Area Allocations (Splits)</span>
-                    <span class="text-[10px] text-[#71717a]">Cost distribution</span>
+                    <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Property Area Allocations (Splits)</span>
+                    <span class="text-[10px] text-muted-foreground">Cost distribution</span>
                   </div>
                   
                   <div class="space-y-2">
                     <div 
                       v-for="(alloc, aIdx) in entry.allocations" 
                       :key="aIdx" 
-                      class="flex items-center gap-3 bg-white p-3 border border-[#e7e5e4] rounded-xl shadow-2xs"
+                      class="flex items-center gap-3 bg-white p-3 border border-border rounded-xl shadow-2xs"
                     >
                       <!-- Area Selector -->
                       <div class="flex-1">
-                        <label class="block text-[10px] font-bold text-[#71717a] uppercase mb-1">Target Area</label>
+                        <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Target Area</label>
                         <select 
                           v-model="alloc.area" 
-                          class="min-h-10 w-full px-3 border border-[#e7e5e4] rounded-lg text-xs bg-[#fafaf9] text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none" 
+                          class="min-h-10 w-full px-3 border border-border rounded-lg text-xs bg-background text-foreground focus:bg-white focus:border-primary focus:outline-none" 
                           required
                         >
                           <option value="Boarding House">Boarding House</option>
@@ -849,14 +849,14 @@ function exportFilteredExpenses() {
 
                       <!-- Amount -->
                       <div class="w-36 sm:w-44">
-                        <label class="block text-[10px] font-bold text-[#71717a] uppercase mb-1">Amount (₱)</label>
+                        <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Amount (₱)</label>
                         <input 
                           v-model="alloc.amount" 
                           type="number" 
                           placeholder="0.00" 
                           min="0"
                           step="any"
-                          class="min-h-10 w-full px-3 border border-[#e7e5e4] rounded-lg text-xs font-bold text-[#1c1917] bg-[#fafaf9] focus:bg-white focus:border-[#0c66e4] focus:outline-none tabular" 
+                          class="min-h-10 w-full px-3 border border-border rounded-lg text-xs font-bold text-foreground bg-background focus:bg-white focus:border-primary focus:outline-none tabular" 
                           required 
                         />
                       </div>
@@ -883,7 +883,7 @@ function exportFilteredExpenses() {
                       @click="addAllocation(index)" 
                       class="btn-secondary text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
                     >
-                      <Plus class="size-3.5 text-[#0c66e4]" />
+                      <Plus class="size-3.5 text-primary" />
                       <span>Split across another area</span>
                     </button>
                   </div>
@@ -898,14 +898,14 @@ function exportFilteredExpenses() {
                 @click="addFormEntry" 
                 class="btn-secondary min-h-10 text-xs px-3.5 py-2 gap-1.5 inline-flex items-center cursor-pointer"
               >
-                <Plus class="size-4 text-[#0c66e4]" />
+                <Plus class="size-4 text-primary" />
                 <span>Add Another Expense Item</span>
               </button>
             </div>
           </div>
 
           <!-- Modal Actions Footer -->
-          <div class="p-4 px-6 border-t border-[#e7e5e4] flex items-center justify-end gap-2 bg-[#fafaf9]">
+          <div class="p-4 px-6 border-t border-border flex items-center justify-end gap-2 bg-background">
             <button type="button" @click="isAddOpen = false" class="btn-secondary cursor-pointer">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="btn-primary cursor-pointer disabled:opacity-50 min-w-[110px]">
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
@@ -922,37 +922,37 @@ function exportFilteredExpenses() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
       @click.self="isEditOpen = false"
     >
-      <div class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white border border-[#e7e5e4] animate-in fade-in zoom-in-95 duration-150 my-6">
+      <div class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white border border-border animate-in fade-in zoom-in-95 duration-150 my-6">
         
         <!-- Modal Header -->
-        <div class="flex items-center justify-between p-6 pb-4 border-b border-[#e7e5e4]">
+        <div class="flex items-center justify-between p-6 pb-4 border-b border-border">
           <div class="flex items-center gap-2.5">
-            <div class="size-9 rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 flex items-center justify-center">
+            <div class="size-9 rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 flex items-center justify-center">
               <ReceiptText class="size-5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-lg text-[#1c1917]">
+              <h3 class="font-display font-extrabold text-lg text-foreground">
                 Edit Operating Expense
               </h3>
-              <p class="text-xs text-[#71717a]">Update expense classification and property area cost splits</p>
+              <p class="text-xs text-muted-foreground">Update expense classification and property area cost splits</p>
             </div>
           </div>
-          <button @click="isEditOpen = false" class="p-1.5 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer" aria-label="Close dialog">
+          <button @click="isEditOpen = false" class="p-1.5 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer" aria-label="Close dialog">
             <X class="size-5" />
           </button>
         </div>
 
         <form @submit.prevent="handleEditExpense">
-          <div class="p-6 space-y-4 text-xs text-[#1c1917] max-h-[70vh] overflow-y-auto">
+          <div class="p-6 space-y-4 text-xs text-foreground max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
             <div class="w-full sm:w-64">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
                 Expense Date
               </label>
               <input 
                 v-model="editDate" 
                 type="date" 
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-xs text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors" 
+                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-xs text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors" 
                 required 
               />
             </div>
@@ -960,24 +960,24 @@ function exportFilteredExpenses() {
             <!-- Description & Category Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
                   Description &amp; Receipt #
                 </label>
                 <input 
                   v-model="editDesc" 
                   placeholder="e.g. OR #88240 — supplies" 
-                  class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-xs text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors" 
+                  class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-xs text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors" 
                   required 
                 />
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
                   Expense Category
                 </label>
                 <select 
                   v-model="editCategory" 
-                  class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-xs font-medium text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors cursor-pointer" 
+                  class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-xs font-medium text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors cursor-pointer" 
                   required
                 >
                   <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
@@ -988,24 +988,24 @@ function exportFilteredExpenses() {
             <!-- Allocations / Splits Section -->
             <div class="space-y-3 pt-2">
               <div class="flex items-center justify-between">
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a]">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
                   Property Area Allocations (Splits)
                 </label>
-                <span class="text-[10px] text-[#71717a]">Distribute cost across boarding house &amp; main house</span>
+                <span class="text-[10px] text-muted-foreground">Distribute cost across boarding house &amp; main house</span>
               </div>
 
               <div class="space-y-2">
                 <div 
                   v-for="(alloc, aIdx) in editAllocations" 
                   :key="aIdx" 
-                  class="flex items-center gap-3 bg-[#fafaf9] p-3 border border-[#e7e5e4] rounded-xl"
+                  class="flex items-center gap-3 bg-background p-3 border border-border rounded-xl"
                 >
                   <!-- Area Selector -->
                   <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-[#71717a] uppercase mb-1">Target Area</label>
+                    <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Target Area</label>
                     <select 
                       v-model="alloc.area" 
-                      class="min-h-10 w-full px-3 border border-[#e7e5e4] rounded-lg text-xs bg-white text-[#1c1917] focus:border-[#0c66e4] focus:outline-none cursor-pointer" 
+                      class="min-h-10 w-full px-3 border border-border rounded-lg text-xs bg-white text-foreground focus:border-primary focus:outline-none cursor-pointer" 
                       required
                     >
                       <option value="Boarding House">Boarding House</option>
@@ -1018,14 +1018,14 @@ function exportFilteredExpenses() {
 
                   <!-- Amount -->
                   <div class="w-36 sm:w-44">
-                    <label class="block text-[10px] font-bold text-[#71717a] uppercase mb-1">Amount (₱)</label>
+                    <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Amount (₱)</label>
                     <input 
                       v-model="alloc.amount" 
                       type="number" 
                       placeholder="0.00" 
                       min="0"
                       step="any"
-                      class="min-h-10 w-full px-3 border border-[#e7e5e4] rounded-lg text-xs font-bold text-[#1c1917] bg-white focus:border-[#0c66e4] focus:outline-none tabular" 
+                      class="min-h-10 w-full px-3 border border-border rounded-lg text-xs font-bold text-foreground bg-white focus:border-primary focus:outline-none tabular" 
                       required 
                     />
                   </div>
@@ -1052,7 +1052,7 @@ function exportFilteredExpenses() {
                   @click="addEditAllocation" 
                   class="btn-secondary text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
                 >
-                  <Plus class="size-3.5 text-[#0c66e4]" />
+                  <Plus class="size-3.5 text-primary" />
                   <span>Split across another area</span>
                 </button>
               </div>
@@ -1060,7 +1060,7 @@ function exportFilteredExpenses() {
           </div>
 
           <!-- Modal Actions Footer: Delete on the left, Cancel/Save on the right -->
-          <div class="p-4 px-6 border-t border-[#e7e5e4] flex items-center justify-between gap-3 bg-[#fafaf9]">
+          <div class="p-4 px-6 border-t border-border flex items-center justify-between gap-3 bg-background">
             <button
               v-if="editingExpense"
               type="button"
@@ -1090,13 +1090,13 @@ function exportFilteredExpenses() {
       class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
       @click.self="isConfirmOpen = false"
     >
-      <div class="surface-card w-full max-w-sm shadow-2xl rounded-2xl p-6 bg-white space-y-4 text-center border border-[#e7e5e4]">
+      <div class="surface-card w-full max-w-sm shadow-2xl rounded-2xl p-6 bg-white space-y-4 text-center border border-border">
         <div class="flex flex-col items-center gap-3">
-          <div class="size-12 rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 flex items-center justify-center">
+          <div class="size-12 rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 flex items-center justify-center">
             <ReceiptText class="size-6" />
           </div>
-          <h3 class="font-display font-extrabold text-base text-[#1c1917]">{{ confirmTitle }}</h3>
-          <p class="text-xs text-[#71717a] leading-relaxed">{{ confirmMessage }}</p>
+          <h3 class="font-display font-extrabold text-base text-foreground">{{ confirmTitle }}</h3>
+          <p class="text-xs text-muted-foreground leading-relaxed">{{ confirmMessage }}</p>
         </div>
 
         <div class="flex items-center justify-center gap-2 pt-2">

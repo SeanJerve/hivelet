@@ -416,10 +416,10 @@ async function handleQuickLogin(account: DemoAccount) {
         <!-- Left: Sign In / Register Form -->
         <div class="lg:col-span-6 surface-card p-6 sm:p-8 space-y-6">
           <div class="text-center space-y-1">
-            <h1 class="font-display text-2xl font-extrabold text-[#1c1917]">
+            <h1 class="font-display text-2xl font-extrabold text-foreground">
               {{ isSignUp ? 'Create a Hivelet Account' : 'Sign in to Hivelet' }}
             </h1>
-            <p class="text-xs text-[#71717a]">Fe Galang Da Silva Boarding House</p>
+            <p class="text-xs text-muted-foreground">Fe Galang Da Silva Boarding House</p>
           </div>
 
           <!-- Denied Alert -->
@@ -427,13 +427,13 @@ async function handleQuickLogin(account: DemoAccount) {
             v-if="deniedReason && !isSignUp"
             class="flex gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs text-amber-900"
           >
-            <AlertCircle class="size-4 shrink-0 text-[#f59e0b] mt-0.5" />
+            <AlertCircle class="size-4 shrink-0 text-accent mt-0.5" />
             <span>{{ deniedReason }}</span>
           </div>
 
           <form class="space-y-4 text-xs" @submit.prevent="handleSubmit">
             <div v-if="isSignUp">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
                 Full Name
               </label>
               <input
@@ -441,12 +441,12 @@ async function handleQuickLogin(account: DemoAccount) {
                 type="text"
                 required
                 placeholder="Juan Dela Cruz"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
               />
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
                 Email address
               </label>
               <input
@@ -455,24 +455,24 @@ async function handleQuickLogin(account: DemoAccount) {
                 autocomplete="username"
                 required
                 placeholder="you@email.com"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
               />
             </div>
 
             <div v-if="isSignUp">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
                 Phone Number (Optional)
               </label>
               <input
                 v-model="phoneNumber"
                 type="text"
                 placeholder="0917-000-0000"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
               />
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
                 Password
               </label>
               <div class="relative">
@@ -482,23 +482,23 @@ async function handleQuickLogin(account: DemoAccount) {
                   autocomplete="current-password"
                   required
                   placeholder="••••••••"
-                  class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 pr-11 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+                  class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 pr-11 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
                 />
                 <button
                   type="button"
-                  class="absolute right-1 top-1/2 -translate-y-1/2 size-9 grid place-items-center text-[#71717a] hover:text-[#1c1917]"
+                  class="absolute right-1 top-1/2 -translate-y-1/2 size-9 grid place-items-center text-muted-foreground hover:text-foreground"
                   @click="showPassword = !showPassword"
                 >
                   <component :is="showPassword ? EyeOff : Eye" class="size-4" />
                 </button>
               </div>
-              <p v-if="isSignUp" class="text-[11px] text-[#71717a] mt-1">
+              <p v-if="isSignUp" class="text-[11px] text-muted-foreground mt-1">
                 Must be at least 10 characters and contain a letter and a number.
               </p>
             </div>
 
             <div v-if="isSignUp">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
                 Confirm Password
               </label>
               <input
@@ -506,7 +506,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 type="password"
                 required
                 placeholder="••••••••"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
               />
             </div>
 
@@ -531,12 +531,12 @@ async function handleQuickLogin(account: DemoAccount) {
           </form>
 
           <div class="text-center text-xs pt-2">
-            <button @click="toggleMode" class="text-[#8a5814] font-bold hover:underline">
+            <button @click="toggleMode" class="text-accent-ink font-bold hover:underline">
               {{ isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Create one" }}
             </button>
           </div>
 
-          <div class="border-t border-[#e7e5e4] pt-4 flex items-start gap-2 text-xs text-[#71717a]">
+          <div class="border-t border-border pt-4 flex items-start gap-2 text-xs text-muted-foreground">
             <ShieldCheck class="size-4 text-emerald-600 shrink-0 mt-0.5" />
             <p>Enforced server-side Role-Based Access Control (RBAC). Passwords hashed with bcrypt.</p>
           </div>
@@ -544,43 +544,43 @@ async function handleQuickLogin(account: DemoAccount) {
 
         <!-- Right: 1-Click Demo Accounts -->
         <div class="lg:col-span-6 surface-card p-6 sm:p-8 space-y-4">
-          <div class="border-b border-[#e7e5e4] pb-3">
+          <div class="border-b border-border pb-3">
             <div class="flex items-center justify-between">
-              <h2 class="font-display text-lg font-extrabold text-[#1c1917]">
+              <h2 class="font-display text-lg font-extrabold text-foreground">
                 Quick Demo Access
               </h2>
               <span class="badge-soft badge-warning font-bold text-[10px]">
                 1-Click Sign In
               </span>
             </div>
-            <p class="text-xs text-[#71717a] mt-1">
+            <p class="text-xs text-muted-foreground mt-1">
               Select any verified demonstration account below to authenticate immediately.
             </p>
           </div>
 
-          <div class="overflow-x-auto border border-[#e7e5e4] rounded-2xl max-h-[380px] overflow-y-auto">
+          <div class="overflow-x-auto border border-border rounded-2xl max-h-[380px] overflow-y-auto">
             <table class="w-full text-left text-xs border-collapse">
               <thead>
-                <tr class="bg-[#f5f5f4] text-[#71717a] border-b border-[#e7e5e4] sticky top-0 z-10 shadow-[inset_0_-1px_0_#e7e5e4]">
+                <tr class="bg-muted text-muted-foreground border-b border-border sticky top-0 z-10 shadow-[inset_0_-1px_0_#e7e5e4]">
                   <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-[10px]">User / Role</th>
                   <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-[10px]">Target</th>
                   <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-[10px] text-right">Action</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-[#e7e5e4]">
+              <tbody class="divide-y divide-border">
                 <tr
                   v-for="acc in demoAccounts"
                   :key="acc.email"
-                  class="hover:bg-[#fafaf9] transition-colors"
+                  class="hover:bg-background transition-colors"
                 >
                   <td class="py-3 px-3">
-                    <div class="font-bold text-[#1c1917]">{{ acc.name }}</div>
-                    <div class="text-[11px] text-[#71717a] font-mono">{{ acc.email }}</div>
+                    <div class="font-bold text-foreground">{{ acc.name }}</div>
+                    <div class="text-[11px] text-muted-foreground font-mono">{{ acc.email }}</div>
                     <span :class="['badge-soft text-[9px] mt-1 inline-block', acc.badgeClass]">
                       {{ acc.roleLabel }}
                     </span>
                   </td>
-                  <td class="py-3 px-3 text-[#71717a] font-medium text-xs">
+                  <td class="py-3 px-3 text-muted-foreground font-medium text-xs">
                     {{ acc.room || 'Admin Workspace' }}
                   </td>
                   <td class="py-3 px-3 text-right">
@@ -608,7 +608,7 @@ async function handleQuickLogin(account: DemoAccount) {
       </div>
 
       <div class="text-center">
-        <router-link to="/public" class="text-xs font-bold text-[#8a5814] hover:underline">
+        <router-link to="/public" class="text-xs font-bold text-accent-ink hover:underline">
           ← Back to the public guest showcase
         </router-link>
       </div>

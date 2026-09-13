@@ -48,6 +48,19 @@
   --color-neutral-soft: var(--neutral-soft);
   --color-neutral-strong: var(--neutral-strong);
 
+  /* Roles that the interface was already using as literal hex values. Declaring
+     them here is what turns `text-[#71717a]` into `text-muted-foreground`. */
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-foreground-soft: var(--foreground-soft);
+  --color-muted-foreground-soft: var(--muted-foreground-soft);
+  --color-ink-navy: var(--ink-navy);
+  --color-border-strong: var(--border-strong);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-neutral-dark: var(--neutral-dark);
+  --color-neutral-dark-strong: var(--neutral-dark-strong);
+  --color-accent-ink: var(--accent-ink);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -69,17 +82,33 @@
   --card-foreground: #1c1917;
   --popover: #ffffff;
   --popover-foreground: #1c1917;
-  --primary: #1e2532;
-  --primary-foreground: #fafaf9;
+  /* `--primary` was #1e2532 while `.btn-primary` painted itself #0c66e4, so the
+     token named "primary" was not the primary action colour. Nothing consumed
+     the token - every component wrote the hex inline - so correcting it here
+     changes no pixel and makes the name true. */
+  --primary: #0c66e4;
+  --primary-strong: #0052cc;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e9f2ff;
+
+  /* The dark neutral that `.btn-dark` and the sidebar use. */
+  --neutral-dark: #1e2532;
+  --neutral-dark-strong: #2b3648;
   --secondary: #f5f5f4;
   --secondary-foreground: #292524;
   --muted: #f5f5f4;
   --muted-foreground: #71717a;
+  --muted-foreground-soft: #a1a1aa;
+  --foreground-soft: #57534e;
+  --ink-navy: #172b4d;
+  --surface-sunken: #f4f5f7;
   --accent: #f59e0b;
   --accent-foreground: #78350f;
+  --accent-ink: #8a5814;
   --destructive: #ef4444;
   --destructive-foreground: #fafaf9;
   --border: #e7e5e4;
+  --border-strong: #dfe1e6;
   --input: #e7e5e4;
   --ring: #f59e0b;
 
@@ -168,7 +197,7 @@ body {
 }
 
 .surface-card {
-  background-color: #ffffff;
+  background-color: var(--card);
   border: 1px solid var(--border);
   border-radius: 1rem;
   box-shadow: var(--shadow-card);
@@ -203,17 +232,17 @@ body {
 }
 
 .btn-primary {
-  background-color: #0c66e4;
-  color: #ffffff;
-  border: 1px solid #0c66e4;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--primary);
   box-shadow: 0 1px 2px rgba(12, 102, 228, 0.15);
 }
 .btn-primary svg {
   color: #ffffff !important;
 }
 .btn-primary:hover:not(:disabled) {
-  background-color: #0052cc;
-  border-color: #0052cc;
+  background-color: var(--primary-strong);
+  border-color: var(--primary-strong);
 }
 .btn-primary:active:not(:disabled) {
   transform: scale(0.98);
@@ -224,17 +253,17 @@ body {
 }
 
 .btn-dark {
-  background-color: #1e2532;
-  color: #ffffff;
-  border: 1px solid #1e2532;
+  background-color: var(--neutral-dark);
+  color: var(--primary-foreground);
+  border: 1px solid var(--neutral-dark);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 .btn-dark svg {
   color: #ffffff !important;
 }
 .btn-dark:hover:not(:disabled) {
-  background-color: #2b3648;
-  border-color: #2b3648;
+  background-color: var(--neutral-dark-strong);
+  border-color: var(--neutral-dark-strong);
 }
 .btn-dark:active:not(:disabled) {
   transform: scale(0.98);
@@ -245,13 +274,13 @@ body {
 }
 
 .btn-secondary {
-  background-color: #ffffff;
-  color: #1c1917;
-  border: 1px solid #e7e5e4;
+  background-color: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 .btn-secondary:hover:not(:disabled) {
-  background-color: #fafaf9;
+  background-color: var(--background);
   border-color: #d6d3d1;
 }
 .btn-secondary:active:not(:disabled) {

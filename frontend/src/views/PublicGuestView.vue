@@ -174,9 +174,9 @@ async function submitInquiry() {
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col w-full bg-[#f4f5f7]">
+  <div class="flex-1 flex flex-col w-full bg-surface-sunken">
     <!-- Academic Clean Property Hero Header Section -->
-    <section class="w-full bg-[#1e2532] text-white border-b border-[#334155] shadow-xs">
+    <section class="w-full bg-neutral-dark text-white border-b border-[#334155] shadow-xs">
       <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         
         <div class="inline-flex items-center gap-2 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider mb-4">
@@ -236,10 +236,10 @@ async function submitInquiry() {
     <div id="categories" class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20">
       <section class="space-y-6">
         <div>
-          <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+          <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
             Explore by unit category
           </h2>
-          <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+          <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
             Choose a category to browse live availability across the property. Click any category below to view all rooms in that category.
           </p>
         </div>
@@ -256,10 +256,10 @@ async function submitInquiry() {
             role="button"
             tabindex="0"
             @keydown.enter="navigateToCategory(c.slug)"
-            class="surface-card group flex min-h-11 flex-col items-start p-6 text-left transition-all hover:shadow-xl hover:-translate-y-0.5 cursor-pointer rounded-2xl border border-[#dfe1e6] bg-white relative overflow-hidden"
+            class="surface-card group flex min-h-11 flex-col items-start p-6 text-left transition-all hover:shadow-xl hover:-translate-y-0.5 cursor-pointer rounded-2xl border border-border-strong bg-white relative overflow-hidden"
           >
             <div class="flex items-center justify-between w-full">
-              <span class="grid size-12 place-items-center rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 group-hover:bg-[#0c66e4] group-hover:text-white transition-colors">
+              <span class="grid size-12 place-items-center rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 group-hover:bg-primary group-hover:text-white transition-colors">
                 <component :is="c.icon" class="size-6" />
               </span>
               <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
@@ -267,17 +267,17 @@ async function submitInquiry() {
               </span>
             </div>
 
-            <h3 class="mt-5 font-display text-xl font-extrabold text-[#1c1917] group-hover:text-[#0c66e4] transition-colors">
+            <h3 class="mt-5 font-display text-xl font-extrabold text-foreground group-hover:text-primary transition-colors">
               {{ c.title }}
             </h3>
-            <p class="text-xs font-bold uppercase tracking-wider text-[#8a5814] mt-0.5">{{ c.pax }}</p>
-            <p class="mt-2.5 text-xs sm:text-sm text-[#71717a] leading-relaxed flex-1">{{ c.blurb }}</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-accent-ink mt-0.5">{{ c.pax }}</p>
+            <p class="mt-2.5 text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1">{{ c.blurb }}</p>
             
-            <div class="mt-5 pt-4 border-t border-[#e7e5e4] w-full flex items-center justify-between text-xs">
-              <span class="font-semibold text-[#71717a]">
+            <div class="mt-5 pt-4 border-t border-border w-full flex items-center justify-between text-xs">
+              <span class="font-semibold text-muted-foreground">
                 {{ CANONICAL_UNITS.filter(c.match).length }} Total Units
               </span>
-              <span class="font-bold text-[#0c66e4] group-hover:text-[#0052cc] flex items-center gap-1.5 transition-colors">
+              <span class="font-bold text-primary group-hover:text-primary-strong flex items-center gap-1.5 transition-colors">
                 <span>View All Rooms</span>
                 <ArrowRight class="size-4 group-hover:translate-x-1 transition-transform" />
               </span>
@@ -291,14 +291,14 @@ async function submitInquiry() {
     <section id="faqs" class="w-full bg-white py-16 sm:py-20 shadow-xs scroll-mt-20">
       <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-10">
         <div class="max-w-3xl space-y-2">
-          <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-[#0c66e4]">
+          <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-primary">
             <HelpCircle class="size-3.5" />
             Frequently Asked Questions
           </span>
-          <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-[#1c1917] tracking-tight">
+          <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
             Boarding House Policies &amp; Guidelines
           </h2>
-          <p class="text-xs sm:text-sm text-[#71717a] leading-relaxed">
+          <p class="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Standard operating guidelines, individual utilities submetering, security curfews, and payment methods for Fe Galang Da Silva Boarding House.
           </p>
         </div>
@@ -307,24 +307,24 @@ async function submitInquiry() {
           <div 
             v-for="(faq, idx) in FAQS" 
             :key="idx"
-            class="surface-card rounded-2xl border border-[#e7e5e4] bg-[#fafaf9] overflow-hidden transition-all"
+            class="surface-card rounded-2xl border border-border bg-background overflow-hidden transition-all"
           >
             <button
               type="button"
               @click="toggleFaq(idx)"
               class="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-white transition-colors"
             >
-              <span class="font-display font-extrabold text-sm sm:text-base text-[#1c1917]">
+              <span class="font-display font-extrabold text-sm sm:text-base text-foreground">
                 {{ faq.q }}
               </span>
-              <span class="size-8 rounded-xl bg-white border border-[#e7e5e4] grid place-items-center shrink-0 text-[#71717a]">
-                <ChevronDown :class="['size-4 transition-transform duration-200', openFaqIndex === idx ? 'rotate-180 text-[#0c66e4]' : '']" />
+              <span class="size-8 rounded-xl bg-white border border-border grid place-items-center shrink-0 text-muted-foreground">
+                <ChevronDown :class="['size-4 transition-transform duration-200', openFaqIndex === idx ? 'rotate-180 text-primary' : '']" />
               </span>
             </button>
 
             <div 
               v-if="openFaqIndex === idx"
-              class="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-[#57534e] leading-relaxed border-t border-[#e7e5e4]/60 pt-4 bg-white animate-in fade-in duration-150"
+              class="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-foreground-soft leading-relaxed border-t border-border/60 pt-4 bg-white animate-in fade-in duration-150"
             >
               {{ faq.a }}
             </div>
@@ -336,14 +336,14 @@ async function submitInquiry() {
     <!-- 3. Rectangular Inquiry Form Section (Centered) -->
     <div id="inquire-now" class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
       <section id="inquiry-form" class="scroll-mt-20">
-        <div class="surface-card w-full max-w-5xl mx-auto rounded-3xl border border-[#dfe1e6] bg-white p-8 sm:p-12 shadow-sm space-y-6">
+        <div class="surface-card w-full max-w-5xl mx-auto rounded-3xl border border-border-strong bg-white p-8 sm:p-12 shadow-sm space-y-6">
           
           <!-- Header -->
           <div class="space-y-1">
-            <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-[#1c1917] tracking-tight">
+            <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-foreground tracking-tight">
               Inquire with the Landlady
             </h2>
-            <p class="text-xs sm:text-sm text-[#71717a]">
+            <p class="text-xs sm:text-sm text-muted-foreground">
               Send your message directly to {{ LANDLADY.name }}.
             </p>
           </div>
@@ -353,27 +353,27 @@ async function submitInquiry() {
             <!-- Row 1: Full Name & Phone Number -->
             <div class="grid gap-5 sm:grid-cols-2">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
                   FULL NAME
                 </label>
                 <input 
                   v-model="inquiryName" 
                   type="text" 
                   placeholder="Juan Dela Cruz" 
-                  class="min-h-12 w-full px-4 border border-[#dfe1e6] rounded-2xl text-sm bg-white text-[#1c1917] focus:border-[#0c66e4] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
+                  class="min-h-12 w-full px-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
                   required 
                 />
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
                   PHONE NUMBER
                 </label>
                 <input 
                   v-model="inquiryPhone" 
                   type="tel" 
                   placeholder="0917-000-0000" 
-                  class="min-h-12 w-full px-4 border border-[#dfe1e6] rounded-2xl text-sm bg-white text-[#1c1917] focus:border-[#0c66e4] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
+                  class="min-h-12 w-full px-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
                   required 
                 />
               </div>
@@ -381,27 +381,27 @@ async function submitInquiry() {
 
             <!-- Row 2: Email -->
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
                 EMAIL
               </label>
               <input 
                 v-model="inquiryEmail" 
                 type="email" 
                 placeholder="you@email.com" 
-                class="min-h-12 w-full px-4 border border-[#dfe1e6] rounded-2xl text-sm bg-white text-[#1c1917] focus:border-[#0c66e4] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
+                class="min-h-12 w-full px-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
               />
             </div>
 
             <!-- Row 3: Message -->
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
                 MESSAGE
               </label>
               <textarea 
                 v-model="inquiryMsg" 
                 rows="4" 
                 placeholder="Good day po! Interested ako mag-inquire sa boarding house. Pwede po bang mag-viewing?" 
-                class="w-full p-4 border border-[#dfe1e6] rounded-2xl text-sm bg-white text-[#1c1917] focus:border-[#0c66e4] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-none leading-relaxed" 
+                class="w-full p-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-none leading-relaxed" 
                 required
               ></textarea>
             </div>
@@ -426,14 +426,14 @@ async function submitInquiry() {
     <!-- 4. Location & Proximity Map Section (100% Full-Width Edge-to-Edge with Top Spacing) -->
     <section id="location" class="w-full bg-white pt-16 sm:pt-20 pb-0 shadow-xs mt-8 sm:mt-12 space-y-8 scroll-mt-20">
       <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-2">
-        <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-[#0c66e4]">
+        <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-primary">
           <Compass class="size-3.5" />
           Location & Proximity
         </span>
-        <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-[#1c1917] tracking-tight">
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
           Strategic Location Near Bicol University Main Campus
         </h2>
-        <p class="text-xs sm:text-sm text-[#71717a] leading-relaxed max-w-3xl">
+        <p class="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-3xl">
           Situated at Galang's Compound with direct, well-paved transit access to Bicol University colleges, student libraries, and nearby convenience hubs.
         </p>
       </div>
@@ -519,7 +519,7 @@ async function submitInquiry() {
 
         <!-- Floating Label 1: Galang's Compound (Hivelet) -->
         <div class="absolute right-[31%] top-[56%] -translate-y-full z-10 pointer-events-auto">
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1e2532] text-white shadow-xl border border-white/20 text-[11px] font-bold">
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-dark text-white shadow-xl border border-white/20 text-[11px] font-bold">
             <MapPin class="size-3.5 text-rose-500" />
             <span>Hivelet (Galang's Compound)</span>
           </div>
@@ -527,7 +527,7 @@ async function submitInquiry() {
 
         <!-- Floating Label 2: Bicol University Main Campus -->
         <div class="absolute left-[3%] top-[12%] z-10 pointer-events-auto">
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0c66e4] text-white shadow-xl border border-white/20 text-[11px] font-bold">
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white shadow-xl border border-white/20 text-[11px] font-bold">
             <GraduationCap class="size-3.5 text-amber-300" />
             <span>Bicol University (Main Campus)</span>
           </div>

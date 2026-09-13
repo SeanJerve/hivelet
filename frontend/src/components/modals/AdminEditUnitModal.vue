@@ -209,21 +209,21 @@ async function handleSave() {
   >
     <!-- Modal Card -->
     <div
-      class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white animate-in fade-in zoom-in-95 duration-150 my-6 border border-[#e7e5e4]"
+      class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white animate-in fade-in zoom-in-95 duration-150 my-6 border border-border"
     >
       <!-- Header -->
-      <div class="flex items-center justify-between p-6 pb-4 border-b border-[#e7e5e4]">
+      <div class="flex items-center justify-between p-6 pb-4 border-b border-border">
         <div>
-          <h3 class="font-display font-black text-xl text-[#1c1917] tracking-tight uppercase">
+          <h3 class="font-display font-black text-xl text-foreground tracking-tight uppercase">
             UNIT {{ unit.unitCode.toUpperCase() }} — RATE &amp; SPECS
           </h3>
-          <p class="text-xs text-[#71717a] mt-0.5">
+          <p class="text-xs text-muted-foreground mt-0.5">
             {{ unit.cluster }} · Floor {{ unit.floor }} · {{ unit.type }}
           </p>
         </div>
         <button
           @click="closeModal"
-          class="grid size-9 place-items-center rounded-full text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4] transition-colors cursor-pointer"
+          class="grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-muted border border-border transition-colors cursor-pointer"
           aria-label="Close"
         >
           <X class="size-4" />
@@ -231,12 +231,12 @@ async function handleSave() {
       </div>
 
       <!-- Form Body -->
-      <form @submit.prevent="handleSave" class="p-6 space-y-4 text-xs text-[#1c1917] max-h-[75vh] overflow-y-auto">
+      <form @submit.prevent="handleSave" class="p-6 space-y-4 text-xs text-foreground max-h-[75vh] overflow-y-auto">
         
         <!-- Room Photo Upload (BLOB Database Storage) -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a]">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
               ROOM PHOTO
             </label>
             <span v-if="uploadedFileName" class="text-[10px] font-medium text-emerald-700">
@@ -254,7 +254,7 @@ async function handleSave() {
           />
 
           <!-- Upload Dropzone & Photo Card -->
-          <div class="relative group rounded-2xl overflow-hidden border border-[#e7e5e4] bg-[#fafaf9] transition-all">
+          <div class="relative group rounded-2xl overflow-hidden border border-border bg-background transition-all">
             <div class="h-44 w-full relative bg-neutral-900">
               <img
                 :src="unitPhoto"
@@ -274,8 +274,8 @@ async function handleSave() {
             </div>
 
             <!-- Upload Action Bar -->
-            <div class="p-3 bg-white border-t border-[#e7e5e4] flex items-center justify-between gap-3">
-              <span class="text-xs text-[#71717a]">
+            <div class="p-3 bg-white border-t border-border flex items-center justify-between gap-3">
+              <span class="text-xs text-muted-foreground">
                 {{ uploadedFileName ? uploadedFileName : 'PNG, JPG, or WebP' }}
               </span>
 
@@ -294,7 +294,7 @@ async function handleSave() {
 
         <!-- Monthly Rate -->
         <div>
-          <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
             MONTHLY RATE (₱)
           </label>
           <input
@@ -302,7 +302,7 @@ async function handleSave() {
             type="number"
             min="0"
             step="100"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-base font-bold text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-base font-bold text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
             required
           />
         </div>
@@ -310,26 +310,26 @@ async function handleSave() {
         <!-- Dynamic Registered Occupants (Based on actual tenants residing) -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a]">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
               REGISTERED OCCUPANTS
             </label>
-            <span class="text-[10px] font-semibold text-[#0c66e4]">
+            <span class="text-[10px] font-semibold text-primary">
               (Calculated dynamically from active tenant records)
             </span>
           </div>
 
-          <div class="rounded-xl border border-[#e7e5e4] bg-[#fafaf9] p-3.5 flex items-center justify-between">
+          <div class="rounded-xl border border-border bg-background p-3.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="grid size-9 place-items-center rounded-lg bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200 shrink-0">
+              <div class="grid size-9 place-items-center rounded-lg bg-blue-50 text-primary ring-1 ring-blue-200 shrink-0">
                 <Users class="size-4" />
               </div>
               <div>
-                <p class="font-display font-extrabold text-sm text-[#1c1917]">
+                <p class="font-display font-extrabold text-sm text-foreground">
                   {{ occupantsSummary.count }} {{ occupantsSummary.count === 1 ? 'Registered Occupant' : 'Registered Occupants' }}
                 </p>
-                <p class="text-[11px] text-[#71717a] mt-0.5">
+                <p class="text-[11px] text-muted-foreground mt-0.5">
                   <template v-if="occupantsSummary.count > 0">
-                    Active resident(s): <strong class="text-[#1c1917]">{{ occupantsSummary.text }}</strong>
+                    Active resident(s): <strong class="text-foreground">{{ occupantsSummary.text }}</strong>
                   </template>
                   <template v-else>
                     No active tenants currently assigned to Unit {{ unit.unitCode.toUpperCase() }}
@@ -351,20 +351,20 @@ async function handleSave() {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <!-- Unit Type Dropdown -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
               UNIT TYPE
             </label>
             <div class="relative">
               <select
                 v-model="unitType"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm font-semibold text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
+                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm font-semibold text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
                 required
               >
                 <option v-for="opt in UNIT_TYPE_CHOICES" :key="opt" :value="opt">
                   {{ opt }}
                 </option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-[#71717a]">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground">
                 <ChevronDown class="size-4" />
               </div>
             </div>
@@ -372,20 +372,20 @@ async function handleSave() {
 
           <!-- Operational Status Dropdown -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
               OPERATIONAL STATUS
             </label>
             <div class="relative">
               <select
                 v-model="editStatus"
-                class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm font-semibold text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
+                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm font-semibold text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
                 required
               >
                 <option v-for="opt in OPERATIONAL_STATUS_OPTIONS" :key="opt" :value="opt">
                   {{ opt }}
                 </option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-[#71717a]">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground">
                 <ChevronDown class="size-4" />
               </div>
             </div>
@@ -394,32 +394,32 @@ async function handleSave() {
 
         <!-- Billing Rule -->
         <div>
-          <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
             BILLING RULE
           </label>
           <input
             v-model="billingRule"
             type="text"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] px-3.5 text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
             required
           />
         </div>
 
         <!-- Amenities / Inclusions Textarea -->
         <div>
-          <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1.5">
+          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
             AMENITIES / INCLUSIONS
           </label>
           <textarea
             v-model="amenitiesText"
             rows="3"
-            class="w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] p-3 text-xs leading-relaxed text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors resize-none"
+            class="w-full rounded-xl border border-border bg-background p-3 text-xs leading-relaxed text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors resize-none"
             placeholder="Separate items with commas..."
           ></textarea>
         </div>
 
         <!-- Actions -->
-        <div class="pt-3 border-t border-[#e7e5e4] flex items-center justify-end gap-2.5">
+        <div class="pt-3 border-t border-border flex items-center justify-end gap-2.5">
           <button
             type="button"
             @click="closeModal"

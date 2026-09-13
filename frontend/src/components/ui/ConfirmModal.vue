@@ -24,7 +24,7 @@ const emit = defineEmits<{
   <Teleport to="body">
     <div 
       v-if="isOpen" 
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1c1917]/50 backdrop-blur-xs transition-opacity"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/50 backdrop-blur-xs transition-opacity"
       @click.self="emit('cancel')"
     >
       <div class="surface-card w-full max-w-md p-6 shadow-2xl rounded-2xl flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
@@ -42,23 +42,23 @@ const emit = defineEmits<{
           </div>
 
           <div class="flex-1">
-            <h3 class="font-display font-extrabold text-base text-[#1c1917] leading-snug">{{ title }}</h3>
-            <p class="text-xs text-[#71717a] mt-1 leading-relaxed">{{ message }}</p>
+            <h3 class="font-display font-extrabold text-base text-foreground leading-snug">{{ title }}</h3>
+            <p class="text-xs text-muted-foreground mt-1 leading-relaxed">{{ message }}</p>
           </div>
 
           <button 
             @click="emit('cancel')" 
-            class="w-7 h-7 rounded-full flex items-center justify-center text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4] transition-colors"
+            class="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted border border-border transition-colors"
           >
             <X class="w-4 h-4" />
           </button>
         </div>
 
-        <div class="bg-[#fafaf9] border border-[#e7e5e4] p-3 text-xs text-[#57534e] rounded-xl">
-          <span class="font-bold text-[#1c1917]">Notice:</span> This action will update the system state and audit logs immediately.
+        <div class="bg-background border border-border p-3 text-xs text-foreground-soft rounded-xl">
+          <span class="font-bold text-foreground">Notice:</span> This action will update the system state and audit logs immediately.
         </div>
 
-        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#e7e5e4]">
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
           <button 
             @click="emit('cancel')" 
             class="btn-secondary"

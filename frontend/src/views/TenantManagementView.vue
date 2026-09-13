@@ -234,17 +234,17 @@ async function handleOnboard() {
 <template>
   <div class="space-y-6">
     <!-- Page Header -->
-    <div class="flex flex-col gap-3 border-b border-[#e7e5e4] pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-[#1c1917]">Active Tenants</span>
+          <span class="font-bold text-foreground">Active Tenants</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
           Active Tenant Directory
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
           {{ tenants.length }} residents currently on record.
         </p>
       </div>
@@ -255,7 +255,7 @@ async function handleOnboard() {
           :disabled="isLoading"
           class="btn-secondary"
         >
-          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin' : '']" />
+          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
         </button>
 
@@ -272,24 +272,24 @@ async function handleOnboard() {
     <!-- Section Card with Search & Tenant Table -->
     <div class="surface-card overflow-hidden">
       <!-- Search Bar & Filters -->
-      <div class="border-b border-[#e7e5e4] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
+      <div class="border-b border-border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
         <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             v-model="q"
             type="text"
             placeholder="Search name, unit or phone…"
-            class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
           />
         </div>
 
-        <div class="h-10 inline-flex items-center gap-1 self-start sm:self-auto bg-[#f5f5f4] p-1 border border-[#e7e5e4] rounded-xl text-xs">
+        <div class="h-10 inline-flex items-center gap-1 self-start sm:self-auto bg-muted p-1 border border-border rounded-xl text-xs">
           <button
             type="button"
             @click="statusFilter = 'all'"
             :class="[
               'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
-              statusFilter === 'all' ? 'bg-white text-[#0c66e4] shadow-xs' : 'text-[#71717a] hover:text-[#1c1917]'
+              statusFilter === 'all' ? 'bg-white text-primary shadow-xs' : 'text-muted-foreground hover:text-foreground'
             ]"
           >
             All ({{ tenants.length }})
@@ -299,7 +299,7 @@ async function handleOnboard() {
             @click="statusFilter = 'active'"
             :class="[
               'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
-              statusFilter === 'active' ? 'bg-white text-[#0c66e4] shadow-xs' : 'text-[#71717a] hover:text-[#1c1917]'
+              statusFilter === 'active' ? 'bg-white text-primary shadow-xs' : 'text-muted-foreground hover:text-foreground'
             ]"
           >
             Active ({{ activeCount }})
@@ -309,7 +309,7 @@ async function handleOnboard() {
             @click="statusFilter = 'vacated'"
             :class="[
               'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
-              statusFilter === 'vacated' ? 'bg-white text-[#0c66e4] shadow-xs' : 'text-[#71717a] hover:text-[#1c1917]'
+              statusFilter === 'vacated' ? 'bg-white text-primary shadow-xs' : 'text-muted-foreground hover:text-foreground'
             ]"
           >
             Past / Vacated ({{ vacatedCount }})
@@ -325,8 +325,8 @@ async function handleOnboard() {
       <!-- Table (Screenshot 4) -->
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[1000px] text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-[#f5f5f4]">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
+          <thead class="sticky top-0 z-10 bg-muted">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
               <th class="whitespace-nowrap px-4 py-3 font-bold">RESIDENT</th>
               <th class="whitespace-nowrap px-4 py-3 font-bold">UNIT</th>
               <th class="whitespace-nowrap px-4 py-3 font-bold">ROOMMATES</th>
@@ -341,17 +341,17 @@ async function handleOnboard() {
             <tr 
               v-for="t in rows" 
               :key="t.id"
-              class="border-b border-[#e7e5e4] last:border-0 hover:bg-[#fafaf9] transition-colors"
+              class="border-b border-border last:border-0 hover:bg-background transition-colors"
             >
               <!-- RESIDENT (Name + Email + Phone stacked for compact layout) -->
               <td class="px-4 py-3.5">
-                <p class="font-bold text-[#1c1917]">{{ t.name }}</p>
-                <p class="text-xs text-[#71717a]">{{ t.email }}</p>
-                <p class="tabular font-mono text-[11px] text-[#71717a] mt-0.5">{{ t.phone }}</p>
+                <p class="font-bold text-foreground">{{ t.name }}</p>
+                <p class="text-xs text-muted-foreground">{{ t.email }}</p>
+                <p class="tabular font-mono text-[11px] text-muted-foreground mt-0.5">{{ t.phone }}</p>
               </td>
 
               <!-- UNIT -->
-              <td class="px-4 py-3.5 font-display font-extrabold uppercase text-[#1c1917]">
+              <td class="px-4 py-3.5 font-display font-extrabold uppercase text-foreground">
                 {{ t.unitCode }}
               </td>
 
@@ -373,17 +373,17 @@ async function handleOnboard() {
 
               <!-- EMERGENCY CONTACT -->
               <td class="whitespace-nowrap px-4 py-3.5">
-                <p class="text-[#1c1917] font-medium">{{ t.emergencyContact.name }}</p>
-                <p class="tabular font-mono text-xs text-[#71717a]">{{ t.emergencyContact.phone }}</p>
+                <p class="text-foreground font-medium">{{ t.emergencyContact.name }}</p>
+                <p class="tabular font-mono text-xs text-muted-foreground">{{ t.emergencyContact.phone }}</p>
               </td>
 
               <!-- MOVE-IN -->
-              <td class="whitespace-nowrap px-4 py-3.5 text-[#71717a]">
+              <td class="whitespace-nowrap px-4 py-3.5 text-muted-foreground">
                 {{ t.moveInDate }}
               </td>
 
               <!-- DEPOSIT -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 font-display font-bold text-[#1c1917]">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 font-display font-bold text-foreground">
                 {{ peso(t.depositAmount) }}
               </td>
 
@@ -403,7 +403,7 @@ async function handleOnboard() {
               <td class="whitespace-nowrap px-4 py-3.5 text-right">
                 <button 
                   @click="openEdit(t)"
-                  class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-2xs font-semibold cursor-pointer hover:border-[#0c66e4] hover:text-[#0c66e4]"
+                  class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-2xs font-semibold cursor-pointer hover:border-primary hover:text-primary"
                 >
                   <Pencil class="size-3.5" />
                   <span>Edit</span>
@@ -423,29 +423,29 @@ async function handleOnboard() {
     >
       <div class="surface-card w-full max-w-xl shadow-2xl rounded-2xl p-6 bg-white space-y-4 max-h-[90dvh] overflow-y-auto">
         <!-- Header -->
-        <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+        <div class="flex items-center justify-between pb-3 border-b border-border">
           <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-[#0c66e4] ring-1 ring-blue-200">
+            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200">
               <Pencil class="size-4.5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-lg text-[#1c1917] leading-tight">
+              <h3 class="font-display font-extrabold text-lg text-foreground leading-tight">
                 {{ editModalTenant.name }}
               </h3>
-              <p class="text-xs text-[#71717a]">
+              <p class="text-xs text-muted-foreground">
                 Unit {{ editModalTenant.unitCode }} · Resident Profile &amp; Assignment
               </p>
             </div>
           </div>
-          <button @click="editModalTenant = null" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer">
+          <button @click="editModalTenant = null" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
             <X class="size-5" />
           </button>
         </div>
 
         <!-- Section 1: Resident Information Profile Card -->
-        <div class="rounded-xl border border-[#e7e5e4] bg-[#fafaf9] p-4 space-y-3">
-          <div class="flex items-center justify-between border-b border-[#e7e5e4]/70 pb-2">
-            <span class="font-bold text-[11px] uppercase tracking-wider text-[#71717a]">
+        <div class="rounded-xl border border-border bg-background p-4 space-y-3">
+          <div class="flex items-center justify-between border-b border-border/70 pb-2">
+            <span class="font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
               Resident Profile
             </span>
             <span :class="[
@@ -458,31 +458,31 @@ async function handleOnboard() {
 
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
             <div>
-              <p class="text-[10px] uppercase font-bold text-[#71717a]">Phone</p>
-              <p class="font-mono text-xs text-[#1c1917] mt-0.5">{{ editModalTenant.phone }}</p>
+              <p class="text-[10px] uppercase font-bold text-muted-foreground">Phone</p>
+              <p class="font-mono text-xs text-foreground mt-0.5">{{ editModalTenant.phone }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-[#71717a]">Email</p>
-              <p class="text-xs text-[#1c1917] truncate mt-0.5" :title="editModalTenant.email">{{ editModalTenant.email }}</p>
+              <p class="text-[10px] uppercase font-bold text-muted-foreground">Email</p>
+              <p class="text-xs text-foreground truncate mt-0.5" :title="editModalTenant.email">{{ editModalTenant.email }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-[#71717a]">Deposit Held</p>
-              <p class="font-display font-bold text-xs text-[#1c1917] mt-0.5">{{ peso(editModalTenant.depositAmount) }}</p>
+              <p class="text-[10px] uppercase font-bold text-muted-foreground">Deposit Held</p>
+              <p class="font-display font-bold text-xs text-foreground mt-0.5">{{ peso(editModalTenant.depositAmount) }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-[#71717a]">Move-In Date</p>
-              <p class="text-xs text-[#1c1917] mt-0.5">{{ editModalTenant.moveInDate }}</p>
+              <p class="text-[10px] uppercase font-bold text-muted-foreground">Move-In Date</p>
+              <p class="text-xs text-foreground mt-0.5">{{ editModalTenant.moveInDate }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-[#71717a]">Anniversary</p>
-              <p class="text-xs text-[#1c1917] mt-0.5">{{ editModalTenant.anniversary }}</p>
+              <p class="text-[10px] uppercase font-bold text-muted-foreground">Anniversary</p>
+              <p class="text-xs text-foreground mt-0.5">{{ editModalTenant.anniversary }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-[#71717a]">Emergency Contact</p>
-              <p class="text-xs text-[#1c1917] mt-0.5 truncate" :title="editModalTenant.emergencyContact.name + ' (' + editModalTenant.emergencyContact.phone + ')'">
+              <p class="text-[10px] uppercase font-bold text-muted-foreground">Emergency Contact</p>
+              <p class="text-xs text-foreground mt-0.5 truncate" :title="editModalTenant.emergencyContact.name + ' (' + editModalTenant.emergencyContact.phone + ')'">
                 {{ editModalTenant.emergencyContact.name }}
               </p>
-              <p class="font-mono text-[10px] text-[#71717a]">{{ editModalTenant.emergencyContact.phone }}</p>
+              <p class="font-mono text-[10px] text-muted-foreground">{{ editModalTenant.emergencyContact.phone }}</p>
             </div>
           </div>
         </div>
@@ -491,8 +491,8 @@ async function handleOnboard() {
         <form @submit.prevent="saveEdit" class="space-y-4 text-xs">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Target Unit</label>
-              <select v-model="editUnitCode" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white font-bold" required>
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
+              <select v-model="editUnitCode" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white font-bold" required>
                 <option v-for="u in CANONICAL_UNITS" :key="u.unitCode" :value="u.unitCode.toUpperCase()">
                   {{ u.unitCode.toUpperCase() }} — {{ u.cluster }} ({{ peso(u.basePrice) }})
                 </option>
@@ -500,8 +500,8 @@ async function handleOnboard() {
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Account Status</label>
-              <select v-model="editStatus" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white" required>
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Account Status</label>
+              <select v-model="editStatus" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
                 <option value="active">Active</option>
                 <option value="vacated">Vacated (Pending)</option>
               </select>
@@ -509,21 +509,21 @@ async function handleOnboard() {
           </div>
 
           <!-- Roommate Options -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#e7e5e4]">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Has Roommate?</label>
-              <select v-model="editHasRoommates" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white" required>
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Has Roommate?</label>
+              <select v-model="editHasRoommates" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
                 <option value="no">No (Solo Resident)</option>
                 <option value="yes">Yes (With Roommates)</option>
               </select>
             </div>
 
             <div v-if="editHasRoommates === 'yes'">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Roommate Qty</label>
-              <input v-model.number="editRoommateQty" type="number" min="1" max="8" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold bg-[#fafaf9]" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Roommate Qty</label>
+              <input v-model.number="editRoommateQty" type="number" min="1" max="8" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold bg-background" required />
             </div>
             <div v-else class="flex items-end">
-              <p class="text-xs text-[#71717a] pb-2.5">Solo resident headcount.</p>
+              <p class="text-xs text-muted-foreground pb-2.5">Solo resident headcount.</p>
             </div>
           </div>
 
@@ -535,7 +535,7 @@ async function handleOnboard() {
           </div>
 
           <!-- Actions Footer (Vacate on Left, Cancel & Save on Right) -->
-          <div class="pt-3 border-t border-[#e7e5e4] flex items-center justify-between gap-3">
+          <div class="pt-3 border-t border-border flex items-center justify-between gap-3">
             <button 
               type="button" 
               @click="openVacateFromModal(editModalTenant)" 
@@ -571,7 +571,7 @@ async function handleOnboard() {
           <AlertTriangle class="size-5" />
           <h3 class="font-display font-extrabold text-lg">Settle vacancy &amp; deactivate</h3>
         </div>
-        <p class="text-xs text-[#71717a] leading-relaxed">
+        <p class="text-xs text-muted-foreground leading-relaxed">
           This closes the account of <strong>{{ vacateModalTenant.name }}</strong> and marks unit <strong>{{ vacateModalTenant.unitCode }}</strong> as vacant. Deposit settlement will be logged.
         </p>
         <div class="pt-2 flex justify-end gap-2">
@@ -591,32 +591,32 @@ async function handleOnboard() {
       @click.self="isOnboardModalOpen = false"
     >
       <div class="surface-card w-full max-w-2xl shadow-2xl rounded-2xl p-6 bg-white space-y-4 max-h-[90dvh] overflow-y-auto">
-        <div class="flex items-center justify-between pb-3 border-b border-[#e7e5e4]">
+        <div class="flex items-center justify-between pb-3 border-b border-border">
           <div class="flex items-center gap-2">
-            <UserPlus class="size-5 text-[#f59e0b]" />
-            <h3 class="font-display font-extrabold text-lg text-[#1c1917]">Onboard New Tenant</h3>
+            <UserPlus class="size-5 text-accent" />
+            <h3 class="font-display font-extrabold text-lg text-foreground">Onboard New Tenant</h3>
           </div>
-          <button @click="isOnboardModalOpen = false" class="p-1 rounded-lg text-[#71717a] hover:bg-[#f5f5f4] cursor-pointer">
+          <button @click="isOnboardModalOpen = false" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
             <X class="size-5" />
           </button>
         </div>
 
         <form @submit.prevent="handleOnboard" class="grid gap-4 sm:grid-cols-2 text-xs">
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Full Name</label>
-            <input v-model="newName" placeholder="Juan Dela Cruz" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Full Name</label>
+            <input v-model="newName" placeholder="Juan Dela Cruz" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Email</label>
-            <input v-model="newEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Email</label>
+            <input v-model="newEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Phone</label>
-            <input v-model="newPhone" placeholder="0917-000-0000" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Phone</label>
+            <input v-model="newPhone" placeholder="0917-000-0000" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Target Unit</label>
-            <select v-model="newUnit" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white" required>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
+            <select v-model="newUnit" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
               <option v-for="u in CANONICAL_UNITS" :key="u.unitCode" :value="u.unitCode">
                 {{ u.unitCode.toUpperCase() }} — {{ peso(u.basePrice) }} ({{ u.cluster }})
               </option>
@@ -625,49 +625,49 @@ async function handleOnboard() {
 
           <!-- Roommate Options -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Has Roommate?</label>
-            <select v-model="newHasRoommates" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm bg-white" required>
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Has Roommate?</label>
+            <select v-model="newHasRoommates" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
               <option value="no">No (Solo Resident)</option>
               <option value="yes">Yes (With Roommates)</option>
             </select>
           </div>
 
           <div v-if="newHasRoommates === 'yes'">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Roommate Qty</label>
-            <input v-model.number="newRoommateQty" type="number" min="1" max="8" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold bg-[#fafaf9]" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Roommate Qty</label>
+            <input v-model.number="newRoommateQty" type="number" min="1" max="8" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold bg-background" required />
           </div>
           <div v-else class="flex items-end">
-            <p class="text-xs text-[#71717a] pb-3">Resident will occupy unit alone (1 Headcount).</p>
+            <p class="text-xs text-muted-foreground pb-3">Resident will occupy unit alone (1 Headcount).</p>
           </div>
 
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Move-in Date</label>
-            <input v-model="newMoveIn" type="date" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Move-in Date</label>
+            <input v-model="newMoveIn" type="date" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Anniversary Anchor Date</label>
-            <input v-model="newAnniv" type="date" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Anniversary Anchor Date</label>
+            <input v-model="newAnniv" type="date" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Deposit Amount (₱)</label>
-            <input v-model.number="newDeposit" type="number" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm font-bold" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Deposit Amount (₱)</label>
+            <input v-model.number="newDeposit" type="number" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Emergency Contact Name (Optional)</label>
-            <input v-model="newEmergName" placeholder="Maria Santos (optional)" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Emergency Contact Name (Optional)</label>
+            <input v-model="newEmergName" placeholder="Maria Santos (optional)" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" />
           </div>
           <div class="sm:col-span-2">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-[#71717a] mb-1">Emergency Contact Phone (Optional)</label>
-            <input v-model="newEmergPhone" placeholder="0928-000-0000 (optional)" class="min-h-11 w-full px-3.5 border border-[#e7e5e4] rounded-xl text-sm" />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Emergency Contact Phone (Optional)</label>
+            <input v-model="newEmergPhone" placeholder="0928-000-0000 (optional)" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" />
           </div>
 
           <!-- Concluded Summary Banner (Positioned directly above modal action buttons) -->
           <div class="sm:col-span-2 p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-blue-950 text-xs flex items-center justify-between shadow-2xs">
             <div class="flex items-center gap-2">
-              <span class="size-2 rounded-full bg-[#0c66e4]"></span>
+              <span class="size-2 rounded-full bg-primary"></span>
               <span class="font-medium">Total Registered Headcount:</span>
             </div>
-            <strong class="font-display font-extrabold text-sm text-[#0c66e4]">
+            <strong class="font-display font-extrabold text-sm text-primary">
               {{ newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1 }} Pax · ₱{{ (newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1) * 200 }}/mo water fee
             </strong>
           </div>

@@ -98,7 +98,7 @@ const STATUS_STYLE: Record<UnitStatus, string> = {
   settled: 'border-emerald-200 bg-emerald-50/40',
   pending: 'border-amber-200 bg-amber-50/40',
   overdue: 'border-rose-200 bg-rose-50/40',
-  vacant: 'border-[#e7e5e4] bg-[#fafaf9]',
+  vacant: 'border-border bg-background',
   maintenance: 'border-purple-200 bg-purple-50/40',
 };
 
@@ -147,17 +147,17 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
 <template>
   <div class="space-y-6">
     <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#e7e5e4] pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-[#71717a] mb-1">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-[#1c1917]">Room &amp; Rate Directory</span>
+          <span class="font-bold text-foreground">Room &amp; Rate Directory</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-[#1c1917] tracking-tight">
+        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
           Room &amp; Rate Directory
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
+        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
           Canonical 33-unit inventory with live operational statuses, rates, and occupancy across 5 clusters.
         </p>
       </div>
@@ -165,15 +165,15 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
       <!-- Quick Actions -->
       <div class="flex items-center gap-3">
         <!-- View Mode Switcher -->
-        <div class="h-10 inline-flex items-center rounded-xl border border-[#e7e5e4] bg-[#f5f5f4] p-1 shadow-2xs">
+        <div class="h-10 inline-flex items-center rounded-xl border border-border bg-muted p-1 shadow-2xs">
           <button
             type="button"
             @click="viewMode = 'matrix'"
             :class="[
               'h-8 inline-flex items-center gap-1.5 rounded-lg px-3.5 text-xs font-bold transition-all cursor-pointer',
               viewMode === 'matrix' 
-                ? 'bg-white text-[#0c66e4] shadow-xs' 
-                : 'text-[#71717a] hover:text-[#1c1917]'
+                ? 'bg-white text-primary shadow-xs' 
+                : 'text-muted-foreground hover:text-foreground'
             ]"
           >
             <LayoutGrid class="size-3.5" />
@@ -186,8 +186,8 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
             :class="[
               'h-8 inline-flex items-center gap-1.5 rounded-lg px-3.5 text-xs font-bold transition-all cursor-pointer',
               viewMode === 'table' 
-                ? 'bg-white text-[#0c66e4] shadow-xs' 
-                : 'text-[#71717a] hover:text-[#1c1917]'
+                ? 'bg-white text-primary shadow-xs' 
+                : 'text-muted-foreground hover:text-foreground'
             ]"
           >
             <TableIcon class="size-3.5" />
@@ -201,7 +201,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
           class="btn-secondary"
           title="Refresh Directory"
         >
-          <RefreshCw :class="['size-3.5 text-[#71717a]', isLoading ? 'animate-spin text-[#0c66e4]' : '']" />
+          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin text-primary' : '']" />
           <span>Refresh</span>
         </button>
       </div>
@@ -213,12 +213,12 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
         @click="selectedStatus = 'All'"
         :class="[
           'surface-card p-5 cursor-pointer transition-all hover:shadow-xs',
-          selectedStatus === 'All' ? 'ring-2 ring-[#0c66e4]' : ''
+          selectedStatus === 'All' ? 'ring-2 ring-primary' : ''
         ]"
       >
-        <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Inventory</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">33 Units</p>
-        <p class="mt-1 text-xs text-[#71717a]">Across 5 clusters &amp; 3 floors</p>
+        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Inventory</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">33 Units</p>
+        <p class="mt-1 text-xs text-muted-foreground">Across 5 clusters &amp; 3 floors</p>
       </div>
 
       <div 
@@ -259,20 +259,20 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
     </div>
 
     <!-- Search & Filter Controls -->
-    <div class="surface-card p-4 rounded-2xl border border-[#e7e5e4] flex flex-col sm:flex-row gap-3">
+    <div class="surface-card p-4 rounded-2xl border border-border flex flex-col sm:flex-row gap-3">
       <div class="relative flex-1">
-        <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#71717a]" />
+        <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <input
           v-model="q"
           type="text"
           placeholder="Search by unit code, resident name, or unit type…"
-          class="min-h-11 w-full rounded-xl border border-[#e7e5e4] bg-[#fafaf9] pl-10 pr-4 text-xs sm:text-sm text-[#1c1917] focus:bg-white focus:border-[#0c66e4] focus:outline-none transition-colors"
+          class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 
       <select
         v-model="cluster"
-        class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-56 cursor-pointer"
+        class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-56 cursor-pointer"
       >
         <option value="All">All Clusters (5)</option>
         <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
@@ -280,7 +280,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
 
       <select
         v-model="selectedStatus"
-        class="min-h-11 rounded-xl border border-[#e7e5e4] bg-white px-4 text-xs sm:text-sm font-semibold text-[#1c1917] focus:border-[#0c66e4] focus:outline-none sm:w-48 cursor-pointer"
+        class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-48 cursor-pointer"
       >
         <option value="All">All Statuses</option>
         <option value="settled">Settled / Occupied</option>
@@ -304,21 +304,21 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
         v-for="clusterName in activeClusters" 
         :key="clusterName"
         v-show="getUnitsForCluster(clusterName).length > 0"
-        class="surface-card rounded-2xl overflow-hidden border border-[#e7e5e4]"
+        class="surface-card rounded-2xl overflow-hidden border border-border"
       >
         <!-- Cluster Header -->
-        <header class="flex items-center justify-between gap-3 border-b border-[#e7e5e4] bg-[#fafaf9] px-5 py-3.5">
+        <header class="flex items-center justify-between gap-3 border-b border-border bg-background px-5 py-3.5">
           <div class="flex items-center gap-2.5">
-            <span class="size-2.5 rounded-full bg-[#1c1917]"></span>
-            <h2 class="font-display text-sm font-black uppercase tracking-wider text-[#1c1917]">
+            <span class="size-2.5 rounded-full bg-foreground"></span>
+            <h2 class="font-display text-sm font-black uppercase tracking-wider text-foreground">
               {{ clusterName }}
             </h2>
-            <span class="text-xs font-medium text-[#71717a]">
+            <span class="text-xs font-medium text-muted-foreground">
               ({{ getUnitsForCluster(clusterName).length }} units)
             </span>
           </div>
 
-          <div class="flex items-center gap-2 text-xs text-[#71717a]">
+          <div class="flex items-center gap-2 text-xs text-muted-foreground">
             <span>Active Inventory</span>
           </div>
         </header>
@@ -331,17 +331,17 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
               :key="u.unitCode"
               :class="[
                 'rounded-2xl border p-4 transition-all hover:shadow-md bg-white flex flex-col justify-between',
-                STATUS_STYLE[u.status] || 'border-[#e7e5e4]'
+                STATUS_STYLE[u.status] || 'border-border'
               ]"
             >
               <!-- Card Header -->
               <div>
                 <div class="flex items-start justify-between gap-2">
                   <div>
-                    <p class="font-display text-xl font-black uppercase leading-none text-[#1c1917]">
+                    <p class="font-display text-xl font-black uppercase leading-none text-foreground">
                       {{ u.unitCode }}
                     </p>
-                    <p class="mt-1 text-xs font-semibold text-[#71717a]">{{ u.type }}</p>
+                    <p class="mt-1 text-xs font-semibold text-muted-foreground">{{ u.type }}</p>
                   </div>
                   <span :class="['badge-soft text-[10px] capitalize font-bold', getStatusBadgeClass(u.status)]">
                     {{ getStatusLabel(u.status) }}
@@ -349,17 +349,17 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
                 </div>
 
                 <!-- Occupant & Price Info -->
-                <div class="mt-3.5 pt-3 border-t border-[#e7e5e4]/60 space-y-1">
+                <div class="mt-3.5 pt-3 border-t border-border/60 space-y-1">
                   <div class="flex items-center justify-between text-xs gap-1">
-                    <span class="text-[#71717a] shrink-0">Occupants:</span>
-                    <span class="font-bold text-[#1c1917] truncate max-w-[170px] text-right" :title="formatUnitOccupantsSummary(u.unitCode).text">
+                    <span class="text-muted-foreground shrink-0">Occupants:</span>
+                    <span class="font-bold text-foreground truncate max-w-[170px] text-right" :title="formatUnitOccupantsSummary(u.unitCode).text">
                       {{ formatUnitOccupantsSummary(u.unitCode).text }}
                     </span>
                   </div>
 
                   <div class="flex items-center justify-between text-xs">
-                    <span class="text-[#71717a]">Monthly Rate:</span>
-                    <span class="tabular font-display font-extrabold text-[#1c1917]">
+                    <span class="text-muted-foreground">Monthly Rate:</span>
+                    <span class="tabular font-display font-extrabold text-foreground">
                       {{ peso(u.price) }}
                     </span>
                   </div>
@@ -373,13 +373,13 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
                   @click="openSpecs(u)"
                   class="btn-secondary min-h-9 flex-1 py-1 px-2.5 text-xs gap-1.5 shadow-2xs font-semibold cursor-pointer"
                 >
-                  <Eye class="size-3.5 text-[#71717a]" />
+                  <Eye class="size-3.5 text-muted-foreground" />
                   <span>Specs</span>
                 </button>
                 <button
                   type="button"
                   @click="editUnit(u)"
-                  class="btn-secondary min-h-9 flex-1 py-1 px-2.5 text-xs gap-1.5 shadow-2xs font-bold hover:border-[#0c66e4] hover:text-[#0c66e4] cursor-pointer"
+                  class="btn-secondary min-h-9 flex-1 py-1 px-2.5 text-xs gap-1.5 shadow-2xs font-bold hover:border-primary hover:text-primary cursor-pointer"
                 >
                   <Pencil class="size-3.5" />
                   <span>Edit Unit</span>
@@ -393,20 +393,20 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
       <!-- Empty Filter State -->
       <div 
         v-if="filteredRooms.length === 0" 
-        class="surface-card p-12 text-center rounded-2xl border border-[#e7e5e4] text-[#71717a]"
+        class="surface-card p-12 text-center rounded-2xl border border-border text-muted-foreground"
       >
-        <Search class="size-8 mx-auto mb-2 text-[#a1a1aa]" />
-        <p class="font-bold text-sm text-[#1c1917]">No units match your filter criteria</p>
+        <Search class="size-8 mx-auto mb-2 text-muted-foreground-soft" />
+        <p class="font-bold text-sm text-foreground">No units match your filter criteria</p>
         <p class="text-xs mt-1">Try clearing your search query or selecting "All Clusters".</p>
       </div>
     </div>
 
     <!-- VIEW MODE 2: TABLE REGISTER VIEW -->
-    <div v-else class="surface-card overflow-hidden rounded-2xl border border-[#e7e5e4]">
+    <div v-else class="surface-card overflow-hidden rounded-2xl border border-border">
       <div class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[950px] text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-[#f5f5f4]">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-[#71717a] border-b border-[#e7e5e4]">
+          <thead class="sticky top-0 z-10 bg-muted">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
               <th class="whitespace-nowrap px-4 py-3 font-bold">UNIT</th>
               <th class="whitespace-nowrap px-4 py-3 font-bold">CLUSTER</th>
               <th class="whitespace-nowrap px-4 py-3 font-bold">TYPE</th>
@@ -421,25 +421,25 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
             <tr 
               v-for="u in filteredRooms" 
               :key="u.unitCode"
-              class="border-b border-[#e7e5e4] last:border-0 hover:bg-[#fafaf9] transition-colors"
+              class="border-b border-border last:border-0 hover:bg-background transition-colors"
             >
-              <td class="px-4 py-3.5 font-display font-extrabold uppercase text-[#1c1917]">
+              <td class="px-4 py-3.5 font-display font-extrabold uppercase text-foreground">
                 {{ u.unitCode.toUpperCase() }}
               </td>
 
-              <td class="whitespace-nowrap px-4 py-3.5 text-[#71717a] font-medium">
+              <td class="whitespace-nowrap px-4 py-3.5 text-muted-foreground font-medium">
                 {{ u.cluster }}
               </td>
 
-              <td class="whitespace-nowrap px-4 py-3.5 font-medium text-[#1c1917]">
+              <td class="whitespace-nowrap px-4 py-3.5 font-medium text-foreground">
                 {{ u.type }}
               </td>
 
-              <td class="px-4 py-3.5 text-xs text-[#71717a]">
+              <td class="px-4 py-3.5 text-xs text-muted-foreground">
                 {{ u.billingRule }}
               </td>
 
-              <td class="tabular whitespace-nowrap px-4 py-3.5 font-display font-bold text-[#1c1917]">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 font-display font-bold text-foreground">
                 {{ peso(u.price) }}
               </td>
 
@@ -449,7 +449,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
                 </span>
               </td>
 
-              <td class="whitespace-nowrap px-4 py-3.5 text-[#1c1917] font-medium" :title="formatUnitOccupantsSummary(u.unitCode).text">
+              <td class="whitespace-nowrap px-4 py-3.5 text-foreground font-medium" :title="formatUnitOccupantsSummary(u.unitCode).text">
                 {{ formatUnitOccupantsSummary(u.unitCode).text }}
               </td>
 
@@ -459,12 +459,12 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
                     @click="openSpecs(u)"
                     class="btn-secondary min-h-8 px-2.5 py-1 text-xs gap-1 inline-flex items-center shadow-2xs cursor-pointer"
                   >
-                    <Eye class="size-3.5 text-[#71717a]" />
+                    <Eye class="size-3.5 text-muted-foreground" />
                     <span>Specs</span>
                   </button>
                   <button 
                     @click="editUnit(u)"
-                    class="btn-secondary min-h-8 px-2.5 py-1 text-xs gap-1 inline-flex items-center shadow-2xs font-semibold cursor-pointer hover:border-[#0c66e4] hover:text-[#0c66e4]"
+                    class="btn-secondary min-h-8 px-2.5 py-1 text-xs gap-1 inline-flex items-center shadow-2xs font-semibold cursor-pointer hover:border-primary hover:text-primary"
                   >
                     <Pencil class="size-3.5" />
                     <span>Edit</span>
