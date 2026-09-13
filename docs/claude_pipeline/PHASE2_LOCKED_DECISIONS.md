@@ -90,6 +90,16 @@ year-on-year expense reports comparable.
 | **OD-15** | **Penthouse and Linda have no expense area.** The five allocation buckets cover only BH, Front Apartment and Back Apartment. Where `PH`, `LF` and `LB` costs are recorded is not established by any document. | Expenses for three units may be silently landing in the wrong bucket, or nowhere. Affects BR-041 and BR-047. Migration `008` records the gap rather than inventing a sixth area. | Phase 2 |
 | **OD-16** | **"No late payment" vs the seeded 7-day grace period.** `system_settings.grace_period_days = '7'` and **BR-012** define a grace window, but OD-03's answer states late payment is not accepted. | These may be describing different things (a grace window before *Overdue* status, versus a policy of not accepting money late), or the grace period may not reflect practice. `billingService` cannot be specified until it is clear which. | Phase 3 |
 
+## Defects surfaced this round — recorded, not fixed
+
+| # | Defect | Evidence | Phase |
+| :-- | :--- | :--- | :-- |
+| D-1 | Missing deposit defaults to `current_price * 2`, the "one month advance plus one month deposit" pattern. There is no security deposit in this business, so the default is wrong and it moves money. | `backend/src/routes/admin.ts:571` | 3 |
+| D-2 | Expense-entry edit **deletes all allocations, then inserts replacements, with no transaction**. `:1474` builds the area as `a.propertyArea \|\| a.area`, and the `\|\| a.area` fallback can carry a non-canonical short form. Before `008` that wrote junk silently; after `008` the insert is rejected and **the delete has already committed**, losing the entry's allocations. | `backend/src/routes/admin.ts:1471-1477` | 3 — fix before applying `008` |
+| D-3 | Phone normalisation by stripping non-digits does not fold the `+63` country code onto the `0` prefix, so one human number can hold two logins. **Found and fixed during verification** — `006` now uses `public.normalize_ph_phone()`. | `database/migrations/VERIFICATION.md` | fixed |
+
+---
+
 ## Still open from Phase 1
 
 | ID | Item | Gate |

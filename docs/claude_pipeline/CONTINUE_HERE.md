@@ -4,8 +4,10 @@
 
 > **Phase 2 status.** The STEP 0 alignment is done and seven open decisions were closed — see
 > **`docs/claude_pipeline/PHASE2_LOCKED_DECISIONS.md`**, which is binding canon alongside
-> `PHASE1_LOCKED_DECISIONS.md`. Migrations `005`–`009` are written in `database/migrations/` and are
-> **not yet applied to any database**. Three new questions opened (OD-14 floor-1 count, OD-15 missing
+> `PHASE1_LOCKED_DECISIONS.md`. Migrations `005`–`009` are written in `database/migrations/`, and are
+> **verified against PostgreSQL 16 but NOT applied to Supabase** — see
+> `database/migrations/VERIFICATION.md` for what was actually exercised, and for a data-loss risk
+> that `008` introduces on one API path which should be fixed before it is applied. Three new questions opened (OD-14 floor-1 count, OD-15 missing
 > Penthouse/Linda expense areas, OD-16 grace period vs no-late-payment); OD-02 and OD-10 remain.
 > The ERD, data dictionary and 3NF proof — the main Phase 2 deliverables — are still to be produced.
 
@@ -122,10 +124,14 @@ only change required. The partial index is kept for efficiency and intent, not c
 3. The written 1NF / 2NF / 3NF proof.
 4. The RLS and security posture write-up.
 
-**Before any of that, someone should apply `005`–`009`** against a scratch database and confirm they
-run clean. They are written defensively — each is one transaction ending in an assertion — but they
-have never been executed. `008` will refuse if a stored `property_area` is not one of the five
-canonical strings; `006` will refuse if two credentialed accounts share a phone number.
+**`005`–`009` are verified.** They were applied in order to a throwaway PostgreSQL 16 loaded with the
+real schema, then re-applied to confirm idempotency, and their behaviour was exercised case by case —
+full record in `database/migrations/VERIFICATION.md`. Verification caught and fixed a real defect in
+`006` (phone normalisation did not fold the `+63` prefix, so one human number could hold two logins).
+
+**Read the risk section of that record before applying `008` to Supabase.** It turns a silent bad
+write into a hard error, and `backend/src/routes/admin.ts:1471-1477` deletes an entry's allocations
+before inserting replacements with no transaction — so a rejected insert loses them.
 
 ---
 

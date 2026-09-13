@@ -83,14 +83,37 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_email_lower
 --    Uniqueness is scoped to rows that actually HOLD credentials
 --    (`password_hash IS NOT NULL`). This is deliberate. A login identifier only
 --    has to resolve to one account among accounts you can log into. Two
---    credential-less tenants — a married couple who gave the landlady one
---    contact number — must still both be billable records, and a global unique
+--    credential-less tenants - a married couple who gave the landlady one
+--    contact number - must still both be billable records, and a global unique
 --    index would make the second one impossible to create.
 --
---    The index is built on digits only, so "0917 555 1234", "09175551234" and
---    "+63 917 555 1234" cannot be registered as three separate logins for one
---    person. regexp_replace is IMMUTABLE, so it is legal in an index expression.
+--    Normalisation is NOT simply "strip non-digits". A first attempt did exactly
+--    that and failed a live test: '0917 555 1234' yields '09175551234' while
+--    '+63 917 555 1234' yields '639175551234', so the same human phone number
+--    registered twice. Philippine mobile numbers are written both ways
+--    routinely, so the canonical form must fold the +63 country code onto the
+--    national 0 prefix before comparing.
 -- -----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.normalize_ph_phone(raw TEXT)
+RETURNS TEXT
+LANGUAGE sql
+IMMUTABLE
+PARALLEL SAFE
+AS $fn$
+  SELECT CASE
+    WHEN regexp_replace(COALESCE(raw, ''), '[^0-9]', '', 'g') ~ '^63[0-9]{10}$'
+      THEN '0' || substring(regexp_replace(raw, '[^0-9]', '', 'g') FROM 3)
+    ELSE regexp_replace(COALESCE(raw, ''), '[^0-9]', '', 'g')
+  END;
+$fn$;
+
+COMMENT ON FUNCTION public.normalize_ph_phone(TEXT) IS
+  'Canonical form of a Philippine phone number for identity comparison: digits '
+  'only, with a leading 63 country code folded to the national 0 prefix so that '
+  '+63 917 555 1234 and 0917 555 1234 compare equal. IMMUTABLE because '
+  'idx_profiles_phone_login indexes it - changing this body silently invalidates '
+  'that index, so reindex profiles if it is ever altered.';
+
 DO $$
 DECLARE
   dup_count INTEGER;
@@ -98,11 +121,11 @@ BEGIN
   SELECT COUNT(*)
     INTO dup_count
     FROM (
-      SELECT regexp_replace(phone_number, '[^0-9]', '', 'g') AS digits
+      SELECT public.normalize_ph_phone(phone_number) AS canonical
         FROM public.profiles
        WHERE phone_number  IS NOT NULL
          AND password_hash IS NOT NULL
-         AND regexp_replace(phone_number, '[^0-9]', '', 'g') <> ''
+         AND public.normalize_ph_phone(phone_number) <> ''
        GROUP BY 1
       HAVING COUNT(*) > 1
     ) d;
@@ -110,13 +133,16 @@ BEGIN
   IF dup_count > 0 THEN
     RAISE EXCEPTION
       'Migration 006 stopped: % phone number(s) are shared by more than one '
-      'credentialed account. Resolve the duplicates, then re-run. No changes '
-      'have been committed.', dup_count;
+      'credentialed account once +63 and 0 prefixes are treated as equal. '
+      'Resolve the duplicates, then re-run. No changes have been committed.',
+      dup_count;
   END IF;
 END $$;
 
+DROP INDEX IF EXISTS public.idx_profiles_phone_login;
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_phone_login
-  ON public.profiles (regexp_replace(phone_number, '[^0-9]', '', 'g'))
+  ON public.profiles (public.normalize_ph_phone(phone_number))
   WHERE phone_number  IS NOT NULL
     AND password_hash IS NOT NULL;
 

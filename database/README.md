@@ -117,3 +117,12 @@ Known defect recorded by `009` and deliberately left for Phase 3:
 `backend/src/routes/admin.ts:571` defaults a missing deposit to `current_price * 2`, the familiar
 "one month advance plus one month deposit" arrangement. With no security deposit in this business
 that default is wrong. Correcting it moves money, so it belongs with the `billingService` extraction.
+
+## Verification status
+
+`005`-`009` were applied in order to a throwaway PostgreSQL 16 loaded with the real schema on
+2026-09-13, re-applied to confirm idempotency, and exercised case by case. Full record, including a
+defect the testing caught and a data-loss risk to resolve before `008` goes to Supabase:
+**`database/migrations/VERIFICATION.md`**.
+
+They have **not** been applied to the live Supabase database.
