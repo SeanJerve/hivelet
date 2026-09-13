@@ -697,9 +697,17 @@ distribution, refusing to commit if it is not 11 / 11 / 10 / 1 across 33 units.
 
 | Check | Result |
 | :--- | :--- |
-| Floors after `015` | **11 / 11 / 10 / 1** |
+| Floors after `015`, live | **11 / 11 / 10 / 1** |
 | Total units | **33** |
 | Rows changed | **1** |
+| `001`-`015` on a fresh seven-drift container | **16 files clean** |
+| Replayed a 2nd time | **16 files clean** |
+| Replayed a 3rd time | **16 files clean** |
+| Floors reached independently in the container | **11 / 11 / 10 / 1** |
+
+That last row matters: the container is seeded from `FULL_DATABASE_SCHEMA.sql`, so it starts at
+12 / 11 / 9 / 1 like production did, and `015` brings it to the surveyed distribution without any
+manual step.
 
 **The single inference.** The code `F1` reads like "Front, floor 1", which is almost certainly how it
 came to be seeded as floor 1; on the client's account the Front Apartment is a separate structure and
