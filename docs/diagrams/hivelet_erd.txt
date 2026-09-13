@@ -53,14 +53,14 @@ erDiagram
         uuid id PK "Surrogate unit identifier"
         varchar cluster_code FK "References CLUSTERS(code)"
         varchar room_number UK "Unique Unit Code: 1a, 2b, B1F, PH"
-        int floor "Floor level: 1, 2, or 3"
+        int floor "Floor level: 1 to 4, level 4 is the rooftop penthouse"
         varchar room_type "Type: Studio, 1-bed, 2-bed, 3-bed"
         int capacity "Maximum allowed occupants"
         numeric base_price "Historical base rental rate"
         numeric current_price "Current active rental rate"
         varchar operational_status "Status: Available, Occupied, Maintenance"
         varchar visibility_status "Visibility: Published, Hidden"
-        boolean is_linda_unit "Linda special co-ownership flag"
+        boolean is_linda_unit "Linda fixed-rate unit flag (BR-040)"
         date available_from "Expected availability date"
     }
 
@@ -76,11 +76,11 @@ erDiagram
     ROOM_PRICE_HISTORY {
         uuid id PK "History record identifier"
         uuid room_id FK "References ROOMS(id) ON DELETE CASCADE"
-        numeric previous_price "Pre-adjustment rent rate"
-        numeric new_price "Adjusted rate (2% annual increase)"
-        date effective_date "Legal escalation start date"
+        numeric previous_price "Rate in force before the change"
+        numeric new_price "Administrator-set rate"
+        date effective_date "Date the new rate takes effect"
         text reason "Justification notes"
-        uuid created_by FK "Admin who approved rate"
+        uuid created_by FK "Administrator who made the change"
     }
 
     ROOM_ASSIGNMENTS {
@@ -89,7 +89,7 @@ erDiagram
         uuid tenant_profile_id FK "References PROFILES(id) ON DELETE CASCADE"
         date start_date "Move-in date (sets monthly due date)"
         date end_date "Move-out date (NULL if active)"
-        date anniversary_date "1-year rent review milestone"
+        date anniversary_date "Rent period derivation anchor (BR-033)"
         numeric deposit_amount "Security deposit held"
         int occupant_count "Headcount for 200/head water fee"
         boolean is_primary_contact "Main accountable leaseholder"
@@ -156,11 +156,11 @@ erDiagram
         varchar contact_name "Name printed on receipt"
         varchar invoice_number "Official invoice number"
         numeric rent_amount "Gross rent collected"
-        numeric fifty_percent_share "50% co-ownership revenue share"
+        numeric fifty_percent_share "Half of rent_amount, system-computed (BR-035)"
         int occupants "Occupants during month"
-        numeric water_payment "Water collected (occupants * 200)"
+        numeric water_payment "Water collected: occupants x configurable rate (BR-014)"
         numeric gbg_fee "Garbage collection fee"
-        numeric remitted_amount "Net remitted amount to landlady"
+        numeric remitted_amount "Rent amount plus water payment, system-computed (BR-038)"
         varchar verification_status "Status: Verified, Pending"
         timestamptz voided_at "Audit void timestamp (non-destructive)"
     }
@@ -233,7 +233,7 @@ erDiagram
     AUDIT_LOGS {
         uuid id PK "Audit entry identifier"
         uuid actor_profile_id FK "References PROFILES(id) ON DELETE SET NULL"
-        varchar action "Verb: PAYMENT_VERIFIED, RATE_ADJUSTED"
+        varchar action "Verb: PAYMENT_VERIFY, ROOM_UPDATE"
         varchar entity_type "Target table: PAYMENT, BILL, ROOM"
         varchar entity_id "UUID string of target record"
         jsonb previous_values "Pre-mutation JSON state"

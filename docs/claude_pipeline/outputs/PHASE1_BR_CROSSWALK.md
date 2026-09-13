@@ -1,0 +1,280 @@
+# HIVELET — PHASE 1 BUSINESS RULE CROSSWALK
+
+**Web-Based Boarding House Management & Financial Operations System**
+Client: Fe Galang Da Silva Boarding House, Legazpi City
+Bicol University — College of Science — IT 124 Capstone Project 2 — **Group 4**
+
+| | |
+| --- | --- |
+| **Adviser** | Dr. Jayvee Christopher Vibar |
+| **Panel** | Dr. Aris J. Ordonez (Chair), Prof. Ryan A. Rodriguez, Prof. Laarni D. Pancho |
+| **Team** | Sean Jerve Ll. Rebancos (System Architect / Full-Stack) · John Lloyd M. Cuario (Database Administrator / Data Analyst) · Eljohn Paulo C. Loterte (Frontend / UI-UX) · Victor Noel A. Napay (Backend / Integration) · Kiel Hedrix V. Relos (QA / Systems Analyst) |
+| **Artifact** | Phase 1 corrected artifact — supersedes the `BR-001 .. BR-007` numbering in `docs/claude_pipeline/CLAUDE_PIPELINE.md:140-146` |
+
+---
+
+## 0. Why this document exists
+
+Two independent rule registers grew inside this repository under the same `BR-` prefix.
+`docs/02_BUSINESS_RULES.md` defines forty-nine numbered business rules. A later planning
+document, `docs/claude_pipeline/CLAUDE_PIPELINE.md`, introduced seven "architectural pillars"
+and also labelled them `BR-001` through `BR-007`. The two sets collide head-on: canonical
+`BR-003` is Historical Preservation, while the pillar set's `BR-003` addressed the derived
+half-of-rent ledger column. A citation of "BR-003" in a submitted document is therefore
+ambiguous, and at least four published citations are already wrong because of it.
+
+This crosswalk resolves the collision permanently:
+
+1. **`docs/02_BUSINESS_RULES.md` (BR-001 .. BR-049) is the one canonical `BR-` namespace.**
+   Every business-rule citation in every Hivelet artifact resolves against it and nothing else.
+2. **The seven pillars are renumbered `ARCH-001 .. ARCH-007`** and reclassified as
+   *architectural pillars*, not business rules. They never again carry a `BR-` prefix.
+3. Each pillar is re-expressed below as a set of *real* canonical BR citations, so the
+   architectural argument survives the renumbering intact.
+
+Section 1 is the canonical register with verified enforcement evidence. Section 2 is the pillar
+crosswalk. Section 3 is the collision table. Section 4 is the misattribution register from which
+the Phase 1 errata sheet is drawn.
+
+**Evidence convention.** Every `file:line` reference below was read at the cited line. Database
+references point at `database/FULL_DATABASE_SCHEMA.sql`; code references point at `backend/src/`.
+Peso amounts are written `PHP`.
+
+---
+
+## 1. Canonical business rule register — BR-001 .. BR-049
+
+**Status legend**
+
+| Status | Meaning |
+| --- | --- |
+| **Enforced** | A verified schema constraint or code path makes the rule hold at runtime today. |
+| **Partial** | Enforced on some paths or at one layer only; a reachable path bypasses it. |
+| **Schema only** | Columns or seed rows exist and are correct; no code reads or writes them yet. |
+| **Not enforced** | No constraint and no code path implements the rule today. |
+| **Violated** | Code exists and actively contradicts the rule. |
+
+### 1.1 Property, rooms and occupancy — BR-001 .. BR-008
+
+| ID | Name | Rule | Enforcement locus (verified) | Status |
+| --- | --- | --- | --- | --- |
+| **BR-001** | Single Property Scope | Hivelet manages exactly one property, the Fe Galang Da Silva Boarding House. | Enforced structurally by the absence of a `properties` table — `clusters` (`FULL_DATABASE_SCHEMA.sql:26`) is the root of the location hierarchy and `rooms.cluster_code` (`:87`) is its only parent key. No property discriminator exists to be mis-set. | Enforced |
+| **BR-002** | Room Identity | Each unit is uniquely identified by room number within its floor context. The building form is **three residential floors plus a rooftop penthouse level**; the owner-confirmed per-floor distribution (2026-09-13) is **floor 1 = 11, floor 2 = 11, floor 3 = 10, floor 4 (rooftop penthouse, `PH`) = 1 — 33 units in total**. | `rooms.room_number VARCHAR(20) UNIQUE NOT NULL` (`FULL_DATABASE_SCHEMA.sql:88`) plus `rooms.floor INTEGER NOT NULL DEFAULT 1` (`:89`). | Enforced |
+| **BR-003** | Historical Preservation | Records are not silently deleted because a room, tenant, payment, inquiry or expense went inactive. | Soft-delete columns exist and are used: `monthly_income_records.voided_at / voided_by / void_reason` (`FULL_DATABASE_SCHEMA.sql:279-281`), written by `DELETE /api/admin/income-records/:id`, which issues an `UPDATE`, not a `DELETE` (`backend/src/routes/admin.ts:1303-1310`). `profiles.account_status` (`:56`) and `rooms.operational_status` (`:95`) carry the tenant and unit soft states. **Counter-evidence:** `DELETE /api/admin/rooms/:roomId` issues a physical `.delete()` (`backend/src/routes/admin.ts:283`), and the seventeen `ON DELETE CASCADE` foreign keys propagate that removal into dependent ledger rows. | Partial |
+| **BR-004** | Room Occupancy | A room is occupied when the administrator records an active tenant relationship for it. | `room_assignments.is_active BOOLEAN NOT NULL DEFAULT TRUE` (`FULL_DATABASE_SCHEMA.sql:162`); assignment created at `backend/src/routes/admin.ts:409-418` and the unit flipped to `Occupied` at `:426`. | Enforced |
+| **BR-005** | Room Availability | The administrator returns a room to availability, may mark it under maintenance, and may set an expected availability date. | Status vocabulary pinned at the API edge by `z.enum(['Available','Reserved','Occupied','Under Maintenance'])` (`backend/src/routes/admin.ts:56`, `:114`); `rooms.available_from DATE` (`FULL_DATABASE_SCHEMA.sql:98`); release paths at `admin.ts:532` and `:701`; maintenance flip at `:1638`. | Enforced |
+| **BR-006** | Reservation | A reserved room must not accept new public inquiries while the reservation stands. | `backend/src/routes/public.ts:145-150` rejects the inquiry with a 409 when `room.operational_status === 'Reserved'`. | Enforced |
+| **BR-007** | Website Visibility | Operational status and public visibility are separate axes; a unit may stay listed while reserved or under maintenance. | Two independent columns — `rooms.operational_status` (`FULL_DATABASE_SCHEMA.sql:95`) and `rooms.visibility_status` (`:96`) — with the public catalog filtering on visibility alone (`backend/src/routes/public.ts:141-143`; doctrine note at `:38-44`). | Enforced |
+| **BR-008** | Primary Contact | A room has one primary accountable contact for official communication and transactions. | `room_assignments.is_primary_contact BOOLEAN NOT NULL DEFAULT TRUE` (`FULL_DATABASE_SCHEMA.sql:161`), surfaced at `backend/src/routes/tenant.ts:53`. No partial unique index restricts a room to a single active primary contact, so the *at most one* half of the rule rests on administrator discipline. | Partial |
+
+### 1.2 Tenancy lifecycle and inquiries — BR-009, BR-024 .. BR-027
+
+| ID | Name | Rule | Enforcement locus (verified) | Status |
+| --- | --- | --- | --- | --- |
+| **BR-009** | Inquiry Conversion | Conversion reuses stored prospect information rather than forcing retyping; conversion does not guarantee tenancy. | `inquiries.converted_tenant_id UUID REFERENCES profiles(id)` (`FULL_DATABASE_SCHEMA.sql:189`) and the `Converted` status value (`backend/src/routes/admin.ts:745`). The conversion endpoint itself only flips status (`admin.ts:748-785`); no prospect-to-onboarding field carry-over is implemented, so the "no retyping" clause is unmet. | Partial |
+| **BR-024** | Tenant Privacy | A tenant reaches only the records they are authorized to reach. | Row scoping in `backend/src/services/scopeService.ts:28` (`resolveTenantScope`) and `:55` (`assertRoomInScope`); identity gate `requireSelfOrAdmin` at `backend/src/middleware/auth.ts:146`; every `*:read:all` permission withheld from the tenant role with the reason recorded inline (`backend/src/config/rbac.ts:117`). | Enforced |
+| **BR-025** | Tenant Deactivation | On a settled departure the tenant account goes inactive; history remains. | `POST /api/admin/tenants/:profileId/vacate` ends the assignments (`backend/src/routes/admin.ts:692-696`), frees the unit (`:701`) and sets `account_status = 'inactive'` (`:708`); `backend/src/services/authService.ts:90` then refuses that account's next login. Deposit reconciliation on departure is unimplemented — see `PHASE1_OPEN_DECISIONS_REGISTER.md`, item **OD-04**. | Partial |
+| **BR-026** | Duplicate Prevention | No duplicate person records and no duplicate active account relationships. | `profiles.email VARCHAR(255) UNIQUE NOT NULL` (`FULL_DATABASE_SCHEMA.sql:47`) plus a pre-insert existence check returning 400 (`backend/src/routes/admin.ts:359-367`). The *active relationship* half is unguarded: `idx_room_assignments_room_active` (`FULL_DATABASE_SCHEMA.sql:176`) is a plain index, not a partial unique index, so two concurrently active assignments on one room are storable. | Partial |
+| **BR-027** | Returning Tenant | A returning tenant re-links to their existing record instead of spawning a duplicate. | The reassignment path detects a prior inactive profile (`backend/src/routes/admin.ts:550-560`) and carries the previous deposit and occupant count forward into the new assignment (`:571-572`, written at `:581-582`). | Enforced |
+
+### 1.3 Billing, payment and settlement — BR-010 .. BR-019, BR-038, BR-039
+
+| ID | Name | Rule | Enforcement locus (verified) | Status |
+| --- | --- | --- | --- | --- |
+| **BR-010** | Due Date | The monthly due date derives from the move-in date and the billing relationship. | Carrier columns exist — `room_assignments.anniversary_date` (`FULL_DATABASE_SCHEMA.sql:158`), `bills.due_date` (`:221`) — and onboarding seeds the anniversary from the move-in date (`backend/src/routes/admin.ts:415`). No scheduled generator derives a due date from it; the one bill-creating path hardcodes `now + 5 days` (`backend/src/routes/tenant.ts:452`). | Partial |
+| **BR-011** | Overdue | A payment is overdue beginning the day after its due date. | `bills.status` (`FULL_DATABASE_SCHEMA.sql:223`) carries an `Overdue` value that is read at `backend/src/routes/admin.ts:1143`, but no code transitions a bill into it. | Not enforced |
+| **BR-012** | Grace Period | A one-week grace period may apply; grace must be distinguishable from overdue. | Configured correctly at `system_settings.grace_period_days = '7'` (`FULL_DATABASE_SCHEMA.sql:458`) against carrier column `bills.grace_period_end_date` (`:222`). The only code that sets that column writes `now + 10 days` (`backend/src/routes/tenant.ts:453`), contradicting both the seeded value and the rule. | Violated |
+| **BR-013** | Full Payment | Full payment is the expected workflow; partial payment is an explicitly recorded exception. | The settlement loop consumes a running remainder against the oldest unpaid bills (`backend/src/routes/admin.ts:1135-1150`) with no full-amount assertion and no "exceptional arrangement" flag. | Not enforced |
+| **BR-014** | Water Fee | Water is charged per registered occupant at the configured rate. | Configured correctly at `system_settings.water_rate_per_occupant = '200'` (`FULL_DATABASE_SCHEMA.sql:454`). **That row is read by zero lines of `backend/src`** — the rate is hardcoded as `occupants * 200` at `backend/src/routes/admin.ts:910`, `:1103` and `:1243`. PHP 200 is the seeded default of a configurable parameter, not a constant of the system. | Violated |
+| **BR-015** | Electricity | Electricity flows through the private electric company; Hivelet records but does not generate it. | Correct by omission — no electricity billing engine exists. The only electricity column is the Linda exception carrier `monthly_income_records.linda_electricity_charge` (`FULL_DATABASE_SCHEMA.sql:277`). | Enforced |
+| **BR-016** | Online Payment | GCash online payment is optional, delivered through Adyen, and follows the verification workflow. | Decoupled adapter `backend/src/services/adyenService.ts:37`; tenant checkout entry point `POST /api/tenant/payments/checkout` (`backend/src/routes/tenant.ts:379-380`); business-rule header at `adyenService.ts:6`. | Enforced |
+| **BR-017** | Payment Verification | An online payment stays pending until the administrator confirms it. | `payments.verification_status` (`FULL_DATABASE_SCHEMA.sql:240`); the adapter inserts `'Pending Verification'` explicitly (`backend/src/services/adyenService.ts:202`); the sovereign admin gate is `PATCH /api/admin/payments/:paymentId/verify` behind `PAYMENT_VERIFY` (`backend/src/routes/admin.ts:836-838`). The column default is `'Verified'` — correct for on-site cash, but unforgiving of any future insert path that omits the field. | Enforced |
+| **BR-018** | Payment Correction | A financial correction writes an audit record holding previous and updated values. | `audit_logs.previous_values JSONB` / `new_values JSONB` (`FULL_DATABASE_SCHEMA.sql:434-435`); writer `recordAudit` (`backend/src/services/auditService.ts:78`) and its request-bound wrapper `auditFromRequest` (`:104`), invoked on every ledger mutation. | Enforced |
+| **BR-019** | Report Recalculation | A confirmed correction must propagate into active reports and analytics. | No recalculation or aggregate-refresh code exists in `backend/src`; report totals are derived client-side from raw rows returned by `GET /api/admin/income-records` (`backend/src/routes/admin.ts:1013-1015`). | Not enforced |
+| **BR-038** | Remitted Amount Formula | Remitted Amount = Rent Amount + Water Payment, system-computed, never typed. | Carrier column `monthly_income_records.remitted_amount` (`FULL_DATABASE_SCHEMA.sql:272`). The value is computed as `calcRemitted` at `backend/src/routes/admin.ts:1104` and then **omitted from the INSERT column list** at `:1112-1130`. The identifier `remitted_amount` appears exactly once in `backend/src`, as a read at `backend/src/routes/tenant.ts:123`. Every row therefore stores `0.00`. | Violated |
+| **BR-039** | Deposit Equals Initial Rent | The deposit is set once at onboarding, equal to the rent in effect at move-in. | Carrier column `room_assignments.deposit_amount` (`FULL_DATABASE_SCHEMA.sql:159`). Onboarding accepts whatever the client sends, defaulting to zero (`backend/src/routes/admin.ts:416`), and the reassignment fallback computes `current_price * 2` behind a hardcoded `4500` floor (`:571`). Neither expression equals "the Rent Amount in effect when they moved in". | Violated |
+
+### 1.4 The landlady's income ledger — BR-029 .. BR-037, BR-040
+
+| ID | Name | Rule | Enforcement locus (verified) | Status |
+| --- | --- | --- | --- | --- |
+| **BR-029** | Current Month Dashboard | Financial dashboard statistics default to the current month. | `GET /api/admin/income-records` treats `year` and `month` as optional query parameters with no default (`backend/src/routes/admin.ts:1017-1018`). Default-to-current-month behaviour, where present, is a client-side concern only. | Not enforced |
+| **BR-030** | Exportability | Important business records must be exportable for use outside Hivelet. | No CSV, XLSX or export handler exists anywhere in `backend/src`. | Not enforced |
+| **BR-031** | Online Authority | The server is authoritative; cached or offline client data must never override it. | Enforced by construction: the PWA runtime cache is scoped to `GET /api/public` and `/api/health` only (`frontend/vite.config.ts:64-65`, `NetworkFirst`). No write is queued offline, so no cached value can outrank a server record. | Enforced |
+| **BR-032** | Canonical Unit List | The rentable units are fixed and grouped into five clusters. | Five cluster rows seeded at `FULL_DATABASE_SCHEMA.sql:32-38` — BH (Main Rooms), Back Apartment, Penthouse, Front Apartment, Linda — with the 33 units seeded from `:466`. Exposed at `GET /api/public/clusters` (`backend/src/routes/public.ts:88-89`). Canonical figures: **33 units, 5 clusters** (BH 22, Back Apartment 5, Front Apartment 3, Penthouse 1, Linda 2). | Enforced |
+| **BR-033** | Rent Period Derivation | "Rent For" derives from the stored anniversary date and the current cycle; it is not typed per entry. | Carrier columns `monthly_income_records.rent_period_start / rent_period_end` (`FULL_DATABASE_SCHEMA.sql:265-266`). Derivation exists only on the gateway-verification path (`backend/src/routes/admin.ts:921-931`); the manual entry path writes client-supplied values straight through (`:1126-1127`). | Partial |
+| **BR-034** | Occupant Count Carries Forward | A unit's occupant count defaults to the previous month's value for the same tenant and is editable. | `room_assignments.occupant_count` (`FULL_DATABASE_SCHEMA.sql:160`); carry-forward implemented on reassignment (`backend/src/routes/admin.ts:572`). The monthly entry path reads the live assignment (`:1094-1098`) rather than the prior month's ledger row, so month-over-month memory is assignment-scoped, not ledger-scoped. | Partial |
+| **BR-035** | 50% Share Is Derived | The "50% Share" figure is exactly half of that row's Rent Amount, computed by the system and never entered manually. Water, GBG fee and deposit are excluded from it. | Carrier column `monthly_income_records.fifty_percent_share` (`FULL_DATABASE_SCHEMA.sql:268`), with the divisor held configurably at `system_settings.revenue_share_percent = '50'` (`:459`). The halving is computed at `backend/src/routes/admin.ts:911` and `:1102`, but the identifier `fifty_percent_share` **never appears in an INSERT or UPDATE anywhere in `backend/src`**, so every row stores `0.00`. | Violated |
+| **BR-036** | Water Payment Validation | Water Payment must equal Occupants x the configured rate; a mismatch warns before saving rather than being silently accepted. | No comparison exists. The entry path overwrites any submitted water figure with `occupants * 200` (`backend/src/routes/admin.ts:1103`), silently discarding the discrepancy the rule requires the system to surface. | Not enforced |
+| **BR-037** | Garbage Fee Frequency | The GBG fee is charged once per year per unit, not every month. | Carrier column `monthly_income_records.gbg_fee` (`FULL_DATABASE_SCHEMA.sql:271`). The token `gbg` appears zero times in `backend/src`. | Schema only |
+| **BR-040** | Linda's Fixed Billing Exception | Units LF and LB are excluded from the per-occupant water model and billed on fixed per-unit charges. | Flag `rooms.is_linda_unit` (`FULL_DATABASE_SCHEMA.sql:97`); carriers `monthly_income_records.is_linda_billing / linda_electricity_charge / linda_water_charge` (`:275-277`); three seeded parameters — `linda_lf_water_charge` PHP 400, `linda_lb_water_charge` PHP 200, `linda_lb_electricity_charge` PHP 325 (`:455-457`). No route branches on `is_linda_unit`, so an LF or LB entry still runs the per-occupant path. | Schema only |
+
+### 1.5 The landlady's expense ledger — BR-020, BR-041 .. BR-047
+
+| ID | Name | Rule | Enforcement locus (verified) | Status |
+| --- | --- | --- | --- | --- |
+| **BR-020** | Expense Allocation | Expenses support categories and may be assigned to a room where applicable. | Category side enforced by `monthly_expense_entries.category_code` (`FULL_DATABASE_SCHEMA.sql:332`). The room side has no column: `expense_property_allocations` allocates to a `property_area` string (`:353`) and holds no `room_id`. The "may be assigned to a room" clause is unimplementable against the current schema. | Partial |
+| **BR-041** | Expense Property Areas | Every expense allocates to one or more of five fixed Property Areas. | `expense_property_allocations.property_area VARCHAR(100) NOT NULL` (`FULL_DATABASE_SCHEMA.sql:353`) is free text — no CHECK constraint, no lookup table — and the API writes whatever string arrives (`backend/src/routes/admin.ts:1409`). The five-area list is documentary, not constrained. | Partial |
+| **BR-042** | One Category Per Expense Entry | An entry carries exactly one category even when split across areas. | Structurally guaranteed: `monthly_expense_entries.category_code` is a single `NOT NULL` foreign key (`FULL_DATABASE_SCHEMA.sql:332`) and the allocation child table carries no category column. | Enforced |
+| **BR-043** | Fixed Expense Category List | The expense category list is fixed and system-wide. | Thirteen rows seeded in `fixed_expense_categories` (`FULL_DATABASE_SCHEMA.sql:311-326`), including the Salaries: Michelle parent (`6`) with PhilHealth, SSS and Allowances children (`6a`, `6b`, `6c`) modelled through the `parent_code` self-reference (`:307`). Served at `GET /api/admin/expense-categories` (`backend/src/routes/admin.ts:1531-1533`). | Enforced |
+| **BR-044** | Split Expense Allocation | One entry may allocate across several areas without duplicating date, supplier or category. | 1:N child table `expense_property_allocations` (`FULL_DATABASE_SCHEMA.sql:350-356`); the parent is inserted once (`backend/src/routes/admin.ts:1393-1400`) and the allocations inserted as a batch (`:1406-1416`). | Enforced |
+| **BR-045** | Expense Row Total Is Derived | An entry's Total Expenses is the sum of its allocations, computed by the system. | Computed by reduction at `backend/src/routes/admin.ts:1389`, written at `:1398`, and recomputed on amendment at `:1459`. | Enforced |
+| **BR-046** | Expense Category Totals | Each category keeps a this-month total and a running cumulative total, both system-computed. | No cumulative column exists on `fixed_expense_categories` (`FULL_DATABASE_SCHEMA.sql:304-309`) and no roll-forward code exists in `backend/src`. | Not enforced |
+| **BR-047** | Expense Category Reconciliation | The sum of category this-month totals must equal the sum of Property Area bottom totals for the same month. | No reconciliation assertion exists at any layer. | Not enforced |
+
+### 1.6 Maintenance, security and reporting — BR-021 .. BR-023, BR-028, BR-048, BR-049
+
+| ID | Name | Rule | Enforcement locus (verified) | Status |
+| --- | --- | --- | --- | --- |
+| **BR-021** | Ticket Priority | Priority levels are Emergency, High, Medium, Low. | Pinned at the API edge by `z.enum(['Emergency','High','Medium','Low'])` on tenant submission (`backend/src/routes/tenant.ts:159`) and on the admin paths (`backend/src/routes/admin.ts:1573`, `:1656`). The column `maintenance_tickets.priority VARCHAR(50)` (`FULL_DATABASE_SCHEMA.sql:370`) carries no CHECK constraint, so the vocabulary holds only for traffic passing through Express — which, given `service_role` containment, is all of it. | Enforced |
+| **BR-022** | Ticket Visibility | A new ticket is visible to the administrator immediately on successful submission. | The tenant submission handler writes the ticket in `Submitted` state with the rule cited inline (`backend/src/routes/tenant.ts:196-197`) and raises the administrator notification in the same request (`:223`); the admin queue reads live rows with no staging state (`backend/src/routes/admin.ts:1549-1551`). | Enforced |
+| **BR-023** | Ticket Closure | The administrator holds final authority to close a ticket. | Dedicated permission `TICKET_CLOSE` (`backend/src/config/rbac.ts:84`), explicitly withheld from the tenant role (`:120`); the only closing endpoint is `PATCH /api/admin/tickets/:ticketId/close` (`backend/src/routes/admin.ts:1761-1763`) behind the admin-only router guard. | Enforced |
+| **BR-028** | Auditability | Important administrative and financial actions must be traceable. | `audit_logs` (`FULL_DATABASE_SCHEMA.sql:428-439`) written through `recordAudit` (`backend/src/services/auditService.ts:78`). Immutability is enforced in the database, not by convention: `REVOKE UPDATE, DELETE ON public.audit_logs FROM PUBLIC` and `... FROM anon, authenticated, service_role` (`FULL_DATABASE_SCHEMA.sql:572-573`) strip update and delete privileges from the very role the backend connects as. | Enforced |
+| **BR-048** | Admin-Only Authorship of Income/Expense Ledgers | Only the administrator may create or edit Monthly Income and Monthly Expenses entries; tenants and visitors have no access. | Router-level gate `router.use('/admin', requireAuth, requireAdmin)` (`backend/src/routes/admin.ts:28`); the four ledger permissions are declared under an explicit BR-048 heading (`backend/src/config/rbac.ts:70-75`) and deliberately absent from the tenant grant, with the reason recorded inline (`:118`). | Enforced |
+| **BR-049** | Excel Export of Income/Expense Reports | Both ledgers must export to an Excel-compatible spreadsheet reproducing the documented layouts. | No spreadsheet generation exists in `backend/src`. | Not enforced |
+
+### 1.7 Register roll-up
+
+| Status | Count | Rules |
+| --- | --- | --- |
+| **Enforced** | 23 | BR-001, BR-002, BR-004, BR-005, BR-006, BR-007, BR-015, BR-016, BR-017, BR-018, BR-021, BR-022, BR-023, BR-024, BR-027, BR-028, BR-031, BR-032, BR-042, BR-043, BR-044, BR-045, BR-048 |
+| **Partial** | 10 | BR-003, BR-008, BR-009, BR-010, BR-020, BR-025, BR-026, BR-033, BR-034, BR-041 |
+| **Schema only** | 2 | BR-037, BR-040 |
+| **Not enforced** | 9 | BR-011, BR-013, BR-019, BR-029, BR-030, BR-036, BR-046, BR-047, BR-049 |
+| **Violated** | 5 | BR-012, BR-014, BR-035, BR-038, BR-039 |
+| | **49** | |
+
+The five **Violated** rules share one root cause and therefore one remedy. `system_settings` holds
+six correctly seeded, correctly labelled parameter rows (`FULL_DATABASE_SCHEMA.sql:452-460`) and is
+read by **zero lines** of `backend/src`; route handlers carry literal constants instead. All five
+failures — a 10-day grace period against a seeded 7, a hardcoded PHP 200 water rate, and three
+derived money columns that are computed and then dropped before the INSERT — are instances of the
+same architectural defect: **131 of 158 database calls (83%) currently sit inside route handlers
+rather than behind a service boundary**, with `backend/src/routes/admin.ts` alone running to
+2,056 lines. The Phase 3 extraction of `billingService.ts` from those handlers, reading
+`system_settings` once at the boundary, closes BR-012, BR-014, BR-035, BR-038 and BR-039 together.
+
+---
+
+## 2. Architectural pillar crosswalk — ARCH-001 .. ARCH-007
+
+The seven items previously numbered `BR-001 .. BR-007` in `docs/claude_pipeline/CLAUDE_PIPELINE.md`
+are renumbered `ARCH-001 .. ARCH-007`. They are **architectural pillars** — statements about how the
+system is built — and are never cited with a `BR-` prefix again. Each pillar below lists the
+canonical business rules it actually implements.
+
+| Pillar | Name | Canonical BR citations | What the pillar asserts architecturally |
+| --- | --- | --- | --- |
+| **ARCH-001** | Room-Centric Tenancy | **BR-001**, **BR-002**, **BR-003**, **BR-032** | The room, not the tenant, is the primary operational entity. Tenancy is modelled as a time-bounded `room_assignments` relationship between a unit and a profile, so a unit's financial history survives every change of occupant. |
+| **ARCH-002** | Dynamic Utility Water | **BR-014**, **BR-034**, **BR-036**, **BR-040** | The per-occupant water rate is a stored parameter, not a constant: `water_amount = registered_occupants x system_settings.water_rate_per_occupant`, with the Linda units carved out to fixed per-unit charges. |
+| **ARCH-003** | 50% Share Ledger Parity | **BR-035** | The income ledger reproduces Column 6 of the landlady's existing source spreadsheet as a system-derived figure — exactly half of that row's Rent Amount — retained so the digital ledger reconciles line-for-line with her historical records. Water, GBG fee and deposit are excluded from the arithmetic. |
+| **ARCH-004** | Rate Change History | **BR-003** | Room rates are set **manually by the administrator**. Every change is preserved rather than overwritten: `room_price_history` (`FULL_DATABASE_SCHEMA.sql:136-145`) records the previous rate (`:139`), the new administrator-set rate (`:140`), the date the new rate takes effect (`:141`), the stated reason (`:142`) and the administrator who made the change — `created_by` (`:143`). A bill raised under an earlier rate therefore stays reconcilable against the rate then in force. No automatic and no recommended rate change exists in scope. |
+| **ARCH-005** | Hybrid Gateway Adapter | **BR-016**, **BR-017** | On-site in-person cash settlement is the primary method, matching Mrs. Fe's daily routine. Adyen GCash is an optional digital alternative reached through a decoupled adapter that auto-selects sandbox or live credentials, and the administrator retains a sovereign verification gate — gateway completion inserts a payment as `Pending Verification` and never auto-settles a bill. |
+| **ARCH-006** | Backend Security Boundary | **BR-006**, **BR-048** | Express is the sole security perimeter. The Supabase `service_role` key never leaves the server; RLS is enabled and forced across all twenty tables (`FULL_DATABASE_SCHEMA.sql:558-559`) and the `anon` and `authenticated` roles are stripped of schema access entirely (`:566-569`). |
+| **ARCH-007** | Immutable Audit Trail | **BR-018**, **BR-028** | Critical administrative, financial and tenancy actions append a record to `audit_logs` carrying actor, action, entity, before-image and after-image JSONB, IP address and user agent — with `UPDATE` and `DELETE` revoked from every role including `service_role` (`FULL_DATABASE_SCHEMA.sql:572-573`). |
+
+### 2.1 Notes the panel may probe
+
+- **ARCH-004 was re-anchored, and the question the panel would have asked is now closed.** As
+  first drafted this pillar described an automatic rate-increase feature whose decision of record
+  was `docs/08_OPEN_DECISIONS.md:41` — a planning note, never a business rule. Every other mention
+  in the repository restates that note: `docs/05_DATABASE_DESIGN.md:64`, the schema section comment
+  at `FULL_DATABASE_SCHEMA.sql:134`, and descriptive passages across the Module 01 submission set.
+  A repository-wide search of the canonical register `docs/02_BUSINESS_RULES.md` for `2%`,
+  `annual`, `escalat` and `adjust` returns **zero matches**: the feature had no canonical anchor to
+  rest on, so withdrawing it contradicts no canonical rule. The client has since confirmed that she
+  simply edits a room's rate herself when she decides to change it. The automation is therefore
+  **out of scope**, and the pillar is re-anchored to canonical **BR-003 Historical Preservation**
+  as **Rate Change History**: rates are administrator-set, and `room_price_history` preserves each
+  change with its effective date and its author. The table keeps its full justification; only the
+  automation is gone. Recorded as closed in `PHASE1_OPEN_DECISIONS_REGISTER.md`, item **OD-11**.
+- **ARCH-002 has no implementation owner today.** The parameter row exists and is correct; no code
+  reads it. Phase 1 diagrams therefore add an explicit configuration-maintenance flow into data
+  store **D11 System Parameters**, so the pillar has a visible owner on the DFD rather than an
+  implied one.
+- **ARCH-006 and canonical BR-006 are easy to confuse.** Cite **ARCH-006** for the security
+  perimeter argument and **BR-006** for the rule that a reserved room stops accepting inquiries.
+
+---
+
+## 3. Collision table — BR-001 .. BR-007
+
+For each colliding identifier this table places the canonical meaning beside the superseded pillar
+meaning, so that no future editor reading an old slide deck or planning note silently re-imports the
+wrong definition.
+
+| ID | **Canonical meaning — `docs/02_BUSINESS_RULES.md` (authoritative)** | **Superseded meaning — `CLAUDE_PIPELINE.md:140-146` (withdrawn)** | Correct replacement citation |
+| --- | --- | --- | --- |
+| **BR-001** | **Single Property Scope.** Hivelet manages one property: the Fe Galang Da Silva Boarding House. (`02_BUSINESS_RULES.md:5-7`) | Room-Centric Tenancy — units carry unique IDs and leases bind to specific rooms. Additionally described the property as spanning "Main Building, Annex A, Annex B", which are **not** cluster names in this system. (`CLAUDE_PIPELINE.md:140`) | Pillar sense to **ARCH-001**. Cluster names to **BR-032** — BH (Main Rooms), Back Apartment, Front Apartment, Penthouse, Linda. |
+| **BR-002** | **Room Identity.** Each room is a unique unit identified by room number and floor context. (`:9-11`) | Dynamic Utility Water Calculation — water read from `system_settings.water_rate_per_occupant`, never hardcoded, with Linda per-unit overrides. (`CLAUDE_PIPELINE.md:141`) | Pillar sense to **ARCH-002**, resting on **BR-014**, **BR-036**, **BR-040**. |
+| **BR-003** | **Historical Preservation.** Records are not silently deleted when a room, tenant, payment, inquiry or expense goes inactive. (`:13-15`) | A gloss on the derived half-of-rent ledger column that attached a meaning to that figure beyond its arithmetic. **That gloss is withdrawn in full and must not be reintroduced in any artifact.** (`CLAUDE_PIPELINE.md:142`) | Arithmetic sense to **ARCH-003** / **BR-035**, stated as a system-derived figure equal to exactly half of the row's Rent Amount and nothing further. Preservation sense to canonical **BR-003**. |
+| **BR-004** | **Room Occupancy.** A room is occupied when the administrator identifies an active tenant relationship for it. (`:17-19`) | An automatic rate-increase tracking pillar — price changes recorded in `room_price_history`. (`CLAUDE_PIPELINE.md:143`) **The automatic-increase half is withdrawn in full — it is out of scope, and no canonical rule ever carried it — and must not be reintroduced in any artifact.** | Pillar sense to **ARCH-004 Rate Change History**, resting on canonical **BR-003**. The surviving assertion is the record-keeping one: rates are administrator-set, and each change is preserved in `room_price_history`. |
+| **BR-005** | **Room Availability.** The administrator controls the vacancy process: mark available, mark under maintenance, set an expected availability date. (`:21-28`) | Hybrid Decoupled Payment Gateway Architecture — cash primary, Adyen GCash optional, sandbox/live auto-switch, sovereign admin verification gate. (`CLAUDE_PIPELINE.md:144`) | Pillar sense to **ARCH-005**, resting on **BR-016**, **BR-017**. |
+| **BR-006** | **Reservation.** A reserved room must not accept new public inquiries while the reservation is active. (`:30-32`) | Backend-Enforced Security Boundary — Express as sole perimeter, `service_role` server-side only, RLS denying anon access, JWT role checks on every protected route. (`CLAUDE_PIPELINE.md:145`) | Pillar sense to **ARCH-006**, resting on **BR-006** and **BR-048**. Canonical BR-006 survives *inside* that pillar, which is precisely why the two are confusable — cite the pillar for the perimeter, the BR for the inquiry block. |
+| **BR-007** | **Website Visibility.** Operational status and website visibility are separate; a room may stay publicly visible while under maintenance or reserved. (`:34-38`) | Immutable Audit Trail — append-only `audit_logs` with actor, action, entity, before/after JSONB, IP address and user agent. (`CLAUDE_PIPELINE.md:146`) | Pillar sense to **ARCH-007**, resting on **BR-018**, **BR-028**. |
+
+### 3.1 Additional stale assertion carried in the superseded block
+
+`CLAUDE_PIPELINE.md:140` describes the property as "33 units across Main Building, Annex A, Annex B".
+The unit **count** is correct; the **grouping** is not. Hivelet's five clusters are BH (Main Rooms),
+Back Apartment, Front Apartment, Penthouse and Linda, seeded at `FULL_DATABASE_SCHEMA.sql:32-38` and
+fixed by BR-032. The family's own word "Annex" refers to a **floor**, not a cluster — "Annex A" is
+the first floor. The strings "Main Building", "Annex A" and "Annex B" must not appear as cluster
+names in any Hivelet artifact.
+
+---
+
+## 4. Misattribution register
+
+Known incorrect or stale citations in submitted and in-repository documents. Each row names the
+exact location, the claim as written, why it is wrong, and the correction. This register is the
+source for the Phase 1 errata sheet handed to the panel.
+
+| # | Location | Claim as written | Why it is wrong | Correction |
+| --- | --- | --- | --- | --- |
+| **M-01** | `docs/module_01_submission/DEEP_TECHNICAL_ARCHITECTURE_AND_DATABASE_ANALYSIS.md:109` | Heading: `` `room_price_history` Table (BR-048 2% Annual Escalation) `` | Canonical **BR-048 is Admin-Only Authorship of Income/Expense Ledgers** (`02_BUSINESS_RULES.md:226-228`). It has nothing to do with rates. The feature the heading names is not a canonical business rule at all — searching `02_BUSINESS_RULES.md` for `2%`, `annual`, `escalat` and `adjust` returns zero matches — and it has since been removed from scope entirely; see row **M-11**. | Retitle to `room_price_history` Table (**ARCH-004** Rate Change History, canonical **BR-003**). **`backend/src/config/rbac.ts:5-6` already cites BR-048 correctly**, as does `backend/src/routes/admin.ts:7` — the code is right and the document is wrong. |
+| **M-02** | `docs/module_01_submission/DEEP_TECHNICAL_ARCHITECTURE_AND_DATABASE_ANALYSIS.md:41` | "foreign key ON DELETE RESTRICT constraints" listed as a delivered Tier-4 property | The live schema contains **17 `ON DELETE CASCADE`, 4 `ON DELETE SET NULL`, and 0 `ON DELETE RESTRICT`** clauses. `bills.room_id` (`FULL_DATABASE_SCHEMA.sql:213`), `payments.room_id` (`:235`) and `monthly_income_records.room_id` (`:257`) all cascade. | State RESTRICT as a **Phase 2 proposal** — migration `005_ledger_fk_restrict.sql`, moving `bills` / `payments` / `monthly_income_records` `room_id` and `tenant_profile_id` to RESTRICT. Soft-delete already exists (`profiles.account_status:56`, `rooms.operational_status:95`), so RESTRICT is safe to adopt. Never present it as current fact. |
+| **M-03** | `docs/module_01_submission/03_DATABASE_SCHEMA_AND_DATA_DICTIONARY.md:26` | "Critical financial and audit entities (`bills`, `payments`, `monthly_income_records`) enforce `ON DELETE RESTRICT` or `SET NULL` ... per Capstone Rule BR-003" | The same false RESTRICT claim as M-02. The BR-003 citation is *apt in intent* — Historical Preservation is the right rule — but the mechanism described does not exist. "Capstone Rule BR-003" is also nonstandard phrasing; the namespace term is "business rule". | Rewrite to describe the **current** cascade posture honestly, cite **BR-003** for the intent, and point at migration `005_ledger_fk_restrict.sql` as the Phase 2 remedy. |
+| **M-04** | `docs/module_01_submission/05_UI_UX_DESIGN_REFINEMENT.md:64` | A helper-tooltip row citing "(`BR-035`, `BR-048`)" for two tooltips: one glossing the derived half-of-rent ledger column with a meaning beyond its arithmetic, and one describing "the 2% annual increase recommendation". *(The withdrawn phrase is referred to here rather than reproduced, per the BR-035 editorial standard in Section 5.4.)* | Two errors in one cell. (a) **BR-048 is Admin-Only Ledger Authorship**, not the annual increase — the same misattribution as M-01. (b) The gloss attaches to the BR-035 figure a meaning that canonical BR-035 (`02_BUSINESS_RULES.md:168-170`) does not carry: BR-035 states only that the figure is exactly half of the Rent Amount and is system-computed. | Cite **BR-035** for the derived-figure tooltip. The second tooltip needs no replacement citation because it has no replacement feature — the rate-increase recommendation is out of scope (row **M-11**); a rate tooltip, if one is wanted at all, explains **ARCH-004 Rate Change History** (canonical **BR-003**): the administrator sets the rate and `room_price_history` preserves the change. Restate the BR-035 tooltip in neutral arithmetic and ledger-parity terms only; the withdrawn wording is struck and must not be reintroduced. |
+| **M-05** | `docs/module_01_submission/05_UI_UX_DESIGN_REFINEMENT.md:60` | Heuristic 6 cites `BR-009` for the monthly-payment form pre-filling tenant name, registered occupant count and base rent | **BR-009 is Inquiry Conversion** (`02_BUSINESS_RULES.md:46-50`) and governs reuse of *prospect* data at conversion time, not recall of *tenant* data on a monthly ledger entry. | Cite **BR-034** (Occupant Count Carries Forward) for the occupant pre-fill and **BR-033** (Rent Period Derivation) for the period pre-fill. The requirement-level anchor is **FR-033 Occupant Count Memory** (`docs/03_REQUIREMENTS.md:101`). |
+| **M-06** | `docs/claude_pipeline/CLAUDE_PIPELINE.md:140-146` | Seven architectural pillars numbered `BR-001` .. `BR-007` | Direct namespace collision with canonical BR-001 .. BR-007 (Section 3 above). Every one of the seven identifiers means something different in the canonical register. | Renumber to **ARCH-001 .. ARCH-007** and reclassify as architectural pillars. Section 2 of this document is the authoritative replacement mapping. |
+| **M-07** | `docs/claude_pipeline/CLAUDE_PIPELINE.md:140` | "33 units across Main Building, Annex A, Annex B" | The count is right, the grouping is not. The five canonical clusters are seeded at `FULL_DATABASE_SCHEMA.sql:32-38`. In the family's own usage "Annex" denotes a **floor**, not a cluster. | Cite **BR-032**: BH (Main Rooms) 22, Back Apartment 5, Front Apartment 3, Penthouse 1, Linda 2 — 33 units, 5 clusters. |
+| **M-08** | `docs/01_SYSTEM_BIBLE.md:146` | "32 total rooms/units" | The canonical enumeration in BR-032 yields **33**: BH 22 (1a-1h = 8, 2a-2g = 7, 3a-3g = 7) + Back Apartment 5 + Front Apartment 3 + Penthouse 1 + Linda 2. The seeded database holds 33 (`FULL_DATABASE_SCHEMA.sql:466` onward). `docs/11_FORM_FIELD_AUDIT.md:313-318` already flagged the discrepancy. | Correct the prose to **33**. The arithmetic error is in the narrative, not in the data. |
+| **M-09** | Design-justification documents glossing FR-033 as "Monthly Expense Layout" and FR-034 as "Expense Cluster Breakdown" | `docs/03_REQUIREMENTS.md` is canonical for FR meanings and reads **FR-033 Occupant Count Memory** (`:101`) and **FR-034 Water Payment Validation** (`:104`). | The alternate glosses predate the requirements consolidation and now point at entirely different requirements. | Use the `03_REQUIREMENTS.md` meanings. FR-034 pairs with **BR-036**; FR-033 pairs with **BR-034**. |
+| **M-10** | Submitted traceability matrix | Matrix rows stop at FR-034 while the defense narrative promises coverage through FR-044 | The verified requirement set is **44 functional requirements — 20 fully mapped, 13 partial, 10 missing, 1 frontend-only**. A matrix ending at FR-034 omits ten requirements the defense claims are traced, including **FR-043 Admin-Only Income/Expense Entry** (`docs/03_REQUIREMENTS.md:131`) and **FR-044 Excel Export of Income/Expense Reports** (`:134`). | Extend the matrix to FR-044 and carry the honest 20 / 13 / 10 / 1 split. FR-044 maps to **BR-049**, which Section 1.6 records as **Not enforced** — no export handler exists in `backend/src`. |
+| **M-11** | `docs/module_01_submission/DEEP_TECHNICAL_ARCHITECTURE_AND_DATABASE_ANALYSIS.md:109`; `docs/08_OPEN_DECISIONS.md` section 8 (`:41`) | Both describe an automatic annual rent-increase feature — the submitted heading at `DEEP_TECHNICAL…md:109`, and the planning note at `08_OPEN_DECISIONS.md:41` that is its decision of record — every other mention in the repository, including `docs/05_DATABASE_DESIGN.md:64` and the schema section comment at `FULL_DATABASE_SCHEMA.sql:134`, restates that note rather than establishing a rule. | The feature is **formally out of scope**. The client confirmed on 2026-09-13 that she edits a room's rate manually when she decides to change it; there is no automatic increase and no recommendation. Searching the canonical register `docs/02_BUSINESS_RULES.md` for `2%`, `annual`, `escalat` and `adjust` returns **zero matches**, so the feature never was a canonical business rule and withdrawing it contradicts none. | State the surviving behaviour instead: rate changes are **administrator-initiated**, and every change is historically recorded in `room_price_history` (`FULL_DATABASE_SCHEMA.sql:136-145`) with its effective date and its author — **ARCH-004 Rate Change History**, canonical **BR-003**. *This row is separate from **M-01**, which records a different error in the same heading — the BR-048 misattribution — and both stand.* |
+
+### 4.1 Citations verified correct — do not "fix" these
+
+| Location | Citation | Verdict |
+| --- | --- | --- |
+| `backend/src/config/rbac.ts:5-6` | `BR-024 Tenant Privacy, BR-023 Ticket Closure, BR-048 Admin-Only Authorship of Income/Expense Ledgers` | **Correct.** The RBAC module is the one place in the repository that has always cited BR-048 with its true meaning. It is the reference standard against which M-01 and M-04 are judged wrong. |
+| `backend/src/routes/admin.ts:5-7` | `BR-017, BR-018, BR-023, BR-028, BR-048` | **Correct** for every rule listed. |
+| `backend/src/routes/public.ts:5` | `BR-006 Reservation, BR-007 Website Visibility` | **Correct**, and both are genuinely enforced in that file (`:145-150`, `:141-143`). |
+| `backend/src/services/adyenService.ts:6` | `BR-016 (Online Payment), BR-017 (Payment Verification)` | **Correct**; the adapter inserts `'Pending Verification'` at `:202` exactly as BR-017 requires. |
+| `backend/src/services/auditService.ts:5` | `BR-018 Payment Correction, BR-028 Auditability` | **Correct.** |
+| `backend/src/services/scopeService.ts:5` | `BR-024 Tenant Privacy, BR-003 Historical Preservation` | **Correct**, including the subtle BR-003 use noted at `:22-26` — a former tenant retains read access to their own historical rows without gaining sight of the room's current occupant. |
+| `FULL_DATABASE_SCHEMA.sql:454-459` | `business_rule` column values `BR-014`, `BR-040`, `BR-012`, `BR-035` on the six seeded parameters | **Correct.** The seed data carries the most accurate BR mapping in the repository; the defect is that no code reads it. |
+
+---
+
+## 5. Rules of use
+
+1. **One namespace.** A `BR-nnn` citation resolves against `docs/02_BUSINESS_RULES.md` and nothing
+   else. An architectural pillar is cited as `ARCH-nnn`. The two prefixes never mix.
+2. **No new BR numbers in Phase 1.** BR-050 and beyond are reserved for Phase 2, after the items in
+   `PHASE1_OPEN_DECISIONS_REGISTER.md` are closed with the client.
+3. **Status honesty.** When an artifact asserts that a rule is enforced, it cites the enforcing
+   `file:line`. Where Section 1 records **Not enforced**, **Schema only** or **Violated**, no
+   artifact may claim otherwise; the correct framing is a named Phase 2 or Phase 3 work item.
+4. **BR-035 editorial standard.** The derived half-of-rent column is described in arithmetic and
+   ledger-parity terms only: exactly half of that row's Rent Amount, system-computed, never entered
+   manually, excluding water, GBG fee and deposit, and retained so the digital ledger reconciles
+   line-for-line with the landlady's existing source spreadsheet. Statements about the figure's
+   purpose, recipient or destination appear in no Hivelet artifact.
+
+---
+
+*Phase 1 corrected artifact. Supersedes the `BR-001 .. BR-007` numbering in
+`docs/claude_pipeline/CLAUDE_PIPELINE.md:140-146`. Companion artifact:
+`docs/claude_pipeline/outputs/PHASE1_OPEN_DECISIONS_REGISTER.md`.*

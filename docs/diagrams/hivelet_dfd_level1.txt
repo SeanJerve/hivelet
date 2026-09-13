@@ -1,72 +1,249 @@
+%% ===========================================================================
+%% HIVELET - LEVEL 1 DATA FLOW DIAGRAM (LOGICAL DECOMPOSITION OF PROCESS 0.0)
+%% Web-Based Boarding House Management & Financial Operations System
+%% Fe Galang Da Silva Boarding House, Legazpi City
+%% Bicol University, College of Science - IT 124 Capstone Project 2 - GROUP 4
+%% Balances against: docs/diagrams/hivelet_dfd_context.mmd
+%% ---------------------------------------------------------------------------
+%% CAPTION - SYMBOL CONVENTION (reproduce beneath the rendered figure)
+%%   rectangle      = external entity, a source or sink outside the boundary
+%%   double circle  = process, numbered n.0 as a child of Process 0.0
+%%   cylinder       = data store, mapped 1:1 onto physical tables in
+%%                    database/FULL_DATABASE_SCHEMA.sql
+%%   solid arrow    = data flow implemented in backend/src today
+%%   dotted arrow   = data flow specified but NOT yet wired in code; the target
+%%                    behaviour, honestly marked (see CONFIGURATION HONESTY)
+%%   Notation is Mermaid flowchart. The IT 124 module handout mandates no
+%%   Gane-Sarson or Yourdon standard, so no conformance to either is claimed.
+%% ---------------------------------------------------------------------------
+%% RECONCILIATION WITH THE SAD LABORATORY REFERENCE SET
+%%   docs/claude_pipeline/diagrams/reference_dfds/DFD.png decomposed the system
+%%   into five processes and six data stores. This revision carries seven
+%%   processes and twelve data stores. Process 7.0 Authenticate & Authorize
+%%   Users RESTORES legacy Process 5, which an earlier revision of this file
+%%   deleted. Its removal produced a hard balancing failure: the flow
+%%   "Authentication Credentials" crossed the system boundary at Level 0 and
+%%   terminated nowhere at Level 1. 7.0 now receives it from all three human
+%%   entities, reads and writes D2 User Profiles, and issues the authorized
+%%   session context consumed by processes 1.0 through 6.0. It maps to a real
+%%   implemented artefact, backend/src/services/authService.ts, 388 lines.
+%%   Defects in the legacy source images, recorded rather than silently hidden:
+%%     - DFD.png misspells "Authenticate" as "Autheticate"; the correct spelling
+%%       is used for Process 7.0 below.
+%%     - CHILD2.png misspells "Response" as "Respoonse".
+%%     - CHILD1.png gives sub-processes 1.3 AND 1.4 the same title, "Manage Room
+%%       and Unit Records". 1.4 is functionally the Occupancy / Bed Availability
+%%       monitor; that reading is carried here by the flow
+%%       "Occupancy and Bed Availability Report" out of Process 2.0.
+%% ---------------------------------------------------------------------------
+%% BALANCING RULES APPLIED IN THIS REVISION
+%%   1. Every output promised to an entity at Level 0 is produced here by a
+%%      named process. The previous revision promised eleven administrator
+%%      outputs at Level 0 and delivered one at Level 1.
+%%   2. No data store is write-only. D5 Tenant Bills, D6 Payment Records,
+%%      D9 Maintenance Tickets, D10 Audit Logs and D12 Notifications were
+%%      write-only black holes; each now carries at least one read edge feeding
+%%      a process that emits to an external entity.
+%%   3. D11 System Parameters gains a visible owner: an administrator
+%%      configuration-maintenance flow in and the water-rate lookup out, so
+%%      architectural pillar ARCH-002 Dynamic Utility Water is traceable on the
+%%      diagram rather than implied.
+%% ---------------------------------------------------------------------------
+%% CONFIGURATION HONESTY (why the three D11 edges are dotted)
+%%   The water charge is defined as registered occupants multiplied by
+%%   system_settings.water_rate_per_occupant, seeded at 200 and CONFIGURABLE
+%%   (BR-014, BR-036). Units LF and LB are excluded from the per-occupant model
+%%   and carry fixed per-unit charges (BR-040). The grace period is
+%%   system_settings.grace_period_days, seeded at 7 (BR-012).
+%%   As of this revision the system_settings table holds six correctly seeded
+%%   keys and is read by ZERO lines of backend/src. The rate is hardcoded as
+%%   occupants * 200 at backend/src/routes/admin.ts:910, :1103 and :1243, and a
+%%   10-day grace period is hardcoded at backend/src/routes/tenant.ts:453, which
+%%   contradicts the seeded 7 and BR-012. The three D11 edges are therefore
+%%   drawn DOTTED: they are the specified logical design and a Phase 3
+%%   remediation target, not as-built behaviour.
+%%   Related known defect, stated rather than drawn around:
+%%   fifty_percent_share and remitted_amount are computed at
+%%   backend/src/routes/admin.ts:911 but are absent from the INSERT, so every
+%%   monthly_income_records row currently persists 0.00. The edge
+%%   "Write Monthly Income Ledger Row" into D7 is correct as a logical flow; the
+%%   defective field population is Phase 3 work.
+%% ---------------------------------------------------------------------------
+%% SETTLEMENT POSTURE
+%%   On-site cash settlement is PRIMARY (BR-015). The Adyen GCash redirect is
+%%   the optional digital alternative. The gateway authorisation result is
+%%   written as a payment in "Pending Verification" state and never auto-settles
+%%   a bill; the administrator verification decision is the only flow that moves
+%%   a bill to Paid (BR-017).
+%% ===========================================================================
+
 graph TB
-    %% External Entities
-    PROSPECT["Public Visitor"]
+    %% --- External Entities (labels are IDENTICAL to hivelet_dfd_context.mmd) ---
+    PROSPECT["Public Visitor / Prospect"]
     TENANT["Active Tenant"]
-    ADMIN["Administrator (Landlady)"]
+    ADMIN["Administrator<br/>Mrs. Fe Galang Da Silva"]
+    GATEWAY["Payment Gateway<br/>Adyen GCash - Sandbox / Live"]
 
-    %% Processes
-    P1(("1.0<br/>Manage Public<br/>Inquiries & Catalog"))
-    P2(("2.0<br/>Manage Tenancy<br/>& Occupancy"))
-    P3(("3.0<br/>Process Billing<br/>& Payments"))
-    P4(("4.0<br/>Manage Operational<br/>Expenses"))
-    P5(("5.0<br/>Process Maintenance<br/>Tickets"))
-    P6(("6.0<br/>Generate Financial<br/>Reports & Analytics"))
+    %% --- Processes ---
+    P1((("1.0<br/>Manage Public<br/>Inquiries & Catalog")))
+    P2((("2.0<br/>Manage Tenancy<br/>& Occupancy")))
+    P3((("3.0<br/>Process Billing<br/>& Payments")))
+    P4((("4.0<br/>Manage Operational<br/>Expenses")))
+    P5((("5.0<br/>Process Maintenance<br/>Tickets")))
+    P6((("6.0<br/>Generate Financial<br/>Reports & Analytics")))
+    P7((("7.0<br/>Authenticate &<br/>Authorize Users")))
 
-    %% Data Stores (Mapped 1:1 to ERD)
-    D1[("D1: Room Catalog<br/>(rooms, clusters, photos, price_history)")]
-    D2[("D2: User Profiles<br/>(profiles)")]
-    D3[("D3: Room Assignments<br/>(room_assignments)")]
-    D4[("D4: Inquiries Store<br/>(inquiries, messages)")]
-    D5[("D5: Tenant Bills<br/>(bills)")]
-    D6[("D6: Payment Records<br/>(payments)")]
-    D7[("D7: Monthly Income Ledger<br/>(monthly_income_records)")]
-    D8[("D8: Expenses Ledger<br/>(fixed_categories, entries, allocations)")]
-    D9[("D9: Maintenance Tickets<br/>(tickets, attachments, messages)")]
-    D10[("D10: Audit Logs<br/>(audit_logs)")]
-    D11[("D11: System Parameters<br/>(system_settings)")]
-    D12[("D12: Notifications<br/>(notifications)")]
+    %% --- Data Stores (1:1 with database/FULL_DATABASE_SCHEMA.sql) ---
+    D1[("D1: Room Catalog<br/>clusters, rooms, room_photos,<br/>room_price_history")]
+    D2[("D2: User Profiles<br/>profiles")]
+    D3[("D3: Room Assignments<br/>room_assignments")]
+    D4[("D4: Inquiries Store<br/>inquiries, inquiry_messages")]
+    D5[("D5: Tenant Bills<br/>bills")]
+    D6[("D6: Payment Records<br/>payments")]
+    D7[("D7: Monthly Income Ledger<br/>monthly_income_records")]
+    D8[("D8: Expenses Ledger<br/>fixed_expense_categories,<br/>monthly_expense_entries,<br/>expense_property_allocations")]
+    D9[("D9: Maintenance Tickets<br/>maintenance_tickets,<br/>ticket_attachments, ticket_messages")]
+    D10[("D10: Audit Logs<br/>audit_logs")]
+    D11[("D11: System Parameters<br/>system_settings")]
+    D12[("D12: Notifications<br/>notifications")]
 
-    %% Process 1.0 Flows
-    PROSPECT -->|Search / Submit Inquiry| P1
-    D1 -->|Read Room Availability| P1
-    P1 -->|Write Inquiry Details| D4
-    P1 -->|Dispatch Alert| D12
+    %% =======================================================================
+    %% PROCESS 7.0 - AUTHENTICATE & AUTHORIZE USERS
+    %% Restores legacy DFD.png Process 5. Closes the Level 0 / Level 1
+    %% balancing failure on "Authentication Credentials".
+    %% Implemented: backend/src/services/authService.ts
+    %% =======================================================================
+    PROSPECT -->|"Registration and Login Credentials"| P7
+    TENANT -->|"Authentication Credentials"| P7
+    ADMIN -->|"Authentication Credentials"| P7
+    D2 -->|"Read Credential Hash, Role Claim and Account Status"| P7
+    P7 -->|"Write Account Record, Role Claim and Last Login"| D2
+    P7 -->|"Registration and Login Confirmation"| PROSPECT
+    P7 -->|"Login Confirmation and Role-Scoped Session"| TENANT
+    P7 -->|"Login Confirmation and Role-Scoped Session"| ADMIN
+    P7 -->|"Log Authentication and Role-Change Event"| D10
+    P7 -->|"Authorized Session Context"| P1
+    P7 -->|"Authorized Session Context"| P2
+    P7 -->|"Authorized Session Context"| P3
+    P7 -->|"Authorized Session Context"| P4
+    P7 -->|"Authorized Session Context"| P5
+    P7 -->|"Authorized Session Context"| P6
 
-    %% Process 2.0 Flows
-    ADMIN -->|Approve Onboarding| P2
-    D4 -->|Fetch Prospect Details| P2
-    P2 -->|Create Tenant Profile| D2
-    P2 -->|Assign Room & Headcount| D3
-    P2 -->|Update Room Status to Occupied| D1
-    P2 -->|Log Onboarding Action| D10
+    %% =======================================================================
+    %% PROCESS 1.0 - MANAGE PUBLIC INQUIRIES & CATALOG
+    %% =======================================================================
+    PROSPECT -->|"Room Availability Query and Inquiry Submission"| P1
+    D1 -->|"Read Room Catalog, Rate and Availability"| P1
+    P1 -->|"Write Inquiry and Message Thread"| D4
+    D4 -->|"Read Inquiry Thread and Disposition Status"| P1
+    ADMIN -->|"Inquiry Reply and Disposition Decision"| P1
+    P1 -->|"Room Catalog Details and Availability<br/>Inquiry Status and Reply Messages"| PROSPECT
+    P1 -->|"Queue New Inquiry Alert"| D12
+    D12 -->|"Read Unread Notification Feed"| P1
+    P1 -->|"New Inquiry Notifications"| ADMIN
+    P1 -->|"Log Inquiry Disposition"| D10
 
-    %% Process 3.0 Flows
-    D3 -->|Read Occupants Headcount| P3
-    D1 -->|Read Base Rent| P3
-    D11 -->|Read P200 Water Rate| P3
-    P3 -->|Generate Bill (Rent + Water)| D5
-    TENANT -->|Submit GCash Ref & Proof| P3
-    ADMIN -->|Record Cash / Verify GCash| P3
-    P3 -->|Write Payment (Pending / Verified)| D6
-    P3 -->|Update Bill to Paid| D5
-    P3 -->|Record 50% Share Income| D7
-    P3 -->|Log Verification Event| D10
-    P3 -->|Send Receipt Notice| D12
+    %% =======================================================================
+    %% PROCESS 2.0 - MANAGE TENANCY & OCCUPANCY
+    %% Absorbs the function CHILD1.png mislabelled as a second
+    %% "Manage Room and Unit Records" at 1.4: occupancy / bed availability.
+    %% =======================================================================
+    ADMIN -->|"Onboarding Approval, Move-In Date and Occupant Count"| P2
+    ADMIN -->|"Room Rate Change"| P2
+    D4 -->|"Read Converted Prospect Contact Details"| P2
+    P2 -->|"Create or Update Tenant Profile"| D2
+    D2 -->|"Read Tenant Profile and Account Status"| P2
+    P2 -->|"Write Room Assignment and Registered Occupant Count"| D3
+    D3 -->|"Read Active Assignments and Occupant Headcount"| P2
+    P2 -->|"Update Room Operational Status"| D1
+    P2 -->|"Write Rate Change and Price History Row"| D1
+    D1 -->|"Read Unit Roster and Cluster Membership"| P2
+    P2 -->|"Occupancy and Bed Availability Report"| ADMIN
+    P2 -->|"Tenancy Confirmation and Assigned Unit Details"| TENANT
+    P2 -->|"Log Onboarding, Rate Change and Move-Out Action"| D10
 
-    %% Process 4.0 Flows
-    ADMIN -->|Record Official Receipts & Cluster Splits| P4
-    P4 -->|Write Categorized Expenses| D8
-    P4 -->|Log Expense Action| D10
+    %% =======================================================================
+    %% PROCESS 3.0 - PROCESS BILLING & PAYMENTS
+    %% The configuration-maintenance path into D11 and the water-rate lookup out
+    %% of it are DOTTED: specified, not yet wired. See CONFIGURATION HONESTY.
+    %% =======================================================================
+    ADMIN -. "System Parameter Maintenance - Water Rate, Grace Period, Linda Fixed Charges" .-> P3
+    P3 -. "Write Configured System Parameters" .-> D11
+    D11 -. "Read Water Rate Per Occupant and Grace Period Days" .-> P3
+    D3 -->|"Read Registered Occupant Count"| P3
+    D1 -->|"Read Base Monthly Rent Amount"| P3
+    P3 -->|"Write Itemized Bill - Rent plus Water"| D5
+    D5 -->|"Read Outstanding, Due and Overdue Bills"| P3
+    P3 -->|"Itemized Bill and Statement of Account"| TENANT
+    TENANT -->|"GCash Checkout Initiation"| P3
+    P3 -->|"Checkout Session Request and Redirect-Out"| GATEWAY
+    GATEWAY -->|"Authorization Result and Gateway Payment Reference"| P3
+    TENANT -. "GCash Reference Number and Receipt Proof - specified, no endpoint today, see OD-10" .-> P3
+    ADMIN -->|"On-Site Cash Entry and GCash Verification Decision"| P3
+    P3 -->|"Write Payment as Pending Verification then Verified"| D6
+    D6 -->|"Read Pending Verification Queue and Settled Payments"| P3
+    P3 -->|"Pending Payment Verification Queue"| ADMIN
+    P3 -->|"Update Bill Status to Paid"| D5
+    P3 -->|"Write Monthly Income Ledger Row"| D7
+    P3 -->|"Queue Receipt and Due-Date Notice"| D12
+    D12 -->|"Read Recipient Notice Feed"| P3
+    P3 -->|"Payment Verification Confirmation and Receipt Notice"| TENANT
+    P3 -->|"Log Billing and Verification Event"| D10
 
-    %% Process 5.0 Flows
-    TENANT -->|Submit Issue & Upload Photo| P5
-    P5 -->|Write Ticket & Attachments| D9
-    P5 -->|Dispatch Ticket Notice| D12
-    ADMIN -->|Assign Tech & Close Ticket| P5
-    P5 -->|Update Ticket Status| D9
-    P5 -->|Log Closure Action| D10
+    %% =======================================================================
+    %% PROCESS 4.0 - MANAGE OPERATIONAL EXPENSES
+    %% =======================================================================
+    ADMIN -->|"Official Receipts, Category and Cluster Allocations"| P4
+    P4 -->|"Write Categorized Expense Entry and Allocation Split"| D8
+    D8 -->|"Read Fixed Categories and Prior Period Entries"| P4
+    P4 -->|"Expense Entry Confirmation and Category Totals"| ADMIN
+    P4 -->|"Log Expense Action"| D10
 
-    %% Process 6.0 Flows
-    D7 -->|Read Income & 50% Shares| P6
-    D8 -->|Read Categorized Expenses| P6
-    P6 -->|Display Monthly Income & Expense Reports| ADMIN
+    %% =======================================================================
+    %% PROCESS 5.0 - PROCESS MAINTENANCE TICKETS
+    %% Replaces the legacy chat-message report that PHYSICAL.png shows being
+    %% noted informally with no log and assigned verbally.
+    %% =======================================================================
+    TENANT -->|"Issue Description, Priority and Photo Attachment"| P5
+    P5 -->|"Write Ticket, Attachments and Message Thread"| D9
+    D9 -->|"Read Open Ticket Queue and Status History"| P5
+    ADMIN -->|"Technician Assignment and Closure Decision"| P5
+    P5 -->|"Update Ticket Status and Assignment"| D9
+    P5 -->|"High-Priority Maintenance Alerts"| ADMIN
+    P5 -->|"Ticket Status Updates and Notices"| TENANT
+    P5 -->|"Queue Ticket Status Notice"| D12
+    P5 -->|"Log Assignment and Closure Action"| D10
+
+    %% =======================================================================
+    %% PROCESS 6.0 - GENERATE FINANCIAL REPORTS & ANALYTICS
+    %% Read-only aggregation process. Gives D5, D6, D7, D8 and D10 their
+    %% terminating read edges to an external entity.
+    %% Audit trail read is implemented at backend/src/routes/admin.ts:1864.
+    %% =======================================================================
+    D7 -->|"Read Monthly Income Ledger Rows"| P6
+    D8 -->|"Read Categorized Expense Totals"| P6
+    D5 -->|"Read Billed versus Collected Totals"| P6
+    D6 -->|"Read Settled Payment Totals"| P6
+    D3 -->|"Read Occupancy History for Utilisation Analytics"| P6
+    D10 -->|"Read Immutable Audit Trail Entries"| P6
+    P6 -->|"Monthly Income and Expense Ledgers"| ADMIN
+    P6 -->|"Immutable System Audit Log"| ADMIN
+
+    %% --- Visible caption block (renders with the figure) ---
+    LEGEND["SYMBOL CONVENTION<br/>rectangle = external entity<br/>double circle = process<br/>cylinder = data store<br/>solid arrow = data flow implemented today<br/>dotted arrow = specified, not yet wired in code<br/>Notation: Mermaid flowchart; no Gane-Sarson<br/>or Yourdon standard is claimed.<br/>Legacy image corrections: DFD.png 'Autheticate',<br/>CHILD2.png 'Respoonse', CHILD1.png duplicate<br/>1.3 / 1.4 title."]
+
+    classDef entity fill:#FFF4D6,stroke:#8A6D3B,stroke-width:2px,color:#241C0B;
+    classDef gateway fill:#FCE4E4,stroke:#A94442,stroke-width:2px,color:#2B0E0E;
+    classDef process fill:#DCEBF7,stroke:#255E7E,stroke-width:2px,color:#0C2430;
+    classDef authproc fill:#E4DCF5,stroke:#4B3A8C,stroke-width:3px,color:#1B1230;
+    classDef store fill:#E6F2E6,stroke:#3C6E3C,stroke-width:2px,color:#12250F;
+    classDef pending fill:#F5F5F5,stroke:#777777,stroke-width:2px,stroke-dasharray:6 4,color:#333333;
+    classDef caption fill:#FFFFFF,stroke:#9A9A9A,stroke-width:1px,color:#333333;
+
+    class PROSPECT,TENANT,ADMIN entity;
+    class GATEWAY gateway;
+    class P1,P2,P3,P4,P5,P6 process;
+    class P7 authproc;
+    class D1,D2,D3,D4,D5,D6,D7,D8,D9,D10,D12 store;
+    class D11 pending;
+    class LEGEND caption;

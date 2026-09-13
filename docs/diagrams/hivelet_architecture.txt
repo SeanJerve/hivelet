@@ -1,68 +1,179 @@
+%% =====================================================================
+%% HIVELET - SYSTEM ARCHITECTURE DIAGRAM (Phase 1, corrected)
+%% Web-Based Boarding House Management and Financial Operations System
+%% Fe Galang Da Silva Boarding House, Legazpi City
+%% Bicol University College of Science - IT 124 Capstone Project 2, Group 4
+%% -
+%% Canonical pattern: Layered Client-Server Architecture Structured as a
+%% Modular Monolith with a Pluggable Payment Gateway Adapter (five tiers).
+%% Footnote: "Isolated Payment Gateway Adapter" is an earlier synonym for this
+%% same Tier 5 boundary, used in FINAL_PRESENTATION_ARCHITECTURE_AND_DATABASE_
+%% DEFENSE.md. A panelist quoting that slide is describing this diagram.
+%% -
+%% Solid node border = implemented and verifiable in backend/src today.
+%% Dashed node border = planned Phase 3 extraction; does NOT exist today.
+%% =====================================================================
 graph TB
-    subgraph CLIENT_TIER ["1. Presentation Layer (Frontend Client SPA & PWA)"]
+
+    subgraph TIER1 ["1. Presentation Layer - Vue 3 SPA and PWA Shell"]
         direction TB
-        PWA_CACHE["PWA Service Worker & Cache Storage<br/>(Offline Assets, Statements, Directory & Contacts)"]
-        
-        UI_PUBLIC["Public Website & Catalog<br/>(Room Directory, Inquiry Form)"]
-        UI_TENANT["Tenant Self-Service Portal<br/>(Bills, GCash Upload, Maintenance)"]
-        UI_ADMIN["Admin Control Center<br/>(Occupancy, Guided Billing, Reports)"]
-        
-        STATE_STORE["Client State & Routing<br/>(Reactive Stores, Vue Router RBAC Guards)"]
+        SPA_SHELL["Vue 3 + Vite SPA Shell<br/>Pinia stores, vue-router role guards"]
+        PWA_CACHE["PWA Service Worker Cache<br/>vite-plugin-pwa, NetworkFirst<br/>READ-ONLY: GET /api/public and /api/health only"]
+        UI_PUBLIC["Public Directory<br/>Unit catalog, availability, inquiry form"]
+        UI_TENANT["Tenant Portal<br/>Own bills, payment submission, tickets"]
+        UI_ADMIN["Admin Control Center<br/>Occupancy, billing, verification queue, reports"]
     end
 
-    subgraph API_TIER ["2. API & Routing Layer (Node.js / Express.js)"]
+    subgraph TIER2 ["2. API & Security Perimeter (Helmet, CORS, JWT, RBAC)"]
         direction TB
-        AUTH_MW["Security & Auth Middleware<br/>(JWT Token Validator, RBAC 'admin'/'tenant')"]
-        API_ROUTER["RESTful API Route Controllers<br/>(/auth, /rooms, /bills, /payments, /tickets)"]
-        VAL_ERR["Validation & Error Handler<br/>(Input Sanitizer, ApiError Formatter)"]
+        SEC_MW["Security Middleware Chain<br/>helmet headers, CORS allow-list origin lock<br/>server.ts lines 21 and 37"]
+        AUTH_GUARD["Identity Guards<br/>attachGuestRole, requireAuth, requireRole,<br/>requirePermission, requireSelfOrAdmin"]
+        API_ROUTER["REST Route Controllers<br/>/api/health, /api/auth, /api/public,<br/>/api/tenant, /api/admin"]
+        ERR_HANDLER["Centralized Fault Boundary<br/>ApiError formatter, notFoundHandler"]
     end
 
-    subgraph SERVICE_TIER ["3. Business Logic & Domain Services (Modular Monolith)"]
+    subgraph TIER3 ["3. Domain Service Layer - Modular Monolith"]
         direction TB
-        SRV_BILLING["Billing & Share Service<br/>(Rent, P200/head Water, 50% Share Split)"]
-        SRV_PAYMENT["Payment Verification Service<br/>(Cash Settlement & GCash Verification Queue)"]
-        SRV_OCCUPANCY["Occupancy & Room Service<br/>(33 Units, Leases, 2% Annual Review)"]
-        SRV_TICKET["Maintenance Ticketing Service<br/>(Issue Priorities & Status Progression)"]
-        SRV_INQUIRY["Inquiry Conversion Service<br/>(Public Inquiries -> Tenant Onboarding)"]
-        SRV_AUDIT["Audit Trail Service<br/>(Immutable System Event Logging)"]
+        SRV_AUTH["authService.ts<br/>bcrypt verify, JWT issuance, lockout<br/>388 lines - IMPLEMENTED"]
+        SRV_SCOPE["scopeService.ts<br/>Tenant row-scope resolution<br/>IMPLEMENTED"]
+        SRV_AUDIT["auditService.ts<br/>Append-only audit writer<br/>IMPLEMENTED"]
+        SRV_NOTIFY["notificationService.ts<br/>Alert and notice dispatch<br/>IMPLEMENTED"]
+        SRV_ADYEN["adyenService.ts<br/>Pluggable payment gateway adapter<br/>IMPLEMENTED"]
+
+        SRV_BILLING["billingService.ts<br/>Rent, water and share arithmetic<br/>PLANNED - Phase 3"]
+        SRV_PAYMENT["paymentService.ts<br/>Settlement and verification gate<br/>PLANNED - Phase 3"]
+        SRV_OCCUPANCY["occupancyService.ts<br/>33 units, assignments, headcount<br/>PLANNED - Phase 3"]
+        SRV_TICKET["ticketService.ts<br/>Maintenance ticket lifecycle<br/>PLANNED - Phase 3"]
+        SRV_INQUIRY["inquiryService.ts<br/>Prospect to tenant conversion<br/>PLANNED - Phase 3"]
+        SRV_SETTINGS["settingsService.ts<br/>Runtime parameter resolution<br/>PLANNED - Phase 3"]
+        SRV_EXPENSE["expenseService.ts<br/>Expense entry and cluster allocation<br/>PLANNED - Phase 3"]
+        SRV_FIN_REPORT["financialReportService.ts<br/>Income versus expense analytics<br/>PLANNED - Phase 3"]
     end
 
-    subgraph DATA_TIER ["4. Data Persistence Layer (PostgreSQL / Supabase)"]
+    subgraph TIER4 ["4. Data Persistence Layer - PostgreSQL 16 on Supabase, 20 Tables"]
         direction TB
-        DB_AUTH["Identity & RBAC Tables<br/>(profiles)"]
-        DB_CATALOG["Catalog & Leases<br/>(clusters, rooms, price_history, assignments)"]
-        DB_FINANCE["Financial Ledgers<br/>(bills, payments, monthly_income_records)"]
-        DB_EXPENSE["Expense Tables<br/>(fixed_categories, entries, allocations)"]
-        DB_OPS["Operations & Audit<br/>(tickets, attachments, audit_logs, settings)"]
+        DB_GATE["ACCESS CONTROL BOUNDARY<br/>RLS ENABLED and FORCED on all application tables<br/>anon and authenticated REVOKED from schema public<br/>sole entry point is the backend service_role client"]
+        DB_IDENTITY["Identity Store<br/>profiles"]
+        DB_CATALOG["Property Catalog Store<br/>clusters, rooms, room_photos, room_price_history"]
+        DB_TENANCY["Tenancy Store<br/>room_assignments"]
+        DB_INQUIRY["Inquiry Store<br/>inquiries, inquiry_messages"]
+        DB_LEDGER["Financial Ledger Store<br/>bills, payments, monthly_income_records"]
+        DB_EXPENSE["Expense Ledger Store<br/>fixed_expense_categories, monthly_expense_entries,<br/>expense_property_allocations"]
+        DB_MAINT["Maintenance Store<br/>maintenance_tickets, ticket_attachments, ticket_messages"]
+        DB_NOTIFY["Notification Store<br/>notifications"]
+        DB_AUDIT["Audit Store<br/>audit_logs - UPDATE and DELETE revoked from every role"]
+        DB_SETTINGS["System Parameter Store<br/>system_settings - 6 seeded keys"]
     end
 
-    subgraph EXT_TIER ["5. External Services & Defined Integration Interfaces"]
+    subgraph TIER5 ["5. External Integration Boundary"]
         direction TB
-        EXT_GCASH["GCash / Payment Interface<br/>(Manual Verification Queue & Sandbox PoC)"]
-        EXT_STORAGE["Media Storage Interface<br/>(Room Photos & Maintenance Attachments)"]
+        EXT_ADYEN["Adyen Checkout API - GCash<br/>developer sandbox or live, auto-selected from credentials<br/>direct HTTPS call - @adyen/api-library declared but not imported"]
+        EXT_STORAGE["Supabase Storage Buckets<br/>object URLs for room photos and ticket attachments<br/>PLANNED - not referenced by backend code today"]
     end
 
-    %% PWA Cache connections to all 3 client views
-    PWA_CACHE -.->|Cached Catalog| UI_PUBLIC
-    PWA_CACHE -.->|Cached Statements & Dues| UI_TENANT
-    PWA_CACHE -.->|Cached Directory & Contacts| UI_ADMIN
+    %% ---------- Tier 1 internal ----------
+    UI_PUBLIC --> SPA_SHELL
+    UI_TENANT --> SPA_SHELL
+    UI_ADMIN --> SPA_SHELL
+    PWA_CACHE -.->|"Cached public catalog and health probe only"| UI_PUBLIC
 
-    %% Flow Connections to State Store
-    UI_PUBLIC --> STATE_STORE
-    UI_TENANT --> STATE_STORE
-    UI_ADMIN --> STATE_STORE
-    STATE_STORE -->|HTTP/REST with JWT| AUTH_MW
+    %% ---------- Tier 1 to Tier 2 ----------
+    SPA_SHELL -->|"HTTPS REST, Authorization Bearer JWT"| SEC_MW
 
-    AUTH_MW --> API_ROUTER
-    API_ROUTER --> VAL_ERR
-    VAL_ERR --> SERVICE_TIER
+    %% ---------- Tier 2 internal ----------
+    SEC_MW --> AUTH_GUARD
+    AUTH_GUARD --> API_ROUTER
+    API_ROUTER --> ERR_HANDLER
+    ERR_HANDLER -->|"Uniform JSON error envelope"| SPA_SHELL
 
-    SRV_BILLING --> DB_FINANCE
-    SRV_PAYMENT --> DB_FINANCE
-    SRV_PAYMENT -.-> EXT_GCASH
-    SRV_OCCUPANCY --> DB_CATALOG
-    SRV_TICKET --> DB_OPS
-    SRV_TICKET -.-> EXT_STORAGE
-    SRV_INQUIRY --> DB_CATALOG
-    SRV_INQUIRY --> DB_AUTH
-    SRV_AUDIT --> DB_OPS
+    %% ---------- Tier 2 to Tier 3, implemented services ----------
+    API_ROUTER --> SRV_AUTH
+    API_ROUTER --> SRV_SCOPE
+    API_ROUTER --> SRV_AUDIT
+    API_ROUTER --> SRV_NOTIFY
+    API_ROUTER --> SRV_ADYEN
+
+    %% ---------- Tier 2 to Tier 3, planned extractions ----------
+    API_ROUTER -.-> SRV_BILLING
+    API_ROUTER -.-> SRV_PAYMENT
+    API_ROUTER -.-> SRV_OCCUPANCY
+    API_ROUTER -.-> SRV_TICKET
+    API_ROUTER -.-> SRV_INQUIRY
+    API_ROUTER -.-> SRV_SETTINGS
+    API_ROUTER -.-> SRV_EXPENSE
+    API_ROUTER -.-> SRV_FIN_REPORT
+
+    %% ---------- Known Phase 2 debt, drawn honestly ----------
+    API_ROUTER -.->|"Current reality: 131 of 158 DB calls still inline in route handlers - admin.ts is 2056 lines"| DB_GATE
+
+    %% ---------- Tier 3 to the access-control boundary ----------
+    SRV_AUTH --> DB_GATE
+    SRV_SCOPE --> DB_GATE
+    SRV_AUDIT --> DB_GATE
+    SRV_NOTIFY --> DB_GATE
+    SRV_ADYEN --> DB_GATE
+    SRV_BILLING -.-> DB_GATE
+    SRV_PAYMENT -.-> DB_GATE
+    SRV_OCCUPANCY -.-> DB_GATE
+    SRV_TICKET -.-> DB_GATE
+    SRV_INQUIRY -.-> DB_GATE
+    SRV_SETTINGS -.-> DB_GATE
+    SRV_EXPENSE -.-> DB_GATE
+    SRV_FIN_REPORT -.-> DB_GATE
+
+    %% ---------- Boundary to the twenty tables ----------
+    DB_GATE --> DB_IDENTITY
+    DB_GATE --> DB_CATALOG
+    DB_GATE --> DB_TENANCY
+    DB_GATE --> DB_INQUIRY
+    DB_GATE --> DB_LEDGER
+    DB_GATE --> DB_EXPENSE
+    DB_GATE --> DB_MAINT
+    DB_GATE --> DB_NOTIFY
+    DB_GATE --> DB_AUDIT
+    DB_GATE --> DB_SETTINGS
+
+    %% ---------- Named domain reads and writes the panel will ask about ----------
+    SRV_SETTINGS -.->|"Owns and maintains runtime parameters"| DB_SETTINGS
+    SRV_BILLING -.->|"Settings lookup: water_rate_per_occupant, grace_period_days, Linda fixed charges"| DB_SETTINGS
+    SRV_EXPENSE -.->|"Writes expense entries and cluster allocations"| DB_EXPENSE
+    SRV_FIN_REPORT -.->|"Reads expense ledger"| DB_EXPENSE
+    SRV_FIN_REPORT -.->|"Reads income ledger and derived share column"| DB_LEDGER
+
+    %% ---------- Tier 3 to Tier 5 ----------
+    SRV_ADYEN -->|"Create checkout session and submit GCash payment"| EXT_ADYEN
+    SRV_TICKET -.->|"Attachment object upload"| EXT_STORAGE
+    SRV_OCCUPANCY -.->|"Room photo object upload"| EXT_STORAGE
+
+    %% ---------- Redirect out at Tier 1, authorization result back into Tier 2 ----------
+    UI_TENANT -.->|"Browser redirect to hosted GCash checkout"| EXT_ADYEN
+    EXT_ADYEN -->|"Authorization result returned to the API - payment inserted as Pending Verification, never auto-settled"| API_ROUTER
+
+    subgraph LEGEND ["Notation Key - not an architectural tier"]
+        direction TB
+        LEG_PATTERN["Pattern: Layered Client-Server Architecture Structured as a<br/>Modular Monolith with a Pluggable Payment Gateway Adapter"]
+        LEG_IMPL["SOLID border, solid arrow<br/>Implemented today and verifiable in the repository"]
+        LEG_PLAN["DASHED border, dotted arrow<br/>Planned Phase 3 extraction - does not exist today"]
+        LEG_GATE["THICK RED border<br/>Access-control containment boundary"]
+    end
+
+    %% ---------- Styling ----------
+    classDef t1 fill:#E8F1FB,stroke:#1F4E79,stroke-width:1.5px,color:#10263B
+    classDef t2 fill:#FDF0E3,stroke:#A85C10,stroke-width:1.5px,color:#3B2410
+    classDef t3i fill:#E9F6EC,stroke:#1E7A3C,stroke-width:1.5px,color:#0F3B1E
+    classDef t3p fill:#F4F7F5,stroke:#6E8C79,stroke-width:1.5px,stroke-dasharray:6 4,color:#2F4436
+    classDef t4 fill:#F1ECF8,stroke:#5B3A8E,stroke-width:1.5px,color:#2B1A44
+    classDef t4gate fill:#EFE2E2,stroke:#9B1C1C,stroke-width:3px,color:#3F0B0B
+    classDef t5 fill:#FCF6DC,stroke:#8A6D0B,stroke-width:1.5px,color:#3D3005
+    classDef t5p fill:#FBF9EE,stroke:#A99652,stroke-width:1.5px,stroke-dasharray:6 4,color:#413714
+    classDef leg fill:#FFFFFF,stroke:#555555,stroke-width:1px,color:#222222
+
+    class SPA_SHELL,PWA_CACHE,UI_PUBLIC,UI_TENANT,UI_ADMIN t1
+    class SEC_MW,AUTH_GUARD,API_ROUTER,ERR_HANDLER t2
+    class SRV_AUTH,SRV_SCOPE,SRV_AUDIT,SRV_NOTIFY,SRV_ADYEN t3i
+    class SRV_BILLING,SRV_PAYMENT,SRV_OCCUPANCY,SRV_TICKET,SRV_INQUIRY,SRV_SETTINGS,SRV_EXPENSE,SRV_FIN_REPORT t3p
+    class DB_IDENTITY,DB_CATALOG,DB_TENANCY,DB_INQUIRY,DB_LEDGER,DB_EXPENSE,DB_MAINT,DB_NOTIFY,DB_AUDIT,DB_SETTINGS t4
+    class DB_GATE t4gate
+    class EXT_ADYEN t5
+    class EXT_STORAGE t5p
+    class LEG_PATTERN,LEG_IMPL,LEG_PLAN,LEG_GATE leg

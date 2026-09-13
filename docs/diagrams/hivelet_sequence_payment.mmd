@@ -3,56 +3,57 @@ sequenceDiagram
     actor Tenant as Active Tenant
     actor Admin as Landlady (Admin)
     participant Client as Frontend (Vue 3 SPA)
-    participant API as API Layer (Express.js)
-    participant Service as Domain Services (Billing & Payment)
+    participant API as API Layer and Route Handlers (Express.js)
+    participant Service as adyenService.ts (Tier 3, IMPLEMENTED)
+    participant Gateway as Adyen Checkout API - GCash (developer sandbox or live)
     participant DB as PostgreSQL Database
 
-    Note over Admin, DB: PHASE 1: Automated Monthly Billing Generation (BR-010, BR-014)
-    Admin->>Client: Triggers Monthly Billing Batch
-    Client->>API: POST /api/admin/bills/generate-monthly
-    API->>Service: generateMonthlyBills(clusterCode, period)
-    Service->>DB: Query active room_assignments (occupant_count, room_id, rates)
-    DB-->>Service: Returns active leases & occupant counts
-    Service->>DB: Query system_settings (key: 'water_rate_per_occupant')
-    DB-->>Service: Returns 200.00
-    Service->>Service: Compute water_amount = occupant_count * 200.00
-    Service->>Service: Compute total_amount = base_rent + water_amount
-    Service->>DB: INSERT INTO bills (rent_amount, water_amount, total_amount, status='Due')
-    DB-->>Service: Bills Created Successfully
-    Service-->>API: Batch Complete
-    API-->>Client: HTTP 201 Created
+    Note over Admin, DB: STAGE 1 - Bill Availability (BR-010, BR-014)
+    Tenant->>Client: Opens Statements
+    Client->>API: GET /api/tenant/my-bills - tenant.ts:70
+    API->>DB: SELECT bills scoped to this tenant
+    DB-->>Client: Due bills with rent and water components
+    Note over API, DB: PLANNED Phase 3 - no monthly billing batch endpoint exists today. A bill is created only as a side effect of checkout at tenant.ts:445, the water charge is the hardcoded literal 200 at tenant.ts:440 rather than system_settings.water_rate_per_occupant, and the grace window is hardcoded to 10 days at tenant.ts:453 against the seeded 7. Closed by billingService.ts and settingsService.ts.
 
-    Note over Tenant, DB: PHASE 2: Tenant Payment Submission (GCash Proof)
-    Tenant->>Client: Selects Due Bill, Enters GCash Ref No. & Uploads Screenshot
-    Client->>API: POST /api/tenant/payments/submit
-    API->>Service: submitPaymentProof(billId, refNo, amount, proofUrl)
-    Service->>DB: INSERT INTO payments (amount, payment_method='GCash', transaction_reference=refNo, verification_status='Pending Verification')
-    Service->>DB: INSERT INTO notifications (recipient=Admin, title='New GCash Payment Submitted')
-    DB-->>Service: Payment Record Created (Pending)
-    Service-->>API: Payment Queued
+    Note over Tenant, DB: STAGE 2 - Adyen GCash Checkout (BR-016)
+    Tenant->>Client: Selects a due bill and chooses GCash
+    Client->>API: POST /api/tenant/payments/checkout - tenant.ts:380
+    API->>Service: createCheckoutSession(billId, tenantProfileId, amount, returnUrl)
+    Service->>Service: isLiveConfigured() selects sandbox or live credentials - adyenService.ts:42
+    Service->>Gateway: POST https://checkout-test.adyen.com/v71/sessions - adyenService.ts:61
+    Gateway-->>Service: Checkout session id and session data
+    Service-->>API: Session returned
+    API-->>Client: Session handed to the Adyen Drop-in (@adyen/adyen-web)
+    Client->>Gateway: Tenant completes the hosted GCash payment
+    Gateway-->>Client: Authorization result and PSP reference
+    Client->>API: POST /api/tenant/payments/adyen/verify-session - tenant.ts:515
+    API->>Service: Complete the session against the gateway result
+    Service->>DB: INSERT INTO payments (payment_method='Adyen Online', payment_source='GCash Sandbox', verification_status='Pending Verification') - adyenService.ts:203
+    Service->>DB: INSERT INTO audit_logs (actor=tenant, entity='PAYMENT')
+    Service-->>API: Payment queued for administrator verification
     API-->>Client: HTTP 200 OK ("Submitted for Verification")
+    Note over Tenant, Gateway: On-site in-person cash settlement remains the PRIMARY method (BR-015). Adyen GCash is the optional digital alternative. Because the account is a developer sandbox account, posting to checkout-test.adyen.com is correct behaviour. Honest caveats - @adyen/api-library is declared in backend/package.json but never imported, the adapter calls the Checkout API over HTTP directly, and the two public gateway-return endpoints in public.ts carry no guard (Phase 3 hardening).
 
-    Note over Admin, DB: PHASE 3: Admin Verification & 50% Share Ledger Sync (BR-017, BR-035)
-    Admin->>Client: Opens Admin Verification Queue
-    Client->>API: GET /api/admin/payments/pending
-    API->>DB: SELECT * FROM payments WHERE verification_status = 'Pending Verification'
-    DB-->>Client: Displays Tenant Name, Bill ID, GCash Ref, and Screenshot
-    Admin->>Admin: Verifies funds deposited in personal GCash app / SMS
-    Admin->>Client: Clicks [ Verify & Confirm Payment ]
-    Client->>API: POST /api/admin/payments/:id/verify
-    API->>Service: verifyPayment(paymentId, adminId)
-    
+    Note over Admin, DB: STAGE 3 - Administrator Verification and Ledger Write (BR-017, BR-035)
+    Admin->>Client: Opens the verification queue
+    Client->>API: GET /api/admin/payments - admin.ts:807
+    API->>DB: SELECT payments WHERE verification_status = 'Pending Verification'
+    DB-->>Client: Tenant name, room, amount and gateway reference
+    Admin->>Admin: Confirms the funds arrived in the GCash app or by SMS
+    Admin->>Client: Clicks [ Verify and Confirm Payment ]
+    Client->>API: PATCH /api/admin/payments/:paymentId/verify - admin.ts:836
+
     rect rgb(240, 245, 255)
-    Note over Service, DB: Atomic Database Transaction
-    Service->>DB: UPDATE payments SET verification_status='Verified', verified_at=NOW(), verified_by=adminId
-    Service->>DB: UPDATE bills SET status='Paid' WHERE id=payment.bill_id
-    Service->>Service: Compute fifty_percent_share = rent_amount * 0.50
-    Service->>DB: INSERT INTO monthly_income_records (rent_amount, fifty_percent_share, water_payment, remitted_amount, payment_method='GCash')
-    Service->>DB: INSERT INTO audit_logs (action='PAYMENT_VERIFIED', actor=adminId, entity='PAYMENT')
-    Service->>DB: INSERT INTO notifications (recipient=Tenant, title='Payment Verified & Settled')
+    Note over API, DB: PLANNED Phase 3 - these writes are sequential. No BEGIN/COMMIT transaction exists anywhere in backend/src today, and the handler owns them directly - 131 of 158 database calls still sit in route handlers. Atomicity is owned by paymentService.ts.
+    API->>DB: UPDATE payments SET verification_status='Verified', verified_at=NOW(), verified_by=adminId
+    API->>DB: UPDATE bills SET status='Paid' WHERE id = payment.bill_id
+    API->>API: Compute fifty_percent_share = rent_amount / 2 - admin.ts:911
+    API->>DB: INSERT INTO monthly_income_records (rent_amount, occupants, water_payment, payment_method='GCash') - admin.ts:942
+    Note over API, DB: DISCLOSED DEFECT - fifty_percent_share and remitted_amount are computed at admin.ts:911 and admin.ts:1102-1104 but are absent from both INSERT payloads - this one at admin.ts:942-958 and the manual-entry one at admin.ts:1112-1129 - so every monthly_income_records row currently stores 0.00. Phase 3, together with the billingService.ts extraction.
+    API->>DB: INSERT INTO audit_logs (action='PAYMENT_VERIFY', actor=adminId, entity='PAYMENT')
+    API->>DB: INSERT INTO notifications (recipient=Tenant, title='Payment Verified')
     end
 
-    DB-->>Service: Transaction Committed
-    Service-->>API: Success Response
-    API-->>Client: HTTP 200 OK ("Payment Verified & Income Ledger Updated")
+    DB-->>API: Writes complete
+    API-->>Client: HTTP 200 OK ("Payment Verified and Income Ledger Updated")
     Client-->>Admin: Updates UI (Green Verified Badge, Statement Settled)
