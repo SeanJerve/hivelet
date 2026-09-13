@@ -105,13 +105,13 @@ async function handleSendReply() {
   const messageToSend = replyMessage.value.trim();
 
   try {
-    try {
-      await api.post(`/admin/inquiries/${currentInq.id}/reply`, {
-        message: messageToSend,
-      });
-    } catch {
-      // Offline fallback
-    }
+    // The endpoint is /messages - there is no /reply route, so this call always
+    // 404'd. It was silent because the catch below swallowed it as an "offline
+    // fallback", and the thread was only ever updated in local state: the reply
+    // looked sent, and was never stored.
+    await api.post(`/admin/inquiries/${currentInq.id}/messages`, {
+      message: messageToSend,
+    });
 
     if (!inquiryThreads.value[currentInq.id]) {
       inquiryThreads.value[currentInq.id] = [];

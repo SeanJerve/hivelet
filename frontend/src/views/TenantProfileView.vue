@@ -138,11 +138,9 @@ async function handleSave() {
       avatar_url: form.value.avatar_url,
     };
 
-    try {
-      await api.put('/tenant/my-profile', payload);
-    } catch {
-      // Local session update
-    }
+    // Surfaced rather than swallowed: a profile edit that silently fails leaves
+    // the tenant believing their emergency contact is on file when it is not.
+    await api.put('/tenant/my-profile', payload);
 
     if (currentUser.value) {
       currentUser.value.fullName = form.value.full_name.trim();

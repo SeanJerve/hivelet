@@ -89,7 +89,7 @@ async function fetchTenantData() {
       api.get<ApiMyRoom[]>('/tenant/my-rooms'),
       api.get<ApiBill[]>('/tenant/my-bills'),
       api.get<ApiPayment[]>('/tenant/my-payments'),
-      api.get<ApiTicket[]>('/tenant/tickets'),
+      api.get<ApiTicket[]>('/tenant/my-tickets'),
     ]);
 
     if (roomsRes && roomsRes.length > 0) {
@@ -207,22 +207,26 @@ async function handleCreateTicket() {
   if (!ticketTitle.value.trim()) return;
   isSubmitting.value = true;
   try {
-    if (activeRoomId.value) {
-      try {
-        await api.post('/tenant/tickets', {
-          roomId: activeRoomId.value,
-          title: ticketTitle.value.trim(),
-          description: ticketDesc.value.trim(),
-          category: ticketCat.value,
-          priority: ticketPriority.value,
-        });
-      } catch {
-        // Offline fallback
-      }
+    if (!activeRoomId.value) {
+      showToast('error', 'No unit assigned', 'You have no active unit, so a request cannot be raised. Contact the administrator.');
+      return;
     }
 
+    // The server's response is the record. This previously swallowed the failure
+    // and then fabricated a ticket with an invented id, so a tenant whose request
+    // never reached the server still saw "dispatched" and a ticket number that
+    // existed nowhere. A maintenance request that silently vanishes is the exact
+    // problem this system was built to solve.
+    const created = await api.post<{ id: string; created_at?: string }>('/tenant/tickets', {
+      roomId: activeRoomId.value,
+      title: ticketTitle.value.trim(),
+      description: ticketDesc.value.trim(),
+      category: ticketCat.value,
+      priority: ticketPriority.value,
+    });
+
     const newT: MaintenanceTicket = {
-      id: `TCK-${String(1040 + maintenanceTickets.length + 1)}`,
+      id: created?.id ?? '',
       unit: currentRoomNumber.value,
       title: ticketTitle.value,
       category: ticketCat.value,
@@ -238,6 +242,13 @@ async function handleCreateTicket() {
     ticketTitle.value = '';
     ticketDesc.value = '';
     showToast('success', 'Maintenance request dispatched', `Ticket #${newT.id} sent directly to Landlady.`);
+  } catch (err: any) {
+    // Say so. The previous version reported success regardless.
+    showToast(
+      'error',
+      'Request not sent',
+      err?.message || 'The maintenance request could not be saved. Please try again.'
+    );
   } finally {
     isSubmitting.value = false;
   }

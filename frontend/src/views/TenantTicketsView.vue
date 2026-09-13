@@ -278,37 +278,28 @@ async function handleTicketSubmit() {
 
   submitting.value = true;
   try {
-    if (activeRoomId.value) {
-      try {
-        const attachments = ticketPhotoUrl.value
-          ? [{ fileUrl: ticketPhotoUrl.value, fileType: 'image/png' }]
-          : undefined;
-
-        await api.post('/tenant/tickets', {
-          roomId: activeRoomId.value,
-          title: ticketTitle.value.trim(),
-          description: ticketDescription.value.trim(),
-          category: ticketCategory.value,
-          priority: ticketPriority.value,
-          attachments,
-        });
-      } catch {
-        // Fallback for offline mode
-      }
+    if (!activeRoomId.value) {
+      ticketError.value = 'You have no active unit, so a request cannot be raised. Contact the administrator.';
+      return;
     }
 
-    const newTicket: TicketRow = {
-      id: `TCK-${Date.now().toString().slice(-6)}`,
+    const attachments = ticketPhotoUrl.value
+      ? [{ fileUrl: ticketPhotoUrl.value, fileType: 'image/png' }]
+      : undefined;
+
+    // Failure propagates to the catch below, which shows it. This used to be
+    // swallowed and followed by a fabricated ticket row with an invented id, so a
+    // request that never reached the server still read as "submitted to Landlady
+    // Fe Galang Da Silva for review". `fetchTickets()` then quietly replaced the
+    // fake row with the real list, and the ticket simply was not there.
+    await api.post('/tenant/tickets', {
+      roomId: activeRoomId.value,
       title: ticketTitle.value.trim(),
       description: ticketDescription.value.trim(),
       category: ticketCategory.value,
       priority: ticketPriority.value,
-      status: 'Open',
-      created_at: new Date().toISOString(),
-      resolved_at: null,
-      rooms: { id: activeRoomId.value || '1a', room_number: activeRoomNumber.value || '1A' }
-    };
-    tickets.value.unshift(newTicket);
+      attachments,
+    });
 
     ticketNotice.value = `Ticket "${ticketTitle.value.trim()}" has been submitted to Landlady Fe Galang Da Silva for review.`;
     ticketTitle.value = '';
