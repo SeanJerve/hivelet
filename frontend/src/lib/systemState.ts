@@ -184,7 +184,21 @@ export const isMobileSidebarOpen = ref(false);
 export const isStateLoading = ref(false);
 export const lastSyncTime = ref<Date | null>(null);
 
-// Initialize initial reactive state from canonical defaults to prevent empty flash
+/**
+ * Initial reactive state, so the UI has the 33-unit grid to draw before the API
+ * responds rather than flashing empty.
+ *
+ * IMPORTANT: this seeds STRUCTURE ONLY - unit code, cluster, floor, type,
+ * capacity. Those are real and verified against the live database.
+ *
+ * It deliberately does NOT seed people or money. `CANONICAL_UNITS` carries 33
+ * invented tenant names (Samantha Cruz, Maria Santos, Gabriel Fernandez...) and
+ * invented payment statuses, and those used to be shown on screen until the API
+ * replied - and would persist indefinitely if it failed. The real tenants are
+ * people like Jaye Casia and the Gayon group; displaying fabricated residents of
+ * a real person's property, with fabricated arrears, is not a loading state worth
+ * having. Units render as vacant with no tenant until live data arrives.
+ */
 export const rooms = reactive<RoomItem[]>(
   CANONICAL_UNITS.map((u) => ({
     id: u.id,
@@ -194,12 +208,12 @@ export const rooms = reactive<RoomItem[]>(
     floorLabel: u.floorLabel,
     type: u.type,
     price: u.basePrice,
-    occupants: u.occupants,
+    occupants: 0,
     maxOccupants: u.capacity,
-    status: u.status,
-    tenant: u.tenantName,
-    paid: u.status === 'settled',
-    balance: u.status === 'overdue' ? u.basePrice : u.status === 'pending' ? u.basePrice : 0,
+    status: 'vacant' as const,
+    tenant: '',
+    paid: false,
+    balance: 0,
     waterRateType: u.waterRateType,
     billingRule: u.billingRule,
     amenities: u.amenities,
