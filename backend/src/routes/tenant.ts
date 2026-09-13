@@ -23,6 +23,7 @@ import { resolveTenantScope, isEmptyScope, assertRoomInScope } from '../services
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
+import { computeBillAmounts, computeBillPeriod } from '../services/billingService.js';
 import { adyenService } from '../services/adyenService.js';
 import { notificationService } from '../services/notificationService.js';
 import { config } from '../config/env.js';
@@ -386,7 +387,9 @@ router.post(
     }
     const { returnUrl } = parsed.data;
     let targetBillId = parsed.data.billId;
-    let billTotalAmount = 4700;
+    // Starts at zero deliberately. Every path below either resolves a real bill total or
+    // throws; a non-zero seed here previously meant a failed lookup could charge P4,700.
+    let billTotalAmount = 0;
 
     if (targetBillId) {
       // Validate that the bill exists, belongs to this tenant, and is unpaid
@@ -422,48 +425,75 @@ router.post(
         targetBillId = unpaid.id;
         billTotalAmount = Number(unpaid.total_amount);
       } else {
-        // Query active room assignment to generate current cycle bill
-        const { data: assignment } = await db
+        // Raise the current cycle's bill for the tenant's OWN active unit.
+        //
+        // This block previously fell back to `SELECT id, current_price FROM rooms LIMIT 1`
+        // when the tenant had no assignment, and billed them against that arbitrary room at
+        // a hardcoded P4,500 if its price was also missing. That could attach a financial
+        // record to a unit the tenant has never occupied. A tenant with no active tenancy
+        // now gets a 409 instead.
+        const { data: assignment, error: assignmentError } = await db
           .from('room_assignments')
-          .select('room_id, occupant_count, rooms:room_id (current_price)')
+          .select('room_id, occupant_count, anniversary_date, rooms:room_id (room_number, current_price)')
           .eq('tenant_profile_id', req.user!.profileId)
+          .eq('is_active', true)
           .maybeSingle();
 
-        const { data: anyRoom } = await db
-          .from('rooms')
-          .select('id, current_price')
-          .limit(1)
-          .maybeSingle();
+        if (assignmentError) throw ApiError.internal(assignmentError.message);
 
-        const targetRoomId = assignment?.room_id || anyRoom?.id;
-        const rent = Number((assignment?.rooms as any)?.current_price) || Number(anyRoom?.current_price) || 4500;
-        const water = (Number(assignment?.occupant_count) || 1) * 200;
-        const total = rent + water;
+        const room = assignment?.rooms as { room_number?: string; current_price?: number } | null;
 
-        if (targetRoomId) {
-          const { data: newBill } = await db
-            .from('bills')
-            .insert({
-              tenant_profile_id: req.user!.profileId,
-              room_id: targetRoomId,
-              bill_type: 'Monthly Rent',
-              billing_period_start: new Date().toISOString().split('T')[0],
-              billing_period_end: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-              due_date: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0],
-              grace_period_end_date: new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0],
-              rent_amount: rent,
-              water_amount: water,
-              total_amount: total,
-              status: 'Due',
-            })
-            .select('id, total_amount')
-            .maybeSingle();
-
-          if (newBill) {
-            targetBillId = newBill.id;
-            billTotalAmount = Number(newBill.total_amount);
-          }
+        if (!assignment?.room_id || !room?.room_number) {
+          throw ApiError.conflict(
+            'You have no active unit, so there is nothing to bill. Contact the administrator ' +
+            'if you believe this is wrong.'
+          );
         }
+
+        // BR-014 / BR-040 - the water rate and any Linda fixed charge come from
+        // system_settings, never from a literal. BR-033 - the period runs on the tenancy
+        // anniversary. BR-012 / OD-16 - there is no grace period, so grace ends on the due date.
+        const amounts = await computeBillAmounts({
+          roomNumber: room.room_number,
+          currentPrice: Number(room.current_price) || 0,
+          occupants: Number(assignment.occupant_count) || 1
+        });
+
+        if (amounts.totalAmount <= 0) {
+          throw ApiError.conflict(
+            'This unit has no rate set, so a bill cannot be raised. Contact the administrator.'
+          );
+        }
+
+        // BR-033 - the cycle runs on the tenancy anniversary day, not the calendar month.
+        const period = await computeBillPeriod(assignment.anniversary_date ?? new Date());
+
+        const { data: newBill, error: billError } = await db
+          .from('bills')
+          .insert({
+            tenant_profile_id: req.user!.profileId,
+            room_id: assignment.room_id,
+            // 'Combined' is a real `bill_type_enum` value. This previously read
+            // 'Monthly Rent', which is not, so the insert failed with 22P02 every time.
+            bill_type: 'Combined',
+            billing_period_start: period.billingPeriodStart,
+            billing_period_end: period.billingPeriodEnd,
+            due_date: period.dueDate,
+            grace_period_end_date: period.gracePeriodEndDate,
+            rent_amount: amounts.rentAmount,
+            water_amount: amounts.waterAmount,
+            total_amount: amounts.totalAmount,
+            status: 'Due'
+          })
+          .select('id, total_amount')
+          .single();
+
+        // The error was previously discarded, so a rejected insert left the request to carry
+        // on with a fabricated total.
+        if (billError) throw ApiError.internal(billError.message);
+
+        targetBillId = newBill.id;
+        billTotalAmount = Number(newBill.total_amount);
       }
     }
 

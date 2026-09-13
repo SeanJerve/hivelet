@@ -250,3 +250,41 @@ above; LB: none on record). **`system_settings.linda_lb_electricity_charge` has 
 touched** — it is a seeded parameter that no backend code reads (defect 1), and changing a money
 setting on inference rather than instruction is the wrong call. Worth one question to the client:
 *which Linda unit actually pays the fixed ₱325 electricity?*
+
+
+---
+
+# Third addendum — OD-16 closed (2026-09-13)
+
+## OD-16 — CLOSED. There is no grace period, and there never was
+
+The owner:
+
+> "there is no grace period. they do not accept late payments. it's just, i think, a mistake that
+> an AI does upon building this website."
+
+So `system_settings.grace_period_days = '7'` was **not** a business rule that the code disagreed
+with. It was introduced during the original build and then written up as though it were policy,
+which is how it acquired a `BR-` number. **BR-012 is errata**, and the register entry that framed
+this as "the code says 10, the setting says 7, which is right?" was asking the wrong question — the
+answer is neither.
+
+**Resolution.** Migration `016` sets the value to `'0'` rather than deleting the key, so BR-012 stays
+traceable and billing code has one place to read the policy from instead of a literal. The column
+`bills.grace_period_end_date` is kept and re-documented: from now on it equals `due_date`.
+
+**The two existing bills were deliberately not rewritten.** Both are already `Paid` and both carry
+the 7-day window they were issued under. A bill's terms are the terms it was issued on (BR-003);
+back-dating them to tidy a column would falsify the record. `isOverdue()` honours a bill's own stored
+window for exactly this reason.
+
+## OD-18 — does not block Phase 3
+
+Confirmed with the owner that the disputed ₱325 Linda electricity charge can wait. It does not gate
+billing, because billing needs the **water** figures, and those are correct and corroborated: across
+31 months `LF` is charged exactly ₱400/month and `LB` exactly ₱200/month, matching
+`linda_lf_water_charge` and `linda_lb_water_charge`.
+
+`settingsService` therefore exposes `getLindaFixedWaterCharge()` and **deliberately no electricity
+accessor**, with the reason written at the call site. Wiring a disputed money value into billing
+would be the wrong kind of progress.

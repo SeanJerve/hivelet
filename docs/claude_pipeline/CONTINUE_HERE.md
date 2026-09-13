@@ -17,6 +17,7 @@
 > | `013_fix_replace_allocations_enum_cast` | **APPLIED** — the broken expense edit works again |
 > | `014_codify_production_only_objects` | **APPLIED** — a no-op in production, as intended |
 > | `015_correct_front_apartment_floor` | **APPLIED** — floors are now 11 / 11 / 10 / 1, closing OD-14 |
+> | `016_no_grace_period` | **APPLIED** — `grace_period_days` is 0, closing OD-16 |
 >
 > `005`–`010` were verified individually against the live catalogue, not assumed — the evidence table
 > is in the third addendum of `database/migrations/VERIFICATION.md`. **`APPLY_PHASE2.sql` does not
@@ -183,10 +184,10 @@ State these honestly; never claim any as already fixed.
 
 | # | Defect | Evidence | Phase |
 | :-- | :--- | :--- | :-- |
-| 1 | `system_settings` holds 6 correctly seeded keys, read by **zero** lines of backend code | — | 3 |
-| 2 | Water rate hardcoded `occupants * 200` | `admin.ts:910, 1103, 1243`; `tenant.ts:440` | 3 |
+| 1 | ~~`system_settings` read by **zero** lines of backend code~~ **FIXED.** `settingsService.ts` is now the typed, cached reader; `billingService` consumes it | `services/settingsService.ts` | done |
+| 2 | Water rate hardcoded `occupants * 200` — **partly fixed.** `billingService.computeWaterFee()` now reads the rate from settings and honours the Linda fixed charges; `tenant.ts` checkout uses it. The three `admin.ts` sites still need migrating to it | `admin.ts:910, 1103, 1243` | 3 |
 | 3 | Share divisor hardcoded `rentAmount / 2` | `admin.ts:911, 1102` | 3 |
-| 4 | Grace period hardcoded to 10 days, contradicting seeded `grace_period_days = 7` and BR-012 | `tenant.ts:453` | 3 |
+| 4 | ~~Grace period hardcoded to 10 days~~ **FIXED.** There is no grace period at all (OD-16); `016` sets the setting to 0 and `billingService` reads it | `tenant.ts` | done |
 | 5 | ~~`fifty_percent_share` / `remitted_amount` never written — every row stores `0.00`~~ **CORRECTED: both are `GENERATED ALWAYS AS … STORED`; all 937 rows are correct. The real defect is one line of dead code that computes a value nothing reads.** | `admin.ts:922` | 3 — trivial |
 | 6 | ~~Foreign keys are 17 CASCADE / 4 SET NULL / 0 RESTRICT~~ **FIXED by `005`.** Now 7 RESTRICT / 11 CASCADE / 1 SET NULL / 19 NO ACTION | live catalogue | done |
 | 7 | No `BEGIN`/`COMMIT` transaction anywhere in `backend/src`. `replace_expense_allocations` (`010`) is the only atomic multi-row write, and it is a database function because supabase-js cannot open a transaction | — | 3 |
@@ -199,6 +200,7 @@ State these honestly; never claim any as already fixed.
 | 14 | ~~Migration `002`'s `REVOKE` on `current_user_role()` has never done anything~~ **FIXED by `011`.** Also worth knowing: that function **fails open**, returning `'admin'` when it cannot identify the caller. Nothing consults it (zero policies), but it is now revoked from `PUBLIC` | live catalogue | done |
 | 15 | ~~`replace_expense_allocations()` inserts uncast `text` into an enum column, so every expense-entry allocation edit 500s~~ **FIXED by `013`**, verified against production | live catalogue | done |
 | 16 | ~~BR-045's trigger and BR-044's unique key existed **only in the production database**~~ **FIXED by `014`.** Both are now created by a migration, so a rebuilt database gets them | live catalogue | done |
+| 18 | **NEW, FIXED.** `POST /api/tenant/payments/checkout` billed against **an arbitrary room** (`rooms LIMIT 1`) at a hardcoded ₱4,500 when the tenant had no assignment, used `bill_type: 'Monthly Rent'` which is not a valid enum value (so the insert failed with 22P02 every time), discarded the insert error, and seeded the total at ₱4,700 | `tenant.ts` | done |
 | 17 | **NEW.** The Linda fixed electricity charge is attributed to `LB` in `system_settings` and was shown that way in the UI; 31 months of ledger data and the owner's spreadsheet both say it is `LF`. UI corrected; the setting deliberately left alone. See OD-18 | `monthly_income_records`; source workbook | 3 |
 
 ---
@@ -213,7 +215,6 @@ settled both — full account in `PHASE2_LOCKED_DECISIONS.md`, second addendum.
 | **OD-18** | **The Linda fixed electricity charge is recorded against the wrong unit.** `system_settings.linda_lb_electricity_charge = 325` says **LB**. The ledger says **LF**: charged in 31 of 31 months (min ₱325, max ₱2,285.76), while LB is charged in **0 of 31**. The owner's spreadsheet agrees with the ledger. | The setting is read by zero lines of backend code today (defect 1), so nothing is mis-billing yet — but it would the moment `billingService` is wired up in Phase 3. | 3 |
 | **OD-02** | GBG garbage fee timing — fixed calendar month, unit anniversary month, or administrator discretion | — | 3 |
 | **OD-10** | Tenant-submitted payments (form F-12) — does the form stay, and does `payment:submit:own` get added | — | 3 |
-| **OD-16** | "No late payment" vs the seeded 7-day grace period | `billingService` cannot be specified until this is settled | 3 |
 
 **One thing to eyeball on the next walk-through.** Migration `015` places `F1` on the **third** floor.
 That is forced by arithmetic once both Linda units sit on the ground floor, but the code `F1` reads
