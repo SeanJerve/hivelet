@@ -8,7 +8,7 @@
 
 import { ref, reactive } from 'vue';
 import { 
-  CANONICAL_32_UNITS, 
+  CANONICAL_UNITS, 
   type RentableUnit, 
   type Cluster, 
   type UnitStatus, 
@@ -186,7 +186,7 @@ export const lastSyncTime = ref<Date | null>(null);
 
 // Initialize initial reactive state from canonical defaults to prevent empty flash
 export const rooms = reactive<RoomItem[]>(
-  CANONICAL_32_UNITS.map((u) => ({
+  CANONICAL_UNITS.map((u) => ({
     id: u.id,
     unitCode: u.unitCode,
     cluster: u.cluster,
@@ -387,7 +387,7 @@ export async function fetchRooms(): Promise<RoomItem[]> {
             'Wi-Fi Ready'
           ],
           photo: (r.room_photos?.find((p: any) => p.is_primary)?.file_url || r.room_photos?.[0]?.file_url) ||
-            CANONICAL_32_UNITS.find(u => u.unitCode.toLowerCase() === unitCode.toLowerCase())?.photo ||
+            CANONICAL_UNITS.find(u => u.unitCode.toLowerCase() === unitCode.toLowerCase())?.photo ||
             'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=70',
           desc: r.description || `${r.room_type || 'Studio'} unit in ${cluster}.`
         };

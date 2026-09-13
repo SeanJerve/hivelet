@@ -185,7 +185,7 @@ function closeMobileNav() {
 
             <div class="p-3 bg-[#fafaf9] rounded-xl border border-[#e7e5e4] text-xs text-[#71717a] mt-6">
               <p class="font-bold text-[#1c1917]">Fe Galang Da Silva Boarding House</p>
-              <p class="text-[11px] mt-0.5">32 Rentable Units • Legazpi City</p>
+              <p class="text-[11px] mt-0.5">33 Rentable Units • Legazpi City</p>
             </div>
           </div>
         </Transition>

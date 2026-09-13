@@ -200,37 +200,37 @@ const clusterGroups = computed(() => {
   const definitions = [
     { 
       key: 'BH', 
-      label: 'Main House ("BH")', 
-      desc: '22 Rentable Rooms · 50% Linda & Fe Co-Ownership Revenue Share', 
-      isCoOwned: true, 
+      label: 'Boarding House ("BH")', 
+      desc: '22 Rentable Rooms · Column 6 retained for spreadsheet parity', 
+      hasShareColumn: true, 
       units: ['1A', '1B', '1C', '1D', '1E', '1F', '1G', '1H', '2A', '2B', '2C', '2D', '2E', '2F', '2G', '3A', '3B', '3C', '3D', '3E', '3F', '3G'] 
     },
     { 
       key: 'Back Apartment', 
       label: 'Back Apartment', 
       desc: '5 Self-Contained Units · 100% Single Owner Revenue', 
-      isCoOwned: false, 
+      hasShareColumn: false, 
       units: ['B1F', 'B2F', 'B2B', 'B3F', 'B3B'] 
     },
     { 
       key: 'Penthouse', 
       label: 'Penthouse', 
       desc: '1 Top-Floor Suite (PH)', 
-      isCoOwned: false, 
+      hasShareColumn: false, 
       units: ['PH'] 
     },
     { 
       key: 'Front Apartment', 
       label: 'Front Apartment', 
       desc: '3 Multi-Room Apartments · High-Capacity Units', 
-      isCoOwned: false, 
+      hasShareColumn: false, 
       units: ['F1', 'F2F', 'F2B'] 
     },
     { 
       key: 'Linda', 
       label: 'Linda Commercial & Annex', 
       desc: '2 Commercial Spaces (*LF, *LB) · Submeter Electric Reimbursement', 
-      isCoOwned: false, 
+      hasShareColumn: false, 
       units: ['LF', 'LB', '*LF', '*LB'] 
     }
   ];
@@ -242,11 +242,11 @@ const clusterGroups = computed(() => {
     });
 
     const gRent = groupRecords.reduce((sum, r) => sum + r.rent, 0);
-    const gShare = def.isCoOwned ? gRent / 2 : 0;
+    const gShare = def.hasShareColumn ? gRent / 2 : 0;
     const gOccupants = groupRecords.reduce((sum, r) => sum + r.occupants, 0);
     const gWater = groupRecords.reduce((sum, r) => sum + r.water, 0);
     const gGarbage = groupRecords.reduce((sum, r) => sum + r.garbage, 0);
-    const gRemitted = groupRecords.reduce((sum, r) => sum + (def.isCoOwned ? (r.rent / 2) : r.rent) + r.water, 0);
+    const gRemitted = groupRecords.reduce((sum, r) => sum + (def.hasShareColumn ? (r.rent / 2) : r.rent) + r.water, 0);
 
     return {
       ...def,
@@ -830,7 +830,7 @@ function exportCSV() {
           <!-- Cluster Section Header -->
           <div class="px-4 py-3 bg-[#f8fafc] border-b border-[#e7e5e4] flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2.5">
-              <span class="size-2.5 rounded-full" :class="group.isCoOwned ? 'bg-amber-500' : 'bg-[#0c66e4]'"></span>
+              <span class="size-2.5 rounded-full" :class="group.hasShareColumn ? 'bg-amber-500' : 'bg-[#0c66e4]'"></span>
               <div>
                 <h4 class="font-display font-extrabold text-sm text-[#1c1917]">{{ group.label }}</h4>
                 <p class="text-[11px] text-[#71717a]">{{ group.desc }}</p>
@@ -838,7 +838,7 @@ function exportCSV() {
             </div>
             <div class="flex items-center gap-2 text-xs">
               <span class="badge-soft badge-blue font-bold">{{ group.records.length }} records</span>
-              <span v-if="group.isCoOwned" class="badge-soft badge-warning font-bold">50% Revenue Share Active</span>
+              <span v-if="group.hasShareColumn" class="badge-soft badge-warning font-bold" title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet (BR-035).">Column 6 &mdash; spreadsheet parity</span>
             </div>
           </div>
 
@@ -852,7 +852,7 @@ function exportCSV() {
                   <th class="whitespace-nowrap px-3 py-2.5 font-bold">TENANT &amp; OR #</th>
                   <th class="whitespace-nowrap px-3 py-2.5 font-bold">RENT PERIOD</th>
                   <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">RENT (₱)</th>
-                  <th v-if="group.isCoOwned" class="whitespace-nowrap px-3 py-2.5 font-bold text-right text-amber-800">50% SHARE (₱)</th>
+                  <th v-if="group.hasShareColumn" class="whitespace-nowrap px-3 py-2.5 font-bold text-right text-amber-800">50% SHARE (₱)</th>
                   <th v-if="group.key === 'Linda'" class="whitespace-nowrap px-3 py-2.5 font-bold text-right text-sky-800">ELECTRIC (₱)</th>
                   <th class="whitespace-nowrap px-3 py-2.5 font-bold text-center">HEADS</th>
                   <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">WATER (₱)</th>
@@ -883,7 +883,7 @@ function exportCSV() {
                   <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-bold text-[#1c1917]">
                     {{ peso(r.rent) }}
                   </td>
-                  <td v-if="group.isCoOwned" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-amber-800 bg-amber-50/40">
+                  <td v-if="group.hasShareColumn" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-amber-800 bg-amber-50/40">
                     {{ peso(r.rent / 2) }}
                   </td>
                   <td v-if="group.key === 'Linda'" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-sky-800 bg-sky-50/40">
@@ -899,7 +899,7 @@ function exportCSV() {
                     {{ peso(r.garbage) }}
                   </td>
                   <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-extrabold text-emerald-800">
-                    {{ peso(group.isCoOwned ? (r.rent / 2) + r.water : r.rent + r.water) }}
+                    {{ peso(group.hasShareColumn ? (r.rent / 2) + r.water : r.rent + r.water) }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-2 text-center">
                     <button 
@@ -921,7 +921,7 @@ function exportCSV() {
                     {{ group.label }} SUB-TOTAL ({{ group.records.length }} UNITS)
                   </td>
                   <td class="tabular px-3 py-2.5 text-right font-black text-[#1c1917]">{{ peso(group.totalRent) }}</td>
-                  <td v-if="group.isCoOwned" class="tabular px-3 py-2.5 text-right font-black text-amber-800">{{ peso(group.totalShare) }}</td>
+                  <td v-if="group.hasShareColumn" class="tabular px-3 py-2.5 text-right font-black text-amber-800">{{ peso(group.totalShare) }}</td>
                   <td v-if="group.key === 'Linda'" class="tabular px-3 py-2.5 text-right font-black text-sky-800">
                     {{ peso(group.records.reduce((s, r) => s + (r.linda?.electricity || 0), 0)) }}
                   </td>

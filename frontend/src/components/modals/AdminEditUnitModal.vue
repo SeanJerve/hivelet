@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
-import { peso, CANONICAL_32_UNITS } from '@/lib/canonicalUnits';
+import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { X, Check, Loader2, Upload, ChevronDown, Users, ShieldCheck, Home } from 'lucide-vue-next';
 

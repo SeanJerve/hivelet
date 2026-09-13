@@ -29,7 +29,7 @@ import {
             <span class="rounded-md bg-blue-500/20 px-2 py-0.5 text-[10px] font-extrabold uppercase text-blue-300 border border-blue-400/30">EST. 2026</span>
           </div>
           <p class="text-slate-400 leading-relaxed text-xs">
-            Fe Galang Da Silva Boarding House Management System. Centralized operational, financial, and inquiry workflows for 32 rentable units in Legazpi City, Albay.
+            Fe Galang Da Silva Boarding House Management System. Centralized operational, financial, and inquiry workflows for 33 rentable units in Legazpi City, Albay.
           </p>
         </div>
 

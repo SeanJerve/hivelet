@@ -9,7 +9,7 @@
  */
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { CANONICAL_32_UNITS, peso, type RentableUnit } from '@/lib/canonicalUnits';
+import { CANONICAL_UNITS, peso, type RentableUnit } from '@/lib/canonicalUnits';
 import { isLiveChatheadOpen, showToast, LANDLADY, rooms, fetchRooms } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
@@ -134,7 +134,7 @@ onMounted(async () => {
       publicRooms.value = data;
     }
   } catch {
-    // Fallback to CANONICAL_32_UNITS
+    // Fallback to CANONICAL_UNITS
   } finally {
     isLoading.value = false;
   }
@@ -146,7 +146,7 @@ watch(() => [route.params.categorySlug, route.query.category], () => {
 });
 
 const mergedUnits = computed<RentableUnit[]>(() => {
-  return CANONICAL_32_UNITS.map((u) => {
+  return CANONICAL_UNITS.map((u) => {
     const live = rooms.find((r) => r.unitCode.toLowerCase() === u.unitCode.toLowerCase());
     if (live) {
       return {

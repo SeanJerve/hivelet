@@ -27,7 +27,7 @@ function handleGuestEntry() {
           </div>
           <div>
             <h3 class="font-display font-extrabold text-base text-[#1c1917]">Public Guest Entry</h3>
-            <p class="text-xs text-[#71717a]">Browse 32 available units and submit inquiries.</p>
+            <p class="text-xs text-[#71717a]">Browse 33 available units and submit inquiries.</p>
           </div>
         </div>
         <button @click="closeModal" class="grid size-8 place-items-center rounded-full text-[#71717a] hover:bg-[#f5f5f4] border border-[#e7e5e4] cursor-pointer">

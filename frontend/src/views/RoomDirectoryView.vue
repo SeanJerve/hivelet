@@ -158,7 +158,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
           Room &amp; Rate Directory
         </h1>
         <p class="mt-1 text-xs sm:text-sm text-[#71717a]">
-          Canonical 32-unit inventory with live operational statuses, rates, and occupancy across 5 clusters.
+          Canonical 33-unit inventory with live operational statuses, rates, and occupancy across 5 clusters.
         </p>
       </div>
 
@@ -217,7 +217,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
         ]"
       >
         <p class="text-xs font-extrabold uppercase tracking-widest text-[#71717a]">Total Inventory</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">32 Units</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-[#1c1917]">33 Units</p>
         <p class="mt-1 text-xs text-[#71717a]">Across 5 clusters &amp; 3 floors</p>
       </div>
 

@@ -7,7 +7,7 @@
   @innovations
     - Pinned Live Operations: Default executive dashboard strictly tracks live FY 2026 occupancy, pending remittances, and maintenance alerts.
     - Deep Historical Fiscal Year Archive: One-click transformation into an audit-grade historical review interface for past years (FY 2025, FY 2024).
-    - Multi-Dimensional Historical Audit Surface: Dynamically aggregates 12-month inflow curves, operating cash flow, 5-cluster matrix, verified tenant roster, 32-unit utilization, and raw searchable ledgers.
+    - Multi-Dimensional Historical Audit Surface: Dynamically aggregates 12-month inflow curves, operating cash flow, 5-cluster matrix, verified tenant roster, 33-unit utilization, and raw searchable ledgers.
     - Collapsible & Contained Scrollable Tables: High-density tables feature individual accordion collapse/expand toggles, sticky header rows, and max-height scrolling to maintain clean visual hierarchy.
 -->
 <script setup lang="ts">
@@ -298,7 +298,7 @@ const livePeakMonth = computed(() => {
   return highest;
 });
 
-// Live 32 Units Cluster Performance Breakdown
+// Live 33 Units Cluster Performance Breakdown
 const liveClusterPerformance = computed(() => {
   return CLUSTERS.map((clusterName) => {
     const clusterRooms = rooms.filter(r => r.cluster === clusterName);
@@ -479,7 +479,7 @@ const historicalTenantRoster = computed<HistoricalTenantSummary[]>(() => {
   return list;
 });
 
-// Historical 32-Unit Room Utilization Directory
+// Historical 33-Unit Room Utilization Directory
 interface HistoricalRoomUtilization {
   unitCode: string;
   cluster: string;
@@ -1199,7 +1199,7 @@ function exportHistoricalCSV() {
             </div>
 
             <div class="mt-6 pt-4 border-t border-[#dfe1e6] flex items-center justify-between text-xs text-[#71717a]">
-              <span>Total Operational Capacity: <strong>32 Units</strong></span>
+              <span>Total Operational Capacity: <strong>33 Units</strong></span>
               <span class="text-emerald-700 font-semibold">Active Inventory Fully Synchronized</span>
             </div>
           </div>
@@ -1702,7 +1702,7 @@ function exportHistoricalCSV() {
         </div>
 
         <!-- ================================================================== *
-         * SECTION 5: 32-UNIT HISTORICAL ROOM UTILIZATION DIRECTORY
+         * SECTION 5: 33-UNIT HISTORICAL ROOM UTILIZATION DIRECTORY
          * ================================================================== -->
         <div class="surface-card rounded-2xl border border-[#dfe1e6] bg-white p-6 shadow-xs space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dfe1e6] pb-4">
@@ -1712,7 +1712,7 @@ function exportHistoricalCSV() {
                   <Building2 class="size-4" />
                 </span>
                 <h2 class="font-display text-base font-extrabold text-[#172b4d]">
-                  32-Unit Historical Revenue &amp; Occupancy Directory (FY {{ selectedArchiveYear }})
+                  33-Unit Historical Revenue &amp; Occupancy Directory (FY {{ selectedArchiveYear }})
                 </h2>
               </div>
               <p class="text-xs text-[#71717a] mt-0.5">
@@ -1722,7 +1722,7 @@ function exportHistoricalCSV() {
 
             <div class="flex items-center gap-2 text-xs">
               <span class="px-3 py-1 rounded-xl bg-[#fafaf9] border border-[#dfe1e6] text-[#71717a] font-bold">
-                32 Canonical Units
+                33 Canonical Units
               </span>
 
               <!-- Collapse Toggle Button -->

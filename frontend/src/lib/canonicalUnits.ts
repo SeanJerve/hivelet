@@ -45,7 +45,16 @@ const APT_AMENITIES = [
   "Parking slot",
 ];
 
-export const CANONICAL_32_UNITS: RentableUnit[] = [
+/**
+ * The canonical rentable units. THIRTY-THREE of them, across five clusters -
+ * BH 22, Back Apartment 5, Front Apartment 3, Penthouse 1, Linda 2 - on floors
+ * 11 / 11 / 10 / 1.
+ *
+ * This was named CANONICAL_32_UNITS. The figure 32 comes from
+ * docs/01_SYSTEM_BIBLE.md:146 and is wrong; the seed, the live database and the
+ * owner's own spreadsheet all hold 33. Errata E-01 and E-02.
+ */
+export const CANONICAL_UNITS: RentableUnit[] = [
   // 1st Floor BH (1A - 1H)
   { id: "bh-1a", unitCode: "1a", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "Studio Type Apartment", basePrice: 4500, capacity: 2, occupants: 2, status: "settled", tenantName: "Samantha Cruz", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[0], waterRateType: "standard" },
   { id: "bh-1b", unitCode: "1b", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 2, status: "settled", tenantName: "Maria Santos", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: PHOTOS[1], waterRateType: "standard" },

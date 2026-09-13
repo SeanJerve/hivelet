@@ -9,7 +9,7 @@
  */
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { CANONICAL_32_UNITS, HERO_PHOTO, type RentableUnit } from '@/lib/canonicalUnits';
+import { CANONICAL_UNITS, HERO_PHOTO, type RentableUnit } from '@/lib/canonicalUnits';
 import { showToast, LANDLADY, fetchRooms } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -48,7 +48,7 @@ const FAQS = [
   },
   {
     q: 'How is electricity metered and billed?',
-    a: 'Each of the 32 rentable units is fitted with an individual electric submeter. Readings are recorded on the 25th of every month and billed at actual consumption rate (₱12.50 / kWh).'
+    a: 'Each of the 33 rentable units is fitted with an individual electric submeter. Readings are recorded on the 25th of every month and billed at actual consumption rate (₱12.50 / kWh).'
   },
   {
     q: 'What payment methods does the boarding house accept?',
@@ -189,7 +189,7 @@ async function submitInquiry() {
         </h1>
 
         <p class="mt-3 max-w-2xl text-sm sm:text-base text-slate-300 leading-relaxed">
-          Canonical 32-unit residential boarding house across 3 floors and 5 property clusters. Verified individual electric submeters, ₱200/head monthly water rule, and secure gated perimeter.
+          Canonical 33-unit residential boarding house across three residential floors plus a rooftop penthouse level, in 5 property clusters. Verified individual electric submeters, ₱200/head monthly water rule, and secure gated perimeter.
         </p>
 
         <div class="mt-6 flex flex-wrap items-center gap-3">
@@ -213,7 +213,7 @@ async function submitInquiry() {
         <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl">
           <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
             <p class="text-xs text-slate-400 font-bold uppercase">Total Inventory</p>
-            <p class="font-display text-2xl font-black text-white mt-1">32 Units</p>
+            <p class="font-display text-2xl font-black text-white mt-1">33 Units</p>
           </div>
           <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
             <p class="text-xs text-slate-400 font-bold uppercase">Property Floors</p>
@@ -263,7 +263,7 @@ async function submitInquiry() {
                 <component :is="c.icon" class="size-6" />
               </span>
               <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                {{ CANONICAL_32_UNITS.filter(c.match).filter((u) => u.status === 'vacant').length }} Vacant
+                {{ CANONICAL_UNITS.filter(c.match).filter((u) => u.status === 'vacant').length }} Vacant
               </span>
             </div>
 
@@ -275,7 +275,7 @@ async function submitInquiry() {
             
             <div class="mt-5 pt-4 border-t border-[#e7e5e4] w-full flex items-center justify-between text-xs">
               <span class="font-semibold text-[#71717a]">
-                {{ CANONICAL_32_UNITS.filter(c.match).length }} Total Units
+                {{ CANONICAL_UNITS.filter(c.match).length }} Total Units
               </span>
               <span class="font-bold text-[#0c66e4] group-hover:text-[#0052cc] flex items-center gap-1.5 transition-colors">
                 <span>View All Rooms</span>
