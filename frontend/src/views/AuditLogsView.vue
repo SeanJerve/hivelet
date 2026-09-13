@@ -15,7 +15,7 @@
  *   - BR-028: Auditability: Important business operations must be traceable.
  * ============================================================================
  */
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/useToast';
 import { 
@@ -62,7 +62,20 @@ const isLoading = ref(false);
 /** Set when the trail could not be loaded. Never replaced with sample rows. */
 const loadError = ref<string | null>(null);
 const searchQuery = ref('');
-const categoryFilter = ref<string>('all');
+/**
+ * Defaults to business events, not everything.
+ *
+ * 1,700 of the 2,221 rows in the live trail - 77% - are AUTH_ACCESS_DENIED,
+ * almost all of them produced by a bug in this very application: `systemState.ts`
+ * fired six administrator-only requests on every page load regardless of who was
+ * signed in, and each refusal was dutifully audited. The bug is fixed, but the
+ * table is append-only by design and those rows can never be removed.
+ *
+ * So the default view shows what the landlady actually did. The authentication
+ * events are one click away and nothing is hidden - but a log that opens on 77%
+ * noise is a log nobody reads.
+ */
+const categoryFilter = ref<string>('business');
 const expandedRowId = ref<string | null>(null);
 const rowLimit = ref<number>(100);
 
@@ -80,8 +93,24 @@ async function fetchAuditLogs() {
   isLoading.value = true;
   loadError.value = null;
   try {
-    const res = await api.get<AuditRecord[]>(`/admin/audit-logs?limit=${rowLimit.value}`);
-    auditLogs.value = Array.isArray(res) ? res : [];
+    // The category is applied by the DATABASE, before the row limit. It has to
+    // be: 2,103 of the 2,223 rows are authentication events, so the newest 100
+    // are all AUTH_*, and a filter applied here would return nothing at all.
+    const params = new URLSearchParams({ limit: String(rowLimit.value) });
+    if (categoryFilter.value === 'business' || categoryFilter.value === 'auth') {
+      params.set('category', categoryFilter.value);
+    }
+    const { data, meta } = await api.getWithMeta<
+      AuditRecord[],
+      { authTotal: number; businessTotal: number; grandTotal: number }
+    >(`/admin/audit-logs?${params}`);
+
+    auditLogs.value = Array.isArray(data) ? data : [];
+    if (meta) {
+      authTotal.value = meta.authTotal ?? 0;
+      businessTotal.value = meta.businessTotal ?? 0;
+      grandTotal.value = meta.grandTotal ?? 0;
+    }
   } catch (err: unknown) {
     auditLogs.value = [];
     loadError.value =
@@ -91,14 +120,27 @@ async function fetchAuditLogs() {
   }
 }
 
+watch(categoryFilter, (next, prev) => {
+  const serverSide = (v: string) => v === 'business' || v === 'auth';
+  if (serverSide(next) || serverSide(prev)) fetchAuditLogs();
+});
+
 onMounted(() => {
   fetchAuditLogs();
 });
+
+/** Totals for the WHOLE table, from the API, not just the window on screen. */
+const authTotal = ref(0);
+const businessTotal = ref(0);
+const grandTotal = ref(0);
+const authEventCount = computed(() => authTotal.value);
+const businessEventCount = computed(() => businessTotal.value);
 
 const filteredLogs = computed(() => {
   const query = searchQuery.value.toLowerCase().trim();
   return auditLogs.value.filter(log => {
     // Category filter
+    // 'business' and 'auth' are applied server-side; the rest narrow what came back.
     if (categoryFilter.value === 'financial' && !log.action.includes('FINANC') && !log.action.includes('PAYMENT') && !log.action.includes('COLLECT') && !log.action.includes('INCOME')) return false;
     if (categoryFilter.value === 'expense' && !log.action.includes('EXPENSE')) return false;
     if (categoryFilter.value === 'tenant' && !log.action.includes('TENANT') && !log.action.includes('VACAT')) return false;
@@ -320,10 +362,24 @@ function exportAuditCSV() {
           <!-- Category Filter -->
           <div class="inline-flex rounded-xl bg-white p-1 border border-border-strong">
             <button
+              @click="categoryFilter = 'business'"
+              :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'business' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
+              title="Payments, expenses, tenants, rooms and tickets - what was actually done to the records"
+            >
+              Business ({{ businessEventCount }})
+            </button>
+            <button
+              @click="categoryFilter = 'auth'"
+              :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'auth' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
+              title="Sign-ins, sign-outs and refused requests"
+            >
+              Sign-in ({{ authEventCount }})
+            </button>
+            <button
               @click="categoryFilter = 'all'"
               :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'all' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
             >
-              All ({{ auditLogs.length }})
+              All ({{ grandTotal }})
             </button>
             <button
               @click="categoryFilter = 'financial'"

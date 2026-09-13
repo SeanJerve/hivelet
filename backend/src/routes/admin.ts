@@ -2058,14 +2058,55 @@ router.get(
   asyncHandler(async (req, res) => {
     const limit = Math.min(Number(req.query.limit ?? 100), 500);
 
-    const { data, error } = await db
+    /**
+     * `category` filters BEFORE the row limit, which is the whole point.
+     *
+     * 1,700 of the 2,221 rows in this table are `AUTH_ACCESS_DENIED`, nearly all
+     * of them produced by a bug in our own frontend that fired six
+     * administrator-only requests on every page load regardless of who was signed
+     * in. That is fixed, but `audit_logs` is append-only - migration 002 revokes
+     * DELETE from every role including this one - so the rows are permanent.
+     *
+     * Filtering in the browser could not work: the last 100 rows are ALL
+     * authentication events, so a client-side "business events" filter returned
+     * nothing at all. The database has to do the filtering.
+     *
+     *   business - what was actually done to the records
+     *   auth     - sign-ins, sign-outs and refused requests
+     *   (absent) - everything, newest first
+     */
+    const category = typeof req.query.category === 'string' ? req.query.category : undefined;
+
+    let query = db
       .from('audit_logs')
-      .select('*, profiles:actor_profile_id (id, full_name, role)')
+      .select('*, profiles:actor_profile_id (id, full_name, role)');
+
+    if (category === 'business') query = query.not('action', 'like', 'AUTH\_%');
+    else if (category === 'auth') query = query.like('action', 'AUTH\_%');
+
+    const { data, error } = await query
       .order('created_at', { ascending: false })
       .limit(limit);
 
     if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+
+    // Totals for the whole table, so the tab labels are not limited to the window.
+    const counted = await db
+      .from('audit_logs')
+      .select('id', { head: true, count: 'exact' })
+      .like('action', 'AUTH\_%');
+    const total = await db
+      .from('audit_logs')
+      .select('id', { head: true, count: 'exact' });
+
+    const authTotal = counted.count ?? 0;
+    const grandTotal = total.count ?? 0;
+
+    res.status(200).json({
+      success: true,
+      data: data ?? [],
+      meta: { authTotal, businessTotal: grandTotal - authTotal, grandTotal },
+    });
   })
 );
 

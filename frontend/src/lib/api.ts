@@ -81,7 +81,16 @@ interface RequestOptions {
   auth?: boolean;
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+/** The full `{ success, data, meta? }` envelope the API returns. */
+interface Envelope<T, M = Record<string, unknown>> {
+  data: T;
+  meta?: M;
+}
+
+async function requestEnvelope<T, M = Record<string, unknown>>(
+  path: string,
+  options: RequestOptions = {}
+): Promise<Envelope<T, M>> {
   const { method = 'GET', body, auth = true } = options;
 
   const headers: Record<string, string> = { Accept: 'application/json' };
@@ -120,11 +129,22 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     throw apiError;
   }
 
-  return payload.data as T;
+  return { data: payload.data as T, meta: payload.meta as M | undefined };
+}
+
+/** The common case: just the rows. */
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return (await requestEnvelope<T>(path, options)).data;
 }
 
 export const api = {
   get: <T>(path: string, auth = true) => request<T>(path, { method: 'GET', auth }),
+  /**
+   * For endpoints that report totals alongside the rows - the audit log says how
+   * many events exist in the whole table, which a 100-row window cannot tell you.
+   */
+  getWithMeta: <T, M = Record<string, unknown>>(path: string, auth = true) =>
+    requestEnvelope<T, M>(path, { method: 'GET', auth }),
   post: <T>(path: string, body?: unknown, auth = true) =>
     request<T>(path, { method: 'POST', body, auth }),
   put: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PUT', body }),
