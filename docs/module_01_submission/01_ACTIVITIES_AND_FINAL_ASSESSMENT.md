@@ -1,10 +1,34 @@
 # BUCS IT DEPARTMENT | IT 124: CAPSTONE PROJECT 2
+
+> [!CAUTION]
+> **SUPERSEDED IN PART — read `docs/claude_pipeline/outputs/PHASE1_MODULE01_ERRATA.md` first.**
+>
+> This document was submitted before the Phase 1 and Phase 2 audits. Twenty-one corrections
+> (E-01 … E-21) apply to this submission set. The ones most likely to be read aloud by mistake:
+>
+> | Claim in this pack | Correction |
+> | :--- | :--- |
+> | "32 units" | **33 units** across 5 clusters, floors **11 / 11 / 10 / 1** |
+> | "2% annual increase rule" | **No such rule exists.** The owner sets rates by hand; only the change history is kept |
+> | "50/50 co-ownership revenue share" | **Banned wording.** `fifty_percent_share` is a system-computed figure equal to half the row's Rent Amount, retained for ledger parity with the historical spreadsheet — no party, recipient or purpose is modelled |
+> | "Main Building / Annex A / Annex B" | **Not cluster names.** BH, Back Apartment, Front Apartment, Penthouse, Linda. "Annex" is the family's word for a *floor* |
+> | "Pending Consultation" | **Withdrawn.** The Adyen evaluation is complete — a developer sandbox is configured and the GCash flow runs against it |
+> | "one-week grace period" | **There is no grace period.** Late payment is not accepted (OD-16) |
+> | "ON DELETE RESTRICT" as existing fact | It did **not** exist when this was written. Applied by migration `005` on 2026-09-13 |
+> | "atomic database transaction" | No transaction existed in `backend/src` when this was written |
+>
+> **For the Capstone 2 defense, speak from `docs/claude_pipeline/outputs/PHASE3_DEFENSE_PACK.md`,
+> not from this pack.** Only one panel recommendation was ever given — see
+> `PHASE3_PANEL_RECOMMENDATION_REGISTER.md`.
+
+---
+
 ## MODULE 01: CONCEPT REVIEW & DESIGN REFINEMENT
 ### Official Activity Worksheets & Final Assessment Answer Key
 
 **Project Title:** Hivelet: A Web-Based Boarding House Management and Financial Operations System  
 **Target Property:** Fe Galang Da Silva Boarding House, Legazpi City  
-**Group Number:** [Insert Your Group Number]  
+**Group Number:** 4  
 
 ---
 
