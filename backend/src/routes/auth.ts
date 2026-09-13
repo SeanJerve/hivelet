@@ -124,7 +124,26 @@ router.patch(
   requireAuth,
   asyncHandler(async (req, res) => {
     const before = await getOwnProfile(req.user!.profileId);
-    const updated = await updateOwnProfile(req.user!.profileId, req.body ?? {});
+    // `updateOwnProfile` already strips anything outside TENANT_EDITABLE_FIELDS,
+    // so role escalation was never possible. What was missing was TYPE checking:
+    // an object or array reached PostgreSQL and came back as a 500 rather than a
+    // 422 naming the offending field. Lengths match the column widths.
+    const parsedProfile = z.object({
+      phone_number: z.string().trim().max(50).nullable().optional(),
+      emergency_contact_name: z.string().trim().max(255).nullable().optional(),
+      emergency_contact_phone: z.string().trim().max(50).nullable().optional(),
+      occupation: z.string().trim().max(100).nullable().optional(),
+      facebook_url: z.string().trim().max(2048).nullable().optional()
+    }).strict().safeParse(req.body ?? {});
+
+    if (!parsedProfile.success) {
+      throw ApiError.validation(
+        'Invalid profile payload.',
+        parsedProfile.error.flatten().fieldErrors
+      );
+    }
+
+    const updated = await updateOwnProfile(req.user!.profileId, parsedProfile.data);
 
     await auditFromRequest(req, {
       action: 'PROFILE_UPDATE',

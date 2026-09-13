@@ -218,10 +218,25 @@ router.post(
   '/admin/rooms/:roomId/photo',
   requirePermission(PERMISSIONS.ROOM_MANAGE),
   asyncHandler(async (req, res) => {
-    const { photo, caption } = req.body;
-    if (!photo || typeof photo !== 'string') {
-      throw ApiError.badRequest('A photo BLOB or base64 data URL is required.');
+    // Size is already bounded by `express.json({ limit: '1mb' })` in server.ts, so
+    // this checks shape rather than length: that the value really is an image
+    // data URL or an http(s) URL, and not an arbitrary string that would be
+    // rendered into an <img src> on the public directory.
+    const parsedPhoto = z.object({
+      photo: z.string()
+        .min(1, 'is required')
+        .refine(
+          (v) => /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(v)
+              || /^https?:\/\//.test(v),
+          'must be an image data URL (data:image/...;base64,...) or an http(s) URL'
+        ),
+      caption: z.string().trim().max(255).optional()
+    }).strict().safeParse(req.body);
+
+    if (!parsedPhoto.success) {
+      throw ApiError.validation('Invalid photo payload.', parsedPhoto.error.flatten().fieldErrors);
     }
+    const { photo, caption } = parsedPhoto.data;
 
     const { data: room, error: rErr } = await db.from('rooms').select('id').eq('id', req.params.roomId).single();
     if (rErr || !room) throw ApiError.notFound('Room not found.');

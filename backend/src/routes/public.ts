@@ -992,14 +992,36 @@ router.post(
       return;
     }
 
-    const items: AdyenNotificationItem[] = Array.isArray(req.body?.notificationItems)
-      ? req.body.notificationItems.map((n: any) => n?.NotificationRequestItem ?? n)
-      : [];
+    // Shape check before the crypto. The HMAC is what proves authenticity, and
+    // nothing here weakens it - this only rejects payloads that are not Adyen
+    // notification envelopes at all, so a malformed body returns a 400 naming the
+    // problem instead of failing deeper in as an opaque 401.
+    //
+    // Deliberately permissive about the item's contents: the signature is computed
+    // over the values exactly as sent, so validation must not coerce, trim or
+    // reorder anything. `passthrough()` keeps unknown fields, which matters
+    // because Adyen adds new additionalData keys over time.
+    const webhookBodySchema = z.object({
+      live: z.union([z.string(), z.boolean()]).optional(),
+      notificationItems: z.array(
+        z.object({
+          NotificationRequestItem: z.object({}).passthrough().optional()
+        }).passthrough()
+      ).min(1, 'must contain at least one notification item')
+    }).passthrough();
 
-    if (items.length === 0) {
-      res.status(400).json({ success: false, error: 'No notificationItems.' });
+    const parsedWebhook = webhookBodySchema.safeParse(req.body);
+    if (!parsedWebhook.success) {
+      res.status(400).json({
+        success: false,
+        error: 'Malformed notification payload.',
+        detail: parsedWebhook.error.flatten().fieldErrors
+      });
       return;
     }
+
+    const items: AdyenNotificationItem[] = parsedWebhook.data.notificationItems
+      .map((n: any) => n?.NotificationRequestItem ?? n);
 
     // Verify EVERY item before applying ANY of them. A batch containing one forged
     // item is a forged batch.
