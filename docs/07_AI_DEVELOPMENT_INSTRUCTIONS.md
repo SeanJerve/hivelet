@@ -75,3 +75,11 @@ The primary goal is:
 - secure
 - maintainable
 - deployable on a real server
+
+## Multi-Agent & Claude Backend Pipeline
+
+When delegating backend, database, and system modeling tasks to Claude:
+- Reference the dedicated pipeline in [`docs/claude_pipeline/CLAUDE_PIPELINE.md`](file:///c:/Users/LloydCuario/OneDrive/Desktop/hivelet/hivelet/docs/claude_pipeline/CLAUDE_PIPELINE.md).
+- Enforce that frontend code (`frontend/`, `website/`) is strictly **READ-ONLY** for backend agents.
+- Ensure all architectural justifications follow the 4-part framework (Functionality, Security, Scalability, Problem Alignment).
+
