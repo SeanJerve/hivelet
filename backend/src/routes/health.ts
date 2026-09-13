@@ -3,6 +3,9 @@
  * @description Liveness and security-posture check.
  * @rationale Surfaces whether the RLS lockdown is actually in force, so a
  *            regression is visible without re-running a manual probe.
+ *
+ * This endpoint is open, so it reports a verdict and never the underlying
+ * database error — that goes to the server log.
  */
 import { Router } from 'express';
 import { checkDbHealth } from '../config/db.js';
@@ -14,6 +17,10 @@ router.get(
   '/health',
   asyncHandler(async (_req, res) => {
     const health = await checkDbHealth();
+
+    if (health.detail) {
+      console.warn(`[health] ${health.lockdown}: ${health.detail}`);
+    }
 
     res.status(health.connected ? 200 : 503).json({
       success: health.connected,
@@ -27,8 +34,9 @@ router.get(
         message: health.message,
       },
       security: {
-        // False here means the public key can still read tenant data.
-        rlsLockdownActive: health.anonLockedDown,
+        // 'enforced' is the only value that proves the public key cannot read
+        // tenant data. 'unverified' means the probe never reached PostgreSQL.
+        rlsLockdown: health.lockdown,
         authorizationModel: 'backend-enforced JWT + RBAC',
       },
     });

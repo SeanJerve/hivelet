@@ -540,22 +540,44 @@ router.post(
         sessionData: sessionRes.sessionData,
         clientKey: sessionRes.clientKey,
         environment: sessionRes.environment,
-        redirectUrl: `http://localhost:${config.port}${sessionRes.redirectUrl}`,
+        // Only the local development checkout has a page of ours to redirect to.
+        // A real Adyen session is paid inside the Drop-in on the tenant's own
+        // page; there is no Hivelet-hosted cashier in that flow.
+        redirectUrl:
+          'redirectUrl' in sessionRes && sessionRes.redirectUrl
+            ? `http://localhost:${config.port}${sessionRes.redirectUrl}`
+            : null,
         isLive: sessionRes.isLive
       }
     });
   })
 );
 
+/**
+ * `sessionResult` is the opaque token Adyen hands the browser when checkout ends.
+ * It is required, because it is the only part of this payload the server can
+ * actually check - it gets passed back to Adyen over a server-to-server call. The
+ * previous schema accepted a `resultCode` and a `pspReference` from the browser
+ * and trusted both; neither is evidence of anything.
+ */
 const verifySessionSchema = z.object({
-  sessionId: z.string(),
-  resultCode: z.string().optional(),
-  pspReference: z.string().optional(),
+  sessionId: z.string().min(1).max(200),
+  sessionResult: z.string().min(1).max(4096),
 });
 
 /**
  * POST /api/tenant/payments/adyen/verify-session
- * Completes Adyen Component session and registers payment in Pending Verification.
+ *
+ * Asks Adyen what became of a checkout session and reports it back to the payer.
+ * **It records no payment.** The HMAC-verified webhook is the only writer of an
+ * `Adyen Online` row - see the note at the top of `services/adyenService.ts`.
+ *
+ * This route previously inserted a payment straight from the browser's say-so,
+ * under a locally invented reference. Two things were wrong with that: a tenant
+ * could put a row in the landlady's verification queue without paying anything,
+ * and when the real webhook arrived it could not recognise the row (it matches on
+ * `transaction_reference = pspReference`, which the browser never learns), so the
+ * same payment was banked twice.
  */
 router.post(
   '/tenant/payments/adyen/verify-session',
@@ -565,14 +587,24 @@ router.post(
     if (!parsed.success) {
       throw ApiError.validation('Invalid verification payload.', parsed.error.flatten().fieldErrors);
     }
-    const { sessionId, pspReference } = parsed.data;
-    const ip = clientIp(req);
+    const { sessionId, sessionResult } = parsed.data;
 
-    const result = await adyenService.completeMockPayment(sessionId, ip);
+    const result = await adyenService.confirmCheckout(
+      sessionId,
+      sessionResult,
+      req.user!.profileId
+    );
+
     res.status(200).json({
       success: true,
       data: {
-        paymentReference: pspReference || result.paymentReference,
+        // Adyen's own word for the session's state.
+        gatewayStatus: result.status,
+        confirmed: result.confirmed,
+        // Whether the webhook's payment row has landed yet. It usually arrives
+        // within seconds, and the payment is real either way - this only tells
+        // the UI whether to say "recorded" or "being recorded".
+        recorded: result.recorded,
         status: 'Pending Verification',
       },
     });

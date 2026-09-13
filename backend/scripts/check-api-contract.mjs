@@ -62,9 +62,29 @@ async function check(label, pathname, token) {
 
 console.log(`API: ${BASE}\n`);
 
+/**
+ * The security posture is a claim the system makes about itself, so assert it
+ * rather than reading past it.
+ *
+ * `enforced` is the ONLY passing value. It means the publishable key reached
+ * PostgreSQL and PostgreSQL refused it. `unverified` means the key was rejected
+ * at the gateway and the probe proved nothing - which is what an environment
+ * still holding a rotated-out key looks like, and which the old boolean field
+ * reported as a green padlock.
+ */
+async function checkLockdown() {
+  const r = await fetch(`${BASE}/health`);
+  const j = await r.json().catch(() => ({}));
+  const verdict = j?.security?.rlsLockdown;
+  const ok = verdict === 'enforced';
+  ok ? pass++ : (fail++, failures.push(`rlsLockdown is "${verdict}", expected "enforced"`));
+  console.log(`  ${ok ? 'OK  ' : 'FAIL'} ${''.padEnd(4)} ${'rlsLockdown verdict'.padEnd(42)} ${verdict}`);
+}
+
 // ---- public -------------------------------------------------------------
 console.log('PUBLIC (no token)');
 await check('public', '/health', null);
+await checkLockdown();
 await check('public', '/public/rooms', null);
 await check('public', '/public/clusters', null);
 

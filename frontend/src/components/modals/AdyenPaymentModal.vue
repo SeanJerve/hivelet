@@ -11,15 +11,15 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
 import { AdyenCheckout, Dropin } from '@adyen/adyen-web';
+import type { PaymentCompletedData, PaymentFailedData } from '@adyen/adyen-web';
 import '@adyen/adyen-web/styles/adyen.css';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/useToast';
-import { 
-  ShieldCheck, 
-  X, 
-  Loader2, 
-  ExternalLink, 
-  AlertCircle, 
+import {
+  ShieldCheck,
+  X,
+  Loader2,
+  AlertCircle,
   CheckCircle2,
   Lock
 } from 'lucide-vue-next';
@@ -46,9 +46,8 @@ const adyenContainerRef = ref<HTMLDivElement | null>(null);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 const isCompleted = ref(false);
-const paymentRef = ref<string>('');
-const redirectUrl = ref<string | null>(null);
-const isLiveSession = ref(false);
+/** True once the webhook's payment row is visible; false while it is in flight. */
+const isRecorded = ref(false);
 
 onMounted(async () => {
   await initializeAdyen();
@@ -64,89 +63,102 @@ async function initializeAdyen() {
       sessionData: string | null;
       clientKey: string;
       environment: string;
-      redirectUrl: string;
       isLive: boolean;
     }>('/tenant/payments/checkout', {
       billId: props.bill.id,
       returnUrl: window.location.origin + '/tenant/payments'
     });
 
-    if (!res || !res.sessionId) {
-      throw new Error('Failed to obtain Adyen checkout session.');
+    if (!res?.sessionId || !res.sessionData || !res.clientKey) {
+      throw new Error('The payment gateway did not return a usable checkout session.');
     }
 
-    redirectUrl.value = res.redirectUrl;
-    isLiveSession.value = res.isLive;
+    await nextTick();
 
-    // If live Adyen session data is available, mount official @adyen/adyen-web SDK
-    if (res.sessionData && res.clientKey) {
-      await nextTick();
-      
-      const checkout = await AdyenCheckout({
-        environment: (res.environment as any) || 'test',
-        clientKey: res.clientKey,
-        session: {
-          id: res.sessionId,
-          sessionData: res.sessionData
-        },
-        onPaymentCompleted: async (result: any) => {
-          console.log('[Adyen Web SDK] Payment completed result:', result);
-          await finalizePayment(res.sessionId, result.resultCode, result.pspReference);
-        },
-        onError: (error: any) => {
-          console.error('[Adyen Web SDK] Error:', error);
-          errorMessage.value = error?.message || 'An error occurred in Adyen Checkout.';
-        }
-      });
-
-      if (adyenContainerRef.value) {
-        // Create Drop-in component via new Dropin
-        const dropin = new Dropin(checkout, {
-          showPayButton: true,
-          paymentMethodsConfiguration: {
-            gcash: {
-              name: 'GCash e-Wallet',
-              showPayButton: true
-            },
-            card: {
-              hasHolderName: true,
-              holderNameRequired: true,
-              billingAddressRequired: false
-            }
-          }
-        });
-        dropin.mount(adyenContainerRef.value);
+    const checkout = await AdyenCheckout({
+      environment: (res.environment as 'test' | 'live') || 'test',
+      clientKey: res.clientKey,
+      session: {
+        id: res.sessionId,
+        sessionData: res.sessionData
+      },
+      /**
+       * Adyen hands this callback only the keys it whitelists - `action`,
+       * `resultCode`, `sessionData`, `order`, `sessionResult`, `donationToken`,
+       * `error`. There is no `pspReference` here, which is exactly why this page
+       * does not record the payment: it has nothing the server could reconcile
+       * against the webhook. `sessionResult` goes to our backend, which asks
+       * Adyen directly what happened.
+       */
+      onPaymentCompleted: async (data: PaymentCompletedData) => {
+        // The union is `SessionsResponse | { resultCode, donationToken? }`. Only
+        // the sessions arm carries `sessionResult`, so narrow rather than cast -
+        // an advanced-flow payload here would otherwise silently send undefined.
+        const sessionResult = 'sessionResult' in data ? data.sessionResult : undefined;
+        await confirmWithServer(res.sessionId, sessionResult);
+      },
+      onPaymentFailed: (data?: PaymentFailedData) => {
+        const code = data && 'resultCode' in data ? data.resultCode : undefined;
+        errorMessage.value =
+          `The payment did not go through${code ? ` (${code})` : ''}. ` +
+          'Nothing has been charged and no payment was recorded.';
+      },
+      onError: (error: { message?: string }) => {
+        errorMessage.value = error?.message || 'An error occurred during checkout.';
       }
+    });
+
+    if (adyenContainerRef.value) {
+      new Dropin(checkout, { showPayButton: true }).mount(adyenContainerRef.value);
     }
-  } catch (err: any) {
-    console.error('Adyen init error:', err);
-    errorMessage.value = err?.message || 'Unable to connect to Adyen test environment.';
+  } catch (err: unknown) {
+    errorMessage.value =
+      err instanceof Error ? err.message : 'Unable to reach the payment gateway.';
   } finally {
     isLoading.value = false;
   }
 }
 
-async function finalizePayment(sessionId: string, resultCode?: string, pspReference?: string) {
+/**
+ * Confirms the outcome with our server, which confirms it with Adyen.
+ *
+ * This does not create the payment. The signed webhook does that, usually within
+ * seconds. `recorded` tells us whether it has landed yet, so the tenant is told
+ * the truth either way rather than being shown a reference that was invented here.
+ */
+async function confirmWithServer(sessionId: string, sessionResult?: string) {
+  if (!sessionResult) {
+    errorMessage.value =
+      'The gateway did not return a result token, so this payment could not be confirmed. ' +
+      'If money left your account, contact the landlady - the payment is still recorded on Adyen.';
+    return;
+  }
+
   isLoading.value = true;
   try {
-    const verifyRes = await api.post<{ paymentReference: string; status: string }>(
+    const res = await api.post<{ confirmed: boolean; recorded: boolean; gatewayStatus: string }>(
       '/tenant/payments/adyen/verify-session',
-      { sessionId, resultCode, pspReference }
+      { sessionId, sessionResult }
     );
-    paymentRef.value = verifyRes?.paymentReference || 'ADYEN-CONFIRMED';
+
+    if (!res?.confirmed) {
+      errorMessage.value = `Adyen reports this checkout as "${res?.gatewayStatus ?? 'unknown'}". No payment was recorded.`;
+      return;
+    }
+
     isCompleted.value = true;
-    showToast('success', 'Payment Submitted', `Online payment (Ref: ${paymentRef.value}) is pending landlady verification.`);
-    emit('success', paymentRef.value);
-  } catch (err: any) {
-    showToast('error', 'Verification Failed', err?.message || 'Failed to record payment verification.');
+    isRecorded.value = Boolean(res.recorded);
+    showToast(
+      'success',
+      'Payment confirmed by Adyen',
+      "It is now awaiting the landlady's verification."
+    );
+    emit('success', sessionId);
+  } catch (err: unknown) {
+    errorMessage.value =
+      err instanceof Error ? err.message : 'Could not confirm the payment with the gateway.';
   } finally {
     isLoading.value = false;
-  }
-}
-
-function openInteractiveSimulator() {
-  if (redirectUrl.value) {
-    window.location.href = redirectUrl.value;
   }
 }
 </script>
@@ -211,9 +223,15 @@ function openInteractiveSimulator() {
         <!-- Success Completed State -->
         <div v-else-if="isCompleted" class="py-8 text-center space-y-3">
           <CheckCircle2 class="size-12 text-emerald-600 mx-auto" />
-          <h3 class="text-base font-bold text-[#1c1917]">Payment Submitted Successfully</h3>
-          <p class="text-xs text-[#71717a] max-w-sm mx-auto">
-            Your payment reference <strong class="font-mono text-[#1c1917]">{{ paymentRef }}</strong> has been recorded. It is now awaiting verification by Landlady Fe Galang Da Silva.
+          <h3 class="text-base font-bold text-[#1c1917]">Adyen confirmed your payment</h3>
+          <p v-if="isRecorded" class="text-xs text-[#71717a] max-w-sm mx-auto">
+            It has been recorded and is now awaiting verification by Landlady Fe Galang Da Silva.
+            It will appear in your payment history once she has verified it.
+          </p>
+          <p v-else class="text-xs text-[#71717a] max-w-sm mx-auto">
+            The gateway is sending us the signed confirmation now, and the record usually
+            appears within a few seconds. It will then await verification by Landlady
+            Fe Galang Da Silva. Nothing further is needed from you.
           </p>
           <button
             @click="emit('close')"
@@ -231,12 +249,8 @@ function openInteractiveSimulator() {
           </div>
           <p>{{ errorMessage }}</p>
           <div class="pt-2">
-            <button
-              @click="openInteractiveSimulator"
-              class="btn-dark gap-1.5"
-            >
-              <ExternalLink class="size-3.5" />
-              <span>Use Interactive GCash Gateway</span>
+            <button @click="initializeAdyen" class="btn-dark gap-1.5">
+              <span>Try again</span>
             </button>
           </div>
         </div>
@@ -244,20 +258,6 @@ function openInteractiveSimulator() {
         <!-- Adyen Web Component Container -->
         <div v-else class="space-y-4">
           <div ref="adyenContainerRef" id="adyen-dropin-container" class="min-h-[220px]"></div>
-
-          <!-- Interactive Gateway Link -->
-          <div class="p-3 bg-[#fafaf9] border border-[#e7e5e4] rounded-xl flex items-center justify-between">
-            <div class="text-[11px] text-[#71717a]">
-              <span class="font-bold text-[#1c1917]">Simulator Mode:</span> Want the full GCash mobile screen?
-            </div>
-            <button
-              @click="openInteractiveSimulator"
-              class="text-xs font-bold text-[#0c66e4] hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <span>Open GCash Simulator</span>
-              <ExternalLink class="size-3" />
-            </button>
-          </div>
         </div>
       </div>
 
@@ -265,7 +265,7 @@ function openInteractiveSimulator() {
       <div class="bg-[#fafaf9] border-t border-[#e7e5e4] px-4 py-3 flex items-center justify-between text-[10px] text-[#71717a]">
         <div class="flex items-center gap-1.5">
           <ShieldCheck class="size-3.5 text-emerald-600" />
-          <span>PCI-DSS Level 1 Encrypted • Merchant: <strong>HiveletECOM</strong></span>
+          <span>Card and wallet details are entered in Adyen's fields and never reach Hivelet's servers</span>
         </div>
         <button
           @click="emit('close')"

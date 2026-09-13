@@ -11,7 +11,7 @@
  * public visitor "cannot access private tenant information".
  */
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { Router } from 'express';
+import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
 import { db } from '../config/db.js';
 import { optionalAuth, requirePermission } from '../middleware/auth.js';
@@ -200,7 +200,28 @@ router.post(
 );
 
 /**
- * GET /api/public/payments/mock-gateway
+ * Both local-cashier routes are closed in any environment that has a real gateway.
+ *
+ * They are unauthenticated by necessity - a gateway returns the browser by
+ * top-level redirect, which carries no Authorization header - and the POST writes
+ * a `Pending Verification` payment. In a configured deployment that is a second,
+ * unsigned way to put money in the verification queue alongside the HMAC-verified
+ * webhook, so it is refused outright rather than left standing and guarded only by
+ * the session token.
+ */
+function refuseWhenGatewayConfigured(_req: Request, res: Response, next: NextFunction): void {
+  if (adyenService.isLiveConfigured()) {
+    res.status(404).json({
+      success: false,
+      error: { message: 'Not found.' }
+    });
+    return;
+  }
+  next();
+}
+
+/**
+ * GET /api/public/payments/local-cashier
  * Serves the GCash payment authorisation screen for a checkout session.
  *
  * WHY THIS ROUTE CARRIES NO `requirePermission` GUARD
@@ -222,7 +243,8 @@ router.post(
  * This route is read-only - it renders a page. The state change happens in the POST below.
  */
 router.get(
-  '/public/payments/mock-gateway',
+  '/public/payments/local-cashier',
+  refuseWhenGatewayConfigured,
   asyncHandler(async (req, res) => {
     const sessionId = req.query.sessionId as string;
     if (!sessionId) {
@@ -250,7 +272,7 @@ router.get(
     const clientBaseUrl = cancelBase.split('?')[0].replace(/\/tenant(\/payments)?$/, '');
     const cancelUrl = `${cancelBase.split('?')[0]}?status=cancelled`;
     const host = req.get('host') || 'localhost:5000';
-    const mobilePayUrl = `${req.protocol}://${host}/api/public/payments/mock-gateway?sessionId=${sessionId}&view=mobile`;
+    const mobilePayUrl = `${req.protocol}://${host}/api/public/payments/local-cashier?sessionId=${sessionId}&view=mobile`;
     const qrDataUrl = await QRCode.toDataURL(mobilePayUrl, {
       errorCorrectionLevel: 'M',
       margin: 1,
@@ -822,7 +844,7 @@ router.get(
 
           async function submitFinalPayment() {
             try {
-              const res = await fetch('/api/public/payments/mock-gateway/complete', {
+              const res = await fetch('/api/public/payments/local-cashier/complete', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -874,7 +896,7 @@ const mockGatewayCompleteSchema = z.object({
 });
 
 /**
- * POST /api/public/payments/mock-gateway/complete
+ * POST /api/public/payments/local-cashier/complete
  * Handles the gateway's return and records the payment for administrator verification.
  *
  * Unauthenticated for the same reason as the GET above: this is a gateway return, and the
@@ -890,7 +912,8 @@ const mockGatewayCompleteSchema = z.object({
  *      money or close a debt.
  */
 router.post(
-  '/public/payments/mock-gateway/complete',
+  '/public/payments/local-cashier/complete',
+  refuseWhenGatewayConfigured,
   asyncHandler(async (req, res) => {
     const parsed = mockGatewayCompleteSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -902,7 +925,7 @@ router.post(
     const returnUrl = session?.returnUrl;
     const ip = clientIp(req);
 
-    const result = await adyenService.completeMockPayment(sessionId, ip);
+    const result = await adyenService.recordLocalCheckoutPayment(sessionId, ip);
     // Re-validated here even though the session was validated at creation: this is
     // the statement that actually performs the redirect, and a guard that lives at
     // the dangerous line cannot be bypassed by a future code path that populates

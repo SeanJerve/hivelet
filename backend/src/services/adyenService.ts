@@ -1,22 +1,41 @@
 /**
  * @file services/adyenService.ts
- * @description Mock Adyen payment gateway service for Hivelet.
- * 
+ * @description Adyen checkout session handling for Hivelet.
+ *
  * @systemBibleRef Section 12 (Payment Types)
  * @businessRules  BR-016 (Online Payment), BR-017 (Payment Verification)
  * @requirements   FR-015 (Online Payments), FR-016 (Payment Verification)
- * 
- * @architectureRationale 
- * Exposing checkout session handlers entirely on the backend to enforce the
- * database security boundary (04_ARCHITECTURE.md). It stores temporary, 
- * unverified payment session states in an in-memory server Map rather than 
- * writing premature entries directly to the database.
- * 
- * @keyInnovations
- * Provides a mock checkout pipeline mimicking Adyen's asynchronous webhook 
- * workflow. This enables students/evaluators to verify and demonstrate online 
- * GCash transactions on local development systems without creating external 
- * developer accounts or incurring subscription fees.
+ *
+ * @architectureRationale
+ * Session creation runs server-side so the Adyen API key never reaches a browser
+ * (04_ARCHITECTURE.md). Session metadata lives in an in-memory Map rather than in
+ * the database, so an abandoned checkout leaves no ledger trace.
+ *
+ * WHO IS ALLOWED TO WRITE A PAYMENT
+ * ---------------------------------
+ * Only the webhook. `adyenWebhookHandler.applyNotificationItem()` is the single
+ * writer of an `Adyen Online` payment row, because it is the only path that
+ * carries proof: an HMAC signature over Adyen's own payload, and the
+ * `pspReference` that identifies the transaction at the gateway.
+ *
+ * This service deliberately does NOT write a payment when the shopper's browser
+ * comes back from checkout, for two reasons found by reading the Adyen Web v6
+ * bundle rather than assuming:
+ *
+ *   1. `onPaymentCompleted` hands the page only the keys Adyen whitelists -
+ *      `action, resultCode, sessionData, order, sessionResult, donationToken,
+ *      error`. **`pspReference` is not among them.** A row written from the
+ *      browser therefore cannot carry the gateway's reference, so the webhook's
+ *      idempotency check (which matches on `transaction_reference = pspReference`)
+ *      could never recognise it, and the same payment would be banked twice -
+ *      two rows, two notifications, two amounts in the verification queue.
+ *   2. A request from the payer's own browser saying "I paid" is not evidence.
+ *      The previous implementation accepted exactly that and inserted a payment
+ *      with a locally invented reference.
+ *
+ * What the browser return IS used for is confirmation to the payer. The server
+ * asks Adyen directly - `GET /v71/sessions/{id}?sessionResult=...` - and reports
+ * what Adyen says. It reads; it does not bank.
  */
 
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -97,24 +116,44 @@ export const adyenService = {
             sessionData: data.sessionData,
             clientKey: config.adyen.clientKey,
             environment: 'test',
-            isLive: true,
-            redirectUrl: `/api/public/payments/mock-gateway?sessionId=${data.id}`
+            isLive: true
           };
         }
-        console.warn('[Adyen Service] Live session call returned non-200, using local gateway:', data);
+
+        // Configured, but Adyen refused the session. This must surface.
+        //
+        // It previously fell through to the local checkout page, which writes a
+        // `Pending Verification` payment without any money moving - so a genuine
+        // gateway outage silently became a payment the landlady would then see in
+        // her queue and could reasonably approve. A gateway that is down has to
+        // look down.
+        console.error('[adyenService] Adyen refused the session:', JSON.stringify(data).slice(0, 400));
+        throw ApiError.internal(
+          'The payment gateway did not accept this checkout. No payment was started. Please try again shortly.'
+        );
       } catch (err) {
-        console.error('[Adyen Service] Failed connecting to Adyen v71 API, using local gateway:', err);
+        if (err instanceof ApiError) throw err;
+        console.error('[adyenService] could not reach Adyen:', err);
+        throw ApiError.internal(
+          'The payment gateway could not be reached. No payment was started. Please try again shortly.'
+        );
       }
     }
 
-    return this.createMockCheckoutSession(billId, tenantProfileId, amount, fallbackReturnUrl);
+    // Reached only when no Adyen credentials are configured - a developer checkout
+    // on a machine with no gateway account. Never in a configured deployment.
+    return this.createLocalCheckoutSession(billId, tenantProfileId, amount, fallbackReturnUrl);
   },
 
   /**
-   * Initializes a GCash checkout session (Hybrid: live or mock sandbox).
-   * Creates a transaction session mapping bill & tenant identification to a temporary session token.
+   * Local checkout page for an environment with no Adyen credentials.
+   *
+   * This exists so the system can be run end to end on a machine that has no
+   * gateway account. It is unreachable in any environment where
+   * `isLiveConfigured()` is true - the routes serving it refuse to render, and
+   * the branch above never calls it.
    */
-  createMockCheckoutSession(billId: string, tenantProfileId: string, amount: number, returnUrl?: string) {
+  createLocalCheckoutSession(billId: string, tenantProfileId: string, amount: number, returnUrl?: string) {
     // SECURITY: this token is the ONLY thing guarding the two unauthenticated gateway
     // endpoints - they cannot require a JWT because the gateway returns the browser by
     // top-level redirect, which carries no Authorization header. That makes the session id a
@@ -126,7 +165,7 @@ export const adyenService = {
     // instead, which is what a bearer capability needs to be.
     const sessionId = `adyen_sess_${randomBytes(16).toString('hex')}`;
     checkoutSessions.set(sessionId, { billId, tenantProfileId, amount, returnUrl });
-    const redirectUrl = `/api/public/payments/mock-gateway?sessionId=${sessionId}`;
+    const redirectUrl = `/api/public/payments/local-cashier?sessionId=${sessionId}`;
     return {
       sessionId,
       sessionData: null,
@@ -145,11 +184,17 @@ export const adyenService = {
   },
 
   /**
-   * Finalizes payment on checkout completion.
-   * Inserts the payment in Pending Verification status to respect BR-017,
-   * creates an immutable audit record, and triggers an administrator alert notification.
+   * Records a payment made through the LOCAL checkout page.
+   *
+   * Reachable only where `isLiveConfigured()` is false - a development machine
+   * with no gateway account. The route that calls it refuses to serve in any
+   * configured environment, so this never runs alongside the webhook and the two
+   * cannot both bank the same payment.
+   *
+   * Writes `Pending Verification` (BR-017) like every other path: no checkout,
+   * local or otherwise, settles a debt.
    */
-  async completeMockPayment(sessionId: string, ipAddress: string | null) {
+  async recordLocalCheckoutPayment(sessionId: string, ipAddress: string | null) {
     const session = checkoutSessions.get(sessionId);
     if (!session) {
       throw ApiError.notFound('Payment session has expired or is invalid.');
@@ -250,7 +295,7 @@ export const adyenService = {
     // so it must not collide and must not be guessable. `Math.floor(Math.random() * 9e7)` gave
     // 8 digits from a non-cryptographic PRNG - roughly a 1-in-10,000 collision chance by the
     // time a few thousand payments exist (birthday bound), and predictable besides.
-    const transactionReference = `ADYEN-GCASH-${randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase()}`;
+    const transactionReference = `LOCAL-${randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase()}`;
 
     // Insert payment record. Status MUST be 'Pending Verification' (BR-017 / System Bible Section 12)
     const { data: payment, error: payError } = await db
@@ -261,7 +306,7 @@ export const adyenService = {
         room_id: resolvedRoomId,
         amount: session.amount,
         payment_method: 'Adyen Online',
-        payment_source: 'GCash Sandbox',
+        payment_source: 'Local checkout (no gateway configured)',
         verification_status: 'Pending Verification',
         transaction_reference: transactionReference,
         paid_at: new Date().toISOString()
@@ -308,5 +353,109 @@ export const adyenService = {
 
     checkoutSessions.delete(sessionId);
     return { success: true, paymentReference: transactionReference };
+  },
+
+  /**
+   * Asks Adyen what became of a checkout session, and reports it to the payer.
+   *
+   * WRITES NOTHING. See the note at the top of this file: the webhook is the only
+   * writer of an Adyen payment, because it is the only path holding the HMAC
+   * signature and the `pspReference`.
+   *
+   * `sessionResult` is an opaque token Adyen hands the browser when checkout
+   * finishes. It is passed straight back to Adyen over a server-to-server call
+   * authenticated with our API key, so the answer comes from the gateway rather
+   * than from the payer's browser. A forged or replayed token is rejected by
+   * Adyen, not by us.
+   *
+   * Returns the session status verbatim alongside whether the webhook's payment
+   * row has landed yet, so the UI can distinguish "Adyen confirmed it, the record
+   * is on its way" from "Adyen has not confirmed anything".
+   */
+  async confirmCheckout(sessionId: string, sessionResult: string, tenantProfileId: string) {
+    const session = checkoutSessions.get(sessionId);
+    if (!session) {
+      throw ApiError.notFound('Payment session has expired or is invalid.');
+    }
+
+    // The session is a bearer capability. Confirm it belongs to the caller, so one
+    // tenant cannot read the outcome of another tenant's checkout by holding its id.
+    if (session.tenantProfileId !== tenantProfileId) {
+      throw ApiError.notFound('Payment session has expired or is invalid.');
+    }
+
+    if (!this.isLiveConfigured()) {
+      throw ApiError.internal('Adyen is not configured in this environment.');
+    }
+
+    const url =
+      `https://checkout-test.adyen.com/v71/sessions/${encodeURIComponent(sessionId)}` +
+      `?sessionResult=${encodeURIComponent(sessionResult)}`;
+
+    let status = 'unknown';
+    let adyenSaidNo: string | null = null;
+
+    try {
+      const response = await fetch(url, { headers: { 'x-api-key': config.adyen.apiKey } });
+      const body = (await response.json()) as { status?: string; message?: string };
+
+      if (response.ok && typeof body.status === 'string') {
+        status = body.status;
+      } else {
+        // A 422 here means the token did not validate - which is the expected
+        // answer to a forged sessionResult, not a server fault.
+        adyenSaidNo = body.message ?? `Adyen returned HTTP ${response.status}`;
+      }
+    } catch (err) {
+      throw ApiError.internal(
+        `Could not reach Adyen to confirm this payment: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+
+    if (adyenSaidNo) {
+      throw ApiError.validation(`Adyen did not accept this checkout result: ${adyenSaidNo}`);
+    }
+
+    // Only `completed` is treated as confirmed. Every other value - including one
+    // Adyen may add later - falls through as "not confirmed" rather than being
+    // optimistically read as success.
+    const confirmed = status === 'completed';
+
+    // Has the webhook's row arrived? Matched by bill rather than by pspReference,
+    // because the browser never learns the pspReference.
+    let recorded = false;
+    if (session.billId) {
+      const { data: existing } = await db
+        .from('payments')
+        .select('id')
+        .eq('bill_id', session.billId)
+        .eq('payment_method', 'Adyen Online')
+        .limit(1);
+      recorded = Boolean(existing && existing.length > 0);
+    }
+
+    if (confirmed) {
+      // Audited as an observation, not as money. `PAYMENT_RECORD` would overstate
+      // what happened here - nothing was recorded.
+      await recordAudit({
+        actorProfileId: tenantProfileId,
+        action: 'PAYMENT_RECORD',
+        entityType: 'PAYMENT',
+        entityId: session.billId,
+        newValues: {
+          note: 'Adyen confirmed a completed checkout session to the returning browser. ' +
+                'No payment was written here - the webhook is the writer.',
+          sessionId,
+          adyenSessionStatus: status,
+          webhookRowPresent: recorded
+        },
+        ipAddress: null
+      }).catch(() => {});
+
+      checkoutSessions.delete(sessionId);
+    }
+
+    return { status, confirmed, recorded };
   }
 };
+

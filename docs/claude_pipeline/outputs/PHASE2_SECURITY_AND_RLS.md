@@ -203,6 +203,62 @@ definition has been altered is worth rebuilding rather than trusting.
 
 ---
 
+### 4.4 The lockdown self-check passed when it was misconfigured
+
+The API carries its own continuous proof of the posture. At boot, and on every request to the open
+`GET /api/health`, it holds a second Supabase client built from the **publishable** key and tries to
+read `profiles` with it. If that read succeeds, tenant contact data is public and the system says so
+loudly.
+
+The logic that judged the result was one line:
+
+```ts
+const anonLockedDown = probe.error !== null;   // any error at all counted as proof
+```
+
+Measured against the live project, that test cannot distinguish the two failures it must:
+
+| Key used for the probe | HTTP | PostgreSQL `code` | Message | Old verdict |
+| :--- | :-- | :--- | :--- | :--- |
+| The current publishable key | 401 | `42501` | `permission denied for table profiles` | locked down |
+| A rotated-out or mistyped key | 401 | *none* | `Invalid API key` | locked down |
+
+Both are HTTP 401 and both set `error`, so both were reported as a green padlock. In the second row
+the probe never reached PostgreSQL at all — it was turned away at the API gateway — so **nothing was
+tested and the system reported success anyway.**
+
+This is not hypothetical for this project. The September 2026 key rotation replaced the legacy JWT
+keys with the `sb_publishable_` / `sb_secret_` format, and any environment still holding the old key
+lands in exactly that row. A security check that passes when it is broken is worse than no check,
+because it is the one thing an operator trusts without looking.
+
+**The fix.** A PostgreSQL error `code` is present only once PostgREST has authenticated the key and
+handed the query to the database, so its presence is the discriminator. The boolean was replaced by
+a three-state verdict:
+
+| Verdict | Meaning |
+| :--- | :--- |
+| `enforced` | The probe reached PostgreSQL and PostgreSQL refused it. The only passing value. |
+| `exposed` | The probe read tenant rows. An emergency. |
+| `unverified` | The key was rejected before PostgreSQL saw it. Nothing was proven either way. |
+
+`GET /api/health` now reports `security.rlsLockdown` as one of those three, boot logging warns
+distinctly on `unverified`, and `npm run check:api` asserts the value is `enforced` — so an
+environment that has stopped testing itself fails the suite instead of passing it quietly.
+
+The same pass also stopped that open endpoint returning raw Supabase error text, which named tables
+to an unauthenticated caller. The detail is written to the server log; the response carries a
+verdict.
+
+Verified both ways on 2026-09-13 against the live project: the real key yields `enforced`, and an
+instance booted with a deliberately stale publishable key yields `unverified` and the warning,
+where it would previously have claimed the lockdown held.
+
+*Files:* `backend/src/config/db.ts`, `backend/src/routes/health.ts`,
+`backend/scripts/check-api-contract.mjs`.
+
+---
+
 ## 5. Function exposure — the full picture
 
 | Function | `SECURITY DEFINER` | `search_path` pinned *(before → after)* | Executable by `anon` *(before → after)* |
@@ -327,6 +383,17 @@ WHERE n.nspname='public';
 Confirmed after `011` was applied on 2026-09-13: the first query returns 21 rows all
 `enabled = true, forced = true, policies = 0`; the second returns zero rows; the third shows
 `anon_can_execute = false` for every function of ours and a pinned `search_path` on all of them.
+
+
+The posture is also checkable from outside the database, with the API running:
+
+```bash
+curl -s http://localhost:5000/api/health | grep -o '"rlsLockdown":"[a-z]*"'
+# -> "rlsLockdown":"enforced"
+```
+
+`enforced` means the publishable key reached PostgreSQL and was refused — see 4.4. `unverified`
+means the probe never got that far and the result proves nothing.
 
 ---
 
