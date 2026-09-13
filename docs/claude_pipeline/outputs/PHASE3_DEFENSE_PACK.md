@@ -279,10 +279,19 @@ It is the right choice for this section because it is the change that *answers t
 >
 > **Security.** The gateway is never trusted with the financial outcome. A completed online payment
 > is inserted as Pending Verification and cannot settle a bill — only a human with `payment:verify`
-> can, under BR-017. Below that sit two further layers: the database refuses to answer anyone but our
-> backend, because row-level security is forced on all 21 tables with zero policies; and the payment
-> callback endpoints are protected by a single-use **128-bit cryptographic capability token**, so a
-> forged callback cannot be constructed and a replayed one finds nothing.
+> can, under BR-017. Below that sit two further layers. The database refuses to answer anyone but our
+> backend, because row-level security is forced on all 21 tables with zero policies. And **exactly one
+> code path may write an online payment**: the webhook, after an HMAC-SHA256 signature over Adyen's
+> own payload verifies against our shared secret, compared in constant time. A forged notification
+> fails the signature; a replayed one is recognised by its `pspReference` and acknowledged without
+> writing a second row.
+>
+> That single-writer rule is a change we made *because* we found the alternative failing. The
+> shopper's browser also wrote a payment when it returned from checkout, under a reference it
+> generated itself — so one payment produced two rows the webhook could not reconcile, and any
+> tenant could have placed an unpaid row in the landlady's queue by replaying the request. The
+> browser now asks our server what happened, our server asks Adyen, and nobody's browser writes
+> money.
 >
 > **Scalability.** Changing payment provider is one file and **zero schema changes**, because the
 > payments table stores generic settlement attributes. Adding a provider is one new value in an enum.
@@ -306,9 +315,12 @@ It is the right choice for this section because it is the change that *answers t
 | *"Why not microservices?"* | "Scale doesn't justify it. One property, 33 units, one administrator. A modular monolith gives us clean service boundaries without distributed-systems cost. The one thing we did split out is the payment gateway — because that is the boundary the panel identified as risky." |
 | *"Is your schema really in 3NF?"* | "Twenty of twenty-one tables, yes. One is not: `rooms.is_linda_unit` is determined by the cluster, which is a transitive dependency. We found it, measured it — zero of 33 rows disagree today — and we can show you the migration that fixes it. We would rather name the exception than claim perfection." |
 | *"How do you know the water rate is right?"* | "It comes from a `system_settings` row, not from code. We found it hardcoded as `occupants * 200` in four places, which meant the landlady could not change her own rate without a developer. There is no hardcoded rate left in the backend." |
-| *"What if the gateway sends a fake payment?"* | "It creates a Pending Verification row for a human to reject. It cannot settle a bill. And the callback needs a 128-bit single-use token it cannot guess." |
+| *"What if the gateway sends a fake payment?"* | "It cannot get that far. A payment row is written by exactly one path — the webhook — and only after an HMAC-SHA256 signature over Adyen's own payload verifies against our shared secret, compared in constant time. Even a genuine authorisation writes `Pending Verification`; only an administrator holding `payment:verify` settles a bill. Adyen telling us the money moved is evidence, not the landlady's decision." |
+| *"Why doesn't the browser record the payment when the shopper comes back?"*<br>**Strong answer — this was a real defect we found and fixed.** | "Because it produced two payment rows for one payment. The browser wrote a row under a locally generated reference; the webhook then wrote its own under the gateway's `pspReference`, and its duplicate check matches on that reference, so it could not recognise the first. Two rows, two notifications, one payment. And the browser cannot be fixed by sending the reference, because Adyen never gives it one — Adyen Web v6 passes exactly seven keys into `onPaymentCompleted` and `pspReference` is not among them. We verified that by reading the shipped SDK bundle rather than trusting the documentation. So the webhook became the only writer, and the browser return now asks our server, which asks Adyen directly over a server-to-server call, what actually happened." |
+| *"What happens if the webhook cannot reach you during the demo?"* | "The payment is still real and still recorded at Adyen; our ledger just has not heard yet. The tenant sees 'Adyen confirmed your payment, the record is on its way' rather than a false receipt, and the administrator has the manual payment entry she has always had. We preferred a delay we can explain over a row we cannot prove." |
 | *"You said ₱3.43 million — how confident are you?"* | "It is a sum over all 1,327 expense allocations in the live database, and it reconciles with the landlady's own spreadsheet. 58.9% of the recorded expense ledger is personal rather than operating cost." |
 | *"How do you know your system is secure?"*<br>**Only if it comes up — this is a strong answer, not a volunteered confession.** | "We audited it and found our own worst problem. Our live database key and our JWT signing secret had been committed to a public repository for three weeks, and our demo passwords still opened all 44 accounts including the administrator. We rotated everything, migrated to Supabase's new key format so the old keys are revoked everywhere at once, and added a pre-commit scanner so it cannot recur. The lesson we took is that a correct access-control design protects nothing once its credentials leak — which is why we now treat key handling as part of the architecture rather than an afterthought." |
+| *"How do you know the interface shows real data?"*<br>**Only if the panel probes the UI.** | "We audited it and found it was not. Twenty-some places displayed or wrote values the system did not hold: the audit log rendered four invented entries attributed to the landlady whenever the API failed, the resident's profile form was pre-filled with a fabricated emergency contact that would be saved on submit, a payment with no verification status displayed as VERIFIED, and recording cash could report 'posted to the ledger' with nothing written. We swept all 33 write paths and fixed every one. The rule we now hold is that the interface may show what the database says or say it does not know — never a plausible substitute." |
 | *"Did anything in your submitted documents turn out wrong?"* | "Yes, and we produced an errata sheet with 21 entries. The largest were a claim that `ON DELETE RESTRICT` already existed when it did not, and a 2% annual rent escalation that appears in no business rule — the owner sets rates by hand. We would rather hand you the corrections than have you find them." |
 
 ---

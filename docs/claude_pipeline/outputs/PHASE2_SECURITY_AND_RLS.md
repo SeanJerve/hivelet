@@ -341,17 +341,28 @@ rewriting is theatre.**
 
 ## 7. Gaps that remain open, stated honestly
 
-Not fixed by `011`, and not to be described as fixed.
+Reassessed on 2026-09-13. Two of the four gaps recorded after migration `011` have since
+been closed; the wording below says which, and what closed them.
 
-| # | Gap | Evidence | Phase |
-| :-- | :--- | :--- | :-- |
-| 1 | **Two payment endpoints carry no authentication middleware.** Both go straight to `asyncHandler` with no `optionalAuth`, no `requireAuth`, no `requirePermission`. Every other route in the file declares a permission. | `backend/src/routes/public.ts:202`, `:853` | 3 |
-| 2 | **`system_settings` is read by zero lines of backend code.** Six correctly seeded keys — including `water_rate_per_occupant = 200` and `grace_period_days = 7` — are dead configuration while the values they should supply are hardcoded. A setting that cannot be changed is a security and governance claim the system does not honour. | `admin.ts:910, 1103, 1243`; `tenant.ts:440, 453` | 3 |
-| 3 | **Supabase Storage is not referenced by any backend code.** `room_photos.file_url` and `ticket_attachments.file_url` hold URLs, but no upload path, bucket policy or signed-URL logic exists. There is no storage access-control posture to document because there is no integration. | — | 3 |
-| 4 | **No transaction boundary in application code.** `replace_expense_allocations` (migration `010`) is the only atomic multi-row write in the system, and it is a database function precisely because supabase-js cannot open a transaction. Every other multi-step write can half-complete. | — | 3 |
+| # | Gap | Status | Evidence |
+| :-- | :--- | :--- | :--- |
+| 1 | **Two payment endpoints carried no authentication middleware.** | **Closed.** They were the local checkout page and its completion POST. Both now refuse to serve in any environment where `isLiveConfigured()` is true, so they do not exist in a configured deployment. The Adyen webhook is unauthenticated by Express *by necessity* - a gateway holds no JWT - and is instead protected by Basic Auth plus an HMAC-SHA256 signature over Adyen's own payload, verified in constant time. | `backend/src/routes/public.ts` (`refuseWhenGatewayConfigured`), `services/adyenWebhook.ts` |
+| 2 | **`system_settings` was read by zero lines of backend code.** | **Closed.** `services/settingsService.ts` is a typed cached reader, and `billingService` applies `water_rate_per_occupant` and `grace_period_days` through it. The public listing reads the water rate over `GET /api/public/rates` rather than restating it. | `services/settingsService.ts`, `services/billingService.ts`, `routes/public.ts` |
+| 3 | **Supabase Storage is not referenced by any backend code.** | **Open.** Photographs are stored as base64 data URLs directly in `room_photos.file_url`. That works and is access-controlled the same way every other column is, but it is not a storage integration and there is no bucket policy to describe. One of the 33 units has a photograph on file. | — |
+| 4 | **No transaction boundary in application code.** | **Open.** `replace_expense_allocations` (migration `010`) is still the only atomic multi-row write, and it is a database function precisely because supabase-js cannot open a transaction. Every other multi-step write can half-complete. | — |
 
-Gap 2 deserves emphasis at the defense: it is the reason **BR-012's grace period and BR-014's water
-rate are not actually configurable**, and it is entangled with the open question OD-16.
+### 7.1 A fifth gap, found later and closed: the self-check that passed when broken
+
+Recorded here because it is the most instructive of them. See 4.4 - the lockdown probe
+treated "your key is invalid" as proof that the lockdown held. The lesson generalises past
+this one check: **a control that cannot fail is not a control.** The same shape appeared
+twice more in this codebase and both are now fixed:
+
+- The frontend reported payments, expenses and ticket edits as saved when the write had
+  failed, because the failure was caught and logged rather than surfaced.
+- `GET /api/health` returned raw Supabase error text to unauthenticated callers.
+
+Gap 4 is the one to raise first if the panel asks what is still weak.
 
 ---
 
