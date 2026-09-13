@@ -186,13 +186,13 @@ State these honestly; never claim any as already fixed.
 | # | Defect | Evidence | Phase |
 | :-- | :--- | :--- | :-- |
 | 1 | ~~`system_settings` read by **zero** lines of backend code~~ **FIXED.** `settingsService.ts` is now the typed, cached reader; `billingService` consumes it | `services/settingsService.ts` | done |
-| 2 | Water rate hardcoded `occupants * 200` — **partly fixed.** `billingService.computeWaterFee()` now reads the rate from settings and honours the Linda fixed charges; `tenant.ts` checkout uses it. The three `admin.ts` sites still need migrating to it | `admin.ts:910, 1103, 1243` | 3 |
-| 3 | Share divisor hardcoded `rentAmount / 2` | `admin.ts:911, 1102` | 3 |
+| 2 | ~~Water rate hardcoded `occupants * 200`~~ **FIXED.** All four sites now call `billingService.computeWaterFee()`, which reads the rate from settings and honours the Linda fixed charges. No `* 200` remains in `backend/src` | live code | done |
+| 3 | ~~Share divisor hardcoded `rentAmount / 2`~~ **FIXED.** Both were dead variables that nothing read — the database generates the column. Deleted | live code | done |
 | 4 | ~~Grace period hardcoded to 10 days~~ **FIXED.** There is no grace period at all (OD-16); `016` sets the setting to 0 and `billingService` reads it | `tenant.ts` | done |
-| 5 | ~~`fifty_percent_share` / `remitted_amount` never written — every row stores `0.00`~~ **CORRECTED: both are `GENERATED ALWAYS AS … STORED`; all 937 rows are correct. The real defect is one line of dead code that computes a value nothing reads.** | `admin.ts:922` | 3 — trivial |
+| 5 | ~~`fifty_percent_share` / `remitted_amount` never written~~ **RESOLVED.** Both are `GENERATED ALWAYS AS … STORED` and all 937 rows are correct; the dead code that recomputed them has been deleted | live code | done |
 | 6 | ~~Foreign keys are 17 CASCADE / 4 SET NULL / 0 RESTRICT~~ **FIXED by `005`.** Now 7 RESTRICT / 11 CASCADE / 1 SET NULL / 19 NO ACTION | live catalogue | done |
 | 7 | No `BEGIN`/`COMMIT` transaction anywhere in `backend/src`. `replace_expense_allocations` (`010`) is the only atomic multi-row write, and it is a database function because supabase-js cannot open a transaction | — | 3 |
-| 8 | Two payment endpoints carry no authentication middleware at all | `public.ts:202`, `:853` | 3 |
+| 8 | ~~Two payment endpoints carry no authentication middleware~~ **RESOLVED.** They are gateway returns and cannot take a JWT (top-level redirect carries no header). The guard is a capability token, now **128 bits of CSPRNG** instead of `Math.random()`, single-use, and unable to mark anything paid. Both routes now document why they are open | `public.ts` | done |
 | 9 | ~~`PH` seeded as `floor = 3`~~ **FIXED by `007`.** `PH` is on level 4 | live catalogue | done |
 | 10 | ~~`rooms.floor` values were populated for development and contradict the survey~~ **FIXED by `015`.** `F1` moved to floor 3; the distribution is 11 / 11 / 10 / 1 | live catalogue | done |
 | 11 | Supabase Storage is **not** referenced by any backend code — a design target, not an integration | — | 3 |
@@ -201,6 +201,7 @@ State these honestly; never claim any as already fixed.
 | 14 | ~~Migration `002`'s `REVOKE` on `current_user_role()` has never done anything~~ **FIXED by `011`.** Also worth knowing: that function **fails open**, returning `'admin'` when it cannot identify the caller. Nothing consults it (zero policies), but it is now revoked from `PUBLIC` | live catalogue | done |
 | 15 | ~~`replace_expense_allocations()` inserts uncast `text` into an enum column, so every expense-entry allocation edit 500s~~ **FIXED by `013`**, verified against production | live catalogue | done |
 | 16 | ~~BR-045's trigger and BR-044's unique key existed **only in the production database**~~ **FIXED by `014`.** Both are now created by a migration, so a rebuilt database gets them | live catalogue | done |
+| 19 | **NEW, FIXED.** `adyenService.completeMockPayment` had the same broken bill insert — invalid `bill_type` **and** a missing `NOT NULL` `grace_period_end_date`, so it could never have succeeded, with both errors discarded. It also billed against an arbitrary room and split the amount assuming water was exactly ₱200 | `adyenService.ts` | done |
 | 18 | **NEW, FIXED.** `POST /api/tenant/payments/checkout` billed against **an arbitrary room** (`rooms LIMIT 1`) at a hardcoded ₱4,500 when the tenant had no assignment, used `bill_type: 'Monthly Rent'` which is not a valid enum value (so the insert failed with 22P02 every time), discarded the insert error, and seeded the total at ₱4,700 | `tenant.ts` | done |
 | 17 | ~~The Linda fixed electricity charge is attributed to the wrong unit~~ **RESOLVED by `017`.** It was neither unit's rate — it was a workaround for unmetered units, and is retired. History preserved | live catalogue | done |
 

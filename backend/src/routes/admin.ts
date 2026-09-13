@@ -26,6 +26,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
+import { computeWaterFee } from '../services/billingService.js';
 
 const router = Router();
 
@@ -916,10 +917,21 @@ router.patch(
         .eq('is_active', true)
         .maybeSingle();
 
+      // The unit's code decides whether water is per-occupant or a Linda fixed charge
+      // (BR-014 / BR-040), so it has to be known before the water figure can be derived.
+      const { data: paidRoom } = await db
+        .from('rooms')
+        .select('room_number')
+        .eq('id', before.room_id)
+        .maybeSingle();
+
       const occupants = assignment?.occupant_count || 1;
-      const rentAmount = billData?.rent_amount || (before.amount - occupants * 200);
-      const waterAmount = billData?.water_amount || (occupants * 200);
-      const fiftyPercentShare = rentAmount / 2;
+
+      // Rate read from system_settings, never hardcoded (defect 2). Prefer the bill's own
+      // figures when there is a bill - those are the terms the tenant was invoiced under.
+      const derivedWater = await computeWaterFee(paidRoom?.room_number ?? '', occupants);
+      const waterAmount = billData?.water_amount ?? derivedWater.amount;
+      const rentAmount = billData?.rent_amount ?? (before.amount - waterAmount);
 
       const datePaid = new Date(before.paid_at || Date.now());
       const year = datePaid.getFullYear();
@@ -1110,9 +1122,9 @@ router.post(
 
     if (assignError) throw ApiError.internal(assignError.message);
 
-    const calcShare = rentAmount / 2;
-    const calcWater = occupants * 200;
-    const calcRemitted = rentAmount + calcWater;
+    // BR-014 / BR-040 - the rate comes from system_settings and the two Linda units are on a
+    // fixed charge. Previously `occupants * 200`, which could not be changed without a deploy.
+    const { amount: calcWater } = await computeWaterFee(roomNumber, occupants);
 
     const date = new Date(datePaid);
     const year = date.getFullYear();
@@ -1251,7 +1263,16 @@ router.patch(
 
     const rent = rentAmount !== undefined ? Number(rentAmount) : Number(before.rent_amount);
     const occ = occupants !== undefined ? Number(occupants) : Number(before.occupants || 1);
-    const water = occ * 200;
+
+    // Resolve the unit's code so the Linda fixed charge is honoured on edits too. When the
+    // caller did not change the room, fall back to the row's existing one.
+    const { data: editRoom } = await db
+      .from('rooms')
+      .select('room_number')
+      .eq('id', roomId)
+      .maybeSingle();
+
+    const { amount: water } = await computeWaterFee(editRoom?.room_number ?? '', occ);
 
     const updatePatch: Record<string, unknown> = {
       updated_at: new Date().toISOString(),

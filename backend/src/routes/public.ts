@@ -196,7 +196,25 @@ router.post(
 
 /**
  * GET /api/public/payments/mock-gateway
- * Serves a simulated GCash payment authorization screen.
+ * Serves the GCash payment authorisation screen for a checkout session.
+ *
+ * WHY THIS ROUTE CARRIES NO `requirePermission` GUARD
+ * ---------------------------------------------------
+ * Every other route in this file declares a permission, and the absence here is deliberate
+ * rather than an oversight (it was previously recorded as defect 8 precisely because it did
+ * not look deliberate).
+ *
+ * A payment gateway returns the payer to the merchant by **top-level browser redirect**. That
+ * navigation carries no `Authorization` header - this API authenticates with bearer tokens,
+ * not cookies - so requiring a JWT here would break the flow for every real payer while
+ * stopping no attacker.
+ *
+ * The protection is therefore a **capability token**: `sessionId` is 128 bits from the CSPRNG
+ * (`adyenService.createMockCheckoutSession`), is held only in server memory, and is deleted
+ * on completion, so it is unguessable and single-use. Holding it proves you were sent here by
+ * a checkout this server started.
+ *
+ * This route is read-only - it renders a page. The state change happens in the POST below.
  */
 router.get(
   '/public/payments/mock-gateway',
@@ -847,7 +865,19 @@ const mockGatewayCompleteSchema = z.object({
 
 /**
  * POST /api/public/payments/mock-gateway/complete
- * Handles redirect response from mock checkout and updates payments to pending verification.
+ * Handles the gateway's return and records the payment for administrator verification.
+ *
+ * Unauthenticated for the same reason as the GET above: this is a gateway return, and the
+ * `sessionId` capability token is what authorises it. See that route's comment.
+ *
+ * Two properties make this safe to leave open, and both must be preserved:
+ *
+ *   1. **The token is single-use.** `completeMockPayment` deletes the session, so a replayed
+ *      request finds nothing and returns 404 rather than writing a second payment.
+ *   2. **It cannot mark anything paid.** The payment is written as `Pending Verification`
+ *      (BR-017). Only an administrator holding `payment:verify` can settle a bill. Even a
+ *      forged completion would create a pending row for a human to reject - it cannot move
+ *      money or close a debt.
  */
 router.post(
   '/public/payments/mock-gateway/complete',
