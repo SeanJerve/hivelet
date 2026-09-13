@@ -674,3 +674,52 @@ stated source of truth is not itself stale. The deltas: `property_area_type` gai
 `authenticated_security_definer_function_executable`. What remains is 21 × `rls_enabled_no_policy`
 at INFO, which is the intended design and is argued in `PHASE2_SECURITY_AND_RLS.md` §2.1.
 `property_areas` is now among those 21; before `011` it was excluded because RLS was off entirely.
+
+
+---
+
+# Seventh addendum — migration 015, closing OD-14
+
+**2026-09-13.** The client gave a building-by-building breakdown that settled the floor question.
+
+The two floor counts they stated match the seeded room codes exactly — Apartment Building (BH)
+8 / 7 / 7 for `1a`-`1h`, `2a`-`2g`, `3a`-`3g`, and Back Apartment 1 / 2 / 2 for `B1F`, `B2F`+`B2B`,
+`B3F`+`B3B`. With the Penthouse on level 4 those account for **9 / 9 / 9 / 1**.
+
+The surveyed **11 / 11 / 10 / 1** therefore needs +2 / +2 / +1 from the five units whose floors the
+client did not state: 3 Front Apartment + 2 Linda. The owner has twice placed both Linda units on the
+ground floor, and `F2B` / `F2F` were already on the second. One placement remained:
+
+> **`F1` is on the third floor, not the ground floor.**
+
+Applied as `015_correct_front_apartment_floor.sql`. It updates one row and asserts the resulting
+distribution, refusing to commit if it is not 11 / 11 / 10 / 1 across 33 units.
+
+| Check | Result |
+| :--- | :--- |
+| Floors after `015` | **11 / 11 / 10 / 1** |
+| Total units | **33** |
+| Rows changed | **1** |
+
+**The single inference.** The code `F1` reads like "Front, floor 1", which is almost certainly how it
+came to be seeded as floor 1; on the client's account the Front Apartment is a separate structure and
+`F1` numbers its first unit rather than its level. This is the one thing in `015` worth checking on a
+walk-through. `rooms.floor` is display-only — searched across `backend/src` and `frontend/src`, its
+only consumers are floor labels in `RoomDetailModal.vue` and `AdminEditUnitModal.vue` — so an error
+here is a label, not money.
+
+## A defect this round surfaced: the Linda electricity charge is on the wrong unit
+
+Checking that no Front Apartment income reaches Linda (it does not — 0 of 93 rows flagged, ₱0.00 of
+Linda charges) turned up a mismatch between configuration and ledger:
+
+| | `system_settings` / old UI | Live ledger, 31 months | Owner's spreadsheet |
+| :--- | :--- | :--- | :--- |
+| `LF` | electricity "submetered actual" | **charged 31 of 31** — min ₱325, max ₱2,285.76, avg ₱388.25 | `Electric` column = 325 on the `*LF` row |
+| `LB` | **fixed ₱325 / month** | **charged 0 of 31** | nothing on the `*LB` row |
+
+The ledger and the owner's own book agree with each other and disagree with
+`system_settings.linda_lb_electricity_charge = 325`. The income screen was corrected to match the
+evidence. **The setting was deliberately not changed** — it is a money parameter, no backend code
+reads it (defect 1), and altering one on inference rather than instruction is the wrong call.
+Recorded as **OD-18** for the client to confirm: which Linda unit actually pays the fixed ₱325?

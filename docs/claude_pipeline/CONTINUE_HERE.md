@@ -16,6 +16,7 @@
 > | `012_penthouse_area_and_cluster_routing` | **APPLIED** — 6 areas, every cluster routed |
 > | `013_fix_replace_allocations_enum_cast` | **APPLIED** — the broken expense edit works again |
 > | `014_codify_production_only_objects` | **APPLIED** — a no-op in production, as intended |
+> | `015_correct_front_apartment_floor` | **APPLIED** — floors are now 11 / 11 / 10 / 1, closing OD-14 |
 >
 > `005`–`010` were verified individually against the live catalogue, not assumed — the evidence table
 > is in the third addendum of `database/migrations/VERIFICATION.md`. **`APPLY_PHASE2.sql` does not
@@ -34,6 +35,7 @@
 > | Clusters routing nowhere | **0** |
 > | BR-044 unique key / BR-045 trigger | both present |
 > | Row counts (entries / allocations / rooms) | **1,262 / 1,327 / 33** — unchanged |
+> | Floor distribution | **11 / 11 / 10 / 1** — matches the survey |
 >
 > ### The expense-edit bug is fixed
 >
@@ -106,7 +108,8 @@ Constraints that still apply:
 
 I have full authority over frontend, backend and applying migrations to Supabase.
 
-Migrations 005-014 are all applied and verified - there is no database work pending.
+Migrations 005-015 are all applied and verified - there is no database work pending.
+The floor distribution is 11 / 11 / 10 / 1 and OD-14 and OD-17 are closed.
 
 Begin Phase 3 with docs/claude_pipeline/prompts/PROMPT_3_BACKEND_SERVICES.md.
 ```
@@ -183,28 +186,33 @@ State these honestly; never claim any as already fixed.
 | 7 | No `BEGIN`/`COMMIT` transaction anywhere in `backend/src`. `replace_expense_allocations` (`010`) is the only atomic multi-row write, and it is a database function because supabase-js cannot open a transaction | — | 3 |
 | 8 | Two payment endpoints carry no authentication middleware at all | `public.ts:202`, `:853` | 3 |
 | 9 | ~~`PH` seeded as `floor = 3`~~ **FIXED by `007`.** `PH` is on level 4 | live catalogue | done |
-| 10 | `rooms.floor` values were populated for development, not surveyed — **and they contradict the owner's survey.** See OD-14 below | live catalogue | 2 → open |
+| 10 | ~~`rooms.floor` values were populated for development and contradict the survey~~ **FIXED by `015`.** `F1` moved to floor 3; the distribution is 11 / 11 / 10 / 1 | live catalogue | done |
 | 11 | Supabase Storage is **not** referenced by any backend code — a design target, not an integration | — | 3 |
 | 12 | **NEW.** `rooms.is_linda_unit` is transitively determined by `cluster_code` — the one genuine 3NF violation | `PHASE2_NORMALIZATION_PROOF.md` §4.3 | 3 |
 | 13 | ~~`property_areas` is the only table without forced RLS~~ **FIXED by `011`.** 21 of 21 forced | live catalogue | done |
 | 14 | ~~Migration `002`'s `REVOKE` on `current_user_role()` has never done anything~~ **FIXED by `011`.** Also worth knowing: that function **fails open**, returning `'admin'` when it cannot identify the caller. Nothing consults it (zero policies), but it is now revoked from `PUBLIC` | live catalogue | done |
 | 15 | ~~`replace_expense_allocations()` inserts uncast `text` into an enum column, so every expense-entry allocation edit 500s~~ **FIXED by `013`**, verified against production | live catalogue | done |
 | 16 | ~~BR-045's trigger and BR-044's unique key existed **only in the production database**~~ **FIXED by `014`.** Both are now created by a migration, so a rebuilt database gets them | live catalogue | done |
+| 17 | **NEW.** The Linda fixed electricity charge is attributed to `LB` in `system_settings` and was shown that way in the UI; 31 months of ledger data and the owner's spreadsheet both say it is `LF`. UI corrected; the setting deliberately left alone. See OD-18 | `monthly_income_records`; source workbook | 3 |
 
 ---
 
 ## Still genuinely open
 
+**OD-14 and OD-17 are closed.** The client gave a building-by-building breakdown on 2026-09-13 which
+settled both — full account in `PHASE2_LOCKED_DECISIONS.md`, second addendum.
+
 | ID | Item | Why it matters | Gate |
 | :-- | :--- | :--- | :-- |
-| **OD-14** | **Which unit's stored floor is wrong.** The database says **12 / 11 / 9 / 1**; the owner says **11 / 11 / 10 / 1**. Both total 33, and the error is symmetrical — one unit too many on the ground floor, one too few on the third — so **exactly one row's `floor` is wrong**. Ground floor as stored: `1a`–`1h`, `B1F`, `F1`, `LF`, `LB`. | The ERD and data dictionary are unaffected (neither asserts per-floor counts), but any public document stating the distribution is asserting something the data contradicts. **No migration was written: moving a row on a guess would corrupt the one artifact whose job is to describe the building truthfully.** | 2 |
-| **OD-17** | **Is `LF` a Linda unit or a Front Apartment unit?** The owner said on 2026-09-13 *"there is no linda front … the linda front its an apartment"* and *"we should remove it as linda front, it should be … front apartment"* — but also that the Front Apartment *"consists of 3 units, 1 ground and 2 on the 2nd floor"*, which `F1`, `F2B` and `F2F` already satisfy. Moving `LF` in would make it 4. | `LF` is a real, separately let unit: **31 income records**, its own tenant (`Gayon LGPT`), and its own ₱400 Linda water charge — distinct from `LB`'s ₱200. It cannot simply be deleted. Its cluster decides which expense bucket its costs land in once `012` is applied. | 2 |
+| **OD-18** | **The Linda fixed electricity charge is recorded against the wrong unit.** `system_settings.linda_lb_electricity_charge = 325` says **LB**. The ledger says **LF**: charged in 31 of 31 months (min ₱325, max ₱2,285.76), while LB is charged in **0 of 31**. The owner's spreadsheet agrees with the ledger. | The setting is read by zero lines of backend code today (defect 1), so nothing is mis-billing yet — but it would the moment `billingService` is wired up in Phase 3. | 3 |
 | **OD-02** | GBG garbage fee timing — fixed calendar month, unit anniversary month, or administrator discretion | — | 3 |
 | **OD-10** | Tenant-submitted payments (form F-12) — does the form stay, and does `payment:submit:own` get added | — | 3 |
 | **OD-16** | "No late payment" vs the seeded 7-day grace period | `billingService` cannot be specified until this is settled | 3 |
 
-**OD-14 and OD-17 are one short conversation with the client.** The question that resolves both:
-*walk the ground floor and the third floor, and say which units are on each.*
+**One thing to eyeball on the next walk-through.** Migration `015` places `F1` on the **third** floor.
+That is forced by arithmetic once both Linda units sit on the ground floor, but the code `F1` reads
+like "Front, floor 1", so it is the single inference in the whole floor correction. `rooms.floor` is
+display-only — if it is wrong it is a label, not money.
 
 ---
 

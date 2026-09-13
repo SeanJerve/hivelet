@@ -402,37 +402,16 @@ Two things it establishes that nothing else in the project did:
 
 Two items are genuinely open and are recorded rather than papered over.
 
-**OD-14 — the stored floor values contradict the owner's survey.**
-Locked canon publishes **11 / 11 / 10 / 1** and the owner reconfirmed that distribution twice on
-2026-09-13. The live `rooms.floor` data says:
+**OD-14 — CLOSED.** The stored floor values contradicted the owner's survey (12 / 11 / 9 / 1 against
+11 / 11 / 10 / 1). The client's building-by-building breakdown of 2026-09-13 settled it: the two
+floor counts they gave — Apartment Building 8 / 7 / 7 and Back Apartment 1 / 2 / 2 — match the seeded
+codes exactly, and with the Penthouse on level 4 account for 9 / 9 / 9 / 1. The five units whose
+floors were not stated (3 Front Apartment + 2 Linda) had to fill +2 / +2 / +1, and with both Linda
+units on the ground floor only one placement remained: **`F1` is on the third floor.** Migration
+`015` moved it; the live distribution is now **11 / 11 / 10 / 1** across 33 units.
 
-| Floor | Units | Room numbers |
-| :-- | :-- | :--- |
-| 1 | **12** | `1a`–`1h`, `B1F`, `F1`, `LF`, `LB` |
-| 2 | 11 | `2a`–`2g`, `B2B`, `B2F`, `F2B`, `F2F` |
-| 3 | **9** | `3a`–`3g`, `B3B`, `B3F` |
-| 4 | 1 | `PH` |
-
-Both total 33. The discrepancy is symmetrical — one unit too many on the ground floor, one too few
-on the third — so **exactly one row's `floor` is wrong**, and which one is not yet established.
-
-The distribution itself is not in dispute; **11 / 11 / 10 / 1 is locked canon and the owner has
-reconfirmed it.** What is missing is which single `rooms.floor` value to change, and that cannot be
-derived:
-
-- Every unit code except `LF` and `LB` encodes its own level (`1a`–`1h`, `B1F`, `F1` on the ground;
-  `2a`–`2g`, `B2B`, `B2F`, `F2B`, `F2F` on the second; `3a`–`3g`, `B3B`, `B3F` on the third), so the
-  codes alone produce 12 / 11 / 9 / 1.
-- **The owner's ledger records no floor for any unit** (§6b) — there is no floor column anywhere in
-  the workbook. So there is no document to check the database against.
-- `rooms.floor` was populated for development rather than surveyed (defect 10), so the stored values
-  carry no authority of their own.
-
-**No migration has been written to move a unit.** Every candidate correction is arithmetically valid
-and they disagree about which room is where; guessing would corrupt the one artifact whose purpose is
-to describe the building truthfully. The ERD and data dictionary above are unaffected, because
-neither asserts a per-floor count. **This closes with one walk of the ground and third floors** —
-listing which units are on each — and nothing short of that will close it.
+`rooms.floor` is display-only — no billing, pricing or reporting logic reads it — so the one
+inference here (that `F1` numbers a unit rather than a level) is a label, not money.
 
 **OD-15 — closed by the owner, not yet applied.**
 The owner confirmed on 2026-09-13 that the Penthouse gets **its own** expense category and that
@@ -440,20 +419,29 @@ Linda's costs book to **Back Apartment**. Migration `012` implements both and is
 **not applied** — see §8. Until it is, `property_areas` holds five rows, the `Penthouse` and `Linda`
 clusters route nowhere, and the diagram above reflects that live state rather than the intended one.
 
-**OD-17 — is `LF` a Linda unit or a Front Apartment unit?**
-The owner has said the unit should not be called "Linda Front" and belongs with the Front Apartment.
-**The owner's own ledger says otherwise**, and that evidence is now on the record (§6b): the
-*Monthly Income* sheet lists `*LF` and `*LB` together under a `Linda` header, against a footnote
-reading *"Rent remitted to Linda directly"*, and `LF` carries a ₱325 electric charge no other unit
-has. Reclassifying `LF` to the Front Apartment would put the database at odds with the book it was
-built to reconcile with, and would move its costs from the Back bucket to the Front one under `012`.
+**OD-17 — CLOSED. `LF` is a Linda unit, and no reclassification was needed.**
+The client's concern was that Front Apartment income must not be remitted to Linda. **That separation
+already held, and was verified against the live data rather than assumed:** all three Front Apartment
+units carry `is_linda_unit = false`, **zero** of their 93 income rows are flagged as Linda billing,
+and they show ₱0.00 of Linda water and ₱0.00 of Linda electricity. Front Apartment remains 3 units
+and Linda remains 2.
 
-**No room row has been reclassified.** `LF` is a real, separately let unit with 31 income records, its
-own tenant and its own fixed charges; moving it on an instruction the source records contradict would
-shift real money between reporting buckets across those records. The question to put to the client is
-narrower than "which cluster": *the books say LF's rent is remitted to Linda directly — is that still
-the arrangement, or has it changed?* If it has, the reclassification is correct and a migration is
-trivial. If it has not, the database is already right and it is the label that misleads.
+What was wrong was the **name**. "Linda Front" implied a Front Apartment association that does not
+exist, so the income screen now labels the two units `Linda (LF)` and `Linda (LB)`. The `room_number`
+codes are deliberately unchanged — they are the natural key that reconciles with the owner's
+spreadsheet, which lists them as `*LF` and `*LB` (§6b).
+
+**Main House — confirmed.** The client confirmed it is an expense-only category, not a rentable
+space. That is exactly what the schema does: a Property Area with `is_rental_expense = FALSE`, not a
+cluster, owning no unit.
+
+**OD-18 — newly open.** The Linda fixed electricity charge is recorded against the wrong unit.
+`system_settings.linda_lb_electricity_charge = 325` names `LB`; the ledger charges **`LF` in 31 of 31
+months** (min ₱325, max ₱2,285.76) and **`LB` in none**, and the owner's spreadsheet agrees with the
+ledger. The UI was corrected to match the evidence; the seeded setting was deliberately left alone,
+since changing a money parameter on inference rather than instruction is the wrong call. Nothing
+mis-bills today — no backend code reads `system_settings` (defect 1) — but it would once
+`billingService` is built.
 
 ---
 

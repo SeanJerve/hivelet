@@ -174,3 +174,79 @@ reports are considered final.
 
 **No room row was reclassified.** Changing a unit's cluster on a contradictory instruction would move
 real money between reporting buckets across 31 historical records.
+
+
+---
+
+# Second addendum — the client's building breakdown (2026-09-13)
+
+The owner walked the property with the client and returned a building-by-building account. It is
+the first statement in this project that gives **structures and unit counts together**, and it
+closes both remaining Phase 2 questions.
+
+| Structure | Local reference | Units | Floors |
+| :--- | :--- | :-: | :--- |
+| Penthouse | *taas* | 1 | rooftop, level 4 |
+| Front Apartment | *kataning ni bossing* | 3 | not stated |
+| Linda | *sa luwasan mi beside red gate* | 2 | not stated |
+| Apartment Building (BH) | *su may mesa tapos seesaw* | 22 | **8 / 7 / 7** |
+| Back Apartment | *sa katabi niyo red gate tapos mga sa taas papunta penthouse* | 5 | **1 / 2 / 2** |
+
+Total **33**, matching the canonical unit list and the owner's own ledger.
+
+## OD-14 — CLOSED. `F1` is on the third floor
+
+The two floor breakdowns the client did give match the seeded data **exactly**: BH is `1a`–`1h` /
+`2a`–`2g` / `3a`–`3g` = 8 / 7 / 7, and Back Apartment is `B1F` / `B2F`+`B2B` / `B3F`+`B3B` = 1 / 2 / 2.
+With the Penthouse on level 4, those three account for **9 / 9 / 9 / 1**.
+
+Reaching the surveyed **11 / 11 / 10 / 1** needs +2 on the ground, +2 on the second and +1 on the
+third — five places for the five units whose floors the client did not state (3 Front + 2 Linda).
+The owner has twice said the ground floor's eleven **include both Linda units**, which fixes Linda at
+2 on the ground; `F2B` and `F2F` were already on the second, filling it.
+
+Exactly one placement remains: **`F1` is on the third floor.** Applied as migration `015`; the live
+distribution is now 11 / 11 / 10 / 1 across 33 units.
+
+> **The one inference, stated plainly.** The code `F1` reads like "Front, floor 1", which is almost
+> certainly how it came to be seeded as floor 1. On the client's account the Front Apartment is a
+> separate structure and `F1` denotes its first unit, not its level. This is the single thing in
+> migration `015` worth eyeballing on a walk-through. `rooms.floor` is display-only — no billing,
+> pricing or reporting logic reads it — so if it is wrong it is a label, not money.
+
+## OD-17 — CLOSED. The clusters were already right; the *label* was the problem
+
+The client's concern was *"not linda front since income shouldn't go to linda from front apartment"*.
+**That separation already held, and was verified against the live data rather than assumed:**
+
+| Cluster | Units | `is_linda_unit` | Rows flagged Linda billing | Linda water | Linda electricity |
+| :--- | :--- | :-: | :-: | ---: | ---: |
+| Front Apartment | `F1`, `F2B`, `F2F` | false | **0 of 93** | **₱0.00** | **₱0.00** |
+| Linda | `LF`, `LB` | true | 62 of 62 | ₱18,600.00 | ₱12,035.76 |
+
+No Front Apartment income has ever been attributed to Linda. Front Apartment stays 3 units, Linda
+stays 2 — **no room was reclassified, because none needed to be.**
+
+What was wrong was the **naming**. "Linda Front" implied a Front Apartment association that does not
+exist. Both units are simply Linda units, and the UI now labels them `Linda (LF)` and `Linda (LB)`.
+The `room_number` codes are deliberately unchanged: they are the natural key that reconciles with the
+owner's spreadsheet, which lists them as `*LF` and `*LB`.
+
+## Main House — CONFIRMED as expense-only
+
+The client confirmed Main House *"is for the expense only … it's not something they go for rent but
+it's something getting categorized for expenses"*. This is exactly what OD-05 settled and what the
+schema already does: `Main House` is a **Property Area** with `is_rental_expense = FALSE`, and it is
+**not** a cluster and owns no rentable unit. No change required.
+
+## Newly open — raised by this round
+
+| ID | Item | Evidence | Gate |
+| :-- | :--- | :--- | :-- |
+| **OD-18** | **The Linda fixed electricity charge is recorded against the wrong unit.** `system_settings.linda_lb_electricity_charge = 325` and the income screen both attributed a fixed ₱325/month to **LB**. The live ledger says the opposite: **LF** is charged electricity in **31 of 31** months (min ₱325, max ₱2,285.76, avg ₱388.25) and **LB in 0 of 31**. The owner's own spreadsheet agrees with the ledger — the `Electric` column carries 325 on the `*LF` row and nothing on `*LB`. | 31 months of `monthly_income_records`; `INCOME AND EXPENSES PAST RECORDS` workbook, Monthly Income rows 42–43 | 3 |
+
+The UI has been corrected to match the ledger and the spreadsheet (LF: ₱325 minimum, submetered
+above; LB: none on record). **`system_settings.linda_lb_electricity_charge` has deliberately not been
+touched** — it is a seeded parameter that no backend code reads (defect 1), and changing a money
+setting on inference rather than instruction is the wrong call. Worth one question to the client:
+*which Linda unit actually pays the fixed ₱325 electricity?*

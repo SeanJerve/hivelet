@@ -1043,28 +1043,30 @@ function exportCSV() {
         <h3 class="font-display font-extrabold text-base text-[#1c1917]">Linda Units Fixed Charge Schedule</h3>
       </div>
       <p class="text-xs text-[#71717a] leading-relaxed">
-        Linda units follow fixed municipal utility billing rules rather than submetered rates.
+        The two Linda units sit in the separate structure beside the red gate and follow fixed
+        utility billing rather than submetered rates. They are not part of the Front Apartment,
+        whose income is never remitted to Linda.
       </p>
 
       <div class="grid gap-4 sm:grid-cols-2 pt-2">
         <div class="p-4 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] space-y-1">
           <div class="flex justify-between items-center">
-            <span class="font-display font-bold text-sm text-[#1c1917]">Linda Front (LF)</span>
+            <span class="font-display font-bold text-sm text-[#1c1917]">Linda (LF)</span>
             <span class="badge-soft badge-blue text-xs font-bold">
               Fixed Billing
             </span>
           </div>
-          <p class="text-xs text-[#71717a]">Water: <strong>₱400.00 / month</strong> · Electricity: Submetered actual</p>
+          <p class="text-xs text-[#71717a]">Water: <strong>₱400.00 / month</strong> · Electric: <strong>₱325.00 minimum</strong>, submetered actual above that</p>
         </div>
 
         <div class="p-4 rounded-xl bg-[#fafaf9] border border-[#e7e5e4] space-y-1">
           <div class="flex justify-between items-center">
-            <span class="font-display font-bold text-sm text-[#1c1917]">Linda Back (LB)</span>
+            <span class="font-display font-bold text-sm text-[#1c1917]">Linda (LB)</span>
             <span class="badge-soft badge-blue text-xs font-bold">
               Fixed Billing
             </span>
           </div>
-          <p class="text-xs text-[#71717a]">Water: <strong>₱200.00 / month</strong> · Electric: <strong>₱325.00 fixed / month</strong></p>
+          <p class="text-xs text-[#71717a]">Water: <strong>₱200.00 / month</strong> · Electric: <strong>none on record</strong></p>
         </div>
       </div>
     </div>

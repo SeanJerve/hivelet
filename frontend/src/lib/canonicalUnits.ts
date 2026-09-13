@@ -85,13 +85,13 @@ export const CANONICAL_32_UNITS: RentableUnit[] = [
   { id: "apt-ph", unitCode: "PH", cluster: "Penthouse", floor: 4, floorLabel: "Rooftop (Level 4)", type: "3-Bedroom Penthouse Suite", basePrice: 12000, capacity: 5, occupants: 4, status: "settled", tenantName: "Precious Landicho", billingRule: "Rent + ₱200 / occupant water", amenities: [...APT_AMENITIES, "Roof deck", "Panoramic Tanauan view"], photo: PHOTOS[3], waterRateType: "standard" },
 
   // Front Apartment (F1, F2F, F2B)
-  { id: "apt-f1", unitCode: "F1", cluster: "Front Apartment", floor: 1, floorLabel: "Floor 1", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 2, status: "settled", tenantName: "Allan Ilagan", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },
+  { id: "apt-f1", unitCode: "F1", cluster: "Front Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 2, status: "settled", tenantName: "Allan Ilagan", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[5], waterRateType: "standard" },
   { id: "apt-f2f", unitCode: "F2F", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 10000, capacity: 4, occupants: 3, status: "overdue", tenantName: "Sofia Manalo", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[6], waterRateType: "standard" },
   { id: "apt-f2b", unitCode: "F2B", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 4, status: "settled", tenantName: "Kevin Alcantara", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: PHOTOS[7], waterRateType: "standard" },
 
   // Linda Units (LF, LB)
-  { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Front Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "Rowena Silva", billingRule: "Fixed: ₱325 electricity + ₱400 water (remitted to Linda)", amenities: BH_AMENITIES, photo: PHOTOS[6], waterRateType: "linda_fixed" },
-  { id: "linda-lb", unitCode: "LB", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Back Unit", basePrice: 5500, capacity: 2, occupants: 1, status: "pending", tenantName: "Mark Anthony Lopez", billingRule: "Fixed: ₱325 electricity + ₱200 water (remitted to Linda)", amenities: BH_AMENITIES, photo: PHOTOS[7], waterRateType: "linda_fixed" },
+  { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "Rowena Silva", billingRule: "Fixed: ₱400 water + ₱325 minimum electricity (remitted to Linda)", amenities: BH_AMENITIES, photo: PHOTOS[6], waterRateType: "linda_fixed" },
+  { id: "linda-lb", unitCode: "LB", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 5500, capacity: 2, occupants: 1, status: "pending", tenantName: "Mark Anthony Lopez", billingRule: "Fixed: ₱200 water (remitted to Linda); no electricity on record", amenities: BH_AMENITIES, photo: PHOTOS[7], waterRateType: "linda_fixed" },
 ];
 
 export const CLUSTERS: Cluster[] = [
