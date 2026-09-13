@@ -232,27 +232,55 @@ function submitAddExpense() {
       isSubmitting.value = true;
       try {
 
-        // Save each item individually
-        await Promise.all(
-          formEntries.value.map(async (entry) => {
-            try {
-              await api.post('/admin/expense-entries', {
-                expenseDate: date.value,
-                orSupplier: entry.desc.trim(),
-                categoryCode: getDbCategoryCode(entry.category),
-                allocations: entry.allocations.map(a => ({
-                  propertyArea: a.area,
-                  amount: Number(a.amount) || 0
-                }))
-              });
-            } catch (err) {
-              console.warn('API save failed, relying on local sync:', err);
-            }
-          })
+        /**
+         * Every entry must reach the ledger, and the ones that did not must be
+         * named.
+         *
+         * Each POST used to be wrapped in its own catch that logged "API save
+         * failed, relying on local sync" and carried on. All the entries were
+         * then pushed into local state under fabricated ids
+         * (`EXP-NEW-<timestamp>-<n>`) and a toast reported "Successfully saved N
+         * entries" - N being the number typed, not the number saved. Expenses
+         * that never reached the database sat on screen looking recorded until
+         * the next refresh silently removed them.
+         */
+        const results = await Promise.allSettled(
+          formEntries.value.map((entry) =>
+            api.post('/admin/expense-entries', {
+              expenseDate: date.value,
+              orSupplier: entry.desc.trim(),
+              categoryCode: getDbCategoryCode(entry.category),
+              allocations: entry.allocations.map(a => ({
+                propertyArea: a.area,
+                amount: Number(a.amount) || 0
+              }))
+            })
+          )
         );
 
-        // Save locally
+        const failed = results
+          .map((r, i) => (r.status === 'rejected' ? formEntries.value[i].desc.trim() || `entry ${i + 1}` : null))
+          .filter((x): x is string => x !== null);
+
+        const count = results.length - failed.length;
+
+        if (failed.length > 0) {
+          showToast(
+            'error',
+            count > 0 ? 'Some expenses were not saved' : 'Expenses not saved',
+            `${failed.length} of ${results.length} could not be recorded: ${failed.join(', ')}. ` +
+            'They are still in the form - please try again.'
+          );
+        }
+
+        if (count === 0) {
+          return;
+        }
+
+        // Only what the ledger accepted. The refetch below replaces these rows
+        // with the server's own, ids included.
         formEntries.value.forEach((entry, idx) => {
+          if (results[idx].status !== 'fulfilled') return;
           const newEntry: ExpenseRecord = {
             id: `EXP-NEW-${Date.now()}-${idx}`,
             date: formatDateForDisplay(date.value),
@@ -266,8 +294,12 @@ function submitAddExpense() {
           expenseRecords.unshift(newEntry);
         });
 
+        if (failed.length > 0) {
+          isSubmitting.value = false;
+          return;
+        }
+
         isAddOpen.value = false;
-        const count = formEntries.value.length;
 
         // Reset entries form list
         formEntries.value = [
@@ -280,7 +312,7 @@ function submitAddExpense() {
           }
         ];
 
-        showToast('success', 'Expenses recorded', `Successfully saved ${count} entries.`);
+        showToast('success', 'Expenses recorded', `${count} ${count === 1 ? 'entry' : 'entries'} saved to the ledger.`);
       } catch (err: any) {
         showToast('error', 'Submission failed', err.message || 'Server error occurred');
       } finally {

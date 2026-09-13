@@ -212,19 +212,20 @@ async function handleSaveEditTicket() {
       t.description = editDesc.value;
     }
 
-    try {
-      await api.patch(`/admin/tickets/${ticketId}`, {
-        title: editTitle.value,
-        roomNumber: editUnit.value.toUpperCase(),
-        category: editCategory.value,
-        priority: editPriority.value,
-        status: editStatus.value,
-        assignedTechnician: editTech.value,
-        description: editDesc.value,
-      });
-    } catch (err: any) {
-      console.warn('Backend ticket update notice:', err);
-    }
+    // No inner catch. The failure was swallowed here with a console warning while
+    // the local ticket object had ALREADY been mutated above, so the board showed
+    // the new status and technician and announced "updated successfully" with
+    // nothing changed in the database - until the refetch below quietly put the
+    // old values back. The outer catch reports it instead.
+    await api.patch(`/admin/tickets/${ticketId}`, {
+      title: editTitle.value,
+      roomNumber: editUnit.value.toUpperCase(),
+      category: editCategory.value,
+      priority: editPriority.value,
+      status: editStatus.value,
+      assignedTechnician: editTech.value,
+      description: editDesc.value,
+    });
 
     await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
     showToast('success', 'Ticket updated', `Ticket #${ticketId} updated successfully.`);

@@ -125,8 +125,17 @@ async function handleSendReply() {
       time: 'Just now'
     });
 
-    showToast('success', 'Reply dispatched', `Sent response to ${currentInq.name}.`);
+    showToast('success', 'Reply sent', `Your response to ${currentInq.name} has been saved.`);
     replyMessage.value = '';
+  } catch (err: unknown) {
+    // Without this the failure propagated silently: the reply box emptied, no
+    // toast appeared, and the landlady had no way to tell the message had not
+    // been stored.
+    showToast(
+      'error',
+      'Reply not sent',
+      err instanceof Error ? err.message : 'Your reply could not be saved. Please try again.'
+    );
   } finally {
     isSubmitting.value = false;
   }
