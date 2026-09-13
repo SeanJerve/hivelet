@@ -580,3 +580,82 @@ Built from `FULL_DATABASE_SCHEMA.sql` + `001`–`004` + the seven-drift fixture 
 (`011` aborting on an absent function, `011` altering 44 extension functions, `008` becoming
 unreplayable), two portability defects in `012`, and **one live production defect** —
 `replace_expense_allocations` failing on every call. None of these were visible by reading.
+
+---
+
+# Sixth addendum — 011 to 014 applied to production
+
+**2026-09-13.** All four were applied through the Supabase MCP server and verified against the live
+catalogue. `012` was split into two applications because PostgreSQL will not permit a value added by
+`ALTER TYPE … ADD VALUE` to be *used* in the transaction that added it, and the MCP wraps each
+migration in one.
+
+| Migration | Applied as | Result |
+| :--- | :--- | :--- |
+| `013` | `fix_replace_allocations_enum_cast` | The RPC now reads the column's real type and casts to it |
+| `011` | `security_posture_corrections` | 21 of 21 tables forced; `current_user_role()` revoked from `PUBLIC`; `search_path` pinned |
+| `012` step 1 | `penthouse_area_add_enum_value` | `property_area_type` gains `Penthouse` |
+| `012` step 2 | `penthouse_area_and_cluster_routing` | Area seeded; `clusters.expense_area` added, populated, `NOT NULL`; `property_areas.cluster_code` dropped |
+| `014` | `codify_production_only_objects` | No-op, as designed — both objects were already present |
+
+## Verified end state
+
+| Check | Live value |
+| :--- | :--- |
+| Tables without forced RLS | **none** (21 of 21) |
+| `anon` can execute `current_user_role()` | **false** |
+| Our functions with a mutable `search_path` | **none** |
+| Extension functions altered | **0** |
+| Property areas | **6, of which 4 rental** |
+| Clusters routing nowhere | **0** |
+| `property_areas.cluster_code` | **dropped** |
+| BR-044 composite unique key | present |
+| BR-045 trigger | present |
+| `monthly_expense_entries` / `expense_property_allocations` / `rooms` | **1,262 / 1,327 / 33** |
+
+Cluster routing now reads: `BH` → Boarding House · `Back Apartment` → Back Apartment ·
+`Linda` → **Back Apartment** · `Front Apartment` → Front Apartment · `Penthouse` → **Penthouse**.
+
+**Row counts are identical to before the migrations.** None of the four touched a row of business
+data.
+
+## The production defect, fixed and proven against production
+
+`013` was not taken on trust from the container run. A self-cleaning test was executed against the
+live database:
+
+1. Created an expense entry labelled `CLAUDE 013 SELF TEST - DELETE ME`.
+2. Called `replace_expense_allocations()` with a valid two-area payload — **this is the exact call
+   that previously raised `42804` every time**. It succeeded: 2 rows, ₱300.00.
+3. Called it again with `'Front Apt'`, a non-canonical label. **Refused**, and the two original rows
+   survived unchanged at ₱300.00 — the atomicity guarantee holding under a real rejection.
+4. Deleted the test entry.
+
+Afterwards: **0 rows matching the test label**, and `monthly_expense_entries` /
+`expense_property_allocations` back at exactly **1,262 / 1,327**. Nothing was left behind.
+
+`PATCH /api/admin/expense-entries/:id` works again.
+
+## Application code brought into step, in the right order
+
+`backend/src/config/propertyAreas.ts` and `frontend/src/lib/systemState.ts` now carry `Penthouse` as
+a sixth area, and it is deliberately **not** in either `NON_RENTAL_AREAS` list — the penthouse is let
+to tenants, so its upkeep is an operating cost.
+
+This was done **after** `012`, not before. Adding the value to the TypeScript lists first would have
+let the API accept an area the enum and the foreign key both reject. `tsc --noEmit` and
+`vue-tsc --noEmit` both exit 0.
+
+## What remains open
+
+Only the two questions that need the client, both about the building rather than the database:
+
+- **OD-14** — which single `rooms.floor` value is wrong. Stored: 12 / 11 / 9 / 1. Canon and the
+  owner: 11 / 11 / 10 / 1. The second floor is already at 11, so the unit leaving the ground floor
+  has to land on the **third**. The owner's ledger records no floor for any unit, so there is no
+  document to settle it against.
+- **OD-17** — whether `LF` is a Linda unit. The owner's own workbook lists `*LF` and `*LB` together
+  under a `Linda` header against the footnote *"Rent remitted to Linda directly"*, and `LF` carries a
+  ₱325 electric charge no other unit has.
+
+No room row has been reclassified and no floor moved.

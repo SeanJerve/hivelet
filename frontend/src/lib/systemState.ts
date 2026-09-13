@@ -93,21 +93,28 @@ export interface IncomeRecord {
 }
 
 /**
- * The five Property Areas of the expense ledger. These are the exact strings stored in
+ * The six Property Areas of the expense ledger. These are the exact strings stored in
  * `expense_property_allocations.property_area` and seeded into the `property_areas` lookup
  * (database/migrations/008_property_areas_lookup.sql).
+ *
+ * `Penthouse` was added by 012_penthouse_area_and_cluster_routing.sql (OD-15). Keep this list in
+ * step with backend/src/config/propertyAreas.ts.
  */
 export type PropertyArea =
   | 'Boarding House'
   | 'Main House'
   | 'Front Apartment'
   | 'Back Apartment'
+  | 'Penthouse'
   | 'Other Expenses / Personal';
 
 /**
  * Areas that are NOT a cost of running the boarding house and must never be subtracted from
  * rental income. "Main House" is Mrs. Fe's own residence (OD-05, confirmed 2026-09-13); it shares
  * utility bills with the business, which is why single entries split across two areas.
+ *
+ * `Penthouse` is deliberately NOT here: the penthouse is let to tenants, so its upkeep is an
+ * operating cost.
  *
  * Mirrors `property_areas.is_rental_expense = FALSE` in the database. Keep the two in step.
  */

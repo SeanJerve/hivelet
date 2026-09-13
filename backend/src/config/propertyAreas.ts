@@ -1,17 +1,23 @@
 /**
- * The five canonical Property Areas of the monthly expense ledger.
+ * The six canonical Property Areas of the monthly expense ledger.
  *
  * These strings are the primary key of `public.property_areas`
  * (database/migrations/008_property_areas_lookup.sql) and the exact values stored in
- * `expense_property_allocations.property_area`. Anything else is rejected by the foreign key.
+ * `expense_property_allocations.property_area`, which is the `property_area_type` ENUM in
+ * production. Anything else is rejected by both the enum and the foreign key.
  *
- * Source of truth: docs/10_MONTHLY_EXPENSES_REPORT.md section 2.
+ * `Penthouse` was added by 012_penthouse_area_and_cluster_routing.sql (OD-15, confirmed by the
+ * owner 2026-09-13): the penthouse is a single large unit whose costs are booked separately
+ * rather than folded into Boarding House. Before that row existed, PH costs had nowhere to go.
+ *
+ * Source of truth: docs/10_MONTHLY_EXPENSES_REPORT.md section 2, as amended by OD-15.
  */
 export const PROPERTY_AREAS = [
   'Boarding House',
   'Main House',
   'Front Apartment',
   'Back Apartment',
+  'Penthouse',
   'Other Expenses / Personal'
 ] as const;
 
@@ -23,6 +29,9 @@ export type PropertyArea = (typeof PROPERTY_AREAS)[number];
  * "Main House" is the owner's own residence (OD-05, confirmed 2026-09-13) and "Other Expenses /
  * Personal" is personal by definition. Both are recorded in the same ledger because they share
  * utility bills with the business, but neither may be subtracted from rental income.
+ *
+ * `Penthouse` is deliberately NOT here: the penthouse is let to tenants, so its upkeep is an
+ * operating cost.
  *
  * Mirrors `property_areas.is_rental_expense = FALSE`. Keep the two in step.
  */
@@ -50,6 +59,9 @@ const ALIASES: Record<string, PropertyArea> = {
   'other expenses': 'Other Expenses / Personal',
   'personal': 'Other Expenses / Personal',
   'bh': 'Boarding House',
+  'ph': 'Penthouse',
+  'penthouse expenses': 'Penthouse',
+  'pent house': 'Penthouse',
   'boarding house expenses': 'Boarding House',
   'main house expenses': 'Main House',
   'front apartment expenses': 'Front Apartment',

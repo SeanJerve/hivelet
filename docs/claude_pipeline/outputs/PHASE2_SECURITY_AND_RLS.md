@@ -40,8 +40,9 @@ WHERE table_schema = 'public' AND grantee IN ('anon', 'authenticated');
 -- zero rows
 ```
 
-**(b) Forced RLS with zero policies.** Twenty tables are `ENABLE ROW LEVEL SECURITY` **and**
-`FORCE ROW LEVEL SECURITY`, with **no policies defined at all**.
+**(b) Forced RLS with zero policies.** All twenty-one tables are `ENABLE ROW LEVEL SECURITY` **and**
+`FORCE ROW LEVEL SECURITY`, with **no policies defined at all**. (Twenty, until `011` brought
+`property_areas` into line — see §4.1.)
 
 Under PostgreSQL, RLS is **deny-by-default**: with RLS enabled and no policy granting access, the
 visible row set is empty for every role that does not bypass RLS. `FORCE` extends that to the table
@@ -93,7 +94,8 @@ permission checks are declarative at the route boundary rather than scattered th
 ## 4. Findings from this phase
 
 Three, all found by reading the live catalogue rather than the schema file. All three are fixed by
-`database/migrations/011_security_posture_corrections.sql` — **written and tested, not yet applied.**
+`database/migrations/011_security_posture_corrections.sql`, **applied to production on 2026-09-13**.
+Each finding below is stated as it was found; §4.4 records the verified result.
 
 > **A fourth finding, from testing rather than reading, is not a security defect but belongs in the
 > same list because it is live.** `replace_expense_allocations()` inserts uncast `text` into the
@@ -121,6 +123,11 @@ rental-versus-personal classification of the owner's expenses.
 Fix: `ENABLE` + `FORCE ROW LEVEL SECURITY`, and revoke grants explicitly. Safe for the backend —
 `service_role` bypasses RLS, and foreign-key checks from `expense_property_allocations` run as
 internal referential-integrity triggers that bypass RLS too.
+
+### 4.1a Result
+
+`011` was applied on 2026-09-13. `property_areas` is now `ENABLE` + `FORCE`, and the count of public
+tables outside the lockdown is **zero**.
 
 ### 4.2 A revoke in migration `002` never took effect
 
@@ -196,12 +203,15 @@ definition has been altered is worth rebuilding rather than trusting.
 
 ## 5. Function exposure — the full picture
 
-| Function | `SECURITY DEFINER` | `search_path` pinned | Executable by `anon` | After `011` |
-| :--- | :---: | :---: | :---: | :--- |
-| `current_user_role()` | **yes** | ✘ | **yes** | pinned, revoked from `PUBLIC` |
-| `normalize_ph_phone(text)` | no | ✘ | yes | pinned, revoked from `PUBLIC` |
-| `update_expense_entry_total()` | no | ✘ | yes (trigger function; harmless) | pinned |
-| `replace_expense_allocations(uuid, jsonb)` | no | **✔** | **no** — `postgres` / `service_role` only | unchanged |
+| Function | `SECURITY DEFINER` | `search_path` pinned *(before → after)* | Executable by `anon` *(before → after)* |
+| :--- | :---: | :---: | :---: |
+| `current_user_role()` | **yes** | ✘ → **✔** | **yes** → **no** |
+| `normalize_ph_phone(text)` | no | ✘ → **✔** | yes → **no** |
+| `update_expense_entry_total()` | no | ✘ → **✔** | yes → no |
+| `replace_expense_allocations(uuid, jsonb)` | no | ✔ → ✔ | no → no |
+
+**Verified live after `011`:** `anon` can execute `current_user_role()` = **false**; functions of ours
+with a mutable `search_path` = **none**; extension functions altered = **0**.
 
 `replace_expense_allocations` is worth pointing at during the defense as the standard the others are
 being raised to: `SECURITY INVOKER`, `search_path` pinned, `EXECUTE` held only by the two roles that
@@ -268,9 +278,9 @@ FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
 WHERE n.nspname='public';
 ```
 
-Expected after `011`: the first query returns 21 rows all `enabled = true, forced = true,
-policies = 0`; the second returns zero rows; the third shows `anon_can_execute = false` for every
-function and a pinned `search_path` on all four.
+Confirmed after `011` was applied on 2026-09-13: the first query returns 21 rows all
+`enabled = true, forced = true, policies = 0`; the second returns zero rows; the third shows
+`anon_can_execute = false` for every function of ours and a pinned `search_path` on all of them.
 
 ---
 

@@ -1,7 +1,7 @@
 erDiagram
 
     CLUSTERS                     ||--|{ ROOMS                        : "groups"
-    CLUSTERS                     ||--o{ PROPERTY_AREAS               : "books_costs_to"
+    PROPERTY_AREAS               ||--o{ CLUSTERS                     : "absorbs_costs_of"
     ROOMS                        ||--o{ ROOM_PHOTOS                  : "illustrated_by"
     ROOMS                        ||--o{ ROOM_PRICE_HISTORY           : "rate_changed_in"
 
@@ -48,6 +48,7 @@ erDiagram
     CLUSTERS {
         varchar code PK "BH, Back Apartment, Front Apartment, Penthouse, Linda"
         varchar name "Display title of the cluster"
+        property_area_type expense_area FK "NOT NULL. Area this cluster books costs to. Linda and Back Apartment share one, OD-15"
         int display_order "Canonical report ordering, 1 to 5"
     }
 
@@ -247,10 +248,9 @@ erDiagram
     }
 
     PROPERTY_AREAS {
-        property_area_type code PK "Boarding House, Main House, Front Apartment, Back Apartment, Other Expenses / Personal"
+        property_area_type code PK "Boarding House, Main House, Front Apartment, Back Apartment, Penthouse, Other Expenses / Personal"
         varchar name "Display title in the expense report"
         bool is_rental_expense "FALSE for Main House and Other/Personal. Net rental income sums only TRUE, OD-05"
-        varchar cluster_code FK "Cluster whose costs land here. NULL for unmapped areas"
         int display_order "Canonical report ordering"
         text notes "Provenance of the row"
     }

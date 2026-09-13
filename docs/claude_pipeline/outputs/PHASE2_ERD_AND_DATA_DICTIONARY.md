@@ -71,7 +71,7 @@ The diagram source is `docs/diagrams/hivelet_erd.mmd` (mirrored as `.txt`). It w
 erDiagram
 
     CLUSTERS                     ||--|{ ROOMS                        : "groups"
-    CLUSTERS                     ||--o{ PROPERTY_AREAS               : "books_costs_to"
+    PROPERTY_AREAS               ||--o{ CLUSTERS                     : "absorbs_costs_of"
     ROOMS                        ||--o{ ROOM_PHOTOS                  : "illustrated_by"
     ROOMS                        ||--o{ ROOM_PRICE_HISTORY           : "rate_changed_in"
 
@@ -141,7 +141,7 @@ Where the two disagree, the disagreement is stated rather than hidden.
 | `AUTH_USERS` → `PROFILES` | `\|\|--o\|` | `profiles.auth_user_id` is **UNIQUE and nullable**. One Supabase Auth user maps to at most one profile, and a profile may have none. This is the shape OD-09 requires: a tenant is a record, a login is optional. |
 | `PROFILES` → `PAYMENTS` (twice) | `\|\|--o{` ×2 | Two genuinely different relationships: `tenant_profile_id` (who paid, `NOT NULL`) and `verified_by` (which administrator verified it, nullable — BR-017). Drawing one edge would lose the distinction. |
 | `FIXED_EXPENSE_CATEGORIES` → itself | `\|\|--o{` | `parent_code` is a nullable self-reference. It is non-NULL only on the `6a` / `6b` / `6c` sub-lines; the other ten of the thirteen seeded rows are roots. |
-| `CLUSTERS` → `PROPERTY_AREAS` | `\|\|--o{` | Drawn to the schema, which places `cluster_code` on `property_areas` with no unique constraint. **The business intent is the opposite direction** — see §7. |
+| `PROPERTY_AREAS` → `CLUSTERS` | `\|\|--o{` | One area absorbs the costs of zero-or-many clusters. `clusters.expense_area` is `NOT NULL`, so **every cluster routes somewhere**; `Linda` and `Back Apartment` both route to `Back Apartment`, which is exactly the many-to-one the old `property_areas.cluster_code` could not express. `Main House` and `Other Expenses / Personal` own no cluster, hence `o{` rather than `\|{`. |
 | `ROOMS` → `ROOM_PRICE_HISTORY` | `\|\|--o{` | Zero-or-many, and currently **zero**: the table holds 0 rows. ARCH-004 is a design target that no rate change has yet exercised. |
 
 ### 2.3 Foreign key delete policy
@@ -170,7 +170,7 @@ makes several of the 1NF and 3NF claims in the companion document hold by constr
 | `inquiry_status_type` | `Pending`, `Contacted`, `Converted`, `Closed` |
 | `operational_status_type` | `Available`, `Reserved`, `Occupied`, `Under Maintenance` |
 | `payment_method_type` | `Cash`, `GCash`, `Bank Transfer`, `Adyen Online` |
-| `property_area_type` | `Boarding House`, `Main House`, `Front Apartment`, `Back Apartment`, `Other Expenses / Personal` — **`Penthouse` becomes a sixth value once `012` is applied** |
+| `property_area_type` | `Boarding House`, `Main House`, `Front Apartment`, `Back Apartment`, **`Penthouse`**, `Other Expenses / Personal` — six values since `012` |
 | `room_type_enum` | `Studio`, `One-bedroom`, `Two-bedroom`, `Three-bedroom` |
 | `ticket_priority_type` | `Emergency`, `High`, `Medium`, `Low` |
 | `ticket_status_type` | `Submitted`, `In Progress`, `Resolved`, `Closed` |
@@ -481,25 +481,38 @@ foreign key rejects.
 
 ---
 
-## 9. What in this document changes once `011`–`014` are applied
+## 9. Migration state this document reflects
 
-**This document describes the live database as it stands, with `005`–`010` applied and `011`–`014`
-not.** That is deliberate — an ERD that describes a state the database is not in is worse than no
-ERD. But it means the following statements have a shelf life, and whoever applies those migrations
-must revise them here rather than let the document quietly go stale:
+**All of `005`–`014` are applied to the live database.** This document describes the schema as it
+stands after them, verified against the catalogue on 2026-09-13:
 
-| Section | Says today | Becomes true after |
-| :--- | :--- | :--- |
-| §2 ERD, §3 enums, §4 | `property_area_type` has **5** values; `property_areas` holds 5 rows | `012` — 6 values, 6 rows, 4 of them rental |
-| §2 ERD relationships | `CLUSTERS ||--o{ PROPERTY_AREAS : "books_costs_to"` via `property_areas.cluster_code` | `012` — the column is dropped and the edge reverses: `PROPERTY_AREAS ||--o{ CLUSTERS` via `clusters.expense_area`, which is `NOT NULL`, so **every cluster routes somewhere** |
-| §2 ERD `PROPERTY_AREAS` block | has a `cluster_code` FK attribute | `012` — remove it; add `expense_area` to the `CLUSTERS` block |
-| §5 integrity machinery | lists the trigger and the composite unique key as existing | `014` — they become objects this repository creates, not production-only ones |
-| `PHASE2_SECURITY_AND_RLS.md` §4.1 | `property_areas` is outside the RLS lockdown | `011` — 21 of 21 tables forced |
+| Check | Live value |
+| :--- | :--- |
+| Tables under forced RLS | **21 of 21** |
+| `anon` can execute `current_user_role()` | **false** |
+| Our functions with a mutable `search_path` | **none** |
+| Extension functions altered | **0** |
+| Property areas | **6, of which 4 rental** |
+| Clusters routing nowhere | **0** |
+| `property_areas.cluster_code` | **dropped** |
+| BR-044 composite unique key | present |
+| BR-045 trigger | present |
+| Row counts (entries / allocations / rooms) | **1,262 / 1,327 / 33** — unchanged by the migrations |
 
-The ERD source `docs/diagrams/hivelet_erd.mmd` needs the same two edits, and re-rendering.
+The cluster-to-area routing now reads:
 
-**Nothing in §4's data dictionaries changes** — `011`–`014` touch no column of `rooms`, `bills`,
-`payments`, `monthly_income_records` or `audit_logs`.
+| Cluster | Units | Books costs to |
+| :--- | :-: | :--- |
+| `BH` | 22 | Boarding House |
+| `Back Apartment` | 5 | Back Apartment |
+| `Linda` | 2 | **Back Apartment** |
+| `Front Apartment` | 3 | Front Apartment |
+| `Penthouse` | 1 | **Penthouse** |
+
+`backend/src/config/propertyAreas.ts` and `frontend/src/lib/systemState.ts` were updated in the same
+change to carry the sixth area, **after** the migration rather than before — adding it to the
+TypeScript list first would have let the API accept a value the database rejects. Both type-check
+clean.
 
 ---
 
