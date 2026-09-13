@@ -37,11 +37,31 @@ function optional(name: string, fallback: string): string {
 const nodeEnv = optional('NODE_ENV', 'development');
 const jwtSecret = required('JWT_SECRET');
 
-// A default secret shipped in the repo is fine for local work but would make
-// every issued token forgeable in production.
-if (nodeEnv === 'production' && jwtSecret === 'hivelet_super_secret_jwt_key_2026_capstone') {
+// Secrets known to be compromised. `hivelet_super_secret_jwt_key_2026_capstone`
+// was committed to a public repository in `.env.example` from 2026-08-25 until
+// 2026-09-13, so it is public knowledge and anyone holding it can mint a token
+// claiming any role - which defeats the entire permission model in
+// `config/rbac.ts` regardless of how correct that model is.
+//
+// This refuses it in EVERY environment, not just production. The original guard
+// only fired on `NODE_ENV === 'production'`, which is the one environment this
+// project has never run in; a published secret is no safer in development.
+const COMPROMISED_JWT_SECRETS = new Set([
+  'hivelet_super_secret_jwt_key_2026_capstone'
+]);
+
+if (COMPROMISED_JWT_SECRETS.has(jwtSecret)) {
   throw new Error(
-    '[config] JWT_SECRET is still the example value. Set a unique secret before deploying.'
+    '[config] JWT_SECRET is a known-compromised value that was published in a public ' +
+    'repository. Generate a new one with: ' +
+    'node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64url\'))"'
+  );
+}
+
+if (jwtSecret.length < 32) {
+  throw new Error(
+    `[config] JWT_SECRET is ${jwtSecret.length} characters. Use at least 32 - ` +
+    'a short or guessable signing key can be brute-forced offline from any single token.'
   );
 }
 
