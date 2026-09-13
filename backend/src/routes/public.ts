@@ -17,8 +17,12 @@ import { optionalAuth, requirePermission } from '../middleware/auth.js';
 import { PERMISSIONS } from '../config/rbac.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
+import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { adyenService } from '../services/adyenService.js';
+import { verifyNotificationItem, isWebhookConfigured, type AdyenNotificationItem } from '../services/adyenWebhook.js';
+import { applyNotificationItem } from '../services/adyenWebhookHandler.js';
+import { config } from '../config/env.js';
 import { notificationService } from '../services/notificationService.js';
 import QRCode from 'qrcode';
 
@@ -893,8 +897,11 @@ router.post(
     const ip = clientIp(req);
 
     const result = await adyenService.completeMockPayment(sessionId, ip);
-    const clientBaseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-    const targetUrl = returnUrl || `${clientBaseUrl}/tenant/payments`;
+    // Re-validated here even though the session was validated at creation: this is
+    // the statement that actually performs the redirect, and a guard that lives at
+    // the dangerous line cannot be bypassed by a future code path that populates
+    // the session some other way.
+    const targetUrl = safeReturnUrl(returnUrl, defaultReturnUrl());
     const delimiter = targetUrl.includes('?') ? '&' : '?';
     const finalRedirectUrl = `${targetUrl}${delimiter}status=success&ref=${result.paymentReference}`;
 
@@ -909,6 +916,94 @@ router.post(
     }
 
     res.redirect(finalRedirectUrl);
+  })
+);
+
+/**
+ * POST /api/public/payments/adyen/webhook
+ *
+ * Adyen's AUTHORITATIVE payment notification. Until this existed, the system
+ * treated the browser redirect as the payment event - which is both unreliable
+ * (the payer can close the tab between paying and returning) and unauthenticated
+ * (a redirect is just a request anyone can make).
+ *
+ * WHY THIS ROUTE CARRIES NO `requirePermission` GUARD
+ * ---------------------------------------------------
+ * It is called by Adyen's servers, which hold no account in this system and no
+ * JWT. Its authentication is the **HMAC-SHA256 signature** on every notification
+ * item, computed over eight fields with a shared secret. An item whose signature
+ * does not verify is refused with 401 and never reaches the handler.
+ *
+ * TWO THINGS THAT MUST NOT CHANGE
+ * -------------------------------
+ *   1. **It never settles a bill.** A verified authorisation writes a payment in
+ *      `Pending Verification` for a human to act on (BR-017). Adyen saying the
+ *      money moved is evidence, not the landlady's decision.
+ *   2. **It returns `[accepted]` for anything it has durably handled**, including
+ *      duplicates and events it deliberately ignores. Adyen retries until it sees
+ *      that, so failing to say it turns one event into an endless stream.
+ */
+router.post(
+  '/public/payments/adyen/webhook',
+  asyncHandler(async (req, res) => {
+    const hmacKey = config.adyen.hmacKey;
+
+    // Refuse to run unauthenticated. Without a real key every signature check
+    // would fail anyway - but failing closed and saying so is better than
+    // appearing to work.
+    if (!isWebhookConfigured(hmacKey)) {
+      console.error('[adyen-webhook] ADYEN_HMAC_KEY is not configured; refusing the notification');
+      res.status(503).json({ success: false, error: 'Webhook not configured.' });
+      return;
+    }
+
+    const items: AdyenNotificationItem[] = Array.isArray(req.body?.notificationItems)
+      ? req.body.notificationItems.map((n: any) => n?.NotificationRequestItem ?? n)
+      : [];
+
+    if (items.length === 0) {
+      res.status(400).json({ success: false, error: 'No notificationItems.' });
+      return;
+    }
+
+    // Verify EVERY item before applying ANY of them. A batch containing one forged
+    // item is a forged batch.
+    for (const item of items) {
+      if (!verifyNotificationItem(item, hmacKey)) {
+        console.error(
+          `[adyen-webhook] HMAC verification FAILED for pspReference=${item?.pspReference ?? '(none)'}`
+        );
+        res.status(401).json({ success: false, error: 'Invalid HMAC signature.' });
+        return;
+      }
+    }
+
+    const ip = clientIp(req);
+    const results = [];
+    for (const item of items) {
+      try {
+        results.push(await applyNotificationItem(item, ip));
+      } catch (err) {
+        console.error('[adyen-webhook] item failed:', err);
+        results.push({
+          pspReference: String(item?.pspReference ?? ''),
+          eventCode: String(item?.eventCode ?? ''),
+          outcome: 'failed' as const
+        });
+      }
+    }
+
+    // If anything failed, do NOT acknowledge - Adyen should retry it.
+    if (results.some(r => r.outcome === 'failed')) {
+      console.error('[adyen-webhook] one or more items failed; not acknowledging', results);
+      res.status(500).json({ success: false, results });
+      return;
+    }
+
+    console.log('[adyen-webhook] accepted', results.map(r => `${r.pspReference}:${r.outcome}`).join(' '));
+
+    // Adyen looks for exactly this response body.
+    res.status(200).send('[accepted]');
   })
 );
 

@@ -25,6 +25,7 @@ import { config } from '../config/env.js';
 import { ApiError } from '../utils/ApiError.js';
 import { recordAudit } from './auditService.js';
 import { computeBillAmounts, computeBillPeriod } from './billingService.js';
+import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
 
 export interface SessionDetails {
   billId: string;
@@ -56,7 +57,11 @@ export const adyenService = {
    * Automatically falls back to local simulation if Adyen API is unreachable.
    */
   async createCheckoutSession(billId: string, tenantProfileId: string, amount: number, returnUrl?: string) {
-    const fallbackReturnUrl = returnUrl || `${config.cors.origins[0] || 'http://localhost:5173'}/tenant/payments`;
+    // SECURITY: `returnUrl` arrives from the client. Validated against the CORS
+    // allow-list here, at the single point where it enters the system, so the
+    // stored session can never carry an off-origin destination - not into Adyen's
+    // returnUrl, and not into the res.redirect() on the way back.
+    const fallbackReturnUrl = safeReturnUrl(returnUrl, defaultReturnUrl());
 
     if (this.isLiveConfigured()) {
       try {
@@ -73,7 +78,11 @@ export const adyenService = {
               value: Math.round(amount * 100), // minor units (centavos)
             },
             countryCode: 'PH',
-            reference: `BILL-${billId.substring(0, 8)}-${Date.now()}`,
+            // The FULL bill uuid, not a prefix. This is the only thread tying the
+            // webhook's notification back to a bill, and an 8-character prefix
+            // both risks collisions and cannot be matched with an equality test.
+            // 55 characters, within Adyen's 80-character merchantReference limit.
+            reference: `BILL-${billId}-${Date.now()}`,
             returnUrl: fallbackReturnUrl,
             shopperLocale: 'en-US',
             channel: 'Web',

@@ -505,8 +505,16 @@ router.post(
       }
     }
 
-    if (!targetBillId) {
-      targetBillId = `bill_demo_${Date.now()}`;
+    // Every path above either resolves a real bill or throws. This used to
+    // fabricate `bill_demo_<timestamp>` here instead, which meant a checkout
+    // session - and a real Adyen session, with a real amount - could be opened
+    // against a bill id that referenced nothing. The payment that came back had
+    // nowhere to attach.
+    if (!targetBillId || billTotalAmount <= 0) {
+      throw ApiError.conflict(
+        'No unpaid bill could be resolved for your account, so there is nothing to pay. ' +
+        'Contact the administrator if you believe this is wrong.'
+      );
     }
 
     // Initialize Adyen checkout session (Hybrid: live or mock sandbox)
