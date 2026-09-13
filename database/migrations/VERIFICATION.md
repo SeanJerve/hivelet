@@ -232,3 +232,87 @@ band and never written back.
 
 The ERD, data dictionary and 3NF proof are meant to document the real system. They will be built from
 `DRIFT_DIAGNOSTIC.sql`, which reads the live catalogue directly, rather than from the schema file.
+
+---
+
+# Second addendum — a second drift, and the same mistake made twice
+
+**2026-09-13, second production run.** `005`, `006` and `007` applied. `008` failed:
+
+```
+ERROR: 42883: operator does not exist: character varying = property_area_type
+QUERY:  ... LEFT JOIN public.property_areas p ON p.code = a.property_area
+```
+
+`008` rolled back; `009` and `010` never ran. `PH` is now on level 4, so the `007` fix worked.
+
+## What the second drift is
+
+**In production, `expense_property_allocations.property_area` is a custom ENUM called
+`property_area_type`.** `FULL_DATABASE_SCHEMA.sql` declares it `VARCHAR(100) NOT NULL`. The enum type
+is not mentioned anywhere in the repository.
+
+This did not merely break a join. **It falsified the migration's stated premise.** `008` opened by
+arguing that `property_area` was unconstrained free text where *"a typo silently creates a sixth area
+that no report will ever find again"*. Against an enum that was never true: the value set was already
+closed, and typos were already impossible.
+
+So the foreign key `008` adds is not the point and never was. The point is `is_rental_expense` — the
+personal/rental boundary from OD-05, which no enum can carry and which nothing in the live database
+records anywhere. The migration's rationale has been rewritten to say that, rather than leaving a
+justification that the database contradicts.
+
+## The mistake, stated plainly
+
+The first addendum drew the right lesson — *"a migration bound for production must be tested against a
+database that reproduces production"* — and then only half-applied it. `007` was re-verified against a
+fixture carrying the real CHECK constraint. `008` was regenerated in the same commit **without
+checking the type of the column it was about to constrain**, from the same file already known to be
+unreliable. The correction was applied to the specific failure instead of to the class of failure.
+
+Both drifts were found by production rejecting a migration. Neither was found by reading. That is the
+part worth fixing, and it is why the fixture below now exists as a file rather than as a set of
+commands typed once.
+
+## `_TEST_FIXTURE_production_drift.sql`
+
+Every known difference between the repository and production, in one idempotent script, applied
+immediately after `FULL_DATABASE_SCHEMA.sql` + `001`-`004` when building any test database:
+
+| # | Drift | Broke | SQLSTATE |
+| :-- | :--- | :--- | :--- |
+| 1 | `rooms_floor_check` capping `rooms.floor` at 3 | `007` | 23514 |
+| 2 | `property_area` is the enum `property_area_type`, not varchar | `008` | 42883 |
+
+**A migration that has not been run against this fixture has not been tested.**
+
+The fixture was confirmed to reproduce *both* original errors before the fixes were applied — the
+42883 was reproduced by joining a `VARCHAR(100)` key against the column, exactly as the old `008` did.
+
+## The fix in `008`
+
+Step 1 now reads the column's real type out of `pg_attribute` and builds the lookup's primary key to
+match, via `format()` and `EXECUTE`. It is correct whether the column is the enum, a varchar, or
+something else again — it does not assume, it asks. The seed works unchanged either way, because
+unquoted string literals are of unknown type and coerce to whatever the column turned out to be.
+
+Verified on the production-like fixture:
+
+| Test | Result |
+| :--- | :--- |
+| `008` reports the type it found | `property_area is of type property_area_type` |
+| `property_areas.code` type | `property_area_type` — matches the referencing column |
+| Areas seeded / non-rental | 5 / 2 |
+| `005`-`010` on the drifted schema | all clean |
+| Whole `APPLY_PHASE2.sql`, run twice | zero errors both runs |
+| End state | PH level 4, 6 ledger RESTRICT, email nullable, RPC present |
+
+## Consequence for the rest of Phase 2
+
+Two unknown differences, both found by accident, means the count of unknown differences is not two.
+`DRIFT_DIAGNOSTIC.sql` now dumps custom types first — the section whose absence caused this failure —
+along with every column's real type, CHECK constraints, foreign keys, indexes, functions, triggers,
+RLS state and row counts.
+
+**The ERD, data dictionary and 3NF proof will be built from its output, saved as
+`database/live_schema.csv`, and not from `FULL_DATABASE_SCHEMA.sql`.**

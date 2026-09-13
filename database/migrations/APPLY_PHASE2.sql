@@ -1,50 +1,56 @@
 -- =============================================================================
 -- APPLY_PHASE2.sql  —  Hivelet Phase 2 migrations 005-010, in order
 -- =============================================================================
--- Regenerated 2026-09-13 after a failed first run. Paste the whole file into the
+-- Regenerated 2026-09-13 after a SECOND failure. Paste the whole file into the
 -- Supabase SQL Editor and Run.
 --
--- SAFE TO RE-RUN AFTER THE FAILED ATTEMPT. On the first attempt 005 and 006
--- committed, 007 failed and rolled back, and 008-010 never executed. Every
--- migration here is idempotent, so running the file again re-applies 005 and 006
--- as no-ops and continues from 007.
+-- CURRENT PRODUCTION STATE, read from the live database:
+--   005  APPLIED      006  APPLIED      007  APPLIED (PH is on level 4)
+--   008  rolled back  009  not run      010  not run
 --
--- WHY 007 FAILED THE FIRST TIME - and what it taught us.
--- The live database carries a CHECK constraint, `rooms_floor_check`, capping
--- `rooms.floor` at 3. That constraint exists NOWHERE in this repository: not in
--- FULL_DATABASE_SCHEMA.sql, not in migrations 001-004. It was applied out of band,
--- so the master schema file does not describe the live database.
+-- Re-running this whole file is safe. Every migration is idempotent, so 005-007
+-- re-apply as no-ops and it continues from 008.
 --
--- The original 007 went straight to the UPDATE on the evidence of that file and
--- hit 23514. The transaction rolled it back cleanly and nothing was left
--- half-applied - which is exactly what these migrations are written to do.
+-- TWO FAILURES, BOTH THE SAME ROOT CAUSE: the repository does not describe the
+-- live database.
 --
--- 007 now relaxes the constraint to `floor BETWEEN 1 AND 4` before touching the
--- row, and reports whatever definition it replaced so the drift is recorded.
--- Re-verified against a database deliberately built WITH the production
--- constraint, not just from the schema file.
+--   007 failed with 23514. Production carries `rooms_floor_check` capping
+--       rooms.floor at 3. Not in FULL_DATABASE_SCHEMA.sql, not in 001-004.
+--       FIXED: 007 now finds any floor CHECK by DEFINITION rather than by name,
+--       reports what it replaced, and installs CHECK (floor BETWEEN 1 AND 4).
 --
--- Live-data preconditions re-checked 2026-09-13 with
--- database/check-migration-preconditions.mjs: NO BLOCKERS.
---   * no credentialed account shares a phone number (after +63 folding)
---   * no case-insensitive email collisions
---   * every credentialed account has at least one identifier
---   * all 1,327 stored property_area values are already canonical
+--   008 failed with 42883: operator does not exist: character varying =
+--       property_area_type. In production `property_area` is a custom ENUM, not
+--       the VARCHAR(100) the schema file declares. That also falsified 008's
+--       original premise - the column was never free text, so typos were already
+--       impossible. The foreign key is a formality; the real payload is
+--       `is_rental_expense`, which no enum can carry.
+--       FIXED: 008 now READS the column's actual type from the catalogue and
+--       builds the lookup's primary key to match, so it is correct for an enum,
+--       a varchar, or anything else.
+--
+-- Both fixes are verified against `_TEST_FIXTURE_production_drift.sql`, which
+-- reproduces both differences locally. The fixture was confirmed to reproduce
+-- BOTH original errors before the fixes, and all six migrations pass after -
+-- twice, for idempotency.
+--
+-- Live-data preconditions re-checked: NO BLOCKERS. All 1,327 stored
+-- property_area values are among the five canonical labels.
 --
 -- WHAT CHANGES, in one line each:
---   005  six ledger foreign keys -> ON DELETE RESTRICT (financial history cannot cascade away)
+--   005  six ledger foreign keys -> ON DELETE RESTRICT
 --   006  profiles.email nullable; phone becomes an alternate login identifier
---   007  rooms_floor_check relaxed to 1-4; PH moves to the rooftop level 4
---   008  property_areas lookup + foreign key; Main House and Other marked NON-RENTAL
+--   007  floor CHECK relaxed to 1-4; PH moves to the rooftop level
+--   008  property_areas metadata + is_rental_expense; Main House marked NON-RENTAL
 --   009  comments only: deposit_amount is advance rent; rent is never prorated
 --   010  replace_expense_allocations() so allocation edits are atomic
 --
 -- ORDER MATTERS: 010 depends on 008.
 --
--- AFTER RUNNING THIS, please run DRIFT_DIAGNOSTIC.sql in the same editor and send
--- the result. The schema file is known to be wrong and the remaining Phase 2
--- deliverables - the ERD, the data dictionary, the 3NF proof - must describe the
--- real database rather than a stale file.
+-- AFTER THIS SUCCEEDS, run DRIFT_DIAGNOSTIC.sql, click Download CSV, and save it
+-- as database/live_schema.csv. Two unknown differences found by accident means
+-- there are probably more, and the ERD, data dictionary and 3NF proof must
+-- describe the real database rather than a file now known to be wrong.
 -- =============================================================================
 
 
@@ -492,39 +498,52 @@ COMMIT;
 -- ######################################################################
 
 -- =============================================================================
--- Migration 008 — Property Area Lookup, and the Personal/Rental Boundary
+-- Migration 008 — Property Area Metadata, and the Personal/Rental Boundary
 -- =============================================================================
 -- @phase          Phase 2 (Database Architecture)
 -- @decisionRef    OD-05, closed 2026-09-13 by Group 4
 -- @businessRules  BR-041 (expense allocation), BR-047 (reconciliation)
--- @sourceDoc      docs/10_MONTHLY_EXPENSES_REPORT.md §2, §5
+-- @sourceDoc      docs/10_MONTHLY_EXPENSES_REPORT.md section 2, section 5
 --
--- `expense_property_allocations.property_area` is VARCHAR(100) NOT NULL free
--- text with no CHECK and no lookup, and the API writes whatever string arrives
--- (`backend/src/routes/admin.ts:1409`). A typo silently creates a sixth area
--- that no report will ever find again.
+-- WHY THIS MIGRATION EXISTS.
+-- "Main House" was the one expense area with no matching unit cluster, and
+-- docs/10_MONTHLY_EXPENSES_REPORT.md:27 recorded its meaning as unconfirmed.
+-- CONFIRMED 2026-09-13: Main House is the owner's own residence. Those rows are
+-- personal household costs that share a book with the business. They are NOT a
+-- cost of running the boarding house.
 --
--- WHY THIS IS MORE THAN A TIDY-UP.
--- "Main House" was the one area with no matching unit cluster, and
--- `docs/10_MONTHLY_EXPENSES_REPORT.md:27` recorded its meaning as unconfirmed.
--- CONFIRMED 2026-09-13: **Main House is Mrs. Fe's own residence.** Those rows are
--- personal household costs that happen to share a book with the business \u2014 they
--- are NOT a cost of running the boarding house.
+-- That is arithmetic, not labelling. Section 5 of the source document gives a real
+-- entry: the 4-Jun-26 Electricbill (May26) row splits P14,964.13 to Boarding House
+-- and P5,688.67 to Main House on ONE bill. Across the live ledger the personal
+-- share is P3,432,990.47 of P5,823,586.47 - 58.9%. Counting it as a business
+-- expense understates net rental income by that much. is_rental_expense is what
+-- lets a report subtract only the operating half.
 --
--- This matters arithmetically, not just descriptively. §5 of the source document
--- gives a real entry: the `4-Jun-26 Electricbill (May26)` row splits
--- \u20b114,964.13 to Boarding House and \u20b15,688.67 to Main House on ONE bill. If that
--- \u20b15,688.67 is counted as a business expense, net rental income is understated by
--- that amount every time it happens. `is_rental_expense` is what lets the income
--- report subtract only the \u20b114,964.13.
+-- SECOND CORRECTION FOR SCHEMA DRIFT - read this before assuming the premise.
+-- The first version of this migration was written against FULL_DATABASE_SCHEMA.sql,
+-- which declares property_area VARCHAR(100) NOT NULL, and argued the column was
+-- unconstrained free text where a typo would silently create a sixth area.
+-- Applying it to the live database failed:
 --
--- "Other Expenses / Personal" is marked non-rental for the same reason; it
--- already says so in its own name.
+--   ERROR 42883: operator does not exist: character varying = property_area_type
+--
+-- In production property_area is a custom ENUM, property_area_type - not varchar.
+-- The repository does not mention that type anywhere. So the original premise was
+-- wrong: the column was never free text and typos were already impossible. The
+-- foreign key below is therefore NOT the point; it is a formality that lets the
+-- metadata table join cleanly.
+--
+-- The point is is_rental_expense, which no enum can carry, and which nothing in
+-- the live database currently records anywhere.
+--
+-- Rather than assume a type a second time, step 1 READS the actual type of
+-- expense_property_allocations.property_area and builds the lookup primary key to
+-- match. It is correct whether the column is the enum, a varchar, or something
+-- else again.
 --
 -- KNOWN GAP, recorded not invented: the five areas cover only three of the five
--- unit clusters. Penthouse and Linda have no area of their own. Where their
--- costs are recorded today is not established by any document, and this
--- migration does not guess \u2014 it is carried as a Phase 2 follow-up question.
+-- unit clusters. Penthouse and Linda have no area of their own, and where their
+-- costs are recorded is not established by any document (OD-15). Not guessed here.
 --
 -- Apply AFTER 001-007. Idempotent; safe to re-run.
 -- =============================================================================
@@ -532,37 +551,65 @@ COMMIT;
 BEGIN;
 
 -- -----------------------------------------------------------------------------
--- 1. The lookup. `code` deliberately holds the exact string already stored in
---    `expense_property_allocations.property_area`, so no data rewrite is needed
---    and the foreign key can be added against live rows as they stand.
+-- 1. Build the lookup with a primary key of whatever type the referencing column
+--    actually is, read from the catalogue rather than assumed.
 -- -----------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS public.property_areas (
-  code              VARCHAR(100) PRIMARY KEY,
-  name              VARCHAR(150) NOT NULL,
-  cluster_code      VARCHAR(50) REFERENCES public.clusters(code) ON UPDATE CASCADE,
-  is_rental_expense BOOLEAN      NOT NULL DEFAULT TRUE,
-  display_order     INTEGER      NOT NULL DEFAULT 0,
-  notes             TEXT
-);
+DO $mig$
+DECLARE
+  col_type TEXT;
+BEGIN
+  SELECT format_type(a.atttypid, a.atttypmod)
+    INTO col_type
+    FROM pg_attribute a
+    JOIN pg_class     c ON c.oid = a.attrelid
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+   WHERE n.nspname = 'public'
+     AND c.relname = 'expense_property_allocations'
+     AND a.attname = 'property_area'
+     AND a.attnum  > 0
+     AND NOT a.attisdropped;
+
+  IF col_type IS NULL THEN
+    RAISE EXCEPTION
+      'Migration 008: expense_property_allocations.property_area does not exist.';
+  END IF;
+
+  RAISE NOTICE 'Migration 008: property_area is of type %; building lookup to match.', col_type;
+
+  EXECUTE format(
+    'CREATE TABLE IF NOT EXISTS public.property_areas ('
+    '  code              %s PRIMARY KEY,'
+    '  name              VARCHAR(150) NOT NULL,'
+    '  cluster_code      VARCHAR(50) REFERENCES public.clusters(code) ON UPDATE CASCADE,'
+    '  is_rental_expense BOOLEAN      NOT NULL DEFAULT TRUE,'
+    '  display_order     INTEGER      NOT NULL DEFAULT 0,'
+    '  notes             TEXT'
+    ')', col_type);
+END
+$mig$;
 
 COMMENT ON TABLE public.property_areas IS
-  'The five allocation buckets of the monthly expense ledger '
-  '(10_MONTHLY_EXPENSES_REPORT.md section 2). is_rental_expense = FALSE marks '
-  'costs that are not a cost of running the boarding house and must be excluded '
-  'from net rental income.';
+  'Metadata for the five allocation buckets of the monthly expense ledger '
+  '(10_MONTHLY_EXPENSES_REPORT.md section 2). The set of valid values is already '
+  'enforced by the property_area_type enum; what this table adds is '
+  'is_rental_expense, which the enum cannot carry.';
 
 COMMENT ON COLUMN public.property_areas.is_rental_expense IS
-  'FALSE for Main House (Mrs. Fe personal residence) and Other/Personal. Net '
+  'FALSE for Main House (the owner personal residence) and Other/Personal. Net '
   'rental income must sum only the TRUE rows. Confirmed 2026-09-13 (OD-05).';
 
+-- -----------------------------------------------------------------------------
+-- 2. Seed. Unquoted string literals are of unknown type and coerce to whatever
+--    code turned out to be, so this works for an enum or a varchar alike.
+-- -----------------------------------------------------------------------------
 INSERT INTO public.property_areas (code, name, cluster_code, is_rental_expense, display_order, notes)
 VALUES
   ('Boarding House',            'Boarding House Expenses',   'BH',              TRUE,  1,
    'Maps to the BH (Main Rooms) cluster.'),
   ('Main House',                'Main House Expenses',        NULL,             FALSE, 2,
-   'Mrs. Fe Galang Da Silva personal residence. Confirmed 2026-09-13 (OD-05). '
-   'Not a rental cost; excluded from net rental income. Shares utility bills '
-   'with the boarding house, which is why entries split across two areas.'),
+   'The owner personal residence. Confirmed 2026-09-13 (OD-05). Not a rental '
+   'cost; excluded from net rental income. Shares utility bills with the boarding '
+   'house, which is why single entries split across two areas.'),
   ('Front Apartment',           'Front Apartment Expenses',  'Front Apartment', TRUE,  3,
    'Maps to the Front Apartment cluster.'),
   ('Back Apartment',            'Back Apartment Expenses',   'Back Apartment',  TRUE,  4,
@@ -577,14 +624,14 @@ SET name              = EXCLUDED.name,
     notes             = EXCLUDED.notes;
 
 -- -----------------------------------------------------------------------------
--- 2. Refuse to constrain live data that would not satisfy the constraint.
---    Fails inside the transaction and rolls back, rather than half-applying.
+-- 3. Refuse to constrain live data that would not satisfy the constraint.
+--    Both sides are now the same type, so this comparison is valid.
 -- -----------------------------------------------------------------------------
-DO $$
+DO $mig$
 DECLARE
   strays TEXT;
 BEGIN
-  SELECT string_agg(DISTINCT quote_literal(a.property_area), ', ')
+  SELECT string_agg(DISTINCT quote_literal(a.property_area::text), ', ')
     INTO strays
     FROM public.expense_property_allocations a
     LEFT JOIN public.property_areas p ON p.code = a.property_area
@@ -593,15 +640,15 @@ BEGIN
   IF strays IS NOT NULL THEN
     RAISE EXCEPTION
       'Migration 008 stopped: expense_property_allocations holds property_area '
-      'value(s) not in the lookup: %. Reconcile them to the five canonical '
-      'areas, then re-run. Nothing has been committed.', strays;
+      'value(s) with no row in the lookup: %. Seed them, then re-run. Nothing '
+      'has been committed.', strays;
   END IF;
-END $$;
+END
+$mig$;
 
 -- -----------------------------------------------------------------------------
--- 3. Constrain it. ON UPDATE CASCADE so a future rename propagates instead of
---    orphaning history; ON DELETE RESTRICT because an area with expenses
---    allocated against it must not be removable.
+-- 4. Constrain it. The enum already restricts the value set, so this foreign key
+--    is about referential integrity with the metadata table, not about typos.
 -- -----------------------------------------------------------------------------
 ALTER TABLE public.expense_property_allocations
   DROP CONSTRAINT IF EXISTS expense_property_allocations_property_area_fkey;
@@ -615,9 +662,9 @@ CREATE INDEX IF NOT EXISTS idx_expense_alloc_area
   ON public.expense_property_allocations (property_area);
 
 -- -----------------------------------------------------------------------------
--- 4. Verify.
+-- 5. Verify.
 -- -----------------------------------------------------------------------------
-DO $$
+DO $mig$
 DECLARE
   area_count    INTEGER;
   nonrental_cnt INTEGER;
@@ -635,8 +682,9 @@ BEGIN
   END IF;
 
   RAISE NOTICE 'Migration 008 OK: 5 property areas, 2 of them non-rental, '
-               'allocations now constrained by foreign key.';
-END $$;
+               'allocations now joined to the lookup by foreign key.';
+END
+$mig$;
 
 COMMIT;
 
