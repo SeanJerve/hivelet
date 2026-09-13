@@ -1091,18 +1091,37 @@ router.get(
   })
 );
 
+/**
+ * Body schema for a NEW income-record entry.
+ *
+ * Two corrections here, both about the ledger being the book of record.
+ *
+ * `rentAmount` used `z.number().min(0)`. Zod's `z.number()` does reject NaN, but
+ * it ACCEPTS `Infinity` - and PostgreSQL sorts Infinity above every numeric, so
+ * `CHECK (rent_amount >= 0)` passes it, both GENERATED columns derive from it,
+ * and every SUM over the ledger returns Infinity from that row onward. The
+ * shared `money` primitive is `.finite()` and rejects both. The PATCH route was
+ * fixed earlier; this create route was still open.
+ *
+ * `invoiceNumber` was optional, and the handler substituted
+ * `INV-<year>-<4 random digits>` when it was absent. That writes a receipt number
+ * matching no receipt in the landlady's book, from a 9,000-value space that
+ * collides at roughly even odds after a hundred entries. All 937 historical rows
+ * carry a real OR number (`OR#4627` and so on), and the column is NOT NULL, so
+ * the number is asked for rather than invented.
+ */
 const incomeRecordSchema = z.object({
-  roomNumber: z.string(),
-  datePaid: z.string(),
-  contactName: z.string(),
-  invoiceNumber: z.string().optional(),
-  rentAmount: z.number().min(0),
-  occupants: z.number().int().min(1),
+  roomNumber: shortText(20),
+  datePaid: isoDate,
+  contactName: shortText(255),
+  invoiceNumber: shortText(100),
+  rentAmount: money,
+  occupants: occupantCount.refine((n) => n >= 1, 'must be at least one occupant'),
   paymentMethod: z.enum(['Cash', 'Online', 'GCash']).default('Cash'),
-  transactionReference: z.string().optional(),
-  monthsCovered: z.number().int().min(1),
-  dateCoveredStart: z.string(),
-  dateCoveredEnd: z.string(),
+  transactionReference: shortText(120).optional(),
+  monthsCovered: z.number().int().min(1).max(60),
+  dateCoveredStart: isoDate,
+  dateCoveredEnd: isoDate,
 });
 
 /**
@@ -1164,7 +1183,8 @@ router.post(
         month,
         date_paid: datePaid,
         contact_name: contactName,
-        invoice_number: invoiceNumber || `INV-${year}-${Math.floor(1000 + Math.random() * 9000)}`,
+        // Required by the schema above, so there is nothing to substitute.
+        invoice_number: invoiceNumber,
         rent_amount: rentAmount,
         occupants,
         water_payment: calcWater,

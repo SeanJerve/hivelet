@@ -154,40 +154,70 @@ function triggerRecord() {
     Payment Method: ${paymentMethod.value} ${paymentMethod.value === 'Online' ? `(Ref: ${transactionReference.value})` : ''}
   `;
 
+  // Every one of the 937 ledger rows carries an OR number from the landlady's
+  // receipt book, and the column is NOT NULL. The API no longer invents one, so
+  // ask here rather than failing after she has confirmed the amount.
+  if (!orNum.value.trim()) {
+    showToast('error', 'OR number required', 'Enter the number from the receipt you issued.');
+    return;
+  }
+
   showConfirm(
     'Confirm Payment Entry',
     confirmMsg,
     async () => {
       isSubmitting.value = true;
       try {
-        let serverRecordId = `INC-NEW-${Date.now()}`;
-        try {
-          const allRooms = await api.get<{ id: string; room_number: string }[]>('/admin/rooms');
-          const matched = allRooms.find((r) => r.room_number.toLowerCase() === selectedUnit.value.toLowerCase());
-          if (matched) {
-            const payload = {
-              roomNumber: selectedUnit.value.toUpperCase(),
-              datePaid: date.value,
-              contactName: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || 'Walk-in Resident'),
-              invoiceNumber: orNum.value || `OR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-              rentAmount: Number(rentAmount.value) || 0,
-              occupants: occCount,
-              paymentMethod: paymentMethod.value === 'Online' ? 'Online' : 'Cash',
-              transactionReference: paymentMethod.value === 'Online' ? transactionReference.value : undefined,
-              monthsCovered: Number(monthsCovered.value) || 1,
-              dateCoveredStart: dateCoveredStart.value,
-              dateCoveredEnd: dateCoveredEnd.value,
-            };
-            const response = await api.post<any>('/admin/income-records', payload);
-            if (response && response.data && response.data.id) {
-              serverRecordId = response.data.id;
-            }
-          }
-        } catch (err) {
-          console.warn('Backend payment save failed, relying on local sync:', err);
+        /**
+         * The ledger write must succeed before anything on screen says it did.
+         *
+         * This block previously did the opposite, in three compounding ways.
+         * If the unit could not be matched to a room the POST was skipped
+         * outright with no error; if the POST threw, the failure was swallowed
+         * with a console warning and the comment "relying on local sync"; and in
+         * both cases an income record was pushed into local state under a made-up
+         * id, the unit was marked settled with a zero balance, and a toast
+         * announced the amount "posted to the ledger". The landlady would have
+         * taken cash, seen the unit go green, and had nothing in the books.
+         */
+        const allRooms = await api.get<{ id: string; room_number: string }[]>('/admin/rooms');
+        const matched = allRooms.find((r) => r.room_number.toLowerCase() === selectedUnit.value.toLowerCase());
+
+        if (!matched) {
+          showToast(
+            'error',
+            'Unit not found',
+            `No unit "${selectedUnit.value.toUpperCase()}" exists, so nothing was recorded.`
+          );
+          return;
         }
 
-        const inv = orNum.value || `OR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const payload = {
+          roomNumber: selectedUnit.value.toUpperCase(),
+          datePaid: date.value,
+          contactName: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || ''),
+          // An OR number identifies a physical receipt. Generating one from
+          // `Math.random()` puts a number on the ledger that matches no receipt
+          // in the landlady's book, and two entries could collide.
+          invoiceNumber: orNum.value.trim(),
+          rentAmount: Number(rentAmount.value) || 0,
+          occupants: occCount,
+          paymentMethod: paymentMethod.value === 'Online' ? 'Online' : 'Cash',
+          transactionReference: paymentMethod.value === 'Online' ? transactionReference.value : undefined,
+          monthsCovered: Number(monthsCovered.value) || 1,
+          dateCoveredStart: dateCoveredStart.value,
+          dateCoveredEnd: dateCoveredEnd.value,
+        };
+
+        const response = await api.post<any>('/admin/income-records', payload);
+        const serverRecordId = response?.data?.id ?? response?.id;
+
+        if (!serverRecordId) {
+          showToast('error', 'Not recorded', 'The ledger did not confirm this entry. Nothing was posted.');
+          return;
+        }
+
+        const inv = orNum.value.trim();
 
         incomeRecords.unshift({
           id: serverRecordId,
@@ -202,7 +232,10 @@ function triggerRecord() {
           water: Number(waterAmount.value) || 0,
           garbage: Number(gbgFee.value) || 0,
           anniversary: new Date(date.value).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-          deposit: (room?.price || 4500) * 2,
+          // Advance rent (OD-04), not a computed guess. The ledger row the API
+          // just returned is the record; this local copy only mirrors the screen
+          // until the refetch below replaces it.
+          deposit: 0,
         });
 
         if (room) {
@@ -215,6 +248,14 @@ function triggerRecord() {
 
         showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()} · ₱${totalAmountReceived.value} posted to the ledger.`);
         closeModal();
+      } catch (err: unknown) {
+        showToast(
+          'error',
+          'Payment NOT recorded',
+          err instanceof Error
+            ? `${err.message} Nothing was written to the ledger - please try again.`
+            : 'Nothing was written to the ledger - please try again.'
+        );
       } finally {
         isSubmitting.value = false;
       }
@@ -290,7 +331,7 @@ function triggerRecord() {
           </div>
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">OR / Receipt Number</label>
-            <input v-model="orNum" type="text" placeholder="OR-2026-1055" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-mono text-foreground focus:border-primary focus:outline-none" required />
+            <input v-model="orNum" type="text" placeholder="OR#4627" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-mono text-foreground focus:border-primary focus:outline-none" required />
           </div>
         </div>
 

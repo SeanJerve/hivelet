@@ -231,31 +231,57 @@ function openChat() {
   isLiveChatheadOpen.value = true;
 }
 
+/**
+ * Sends an inquiry, and says so only if it was actually sent.
+ *
+ * This function used to report success in two situations where nothing had been
+ * saved. If no room matched the chosen unit code the POST was skipped entirely
+ * and the success toast fired anyway; and the catch block showed a *success*
+ * toast reading "Your message has been queued for the landlady" when the request
+ * had failed and nothing was queued anywhere. A prospective tenant was told the
+ * landlady had their message when she did not, and would never know to follow up.
+ */
 async function submitInquiry() {
+  // `inquiries.prospect_email` is NOT NULL, so ask rather than invent.
+  if (!inquiryName.value.trim() || !inquiryPhone.value.trim() || !inquiryEmail.value.trim()) {
+    showToast('error', 'Required fields', 'Please provide your name, contact number and email address.');
+    return;
+  }
+
+  const matchedRoom = publicRooms.value.find(
+    (r) => r.room_number.toLowerCase() === inquiryUnit.value.toLowerCase()
+  );
+
+  if (!matchedRoom) {
+    showToast(
+      'error',
+      'Unit not available',
+      `Unit ${inquiryUnit.value} could not be found, so the inquiry was not sent. Please refresh and try again.`
+    );
+    return;
+  }
+
   isSubmitting.value = true;
   try {
-    const matchedRoom = publicRooms.value.find(
-      (r) => r.room_number.toLowerCase() === inquiryUnit.value.toLowerCase()
-    );
-
-    if (matchedRoom) {
-      await api.post('/public/inquiries', {
-        roomId: matchedRoom.id,
-        prospectName: inquiryName.value.trim(),
-        prospectEmail: inquiryEmail.value.trim(),
-        prospectPhone: inquiryPhone.value.trim(),
-        message: inquiryMsg.value.trim(),
-      }, false);
-    }
+    await api.post('/public/inquiries', {
+      roomId: matchedRoom.id,
+      prospectName: inquiryName.value.trim(),
+      prospectEmail: inquiryEmail.value.trim(),
+      prospectPhone: inquiryPhone.value.trim(),
+      message: inquiryMsg.value.trim(),
+    }, false);
 
     showToast('success', 'Inquiry sent', 'Fe Galang Da Silva has received your message.');
     isInquiryOpen.value = false;
     inquiryName.value = '';
     inquiryPhone.value = '';
     inquiryEmail.value = '';
-  } catch {
-    showToast('success', 'Inquiry recorded', 'Your message has been queued for the landlady.');
-    isInquiryOpen.value = false;
+  } catch (err: unknown) {
+    showToast(
+      'error',
+      'Inquiry not sent',
+      err instanceof Error ? err.message : 'Your message could not be delivered. Please try again.'
+    );
   } finally {
     isSubmitting.value = false;
   }

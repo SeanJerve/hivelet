@@ -263,11 +263,13 @@ function handleDeleteTicketPrompt() {
     async () => {
       isSubmitting.value = true;
       try {
-        try {
-          await api.delete(`/admin/tickets/${ticketId}`);
-        } catch (err) {
-          console.warn('Backend ticket delete fallback:', err);
-        }
+        // The delete must succeed before anything is removed from the screen.
+        //
+        // The failure was swallowed here with a console warning, the ticket was
+        // spliced out of local state regardless, and a "successfully removed"
+        // toast followed. The row was still in the database, so it reappeared on
+        // the next refresh - after the landlady had been told it was gone.
+        await api.delete(`/admin/tickets/${ticketId}`);
 
         const idx = maintenanceTickets.findIndex(t => t.id === ticketId);
         if (idx !== -1) {
@@ -278,6 +280,12 @@ function handleDeleteTicketPrompt() {
         isEditModalOpen.value = false;
         editingTicket.value = null;
         showToast('success', 'Ticket deleted', `Ticket #${ticketId} was successfully removed.`);
+      } catch (err: unknown) {
+        showToast(
+          'error',
+          'Ticket not deleted',
+          err instanceof Error ? err.message : 'The ticket could not be removed. It is still on the board.'
+        );
       } finally {
         isSubmitting.value = false;
       }

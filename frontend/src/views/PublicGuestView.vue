@@ -164,8 +164,17 @@ async function submitInquiry() {
 
   isSubmitting.value = true;
   try {
+    // `inquiries.room_id` is required, and this form is a general enquiry with no
+    // unit attached. Every message from this page used to be filed against
+    // `publicRooms[0]` - unit 1a - so the landlady's inbox attributed general
+    // interest to one specific room regardless of what the prospect wanted.
+    // A vacant unit is a better guess than an arbitrary one, and the message body
+    // carries what they actually asked.
     const publicRooms = await api.get<any[]>('/public/rooms', false);
-    const defaultRoom = publicRooms && publicRooms.length ? publicRooms[0] : null;
+    const available = (publicRooms ?? []).filter(
+      (r) => String(r.operational_status || '').toLowerCase() === 'available'
+    );
+    const defaultRoom = available[0] ?? (publicRooms ?? [])[0] ?? null;
 
     if (!defaultRoom) {
       showToast('error', 'Inquiry Error', 'No active room available for inquiry submission.');
@@ -182,7 +191,10 @@ async function submitInquiry() {
       message: inquiryMsg.value.trim(),
     }, false);
 
-    showToast('success', 'Inquiry Delivered & Saved', 'Your message has been saved to the database and sent to Mrs. Fe Galang Da Silva.');
+    // The system saves the inquiry for the landlady to read in her portal. It
+    // sends no email or SMS, so "sent to Mrs. Fe Galang Da Silva" claimed a
+    // delivery channel that does not exist.
+    showToast('success', 'Inquiry received', 'Your message has been saved and will reach Mrs. Fe Galang Da Silva in her portal.');
     inquiryName.value = '';
     inquiryPhone.value = '';
     inquiryEmail.value = '';
