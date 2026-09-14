@@ -7,8 +7,8 @@ This is the **Final Group Requirement** for Module 01 — presenting our finaliz
 architecture, database schema, and process/data flow diagrams to our instructor
 and the class.
 
-**Sections 1 to 6 run about 10 minutes. Section 7 is questions.** The limit is
-10 to 15.
+**Sections 1 to 6 run about 10 minutes of speech. Section 7 is the question
+period.** The limit is 10 to 15.
 
 Anything in **bold brackets** is a stage direction. Do not read it aloud.
 
@@ -18,8 +18,8 @@ Anything in **bold brackets** is a stage direction. Do not read it aloud.
 
 | § | Section | Speaker | Target |
 | :-- | :--- | :--- | ---: |
-| 1 | Introduction and problem recap | **Loyd** | 1:00 |
-| 2 | Panel recommendation recap | **Loyd** | 1:30 |
+| 1 | Introduction and problem recap | **Loyd** | 1:20 |
+| 2 | Panel recommendation recap | **Loyd** | 1:15 |
 | 3 | Finalized architecture | **Sean** | 2:00 |
 | 4 | Finalized database schema | **Eljohn** | 2:00 |
 | 5 | Process and data flow diagrams | **Vince** | 2:00 |
@@ -33,51 +33,70 @@ explicitly checks that every member speaks. Nobody sits this out.
 
 ---
 
-## § 1 — INTRODUCTION AND PROBLEM RECAP · LOYD · 1:00
+## § 1 — INTRODUCTION AND PROBLEM RECAP · LOYD · 1:20
 
 **[ON SCREEN: title slide — Hivelet, Group 4, and the five member names]**
 
-Good day, ma'am/sir. We are Group 4, and our system is **Hivelet** — a boarding
-house management system for the Fe Galang Da Silva Boarding House here in
+Good day, ma'am/sir. We are Group 4, and our system is **Hivelet** — a web-based
+apartment management system for the Fe Galang Da Silva Boarding House here in
 Legazpi.
 
 The property has **thirty-three rentable units across five clusters**: the main
 boarding house, a front apartment, a back apartment, a penthouse, and two Linda
 units.
 
-Right now the whole thing runs on paper and a spreadsheet. Rent is collected in
-person, receipts are handwritten, and when there is a question about a payment,
-the answer is somewhere in a Messenger thread. There is no single place that says
-who has paid, who is late, and what the property actually earned.
+**[The next paragraph is the gap from our paper. Say it clearly — it is why the
+study exists.]**
+
+Property management systems already exist. The problem is that most are built for
+**large-scale or commercial properties**. They assume stable infrastructure,
+structured workflows, and dedicated administrative staff — and a small,
+resource-constrained boarding house has none of those. In the Philippine setting,
+transactions are also mostly **cash-based** and records are still kept by hand.
+
+So the existing options are either too heavy for a property this size, or they
+solve only one piece and leave the rest scattered.
+
+That is our gap: **there is no single, context-appropriate platform that brings
+tenant management, financial tracking, communication, and booking together** at
+this scale.
+
+Today, rent is collected in person, receipts are handwritten, and payment
+questions are answered by scrolling through Messenger. Nothing says who has paid,
+who is late, and what the property earned.
 
 Our end users are the landlady, Mrs. Fe Galang Da Silva, who needs one reliable
-record, and her residents, who should be able to see their own bills without
-having to ask.
+record, and her residents, who should see their own bills without having to ask.
 
 **[PAUSE]**
 
 ---
 
-## § 2 — PANEL RECOMMENDATION RECAP · LOYD · 1:30
+## § 2 — PANEL RECOMMENDATION RECAP · LOYD · 1:15
 
 **[ON SCREEN: a slide with the recommendation written out]**
 
-At our Capstone 1 proposal defense, the panel gave us **one recommendation**.
+At our Capstone 1 proposal defense, the panel gave us **one recommendation**:
+that we explore an **online payment integration**, and specifically that we
+evaluate **Adyen for GCash payments**.
 
-They recommended that we explore an online payment integration — specifically
-looking at **Adyen for GCash payments**. And because the commercial fees and the
-merchant registration were still being discussed with the property owner at the
-time, they told us to make sure our architecture and our database did **not**
-become rigidly dependent on an outside service we had not confirmed yet.
+That fit where we already were. Our paper defines online payment as an
+**optional, supplementary feature** — the words in our Definition of Terms are
+that it does not serve as the primary financial processing mechanism. Cash is
+how this property actually operates, and that does not change.
 
-We read that as two instructions.
+So the recommendation gave us a design question of our own to answer: **how do we
+add a real payment gateway without the system becoming dependent on it?**
 
-The first is to actually do the evaluation and come back with a real result.
+Because the honest situation is that our client may never switch to online
+payment. She may keep collecting cash indefinitely, and that is a reasonable
+choice for her. But if she ever decides to go online — or if the next person
+managing the property does — the system should already be ready, and she should
+not have to pay for a rebuild to get there.
 
-The second is the architectural one: the system has to keep working **whether or
-not** that gateway is available.
-
-The next three sections are how we answered both.
+That is what the next three sections show: a system that works today the way she
+actually works, with the online option built in and switched off without breaking
+anything.
 
 **[PAUSE — hand over to Sean]**
 
@@ -103,15 +122,17 @@ that this scale does not need.
 
 **[POINT: Tier 5]**
 
-Tier 5 is there **because of the panel's recommendation**. It is one file, and it
-is the only place in the whole system that knows Adyen exists. If the gateway
-changed, we would change that file — and nothing in the database would move.
+Tier 5 is our answer to the design question from the last section. It is one
+file, and it is the only place in the whole system that knows Adyen exists. If
+the gateway changed, we would change that one file — and nothing in the database
+would move.
 
 **[POINT: the two arrows leaving Tier 5]**
 
 When the gateway is configured, online payment goes through it. When it is not, a
-local settlement path handles it instead, and the system still works. That is the
-panel's second instruction, and it is something we can show rather than just say.
+local settlement path handles it instead, and the system still works. That is
+what "optional" means in our paper, built rather than promised — and it is
+something we can show rather than just say.
 
 **[POINT: the green box on the right]**
 
@@ -159,8 +180,8 @@ outlives the bill it settled.
 **Fourth**, the room and tenant references are restrict-on-delete, so financial
 history cannot be erased indirectly.
 
-Together, those four keep the schema independent of any one payment provider,
-which is what the panel asked for.
+Together, those four keep the schema independent of any one payment provider —
+so the online option can be switched on later without touching the database.
 
 **[PAUSE — hand over to Vince]**
 
@@ -240,7 +261,8 @@ reference, a named verifier, and a timestamp. And because the gateway is
 optional, the landlady is never locked out of her own system by an arrangement
 she has not agreed to.
 
-That last point is the panel's recommendation, answered.
+And that is the panel's recommendation answered — we explored Adyen, we built
+it, and we built it in a way that leaves the choice with her.
 
 **[ON SCREEN: closing slide]**
 
@@ -264,6 +286,12 @@ Yes. It runs against a configured developer sandbox using their real Checkout
 Sessions API, with GCash enabled on the account. Going live commercially also
 needs the property registered as a business, which is the owner's decision rather
 than a software task.
+
+**"The client prefers cash — so why build the online payment at all?"** · *Loyd or Kiel*
+Because the panel asked us to explore it, and because the cost of being ready is
+low while the cost of not being ready is a rebuild. Our paper always treated
+online payment as optional and supplementary. If she never turns it on, nothing
+in the system is worse for it — cash does not pass through the gateway at all.
 
 **"Is your schema really in 3NF?"** · *Eljohn*
 Twenty of twenty-one tables, yes. One is not — there is a flag on the rooms table
@@ -307,7 +335,7 @@ Agree them beforehand so nobody hesitates on camera.
 | Criterion | What actually earns it |
 | :--- | :--- |
 | Design completeness and technical accuracy | Sections 3, 4 and 5, and the diagrams being consistent with each other. We checked that every DFD data store maps to an ERD entity — §5 says so out loud. |
-| Incorporation of panel recommendations | §2 states it; §3, §4 and §6 answer it. Say the words "this is what the panel recommended" so it is unmistakable. |
+| Incorporation of panel recommendations | §2 states it; §3, §4 and §6 answer it. Say "the panel recommended we explore Adyen for GCash" plainly, then show the three places we answered it. |
 | Design justification | §6, all four parts. Be specific, not generic — "hashed with bcrypt", not "it is secure". |
 | Delivery and team participation | Stay inside 10 to 15 minutes, and **every member speaks**. |
 
@@ -321,6 +349,7 @@ Agree them beforehand so nobody hesitates on camera.
 | "2% annual increase" | nothing — the owner sets rates by hand |
 | "32 units" | **33 units** |
 | "the panel also recommended…" | There was **one** recommendation |
+| "the panel instructed us to keep the architecture and database independent of Adyen" | That was **our** design decision, not theirs. The panel said *explore Adyen for GCash*. Our paper already called online payment optional. Claiming otherwise puts words in the panel's mouth, to the panel. |
 
 ### Filming notes
 

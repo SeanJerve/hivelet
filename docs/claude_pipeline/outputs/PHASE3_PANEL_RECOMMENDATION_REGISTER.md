@@ -16,28 +16,74 @@ Bicol University College of Science | Capstone Project 2 | Group 4
 
 ## 1. The recommendation
 
-**There is exactly one**, confirmed by the team on 2026-09-13 and recorded at
-`docs/module_01_submission/01_ACTIVITIES_AND_FINAL_ASSESSMENT.md:47-48`:
+**CORRECTED 2026-09-14.** This section previously split the recommendation into R-01a
+and R-01b and called R-01b "the architectural one, and the spine of Sections 3, 4 and 6."
+Sean confirmed on 2026-09-14 that **the panel did not say that part.** What they asked was
+narrower.
 
-> **R-01.** *"The panel recommended exploring an online payment integration (specifically evaluating
-> Adyen for GCash payments). Because commercial transaction fees and legal merchant registration
-> terms are currently pending final consultation with our adviser and property stakeholder
-> (Mrs. Fe Galang Da Silva), our team was instructed to ensure the system architecture and database
-> do not become rigidly dependent on an unconfirmed external service."*
+### What the panel actually recommended
 
-It is worth noticing that this is really **two instructions in one sentence**, and the second is the
-harder and more interesting one:
+> **R-01.** Explore an online payment integration, specifically evaluating **Adyen for
+> GCash payments**.
 
-| | The instruction | What it demands |
-| :-- | :--- | :--- |
-| **R-01a** | *Explore an online payment integration, specifically evaluating Adyen for GCash.* | Do the evaluation. Show a real result, not an intention. |
-| **R-01b** | *Ensure the architecture and database do not become rigidly dependent on an unconfirmed external service.* | The system must remain fully operational **whether or not** Adyen is available, configured, or ever commercially approved — and that must be demonstrable, not asserted. |
+That is the whole of it. The team had already decided it wanted an online option; the panel
+encouraged pursuing it.
 
-**R-01b is the architectural one, and it is the spine of Sections 3, 4 and 6.**
+### Where the longer version came from, and why it has to go
+
+The only source for the longer wording is the team's own **answer to Activity Item 12** at
+`docs/module_01_submission/01_ACTIVITIES_AND_FINAL_ASSESSMENT.md:72`, which reads:
+
+> *"…our team **was instructed** to ensure the system architecture and database do not
+> become rigidly dependent on an unconfirmed external service."*
+
+Item 12 asks the student to *"write down one recommendation."* That sentence is therefore a
+paraphrase written by the team after the fact, mixing what the panel said with the team's
+own reasoning about it. Nothing in it is a transcript.
+
+This register then treated the paraphrase as the panel's instruction, and every downstream
+artifact inherited it.
+
+**This is the exact risk this document was written to prevent.** The warning at the top says
+attributing to the panel something the panel did not say is the largest avoidable error in
+this presentation — and it happened here, in the register itself.
+
+### The decoupling was the team's decision, and the paper proves it
+
+The optional, non-primary status of online payment is **in the capstone paper, written
+before the panel ever spoke.** From the Definition of Terms:
+
+> *"**Optional Online Payment Feature** — A supplementary system function that allows
+> tenants to input or simulate digital payment transactions within the platform, **without
+> serving as the primary financial processing mechanism of the system**."*
+
+And from Scope and Delimitations:
+
+> *"…while this primarily supports manual, cash-based transaction recording, it offers an
+> **optional** digital payment submission feature for added convenience."*
+
+So the correct account is simpler, and better for the team:
+
+| | |
+| :--- | :--- |
+| **The panel asked** | Explore an online payment integration — look at Adyen for GCash. |
+| **The team had already decided** | Online payment is optional and supplementary. Cash stays primary. That is in the paper. |
+| **So the team's design question was** | How do we add a real gateway *without* making the system depend on it — since the owner may never adopt it? |
+| **The answer** | The pluggable adapter, the gateway-agnostic `payments` table, and the administrator verification gate. |
+
+Presenting it this way is stronger, not weaker. It shows engineering judgment the team
+exercised rather than an instruction it followed, and it stays true to what was said.
+
+**Say:** *"The panel recommended we explore Adyen for GCash. Our paper had already defined
+online payment as optional, so our design question was how to add it without the system
+becoming dependent on it."*
+
+**Do not say:** *"The panel instructed us to ensure our architecture and database do not
+become rigidly dependent on an unconfirmed external service."*
 
 ---
 
-## 2. R-01a — the evaluation was done, and the answer is concrete
+## 2. The evaluation was done, and the answer is concrete
 
 **Status: resolved, with a working integration.**
 
@@ -63,12 +109,12 @@ evaluated, built it, and can state precisely where the boundary between "we can 
 
 ---
 
-## 3. R-01b — the system does not depend on Adyen, and this is demonstrable
+## 3. The system does not depend on Adyen — the team's own design decision, and demonstrable
 
 **Status: resolved. This is the claim to lead with in Section 3.**
 
 The pattern is *Layered Client–Server Architecture Structured as a Modular Monolith with a **Pluggable
-Payment Gateway Adapter***. The last clause exists **because of R-01b**, and it is the single most
+Payment Gateway Adapter***. The last clause exists because of **the team's decision to keep online payment optional** (see §1), and it is the single most
 defensible sentence in this project: the panel named a risk, and a named tier of the architecture
 exists to absorb exactly that risk.
 
@@ -78,7 +124,7 @@ exists to absorb exactly that risk.
 | :--- | :--- | :--- |
 | **A runtime branch, not a build-time dependency.** `isLiveConfigured()` is evaluated per request. If credentials are absent or are placeholders, the system takes a local path instead. | `adyenService.ts:44-52`, `:61` | Adyen can be removed, misconfigured or unreachable and the application still starts, still bills, and still collects payment. |
 | **The gateway is confined to one file.** All Adyen knowledge lives in `adyenService.ts`. No route, no other service and no database object references Adyen. | `backend/src/services/` | Swapping to PayMongo, Xendit or direct GCash is one file, not a migration. |
-| **The schema is gateway-agnostic.** `payments` stores `payment_method`, `payment_source`, `transaction_reference` and `verification_status` — generic attributes that describe *any* settlement, not Adyen's data model. | `payments` table | **No schema change is required to change gateway.** This is the database half of R-01b, and it is what Section 4 should show. |
+| **The schema is gateway-agnostic.** `payments` stores `payment_method`, `payment_source`, `transaction_reference` and `verification_status` — generic attributes that describe *any* settlement, not Adyen's data model. | `payments` table | **No schema change is required to change gateway.** This is the database half of that decision, and it is what Section 4 should show. |
 | **On-site cash remains primary.** The `payment_method_type` enum leads with `'Cash'`, which is the default, and the business's main settlement route is a person paying in person. | `payment_method_type` | The online channel is an *addition*, never a dependency. The boarding house ran on cash before and still does. |
 | **The administrator holds a sovereign gate.** A completed gateway payment is written as `'Pending Verification'` and **can never auto-settle a bill**. Only a human with `payment:verify` moves a bill to `Paid`. | BR-017; `public.ts` completion route | Even a compromised or misbehaving gateway cannot mark a debt as paid. The external service is never trusted with the financial outcome. |
 
@@ -90,7 +136,7 @@ exists to absorb exactly that risk.
 
 ---
 
-## 4. What changed in the database in response to R-01b
+## 4. What changed in the database, and why
 
 **This is Section 4's required content: entities, attributes and relationships that changed because
 of a recommendation.** Four changes trace directly to R-01.
@@ -98,7 +144,7 @@ of a recommendation.** Four changes trace directly to R-01.
 | # | Change | Entity / attribute | Why R-01 required it |
 | :-- | :--- | :--- | :--- |
 | **D-1** | Gateway-agnostic settlement attributes | `payments.payment_method`, `.payment_source`, `.transaction_reference`, `.verification_status` | These describe a settlement in the abstract. Storing an Adyen-shaped payload instead would have made the schema itself depend on the unconfirmed service — the exact rigidity the panel warned about. |
-| **D-2** | A verification state machine, not a boolean | `verification_status_type` = `Verified` / `Pending Verification` / `Rejected`, plus `verified_by` → `profiles` and `verified_at` | R-01b means the gateway's word is not final. A three-state column with a named human verifier is what makes the administrator's gate expressible in data. |
+| **D-2** | A verification state machine, not a boolean | `verification_status_type` = `Verified` / `Pending Verification` / `Rejected`, plus `verified_by` → `profiles` and `verified_at` | Keeping the gateway optional means its word is not final. A three-state column with a named human verifier is what makes the administrator's gate expressible in data. |
 | **D-3** | A payment can outlive its bill | `payments.bill_id` is **nullable**, `ON DELETE SET NULL` | The payment is the financial fact; the bill is only the demand for it. A gateway callback can arrive for a bill that no longer exists, and losing the record of money received would be worse than losing the demand. |
 | **D-4** | Financial history cannot be deleted | Six ledger foreign keys converted to `ON DELETE RESTRICT` (migration `005`) | If an external service may write into the ledger, the ledger must be undeletable by accident. Before this, the schema had **0** `RESTRICT` constraints — 17 `CASCADE` and 4 `SET NULL` — so deleting one room could have cascaded away its entire financial history. |
 
@@ -150,8 +196,8 @@ panel did not say. Presenting them to the same panel is the largest avoidable ri
 | § | Section | Primary source | Lead with |
 | :-- | :--- | :--- | :--- |
 | 1 | Introduction & problem | Capstone 1 research | 33 units, one property, paper notebooks and Messenger screenshots |
-| 2 | **Panel recommendations** | **This file, §1** | **One recommendation, stated in two halves (R-01a, R-01b)** |
-| 3 | **Finalized architecture** | This file §3; `PHASE1_ARCHITECTURE_AND_PATTERN.md` | The **Pluggable Payment Gateway Adapter** tier exists because of R-01b |
+| 2 | **Panel recommendations** | **This file, §1** | **One recommendation: explore Adyen for GCash. The decoupling is the team's own design decision.** |
+| 3 | **Finalized architecture** | This file §3; `PHASE1_ARCHITECTURE_AND_PATTERN.md` | The **Pluggable Payment Gateway Adapter** tier is how the team kept online payment optional |
 | 4 | **Finalized schema** | This file §4; `PHASE2_ERD_AND_DATA_DICTIONARY.md` | The four changes D-1…D-4, then §5 as "what else the audit found" |
 | 5 | Process & data flow | `PHASE1_DFD_TRACEABILITY.md` | 7 processes / 12 data stores; walk **Process 3.0 Billing & Payments** |
 | 6 | **Design justification** | This file §3; `PHASE2_SECURITY_AND_RLS.md` | Four-part justification of the **adapter** — it is the change that answers the panel |
