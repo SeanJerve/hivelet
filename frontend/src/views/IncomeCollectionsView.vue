@@ -154,11 +154,40 @@ async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected')
   }
 }
 
+/**
+ * The configured water rates, from `GET /api/public/rates`. BR-014 / BR-036.
+ *
+ * This view validated water against a hardcoded `occupants * 200`, with `LF` and
+ * `LB` pinned at 400 and 200, and required the figure to be a whole multiple of
+ * 200. `OnsitePaymentModal` was moved onto the configured rate; this form - the
+ * one the owner uses to correct the ledger - was not, so the moment she changes
+ * the rate in settings the two disagree and this one rejects a correct entry.
+ *
+ * The seeded values remain as the fallback, so a failed fetch degrades to
+ * today's behaviour rather than to no validation at all.
+ */
+const waterRatePerOccupant = ref<number | null>(null);
+const lindaFixedWaterCharges = ref<Record<string, number> | null>(null);
+
+async function loadWaterRates() {
+  try {
+    const r = await api.get<{
+      waterRatePerOccupant: number;
+      lindaFixedWaterCharges: Record<string, number>;
+    }>('/public/rates', false);
+    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+    lindaFixedWaterCharges.value = r?.lindaFixedWaterCharges ?? null;
+  } catch {
+    // Left null; the seeded defaults below apply.
+  }
+}
+
 onMounted(() => {
   if (route.query.tab === 'verify') {
     activeTab.value = 'verify';
   }
   fetchIncome();
+  loadWaterRates();
 });
 
 const rows = computed(() => {
@@ -412,11 +441,19 @@ async function handleEditIncome() {
   const room = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
   const summary = formatUnitOccupantsSummary(editUnit.value);
   const occupants = summary.count > 0 ? summary.count : (room?.occupants || 1);
-  let waterBaseline = occupants * 200;
-  if (unitUpper === 'LF') {
-    waterBaseline = 400;
-  } else if (unitUpper === 'LB') {
-    waterBaseline = 200;
+  // BR-014 / BR-040 - the configured rate, with the seeded value as the fallback.
+  const perOccupantRate = waterRatePerOccupant.value ?? 200;
+  const lindaFixed = lindaFixedWaterCharges.value?.[unitUpper];
+
+  let waterBaseline = occupants * perOccupantRate;
+  let isLindaUnit = false;
+  if (lindaFixed !== undefined) {
+    waterBaseline = lindaFixed;
+    isLindaUnit = true;
+  } else if (unitUpper === 'LF' || unitUpper === 'LB') {
+    // Only reached if the rates fetch failed; these are the seeded charges.
+    waterBaseline = unitUpper === 'LF' ? 400 : 200;
+    isLindaUnit = true;
   }
 
   const waterVal = Number(editWater.value) || 0;
@@ -425,8 +462,11 @@ async function handleEditIncome() {
       showToast('error', 'Water Payment Error', `Water payment for ${unitUpper} cannot be lower than the limit of ₱${waterBaseline} for ${occupants} occupant(s) unless it is ₱0.`);
       return;
     }
-    if (waterVal % 200 !== 0) {
-      showToast('error', 'Water Payment Error', 'Water payment must be paid in whole multiples of ₱200 (e.g. 0, 200, 400, 600).');
+    // The multiple only applies to per-occupant units. LF and LB are on a fixed
+    // charge (BR-040), so a figure that is not a multiple of the per-occupant
+    // rate is correct for them and must not be refused.
+    if (!isLindaUnit && waterVal % perOccupantRate !== 0) {
+      showToast('error', 'Water Payment Error', `Water payment must be paid in whole multiples of ₱${perOccupantRate} (e.g. 0, ${perOccupantRate}, ${perOccupantRate * 2}, ${perOccupantRate * 3}).`);
       return;
     }
   }
