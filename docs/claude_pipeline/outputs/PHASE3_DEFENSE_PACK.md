@@ -98,14 +98,17 @@ Annex A, Annex B" — those are not cluster names, and "Annex" is the family's w
 > **explore an online payment integration**, and specifically that we evaluate **Adyen for
 > GCash payments**.
 >
-> That fit where we already were. Our paper defines online payment as an **optional,
-> supplementary feature** — in our own Definition of Terms, it does not serve as the primary
-> financial processing mechanism. Cash is how this property operates.
+> To be clear where we were before that: our proposal handled payments by **recording
+> cash**. There was no online payment in it at all, so this was genuinely new.
 >
-> So the recommendation set us a design question of our own: **how do we add a real payment
-> gateway without the system becoming dependent on it?** Our client may never switch to online
-> payment, and that is a reasonable choice for her — but if she ever does, the system should
-> already be ready. Everything in the next two sections is our answer to that."
+> In building it we had a decision of our own to make, because our client collects cash and
+> may prefer to keep doing that. We chose to make the online payment **optional** rather than
+> the way payments work. Cash stays primary; the online option sits beside it; the system
+> runs correctly whether it is switched on or off.
+>
+> If she never adopts it, nothing is lost. If she decides to go online later, the system is
+> already ready and nobody pays for a rebuild. Everything in the next two sections is how we
+> did that."
 
 **If asked whether that was the only one:** yes, and do not invent others. "That was the
 recommendation we were given, and we treated the second half of it as an architectural requirement."

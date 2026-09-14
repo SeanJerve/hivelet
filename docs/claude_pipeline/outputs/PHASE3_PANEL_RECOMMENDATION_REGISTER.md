@@ -48,35 +48,32 @@ artifact inherited it.
 attributing to the panel something the panel did not say is the largest avoidable error in
 this presentation — and it happened here, in the register itself.
 
-### The decoupling was the team's decision, and the paper proves it
+### The actual sequence, confirmed by the team on 2026-09-14
 
-The optional, non-primary status of online payment is **in the capstone paper, written
-before the panel ever spoke.** From the Definition of Terms:
+An earlier revision of this correction got the order wrong in the other direction. It said
+the paper defined online payment as optional *before* the panel spoke. It did not. The
+manuscript in `docs/reference/` was **revised after the proposal defense**, which is why it
+names Adyen at all — Adyen appears exactly once in sixty-one pages, in the conceptual
+framework.
 
-> *"**Optional Online Payment Feature** — A supplementary system function that allows
-> tenants to input or simulate digital payment transactions within the platform, **without
-> serving as the primary financial processing mechanism of the system**."*
-
-And from Scope and Delimitations:
-
-> *"…while this primarily supports manual, cash-based transaction recording, it offers an
-> **optional** digital payment submission feature for added convenience."*
-
-So the correct account is simpler, and better for the team:
-
-| | |
+| When | What |
 | :--- | :--- |
-| **The panel asked** | Explore an online payment integration — look at Adyen for GCash. |
-| **The team had already decided** | Online payment is optional and supplementary. Cash stays primary. That is in the paper. |
-| **So the team's design question was** | How do we add a real gateway *without* making the system depend on it — since the owner may never adopt it? |
-| **The answer** | The pluggable adapter, the gateway-agnostic `payments` table, and the administrator verification gate. |
+| **Capstone 1 proposal** | Payments were **recorded cash only** — the administrator enters what was collected in person. No online payment of any kind. |
+| **Proposal defense** | The panel recommended exploring an online payment integration, specifically evaluating **Adyen for GCash**. |
+| **After the defense** | The team built it — and decided on its own that it should be **optional**, with cash remaining primary. The paper was revised to match. |
 
-Presenting it this way is stronger, not weaker. It shows engineering judgment the team
-exercised rather than an instruction it followed, and it stays true to what was said.
+So the decoupling is the team's design decision, made **in response to** the recommendation
+rather than before it. That is still the team's judgment, not an instruction: the panel
+asked for an online payment integration, not for an optional one.
 
-**Say:** *"The panel recommended we explore Adyen for GCash. Our paper had already defined
-online payment as optional, so our design question was how to add it without the system
-becoming dependent on it."*
+The reasoning behind the choice, in the team's words: the client collects cash and may
+never move off it, and that is a reasonable choice for her — but if she ever does, or
+whoever manages the property next does, the system should already be ready rather than
+needing a rebuild.
+
+**Say:** *"The panel recommended we explore Adyen for GCash. Our proposal only recorded
+cash, so this was new. We chose to build it as an option rather than as the default,
+because our client may never adopt it — and the system should work either way."*
 
 **Do not say:** *"The panel instructed us to ensure our architecture and database do not
 become rigidly dependent on an unconfirmed external service."*
