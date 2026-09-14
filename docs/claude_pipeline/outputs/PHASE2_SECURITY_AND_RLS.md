@@ -349,7 +349,7 @@ been closed; the wording below says which, and what closed them.
 | 1 | **Two payment endpoints carried no authentication middleware.** | **Closed.** They were the local checkout page and its completion POST. Both now refuse to serve in any environment where `isLiveConfigured()` is true, so they do not exist in a configured deployment. The Adyen webhook is unauthenticated by Express *by necessity* - a gateway holds no JWT - and is instead protected by Basic Auth plus an HMAC-SHA256 signature over Adyen's own payload, verified in constant time. | `backend/src/routes/public.ts` (`refuseWhenGatewayConfigured`), `services/adyenWebhook.ts` |
 | 2 | **`system_settings` was read by zero lines of backend code.** | **Closed.** `services/settingsService.ts` is a typed cached reader, and `billingService` applies `water_rate_per_occupant` and `grace_period_days` through it. The public listing reads the water rate over `GET /api/public/rates` rather than restating it. | `services/settingsService.ts`, `services/billingService.ts`, `routes/public.ts` |
 | 3 | **Supabase Storage is not referenced by any backend code.** | **Open.** Photographs are stored as base64 data URLs directly in `room_photos.file_url`. That works and is access-controlled the same way every other column is, but it is not a storage integration and there is no bucket policy to describe. One of the 33 units has a photograph on file. | — |
-| 4 | **No transaction boundary in application code.** | **Open.** `replace_expense_allocations` (migration `010`) is still the only atomic multi-row write, and it is a database function precisely because supabase-js cannot open a transaction. Every other multi-step write can half-complete. | — |
+| 4 | **No transaction boundary in application code.** | **Mostly closed.** **CLOSED 2026-09-14.** Migration `018` added `settle_verified_payment()`, a plpgsql function whose body runs in one implicit transaction. The payment verification path - mark the payment Verified, mark its bill Paid, write the monthly income row - now commits all three together or none. Proved against the live database by deliberately rejecting the ledger row: the payment stayed `Pending Verification` and the bill stayed `Due`. Idempotent by `verification_status`, so a retry cannot double-post. This is the same remedy migration `010` applied to expense allocations. **Still open elsewhere:** supabase-js remains unable to open a transaction, so any multi-step write NOT routed through a database function can still half-complete. | `database/migrations/018_atomic_payment_settlement.sql` |
 
 ### 7.1 A fifth gap, found later and closed: the self-check that passed when broken
 
@@ -362,7 +362,7 @@ twice more in this codebase and both are now fixed:
   failed, because the failure was caught and logged rather than surfaced.
 - `GET /api/health` returned raw Supabase error text to unauthenticated callers.
 
-Gap 4 is the one to raise first if the panel asks what is still weak.
+Gap 3 is now the one to raise first if the panel asks what is still weak: photographs are base64 data URLs in a column rather than a storage integration, so there is no bucket policy to describe. Gap 4 was the previous answer and is largely closed - the two payment paths that could half-complete now run inside database functions - but supabase-js still cannot open a transaction, so any future multi-step write that skips that pattern reintroduces the problem.
 
 ---
 

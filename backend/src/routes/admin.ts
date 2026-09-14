@@ -952,29 +952,57 @@ router.patch(
     const isVerified = parsed.data.verification_status === 'Verified';
     const isRejected = parsed.data.verification_status === 'Rejected';
 
-    const { data: after, error } = await db
-      .from('payments')
-      .update({
-        verification_status: parsed.data.verification_status,
-        verified_at: isVerified ? new Date().toISOString() : null,
-        verified_by: isVerified ? req.user!.profileId : null,
-      })
-      .eq('id', req.params.paymentId)
-      .select('*')
-      .single();
+    /**
+     * VERIFYING A PAYMENT IS THREE WRITES, AND THEY MUST NOT HAPPEN SEPARATELY.
+     *
+     * Marking the payment Verified, marking its bill Paid, and writing the
+     * monthly income row used to be three PostgREST round trips with nothing
+     * joining them, because supabase-js cannot open a transaction. If the third
+     * failed - `contact_name` and `invoice_number` are NOT NULL, `payment_method`
+     * is an enum, `rent_amount` carries a CHECK - the first two had already
+     * committed. The payment read Verified, the bill read Paid, and no income was
+     * ever recorded. Money collected, debt closed, ledger blank, and nothing on
+     * screen to say so.
+     *
+     * Migration 018 added `settle_verified_payment()`. A plpgsql body runs in one
+     * implicit transaction, so all three commit together or none do. Verified
+     * against the live database by deliberately rejecting the ledger row: the
+     * payment stayed Pending Verification and the bill stayed Due.
+     *
+     * The figures are therefore computed BEFORE anything is written, and the
+     * payment update moved inside that call. Rejection is left as a direct
+     * update - it touches no ledger row, so there is nothing to tear.
+     */
+    let after: Record<string, unknown> | null = null;
 
-    if (error) throw ApiError.internal(error.message);
+    if (!isVerified) {
+      const { data: updated, error } = await db
+        .from('payments')
+        .update({
+          verification_status: parsed.data.verification_status,
+          verified_at: null,
+          verified_by: null,
+        })
+        .eq('id', req.params.paymentId)
+        .select('*')
+        .single();
+
+      if (error) throw ApiError.internal(error.message);
+      after = updated;
+    }
 
     // System Bible Section 22 — "Payment verified -> financial records update."
     if (isVerified) {
+      // Read-only: the bill's own figures are the terms the tenant was invoiced
+      // under, so they are preferred over anything derived. Nothing is written
+      // until the single call at the end of this block.
       let billData: any = null;
       if (before.bill_id) {
         const { data: b } = await db
           .from('bills')
-          .update({ status: 'Paid', updated_at: new Date().toISOString() })
-          .eq('id', before.bill_id)
           .select('*')
-          .single();
+          .eq('id', before.bill_id)
+          .maybeSingle();
         billData = b;
       }
 
@@ -1038,29 +1066,50 @@ router.patch(
         .eq('transaction_reference', before.transaction_reference)
         .maybeSingle();
 
-      if (!existingIncome && before.transaction_reference) {
-        const { error: insertError } = await db.from('monthly_income_records').insert({
-          room_id: before.room_id,
-          tenant_profile_id: before.tenant_profile_id,
-          assignment_id: assignment?.id || null,
-          year,
-          month,
-          date_paid: datePaid.toISOString().split('T')[0],
-          contact_name: tenantProfile?.full_name || 'Online Resident',
-          invoice_number: before.transaction_reference,
-          rent_period_start: rentPeriodStart,
-          rent_period_end: rentPeriodEnd,
-          rent_amount: rentAmount,
-          occupants: occupants,
-          water_payment: waterAmount,
-          payment_method: 'GCash',
-          transaction_reference: before.transaction_reference,
-        });
+      // `payment_method` is NOT hardcoded. It used to read 'GCash', so an
+      // `Adyen Online` settlement was written into the ledger as GCash. The
+      // function falls back to the payment's own method.
+      const incomePayload =
+        !existingIncome && before.transaction_reference
+          ? {
+              room_id: before.room_id,
+              tenant_profile_id: before.tenant_profile_id,
+              assignment_id: assignment?.id ?? null,
+              year,
+              month,
+              date_paid: datePaid.toISOString().split('T')[0],
+              contact_name: tenantProfile?.full_name || 'Online Resident',
+              invoice_number: before.transaction_reference,
+              rent_period_start: rentPeriodStart,
+              rent_period_end: rentPeriodEnd,
+              rent_amount: rentAmount,
+              occupants,
+              water_payment: waterAmount,
+              transaction_reference: before.transaction_reference,
+            }
+          : null;
 
-        if (insertError) {
-          throw ApiError.internal(`Failed to insert monthly income record: ${insertError.message}`);
-        }
+      // All three writes, one transaction. Idempotent by verification_status, so
+      // a retry cannot double-post a ledger row.
+      const { error: settleError } = await db.rpc('settle_verified_payment', {
+        p_payment_id: req.params.paymentId,
+        p_verified_by: req.user!.profileId,
+        p_income: incomePayload,
+      });
+
+      if (settleError) {
+        throw ApiError.internal(
+          `Could not settle this payment: ${settleError.message}. ` +
+            'Nothing was changed - the payment is still awaiting verification.'
+        );
       }
+
+      const { data: settled } = await db
+        .from('payments')
+        .select('*')
+        .eq('id', req.params.paymentId)
+        .single();
+      after = settled;
 
       // Notify the tenant that their payment is settled
       await db.from('notifications').insert({

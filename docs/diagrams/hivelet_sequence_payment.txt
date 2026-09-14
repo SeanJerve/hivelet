@@ -56,7 +56,7 @@ sequenceDiagram
     Client->>API: PATCH /api/admin/payments/:paymentId/verify
 
     rect rgb(240, 245, 255)
-    Note over API, DB: OPEN GAP - these writes are sequential. No BEGIN/COMMIT exists in backend/src, because supabase-js cannot open a transaction. replace_expense_allocations is the only atomic multi-row write and it is a database function for exactly that reason.
+    Note over API, DB: ATOMIC since migration 018. These three writes run inside settle_verified_payment(), a plpgsql function whose body is one implicit transaction - so they commit together or not at all. Verified by rejecting the ledger row mid-call: the payment stayed Pending Verification and the bill stayed Due. supabase-js still cannot open a transaction, so this pattern is how atomicity is obtained here.
     API->>DB: UPDATE payments SET verification_status='Verified', verified_at=NOW(), verified_by=adminId
     API->>DB: UPDATE bills SET status='Paid' WHERE id = payment.bill_id
     API->>DB: INSERT INTO monthly_income_records (rent_amount, occupants, water_payment, invoice_number, ...)
