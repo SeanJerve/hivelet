@@ -80,23 +80,19 @@ At our Capstone 1 proposal defense, the panel gave us **one recommendation**:
 that we explore an **online payment integration**, and specifically that we
 evaluate **Adyen for GCash payments**.
 
-To be clear about where we were before that. Our proposal handled payments by
-**recording cash** — the administrator enters what was collected in person.
-There was no online payment in it at all.
+To be clear where we were before that. Our proposal handled payments by
+**recording cash** — the administrator enters what was collected in person. There
+was no online payment in it at all.
 
-So the recommendation asked us to add something genuinely new. And in doing that
-we had a decision of our own to make, because our client collects cash and may
-simply prefer to keep doing that.
+So we raised the practical constraint: our client collects cash, and that is what
+she wants. Online payment is not how she operates today.
 
-We decided to build the online payment as an **optional** part of the system,
-rather than as the way payments work. Cash stays the primary method. The online
-option sits beside it, and the system runs correctly whether that option is
-switched on or off.
+What came out of that discussion was to explore it as an **optional** feature —
+not as the way payments work, but as an option sitting beside cash. That way, if
+she changes her mind later, it is already there.
 
-Our reasoning is straightforward: if our client never adopts online payment,
-nothing is lost — she keeps working the way she works. But if she decides to go
-online later, or whoever manages the property next does, the system is already
-ready and no one has to pay for a rebuild.
+That is the shape of what we built. Cash stays the primary method. The online
+option can be switched on or off, and the system runs correctly either way.
 
 The next three sections are how we did that.
 
@@ -290,15 +286,15 @@ needs the property registered as a business, which is the owner's decision rathe
 than a software task.
 
 **"The client prefers cash — so why build the online payment at all?"** · *Loyd or Kiel*
-Because the panel asked us to explore it, and because the cost of being ready is
-low while the cost of not being ready is a rebuild. We built it as an option
-rather than as the default, so if she never turns it on, nothing in the system is
-worse for it — cash does not pass through the gateway at all.
+That is exactly why it is optional rather than the default. The cost of having it
+ready is low; the cost of not having it, if she changes her mind, is a rebuild. If
+she never turns it on, nothing in the system is worse for it — cash does not pass
+through the gateway at all.
 
 **"Was online payment in your original proposal?"** · *Loyd*
-No. Our proposal recorded cash payments only. The online integration is what we
-added in response to the panel's recommendation, and making it optional was our
-own decision on top of that.
+No. Our proposal recorded cash payments only. The online integration came from the
+panel's recommendation, and building it as optional was what we settled on once we
+raised that our client only accepts cash.
 
 **"Is your schema really in 3NF?"** · *Eljohn*
 Twenty of twenty-one tables, yes. One is not — there is a flag on the rooms table

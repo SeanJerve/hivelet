@@ -50,33 +50,32 @@ this presentation — and it happened here, in the register itself.
 
 ### The actual sequence, confirmed by the team on 2026-09-14
 
-An earlier revision of this correction got the order wrong in the other direction. It said
-the paper defined online payment as optional *before* the panel spoke. It did not. The
-manuscript in `docs/reference/` was **revised after the proposal defense**, which is why it
-names Adyen at all — Adyen appears exactly once in sixty-one pages, in the conceptual
-framework.
+This section has been corrected twice. It first over-stated the recommendation, turning the
+team's own paraphrase into a panel instruction about architecture. The correction then
+over-swung the other way, claiming the paper defined online payment as optional before the
+panel spoke. Neither was right. The truth is a conversation, not an instruction and not a
+unilateral decision.
 
-| When | What |
+| When | What happened |
 | :--- | :--- |
 | **Capstone 1 proposal** | Payments were **recorded cash only** — the administrator enters what was collected in person. No online payment of any kind. |
-| **Proposal defense** | The panel recommended exploring an online payment integration, specifically evaluating **Adyen for GCash**. |
-| **After the defense** | The team built it — and decided on its own that it should be **optional**, with cash remaining primary. The paper was revised to match. |
+| **At the defense** | The panel recommended exploring an online payment integration, specifically **Adyen for GCash**. |
+| **In that same discussion** | The team raised the practical constraint: **the client only accepts cash.** What everyone settled on was to explore the integration as an **optional** feature, so that if she changes her mind later it is already available. |
+| **After the defense** | The team built it that way, and revised the manuscript to match — which is why Adyen appears exactly **once** in sixty-one pages. |
 
-So the decoupling is the team's design decision, made **in response to** the recommendation
-rather than before it. That is still the team's judgment, not an instruction: the panel
-asked for an online payment integration, not for an optional one.
+So the optional framing is neither an instruction the panel handed down nor something the
+team invented alone. It is what the room agreed once the client's actual preference was on
+the table. Describe it that way and it is accurate on both counts.
 
-The reasoning behind the choice, in the team's words: the client collects cash and may
-never move off it, and that is a reasonable choice for her — but if she ever does, or
-whoever manages the property next does, the system should already be ready rather than
-needing a rebuild.
-
-**Say:** *"The panel recommended we explore Adyen for GCash. Our proposal only recorded
-cash, so this was new. We chose to build it as an option rather than as the default,
-because our client may never adopt it — and the system should work either way."*
+**Say:** *"The panel recommended we explore Adyen for GCash. We raised that our client only
+accepts cash, so we settled on exploring it as an optional feature — there if she changes her
+mind, and not in the way if she does not."*
 
 **Do not say:** *"The panel instructed us to ensure our architecture and database do not
-become rigidly dependent on an unconfirmed external service."*
+become rigidly dependent on an unconfirmed external service."* They did not say that.
+
+**Also do not say:** *"Our paper had already defined online payment as optional."* It had
+not — the proposal recorded cash only, and that wording was added afterwards.
 
 ---
 

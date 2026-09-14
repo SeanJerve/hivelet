@@ -99,16 +99,16 @@ Annex A, Annex B" — those are not cluster names, and "Annex" is the family's w
 > GCash payments**.
 >
 > To be clear where we were before that: our proposal handled payments by **recording
-> cash**. There was no online payment in it at all, so this was genuinely new.
+> cash**. There was no online payment in it at all.
 >
-> In building it we had a decision of our own to make, because our client collects cash and
-> may prefer to keep doing that. We chose to make the online payment **optional** rather than
-> the way payments work. Cash stays primary; the online option sits beside it; the system
-> runs correctly whether it is switched on or off.
+> So we raised the practical constraint — our client collects cash, and that is what she
+> wants. What came out of that discussion was to explore the integration as an **optional**
+> feature rather than as the way payments work, so that it is there if she changes her mind
+> later.
 >
-> If she never adopts it, nothing is lost. If she decides to go online later, the system is
-> already ready and nobody pays for a rebuild. Everything in the next two sections is how we
-> did that."
+> That is the shape of what we built. Cash stays primary; the online option can be switched
+> on or off; the system runs correctly either way. Everything in the next two sections is how
+> we did that."
 
 **If asked whether that was the only one:** yes, and do not invent others. "That was the
 recommendation we were given, and we treated the second half of it as an architectural requirement."
