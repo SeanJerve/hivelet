@@ -114,7 +114,7 @@ export const CANONICAL_UNITS: RentableUnit[] = [
   { id: "apt-f2b", unitCode: "F2B", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 4, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
 
   // Linda Units (LF, LB)
-  { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Fixed: ₱400 water + ₱325 minimum electricity (remitted to Linda)", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
+  { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Fixed: ₱400 water (remitted to Linda)", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
   { id: "linda-lb", unitCode: "LB", cluster: "Linda Units", floor: 1, floorLabel: "Floor 1", type: "Linda Unit", basePrice: 5500, capacity: 2, occupants: 1, status: "pending", tenantName: "", billingRule: "Fixed: ₱200 water (remitted to Linda); no electricity on record", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
 ];
 
@@ -126,13 +126,23 @@ export const CLUSTERS: Cluster[] = [
   "Linda Units",
 ];
 
-export const LINDA_FIXED: Record<string, { electricity: number; water: number }> = {
-  LF: { electricity: 325, water: 400 },
-  LB: { electricity: 325, water: 200 },
-};
-
-export const WATER_PER_OCCUPANT = 200;
-export const GARBAGE_FEE = 600;
+/*
+ * LINDA_FIXED, WATER_PER_OCCUPANT and GARBAGE_FEE were removed on 2026-09-14.
+ *
+ * All three were imported by `systemState.ts` and read by nothing, and all three
+ * were wrong in a way that only showed up if someone used them:
+ *
+ *   - LINDA_FIXED carried `electricity: 325` for both units. Migration `017`
+ *     retired that charge - the owner confirmed it was a workaround for unmetered
+ *     units - so nothing records one for any unit now.
+ *   - WATER_PER_OCCUPANT hardcoded the rate that BR-014 exists to make
+ *     configurable. It has already been found hardcoded twice elsewhere and
+ *     fixed both times; a constant named this, one import away from a view, is
+ *     how it would come back a third time.
+ *
+ * The live figures come from `GET /api/public/rates`, which needs no
+ * authentication precisely so the public pages can use it.
+ */
 
 export function peso(value: number, decimals = 0) {
   return `₱${value.toLocaleString("en-PH", {

@@ -13,9 +13,6 @@ import {
   type Cluster, 
   type UnitStatus, 
   peso, 
-  WATER_PER_OCCUPANT, 
-  GARBAGE_FEE, 
-  LINDA_FIXED,
   CLUSTERS
 } from './canonicalUnits';
 import { api } from './api';
@@ -228,6 +225,48 @@ export const rooms = reactive<RoomItem[]>(
 );
 
 export const tenants = reactive<TenantRecord[]>([]);
+/**
+ * The configured water rates, fetched once and reused. BR-014 / BR-040.
+ *
+ * `GET /api/public/rates` needs no authentication, which is what makes it usable
+ * from the public room pages.
+ */
+const waterRates = reactive<{ perOccupant: number | null; linda: Record<string, number> }>({
+  perOccupant: null,
+  linda: {},
+});
+
+let waterRatesLoaded = false;
+
+export async function fetchWaterRates(): Promise<void> {
+  if (waterRatesLoaded) return;
+  try {
+    const r = await api.get<{
+      waterRatePerOccupant: number;
+      lindaFixedWaterCharges: Record<string, number>;
+    }>('/public/rates', false);
+    waterRates.perOccupant = r?.waterRatePerOccupant ?? null;
+    waterRates.linda = r?.lindaFixedWaterCharges ?? {};
+    waterRatesLoaded = true;
+  } catch {
+    // Left unset; buildBillingRule falls back to the seeded figures.
+  }
+}
+
+/** The one-line charge summary shown against a unit on the public pages. */
+function buildBillingRule(unitCode: string, isLinda: boolean): string {
+  const code = unitCode.toUpperCase();
+  if (isLinda) {
+    // LF and LB are different figures - 400 and 200 - and saying "200" for both
+    // was wrong for LF. The electricity line is gone entirely: migration 017
+    // retired the flat charge, and nothing records one for any unit now.
+    const fixed = waterRates.linda[code] ?? (code === 'LF' ? 400 : 200);
+    return `Fixed ₱${fixed.toLocaleString()}/mo water, submetered electric`;
+  }
+  const perHead = waterRates.perOccupant ?? 200;
+  return `₱${perHead.toLocaleString()}/head water, submetered electric`;
+}
+
 export const incomeRecords = reactive<IncomeRecord[]>([]);
 export const expenseRecords = reactive<ExpenseRecord[]>([]);
 export const maintenanceTickets = reactive<MaintenanceTicket[]>([]);
@@ -360,6 +399,11 @@ function mapOperationalStatus(status: string): UnitStatus {
  * Loads all rooms from the backend Supabase API and syncs reactive `rooms`
  */
 export async function fetchRooms(): Promise<RoomItem[]> {
+  // The rates decide the per-unit billing line built below, so they are read
+  // first. Cached after the first call, and a failure falls back to the seeded
+  // figures rather than blocking the room list.
+  await fetchWaterRates();
+
   try {
     // The endpoint follows the SIGNED-IN role, not the `activeRole` ref, which
     // defaults to 'admin' and therefore sent tenants and guests to /admin/rooms.
@@ -398,7 +442,17 @@ export async function fetchRooms(): Promise<RoomItem[]> {
           paid: isOccupied,
           balance: 0,
           waterRateType: isLinda ? 'linda_fixed' : 'standard',
-          billingRule: isLinda ? 'Fixed ₱200/mo water, submetered electric' : '₱200/head water, submetered electric',
+          // Shown on the public room pages (RoomDirectoryView, CategoryRoomsView).
+          //
+          // It read "Fixed ₱200/mo water" for BOTH Linda units, and LF is ₱400 -
+          // so a prospect browsing LF was told the wrong charge. The per-occupant
+          // figure was written in as 200 as well, which goes stale the moment the
+          // owner changes the rate in settings (BR-014).
+          //
+          // Derived from the configured rates now, with the seeded values as the
+          // fallback so a failed fetch degrades to today's wording rather than to
+          // a blank.
+          billingRule: buildBillingRule(unitCode, isLinda),
           amenities: [
             'Private Bathroom',
             'Submetered Electricity',

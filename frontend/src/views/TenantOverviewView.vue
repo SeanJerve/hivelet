@@ -120,7 +120,28 @@ const dueDateCountdown = computed(() => {
   return { daysLeft: diff, label: `Due in ${diff} days`, severity: 'safe' as const };
 });
 
+/**
+ * The configured per-occupant water rate. BR-014.
+ *
+ * The card below stated "₱200 / registered occupant monthly" as a literal. The
+ * rate is the owner's to set, so the moment she changed it the tenant's own
+ * statement explained their bill with a figure that no longer applied - while
+ * the amount beside it, which comes from the server, moved. The two would
+ * disagree on screen and the wrong one looks authoritative.
+ */
+const waterRatePerOccupant = ref<number | null>(null);
+
+async function loadWaterRate() {
+  try {
+    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
+    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+  } catch {
+    // Left null; the label falls back to wording that quotes no figure.
+  }
+}
+
 onMounted(async () => {
+  loadWaterRate();
   // Check for returning payment status from checkout redirect
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get('status');
@@ -396,7 +417,11 @@ async function handlePayOnline() {
             </span>
           </div>
           <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-foreground">₱{{ tenantData.waterFee.toLocaleString() }}</p>
-          <p class="mt-1.5 text-xs text-sky-700 font-medium">₱200 / registered occupant monthly</p>
+          <p class="mt-1.5 text-xs text-sky-700 font-medium">
+            {{ waterRatePerOccupant === null
+              ? 'Charged per registered occupant, monthly'
+              : `₱${waterRatePerOccupant.toLocaleString()} / registered occupant monthly` }}
+          </p>
         </div>
 
         <div class="surface-card p-5">
