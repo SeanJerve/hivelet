@@ -148,7 +148,7 @@ Look for `"rlsLockdown":"enforced"`. **That is the only passing value.**
 so nothing was actually tested.
 
 ```bash
-# 2. 26 endpoint and permission checks
+# 2. 30 endpoint, permission and input checks
 cd backend && npm run check:api
 
 # 3. the signature implementation, 23 checks, no network needed

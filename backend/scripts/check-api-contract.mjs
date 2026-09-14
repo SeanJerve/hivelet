@@ -129,6 +129,60 @@ if (tenantToken) {
   console.log(`  ${blocked ? 'OK  ' : 'FAIL'} ${r.status}  tenant calling /admin/tenants`);
 }
 
+
+// ---- numeric poisoning --------------------------------------------------
+//
+// JSON has no Infinity literal, which is why this looks impossible. It is not:
+// `1e999` is valid JSON and every parser turns it into Infinity. PostgreSQL then
+// sorts Infinity above every numeric, so a `CHECK (x >= 0)` passes it - and on a
+// column that feeds a GENERATED ALWAYS expression, every SUM over the ledger
+// returns Infinity from that row onward.
+//
+// The shared `money` primitive is `.finite()`. These calls prove the routes
+// actually reach it. Each one must be REJECTED, so a pass writes nothing; a
+// failure is visible as a created row and is reported here rather than silently
+// leaving one behind.
+if (adminToken) {
+  console.log('\nNUMERIC POISONING (Infinity must never reach a money column)');
+
+  const poison = [
+    ['POST',  '/admin/rooms',          { cluster_code: 'BH', room_number: `ZZ-PROBE-${Date.now()}`,
+                                         current_price: 1e999 },                 'room create, current_price'],
+    ['POST',  '/admin/income-records', { roomNumber: '1a', datePaid: '2026-09-14',
+                                         contactName: 'Probe', invoiceNumber: 'OR#PROBE',
+                                         rentAmount: 1e999, occupants: 1, monthsCovered: 1,
+                                         dateCoveredStart: '2026-09-14',
+                                         dateCoveredEnd: '2026-10-13' },         'income create, rentAmount'],
+    ['POST',  '/admin/expense-entries',{ expenseDate: '2026-09-14', orSupplier: 'Probe',
+                                         categoryCode: '1',
+                                         allocations: [{ propertyArea: 'Boarding House',
+                                                         amount: 1e999 }] },     'expense create, allocation amount'],
+  ];
+
+  for (const [method, path, body, label] of poison) {
+    const r = await fetch(`${BASE}${path}`, {
+      method,
+      headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    // 400 is the schema refusing it. Anything 2xx means it was accepted.
+    const refused = r.status >= 400 && r.status < 500;
+    refused ? pass++ : (fail++, failures.push(`${label}: Infinity was ACCEPTED -> ${r.status}`));
+    console.log(`  ${refused ? 'OK  ' : 'FAIL'} ${r.status}  ${label}`);
+  }
+
+  // The same value as a plain string, which is the other way a parser can hand
+  // it over. `z.number()` rejects a string outright, so this is belt and braces.
+  const r2 = await fetch(`${BASE}/admin/rooms`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+    body: '{"cluster_code":"BH","room_number":"ZZ-PROBE-STR","current_price":1e999}',
+  });
+  const refused2 = r2.status >= 400 && r2.status < 500;
+  refused2 ? pass++ : (fail++, failures.push(`raw 1e999 in the body was ACCEPTED -> ${r2.status}`));
+  console.log(`  ${refused2 ? 'OK  ' : 'FAIL'} ${r2.status}  raw 1e999 in the request body`);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 for (const f of failures) console.log('  - ' + f);
 process.exit(fail === 0 ? 0 : 1);

@@ -78,7 +78,7 @@ npm run dev:frontend     # :5173
 #    key was rejected before it reached PostgreSQL, so nothing was tested.
 curl -s http://localhost:5000/api/health
 
-# 2. 26 endpoint and RBAC checks. Needs credentials/creds.txt - ask Sean for it.
+# 2. 30 endpoint, RBAC and input checks. Needs credentials/creds.txt - ask Sean for it.
 cd backend && npm run check:api
 
 # 3. the HMAC implementation, 23 checks, no network needed

@@ -57,8 +57,13 @@ const roomInsertSchema = z.object({
   room_number: z.string().min(1),
   floor: z.number().int().min(1).optional(),
   room_type: z.string().min(1).optional(),
-  capacity: z.number().int().min(1).optional(),
-  current_price: z.number().min(0),
+  capacity: occupantCount.refine((n) => n >= 1, 'must be at least one').optional(),
+  // `money`, not `z.number().min(0)`. Zod's `z.number()` rejects NaN but ACCEPTS
+  // Infinity, and JSON carries it in plainly as `1e999`. PostgreSQL sorts Infinity
+  // above every numeric, so a `>= 0` CHECK passes it. This is the unit's rent: it
+  // becomes the advance rent at move-in (BR-039), every bill raised against the
+  // unit (BR-010), and every income total that follows.
+  current_price: money,
   description: z.string().optional(),
   operational_status: z.enum(['Available', 'Reserved', 'Occupied', 'Under Maintenance']).optional(),
   visibility_status: z.enum(['Published', 'Hidden']).optional(),
@@ -116,8 +121,9 @@ router.post(
 const roomUpdateSchema = z.object({
   description: z.string().max(2000).nullish(),
   room_type: z.string().max(100).optional(),
-  capacity: z.number().int().min(1).max(20).optional(),
-  current_price: z.number().min(0).optional(),
+  capacity: occupantCount.refine((n) => n >= 1 && n <= 20, 'must be between 1 and 20').optional(),
+  // See the note on `roomInsertSchema.current_price` above.
+  current_price: money.optional(),
   operational_status: z.enum(['Available', 'Reserved', 'Occupied', 'Under Maintenance']).optional(),
   visibility_status: z.enum(['Published', 'Hidden']).optional(),
   available_from: z.string().nullish(),
@@ -361,9 +367,10 @@ const tenantOnboardSchema = z.object({
   facebookUrl: z.string().optional(),
   roomNumber: z.string().optional(),
   moveInDate: z.string().optional(),
-  depositAmount: z.number().min(0).optional(),
-  occupantCount: z.number().int().min(1).optional(),
-  roommateQty: z.number().int().min(0).optional(),
+  // Advance rent (OD-04), so it is money and takes the finite check with it.
+  depositAmount: money.optional(),
+  occupantCount: occupantCount.refine((n) => n >= 1, 'must be at least one occupant').optional(),
+  roommateQty: occupantCount.optional(),
 });
 
 /**
@@ -519,8 +526,8 @@ const tenantUpdateSchema = z.object({
   facebookUrl: z.string().optional(),
   roomNumber: z.string().optional(),
   accountStatus: z.enum(['active', 'inactive']).optional(),
-  occupantCount: z.number().int().min(1).optional(),
-  roommateQty: z.number().int().min(0).optional(),
+  occupantCount: occupantCount.refine((n) => n >= 1, 'must be at least one occupant').optional(),
+  roommateQty: occupantCount.optional(),
 });
 
 /**
