@@ -51,7 +51,14 @@ database/seeded-tenant-credentials.json
 # Database backups - contain tenant personal data, never commit
 backups/
 
-# Presentation working copy. Generated from docs/ by copying - the originals in
-# docs/claude_pipeline/outputs/ and docs/diagrams/rendered/ remain the source of
-# truth. Kept out of git so the same document does not exist twice in history.
-VIDEO PRESENTATION DOCS/
+# Presentation working copy. The numbered markdown files and the diagrams are
+# COPIES - the originals live in docs/claude_pipeline/outputs/ and
+# docs/diagrams/rendered/, and duplicating them in history helps nobody.
+#
+# The three files that exist only here ARE tracked, because losing them would
+# mean losing work: the entry-point note, the HTML script the team films from,
+# and the teammate setup guide.
+VIDEO PRESENTATION DOCS/*
+!VIDEO PRESENTATION DOCS/!! READ THIS FIRST - SEAN.md
+!VIDEO PRESENTATION DOCS/filming-script.html
+!VIDEO PRESENTATION DOCS/SET UP LOYDS LAPTOP.md

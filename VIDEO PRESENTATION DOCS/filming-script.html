@@ -1,0 +1,606 @@
+<title>Hivelet Filming Script</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;800&family=Plus+Jakarta+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+
+<style>
+  :root {
+    --ground:        #fafaf9;
+    --surface:       #ffffff;
+    --sunken:        #f4f4f2;
+    --ink:           #1c1917;
+    --ink-soft:      #57534e;
+    --ink-faint:     #8b8681;
+    --line:          #e7e5e4;
+    --line-strong:   #d6d3d1;
+    --primary:       #0c66e4;
+    --direction:     #b45309;
+    --direction-bg:  #fdf6e9;
+    --warn:          #be123c;
+    --warn-bg:       #fdf2f4;
+
+    --loyd:   #0c66e4;
+    --sean:   #0d7a6e;
+    --eljohn: #6d3ad4;
+    --vince:  #b45309;
+    --kiel:   #be123c;
+    --all:    #57534e;
+
+    --font-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
+    --font-body:    'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --ground:       #171613;
+      --surface:      #201e1a;
+      --sunken:       #1a1815;
+      --ink:          #f2efe9;
+      --ink-soft:     #b8b2a8;
+      --ink-faint:    #857f75;
+      --line:         #322e28;
+      --line-strong:  #454038;
+      --primary:      #6aa6ff;
+      --direction:    #f0b45e;
+      --direction-bg: #251d10;
+      --warn:         #ff8fa6;
+      --warn-bg:      #2a1419;
+      --loyd:   #6aa6ff;
+      --sean:   #4fc7b4;
+      --eljohn: #b393f5;
+      --vince:  #f0b45e;
+      --kiel:   #ff8fa6;
+      --all:    #b8b2a8;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:       #171613;
+    --surface:      #201e1a;
+    --sunken:       #1a1815;
+    --ink:          #f2efe9;
+    --ink-soft:     #b8b2a8;
+    --ink-faint:    #857f75;
+    --line:         #322e28;
+    --line-strong:  #454038;
+    --primary:      #6aa6ff;
+    --direction:    #f0b45e;
+    --direction-bg: #251d10;
+    --warn:         #ff8fa6;
+    --warn-bg:      #2a1419;
+    --loyd:   #6aa6ff;
+    --sean:   #4fc7b4;
+    --eljohn: #b393f5;
+    --vince:  #f0b45e;
+    --kiel:   #ff8fa6;
+    --all:    #b8b2a8;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 0;
+    padding-block: 0 5rem;
+    padding-inline: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 46rem; margin-inline: auto; }
+
+  /* ---------- masthead ---------- */
+  .masthead { padding-block: 3rem 1.5rem; border-bottom: 2px solid var(--ink); }
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 .9rem;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 6vw, 2.9rem);
+    line-height: 1.05;
+    letter-spacing: -.025em;
+    margin: 0 0 .6rem;
+    text-wrap: balance;
+  }
+  .standfirst { font-size: 1.05rem; color: var(--ink-soft); margin: 0; max-width: 34rem; }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 1.6rem; margin-top: 1.8rem; }
+  .meta div { display: flex; flex-direction: column; gap: .2rem; }
+  .meta dt {
+    font-family: var(--font-mono); font-size: .64rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .meta dd { margin: 0; font-weight: 700; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+
+  /* ---------- running order ---------- */
+  .order { margin-block: 2.5rem; }
+  .order h2, .block h2 {
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 700;
+    margin: 0 0 1rem;
+  }
+  .order ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .order a {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr auto auto;
+    align-items: baseline;
+    gap: .75rem;
+    padding: .7rem .85rem;
+    text-decoration: none;
+    color: inherit;
+    background: var(--surface);
+    border-left: 3px solid var(--spk, var(--line-strong));
+    transition: background .12s ease;
+  }
+  .order a:hover, .order a:focus-visible { background: var(--sunken); outline: none; }
+  .order a:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); }
+  .order .n { font-family: var(--font-mono); font-weight: 700; color: var(--spk); }
+  .order .t { font-weight: 500; }
+  .order .who { font-weight: 800; color: var(--spk); font-size: .9rem; }
+  .order .dur {
+    font-family: var(--font-mono); font-size: .8rem; color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- section ---------- */
+  section.part { margin-block: 3.5rem; scroll-margin-top: 1rem; }
+  .part-head {
+    border-left: 4px solid var(--spk);
+    padding-left: 1.1rem;
+    margin-bottom: 1.6rem;
+  }
+  .part-head .num {
+    font-family: var(--font-mono); font-size: .7rem; letter-spacing: .12em;
+    color: var(--spk); font-weight: 700; text-transform: uppercase;
+  }
+  .part-head h3 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(1.3rem, 3.6vw, 1.65rem); line-height: 1.2;
+    letter-spacing: -.015em; margin: .35rem 0 .6rem; text-wrap: balance;
+  }
+  .credit { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+  .chip {
+    font-weight: 800; font-size: .88rem; letter-spacing: .01em;
+    color: var(--surface); background: var(--spk);
+    padding: .18rem .6rem; border-radius: 2px;
+  }
+  .runtime {
+    font-family: var(--font-mono); font-size: .82rem; color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- spoken lines ---------- */
+  .say { font-size: 1.19rem; line-height: 1.78; margin: 0 0 1.15rem; }
+  .say strong { font-weight: 800; color: var(--ink); }
+  .say em { font-style: normal; font-weight: 700; color: var(--primary); }
+
+  /* ---------- stage directions ---------- */
+  .cue {
+    font-family: var(--font-mono); font-size: .82rem; line-height: 1.55;
+    color: var(--direction); background: var(--direction-bg);
+    border-left: 3px solid var(--direction);
+    padding: .6rem .85rem; margin: 0 0 1.15rem;
+  }
+  .cue b { font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .cue .file { color: var(--ink); font-weight: 700; }
+
+  .handover {
+    font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-faint);
+    border-top: 1px dashed var(--line-strong);
+    padding-top: .9rem; margin-top: 2rem;
+  }
+
+  /* ---------- Q&A ---------- */
+  .qa { display: grid; gap: 1.4rem; }
+  .q {
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 1rem 1.1rem;
+  }
+  .q .ask {
+    font-family: var(--font-display); font-weight: 700; font-size: 1.02rem;
+    margin: 0 0 .2rem; line-height: 1.35;
+  }
+  .q .by {
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--spk, var(--ink-faint)); font-weight: 700;
+    margin: 0 0 .55rem;
+  }
+  .q p.ans { margin: 0; color: var(--ink-soft); font-size: 1rem; line-height: 1.65; }
+
+  /* ---------- tables ---------- */
+  .block { margin-block: 3rem; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  th, td { text-align: left; padding: .65rem .8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 700;
+    border-bottom: 2px solid var(--line-strong);
+  }
+  td strong { font-weight: 800; }
+
+  .never td:first-child { color: var(--warn); font-weight: 700; }
+  .never { background: var(--warn-bg); }
+  .never th { border-bottom-color: var(--warn); }
+
+  ul.notes { margin: 0; padding-left: 1.15rem; display: grid; gap: .7rem; }
+  ul.notes li { color: var(--ink-soft); }
+  ul.notes strong { color: var(--ink); font-weight: 800; }
+
+  .footnote {
+    margin-top: 3.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line);
+    font-size: .88rem; color: var(--ink-faint);
+  }
+
+  @media print {
+    body { background: #fff; color: #000; font-size: 12pt; padding: 0; }
+    .order { break-after: page; }
+    section.part { break-inside: avoid; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">IT 124 Capstone Project 2 · Module 01 · Group 4</p>
+    <h1>Hivelet Filming Script</h1>
+    <p class="standfirst">
+      Final Group Requirement — presenting our finalized architecture, database schema,
+      and process/data flow diagrams.
+    </p>
+    <dl class="meta">
+      <div><dt>Sections 1–6</dt><dd>9.8 min</dd></div>
+      <div><dt>With questions</dt><dd>12.7 min</dd></div>
+      <div><dt>Limit</dt><dd>10–15 min</dd></div>
+      <div><dt>Speakers</dt><dd>5</dd></div>
+    </dl>
+  </header>
+
+  <nav class="order">
+    <h2>Running order — tap your section</h2>
+    <ol>
+      <li><a href="#s1" style="--spk: var(--loyd)"><span class="n">1</span><span class="t">Introduction &amp; problem recap</span><span class="who">Loyd</span><span class="dur">1:20</span></a></li>
+      <li><a href="#s2" style="--spk: var(--loyd)"><span class="n">2</span><span class="t">Panel recommendation recap</span><span class="who">Loyd</span><span class="dur">1:15</span></a></li>
+      <li><a href="#s3" style="--spk: var(--sean)"><span class="n">3</span><span class="t">Finalized architecture</span><span class="who">Sean</span><span class="dur">2:00</span></a></li>
+      <li><a href="#s4" style="--spk: var(--eljohn)"><span class="n">4</span><span class="t">Finalized database schema</span><span class="who">Eljohn</span><span class="dur">2:00</span></a></li>
+      <li><a href="#s5" style="--spk: var(--vince)"><span class="n">5</span><span class="t">Process &amp; data flow diagrams</span><span class="who">Vince</span><span class="dur">2:00</span></a></li>
+      <li><a href="#s6" style="--spk: var(--kiel)"><span class="n">6</span><span class="t">Design justification</span><span class="who">Kiel</span><span class="dur">2:30</span></a></li>
+      <li><a href="#s7" style="--spk: var(--all)"><span class="n">7</span><span class="t">Questions</span><span class="who">Everyone</span><span class="dur">2–3:00</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section class="part" id="s1" style="--spk: var(--loyd)">
+    <div class="part-head">
+      <span class="num">Section 1</span>
+      <h3>Introduction and problem recap</h3>
+      <p class="credit"><span class="chip">Loyd</span><span class="runtime">target 1:20</span></p>
+    </div>
+
+    <p class="cue"><b>On screen</b> — title slide: Hivelet, Group 4, and the five member names</p>
+
+    <p class="say">Good day, ma'am/sir. We are Group 4, and our system is <strong>Hivelet</strong> — a web-based apartment management system for the Fe Galang Da Silva Boarding House here in Legazpi.</p>
+
+    <p class="say">The property has <strong>thirty-three rentable units across five clusters</strong>: the main boarding house, a front apartment, a back apartment, a penthouse, and two Linda units.</p>
+
+    <p class="cue"><b>Say the next part clearly</b> — this is the gap from our paper, and it is why the study exists</p>
+
+    <p class="say">Property management systems already exist. The problem is that most are built for <strong>large-scale or commercial properties</strong>. They assume stable infrastructure, structured workflows, and dedicated administrative staff — and a small, resource-constrained boarding house has none of those. In the Philippine setting, transactions are also mostly <strong>cash-based</strong> and records are still kept by hand.</p>
+
+    <p class="say">So the existing options are either too heavy for a property this size, or they solve only one piece and leave the rest scattered.</p>
+
+    <p class="say">That is our gap: <em>there is no single, context-appropriate platform that brings tenant management, financial tracking, communication, and booking together</em> at this scale.</p>
+
+    <p class="say">Today, rent is collected in person, receipts are handwritten, and payment questions are answered by scrolling through Messenger. Nothing says who has paid, who is late, and what the property earned.</p>
+
+    <p class="say">Our end users are the landlady, Mrs. Fe Galang Da Silva, who needs one reliable record, and her residents, who should see their own bills without having to ask.</p>
+
+    <p class="handover">Pause → stay on, section 2 is also yours</p>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section class="part" id="s2" style="--spk: var(--loyd)">
+    <div class="part-head">
+      <span class="num">Section 2</span>
+      <h3>Panel recommendation recap</h3>
+      <p class="credit"><span class="chip">Loyd</span><span class="runtime">target 1:15</span></p>
+    </div>
+
+    <p class="cue"><b>On screen</b> — a slide with the recommendation written out</p>
+
+    <p class="say">At our Capstone 1 proposal defense, the panel gave us <strong>one recommendation</strong>: that we explore an <strong>online payment integration</strong>, and specifically that we evaluate <strong>Adyen for GCash payments</strong>.</p>
+
+    <p class="say">To be clear where we were before that. Our proposal handled payments by <strong>recording cash</strong> — the administrator enters what was collected in person. There was no online payment in it at all.</p>
+
+    <p class="say">So we raised the practical constraint: our client collects cash, and that is what she wants. Online payment is not how she operates today.</p>
+
+    <p class="say">What came out of that discussion was to explore it as an <em>optional</em> feature — not as the way payments work, but as an option sitting beside cash. That way, if she changes her mind later, it is already there.</p>
+
+    <p class="say">That is the shape of what we built. Cash stays the primary method. The online option can be switched on or off, and the system runs correctly either way.</p>
+
+    <p class="say">The next three sections are how we did that.</p>
+
+    <p class="handover">Pause → hand over to Sean</p>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section class="part" id="s3" style="--spk: var(--sean)">
+    <div class="part-head">
+      <span class="num">Section 3 · graded core</span>
+      <h3>Finalized architecture</h3>
+      <p class="credit"><span class="chip">Sean</span><span class="runtime">target 2:00</span></p>
+    </div>
+
+    <p class="cue"><b>On screen</b> — <span class="file">hivelet_architecture_defense.svg</span> · leave it up for the whole section</p>
+
+    <p class="say">This is our finalized architecture. The pattern is a <strong>layered architecture structured as a modular monolith, with a pluggable payment gateway adapter</strong>.</p>
+
+    <p class="cue"><b>Point</b> — across the five tiers, left to right</p>
+
+    <p class="say">Five tiers. Tier 1 is our web client. Tier 2 is the API and security layer, where all authorization happens — thirty-nine permissions across four roles. Tier 3 is our domain services. Tier 4 is the PostgreSQL database. And Tier 5, in orange, is the payment gateway adapter.</p>
+
+    <p class="say">We chose a modular monolith over microservices because our system is one property with one administrator. Microservices would add distributed-system complexity that this scale does not need.</p>
+
+    <p class="cue"><b>Point</b> — Tier 5</p>
+
+    <p class="say">Tier 5 is our answer to the design question from the last section. It is one file, and it is the only place in the whole system that knows Adyen exists. If the gateway changed, we would change that one file — and nothing in the database would move.</p>
+
+    <p class="cue"><b>Point</b> — the two arrows leaving Tier 5</p>
+
+    <p class="say">When the gateway is configured, online payment goes through it. When it is not, a local settlement path handles it instead, and the system still works. That is what we mean by optional — <em>built, not promised</em> — and it is something we can show rather than just say.</p>
+
+    <p class="cue"><b>Point</b> — the green box on the right</p>
+
+    <p class="say">Both routes end at the same place — the administrator verification step. And notice the on-site cash route along the bottom: it reaches that same step without touching Tier 5 at all. Cash stays the primary method and does not depend on the gateway.</p>
+
+    <p class="handover">Pause → hand over to Eljohn</p>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section class="part" id="s4" style="--spk: var(--eljohn)">
+    <div class="part-head">
+      <span class="num">Section 4 · graded core</span>
+      <h3>Finalized database schema</h3>
+      <p class="credit"><span class="chip">Eljohn</span><span class="runtime">target 2:00</span></p>
+    </div>
+
+    <p class="cue"><b>On screen</b> — <span class="file">hivelet_erd_defense_overview.svg</span></p>
+
+    <p class="say">Our finalized schema has <strong>twenty-one tables</strong>. This is the core of it, in Crow's Foot notation.</p>
+
+    <p class="cue"><b>Hold this image</b> while you say the next paragraph — about thirty seconds</p>
+
+    <p class="say">Two things before the detail. Every financial relationship uses <strong>ON DELETE RESTRICT</strong> — a room or a tenant that has payment history cannot be deleted. And the schema is normalized to <strong>Third Normal Form</strong>; twenty of the twenty-one tables satisfy it fully, and we can name the one exception if asked.</p>
+
+    <p class="cue"><b>Switch now</b> — <span class="file">hivelet_erd_defense_payments.svg</span> · stay here for the rest of the section</p>
+
+    <p class="say">This is the <strong>payments</strong> table, and this is what changed because of the recommendation. Four things.</p>
+
+    <p class="cue"><b>Point to each</b> as you say it</p>
+
+    <p class="say"><em>First</em>, the settlement columns are generic — payment method, payment source, transaction reference. Nothing here is specific to Adyen. Supporting a different provider would be one new value in a list, not a schema change.</p>
+
+    <p class="say"><em>Second</em>, the verification columns — status, verified by, and verified at. A payment gateway can report that money moved, but it cannot mark a bill settled. Only the administrator can, and the schema records who decided and when.</p>
+
+    <p class="say"><em>Third</em>, the bill reference is nullable, set to null on delete. A payment outlives the bill it settled.</p>
+
+    <p class="say"><em>Fourth</em>, the room and tenant references are restrict-on-delete, so financial history cannot be erased indirectly.</p>
+
+    <p class="say">Together, those four keep the schema independent of any one payment provider — so the online option can be switched on later without touching the database.</p>
+
+    <p class="handover">Pause → hand over to Vince</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section class="part" id="s5" style="--spk: var(--vince)">
+    <div class="part-head">
+      <span class="num">Section 5</span>
+      <h3>Process and data flow diagrams</h3>
+      <p class="credit"><span class="chip">Vince</span><span class="runtime">target 2:00</span></p>
+    </div>
+
+    <p class="cue"><b>On screen</b> — <span class="file">hivelet_dfd_context.svg</span></p>
+
+    <p class="say">This is our <strong>Context Diagram, Level 0</strong> — the whole system as one process, with four external entities: the prospective tenant, the resident, the administrator, and the payment gateway.</p>
+
+    <p class="cue"><b>Switch</b> — <span class="file">hivelet_dfd_level1.svg</span></p>
+
+    <p class="say">And this is our <strong>Level 1 DFD</strong>. We want to point out one change ourselves.</p>
+
+    <p class="say">Our earlier submission had <strong>six</strong> subprocesses. This has <strong>seven</strong>.</p>
+
+    <p class="say">The seventh is payment gateway settlement. When we built the integration, we found the gateway callback is really its own process — it is triggered by an outside system rather than by a user, so it has a different trust boundary. Putting it inside billing would have hidden that.</p>
+
+    <p class="cue"><b>Point</b> — Process 3.0</p>
+
+    <p class="say">Let me walk through one subprocess — <strong>3.0, Billing and Payment Settlement</strong>.</p>
+
+    <p class="cue"><b>Trace the path</b> with your cursor as you speak</p>
+
+    <p class="say">A resident requests a bill. The process reads the room assignment from <strong>D3</strong> and the water rate from <strong>D11, System Parameters</strong> — that rate is configuration, not a number written into our code. It writes the bill to <strong>D5</strong>.</p>
+
+    <p class="say">When a payment comes in, it writes a payment record to <strong>D6</strong>, marked pending verification. It does not touch the bill status.</p>
+
+    <p class="say">Only when the administrator verifies does it mark the bill paid and write the income record into <strong>D7</strong>.</p>
+
+    <p class="say">And every step writes to <strong>D10</strong>, the audit log.</p>
+
+    <p class="say">We also did the cross-check the module asks for — <em>every data store in our DFD maps to an entity in our ERD</em>. All twenty-one tables are accounted for.</p>
+
+    <p class="handover">Pause → hand over to Kiel</p>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section class="part" id="s6" style="--spk: var(--kiel)">
+    <div class="part-head">
+      <span class="num">Section 6</span>
+      <h3>Design justification</h3>
+      <p class="credit"><span class="chip">Kiel</span><span class="runtime">target 2:30</span></p>
+    </div>
+
+    <p class="cue"><b>On screen</b> — <span class="file">hivelet_architecture_defense.svg</span> again</p>
+
+    <p class="say">Our most significant design change is <strong>Tier 5, the pluggable payment gateway adapter</strong>. Here is our four-part justification.</p>
+
+    <p class="say"><em>Functionality.</em> It supports our requirements for billing, manual payments, online payments, and payment verification. On-site cash and online payment go through the same pipeline and produce the same records, so the landlady has one list to check instead of two separate workflows.</p>
+
+    <p class="say"><em>Security.</em> Passwords are hashed with <strong>bcrypt</strong>. Authorization is enforced on the server, never in the browser — our web client holds no database credential at all. Row-level security is enabled and forced on all twenty-one tables, so the database will not answer anyone except our own backend. And an online payment is recorded as <strong>pending verification</strong>; it cannot settle a bill until a person with the verify permission approves it.</p>
+
+    <p class="say"><em>Scalability.</em> Changing payment provider is one file and <strong>no schema changes</strong>, because the payments table stores generic settlement attributes. Foreign keys are indexed. We designed for the scale this property actually has — thirty-three units and one administrator — rather than for traffic it will never see.</p>
+
+    <p class="say"><em>Problem alignment.</em> The original problem was lost records and payments nobody could prove. This turns every payment, cash or online, into a record with a reference, a named verifier, and a timestamp. And because the gateway is optional, the landlady is never locked out of her own system by an arrangement she has not agreed to.</p>
+
+    <p class="say">And that is the panel's recommendation answered — we explored Adyen, we built it, and we built it in a way that leaves the choice with her.</p>
+
+    <p class="cue"><b>On screen</b> — closing slide</p>
+
+    <p class="say">Thank you, ma'am/sir. We are happy to take questions.</p>
+
+    <p class="handover">Pause → open the floor</p>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section class="part" id="s7" style="--spk: var(--all)">
+    <div class="part-head">
+      <span class="num">Section 7</span>
+      <h3>Questions</h3>
+      <p class="credit"><span class="chip">Everyone</span><span class="runtime">2:00 – 3:00</span></p>
+    </div>
+
+    <p class="cue">Whoever presented a section answers questions about it. If you do not know, say so and say what you would check — that is a better answer than a guess.</p>
+
+    <div class="qa">
+      <div class="q" style="--spk: var(--sean)">
+        <p class="ask">“Why a modular monolith and not microservices?”</p>
+        <p class="by">Sean</p>
+        <p class="ans">One property, thirty-three units, one administrator. Microservices add distributed-system complexity our scale does not need. The modular monolith gives clean internal separation without that cost — and we did split out the one part that genuinely needed its own boundary, the payment adapter.</p>
+      </div>
+
+      <div class="q" style="--spk: var(--loyd)">
+        <p class="ask">“Was online payment in your original proposal?”</p>
+        <p class="by">Loyd</p>
+        <p class="ans">No. Our proposal recorded cash payments only. The online integration came from the panel's recommendation, and building it as optional was what we settled on once we raised that our client only accepts cash.</p>
+      </div>
+
+      <div class="q" style="--spk: var(--kiel)">
+        <p class="ask">“The client prefers cash — so why build the online payment at all?”</p>
+        <p class="by">Loyd or Kiel</p>
+        <p class="ans">That is exactly why it is optional rather than the default. The cost of having it ready is low; the cost of not having it, if she changes her mind, is a rebuild. If she never turns it on, nothing in the system is worse for it — cash does not pass through the gateway at all.</p>
+      </div>
+
+      <div class="q" style="--spk: var(--sean)">
+        <p class="ask">“Is the Adyen integration actually working?”</p>
+        <p class="by">Sean or Kiel</p>
+        <p class="ans">Yes. It runs against a configured developer sandbox using their real Checkout Sessions API, with GCash enabled on the account. Going live commercially also needs the property registered as a business, which is the owner's decision rather than a software task.</p>
+      </div>
+
+      <div class="q" style="--spk: var(--eljohn)">
+        <p class="ask">“Is your schema really in 3NF?”</p>
+        <p class="by">Eljohn</p>
+        <p class="ans">Twenty of twenty-one tables, yes. One is not — there is a flag on the rooms table that is really determined by the cluster the room belongs to, which is a transitive dependency. We found it, and we have the migration that fixes it.</p>
+      </div>
+
+      <div class="q" style="--spk: var(--eljohn)">
+        <p class="ask">“What if the payment gateway sends something false?”</p>
+        <p class="by">Eljohn or Kiel</p>
+        <p class="ans">The notification is signature-verified before anything is written, and even a genuine one only creates a record for the administrator to approve. It cannot settle a bill on its own.</p>
+      </div>
+
+      <div class="q" style="--spk: var(--vince)">
+        <p class="ask">“How do you know the water rate is correct?”</p>
+        <p class="by">Vince</p>
+        <p class="ans">It comes from a settings record, not from code. The administrator can change it without needing a developer.</p>
+      </div>
+
+      <div class="q" style="--spk: var(--all)">
+        <p class="ask">“Which tools did you use?”</p>
+        <p class="by">Anyone</p>
+        <p class="ans">A diagramming tool for the architecture and data flow diagrams, a database modeling tool for the ERD, and a UI/UX design tool for the mockups. <strong>The module asks for the type of tool, not the product name — do not name products here.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ never say ============ -->
+  <div class="block">
+    <h2>Never say these on camera</h2>
+    <div class="tablewrap">
+      <table class="never">
+        <thead><tr><th>Do not say</th><th>Say instead</th></tr></thead>
+        <tbody>
+          <tr><td>A product name for a tool</td><td>“a diagramming tool”, “a database modeling tool”, “a UI/UX design tool”</td></tr>
+          <tr><td>“The panel instructed us to keep the architecture and database independent of Adyen”</td><td>They never said that. The panel recommended exploring Adyen for GCash; the optional approach came out of the discussion after we raised the cash constraint.</td></tr>
+          <tr><td>“Our paper had already defined online payment as optional”</td><td>It had not — the proposal recorded cash only, and that wording was added afterwards.</td></tr>
+          <tr><td>“co-ownership”, “50/50”, “owner share”, “landlady share”</td><td>“the fifty percent column” — a figure the system computes as half that row's rent, kept so the records reconcile with the original spreadsheet</td></tr>
+          <tr><td>“mock”, “simulator”, “demo gateway”</td><td>“the Adyen integration”, “the local settlement path”</td></tr>
+          <tr><td>“2% annual increase”</td><td>Nothing — the owner sets rates by hand</td></tr>
+          <tr><td>“32 units”</td><td><strong>33 units</strong></td></tr>
+          <tr><td>“The panel also recommended…”</td><td>There was <strong>one</strong> recommendation</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ rubric ============ -->
+  <div class="block">
+    <h2>The rubric — 100 points, 25 each</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Criterion</th><th>What actually earns it</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Design completeness &amp; technical accuracy</strong></td><td>Sections 3, 4 and 5, and the diagrams being consistent with each other. Section 5 says the DFD-to-ERD cross-check out loud.</td></tr>
+          <tr><td><strong>Incorporation of panel recommendations</strong></td><td>Section 2 states it; 3, 4 and 6 answer it. Say <em>“the panel recommended we explore Adyen for GCash”</em> plainly, then show the three places we answered it.</td></tr>
+          <tr><td><strong>Design justification</strong></td><td>Section 6, all four parts. Be specific, not generic — “hashed with bcrypt”, not “it is secure”.</td></tr>
+          <tr><td><strong>Delivery &amp; team participation</strong></td><td>Stay inside 10–15 minutes, and <strong>every member speaks</strong>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ group ID ============ -->
+  <div class="block">
+    <h2>Group identification — fill this in before recording</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Member</th><th>Name</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Loyd</td><td style="color: var(--warn)">— agree this beforehand</td></tr>
+          <tr><td>2</td><td>Sean</td><td>Database administrator</td></tr>
+          <tr><td>3</td><td>Eljohn</td><td style="color: var(--warn)">— agree this beforehand</td></tr>
+          <tr><td>4</td><td>Vince</td><td style="color: var(--warn)">— agree this beforehand</td></tr>
+          <tr><td>5</td><td>Kiel</td><td style="color: var(--warn)">— agree this beforehand</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ filming notes ============ -->
+  <div class="block">
+    <h2>Filming notes</h2>
+    <ul class="notes">
+      <li><strong>Section 4 needs two images, not one.</strong> Open on the overview, then switch to the payments close-up and stay there. The full ERD is too small to read on video.</li>
+      <li><strong>Do not show <span style="font-family: var(--font-mono)">hivelet_architecture.svg</span></strong> — that is the full component map and it is a reference document. Use the <span style="font-family: var(--font-mono)">_defense</span> version, built to fit a widescreen frame.</li>
+      <li>Use the <strong>.svg</strong> files in <span style="font-family: var(--font-mono)">diagrams/</span>. The PNGs are only for tools that will not accept SVG.</li>
+      <li>Leave a real pause at each handover — it makes the cut between speakers clean.</li>
+      <li>If you are running long, trim <strong>section 6</strong> slightly. Do not trim 3 or 4.</li>
+    </ul>
+  </div>
+
+  <p class="footnote">
+    If a question goes deeper than this script, the detail is in the numbered documents
+    beside it in <span style="font-family: var(--font-mono)">VIDEO PRESENTATION DOCS</span>.
+    You should not need them — they are there in case you do.
+  </p>
+
+</div>
