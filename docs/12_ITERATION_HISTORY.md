@@ -284,19 +284,22 @@ Each was verified against the live database and each is covered by a regression 
 | **The tenant portal wrote false intrusion attempts into the audit log** — six admin-only requests on every page load, each refusal audited. | **2,104 of 2,224 audit rows were this bug**, and the table is append-only, so they are permanent. |
 | **`NaN` and `Infinity` could reach money columns.** JSON has no Infinity literal, but `1e999` parses to one, and PostgreSQL sorts it above every numeric — so a `CHECK (x >= 0)` passes it, and on a generated column every subsequent `SUM` returns Infinity. | Found in **five** schemas across the iteration, including `rooms.current_price`, which becomes the advance rent, every bill, and every income total. |
 | **Expense creation was two round trips.** A rejected allocation left an entry carrying a total with nothing underneath it. | Exactly the imbalance **BR-047** forbids. Closed by migration `019`. |
+| **Deleting a room destroyed its history.** The delete was unguarded, and four tables cascade from `rooms` — including `room_price_history`, the table **BR-003** is anchored to. It was also logged as `ROOM_UPDATE`, so the one surviving record said the room had been *edited*. | The ledger itself survives, because migration `005` made it `RESTRICT` and every one of the 33 rooms holds ledger rows — which is why nothing was lost. A room without them did not survive. |
+| **A rate change could go unrecorded.** The `room_price_history` insert discarded its result and ran *after* the rate had already changed, so a rejected insert left the new rate live and no record that the old one existed. | This is the claim that replaced the withdrawn escalation feature — that every manual change is preserved. Migration `020` moved the row to a database trigger, so it now holds regardless of write path. |
 
 ### 4.4 The business rule register, rebuilt
 
 | | End of Iteration 1 | End of Iteration 2 |
 | :--- | ---: | ---: |
-| Enforced | not assessed | **35** |
-| Partial | not assessed | 11 |
+| Enforced | not assessed | **36** |
+| Partial | not assessed | 10 |
 | Schema only | not assessed | 2 |
 | Not enforced | not assessed | **1** (OD-07, client-gated) |
 | **Violated** | not assessed | **0** |
 
 Six rules moved because the register was wrong, not because code changed — **BR-008**,
-**BR-019**, **BR-026**, **BR-030**, **BR-041**, **BR-047**. Three structural defects were
+**BR-019**, **BR-026**, **BR-030**, **BR-041** and **BR-047**; **BR-003** moved because
+code changed. Three structural defects were
 also found *in the register itself*: a rule with no status cell at all, a rule whose row
 and summary disagreed, and three rules carrying a status the legend never defined.
 `check:rules` now prevents all three.

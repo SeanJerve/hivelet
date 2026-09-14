@@ -467,7 +467,7 @@ Ten commits. The ones that matter:
   read. Nothing can go stale.
 - **BR-046 is the one that genuinely waits on the owner** — see §4.
 
-**49 rules: 35 enforced, 11 partial, 2 schema only, 1 not enforced, 0 violated.**
+**49 rules: 36 enforced, 10 partial, 2 schema only, 1 not enforced, 0 violated.**
 
 Four more rules moved after the four above, and for the same reason each time: the
 evidence in the register cited `FULL_DATABASE_SCHEMA.sql`, which does not describe
@@ -530,7 +530,8 @@ In the order I would take them.
 
 **Every multi-step write must be a database function.** supabase-js cannot open a
 transaction, so three migrations now exist for exactly this reason — `010` (expense
-allocations, update), `018` (payment settlement) and `019` (expense creation). If you add a
+allocations, update), `018` (payment settlement), `019` (expense creation) and `020`
+(rate change history, as a trigger). If you add a
 write that touches more than one table, follow the pattern rather than chaining awaits.
 
 **Do not** "fix" `fifty_percent_share` or `remitted_amount` by adding them to an INSERT.

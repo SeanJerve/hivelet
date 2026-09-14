@@ -20,6 +20,9 @@ export type AuditAction =
   | 'AUTH_ACCESS_DENIED'
   | 'PROFILE_UPDATE'
   | 'ROOM_UPDATE'
+  // A room deletion was logged as ROOM_UPDATE, so the one record that survives
+  // the row said the room had been edited rather than destroyed. BR-003.
+  | 'ROOM_DELETE'
   | 'ROOM_STATUS_CHANGE'
   | 'TENANT_CREATE'
   | 'TENANT_UPDATE'

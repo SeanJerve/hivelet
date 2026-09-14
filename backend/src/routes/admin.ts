@@ -193,16 +193,62 @@ router.patch(
       }
     }
 
+    /**
+     * BR-003 / ARCH-004 - rate change history.
+     *
+     * The history row is no longer written here. Migration `020` put an AFTER
+     * UPDATE trigger on `rooms` that writes it in the same transaction as the
+     * rate change itself, so a rate cannot be changed without being recorded by
+     * ANY path - this route, a future service, or a direct SQL fix.
+     *
+     * This code used to insert it and discard the result: no `error` was
+     * destructured and nothing was checked. `rooms` had already been updated by
+     * then, so a rejected insert left the new rate live and no record that the
+     * old one ever existed - exactly what BR-003 forbids, reported to nobody.
+     *
+     * What is left here is attribution. The row is already guaranteed; this adds
+     * who did it and why. If it fails, the history is still intact and the actor
+     * is still in `audit_logs`, which is what the message below says.
+     */
     const previousPrice = Number((before as Record<string, unknown>).current_price);
     if (parsed.data.current_price !== undefined && parsed.data.current_price !== previousPrice) {
-      await db.from('room_price_history').insert({
-        room_id: req.params.roomId,
-        previous_price: previousPrice,
-        new_price: parsed.data.current_price,
-        effective_date: new Date().toISOString().slice(0, 10),
-        reason: 'Administrator price adjustment',
-        created_by: req.user!.profileId,
-      });
+      const { data: recorded, error: findError } = await db
+        .from('room_price_history')
+        .select('id')
+        .eq('room_id', req.params.roomId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (findError) {
+        throw ApiError.internal(
+          `The rate was changed and the change is recorded, but the record could not be read ` +
+            `back to attribute it: ${findError.message}. The administrator who made the change ` +
+            'is still in the audit log.'
+        );
+      }
+
+      if (!recorded) {
+        // The trigger is the only thing that writes this row, so its absence means
+        // the trigger is gone - which would make every future rate change silent.
+        throw ApiError.internal(
+          'The rate was changed, but no history row was written for it. The trigger ' +
+            '`trg_record_room_price_change` (migration 020) may be missing - check it before ' +
+            'changing any further rates.'
+        );
+      }
+
+      const { error: attributionError } = await db
+        .from('room_price_history')
+        .update({ created_by: req.user!.profileId, reason: 'Administrator price adjustment' })
+        .eq('id', recorded.id);
+
+      if (attributionError) {
+        throw ApiError.internal(
+          `The rate was changed and the change IS recorded, but it could not be attributed: ` +
+            `${attributionError.message}. The administrator who made it is still in the audit log.`
+        );
+      }
     }
 
     await auditFromRequest(req, {
@@ -314,6 +360,59 @@ router.delete(
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Room not found.');
 
+    /**
+     * BR-003 - Historical Preservation.
+     *
+     * This is a hard DELETE, and it was unguarded. The ledger tables survive it:
+     * migration `005` moved `bills`, `payments` and `monthly_income_records` to
+     * `ON DELETE RESTRICT`, so PostgreSQL refuses to remove a room that has any
+     * of them - and today all 33 rooms do, which is why nothing has been lost.
+     *
+     * Four tables do NOT survive it. `room_price_history`, `room_assignments`,
+     * `inquiries` and `room_photos` are all `ON DELETE CASCADE` from `rooms`, so
+     * a room without ledger rows - a newly created one, or one never rented -
+     * takes its entire history with it, silently and with no confirmation beyond
+     * the button press.
+     *
+     * `room_price_history` is the table BR-003 is anchored to. Destroying the
+     * record of every rate the owner ever set, as a side effect of removing a
+     * unit created by mistake, is exactly what the rule forbids.
+     *
+     * So the room is deleted only when it carries no history at all. Anything
+     * else is a retirement, and `operational_status` is what expresses that.
+     */
+    const [assignments, priceHistory, inquiries, photos, bills, payments, income] =
+      await Promise.all([
+        db.from('room_assignments').select('id', { count: 'exact', head: true }).eq('room_id', req.params.roomId),
+        db.from('room_price_history').select('id', { count: 'exact', head: true }).eq('room_id', req.params.roomId),
+        db.from('inquiries').select('id', { count: 'exact', head: true }).eq('room_id', req.params.roomId),
+        db.from('room_photos').select('id', { count: 'exact', head: true }).eq('room_id', req.params.roomId),
+        db.from('bills').select('id', { count: 'exact', head: true }).eq('room_id', req.params.roomId),
+        db.from('payments').select('id', { count: 'exact', head: true }).eq('room_id', req.params.roomId),
+        db.from('monthly_income_records').select('id', { count: 'exact', head: true }).eq('room_id', req.params.roomId),
+      ]);
+
+    const held: string[] = [];
+    const note = (count: number | null, singular: string, plural: string) => {
+      if (count && count > 0) held.push(`${count} ${count === 1 ? singular : plural}`);
+    };
+    note(income.count, 'income record', 'income records');
+    note(payments.count, 'payment', 'payments');
+    note(bills.count, 'bill', 'bills');
+    note(assignments.count, 'tenancy record', 'tenancy records');
+    note(priceHistory.count, 'rate change', 'rate changes');
+    note(inquiries.count, 'inquiry', 'inquiries');
+    note(photos.count, 'photo', 'photos');
+
+    if (held.length > 0) {
+      throw ApiError.conflict(
+        `Unit ${before.room_number} cannot be deleted - it holds ${held.join(', ')}. ` +
+          'Deleting it would destroy that history. Set its operational status to ' +
+          '"Under Maintenance" to take it out of service instead; the unit and everything ' +
+          'recorded against it are kept.'
+      );
+    }
+
     const { error } = await db
       .from('rooms')
       .delete()
@@ -321,14 +420,20 @@ router.delete(
 
     if (error) throw ApiError.internal(error.message);
 
+    // ROOM_DELETE, not ROOM_UPDATE. The row is gone, so this entry is the only
+    // remaining record that the unit ever existed - `previousValues` carries the
+    // whole row deliberately, as it does for the ticket delete.
     await auditFromRequest(req, {
-      action: 'ROOM_UPDATE',
+      action: 'ROOM_DELETE',
       entityType: 'ROOM',
       entityId: req.params.roomId,
       previousValues: before
     });
 
-    res.status(200).json({ success: true, data: { message: 'Room unit deleted.' } });
+    res.status(200).json({
+      success: true,
+      data: { message: `Unit ${before.room_number} deleted. It held no records.` }
+    });
   })
 );
 
@@ -2205,8 +2310,9 @@ router.delete(
 
     if (error) throw ApiError.internal(error.message);
 
-    // BR-028 - this is the only hard DELETE an administrator can perform, so the
-    // audit entry is the ONLY remaining record that the ticket ever existed.
+    // BR-028 - one of only two hard DELETEs an administrator can perform (the
+    // other is a room that holds no records), so the audit entry is the ONLY
+    // remaining record that the ticket ever existed.
     // `previousValues` carries the whole row deliberately.
     await auditFromRequest(req, {
       action: 'TICKET_DELETE',
