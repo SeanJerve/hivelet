@@ -387,15 +387,26 @@ lockdown was never actually tested. That is exactly what a stale key looks like.
 ## 2. Verification suites — run these before trusting anything
 
 ```bash
-cd backend  && npm run check:api        # 26 endpoint + RBAC isolation checks
+cd backend  && npm run check:api        # 30 endpoint, RBAC and input checks
             npm run check:adyen       # 23 HMAC signature checks
-            npm run check:billing     # water / grace / period arithmetic
+            npm run check:billing     # water / grace / period / receipt-allocation arithmetic
 cd frontend && npm run check:tokens     # design tokens resolve to the right colours
-cd ..       && npm run check:secrets    # scans for committed credentials
+cd ..       && npm run check:rules      # the BR register agrees with itself
+            npm run check:secrets    # scans for committed credentials
             npm run backup            # snapshot the live database before risky work
 ```
 
-All of these passed at handoff: **26 / 23 / all / all / clean**.
+All of these passed at handoff: **30 / 23 / all / all / all / clean**.
+
+Two of them are worth knowing about before you run them:
+
+- **`check:api` posts `1e999` at three money columns** and asserts each is refused. That
+  is a real request against whatever backend is running. A rejected request writes
+  nothing, so it is safe — and if one were ever *accepted*, the suite says so rather than
+  leaving a poisoned row behind for someone to find in a report months later.
+- **`check:billing` needs no database for the BR-013 half.** `allocateReceipt()` is pure
+  arithmetic, so the 12 checks over it — conservation, the `CHECK (amount > 0)` dust
+  floor, oldest-first ordering — run anywhere.
 
 ---
 
@@ -456,7 +467,20 @@ Ten commits. The ones that matter:
   read. Nothing can go stale.
 - **BR-046 is the one that genuinely waits on the owner** — see §4.
 
-**49 rules: 31 enforced, 15 partial, 2 schema only, 1 not enforced, 0 violated.**
+**49 rules: 35 enforced, 11 partial, 2 schema only, 1 not enforced, 0 violated.**
+
+Four more rules moved after the four above, and for the same reason each time: the
+evidence in the register cited `FULL_DATABASE_SCHEMA.sql`, which does not describe
+this database. **BR-041** (the property areas are an enum with a seeded lookup, not
+free text), **BR-026** and **BR-008** (the register read `idx_room_assignments_room_active`
+and missed `idx_single_active_assignment_per_room`, which is the partial unique index
+it said did not exist), and **BR-030** (CSV export exists - client-side, which is not
+`backend/src`, which is the only place it looked).
+
+`npm run check:rules` now validates the register against itself, because it drifted six
+times in one session and none of it was visible while reading. **BR-039 had no status
+cell at all** - the row ended mid-sentence, so the table rendered a column short while
+the summary still counted it. That predates the session.
 
 ### Security
 - **The RLS self-check passed while misconfigured.** It treated any probe error as proof of
