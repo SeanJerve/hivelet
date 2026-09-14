@@ -141,11 +141,20 @@ Short version:
    and never will be, so pulling cannot give them to him — that is the whole
    point of gitignoring secrets.
 2. **Supabase invite — already done.** He is on the team as a Developer.
-3. He changes **two lines**: his own `JWT_SECRET`, and his own `ADYEN_HMAC_KEY`
-   once he makes his own webhook.
+3. **He changes nothing.** His own `JWT_SECRET` is already generated and in the
+   file, and the `ADYEN_HMAC_KEY` in it is yours — correct for as long as you two
+   take turns pointing your one webhook at whoever's tunnel is up. He only
+   replaces it if he creates a second webhook of his own.
 
-The full steps, with the exact commands and the three checks that prove it
-worked, are in that file.
+### **`PASTE THIS INTO LOYDS CLAUDE.md`** ← send him this too
+
+One block he pastes into his Claude as his first message. It carries the five
+non-negotiable rules, the setup steps in order, and the three checks that prove
+it worked — so he does not have to read anything first and his Claude cannot
+start by wiping the database.
+
+The full manual steps are in `SET UP LOYDS LAPTOP.md` if you would rather walk
+him through it yourself.
 
 ---
 
