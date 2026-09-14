@@ -67,6 +67,8 @@ const router = useRouter();
 const route = useRoute();
 
 const pendingPayments = ref<any[]>([]);
+/** True when the verification queue could not be read, so 0 is not reported as fact. */
+const pendingPaymentsFailed = ref(false);
 const isRefreshing = ref(false);
 const isInitialLoading = ref(true);
 const hoveredMonthIndex = ref<number | null>(null);
@@ -161,8 +163,12 @@ async function loadPayments() {
     if (data && Array.isArray(data)) {
       pendingPayments.value = data.filter((p) => p.verification_status === 'Pending Verification');
     }
+    pendingPaymentsFailed.value = false;
   } catch {
-    // Graceful offline fallback
+    // The card below states a peso figure. Left silent, a failed load rendered
+    // it as a confident "PHP 0.00 awaiting verification" - which is a claim, not
+    // an absence. The card now says the figure is unavailable instead.
+    pendingPaymentsFailed.value = true;
   }
 }
 
@@ -929,7 +935,7 @@ function exportHistoricalCSV() {
               </span>
             </div>
             <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">
-              {{ pendingTotal > 0 ? peso(pendingTotal) : '₱0.00' }}
+              {{ pendingPaymentsFailed ? '—' : (pendingTotal > 0 ? peso(pendingTotal) : '₱0.00') }}
             </p>
             <p class="mt-1.5 text-xs text-amber-800 font-medium">
               {{ pendingCount }} remittance{{ pendingCount === 1 ? '' : 's' }} awaiting review

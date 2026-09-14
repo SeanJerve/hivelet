@@ -119,6 +119,9 @@ const resolvedCount = computed(
 const isTimelineOpen = ref(false);
 const activeTimelineTicket = ref<TicketRow | null>(null);
 const timelineNotes = ref<TicketNote[]>([]);
+
+/** Set when the conversation could not be loaded, so an empty thread is not mistaken for a quiet one. */
+const timelineError = ref<string | null>(null);
 const newNoteText = ref('');
 const savingNote = ref(false);
 
@@ -127,19 +130,39 @@ const savingNote = ref(false);
  * Each stage maps to known status strings from the backend / local mock.
  * @systemBibleRef Section 15 (Maintenance Workflow Stages)
  */
+/**
+ * The stages a ticket can actually be in.
+ *
+ * `ticket_status_type` in the live database has exactly four values - Submitted,
+ * In Progress, Resolved, Closed - and this tracker had five stages, of which
+ * **two could never be current**:
+ *
+ *   - "Reviewed by Landlady" was keyed to `'Open'`, which is not a value the
+ *     enum has. It is the frontend's display alias for Submitted elsewhere, and
+ *     this view reads the API directly, so it never arrived. Its description
+ *     said "Landlady Fe has reviewed your request" - a claim no status in this
+ *     system records, and one the tenant would have been shown while the ticket
+ *     sat unread.
+ *   - "Work In Progress" was keyed to `'In Progress'`, but `getStageIndex`
+ *     returned 2 for that status, so stage 3 was never reached either.
+ *
+ * A tracker whose steps the record cannot reach tells the tenant less than
+ * nothing. These are the four the database can prove, and Closed is shown as its
+ * own stage rather than folded into Resolved, because they are different
+ * outcomes to the person who filed the ticket.
+ */
 const TIMELINE_STAGES = [
-  { key: 'Submitted',  label: 'Submitted',           desc: 'Your ticket has been received.' },
-  { key: 'Open',       label: 'Reviewed by Landlady', desc: 'Landlady Fe has reviewed your request.' },
-  { key: 'In Progress', label: 'Handyman Assigned',   desc: 'A handyman has been dispatched.' },
-  { key: 'In Progress', label: 'Work In Progress',    desc: 'Repairs are currently underway.' },
-  { key: 'Resolved',   label: 'Resolved',             desc: 'The issue has been fully resolved.' },
+  { key: 'Submitted',   label: 'Submitted',   desc: 'Your ticket has been received.' },
+  { key: 'In Progress', label: 'In Progress', desc: 'Work on this request is underway.' },
+  { key: 'Resolved',    label: 'Resolved',    desc: 'The issue has been resolved.' },
+  { key: 'Closed',      label: 'Closed',      desc: 'This ticket is closed.' },
 ];
 
 function getStageIndex(status: string): number {
-  if (RESOLVED_STATES.includes(status)) return 4;
-  if (status === 'In Progress') return 2; // Show up to "Handyman Assigned"
-  if (status === 'Open') return 1;
-  return 0; // Submitted / just filed
+  if (status === 'Closed') return 3;
+  if (status === 'Resolved') return 2;
+  if (status === 'In Progress') return 1;
+  return 0; // Submitted - and anything unrecognised, which is honest about it
 }
 
 async function openTimeline(ticket: TicketRow) {
@@ -147,6 +170,8 @@ async function openTimeline(ticket: TicketRow) {
   timelineNotes.value = seedNotesForTicket(ticket);
   newNoteText.value = '';
   isTimelineOpen.value = true;
+
+  timelineError.value = null;
 
   try {
     const msgs = await api.get<any[]>(`/tenant/tickets/${ticket.id}/messages`);
@@ -158,8 +183,11 @@ async function openTimeline(ticket: TicketRow) {
         timestamp: m.created_at,
       }));
     }
-  } catch {
-    // Fallback to seeded notes
+  } catch (err: any) {
+    // The status notes above still stand - they come from the ticket row. What is
+    // unknown is whether there are replies, and the panel says so rather than
+    // showing an empty thread that reads as "nobody has answered you".
+    timelineError.value = err?.message || 'Replies could not be loaded.';
   }
 }
 
@@ -169,6 +197,24 @@ function closeTimeline() {
   newNoteText.value = '';
 }
 
+/**
+ * The events this ticket's own record proves, and nothing else.
+ *
+ * This function used to fabricate two messages and attribute them to **Landlady
+ * Fe** - "I have assigned a handyman and they will visit soon" on any In
+ * Progress ticket, and "Issue has been resolved..." on any resolved one. She
+ * never wrote either. They were shown to the tenant as their conversation
+ * history, and because they were seeded BEFORE the fetch and only replaced when
+ * it returned rows, a ticket with no replies yet - the ordinary case - displayed
+ * an invented reply from a real person indefinitely.
+ *
+ * That is the same defect as the invented OR numbers and the fabricated
+ * emergency contacts this audit already removed: made-up data presented as real.
+ *
+ * What is left is derived from the ticket row itself and attributed to System,
+ * which is who observed it. A status change is a fact the record holds; a
+ * sentence in the owner's voice is not.
+ */
 function seedNotesForTicket(ticket: TicketRow): TicketNote[] {
   const base: TicketNote[] = [
     {
@@ -180,17 +226,17 @@ function seedNotesForTicket(ticket: TicketRow): TicketNote[] {
   ];
   if (ticket.status === 'In Progress') {
     base.push({
-      id: `note-ll-${ticket.id}`,
-      author: 'Landlady Fe',
-      text: 'Thank you for reporting this! I have assigned a handyman and they will visit soon.',
+      id: `note-progress-${ticket.id}`,
+      author: 'System',
+      text: 'This ticket is marked In Progress.',
       timestamp: ticket.created_at,
     });
   }
   if (RESOLVED_STATES.includes(ticket.status) && ticket.resolved_at) {
     base.push({
       id: `note-resolve-${ticket.id}`,
-      author: 'Landlady Fe',
-      text: 'Issue has been resolved. Please let me know if you encounter the same problem again.',
+      author: 'System',
+      text: `Marked ${ticket.status.toLowerCase()} on ${formatDate(ticket.resolved_at)}.`,
       timestamp: ticket.resolved_at,
     });
   }
@@ -789,6 +835,15 @@ function statusClass(status: string) {
         <!-- Notes / Comment Feed -->
         <div>
           <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Activity &amp; Notes</p>
+
+          <p
+            v-if="timelineError"
+            class="mb-3 rounded-xl border border-amber-300 bg-amber-50/60 px-3.5 py-2.5 text-xs text-foreground-soft"
+          >
+            <strong class="text-foreground">Replies could not be loaded.</strong>
+            This does not mean nobody has answered — only that we could not check.
+            <span class="text-muted-foreground">{{ timelineError }}</span>
+          </p>
 
           <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
             <div
