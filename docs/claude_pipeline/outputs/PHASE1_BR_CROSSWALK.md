@@ -92,7 +92,13 @@ Peso amounts are written `PHP`.
 | **BR-018** | Payment Correction | A financial correction writes an audit record holding previous and updated values. | `audit_logs.previous_values JSONB` / `new_values JSONB` (`FULL_DATABASE_SCHEMA.sql:434-435`); writer `recordAudit` (`backend/src/services/auditService.ts:78`) and its request-bound wrapper `auditFromRequest` (`:104`), invoked on every ledger mutation. | Enforced |
 | **BR-019** | Report Recalculation | A confirmed correction must propagate into active reports and analytics. | No recalculation or aggregate-refresh code exists in `backend/src`; report totals are derived client-side from raw rows returned by `GET /api/admin/income-records` (`backend/src/routes/admin.ts:1013-1015`). | Not enforced |
 | **BR-038** | Remitted Amount Formula | Remitted Amount = Rent Amount + Water Payment, system-computed, never typed. | Carrier column `monthly_income_records.remitted_amount` (`FULL_DATABASE_SCHEMA.sql:272`). **CORRECTED 2026-09-13.** An earlier revision recorded this as Violated on the reasoning that the column is absent from the INSERT payload. Both columns are `GENERATED ALWAYS AS ... STORED` in the live database - `fifty_percent_share` as `(rent_amount / 2.0)` and `remitted_amount` as `(rent_amount + water_payment)`, confirmed from `information_schema.columns` where `is_generated = 'ALWAYS'` for both. PostgreSQL derives them on every write and **rejects any INSERT or UPDATE that names them**, so their absence from the INSERT payload is required, not an omission. Verified across all 937 live rows: none is zero and none disagrees with its formula. The rule is satisfied by the strongest available mechanism: the value cannot be typed, cannot drift from the formula, and cannot be overridden by application code. | **Satisfied** |
-| **BR-039** | Deposit Equals Initial Rent | The deposit is set once at onboarding, equal to the rent in effect at move-in. | Carrier column `room_assignments.deposit_amount` (`FULL_DATABASE_SCHEMA.sql:159`). Onboarding accepts whatever the client sends. **Partly addressed 2026-09-13:** the reassignment fallback that computed `current_price * 2` behind a hardcoded `4500` floor is gone — it invented money that was never collected and wrote it into a financial record; the tenant's actual prior figure is carried forward instead. The onboarding form now pre-fills the field from the unit's **live** price, so the administrator sees and confirms the correct amount. **Still Violated, deliberately recorded as such:** the API itself does not enforce the equality, and a rule is not enforced until the code refuses a figure that contradicts it. *(Note OD-04: this sum is ADVANCE RENT — this business collects no separate refundable security deposit, and the field is now labelled accordingly.)* | **Violated** |
+| **BR-039** | Deposit Equals Initial Rent | The deposit is set once at onboarding, equal to the rent in effect at move-in. | Carrier column `room_assignments.deposit_amount` (`FULL_DATABASE_SCHEMA.sql:159`). Carrier column `room_assignments.deposit_amount`. **CLOSED 2026-09-14.** Three changes, in order. The reassignment fallback that computed `current_price * 2` behind a hardcoded `4500` floor is gone — it invented money that was never collected and wrote it into a financial record. The onboarding form pre-fills the field from the unit's **live** price so the administrator sees and confirms the figure. And the API no longer writes `depositAmount || 0.00`, which recorded a tenancy with no advance rent at all whenever the field was omitted: the unit's `current_price` is now the source, so the rule is what happens by default.
+
+**Recorded as Partial, not Enforced, on purpose.** A supplied figure that differs from the rent is still accepted — the owner may genuinely have agreed a part-payment or a discount, and refusing it would make the system wrong about the world rather than right about the rule. The divergence is written to `audit_logs` with both numbers, so it is attributable instead of silent. That is the posture BR-036 already takes on a mismatched water entry: warn and record, never quietly overwrite the human.
+
+Verified against the live API on a vacant unit, all probe rows removed afterwards: field omitted → the unit rent; sent as `0` → the unit rent; sent as `7777` → honoured **and** audited with `rent_at_move_in` beside `advance_rent_recorded`.
+
+*(OD-04: this sum is ADVANCE RENT. The business collects no separate refundable security deposit, and the field is labelled accordingly.)* | **Partial** |
 
 ### 1.4 The landlady's income ledger — BR-029 .. BR-037, BR-040
 
@@ -138,13 +144,13 @@ Peso amounts are written `PHP`.
 | Status | Count | Rules |
 | --- | --- | --- |
 | **Enforced** | 28 | BR-001, BR-002, BR-004, BR-005, BR-006, BR-007, BR-011, BR-012, BR-014, BR-015, BR-016, BR-017, BR-018, BR-021, BR-022, BR-023, BR-024, BR-027, BR-028, BR-031, BR-032, BR-035, BR-038, BR-042, BR-043, BR-044, BR-045, BR-048 |
-| **Partial** | 10 | BR-003, BR-008, BR-009, BR-010, BR-020, BR-025, BR-026, BR-033, BR-034, BR-041 |
+| **Partial** | 11 | BR-003, BR-008, BR-009, BR-010, BR-020, BR-025, BR-026, BR-033, BR-034, BR-039, BR-041 |
 | **Schema only** | 2 | BR-037, BR-040 |
 | **Not enforced** | 8 | BR-013, BR-019, BR-029, BR-030, BR-036, BR-046, BR-047, BR-049 |
-| **Violated** | 1 | BR-039 |
+| **Violated** | **0** | — |
 | | **49** | |
 
-*Recounted 2026-09-13. This table read **5 Violated** until that date.*
+*Recounted 2026-09-14. This table read **5 Violated** on 2026-09-12 and **1** on 2026-09-13.*
 
 **What happened to the other four, recorded honestly rather than quietly deleted.**
 
@@ -164,12 +170,22 @@ close both. There is no hardcoded rate left in the backend, and `grace_period_da
 rather than 7, per OD-16 and migration `016`, because the owner confirmed the property grants no
 grace period.
 
-**BR-039 remains the one genuine violation.** The rule says the advance rent equals the rent in
-effect at move-in; the API still accepts whatever it is sent. The onboarding form now pre-fills the
-field from the unit's live price so the administrator sees and confirms the correct figure, and the
-`current_price * 2` fallback behind a hardcoded 4,500 floor is gone — it invented money that was
-never collected. But the rule is not yet *enforced*, and it should not be called enforced until the
-API itself refuses a figure that contradicts it.
+**BR-039 was the last one, and it closed on 2026-09-14.** The rule says the advance rent equals the
+rent in effect at move-in. The API used to write `depositAmount || 0.00`, so an onboarding that
+omitted the figure recorded a tenancy with no advance rent at all, and one that sent any figure had
+it accepted unexamined. The unit's `current_price` is now the source, so the rule is what happens by
+default.
+
+It is carried as **Partial rather than Enforced**, deliberately. A supplied figure that differs is
+still accepted, because the owner may genuinely have agreed a part-payment, and refusing it would
+make the system wrong about the world rather than right about the rule. The divergence is audited
+with both numbers instead. Calling that "Enforced" would overstate it.
+
+**There are now no Violated rules.** That is worth saying plainly, and worth saying carefully: the
+count fell from 5 to 0 in two days, but two of those five were never violations at all — they were
+our own misreading of a generated column — and the three real ones were closed by building
+`settingsService`, `billingService`, and the change above. The number moved because the work was
+done and because the record was corrected, and those are different things.
 
 The architectural root of all of this is unchanged: **131 of 164 database calls (80%) still sit
 inside route handlers** rather than behind a service boundary, with `backend/src/routes/admin.ts`

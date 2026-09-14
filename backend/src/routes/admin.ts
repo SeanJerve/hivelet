@@ -426,7 +426,7 @@ router.post(
     if (roomNumber) {
       const { data: room, error: roomError } = await db
         .from('rooms')
-        .select('id')
+        .select('id, current_price')
         .ilike('room_number', roomNumber)
         .maybeSingle();
 
@@ -434,6 +434,34 @@ router.post(
       if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
 
       const finalOccupants = occupantCount ?? (roommateQty !== undefined ? 1 + roommateQty : 1);
+
+      /**
+       * BR-039 — the advance rent equals the rent in effect at move-in.
+       *
+       * OD-04: this sum is ADVANCE RENT, not a refundable security deposit. This
+       * business collects no separate damage sum, so by definition it is one
+       * month's rent for the unit being moved into.
+       *
+       * This route used to write `depositAmount || 0.00`, so an onboarding that
+       * omitted the figure recorded a tenancy with NO advance rent - which is not
+       * what happened in the world - and one that sent any figure at all had it
+       * accepted unexamined. The rule was recorded as Violated for that reason.
+       *
+       * The rent is now the source: omit the field and the unit's `current_price`
+       * is used. A figure that is supplied and DIFFERS is still accepted, because
+       * the landlady may genuinely have agreed something else, but the divergence
+       * is written to the audit log with both numbers so it is attributable rather
+       * than silent. That is the same posture BR-036 takes on a mismatched water
+       * entry: warn and record, do not quietly overwrite the human.
+       */
+      const rentAtMoveIn = Number(room.current_price) || 0;
+      const suppliedDeposit = depositAmount === undefined || depositAmount === null
+        ? undefined
+        : Number(depositAmount);
+      const finalDeposit = suppliedDeposit === undefined || suppliedDeposit === 0
+        ? rentAtMoveIn
+        : suppliedDeposit;
+      const divergesFromRent = finalDeposit !== rentAtMoveIn;
 
       // Create room assignment
       const { error: assignError } = await db
@@ -443,12 +471,26 @@ router.post(
           tenant_profile_id: profile.id,
           start_date: moveInDate || new Date().toISOString().slice(0, 10),
           anniversary_date: moveInDate || new Date().toISOString().slice(0, 10),
-          deposit_amount: depositAmount || 0.00,
+          deposit_amount: finalDeposit,
           occupant_count: finalOccupants,
           is_active: true
         });
 
       if (assignError) throw ApiError.internal(assignError.message);
+
+      if (divergesFromRent) {
+        await auditFromRequest(req, {
+          action: 'TENANT_CREATE',
+          entityType: 'ROOM_ASSIGNMENT',
+          entityId: profile.id,
+          newValues: {
+            note: 'Advance rent recorded differs from the unit rent at move-in (BR-039).',
+            room_number: roomNumber,
+            rent_at_move_in: rentAtMoveIn,
+            advance_rent_recorded: finalDeposit
+          }
+        }).catch(() => {});
+      }
 
       // Update room status to Occupied
       await db
