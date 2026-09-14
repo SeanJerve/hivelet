@@ -217,7 +217,7 @@ async function handleOnboard() {
     const finalRoommateQty = newHasRoommates.value === 'yes' ? Number(newRoommateQty.value) || 1 : 0;
     const finalOccupants = 1 + finalRoommateQty;
 
-    await api.post('/admin/tenants', {
+    const created = await api.post<{ id: string }>('/admin/tenants', {
       fullName: newName.value.trim(),
       email: newEmail.value.trim(),
       phone: newPhone.value.trim(),
@@ -234,6 +234,35 @@ async function handleOnboard() {
       emergencyContactName: newEmergName.value.trim(),
       emergencyContactPhone: newEmergPhone.value.trim(),
     });
+
+    /**
+     * BR-009 - close the loop on the lead this came from.
+     *
+     * The inquiry's details were carried into this form, but nothing was ever
+     * written back: the lead stayed `Pending` in the inbox indefinitely and
+     * `inquiries.converted_tenant_id` - a column that has existed since the
+     * original schema - was never set by anything, so no record connected a
+     * tenancy to the enquiry that produced it.
+     *
+     * Not fatal if it fails. The tenant exists either way, and re-running the
+     * onboarding to fix a lead's status would create a duplicate person.
+     */
+    const inquiryId = route.query.convertInquiryId;
+    if (inquiryId && created?.id) {
+      try {
+        await api.patch(`/admin/inquiries/${inquiryId}`, {
+          status: 'Converted',
+          convertedTenantId: created.id,
+        });
+      } catch (err: any) {
+        showToast(
+          'info',
+          'Tenant onboarded',
+          `${newName.value} was added, but the inquiry could not be marked Converted. ` +
+            'Set it from the Inquiries page.'
+        );
+      }
+    }
 
     await fetchTenants();
     await fetchRooms();

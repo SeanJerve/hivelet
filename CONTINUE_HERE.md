@@ -468,7 +468,7 @@ Ten commits. The ones that matter:
   read. Nothing can go stale.
 - **BR-046 is the one that genuinely waits on the owner** — see §4.
 
-**49 rules: 38 enforced, 8 partial, 2 schema only, 1 not enforced, 0 violated.**
+**49 rules: 40 enforced, 6 partial, 2 schema only, 1 not enforced, 0 violated.**
 
 Four more rules moved after the four above, and for the same reason each time: the
 evidence in the register cited `FULL_DATABASE_SCHEMA.sql`, which does not describe

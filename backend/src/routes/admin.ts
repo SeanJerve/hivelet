@@ -28,7 +28,7 @@ import { assertWritten, warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod } from '../services/billingService.js';
-import { money, occupantCount, isoDate, shortText } from '../utils/validators.js';
+import { money, occupantCount, isoDate, shortText, uuid } from '../utils/validators.js';
 
 const router = Router();
 
@@ -981,6 +981,17 @@ router.get(
 
 const inquiryStatusSchema = z.object({
   status: z.enum(['Pending', 'Contacted', 'Converted', 'Closed']),
+  /**
+   * BR-009 - the tenancy this inquiry became.
+   *
+   * `inquiries.converted_tenant_id` has existed since the original schema and
+   * nothing ever wrote to it. The admin UI carries the prospect's details into
+   * the onboarding form, so the "no retyping" half of the rule was met - but
+   * after onboarding, the lead stayed `Pending` in the inbox forever and nothing
+   * recorded that it had become a tenancy. The column is the link; this is what
+   * sets it.
+   */
+  convertedTenantId: uuid.optional(),
 });
 
 router.patch(
@@ -1001,9 +1012,31 @@ router.patch(
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Inquiry not found.');
 
+    const patch: Record<string, unknown> = {
+      status: parsed.data.status,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (parsed.data.convertedTenantId) {
+      // Checked rather than trusted: the column is a foreign key, so a bad id
+      // would fail anyway - but as a raw constraint error rather than something
+      // the administrator can act on.
+      const { data: profile, error: profileError } = await db
+        .from('profiles')
+        .select('id')
+        .eq('id', parsed.data.convertedTenantId)
+        .maybeSingle();
+
+      if (profileError) throw ApiError.internal(profileError.message);
+      if (!profile) {
+        throw ApiError.notFound('The tenant this inquiry should be linked to does not exist.');
+      }
+      patch.converted_tenant_id = parsed.data.convertedTenantId;
+    }
+
     const { data: after, error } = await db
       .from('inquiries')
-      .update({ status: parsed.data.status, updated_at: new Date().toISOString() })
+      .update(patch)
       .eq('id', req.params.inquiryId)
       .select('*')
       .single();
