@@ -253,6 +253,19 @@ export async function fetchWaterRates(): Promise<void> {
   }
 }
 
+/**
+ * The monthly water charge for one unit, at the configured rates. BR-014 / BR-040.
+ *
+ * Exported because the dashboard's run-rate needs the same figures and was
+ * computing them with a hardcoded 200 - including for Linda, where it used 200
+ * for both units although LF is 400, so the run-rate understated LF every month.
+ */
+export function waterChargeFor(unitCode: string, occupants: number, isLinda: boolean): number {
+  const code = unitCode.toUpperCase();
+  if (isLinda) return waterRates.linda[code] ?? (code === 'LF' ? 400 : 200);
+  return Math.max(1, occupants || 1) * (waterRates.perOccupant ?? 200);
+}
+
 /** The one-line charge summary shown against a unit on the public pages. */
 function buildBillingRule(unitCode: string, isLinda: boolean): string {
   const code = unitCode.toUpperCase();

@@ -27,7 +27,8 @@ import {
   isOnsitePaymentModalOpen,
   type IncomeRecord,
   type ExpenseRecord,
-  type RoomItem 
+  waterChargeFor,
+  type RoomItem,
 } from '@/lib/systemState';
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -261,10 +262,39 @@ const currentMonthRecordCount = computed(() =>
 const baseMonthlyRunRate = computed(() => {
   return rooms.reduce((sum, r) => {
     if (r.status === 'settled' || r.status === 'pending' || r.tenant !== null) {
-      return sum + Number(r.price || 0) + (r.waterRateType === 'linda_fixed' ? 200 : (r.occupants || 1) * 200);
+      // Was `linda_fixed ? 200 : occupants * 200`, which hardcoded the rate
+      // BR-014 makes configurable AND used 200 for both Linda units although LF
+      // is 400 - so the run-rate understated LF by 200 every month.
+      const isLinda = r.waterRateType === 'linda_fixed';
+      return sum + Number(r.price || 0) + waterChargeFor(r.unitCode, r.occupants || 1, isLinda);
     }
     return sum;
   }, 0);
+});
+
+/** The same water figure across the occupied units, for the projection below. */
+const baseMonthlyWater = computed(() =>
+  rooms.reduce((sum, r) => {
+    if (r.status === 'settled' || r.status === 'pending' || r.tenant !== null) {
+      return sum + waterChargeFor(r.unitCode, r.occupants || 1, r.waterRateType === 'linda_fixed');
+    }
+    return sum;
+  }, 0)
+);
+
+/**
+ * What this year's recorded expenses have actually been, as a share of recorded
+ * income. Used to project forward instead of the flat 15% that was written in.
+ * Null when there is nothing to derive it from, in which case nothing is
+ * projected rather than a figure being invented.
+ */
+const observedExpenseRatio = computed<number | null>(() => {
+  const income = live2026IncomeRecords.value.reduce(
+    (s, r) => s + Number(r.totalRemitted || r.rent || 0), 0);
+  const expenses = live2026ExpenseRecords.value.reduce(
+    (s, e) => s + Number((e as any).rentalAmount ?? (e as any).totalAmount ?? 0), 0);
+  if (income <= 0 || expenses <= 0) return null;
+  return expenses / income;
 });
 
 interface MonthIncomeData {
@@ -312,22 +342,40 @@ const live12MonthsData = computed<MonthIncomeData[]>(() => {
       };
     }
 
-    // Future months in 2026 (Aug-Dec 2026): Run-rate projections based on canonical inventory
-    const isFutureIn2026 = monthNum > 7;
-    const projectedGross = isFutureIn2026 ? (baseMonthlyRunRate.value > 0 ? baseMonthlyRunRate.value : 242000) : 0;
+    /**
+     * A month with no records. Project it only if it has not happened yet.
+     *
+     * This was `monthNum > 7` - a fixed July boundary. Two things were wrong with
+     * it: a month that HAS passed with no receipts was drawn as a confident
+     * run-rate projection rather than as the empty month it is, and next January
+     * the boundary would still say July.
+     *
+     * The figures are no longer invented either. The gross came from
+     * `baseMonthlyRunRate` or, failing that, a literal 242000 with no source; the
+     * water was a literal 10400; the expenses were 15% of gross, a ratio from
+     * nowhere. A projection built on made-up constants is not a forecast, it is a
+     * drawing. Where there is no basis, nothing is projected.
+     */
+    const isFutureMonth = CURRENT_YEAR === new Date().getFullYear() && monthNum > CURRENT_MONTH;
+    const canProject = isFutureMonth && baseMonthlyRunRate.value > 0;
+
+    const projectedGross = canProject ? baseMonthlyRunRate.value : 0;
     const projectedShare = Math.round(projectedGross * 0.5);
-    const projectedExpenses = recordedExpenses > 0 ? recordedExpenses : (isFutureIn2026 ? Math.round(projectedGross * 0.15) : 0);
+    const ratio = observedExpenseRatio.value;
+    const projectedExpenses = recordedExpenses > 0
+      ? recordedExpenses
+      : (canProject && ratio !== null ? Math.round(projectedGross * ratio) : 0);
 
     return {
       month: name,
       monthNum,
       grossIncome: projectedGross,
       halfOfRentShare: projectedShare,
-      waterIncome: isFutureIn2026 ? 10400 : 0,
+      waterIncome: canProject ? baseMonthlyWater.value : 0,
       expenses: projectedExpenses,
       personalExpenses: recordedPersonal,
       noi: projectedGross - projectedExpenses,
-      isProjected: isFutureIn2026
+      isProjected: canProject
     };
   });
 });
