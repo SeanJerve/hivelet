@@ -41,7 +41,9 @@ function mapUnitStatusToOperational(status?: string): 'Available' | 'Occupied' |
 }
 
 // Form Fields matching Screenshot 2
-const monthlyRate = ref<number>(5000);
+// Zero rather than a plausible figure. This writes rooms.current_price, which
+// becomes the advance rent at move-in (BR-039) and every bill after it.
+const monthlyRate = ref<number>(0);
 const unitType = ref<string>('1 Bedroom');
 const editStatus = ref<'Available' | 'Occupied' | 'Reserved' | 'Under Maintenance'>('Available');
 const billingRule = ref<string>('Rent + ₱200 / occupant water');

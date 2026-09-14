@@ -15,7 +15,15 @@ import { api } from '@/lib/api';
 import { X, Check, Banknote, Loader2, ReceiptText, Users } from 'lucide-vue-next';
 
 const selectedUnit = ref('1a');
-const rentAmount = ref(4500);
+/**
+ * Starts at zero, not at a plausible peso figure.
+ *
+ * This was `ref(4500)`. The watcher below only overwrites it when the unit is
+ * found AND carries a price, so a lookup that came back empty left 4,500 sitting
+ * in the field - and this is the on-site cash form, so that figure is what gets
+ * collected and written to the ledger as the rent.
+ */
+const rentAmount = ref(0);
 const waterAmount = ref(400); 
 const gbgFee = ref(0);
 const orNum = ref('');
@@ -104,9 +112,11 @@ watch([selectedUnit, monthsCovered], ([newUnit, newMonths]) => {
 
   waterAmount.value = waterBaselineFor(isLinda ? newUnit : newUnit, occCount) * mCovered;
 
-  if (room && room.price) {
-    rentAmount.value = room.price * mCovered;
-  }
+  // Cleared when the unit has no price, rather than left holding the PREVIOUS
+  // unit's figure. Picking unit A at 8,000 and then unit B, which has no price
+  // on record, used to keep 8,000 in the field - unit A's rent, about to be
+  // recorded against unit B.
+  rentAmount.value = room && room.price ? room.price * mCovered : 0;
 }, { immediate: true });
 
 

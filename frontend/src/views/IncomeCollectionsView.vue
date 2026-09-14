@@ -367,7 +367,9 @@ const isEditOpen = ref(false);
 const editingIncome = ref<IncomeRecord | null>(null);
 
 const editUnit = ref('1a');
-const editRent = ref(4500);
+// Zero rather than a plausible figure: an unset field should read as empty,
+// not as a rent someone might not notice is wrong.
+const editRent = ref(0);
 const editWater = ref(400);
 const editGarbage = ref(0);
 const editInvoice = ref('');
