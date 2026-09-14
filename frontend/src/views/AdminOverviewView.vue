@@ -211,6 +211,36 @@ const emergencyTicketsCount = computed(() => maintenanceTickets.filter(t => t.st
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
+/**
+ * BR-029 — financial dashboard statistics default to the current month.
+ *
+ * The dashboard was scoped entirely to the fiscal year: the headline read
+ * "FY 2026 Collections" and the only way to see a month was to read it off the
+ * chart. For the landlady the operationally useful number is what came in *this*
+ * month, which is what the rule asks for.
+ *
+ * The year figure is kept rather than replaced. Removing it would trade one
+ * incomplete view for another, and the annual run-rate is what the chart beneath
+ * is built on.
+ *
+ * Derived from records already in memory, so this costs no request.
+ */
+const CURRENT_MONTH = new Date().getMonth() + 1;
+
+const currentMonthLabel = computed(() =>
+  `${MONTH_NAMES[CURRENT_MONTH - 1]} ${CURRENT_YEAR}`
+);
+
+const currentMonthRevenue = computed(() =>
+  live2026IncomeRecords.value
+    .filter((r) => r.month === CURRENT_MONTH)
+    .reduce((sum, r) => sum + Number(r.totalRemitted || r.rent || 0), 0)
+);
+
+const currentMonthRecordCount = computed(() =>
+  live2026IncomeRecords.value.filter((r) => r.month === CURRENT_MONTH).length
+);
+
 // Base active monthly run-rate from currently occupied rooms
 const baseMonthlyRunRate = computed(() => {
   return rooms.reduce((sum, r) => {
@@ -846,13 +876,24 @@ function exportHistoricalCSV() {
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <div class="surface-card relative overflow-hidden p-5">
             <div class="flex items-start justify-between gap-3">
-              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">FY 2026 Collections</p>
+              <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+                Collections · {{ currentMonthLabel }}
+              </p>
               <span class="rounded-xl p-2 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200">
                 <TrendingUp class="size-4" />
               </span>
             </div>
-            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">{{ peso(monthlyRevenue) }}</p>
-            <p class="mt-1.5 text-xs text-emerald-700 font-semibold">Live verified collections ledger</p>
+            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">{{ peso(currentMonthRevenue) }}</p>
+            <p class="mt-1.5 text-xs text-emerald-700 font-semibold">
+              {{ currentMonthRecordCount }}
+              {{ currentMonthRecordCount === 1 ? 'collection' : 'collections' }} recorded this month
+            </p>
+            <!-- BR-029 asks the dashboard to default to the current month. The
+                 fiscal year is kept beneath rather than dropped - it is what the
+                 chart below is built on. -->
+            <p class="mt-2 pt-2 border-t border-border text-xs text-muted-foreground">
+              FY {{ CURRENT_YEAR }} to date: <strong class="text-foreground tabular">{{ peso(monthlyRevenue) }}</strong>
+            </p>
           </div>
 
           <div class="surface-card relative overflow-hidden p-5">

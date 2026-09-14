@@ -104,7 +104,7 @@ Verified against the live API on a vacant unit, all probe rows removed afterward
 
 | ID | Name | Rule | Enforcement locus (verified) | Status |
 | --- | --- | --- | --- | --- |
-| **BR-029** | Current Month Dashboard | Financial dashboard statistics default to the current month. | `GET /api/admin/income-records` treats `year` and `month` as optional query parameters with no default (`backend/src/routes/admin.ts:1017-1018`). Default-to-current-month behaviour, where present, is a client-side concern only. | Not enforced |
+| **BR-029** | Current Month Dashboard | Financial dashboard statistics default to the current month. | **Partly addressed 2026-09-14.** The original evidence pointed at the endpoint having no default, which is true but is the wrong remedy: `systemState` fetches that route unfiltered and the income ledger needs all 937 rows, so defaulting the API to the current month would break the ledger rather than fix the rule. The rule is about dashboard *statistics*. The dashboard's headline financial card now leads with the current month - "Collections · Sep 2026", with the count of collections recorded and the fiscal year to date kept beneath, since the chart below is built on the annual figure. Derived from records already in memory, so it costs no request. **Partial**, not Enforced: the twelve-month chart and the operating cash-flow rows are still year-scoped by design, and those are financial statistics too. | **Partial** |
 | **BR-030** | Exportability | Important business records must be exportable for use outside Hivelet. | No CSV, XLSX or export handler exists anywhere in `backend/src`. | Not enforced |
 | **BR-031** | Online Authority | The server is authoritative; cached or offline client data must never override it. | Enforced by construction: the PWA runtime cache is scoped to `GET /api/public` and `/api/health` only (`frontend/vite.config.ts:64-65`, `NetworkFirst`). No write is queued offline, so no cached value can outrank a server record. | Enforced |
 | **BR-032** | Canonical Unit List | The rentable units are fixed and grouped into five clusters. | Five cluster rows seeded at `FULL_DATABASE_SCHEMA.sql:32-38` — BH (Main Rooms), Back Apartment, Penthouse, Front Apartment, Linda — with the 33 units seeded from `:466`. Exposed at `GET /api/public/clusters` (`backend/src/routes/public.ts:88-89`). Canonical figures: **33 units, 5 clusters** (BH 22, Back Apartment 5, Front Apartment 3, Penthouse 1, Linda 2). | Enforced |
@@ -144,9 +144,9 @@ Verified against the live API on a vacant unit, all probe rows removed afterward
 | Status | Count | Rules |
 | --- | --- | --- |
 | **Enforced** | 28 | BR-001, BR-002, BR-004, BR-005, BR-006, BR-007, BR-011, BR-012, BR-014, BR-015, BR-016, BR-017, BR-018, BR-021, BR-022, BR-023, BR-024, BR-027, BR-028, BR-031, BR-032, BR-035, BR-038, BR-042, BR-043, BR-044, BR-045, BR-048 |
-| **Partial** | 14 | BR-003, BR-008, BR-009, BR-010, BR-020, BR-025, BR-026, BR-030, BR-033, BR-034, BR-036, BR-039, BR-041, BR-049 |
+| **Partial** | 15 | BR-003, BR-008, BR-009, BR-010, BR-020, BR-025, BR-026, BR-029, BR-030, BR-033, BR-034, BR-036, BR-039, BR-041, BR-049 |
 | **Schema only** | 2 | BR-037, BR-040 |
-| **Not enforced** | 5 | BR-013, BR-019, BR-029, BR-046, BR-047 |
+| **Not enforced** | 4 | BR-013, BR-019, BR-046, BR-047 |
 | **Violated** | **0** | — |
 | | **49** | |
 

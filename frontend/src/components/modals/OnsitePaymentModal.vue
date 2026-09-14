@@ -55,21 +55,6 @@ const currentOccupantsCount = computed(() => {
 });
 
 // Auto-calculate water and rent based on dynamic room occupants and rates
-watch([selectedUnit, monthsCovered], ([newUnit, newMonths]) => {
-  const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
-  const summary = formatUnitOccupantsSummary(newUnit);
-  const occCount = summary.count > 0 ? summary.count : (room?.occupants || 1);
-  const isLinda = room?.cluster === 'Linda Units' || newUnit.toLowerCase() === 'lf' || newUnit.toLowerCase() === 'lb';
-  
-  const mCovered = Math.max(1, Number(newMonths) || 1);
-
-  waterAmount.value = waterBaselineFor(isLinda ? newUnit : newUnit, occCount) * mCovered;
-
-  if (room && room.price) {
-    rentAmount.value = room.price * mCovered;
-  }
-}, { immediate: true });
-
 /**
  * The configured water rates, from `GET /api/public/rates`.
  *
@@ -108,6 +93,22 @@ function waterBaselineFor(unitCode: string, occupants: number): number {
   if (code === 'LB') return 200;
   return occupants * (waterRatePerOccupant.value ?? 200);
 }
+
+watch([selectedUnit, monthsCovered], ([newUnit, newMonths]) => {
+  const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
+  const summary = formatUnitOccupantsSummary(newUnit);
+  const occCount = summary.count > 0 ? summary.count : (room?.occupants || 1);
+  const isLinda = room?.cluster === 'Linda Units' || newUnit.toLowerCase() === 'lf' || newUnit.toLowerCase() === 'lb';
+  
+  const mCovered = Math.max(1, Number(newMonths) || 1);
+
+  waterAmount.value = waterBaselineFor(isLinda ? newUnit : newUnit, occCount) * mCovered;
+
+  if (room && room.price) {
+    rentAmount.value = room.price * mCovered;
+  }
+}, { immediate: true });
+
 
 watch(isOnsitePaymentModalOpen, (isOpen) => {
   if (isOpen) {
