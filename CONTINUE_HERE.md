@@ -387,7 +387,7 @@ lockdown was never actually tested. That is exactly what a stale key looks like.
 ## 2. Verification suites — run these before trusting anything
 
 ```bash
-cd backend  && npm run check:api        # 30 endpoint, RBAC and input checks
+cd backend  && npm run check:api        # 46 endpoint, RBAC, perimeter and input checks
             npm run check:adyen       # 23 HMAC signature checks
             npm run check:billing     # water / grace / period / receipt-allocation arithmetic
             npm run check:writes      # no database write discards its result
@@ -397,7 +397,7 @@ cd ..       && npm run check:rules      # the BR register agrees with itself
             npm run backup            # snapshot the live database before risky work
 ```
 
-All of these passed at handoff: **30 / 23 / all / all / all / all / clean**.
+All of these passed at handoff: **46 / 23 / all / all / all / all / clean**.
 
 Two of them are worth knowing about before you run them:
 

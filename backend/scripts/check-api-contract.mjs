@@ -183,6 +183,67 @@ if (adminToken) {
   console.log(`  ${refused2 ? 'OK  ' : 'FAIL'} ${r2.status}  raw 1e999 in the request body`);
 }
 
+
+// ---- unauthenticated perimeter -------------------------------------------
+//
+// Every admin and tenant route must refuse a caller with no token at all. The
+// suite above proves a TENANT cannot reach admin data; this proves nobody can
+// reach either without logging in, on reads and writes alike.
+//
+// Worth testing separately because the two fail differently: a broken RBAC
+// matrix lets the wrong role through, while a route registered on the wrong
+// router - or one that simply forgets its middleware, which is how the two
+// local-cashier endpoints were once reachable - lets EVERYONE through.
+{
+  console.log('\nUNAUTHENTICATED PERIMETER (no token at all)');
+
+  const readOnly = [
+    '/admin/tenants', '/admin/rooms', '/admin/income-records',
+    '/admin/expense-entries', '/admin/audit-logs', '/admin/payments',
+    '/tenant/my-bills', '/tenant/my-payments', '/tenant/my-profile', '/auth/me',
+  ];
+  const writes = ['/admin/rooms', '/admin/income-records', '/admin/expense-entries'];
+
+  for (const p of readOnly) {
+    const r = await fetch(`${BASE}${p}`);
+    const refused = r.status === 401 || r.status === 403;
+    refused ? pass++ : (fail++, failures.push(`${p} reachable with no token -> ${r.status}`));
+    console.log(`  ${refused ? 'OK  ' : 'FAIL'} ${r.status}  GET  ${p}`);
+  }
+
+  for (const p of writes) {
+    const r = await fetch(`${BASE}${p}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    const refused = r.status === 401 || r.status === 403;
+    refused ? pass++ : (fail++, failures.push(`POST ${p} accepted with no token -> ${r.status}`));
+    console.log(`  ${refused ? 'OK  ' : 'FAIL'} ${r.status}  POST ${p}`);
+  }
+
+  // The in-repository cashier pages must be DEAD while Adyen is configured, and
+  // the webhook must refuse anything it cannot verify. Adyen cannot send a JWT,
+  // so the webhook is deliberately open at the router and guarded by HMAC plus
+  // Basic Auth instead - 401 is the pass here, not 404.
+  const gateway = [
+    ['GET', '/public/payments/local-cashier?sessionId=probe', [404], 'local cashier page is dead'],
+    ['POST', '/public/payments/local-cashier/complete', [404], 'local cashier completion is dead'],
+    ['POST', '/public/payments/adyen/webhook', [401], 'webhook refuses an unsigned call'],
+  ];
+
+  for (const [method, p, okCodes, label] of gateway) {
+    const r = await fetch(`${BASE}${p}`, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      ...(method === 'POST' ? { body: '{"sessionId":"probe","notificationItems":[]}' } : {}),
+    });
+    const ok = okCodes.includes(r.status);
+    ok ? pass++ : (fail++, failures.push(`${label}: got ${r.status}, wanted ${okCodes.join('/')}`));
+    console.log(`  ${ok ? 'OK  ' : 'FAIL'} ${r.status}  ${label}`);
+  }
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 for (const f of failures) console.log('  - ' + f);
 process.exit(fail === 0 ? 0 : 1);
