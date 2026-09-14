@@ -92,7 +92,7 @@ section,item,detail
 1. Columns,monthly_income_records.contact_name,character varying(255) NOT NULL
 1. Columns,monthly_income_records.created_at,timestamp with time zone NULL DEFAULT now()
 1. Columns,monthly_income_records.date_paid,date NOT NULL
-1. Columns,monthly_income_records.fifty_percent_share,"numeric(10,2) NULL DEFAULT (rent_amount / 2.0)"
+1. Columns,monthly_income_records.fifty_percent_share,"numeric(10,2) GENERATED ALWAYS AS (rent_amount / 2.0) STORED -- NOT writable; any INSERT/UPDATE naming this column is rejected by PostgreSQL"
 1. Columns,monthly_income_records.gbg_fee,"numeric(10,2) NOT NULL DEFAULT 0.00"
 1. Columns,monthly_income_records.id,uuid NOT NULL DEFAULT gen_random_uuid()
 1. Columns,monthly_income_records.invoice_number,character varying(100) NOT NULL
@@ -102,7 +102,7 @@ section,item,detail
 1. Columns,monthly_income_records.month,integer NOT NULL
 1. Columns,monthly_income_records.occupants,integer NOT NULL
 1. Columns,monthly_income_records.payment_method,payment_method_type NOT NULL DEFAULT 'Cash'::payment_method_type
-1. Columns,monthly_income_records.remitted_amount,"numeric(10,2) NULL DEFAULT (rent_amount + water_payment)"
+1. Columns,monthly_income_records.remitted_amount,"numeric(10,2) GENERATED ALWAYS AS (rent_amount + water_payment) STORED -- NOT writable; any INSERT/UPDATE naming this column is rejected by PostgreSQL"
 1. Columns,monthly_income_records.rent_amount,"numeric(10,2) NOT NULL"
 1. Columns,monthly_income_records.rent_period_end,date NOT NULL
 1. Columns,monthly_income_records.rent_period_start,date NOT NULL

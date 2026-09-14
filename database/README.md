@@ -38,6 +38,45 @@ After `002`, the database trusts exactly one client: the Express API, which
 connects with `service_role` and enforces roles in middleware before any query
 runs. Browsers never speak to PostgREST.
 
+## `live_schema.csv` — the source of truth, and how to keep it honest
+
+Rule 2 of this project says to trust `live_schema.csv` and the catalogue over
+`FULL_DATABASE_SCHEMA.sql`. That only holds while the CSV is accurate, and on
+2026-09-14 it was not.
+
+It described the two generated columns like this:
+
+```
+monthly_income_records.fifty_percent_share   numeric(10,2) NULL DEFAULT (rent_amount / 2.0)
+monthly_income_records.remitted_amount       numeric(10,2) NULL DEFAULT (rent_amount + water_payment)
+```
+
+They are not defaults. The catalogue reports `is_generated = ALWAYS` for both:
+they are `GENERATED ALWAYS AS (...) STORED`, and PostgreSQL **rejects any INSERT
+or UPDATE that names them**. Rendered as a `DEFAULT`, they read as ordinary
+starting values a write could override — which is precisely the misreading that
+produced the "0.00 defect" repeated across nine documents and logged as two
+business-rule violations that never existed.
+
+**A default cannot reference another column of the same row.** If a line in this
+file shows `DEFAULT (` wrapping a column name, it is a generated column rendered
+wrongly, and the entry is a bug.
+
+To regenerate the affected rows, ask the catalogue rather than reading DDL:
+
+```sql
+SELECT table_name, column_name, data_type, is_generated,
+       generation_expression, column_default, is_nullable
+  FROM information_schema.columns
+ WHERE table_schema = 'public'
+ ORDER BY table_name, ordinal_position;
+```
+
+Anything with `is_generated = 'ALWAYS'` must be written into the CSV as
+`GENERATED ALWAYS AS (<expression>) STORED`, never as a default.
+
+---
+
 ## Verifying
 
 With the API running (`npm run dev:backend`):
