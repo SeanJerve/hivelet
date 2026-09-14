@@ -263,11 +263,12 @@ Iteration 1 had **no** automated checks. Iteration 2 ends with six suites, 100+ 
 
 | Suite | What it holds |
 | :--- | :--- |
-| `check:api` | 30 endpoint, RBAC-isolation and input checks — including posting `1e999` at three money columns to prove Infinity is refused |
+| `check:api` | 46 endpoint, RBAC-isolation, perimeter and input checks — including posting `1e999` at three money columns to prove Infinity is refused, and proving every admin and tenant route refuses a caller with no token |
 | `check:adyen` | 23 HMAC signature checks, no network required |
 | `check:billing` | Water, grace, period and receipt-allocation arithmetic — 12 of them over **BR-013** alone |
 | `check:tokens` | Design tokens resolve to the exact colours they replaced |
 | `check:rules` | The business-rule register agrees with itself |
+| `check:writes` | No database write discards its result |
 | `check:secrets` | Scans for committed credentials; installed as a pre-commit hook |
 
 ### 4.3 Correctness defects found and closed
@@ -286,31 +287,38 @@ Each was verified against the live database and each is covered by a regression 
 | **Expense creation was two round trips.** A rejected allocation left an entry carrying a total with nothing underneath it. | Exactly the imbalance **BR-047** forbids. Closed by migration `019`. |
 | **Deleting a room destroyed its history.** The delete was unguarded, and four tables cascade from `rooms` — including `room_price_history`, the table **BR-003** is anchored to. It was also logged as `ROOM_UPDATE`, so the one surviving record said the room had been *edited*. | The ledger itself survives, because migration `005` made it `RESTRICT` and every one of the 33 rooms holds ledger rows — which is why nothing was lost. A room without them did not survive. |
 | **A rate change could go unrecorded.** The `room_price_history` insert discarded its result and ran *after* the rate had already changed, so a rejected insert left the new rate live and no record that the old one existed. | This is the claim that replaced the withdrawn escalation feature — that every manual change is preserved. Migration `020` moved the row to a database trigger, so it now holds regardless of write path. |
+| **23 database writes discarded their result.** supabase-js does not throw, so `await db.from('bills').update(...)` is indistinguishable from success. | One was the payment **rejection** path: decline a payment, and the bill could still read Paid. One was the lockout counter — while it fails, account lockout never engages. `check:writes` now fails the build on any write that does not say what failure means. |
+| **The rent period came from the date paid.** A tenant on a 13th-of-the-month cycle paying on the 20th had the period recorded as starting on the 20th. | The ledger's "Rent For" column — the one the owner reads to know what a payment was for — drifted off the cycle one receipt at a time. **BR-033** |
+| **The dashboard's year was a literal.** `CURRENT_YEAR = 2026`, while the month beside it came from the clock. | On 1 January the entire dashboard would have read zero — collections, run rate, cash flow — with no error and no empty state. |
+| **A failed load of the verification queue claimed everything was verified.** The error was caught, the list left empty, and the empty state rendered a green shield reading "All Remittances Verified". | Not a missing error message: an affirmative false statement. Empty and unknown are different, and the screen now says which. |
 
 ### 4.4 The business rule register, rebuilt
 
 | | End of Iteration 1 | End of Iteration 2 |
 | :--- | ---: | ---: |
-| Enforced | not assessed | **36** |
-| Partial | not assessed | 10 |
+| Enforced | not assessed | **41** |
+| Partial | not assessed | 5 |
 | Schema only | not assessed | 2 |
 | Not enforced | not assessed | **1** (OD-07, client-gated) |
 | **Violated** | not assessed | **0** |
 
-Six rules moved because the register was wrong, not because code changed — **BR-008**,
-**BR-019**, **BR-026**, **BR-030**, **BR-041** and **BR-047**; **BR-003** moved because
-code changed. Three structural defects were
-also found *in the register itself*: a rule with no status cell at all, a rule whose row
-and summary disagreed, and three rules carrying a status the legend never defined.
-`check:rules` now prevents all three.
+**Eight rules moved because the register was wrong about the system, not because the
+system changed** — BR-008, BR-009, BR-010, BR-019, BR-026, BR-030, BR-041 and BR-047. In
+six of the eight the evidence had been taken from `FULL_DATABASE_SCHEMA.sql`, which does
+not describe this database. Five more moved because code changed: BR-003, BR-013, BR-033,
+BR-034 and BR-036.
+
+Three structural defects were also found *in the register itself*: a rule with no status
+cell at all, a rule whose row and summary disagreed, and three rules carrying a status the
+legend never defined. `check:rules` now prevents all three.
 
 ### 4.5 Iteration 2 in numbers
 
 | | Iteration 1 | Iteration 2 |
 | :--- | ---: | ---: |
-| Numbered migrations | 4 | **19** |
+| Numbered migrations | 4 | **20** |
 | Backend services | 5 | 9 |
-| Automated check suites | **0** | **6** |
+| Automated check suites | **0** | **7** |
 | Pipeline analysis documents | 0 | 12 |
 | Documented errata | 0 | **22** |
 | Business rules assessed | 0 | **49** |
@@ -366,6 +374,14 @@ verification stated better than any general principle could state it.
 and three of the seven Iteration 3 items are waiting on a conversation with the client,
 not on code. That is the correct place for a capstone project to be, and filling those
 gaps with plausible assumptions would have been the easier and worse choice.
+
+**A note on the five rules still Partial**, so that the count is not mistaken for unfinished
+work: **BR-020** would need a `room_id` on expense allocations, and the client's own
+workbook allocates by Property Area rather than by room; **BR-025** waits on OD-04;
+**BR-029** keeps the twelve-month chart year-scoped deliberately; **BR-039** accepts an
+advance rent that diverges from the unit's rent, because the owner may genuinely have
+agreed one, and records the divergence; **BR-049** needs real spreadsheet generation, which
+CSV cannot carry. Each is a decision, not an omission.
 
 ---
 
