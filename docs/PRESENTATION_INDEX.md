@@ -18,8 +18,13 @@ docs/diagrams/rendered/           the images for slides  (10 diagrams, PNG + SVG
 (copied into `VIDEO PRESENTATION DOCS/01_FILMING_SCRIPT.md`)
 
 Word for word, with stage directions, speaker assignments and per-section
-timings. About 12 minutes against a 10–15 minute limit. **This is the one to hold
-while recording.**
+timings. **This is the one to hold while recording.**
+
+Written for what this actually is — the **Module 01 Final Group Requirement**, a
+class presentation to the instructor, not a panel defense. Sections 1 to 6 run
+about 9 minutes of speech; section 7 is the 2-to-3 minute question period the
+module asks for. It carries the four rubric criteria and the module's instruction
+to name the *type* of tool rather than the product.
 
 | § | Speaker |
 | :-- | :--- |
