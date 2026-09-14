@@ -427,6 +427,37 @@ Ten commits. The ones that matter:
   NaN but **accepts `Infinity`**, and PostgreSQL sorts Infinity above every numeric, so
   `CHECK (rent_amount >= 0)` passed it — poisoning both generated columns and every `SUM`.
 
+### Business rules — the last four, closed 2026-09-14
+- **BR-013. A partial payment used to vanish as a debt.** The settlement loop paid only
+  bills it could cover in full; the first it could not broke the loop, and the leftover was
+  written with `bill_id = NULL`. Nothing ever summed those rows back in, so a tenant paying
+  3,000 against a 5,000 bill had the cash recorded, the bill still reading 5,000, and
+  nothing connecting the two — permanently. **13 of the 15 live payments already have
+  `bill_id` NULL.** `'Partially Paid'` had been in the enum the whole time, written by
+  nothing and read by nothing. `billingService.allocateReceipt()` now settles each bill
+  against its outstanding balance; 12 checks in `check:billing` cover it.
+- **Two things that would have broken on the first partial payment.** Neither was reachable
+  before, because nothing ever wrote that status. `TenantOverviewView` whitelisted
+  Pending/Due/Overdue, so a partially paid bill fell through and the tenant saw nothing
+  outstanding while still owing. And the **Adyen charge came from `total_amount`**, so a
+  partially paid bill would have been charged in full a second time. Both fixed; the charge
+  is now derived from the balance and the modal shows the figure it will charge.
+- **BR-047. `FULL_DATABASE_SCHEMA.sql` lied again** — this is the cleanest example of rule 2
+  in the whole audit. It describes `property_area` as VARCHAR(100) free text with no CHECK
+  and no lookup table, and two documents recorded BR-047 as blocked on that basis. The live
+  database has it as the **enum `property_area_type`** with a **seeded six-row lookup**,
+  from migrations 008 and 012. 0 of 1,327 rows are off it. Trigger
+  `trg_update_expense_total` already held the reconciliation identity. Migration **019**
+  closes the one real hole: expense creation was two round trips, so a rejected allocation
+  left an entry carrying a total with nothing underneath it.
+- **BR-019 was never blocked either.** The register said it waited on OD-01; that conflated
+  which totals the report *shows* with whether a correction *reaches* them. There are 0
+  views, 0 materialized views and no aggregate table — every report figure is derived on
+  read. Nothing can go stale.
+- **BR-046 is the one that genuinely waits on the owner** — see §4.
+
+**49 rules: 31 enforced, 15 partial, 2 schema only, 1 not enforced, 0 violated.**
+
 ### Security
 - **The RLS self-check passed while misconfigured.** It treated any probe error as proof of
   lockdown, and "Invalid API key" looks identical to "permission denied" at HTTP 401. A
@@ -469,8 +500,14 @@ In the order I would take them.
 | 2 | **BR-039** — the API does not enforce that advance rent equals the rent at move-in. The form pre-fills it from the live price, but the rule is not enforced. | The last remaining genuine violation. |
 | ~~3~~ | ~~**No transaction boundary anywhere in `backend/src`.**~~ **DONE 2026-09-14.** Migration `018` added `settle_verified_payment()`; the payment, its bill and the income row now commit together or not at all. supabase-js still cannot open a transaction, so any NEW multi-step write must follow the same database-function pattern. | — |
 | ~~4~~ | ~~**No Overdue transition.**~~ **DONE 2026-09-14.** `billingService.isOverdue()` is wired into both bill endpoints, which return `effective_status` derived from the due date. FR-013 is IMPLEMENTED; BR-011 is Enforced. | — |
+| 3 | **Ask the owner one question (OD-07).** Does each expense category's running cumulative total reset at the start of a calendar year, or run indefinitely? | The only thing standing between **BR-046** and enforced. It decides whether the cumulative is a stored column or a computed window, so it is a schema decision — and answering it ourselves would be inventing the owner's accounting policy. |
 | 5 | **Service extraction.** 131 of 164 database calls still sit in route handlers; `admin.ts` is 2,263 lines. Six of the planned services still do not exist. | The architecture's stated target. Not required for the defense. |
 | 6 | Tell teammates the demo passwords changed, and have each create their own Supabase secret key. | Housekeeping from the credential rotation. |
+
+**Every multi-step write must be a database function.** supabase-js cannot open a
+transaction, so three migrations now exist for exactly this reason — `010` (expense
+allocations, update), `018` (payment settlement) and `019` (expense creation). If you add a
+write that touches more than one table, follow the pattern rather than chaining awaits.
 
 **Do not** "fix" `fifty_percent_share` or `remitted_amount` by adding them to an INSERT.
 That was proposed in the old traceability matrix and would break every write.
