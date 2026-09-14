@@ -102,7 +102,7 @@ graph TB
     D5[("D5: Tenant Bills<br/>bills")]
     D6[("D6: Payment Records<br/>payments")]
     D7[("D7: Monthly Income Ledger<br/>monthly_income_records")]
-    D8[("D8: Expenses Ledger<br/>fixed_expense_categories,<br/>monthly_expense_entries,<br/>expense_property_allocations")]
+    D8[("D8: Expenses Ledger<br/>fixed_expense_categories, property_areas,<br/>monthly_expense_entries,<br/>expense_property_allocations")]
     D9[("D9: Maintenance Tickets<br/>maintenance_tickets,<br/>ticket_attachments, ticket_messages")]
     D10[("D10: Audit Logs<br/>audit_logs")]
     D11[("D11: System Parameters<br/>system_settings")]

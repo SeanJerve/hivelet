@@ -1051,7 +1051,7 @@ graph TB
     D5[("D5: Tenant Bills<br/>bills")]
     D6[("D6: Payment Records<br/>payments")]
     D7[("D7: Monthly Income Ledger<br/>monthly_income_records")]
-    D8[("D8: Expenses Ledger<br/>fixed_expense_categories,<br/>monthly_expense_entries,<br/>expense_property_allocations")]
+    D8[("D8: Expenses Ledger<br/>fixed_expense_categories, property_areas,<br/>monthly_expense_entries,<br/>expense_property_allocations")]
     D9[("D9: Maintenance Tickets<br/>maintenance_tickets,<br/>ticket_attachments, ticket_messages")]
     D10[("D10: Audit Logs<br/>audit_logs")]
     D11[("D11: System Parameters<br/>system_settings")]
@@ -1201,6 +1201,71 @@ graph TB
 
 ---
 
+
+## Optional — Payment verification states (BR-017)
+
+A UML state diagram for `payments.verification_status`. Useful in **Section 4** if the panel
+presses on the human gate, and in **Section 6** as the visual answer to their recommendation:
+both entry paths converge on one state, and only one transition settles a debt.
+
+*Source: `docs/diagrams/hivelet_state_payment_verification.mmd` · Rendered:
+`docs/diagrams/rendered/hivelet_state_payment_verification.svg`*
+
+The three states are the live enum, read from `pg_enum`:
+`Verified | Pending Verification | Rejected`.
+
+```mermaid
+---
+title: Payment Verification — the human gate (BR-017)
+---
+stateDiagram-v2
+    direction LR
+
+    state "No payment row exists" as None
+    state "Pending Verification" as Pending
+    state "Verified" as Verified
+    state "Rejected" as Rejected
+    state "Bill status = Paid" as BillPaid
+
+    [*] --> None
+
+    None --> Pending : Cash or GCash taken in person<br/>administrator records it<br/>POST /admin/income-records
+    None --> Pending : Adyen AUTHORISATION arrives<br/>HMAC-SHA256 verified, constant-time<br/>POST /public/payments/adyen/webhook
+
+    Pending --> Verified : administrator holding payment:verify<br/>confirms the funds arrived<br/>PATCH /admin/payments/:id/verify
+    Pending --> Rejected : administrator rejects it
+
+    Verified --> BillPaid : the ONLY transition that<br/>settles a debt
+
+    Rejected --> [*]
+    BillPaid --> [*]
+
+    note right of Pending
+        Every payment enters here. There is no path
+        from None straight to Verified, for any method.
+        A successful, signature-verified authorisation
+        from Adyen still lands in this state.
+    end note
+
+    note right of Verified
+        verified_by  = the administrator's profile id
+        verified_at  = when the decision was made
+        Both NOT NULL once verified, so the ledger
+        records WHO decided and WHEN, not just what.
+    end note
+
+    note left of None
+        Exactly one code path writes an Adyen payment:
+        the webhook. The shopper's browser writes
+        nothing - Adyen Web v6 never gives it the
+        pspReference, so a row written there could not
+        be reconciled and the same payment was banked
+        twice. The browser asks our server what
+        happened; our server asks Adyen.
+    end note
+```
+
+---
 
 ## Optional — Payment sequence
 

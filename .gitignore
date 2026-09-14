@@ -50,3 +50,8 @@ database/seeded-tenant-credentials.json
 
 # Database backups - contain tenant personal data, never commit
 backups/
+
+# Presentation working copy. Generated from docs/ by copying - the originals in
+# docs/claude_pipeline/outputs/ and docs/diagrams/rendered/ remain the source of
+# truth. Kept out of git so the same document does not exist twice in history.
+VIDEO PRESENTATION DOCS/

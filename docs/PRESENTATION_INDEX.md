@@ -7,7 +7,7 @@ Two directories hold nearly all of it:
 
 ```
 docs/claude_pipeline/outputs/     the written artifacts  (11 documents)
-docs/diagrams/rendered/           the images for slides  (9 diagrams, PNG + SVG)
+docs/diagrams/rendered/           the images for slides  (10 diagrams, PNG + SVG)
 ```
 
 ---
@@ -59,6 +59,7 @@ There was **one** recommendation. Do not attribute a second.
 | Open on | `docs/diagrams/rendered/hivelet_erd_defense_overview.svg` |
 | Then cut to, and stay | `docs/diagrams/rendered/hivelet_erd_defense_payments.svg` |
 | Backup | `hivelet_erd_defense.svg`, `hivelet_erd.svg` (full 21 tables) |
+| If they press on the verification gate | `hivelet_state_payment_verification.svg` — both entry paths converge on Pending Verification; only one transition settles a debt |
 | Backing documents | `docs/claude_pipeline/outputs/PHASE2_ERD_AND_DATA_DICTIONARY.md`<br>`docs/claude_pipeline/outputs/PHASE2_NORMALIZATION_PROOF.md` (3NF)<br>`docs/claude_pipeline/outputs/PHASE2_SECURITY_AND_RLS.md` (RLS posture)<br>`docs/05_DATABASE_DESIGN.md` |
 
 **Two shots, not one.** The overview carries the shape of the schema; the payments
