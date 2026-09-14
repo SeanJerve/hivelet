@@ -28,6 +28,7 @@ import { assertWritten, warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod } from '../services/billingService.js';
+import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { money, occupantCount, isoDate, shortText, uuid } from '../utils/validators.js';
 
 const router = Router();
@@ -1366,6 +1367,51 @@ router.patch(
 /* ========================================================================== *
  * FINANCIAL LEDGERS — BR-048, FR-043
  * ========================================================================== */
+
+/**
+ * GET /api/admin/reports/income.xlsx?year=YYYY
+ *
+ * BR-049 / FR-044 - the Monthly Income Report as a real spreadsheet, in the
+ * layout `docs/09_MONTHLY_INCOME_REPORT.md` documents: month blocks, units in
+ * canonical order inside each cluster, a subtotal per cluster, a grand subtotal
+ * that excludes Linda, and Linda's own section beneath it.
+ *
+ * The CSV export in the browser already satisfies **BR-030** - the records leave
+ * the system in a format Excel opens. This is the stricter rule: the *layout*,
+ * which CSV cannot express.
+ *
+ * Streamed rather than buffered into a string, because a full year of the
+ * owner's ledger is thousands of styled cells and there is no reason to hold the
+ * whole file in memory to hand it over.
+ */
+router.get(
+  '/admin/reports/income.xlsx',
+  requirePermission(PERMISSIONS.INCOME_LEDGER_READ),
+  asyncHandler(async (req, res) => {
+    const year = Number(req.query.year ?? new Date().getFullYear());
+
+    const workbook = await buildIncomeReportWorkbook(year);
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="hivelet-income-${year}.xlsx"`
+    );
+
+    await auditFromRequest(req, {
+      action: 'LEDGER_EXPORT',
+      entityType: 'INCOME_RECORD',
+      entityId: String(year),
+      newValues: { export: 'xlsx', year },
+    });
+
+    await workbook.xlsx.write(res);
+    res.end();
+  })
+);
 
 router.get(
   '/admin/income-records',

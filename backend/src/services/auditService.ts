@@ -43,7 +43,12 @@ export type AuditAction =
   | 'ROOM_PHOTO_UPLOAD'
   | 'EXPENSE_CREATE'
   | 'EXPENSE_UPDATE'
-  | 'EXPENSE_VOID';
+  | 'EXPENSE_VOID'
+  // Exporting the ledger is a read, but it removes a full year of the owner's
+  // financial records from the system in one file. BR-048 makes authorship of
+  // these ledgers admin-only; knowing when a copy left is part of the same
+  // accountability.
+  | 'LEDGER_EXPORT';
 
 export type AuditEntityType =
   | 'PROFILE'

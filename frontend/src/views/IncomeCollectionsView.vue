@@ -12,7 +12,7 @@ import {
   type IncomeRecord 
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
-import { api } from '@/lib/api';
+import { api, API_BASE, getStoredToken } from '@/lib/api';
 import { 
   Download, 
   Plus, 
@@ -547,6 +547,52 @@ async function handleEditIncome() {
   }
 }
 
+/**
+ * The Monthly Income Report as a real spreadsheet. BR-049.
+ *
+ * The CSV button beside this one satisfies BR-030 - the rows leave the system in
+ * a format Excel opens. This is the stricter rule: the documented layout, with
+ * the month blocks, the per-cluster subtotals, and Linda kept in her own section
+ * rather than folded into the grand total. CSV cannot express any of that, so
+ * the file is built server-side and streamed back.
+ *
+ * Fetched rather than linked, because the endpoint needs the bearer token and an
+ * `<a href>` cannot carry one.
+ */
+const isExportingExcel = ref(false);
+
+async function exportExcel() {
+  if (isExportingExcel.value) return;
+  isExportingExcel.value = true;
+  // The workbook is a per-year report, so "All Years" falls back to this year
+  // rather than silently exporting one of them.
+  const year = filterYear.value !== 'All'
+    ? filterYear.value
+    : String(new Date().getFullYear());
+  try {
+    const res = await fetch(`${API_BASE}/admin/reports/income.xlsx?year=${year}`, {
+      headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
+    });
+    if (!res.ok) {
+      throw new Error(`The report could not be generated (HTTP ${res.status}).`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hivelet-income-${year}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('success', 'Report downloaded', `Monthly Income Report for ${year}.`);
+  } catch (err: any) {
+    showToast('error', 'Export failed', err?.message || 'The report could not be generated.');
+  } finally {
+    isExportingExcel.value = false;
+  }
+}
+
 function exportCSV() {
   const headers = ['Unit', 'Cluster', 'Date Paid', 'Contact', 'Invoice', 'Rent For', 'Rent (PHP)', '50% Share (PHP)', 'Occupants', 'Water (PHP)', 'Garbage (PHP)', 'Remitted (PHP)'];
   const csvRows = [headers.join(',')];
@@ -703,7 +749,17 @@ function exportCSV() {
           class="btn-secondary"
         >
           <Download class="size-3.5 text-muted-foreground" />
-          <span>Export Excel CSV</span>
+          <span>Export CSV</span>
+        </button>
+
+        <button
+          @click="exportExcel"
+          :disabled="isExportingExcel"
+          class="btn-secondary"
+          title="The full Monthly Income Report layout — month blocks, cluster subtotals, Linda kept separate"
+        >
+          <FileSpreadsheet :class="['size-3.5 text-muted-foreground', isExportingExcel ? 'animate-pulse' : '']" />
+          <span>{{ isExportingExcel ? 'Building…' : 'Export Excel (.xlsx)' }}</span>
         </button>
 
         <button 

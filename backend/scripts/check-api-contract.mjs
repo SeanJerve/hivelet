@@ -244,6 +244,45 @@ if (adminToken) {
   }
 }
 
+
+// ---- ledger export (BR-049) ----------------------------------------------
+//
+// The workbook is generated server-side, so a failure here is a 500 on a route
+// the owner uses to get her own records out. Checks that it is gated, that it
+// refuses a year it cannot mean, and that what comes back is actually an xlsx -
+// a ZIP, which always starts with the bytes "PK".
+if (adminToken) {
+  console.log(`\nLEDGER EXPORT (BR-049)`);
+
+  const thisYear = new Date().getFullYear();
+  const r = await fetch(`${BASE}/admin/reports/income.xlsx?year=${thisYear}`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+  const buf = Buffer.from(await r.arrayBuffer());
+  const isZip = buf[0] === 0x50 && buf[1] === 0x4b;
+  const typed = (r.headers.get('content-type') || '').includes('spreadsheetml');
+  const named = (r.headers.get('content-disposition') || '').includes('.xlsx');
+
+  const ok = r.status === 200 && isZip && typed && named && buf.length > 1000;
+  ok ? pass++ : (fail++, failures.push(
+    `income.xlsx: status ${r.status}, zip ${isZip}, type ${typed}, filename ${named}, ${buf.length} bytes`));
+  console.log(`  ${ok ? 'OK  ' : 'FAIL'} ${r.status}  income.xlsx is a real workbook (${buf.length} bytes)`);
+
+  for (const [year, want] of [['1999', 422], ['abc', 422]]) {
+    const bad = await fetch(`${BASE}/admin/reports/income.xlsx?year=${year}`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    const refused = bad.status === want;
+    refused ? pass++ : (fail++, failures.push(`income.xlsx?year=${year} -> ${bad.status}, wanted ${want}`));
+    console.log(`  ${refused ? 'OK  ' : 'FAIL'} ${bad.status}  year=${year} refused`);
+  }
+
+  const noToken = await fetch(`${BASE}/admin/reports/income.xlsx?year=${thisYear}`);
+  const gated = noToken.status === 401 || noToken.status === 403;
+  gated ? pass++ : (fail++, failures.push(`income.xlsx reachable with no token -> ${noToken.status}`));
+  console.log(`  ${gated ? 'OK  ' : 'FAIL'} ${noToken.status}  refused with no token`);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 for (const f of failures) console.log('  - ' + f);
 process.exit(fail === 0 ? 0 : 1);
