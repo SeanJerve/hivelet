@@ -12,7 +12,24 @@ docs/diagrams/rendered/           the images for slides  (10 diagrams, PNG + SVG
 
 ---
 
-## The script you present from
+## The script you FILM from
+
+**`docs/claude_pipeline/outputs/PHASE3_FILMING_SCRIPT.md`**
+(copied into `VIDEO PRESENTATION DOCS/01_FILMING_SCRIPT.md`)
+
+Word for word, with stage directions, speaker assignments and per-section
+timings. About 12 minutes against a 10–15 minute limit. **This is the one to hold
+while recording.**
+
+| § | Speaker |
+| :-- | :--- |
+| 1 Introduction · 2 Panel recommendation | Loyd |
+| 3 Architecture | Sean |
+| 4 Database schema | Eljohn |
+| 5 Process and data flow | Vince |
+| 6 Design justification | Kiel |
+
+## The reference behind it
 
 **`docs/claude_pipeline/outputs/PHASE3_DEFENSE_PACK.md`**
 
