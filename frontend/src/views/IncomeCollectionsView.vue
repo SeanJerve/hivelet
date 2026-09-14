@@ -25,6 +25,7 @@ import {
   Loader2,
   Clock,
   ShieldCheck,
+  ShieldAlert,
   Check,
   CreditCard,
   FileSpreadsheet,
@@ -110,14 +111,30 @@ function formatDateForDisplay(dStr: string): string {
 
 const pendingPayments = ref<ApiPendingPayment[]>([]);
 
+/**
+ * Whether the last attempt to load the verification queue failed.
+ *
+ * Without this, a failed fetch left the list empty and the panel below rendered
+ * its empty state: a green shield reading "All Remittances Verified". That is an
+ * affirmative false statement - the system had not verified anything, it had
+ * failed to ask. An administrator reading it would reasonably stop looking.
+ *
+ * Empty and unknown are different things, and the screen has to say which.
+ */
+const pendingPaymentsError = ref<string | null>(null);
+
 async function fetchPayments() {
   try {
     const data = await api.get<ApiPendingPayment[]>('/admin/payments');
     if (data && Array.isArray(data)) {
       pendingPayments.value = data.filter((p) => p.verification_status === 'Pending Verification');
     }
-  } catch {
-    // Offline fallback
+    pendingPaymentsError.value = null;
+  } catch (err: any) {
+    // Do NOT leave the list empty and silent - see the note on
+    // `pendingPaymentsError`. The previous rows are kept on screen rather than
+    // cleared, so a transient failure does not make payments appear to vanish.
+    pendingPaymentsError.value = err?.message || 'The verification queue could not be loaded.';
   }
 }
 
@@ -789,7 +806,17 @@ function exportCSV() {
       </div>
 
       <div v-else class="surface-card overflow-hidden">
-        <div v-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-muted-foreground">
+        <div v-if="pendingPaymentsError" class="p-12 text-center text-xs text-muted-foreground">
+          <ShieldAlert class="size-8 mx-auto text-amber-500 mb-2 opacity-90" />
+          <p class="font-bold text-sm text-foreground">The verification queue could not be loaded</p>
+          <p class="mt-1">
+            This does <strong class="text-foreground">not</strong> mean there is nothing to verify — it means we could not ask.
+          </p>
+          <p class="mt-1 text-muted-foreground-soft">{{ pendingPaymentsError }}</p>
+          <button @click="fetchPayments()" class="btn-secondary mt-4 text-xs">Try again</button>
+        </div>
+
+        <div v-else-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-muted-foreground">
           <ShieldCheck class="size-8 mx-auto text-emerald-500 mb-2 opacity-80" />
           <p class="font-bold text-sm text-foreground">All Remittances Verified</p>
           <p class="mt-1">No online transactions currently awaiting administrative approval.</p>
