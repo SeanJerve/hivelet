@@ -108,7 +108,7 @@ async function fetchOutstandingBills() {
   loadingBills.value = true;
   try {
     const data = await api.get<any[]>('/tenant/my-bills');
-    outstandingBills.value = (data ?? []).filter(b => b.status !== 'Paid');
+    outstandingBills.value = (data ?? []).filter(b => ((b as any).effective_status ?? b.status) !== 'Paid');
   } catch (err: any) {
     console.error('Failed to load bills:', err?.message || err);
   } finally {

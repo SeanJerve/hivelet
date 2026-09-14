@@ -41,6 +41,13 @@ interface ApiBill {
   total_amount: number;
   due_date: string;
   status: string;
+  /**
+   * What the bill's status is TODAY. The API derives it from the due date on
+   * read, because nothing in this system ever writes 'Overdue' - see the note on
+   * `withEffectiveStatus` in backend/src/routes/tenant.ts. Always prefer this
+   * over `status`, which is whatever was stored when the bill was raised.
+   */
+  effective_status?: string;
 }
 
 interface ApiPayment {
@@ -154,7 +161,7 @@ async function fetchTenantData() {
     }
 
     if (billsRes && billsRes.length > 0) {
-      const unpaidBill = billsRes.find((b: any) => b.status !== 'Paid');
+      const unpaidBill = billsRes.find((b) => (b.effective_status ?? b.status) !== 'Paid');
       if (unpaidBill) {
         activeBillId.value = unpaidBill.id;
         currentRentAmount.value = Number(unpaidBill.rent_amount) || 0;

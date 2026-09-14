@@ -200,7 +200,10 @@ async function fetchTenantData() {
 
     const unpaidBill = billsData?.find((b: any) => {
       if (b.status === 'Paid') return false;
-      if (b.status === 'Pending' || b.status === 'Due' || b.status === 'Overdue') {
+      // `effective_status` is the API's derived value - a bill past its due date
+      // reads Overdue there even though the stored column still says Due.
+      const st = b.effective_status ?? b.status;
+      if (st === 'Pending' || st === 'Due' || st === 'Overdue') {
         // If the bill due date is <= covered date, it is already settled by a payment
         if (maxCoveredDate) {
           const billDue = new Date(b.due_date);
@@ -219,7 +222,7 @@ async function fetchTenantData() {
       tenantData.value.waterFee = unpaidBill.water_amount;
       tenantData.value.totalAmountDue = unpaidBill.total_amount;
       tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      tenantData.value.dueBadgeText = unpaidBill.status.toUpperCase();
+      tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
       tenantData.value.dueDaysRemaining = 'Awaiting payment';
       tenantData.value.dueDateRaw = unpaidBill.due_date;
       tenantData.value.verifiedAt = '';

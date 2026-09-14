@@ -23,7 +23,7 @@ import { resolveTenantScope, isEmptyScope, assertRoomInScope } from '../services
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
-import { computeBillAmounts, computeBillPeriod } from '../services/billingService.js';
+import { computeBillAmounts, computeBillPeriod, isOverdue } from '../services/billingService.js';
 import { adyenService } from '../services/adyenService.js';
 import { notificationService } from '../services/notificationService.js';
 import { config } from '../config/env.js';
@@ -65,6 +65,46 @@ router.get(
 );
 
 /**
+ * Adds `effective_status` to each bill, and leaves `status` exactly as stored.
+ *
+ * FR-013 was recorded as MISSING for a real reason: nothing in this system ever
+ * moves a bill from `Due` to `Overdue`. There is no handler, no scheduled job and
+ * no trigger, so a bill issued in July still reads `Due` in September. The literal
+ * 'Overdue' appears once in `backend/src`, as a filter value - it was never
+ * written by anything.
+ *
+ * `billingService.isOverdue()` was written to answer exactly this and then called
+ * by nothing at all. It is called here.
+ *
+ * Being overdue is a function of a date and the clock, so it is DERIVED on read
+ * rather than stored. A stored flag is wrong from the moment the clock passes it
+ * until some job catches up; a derived one is correct every time it is asked.
+ * Nothing is written, so this cannot corrupt a ledger row.
+ *
+ * `status` is kept untouched beside it. The two differing is not a bug - it is the
+ * difference between what the database holds and what is true today, and hiding
+ * that would make the stored column look maintained when it is not.
+ */
+interface BillRow {
+  due_date: string;
+  grace_period_end_date?: string | null;
+  status: string;
+  [key: string]: unknown;
+}
+
+async function withEffectiveStatus<T extends BillRow>(
+  bills: T[]
+): Promise<(T & { effective_status: string })[]> {
+  const now = new Date();
+  return Promise.all(
+    bills.map(async (b) => ({
+      ...b,
+      effective_status: (await isOverdue(b, now)) ? 'Overdue' : b.status,
+    }))
+  );
+}
+
+/**
  * GET /api/tenant/my-bills
  * FR-011/FR-013 — the tenant's own billing status, including grace period.
  */
@@ -83,7 +123,10 @@ router.get(
       .order('due_date', { ascending: false });
 
     if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+    // The generated Supabase types widen an embedded relation into a union that
+    // includes an error shape; the runtime rows are plain objects.
+    const bills = (data ?? []) as unknown as BillRow[];
+    res.status(200).json({ success: true, data: await withEffectiveStatus(bills) });
   })
 );
 

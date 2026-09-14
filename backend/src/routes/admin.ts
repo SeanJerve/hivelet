@@ -26,7 +26,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
-import { computeWaterFee } from '../services/billingService.js';
+import { computeWaterFee, isOverdue } from '../services/billingService.js';
 import { money, occupantCount, isoDate, shortText } from '../utils/validators.js';
 
 const router = Router();
@@ -836,7 +836,18 @@ router.get(
       .order('due_date', { ascending: false });
 
     if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+
+    // Same derivation as GET /tenant/my-bills - see the note on
+    // `withEffectiveStatus` there. Nothing in this system ever writes 'Overdue',
+    // so it is computed from the due date on read and `status` is left as stored.
+    const now = new Date();
+    const withStatus = await Promise.all(
+      (data ?? []).map(async (b: { due_date: string; grace_period_end_date?: string | null; status: string }) => ({
+        ...b,
+        effective_status: (await isOverdue(b, now)) ? 'Overdue' : b.status,
+      }))
+    );
+    res.status(200).json({ success: true, data: withStatus });
   })
 );
 
