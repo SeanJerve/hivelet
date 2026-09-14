@@ -63,20 +63,55 @@ watch([selectedUnit, monthsCovered], ([newUnit, newMonths]) => {
   
   const mCovered = Math.max(1, Number(newMonths) || 1);
 
-  if (isLinda) {
-    const monthlyLindaWater = newUnit.toLowerCase() === 'lf' ? 400 : 200;
-    waterAmount.value = monthlyLindaWater * mCovered;
-  } else {
-    waterAmount.value = occCount * 200 * mCovered;
-  }
+  waterAmount.value = waterBaselineFor(isLinda ? newUnit : newUnit, occCount) * mCovered;
 
   if (room && room.price) {
     rentAmount.value = room.price * mCovered;
   }
 }, { immediate: true });
 
+/**
+ * The configured water rates, from `GET /api/public/rates`.
+ *
+ * This modal hardcoded 200 in six places, and the Linda fixed charges as 400 and
+ * 200. That is the same defect that was fixed in the backend - the rate lives in
+ * `system_settings` and is applied by `billingService` - reappearing on the
+ * client. The landlady could change her rate and this form would go on validating
+ * against the old one, rejecting correct entries and accepting wrong ones.
+ *
+ * Null until loaded. Every use falls back to the previous literal so the form
+ * still works if the call fails; the difference is that it is no longer the only
+ * source.
+ */
+const waterRatePerOccupant = ref<number | null>(null);
+const lindaFixedWater = ref<Record<string, number | null>>({});
+
+async function loadRates() {
+  try {
+    const r = await api.get<{
+      waterRatePerOccupant: number;
+      lindaFixedWaterCharges: Record<string, number | null>;
+    }>('/public/rates', false);
+    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+    lindaFixedWater.value = r?.lindaFixedWaterCharges ?? {};
+  } catch {
+    // Leave both null; the literals below stand in.
+  }
+}
+
+/** The per-month water baseline for a unit, from the configured rates. */
+function waterBaselineFor(unitCode: string, occupants: number): number {
+  const code = unitCode.toUpperCase();
+  const fixed = lindaFixedWater.value[code];
+  if (fixed != null) return fixed;
+  if (code === 'LF') return 400;
+  if (code === 'LB') return 200;
+  return occupants * (waterRatePerOccupant.value ?? 200);
+}
+
 watch(isOnsitePaymentModalOpen, (isOpen) => {
   if (isOpen) {
+    loadRates();
     fetchTenants();
     fetchRooms();
   }
@@ -119,13 +154,9 @@ function triggerRecord() {
   const occCount = summary.count > 0 ? summary.count : (room?.occupants || 1);
   const mCovered = Math.max(1, Number(monthsCovered.value) || 1);
 
-  let monthlyWaterBaseline = occCount * 200;
-  if (unitUpper === 'LF') {
-    monthlyWaterBaseline = 400;
-  } else if (unitUpper === 'LB') {
-    monthlyWaterBaseline = 200;
-  }
+  const monthlyWaterBaseline = waterBaselineFor(unitUpper, occCount);
   const totalWaterBaseline = monthlyWaterBaseline * mCovered;
+  const perOccupantRate = waterRatePerOccupant.value ?? 200;
 
   const waterVal = Number(waterAmount.value) || 0;
   
@@ -134,8 +165,8 @@ function triggerRecord() {
       showToast('error', 'Water Payment Error', `Water payment for ${unitUpper} cannot be lower than ₱${totalWaterBaseline} for ${occCount} occupant(s) across ${mCovered} month(s) unless it is ₱0.`);
       return;
     }
-    if (waterVal % 200 !== 0) {
-      showToast('error', 'Water Payment Error', 'Water payment must be paid in whole multiples of ₱200 (e.g. 0, 200, 400, 600).');
+    if (waterVal % perOccupantRate !== 0) {
+      showToast('error', 'Water Payment Error', `Water payment must be a whole multiple of ₱${perOccupantRate}.`);
       return;
     }
   }
@@ -147,7 +178,7 @@ function triggerRecord() {
     Unit: ${selectedUnit.value.toUpperCase()} (${summary.text || (room?.tenant || 'Vacant')})
     Occupants: ${occCount} Registered Headcount
     Rent Amount: ₱${rentAmount.value}
-    Water Payment: ₱${waterAmount.value} (₱200/head rule)
+    Water Payment: ₱${waterAmount.value} (₱${perOccupantRate} per occupant)
     GBG/Garbage Fee: ₱${gbgFee.value}
     Total Amount: ₱${totalAmountReceived.value}
     Validity Period: ${monthsCovered.value} month(s) (${formattedStart} to ${formattedEnd})
@@ -308,7 +339,7 @@ function triggerRecord() {
             <div class="flex items-center justify-between mb-1.5">
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">Payment for Water (₱)</label>
               <span class="text-[10px] font-semibold text-primary">
-                ₱200 × {{ currentOccupantsCount }} {{ currentOccupantsCount === 1 ? 'occupant' : 'occupants' }}
+                ₱{{ waterRatePerOccupant ?? 200 }} × {{ currentOccupantsCount }} {{ currentOccupantsCount === 1 ? 'occupant' : 'occupants' }}
               </span>
             </div>
             <input v-model.number="waterAmount" type="number" min="0" step="200" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />

@@ -125,11 +125,17 @@ router.get(
   requirePermission(PERMISSIONS.PROPERTY_VIEW_PUBLIC),
   asyncHandler(async (_req, res) => {
     const waterRatePerOccupant = await getWaterRatePerOccupant();
+    // Both Linda units, not just LF. BR-040 gives them different fixed charges,
+    // and the on-site payment form validates against whichever applies.
     const lindaFixedWaterCharge = await getLindaFixedWaterCharge('LF');
+    const lindaFixedWaterCharges = {
+      LF: await getLindaFixedWaterCharge('LF'),
+      LB: await getLindaFixedWaterCharge('LB'),
+    };
 
     res.status(200).json({
       success: true,
-      data: { waterRatePerOccupant, lindaFixedWaterCharge },
+      data: { waterRatePerOccupant, lindaFixedWaterCharge, lindaFixedWaterCharges },
     });
   })
 );
