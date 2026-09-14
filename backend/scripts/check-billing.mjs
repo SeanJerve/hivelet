@@ -13,7 +13,7 @@
  *   - a partial payment attaches to the bill it pays down and is recorded
  *     as 'Partially Paid' rather than left floating (BR-013)
  */
-import { computeBillPeriod, computeWaterFee, computeBillAmounts, isOverdue, allocateReceipt }
+import { computeBillPeriod, computeWaterFee, computeBillAmounts, isOverdue, allocateReceipt, computeRentPeriod }
   from '../dist/services/billingService.js';
 
 let failures = 0;
@@ -161,6 +161,38 @@ check('conservation: money in equals money recorded, to the centavo',
     })
     .filter(Boolean),
   []);
+
+
+// --- rent period derivation (BR-033): "Rent For" comes from the tenancy cycle ---
+//
+// The admin form defaulted this to the DATE PAID and required it, so a tenant on
+// a 13th-of-the-month cycle paying on the 20th had the period recorded as
+// starting on the 20th. These assert the cycle, not the payment date.
+check('anniversary 13th, paid 20 Sep, 1 month -> the cycle, not the pay date',
+  await computeRentPeriod('2022-05-13', '2026-09-20', 1),
+  { start: '2026-09-13', end: '2026-10-12' });
+
+check('anniversary 13th, paid 5 Sep (before the anchor) -> the cycle that contains it',
+  await computeRentPeriod('2022-05-13', '2026-09-05', 1),
+  { start: '2026-08-13', end: '2026-09-12' });
+
+check('3 months from 13 Sep -> ends the day before the 13 Dec anniversary',
+  await computeRentPeriod('2022-05-13', '2026-09-20', 3),
+  { start: '2026-09-13', end: '2026-12-12' });
+
+check('12 months crosses the year boundary correctly',
+  await computeRentPeriod('2022-05-13', '2026-09-20', 12),
+  { start: '2026-09-13', end: '2027-09-12' });
+
+// Month-length clamping over a multi-month span: three months from 31 January
+// must not produce an impossible 31 April that rolls into May.
+check('anniversary 31st, 3 months from 31 Jan -> clamps to April, never rolls over',
+  await computeRentPeriod('2021-01-31', '2026-01-31', 3),
+  { start: '2026-01-31', end: '2026-04-29' });
+
+check('monthsCovered 0 or negative is treated as a single cycle',
+  await computeRentPeriod('2022-05-13', '2026-09-20', 0),
+  { start: '2026-09-13', end: '2026-10-12' });
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

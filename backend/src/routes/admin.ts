@@ -26,7 +26,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
-import { computeWaterFee, isOverdue, allocateReceipt } from '../services/billingService.js';
+import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod } from '../services/billingService.js';
 import { money, occupantCount, isoDate, shortText } from '../utils/validators.js';
 
 const router = Router();
@@ -1334,8 +1334,13 @@ const incomeRecordSchema = z.object({
   paymentMethod: z.enum(['Cash', 'Online', 'GCash']).default('Cash'),
   transactionReference: shortText(120).optional(),
   monthsCovered: z.number().int().min(1).max(60),
-  dateCoveredStart: isoDate,
-  dateCoveredEnd: isoDate,
+  // BR-033 - optional, and derived from the tenancy's anniversary cycle when
+  // omitted. They were required, and the form defaulted the start to the DATE
+  // PAID, so a tenant on a 13th-of-the-month cycle who paid on the 20th had the
+  // period recorded as starting on the 20th. "Rent For" is supposed to come from
+  // the stored anniversary and the current cycle, not be typed per entry.
+  dateCoveredStart: isoDate.optional(),
+  dateCoveredEnd: isoDate.optional(),
 });
 
 /**
@@ -1372,7 +1377,7 @@ router.post(
     // Find active assignment
     const { data: assign, error: assignError } = await db
       .from('room_assignments')
-      .select('id, tenant_profile_id')
+      .select('id, tenant_profile_id, anniversary_date')
       .eq('room_id', room.id)
       .eq('is_active', true)
       .maybeSingle();
@@ -1382,6 +1387,44 @@ router.post(
     // BR-014 / BR-040 - the rate comes from system_settings and the two Linda units are on a
     // fixed charge. Previously `occupants * 200`, which could not be changed without a deploy.
     const { amount: calcWater } = await computeWaterFee(roomNumber, occupants);
+
+    /**
+     * BR-033 - the rent period comes from the tenancy's own cycle.
+     *
+     * The two dates were required fields, and the form defaulted the start to the
+     * date paid. A tenant whose anniversary is the 13th, paying on the 20th, had
+     * the period recorded as starting on the 20th - so the ledger's "Rent For"
+     * column drifted away from the cycle the rent actually belongs to, one
+     * receipt at a time.
+     *
+     * `computeRentPeriod()` derives it from the stored anniversary, which is what
+     * the rule asks for. A supplied value is still honoured - 937 historical rows
+     * were migrated with periods taken from the owner's own book, and a
+     * back-dated correction is legitimate - but a divergence is recorded rather
+     * than passed over, the same posture BR-039 takes on advance rent.
+     */
+    const derivedPeriod = assign?.anniversary_date
+      ? await computeRentPeriod(assign.anniversary_date, datePaid, monthsCovered)
+      : null;
+
+    const periodStart = dateCoveredStart ?? derivedPeriod?.start;
+    const periodEnd = dateCoveredEnd ?? derivedPeriod?.end;
+
+    if (!periodStart || !periodEnd) {
+      throw ApiError.validation(
+        'The rent period could not be determined.',
+        {
+          dateCoveredStart: [
+            'This unit has no active tenancy to derive the period from, so the dates ' +
+              'covered must be supplied.'
+          ]
+        }
+      );
+    }
+
+    const periodDiverges =
+      derivedPeriod !== null &&
+      (periodStart !== derivedPeriod.start || periodEnd !== derivedPeriod.end);
 
     const date = new Date(datePaid);
     const year = date.getFullYear();
@@ -1404,8 +1447,8 @@ router.post(
         water_payment: calcWater,
         payment_method: normalizedMethod,
         transaction_reference: transactionReference || null,
-        rent_period_start: dateCoveredStart,
-        rent_period_end: dateCoveredEnd,
+        rent_period_start: periodStart,
+        rent_period_end: periodEnd,
         verification_status: 'Verified'
       })
       .select('*')
@@ -1421,7 +1464,17 @@ router.post(
       action: 'PAYMENT_RECORD',
       entityType: 'PAYMENT',
       entityId: newRecord.id,
-      newValues: newRecord
+      newValues: periodDiverges
+        ? {
+            ...newRecord,
+            // BR-033: kept, because the administrator may have a reason, but
+            // attributable rather than silent.
+            rentPeriodOverride: {
+              supplied: { start: periodStart, end: periodEnd },
+              derivedFromAnniversary: derivedPeriod
+            }
+          }
+        : newRecord
     });
 
     if (assign?.tenant_profile_id) {

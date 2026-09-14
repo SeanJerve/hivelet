@@ -73,7 +73,17 @@ const hoveredMonthIndex = ref<number | null>(null);
 const isFabOpen = ref(false);
 
 // Active Operational Year
-const CURRENT_YEAR = 2026;
+// Read from the clock, not pinned to a literal.
+//
+// This was `= 2026`. Every "live" figure on this dashboard filters on
+// `r.year === CURRENT_YEAR` while the month beside it comes from `new Date()`,
+// so on 1 January the whole page would have quietly read zero - no error, no
+// empty state, just a dashboard reporting that the business had stopped.
+//
+// The historical archive below derives its years from the data with
+// `r.year < CURRENT_YEAR`, so it follows automatically: the year that has just
+// ended becomes an archive year on its own.
+const CURRENT_YEAR = new Date().getFullYear();
 
 // Historical Archive State & Scalable Period Selector
 const isHistoricalMode = ref(false);

@@ -93,7 +93,14 @@ const monthsList = [
   { val: 'Dec', label: 'December' },
 ];
 
-const yearsList = ['All', '2026', '2025', '2024'];
+// Derived from the ledger, not a literal list. It was `['All','2026','2025','2024']`,
+// which would have stopped offering the current year the moment 2027 began.
+const yearsList = computed(() => {
+  const years = new Set<string>();
+  for (const r of incomeRecords) if (r.year) years.add(String(r.year));
+  years.add(String(new Date().getFullYear()));
+  return ['All', ...Array.from(years).sort((a, b) => Number(b) - Number(a))];
+});
 
 function formatDateForDisplay(dStr: string): string {
   const d = new Date(dStr);
@@ -352,7 +359,13 @@ function startEditIncome(r: IncomeRecord) {
   }
 
   editMonthsCovered.value = 1;
-  editDateCoveredStart.value = editDate.value;
+  // BR-033 - left blank so the server derives the period from the tenant's own
+  // anniversary cycle. This used to default to the DATE PAID, so a tenant on a
+  // 13th-of-the-month cycle paying on the 20th had the period recorded as
+  // starting on the 20th, and the ledger's "Rent For" drifted off the cycle one
+  // receipt at a time. Typing a date still overrides, which back-dated
+  // corrections need - the divergence is recorded in the audit log.
+  editDateCoveredStart.value = '';
   editMethod.value = 'Cash';
   editReference.value = '';
 
@@ -432,8 +445,10 @@ async function handleEditIncome() {
       paymentMethod: editMethod.value === 'Online' ? 'GCash' : 'Cash',
       transactionReference: editMethod.value === 'Online' ? editReference.value : undefined,
       monthsCovered: Number(editMonthsCovered.value) || 1,
-      dateCoveredStart: editDateCoveredStart.value,
-      dateCoveredEnd: editDateCoveredEnd.value,
+      // Omitted when blank, so the server derives both from the anniversary. BR-033.
+      ...(editDateCoveredStart.value
+        ? { dateCoveredStart: editDateCoveredStart.value, dateCoveredEnd: editDateCoveredEnd.value }
+        : {}),
     };
 
     if (oldId && !oldId.startsWith('INC-MOCK-') && !oldId.startsWith('INC-NEW-')) {
@@ -1192,8 +1207,11 @@ function exportCSV() {
               <input v-model.number="editMonthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Covered Period Start</label>
-              <input v-model="editDateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+                Covered Period Start
+                <span class="normal-case tracking-normal font-medium text-muted-foreground-soft">— blank uses the tenant's billing cycle</span>
+              </label>
+              <input v-model="editDateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" />
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Covered Period End</label>

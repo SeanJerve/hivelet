@@ -175,6 +175,44 @@ export async function isOverdue(
   return asOf.getTime() > cutoff.getTime();
 }
 
+
+/**
+ * The span a receipt covers, expressed as the tenancy's own cycle. BR-033.
+ *
+ * "Rent For" is supposed to derive from the stored anniversary date and the
+ * current cycle, not be typed per entry. `computeBillPeriod()` already does that
+ * for one cycle; this extends it to a receipt covering several months, which the
+ * income ledger allows (`monthsCovered`, 1..60).
+ *
+ * The end is the day before the anniversary `monthsCovered` cycles later, with
+ * the same month-length clamping - so three months from 31 January ends on
+ * 30 April, not on an impossible 31 April that rolls into May.
+ */
+export async function computeRentPeriod(
+  anniversaryDate: string | Date,
+  datePaid: string | Date,
+  monthsCovered = 1
+): Promise<{ start: string; end: string }> {
+  const first = await computeBillPeriod(anniversaryDate, new Date(datePaid));
+  if (monthsCovered <= 1) {
+    return { start: first.billingPeriodStart, end: first.billingPeriodEnd };
+  }
+
+  const anniversary = new Date(anniversaryDate);
+  const anchorDay = Number.isNaN(anniversary.getTime()) ? 1 : anniversary.getUTCDate();
+  const clampToMonth = (y: number, m: number, d: number) =>
+    Math.min(d, new Date(Date.UTC(y, m + 1, 0)).getUTCDate());
+
+  const start = new Date(`${first.billingPeriodStart}T00:00:00Z`);
+  const y = start.getUTCFullYear();
+  const m = start.getUTCMonth() + monthsCovered;
+  const nextAnniversary = new Date(Date.UTC(y, m, clampToMonth(y, m, anchorDay)));
+
+  return {
+    start: first.billingPeriodStart,
+    end: toIsoDate(new Date(nextAnniversary.getTime() - 86_400_000)),
+  };
+}
 /* ========================================================================== *
  * BR-013 — allocating a receipt against what a tenant actually owes
  * ========================================================================== */
