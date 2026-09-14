@@ -108,17 +108,30 @@ on the Phase 1 errata sheet.
 | --- | --- | --- |
 | **Phase 2** (schema, migration, specification) | 6 | OD-01, OD-04, OD-05, OD-06, OD-07, OD-08 |
 | **Phase 3** (service extraction and implementation) | 3 | OD-02, OD-03, OD-10 |
-| | **10** | |
+| | **9** | |
 
-**Critical path.** Four items require a database migration and therefore gate everything downstream
-of them: **OD-04** (deposit reconciliation on move-out), 
-**OD-04** (deposit disposition columns), **OD-05** (the Property Area lookup table and CHECK
-constraint), and **OD-07** (whether the category cumulative is stored or computed). All ten
-remaining items require a decision from Mrs. Fe Galang Da Silva rather than from the development
-team; they should be gathered into a single client consultation rather than raised piecemeal. The
-three items closed on 2026-09-13 (**OD-11**, **OD-12** and **OD-13**) are recorded in Section 2.
+**Critical path.** Three items require a database migration and therefore gate everything
+downstream of them: **OD-04** (deposit disposition columns for reconciliation on move-out),
+**OD-05** (what "Main House" covers) and **OD-07** (whether the category cumulative is stored or
+computed).
 
-**What this register is not.** None of the ten items above is a defect. The defects identified
+> **Corrected 2026-09-14, three times over.** This paragraph said *four* items and listed
+> **OD-04** twice under two different descriptions; the summary above totalled **10** against a
+> table of nine rows. There are **nine** open items.
+>
+> It also claimed OD-05 gates "the Property Area lookup table and CHECK constraint". **That table
+> exists, and has since migrations `008` and `012`:** `property_area` is the enum
+> `property_area_type`, `property_areas` is a seeded lookup of all six areas whose own `code`
+> column is that same enum, and **0 of 1,327** allocation rows are off it. What OD-05 actually
+> gates is narrower - "Main House" maps to no unit cluster under **BR-032**, so the owner should
+> confirm what it covers. That constrains what **BR-041** *means*, not whether it is enforced.
+
+All nine remaining items require a decision from Mrs. Fe Galang Da Silva rather than from the
+development team; they should be gathered into a single client consultation rather than raised
+piecemeal. The three items closed on 2026-09-13 (**OD-11**, **OD-12** and **OD-13**) are recorded
+in Section 2.
+
+**What this register is not.** None of the nine items above is a defect. The defects identified
 against the codebase have known remedies and are tracked elsewhere. Their status as of
 **2026-09-13**:
 

@@ -538,6 +538,22 @@ That was proposed in the old traceability matrix and would break every write.
 
 ---
 
+## 4.5 The iteration record
+
+`docs/12_ITERATION_HISTORY.md` — the agile iteration history, written for the capstone
+professor and panel rather than for a developer.
+
+It sets the boundary where the commit history actually puts it: **Iteration 1**,
+construction, 95 commits to `1438595`; **Iteration 2**, verification and correction, 87
+commits from `cc10d98`; **Iteration 3**, consolidation, planned and gated on a single
+client consultation. It carries the dated client decisions, the panel recommendation in
+its corrected form, the 22 errata, and what each iteration changed.
+
+**If you add work, add it there too** — an iteration record written after the fact is
+worth much less than one kept as you go.
+
+---
+
 ## 5. Where things live
 
 | What | Where |
