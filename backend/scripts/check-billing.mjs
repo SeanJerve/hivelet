@@ -10,8 +10,10 @@
  *   - there is no grace period, so grace always equals the due date (OD-16)
  *   - the water rate comes from settings; the two Linda units are fixed (BR-014, BR-040)
  *   - a bill already issued keeps the window it was issued under (BR-003)
+ *   - a partial payment attaches to the bill it pays down and is recorded
+ *     as 'Partially Paid' rather than left floating (BR-013)
  */
-import { computeBillPeriod, computeWaterFee, computeBillAmounts, isOverdue }
+import { computeBillPeriod, computeWaterFee, computeBillAmounts, isOverdue, allocateReceipt }
   from '../dist/services/billingService.js';
 
 let failures = 0;
@@ -72,6 +74,93 @@ check('unpaid on the due date is not yet overdue',
 check('legacy bill honours its own stored 7-day window',
   await isOverdue({ due_date: '2026-07-05', grace_period_end_date: '2026-07-12', status: 'Due' },
                   new Date(Date.UTC(2026, 6, 10))), false);
+
+
+// --- receipt allocation (BR-013): partial payment is recorded, never stranded ---
+//
+// This is the one function in the system that decides where money goes, so it is
+// tested against its real export rather than a restatement of its logic.
+//
+// `bill` here is shorthand for { id, total_amount, status, paidSoFar }.
+const bill = (id, total, status = 'Due', paidSoFar = 0) =>
+  ({ id, total_amount: total, status, paidSoFar });
+
+const plan = (receipt, bills) => {
+  const p = allocateReceipt(receipt, bills);
+  return { steps: p.steps, corrections: p.corrections, advance: p.advance };
+};
+
+// The case that was broken. 3,000 against a 5,000 bill used to be written with
+// bill_id NULL and left there; the bill went on reading its full 5,000 forever.
+check('partial: the money is LINKED to the bill it pays down',
+  plan(3000, [bill('B1', 5000)]).steps,
+  [{ billId: 'B1', amount: 3000, billStatus: 'Partially Paid' }]);
+
+check('partial: nothing becomes a floating advance',
+  plan(3000, [bill('B1', 5000)]).advance, 0);
+
+// The following month. This is what used to orphan the first 3,000 permanently.
+check('follow-up: only the 2,000 balance is taken, the rest is an advance',
+  plan(3000, [bill('B1', 5000, 'Partially Paid', 3000)]).steps,
+  [{ billId: 'B1', amount: 2000, billStatus: 'Paid' },
+   { billId: null, amount: 1000, billStatus: null }]);
+
+check('exact: clears the bill with no advance',
+  plan(5000, [bill('B1', 5000)]).steps,
+  [{ billId: 'B1', amount: 5000, billStatus: 'Paid' }]);
+
+// Oldest first, and it does not skip ahead to a smaller newer bill.
+check('cascade: oldest cleared, newest part-paid',
+  plan(9000, [bill('B1', 5000, 'Overdue'), bill('B2', 5000)]).steps,
+  [{ billId: 'B1', amount: 5000, billStatus: 'Paid' },
+   { billId: 'B2', amount: 4000, billStatus: 'Partially Paid' }]);
+
+check('oldest-first: a receipt too small for the oldest debt pays IT down, ' +
+      'rather than clearing a smaller newer bill',
+  plan(400, [bill('B1', 5000), bill('B2', 400)]).steps,
+  [{ billId: 'B1', amount: 400, billStatus: 'Partially Paid' }]);
+
+// A bill earlier payments already covered, whose status never caught up.
+check('stale: a covered bill is corrected, not paid a second time',
+  plan(5000, [bill('B1', 5000, 'Due', 5000), bill('B2', 5000)]),
+  { steps: [{ billId: 'B2', amount: 5000, billStatus: 'Paid' }],
+    corrections: ['B1'], advance: 0 });
+
+// The live system's dominant case today: 13 of 15 payments have no bill at all.
+check('no bills: the whole receipt is an advance',
+  plan(4700, []).steps, [{ billId: null, amount: 4700, billStatus: null }]);
+
+// Float drift. `payments_amount_check` is CHECK (amount > 0), so a sub-centavo
+// residue is a LEGAL row - it would be written, and it would be junk.
+check('dust: three odd bills clear exactly, leaving no residue row',
+  plan(1000.10, [bill('B1', 333.37), bill('B2', 333.37), bill('B3', 333.36)]),
+  { steps: [{ billId: 'B1', amount: 333.37, billStatus: 'Paid' },
+            { billId: 'B2', amount: 333.37, billStatus: 'Paid' },
+            { billId: 'B3', amount: 333.36, billStatus: 'Paid' }],
+    corrections: [], advance: 0 });
+
+check('dust: a sub-centavo receipt writes nothing at all',
+  plan(0.004, [bill('B1', 5000)]).steps, []);
+
+check('constraint: no step ever violates CHECK (amount > 0)',
+  [5000.001, 0.004, 1000.10, 3000, 9000, 4700]
+    .flatMap((r) => plan(r, [bill('B1', 5000), bill('B2', 333.37)]).steps)
+    .filter((s) => !(s.amount > 0)),
+  []);
+
+// Conservation. Every peso handed over is recorded exactly once - no more, no less.
+check('conservation: money in equals money recorded, to the centavo',
+  [[3000, [bill('B1', 5000)]],
+   [9000, [bill('B1', 5000), bill('B2', 5000)]],
+   [12345.67, [bill('B1', 4700, 'Due', 1200)]],
+   [4700, []],
+   [1000.10, [bill('B1', 333.37), bill('B2', 333.37), bill('B3', 333.36)]]]
+    .map(([receipt, bills]) => {
+      const recorded = plan(receipt, bills).steps.reduce((s, x) => s + x.amount, 0);
+      return Math.abs(recorded - receipt) < 0.005 ? null : { receipt, recorded };
+    })
+    .filter(Boolean),
+  []);
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

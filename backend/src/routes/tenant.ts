@@ -23,7 +23,7 @@ import { resolveTenantScope, isEmptyScope, assertRoomInScope } from '../services
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
-import { computeBillAmounts, computeBillPeriod, isOverdue } from '../services/billingService.js';
+import { computeBillAmounts, computeBillPeriod, isOverdue, toCentavos } from '../services/billingService.js';
 import { adyenService } from '../services/adyenService.js';
 import { notificationService } from '../services/notificationService.js';
 import { config } from '../config/env.js';
@@ -86,22 +86,95 @@ router.get(
  * that would make the stored column look maintained when it is not.
  */
 interface BillRow {
+  id?: string;
+  total_amount?: number | string | null;
   due_date: string;
   grace_period_end_date?: string | null;
   status: string;
   [key: string]: unknown;
 }
 
+type BillWithBalance<T> = T & {
+  effective_status: string;
+  amount_paid: number;
+  amount_outstanding: number;
+};
+
 async function withEffectiveStatus<T extends BillRow>(
   bills: T[]
-): Promise<(T & { effective_status: string })[]> {
+): Promise<BillWithBalance<T>[]> {
   const now = new Date();
+
+  /**
+   * BR-013 - the balance, alongside the status.
+   *
+   * A bill can now read 'Partially Paid', and a status with no balance beside it
+   * tells the tenant they still owe something without telling them how much: the
+   * bill's own `total_amount` is the debt as issued, not what is left of it.
+   * Both figures are derived on read from the payments actually linked to the
+   * bill, for the same reason `effective_status` is - a stored balance is wrong
+   * from the moment a payment lands until something recomputes it.
+   */
+  const ids = bills
+    .map((b) => b.id)
+    .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+  const paidByBill = new Map<string, number>();
+
+  if (ids.length > 0) {
+    const { data: paid, error: paidError } = await db
+      .from('payments')
+      .select('bill_id, amount')
+      .in('bill_id', ids)
+      .eq('verification_status', 'Verified');
+
+    // Not swallowed. Falling back to zero would report every bill as fully
+    // outstanding, which reads as a demand for money the tenant has already paid.
+    if (paidError) throw ApiError.internal(paidError.message);
+
+    for (const pmt of paid ?? []) {
+      const key = String((pmt as { bill_id: string | null }).bill_id);
+      paidByBill.set(key, (paidByBill.get(key) ?? 0) + Number((pmt as { amount: number }).amount));
+    }
+  }
+
   return Promise.all(
-    bills.map(async (b) => ({
-      ...b,
-      effective_status: (await isOverdue(b, now)) ? 'Overdue' : b.status,
-    }))
+    bills.map(async (b) => {
+      const amountPaid = toCentavos(paidByBill.get(String(b.id)) ?? 0);
+      const total = toCentavos(Number(b.total_amount ?? 0));
+      return {
+        ...b,
+        effective_status: (await isOverdue(b, now)) ? 'Overdue' : b.status,
+        amount_paid: amountPaid,
+        // Clamped at zero: an overpayment is an advance, not a negative debt.
+        amount_outstanding: toCentavos(Math.max(0, total - amountPaid)),
+      };
+    })
   );
+}
+
+/**
+ * What is still owed on a bill: its total, less every verified payment already
+ * linked to it. BR-013.
+ *
+ * A bill that is 'Partially Paid' has a total that is no longer what the tenant
+ * owes, and charging `total_amount` would take the settled portion a second
+ * time. Derived on read for the same reason the balance on `withEffectiveStatus`
+ * is - a stored figure is wrong from the moment a payment lands.
+ */
+async function outstandingOnBill(billId: string, totalAmount: number): Promise<number> {
+  const { data: paid, error } = await db
+    .from('payments')
+    .select('amount')
+    .eq('bill_id', billId)
+    .eq('verification_status', 'Verified');
+
+  // Not swallowed. A zero fallback would silently charge the full original
+  // amount, which is precisely the overcharge this function exists to prevent.
+  if (error) throw ApiError.internal(error.message);
+
+  const alreadyPaid = (paid ?? []).reduce((sum, p) => sum + Number((p as { amount: number }).amount), 0);
+  return toCentavos(Math.max(0, toCentavos(totalAmount) - toCentavos(alreadyPaid)));
 }
 
 /**
@@ -462,7 +535,15 @@ router.post(
         throw ApiError.conflict('This bill is already paid.');
       }
 
-      billTotalAmount = Number(bill.total_amount);
+      // The BALANCE, not the debt as issued - a partially paid bill would
+      // otherwise be charged in full a second time. BR-013.
+      billTotalAmount = await outstandingOnBill(bill.id, Number(bill.total_amount));
+
+      if (billTotalAmount <= 0) {
+        throw ApiError.conflict(
+          'This bill has already been paid in full. Nothing is outstanding on it.'
+        );
+      }
     } else {
       // Auto-resolve latest unpaid bill or create one for the occupied unit
       const { data: existingBills } = await db
@@ -474,7 +555,7 @@ router.post(
       const unpaid = existingBills?.find((b: any) => b.status !== 'Paid');
       if (unpaid) {
         targetBillId = unpaid.id;
-        billTotalAmount = Number(unpaid.total_amount);
+        billTotalAmount = await outstandingOnBill(unpaid.id, Number(unpaid.total_amount));
       } else {
         // Raise the current cycle's bill for the tenant's OWN active unit.
         //

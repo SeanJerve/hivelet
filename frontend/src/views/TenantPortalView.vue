@@ -166,7 +166,13 @@ async function fetchTenantData() {
         activeBillId.value = unpaidBill.id;
         currentRentAmount.value = Number(unpaidBill.rent_amount) || 0;
         currentWaterAmount.value = Number(unpaidBill.water_amount) || 0;
-        currentTotalDue.value = Number(unpaidBill.total_amount) || 0;
+        // The BALANCE, not the debt as issued. `remitAmount` below prefills the
+        // amount the tenant is about to hand over, so on a partially paid bill
+        // `total_amount` would ask them to pay the whole thing a second time.
+        // `amount_outstanding` is derived by the API from the payments actually
+        // linked to this bill. BR-013.
+        currentTotalDue.value =
+          Number((unpaidBill as any).amount_outstanding ?? unpaidBill.total_amount) || 0;
         remitAmount.value = currentTotalDue.value > 0 ? String(currentTotalDue.value) : '';
       } else {
         activeBillId.value = null;

@@ -104,6 +104,19 @@ onMounted(async () => {
   await Promise.all([fetchOutstandingBills(), fetchPaymentHistory()]);
 });
 
+/**
+ * What is still owed on a bill, as opposed to what it was issued for.
+ *
+ * The API derives `amount_outstanding` from the payments actually linked to the
+ * bill (BR-013). The fallback is the bill's own total, which is correct for any
+ * bill nothing has been paid against and is what every bill read before partial
+ * settlement existed.
+ */
+function billBalance(bill: any): number {
+  const outstanding = Number(bill?.amount_outstanding);
+  return Number.isFinite(outstanding) ? outstanding : Number(bill?.total_amount) || 0;
+}
+
 async function fetchOutstandingBills() {
   loadingBills.value = true;
   try {
@@ -205,19 +218,24 @@ function handleAdyenSuccess(refId: string) {
         <div class="space-y-1.5">
           <div class="flex items-center gap-2">
             <span class="badge-soft badge-warning font-bold text-xs">
-              OUTSTANDING INVOICE
+              {{ billBalance(bill) < Number(bill.total_amount) ? 'PARTIALLY PAID' : 'OUTSTANDING INVOICE' }}
             </span>
             <span class="text-xs text-muted-foreground">
               Due: <strong class="text-foreground">{{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}</strong>
             </span>
           </div>
+          <!-- The BALANCE, not the debt as issued. BR-013. -->
           <p class="text-2xl font-black tabular font-display text-foreground">
-            ₱{{ bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+            ₱{{ billBalance(bill).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
           </p>
           <p class="text-xs text-muted-foreground space-x-3">
             <span>Base Rent: <strong class="text-foreground tabular">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
             <span>·</span>
             <span>Water Fee: <strong class="text-foreground tabular">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
+            <template v-if="Number(bill.amount_paid) > 0">
+              <span>·</span>
+              <span>Already paid: <strong class="text-foreground tabular">₱{{ Number(bill.amount_paid).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong> of ₱{{ Number(bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            </template>
           </p>
         </div>
 

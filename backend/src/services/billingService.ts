@@ -39,7 +39,7 @@ export interface BillPeriod {
 }
 
 /** Rounds to two decimal places without floating-point drift on ordinary money values. */
-function toCentavos(value: number): number {
+export function toCentavos(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
@@ -173,4 +173,114 @@ export async function isOverdue(
   const boundary = bill.grace_period_end_date ?? bill.due_date;
   const cutoff = new Date(`${boundary}T23:59:59.999Z`);
   return asOf.getTime() > cutoff.getTime();
+}
+
+/* ========================================================================== *
+ * BR-013 — allocating a receipt against what a tenant actually owes
+ * ========================================================================== */
+
+/**
+ * Half a centavo.
+ *
+ * Money is NUMERIC in PostgreSQL but arrives in JavaScript as a float, so a
+ * chain of subtractions can leave a residue like 4.5e-13. `payments_amount_check`
+ * is `CHECK (amount > 0)`, which means such a residue is a perfectly *legal*
+ * payment row - it would be written, and it would be junk. Anything at or below
+ * this is treated as settled.
+ */
+export const MONEY_DUST = 0.005;
+
+export interface BillForAllocation {
+  id: string;
+  total_amount: number | string;
+  status: string;
+  /** Sum of every verified payment already linked to this bill. */
+  paidSoFar: number;
+}
+
+export interface AllocationStep {
+  /** `null` for the advance - money with no remaining debt to attach to. */
+  billId: string | null;
+  amount: number;
+  /** The status the bill carries once this step is written. `null` for an advance. */
+  billStatus: 'Paid' | 'Partially Paid' | null;
+}
+
+export interface AllocationPlan {
+  /** Payment rows to write, in order. */
+  steps: AllocationStep[];
+  /** Bills already covered by earlier payments whose stored status is stale. */
+  corrections: string[];
+  /** The portion with no debt left to attach to. Zero when fully consumed. */
+  advance: number;
+}
+
+/**
+ * Decides how one receipt is spread across a tenant's open bills.
+ *
+ * WHAT THIS REPLACED
+ * ------------------
+ * The settlement loop used to pay only the bills it could cover in FULL. The
+ * first bill it could not cover broke the loop, and the leftover was written
+ * with `bill_id = NULL`.
+ *
+ * That stranded the money. Nothing anywhere summed those unlinked rows back into
+ * a later settlement, so a tenant who paid 3,000 against a 5,000 bill had the
+ * 3,000 recorded, the bill still reading its full 5,000, and nothing connecting
+ * the two. The next month it happened again. The ledger was right about the cash
+ * and wrong about the debt, permanently, and nothing on screen said so.
+ *
+ * `'Partially Paid'` was in `bill_status_type` the whole time - written by
+ * nothing, read by nothing. BR-013 calls partial payment "an explicitly recorded
+ * exception"; there was no recording.
+ *
+ * WHAT IT DOES
+ * ------------
+ * Oldest bill first, each settled against its OUTSTANDING balance rather than
+ * its issued total. A bill that is not cleared is marked 'Partially Paid'. Money
+ * becomes an advance only once every open bill is settled, which is the one case
+ * where an unlinked payment row is the right record.
+ *
+ * Oldest-first, and it does NOT skip ahead: a receipt too small for the oldest
+ * debt pays down that debt rather than clearing a smaller newer one. Reordering
+ * would settle newer bills while an older one aged, which is the opposite of
+ * what a ledger should do.
+ *
+ * Pure arithmetic - no I/O, so the caller owns the reads, the writes and their
+ * failure handling. That is also what makes it directly testable, which for the
+ * one function in this system that decides where money goes is the point.
+ */
+export function allocateReceipt(
+  receiptAmount: number,
+  bills: BillForAllocation[]
+): AllocationPlan {
+  let remaining = toCentavos(receiptAmount);
+  const steps: AllocationStep[] = [];
+  const corrections: string[] = [];
+
+  for (const bill of bills) {
+    if (remaining <= MONEY_DUST) break;
+
+    const outstanding = toCentavos(Number(bill.total_amount) - toCentavos(bill.paidSoFar));
+
+    // Already covered by earlier payments but never re-statused. Correct it
+    // rather than spending this receipt on a debt that is gone.
+    if (outstanding <= MONEY_DUST) {
+      if (bill.status !== 'Paid') corrections.push(bill.id);
+      continue;
+    }
+
+    const applied = toCentavos(Math.min(remaining, outstanding));
+    steps.push({
+      billId: bill.id,
+      amount: applied,
+      billStatus: applied >= outstanding - MONEY_DUST ? 'Paid' : 'Partially Paid',
+    });
+    remaining = toCentavos(remaining - applied);
+  }
+
+  const advance = remaining > MONEY_DUST ? remaining : 0;
+  if (advance > 0) steps.push({ billId: null, amount: advance, billStatus: null });
+
+  return { steps, corrections, advance };
 }

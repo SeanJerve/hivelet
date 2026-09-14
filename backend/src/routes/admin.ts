@@ -26,7 +26,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
-import { computeWaterFee, isOverdue } from '../services/billingService.js';
+import { computeWaterFee, isOverdue, allocateReceipt } from '../services/billingService.js';
 import { money, occupantCount, isoDate, shortText } from '../utils/validators.js';
 
 const router = Router();
@@ -1302,72 +1302,141 @@ router.post(
     if (insertError) throw ApiError.internal(insertError.message);
 
     // Sync: if this is recorded for an active tenant assignment, check and update their bills
-    if (assign?.tenant_profile_id) {
-      let remainingPayment = Number(rentAmount || 0) + Number(calcWater || 0);
-      
-      const { data: unpaidBills } = await db
-        .from('bills')
-        .select('id, total_amount, status')
-        .eq('tenant_profile_id', assign.tenant_profile_id)
-        .in('status', ['Due', 'Overdue', 'Pending'])
-        .order('due_date', { ascending: true });
-
-      if (unpaidBills && unpaidBills.length > 0) {
-        for (const bill of unpaidBills) {
-          const billAmount = Number(bill.total_amount);
-          if (remainingPayment >= billAmount) {
-            // Update bill status to Paid
-            await db
-              .from('bills')
-              .update({ status: 'Paid', updated_at: new Date().toISOString() })
-              .eq('id', bill.id);
-
-            // Record a payment entry for the tenant to see in their payment history
-            await db.from('payments').insert({
-              bill_id: bill.id,
-              room_id: room.id,
-              tenant_profile_id: assign.tenant_profile_id,
-              amount: billAmount,
-              payment_method: normalizedMethod,
-              payment_source: 'On-Site Cash',
-              verification_status: 'Verified',
-              transaction_reference: transactionReference || `CASH-REC-${Math.floor(100000 + Math.random() * 900000)}`,
-              paid_at: new Date(datePaid).toISOString(),
-              verified_at: new Date().toISOString(),
-              verified_by: req.user!.profileId,
-            });
-
-            remainingPayment -= billAmount;
-          } else {
-            break;
-          }
-        }
-      }
-
-      // If there is still remaining payment or no bills were found, insert it as an unlinked payment
-      if (remainingPayment > 0) {
-        await db.from('payments').insert({
-          bill_id: null,
-          room_id: room.id,
-          tenant_profile_id: assign.tenant_profile_id,
-          amount: remainingPayment,
-          payment_method: normalizedMethod,
-          payment_source: 'On-Site Cash',
-          verification_status: 'Verified',
-          transaction_reference: transactionReference || `CASH-REC-${Math.floor(100000 + Math.random() * 900000)}`,
-          paid_at: new Date(datePaid).toISOString(),
-          verified_at: new Date().toISOString(),
-          verified_by: req.user!.profileId,
-        });
-      }
-    }
-
+    // Audited here rather than after settlement, so that a settlement failure
+    // below still leaves a record that this income row was created. It was, and
+    // it is kept.
     await auditFromRequest(req, {
       action: 'PAYMENT_RECORD',
       entityType: 'PAYMENT',
       entityId: newRecord.id,
       newValues: newRecord
     });
+
+    if (assign?.tenant_profile_id) {
+      /**
+       * BR-013 - apply this receipt to what the tenant actually owes.
+       *
+       * The decision of where the money goes is `allocateReceipt()` in
+       * billingService, which is pure arithmetic and directly tested by
+       * `npm run check:billing`. Everything here is the I/O around it: read the
+       * open bills, read what has already been paid against them, then write the
+       * plan it returns and check every write.
+       */
+      const { data: openBills, error: openBillsError } = await db
+        .from('bills')
+        .select('id, total_amount, status')
+        .eq('tenant_profile_id', assign.tenant_profile_id)
+        .in('status', ['Due', 'Overdue', 'Pending', 'Partially Paid'])
+        .order('due_date', { ascending: true });
+
+      if (openBillsError) {
+        throw ApiError.internal(
+          'The income record was saved and kept, but this tenant\'s bills could not be ' +
+            `read to settle against: ${openBillsError.message}. No bill was changed.`
+        );
+      }
+
+      // One query for every prior verified payment across all of these bills,
+      // rather than one query per bill inside the loop.
+      const billIds = (openBills ?? []).map((b) => String(b.id));
+      const paidByBill = new Map<string, number>();
+
+      if (billIds.length > 0) {
+        const { data: priorPayments, error: priorError } = await db
+          .from('payments')
+          .select('bill_id, amount')
+          .in('bill_id', billIds)
+          .eq('verification_status', 'Verified');
+
+        if (priorError) {
+          throw ApiError.internal(
+            'The income record was saved and kept, but prior payments could not be read, ' +
+              `so this receipt was not applied to any bill: ${priorError.message}`
+          );
+        }
+
+        for (const pmt of priorPayments ?? []) {
+          const key = String((pmt as { bill_id: string | null }).bill_id);
+          const amt = Number((pmt as { amount: number }).amount);
+          paidByBill.set(key, (paidByBill.get(key) ?? 0) + amt);
+        }
+      }
+
+      const plan = allocateReceipt(
+        Number(rentAmount || 0) + Number(calcWater || 0),
+        (openBills ?? []).map((b) => ({
+          id: String(b.id),
+          total_amount: b.total_amount,
+          status: String(b.status),
+          paidSoFar: paidByBill.get(String(b.id)) ?? 0,
+        }))
+      );
+
+      // The receipt number the administrator entered. This previously generated
+      // `CASH-REC-<6 random digits>` - a reference matching no document anyone
+      // holds. Several bills settled from one receipt now carry that receipt's
+      // number, which is what makes them traceable back to it.
+      const reference = transactionReference || invoiceNumber;
+
+      // Bills earlier payments already covered, whose stored status never caught up.
+      for (const billId of plan.corrections) {
+        const { error: fixError } = await db
+          .from('bills')
+          .update({ status: 'Paid', updated_at: new Date().toISOString() })
+          .eq('id', billId);
+
+        if (fixError) {
+          throw ApiError.internal(
+            `The income record was saved, but a bill already covered by earlier payments ` +
+              `could not be corrected to Paid: ${fixError.message}`
+          );
+        }
+      }
+
+      for (const step of plan.steps) {
+        // The payment row goes in FIRST, deliberately. If the status update then
+        // fails, the money is recorded against the debt and only the status is
+        // stale - visible, and recoverable by hand. The other order leaves a bill
+        // marked Paid with nothing recorded against it, which is the failure this
+        // project has already been bitten by once.
+        const { error: paymentError } = await db.from('payments').insert({
+          bill_id: step.billId,
+          room_id: room.id,
+          tenant_profile_id: assign.tenant_profile_id,
+          amount: step.amount,
+          payment_method: normalizedMethod,
+          payment_source: 'On-Site Cash',
+          verification_status: 'Verified',
+          transaction_reference: reference,
+          paid_at: new Date(datePaid).toISOString(),
+          verified_at: new Date().toISOString(),
+          verified_by: req.user!.profileId,
+        });
+
+        if (paymentError) {
+          throw ApiError.internal(
+            `The income record was saved, but ${step.amount.toFixed(2)} of it could not be ` +
+              `applied to this tenant's account: ${paymentError.message}. No bill was marked ` +
+              'paid by this step - check the tenant before recording anything else.'
+          );
+        }
+
+        if (step.billId === null || step.billStatus === null) continue;
+
+        const { error: billError } = await db
+          .from('bills')
+          .update({ status: step.billStatus, updated_at: new Date().toISOString() })
+          .eq('id', step.billId);
+
+        if (billError) {
+          throw ApiError.internal(
+            `${step.amount.toFixed(2)} was recorded against this bill, but its status could ` +
+              `not be updated: ${billError.message}. The money is not lost - the bill still ` +
+              'reads unpaid and needs correcting by hand.'
+          );
+        }
+      }
+    }
 
     res.status(201).json({ success: true, data: newRecord });
   })

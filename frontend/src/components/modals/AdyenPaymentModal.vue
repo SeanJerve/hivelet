@@ -9,7 +9,7 @@
   test payment methods, and submit verified transactions.
 -->
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { AdyenCheckout, Dropin } from '@adyen/adyen-web';
 import type { PaymentCompletedData, PaymentFailedData } from '@adyen/adyen-web';
 import '@adyen/adyen-web/styles/adyen.css';
@@ -30,10 +30,31 @@ const props = defineProps<{
     rent_amount: number;
     water_amount: number;
     total_amount: number;
+    /** Derived by the API from the payments linked to this bill. BR-013. */
+    amount_paid?: number;
+    amount_outstanding?: number;
     due_date: string;
     room_number?: string;
   };
 }>();
+
+/**
+ * The figure Adyen will actually charge.
+ *
+ * The server derives the charge from the bill's outstanding balance, not its
+ * total - a partially paid bill would otherwise be taken in full a second time.
+ * This mirrors that calculation so the amount shown here is the amount charged.
+ * Falls back to the total, which is correct for a bill nothing has been paid
+ * against.
+ */
+const amountDue = computed(() => {
+  const outstanding = Number(props.bill.amount_outstanding);
+  return Number.isFinite(outstanding) ? outstanding : Number(props.bill.total_amount) || 0;
+});
+
+const partiallySettled = computed(
+  () => Number(props.bill.amount_paid) > 0 && amountDue.value < Number(props.bill.total_amount)
+);
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -206,9 +227,16 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
           <span class="text-muted-foreground">Base Rent + Water Fee:</span>
           <span class="text-foreground">₱{{ props.bill.rent_amount.toLocaleString() }} + ₱{{ props.bill.water_amount.toLocaleString() }}</span>
         </div>
+        <div v-if="partiallySettled" class="flex justify-between items-center text-xs">
+          <span class="text-muted-foreground">Already paid on this bill:</span>
+          <span class="text-foreground tabular">
+            &minus;₱{{ Number(props.bill.amount_paid).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
+            <span class="text-muted-foreground">of ₱{{ Number(props.bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+          </span>
+        </div>
         <div class="flex justify-between items-center text-sm font-extrabold text-primary pt-1.5 border-t border-border">
-          <span>Total Remittance Due:</span>
-          <span class="tabular font-display text-base font-black">₱{{ props.bill.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+          <span>{{ partiallySettled ? 'Remaining Balance Due:' : 'Total Remittance Due:' }}</span>
+          <span class="tabular font-display text-base font-black">₱{{ amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
         </div>
       </div>
 

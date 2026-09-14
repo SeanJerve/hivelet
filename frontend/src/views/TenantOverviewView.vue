@@ -199,28 +199,35 @@ async function fetchTenantData() {
     });
 
     const unpaidBill = billsData?.find((b: any) => {
-      if (b.status === 'Paid') return false;
       // `effective_status` is the API's derived value - a bill past its due date
       // reads Overdue there even though the stored column still says Due.
-      const st = b.effective_status ?? b.status;
-      if (st === 'Pending' || st === 'Due' || st === 'Overdue') {
-        // If the bill due date is <= covered date, it is already settled by a payment
-        if (maxCoveredDate) {
-          const billDue = new Date(b.due_date);
-          if (billDue <= maxCoveredDate) {
-            return false;
-          }
+      //
+      // Anything not settled counts, INCLUDING 'Partially Paid'. This was a
+      // whitelist of Pending/Due/Overdue, which dropped a partially paid bill
+      // silently: the tenant saw nothing outstanding while still owing the
+      // balance. BR-013.
+      if (b.status === 'Paid') return false;
+      if ((b.effective_status ?? b.status) === 'Paid') return false;
+
+      // If the bill due date is <= covered date, it is already settled by a payment
+      if (maxCoveredDate) {
+        const billDue = new Date(b.due_date);
+        if (billDue <= maxCoveredDate) {
+          return false;
         }
-        return true;
       }
-      return false;
+      return true;
     });
 
     if (unpaidBill) {
       activeBillId.value = unpaidBill.id;
       tenantData.value.baseRent = unpaidBill.rent_amount;
       tenantData.value.waterFee = unpaidBill.water_amount;
-      tenantData.value.totalAmountDue = unpaidBill.total_amount;
+      // The BALANCE, not the debt as issued - they differ the moment a bill is
+      // partially paid. `amount_outstanding` is derived by the API from the
+      // payments actually linked to the bill. BR-013.
+      tenantData.value.totalAmountDue =
+        (unpaidBill as any).amount_outstanding ?? unpaidBill.total_amount;
       tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
       tenantData.value.dueDaysRemaining = 'Awaiting payment';
