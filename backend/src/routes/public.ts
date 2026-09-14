@@ -18,6 +18,7 @@ import { optionalAuth, requirePermission } from '../middleware/auth.js';
 import { PERMISSIONS } from '../config/rbac.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
+import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { getWaterRatePerOccupant, getLindaFixedWaterCharge } from '../services/settingsService.js';
 import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
@@ -206,12 +207,20 @@ router.post(
 
     // Seed the conversation thread so the administrator sees the original
     // message in context (System Bible Section 16).
-    await db.from('inquiry_messages').insert({
-      inquiry_id: data.id,
-      sender_id: req.user?.profileId ?? null,
-      sender_name: input.prospectName,
-      message_body: input.message,
-    });
+    //
+    // Logged rather than thrown: `inquiries.message` is NOT NULL and already
+    // holds this text, so a failure here costs the thread view, not the message.
+    // Throwing would show a prospect an error for an inquiry that was received
+    // and invite them to send it again.
+    warnIfWriteFailed(
+      await db.from('inquiry_messages').insert({
+        inquiry_id: data.id,
+        sender_id: req.user?.profileId ?? null,
+        sender_name: input.prospectName,
+        message_body: input.message,
+      }),
+      'Inquiry thread seed'
+    );
 
     await auditFromRequest(req, {
       action: 'INQUIRY_CREATE',

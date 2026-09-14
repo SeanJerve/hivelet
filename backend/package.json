@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "check:billing": "npm run build && node scripts/check-billing.mjs",
     "check:adyen": "npm run build && node scripts/check-adyen-hmac.mjs",
-    "check:api": "node scripts/check-api-contract.mjs"
+    "check:api": "node scripts/check-api-contract.mjs",
+    "check:writes": "node scripts/check-silent-writes.mjs"
   },
   "dependencies": {
     "@adyen/api-library": "^32.0.0",

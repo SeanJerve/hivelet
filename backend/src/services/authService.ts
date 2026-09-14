@@ -13,6 +13,7 @@ import jwt, { type SignOptions } from 'jsonwebtoken';
 import { db } from '../config/db.js';
 import { config } from '../config/env.js';
 import { ApiError } from '../utils/ApiError.js';
+import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import type { AuthUser, JwtPayload } from '../types/auth.js';
 import type { StoredRole } from '../config/rbac.js';
 
@@ -94,14 +95,18 @@ export async function login(
     throw ApiError.accountInactive();
   }
 
-  await db
-    .from('profiles')
-    .update({
-      last_login_at: new Date().toISOString(),
-      failed_login_count: 0,
-      locked_until: null,
-    })
-    .eq('id', data.id);
+  // Telemetry. A failure must not deny a login that has already succeeded.
+  warnIfWriteFailed(
+    await db
+      .from('profiles')
+      .update({
+        last_login_at: new Date().toISOString(),
+        failed_login_count: 0,
+        locked_until: null,
+      })
+      .eq('id', data.id),
+    'Login timestamp'
+  );
 
   const user: AuthUser = {
     profileId: data.id,
@@ -125,15 +130,23 @@ async function registerFailedAttempt(row: CredentialRow): Promise<void> {
   const failedCount = (row.failed_login_count ?? 0) + 1;
   const shouldLock = failedCount >= config.auth.maxFailedLogins;
 
-  await db
-    .from('profiles')
-    .update({
-      failed_login_count: failedCount,
-      locked_until: shouldLock
-        ? new Date(Date.now() + config.auth.lockoutMinutes * 60_000).toISOString()
-        : null,
-    })
-    .eq('id', row.id);
+  // Logged, not thrown: this runs inside the failed-login path, and turning it
+  // into a 500 would both break the "invalid credentials" response and hand a
+  // caller a way to tell a real account from a missing one. But it is NOT
+  // silent - if this write is failing, lockout never engages and the account is
+  // open to unlimited guessing, which is the one thing nobody would notice.
+  warnIfWriteFailed(
+    await db
+      .from('profiles')
+      .update({
+        failed_login_count: failedCount,
+        locked_until: shouldLock
+          ? new Date(Date.now() + config.auth.lockoutMinutes * 60_000).toISOString()
+          : null,
+      })
+      .eq('id', row.id),
+    'Failed-login counter - lockout will NOT engage while this is failing'
+  );
 }
 
 export function issueToken(user: AuthUser): string {
@@ -298,14 +311,20 @@ export async function changeOwnPassword(
 /** Best-effort login audit; never blocks or fails the login itself. */
 async function recordLoginAudit(user: AuthUser, ipAddress?: string): Promise<void> {
   try {
-    await db.from('audit_logs').insert({
-      actor_profile_id: user.profileId,
-      action: 'AUTH_LOGIN',
-      entity_type: 'PROFILE',
-      entity_id: user.profileId,
-      new_values: { role: user.role, email: user.email },
-      ip_address: ipAddress ?? null,
-    });
+    // The try/catch around this is deliberate and stays. The warn is new: the
+    // catch swallowed a rejected insert as well as a thrown one, so a broken
+    // login audit produced no signal anywhere.
+    warnIfWriteFailed(
+      await db.from('audit_logs').insert({
+        actor_profile_id: user.profileId,
+        action: 'AUTH_LOGIN',
+        entity_type: 'PROFILE',
+        entity_id: user.profileId,
+        new_values: { role: user.role, email: user.email },
+        ip_address: ipAddress ?? null,
+      }),
+      'Login audit'
+    );
   } catch {
     // Audit write failures must not deny a legitimate login.
   }

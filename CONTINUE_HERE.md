@@ -390,13 +390,14 @@ lockdown was never actually tested. That is exactly what a stale key looks like.
 cd backend  && npm run check:api        # 30 endpoint, RBAC and input checks
             npm run check:adyen       # 23 HMAC signature checks
             npm run check:billing     # water / grace / period / receipt-allocation arithmetic
+            npm run check:writes      # no database write discards its result
 cd frontend && npm run check:tokens     # design tokens resolve to the right colours
 cd ..       && npm run check:rules      # the BR register agrees with itself
             npm run check:secrets    # scans for committed credentials
             npm run backup            # snapshot the live database before risky work
 ```
 
-All of these passed at handoff: **30 / 23 / all / all / all / clean**.
+All of these passed at handoff: **30 / 23 / all / all / all / all / clean**.
 
 Two of them are worth knowing about before you run them:
 
@@ -527,6 +528,13 @@ In the order I would take them.
 | 3 | **Ask the owner one question (OD-07).** Does each expense category's running cumulative total reset at the start of a calendar year, or run indefinitely? | The only thing standing between **BR-046** and enforced. It decides whether the cumulative is a stored column or a computed window, so it is a schema decision — and answering it ourselves would be inventing the owner's accounting policy. |
 | 5 | **Service extraction.** 131 of 164 database calls still sit in route handlers; `admin.ts` is 2,263 lines. Six of the planned services still do not exist. | The architecture's stated target. Not required for the defense. |
 | 6 | Tell teammates the demo passwords changed, and have each create their own Supabase secret key. | Housekeeping from the credential rotation. |
+
+**Every database write must say what failure means.** supabase-js does not throw —
+every call resolves to `{ data, error }`, so a bare `await db.from(...).update(...)` is
+indistinguishable from success. A sweep found **23** of them; one left a *rejected*
+payment's bill still reading Paid, and one meant account lockout never engaged. Use
+`assertWritten` or `warnIfWriteFailed` (`src/utils/checkedWrite.ts`), or destructure
+`error` yourself. `npm run check:writes` fails the build if you don't.
 
 **Every multi-step write must be a database function.** supabase-js cannot open a
 transaction, so three migrations now exist for exactly this reason — `010` (expense

@@ -24,6 +24,7 @@ import {
 } from '../config/propertyAreas.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
+import { assertWritten, warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod } from '../services/billingService.js';
@@ -97,14 +98,18 @@ router.post(
     if (error) throw ApiError.internal(error.message);
 
     if (photo && photo.trim().length > 0) {
-      await db.from('room_photos').insert({
-        room_id: data.id,
-        file_url: photo,
-        caption: 'Room Primary Photo',
-        is_primary: true,
-        display_order: 0,
-        uploaded_by: req.user!.profileId,
-      });
+      assertWritten(
+        await db.from('room_photos').insert({
+          room_id: data.id,
+          file_url: photo,
+          caption: 'Room Primary Photo',
+          is_primary: true,
+          display_order: 0,
+          uploaded_by: req.user!.profileId,
+        }),
+        `Unit ${data.room_number} was created, but its photo could not be saved - ` +
+          'add it from the unit page rather than creating the unit again'
+      );
     }
 
     await auditFromRequest(req, {
@@ -170,26 +175,32 @@ router.patch(
         .eq('room_id', req.params.roomId);
 
       if (existingPhotos && existingPhotos.length > 0) {
-        await db
-          .from('room_photos')
-          .update({
-            file_url: photo,
-            caption: 'Room Primary Photo',
-            is_primary: true,
-            uploaded_by: req.user!.profileId,
-          })
-          .eq('id', existingPhotos[0].id);
+        assertWritten(
+          await db
+            .from('room_photos')
+            .update({
+              file_url: photo,
+              caption: 'Room Primary Photo',
+              is_primary: true,
+              uploaded_by: req.user!.profileId,
+            })
+            .eq('id', existingPhotos[0].id),
+          'The photo could not be replaced'
+        );
       } else {
-        await db
-          .from('room_photos')
-          .insert({
-            room_id: req.params.roomId,
-            file_url: photo,
-            caption: 'Room Primary Photo',
-            is_primary: true,
-            display_order: 0,
-            uploaded_by: req.user!.profileId,
-          });
+        assertWritten(
+          await db
+            .from('room_photos')
+            .insert({
+              room_id: req.params.roomId,
+              file_url: photo,
+              caption: 'Room Primary Photo',
+              is_primary: true,
+              display_order: 0,
+              uploaded_by: req.user!.profileId,
+            }),
+          'The photo could not be saved'
+        );
       }
     }
 
@@ -605,10 +616,13 @@ router.post(
       }
 
       // Update room status to Occupied
-      await db
-        .from('rooms')
-        .update({ operational_status: 'Occupied' })
-        .eq('id', room.id);
+      assertWritten(
+        await db
+          .from('rooms')
+          .update({ operational_status: 'Occupied' })
+          .eq('id', room.id),
+        `Unit ${roomNumber} was assigned, but its status could not be set to Occupied`
+      );
     }
 
     await auditFromRequest(req, {
@@ -697,12 +711,21 @@ router.patch(
         .eq('tenant_profile_id', req.params.profileId)
         .eq('is_active', true);
 
-      // Deactivate old assignments
-      await db
-        .from('room_assignments')
-        .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
-        .eq('tenant_profile_id', req.params.profileId)
-        .eq('is_active', true);
+      // Deactivate old assignments.
+      //
+      // Silently skipping this used to leave the previous tenancy active. The
+      // tenant then occupied two units at once in every occupancy figure, and
+      // the next assignment to the old unit failed on
+      // `idx_single_active_assignment_per_room` - a unique violation surfacing
+      // much later, nowhere near the cause.
+      assertWritten(
+        await db
+          .from('room_assignments')
+          .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
+          .eq('tenant_profile_id', req.params.profileId)
+          .eq('is_active', true),
+        'The previous tenancy could not be closed'
+      );
 
       // If old room is now empty, set operational_status to Available
       if (oldActive && oldActive.length > 0) {
@@ -713,7 +736,10 @@ router.patch(
             .eq('room_id', old.room_id)
             .eq('is_active', true);
           if (!count || count === 0) {
-            await db.from('rooms').update({ operational_status: 'Available' }).eq('id', old.room_id);
+            assertWritten(
+              await db.from('rooms').update({ operational_status: 'Available' }).eq('id', old.room_id),
+              'The vacated unit could not be marked Available'
+            );
           }
         }
       }
@@ -741,10 +767,13 @@ router.patch(
               const prof: any = a.profiles;
               if (prof?.account_status === 'inactive') {
                 // Stale assignment from inactive tenant, safely deactivate it
-                await db
-                  .from('room_assignments')
-                  .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
-                  .eq('id', a.id);
+                assertWritten(
+                  await db
+                    .from('room_assignments')
+                    .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
+                    .eq('id', a.id),
+                  `Unit ${roomNumber.toUpperCase()} still holds a stale tenancy that could not be closed`
+                );
               } else {
                 throw ApiError.badRequest(`Unit ${roomNumber.toUpperCase()} is already occupied by active tenant ${prof?.full_name || 'another resident'}.`);
               }
@@ -775,18 +804,26 @@ router.patch(
 
         if (assignError) throw ApiError.internal(assignError.message);
 
-        await db
-          .from('rooms')
-          .update({ operational_status: 'Occupied' })
-          .eq('id', room.id);
+        assertWritten(
+          await db
+            .from('rooms')
+            .update({ operational_status: 'Occupied' })
+            .eq('id', room.id),
+          'The tenancy was moved, but the new unit could not be marked Occupied'
+        );
       }
     } else if (explicitOccupants !== undefined) {
-      // Room number did not change, but occupant count was updated directly
-      await db
-        .from('room_assignments')
-        .update({ occupant_count: explicitOccupants })
-        .eq('tenant_profile_id', req.params.profileId)
-        .eq('is_active', true);
+      // Room number did not change, but occupant count was updated directly.
+      // The water charge is occupants x rate (BR-014), so a silently dropped
+      // change here bills the tenant on the old headcount indefinitely.
+      assertWritten(
+        await db
+          .from('room_assignments')
+          .update({ occupant_count: explicitOccupants })
+          .eq('tenant_profile_id', req.params.profileId)
+          .eq('is_active', true),
+        'The occupant count could not be updated'
+      );
     }
 
     await auditFromRequest(req, {
@@ -878,17 +915,28 @@ router.post(
       .eq('tenant_profile_id', req.params.profileId)
       .eq('is_active', true);
 
-    // Deactivate assignments
-    await db
-      .from('room_assignments')
-      .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
-      .eq('tenant_profile_id', req.params.profileId)
-      .eq('is_active', true);
+    // Deactivate assignments.
+    //
+    // BR-025. This is the departure path. Discarding the result meant the tenant
+    // could be marked inactive while still holding an active tenancy: the unit
+    // never frees, it keeps counting as occupied, and the next assignment to it
+    // fails on `idx_single_active_assignment_per_room` long afterwards.
+    assertWritten(
+      await db
+        .from('room_assignments')
+        .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
+        .eq('tenant_profile_id', req.params.profileId)
+        .eq('is_active', true),
+      'The tenancy could not be closed, so this unit is still recorded as occupied'
+    );
 
     // Free rooms
     if (activeAssignments && activeAssignments.length > 0) {
       for (const a of activeAssignments) {
-        await db.from('rooms').update({ operational_status: 'Available' }).eq('id', a.room_id);
+        assertWritten(
+          await db.from('rooms').update({ operational_status: 'Available' }).eq('id', a.room_id),
+          'The tenancy was closed, but the unit could not be marked Available'
+        );
       }
     }
 
@@ -1223,33 +1271,48 @@ router.patch(
         .single();
       after = settled;
 
-      // Notify the tenant that their payment is settled
-      await db.from('notifications').insert({
+      // Secondary to a settlement that has already committed, so a failure is
+      // logged rather than thrown - throwing would report a successful payment
+      // as an error and invite the administrator to record it twice.
+      warnIfWriteFailed(
+        await db.from('notifications').insert({
         recipient_profile_id: before.tenant_profile_id,
         title: 'Online Payment Verified',
         message: `Your online payment of ₱${before.amount.toLocaleString()} (Ref: ${before.transaction_reference}) has been verified and settled by the administrator.`,
-        type: 'Payment',
-        priority: 'Low',
-        is_read: false,
-      });
+          type: 'Payment',
+          priority: 'Low',
+          is_read: false,
+        }),
+        'Settlement notification'
+      );
     } else if (isRejected) {
-      // Revert bill status to 'Due' if it was linked
+      // Revert bill status to 'Due' if it was linked.
+      //
+      // This runs when an administrator REJECTS a payment. Discarding the result
+      // meant a declined payment could leave its bill still reading Paid - the
+      // money was not collected, the debt was closed, and nobody would chase it,
+      // because as far as the system was concerned there was nothing to chase.
       if (before.bill_id) {
-        await db
-          .from('bills')
-          .update({ status: 'Due', updated_at: new Date().toISOString() })
-          .eq('id', before.bill_id);
+        assertWritten(
+          await db
+            .from('bills')
+            .update({ status: 'Due', updated_at: new Date().toISOString() })
+            .eq('id', before.bill_id),
+          'The payment was rejected, but its bill could not be reopened and may still read Paid'
+        );
       }
 
-      // Notify tenant of rejection
-      await db.from('notifications').insert({
+      warnIfWriteFailed(
+        await db.from('notifications').insert({
         recipient_profile_id: before.tenant_profile_id,
         title: 'Payment Verification Declined',
         message: `Your online payment submission (Ref: ${before.transaction_reference || 'N/A'}) was declined. Please contact the administrator.`,
-        type: 'Payment',
-        priority: 'High',
-        is_read: false,
-      });
+          type: 'Payment',
+          priority: 'High',
+          is_read: false,
+        }),
+        'Rejection notification'
+      );
     }
 
     await auditFromRequest(req, {
@@ -2155,7 +2218,10 @@ router.post(
     if (error) throw ApiError.internal(error.message);
 
     if (roomId && (parsed.data.setRoomMaintenance || parsed.data.priority === 'Emergency')) {
-      await db.from('rooms').update({ operational_status: 'Under Maintenance' }).eq('id', roomId);
+      assertWritten(
+        await db.from('rooms').update({ operational_status: 'Under Maintenance' }).eq('id', roomId),
+        'The ticket was raised, but the unit could not be marked Under Maintenance'
+      );
     }
 
     await auditFromRequest(req, {
@@ -2259,7 +2325,10 @@ router.patch(
           .maybeSingle();
 
         const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
-        await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', targetRoomId);
+        assertWritten(
+          await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', targetRoomId),
+          `The ticket was updated, but the unit could not be returned to ${newRoomStatus}`
+        );
       }
     }
 
@@ -2332,7 +2401,10 @@ router.patch(
           .maybeSingle();
 
         const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
-        await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id);
+        assertWritten(
+          await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id),
+          `The ticket was updated, but the unit could not be returned to ${newRoomStatus}`
+        );
       }
     }
 
@@ -2391,7 +2463,10 @@ router.delete(
           .maybeSingle();
 
         const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
-        await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id);
+        assertWritten(
+          await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id),
+          `The ticket was updated, but the unit could not be returned to ${newRoomStatus}`
+        );
       }
     }
 

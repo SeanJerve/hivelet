@@ -42,6 +42,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { db } from '../config/db.js';
 import { config } from '../config/env.js';
 import { ApiError } from '../utils/ApiError.js';
+import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { recordAudit } from './auditService.js';
 import { computeBillAmounts, computeBillPeriod } from './billingService.js';
 import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
@@ -341,14 +342,19 @@ export const adyenService = {
       .limit(1);
 
     if (admins && admins.length > 0) {
-      await db.from('notifications').insert({
+      // Secondary to a payment that has already been recorded. A lost
+      // notification must not turn a successful payment into an error.
+      warnIfWriteFailed(
+        await db.from('notifications').insert({
         recipient_profile_id: admins[0].id,
         title: 'New Online GCash Payment',
         message: `Tenant has submitted payment of ₱${session.amount.toLocaleString()} for verification (Ref: ${transactionReference}).`,
-        type: 'Payment',
-        priority: 'Medium',
-        is_read: false
-      });
+          type: 'Payment',
+          priority: 'Medium',
+          is_read: false
+        }),
+        'New-payment notification to the administrator'
+      );
     }
 
     checkoutSessions.delete(sessionId);
