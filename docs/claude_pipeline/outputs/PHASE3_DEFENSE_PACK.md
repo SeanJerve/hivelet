@@ -18,20 +18,28 @@ Bicol University College of Science | Capstone Project 2 | Group 4
 
 ## Slide assets
 
-All rendered at 3x into `docs/diagrams/rendered/` — drop the PNGs straight into slides.
+Every diagram is in `docs/diagrams/rendered/` in **both** formats — `.svg` and `.png`.
 
-**Prefer SVG over PNG where your tool allows it.** The `.png` files soften when scaled up on a
-projector; SVG stays sharp at any size. Paste-ready Mermaid source for every diagram — themed,
-copy and go — is in **`docs/diagrams/DIAGRAM_SOURCE.md`**, for mermaid.live, Mermaid Chart or
-Mermaid AI. If you regenerate a diagram there, paste the result back into the matching `.mmd`
-file so the repository stays the source of truth.
+**Use the SVG on camera.** It stays sharp at any zoom, which matters because a viewer of a
+video cannot lean into the screen the way a panelist can lean into a slide. The PNGs are
+there for tools that will not accept SVG; they are 3,900–5,400 px wide so they hold up, but
+they soften past that. *(They were previously exported at roughly 800 px, which is why they
+looked blurry — that is fixed.)*
+
+There is a one-page map of every document and image, section by section, in
+**`docs/PRESENTATION_INDEX.md`**. Keep that open while recording.
+
+Paste-ready Mermaid source for every diagram — themed, copy and go — is in
+**`docs/diagrams/DIAGRAM_SOURCE.md`**, for mermaid.live, Mermaid Chart or Mermaid AI. If you
+regenerate a diagram there, paste the result back into the matching `.mmd` file so the
+repository stays the source of truth.
 
 | Section | Use on screen | File |
 | :-- | :--- | :--- |
-| 3 | **Architecture, defense view** — five tiers left-to-right, adapter and gate highlighted | `hivelet_architecture_defense.png` |
+| 3 | **Architecture, defense view** — five tiers left-to-right, adapter and gate highlighted | `hivelet_architecture_defense.svg` |
 | 3 | *Backup:* architecture, full component map | `hivelet_architecture.png` |
-| 4 | **ERD overview** — 12 entities, cardinalities and delete policies, no attribute clutter | `hivelet_erd_defense_overview.png` |
-| 4 | **PAYMENTS close-up** — the four changes D-1…D-4, large type | `hivelet_erd_defense_payments.png` |
+| 4 | **ERD overview** — 12 entities, cardinalities and delete policies, no attribute clutter | `hivelet_erd_defense_overview.svg` |
+| 4 | **PAYMENTS close-up** — the four changes D-1…D-4, large type | `hivelet_erd_defense_payments.svg` |
 | 4 | *Backup:* ERD defense view with attributes; full 21-table ERD | `hivelet_erd_defense.png`, `hivelet_erd.png` |
 | 5 | Level 0 context, then Level 1 | `hivelet_dfd_context.png`, `hivelet_dfd_level1.png` |
 | 5 | *Optional:* payment sequence | `hivelet_sequence_payment.png` |
@@ -42,12 +50,12 @@ file so the repository stays the source of truth.
 seven-entity version puts nine attribute rows on screen at once — at 16:9 the type is too
 small to read, and a viewer cannot zoom a video the way a panelist can lean into a slide.
 
-So: open on **`hivelet_erd_defense_overview.png`** while you say what the schema *is* — 21
+So: open on **`hivelet_erd_defense_overview.svg`** while you say what the schema *is* — 21
 tables, the delete policy, where money lives. Then cut to
-**`hivelet_erd_defense_payments.png`** and stay there for the rest of the section. That
+**`hivelet_erd_defense_payments.svg`** and stay there for the rest of the section. That
 second image is where D-1 through D-4 are legible, and it is what you talk over.
 
-The same applies to Section 3: `hivelet_architecture_defense.png` is built wide and shallow
+The same applies to Section 3: `hivelet_architecture_defense.svg` is built wide and shallow
 specifically so it fills a 16:9 frame. **Do not use the full architecture map on camera** —
 it is a reference document, not a slide.
 
@@ -98,7 +106,7 @@ recommendation we were given, and we treated the second half of it as an archite
 
 ## §3 — Finalized architecture  ·  ~2 min  ·  **GRADED CORE**
 
-**Slide:** `hivelet_architecture_defense.png`
+**Slide:** `hivelet_architecture_defense.svg`
 
 > "Our pattern is a **Layered Client–Server Architecture Structured as a Modular Monolith with a
 > Pluggable Payment Gateway Adapter**. Five tiers.
