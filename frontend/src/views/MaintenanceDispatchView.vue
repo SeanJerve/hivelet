@@ -240,10 +240,27 @@ async function handleSaveEditTicket() {
 
 async function handleQuickDispatch() {
   if (!editingTicket.value) return;
-  editStatus.value = 'In Progress';
+
+  /**
+   * This used to auto-assign `TECHNICIANS[1]` - "Mang Ruel (Plumbing)" - to any
+   * unassigned ticket it dispatched, whatever the ticket was about. An
+   * electrical fault got the plumber, and the name was written to
+   * `maintenance_tickets.assigned_technician`, which is a real column on a real
+   * record.
+   *
+   * Dispatching is the administrator saying who is going. The system guessing on
+   * her behalf produces a record that reads like a decision she made.
+   */
   if (editTech.value === 'Unassigned') {
-    editTech.value = TECHNICIANS[1];
+    showToast(
+      'error',
+      'Choose a technician first',
+      'Pick who is attending this ticket before dispatching it.'
+    );
+    return;
   }
+
+  editStatus.value = 'In Progress';
   await handleSaveEditTicket();
 }
 

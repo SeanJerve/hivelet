@@ -246,6 +246,18 @@ export const EXPENSE_CATEGORIES = [
   "10 — Others",
 ];
 
+/**
+ * PLACEHOLDER NAMES. The owner has not supplied her tradespeople.
+ *
+ * These are written to `maintenance_tickets.assigned_technician` on a real
+ * record when a ticket is dispatched, so they are not cosmetic - a ticket
+ * history will say "Mang Ruel (Plumbing)" attended, and no such person is known
+ * to this project. "Aircon Pro Tanauan" is not even in the right province.
+ *
+ * Replace with the real list before the system is used in earnest. Until then
+ * the dispatch flow requires the administrator to pick one deliberately rather
+ * than defaulting to any of them, so nothing is attributed by accident.
+ */
 export const TECHNICIANS = [
   "Unassigned",
   "Mang Ruel (Plumbing)",
@@ -254,47 +266,31 @@ export const TECHNICIANS = [
   "Aircon Pro Tanauan",
 ];
 
-export const DEMO_TENANT = {
-  name: "Samantha Cruz",
-  unit: "1A",
-  unitLabel: "Room 1A — Floor 1, Studio Type Apartment",
-  phone: "0928-311-2839",
-  email: "samantha.1a@gmail.com",
-  occupation: "BPO Team Lead",
-  facebook: "facebook.com/samanthacruz",
-  emergencyName: "Joyce Mangubat",
-  emergencyPhone: "0928-829-2422",
-  moveIn: "Jan 5, 2023",
-  deposit: 9000,
-  occupants: 2,
-  capacity: 3,
-  rent: 4500,
-  water: 400,
-  dueDate: "August 5, 2026",
-  amountDue: 4900,
-  photo: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=70",
-  fixtures: [
-    "Private tiled bathroom with heater outlet",
-    "Built-in wardrobe and study desk",
-    "Ceiling fan + provision for window-type aircon",
-    "Submetered electricity (₱12.50 / kWh, read every 25th)",
-    "Shared laundry area access, 6:00 AM – 9:00 PM",
-    "Fiber Wi-Fi ready (own subscription allowed)",
-  ],
-};
+/**
+ * DEMO_TENANT and PAYMENT_HISTORY were removed on 2026-09-14.
+ *
+ * Both were fabricated data with no remaining reader. DEMO_TENANT described an
+ * invented resident - "Samantha Cruz", an emergency contact named "Joyce
+ * Mangubat" with a plausible mobile number, a 9,000 deposit and a stock photo.
+ * PAYMENT_HISTORY held four invented receipts numbered OR-2026-1032 and up,
+ * marked Verified.
+ *
+ * PAYMENT_HISTORY had already been unwired from the tenant portal earlier in
+ * this audit; DEMO_TENANT was read by nothing at all. They are deleted rather
+ * than left dormant because this project has now been bitten three times by
+ * invented data reaching a real screen - the OR numbers, the emergency contacts,
+ * and the ticket replies signed in the owner's name. A realistic-looking
+ * fixture sitting one import away from a view is how that keeps happening.
+ *
+ * Demo credentials live in credentials/creds.txt against real seeded accounts.
+ */
 
-export const PAYMENT_HISTORY = [
-  { or: "OR-2026-1032", date: "Jul 03, 2026", period: "Jun.26 – Jul.25", amount: 4900, method: "GCash", status: "Verified" },
-  { or: "OR-2026-0981", date: "Jun 04, 2026", period: "May.26 – Jun.25", amount: 4900, method: "GCash", status: "Verified" },
-  { or: "OR-2026-0930", date: "May 02, 2026", period: "Apr.26 – May.25", amount: 4700, method: "Cash", status: "Verified" },
-  { or: "OR-2026-0888", date: "Apr 05, 2026", period: "Mar.26 – Apr.25", amount: 4700, method: "GCash", status: "Verified" },
-];
+
 
 export const LANDLADY = {
   name: "Fe Galang Da Silva",
   gcash: "09494150382",
   phone: "09494150382",
-  facebook: "https://www.facebook.com/michelle.millete.16",
   property: "Fe Galang Da Silva Boarding House",
   address: "32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
 };
