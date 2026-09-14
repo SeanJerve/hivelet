@@ -2,8 +2,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
-import { api } from '@/lib/api';
-import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
+import { api, API_BASE, getStoredToken } from '@/lib/api';
+import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
@@ -43,6 +43,45 @@ const dbCategories = ref<ApiCat[]>([]);
 // Filter selectors
 const filterMonth = ref('All');
 const filterYear = ref('All');
+
+/**
+ * The Monthly Expenses Report as a real spreadsheet. BR-049.
+ *
+ * The CSV beside this one is a flat dump. This is her layout: a month block per
+ * month, the Property Area columns totalled at the bottom, the category summary
+ * down the right with a running cumulative, and a line stating whether the two
+ * sides reconcile - which is BR-047, and the check she does by eye today.
+ *
+ * Fetched rather than linked, because the endpoint needs the bearer token.
+ */
+const isExportingExcel = ref(false);
+
+async function exportExpensesExcel() {
+  if (isExportingExcel.value) return;
+  isExportingExcel.value = true;
+  // A per-year report, so "All Years" falls back to this year rather than
+  // silently exporting one of them.
+  const year = filterYear.value !== 'All' ? filterYear.value : String(new Date().getFullYear());
+  try {
+    const res = await fetch(`${API_BASE}/admin/reports/expenses.xlsx?year=${year}`, {
+      headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
+    });
+    if (!res.ok) throw new Error(`The report could not be generated (HTTP ${res.status}).`);
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hivelet-expenses-${year}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('success', 'Report downloaded', `Monthly Expenses Report for ${year}.`);
+  } catch (err: any) {
+    showToast('error', 'Export failed', err?.message || 'The report could not be generated.');
+  } finally {
+    isExportingExcel.value = false;
+  }
+}
 
 const monthsList = [
   { val: 'All', label: 'All Months' },
@@ -616,7 +655,17 @@ function exportFilteredExpenses() {
           title="Export CSV"
         >
           <Download class="size-3.5 text-muted-foreground" />
-          <span>Export Excel CSV</span>
+          <span>Export CSV</span>
+        </button>
+
+        <button
+          @click="exportExpensesExcel"
+          :disabled="isExportingExcel"
+          class="btn-secondary"
+          title="The full Monthly Expenses Report layout — month blocks, Property Area totals, and the category summary with its running cumulative"
+        >
+          <FileSpreadsheet :class="['size-3.5 text-muted-foreground', isExportingExcel ? 'animate-pulse' : '']" />
+          <span>{{ isExportingExcel ? 'Building…' : 'Export Excel (.xlsx)' }}</span>
         </button>
 
         <button 

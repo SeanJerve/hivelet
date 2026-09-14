@@ -281,6 +281,31 @@ if (adminToken) {
   const gated = noToken.status === 401 || noToken.status === 403;
   gated ? pass++ : (fail++, failures.push(`income.xlsx reachable with no token -> ${noToken.status}`));
   console.log(`  ${gated ? 'OK  ' : 'FAIL'} ${noToken.status}  refused with no token`);
+
+  // The expense side, same three properties.
+  const er = await fetch(`${BASE}/admin/reports/expenses.xlsx?year=${thisYear}`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+  const ebuf = Buffer.from(await er.arrayBuffer());
+  const eok =
+    er.status === 200 &&
+    ebuf[0] === 0x50 && ebuf[1] === 0x4b &&
+    (er.headers.get('content-type') || '').includes('spreadsheetml') &&
+    ebuf.length > 1000;
+  eok ? pass++ : (fail++, failures.push(`expenses.xlsx: status ${er.status}, ${ebuf.length} bytes`));
+  console.log(`  ${eok ? 'OK  ' : 'FAIL'} ${er.status}  expenses.xlsx is a real workbook (${ebuf.length} bytes)`);
+
+  const eBad = await fetch(`${BASE}/admin/reports/expenses.xlsx?year=1999`, {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+  const eRefused = eBad.status === 422;
+  eRefused ? pass++ : (fail++, failures.push(`expenses.xlsx?year=1999 -> ${eBad.status}`));
+  console.log(`  ${eRefused ? 'OK  ' : 'FAIL'} ${eBad.status}  expenses year=1999 refused`);
+
+  const eNoToken = await fetch(`${BASE}/admin/reports/expenses.xlsx?year=${thisYear}`);
+  const eGated = eNoToken.status === 401 || eNoToken.status === 403;
+  eGated ? pass++ : (fail++, failures.push(`expenses.xlsx reachable with no token -> ${eNoToken.status}`));
+  console.log(`  ${eGated ? 'OK  ' : 'FAIL'} ${eNoToken.status}  expenses refused with no token`);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

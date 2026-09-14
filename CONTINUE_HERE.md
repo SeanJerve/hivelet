@@ -387,7 +387,7 @@ lockdown was never actually tested. That is exactly what a stale key looks like.
 ## 2. Verification suites — run these before trusting anything
 
 ```bash
-cd backend  && npm run check:api        # 46 endpoint, RBAC, perimeter and input checks
+cd backend  && npm run check:api        # 53 endpoint, RBAC, perimeter, export and input checks
             npm run check:adyen       # 23 HMAC signature checks
             npm run check:billing     # water / grace / period / receipt-allocation arithmetic
             npm run check:writes      # no database write discards its result
@@ -397,7 +397,7 @@ cd ..       && npm run check:rules      # the BR register agrees with itself
             npm run backup            # snapshot the live database before risky work
 ```
 
-All of these passed at handoff: **46 / 23 / all / all / all / all / clean**.
+All of these passed at handoff: **53 / 23 / all / all / all / all / clean**.
 
 Two of them are worth knowing about before you run them:
 
@@ -468,7 +468,7 @@ Ten commits. The ones that matter:
   read. Nothing can go stale.
 - **BR-046 is the one that genuinely waits on the owner** — see §4.
 
-**49 rules: 41 enforced, 5 partial, 2 schema only, 1 not enforced, 0 violated.**
+**49 rules: 42 enforced, 4 partial, 2 schema only, 1 not enforced, 0 violated.**
 
 Four more rules moved after the four above, and for the same reason each time: the
 evidence in the register cited `FULL_DATABASE_SCHEMA.sql`, which does not describe

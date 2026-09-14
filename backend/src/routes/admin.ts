@@ -29,6 +29,7 @@ import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
+import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
 import { money, occupantCount, isoDate, shortText, uuid } from '../utils/validators.js';
 
 const router = Router();
@@ -1406,6 +1407,44 @@ router.get(
       entityType: 'INCOME_RECORD',
       entityId: String(year),
       newValues: { export: 'xlsx', year },
+    });
+
+    await workbook.xlsx.write(res);
+    res.end();
+  })
+);
+
+/**
+ * GET /api/admin/reports/expenses.xlsx?year=YYYY
+ *
+ * BR-049 / FR-044 - the other half. `docs/10_MONTHLY_EXPENSES_REPORT.md` describes
+ * a month block with two totals systems side by side: Property Area columns
+ * summed at the bottom, and a category summary down the right with a "this month"
+ * figure and a running cumulative. The sheet prints both and states whether they
+ * reconcile, which is **BR-047** and is what the owner checks by eye today.
+ */
+router.get(
+  '/admin/reports/expenses.xlsx',
+  requirePermission(PERMISSIONS.EXPENSE_LEDGER_READ),
+  asyncHandler(async (req, res) => {
+    const year = Number(req.query.year ?? new Date().getFullYear());
+
+    const workbook = await buildExpenseReportWorkbook(year);
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="hivelet-expenses-${year}.xlsx"`
+    );
+
+    await auditFromRequest(req, {
+      action: 'LEDGER_EXPORT',
+      entityType: 'EXPENSE_ENTRY',
+      entityId: String(year),
+      newValues: { export: 'xlsx', ledger: 'expenses', year },
     });
 
     await workbook.xlsx.write(res);
