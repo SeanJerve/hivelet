@@ -1658,7 +1658,12 @@ const expenseAllocationSchema = z.object({
     .refine((a): a is PropertyArea => a !== null, {
       message: `Property area must be one of: ${PROPERTY_AREAS.join(', ')}`
     }),
-  amount: z.number().min(0)
+  // `money`, not `z.number().min(0)`. Zod's `z.number()` rejects NaN but ACCEPTS
+  // Infinity, and PostgreSQL sorts Infinity above every numeric - it would pass
+  // the column's CHECK, poison the entry's derived total, and make every SUM
+  // over the expense ledger return Infinity from that row onward. The PATCH
+  // route below already used the shared `.finite()` primitive; this one did not.
+  amount: money
 });
 
 const expenseEntrySchema = z.object({
@@ -1683,40 +1688,49 @@ router.post(
 
     const { expenseDate, orSupplier, categoryCode, allocations } = parsed.data;
 
-    const totalExpenses = allocations.reduce((acc, curr) => acc + curr.amount, 0);
+    /**
+     * Atomic - migration 019. BR-047.
+     *
+     * This was two unrelated round trips: insert the entry with a total computed
+     * here, then insert the allocations. If the second failed - a bad area, the
+     * foreign key migration 008 added, a duplicate (entry, area) pair - the first
+     * had already committed, leaving an entry carrying a real total with NOTHING
+     * underneath it. That is exactly the imbalance BR-047 forbids: the category
+     * side of the month gains an amount the Property Area side never sees, and
+     * nothing in the application would ever notice. The caller saw the error; the
+     * orphaned row stayed behind regardless.
+     *
+     * `total_expenses` is no longer sent. It is derived inside the transaction
+     * from the allocation rows themselves, so the stored figure and the rows
+     * beneath it are one assertion instead of two that happen to agree.
+     *
+     * Migration 010 gave the UPDATE path this treatment. This is the create path.
+     */
+    const { data: created, error: createError } = await db.rpc(
+      'create_expense_entry_with_allocations',
+      {
+        p_expense_date: expenseDate,
+        p_or_supplier: orSupplier,
+        p_category_code: categoryCode,
+        p_allocations: allocations.map((a) => ({
+          property_area: a.propertyArea,
+          amount: a.amount
+        })),
+        p_created_by: req.user!.profileId
+      }
+    );
 
-    // Insert main entry
-    const { data: entry, error: entryError } = await db
-      .from('monthly_expense_entries')
-      .insert({
-        expense_date: expenseDate,
-        or_supplier: orSupplier,
-        category_code: categoryCode,
-        total_expenses: totalExpenses,
-        created_by: req.user!.profileId
-      })
-      .select('*')
-      .single();
+    if (createError) throw ApiError.internal(createError.message);
+    if (!created) {
+      throw ApiError.internal('The expense entry was not created and nothing was written.');
+    }
 
-    if (entryError) throw ApiError.internal(entryError.message);
-
-    // Insert allocations
-    const allocationInserts = allocations.map(a => ({
-      expense_entry_id: entry.id,
-      property_area: a.propertyArea,
-      amount: a.amount
-    }));
-
-    const { error: allocError } = await db
-      .from('expense_property_allocations')
-      .insert(allocationInserts);
-
-    if (allocError) throw ApiError.internal(allocError.message);
+    const entry = created as Record<string, unknown>;
 
     await auditFromRequest(req, {
       action: 'EXPENSE_CREATE',
       entityType: 'EXPENSE_ENTRY',
-      entityId: entry.id,
+      entityId: String(entry.id),
       newValues: { entry, allocations }
     });
 
