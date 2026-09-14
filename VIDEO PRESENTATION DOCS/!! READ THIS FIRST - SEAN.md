@@ -134,11 +134,13 @@ Separate guide, same folder:
 
 ### **`SET UP LOYDS LAPTOP.md`**
 
-Short version — it is more than the JWT and the HMAC key:
+Short version:
 
-1. Send him **two files** (`loyd.env` and `creds.txt`) — both already prepared.
-2. **Invite him to the Supabase project** — a key alone does not give his Claude
-   database access.
+1. **Send him two files** — `credentials/loyd.env` and `credentials/creds.txt`.
+   Both already prepared, both on your laptop. **They are not in the repository**
+   and never will be, so pulling cannot give them to him — that is the whole
+   point of gitignoring secrets.
+2. **Supabase invite — already done.** He is on the team as a Developer.
 3. He changes **two lines**: his own `JWT_SECRET`, and his own `ADYEN_HMAC_KEY`
    once he makes his own webhook.
 

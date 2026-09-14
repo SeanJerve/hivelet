@@ -1,20 +1,32 @@
 # Setting up Loyd's laptop
 
-**You were close.** It is his own `JWT_SECRET` and his own `ADYEN_HMAC_KEY` that
-he changes — but there are **two files only you can send** and **one invite only
-you can make**, and without those he gets stuck in ways that are not obvious.
+**You were right about what Loyd changes:** his own `JWT_SECRET` and his own
+`ADYEN_HMAC_KEY`. Those are the only two values he edits.
 
-Nothing here was deleted. Both files are sitting in `credentials/` on your
-machine right now, already prepared.
+**What is left on your side is sending two files.** They are not in the
+repository and never will be, so pulling cannot give them to him. Both are
+already prepared and sitting in `credentials/` on your laptop.
+
+The Supabase invite is already done — he is on the team.
+
+Nothing was deleted.
 
 ---
 
-## Part A — what you do (about 5 minutes)
+## Part A — what you do (about 2 minutes)
 
-### A1. Send him two files
+### A1. Send him two files — this is the main thing
 
-Both are in `credentials/` on your laptop. Both are gitignored, so cloning the
-repo does **not** give him either one.
+**Cloning the repository does not give him these.** That is on purpose, not a
+mistake: `credentials/` and every `.env` are gitignored, because the moment a
+secret is committed it is in the history forever. That is exactly what happened
+in August.
+
+So there is no way for him to `git pull` his way to a working setup. You send
+them directly, once.
+
+Both files are sitting in `credentials/` on your laptop right now, already
+prepared:
 
 | File | What it is | Why he needs it |
 | :--- | :--- | :--- |
@@ -25,15 +37,20 @@ Send both, confirm he has them, then delete the message. Do not screenshot
 either one — a screenshot lands in a camera roll and syncs to a cloud backup,
 which is how the last leak outlived the file it came from.
 
-### A2. Invite him to the Supabase project
+### A2. Supabase project access — ✅ ALREADY DONE
 
-**Supabase → your project → Project Settings → Team → Invite.**
+`luydcuario@gmail.com` is already on the team. Nothing to do.
 
-This is the step a pasted key does not cover. `.mcp.json` points the Supabase MCP
-at the project, and the MCP authenticates against **his own** Supabase account.
-Without membership his Claude cannot query the database — which matters, because
-*"verify against the database, not the documents"* is rule 3 of the handoff, and
-it is how both of the big errors in this project were caught.
+This mattered because `.mcp.json` points the Supabase MCP at the project and the
+MCP authenticates against **his own** Supabase account — a pasted key does not
+cover it. Without membership his Claude could not query the database at all,
+which is how both of the big errors in this project were caught.
+
+> **One difference worth knowing:** his role is **Developer**; everyone else on
+> the team is **Owner**. That is fine for what he needs — the MCP reads the
+> database, and you are sending him the secret key anyway. But if he ever reports
+> that a Supabase settings page is missing or read-only, that is why, and you can
+> raise his role from the same Team screen.
 
 ### A3. Tell him he needs his own Adyen webhook
 
