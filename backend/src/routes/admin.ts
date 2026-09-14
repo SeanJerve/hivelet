@@ -1473,7 +1473,7 @@ router.post(
     // Find active assignment
     const { data: assign, error: assignError } = await db
       .from('room_assignments')
-      .select('id, tenant_profile_id, anniversary_date')
+      .select('id, tenant_profile_id, anniversary_date, occupant_count')
       .eq('room_id', room.id)
       .eq('is_active', true)
       .maybeSingle();
@@ -1522,6 +1522,18 @@ router.post(
       derivedPeriod !== null &&
       (periodStart !== derivedPeriod.start || periodEnd !== derivedPeriod.end);
 
+    /**
+     * BR-034 - occupant count carries forward from the tenancy and is editable.
+     *
+     * The form derives it from the live tenancy, which is the carry-forward. A
+     * different figure is accepted, because a roommate may have left before the
+     * tenancy was updated and the receipt should record what was actually
+     * charged - water is occupants x rate (BR-014), so the two must agree with
+     * the money collected. The divergence is recorded rather than passed over.
+     */
+    const carriedOccupants = assign?.occupant_count ?? null;
+    const occupantsDiverge = carriedOccupants !== null && occupants !== carriedOccupants;
+
     const date = new Date(datePaid);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -1560,17 +1572,30 @@ router.post(
       action: 'PAYMENT_RECORD',
       entityType: 'PAYMENT',
       entityId: newRecord.id,
-      newValues: periodDiverges
-        ? {
-            ...newRecord,
-            // BR-033: kept, because the administrator may have a reason, but
-            // attributable rather than silent.
-            rentPeriodOverride: {
-              supplied: { start: periodStart, end: periodEnd },
-              derivedFromAnniversary: derivedPeriod
+      newValues:
+        periodDiverges || occupantsDiverge
+          ? {
+              ...newRecord,
+              // Kept, because the administrator may have a reason - but
+              // attributable rather than silent.
+              ...(periodDiverges
+                ? {
+                    rentPeriodOverride: {
+                      supplied: { start: periodStart, end: periodEnd },
+                      derivedFromAnniversary: derivedPeriod
+                    }
+                  }
+                : {}),
+              ...(occupantsDiverge
+                ? {
+                    occupantCountOverride: {
+                      recorded: occupants,
+                      carriedFromTenancy: carriedOccupants
+                    }
+                  }
+                : {})
             }
-          }
-        : newRecord
+          : newRecord
     });
 
     if (assign?.tenant_profile_id) {

@@ -360,6 +360,20 @@ const editReference = ref('');
 const editMonthsCovered = ref(1);
 const editDateCoveredStart = ref('');
 
+/**
+ * BR-034 - the occupant count on this receipt.
+ *
+ * It was derived from the live tenancy and never shown, so the rule's
+ * "and is editable" half had nowhere to happen. Water is occupants x rate
+ * (BR-014), so when a roommate had moved out and the tenancy had not been
+ * updated yet, the receipt was written at the stale headcount and the
+ * administrator had no way to correct it without leaving the form.
+ *
+ * Defaults to the tenancy's count, which is the carry-forward the rule asks for.
+ * A different figure is accepted and the divergence is recorded in the audit log.
+ */
+const editOccupants = ref(1);
+
 const editDateCoveredEnd = computed(() => {
   const start = new Date(editDateCoveredStart.value);
   if (isNaN(start.getTime())) return '';
@@ -395,6 +409,11 @@ function startEditIncome(r: IncomeRecord) {
   // receipt at a time. Typing a date still overrides, which back-dated
   // corrections need - the divergence is recorded in the audit log.
   editDateCoveredStart.value = '';
+
+  // BR-034 - carried forward from the tenancy, and editable from here.
+  const occSummary = formatUnitOccupantsSummary(editUnit.value);
+  const occRoom = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
+  editOccupants.value = occSummary.count > 0 ? occSummary.count : (occRoom?.occupants || 1);
   editMethod.value = 'Cash';
   editReference.value = '';
 
@@ -440,7 +459,9 @@ async function handleEditIncome() {
   const unitUpper = editUnit.value.toUpperCase();
   const room = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
   const summary = formatUnitOccupantsSummary(editUnit.value);
-  const occupants = summary.count > 0 ? summary.count : (room?.occupants || 1);
+  // What the administrator confirmed on the form, falling back to the tenancy.
+  const carriedForward = summary.count > 0 ? summary.count : (room?.occupants || 1);
+  const occupants = Number(editOccupants.value) > 0 ? Number(editOccupants.value) : carriedForward;
   // BR-014 / BR-040 - the configured rate, with the seeded value as the fallback.
   const perOccupantRate = waterRatePerOccupant.value ?? 200;
   const lindaFixed = lindaFixedWaterCharges.value?.[unitUpper];
@@ -1245,6 +1266,13 @@ function exportCSV() {
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Months Covered</label>
               <input v-model.number="editMonthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
+            </div>
+            <div>
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+                Occupants
+                <span class="normal-case tracking-normal font-medium text-muted-foreground-soft">— carried from the tenancy; water is per occupant</span>
+              </label>
+              <input v-model.number="editOccupants" type="number" min="1" max="50" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
             </div>
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
