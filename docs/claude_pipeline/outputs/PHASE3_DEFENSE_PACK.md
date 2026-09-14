@@ -87,17 +87,25 @@ Annex A, Annex B" — those are not cluster names, and "Annex" is the family's w
 
 **You received one recommendation. Say that plainly — it is a strength, not a gap.**
 
-> "At our Capstone 1 proposal defense the panel gave us **one recommendation**, and it had two parts.
+> **CORRECTED 2026-09-14 — read before rehearsing.** This passage used to say the panel gave
+> the recommendation "in two parts", the second being an instruction not to become rigidly
+> dependent on an unconfirmed external service. **The panel did not say that.** Its only source
+> was the team's own answer to Activity Item 12, which paraphrased what the panel said together
+> with the team's own reasoning. Saying it aloud attributes to the panel something they never
+> said, in front of them. See `PHASE3_PANEL_RECOMMENDATION_REGISTER.md` §1.
 >
-> First, they asked us to **explore an online payment integration**, specifically to evaluate
-> **Adyen for GCash payments**.
+> "At our Capstone 1 proposal defense the panel gave us **one recommendation**: that we
+> **explore an online payment integration**, and specifically that we evaluate **Adyen for
+> GCash payments**.
 >
-> Second — and this is the part that shaped our architecture — because the commercial fees and the
-> merchant registration terms were unsettled, they instructed us to make sure **the system
-> architecture and database do not become rigidly dependent on an unconfirmed external service**.
+> That fit where we already were. Our paper defines online payment as an **optional,
+> supplementary feature** — in our own Definition of Terms, it does not serve as the primary
+> financial processing mechanism. Cash is how this property operates.
 >
-> So the panel did not just ask us to add a feature. They asked us to add it **without letting it
-> become load-bearing**. Everything in the next two sections is our answer to that."
+> So the recommendation set us a design question of our own: **how do we add a real payment
+> gateway without the system becoming dependent on it?** Our client may never switch to online
+> payment, and that is a reasonable choice for her — but if she ever does, the system should
+> already be ready. Everything in the next two sections is our answer to that."
 
 **If asked whether that was the only one:** yes, and do not invent others. "That was the
 recommendation we were given, and we treated the second half of it as an architectural requirement."
@@ -123,8 +131,9 @@ recommendation we were given, and we treated the second half of it as an archite
 > Tier 4 is Supabase PostgreSQL: **21 tables, with row-level security forced on all 21 and zero
 > policies**, which is deny-by-default. Only our backend's `service_role` can read anything.
 >
-> **Tier 5 is the part that answers the panel.** It is a pluggable payment gateway adapter, and it
-> exists precisely because the panel told us not to become rigidly dependent on Adyen."
+> **Tier 5 is the part that answers the recommendation.** It is a pluggable payment gateway
+> adapter, and it exists because we chose to keep online payment optional — the gateway can be
+> switched on or left off without the rest of the system noticing."
 
 **Then deliver the mechanism — this is the heart of the section:**
 
@@ -329,7 +338,7 @@ It is the right choice for this section because it is the change that *answers t
 | *"You said ₱3.43 million — how confident are you?"*<br>**Have the breakdown ready; it is the number most likely to be challenged.** | "It is a query over the live database, re-run on 13 September 2026. The whole expense ledger is **₱5,823,586.47** across **1,327 allocation rows**. Of that, Main House is ₱1,437,487.22 and Other Expenses / Personal is ₱1,995,503.25 — together **₱3,432,990.47, which is 58.95%** of the ledger and is not boarding-house operating cost. The operating side is Boarding House ₱2,253,574.74 (38.70%), Front Apartment ₱87,411.27 (1.50%) and Back Apartment ₱49,609.99 (0.85%). The rows come from the landlady's own spreadsheet, so the figures reconcile with her records rather than competing with them." |
 | *"How do you know your system is secure?"*<br>**Only if it comes up — this is a strong answer, not a volunteered confession.** | "We audited it and found our own worst problem. Our live database key and our JWT signing secret had been committed to a public repository for three weeks, and our demo passwords still opened all 44 accounts including the administrator. We rotated everything, migrated to Supabase's new key format so the old keys are revoked everywhere at once, and added a pre-commit scanner so it cannot recur. The lesson we took is that a correct access-control design protects nothing once its credentials leak — which is why we now treat key handling as part of the architecture rather than an afterthought." |
 | *"How do you know the interface shows real data?"*<br>**Only if the panel probes the UI.** | "We audited it and found it was not. Twenty-some places displayed or wrote values the system did not hold: the audit log rendered four invented entries attributed to the landlady whenever the API failed, the resident's profile form was pre-filled with a fabricated emergency contact that would be saved on submit, a payment with no verification status displayed as VERIFIED, and recording cash could report 'posted to the ledger' with nothing written. We swept all 33 write paths and fixed every one. The rule we now hold is that the interface may show what the database says or say it does not know — never a plausible substitute." |
-| *"Did anything in your submitted documents turn out wrong?"* | "Yes, and we produced an errata sheet with 21 entries. The largest were a claim that `ON DELETE RESTRICT` already existed when it did not, and a 2% annual rent escalation that appears in no business rule — the owner sets rates by hand. We would rather hand you the corrections than have you find them." |
+| *"Did anything in your submitted documents turn out wrong?"* | "Yes, and we keep an errata sheet — it has 22 entries. Three examples: we claimed `ON DELETE RESTRICT` already existed when it did not; we described a 2% annual rent escalation that appears in no business rule, since the owner sets rates by hand; and we overstated the panel's own recommendation, which we corrected once we checked it against what was actually said. We would rather hand you the corrections than have you find them." |
 
 ---
 

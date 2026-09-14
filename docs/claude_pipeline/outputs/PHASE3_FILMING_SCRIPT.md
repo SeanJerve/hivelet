@@ -16,15 +16,15 @@ Anything in **bold brackets** is a stage direction. Do not read it aloud.
 
 ## Who speaks
 
-| § | Section | Speaker | Target |
-| :-- | :--- | :--- | ---: |
-| 1 | Introduction and problem recap | **Loyd** | 1:20 |
-| 2 | Panel recommendation recap | **Loyd** | 1:15 |
-| 3 | Finalized architecture | **Sean** | 2:00 |
-| 4 | Finalized database schema | **Eljohn** | 2:00 |
-| 5 | Process and data flow diagrams | **Vince** | 2:00 |
-| 6 | Design justification | **Kiel** | 2:30 |
-| 7 | Questions | **everyone** | 2:00–3:00 |
+| § | Section                        | Speaker            |     Target |
+| :- | :----------------------------- | :----------------- | ---------: |
+| 1  | Introduction and problem recap | **Loyd**     |       1:20 |
+| 2  | Panel recommendation recap     | **Loyd**     |       1:15 |
+| 3  | Finalized architecture         | **Sean**     |       2:00 |
+| 4  | Finalized database schema      | **Eljohn**   |       2:00 |
+| 5  | Process and data flow diagrams | **Vince**    |       2:00 |
+| 6  | Design justification           | **Kiel**     |       2:30 |
+| 7  | Questions                      | **everyone** | 2:00–3:00 |
 
 The rubric gives **25 points for delivery and team participation**, and it
 explicitly checks that every member speaks. Nobody sits this out.
@@ -58,7 +58,7 @@ So the existing options are either too heavy for a property this size, or they
 solve only one piece and leave the rest scattered.
 
 That is our gap: **there is no single, context-appropriate platform that brings
-tenant management, financial tracking, communication, and booking together** at
+modules together** at
 this scale.
 
 Today, rent is collected in person, receipts are handwritten, and payment
@@ -322,34 +322,34 @@ products.]**
 The module has a table for this, with a name **and a role** for each member.
 Agree them beforehand so nobody hesitates on camera.
 
-| | Name | Role |
-| :--- | :--- | :--- |
-| Member 1 | Loyd | |
-| Member 2 | Sean | Database administrator |
-| Member 3 | Eljohn | |
-| Member 4 | Vince | |
-| Member 5 | Kiel | |
+|          | Name   | Role                   |
+| :------- | :----- | :--------------------- |
+| Member 1 | Loyd   |                        |
+| Member 2 | Sean   | Database administrator |
+| Member 3 | Eljohn |                        |
+| Member 4 | Vince  |                        |
+| Member 5 | Kiel   |                        |
 
 ### The rubric — 100 points, four criteria at 25 each
 
-| Criterion | What actually earns it |
-| :--- | :--- |
+| Criterion                                  | What actually earns it                                                                                                                                      |
+| :----------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Design completeness and technical accuracy | Sections 3, 4 and 5, and the diagrams being consistent with each other. We checked that every DFD data store maps to an ERD entity — §5 says so out loud. |
-| Incorporation of panel recommendations | §2 states it; §3, §4 and §6 answer it. Say "the panel recommended we explore Adyen for GCash" plainly, then show the three places we answered it. |
-| Design justification | §6, all four parts. Be specific, not generic — "hashed with bcrypt", not "it is secure". |
-| Delivery and team participation | Stay inside 10 to 15 minutes, and **every member speaks**. |
+| Incorporation of panel recommendations     | §2 states it; §3, §4 and §6 answer it. Say "the panel recommended we explore Adyen for GCash" plainly, then show the three places we answered it.       |
+| Design justification                       | §6, all four parts. Be specific, not generic — "hashed with bcrypt", not "it is secure".                                                                  |
+| Delivery and team participation            | Stay inside 10 to 15 minutes, and**every member speaks**.                                                                                             |
 
 ### Do not say
 
-| Do not say | Say instead |
-| :--- | :--- |
-| a product name for a tool | "a diagramming tool", "a database modeling tool", "a UI/UX design tool" |
-| "co-ownership", "50/50", "owner share", "landlady share" | "the fifty percent column" — a figure the system computes as half that row's rent, kept so the records reconcile with the original spreadsheet |
-| "mock", "simulator", "demo gateway" | "the Adyen integration", "the local settlement path" |
-| "2% annual increase" | nothing — the owner sets rates by hand |
-| "32 units" | **33 units** |
-| "the panel also recommended…" | There was **one** recommendation |
-| "the panel instructed us to keep the architecture and database independent of Adyen" | That was **our** design decision, not theirs. The panel said *explore Adyen for GCash*. Our paper already called online payment optional. Claiming otherwise puts words in the panel's mouth, to the panel. |
+| Do not say                                                                           | Say instead                                                                                                                                                                                                        |
+| :----------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| a product name for a tool                                                            | "a diagramming tool", "a database modeling tool", "a UI/UX design tool"                                                                                                                                            |
+| "co-ownership", "50/50", "owner share", "landlady share"                             | "the fifty percent column" — a figure the system computes as half that row's rent, kept so the records reconcile with the original spreadsheet                                                                    |
+| "mock", "simulator", "demo gateway"                                                  | "the Adyen integration", "the local settlement path"                                                                                                                                                               |
+| "2% annual increase"                                                                 | nothing — the owner sets rates by hand                                                                                                                                                                            |
+| "32 units"                                                                           | **33 units**                                                                                                                                                                                                 |
+| "the panel also recommended…"                                                       | There was**one** recommendation                                                                                                                                                                              |
+| "the panel instructed us to keep the architecture and database independent of Adyen" | That was**our** design decision, not theirs. The panel said *explore Adyen for GCash*. Our paper already called online payment optional. Claiming otherwise puts words in the panel's mouth, to the panel. |
 
 ### Filming notes
 
