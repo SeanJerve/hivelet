@@ -291,13 +291,15 @@ Each was verified against the live database and each is covered by a regression 
 | **The rent period came from the date paid.** A tenant on a 13th-of-the-month cycle paying on the 20th had the period recorded as starting on the 20th. | The ledger's "Rent For" column — the one the owner reads to know what a payment was for — drifted off the cycle one receipt at a time. **BR-033** |
 | **The dashboard's year was a literal.** `CURRENT_YEAR = 2026`, while the month beside it came from the clock. | On 1 January the entire dashboard would have read zero — collections, run rate, cash flow — with no error and no empty state. |
 | **A failed load of the verification queue claimed everything was verified.** The error was caught, the list left empty, and the empty state rendered a green shield reading "All Remittances Verified". | Not a missing error message: an affirmative false statement. Empty and unknown are different, and the screen now says which. |
+| **The tenant ticket view put words in the owner's mouth.** Two messages were fabricated and attributed to Landlady Fe — "I have assigned a handyman and they will visit soon" on any In Progress ticket. | She never wrote either, and because they were seeded before the fetch and only replaced when it returned rows, a ticket with no replies showed an invented reply indefinitely. The same defect as the invented OR numbers and the fabricated emergency contacts. |
+| **`live_schema.csv` — the file rule 2 points at — was wrong.** It rendered both `GENERATED ALWAYS` columns as ordinary `DEFAULT` expressions. | A reader following the project's own rule correctly would have reached the wrong conclusion. This is exactly the misreading that produced the "0.00 defect". |
 
 ### 4.4 The business rule register, rebuilt
 
 | | End of Iteration 1 | End of Iteration 2 |
 | :--- | ---: | ---: |
-| Enforced | not assessed | **41** |
-| Partial | not assessed | 5 |
+| Enforced | not assessed | **42** |
+| Partial | not assessed | 4 |
 | Schema only | not assessed | 2 |
 | Not enforced | not assessed | **1** (OD-07, client-gated) |
 | **Violated** | not assessed | **0** |
@@ -335,7 +337,7 @@ legend never defined. `check:rules` now prevents all three.
 | :--- | :--- | :--- |
 | 1 | **One client consultation** covering all nine open decisions | The gating activity. Three of the nine require a migration once answered. |
 | 2 | **BR-046** — category cumulative totals | Unblocked by **OD-07**. The last unenforced rule. |
-| 3 | **BR-049** — Excel export reproducing the documented layouts | CSV export already satisfies **BR-030**; what is missing is the grouping, subtotals and footer, which CSV cannot carry. |
+| ~~3~~ | ~~**BR-049** — Excel export~~ **DONE 2026-09-14.** Both ledgers now build real `.xlsx` files in their documented layouts, and the three open decisions they touch (OD-01, OD-05, OD-06) are shown on the sheet rather than assumed. | — |
 | 4 | **Service extraction** | **137 of 173** database calls still sit in route handlers (79%), and `admin.ts` is ~2,500 lines. Six planned services do not yet exist. This is the architecture's stated target. |
 | 5 | **Deposit reconciliation on move-out** | Unblocked by **OD-04**. |
 | 6 | **Two unauthenticated payment endpoints** on the public router | Carried as a hardening item since Phase 1. |
@@ -375,13 +377,12 @@ and three of the seven Iteration 3 items are waiting on a conversation with the 
 not on code. That is the correct place for a capstone project to be, and filling those
 gaps with plausible assumptions would have been the easier and worse choice.
 
-**A note on the five rules still Partial**, so that the count is not mistaken for unfinished
+**A note on the four rules still Partial**, so that the count is not mistaken for unfinished
 work: **BR-020** would need a `room_id` on expense allocations, and the client's own
 workbook allocates by Property Area rather than by room; **BR-025** waits on OD-04;
-**BR-029** keeps the twelve-month chart year-scoped deliberately; **BR-039** accepts an
+**BR-029** keeps the twelve-month chart year-scoped deliberately; and **BR-039** accepts an
 advance rent that diverges from the unit's rent, because the owner may genuinely have
-agreed one, and records the divergence; **BR-049** needs real spreadsheet generation, which
-CSV cannot carry. Each is a decision, not an omission.
+agreed one, and records the divergence. Each is a decision, not an omission.
 
 ---
 
