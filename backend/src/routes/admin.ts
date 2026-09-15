@@ -547,7 +547,11 @@ router.post(
     }
 
     /**
-     * A portal login is created only when there is an email to log in with.
+     * A portal login is created when there is an identifier to log in WITH - an email or a
+     * phone number. The database was built for both: `idx_profiles_phone_login` is a UNIQUE
+     * index on `normalize_ph_phone(phone_number)` restricted to profiles that have a
+     * password, and `normalize_ph_phone()` folds 0917.../+63917.../63917... to one form.
+     * Those objects exist for phone login specifically.
      *
      * OD-09 makes the login optional and separate from the tenancy record, and the
      * `profiles_login_identifier_required` CHECK enforces the same thing from below:
@@ -555,8 +559,10 @@ router.post(
      * password on a profile with no identifier would violate it, so a tenant onboarded
      * without an email is a record with no credentials - exactly what the client described.
      */
+    const normalizedPhone = phone && phone.trim() ? phone.trim() : null;
+
     let passwordHash: string | null = null;
-    if (normalizedEmail) {
+    if (normalizedEmail || normalizedPhone) {
       const tempPassword = 'Hivelet@Tenant2026';
       const bcrypt = (await import('bcryptjs')).default;
       passwordHash = await bcrypt.hash(tempPassword, 12);
@@ -569,7 +575,7 @@ router.post(
         email: normalizedEmail,
         password_hash: passwordHash,
         full_name: fullName,
-        phone_number: phone || null,
+        phone_number: normalizedPhone,
         emergency_contact_name: emergencyContactName || null,
         emergency_contact_phone: emergencyContactPhone || null,
         occupation: occupation || null,
