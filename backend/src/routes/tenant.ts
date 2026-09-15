@@ -498,8 +498,17 @@ const checkoutSchema = z.object({
 
 /**
  * POST /api/tenant/payments/checkout
- * Initiates a mock Adyen checkout session for an unpaid bill.
- * Aligns with BR-016 and BR-017 to direct the resident to checkout.
+ *
+ * Opens an Adyen Checkout session for an unpaid bill. BR-016 and BR-017.
+ *
+ * This said "mock Adyen checkout session", and it is not one. `isLiveConfigured()` is true
+ * whenever real credentials are present - they are - and the session is created against
+ * `https://checkout-test.adyen.com/v71/sessions`. The local cashier page is the fallback for
+ * an environment with no credentials at all, and both of its routes return 404 the moment a
+ * gateway is configured.
+ *
+ * Returns `{ sessionId, sessionData, clientKey, environment, isLive }` for the Adyen Web
+ * component to mount. There is no redirect URL in this flow.
  */
 router.post(
   '/tenant/payments/checkout',

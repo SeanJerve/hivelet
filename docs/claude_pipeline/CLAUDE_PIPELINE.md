@@ -178,20 +178,21 @@ sequenceDiagram
     autonumber
     actor Tenant as Tenant (Resident Portal)
     participant API as Express API Server
-    participant Adyen as Adyen Hybrid Service (Live or Mock)
+    participant Adyen as Adyen Checkout (GCash)
     actor Admin as Administrator (Admin Workspace)
 
-    Tenant->>API: POST /api/tenant/payments/checkout { billId }
+    Tenant->>API: POST /api/tenant/payments/checkout { billId, returnUrl }
     API->>API: Validate bill ownership & active unpaid status
     API->>Adyen: createCheckoutSession(billId, tenantId, amount)
-    Adyen-->>API: Return { sessionId, redirectUrl, isLive }
-    API-->>Tenant: JSON with redirectUrl
-    Tenant->>Tenant: Complete authorization on GCash screen (Live or Mock Portal)
-    Tenant->>API: POST /api/public/payments/mock-gateway/complete { sessionId }
-    API->>Adyen: completePayment(sessionId, ip)
-    Adyen->>API: Insert into `payments` (verification_status: 'Pending Verification')
-    Adyen->>API: Insert Admin Notification & record audit log (PAYMENT_RECORD)
-    API-->>Tenant: Redirect with reference (e.g., ADYEN-GCASH-XXXX)
+    Adyen-->>API: { sessionId, sessionData }
+    API-->>Tenant: { sessionId, sessionData, clientKey, environment, isLive }
+    Tenant->>Tenant: Adyen Web component mounts in the portal; pays with GCash
+    Tenant->>API: POST /api/tenant/payments/adyen/verify-session { sessionId, sessionResult }
+    API->>Adyen: Ask the gateway what actually happened
+    Adyen-->>API: { confirmed, gatewayStatus }
+    Adyen->>API: POST /api/public/payments/adyen/webhook (HMAC-verified)
+    API->>API: Insert into `payments` — payment_source 'GCash (Adyen webhook)', verification_status 'Pending Verification'
+    API->>API: Insert Admin Notification & record audit log
 
     note over Admin: Administrator reviews Verification Queue
     Admin->>API: PATCH /api/admin/payments/:id/verify { verification_status: 'Verified' }
