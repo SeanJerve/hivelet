@@ -7,7 +7,41 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST - commit `df4e817`: four of your active residents could not be edited at all.**
+> **LATEST - commit `7124861`: your tenant directory was counting a prospect as a resident.**
+>
+> `user_role_type` is `(admin, tenant, prospect)`, and `/admin/tenants` returns
+> `.in('role', ['tenant', 'prospect'])` **on purpose** - an enquirer promoted to a profile
+> belongs in the directory before a unit is assigned. But `TenantRecord` never carried the
+> role, so the page could not tell one from the other and treated every row as a resident.
+>
+> | what you saw | what was true |
+> |---|---|
+> | "**44 residents** currently on record" | 43 are residents; one is a prospect |
+> | **Active (43)** | 42 residents, plus a prospect |
+> | a green **Active** badge on her row | she pays no rent and holds no unit |
+>
+> **The property has 33 units.** A headcount that is quietly one too high is exactly the
+> number someone checks.
+>
+> The role is now carried through and used: the header counts residents and names prospects
+> separately, the Active and Past/Vacated chips are about residents only, a **Prospects** chip
+> appears when there are any, and her row and profile header say **Prospect**.
+>
+> **Verified in the running app as the administrator, and the figures reconcile against the
+> database rather than merely looking plausible:**
+>
+> - chips now read **All (44) = Active (42) + Past / Vacated (1) + Prospects (1)**
+> - database: **42 active tenants, 1 inactive tenant, 1 prospect, 1 admin** - 45 profiles, the
+>   admin excluded by the endpoint
+> - the prospect is **Rhea Mendoza** - no assignments, no converted inquiry
+> - the selected chip was read back out of the DOM, not judged from a screenshot
+>
+> No row was written.
+>
+> **Not a defect, checked and left alone:** the endpoint including prospects is deliberate,
+> so I did not change what it fetches - only what the page claims about it.
+
+> **PREVIOUS - commit `df4e817`: four of your active residents could not be edited at all.**
 >
 > `systemState` gives a tenant with no room assignment the unit code **—**. The Edit Resident
 > modal set its Target Unit dropdown to that value - and **—** matches none of its options,
@@ -501,7 +535,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**57 commits on `main`. Working tree clean.** The last few - from `b11652d` onward - are committed locally but **not yet pushed**: the push was blocked here and needs you to run it (`git push origin main`).
+**58 commits on `main`. Working tree clean.** The last few - from `b11652d` onward - are committed locally but **not yet pushed**: the push was blocked here and needs you to run it (`git push origin main`).
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
