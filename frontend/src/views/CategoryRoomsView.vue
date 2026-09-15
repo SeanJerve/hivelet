@@ -60,6 +60,25 @@ interface DbRoom {
 const waterRatePerOccupant = ref<number | null>(null);
 const lindaFixedWaterCharge = ref<number | null>(null);
 
+/**
+ * How a unit's live status reads to a prospect.
+ *
+ * Was `status === 'vacant' ? 'Available' : 'Reserved'` in both places this
+ * badge is drawn, so an OCCUPIED unit displayed as "Reserved" - verified
+ * against the live database: unit 1A is `operational_status = 'Occupied'`,
+ * mapped by `mapOperationalStatus()` to `'settled'`, and the badge read
+ * "Reserved" regardless. A prospect reads "Reserved" as held, not taken -
+ * the wrong signal for a unit that already has a tenant.
+ */
+function publicStatusLabel(status: RentableUnit['status']): string {
+  switch (status) {
+    case 'vacant': return 'Available';
+    case 'pending': return 'Reserved';
+    case 'maintenance': return 'Under Maintenance';
+    default: return 'Occupied';
+  }
+}
+
 /** Never states a figure it has not been given. */
 function waterLabel(rateType: string): string {
   if (rateType === 'linda_fixed') {
@@ -356,7 +375,7 @@ async function submitInquiry() {
                     : 'bg-[#fffbeb] text-[#92400e] border border-[#fef3c7]'
                 ]"
               >
-                {{ activeUnit.status === 'vacant' ? 'Available' : 'Reserved' }}
+                {{ publicStatusLabel(activeUnit.status) }}
               </span>
             </div>
           </div>
@@ -475,7 +494,7 @@ async function submitInquiry() {
                         : 'bg-black/60 text-gray-200'
                     ]"
                   >
-                    {{ u.status === 'vacant' ? 'Available' : 'Reserved' }}
+                    {{ publicStatusLabel(u.status) }}
                   </span>
                 </div>
               </div>
