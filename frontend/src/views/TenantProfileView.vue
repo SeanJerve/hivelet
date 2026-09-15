@@ -78,7 +78,12 @@ async function fetchProfile() {
     const data = await api.get<any>('/tenant/my-profile').catch(() => null);
     
     identity.value = {
-      email: currentUser.value?.email || data?.email || 'tenant@hivelet.com',
+      // No invented address. This used to fall back to 'tenant@hivelet.com', which
+      // was shown to the resident beside a mail icon as though it were theirs. It
+      // now actually fires: OD-09 allows a tenant with no email, and since phone
+      // sign-in landed such a tenant can reach this page. Empty means "none on
+      // file", and the template says so rather than filling the gap.
+      email: currentUser.value?.email || data?.email || '',
       role: currentUser.value?.role || data?.role || 'tenant',
       account_status: data?.account_status || 'active',
     };
@@ -256,7 +261,17 @@ function handleReset() {
             </span>
           </div>
           <p class="text-xs text-muted-foreground flex items-center justify-center sm:justify-start gap-1.5">
-            <Mail class="size-3.5 text-primary" /> {{ identity.email }}
+            <template v-if="identity.email">
+              <Mail class="size-3.5 text-primary" /> {{ identity.email }}
+            </template>
+            <template v-else-if="form.phone_number">
+              <Mail class="size-3.5 text-muted-foreground" />
+              <span>No email on file — signs in with {{ form.phone_number }}</span>
+            </template>
+            <template v-else>
+              <Mail class="size-3.5 text-muted-foreground" />
+              <span>No email on file</span>
+            </template>
           </p>
           <p class="text-xs text-muted-foreground">
             Role: <strong class="text-foreground capitalize">{{ identity.role }}</strong> · Status: <strong class="text-emerald-700 capitalize">{{ identity.account_status }}</strong>
