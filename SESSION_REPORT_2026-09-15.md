@@ -7,7 +7,51 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST - commit `4170dfd`: a bank transfer taken at the door was recorded as GCash.**
+> **LATEST - commit `be9adaf`: the maintenance board said "Close & Resolve" and could only
+> ever resolve.**
+>
+> `ticket_status_type` is `(Submitted | In Progress | Resolved | Closed)`. The dispatch board
+> offered three states and treated closing and resolving as one act - the buttons read
+> **"Close / Resolve"**, **"Close & Resolve Ticket"** and **"Ticket Resolved & Closed"**, and
+> every one of them wrote `'Resolved'`.
+>
+> **The backend was never the problem.** Its PATCH handler already accepts `'Closed'` and, on
+> receiving it, stamps `closed_at` and `closed_by`. Those two columns hold **nothing** across
+> all 5 live tickets, and no ticket has ever had status Closed - because nothing in the
+> interface could send it.
+>
+> **Worse than the missing option.** `systemState` folded Closed into Resolved on the way in.
+> A closed ticket displayed as Resolved, its edit modal loaded Resolved, and saving any
+> unrelated field - a technician, a note - wrote **Resolved back over it**. A state the schema
+> keeps deliberately, silently demoted. No ticket is Closed today, so nothing has been lost;
+> same posture as the hardcoded `payment_source` in `4170dfd`.
+>
+> Closed is now carried through, offered in the filter and the edit modal, and badged neutral
+> so it reads differently from a green Resolved. Every count that meant *"no longer on the
+> board"* - the sidebar's emergency badge, the dashboard's open-ticket and emergency figures,
+> the board's sort and its Resolved tile - was written as `status === 'Resolved'`, complete
+> only while Closed did not exist here. They now test both. The quick actions say what they
+> write: **"Mark Resolved"**.
+>
+> **Left alone deliberately:** "Open" stays this layer's word for the database's "Submitted".
+> The API normalises it back, and the tenant's own view already prints it as "Submitted", so
+> the round trip is intact - renaming it would be churn with no defect behind it.
+>
+> **Verified against the live API with nothing written** - a nonexistent ticket id fails after
+> validation and before any update:
+>
+> | sent | result |
+> |---|---|
+> | Open · Submitted · In Progress · Resolved · **Closed** | **404** — all accepted |
+> | Cancelled | **422** — refused |
+>
+> `maintenance_tickets` 5; `resolved_at` on 3; **`closed_at` 0, `closed_by` 0, status Closed
+> 0** - before and after. In the browser, reading the live DOM: the filter offers
+> [All, Open, In Progress, Resolved, Closed], the edit modal offers
+> [Open, In Progress, Resolved, Closed], and priority offers exactly
+> [Low, Medium, High, Emergency] - which is `ticket_priority_type`. Nothing was submitted.
+
+> **PREVIOUS - commit `4170dfd`: a bank transfer taken at the door was recorded as GCash.**
 >
 > `payment_method_type` is `(Cash | GCash | Bank Transfer | Adyen Online)`. The on-site
 > payment modal offered **two** choices - "Cash" and "Online Payment" - and the API filed
@@ -578,7 +622,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**60 commits, all pushed to `main`. Working tree clean.**
+**62 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
