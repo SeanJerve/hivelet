@@ -129,8 +129,8 @@ them.
 
 | | |
 | :--- | :--- |
-| **Restart the tunnel and repoint the Adyen webhook** | `cloudflared tunnel --url http://localhost:5000`, paste the new URL into the webhook, press Test, expect 200. Until this is done a GCash payment completes at Adyen and **never reaches the ledger, silently** |
-| **Rotate `eljohn`, `kiel` and `bins`** | They appeared in a screenshot and are still live. One click each in Supabase, and no file is built around any of them, so there is nothing to rebuild afterwards |
+| **Restart the tunnel and repoint the Adyen webhook** | **`RESTART_THE_TUNNEL.md`** at the repository root has the whole thing, including installing `cloudflared`, which is **not on this machine yet**. Until it is done a GCash payment completes at Adyen and **never reaches the ledger, silently** — the one failure in this system with no signal anywhere |
+| ~~Rotate `eljohn`, `kiel` and `bins`~~ | **Done 2026-09-15.** All three deleted in Supabase |
 
 **One thing to avoid:** do not run two Claude sessions against this repo at the
 same time. Two sessions editing the same files and pushing to `main` will

@@ -221,7 +221,7 @@ Anchor edits on surrounding text, never on a line number from a document.
 | 4 | **BR-020** | Would need a `room_id` on expense allocations, and her own workbook allocates by Property Area, not by room. Arguably out of scope rather than unfinished |
 | 5 | **BR-025** | Waits on OD-04 — deposit disposition on move-out |
 | 6 | **Team roles disagree across documents** | Repository says Sean is System Architect / Full-Stack and Loyd is Database Administrator; the presentation script says Sean is DBA. Eljohn and Vince have no role recorded. **The team's to settle, not Claude's** |
-| 7 | **The four remaining Supabase secret keys** | `eljohn`, `kiel`, `bins` appeared in a screenshot and are unrotated. `loyd` was rotated on 2026-09-14 |
+| ~~7~~ | ~~**The four remaining Supabase secret keys**~~ | **Closed.** `loyd` rotated 2026-09-14; `eljohn`, `kiel` and `bins` deleted 2026-09-15 |
 
 **Four rules are Partial and each is a decision, not an omission** — see §3.6 and
 the crosswalk rows. Do not treat the count as a backlog.

@@ -230,6 +230,12 @@ Two ways out, and the second is better:
 
 ### The tunnel URL changes every restart
 
+> **Step-by-step runbook: `RESTART_THE_TUNNEL.md` at the repository root.**
+> Including the `winget` line to install `cloudflared`, which is **not currently
+> installed on Sean's machine** — so the first run needs that step before
+> anything else works.
+
+
 `cloudflared tunnel --url http://localhost:5000` gets a **new random address each
 time it starts** — after a reboot, a power cut, or closing the terminal. The old
 URL stops resolving and Adyen's notifications go nowhere.
