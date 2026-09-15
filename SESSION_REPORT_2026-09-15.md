@@ -7,7 +7,68 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST - commit `17095f3`: you could not take a unit off the public site.**
+> **NEEDS YOU, NOT ME — there is an abusive entry in the live inquiries table.**
+>
+> One of the two live inquiries was submitted through the public enquiry form on **25 Aug
+> 2026** for **unit 1a**, and its `prospect_name` and `prospect_email` are a **racial slur**.
+> It is `status = 'Pending'`, it has one message on its thread carrying the same name, and it
+> **renders in the admin Inquiries inbox** - which means it would appear on screen in a
+> capstone demo.
+>
+> Row id `82f74d64-724d-4c2e-b436-f6271f3b1992`, plus its one `inquiry_messages` row.
+>
+> **I have not touched it.** Deleting rows from the owner's live database is yours to
+> authorise, and this is her data. Say the word and I will remove both rows in one
+> transaction; or delete them yourself. It is the only inquiry that is not Rhea Mendoza's, so
+> there is no risk of losing a real lead.
+>
+> Worth knowing either way: the public enquiry form validates format, not content. Nothing
+> stops the next one.
+
+> **LATEST - commit `cabe216`: every reply Mrs. Da Silva sent to an enquiry failed, and blamed
+> the wrong thing.**
+>
+> `POST /admin/inquiries/:id/messages` looked the lead up with
+>
+> ```
+> .select('id, full_name, email, phone_number')
+> ```
+>
+> **`inquiries` has no such columns.** The prospect's details live in `prospect_name`,
+> `prospect_email` and `prospect_phone`, so PostgREST answered **every** call with
+> `42703: column inquiries.full_name does not exist`. The error variable was then truthy and
+> the handler threw **"Inquiry not found"** - blaming the record for a fault in the query, and
+> sending her to look in the wrong place entirely.
+>
+> None of those three fields was used downstream. Only the existence check was, so the read
+> now asks for what it actually needs.
+>
+> **Proven, not inferred.** A read-only probe ran both column lists through the real client
+> against the live database:
+>
+> | select | result |
+> |---|---|
+> | `id, full_name, email, phone_number` | **42703** — column does not exist |
+> | `id, status` | **OK, 1 row** |
+>
+> **Second thing, same handler.** `inquiry_status_type` carries **'Contacted'** and nothing in
+> the system ever wrote it - so a lead stayed **Pending** however many times she had answered
+> it. Replying now advances Pending to Contacted, and *only* Pending: Converted and Closed are
+> ends of the line and must not be walked backwards by sending a message.
+>
+> **Two smaller things found looking for the first:** `systemState` defaulted an inquiry's
+> status to `'Submitted'` - not a value of `inquiry_status_type` at all, it belongs to
+> `ticket_status_type`; the column is NOT NULL so it never fired, but a default the enum
+> cannot hold is a wrong answer waiting for its turn. And `InquiriesView` declared a
+> `statusFilter` with values 'new' and 'replied' and never referenced it again.
+>
+> `check:api` 53/53; both projects typecheck.
+>
+> **Honest limit:** a real reply writes a message into the owner's live thread, so the full
+> round trip is *not* exercised. What is verified is that the read which broke it now
+> succeeds, and that the handler's only use of that read was the existence check.
+
+> **PREVIOUS - commit `17095f3`: you could not take a unit off the public site.**
 >
 > `visibility_status_type` is `(Published | Hidden)`. The column exists, the admin API has
 > accepted both values since the schema was written, and `public.ts` enforces it in **three**
@@ -723,7 +784,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**66 commits, all pushed to `main`. Working tree clean.**
+**68 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
