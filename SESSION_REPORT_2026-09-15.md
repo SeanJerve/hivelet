@@ -25,7 +25,39 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `fb59517`: my own fix from this afternoon would have broken your public
+> **LATEST - commit `4180cc8`: swept my own work for knock-on effects. One more found, five
+> clean.**
+>
+> `formatUnitOccupantsSummary()` filtered `tenants` by unit code and active status, **with no
+> role filter**. `tenants` holds prospects too - the endpoint returns
+> `.in('role', ['tenant', 'prospect'])` deliberately - so a prospect holding a unit code would
+> have counted as a resident of it.
+>
+> **That list is not a label.** Its `count` becomes the occupant figure on the on-site payment
+> form and the ledger's own form, which drives the **BR-014 water fee at a rate per head**;
+> its `residents` becomes the receipt's contact name. A miscounted head is a wrong charge, not
+> a wrong caption.
+>
+> **This changes nothing today, and the commit says so.** A prospect has no assignment, so
+> their unit code is an em dash and cannot match a real one. It is there because the tenant
+> directory counted the same prospect as a resident until `7124861` for exactly this reason,
+> and the only difference between the two bugs is which list the mistake lands in.
+>
+> **Verified by showing it changed nothing:** the unit picker's occupant summaries are
+> identical to before - *"1A — Lobby Toor (Solo), Mark Cruz + 1 roommate"*, *"1C — Daryl
+> Rivero (Solo)"* - which is the result a defensive filter should produce.
+>
+> **The other five changes from today, swept and clean:**
+>
+> | change | checked | result |
+> |---|---|---|
+> | `b593166` | `/admin/rooms` grew a nested array | its two other callers request only `{id, room_number}` and ignore the rest |
+> | `4170dfd` | two-branch payment logic | none survives; the ledger enumerates all three non-Cash values, and the tenant view defaults a missing method to `'UNKNOWN'` before `.toLowerCase()` |
+> | `be9adaf` | three-branch ticket status | the tenant timeline already has four stages including Closed, and returns stage 0 for anything unrecognised |
+> | `7124861` | counting prospects | the All chip counts them deliberately and reconciles: 44 = 42 + 1 + 1 |
+> | `17095f3` | the "33 units" copy | a statement about the property, which hiding a *listing* does not change. Left alone. |
+
+> **PREVIOUS - commit `fb59517`: my own fix from this afternoon would have broken your public
 > inquiry form.**
 >
 > The public inquiry dropdown is built from `CANONICAL_UNITS` - **all 33 units, always**. The
@@ -1155,7 +1187,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**86 commits, all pushed to `main`. Working tree clean.**
+**88 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
