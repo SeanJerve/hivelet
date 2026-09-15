@@ -195,6 +195,29 @@ what the erratum actually corrects. Fixed in `a3f72f3`.
 An errata sheet ages. Its findings stay true — they describe a past document —
 but its *instructions* can be overtaken by the very work they propose.
 
+**The most dangerous genre: a stale document that is followed rather than
+read.** `docs/claude_pipeline/CLAUDE_PIPELINE.md` Section 4 opens *"Every
+database table, backend endpoint, and architectural diagram produced by Claude
+must strictly enforce these immutable business rules"* — and as of 2026-09-15
+it carried **no supersession marker anywhere in the file**. A session obeying
+it would have enforced the banned cluster names, a `fifty_percent_share`
+framing that named both a party and a recipient, and the withdrawn 2%
+escalation. The collision between its seven `BR-001`..`BR-007` pillars and the
+canonical rules of those numbers *is* documented in full — in
+`PHASE1_BR_CROSSWALK.md` Section 3, which is **the other document**. The one
+that gets obeyed said nothing. Fixed in `3b12b3e`.
+
+The prompts under `docs/claude_pipeline/prompts/` are the same genre and were
+swept immediately after: PROMPT_2 and PROMPT_3 already carried correct
+withdrawal tables, PROMPT_3 cited the wrong permission count, and PROMPT_1
+instructed citing "`BR-001` to `BR-007`" — a range that reads as the withdrawn
+pillar numbering rather than the canonical namespace, which runs to BR-049.
+Both corrected in `44c0b25`.
+
+**So when auditing documentation, sort it by whether it is obeyed or consulted,
+and do the obeyed ones first.** A wrong record misleads whoever reads that
+page. A wrong instruction propagates into everything built afterwards.
+
 **What NOT to do with this.** Dated snapshots of moving numbers are honest and
 should be left alone: `admin.ts` line counts, row counts, the database-call
 ratio. Correcting those only re-stales them. The two counts in circulation for

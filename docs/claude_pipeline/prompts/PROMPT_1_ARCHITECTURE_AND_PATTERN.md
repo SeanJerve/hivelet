@@ -68,4 +68,11 @@ Demonstrate 100% traceability between:
 Output your analysis with:
 1. Clear markdown headings and summary tables.
 2. Complete, valid Mermaid code blocks (`mermaid ... `).
-3. Specific references to requirements (`FR-001` to `FR-044`, `BR-001` to `BR-007`).
+3. Specific references to requirements (`FR-001` to `FR-044`, and business rules from the canonical namespace `BR-001` to **`BR-049`** in `docs/02_BUSINESS_RULES.md`).
+
+   > **Disambiguated 2026-09-15.** This read "`BR-001` to `BR-007`", which is ambiguous in a
+   > way that matters: the canonical namespace runs to **BR-049**, and the seven
+   > *architectural pillars* that once occupied exactly `BR-001`..`BR-007` were renumbered
+   > **ARCH-001..ARCH-007** and must never carry a `BR-` prefix again. A range stopping at
+   > seven reads as the pillars. Cite canonical rules by their real numbers, and pillars as
+   > `ARCH-00n`. Side-by-side in `PHASE1_BR_CROSSWALK.md` Section 3.

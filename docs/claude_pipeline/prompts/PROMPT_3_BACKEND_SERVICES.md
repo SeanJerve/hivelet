@@ -72,7 +72,7 @@ Before implementing or modifying backend code, inspect:
 5. `docs/02_BUSINESS_RULES.md` - **the canonical rule namespace, BR-001 ... BR-049.** `docs/01_SYSTEM_BIBLE.md` is background only, and several of its numbers are superseded errata (it says 32 units; the answer is 33, and its "2% price history" is retired canon).
 6. `docs/claude_pipeline/outputs/PHASE1_DFD_TRACEABILITY.md` - align services against the modernised **7 processes and 12 data stores**, not the 5-and-6 of the legacy lab images in `reference_dfds/`.
 7. `database/live_schema.csv` - **the source of truth for the schema.** Not `FULL_DATABASE_SCHEMA.sql`.
-8. `backend/src/config/rbac.ts` - the 39 permissions and their role mappings.
+8. `backend/src/config/rbac.ts` - the **35** permissions and their role mappings. *(Counted directly from the `PERMISSIONS` object, lines 38-89, on 2026-09-15. This read 39, which was wrong wherever it appeared; `PHASE1_ARCHITECTURE_AND_PATTERN.md` had 35 right all along.)*
 
 ---
 
