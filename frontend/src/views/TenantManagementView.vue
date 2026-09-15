@@ -657,13 +657,28 @@ async function handleOnboard() {
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Full Name</label>
             <input v-model="newName" placeholder="Juan Dela Cruz" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
           </div>
+          <!--
+            Email is optional; the phone number is not.
+
+            OD-09, client-confirmed 2026-09-13: "Do tenants need an email address to exist in
+            the system? No." `profiles.email` has been nullable since migration 006 and the
+            API schema stopped demanding one in 43c4608 - but this field kept `required`, so
+            the administrator still could not submit the form without an address. The rule
+            the database actually enforces is `profiles_login_identifier_required`: a profile
+            holding a password must have an email OR a phone number. Phone stays required, so
+            every tenant onboarded here has one identifier and can sign in.
+          -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Email</label>
-            <input v-model="newEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+              Email <span class="font-semibold normal-case tracking-normal text-muted-foreground/70">(optional)</span>
+            </label>
+            <input v-model="newEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" />
+            <p class="text-[11px] text-muted-foreground mt-1">Leave blank if they have none — they will sign in with their phone number.</p>
           </div>
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Phone</label>
             <input v-model="newPhone" placeholder="0917-000-0000" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
+            <p class="text-[11px] text-muted-foreground mt-1">Used to sign in to the tenant portal.</p>
           </div>
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>

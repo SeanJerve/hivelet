@@ -561,6 +561,37 @@ router.post(
      */
     const normalizedPhone = phone && phone.trim() ? phone.trim() : null;
 
+    /**
+     * The same duplicate check the email path has always had, for the identifier that only
+     * just became one.
+     *
+     * `idx_profiles_phone_login` is UNIQUE on `normalize_ph_phone(phone_number)` among
+     * profiles that hold a password. Onboarding a second tenant whose number folds to the
+     * same form would therefore fail at the insert, and the handler surfaces an insert error
+     * as `ApiError.internal(insertError.message)` - a 500 carrying a raw
+     * "duplicate key value violates unique constraint" string to the administrator. A
+     * foreseeable data clash should be a 400 that says what to do about it.
+     *
+     * The test goes through `resolve_login_identifier`, which is the function the login path
+     * uses, so "would this number already sign someone in?" is answered by the thing that
+     * does the signing in. No second copy of the normalisation rule. Its email branch cannot
+     * match here: a phone number is not an email address.
+     */
+    if (normalizedPhone) {
+      const { data: phoneOwner, error: phoneCheckError } = await db.rpc(
+        'resolve_login_identifier',
+        { p_identifier: normalizedPhone }
+      );
+
+      if (phoneCheckError) throw ApiError.internal(phoneCheckError.message);
+      if (Array.isArray(phoneOwner) && phoneOwner.length > 0) {
+        throw ApiError.badRequest(
+          'That phone number already signs someone in to the portal. Use a different number, ' +
+          'or leave the phone blank if this tenant does not need a login.'
+        );
+      }
+    }
+
     let passwordHash: string | null = null;
     if (normalizedEmail || normalizedPhone) {
       const tempPassword = 'Hivelet@Tenant2026';
