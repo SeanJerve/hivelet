@@ -25,7 +25,39 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `11a1437`: one more stale, three still true, one half-changed.**
+> **LATEST - commit `2fe8eee`: the only person who could not see the photo was the one who
+> took it.**
+>
+> `GET /api/tenant/my-tickets` selected the ticket and its room - and **not**
+> `ticket_attachments`. The administrator's list has always selected them. So a resident
+> photographs a leaking pipe, attaches it, submits, and **never sees it again**.
+>
+> The endpoint now returns them and the ticket card renders a thumbnail that opens the full
+> image. Found by retesting **FR-022**, whose note had this exactly right.
+>
+> **FR-026 stands, and I left it alone.** Its subject is the *prospect's* side: a prospect has
+> no account and no public endpoint to reply on, so an inquiry thread is one-directional from
+> them. Today's two inquiry fixes repaired the **administrator's** side, which had been failing
+> entirely. Different half of the same feature - and not something to claim as a fix for a note
+> about the other half.
+>
+> **The other half of FR-022 is recorded, not acted on.** It says the Supabase Storage write is
+> performed by the client, and the live rows show two different mechanisms: one attachment is a
+> real `https://storage.hivelet.…` URL of **50 characters**; the other is a
+> **142,351-character `data:image/jpeg;base64,…` string sitting in the column**, produced by
+> the current client, which reads the file with `FileReader` and posts the data URL rather than
+> uploading it.
+>
+> `ticketSchema` accepts `fileUrl: z.string().min(1)` with **no maximum**, up to ten per
+> ticket. The bound that does exist is `express.json({ limit: '1mb' })` - which caps a
+> *request*, not a column. **Named precisely rather than dressed up as a vulnerability.**
+> Whether attachments belong in object storage is the same decision as the tenant profile
+> photo: it costs storage, and it is Mrs. Da Silva's.
+>
+> `check:columns` and `check:fields` clean; both projects typecheck. Nothing written - the two
+> attachment rows were read, not modified.
+
+> **PREVIOUS - commit `11a1437`: one more stale, three still true, one half-changed.**
 >
 > Third pass over the matrix's notes. **The mix matters** - a retest that finds everything
 > fixed is not a retest either.
@@ -1427,7 +1459,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**102 commits, all pushed to `main`. Working tree clean.**
+**104 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
