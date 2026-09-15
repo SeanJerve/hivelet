@@ -25,7 +25,44 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `da36a37`: the System Bible was ahead of the code, not behind it.**
+> **LATEST - commit `80311d9`: your traceability matrix says nine requirements are MISSING.
+> Seven of them are not.**
+>
+> That table's headline - **"MISSING 9, 20.5%"** - is the figure a panel reads off the page. It
+> **understates the system by seven requirements.** Each row was retested against live code
+> rather than against the table:
+>
+> | FR | Row says | Retested |
+> |---|---|---|
+> | **FR-006** Inquiry Conversion | MISSING | **Implemented** - `converted_tenant_id` is written at `admin.ts:1130`, the very column the row calls the link |
+> | **FR-012** Due Dates | MISSING, *"no route sets a due date"* | **A route does** - `tenant.ts:622`, derived from the tenancy's own anniversary cycle |
+> | **FR-028** Reports | MISSING | **Partial** - the export half is live at `admin.ts:1483`, audited per call, and `check:api` opens the result to confirm it is a real workbook |
+> | **FR-033** Occupant Memory | MISSING | **Implemented** - `admin.ts:1731` carries the count forward from the tenancy, editable |
+> | **FR-036** Linda Fixed Billing | MISSING | **Implemented** - a distinct LINDA section in the income workbook |
+> | **FR-040** Category Cumulative | MISSING | **Implemented** - `expenseReportExport.ts:189` |
+> | **FR-042** Reconciliation | MISSING | **Implemented** - the workbook prints *Reconciles* or *DOES NOT RECONCILE* with both sides' figures |
+> | **FR-019** Cash Flow | MISSING | **Still missing.** No endpoint aggregates income, expenses or net cash flow |
+> | **FR-020** Profitability | MISSING | **Still missing.** Same absence |
+>
+> **Corrected: MISSING 2 (4.5%), not 9 (20.5%).**
+>
+> The original rows are **left in place** with the retest recorded above the table. A register
+> that silently edits its own history is not more trustworthy for it - a reader should be able
+> to see what it said *and* what was found.
+>
+> **FR-033 is recorded with its nuance rather than glossed:** the count carries forward from
+> the *tenancy*, not literally from the previous month's row as the requirement words it. The
+> effect the rule asks for is delivered; the mechanism differs, and saying so is the difference
+> between a retest and a rubber stamp.
+>
+> **`docs/03_REQUIREMENTS.md` was read in full and needs no correction.** It is a pure
+> specification - *"the system shall X"* - with no status column, so it cannot go stale the way
+> a register does. It makes no claim about what is built. The document that carries status is
+> the matrix corrected here.
+>
+> Every code line cited was read back from the file before committing.
+
+> **PREVIOUS - commit `da36a37`: the System Bible was ahead of the code, not behind it.**
 >
 > Every defect register retested today had gone stale by **overstating** problems. The System
 > Bible is the opposite case, and a reader should be told which kind of document they are
@@ -1308,7 +1345,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**94 commits, all pushed to `main`. Working tree clean.**
+**96 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
