@@ -7,7 +7,38 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST CYCLE - commit `c62ca72`: the form audit is a stale defect register, and one row
+> **LATEST CYCLE - commit `ce9a3ef`: three ticket category pickers disagreed, and one could
+> not display its own ticket.**
+>
+> Hunting the same shape that found the Penthouse bug. `maintenance_tickets.category` is a
+> free varchar with no enum, and the three forms that write it each had a hand-typed list.
+> Between them: **nine distinct strings for about six concepts.**
+>
+> | View | Offered |
+> | :--- | :--- |
+> | TenantPortalView | Plumbing, Electrical, **Appliances**, **General** |
+> | TenantTicketsView | Plumbing, Electrical, **Appliance**, Structural / Furniture, **General Maintenance** |
+> | MaintenanceDispatchView | Plumbing, Electrical, Carpentry, Aircon / HVAC, **Appliances**, **General** |
+>
+> So a fault is stored as "Appliance" or "Appliances" depending only on which form the tenant
+> opened, and any grouping or filter splits them.
+>
+> **The sharper half:** a live ticket (BASAG) is stored as **Structural / Furniture**, and the
+> admin dispatch view did not offer that value - so opening that ticket to edit it showed a
+> picker that could not represent its own category. Exactly the Penthouse shape: a stored
+> value the interface cannot show.
+>
+> All three now render from one shared `TICKET_CATEGORIES` list. **Nothing invented** - it is
+> the union of what the three already offered, since no document defines a canonical set
+> (the form audit only says "free varchar; consider a lookup"). Near-duplicates resolve to
+> whichever spelling more of the three already used, and every value in live data is
+> included.
+>
+> **No data changed.** Honest caveat: verified structurally, not in the browser - the picker
+> sits inside an edit modal behind an off-screen table column, so unlike the Penthouse fix
+> this one was not visually confirmed running.
+
+> **PREVIOUS CYCLE - commit `c62ca72`: the form audit is a stale defect register, and one row
 > nearly became a false alarm.**
 >
 > `docs/11_FORM_FIELD_AUDIT.md` is the same genre as the five stale registers already found.
@@ -220,7 +251,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**41 commits, all pushed to `main`. Working tree clean.**
+**43 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
