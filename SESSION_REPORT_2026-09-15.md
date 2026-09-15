@@ -7,7 +7,50 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST - commit `7124861`: your tenant directory was counting a prospect as a resident.**
+> **LATEST - commit `4170dfd`: a bank transfer taken at the door was recorded as GCash.**
+>
+> `payment_method_type` is `(Cash | GCash | Bank Transfer | Adyen Online)`. The on-site
+> payment modal offered **two** choices - "Cash" and "Online Payment" - and the API filed
+> "Online" as **GCash**. The reference box beside it asked for a **"Gcash / Bank Ref #"**.
+>
+> So the form invited a bank reference and then wrote the payment down as GCash, in the ledger
+> Mrs. Da Silva reconciles against her own book.
+>
+> It now offers **Cash, GCash and Bank Transfer** - the three that can actually be taken over
+> the counter. **'Adyen Online' is deliberately not offered**, in the form or the API: that
+> value is written by the gateway's webhook, and an administrator must not be able to assert
+> by hand that money arrived through Adyen.
+>
+> **Second thing, in the same write path.** `payments.payment_source` was **hardcoded** to
+> `'On-Site Cash'` on every row this endpoint writes - including rows whose `payment_method`
+> said GCash. Two columns of the same row contradicting each other. Nothing had noticed
+> because no hand-entered GCash row exists: all 15 live payments are 7 Cash and 8 Adyen
+> Online. It is now derived from the method, in the same shape as the literal already there.
+>
+> **Verified against the live API with nothing written** - every accepted value dies at the
+> room lookup, which happens before any insert:
+>
+> | sent | result |
+> |---|---|
+> | Cash | **404** accepted, no such unit |
+> | GCash | **404** accepted |
+> | **Bank Transfer** | **404** accepted — *could not be recorded before* |
+> | Online | **404** accepted, legacy spelling still honoured |
+> | **Adyen Online** | **422** refused — gateway-only, as intended |
+> | Cheque | **422** refused — not in the enum |
+>
+> `payments` 15 and `monthly_income_records` **937 before and after**; zero rows named "Audit
+> Probe" or invoiced "PROBE-0". In the browser, reading the live DOM: the method list is
+> exactly [Cash, GCash, Bank Transfer], and the reference field is disabled and optional for
+> Cash, enabled and required for the other two. Nothing was submitted.
+>
+> `check:api` 53/53, `check:billing` and `check:writes` both pass.
+>
+> **Also checked and correct, no change needed:** AdminEditUnitModal's
+> `OPERATIONAL_STATUS_OPTIONS` matches `operational_status_type` exactly, and
+> `UNIT_TYPE_CHOICES` still matches `room_type_enum` after `8434d45`.
+
+> **PREVIOUS - commit `7124861`: your tenant directory was counting a prospect as a resident.**
 >
 > `user_role_type` is `(admin, tenant, prospect)`, and `/admin/tenants` returns
 > `.in('role', ['tenant', 'prospect'])` **on purpose** - an enquirer promoted to a profile
@@ -535,7 +578,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**58 commits, all pushed to `main` (`3f87cfa`). Working tree clean.**
+**60 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
