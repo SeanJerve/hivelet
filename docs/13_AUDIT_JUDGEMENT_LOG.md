@@ -115,13 +115,21 @@ in the same file: both status badges read `status === 'vacant' ? 'Available'
 matching the price shown) and confirmed 32 of 33 units are Occupied, only PH
 Available, matching the dashboard's own "32 / 33 Units" exactly.
 
-A third thing surfaced in the same investigation and was **not** fixed:
-`room_photos` holds exactly one row across all 33 units (unit 1A, marked
-primary), and it is not a photo of a room - it is a ~210KB screenshot from an
-animated film. Deleting it would just revert unit 1A to the same "No photo
-yet" state already correct for the other 32 units, but the delete was refused
-by the environment's own shared-resource guardrail, correctly - this is data
-content, not a code defect, and stays open for Sean to decide.
+A third thing surfaced in the same investigation, initially left open: the one
+`room_photos` row on file (unit 1A, marked primary) was not a photo of a room -
+a ~210KB screenshot from an animated film. A first delete attempt was
+correctly refused by the environment's shared-resource guardrail, since a data
+content decision is Sean's call, not an engineering one. Sean confirmed:
+**"get rid of the generic photos or any photos we did not put yet."** That
+authorized two things, both done: the row is deleted, and a second, broader
+issue found while acting on it is fixed too - `fetchRooms()` (systemState.ts)
+had its own generic-photo fallback, a single hardcoded stock image shown for
+every one of the 32 units with no real photo, presented with the same
+confidence as a genuine upload. `canonicalUnits.ts` had already withdrawn its
+own round-robin stock photos in an earlier fix (see its own comment), but this
+second fallback survived that cleanup. Both fallbacks are gone; a unit photo
+is now the real upload or nothing. Verified live: all 33 units, 1A included,
+show the same honest "No photo yet" placeholder.
 
 ---
 
