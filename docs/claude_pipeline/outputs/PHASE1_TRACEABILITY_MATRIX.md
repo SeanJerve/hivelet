@@ -361,7 +361,21 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 > The bound that exists is `express.json({ limit: '1mb' })`, which caps a request rather than a
 > column - worth naming precisely rather than raising an alarm it does not deserve. Whether
 > attachments should go to object storage is the same decision as the tenant profile photo:
-> it costs storage, and it is Mrs. Da Silva's. The rows above are left in place rather
+> it costs storage, and it is Mrs. Da Silva's.
+>
+> ---
+>
+> **Fifth pass, the last three PARTIAL notes. One stands, two are half changed.**
+>
+> | Note | Retested 2026-09-15 |
+> | :--- | :--- |
+> | **FR-030** *"the `NetworkFirst` rule matches `/api/(public|health)` only … no authenticated resource is available offline"* | **Stands, unchanged.** The rule in `frontend/vite.config.ts` is still `/\/api\/(public|health)/i` with a 3-second timeout, a 30-entry cap and a one-hour expiry. Nothing authenticated is cached. |
+> | **FR-035** *"`POST /api/admin/income-records` resolves the active assignment but selects only `id, tenant_profile_id`; it never reads `anniversary_date` or `deposit_amount`"* | **Half changed.** That select now reads `id, tenant_profile_id, anniversary_date, occupant_count`, and the anniversary is used by `computeRentPeriod()` to derive the rent period (BR-033). **`deposit_amount` is still neither selected nor reused.** One clause of two, where before it was none of two. |
+> | **FR-039** *"each Property Area's monthly bottom total and each category's 'this month' total are computed by no route and stored in no column"* | **Half changed, in a way worth stating exactly.** Both are now computed **server-side**, in `expenseReportExport.ts`, for the Excel export - area bottom totals and the category summary, with the BR-047 reconciliation printed beside them. They are still **stored in no column**, and the figures **on screen** are still derived in `ExpensesLedgerView`. So: computed by the system of record when it exports, not when it renders. |
+>
+> *Two of these three moved from "not done" to "half done". Recording the half rather than the
+> headline is the whole value of a retest - "computed server-side for the export but not for
+> the screen, and persisted nowhere" is a sentence someone can act on. "Fixed" is not.* The rows above are left in place rather
 > than rewritten, so a reader can see what the table said and what was found - a register that
 > silently edits its own history is not more trustworthy for it.
 >

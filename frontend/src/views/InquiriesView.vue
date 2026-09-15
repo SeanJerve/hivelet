@@ -446,7 +446,7 @@ async function handleSendReply() {
     >
       <div class="surface-card w-full max-w-sm shadow-2xl rounded-2xl p-6 bg-white space-y-4 text-center">
         <div class="flex flex-col items-center gap-3">
-          <div class="w-12 h-12 rounded-full bg-[#fef3c7] text-[#d97706] flex items-center justify-center">
+          <div class="w-12 h-12 rounded-full bg-warning-soft text-warning-foreground flex items-center justify-center">
             <XCircle class="w-6 h-6" />
           </div>
           <h3 class="font-display font-extrabold text-lg text-foreground">{{ confirmTitle }}</h3>
