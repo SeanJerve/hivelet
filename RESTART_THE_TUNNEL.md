@@ -30,26 +30,32 @@ repoint Adyen when it restarts.
 
 ---
 
-## Step 0 — install `cloudflared` (once, ever)
+## Step 0 — install `cloudflared` — **ALREADY DONE on Sean's machine**
 
-It is **not currently installed on this machine**, so this has to happen first.
-In PowerShell:
+Installed 2026-09-15: **cloudflared 2026.9.1**, at
+`C:\Program Files (x86)\cloudflared\cloudflared.exe`, on the machine PATH.
+
+Smoke-tested at the same time — it reached Cloudflare and issued a working
+tunnel, so the install, the network path and the firewall are all fine. That test
+tunnel was closed immediately; its address was single-use and is already dead.
+
+**One catch:** a terminal that was already open when it installed will not see it.
+If `cloudflared --version` says "not recognized", close that window and open a
+new one.
+
+<details>
+<summary>If you ever need to install it again, on another machine</summary>
 
 ```powershell
 winget install --id Cloudflare.cloudflared
 ```
 
-Then **close and reopen the terminal** — the PATH will not update in a window
-that was already open. Check it took:
+Then reopen the terminal and check with `cloudflared --version`. If `winget`
+gives trouble, download `cloudflared-windows-amd64.exe` from Cloudflare's
+releases page, rename it `cloudflared.exe`, and call it as `.\cloudflared` from
+whichever folder you put it in.
 
-```powershell
-cloudflared --version
-```
-
-If `winget` gives you trouble, the alternative is to download
-`cloudflared-windows-amd64.exe` from Cloudflare's releases page, rename it to
-`cloudflared.exe`, and run it from the folder you put it in with `.\cloudflared`
-instead of `cloudflared`.
+</details>
 
 ---
 
@@ -180,3 +186,13 @@ cloudflared tunnel --url http://localhost:5000
 #       <that address>/api/public/payments/adyen/webhook
 #       → Test → expect 200
 ```
+
+**What Claude can and cannot do for you here.** It can install `cloudflared`,
+start the backend, start the tunnel and read the address out — and it can curl
+the endpoint to confirm it is reachable. It **cannot** touch Adyen: that is a web
+dashboard behind your login, and no Claude session has a browser or your
+credentials. Pasting the URL in and pressing Test is always yours. Four clicks.
+
+Also worth knowing: a tunnel started by a Claude session **dies when that session
+ends**. Useful for proving the setup works, not for actually running a demo. Start
+it yourself in a terminal you control and leave that window open.
