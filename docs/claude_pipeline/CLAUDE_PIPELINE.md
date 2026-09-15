@@ -1,4 +1,27 @@
 # CLAUDE AI BACKEND & SYSTEMS MODELING PIPELINE
+
+> [!CAUTION]
+> **SUPERSEDED IN PART — do not enforce Section 4's "immutable business rules" table.**
+>
+> That table numbers seven **architectural pillars** as `BR-001`..`BR-007`. Those
+> identifiers collide with the canonical business rules of the same numbers in
+> `docs/02_BUSINESS_RULES.md`, which mean entirely different things. The pillars were
+> renumbered **ARCH-001..ARCH-007** and must never carry a `BR-` prefix again. The full
+> side-by-side is in `docs/claude_pipeline/outputs/PHASE1_BR_CROSSWALK.md` Section 3.
+>
+> Three of those rows also carry content that has since been **withdrawn outright**:
+>
+> | Row | Status |
+> | :--- | :--- |
+> | `BR-001` "Main Building, Annex A, Annex B" | **Not cluster names and must never appear as such.** The five clusters are BH, Back Apartment, Front Apartment, Penthouse, Linda. "Annex" is the family's word for a *floor*. M-07, §3.1. |
+> | `BR-003` revenue-share framing | **Banned wording, corrected below.** `fifty_percent_share` is a system-computed figure equal to half that row's Rent Amount, retained for ledger parity with the owner's historical spreadsheet. **No party, recipient, purpose or destination is modelled or implied.** BR-035, and a hard editorial constraint. |
+> | `BR-004` "2% Annual Rate Escalation" | **Withdrawn in full**, client-confirmed 2026-09-13. There is no automatic adjustment and no system-generated recommendation. The owner sets rates by hand; only the change history is kept. E-20, M-11. |
+>
+> **Checked 2026-09-15: this file carried no supersession marker at all**, while instructing
+> that every table, endpoint and diagram "must strictly enforce" the rules below. A session
+> following it would have enforced banned wording, a withdrawn feature and wrong cluster
+> names. That is what this banner exists to stop.
+
 ## Hivelet: Web-Based Boarding House Management & Financial Operations System
 ### Fe Galang Da Silva Boarding House | Bicol University Capstone Project 2 (IT 124)
 
@@ -11,7 +34,7 @@ You are **Claude**, acting as the **Principal Backend Architect, Database Admini
 
 * **Academic Institution:** Bicol University College of Science (BUCS), Department of Computer Science & Information Technology.
 * **Course:** IT 124 — Capstone Project 2 (System Design Refinement & Implementation).
-* **Target Enterprise:** Fe Galang Da Silva Boarding House, Legazpi City (3 Floors, 33 Rentable Units across 3 Clusters: Main Building, Annex A, Annex B).
+* **Target Enterprise:** Fe Galang Da Silva Boarding House, Legazpi City — **33 rentable units across 5 clusters** (BH 22, Back Apartment 5, Front Apartment 3, Penthouse 1, Linda 2), on **three residential floors plus a rooftop penthouse level**, distribution 11 / 11 / 10 / 1. *(Corrected 2026-09-15: this read "3 Floors, 33 Rentable Units across 3 Clusters: Main Building, Annex A, Annex B". The cluster count was wrong and those three are not cluster names — "Annex" is the family's word for a floor. BR-032, M-07.)*
 * **Project Team Members:**
   * **Sean Jerve Ll. Rebancos** — System Architect / Full-Stack Developer
   * **John Lloyd M. Cuario** — Database Administrator / Data Analyst
@@ -137,10 +160,10 @@ Every database table, backend endpoint, and architectural diagram produced by Cl
 
 | Rule ID | Rule Name | Specification |
 | :--- | :--- | :--- |
-| **BR-001** | **Room-Centric Tenancy** | Units (33 units across Main Building, Annex A, Annex B) have unique IDs. Rooms are the primary operational unit. Tenancy leases are tied directly to specific rooms. |
+| ~~**BR-001**~~ **ARCH-001** | **Room-Centric Tenancy** | Units (**33 units across five clusters: BH, Back Apartment, Front Apartment, Penthouse, Linda** — *not* "Main Building / Annex A / Annex B", which are not cluster names) have unique IDs. Rooms are the primary operational unit. Tenancy leases are tied directly to specific rooms. |
 | **BR-002** | **Dynamic Utility Water Calculation** | Water billing is **strictly dynamic and configurable**, read from `system_settings.water_rate_per_occupant` (defaulting to **₱200/head/month**, but never hardcoded). Formula: `water_amount = active_headcount * rate`. Also supports unit-specific overrides in `system_settings` (e.g., `linda_lf_water_charge` at ₱400, `linda_lb_water_charge` at ₱200 remitted to Linda per `BR-040`). |
-| **BR-003** | **50% Co-Ownership Revenue Share** | Net rental income from the boarding house is split **50% to Mrs. Fe Galang Da Silva** and **50% to the co-owner**. Income ledgers must track this split automatically upon payment verification. |
-| **BR-004** | **2% Annual Rate Escalation Tracking** | Room price adjustments have a historical baseline of 2% annual reviews. The database must record price changes in `room_price_history` with timestamps and administrative rationale. |
+| ~~**BR-003**~~ **ARCH-003** | **Derived Half-of-Rent Ledger Column** | **Corrected 2026-09-15 — the original wording is withdrawn in full and must not be reintroduced.** `monthly_income_records.fifty_percent_share` is a **system-computed figure equal to exactly half that row's Rent Amount**, retained so the ledger reconciles line-for-line with the owner's historical spreadsheet. It is `GENERATED ALWAYS AS (rent_amount / 2.0) STORED`, so PostgreSQL derives it and rejects any write naming it. **No party, recipient, purpose or destination is modelled or implied.** Canonical **BR-035**. |
+| ~~**BR-004**~~ **ARCH-004 Rate Change History** | **The escalation half is WITHDRAWN IN FULL** (client-confirmed 2026-09-13; E-20, M-11). There is no automatic adjustment and no recommendation of any kind — the owner sets rates by hand. What survives is the record-keeping: every manual change is preserved in `room_price_history` with the previous rate, the new rate, the effective date and its author, held since migration `020` by an `AFTER UPDATE` trigger so it cannot be bypassed. Anchored to canonical **BR-003** Historical Preservation. ~~Room price adjustments have a historical baseline of 2% annual reviews.~~ The database must record price changes in `room_price_history` with timestamps and administrative rationale. |
 | **BR-005** | **Hybrid Decoupled Payment Gateway Architecture** | **On-site cash payment is the primary, preferred settlement method** (`FR-014`). For digital payments, a **Hybrid Payment Gateway** supports optional GCash settlement via Adyen (`BR-016`, `FR-015`):<br/>• **Live / Sandbox Auto-Switch**: Uses real Adyen v71 API if `.env` keys exist; otherwise activates an internal academic sandbox simulation portal without requiring external API dependencies.<br/>• **Admin Sovereign Verification Gate (`BR-017`, `FR-016`)**: Gateway completion does NOT auto-settle bills; transactions are inserted as `Pending Verification`. The administrator retains final verification authority.<br/>• **Atomic Financial Synchronization**: Verification atomically updates the bill to `Paid`, records the 50% revenue share in `monthly_income_records`, and logs an immutable audit trail. |
 | **BR-006** | **Backend-Enforced Security Boundary** | Express.js is the sole security perimeter. The Supabase `service_role` key is strictly kept on the backend. Row Level Security (RLS) denies public anon access. Role-Based Access Control (`admin` vs `tenant`) is verified on every protected API route via JWT. |
 | **BR-007** | **Immutable Audit Trail** | All critical administrative, financial, and lease actions must generate an append-only record in `audit_logs` capturing `user_id`, `action`, `entity_type`, `entity_id`, `old_values` (JSONB), `new_values` (JSONB), `ip_address`, and `user_agent`. |
@@ -174,7 +197,7 @@ sequenceDiagram
     Admin->>API: PATCH /api/admin/payments/:id/verify { verification_status: 'Verified' }
     API->>API: Update `payments` (verification_status: 'Verified', verified_by, verified_at)
     API->>API: Update `bills` (status: 'Paid')
-    API->>API: Synchronize into `monthly_income_records` (rent, 50% co-owner share, dynamic water)
+    API->>API: Synchronize into `monthly_income_records` (rent, derived half-of-rent column, dynamic water)
     API->>API: Dispatch notification to Tenant & write audit log (PAYMENT_VERIFY)
     API-->>Admin: Return success confirmation
 ```
