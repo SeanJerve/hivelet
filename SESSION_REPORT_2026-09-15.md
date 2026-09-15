@@ -7,7 +7,57 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST CYCLE: clean - nothing to fix. Inquiry status handling checked and correct.**
+> **LATEST: PHONE NUMBER SIGN-IN NOW WORKS, END TO END** - `43c4608`, `d8d6013`, `1732474`,
+> plus migration `021`.
+>
+> You caught me doing half the job here, and you were right. My first pass made email optional
+> and then created a login only when an email existed - so a phone-only tenant became a record
+> with no way in. That is not what OD-09 means.
+>
+> **The database had been built for phone login and nothing ever used it:**
+>
+> ```
+> profiles_login_identifier_required
+>   CHECK (password_hash IS NULL OR email IS NOT NULL OR phone_number IS NOT NULL)
+> idx_profiles_phone_login
+>   UNIQUE ON normalize_ph_phone(phone_number)
+>   WHERE phone_number IS NOT NULL AND password_hash IS NOT NULL
+> normalize_ph_phone(text)   -- folds 0917... / +63917... / 63917...
+> ```
+>
+> A unique index whose predicate is "has a phone AND has a password", next to a Philippine
+> mobile normaliser. Someone built that deliberately. `authService` still looked people up by
+> email alone.
+>
+> **What I did:**
+> - **Migration 021** adds `resolve_login_identifier()` - one credential row from an email OR a
+>   normalised phone. Deliberately a *database* function: phone matching must use the same
+>   expression the unique index is built on. A second copy of that regex in TypeScript could
+>   drift from the index silently, which is the exact failure this whole audit has been about.
+> - Email is matched first, so an address can never be shadowed by a phone. Blank or
+>   punctuation-only input matches nothing.
+> - Login route takes `identifier`, still accepts `email` as an alias.
+> - The form now says **"Email or phone number"**; sign-up keeps requiring an address.
+>
+> **Verified with real logins, not just builds** - tenant Alberto Mestiola, stored as
+> 0917-949-4909:
+>
+> | Input | Result |
+> | :--- | :--- |
+> | by email | 200 |
+> | `0917-949-4909` | 200 |
+> | `+639179494909` | 200 |
+> | `09179494909` | 200 |
+> | unknown phone | 401 |
+> | wrong password | 401 |
+> | admin by email | 200 (regression) |
+>
+> Then through the actual browser: signed in with **+639179494909** and landed on his real
+> portal - Unit 1F, PHP 4,500, Settled.
+>
+> check:api 53/53, check:adyen 23/23, check:rules, check:secrets, both builds clean.
+
+> **PREVIOUS CYCLE: clean - nothing to fix. Inquiry status handling checked and correct.**
 >
 > Chased the inquiry status vocabulary, expecting the same shape as the four bugs above.
 > `InquiriesView` has **no `<option>` elements at all** and declares a filter typed
