@@ -7,7 +7,52 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST - commit `b11652d`: the onboarding form still demanded an email the database
+> **LATEST - commit `df4e817`: four of your active residents could not be edited at all.**
+>
+> `systemState` gives a tenant with no room assignment the unit code **—**. The Edit Resident
+> modal set its Target Unit dropdown to that value - and **—** matches none of its options,
+> because every option is a real unit. So the browser rendered the box **empty**, and
+> `required` then refused to submit the form.
+>
+> That is not cosmetic. **Four active residents hold no assignment today** - John Lloyd
+> Cuario, Mireel Fatima Parcarey, Nikki Prollamante, Ron Juliene Dominguino, 4 of 43 active.
+> Their account status and roommate count **could not be changed at all**, because saving
+> anything demanded a unit selection first. The only way to edit one of them was to assign
+> them a unit they may not actually have.
+>
+> "No unit assigned" is now an option of its own, so the state shows honestly and the form
+> submits. It is `disabled`, so a resident who *has* a unit cannot be un-assigned from this
+> dropdown - releasing a unit is what **Settle Vacancy** is for, and that path closes the
+> tenancy properly.
+>
+> **The second half is why the first had to be careful.** The API treats
+> `roomNumber !== undefined` as *"the assignment is being changed"*: it closes the active
+> tenancy and frees the unit **first**, and only then reads the value - where **—** and
+> **none** are its own sentinels for *leave them unassigned*. Sending **—** from a form whose
+> real subject is the occupant count would have **ended a tenancy as a side effect**. The
+> payload now omits `roomNumber` unless a real unit is picked, so that branch is never
+> entered by accident.
+>
+> **Verified in the running app as the administrator, on John Lloyd Cuario's record - by
+> measuring the live form rather than describing it:**
+>
+> | | Target Unit | form submits? |
+> |---|---|---|
+> | with the fix | value `—`, text **"No unit assigned"** | **yes** |
+> | with that option removed again | value `""`, nothing selected | **no** — *"Please select an item in the list."* |
+>
+> Nothing was saved; no row was written. Live figures: 45 profiles, 43 active tenants,
+> 1 vacated, 4 never assigned.
+>
+> **Also checked this cycle and found correct - no change needed:** `account_status_type` is
+> exactly `(active, inactive)` and the status picker maps its two options 1:1, so nothing is
+> silently rewritten; **neither Excel export references an email at all**; the edit modal's
+> save payload never carried email or phone, so the em-dash placeholder is never written; and
+> `inquiries.prospect_name/_email/_phone` are all NOT NULL with min-length validation at the
+> API, so the em-dash fallback on the inquiry path is **unreachable** - a correct defensive
+> default, not a defect.
+
+> **PREVIOUS - commit `b11652d`: the onboarding form still demanded an email the database
 > stopped requiring.**
 >
 > Mrs. Da Silva answered OD-09 on 2026-09-13: *"Do tenants need an email address to exist in
@@ -456,7 +501,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**56 commits on `main`. Working tree clean.** The last two - `b11652d` and this report update - are committed locally but **not yet pushed**: the push was blocked here and needs you to run it (`git push origin main`).
+**57 commits on `main`. Working tree clean.** The last few - from `b11652d` onward - are committed locally but **not yet pushed**: the push was blocked here and needs you to run it (`git push origin main`).
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
