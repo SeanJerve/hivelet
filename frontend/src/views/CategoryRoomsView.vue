@@ -10,7 +10,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { CANONICAL_UNITS, peso, type RentableUnit } from '@/lib/canonicalUnits';
-import { isLiveChatheadOpen, showToast, LANDLADY, rooms, fetchRooms } from '@/lib/systemState';
+import { isLiveChatheadOpen, showToast, LANDLADY, rooms, fetchRooms, roomsFetchFailed } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -334,6 +334,18 @@ async function submitInquiry() {
         <p class="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
           {{ currentCat.blurb }} Showing all {{ categoryUnits.length }} units in this category. Click any unit card below to inspect details.
         </p>
+        <!-- fetchRooms() falls back to the canonical seed prices/photos on a
+             failed request rather than leaving the page blank - reasonable for
+             a public listing, but that fallback must not be presented as a
+             confirmed live rate. roomsFetchFailed (systemState.ts) says which
+             it is. -->
+        <div
+          v-if="!isLoading && roomsFetchFailed"
+          class="mt-2 inline-flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800"
+        >
+          <span class="font-bold">Live pricing unavailable right now.</span>
+          <span>Rates below are the property's standard listing and may not reflect a recent change. Contact us to confirm before visiting.</span>
+        </div>
       </div>
     </div>
 
