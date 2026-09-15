@@ -256,9 +256,18 @@ router.get(
   asyncHandler(async (req, res) => {
     const { data, error } = await db
       .from('maintenance_tickets')
+      /**
+       * The tenant's own attachments come back with the ticket.
+       *
+       * They did not, and the effect was quiet: a resident photographs a leaking pipe,
+       * attaches it, submits, and can never see it again. The administrator's list selects
+       * `ticket_attachments` and always has; this one did not, so the only person who could
+       * not see the photo was the person who took it.
+       */
       .select(
         'id, title, description, category, priority, status, created_at, resolved_at, ' +
-          'closed_at, rooms:room_id (id, room_number)'
+          'closed_at, rooms:room_id (id, room_number), ' +
+          'ticket_attachments (id, file_url, file_type)'
       )
       .eq('tenant_profile_id', req.user!.profileId)
       .order('created_at', { ascending: false });

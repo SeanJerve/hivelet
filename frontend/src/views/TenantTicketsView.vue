@@ -43,6 +43,7 @@ interface TicketRow {
   created_at: string;
   resolved_at: string | null;
   rooms?: { id: string; room_number: string } | null;
+  ticket_attachments?: { id: string; file_url: string; file_type: string | null }[] | null;
 }
 
 interface TicketNote {
@@ -701,6 +702,32 @@ function statusClass(status: string) {
                 <!-- Body: description -->
                 <div class="px-5 py-3.5 bg-background">
                   <p class="text-xs text-foreground-soft leading-relaxed">{{ ticket.description }}</p>
+
+                  <!--
+                    The photo the resident attached, shown back to them.
+
+                    `GET /api/tenant/my-tickets` did not select `ticket_attachments`, while the
+                    administrator's list always has - so the only person who could not see the
+                    photo was the one who took it.
+                  -->
+                  <div v-if="ticket.ticket_attachments?.length" class="mt-3">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      Photo you attached
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                      <a
+                        v-for="att in ticket.ticket_attachments"
+                        :key="att.id"
+                        :href="att.file_url"
+                        target="_blank"
+                        rel="noopener"
+                        class="block size-20 rounded-xl overflow-hidden border border-border bg-white"
+                        title="Open the full-size photo"
+                      >
+                        <img :src="att.file_url" alt="Photo attached to this request" class="w-full h-full object-cover" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Footer: classification metadata + View Timeline button -->

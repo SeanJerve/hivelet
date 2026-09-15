@@ -331,7 +331,37 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 > | **FR-008** *"`GET /api/admin/rooms` selects only `clusters` and `room_photos` … the data is written and then unreachable from the admin surface"* | **Half changed, and the half matters.** Since `b593166` that select also returns `room_assignments` with the occupant's profile, so *who lives in a unit* is now reachable. **The timeline is not:** the embedded select carries no `start_date` or `end_date`, and `room_price_history` is still read only inside the price-change write path - to attribute the row it has just written - never retrieved for display. The occupancy history and the price history remain unreachable. |
 >
 > *FR-008 is the shape worth noticing: a claim can be half true after a change, and saying
-> "fixed" would be as wrong as leaving it. The precise statement is the useful one.* The rows above are left in place rather
+> "fixed" would be as wrong as leaving it. The precise statement is the useful one.*
+>
+> ---
+>
+> **Fourth pass: FR-022 and FR-026.**
+>
+> **FR-026 stands.** Its subject is the *prospect's* side - a prospect has no account and no
+> public endpoint to reply on, so the inquiry thread is one-directional from them. The two
+> inquiry fixes made on 2026-09-15 (`cabe216`, `09de591`) repaired the **administrator's** side,
+> which had been failing entirely. Different half of the same feature; the note is untouched.
+>
+> **FR-022 was half right, and the wrong half has been fixed.**
+>
+> *"`GET /api/tenant/my-tickets` does not select `ticket_attachments`, so a tenant cannot see
+> the photo they themselves attached"* - **true, and now closed.** The administrator's list had
+> always selected attachments; the tenant's never did, so the only person who could not see the
+> photo was the one who took it. Both the endpoint and the ticket card now return and render
+> it.
+>
+> *"No upload endpoint exists … the Tier 5 Supabase Storage write is performed by the client"* -
+> **true as far as it goes, and the live rows show two different mechanisms.** Of the two
+> attachments in the database, one is a real `https://storage.hivelet.…` URL of 50 characters;
+> the other is a **142,351-character `data:image/jpeg;base64,…` string stored in the column**,
+> produced by the current client, which reads the file with `FileReader` and posts the data URL
+> rather than uploading it. `ticketSchema` accepts `fileUrl: z.string().min(1)` with **no
+> maximum** and up to ten attachments.
+>
+> The bound that exists is `express.json({ limit: '1mb' })`, which caps a request rather than a
+> column - worth naming precisely rather than raising an alarm it does not deserve. Whether
+> attachments should go to object storage is the same decision as the tenant profile photo:
+> it costs storage, and it is Mrs. Da Silva's. The rows above are left in place rather
 > than rewritten, so a reader can see what the table said and what was found - a register that
 > silently edits its own history is not more trustworthy for it.
 >
