@@ -25,7 +25,45 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `de8c0d4`: two registers in your own repository disagreed about the same
+> **LATEST - commit `da36a37`: the System Bible was ahead of the code, not behind it.**
+>
+> Every defect register retested today had gone stale by **overstating** problems. The System
+> Bible is the opposite case, and a reader should be told which kind of document they are
+> holding - so the note now sits at its head.
+>
+> **The normative statements tested are implemented:**
+>
+> | Statement | Where it lives |
+> |---|---|
+> | §7 a reserved room must not accept new inquiries | `public.ts:187` refuses with a conflict |
+> | §6 a room must not lose its historical record | `ON DELETE RESTRICT` on bills, payments and income records - and all 33 rooms hold some |
+> | §12 a payment is pending until the administrator verifies it | the gateway inserts `'Pending Verification'`; only an explicit action settles a bill |
+> | §20 authorization enforced at the backend | RLS forced on all 21 tables, zero policies; every route carries `requirePermission` |
+>
+> **Three statements were true in intent and false in fact this morning. Today closed all
+> three:**
+>
+> | Statement | What was actually true at 09:00 | Closed by |
+> |---|---|---|
+> | §7 *"hidden by administrator decision"* | the column, the API and the public filter all existed; **no control could set it** | `17095f3` |
+> | §9 step 6, *"Administrator communicates with the prospect"* | replies failed with "Inquiry not found"; reading a thread returned a 500 | `cabe216`, `09de591` |
+> | §9 step 10, *"it is closed with an appropriate outcome"* | `Closed` existed in the enum and **nothing ever wrote it** | `6f59ebe` |
+>
+> **Why this document holds where the registers did not, in one line:** the Bible describes
+> what the system is *for*, and intent ages slowly. A defect register describes what was wrong
+> on a particular afternoon, and that ages the moment someone fixes something.
+>
+> **What was not tested is stated in the note itself:** statements phrased "should" rather than
+> "must" were not systematically checked, and onboarding guards duplicate people by email and
+> by credentialed phone, not by name.
+>
+> **One thing worth admitting.** My first draft of that note cited four section numbers written
+> from memory, and all four were wrong - §8 for §6, §16 for §12, §11 for §9, §18 for §19. I
+> caught them by resolving each against the document before committing. Four untrue references
+> inside a note whose entire subject is documents making untrue claims would have been a poor
+> way to end the day.
+
+> **PREVIOUS - commit `de8c0d4`: two registers in your own repository disagreed about the same
 > fact.**
 >
 > **E-17** recorded the two unauthenticated payment endpoints as **closed on 2026-09-14**.
@@ -1270,7 +1308,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**92 commits, all pushed to `main`. Working tree clean.**
+**94 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
