@@ -1,5 +1,30 @@
 # HIVELET FORM & DATA-FLOW AUDIT
 
+> [!IMPORTANT]
+> **Spot-checked 2026-09-15: this is a historical defect register and its FIX items are
+> substantially stale. Do not work from it without re-checking each row against live code.**
+>
+> Two things date it immediately. It audits **`website/src/`**, a directory that no longer
+> exists — the frontend is `frontend/src/` — and it describes a state where "the UI stops
+> using `systemState.ts` mock data", which happened long ago.
+>
+> Of the rows checked against the running system today:
+>
+> | Row | Claim | Verified 2026-09-15 |
+> | :--- | :--- | :--- |
+> | §2 `ticketPriority` | "dropdown omits `Low`, which BR-021 requires" | **Fixed.** All three priority pickers — `TenantPortalView`, `TenantTicketsView`, `MaintenanceDispatchView` — offer Low / Medium / High / Emergency, matching `ticket_priority_type`. |
+> | §2 `paymentMethod` | "UI emits `Cash`/`Online`; enum is `Cash`/`GCash`/`Bank Transfer`/`Adyen Online`" | **Resolved, though the UI still emits `Online`.** It never reaches the enum: `POST /api/admin/income-records` accepts `Cash`/`Online`/`GCash` at its boundary and normalises to `GCash` before the write (`admin.ts`). `IncomeCollectionsView` maps to `GCash` client-side as well. |
+> | §3 preamble | "Every one of these will throw a Postgres enum error on first write" | **Not true of the rows checked.** Both above are handled. |
+>
+> **This box records a spot-check, not a full re-verification** — the remaining rows were not
+> individually retested, and some may still be live. Treated as a lead list rather than a
+> defect list.
+>
+> One genuine defect of exactly this shape *was* found and fixed the same day, so the genre
+> is worth taking seriously even though this particular register has aged: the expense
+> Property Area picker omitted **Penthouse**, making penthouse costs unallocatable
+> (`430d4e1`).
+
 **Scope:** every form, input, select, textarea and file picker in `website/src/`
 (the live app on port 5174), mapped against the live Supabase schema.
 
