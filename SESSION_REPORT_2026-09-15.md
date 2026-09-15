@@ -25,7 +25,37 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `62ea98b`: 6 of the traceability matrix's 83 route citations point at the
+> **LATEST - commit `82a32fc`: four more notes stale - and one of my own corrections was
+> wrong.**
+>
+> Second pass over the same table, this time the PARTIAL rows and the per-requirement notes:
+>
+> | Note | What it says | Retested |
+> |---|---|---|
+> | **FR-034** | *"the backend multiplies by a literal `200` … a configured rate that nothing reads"* | **No longer true** - `computeWaterFee()` reads the configured rate, and the comment beside it names the change |
+> | **FR-036** | *"**zero backend lines** read or write any of them"* | **No longer true** - `computeWaterFee()` calls `getLindaFixedWaterCharge()` first, the exact case BR-040 excludes |
+> | **FR-032** | *"**zero of three** auto-computations persist"* | **Backwards now** - the period is derived from the stored anniversary, and the other two are `GENERATED ALWAYS` columns in your database, which is *why* the handler does not write them. Three of three |
+> | **FR-015** | row says **IMPLEMENTED**, table counts it **PARTIAL** | the table disagrees with its own row; the row is right |
+>
+> ---
+>
+> **And a correction to my own work from one commit ago.**
+>
+> `80311d9` marked **FR-033 implemented**, citing the occupant count carried forward from the
+> tenancy. **That was too generous — and this document had already answered it.** The FR-033
+> note considers exactly that evidence and rejects it: the carry-forward is
+> *assignment-scoped*, while FR-033 asks for *month-scoped* pre-fill from the same tenant's
+> previous month entry. Retested today: **nothing reads the prior month's occupants.**
+>
+> **FR-033 stands as MISSING. The corrected count is 3, not 2.**
+>
+> I recorded that in the document rather than quietly editing my own line. A retest that
+> overturns a register's judgement without engaging its stated reasoning is not a retest - and
+> on this row **the document's reasoning was better than mine.** The whole point of the
+> exercise is that a register should be trusted only as far as it has been checked, and that
+> applies to my corrections too.
+
+> **PREVIOUS - commit `62ea98b`: 6 of the traceability matrix's 83 route citations point at the
 > right line.**
 >
 > **Measured, not estimated.** A committed script extracts every
@@ -1377,7 +1407,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**98 commits, all pushed to `main`. Working tree clean.**
+**100 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
