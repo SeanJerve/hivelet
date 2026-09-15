@@ -7,7 +7,58 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST - commit `be9adaf`: the maintenance board said "Close & Resolve" and could only
+> **LATEST - commit `21568a5`: correcting a typo in the ledger rewrote how the money had been
+> received.**
+>
+> `4170dfd` fixed the on-site payment modal's two-option method dropdown an hour ago. **The
+> ledger page has its own copy of that form** - it both creates and edits records - and it
+> still offered "Cash" and "Online Payment" beside a box asking for a "Gcash / Bank Ref #".
+> Finding the first one did not find the second. An inventory of **every `<option value>`
+> literal in the app** did.
+>
+> **The edit path was the worse half.** `startEditIncome()` loaded the record and then threw
+> two of its fields away:
+>
+> ```
+> editMethod.value = 'Cash';
+> editReference.value = '';
+> ```
+>
+> and the payload PATCHed `paymentMethod: 'Cash'` over the top. So opening a receipt to
+> correct a rent amount **also restated how the money arrived and dropped its reference
+> number** - in Mrs. Da Silva's ledger, silently, with nothing on screen suggesting it had
+> changed.
+>
+> All 937 live rows are Cash with no reference, so nothing has been lost. It became reachable
+> an hour ago, when `4170dfd` made GCash and Bank Transfer recordable in the first place.
+>
+> The form now loads what the row holds and sends it back. `IncomeRecord` carries
+> `transactionReference`, which had never been mapped - so the form had nothing to restore
+> even in principle. **'Adyen Online' is never offered** - only the gateway's webhook may
+> assert money came through Adyen - but it *is* accepted as a loaded value and shown disabled,
+> so opening a gateway receipt to fix a typo puts the method back unchanged. Same shape as the
+> "No unit assigned" option in `df4e817`.
+>
+> **Verified by stubbing `window.fetch` so the request was captured and BLOCKED rather than
+> sent**, then reading what the form would have submitted:
+>
+> ```
+> PATCH /api/admin/income-records/5168ce25-...
+> {"roomNumber":"1C", ..., "paymentMethod":"Bank Transfer",
+>  "transactionReference":"BDO-AUDIT-PROBE", "monthsCovered":1}
+> ```
+>
+> Before this change the same click would have sent `"Cash"` and no reference.
+>
+> `monthly_income_records` **937 rows, 0 non-Cash, 0 with a reference, 0 probe rows**, and
+> `max(updated_at)` still **2026-08-28** - nothing was written to your ledger today.
+>
+> **Also checked and found correct, no change needed:** `bill_status_type` and
+> `bill_type_enum` have no UI picker at all - bills are system-generated, 'Overdue' is a
+> computed `effective_status` that nothing ever writes (documented in both route files), and
+> 'Partially Paid' and 'Combined' are already handled in `billingService` and the Adyen path.
+
+> **PREVIOUS - commit `be9adaf`: the maintenance board said "Close & Resolve" and could only
 > ever resolve.**
 >
 > `ticket_status_type` is `(Submitted | In Progress | Resolved | Closed)`. The dispatch board
@@ -622,7 +673,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**62 commits, all pushed to `main`. Working tree clean.**
+**64 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
