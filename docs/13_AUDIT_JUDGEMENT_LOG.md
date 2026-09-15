@@ -77,14 +77,31 @@ confirmed with nothing written. A partial payment was recorded and the debt left
 standing. A security check reported green while testing nothing. That is the
 argument for automated verification, stated better than any principle.
 
-### A fifth sweep worth doing, not yet done
+### A fifth sweep, run 2026-09-15
 
-**Empty versus unknown, across every view.** Two instances were fixed — the
-verification queue and the dashboard's pending figure. The pattern is: a fetch
-fails, state stays at its initial value, and a zero or an empty list renders as a
-*fact*. `AdminOverviewView`, `CategoryRoomsView` and `TenantPortalView` all have
-silent catches around fetches that feed figures. They were judged lower
-consequence and left. They are still worth reading.
+**Empty versus unknown, across every view.** The pattern: a fetch fails, state
+stays at its initial value, and a zero or an empty list renders as a *fact*.
+Three instances were already fixed before this sweep — the verification queue,
+the dashboard's pending figure, and (found already correct on inspection this
+time) `TenantPortalView`, which surfaces `loadError` in a visible banner and
+gates its "Nothing outstanding" badge on `!loadError`. It needed no change.
+
+`AdminOverviewView`'s other three KPI cards did not: `fetchRooms()`,
+`fetchIncomeRecords()` and `fetchMaintenanceTickets()` each caught their own
+error, logged a `console.warn`, and returned the array unchanged, so a failed
+refresh rendered "₱0 collected", "0 / 33 Units, 0% occupied" and "0 Open — All
+tickets handled" — the exact false-affirmative pattern already fixed once for
+the verification queue, not carried to its siblings. Fixed by adding a
+`*FetchFailed` ref per array in `systemState.ts`, the same shape as the
+existing `pendingPaymentsFailed`. Verified live: backend stopped mid-session to
+force a genuine failure, each card fell back to "—" with its retry message,
+then recovered cleanly once the backend came back.
+
+`CategoryRoomsView` still has it — the public room listing falls back to
+`CANONICAL_UNITS`' seeded prices and photos with no signal when the live fetch
+fails, which is a real prospect-facing risk (a quoted price could be stale) but
+was judged lower consequence than the admin financial dashboard and left,
+consistent with the instruction below not to mass-fix a sweep's output.
 
 ---
 
