@@ -91,7 +91,37 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST - commit `a010e3f`: closing the questions that were mine, not yours.**
+> **LATEST - commit `5267ad8`: the business-rule register read against the live system - and it
+> holds. A clean cycle.**
+>
+> Forty-nine rules that had **never** been checked against running code. `check:rules` proves
+> the register is internally consistent - that its ids resolve and its cross references agree -
+> **not** that the system obeys it. Five of the most falsifiable were traced to their
+> implementation and to live rows:
+>
+> | Rule | Checked against |
+> |---|---|
+> | **BR-003** Historical Preservation | ledger tables are `ON DELETE RESTRICT` from `rooms`; all 33 rooms hold some |
+> | **BR-007** Website Visibility | enforced in three places in `public.ts`, and settable since `17095f3` |
+> | **BR-009** Inquiry Conversion | `converted_tenant_id` is written by the inquiry PATCH |
+> | **BR-011** Overdue | a Paid bill is never overdue; otherwise the bill's **own stored** window is used |
+> | **BR-012** No Grace Period | `grace_period_days` is **0** live, and read from settings rather than pinned in code |
+>
+> **The BR-012 errata was tested against the data and is right - including the part that looks
+> like a discrepancy.** Both live bills carry a grace window **seven days** after their due
+> date: 2026-07-05 → 07-12, and 2026-09-05 → 09-12. That is not old policy leaking. Both were
+> created **before migration 016**, and BR-003 says a bill keeps the terms it was issued under;
+> `isOverdue()` honours each bill's own window rather than applying today's policy
+> retroactively. Worth writing down, because the next reader will see **7** where the rule says
+> **0** and reach for the wrong conclusion.
+>
+> **What the note does not claim:** forty-nine rules, five tested. What it establishes is the
+> *kind* of document this is - one that describes intent and has been kept, like the System
+> Bible, rather than one that describes a particular afternoon and decayed, like every defect
+> register retested today. **The untested rules are unverified, not wrong**, and the note says
+> so rather than implying a clean bill of health.
+
+> **PREVIOUS - commit `a010e3f`: closing the questions that were mine, not yours.**
 >
 > Fair complaint, acted on: several things had been parked as "needs a decision" that were
 > engineering calls, not the owner's. Decided.
@@ -1699,7 +1729,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**115 commits, all pushed to `main`. Working tree clean.**
+**117 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
