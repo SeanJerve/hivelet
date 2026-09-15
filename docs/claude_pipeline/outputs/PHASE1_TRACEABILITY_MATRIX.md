@@ -248,6 +248,33 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 | **MISSING** | **9** | 20.5% | FR-006, FR-012, FR-019, FR-020, FR-028, FR-033, FR-036, FR-040, FR-042 |
 
 *Recounted 2026-09-14: FR-013 moved to IMPLEMENTED, so this row read **10 / 22.7%** until that date.*
+
+> [!IMPORTANT]
+> **Retested 2026-09-15: seven of the nine MISSING rows are stale. Two are real.**
+>
+> Each was checked against live code, not against this table. The headline figure a panel
+> reads - *"MISSING 9, 20.5%"* - **understates the system by seven requirements.**
+>
+> | FR | Row says | Retested against the code |
+> | :--- | :--- | :--- |
+> | **FR-006** Inquiry Conversion | MISSING | **Implemented.** The Convert to Tenant action carries the prospect's details into onboarding, and `converted_tenant_id` is written by `PATCH /admin/inquiries/:id` (`admin.ts:1130`) - the column the row itself calls the link. |
+> | **FR-012** Due Dates | MISSING, *"no route sets a due date"* | **A route does.** `tenant.ts:622` sets `due_date: period.dueDate` when a bill is raised, derived from the tenancy's own anniversary cycle - which is what "individual" means here. |
+> | **FR-028** Reports | MISSING | **Partial, not missing.** The export half is live and asserted: `GET /api/admin/reports/income.xlsx` (`admin.ts:1483`) and its expenses twin, audited on each call, and `npm run check:api` opens the result to confirm it is a real workbook. "Live reports" remains a fair reading of the dashboards. |
+> | **FR-033** Occupant Count Memory | MISSING | **Implemented, with a nuance worth keeping.** `admin.ts:1731` carries the occupant count forward **from the tenancy**, editable by the administrator - not literally from the previous month's row as FR-033 words it. The effect the rule asks for is delivered; the mechanism differs. |
+> | **FR-036** Linda Fixed Billing | MISSING | **Implemented.** `linda_electricity_charge` and `linda_water_charge` are carried through `incomeReportExport.ts`, which renders a distinct LINDA section for the fixed charges remitted directly to her. |
+> | **FR-040** Expense Category Cumulative | MISSING | **Implemented.** `expenseReportExport.ts:189` keeps a running cumulative per category across the months of the year (OD-07). |
+> | **FR-042** Expense/Category Reconciliation | MISSING | **Implemented.** The workbook prints `Reconciles (BR-047)` or `DOES NOT RECONCILE (BR-047)` with both sides' figures (`expenseReportExport.ts:293`). |
+> | **FR-019** Cash Flow | MISSING | **Still MISSING.** No endpoint aggregates income, expenses or net cash flow; there is no `financialReportService`. |
+> | **FR-020** Profitability Analytics | MISSING | **Still MISSING.** Same absence, and `ANALYTICS_VIEW` still guards no route. |
+>
+> **Corrected counts: MISSING 2 (4.5%), not 9 (20.5%).** The rows above are left in place rather
+> than rewritten, so a reader can see what the table said and what was found - a register that
+> silently edits its own history is not more trustworthy for it.
+>
+> *This is the same decay found in every other register retested that day: they age by
+> **overstating** what is wrong. The danger is not that a defect register goes out of date -
+> everyone expects that - it is that it goes out of date in the alarming direction, so the
+> reader spends their attention on work already done.*
 | **FRONTEND-ONLY** | **1** | 2.3% | FR-044 |
 | **Total** | **44** | 100% | — |
 
