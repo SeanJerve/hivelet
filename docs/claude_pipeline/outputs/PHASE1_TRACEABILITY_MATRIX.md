@@ -314,7 +314,24 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 >
 > *Recorded rather than quietly edited. A retest that overturns a register's judgement without
 > engaging its stated reasoning is not a retest - and this document's reasoning was better than
-> mine.* The rows above are left in place rather
+> mine.*
+>
+> ---
+>
+> **Third pass. One more stale, three confirmed still accurate, one half-changed.**
+>
+> The mix matters: a retest that finds everything fixed is not a retest either.
+>
+> | Note | Retested 2026-09-15 |
+> | :--- | :--- |
+> | **FR-018** *"`expense_property_allocations.property_area` is an unconstrained `VARCHAR(100)` … no foreign key … no `CHECK` enumeration. A single typo silently creates a phantom property area"* | **Stale, and doubly so.** The live column is the enum `property_area_type` **and** carries `FOREIGN KEY (property_area) REFERENCES property_areas(code) ON UPDATE CASCADE ON DELETE RESTRICT`. A typo fails at the enum before it reaches the key. The risk this note says "would break the FR-042 reconciliation" is closed twice over. |
+> | **FR-003** *"amenities have no persistence and no route"* | **Still true.** The string `amenit` appears nowhere in `backend/src`; the lists on the public site remain a hardcoded client constant. PARTIAL stands. |
+> | **FR-002** *"eight permission constants are declared and unused"* | **Still true.** `BILL_MANAGE`, `PAYMENT_RECORD`, `PAYMENT_CORRECT`, `INCOME_LEDGER_WRITE`, `EXPENSE_LEDGER_WRITE`, `ANALYTICS_VIEW`, `REPORT_EXPORT`, `TICKET_CLOSE` - each guards **zero** routes today. |
+> | **FR-011** *"there is no bill-authoring endpoint"* | **Still true.** `/admin/bills` is registered `router.get` only; no POST, PATCH or DELETE. |
+> | **FR-008** *"`GET /api/admin/rooms` selects only `clusters` and `room_photos` … the data is written and then unreachable from the admin surface"* | **Half changed, and the half matters.** Since `b593166` that select also returns `room_assignments` with the occupant's profile, so *who lives in a unit* is now reachable. **The timeline is not:** the embedded select carries no `start_date` or `end_date`, and `room_price_history` is still read only inside the price-change write path - to attribute the row it has just written - never retrieved for display. The occupancy history and the price history remain unreachable. |
+>
+> *FR-008 is the shape worth noticing: a claim can be half true after a change, and saying
+> "fixed" would be as wrong as leaving it. The precise statement is the useful one.* The rows above are left in place rather
 > than rewritten, so a reader can see what the table said and what was found - a register that
 > silently edits its own history is not more trustworthy for it.
 >
