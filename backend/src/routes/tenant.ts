@@ -283,6 +283,24 @@ const ticketSchema = z.object({
   description: z.string().min(5).max(4000),
   category: z.string().min(2).max(60),
   priority: z.enum(['Emergency', 'High', 'Medium', 'Low']),
+  /**
+   * `fileUrl` is deliberately uncapped, and this is the reasoning rather than an oversight.
+   *
+   * Two mechanisms are in the live data: one attachment is a real
+   * `https://storage.hivelet.…` URL of 50 characters, the other a 142,351-character
+   * `data:image/jpeg;base64,…` string, because the current client reads the file with
+   * `FileReader` and posts the data URL rather than uploading it first.
+   *
+   * A length cap looks like the obvious guard and is not. Any cap tight enough to reject a
+   * data URL rejects every photo the current client produces - it would not harden the
+   * endpoint, it would switch the feature off. The bound that genuinely applies is
+   * `express.json({ limit: '1mb' })` in `server.ts`, which caps the request; ten attachments
+   * cannot together exceed it.
+   *
+   * Moving attachments to object storage is the real answer and it is a storage decision with
+   * a cost attached, not a validation change. Recorded here so the next reader does not add a
+   * cap thinking it is free.
+   */
   attachments: z
     .array(z.object({ fileUrl: z.string().min(1), fileType: z.string().max(80).optional() }))
     .max(10)

@@ -442,6 +442,29 @@ Every row below is a place where the DFD models something the running system doe
 | **G-9** | **6.0 performs no aggregation.** Ledger CRUD exists; per-category totals, year-to-date rollup, reconciliation check, and Excel export do not | No endpoint in `admin.ts` implements FR-039, FR-040, FR-042, or FR-044 | 6.0 | **PARTIAL** — Phase 3 |
 | **G-10** | **No outbound channel to a non-registered prospect.** Legacy 2.4 Notify Applicant is satisfied in-app only | `notificationService.ts` writes `notifications` rows; no email or SMS transport exists | 1.0, D12 | **PARTIAL** — outside Phase 1 scope, disclosed |
 | **G-11** | **`@adyen/api-library` is declared but not imported.** The adapter calls the Adyen Checkout API over HTTP directly | Declared at `backend/package.json:13`; `grep -rn "@adyen" backend/src` returns no matches; direct POST at `adyenService.ts:61` | 3.0 | **Working as designed, but worth stating.** The decoupled adapter is the architectural commitment; the SDK dependency is presently unused and should either be adopted or removed |
+> [!IMPORTANT]
+> **Gap register retested 2026-09-15. Four rows are stale; their fixes have landed.**
+>
+> | Gap | What it says | Retested against live code and the live catalogue |
+> | :--- | :--- | :--- |
+> | **G-2** | *"Water charge is **hardcoded** as `occupants * 200` in three places rather than read from D11"* | **Stale.** `computeWaterFee()` in `billingService.ts` reads the configured rate, and calls `getLindaFixedWaterCharge()` first for the two fixed-charge units. The only surviving occurrences of `occupants * 200` in `backend/src` are **comments describing the former defect**. |
+> | **G-3** | *"The 50% Share figure is **hardcoded** as `rentAmount / 2` rather than derived through a service"* | **Stale, and G-4 already says why.** `monthly_income_records.fifty_percent_share` is `GENERATED ALWAYS AS (rent_amount / 2.0) STORED` in the live database - the derivation moved to the column. The one remaining `/ 2` in code is a null-fallback in the income export, on a column that cannot be null. |
+> | **G-5** | *"Grace period is **hardcoded at 10 days**, contradicting the seeded value of 7"* | **Stale twice over.** No hardcoded window remains - the only match in `backend/src` is a comment listing what used to be hardcoded - and the seeded value is no longer 7 either: `grace_period_days` is **0** (BR-012 / OD-16, migration `016`). |
+> | **G-8** | *"The live schema carries **17** `ON DELETE CASCADE`"* | **Stale - the Phase 2 proposal was applied.** Counted live from `pg_constraint`: **11 CASCADE, 8 RESTRICT, 18 NO ACTION, 1 SET NULL**. The six that moved are the ledger tables `005` was written to protect. |
+>
+> **G-9 is half stale and is left as PARTIAL deliberately.** *"6.0 performs no aggregation"* is
+> no longer true of the export path - `expenseReportExport.ts` computes Property Area bottom
+> totals and the category summary server-side, and prints the BR-047 reconciliation. It remains
+> true of the screen: those figures are still derived in `ExpensesLedgerView`, and nothing is
+> persisted. Computed by the system of record when it exports, not when it renders.
+>
+> **G-11 was retested and stands:** `@adyen/api-library` is declared in `backend/package.json`
+> and imported nowhere in `backend/src`. Left in place - removing an unused dependency means an
+> install cycle for no functional change, and the decoupled adapter calling the Checkout API
+> over HTTP is the deliberate design this row describes.
+>
+> **G-1, G-4, G-7 were already correct** and needed nothing.
+
 | **G-12** | **No performance figure is asserted anywhere in this document.** Claims of "256MB RAM", "sub-50ms" response, and "100% data consistency" appear in earlier submitted documents without substantiating measurement | — | — | Such figures are **design targets**, not measured results, and are omitted here rather than repeated |
 
 **Scope note on rate changes.** ARCH-004 **Rate Change History** maps to canonical **BR-003 Historical Preservation**. Room rates are set **manually** by the administrator, who edits a unit’s rate whenever she decides to change it; the system performs no automatic adjustment and schedules no rate-review cycle. What the pillar requires is that the change be preserved, and it is: `admin.ts:185` writes a `room_price_history` row carrying the previous price, the new price, the effective date, the reason, and the administrator who made the change. That store is claimed by **D1 Room Catalog** (Section 1.3) and the write is owned by **2.0 Manage Tenancy & Occupancy** (`hivelet_dfd_level1.mmd:159`), with the administrator’s rate change entering across the boundary at `hivelet_dfd_level1.mmd:152`. Historical rate tracking, not rate automation, is the whole of ARCH-004.
