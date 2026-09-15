@@ -92,7 +92,45 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST - commit `ee93ea7`: four more stale gap-register rows, and one decision closed in
+> **LATEST - commit `e1f0f47`: the camelCase check was prototyped, measured, and deliberately
+> not shipped.**
+>
+> The obvious next move was a camelCase companion to `check:fields`. It was built far enough to
+> measure, and the measurement said don't.
+>
+> **snake_case works as a signal** because in this codebase a snake_case property is almost
+> always a database column arriving over the API. **camelCase carries no such signal** - it is
+> the ordinary JavaScript naming convention, so an API field, a local ref, a computed and
+> `addEventListener` are indistinguishable to a static scan.
+>
+> The prototype confirmed it: of **128** distinct camelCase properties read in `frontend/src`,
+> **121** appear in no `res.json()` literal - and that list is dominated by `appendChild`,
+> `createObjectURL`, `charAt`, `allSettled`, `beforeEach`, alongside local names like
+> `badgeClass` and `dateObj`. **A check built on that reports ~121 failures against a clean
+> codebase.** A gate that is red on the day it ships teaches people to ignore red - the same
+> reasoning that kept the citation measurer out of the suite - so it was not built.
+>
+> **What was done instead fits the shape of the problem: the surface is small enough to
+> enumerate.** The API emits exactly **eleven** camelCase keys from `res.json()` literals, and
+> all eleven were checked against every frontend reference:
+>
+> | Keys | Where | Verdict |
+> |---|---|---|
+> | `sessionId`, `sessionData`, `clientKey`, `isLive` | tenant.ts | read by AdyenPaymentModal |
+> | `expiresIn` | auth.ts | spelling matches |
+> | `businessTotal` | admin.ts | read by AuditLogsView |
+> | `totalUnread`, `unreadCount` | admin.ts / tenant.ts | notifications |
+> | `redirectUrl` | public.ts | local cashier completion |
+> | `authorizationModel`, `markedAllRead` | health.ts / admin.ts | **not read at all** |
+>
+> Every spelling matches, or the key is not consumed. **A bounded, exhaustive, dated fact in
+> place of an unbounded gap** - the honest alternative when a check cannot be built at a useful
+> signal-to-noise ratio. The header records how to re-enumerate when a twelfth key appears,
+> because that fact *will* go stale and a check would not have.
+>
+> `check:fields`, `check:columns`, `check:api` 53/53 - all green.
+
+> **PREVIOUS - commit `ee93ea7`: four more stale gap-register rows, and one decision closed in
 > code.**
 >
 > The DFD's gap register, retested against live code and the live catalogue:
@@ -1756,7 +1794,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**119 commits, all pushed to `main`. Working tree clean.**
+**121 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
