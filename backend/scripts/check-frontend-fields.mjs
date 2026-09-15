@@ -41,32 +41,56 @@
  * static scan.
  *
  * A prototype confirmed it. Of 128 distinct camelCase properties read in
- * `frontend/src`, 121 do not appear in any `res.json()` literal — and the list is
+ * `frontend/src`, 121 do not appear in any `res.json()` literal, and the list is
  * dominated by `appendChild`, `createObjectURL`, `charAt`, `allSettled`,
  * `beforeEach`, alongside local names like `badgeClass` and `dateObj`. A check
  * built on that would report roughly 121 failures against a clean codebase. A
  * gate that is red on the day it ships teaches people to ignore red, so it was
  * not shipped.
  *
- * WHAT WAS DONE INSTEAD: the surface is small enough to enumerate
+ * AND THE ENUMERATION THAT REPLACED IT WAS WRONG. READ THIS BEFORE TRUSTING IT.
  *
- * The API emits exactly ELEVEN camelCase keys from `res.json()` literals, and all
- * eleven were checked by hand against every frontend reference on 2026-09-15:
+ * This header said, earlier on 2026-09-15: the API emits exactly ELEVEN camelCase
+ * keys from `res.json()` literals, and all eleven were checked by hand. That was
+ * offered as a bounded, exhaustive, dated fact. It was false.
  *
- *   sessionId, sessionData, clientKey, isLive   tenant.ts  — read by AdyenPaymentModal
- *   expiresIn                                   auth.ts    — spelling matches
- *   businessTotal                               admin.ts   — read by AuditLogsView
- *   totalUnread, unreadCount                    admin.ts / tenant.ts — notifications
- *   redirectUrl                                 public.ts  — local cashier completion
- *   authorizationModel                          health.ts  — not read by the app
- *   markedAllRead                               admin.ts / tenant.ts — not read
+ * Re-scanned the same day, four ways, over the same unchanged source:
  *
- * Every spelling matches, or the key is not consumed at all. That is a bounded,
- * exhaustive, dated fact rather than an unbounded gap — which is the honest
- * alternative when a check cannot be built at a useful signal-to-noise ratio.
+ *   keys matching `name:` inside res.json(...)                    11, then 13
+ *   the same, also accepting SHORTHAND properties `{ name }`      25
+ *   the same, requiring the preceding delimiter to be `{` or `,`  16
  *
- * It will go stale the moment a twelfth camelCase key is added. Re-enumerate by
- * scanning `res.json({...})` argument objects for keys matching /[a-z][A-Z]/.
+ * At least eighteen are real. Five the original scan never saw are
+ * `waterRatePerOccupant`, `lindaFixedWaterCharge`, `lindaFixedWaterCharges`
+ * (all three from `GET /public/rates`), `authTotal` and `grandTotal` -- every one
+ * of them written as a SHORTHAND property, `{ waterRatePerOccupant }`, which a
+ * scan looking for `name:` cannot see. Two more, `rlsLockdown` and
+ * `gatewayStatus`, are real explicit keys that the tightened scan then dropped.
+ *
+ * The failure was not the regex. It was asserting a precise count from a single
+ * scan that had never been made to fail against a key it was known to contain.
+ * That is the same mistake this file exists to catch: a confident number produced
+ * by a method nobody tested first.
+ *
+ * WHAT THE SURFACE ACTUALLY IS
+ *
+ * Not reliably enumerable by regex. A shorthand key and a value passed by name
+ * are the same tokens, so `{ waterRatePerOccupant }` (a key) and
+ * `{ data: withStatus }` (a value) cannot be told apart without parsing. Any
+ * count written here is a FLOOR, not a total, and no exact count belongs in this
+ * comment again.
+ *
+ * The keys confirmed emitted, and confirmed correctly spelled wherever the
+ * frontend reads them, as at 2026-09-15:
+ *
+ *   sessionId, sessionData, clientKey, isLive, gatewayStatus   tenant.ts
+ *   expiresIn                                                  auth.ts
+ *   businessTotal, authTotal, grandTotal, unreadCount          admin.ts
+ *   totalUnread, markedAllRead                                 admin.ts / tenant.ts
+ *   redirectUrl                                                public.ts
+ *   waterRatePerOccupant, lindaFixedWaterCharge,
+ *     lindaFixedWaterCharges                                   public.ts
+ *   authorizationModel, rlsLockdown                            health.ts
  *
  * The schema is read at runtime from PostgREST's OpenAPI document, not written
  * down here, so it cannot go stale.
@@ -112,9 +136,25 @@ const API_COMPUTED = new Map([
   ['effective_status', 'admin.ts + tenant.ts — isOverdue() overlay on a bill'],
   ['amount_paid', 'tenant.ts — summed from payments against the bill'],
   ['amount_outstanding', 'tenant.ts — bill total less amount_paid'],
-  ['water_rate_per_occupant', 'public.ts — from system_settings'],
-  ['linda_fixed_water_charges', 'public.ts — BR-040 fixed charges'],
 ]);
+
+/**
+ * Two entries were removed from the list above on 2026-09-15, and the reason is
+ * worth keeping. `water_rate_per_occupant` and `linda_fixed_water_charges` were
+ * listed as fields produced by public.ts from system_settings. They are not
+ * fields. They are SETTINGS KEYS -- string literals inside `settingsService.ts`
+ * naming rows in `system_settings`. The route that serves those values,
+ * `GET /public/rates`, answers in camelCase: `waterRatePerOccupant`,
+ * `lindaFixedWaterCharge`, `lindaFixedWaterCharges`.
+ *
+ * Nothing in `frontend/src` reads either snake_case name, so removing them broke
+ * nothing today. But an allowlist entry for a field the API does not produce is a
+ * HOLE, not a harmless extra: it pre-approves a name that would read as
+ * `undefined` forever, which is the precise bug this check exists to catch.
+ *
+ * Every entry that remains names where it is produced, so the list can be checked
+ * rather than trusted. Add nothing here without opening that file.
+ */
 
 const SRC = join(repo, 'frontend', 'src');
 const findings = new Map();
