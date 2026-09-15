@@ -212,7 +212,7 @@ swept immediately after: PROMPT_2 and PROMPT_3 already carried correct
 withdrawal tables, PROMPT_3 cited the wrong permission count, and PROMPT_1
 instructed citing "`BR-001` to `BR-007`" — a range that reads as the withdrawn
 pillar numbering rather than the canonical namespace, which runs to BR-049.
-Both corrected in `44c0b25`.
+Both corrected in `ff08b57`.
 
 **So when auditing documentation, sort it by whether it is obeyed or consulted,
 and do the obeyed ones first.** A wrong record misleads whoever reads that
