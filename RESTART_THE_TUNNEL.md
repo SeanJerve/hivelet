@@ -201,7 +201,8 @@ cd backend && npm run build
 node -e "
 const { computeSignature } = require('./dist/services/adyenWebhook.js');
 const fs = require('fs');
-const key = fs.readFileSync('../.env','utf8').split(/?
+const key = fs.readFileSync('../.env','utf8').split(/
+?
 /)
   .find(l => l.startsWith('ADYEN_HMAC_KEY=')).split('=')[1].trim();
 const item = { pspReference:'PROBE-'+Date.now(), merchantAccountCode:'HiveletECOM',
@@ -220,6 +221,17 @@ the pass.
 It is safe to run: `hivelet-hmac-probe` matches no bill, so the handler audits it
 and deliberately writes **no payment row**. Verified 2026-09-15 — payments stayed
 at 15, income records at 937.
+
+**It does leave a trace, and that trace is kept on purpose.** Each probe writes
+one `audit_logs` row and one "Unmatched online payment received" notification.
+Three such rows exist from 2026-09-15, all tagged `merchantReference:
+hivelet-hmac-probe`.
+
+They were **not** deleted. `audit_logs` is append-only on this project, and that
+rule is what makes the log worth anything to a panel — 2,104 junk rows from a
+tenant-portal bug were left in place for the same reason. A rule that bends for
+"obviously mine, obviously harmless" rows is not a rule. If you run the probe,
+expect the trace and leave it.
 
 ### Then, and only then, the real thing
 
