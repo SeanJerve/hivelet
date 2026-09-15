@@ -133,6 +133,69 @@ show the same honest "No photo yet" placeholder.
 
 ---
 
+### A sixth sweep, and the most generalisable thing this audit found
+
+**Documentation drifts in two directions. Only one was ever being checked.**
+
+This project guards hard against **overclaiming** — rule 3, the whole errata
+sheet, the withdrawn performance figures, the `0.00` defect that was never
+real. That guard works. What nobody was checking is the opposite direction:
+**documents that understate the system**, because a register of known-bad
+things is written once and then never crossed off as the things get fixed.
+
+Run on 2026-09-15 against every register-shaped document in the repository.
+**Five checked, five had stale entries:**
+
+| Register | What it claimed | What was true | Fix |
+| :--- | :--- | :--- | :--- |
+| `docs/04_ARCHITECTURE.md` §6 Known Architectural Debt | nine open debt items | **six already closed** — hardcoded water rate, `system_settings` unread, no transactions, unauthenticated payment endpoints, and more | `9ecc09a` |
+| `PHASE1_OPEN_DECISIONS_REGISTER.md` | OD-01..OD-13 | **OD-14..OD-17 missing entirely** (two drove migrations `012`/`015`/`016`), and the grace-period row still answered "Seven days" after OD-16 settled there is none | `d224574` |
+| `docs/claude_pipeline/CONTINUE_HERE.md` known defects | 4 rows open | 2 stale, 2 genuinely open — the best-maintained of the five | `04ed76a` |
+| `PHASE1_TRACEABILITY_MATRIX.md` §5 Gap Register | **10 MISSING requirements** | 6 done, 2 partial, **2 actually missing** (FR-019, FR-020) | `9e8a146` |
+| `PHASE1_TRACEABILITY_MATRIX.md` §5.1 A-x table | 7 rows open | **all 7 closed or superseded** | `dd394e2` |
+
+Two of these documents contain explicit warnings against precisely the failure
+they had fallen into. §6 exists "so that no reader mistakes an intention for an
+implementation." The decisions register warns that an incomplete list makes a
+reader "conclude that none exist, and build on an assumption the client has
+never confirmed."
+
+**The related failure, and the more dangerous one: an erratum records a
+correction, and nobody applies it to the document it names.** The errata sheet
+is not a fix. It is a note that a fix is owed. Three items that are
+rule-flagged in this project's own standing constraints were still live in
+working documents for exactly this reason:
+
+- **The withdrawn 2% rent increase** was still stated as current policy in
+  `docs/08_OPEN_DECISIONS.md:41` — the note misattribution **M-11** names as
+  *its decision of record*, the source every other mention restates. Also in
+  `05_DATABASE_DESIGN.md` and `MODULE_01_DESIGN_JUSTIFICATION.md`. `1da0555`
+- **"32 units"** was still in `docs/01_SYSTEM_BIBLE.md:146`, the canonical
+  source **M-08** names and explicitly prescribes correcting to 33. `e01dfb4`
+- **Banned BR-035 wording** ("co-ownership", used four times) sat in the body
+  of a document whose own banner declares it banned. `79c90fa`
+
+**So: check both directions, and check that a prescribed correction actually
+landed.** When you read an erratum, open the file it names. `PHASE1_LOCKED_DECISIONS.md`
+said the 2% wording was "purged from every artifact, with no exceptions" — it
+was not, and saying so did not make it so.
+
+**What NOT to do with this.** Dated snapshots of moving numbers are honest and
+should be left alone: `admin.ts` line counts, row counts, the database-call
+ratio. Correcting those only re-stales them. The two counts in circulation for
+database calls (131/164 and 137/173) disagree and neither states its counting
+method — that needs the original author, not a guess. And
+`docs/module_01_submission/` is a **frozen submitted artifact**: every file
+carries an errata banner, which is the correct treatment. Correcting the
+submission itself would defeat the purpose of an errata sheet.
+
+**The net finding, worth saying to the panel plainly:** Hivelet is in
+materially better shape than its own documentation claims. A reader of the
+uncorrected set would have found defects that no longer exist and gaps already
+closed.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
