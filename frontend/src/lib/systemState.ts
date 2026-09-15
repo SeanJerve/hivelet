@@ -668,7 +668,23 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
 export function formatUnitOccupantsSummary(unitCode: string): { text: string; count: number; residents: string[] } {
   if (!unitCode) return { text: 'None (Vacant)', count: 0, residents: [] };
   const uCode = unitCode.toUpperCase();
-  const activeTenants = tenants.filter(t => t.unitCode && t.unitCode.toUpperCase() === uCode && t.status === 'active');
+
+  /**
+   * Residents only. `tenants` holds prospects too - `/admin/tenants` returns
+   * `.in('role', ['tenant', 'prospect'])` on purpose - and this list is not just a label:
+   * `count` becomes the occupant figure on the on-site payment form and the ledger's own
+   * form, which drives the BR-014 water fee at a rate per head, and `residents` becomes the
+   * receipt's contact name.
+   *
+   * A prospect has no assignment today, so their unit code is an em dash and cannot match a
+   * real one - which is to say this filter changes nothing right now. It is here because the
+   * directory counted a prospect as a resident until 7124861 for the same reason, and the
+   * difference between a cosmetic miscount and a wrong water charge is only which list the
+   * mistake lands in.
+   */
+  const activeTenants = tenants.filter(
+    t => t.role === 'tenant' && t.unitCode && t.unitCode.toUpperCase() === uCode && t.status === 'active'
+  );
   
   if (activeTenants.length === 0) {
     // Check fallback in rooms reactive array
