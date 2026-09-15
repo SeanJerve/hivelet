@@ -25,7 +25,49 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `bc4d3ae`: a wrong field name in the browser is silent, so there is now a
+> **LATEST - commit `c5a0390`: "Chat Live" threw away a part-filled inquiry and opened
+> nothing.**
+>
+> Three dead things, found by exercising the five modals nothing had opened yet.
+>
+> **1. `LiveChatheadModal` is imported by nothing.** Not by `App.vue`, not by any view.
+> `isLiveChatheadOpen` is set from two places - the room detail modal's "Inquire Directly" and
+> the public inquiry form's **"Chat Live"** button - and setting it renders nothing, anywhere,
+> because the component is never in a mounted tree. A Vue component no file imports cannot
+> appear; that needed no browser to establish.
+>
+> The inquiry form's version is the one that cost something. **A visitor typed their name,
+> number, email and message, clicked "Chat Live", and watched the form close with nothing in
+> its place.** The button is gone; the form now leads only where it works.
+>
+> **Removed rather than wired up.** The chat component posts to
+> `/admin/inquiries/:id/messages` with a hardcoded `selectedInquirerId = 'inq-1'` - an
+> administrator-only endpoint a guest holds no token for - so mounting it would put a control
+> in front of exactly the people it cannot serve. Whether that feature should exist, and
+> against which endpoint, is a decision. **Raised for Mrs. Da Silva rather than guessed at.**
+>
+> **2 and 3. `TenantLoginModal` and `GuestEntryModal` were unreachable.** Both mounted in
+> `App.vue`; nothing anywhere set their open flags, so neither could appear. They predate real
+> authentication - `handleLogin()` sets a role and routes to `/tenant` with **no password
+> check and no API call** - and the markup carries a banner reading *"Demo Login: Unit 204 /
+> 2A · Pass: tenant123"* beside a Guest Name field prefilled **"Maria Santos"**, who does not
+> exist.
+>
+> **Checked before deleting**, because an auth bypass would matter far more than dead code:
+> the router guard tests `isAuthenticated` from `authStore`, **not** `activeRole`, so that
+> route lands on `/login`. It was never a way in - only a hardcoded password and an invented
+> person sitting in a repository whose credentials have already leaked once.
+>
+> **Verified:** `vite build` succeeds (9 precache entries), both projects typecheck,
+> `check:columns` and `check:fields` clean, `/admin/overview` renders. The dev server logs HMR
+> 404s for the two deleted files until it is restarted; the production build is the real
+> evidence, and the honest note is that those console errors are dev-server staleness, not a
+> fault.
+>
+> **Also checked and found live and correct, no change needed:** `RoomDetailModal` (opened
+> from the room directory) and `AdyenPaymentModal` (opened from the tenant payments page).
+
+> **PREVIOUS - commit `bc4d3ae`: a wrong field name in the browser is silent, so there is now a
 > check for it. Ninth suite.**
 >
 > `check:columns` catches a wrong column name in the backend, because PostgREST answers one
@@ -999,7 +1041,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**78 commits, all pushed to `main`. Working tree clean.**
+**80 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
