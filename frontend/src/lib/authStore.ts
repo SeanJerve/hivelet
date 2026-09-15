@@ -68,7 +68,13 @@ export async function login(email: string, password: string): Promise<SessionUse
   authError.value = null;
 
   try {
-    const result = await api.post<LoginResponse>('/auth/login', { email, password }, false);
+    // `identifier` may be an email address or a phone number (OD-09). `email` is still
+    // sent so an older backend would keep working.
+    const result = await api.post<LoginResponse>(
+      '/auth/login',
+      { identifier: email, email, password },
+      false
+    );
     setStoredToken(result.token);
     applySession(result);
     return result.user;

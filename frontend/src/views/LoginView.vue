@@ -447,14 +447,19 @@ async function handleQuickLogin(account: DemoAccount) {
 
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                Email address
+                {{ isSignUp ? 'Email address' : 'Email or phone number' }}
               </label>
+              <!--
+                Signing in accepts either identifier (OD-09: a tenant may have no email).
+                type="email" is kept for sign-up, where an address really is required, but
+                would make the browser reject a phone number before it was ever sent.
+              -->
               <input
                 v-model="email"
-                type="email"
+                :type="isSignUp ? 'email' : 'text'"
                 autocomplete="username"
                 required
-                placeholder="you@email.com"
+                :placeholder="isSignUp ? 'you@email.com' : 'you@email.com or 0917-000-0000'"
                 class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
               />
             </div>
