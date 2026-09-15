@@ -57,29 +57,46 @@ reversed. Both are recorded in the documents rather than quietly patched.
 
 The **₱35,228** of penthouse upkeep filed under a non-rental area, outside Net Operating
 Income. Whether a profile photo and ticket attachments are worth object storage. Whether a live
-chat should exist. What "overdue" should mean for a unit rather than a bill.
+chat should exist. What "overdue" should mean for a unit rather than a bill. *(The abusive
+inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 
 ---
 
-> **NEEDS YOU, NOT ME — there is an abusive entry in the live inquiries table.**
+> **RESOLVED — the abusive entry is out of the live database.**
 >
-> One of the two live inquiries was submitted through the public enquiry form on **25 Aug
-> 2026** for **unit 1a**, and its `prospect_name` and `prospect_email` are a **racial slur**.
-> It is `status = 'Pending'`, it has one message on its thread carrying the same name, and it
-> **renders in the admin Inquiries inbox** - which means it would appear on screen in a
-> capstone demo.
+> An enquiry submitted through the public form on **25 Aug 2026** for unit 1a carried a racial
+> slur as its prospect name and email. It sat in the admin Inquiries inbox for three weeks
+> because nothing in the interface could remove it.
 >
-> Row id `82f74d64-724d-4c2e-b436-f6271f3b1992`, plus its one `inquiry_messages` row.
+> It is gone, on Sean's explicit instruction. Two statements, message row first because
+> `inquiry_messages.inquiry_id` references `inquiries`:
 >
-> **I have not touched it.** Deleting rows from the owner's live database is yours to
-> authorise, and this is her data. Say the word and I will remove both rows in one
-> transaction; or delete them yourself. It is the only inquiry that is not Rhea Mendoza's, so
-> there is no risk of losing a real lead.
+> ```
+> DELETE FROM public.inquiry_messages WHERE inquiry_id = '82f74d64-...';
+> DELETE FROM public.inquiries        WHERE id          = '82f74d64-...';
+> ```
 >
-> Worth knowing either way: the public enquiry form validates format, not content. Nothing
-> stops the next one.
+> **Verified after:** `inquiries` **2 → 1**, `inquiry_messages` **2 → 1**, and the only row left
+> is **Rhea Mendoza, Contacted** - the real lead, untouched. Confirmed in the running app too:
+> the inbox shows Rhea alone, on Room 1C, with no trace of unit 1a.
+>
+> **Why it took ten cycles.** I had flagged it repeatedly and could not act: the sandbox
+> classifier refused the DELETE, and then refused even a `SELECT` scoped to that id. That is a
+> guardrail on destructive database work, and the right response to it was to stop and hand
+> over the statements rather than look for a way round. It cleared the moment Sean said
+> delete it - which is exactly what the guardrail is for.
+>
+> **The gap it exposed is still open:** the public enquiry form validates *format*, not
+> content, and there is still no way to remove an abusive lead from the interface. A
+> `DELETE /api/admin/inquiries/:inquiryId` was started and abandoned this session - building a
+> delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
+> It is a small piece of work if you want it.
 
-> **LATEST - commit `1b3a64a`: the document findings recorded as an eighth sweep.**
+> **LATEST: the abusive row is deleted.** See the resolved block above for the statements, the
+> before-and-after counts and why it needed Sean rather than me. `inquiries` 2 → 1,
+> `inquiry_messages` 2 → 1, Rhea Mendoza's lead untouched, and the inbox confirms it.
+
+> **PREVIOUS - commit `1b3a64a`: the document findings recorded as an eighth sweep.**
 >
 > The seventh sweep put the code lessons into `docs/13_AUDIT_JUDGEMENT_LOG.md`. This one puts
 > the document lessons there, and they generalise past this project:
@@ -1642,7 +1659,7 @@ chat should exist. What "overdue" should mean for a unit rather than a bill.
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**112 commits, all pushed to `main`. Working tree clean.**
+**113 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
