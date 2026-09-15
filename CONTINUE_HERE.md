@@ -13,9 +13,13 @@ Five rules that are not negotiable on this project. Breaking any of them causes 
 1. **The Supabase database is LIVE and holds the owner's real financial records.**
    Never `DROP`, never wipe, never truncate. All schema change is a new numbered
    migration in `database/migrations/`.
-2. **Never edit `database/FULL_DATABASE_SCHEMA.sql`.** It has been wrong about the live
-   schema more than once. **`database/live_schema.csv` is the source of truth**, and the
-   Supabase MCP (`execute_sql`) is better still — query the catalogue directly.
+2. **Ask the catalogue, not a document.** Never edit
+   `database/FULL_DATABASE_SCHEMA.sql`; it does not describe this database. **Eight business
+   rules were recorded wrongly and six of those took their evidence from that file.**
+   `database/live_schema.csv` is better but has itself been wrong — on 2026-09-14 it
+   rendered both `GENERATED ALWAYS` columns as ordinary `DEFAULT`s, which is exactly the
+   misreading behind the `0.00` story. Query `information_schema`, `pg_index`,
+   `pg_constraint` and `pg_trigger` through the Supabase MCP. Documents are a hypothesis.
 3. **Verify before you report.** A "defect" about generated columns storing `0.00` was
    repeated in nine documents and recorded as two business-rule violations. It was never
    true, and the remediation it proposed would have broken every income-record write.
@@ -545,6 +549,23 @@ write that touches more than one table, follow the pattern rather than chaining 
 
 **Do not** "fix" `fifty_percent_share` or `remitted_amount` by adding them to an INSERT.
 That was proposed in the old traceability matrix and would break every write.
+
+---
+
+## 4.4 Read the judgement log before you change anything
+
+`docs/13_AUDIT_JUDGEMENT_LOG.md`.
+
+This document records what is **true**. That one records **why the judgements went
+the way they did**, which is the part that does not survive a new session. A
+reader can see that BR-033 derives the rent period; they cannot see that a
+supplied value is still honoured *on purpose*, and would reasonably "fix" that by
+rejecting it — breaking real entry, because 937 rows were migrated with periods
+from the owner's own book.
+
+It also carries the four defect sweeps that found more than rule-by-rule reading
+did, a fifth worth running that has not been, the traps that cost real time, and
+the standing reason nothing was ever written to production to test anything.
 
 ---
 
