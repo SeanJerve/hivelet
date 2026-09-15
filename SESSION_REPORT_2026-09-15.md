@@ -535,7 +535,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**58 commits on `main`. Working tree clean.** The last few - from `b11652d` onward - are committed locally but **not yet pushed**: the push was blocked here and needs you to run it (`git push origin main`).
+**58 commits, all pushed to `main` (`3f87cfa`). Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
