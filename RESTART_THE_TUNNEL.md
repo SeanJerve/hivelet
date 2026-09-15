@@ -75,6 +75,31 @@ curl -s http://localhost:5000/api/health
 
 You want `"rlsLockdown":"enforced"` in there. That is the only passing value.
 
+### If it says `EADDRINUSE: address already in use :::5000`
+
+**Nothing is broken.** A backend is already running and holding the port; the
+second copy simply could not have it. Check the one that is up:
+
+```powershell
+curl -s http://localhost:5000/api/health
+```
+
+If that answers, you are done with this step — **skip to Step 2** and point the
+tunnel at it. Do not try to start another.
+
+`tsx watch` reloads on code changes, so a long-running backend is usually fine to
+leave alone. **The exception is `.env`:** it is read once at boot. Change a key,
+the HMAC, or anything else in it and you MUST restart, or the process keeps using
+the old value — which looks like the change not working.
+
+To stop whatever is holding the port:
+
+```powershell
+Get-NetTCPConnection -LocalPort 5000 -State Listen |
+  Select-Object -ExpandProperty OwningProcess -Unique |
+  ForEach-Object { Stop-Process -Id $_ -Force }
+```
+
 ---
 
 ## Step 2 — start the tunnel
