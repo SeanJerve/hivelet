@@ -59,7 +59,7 @@ Whether the very bottom figures on a report page represent a single month's tota
 | 5 | Rent Amount | Currency | Total rent charged for the period. Entered by the landlady. Column total appears in the cluster/grand subtotal rows. |
 | 6 | 50% Share | Currency | Exactly half of Column 5. Calculated automatically, never entered. |
 | 7 | Occupants | Integer | Number of people in the unit. Carried forward from the previous month for the same tenant (editable), so the landlady only touches it when occupancy changes. Column total appears in subtotal rows. |
-| 8 | Water Payment | Currency | Must equal Occupants (Col 7) × ₱200 (BR-014). The system validates this and warns rather than silently accepting a mismatch (BR-036). A unit with 0 registered occupants shows `-`. Column total appears in subtotal rows. |
+| 8 | Water Payment | Currency | Must equal Occupants (Col 7) × **the configured rate** — `system_settings.water_rate_per_occupant`, seeded at ₱200 and **currently ₱200**, but the landlady's to change (BR-014). Never hardcode the figure; read the setting. The system validates this and warns rather than silently accepting a mismatch (BR-036). A unit with 0 registered occupants shows `-`. Column total appears in subtotal rows. |
 | 9 | GBG (Garbage) | Currency | Charged once per year per unit, not monthly (BR-037). Most months this is blank/`-`. |
 | 10 | Remitted Amount | Currency | = Column 5 (Rent Amount) + Column 8 (Water Payment) (BR-038). Calculated automatically. Column total appears in subtotal rows. |
 | 11 | Anniv Date | `MMM D/YY` | The tenant's original move-in / billing-anchor date for this unit. Entered once, at onboarding, and reused every month to derive Column 4. Not re-entered on each payment. |
@@ -103,7 +103,7 @@ Linda's two units (LF, LB) do not follow the standard rent/water model. Instead:
 - These fixed charges are totaled separately from the BH/Back/Front/Penthouse grand subtotal.
 - The Linda total is remitted **directly to Linda**, not pooled with the rest of the monthly remittance.
 
-This is a distinct billing mode from BR-014 (₱200/person water) and must not reuse the same per-occupant calculation path.
+This is a distinct billing mode from BR-014 (per-occupant water at the configured rate) and must not reuse the same per-occupant calculation path.
 
 ---
 
@@ -117,7 +117,7 @@ When the landlady records a payment, the panel must guide her through this seque
 4. **Rent For (auto)** — system computes the billing period from the unit's stored Anniv Date and the current cycle; not editable as free text, but the landlady can review it.
 5. **Enter Rent Amount** — system immediately computes and displays 50% Share.
 6. **Occupants (auto-filled, editable)** — pre-filled from the same tenant's prior month entry. The landlady only edits it when someone moves in or out.
-7. **Enter Water Payment** — system checks `Water Payment == Occupants × 200`. If it doesn't match, block save or show a clear warning (landlady must confirm before proceeding) rather than silently accepting a mismatched figure (BR-036).
+7. **Enter Water Payment** — system checks `Water Payment == Occupants × waterRatePerOccupant`, the rate read from `system_settings` (seeded 200, currently 200) rather than a literal. If it doesn't match, block save or show a clear warning (landlady must confirm before proceeding) rather than silently accepting a mismatched figure (BR-036).
 8. **GBG** — only prompted once per unit per year; hidden/blank otherwise.
 9. **Remitted Amount (auto)** — computed as Rent Amount + Water Payment, read-only.
 10. **Anniv Date / Deposit** — only shown/editable during onboarding of a new tenant on a unit, not on the recurring monthly form.
@@ -125,6 +125,19 @@ When the landlady records a payment, the panel must guide her through this seque
 For Linda's units (LF, LB), the panel must switch to the fixed-rate flow in Section 6 instead of the standard rent/occupant flow.
 
 ---
+
+> **Note added 2026-09-15 — the water rate is a setting, not a constant.**
+>
+> Three places in this document stated the per-occupant water charge as a literal ₱200.
+> **BR-014 makes it configurable**: it lives in `system_settings.water_rate_per_occupant`,
+> seeded at 200, and the landlady may change it without a redeployment. Stating it as a
+> constant is exactly how it came to be hardcoded in four backend handlers (known defects
+> **D-2** and **A-2**, both since closed) — and step 7 of Section 7 was an *implementation
+> instruction*, so a developer following it literally would have reintroduced the defect.
+>
+> Live values, verified 2026-09-15: `water_rate_per_occupant` **200**, `linda_lf_water_charge`
+> **400**, `linda_lb_water_charge` **200**. The figures in this document are correct **today**;
+> what changed is that they are now described as the settings they read from.
 
 ## 8. Open Questions
 
