@@ -25,7 +25,47 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `f074f2a`: the day's reasoning written into the judgement log - and one
+> **LATEST - commit `de8c0d4`: two registers in your own repository disagreed about the same
+> fact.**
+>
+> **E-17** recorded the two unauthenticated payment endpoints as **closed on 2026-09-14**.
+> **OD-12**, in the same repository, went on asserting them as *"a Phase 3 hardening item that
+> survives this closure."*
+>
+> Retested live today - both are gone:
+>
+> | route | result |
+> |---|---|
+> | `GET /api/public/payments/local-cashier` | **404** |
+> | `POST /api/public/payments/local-cashier/complete` | **404** |
+>
+> and both sit behind `refuseWhenGatewayConfigured` at `public.ts:291` and `:960`.
+>
+> OD-12's clause is **struck through rather than deleted**, with the reason recorded in the
+> row - a register that quietly loses a claim is no more trustworthy than one that keeps a
+> stale one.
+>
+> **Why this matters more than a single stale line.** Two registers disagreeing about the same
+> fact is worse than either being wrong alone. A reader who finds only the stale row believes
+> it; a reader who finds both has no way to tell which to believe, and the honest conclusion is
+> to trust neither. That is the failure mode this audit has spent the whole day on - and it had
+> one more instance **inside its own output**.
+>
+> **The other E-17 caveat was retested and stands:** `@adyen/api-library` is declared in
+> `backend/package.json` and imported nowhere in `backend/src`, because the adapter calls the
+> Checkout API over HTTP directly.
+>
+> **Left in place deliberately.** Removing an unused dependency means an install cycle against
+> a running dev server for no functional change, and both registers already describe it
+> accurately - it appears twice because it is a noted design consequence, not an oversight.
+> Worth doing in a quiet moment; not worth destabilising a working environment for.
+>
+> **Also checked and correct, no change needed:** `PHASE1_ARCHITECTURE_AND_PATTERN` states the
+> same gap but carries its own resolution note directly beneath it, and
+> `PHASE1_DFD_TRACEABILITY` marks G-7 **RESOLVED**. Both still name the old `mock-gateway`
+> route, but each says in the same breath that it was renamed, so a reader is not misled.
+
+> **PREVIOUS - commit `f074f2a`: the day's reasoning written into the judgement log - and one
 > thing I started and stopped.**
 >
 > **First, the thing I stopped.** You said decide, so I decided the right durable answer to
@@ -1230,7 +1270,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**90 commits, all pushed to `main`. Working tree clean.**
+**92 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
