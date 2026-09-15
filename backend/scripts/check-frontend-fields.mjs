@@ -29,19 +29,44 @@
  * Making it table-aware means tracing which endpoint feeds which mapper, and that
  * is a larger piece of work. Recorded rather than overclaimed.
  *
- * It also sees only snake_case. Database columns are snake_case, so that covers
- * every field read straight off a row — but several endpoints answer in
- * camelCase of their own (`/tenant/payments/checkout` returns `sessionId`,
- * `sessionData`, `clientKey`, `environment`, `isLive`; `/public/water-rate`
- * returns `waterRatePerOccupant`, `lindaFixedWaterCharges`; auth returns a
- * `token` and a `user`). A misspelling in those is exactly as silent, and this
- * check will not see it. They were verified by hand on 2026-09-15 and were
- * correct; by hand does not scale, and the honest statement is that a green run
- * here means the snake_case surface is clean, not the whole of it.
+ * It also sees only snake_case — and that is deliberate, not an omission. It was
+ * measured on 2026-09-15 before being left this way.
  *
- * Closing that gap means collecting the API's own response keys from the backend
- * source, where a response literal and a Zod request schema look alike — worth
- * doing, not worth guessing at.
+ * WHY THERE IS NO camelCase COMPANION
+ *
+ * snake_case works as a signal because in this codebase a snake_case property is
+ * almost always a database column arriving over the API. camelCase carries no
+ * such signal: it is the ordinary JavaScript naming convention, so an API field,
+ * a local ref, a computed, and `addEventListener` are indistinguishable to a
+ * static scan.
+ *
+ * A prototype confirmed it. Of 128 distinct camelCase properties read in
+ * `frontend/src`, 121 do not appear in any `res.json()` literal — and the list is
+ * dominated by `appendChild`, `createObjectURL`, `charAt`, `allSettled`,
+ * `beforeEach`, alongside local names like `badgeClass` and `dateObj`. A check
+ * built on that would report roughly 121 failures against a clean codebase. A
+ * gate that is red on the day it ships teaches people to ignore red, so it was
+ * not shipped.
+ *
+ * WHAT WAS DONE INSTEAD: the surface is small enough to enumerate
+ *
+ * The API emits exactly ELEVEN camelCase keys from `res.json()` literals, and all
+ * eleven were checked by hand against every frontend reference on 2026-09-15:
+ *
+ *   sessionId, sessionData, clientKey, isLive   tenant.ts  — read by AdyenPaymentModal
+ *   expiresIn                                   auth.ts    — spelling matches
+ *   businessTotal                               admin.ts   — read by AuditLogsView
+ *   totalUnread, unreadCount                    admin.ts / tenant.ts — notifications
+ *   redirectUrl                                 public.ts  — local cashier completion
+ *   authorizationModel                          health.ts  — not read by the app
+ *   markedAllRead                               admin.ts / tenant.ts — not read
+ *
+ * Every spelling matches, or the key is not consumed at all. That is a bounded,
+ * exhaustive, dated fact rather than an unbounded gap — which is the honest
+ * alternative when a check cannot be built at a useful signal-to-noise ratio.
+ *
+ * It will go stale the moment a twelfth camelCase key is added. Re-enumerate by
+ * scanning `res.json({...})` argument objects for keys matching /[a-z][A-Z]/.
  *
  * The schema is read at runtime from PostgREST's OpenAPI document, not written
  * down here, so it cannot go stale.
