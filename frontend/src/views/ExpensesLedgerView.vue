@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
+import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api, API_BASE, getStoredToken } from '@/lib/api';
 import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
@@ -920,11 +920,11 @@ function exportFilteredExpenses() {
                           class="min-h-10 w-full px-3 border border-border rounded-lg text-xs bg-background text-foreground focus:bg-white focus:border-primary focus:outline-none" 
                           required
                         >
-                          <option value="Boarding House">Boarding House</option>
-                          <option value="Main House">Main House (personal)</option>
-                          <option value="Front Apartment">Front Apt</option>
-                          <option value="Back Apartment">Back Apt</option>
-                          <option value="Other Expenses / Personal">Other (personal)</option>
+                          <option
+                            v-for="areaOption in PROPERTY_AREA_OPTIONS"
+                            :key="areaOption.value"
+                            :value="areaOption.value"
+                          >{{ areaOption.label }}</option>
                         </select>
                       </div>
 
@@ -1089,11 +1089,11 @@ function exportFilteredExpenses() {
                       class="min-h-10 w-full px-3 border border-border rounded-lg text-xs bg-white text-foreground focus:border-primary focus:outline-none cursor-pointer" 
                       required
                     >
-                      <option value="Boarding House">Boarding House</option>
-                      <option value="Main House">Main House (personal)</option>
-                      <option value="Front Apartment">Front Apt</option>
-                      <option value="Back Apartment">Back Apt</option>
-                      <option value="Other Expenses / Personal">Other (personal)</option>
+                      <option
+                        v-for="areaOption in PROPERTY_AREA_OPTIONS"
+                        :key="areaOption.value"
+                        :value="areaOption.value"
+                      >{{ areaOption.label }}</option>
                     </select>
                   </div>
 

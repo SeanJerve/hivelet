@@ -121,6 +121,28 @@ export const NON_RENTAL_AREAS: readonly PropertyArea[] = [
   'Other Expenses / Personal'
 ] as const;
 
+/**
+ * The area picker's options, in the same order as `backend/src/config/propertyAreas.ts`.
+ *
+ * This exists because the expense form had the list written out as literal `<option>`
+ * elements in **two** places, and both had five entries: `Penthouse` was missing from
+ * the interface, so an expense could not be allocated to it at all. The database has
+ * accepted it since migration `012` (OD-15, client-confirmed 2026-09-13), the enum
+ * `property_area_type` holds all six, and `PropertyArea` above already declared six —
+ * only the two dropdowns were short.
+ *
+ * Both now render from this array. Add an area here and to the backend constant; there
+ * is no third copy to forget.
+ */
+export const PROPERTY_AREA_OPTIONS: readonly { value: PropertyArea; label: string }[] = [
+  { value: 'Boarding House', label: 'Boarding House' },
+  { value: 'Main House', label: 'Main House (personal)' },
+  { value: 'Front Apartment', label: 'Front Apt' },
+  { value: 'Back Apartment', label: 'Back Apt' },
+  { value: 'Penthouse', label: 'Penthouse' },
+  { value: 'Other Expenses / Personal', label: 'Other (personal)' }
+] as const;
+
 export function isRentalArea(area: string): boolean {
   return !NON_RENTAL_AREAS.includes(area as PropertyArea);
 }
