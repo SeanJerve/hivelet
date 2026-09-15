@@ -16,13 +16,23 @@ The landlady logs every expense (repairs, supplies, salaries, utilities, taxes, 
 
 ## 2. Property Areas (Allocation Buckets)
 
-Every peso of an expense is allocated to exactly one of five Property Areas:
+Every peso of an expense is allocated to exactly one of **six** Property Areas:
 
 - Boarding House Expenses
 - Main House Expenses
 - Front Apartment Expenses
 - Back Apartment Expenses
+- **Penthouse Expenses**
 - Other Expenses / Personal
+
+> **Corrected 2026-09-15 — this section listed five and omitted Penthouse.** Migration `012`
+> added it. The live database has had six ever since: `property_area_type` is an enum with
+> six values and `property_areas` is a seeded lookup of all six, verified against the
+> catalogue today. **BR-041** already carries the note that "the rule was written as five;
+> there are six", and `backend/src/services/expenseReportExport.ts:33` says outright that
+> "the document says five Property Areas" — the code was corrected and the correction never
+> came back here. Live usage: five of the six areas carry allocations across 1,327 rows;
+> Penthouse is seeded and not yet used, which is why the gap stayed invisible.
 
 "Boarding House", "Front Apartment", and "Back Apartment" line up with the BH, Front Apartment, and Back Apartment unit clusters defined in `09_MONTHLY_INCOME_REPORT.md`. **"Main House" is a new concept not present in the Monthly Income Report's unit clusters** — its exact meaning (a separate physical structure, the landlady's personal residence, or something else) is unconfirmed. See Section 8, item 1.
 
@@ -105,7 +115,7 @@ The bottom-of-block red total (e.g. `167,919.52` / `1,054,606.34`) is the sum ac
 
 1. **Pick Date** — calendar picker, no free-text date entry.
 2. **Enter OR/Supplier** — free text.
-3. **Select Property Area + Amount** — dropdown restricted to the five areas in Section 2, paired with an amount field.
+3. **Select Property Area + Amount** — dropdown restricted to the **six** areas in Section 2, paired with an amount field. **Build it from `PROPERTY_AREAS` in `backend/src/config/propertyAreas.ts`, never from a hand-typed list**: a five-option dropdown would make Penthouse expenses unallocatable, and the enum would reject anything not on it anyway.
 4. **Split (optional)** — a `+ Add Area` control adds another (Property Area, amount) pair to the *same* entry, without re-asking for date/supplier/category.
 5. **Assign Category** — single dropdown restricted to the fixed list in Section 3, applied once to the whole entry regardless of how many areas it was split across.
 6. **Save & Auto-Calculate** — on save, the system must, without further input:
