@@ -285,6 +285,17 @@ export const expenseRecords = reactive<ExpenseRecord[]>([]);
 export const maintenanceTickets = reactive<MaintenanceTicket[]>([]);
 export const inquiries = reactive<Inquiry[]>([]);
 
+/**
+ * Set when the matching fetch below could not refresh its array - a rejected
+ * request, or a response that carried no rows. The array itself is left at
+ * whatever it last held (see `rooms`'s own seeded-vacant fallback above), so a
+ * dashboard figure derived from it must check this flag before presenting the
+ * count as fact rather than as the last thing that loaded successfully.
+ */
+export const roomsFetchFailed = ref(false);
+export const incomeRecordsFetchFailed = ref(false);
+export const maintenanceTicketsFetchFailed = ref(false);
+
 export const EXPENSE_CATEGORIES = [
   "1 — Supplies",
   "2 — Taxes & Licenses",
@@ -416,6 +427,7 @@ export async function fetchRooms(): Promise<RoomItem[]> {
   // first. Cached after the first call, and a failure falls back to the seeded
   // figures rather than blocking the room list.
   await fetchWaterRates();
+  roomsFetchFailed.value = false;
 
   try {
     // The endpoint follows the SIGNED-IN role, not the `activeRole` ref, which
@@ -485,6 +497,7 @@ export async function fetchRooms(): Promise<RoomItem[]> {
   } catch (err) {
     console.warn('fetchRooms fallback warning:', err);
   }
+  roomsFetchFailed.value = true;
   return rooms;
 }
 
@@ -592,6 +605,7 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
+  incomeRecordsFetchFailed.value = false;
 
   try {
     const res = await api.get<any>('/admin/income-records');
@@ -641,6 +655,7 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
   } catch (err) {
     console.warn('fetchIncomeRecords error:', err);
   }
+  incomeRecordsFetchFailed.value = true;
   return incomeRecords;
 }
 
@@ -716,6 +731,7 @@ export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
+  maintenanceTicketsFetchFailed.value = false;
 
   try {
     const res = await api.get<any[]>('/admin/tickets');
@@ -753,6 +769,7 @@ export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
   } catch (err) {
     console.warn('fetchMaintenanceTickets error:', err);
   }
+  maintenanceTicketsFetchFailed.value = true;
   return maintenanceTickets;
 }
 

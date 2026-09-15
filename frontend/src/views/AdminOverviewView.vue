@@ -29,6 +29,9 @@ import {
   type ExpenseRecord,
   waterChargeFor,
   type RoomItem,
+  roomsFetchFailed,
+  incomeRecordsFetchFailed,
+  maintenanceTicketsFetchFailed,
 } from '@/lib/systemState';
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -947,16 +950,19 @@ function exportHistoricalCSV() {
                 <TrendingUp class="size-4" />
               </span>
             </div>
-            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">{{ peso(currentMonthRevenue) }}</p>
+            <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">{{ incomeRecordsFetchFailed ? '—' : peso(currentMonthRevenue) }}</p>
+            <!-- A failed fetch leaves `incomeRecords` at whatever it last held (or
+                 empty, on first load), which reads as "₱0.00 collected" - a
+                 confident claim the business stopped, not the unknown it is. -->
             <p class="mt-1.5 text-xs text-emerald-700 font-semibold">
-              {{ currentMonthRecordCount }}
-              {{ currentMonthRecordCount === 1 ? 'collection' : 'collections' }} recorded this month
+              <template v-if="incomeRecordsFetchFailed">Figures unavailable — refresh to retry</template>
+              <template v-else>{{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'collection' : 'collections' }} recorded this month</template>
             </p>
             <!-- BR-029 asks the dashboard to default to the current month. The
                  fiscal year is kept beneath rather than dropped - it is what the
                  chart below is built on. -->
             <p class="mt-2 pt-2 border-t border-border text-xs text-muted-foreground">
-              FY {{ CURRENT_YEAR }} to date: <strong class="text-foreground tabular">{{ peso(monthlyRevenue) }}</strong>
+              FY {{ CURRENT_YEAR }} to date: <strong class="text-foreground tabular">{{ incomeRecordsFetchFailed ? '—' : peso(monthlyRevenue) }}</strong>
             </p>
           </div>
 
@@ -968,10 +974,15 @@ function exportHistoricalCSV() {
               </span>
             </div>
             <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">
-              {{ occupiedRoomsCount }} / {{ totalRoomsCount }} Units
+              <template v-if="roomsFetchFailed">—</template>
+              <template v-else>{{ occupiedRoomsCount }} / {{ totalRoomsCount }} Units</template>
             </p>
+            <!-- A failed fetch leaves every room at its seeded vacant default (see
+                 `rooms` in systemState.ts), which would otherwise read as a
+                 confidently empty 33-unit building rather than an unknown one. -->
             <p class="mt-1.5 text-xs text-muted-foreground">
-              {{ occupancyPercentage }}% occupied • {{ vacantRoomsCount }} vacant<template v-if="maintenanceRoomsCount > 0"> • {{ maintenanceRoomsCount }} maintenance</template>
+              <template v-if="roomsFetchFailed">Occupancy unavailable — refresh to retry</template>
+              <template v-else>{{ occupancyPercentage }}% occupied • {{ vacantRoomsCount }} vacant<template v-if="maintenanceRoomsCount > 0"> • {{ maintenanceRoomsCount }} maintenance</template></template>
             </p>
           </div>
 
@@ -998,22 +1009,26 @@ function exportHistoricalCSV() {
               </span>
             </div>
             <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-ink-navy">
-              {{ openTicketsCount }} Open
+              {{ maintenanceTicketsFetchFailed ? '—' : `${openTicketsCount} Open` }}
             </p>
             <!-- The headline counts OPEN tickets; this line used to report on
-                 EMERGENCY tickets, so "2 Open" sat above "All tickets handled". -->
+                 EMERGENCY tickets, so "2 Open" sat above "All tickets handled".
+                 A failed fetch must not fall through to that same "all clear"
+                 wording either - it has verified nothing. -->
             <p
               :class="[
                 'mt-1.5 text-xs font-medium',
-                emergencyTicketsCount > 0 ? 'text-rose-700' : openTicketsCount > 0 ? 'text-amber-700' : 'text-emerald-700'
+                maintenanceTicketsFetchFailed ? 'text-muted-foreground' : emergencyTicketsCount > 0 ? 'text-rose-700' : openTicketsCount > 0 ? 'text-amber-700' : 'text-emerald-700'
               ]"
             >
               {{
-                emergencyTicketsCount > 0
-                  ? `${emergencyTicketsCount} urgent, needs dispatch`
-                  : openTicketsCount > 0
-                    ? `${openTicketsCount} awaiting a technician`
-                    : 'All tickets handled'
+                maintenanceTicketsFetchFailed
+                  ? 'Ticket status unavailable — refresh to retry'
+                  : emergencyTicketsCount > 0
+                    ? `${emergencyTicketsCount} urgent, needs dispatch`
+                    : openTicketsCount > 0
+                      ? `${openTicketsCount} awaiting a technician`
+                      : 'All tickets handled'
               }}
             </p>
           </div>
