@@ -33,7 +33,6 @@ interface MessageBubble {
 const activeInquiryId = ref<string | null>(null);
 const replyMessage = ref('');
 const searchQuery = ref('');
-const statusFilter = ref<'all' | 'new' | 'replied'>('all');
 const isLoading = ref(false);
 const isSubmitting = ref(false);
 

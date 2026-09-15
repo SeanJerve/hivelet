@@ -2865,9 +2865,23 @@ router.post(
       throw ApiError.validation(parsed.error.errors.map((e) => e.message).join(', '));
     }
 
+    /**
+     * This read asked for `full_name, email, phone_number`. `inquiries` has no such columns -
+     * the prospect's details live in `prospect_name`, `prospect_email` and `prospect_phone` -
+     * so PostgREST answered every call with
+     *
+     *     42703: column inquiries.full_name does not exist
+     *
+     * `inqErr` was then truthy and the handler threw "Inquiry not found", blaming the record
+     * for a fault in the query. Every reply the landlady tried to send failed, and the
+     * message it failed with sent her looking in the wrong place.
+     *
+     * Nothing downstream ever used those three fields; only the existence check and the
+     * current status are needed, so that is all this asks for now.
+     */
     const { data: inquiry, error: inqErr } = await db
       .from('inquiries')
-      .select('id, full_name, email, phone_number')
+      .select('id, status')
       .eq('id', req.params.id)
       .single();
 
@@ -2885,6 +2899,29 @@ router.post(
       .single();
 
     if (error) throw ApiError.internal(error.message);
+
+    /**
+     * A lead that has been answered is no longer Pending.
+     *
+     * `inquiry_status_type` carries 'Contacted' for exactly this, and nothing in the system
+     * ever wrote it - so the inbox showed a lead as Pending however many times the landlady
+     * had replied to it. Only Pending is advanced: 'Converted' and 'Closed' are ends of the
+     * line and must not be walked backwards by sending a message.
+     *
+     * Not fatal. The reply is already stored, and a lead showing the wrong status is a
+     * smaller problem than an error telling her the message did not send when it did.
+     */
+    if (inquiry.status === 'Pending') {
+      warnIfWriteFailed(
+        await db
+          .from('inquiries')
+          .update({ status: 'Contacted', updated_at: new Date().toISOString() })
+          .eq('id', req.params.id)
+          .eq('status', 'Pending'),
+        'Inquiry status advance to Contacted'
+      );
+    }
+
     // BR-028 - correspondence with a tenant or prospect is part of the record.
     await auditFromRequest(req, {
       action: 'INQUIRY_MESSAGE_SEND',

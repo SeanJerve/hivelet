@@ -892,7 +892,11 @@ export async function fetchInquiries(): Promise<Inquiry[]> {
           email: i.prospect_email || '—',
           date: dateFormatted,
           message: i.message || '',
-          status: i.status || 'Submitted'
+          // `inquiry_status_type` is (Pending | Contacted | Converted | Closed). This read
+          // 'Submitted', which is not one of them - it is a `ticket_status_type` value. The
+          // column is NOT NULL so the fallback never fired, but a default that the enum
+          // cannot hold is a wrong answer waiting for its turn.
+          status: i.status || 'Pending'
         };
       });
 
