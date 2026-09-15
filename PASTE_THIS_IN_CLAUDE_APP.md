@@ -104,7 +104,11 @@ you did and keep going. I will tell you when to stop. Things that genuinely need
 me, rather than you:
 
   - anything that needs a decision from the client, Mrs. Da Silva
-  - anything that needs a tunnel running or a webhook repointed
+  - anything that needs a tunnel running or a webhook repointed. NOTE: Adyen's
+    "Test configuration" button returns 401 BY DESIGN - it sends a canned payload
+    whose signature is not computed with the real HMAC key. Do not treat that as
+    a fault or start swapping keys; RESTART_THE_TUNNEL.md explains it and gives
+    the test that does mean something
   - anything that would write test data to the live database
   - team roles, which the documents disagree about and which is ours to settle
 
@@ -129,8 +133,9 @@ them.
 
 | | |
 | :--- | :--- |
-| **Restart the tunnel and repoint the Adyen webhook** | **`RESTART_THE_TUNNEL.md`** at the repository root has the whole thing, and `cloudflared` is **already installed and smoke-tested** (2026.9.1), so all that is left is starting it and pasting the URL into Adyen. Until it is done a GCash payment completes at Adyen and **never reaches the ledger, silently** — the one failure in this system with no signal anywhere |
+| ~~Restart the tunnel and repoint the Adyen webhook~~ | **Done 2026-09-15 and verified end to end.** `cloudflared` 2026.9.1 installed; tunnel live; webhook `WBHK4295722322C95PZ9WML8ZQ3MK3` pointing at it with Basic Auth; the HMAC key in `.env` proven against a real signature — a signed notification arriving **through the public tunnel** returned `200 [accepted]`. **When the tunnel restarts you must repoint Adyen:** `RESTART_THE_TUNNEL.md` |
 | ~~Rotate `eljohn`, `kiel` and `bins`~~ | **Done 2026-09-15.** All three deleted in Supabase |
+| **Only real test left** | A genuine GCash payment through the tenant portal. The plumbing is proven, so a failure there is the payment flow, not the webhook |
 
 **One thing to avoid:** do not run two Claude sessions against this repo at the
 same time. Two sessions editing the same files and pushing to `main` will
