@@ -79,7 +79,27 @@ chat should exist. What "overdue" should mean for a unit rather than a bill.
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `003ebb5`: ran all nine suites end to end. One failed, and it was mine.**
+> **LATEST - commit `4c34b5d`: a one-page summary at the top of this file.**
+>
+> This report is newest-first and around thirty blockquotes long. That order is right while the
+> work is running - the newest finding should be the first thing read - and **wrong for anyone
+> arriving afterwards**, who currently meets a token budget before they meet the dead enquiry
+> feature.
+>
+> The summary now sits directly under the dated-snapshot warning, which stays first. It adds
+> **nothing** the entries below do not already say: it groups the six findings that would have
+> cost the owner something, names the pattern behind five of them, sets out what the documents
+> claimed against what was true, and records the two findings that were mine.
+>
+> **The existing entries are untouched.** A summary that rewrote them would be a second account
+> of the same day, and this repository has already produced enough documents that disagree with
+> each other.
+>
+> Every commit hash in it was resolved against the repository before committing, and the two
+> figures it quotes - `admin.ts` at 3,033 lines, 2,693 audit rows with 72 before-images - were
+> re-read rather than recalled.
+
+> **PREVIOUS - commit `003ebb5`: ran all nine suites end to end. One failed, and it was mine.**
 >
 > ```
 > FAIL raw hex literals in templates: 99 (budget 97)
@@ -1589,7 +1609,7 @@ chat should exist. What "overdue" should mean for a unit rather than a bill.
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**108 commits, all pushed to `main`. Working tree clean.**
+**110 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
