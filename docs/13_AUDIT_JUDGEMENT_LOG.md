@@ -180,6 +180,21 @@ landed.** When you read an erratum, open the file it names. `PHASE1_LOCKED_DECIS
 said the 2% wording was "purged from every artifact, with no exceptions" — it
 was not, and saying so did not make it so.
 
+**A third variety, found 2026-09-15: the erratum instruction that has itself
+expired.** **E-07** and **M-02** both end with a standing instruction —
+"`RESTRICT` is never stated as current fact" — which was correct when written,
+because no `RESTRICT` constraint existed. Migration `005` then applied exactly
+the change those rows proposed, on 2026-09-13. Counted live: **8 `RESTRICT`**,
+six of them the precise keys the rows named. A writer following that
+instruction today would **delete a true and defensible claim** — ledger
+protection at the database engine level — on the authority of an erratum. Both
+rows now carry the update, and the distinction that still matters: RESTRICT is
+current fact, and was *not* fact when the Module 01 set was submitted, which is
+what the erratum actually corrects. Fixed in `1a83e0a`.
+
+An errata sheet ages. Its findings stay true — they describe a past document —
+but its *instructions* can be overtaken by the very work they propose.
+
 **What NOT to do with this.** Dated snapshots of moving numbers are honest and
 should be left alone: `admin.ts` line counts, row counts, the database-call
 ratio. Correcting those only re-stales them. The two counts in circulation for
