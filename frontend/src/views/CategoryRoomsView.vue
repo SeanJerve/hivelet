@@ -267,6 +267,13 @@ async function submitInquiry() {
     return;
   }
 
+  // A unit is required: `inquiries.room_id` is NOT NULL. Checked before the lookup so an
+  // empty selection says what to do, rather than reporting an unfindable blank unit.
+  if (!inquiryUnit.value.trim()) {
+    showToast('error', 'Choose a unit', 'Please pick which unit you are asking about.');
+    return;
+  }
+
   const matchedRoom = publicRooms.value.find(
     (r) => r.room_number.toLowerCase() === inquiryUnit.value.toLowerCase()
   );
@@ -570,7 +577,16 @@ async function submitInquiry() {
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
             <select v-model="inquiryUnit" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white">
-              <option value="">Any available unit</option>
+              <!--
+                There was an `<option value="">Any available unit</option>` here, and it
+                could not work: `inquiries.room_id` is NOT NULL, so an inquiry must name a
+                unit. Choosing it left `inquiryUnit` empty, the lookup below matched no
+                room, and the prospect was told "Unit  could not be found ... please
+                refresh" - which refreshing never fixed. It was the first option in the
+                list, so the most natural choice for someone still browsing was the one
+                that silently could not be sent. A form must not offer what the system
+                cannot record.
+              -->
               <option v-for="u in categoryUnits" :key="u.unitCode" :value="u.unitCode">
                 {{ u.unitCode.toUpperCase() }} — {{ u.cluster }} ({{ peso(u.basePrice) }})
               </option>
