@@ -162,12 +162,26 @@ async function saveEdit() {
     const finalRoommateQty = editHasRoommates.value === 'yes' ? Number(editRoommateQty.value) || 1 : 0;
     const finalOccupants = 1 + finalRoommateQty;
 
-    await api.patch(`/admin/tenants/${editModalTenant.value.id}`, {
-      roomNumber: editUnitCode.value.toUpperCase(),
+    /**
+     * `roomNumber` is omitted when no unit is selected, rather than sent as "—".
+     *
+     * The API treats `roomNumber !== undefined` as "the assignment is being changed": it
+     * closes the tenant's active tenancy and frees the unit FIRST, and only then reads the
+     * value - where "—" and "none" are its sentinels for *leave them unassigned*. Sending the
+     * sentinel from a form whose real subject is the occupant count would therefore end a
+     * tenancy as a side effect. Omitting the key skips that whole branch, so editing status
+     * or roommates leaves the tenancy exactly where it was.
+     */
+    const payload: Record<string, unknown> = {
       accountStatus: editStatus.value === 'active' ? 'active' : 'inactive',
       occupantCount: finalOccupants,
       roommateQty: finalRoommateQty,
-    });
+    };
+    if (editUnitCode.value && editUnitCode.value !== '—') {
+      payload.roomNumber = editUnitCode.value.toUpperCase();
+    }
+
+    await api.patch(`/admin/tenants/${editModalTenant.value.id}`, payload);
 
     await fetchTenants();
     await fetchRooms();
@@ -543,11 +557,30 @@ async function handleOnboard() {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
+              <!--
+                `systemState` gives a tenant with no room assignment the unit code "—".
+                That matched none of the options below, so the browser rendered this select
+                EMPTY, and `required` then refused to submit the form - meaning the four
+                active tenants who hold no assignment today could not have their status or
+                roommate count edited at all without also being handed a unit.
+
+                The state is now an option of its own, so it displays honestly and the form
+                submits. It is `disabled`: a tenant who HAS a unit cannot be un-assigned from
+                this dropdown, because releasing a unit is what the Settle Vacancy button is
+                for and that path also closes the tenancy properly. A disabled option can
+                still be the selected one, and its value is non-empty, so `required` is
+                satisfied.
+              -->
               <select v-model="editUnitCode" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white font-bold" required>
+                <option value="—" disabled>No unit assigned</option>
                 <option v-for="u in CANONICAL_UNITS" :key="u.unitCode" :value="u.unitCode.toUpperCase()">
                   {{ u.unitCode.toUpperCase() }} — {{ u.cluster }} ({{ peso(u.basePrice) }})
                 </option>
               </select>
+              <p v-if="editUnitCode === '—'" class="text-[11px] text-muted-foreground mt-1">
+                This resident holds no unit. Pick one to assign them, or save to change the
+                other details and leave them unassigned.
+              </p>
             </div>
 
             <div>
