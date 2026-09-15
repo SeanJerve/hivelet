@@ -2,6 +2,35 @@
 
 This document contains the business rules that must be treated as system laws.
 
+> [!NOTE]
+> **Spot-checked against the live system on 2026-09-15. The rules tested hold, in the code and
+> in the data.**
+>
+> This register had never been read against the running system - `npm run check:rules` proves
+> it is internally consistent, not that the code obeys it. Five of the most falsifiable rules
+> were traced to their implementation and to live rows:
+>
+> | Rule | Checked against |
+> | :--- | :--- |
+> | **BR-003** Historical Preservation | `bills`, `payments` and `monthly_income_records` are `ON DELETE RESTRICT` from `rooms`, so PostgreSQL refuses to delete a room holding any of them - and all 33 hold some. |
+> | **BR-007** Website Visibility | `visibility_status` is enforced in three places in `public.ts`, and as of `17095f3` an administrator can finally set it. |
+> | **BR-009** Inquiry Conversion | `converted_tenant_id` is written by the inquiry PATCH; the lead is linked to the tenancy it became. |
+> | **BR-011** Overdue | `isOverdue()` returns false for a Paid bill and otherwise compares against the bill's **own stored** window, falling back to `due_date`. |
+> | **BR-012** No Grace Period | `system_settings.grace_period_days` is **0** live, and `computeRentPeriod()` reads it from settings rather than pinning zero in code - so granting a window later is a settings change, not a deploy. |
+>
+> **The BR-012 errata was tested against the data and is exactly right, including the part
+> that looks like a discrepancy.** Both live bills carry a `grace_period_end_date` seven days
+> after their due date - 2026-07-05 → 07-12 and 2026-09-05 → 09-12. That is not the old policy
+> leaking: both were created on **2026-07-30** and **2026-08-21**, before migration `016`, and
+> BR-003 says a bill keeps the terms it was issued under. `isOverdue()` honours each bill's own
+> window rather than applying today's policy retroactively, which is what makes the two
+> statements consistent rather than contradictory.
+>
+> **Not every rule was tested** - forty-nine of them, and this is a spot-check of five. What it
+> establishes is that this register is of the kind that describes intent and has been kept, not
+> the kind that describes an afternoon and decayed. Treat the untested rules as unverified, not
+> as wrong.
+
 ## BR-001 — Single Property Scope
 
 Hivelet currently manages one property: Fe Galang Da Silva Boarding House.
