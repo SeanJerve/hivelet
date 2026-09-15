@@ -249,6 +249,27 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 
 *Recounted 2026-09-14: FR-013 moved to IMPLEMENTED, so this row read **10 / 22.7%** until that date.*
 
+> [!WARNING]
+> **Measured 2026-09-15: 6 of this table's 83 route citations point at the route they name.**
+>
+> A citation like `` (`admin.ts:730`) `` is a promise about a line number in a file that grows.
+> `admin.ts` is now past 2,900 lines; the route cited at 730 sits at 1065. Every insertion
+> above a citation invalidates it silently, and nothing in a markdown file can notice - **the
+> document was accurate when it was written.**
+>
+> Run `node backend/scripts/measure-doc-citations.mjs` for the current number and the full
+> list. It is deliberately **not** one of the nine verification suites: a gate that is red on
+> the day it ships teaches people to ignore red.
+>
+> **What is still reliable here: the file name, the route path, the table's judgements.** What
+> is not: the line numbers. Follow a citation by searching for the route, not by jumping to the
+> line.
+>
+> **The durable fix is not renumbering.** Renumbering 83 citations buys accuracy until the next
+> commit. A file name and a route path are stable identifiers; a line number is a convenience
+> that cannot survive a living codebase. Recorded rather than done - rewriting the table is a
+> large mechanical edit and the call belongs to whoever owns this document.
+
 > [!IMPORTANT]
 > **Retested 2026-09-15: seven of the nine MISSING rows are stale. Two are real.**
 >
