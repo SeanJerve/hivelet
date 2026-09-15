@@ -18,7 +18,7 @@
 --   3. ALL THIRTEEN ENUMS    — drift 2 was not a special case. The schema file
 --                              contains ZERO `CREATE TYPE` statements, while
 --                              production defines thirteen enum types used by
---                              seventeen columns. Every one of them is declared
+--                              eighteen columns. Every one of them is declared
 --                              VARCHAR in the repository.
 --   4. GENERATED columns     — monthly_income_records.fifty_percent_share and
 --                              .remitted_amount are GENERATED ALWAYS AS (...)
@@ -104,11 +104,14 @@ END
 $fixture$;
 
 -- -----------------------------------------------------------------------------
--- 3. Convert the seventeen columns that production holds as enums.
+-- 3. Convert the sixteen columns that hold enums at fixture time.
 -- -----------------------------------------------------------------------------
--- property_areas.code is deliberately absent: that table does not exist yet at
--- fixture time (migration 008 creates it), and 008 already reads the referencing
--- column's real type rather than assuming one.
+-- Production holds eighteen enum columns today; two are deliberately absent
+-- here because neither exists yet at fixture time. property_areas.code:
+-- that table does not exist until migration 008 creates it, which already
+-- reads the referencing column's real type rather than assuming one.
+-- clusters.expense_area: added later still, by migration 012 - see
+-- 012_penthouse_area_and_cluster_routing.sql:118.
 --
 -- Defaults have to be dropped before the type change and restored after. The
 -- default expression is evaluated to text rather than string-parsed, so

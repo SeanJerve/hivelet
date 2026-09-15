@@ -409,7 +409,7 @@ a database from it and comparing against `live_schema.csv` found five more:
 | :-- | :--- | :--- | :--- |
 | 1 | `rooms_floor_check` capping floor at 3 | `007` failed in production, 23514 | — |
 | 2 | `property_area` is an enum | `008` failed in production, 42883 | — |
-| 3 | **All thirteen enums.** `FULL_DATABASE_SCHEMA.sql` contains **zero `CREATE TYPE`** statements; production defines 13 enum types across 17 columns, every one declared `VARCHAR` in the repo | Reading `pg_type` | Drift 2 was never a special case. **No migration touching any enum column had ever been genuinely tested.** |
+| 3 | **All thirteen enums.** `FULL_DATABASE_SCHEMA.sql` contains **zero `CREATE TYPE`** statements; production defines 13 enum types across 18 columns, every one declared `VARCHAR` in the repo | Reading `pg_type` | Drift 2 was never a special case. **No migration touching any enum column had ever been genuinely tested.** |
 | 4 | `fifty_percent_share` / `remitted_amount` are `GENERATED ALWAYS AS … STORED` | Reading `pg_attribute.attgenerated` | Falsified defect #5 |
 | 5 | `update_expense_entry_total()` + `trg_update_expense_total` exist in production and **nowhere in the repository** | Comparing function and trigger lists | A database rebuilt from the repo has **no triggers at all**, so BR-045 silently stops holding |
 | 6 | `current_user_role()` exists in production, created out of band | Comparing function lists | The revoke path in `011` was untestable |

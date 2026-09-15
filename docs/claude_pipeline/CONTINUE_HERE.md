@@ -59,7 +59,7 @@
 > **`database/FULL_DATABASE_SCHEMA.sql` does NOT describe the live database.** **SEVEN** undocumented
 > differences are now known — the fixture previously claimed to hold "every known difference" and held
 > two. The worst are: the schema file contains **zero `CREATE TYPE` statements** while production
-> defines **13 enum types across 17 columns**; and `update_expense_entry_total()` with its trigger —
+> defines **13 enum types across 18 columns**; and `update_expense_entry_total()` with its trigger —
 > the object that makes BR-045 true — **exists only in the production database** and in no file in
 > this repository. Restore production from the repo and expense totals silently stop tracking their
 > allocations. All seven are now reproduced by `_TEST_FIXTURE_production_drift.sql`.

@@ -20,7 +20,7 @@ It is now known to be wrong about production in **seven** separate ways:
 | 1 | `rooms.floor` has no CHECK constraint | `rooms_floor_check` capped `floor` at 3 | Migration `007` failed, SQLSTATE 23514 |
 | 2 | `expense_property_allocations.property_area` is `VARCHAR(100)` | It is the enum `property_area_type` | Migration `008` failed, SQLSTATE 42883 |
 | 3 | `fifty_percent_share` and `remitted_amount` are `NUMERIC(10,2) NOT NULL DEFAULT 0.00` | Both are **`GENERATED ALWAYS AS (…) STORED`** | Reading `pg_attribute.attgenerated` |
-| 4 | Every enum-typed column is declared `VARCHAR`; the file contains **zero `CREATE TYPE`** statements | **13 enum types across 17 columns** | Reading `pg_type` — drift 2 was never a special case |
+| 4 | Every enum-typed column is declared `VARCHAR`; the file contains **zero `CREATE TYPE`** statements | **13 enum types across 18 columns** | Reading `pg_type` — drift 2 was never a special case |
 | 5 | No trigger anywhere | `update_expense_entry_total()` + `trg_update_expense_total` | Comparing function and trigger lists |
 | 6 | No `current_user_role()` | It exists, created out of band | Comparing function lists |
 | 7 | No composite unique key on the allocations | `UNIQUE (expense_entry_id, property_area)` | An `ON CONFLICT` clause failing under behavioural test |
