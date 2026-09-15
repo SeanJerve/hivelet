@@ -7,7 +7,57 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST - commit `21568a5`: correcting a typo in the ledger rewrote how the money had been
+> **LATEST - commit `17095f3`: you could not take a unit off the public site.**
+>
+> `visibility_status_type` is `(Published | Hidden)`. The column exists, the admin API has
+> accepted both values since the schema was written, and `public.ts` enforces it in **three**
+> places - both public room listings filter on Published, and an inquiry for a room that is
+> not Published is refused outright.
+>
+> **No control ever sent it.** Not one of the 33 units could be hidden - so a unit held back
+> for a returning resident, or one under maintenance, stayed on the public site advertising
+> itself and accepting enquiries. The enforcement was built and had nothing to enforce.
+>
+> The Edit Unit modal now carries a **Public Listing** control beside Operational Status. It
+> reads the unit's current value rather than assuming Published, and the options say what they
+> do - *"shown on the public site"* and *"not listed, no new enquiries"* - with a note that
+> residents already in the unit are unaffected, because that is the first question the label
+> raises. `RoomItem.visibility` is new; the room mapping never carried it, so nothing could
+> have read the value even to display it.
+>
+> **Verified against the live API with nothing written** - a nonexistent room id fails after
+> validation and before any update:
+>
+> | sent | result |
+> |---|---|
+> | Published · Hidden | **404** — both accepted |
+> | Unlisted | **422** — refused |
+>
+> and in the browser, by stubbing `window.fetch` so the save was **captured and blocked**
+> rather than sent:
+>
+> ```
+> PATCH /api/admin/rooms/a0100000-...
+> {"current_price":4500, ..., "operational_status":"Occupied",
+>  "visibility_status":"Hidden","photo":""}
+> ```
+>
+> The control loaded **Published**, which is what that unit holds. Rooms table unchanged:
+> **33 rows, all Published, max(updated_at) still 2026-09-14**.
+>
+> **Also checked and correct, no change needed:** the room status filters
+> (settled / pending / vacant / maintenance) cover all four values of
+> `operational_status_type` through `mapOperationalStatus()`, which is total and defaults
+> safely; and `verification_status_type` is fully covered - Verified and Rejected are both
+> offered on the pending-payment queue, Pending Verification being the incoming state.
+>
+> **One dead state recorded rather than repaired:** `UnitStatus` includes `'overdue'`, with a
+> label, an icon, a badge colour and a filter predicate - but `mapOperationalStatus()` cannot
+> produce it and no filter offers it, so nothing can reach it. Wiring it would mean deciding
+> what "overdue" means for a *unit* as opposed to a *bill*, which is a decision, not a
+> transcription.
+
+> **PREVIOUS - commit `21568a5`: correcting a typo in the ledger rewrote how the money had been
 > received.**
 >
 > `4170dfd` fixed the on-site payment modal's two-option method dropdown an hour ago. **The
@@ -673,7 +723,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**64 commits, all pushed to `main`. Working tree clean.**
+**66 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
