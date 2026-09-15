@@ -25,7 +25,43 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `2fe8eee`: the only person who could not see the photo was the one who
+> **LATEST - commit `4178676`: three of your units carried an invented arrears status.**
+>
+> I had this queued for five cycles as *"remove a dead branch"*. Tracing it properly before
+> deleting it turned it into something else.
+>
+> `UnitStatus` had a member nothing in the live system could produce - the four values of
+> `operational_status_type` map onto vacant, pending, settled and maintenance, never onto
+> overdue. **The only source was the canonical constant itself:** units **1g, 3f and F2F**
+> carried `status: "overdue"` as seed data. An invented arrears claim about three real units of
+> a real person's property, in the file that is supposed to carry structure.
+>
+> **It never reached a label reading "Overdue", and it is worth being exact about that rather
+> than overstating it.** `publicStatusLabel()` funnels anything unrecognised to "Occupied", and
+> the admin directory reads `systemState.rooms`, which the API replaces wholesale. **But**
+> `CategoryRoomsView` falls back to the canonical row whenever the live list does not contain a
+> unit - which the Hidden control I added this afternoon now makes possible - and systemState's
+> own comment names this exact hazard: *"It deliberately does NOT seed people or money …
+> invented payment statuses."* One override away from the screen is close enough.
+>
+> The three rows now read `"vacant"` like every other seeded unit, the union has four members,
+> and the label, icon, badge and filter branches that could never fire are gone.
+>
+> **Not wired up, deliberately.** A genuine overdue state for a *unit*, as opposed to a *bill*,
+> means deciding what it should mean - a unit whose tenant has an overdue bill, or something
+> else. That is Mrs. Da Silva's call, and inventing it to fill a dead branch is the exact
+> failure this audit exists to correct.
+>
+> **Left alone:** `AdminEditUnitModal`'s normaliser still tolerates 'overdue' among the loose
+> spellings it coerces to 'Occupied' - it takes arbitrary strings, and tolerating a legacy
+> value on the way in costs nothing. `TenantOverviewView` uses 'overdue' as a due-date
+> severity, which is live, is about bills, and is untouched.
+>
+> **Verified in the running app:** the directory's status filter now offers
+> `[All, settled, pending, vacant, maintenance]` and the word "overdue" appears nowhere on the
+> page. `vite build` succeeds, `check:fields` clean, frontend typechecks.
+
+> **PREVIOUS - commit `2fe8eee`: the only person who could not see the photo was the one who
 > took it.**
 >
 > `GET /api/tenant/my-tickets` selected the ticket and its room - and **not**
@@ -1459,7 +1495,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**104 commits, all pushed to `main`. Working tree clean.**
+**106 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
