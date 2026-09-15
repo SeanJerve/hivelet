@@ -265,11 +265,21 @@ where it would previously have claimed the lockdown held.
 | :--- | :---: | :---: | :---: |
 | `current_user_role()` | **yes** | ✘ → **✔** | **yes** → **no** |
 | `normalize_ph_phone(text)` | no | ✘ → **✔** | yes → **no** |
-| `update_expense_entry_total()` | no | ✘ → **✔** | yes → no |
+| `update_expense_entry_total()` | no | ✘ → **✔** | yes → **yes, but not exploitable — see below** |
 | `replace_expense_allocations(uuid, jsonb)` | no | ✔ → ✔ | no → no |
 
 **Verified live after `011`:** `anon` can execute `current_user_role()` = **false**; functions of ours
 with a mutable `search_path` = **none**; extension functions altered = **0**.
+
+**Correction, 2026-09-15:** `update_expense_entry_total()`'s row overclaimed. `EXECUTE` was never
+actually revoked from `anon` — it is still granted, confirmed live via `has_function_privilege('anon',
+'update_expense_entry_total'::regproc, 'EXECUTE')` = `true`. This carries no risk in practice: the
+function `RETURNS trigger` (it backs `trg_update_expense_total`, the BR-047 total-derivation trigger),
+and PostgreSQL refuses to invoke a trigger-return-type function outside trigger context regardless of
+`EXECUTE` grants — there is no `SELECT update_expense_entry_total()` or RPC call that can reach it.
+PostgREST does not expose it as an RPC endpoint either, for the same reason. Worth revoking anyway for
+hygiene (the same reason the seeded key is documented as powerless rather than merely unused), but it
+is not a live exposure and should not be presented as one.
 
 `replace_expense_allocations` is worth pointing at during the defense as the standard the others are
 being raised to: `SECURITY INVOKER`, `search_path` pinned, `EXECUTE` held only by the two roles that
