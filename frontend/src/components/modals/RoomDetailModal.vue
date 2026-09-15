@@ -27,7 +27,6 @@ function closeModal() {
 function getStatusBadgeClass(status?: string) {
   if (status === 'settled' || status === 'occupied') return 'badge-success';
   if (status === 'pending') return 'badge-warning';
-  if (status === 'overdue') return 'badge-danger';
   if (status === 'maintenance') return 'badge-purple';
   return 'badge-neutral';
 }

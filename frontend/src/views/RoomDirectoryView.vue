@@ -69,8 +69,7 @@ const filteredRooms = computed(() => {
       (selectedStatus.value === 'settled' && u.status === 'settled') ||
       (selectedStatus.value === 'pending' && u.status === 'pending') ||
       (selectedStatus.value === 'vacant' && u.status === 'vacant') ||
-      (selectedStatus.value === 'maintenance' && u.status === 'maintenance') ||
-      (selectedStatus.value === 'overdue' && u.status === 'overdue');
+      (selectedStatus.value === 'maintenance' && u.status === 'maintenance');
 
     const query = q.value.toLowerCase().trim();
     const matchesQuery =
@@ -97,7 +96,6 @@ function getUnitsForCluster(clusterName: string) {
 const STATUS_STYLE: Record<UnitStatus, string> = {
   settled: 'border-emerald-200 bg-emerald-50/40',
   pending: 'border-amber-200 bg-amber-50/40',
-  overdue: 'border-rose-200 bg-rose-50/40',
   vacant: 'border-border bg-background',
   maintenance: 'border-purple-200 bg-purple-50/40',
 };
@@ -106,7 +104,6 @@ function getStatusLabel(status: UnitStatus) {
   if (status === 'vacant') return 'Vacant';
   if (status === 'settled') return 'Settled';
   if (status === 'pending') return 'Pending';
-  if (status === 'overdue') return 'Overdue';
   if (status === 'maintenance') return 'Under Maintenance';
   return status;
 }
@@ -114,7 +111,6 @@ function getStatusLabel(status: UnitStatus) {
 function getStatusIcon(status: UnitStatus) {
   if (status === 'settled') return ShieldCheck;
   if (status === 'pending') return Clock;
-  if (status === 'overdue') return AlertCircle;
   if (status === 'maintenance') return Wrench;
   return Home;
 }
@@ -122,7 +118,6 @@ function getStatusIcon(status: UnitStatus) {
 function getStatusBadgeClass(status: UnitStatus) {
   if (status === 'settled') return 'badge-success';
   if (status === 'pending') return 'badge-warning';
-  if (status === 'overdue') return 'badge-danger';
   if (status === 'maintenance') return 'badge-purple';
   return 'badge-neutral';
 }

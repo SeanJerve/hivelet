@@ -1,5 +1,27 @@
 export type Cluster = "BH" | "Back Apartment" | "Penthouse" | "Front Apartment" | "Linda Units";
-export type UnitStatus = "settled" | "pending" | "overdue" | "vacant" | "maintenance";
+/**
+ * The states a unit can actually be in.
+ *
+ * `"overdue"` was a member and nothing in the live system could produce it.
+ * `mapOperationalStatus()` maps the four values of `operational_status_type`
+ * (Available, Reserved, Occupied, Under Maintenance) onto vacant, pending,
+ * settled and maintenance, and never onto overdue. The only source was this
+ * file: three canonical rows below carried `status: "vacant"` as seed data -
+ * an invented arrears claim about three real units of a real person's property.
+ *
+ * It never reached a label reading "Overdue". `publicStatusLabel()` in
+ * CategoryRoomsView funnels anything unrecognised to "Occupied", and the admin
+ * directory reads from `systemState.rooms`, which is replaced wholesale by the
+ * API. But a seeded payment status is the thing systemState's own comment warns
+ * about - "It deliberately does NOT seed people or money ... invented payment
+ * statuses" - and it was one override away from the screen.
+ *
+ * Wiring a genuine overdue state for a UNIT, as opposed to a bill, means
+ * deciding what it should mean: a unit whose tenant has an overdue bill, or
+ * something else. That is Mrs. Da Silva's call, not a transcription, so this
+ * removes the dead branches rather than inventing behaviour to fill them.
+ */
+export type UnitStatus = "settled" | "pending" | "vacant" | "maintenance";
 
 /**
  * NOTE: `tenantName` is intentionally blank on every entry.
@@ -77,7 +99,7 @@ export const CANONICAL_UNITS: RentableUnit[] = [
   { id: "bh-1d", unitCode: "1d", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 6000, capacity: 3, occupants: 1, status: "pending", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
   { id: "bh-1e", unitCode: "1e", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "Studio Type Apartment", basePrice: 6500, capacity: 2, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
   { id: "bh-1f", unitCode: "1f", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
-  { id: "bh-1g", unitCode: "1g", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 1, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-1g", unitCode: "1g", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 1, status: "vacant", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
   { id: "bh-1h", unitCode: "1h", cluster: "BH", floor: 1, floorLabel: "Floor 1", type: "1-Bedroom Apartment", basePrice: 5500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
 
   // 2nd Floor BH (2A - 2G)
@@ -95,7 +117,7 @@ export const CANONICAL_UNITS: RentableUnit[] = [
   { id: "bh-3c", unitCode: "3c", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 5500, capacity: 3, occupants: 1, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
   { id: "bh-3d", unitCode: "3d", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 6000, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
   { id: "bh-3e", unitCode: "3e", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "Studio Type Apartment", basePrice: 6500, capacity: 2, occupants: 3, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
-  { id: "bh-3f", unitCode: "3f", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 1, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "bh-3f", unitCode: "3f", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 4500, capacity: 3, occupants: 1, status: "vacant", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
   { id: "bh-3g", unitCode: "3g", cluster: "BH", floor: 3, floorLabel: "Floor 3", type: "1-Bedroom Apartment", basePrice: 5000, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "standard" },
 
   // Back Apartment (B1F, B2F, B2B, B3F, B3B)
@@ -110,7 +132,7 @@ export const CANONICAL_UNITS: RentableUnit[] = [
 
   // Front Apartment (F1, F2F, F2B)
   { id: "apt-f1", unitCode: "F1", cluster: "Front Apartment", floor: 3, floorLabel: "Floor 3", type: "2-Bedroom Apartment", basePrice: 8000, capacity: 4, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
-  { id: "apt-f2f", unitCode: "F2F", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 10000, capacity: 4, occupants: 3, status: "overdue", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
+  { id: "apt-f2f", unitCode: "F2F", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 10000, capacity: 4, occupants: 3, status: "vacant", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
   { id: "apt-f2b", unitCode: "F2B", cluster: "Front Apartment", floor: 2, floorLabel: "Floor 2", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 4, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
 
   // Linda Units (LF, LB)
