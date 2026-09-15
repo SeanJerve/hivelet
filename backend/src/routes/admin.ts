@@ -45,9 +45,31 @@ router.get(
   '/admin/rooms',
   requirePermission(PERMISSIONS.ROOM_READ_ALL),
   asyncHandler(async (_req, res) => {
+    /**
+     * The active tenancy comes with the room.
+     *
+     * This endpoint returned the room and nothing about who lives in it, while the frontend
+     * mapper read `r.tenant_name` and `r.tenant_profile_id` - neither of which is a column on
+     * `rooms` or anything this select produced. Both were therefore `undefined` on every row,
+     * and the mapper's fallback wrote the literal string "Active Resident" in place of the
+     * resident's name for all 32 occupied units.
+     *
+     * That reached further than the directory. `room.tenant` is the fallback contact name on
+     * the on-site payment modal and the ledger's own form, so a receipt recorded while the
+     * occupant summary was empty would have carried "Active Resident" into
+     * `monthly_income_records.contact_name` - the owner's ledger, and the "Contact + Invoice #"
+     * column of her Excel export. No live row shows it yet: all 937 are real names.
+     *
+     * All 32 occupied rooms have exactly one active assignment, and the one Available room has
+     * none, so this join answers for every row.
+     */
     const { data, error } = await db
       .from('rooms')
-      .select('*, clusters:cluster_code (code, name, display_order), room_photos (id, file_url, is_primary, display_order)')
+      .select(
+        '*, clusters:cluster_code (code, name, display_order), ' +
+        'room_photos (id, file_url, is_primary, display_order), ' +
+        'room_assignments (id, is_active, tenant_profile_id, occupant_count, profiles:tenant_profile_id (id, full_name))'
+      )
       .order('room_number');
 
     if (error) throw ApiError.internal(error.message);

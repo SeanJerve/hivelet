@@ -539,6 +539,7 @@ export async function fetchRooms(): Promise<RoomItem[]> {
           : floor === 3 ? 'Third Floor'
           : 'Rooftop (Level 4)';
         const isOccupied = (r.operational_status || '').toLowerCase() === 'occupied';
+        const activeRoomAssignment = r.room_assignments?.find((a: any) => a.is_active);
 
         return {
           id: r.id,
@@ -552,8 +553,14 @@ export async function fetchRooms(): Promise<RoomItem[]> {
           maxOccupants: r.capacity || 2,
           status: mapOperationalStatus(r.operational_status),
           visibility: r.visibility_status === 'Hidden' ? 'Hidden' : 'Published',
-          tenant: r.tenant_name || (isOccupied ? 'Active Resident' : null),
-          tenantId: r.tenant_profile_id || null,
+          // The resident's actual name, from the active tenancy the API now returns.
+          //
+          // This read `r.tenant_name` and `r.tenant_profile_id`, which `/admin/rooms` never
+          // sent - so both were `undefined` and every occupied unit was labelled with the
+          // invented string "Active Resident". A room with no active assignment now says so
+          // by holding null, rather than being given a resident it does not have.
+          tenant: activeRoomAssignment?.profiles?.full_name || null,
+          tenantId: activeRoomAssignment?.tenant_profile_id || null,
           paid: isOccupied,
           balance: 0,
           waterRateType: isLinda ? 'linda_fixed' : 'standard',
