@@ -2845,7 +2845,10 @@ router.get(
       .from('inquiry_messages')
       .select('*')
       .eq('inquiry_id', req.params.id)
-      .order('created_at', { ascending: true });
+      // `inquiry_messages` has no `created_at`; the column is `sent_at`. Ordering by a
+      // column that does not exist is a PostgREST 42703, so reading any conversation
+      // returned a 500 - the twin of the broken lookup in the POST beneath this.
+      .order('sent_at', { ascending: true });
 
     if (error) throw ApiError.internal(error.message);
     res.status(200).json({ success: true, data: data ?? [] });
