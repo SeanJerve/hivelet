@@ -484,9 +484,14 @@ export async function fetchRooms(): Promise<RoomItem[]> {
             'Provision for Aircon',
             'Wi-Fi Ready'
           ],
-          photo: (r.room_photos?.find((p: any) => p.is_primary)?.file_url || r.room_photos?.[0]?.file_url) ||
-            CANONICAL_UNITS.find(u => u.unitCode.toLowerCase() === unitCode.toLowerCase())?.photo ||
-            'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=70',
+          // Sean, 2026-09-15: get rid of any photo nobody actually uploaded.
+          // This used to fall back to CANONICAL_UNITS' (always-empty) seed
+          // photo, then to a hardcoded stock image - so a unit with no real
+          // photo on file still showed one, indistinguishable from a real
+          // interior shot. Empty when there is no real upload; every consumer
+          // (CategoryRoomsView, RoomDirectoryView) already renders "No photo
+          // yet" for a falsy `photo`.
+          photo: r.room_photos?.find((p: any) => p.is_primary)?.file_url || r.room_photos?.[0]?.file_url || '',
           desc: r.description || `${r.room_type || 'Studio'} unit in ${cluster}.`
         };
       });
