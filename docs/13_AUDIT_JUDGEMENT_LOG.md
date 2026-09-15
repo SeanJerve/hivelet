@@ -318,6 +318,91 @@ changes, and turned up one more (`4180cc8`).
 
 ---
 
+### An eighth sweep: what a register does when nobody reads it against the code
+
+The seventh sweep read the code against itself. This one went back to the
+documents with everything the code had taught, and the findings generalise past
+this project.
+
+#### 1. A defect register decays by OVERSTATING, and that is the dangerous direction
+
+Everyone expects a document to age. The assumption is that it ages by *missing*
+new problems. What actually happens is the reverse: a register lists what was
+wrong on a particular afternoon, someone fixes those things, and nobody goes
+back. The register keeps asserting them.
+
+The traceability matrix's coverage table reads **"MISSING 9, 20.5%"**. Retested
+against live code, **seven of those nine are implemented** - the real figure is
+three. Its PARTIAL notes told the same story: FR-034's *"a configured rate that
+nothing reads"*, FR-036's *"zero backend lines read or write any of them"*,
+FR-032's *"zero of three auto-computations persist"*, FR-018's *"a single typo
+silently creates a phantom property area"* - each describing a system that had
+moved on. The form-field audit was worse: its largest claim, that three forms
+send a unit code where the column wants a uuid, **was never a defect at all** -
+either the client resolves the code or the endpoint does.
+
+Why it matters more than an ordinary stale document: a reader spends their
+attention where the register points. If it points at work already done, the
+attention is spent and the live problems stay unlisted. A panelist reading the
+uncorrected matrix would have marked Hivelet down for seven things it does.
+
+**The cheap habit that prevents it:** when you fix something, grep the documents
+for the thing you fixed. It costs a minute and it is the only moment anyone will
+ever have both facts in their head at once.
+
+#### 2. Two registers disagreeing about one fact is worse than either being wrong alone
+
+E-17 recorded the two unauthenticated payment endpoints as closed on
+2026-09-14. OD-12, in the same repository, went on calling them an open Phase 3
+item. Both routes return **404**, probed live.
+
+A reader who finds only the stale row believes it. A reader who finds both has
+no way to choose, and the correct response is to trust neither - which discards
+the accurate one too. One wrong document costs you one wrong belief; two
+disagreeing documents cost you the standing of both.
+
+#### 3. A line-number citation cannot survive a living codebase
+
+The matrix cites code as `` (`admin.ts:730`) ``. **Six of its 83 route citations
+still point at the route they name.** `admin.ts` is 3,033 lines; the route cited
+at 730 sits at 1065. Every insertion above a citation invalidates it silently,
+and nothing in a markdown file can notice.
+
+This is nobody's carelessness - it was accurate when written. The durable fix is
+not renumbering, which buys accuracy until the next commit. **A file name and a
+route path are stable identifiers; a line number is a convenience that cannot
+survive.** `backend/scripts/measure-doc-citations.mjs` will re-measure on
+demand. It is deliberately not a verification suite: a gate that is red on the
+day it ships teaches people to ignore red.
+
+#### 4. The System Bible held, and the reason is the useful part
+
+Every defect register retested that day had decayed. The System Bible had not.
+Its normative statements are implemented, and the three that were not - a room
+"hidden by administrator decision", "Administrator communicates with the
+prospect", "it is closed with an appropriate outcome" - were closed by the day's
+work. **The document was ahead of the implementation, not behind it.**
+
+The reason is structural, not diligence. The Bible describes what the system is
+*for*, and intent ages slowly. A defect register describes what was *wrong on a
+particular afternoon*, and that ages the moment someone fixes something. Sort
+documents by that axis before deciding how much to trust one.
+
+#### 5. Engage a register's stated reasoning before overturning it
+
+The retest marked **FR-033 implemented**, citing the occupant count carried
+forward from the tenancy. The FR-033 note had already considered that exact
+evidence and rejected it: the carry-forward is assignment-scoped, and FR-033
+asks for month-scoped. Nothing reads the prior month's occupants. **The register
+was right and the retest was wrong**, and it had to be corrected in the document
+a commit later.
+
+A retest that overturns a judgement without reading the reasoning behind it is
+not a retest. It is a second opinion formed with less information than the
+first.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
