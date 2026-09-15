@@ -97,11 +97,31 @@ existing `pendingPaymentsFailed`. Verified live: backend stopped mid-session to
 force a genuine failure, each card fell back to "—" with its retry message,
 then recovered cleanly once the backend came back.
 
-`CategoryRoomsView` still has it — the public room listing falls back to
-`CANONICAL_UNITS`' seeded prices and photos with no signal when the live fetch
-fails, which is a real prospect-facing risk (a quoted price could be stale) but
-was judged lower consequence than the admin financial dashboard and left,
-consistent with the instruction below not to mass-fix a sweep's output.
+`CategoryRoomsView` had it too, and a second pass fixed it rather than leaving
+it: the public room listing falls back to `CANONICAL_UNITS`' seeded prices and
+photos on a failed fetch with no signal, which is a real prospect-facing risk
+(a quoted price could be stale). Unlike the dashboard cards, blanking the page
+on a hiccup would be worse for a public listing, so the seeded fallback stays
+- what changed is an amber notice, gated on `roomsFetchFailed`, saying the
+figures are unconfirmed. Verified live the same way as the dashboard fix:
+backend stopped, notice appeared with unit 1A correctly reverting to true
+canonical defaults ("No photo yet" / Available) rather than the live-but-wrong
+data described below; backend restarted, notice cleared.
+
+While looking at this view, also found and fixed a second, unrelated defect
+in the same file: both status badges read `status === 'vacant' ? 'Available'
+: 'Reserved'`, so every occupied unit displayed as "Reserved" rather than
+"Occupied" - verified against the live database (unit 1A, `Occupied`, ₱4,500,
+matching the price shown) and confirmed 32 of 33 units are Occupied, only PH
+Available, matching the dashboard's own "32 / 33 Units" exactly.
+
+A third thing surfaced in the same investigation and was **not** fixed:
+`room_photos` holds exactly one row across all 33 units (unit 1A, marked
+primary), and it is not a photo of a room - it is a ~210KB screenshot from an
+animated film. Deleting it would just revert unit 1A to the same "No photo
+yet" state already correct for the other 32 units, but the delete was refused
+by the environment's own shared-resource guardrail, correctly - this is data
+content, not a code defect, and stays open for Sean to decide.
 
 ---
 
