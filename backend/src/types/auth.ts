@@ -8,7 +8,8 @@ import type { Role, StoredRole } from '../config/rbac.js';
 /** The authenticated caller, resolved from the database on every request. */
 export interface AuthUser {
   profileId: string;
-  email: string;
+  // Nullable: a tenant may sign in with a phone number and hold no email (OD-09).
+  email: string | null;
   fullName: string;
   role: StoredRole;
   accountStatus: 'active' | 'inactive';
@@ -24,7 +25,8 @@ export interface AuthUser {
  */
 export interface JwtPayload {
   sub: string;
-  email: string;
+  // Nullable: a tenant may sign in with a phone number and hold no email (OD-09).
+  email: string | null;
   role: StoredRole;
   iat?: number;
   exp?: number;

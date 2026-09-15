@@ -21,10 +21,24 @@ import { auditFromRequest, clientIp } from '../services/auditService.js';
 
 const router = Router();
 
-const loginSchema = z.object({
-  email: z.string().email('A valid email address is required.'),
-  password: z.string().min(1, 'Password is required.'),
-});
+/**
+ * The identifier may be an email address OR a Philippine phone number (OD-09 —
+ * a tenant need not have an email, and the database carries a UNIQUE index on
+ * `normalize_ph_phone(phone_number)` for exactly this). It is therefore NOT
+ * validated as an email here; `resolve_login_identifier()` decides what it is.
+ *
+ * `email` is still accepted as an alias so existing clients keep working.
+ */
+const loginSchema = z
+  .object({
+    identifier: z.string().trim().min(1).max(255).optional(),
+    email: z.string().trim().min(1).max(255).optional(),
+    password: z.string().min(1, 'Password is required.'),
+  })
+  .refine((v) => Boolean(v.identifier || v.email), {
+    message: 'Enter your email address or phone number.',
+    path: ['identifier'],
+  });
 
 /**
  * POST /api/auth/login
@@ -38,7 +52,8 @@ router.post(
       throw ApiError.validation('Invalid login payload.', parsed.error.flatten().fieldErrors);
     }
 
-    const result = await login(parsed.data.email, parsed.data.password, clientIp(req) ?? undefined);
+    const identifier = parsed.data.identifier ?? parsed.data.email ?? '';
+    const result = await login(identifier, parsed.data.password, clientIp(req) ?? undefined);
 
     res.status(200).json({
       success: true,

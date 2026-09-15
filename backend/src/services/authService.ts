@@ -24,7 +24,8 @@ const SAFE_PROFILE_COLUMNS =
 
 interface CredentialRow {
   id: string;
-  email: string;
+  // Nullable: a tenant onboarded with only a phone number has no email (OD-09).
+  email: string | null;
   full_name: string;
   role: StoredRole;
   account_status: 'active' | 'inactive';
@@ -40,30 +41,43 @@ export interface LoginResult {
 }
 
 /**
- * Authenticates by email + password.
+ * Authenticates by identifier + password, where the identifier is an email
+ * address OR a Philippine phone number.
+ *
+ * Phone sign-in exists because OD-09 (client-confirmed 2026-09-13) says a tenant
+ * need not have an email: "Every tenant is a record; a portal login is optional
+ * and separate." The database was built for it — `idx_profiles_phone_login` is a
+ * UNIQUE index on `normalize_ph_phone(phone_number)` over credentialed profiles —
+ * but this function looked callers up by email alone, so a phone-only tenant
+ * could hold a password and still never get in.
+ *
+ * Resolution goes through `resolve_login_identifier()` (migration 021) rather
+ * than matching a phone here, so the normalisation rule lives in one place: the
+ * expression the unique index is built on. A second copy in TypeScript could
+ * drift from the index without anything failing loudly.
  *
  * Failure modes are deliberately indistinguishable to the caller where they
- * could enable account enumeration: an unknown email, a password-less profile
- * (e.g. a prospect), and a wrong password all return the same error.
+ * could enable account enumeration: an unknown identifier, a password-less
+ * profile (e.g. a prospect), and a wrong password all return the same error.
  */
 export async function login(
-  emailInput: string,
+  identifierInput: string,
   password: string,
   ipAddress?: string
 ): Promise<LoginResult> {
-  const email = emailInput.trim().toLowerCase();
+  const identifier = identifierInput.trim();
 
-  const { data, error } = await db
-    .from('profiles')
-    .select(
-      'id, email, full_name, role, account_status, password_hash, failed_login_count, locked_until'
-    )
-    .ilike('email', email)
-    .maybeSingle<CredentialRow>();
+  const { data: rows, error } = await db.rpc('resolve_login_identifier', {
+    p_identifier: identifier
+  });
 
   if (error) {
     throw ApiError.internal(`Authentication lookup failed: ${error.message}`);
   }
+
+  // The function is `RETURNS TABLE ... LIMIT 1`, so this is zero or one row.
+  const resolved = (rows ?? []) as unknown as CredentialRow[];
+  const data: CredentialRow | null = resolved.length > 0 ? resolved[0] : null;
 
   if (!data || !data.password_hash) {
     // Unknown email, or a profile with no credentials (System Bible Section 4:
