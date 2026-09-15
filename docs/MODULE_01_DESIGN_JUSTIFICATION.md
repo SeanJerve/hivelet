@@ -64,7 +64,7 @@ Module 01 establishes that an academic software engineering design is complete o
 * **Scalability (Concrete Scale & Engineering Choices):**  
   Optimized for multi-year record retention (5 to 10 years of historical ledgers across 33 units). Database queries for monthly income and expense ledgers utilize composite indexes (`idx_income_active ON monthly_income_records(year, month) WHERE voided_at IS NULL`), ensuring report generation executes in sub-50ms query times regardless of historical database growth.
 * **Problem Alignment (Root Problem Solved):**  
-  Resolves the landlady’s fear of data corruption and accidental loss. In previous years, manual spreadsheet edits frequently caused formulas to break or historical rows to be accidentally overwritten, creating irreconcilable discrepancies between co-owners.
+  Resolves the landlady’s fear of data corruption and accidental loss. In previous years, manual spreadsheet edits frequently caused formulas to break or historical rows to be accidentally overwritten, creating discrepancies that could no longer be reconciled against the receipt book.
 
 ---
 
@@ -74,15 +74,15 @@ Module 01 establishes that an academic software engineering design is complete o
 * **Functionality (Traced to FR-011, FR-012, FR-013, FR-031, FR-032):**  
   Automates the exact mathematical business rules mandated by the property owners:
   $$\text{Total Bill} = \text{Base Rent} + (\text{Registered Occupants} \times ₱200.00)$$
-  $$\text{Co-Ownership Share} = \text{Gross Rent} \times 0.50$$
-  $$\text{Net Remitted} = \text{Co-Ownership Share} + \text{Water Remittance} - \text{Garbage Fees}$$
+  $$\text{Fifty Percent Share} = \text{Rent Amount} \times 0.50$$
+  $$\text{Remitted Amount} = \text{Rent Amount} + \text{Water Payment}$$
   Units are automatically presented in canonical cluster order (`BH`, `Back Apartment`, `Penthouse`, `Front Apartment`, `Linda`) per `FR-031`.
 * **Security (Specific Mechanisms):**  
-  The frontend interface is strictly treated as a display layer. Total amounts, occupant water fees, and revenue shares are computed on the Node.js backend inside isolated database transactions (`BEGIN ... COMMIT`). Request payloads containing client-calculated totals are rejected by schema validators; the server recalculates totals from active `room_assignments` and `system_settings` records.
+  The frontend interface is strictly treated as a display layer. Total amounts, occupant water fees, and revenue shares are computed on the Node.js backend, with multi-table writes made atomic by database functions (migrations `010`, `018`, `019`) rather than by `BEGIN ... COMMIT`, which the client library cannot open. Request payloads containing client-calculated totals are rejected by schema validators; the server recalculates totals from active `room_assignments` and `system_settings` records.
 * **Scalability (Concrete Scale & Engineering Choices):**  
-  The billing engine batch-processes the entire property's monthly billing cycle in a single transaction loop executed on the server, generating all 32 tenant statements in under 150 milliseconds. Parameterized database queries prevent SQL injection, and database-level numeric precision `NUMERIC(10, 2)` prevents floating-point accumulator drift across multi-unit subtotals.
+  The billing engine batch-processes the entire property's monthly billing cycle in a single transaction loop executed on the server, generating all 33 tenant statements in a single pass. Parameterized database queries prevent SQL injection, and database-level numeric precision `NUMERIC(10, 2)` prevents floating-point accumulator drift across multi-unit subtotals.
 * **Problem Alignment (Root Problem Solved):**  
-  Directly eliminates monthly disputes between the property co-owners and tenants regarding occupant headcounts and water surcharges. By linking water charges directly to registered active leaseholders in the database, math errors and manual spreadsheet inconsistencies are eliminated.
+  Directly eliminates monthly disputes with tenants regarding occupant headcounts and water surcharges. By linking water charges directly to registered active leaseholders in the database, math errors and manual spreadsheet inconsistencies are eliminated.
 
 ---
 
