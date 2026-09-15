@@ -56,7 +56,8 @@ reversed. Both are recorded in the documents rather than quietly patched.
 ### Still with the owner
 
 The **₱35,228** of penthouse upkeep filed under a non-rental area, outside Net Operating
-Income. Whether a profile photo and ticket attachments are worth object storage. What "overdue" should mean for a unit rather than a bill. *(The abusive
+Income. Whether a profile photo and ticket attachments are worth object storage - the engineering
+side of that is now decided and recorded in the code; what remains is the cost. What "overdue" should mean for a unit rather than a bill. *(The abusive
 inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 
 ---
@@ -91,8 +92,34 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST - commit `5267ad8`: the business-rule register read against the live system - and it
-> holds. A clean cycle.**
+> **LATEST - commit `ee93ea7`: four more stale gap-register rows, and one decision closed in
+> code.**
+>
+> The DFD's gap register, retested against live code and the live catalogue:
+>
+> | Gap | What it says | Retested |
+> |---|---|---|
+> | **G-2** | *"Water charge is **hardcoded** as `occupants * 200` in three places"* | **Stale.** The rate is read from settings and the two fixed-charge units are handled first. The only surviving occurrences of that expression are **comments describing the former defect**. |
+> | **G-3** | *"The 50% Share is **hardcoded** as `rentAmount / 2`"* | **Stale, and G-4 already says why** - the column is `GENERATED ALWAYS AS (rent_amount / 2.0) STORED`. The derivation moved into the database. |
+> | **G-5** | *"Grace period **hardcoded at 10 days**, contradicting the seeded value of 7"* | **Stale twice over.** No hardcoded window remains, and the seeded value is no longer 7 either - it is **0**. |
+> | **G-8** | *"The live schema carries **17** `ON DELETE CASCADE`"* | **Stale - the proposal was applied.** Counted live: **11 CASCADE, 8 RESTRICT, 18 NO ACTION, 1 SET NULL.** The six that moved are the ledger tables migration `005` was written to protect. |
+>
+> **G-9 stays PARTIAL on purpose** - half stale. *"6.0 performs no aggregation"* is untrue of
+> the export, which computes the area and category totals server-side and prints the BR-047
+> reconciliation, and still true of the screen, where they are derived in the browser and
+> persisted nowhere. **G-11 stands**, retested. G-1, G-4 and G-7 were already correct.
+>
+> **And a decision closed rather than parked.** `ticketSchema.fileUrl` is deliberately
+> uncapped, and the reasoning now lives in the schema itself: **a length cap looks like the
+> obvious guard and is not.** Any cap tight enough to reject a base64 data URL rejects every
+> photo the current client produces - it would not harden the endpoint, it would switch the
+> feature off. The bound that genuinely applies is `express.json({ limit: '1mb' })`, which caps
+> the request. Moving attachments to object storage is the real answer, and that is a storage
+> decision with a cost, not a validation change. Written down so the next reader does not add a
+> cap thinking it is free.
+
+> **PREVIOUS - commit `5267ad8`: the business-rule register read against the live system - and
+> it holds. A clean cycle.**
 >
 > Forty-nine rules that had **never** been checked against running code. `check:rules` proves
 > the register is internally consistent - that its ids resolve and its cross references agree -
@@ -1729,7 +1756,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**117 commits, all pushed to `main`. Working tree clean.**
+**119 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
