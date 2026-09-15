@@ -401,11 +401,22 @@ cd backend  && npm run check:api        # 53 endpoint, RBAC, perimeter, export a
             npm run check:adyen       # 23 HMAC signature checks
             npm run check:billing     # water / grace / period / receipt-allocation arithmetic
             npm run check:writes      # no database write discards its result
+            npm run check:columns     # every table/column/filter/write key in backend/src exists
+            npm run check:fields      # every snake_case field the frontend reads is one the API sends
 cd frontend && npm run check:tokens     # design tokens resolve to the right colours
 cd ..       && npm run check:rules      # the BR register agrees with itself
             npm run check:secrets    # scans for committed credentials
             npm run backup            # snapshot the live database before risky work
 ```
+
+`check:columns` and `check:fields` were added on 2026-09-15 and both read the live schema at
+runtime, so neither can go stale. They exist because two broken column names had survived
+every other suite: `POST /admin/inquiries/:id/messages` selected columns `inquiries` does not
+have and reported it as "Inquiry not found", and the matching GET ordered by a column
+`inquiry_messages` does not have and returned a 500 — between them, the whole enquiry
+conversation feature was dead. The frontend twin is quieter still: a wrong field name there
+is `undefined`, with no error at all, so every occupied unit was labelled "Active Resident"
+and the Audit Trail showed "null" for every change it had recorded.
 
 All of these passed at handoff: **53 / 23 / all / all / all / all / clean**.
 

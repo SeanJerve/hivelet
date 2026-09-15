@@ -12,7 +12,8 @@
     "check:adyen": "npm run build && node scripts/check-adyen-hmac.mjs",
     "check:api": "node scripts/check-api-contract.mjs",
     "check:writes": "node scripts/check-silent-writes.mjs",
-    "check:columns": "node scripts/check-column-refs.mjs"
+    "check:columns": "node scripts/check-column-refs.mjs",
+    "check:fields": "node scripts/check-frontend-fields.mjs"
   },
   "dependencies": {
     "@adyen/api-library": "^32.0.0",
