@@ -7,6 +7,60 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
+## What this day found, in one page
+
+*Everything below this section is newest-first and thirty entries deep. This is the shape of
+it for someone arriving cold. Every commit named here resolves in the repository.*
+
+### The six that would have cost the owner something
+
+| | Commit |
+| :--- | :--- |
+| **The entire enquiry conversation feature was dead.** Every reply failed with "Inquiry not found" - the handler selected columns `inquiries` does not have - and reading a thread returned a 500, because it ordered by a column `inquiry_messages` does not have. She could neither read a lead nor answer one. | `cabe216`, `09de591` |
+| **The Audit Trail showed "null" for every change it had recorded.** Three field names the `audit_logs` table does not have. 2,693 rows, 72 of them carrying a real before-image, none of it reaching the screen. | `b3c97e4` |
+| **Editing a ledger entry rewrote how the money was received** and dropped its reference number. Open a receipt to fix a typo in the rent, and the payment method silently became Cash. | `21568a5` |
+| **A bank transfer taken at the door was filed as GCash** - beside a field that asked for a bank reference. | `4170dfd` |
+| **Four active residents could not be edited at all**, and every occupied unit was labelled "Active Resident" instead of the tenant's name - a string one empty field away from entering the ledger as a payer. | `df4e817`, `b593166` |
+| **The tenant profile form let residents edit their name and upload a photo, and silently discarded both** - the name edit even updated the header, so it looked saved until the next reload. | `b3c97e4` |
+
+### The pattern behind five of them
+
+In a browser, a field name that does not exist is **not an error**. It is `undefined`, and the
+carefully written fallback beside it then runs exactly as its author intended, on a value that
+was never going to arrive. `r.tenant_name`, `l.entity_table`, `l.old_values`, `l.user_agent`,
+`currentUser.email`. **The defensive default is what hides the bug** - code with no fallback
+would have rendered a blank and been caught in a day.
+
+That is now caught by **`check:fields`**, and its backend twin by **`check:columns`**. Both read
+the live schema at runtime, so neither can go stale, and each was made to fail once before it
+was trusted. They exist because two broken column names had survived all seven existing suites.
+
+### What the documents claimed, and what was true
+
+The traceability matrix says **"MISSING 9, 20.5%"**. That is the figure a panel reads off the
+page. **Seven of those nine are implemented**; the real count is **3**. Separately, **6 of its 83
+route citations** point at the route they name - `admin.ts` is 3,033 lines and a line number
+cannot survive a living codebase.
+
+The **System Bible is the opposite case and holds**: its normative statements are implemented,
+and the three that were not this morning were closed by the day's work. Intent ages slowly; a
+defect register ages the moment someone fixes something, **and it ages in the alarming
+direction**.
+
+### Two of the day's findings were mine
+
+A feature shipped at 17:00 created a defect at 21:00 in a file already audited (`17095f3` →
+`fb59517`). And an FR-033 judgement was overturned too generously before being rechecked and
+reversed. Both are recorded in the documents rather than quietly patched.
+
+### Still with the owner
+
+The **₱35,228** of penthouse upkeep filed under a non-rental area, outside Net Operating
+Income. Whether a profile photo and ticket attachments are worth object storage. Whether a live
+chat should exist. What "overdue" should mean for a unit rather than a bill.
+
+---
+
 > **NEEDS YOU, NOT ME — there is an abusive entry in the live inquiries table.**
 >
 > One of the two live inquiries was submitted through the public enquiry form on **25 Aug
