@@ -7,7 +7,42 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST CYCLE - commit `53b26a9`: the public inquiry form's FIRST option could never be
+> **LATEST CYCLE - commit `8434d45`: EDITING ANY NON-STUDIO UNIT WAS BEING REJECTED BY THE
+> DATABASE. Fourth functional bug, and the most consequential yet.**
+>
+> The Edit Unit modal offered **Studio / 1 Bedroom / 2 Bedroom / 3 Bedroom**. Only the first
+> is real: `rooms.room_type` is an enum whose values are **Studio | One-bedroom |
+> Two-bedroom | Three-bedroom**.
+>
+> `room_type` is sent on **every** save from that modal - including a save that only changes
+> the rent. So for the **13 units that are not Studio**, any edit at all wrote an invalid
+> enum value and PostgreSQL rejected it (22P02).
+>
+> | Live distribution | Count |
+> | :--- | ---: |
+> | Studio | 20 |
+> | One-bedroom | 8 |
+> | Two-bedroom | 4 |
+> | Three-bedroom | 1 |
+>
+> **The twenty Studios saved cleanly** - which is exactly why nobody caught it. Whether the
+> save worked depended on which unit you happened to open. And the modal hid its own bug: it
+> converted the stored value to the loose spelling on open, so a One-bedroom unit displayed
+> as "1 Bedroom" and looked right up until the moment you saved.
+>
+> **Also hardened the backend.** `room_type` was `z.string()` in both the insert and update
+> schemas, while `operational_status` and `visibility_status` in those same objects were
+> properly enumerated. It was the odd one out, so a bad value passed validation and surfaced
+> as a database error the caller could do nothing with. Now a clean 422 naming what is
+> allowed.
+>
+> **Verified end to end against live data:** unit 2A, stored as One-bedroom, now opens with
+> One-bedroom selected. check:api 53/53 against the restarted backend.
+>
+> **No data changed** - every stored value was already valid. Only the interface could not
+> round-trip them.
+
+> **PREVIOUS CYCLE - commit `53b26a9`: the public inquiry form's FIRST option could never be
 > sent. Third functional bug.**
 >
 > The unit selector opened with **"Any available unit"** as its first choice. Choosing it made
@@ -279,7 +314,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**45 commits, all pushed to `main`. Working tree clean.**
+**47 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
