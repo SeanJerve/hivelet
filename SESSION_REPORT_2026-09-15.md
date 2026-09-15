@@ -25,7 +25,50 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `b593166`: every occupied unit was labelled "Active Resident".**
+> **LATEST - commit `bc4d3ae`: a wrong field name in the browser is silent, so there is now a
+> check for it. Ninth suite.**
+>
+> `check:columns` catches a wrong column name in the backend, because PostgREST answers one
+> with 42703. **The frontend has no such backstop.** A field that does not exist is
+> `undefined` - no error, no warning, nothing in the console - and the carefully written
+> fallback beside it then does its job perfectly, on nothing. Four of these turned up today,
+> all in code that typechecked and shipped:
+>
+> | field read | what it produced |
+> |---|---|
+> | `r.tenant_name` | every occupied unit labelled **"Active Resident"** - one empty occupant summary away from entering your ledger as a payer's name |
+> | `l.entity_table` | the Audit Trail read **"system"** for every row |
+> | `l.old_values` | the Audit Trail read **"null (Initial record insertion)"** for every row. On an audit trail. |
+> | `l.user_agent` | **"not recorded"**, forever - no such column exists |
+>
+> **`check:fields`** reads every snake_case property the frontend takes off API JSON and checks
+> it against the live schema, plus five API-computed fields allowed by name **with the place
+> each is produced written beside it**. The schema is read at runtime from PostgREST's own
+> document, like `check:columns`, so it cannot go stale.
+>
+> **Two things learned making it honest.**
+>
+> Its first run failed on `r.tenant_name` at `systemState.ts:558` - which is the **comment**
+> explaining that the bug used to be there. A check that reports prose describing a fixed bug
+> teaches people to ignore it, so it strips comments first.
+>
+> It matches on **name, not on table**, and the header says so rather than implying more. A
+> field that is a real column on some *other* table passes even when it is wrong for the
+> object being read - which is exactly how `r.tenant_profile_id` on a room survived alongside
+> `r.tenant_name`: the first is a genuine column on `room_assignments`, so only its twin was
+> caught. Making it table-aware means tracing which endpoint feeds which mapper. **Recorded
+> rather than overclaimed.**
+>
+> **Proven to fail, not just to pass.** Putting `l.old_values` back produced
+> `FAIL old_values — 1 use(s), first frontend/src/views/AuditLogsView.vue:488`, and the file
+> restored to an empty diff afterwards.
+>
+> `CONTINUE_HERE.md` now lists **all nine suites** with a note on why the two newest exist.
+> `docs/12_ITERATION_HISTORY.md` is **left alone**: it is a dated record of Iteration 2 and
+> describes a past state. (It does say "six suites" above a table of seven - an error, but its
+> own, about its own moment.)
+
+> **PREVIOUS - commit `b593166`: every occupied unit was labelled "Active Resident".**
 >
 > `GET /admin/rooms` returned the room, its cluster and its photos - and **nothing about who
 > lives in it**. The frontend mapper nonetheless read `r.tenant_name` and
@@ -956,7 +999,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**76 commits, all pushed to `main`. Working tree clean.**
+**78 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
