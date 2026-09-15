@@ -7,7 +7,35 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST CYCLE - commit `ce9a3ef`: three ticket category pickers disagreed, and one could
+> **LATEST CYCLE - commit `53b26a9`: the public inquiry form's FIRST option could never be
+> sent. Third functional bug.**
+>
+> The unit selector opened with **"Any available unit"** as its first choice. Choosing it made
+> the inquiry impossible to submit: `inquiries.room_id` is **NOT NULL**, so an inquiry must
+> name a unit. With the empty value selected the lookup matched nothing and the prospect was
+> told:
+>
+> > *"Unit  could not be found, so the inquiry was not sent. Please refresh and try again."*
+>
+> Note the blank where the unit should be, and the advice to refresh - which never helped,
+> because nothing was wrong with the data. **The form was offering something the schema
+> cannot record.**
+>
+> This is the public inquiry form - the top of the funnel - and the broken choice was the
+> first in the list, so it was the most natural pick for exactly the person it fails: someone
+> still browsing, who has not settled on a unit.
+>
+> Removed it, and added a guard so an empty selection says *"Please pick which unit you are
+> asking about"* instead. The selector still lists every unit regardless of occupancy, which
+> is correct under BR-007. **Verified live as an anonymous visitor.**
+>
+> **Also checked and found correct, no change needed:** bill statuses everywhere use the
+> robust "not Paid" exclusion so Partially Paid counts as outstanding (the BR-013 defect is
+> genuinely fixed in all three views); ticket `Closed` has no UI option but that is
+> deliberate, closure runs through the BR-023 endpoint; inquiry email is NOT NULL and both
+> API and form require it; and the inquiry success toast now fires only on success.
+
+> **PREVIOUS CYCLE - commit `ce9a3ef`: three ticket category pickers disagreed, and one could
 > not display its own ticket.**
 >
 > Hunting the same shape that found the Penthouse bug. `maintenance_tickets.category` is a
@@ -251,7 +279,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**43 commits, all pushed to `main`. Working tree clean.**
+**45 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
