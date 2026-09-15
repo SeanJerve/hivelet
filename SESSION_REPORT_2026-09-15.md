@@ -92,7 +92,46 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST: everything re-run end to end. All nine green, nothing new found - and one number
+> **LATEST: a final verification pass. Two clean cycles in a row - the audit has reached its
+> natural end.**
+>
+> **Hygiene.** No stray probe scripts in `backend/scripts`; the only scripts committed today
+> are the three intended ones - `check-column-refs.mjs`, `check-frontend-fields.mjs`,
+> `measure-doc-citations.mjs` - plus the token check whose budget was ratcheted. Nothing from
+> the scratchpad was ever committed.
+>
+> **Build.** `vite build` succeeds, 9 precache entries.
+>
+> **Smoke test, all six administrator pages**, each rendering its real heading and live data:
+>
+> | Page | Heading | Live rows |
+> |---|---|---|
+> | `/admin/overview` | Executive Operations Overview | — |
+> | `/admin/directory` | Room & Rate Directory | — |
+> | `/admin/tenants` | Active Tenant Directory | — |
+> | `/admin/income` | Monthly Income & Collections Ledger | **937** |
+> | `/admin/tickets` | Maintenance Dispatch Board | **5** |
+> | `/admin/inquiries` | Prospect Inquiries & Leads | — |
+>
+> **One thing worth recording about the method, even here.** The first pass used `pushState` to
+> move between pages, and the income and tickets pages came back with suspiciously small
+> content - 1,460 and 1,021 characters. That looked like a smoke test passing. Re-run with real
+> navigation they load **937** and **5** rows. *The first numbers were an artefact of how I
+> navigated, not a fact about the pages* - and reporting them would have been a false all-clear
+> in the last measurement of the day.
+>
+> ---
+>
+> **The audit is complete.** Everything listed in the one-page summary above has been read
+> against the running system: the code, the traceability matrix, the DFD gap register, the
+> business rules, the System Bible. Two consecutive cycles have found nothing new, which is a
+> result rather than a gap in the looking.
+>
+> **What remains is not audit work:** one sandbox lock (three names carrying invoice numbers,
+> statements at the top of this file), and one judgement that belongs to Mrs. Da Silva (the
+> ₱35,228 of penthouse upkeep filed outside Net Operating Income).
+
+> **PREVIOUS: everything re-run end to end. All nine green, nothing new found - and one number
 > in this report had gone stale, mine.**
 >
 > | | | | |
@@ -1822,7 +1861,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**123 commits, all pushed to `main`. Working tree clean.**
+**125 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
