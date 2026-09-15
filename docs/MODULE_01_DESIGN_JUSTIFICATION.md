@@ -15,7 +15,8 @@
 > | "Pending Consultation" | **Withdrawn.** The Adyen evaluation is complete — a developer sandbox is configured and the GCash flow runs against it |
 > | "one-week grace period" | **There is no grace period.** Late payment is not accepted (OD-16) |
 > | "ON DELETE RESTRICT" as existing fact | It did **not** exist when this was written. Applied by migration `005` on 2026-09-13 |
-> | "atomic database transaction" | No transaction existed in `backend/src` when this was written |
+> | "atomic database transaction" | No transaction existed in `backend/src` when this was written. Atomicity is delivered today by database functions (migrations `010`, `018`, `019`), because the client library cannot open one |
+> | "sub-50ms", "256MB RAM", "100% data consistency", "under 150 milliseconds" | **All withdrawn (E-16).** No benchmark, profiling run or load test exists in this repository. **No numeric performance claim is made until it has been measured.** |
 >
 > **For the Capstone 2 defense, speak from `docs/claude_pipeline/outputs/PHASE3_DEFENSE_PACK.md`,
 > not from this pack.** Only one panel recommendation was ever given — see
@@ -62,7 +63,7 @@ Module 01 establishes that an academic software engineering design is complete o
 * **Security (Specific Mechanisms):**  
   Foreign keys on core financial ledgers (`bills`, `payments`, `monthly_income_records`) enforce `ON DELETE RESTRICT` constraints at the PostgreSQL database engine level, preventing accidental cascading deletions. Non-destructive soft-voiding utilizes `voided_at TIMESTAMPTZ`, `voided_by UUID`, and `void_reason TEXT`. System activity is recorded in an append-only `audit_logs` table that has no `UPDATE` or `DELETE` API endpoints exposed to any user role.
 * **Scalability (Concrete Scale & Engineering Choices):**  
-  Optimized for multi-year record retention (5 to 10 years of historical ledgers across 33 units). Database queries for monthly income and expense ledgers utilize composite indexes (`idx_income_active ON monthly_income_records(year, month) WHERE voided_at IS NULL`), ensuring report generation executes in sub-50ms query times regardless of historical database growth.
+  Optimized for multi-year record retention (5 to 10 years of historical ledgers across 33 units). Database queries for monthly income and expense ledgers utilize composite indexes (`idx_income_active ON monthly_income_records(year, month) WHERE voided_at IS NULL`), so report generation stays indexed rather than scanning as the ledger grows. The index is real and verified present in the live catalogue; **no query-time figure is claimed, because none has been measured** (errata E-16).
 * **Problem Alignment (Root Problem Solved):**  
   Resolves the landlady’s fear of data corruption and accidental loss. In previous years, manual spreadsheet edits frequently caused formulas to break or historical rows to be accidentally overwritten, creating discrepancies that could no longer be reconciled against the receipt book.
 
@@ -94,7 +95,7 @@ Module 01 establishes that an academic software engineering design is complete o
 * **Security (Specific Mechanisms):**  
   Stateless JSON Web Tokens (JWT) signed with HMAC-SHA256 authenticate all requests across the presentation and application layers. Passwords stored in `profiles.password_hash` are cryptographically salted and hashed using `bcrypt` (10 rounds). Security headers are enforced via `helmet` middleware, and Cross-Origin Resource Sharing (CORS) is restricted to approved campus domain origins.
 * **Scalability (Concrete Scale & Engineering Choices):**  
-  Deployed as a single lightweight Node.js/Express service communicating with a PostgreSQL database. Consumes less than 256MB of RAM on the university server, easily handling the concurrent load of 32 units, student inquiries, and administrative reporting without the networking latency, distributed failures, or high hosting costs of microservices.
+  Deployed as a single lightweight Node.js/Express service communicating with a PostgreSQL database. Sized for a single small property rather than a tenanted platform, handling the concurrent load of 33 units, student inquiries, and administrative reporting without the networking latency, distributed failures, or high hosting costs of microservices.
 * **Problem Alignment (Root Problem Solved):**  
   Addresses the technological gap identified in Section 2.2 of our paper: commercial enterprise property systems are bloated, expensive, and require stable enterprise IT infrastructure. Hivelet provides an enterprise-quality interface optimized for the resource-constrained environment of Legazpi City boarding houses.
 
