@@ -16,9 +16,38 @@
 > | §2 `paymentMethod` | "UI emits `Cash`/`Online`; enum is `Cash`/`GCash`/`Bank Transfer`/`Adyen Online`" | **Resolved, though the UI still emits `Online`.** It never reaches the enum: `POST /api/admin/income-records` accepts `Cash`/`Online`/`GCash` at its boundary and normalises to `GCash` before the write (`admin.ts`). `IncomeCollectionsView` maps to `GCash` client-side as well. |
 > | §3 preamble | "Every one of these will throw a Postgres enum error on first write" | **Not true of the rows checked.** Both above are handled. |
 >
-> **This box records a spot-check, not a full re-verification** — the remaining rows were not
-> individually retested, and some may still be live. Treated as a lead list rather than a
-> defect list.
+> **Second pass, later the same day — the whole `code → uuid` class.** It is the register's
+> largest claimed defect, three rows of it, and none of the three is live:
+>
+> | Row | Claim | Verified 2026-09-15 |
+> | :--- | :--- | :--- |
+> | §F-02 `selectedUnitCode` → `inquiries.room_id` | "UI holds a room *code*, column needs the uuid" | **Resolved in the UI.** `submitInquiry()` looks the code up in `publicRooms` and posts `roomId: matchedRoom.id`; the API's schema is `roomId: z.string().uuid()`, so a code would be refused at the boundary, not at the column. |
+> | §F-03 `selectedUnitNum` → `monthly_income_records.room_id` | "code → uuid" | **Resolved in the API, by design.** `POST /admin/income-records` takes `roomNumber` and resolves it (`admin.ts`, `.ilike('room_number', …)`) before the insert. The UI is *supposed* to hold the code. |
+> | §F-05 `newTenantRoom` → `room_assignments.room_id` | "code → uuid" | **Resolved in the API**, the same way. |
+>
+> So the pattern the register read as a systemic defect is the system's actual design: either
+> the client resolves the code, or the endpoint does. Six write paths resolve a unit code
+> server-side.
+>
+> **Three further rows retested, all stale:**
+>
+> | Row | Claim | Verified 2026-09-15 |
+> | :--- | :--- | :--- |
+> | §F-02 `email` | "optional in the UI; insert will fail" | **Fixed.** `prospectEmail: z.string().email()` at the API, and both public forms require it with an explicit guard. |
+> | §F-02 `submitInquiry()` | "only sets a boolean flag; it performs no write" | **Fixed.** It POSTs to `/public/inquiries`, and reports failure instead of claiming success. |
+> | §F-03 `referenceNum` | "**ADD** — no reference/transaction column on this table" | **Column exists.** `monthly_income_records.transaction_reference`, and it is written by the ledger form as of `21568a5`. |
+>
+> **One live claim in this register turned out to be true again, for a new reason.** It said
+> the public room dropdown "filters to `status === 'available'`, which contradicts BR-007".
+> That filter is gone — but the dropdown is built from `CANONICAL_UNITS`, all 33, while
+> `/public/rooms` returns only units whose `visibility_status` is 'Published'. Harmless while
+> every unit was published; the moment hiding one became possible (`17095f3`, the same day) a
+> prospect could pick a hidden unit and be told *"Unit X could not be found … please refresh"*,
+> which refreshing never fixes. Fixed by offering only units the public API actually returned.
+>
+> **This box still records a spot-check, not a full re-verification.** Rows not named above
+> were not individually retested. Treat it as a lead list, not a defect list — and note that
+> its leads have now been wrong more often than right.
 >
 > One genuine defect of exactly this shape *was* found and fixed the same day, so the genre
 > is worth taking seriously even though this particular register has aged: the expense

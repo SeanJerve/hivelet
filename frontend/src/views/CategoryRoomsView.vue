@@ -225,6 +225,29 @@ const mergedUnits = computed<RentableUnit[]>(() => {
 const currentCat = computed(() => CATEGORIES.find((c) => c.key === selectedCategoryKey.value) || CATEGORIES[0]);
 const categoryUnits = computed(() => mergedUnits.value.filter(currentCat.value.match));
 
+/**
+ * The units this form may actually send an inquiry about.
+ *
+ * `categoryUnits` is built from `CANONICAL_UNITS` - all 33, always - with live data overlaid
+ * where the API supplied it. `/public/rooms` returns only rooms whose `visibility_status` is
+ * 'Published', so the two lists are not the same list, and the gap between them became real
+ * the moment hiding a unit became possible (17095f3).
+ *
+ * Offering a hidden unit here would reproduce exactly the defect the comment on the dropdown
+ * below describes: the lookup in `submitInquiry()` searches `publicRooms`, finds nothing, and
+ * the prospect is told "Unit X could not be found ... please refresh", which refreshing never
+ * fixes. A form must not offer what the system cannot record.
+ *
+ * When `/public/rooms` has not answered at all, the canonical list still drives the page - the
+ * catch in `loadPublicRooms()` says why - and the send path's own guard reports the failure
+ * honestly rather than silently.
+ */
+const inquirableUnits = computed(() => {
+  if (!publicRooms.value.length) return categoryUnits.value;
+  const published = new Set(publicRooms.value.map((r) => r.room_number.toLowerCase()));
+  return categoryUnits.value.filter((u) => published.has(u.unitCode.toLowerCase()));
+});
+
 const activeUnit = computed(() => {
   return categoryUnits.value.find((u) => u.unitCode.toLowerCase() === selectedUnitCode.value.toLowerCase()) || categoryUnits.value[0];
 });
@@ -583,7 +606,7 @@ async function submitInquiry() {
                 that silently could not be sent. A form must not offer what the system
                 cannot record.
               -->
-              <option v-for="u in categoryUnits" :key="u.unitCode" :value="u.unitCode">
+              <option v-for="u in inquirableUnits" :key="u.unitCode" :value="u.unitCode">
                 {{ u.unitCode.toUpperCase() }} — {{ u.cluster }} ({{ peso(u.basePrice) }})
               </option>
             </select>
