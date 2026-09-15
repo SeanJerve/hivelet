@@ -1584,7 +1584,16 @@ const incomeRecordSchema = z.object({
   invoiceNumber: shortText(100),
   rentAmount: money,
   occupants: occupantCount.refine((n) => n >= 1, 'must be at least one occupant'),
-  paymentMethod: z.enum(['Cash', 'Online', 'GCash']).default('Cash'),
+  /**
+   * `payment_method_type` is (Cash | GCash | Bank Transfer | Adyen Online). Three of those
+   * can be taken over the counter; 'Adyen Online' is written only by the gateway's webhook,
+   * so it is deliberately NOT offered here - an administrator must not be able to assert by
+   * hand that money arrived through Adyen.
+   *
+   * 'Online' is kept as an accepted input because that is the value the on-site modal used
+   * to send, and a request already in flight should not start failing.
+   */
+  paymentMethod: z.enum(['Cash', 'Online', 'GCash', 'Bank Transfer']).default('Cash'),
   transactionReference: shortText(120).optional(),
   monthsCovered: z.number().int().min(1).max(60),
   // BR-033 - optional, and derived from the tenancy's anniversary cycle when
@@ -1615,7 +1624,24 @@ router.post(
       dateCoveredStart, dateCoveredEnd
     } = parsed.data;
 
-    const normalizedMethod = (paymentMethod === 'Online' || paymentMethod === 'GCash') ? 'GCash' : 'Cash';
+    // 'Online' was the old form's word for GCash; everything else is already an enum value.
+    const normalizedMethod =
+      paymentMethod === 'Online' ? 'GCash' :
+      paymentMethod === 'GCash' ? 'GCash' :
+      paymentMethod === 'Bank Transfer' ? 'Bank Transfer' : 'Cash';
+
+    /**
+     * `payments.payment_source` is free text describing where the money came in - the
+     * existing literals are 'On-Site Cash' here, 'GCash (Adyen webhook)' in the webhook
+     * handler, and 'Local checkout (no gateway configured)' in the Adyen service.
+     *
+     * It was hardcoded to 'On-Site Cash' on every row this endpoint wrote, including rows
+     * whose `payment_method` said GCash. The two columns then contradicted each other in the
+     * same row. Nothing had noticed because no GCash row has ever been written by hand - all
+     * 15 live payments are 7 Cash and 8 Adyen Online - but the moment one is, the row would
+     * misdescribe itself. Same shape as the existing literal, so no new vocabulary.
+     */
+    const paymentSource = `On-Site ${normalizedMethod}`;
 
     // Find room
     const { data: room, error: roomError } = await db
@@ -1848,7 +1874,7 @@ router.post(
           tenant_profile_id: assign.tenant_profile_id,
           amount: step.amount,
           payment_method: normalizedMethod,
-          payment_source: 'On-Site Cash',
+          payment_source: paymentSource,
           verification_status: 'Verified',
           transaction_reference: reference,
           paid_at: new Date(datePaid).toISOString(),

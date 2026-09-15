@@ -31,7 +31,19 @@ const date = ref(new Date().toISOString().split('T')[0]);
 const isSubmitting = ref(false);
 
 // Payment method & reference
-const paymentMethod = ref<'Cash' | 'Online'>('Cash');
+/**
+ * `payment_method_type` is (Cash | GCash | Bank Transfer | Adyen Online). This modal offered
+ * only Cash and "Online Payment", and the API filed "Online" as GCash - while the reference
+ * field beside it invited a "Gcash / Bank Ref #". A bank transfer handed over the counter
+ * was therefore recorded in the ledger as GCash.
+ *
+ * 'Adyen Online' is not offered on purpose: that value is written by the gateway's webhook,
+ * and an administrator should not be able to assert by hand that money came through Adyen.
+ */
+const paymentMethod = ref<'Cash' | 'GCash' | 'Bank Transfer'>('Cash');
+
+/** Cash has no reference to record; the other two do. */
+const methodHasReference = computed(() => paymentMethod.value !== 'Cash');
 const transactionReference = ref('');
 
 // Validity duration
@@ -193,7 +205,7 @@ function triggerRecord() {
     GBG/Garbage Fee: ₱${gbgFee.value}
     Total Amount: ₱${totalAmountReceived.value}
     Validity Period: ${monthsCovered.value} month(s) (${formattedStart} to ${formattedEnd})
-    Payment Method: ${paymentMethod.value} ${paymentMethod.value === 'Online' ? `(Ref: ${transactionReference.value})` : ''}
+    Payment Method: ${paymentMethod.value} ${methodHasReference.value ? `(Ref: ${transactionReference.value})` : ''}
   `;
 
   // Every one of the 937 ledger rows carries an OR number from the landlady's
@@ -244,8 +256,8 @@ function triggerRecord() {
           invoiceNumber: orNum.value.trim(),
           rentAmount: Number(rentAmount.value) || 0,
           occupants: occCount,
-          paymentMethod: paymentMethod.value === 'Online' ? 'Online' : 'Cash',
-          transactionReference: paymentMethod.value === 'Online' ? transactionReference.value : undefined,
+          paymentMethod: paymentMethod.value,
+          transactionReference: methodHasReference.value ? transactionReference.value : undefined,
           monthsCovered: Number(monthsCovered.value) || 1,
           dateCoveredStart: dateCoveredStart.value,
           dateCoveredEnd: dateCoveredEnd.value,
@@ -383,12 +395,13 @@ function triggerRecord() {
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Payment Method</label>
             <select v-model="paymentMethod" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none">
               <option value="Cash">Cash</option>
-              <option value="Online">Online Payment</option>
+              <option value="GCash">GCash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
             </select>
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" :class="{ 'opacity-40': paymentMethod !== 'Online' }">Transaction Reference #</label>
-            <input v-model="transactionReference" type="text" placeholder="Gcash / Bank Ref #" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:bg-muted" :disabled="paymentMethod !== 'Online'" :required="paymentMethod === 'Online'" />
+            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" :class="{ 'opacity-40': !methodHasReference }">Transaction Reference #</label>
+            <input v-model="transactionReference" type="text" :placeholder="paymentMethod === 'Bank Transfer' ? 'Bank reference #' : 'GCash reference #'" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:bg-muted" :disabled="!methodHasReference" :required="methodHasReference" />
           </div>
         </div>
 
@@ -471,7 +484,7 @@ function triggerRecord() {
             </div>
             <div class="flex justify-between border-t border-border/50 pt-1">
               <span class="text-muted-foreground font-medium">Payment Method:</span>
-              <span class="font-semibold">{{ paymentMethod }} {{ paymentMethod === 'Online' ? `(Ref: ${transactionReference})` : '' }}</span>
+              <span class="font-semibold">{{ paymentMethod }} {{ methodHasReference ? `(Ref: ${transactionReference})` : '' }}</span>
             </div>
           </div>
         </div>
