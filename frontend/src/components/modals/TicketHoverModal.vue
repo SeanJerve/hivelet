@@ -81,12 +81,16 @@ function handleResolve() {
       </div>
 
       <div class="p-4 px-6 border-t border-border flex justify-between items-center">
-        <span v-if="activeHoverTicket.status === 'Resolved'" class="badge-soft badge-success text-xs font-bold">
-          Resolved
+        <span
+          v-if="activeHoverTicket.status === 'Resolved' || activeHoverTicket.status === 'Closed'"
+          :class="['badge-soft text-xs font-bold', activeHoverTicket.status === 'Closed' ? 'badge-neutral' : 'badge-success']"
+        >
+          {{ activeHoverTicket.status }}
         </span>
+        <!-- Said "Close & Resolve Ticket" while writing only 'Resolved'. -->
         <button v-else @click="handleResolve" class="btn-primary">
           <CheckCircle2 class="size-3.5 text-white" />
-          <span>Close &amp; Resolve Ticket</span>
+          <span>Mark Resolved</span>
         </button>
 
         <button @click="closeModal" class="btn-secondary">Close Window</button>

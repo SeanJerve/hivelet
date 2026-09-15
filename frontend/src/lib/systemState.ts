@@ -220,7 +220,16 @@ export interface MaintenanceTicket {
   reported: string;
   description: string;
   technician: string;
-  status: 'Open' | 'In Progress' | 'Resolved';
+  /**
+   * `ticket_status_type` is (Submitted | In Progress | Resolved | Closed).
+   *
+   * 'Open' is this layer's word for the database's 'Submitted' - the API normalises it back
+   * on the way in, and the tenant's own view already prints it as "Submitted", so that
+   * translation is left alone. 'Closed', however, used to be folded into 'Resolved' here,
+   * which meant a closed ticket could not be told from a resolved one and - worse - saving
+   * it from the dispatch board wrote 'Resolved' back over it.
+   */
+  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed';
   photo: string;
   tenantName?: string;
   tenantProfileId?: string;
@@ -809,9 +818,10 @@ export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
           ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : '—';
 
-        let statusMapped: 'Open' | 'In Progress' | 'Resolved' = 'Open';
+        let statusMapped: 'Open' | 'In Progress' | 'Resolved' | 'Closed' = 'Open';
         if (t.status === 'In Progress' || t.status === 'Dispatched') statusMapped = 'In Progress';
-        else if (t.status === 'Resolved' || t.status === 'Closed') statusMapped = 'Resolved';
+        else if (t.status === 'Closed') statusMapped = 'Closed';
+        else if (t.status === 'Resolved') statusMapped = 'Resolved';
 
         return {
           id: t.id,

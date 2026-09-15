@@ -24,7 +24,7 @@ const isTenantSection = computed(() => route.path.startsWith('/tenant'));
 // Unread/Actionable counts for sidebar badges
 const inquiriesCount = computed(() => inquiries.length);
 const urgentTicketsCount = computed(() => 
-  maintenanceTickets.filter(t => t.status !== 'Resolved' && (t.priority === 'Emergency' || t.priority === 'High')).length
+  maintenanceTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed' && (t.priority === 'Emergency' || t.priority === 'High')).length
 );
 
 const ADMIN_NAV = computed(() => [

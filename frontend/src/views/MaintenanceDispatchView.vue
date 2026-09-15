@@ -44,7 +44,15 @@ const editTitle = ref('');
 const editUnit = ref('1a');
 const editCategory = ref('Plumbing');
 const editPriority = ref<'Low' | 'Medium' | 'High' | 'Emergency'>('Medium');
-const editStatus = ref<'Open' | 'In Progress' | 'Resolved'>('Open');
+const editStatus = ref<'Open' | 'In Progress' | 'Resolved' | 'Closed'>('Open');
+
+/**
+ * Resolved and Closed are both "no longer on the board", and several counts here mean that
+ * rather than Resolved specifically. They were written as `status === 'Resolved'`, which was
+ * complete only while Closed did not exist in this layer.
+ */
+const DONE_STATUSES = ['Resolved', 'Closed'];
+const isDone = (s: string) => DONE_STATUSES.includes(s);
 const editTech = ref('Unassigned');
 const editDesc = ref('');
 
@@ -105,8 +113,8 @@ const filtered = computed(() => {
 
   return list.slice().sort((a, b) => {
     // 1. Put Resolved tickets at the bottom (0 for active, 1 for resolved)
-    const aIsResolved = a.status === 'Resolved' ? 1 : 0;
-    const bIsResolved = b.status === 'Resolved' ? 1 : 0;
+    const aIsResolved = isDone(a.status) ? 1 : 0;
+    const bIsResolved = isDone(b.status) ? 1 : 0;
     if (aIsResolved !== bIsResolved) {
       return aIsResolved - bIsResolved;
     }
@@ -125,7 +133,7 @@ const filtered = computed(() => {
 
 const openCount = computed(() => maintenanceTickets.filter((t) => t.status === 'Open').length);
 const inProgressCount = computed(() => maintenanceTickets.filter((t) => t.status === 'In Progress').length);
-const resolvedCount = computed(() => maintenanceTickets.filter((t) => t.status === 'Resolved').length);
+const resolvedCount = computed(() => maintenanceTickets.filter((t) => isDone(t.status)).length);
 
 function getPriorityBadgeClass(p: string) {
   if (p === 'Emergency') return 'badge-danger';
@@ -136,6 +144,7 @@ function getPriorityBadgeClass(p: string) {
 
 function getStatusBadgeClass(s: string) {
   if (s === 'Resolved') return 'badge-success';
+  if (s === 'Closed') return 'badge-neutral';
   if (s === 'In Progress') return 'badge-info';
   return 'badge-warning';
 }
@@ -387,6 +396,7 @@ function handleDeleteTicketPrompt() {
           <option value="Open">Open</option>
           <option value="In Progress">In Progress</option>
           <option value="Resolved">Resolved</option>
+          <option value="Closed">Closed</option>
         </select>
       </div>
 
@@ -485,7 +495,7 @@ function handleDeleteTicketPrompt() {
           <span class="font-bold text-muted-foreground uppercase tracking-wider text-[10px]">Quick Actions:</span>
           <div class="flex items-center gap-2">
             <button
-              v-if="editStatus !== 'In Progress' && editStatus !== 'Resolved'"
+              v-if="editStatus !== 'In Progress' && editStatus !== 'Resolved' && editStatus !== 'Closed'"
               type="button"
               @click="handleQuickDispatch"
               class="btn-secondary px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
@@ -493,17 +503,23 @@ function handleDeleteTicketPrompt() {
               <UserCheck class="size-3.5 text-primary" />
               <span>Dispatch Tech</span>
             </button>
+            <!--
+              This button said "Close / Resolve" and its companion "Ticket Resolved &
+              Closed", while the only status either ever wrote was 'Resolved'. Closed is a
+              separate value in `ticket_status_type` and is now available in the Status
+              dropdown above, so these say what they actually do.
+            -->
             <button
-              v-if="editStatus !== 'Resolved'"
+              v-if="editStatus !== 'Resolved' && editStatus !== 'Closed'"
               type="button"
               @click="handleQuickResolve"
               class="btn-primary px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
             >
               <CheckCircle2 class="size-3.5 text-white" />
-              <span>Close / Resolve</span>
+              <span>Mark Resolved</span>
             </button>
             <span v-else class="text-xs font-bold text-emerald-700 inline-flex items-center gap-1">
-              <Check class="size-4" /> Ticket Resolved & Closed
+              <Check class="size-4" /> Ticket {{ editStatus }}
             </span>
           </div>
         </div>
@@ -550,6 +566,7 @@ function handleDeleteTicketPrompt() {
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Resolved">Resolved</option>
+                <option value="Closed">Closed</option>
               </select>
             </div>
           </div>

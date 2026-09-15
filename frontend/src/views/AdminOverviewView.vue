@@ -226,8 +226,10 @@ const occupancyPercentage = computed(() => totalRoomsCount.value > 0 ? ((occupie
 const pendingCount = computed(() => pendingPayments.value.length);
 const pendingTotal = computed(() => pendingPayments.value.reduce((s, p) => s + (Number(p.amount) || 0), 0));
 
-const openTicketsCount = computed(() => maintenanceTickets.filter(t => t.status !== 'Resolved').length);
-const emergencyTicketsCount = computed(() => maintenanceTickets.filter(t => t.status !== 'Resolved' && (t.priority === 'Emergency' || t.priority === 'High')).length);
+// Closed counts as done too. `ticket_status_type` has both, and a closed ticket sitting in
+// the "open tickets" figure would overstate the outstanding work on the landlady's dashboard.
+const openTicketsCount = computed(() => maintenanceTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed').length);
+const emergencyTicketsCount = computed(() => maintenanceTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed' && (t.priority === 'Emergency' || t.priority === 'High')).length);
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
