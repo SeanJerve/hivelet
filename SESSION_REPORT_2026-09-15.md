@@ -7,7 +7,49 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST - commit `643bdd9`: the tenant profile page was inventing an email address.**
+> **LATEST - commit `b11652d`: the onboarding form still demanded an email the database
+> stopped requiring.**
+>
+> Mrs. Da Silva answered OD-09 on 2026-09-13: *"Do tenants need an email address to exist in
+> the system? No."* The system agreed with her everywhere except the one place you actually
+> type. `profiles.email` has been nullable since migration `006`, the API stopped demanding an
+> address in `43c4608`, phone sign-in landed with migration `021` - and the Onboard Tenant
+> modal's Email field still carried `required`, so the browser refused to submit the form and
+> none of that was reachable. **The client's answer was implemented three layers deep and
+> blocked by one word in the markup.**
+>
+> Email is now optional and labelled so, with the consequence written out instead of implied:
+> *"Leave blank if they have none - they will sign in with their phone number."* Phone keeps
+> `required` and now says what it is for, so every tenant onboarded here still has exactly one
+> working identifier - which is what the `profiles_login_identifier_required` CHECK asks for
+> from below.
+>
+> **Second thing, found while checking the first.** Phone became a login identifier last
+> commit, and `idx_profiles_phone_login` is UNIQUE on the normalised number among profiles
+> holding a password. Email has always had a duplicate check ahead of the insert. Phone had
+> none - so a second tenant on the same number would have reached the insert, failed there,
+> and the handler reports an insert failure as `ApiError.internal(insertError.message)`. You
+> would have been handed a **500 reading "duplicate key value violates unique constraint
+> idx_profiles_phone_login"**. It is now a 400 that tells you what to do instead.
+>
+> That check calls `resolve_login_identifier` - the same function the login path uses - so
+> *"would this number already sign someone in?"* is answered by the thing that does the
+> signing in. Migration `021` exists precisely so that rule has one home, and this would have
+> been the first place to grow a second copy of it.
+>
+> **Verified against the live database, with nothing written to it:**
+>
+> | probe | result |
+> |---|---|
+> | no email at all + a number already in use | **400**, phone message - so a missing email is accepted, not rejected |
+> | `email:""` + the same number as `0917-949-4909` | **same 400** - the normaliser folds `+63917…` and `0917-…` to one form |
+> | `email:"not-an-address"` | **422** *"Enter a valid email address, or leave it blank"* - optional is not unchecked |
+> | profiles count, before and after | **45 and 45**, zero rows named "Audit Probe" |
+>
+> `check:api` still 53/53. **Honest limit:** onboarding a tenant who genuinely has no email is
+> *not* tested end to end, because doing that writes a person into the owner's live records.
+
+> **PREVIOUS - commit `643bdd9`: the tenant profile page was inventing an email address.**
 >
 > Direct follow-through from phone sign-in. Having made phone-only tenants possible, I went
 > looking for whatever in the app assumes an email exists - and the first thing found was
@@ -414,7 +456,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**47 commits, all pushed to `main`. Working tree clean.**
+**56 commits on `main`. Working tree clean.** The last two - `b11652d` and this report update - are committed locally but **not yet pushed**: the push was blocked here and needs you to run it (`git push origin main`).
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
