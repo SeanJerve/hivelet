@@ -293,6 +293,27 @@ Four defects explain most of the PARTIAL and MISSING rows. All are Phase 2 and P
 
 ## 5. Gap Register — The 10 MISSING Requirements
 
+> **Status as at 2026-09-15, verified against live code. Six of these ten are no longer
+> missing, and only FR-013 below is struck through to say so.** This heading and the ten
+> rows under it are kept as the Phase 1 record; read them with this box.
+>
+> | FR | Row says | Verified 2026-09-15 |
+> | :--- | :--- | :--- |
+> | **FR-012** Due Dates | bills carry an arbitrary 5-day offset (`tenant.ts:452`) | **Done.** Zero 5-day offsets remain in `backend/src`; both bill-creating paths derive the date through `billingService.computeBillPeriod()` (7 call sites). BR-010 Enforced. |
+> | **FR-013** Overdue Monitoring | already struck **DONE 2026-09-14** | **Done.** Unchanged. |
+> | **FR-033** Occupant Count Memory | the count is retyped every month | **Done.** Carried forward at onboarding and reassignment; BR-034 cited in code. |
+> | **FR-036** Linda Fixed Billing | LF and LB billed occupants × 200 | **Done.** Both take their fixed charges from `system_settings` through `billingService`; live values LF 400, LB 200. BR-040. |
+> | **FR-042** Reconciliation Check | nothing proves the expense ledger balances | **Done.** Trigger `trg_update_expense_total` makes the two sides one figure; migration `019` closed the creation hole. Live: 0 of 1,262 entries disagree with their allocations, grand total ₱5,823,586.47. BR-047 Enforced. The row's supporting claim that `property_area` is free text is also stale — it is the enum `property_area_type`. |
+> | **FR-006** Inquiry Conversion | prospect details are retyped at onboarding | **Done.** The carry-over existed; what was missing was the write-back, and `inquiries.converted_tenant_id` is now written. BR-009 Enforced. |
+> | **FR-040** Cumulative Totals | year-to-date view is lost | **Partial.** The Excel export carries a running cumulative and labels it. What is still open is **OD-07** — whether it resets at the calendar year — which decides stored column versus computed window. This is the one genuinely client-gated item, and **BR-046** is the one rule still Not enforced. |
+> | **FR-028** Reports | no server-side report existence | **Partial, and satisfied in the narrowed sense this row proposed.** `GET /api/admin/reports/income.xlsx` and `/expenses.xlsx` are server-generated report retrieval (BR-049). No other server-side reporting exists. |
+> | **FR-019** Cash Flow | no server-side net position | **Still missing.** No `financialReportService`; every figure is still browser arithmetic. |
+> | **FR-020** Profitability Analytics | trend views not reproducible server-side | **Still missing.** Same cause as FR-019. |
+>
+> So the honest count today is **two missing, two partial, six done** — not ten missing.
+> Recorded here rather than by rewriting the rows, because the rows are the Phase 1
+> artifact and their consequence statements are what the sequencing argument below rests on.
+
 This is the section that prevents a panelist from discovering a gap on stage. Each entry states the gap, its business consequence against the legacy manual baseline, and a **single confirmed disposition.** The owner confirmed on 2026-09-13 that **all ten are implemented in Phase 3**; none is de-scoped. The group's position on each is fixed before the defense, not improvised during it.
 
 | # | FR | Canonical Name | Consequence if left as-is | Confirmed Disposition |
