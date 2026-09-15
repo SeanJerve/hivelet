@@ -56,8 +56,7 @@ reversed. Both are recorded in the documents rather than quietly patched.
 ### Still with the owner
 
 The **₱35,228** of penthouse upkeep filed under a non-rental area, outside Net Operating
-Income. Whether a profile photo and ticket attachments are worth object storage. Whether a live
-chat should exist. What "overdue" should mean for a unit rather than a bill. *(The abusive
+Income. Whether a profile photo and ticket attachments are worth object storage. What "overdue" should mean for a unit rather than a bill. *(The abusive
 inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 
 ---
@@ -92,7 +91,48 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST: the abusive row is deleted.** See the resolved block above for the statements, the
+> **LATEST - commit `a010e3f`: closing the questions that were mine, not yours.**
+>
+> Fair complaint, acted on: several things had been parked as "needs a decision" that were
+> engineering calls, not the owner's. Decided.
+>
+> **The live chat component is deleted.** `LiveChatheadModal.vue` was imported by no file, so
+> it could never render; its three triggers were removed earlier today; and it posted to an
+> **administrator-only** route with a hardcoded inquirer id, so even mounted it could not have
+> worked for the guests it was shown to. A live chat may well be worth building - it would not
+> start from that code, and keeping 290 unreachable lines as a placeholder for a decision is
+> debt with a story attached.
+>
+> **An expired claim marked** in the migration verification record. Its header said *"These
+> migrations remain unapplied to the live database."* **They were applied** -
+> `supabase_migrations.schema_migrations` lists **12**, from
+> `fix_replace_allocations_enum_cast` through `resolve_login_identifier`. The record of the
+> container run is untouched, because the run has not changed; only the present-tense claim
+> about production is struck and noted. A sentence reading *"remains unapplied"* is taken as
+> current however old the heading above it is, and acting on it would mean re-applying
+> migrations already in place.
+>
+> **Checked and clean:** neither `docs/04_ARCHITECTURE.md` nor the verification record carries
+> a list of the verification suites, so neither understates the count at nine. The "nine" and
+> "seven" in that file are **migrations** and **schema drifts**, not suites.
+>
+> **One thing is genuinely blocked, and it is a lock rather than a question.** Three residents
+> have an invoice number welded onto their name in `profiles.full_name` -
+> "Mireel Fatima ParcareyINV.#5223" and two others. I traced it first: **all three invoice
+> numbers are already in the ledger**, on rows carrying the clean name
+> (INV.#5223 / Mireel Fatima Parcarey / ₱8,000; INV.#5227 / Ron Juliene Dominguino / ₱8,000;
+> INV#5212 / Nikki Prollamante / ₱8,500), so stripping the suffix loses nothing and restores
+> the person's actual name. The `UPDATE` was refused by the sandbox as
+> **[Modify Shared Resources]** - the same lock that held the abusive row until it was
+> explicitly cleared.
+>
+> ```
+> UPDATE public.profiles SET full_name = 'Mireel Fatima Parcarey'   WHERE full_name = 'Mireel Fatima ParcareyINV.#5223';
+> UPDATE public.profiles SET full_name = 'Ron Juliene Dominguino'   WHERE full_name = 'Ron Juliene DominguinoINV.#5227';
+> UPDATE public.profiles SET full_name = 'Nikki Prollamante'        WHERE full_name = 'Nikki ProllamanteINV#5212';
+> ```
+
+> **PREVIOUS: the abusive row is deleted.** See the resolved block above for the statements, the
 > before-and-after counts and why it needed Sean rather than me. `inquiries` 2 → 1,
 > `inquiry_messages` 2 → 1, Rhea Mendoza's lead untouched, and the inbox confirms it.
 
@@ -1659,7 +1699,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**113 commits, all pushed to `main`. Working tree clean.**
+**115 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
