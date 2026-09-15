@@ -7,7 +7,32 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST CYCLE - commit `430d4e1`: A REAL FUNCTIONAL BUG, AND IT HAS BEEN COSTING YOU
+> **LATEST CYCLE - commit `c62ca72`: the form audit is a stale defect register, and one row
+> nearly became a false alarm.**
+>
+> `docs/11_FORM_FIELD_AUDIT.md` is the same genre as the five stale registers already found.
+> It dates itself twice: it audits **`website/src/`**, a directory that no longer exists, and
+> it describes a future state where "the UI stops using systemState.ts mock data" that arrived
+> long ago. Three claims checked against the running system:
+>
+> - **"ticketPriority dropdown omits Low"** - fixed. All three priority pickers offer Low /
+>   Medium / High / Emergency.
+> - **"UI emits Cash/Online; enum is Cash/GCash/Bank Transfer/Adyen Online"** - resolved,
+>   though **the UI genuinely does still send `Online`**, which is not an enum value. It is
+>   safe only because the API explicitly admits it and translates to `GCash` server-side.
+> - **"Every one of these will throw a Postgres enum error on first write"** - not true of
+>   either row above.
+>
+> **The second one is the useful story.** It looked exactly like the Penthouse bug - a
+> dropdown emitting a value the database cannot accept. I traced the write path before saying
+> anything, and it turned out safe. Reporting it as a defect would have been wrong, and the
+> only thing separating the two cases was checking.
+>
+> Labelled the document as a **lead list, not a defect list**, and said plainly that this was
+> a spot-check rather than a full re-verification - the other rows were not retested and some
+> may still be live.
+
+> **PREVIOUS CYCLE - commit `430d4e1`: A REAL FUNCTIONAL BUG, AND IT HAS BEEN COSTING YOU
 > SOMETHING. Needs a decision from Mrs. Da Silva.**
 >
 > The expense form's Property Area picker was hardcoded in **two** places, both listing five
@@ -195,7 +220,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**38 commits, all pushed to `main`. Working tree clean.**
+**41 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
