@@ -25,7 +25,48 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `b3c97e4`: your Audit Trail never showed what changed.**
+> **LATEST - commit `b593166`: every occupied unit was labelled "Active Resident".**
+>
+> `GET /admin/rooms` returned the room, its cluster and its photos - and **nothing about who
+> lives in it**. The frontend mapper nonetheless read `r.tenant_name` and
+> `r.tenant_profile_id`, neither of which is a column on `rooms` or anything that select
+> produced. Both were `undefined` on every row, so the fallback beside them wrote the literal
+> string **"Active Resident"** in place of the resident's name for all 32 occupied units.
+>
+> Same shape as the audit trail an hour ago, and as the invented `tenant@hivelet.com` this
+> morning: in a browser a wrong field name raises nothing, and a carefully written fallback
+> then does its job perfectly, on nothing.
+>
+> **It reached further than a label:**
+>
+> - the Room Directory's search box says *"Search by unit code, resident name, or unit type"*.
+>   Every occupied unit's name was "Active Resident", so **searching for an actual resident
+>   matched nothing**.
+> - `room.tenant` is the fallback contact name in the on-site payment modal **and in the
+>   ledger's own form**. A receipt saved while the occupant summary was empty would have
+>   carried "Active Resident" into `monthly_income_records.contact_name` - Mrs. Da Silva's
+>   ledger, and the "Contact + Invoice #" column of her Excel export.
+>
+> **No live row shows it.** All 937 ledger rows carry real names; 0 read "Active Resident" or
+> "Walk-in Resident". This is the fallback being removed *before* it fired, not after.
+>
+> The endpoint now joins the tenancy and the profile, and the mapper reads the resident from
+> the active assignment. A room with no active assignment holds **null** rather than being
+> given a resident it does not have. All 32 Occupied rooms have exactly one active assignment
+> and the single Available room has none, so the join answers for every row.
+>
+> **Verified against the live API and in the running app:**
+>
+> | check | result |
+> |---|---|
+> | `/admin/rooms` now returns | 1a **Lobby Toor** · 1b **Jade Marmol** · 1c **Daryl Rivero** · 1d **Sandrine Jammeka Mariano** |
+> | "Active Resident" on the directory | **0 occurrences** |
+> | searching **"Daryl Rivero"** | returns **unit 1C**, which is his |
+>
+> `check:columns` clean - it validates the new select too. Both projects typecheck. Nothing
+> was written.
+
+> **PREVIOUS - commit `b3c97e4`: your Audit Trail never showed what changed.**
 >
 > I took the column sweep to the frontend, where the same mistake is much quieter. A wrong
 > column name in the backend is a PostgREST 42703. **In the browser it is `undefined`** - no
@@ -915,7 +956,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**74 commits, all pushed to `main`. Working tree clean.**
+**76 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
