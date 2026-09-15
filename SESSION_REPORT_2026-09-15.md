@@ -25,8 +25,46 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `b0013be`: three dead things in one function, and an honest limit written
-> onto `check:fields`.**
+> **LATEST - commit `fb59517`: my own fix from this afternoon would have broken your public
+> inquiry form.**
+>
+> The public inquiry dropdown is built from `CANONICAL_UNITS` - **all 33 units, always**. The
+> lookup that turns the chosen code into a `roomId` searches `/public/rooms`, which returns
+> **only units whose `visibility_status` is 'Published'**. Two different lists.
+>
+> Harmless while every unit was published - which was true until **`17095f3`**, four hours
+> ago, made hiding one possible. After it: hide a unit, a prospect picks it from the dropdown,
+> the lookup finds nothing, and they are told *"Unit X could not be found, so the inquiry was
+> not sent. Please refresh and try again."* **Refreshing never fixes it.**
+>
+> That is the same defect as the "Any available unit" option removed in `53b26a9` this
+> morning - *a form must not offer what the system cannot record* - **reintroduced through a
+> different door by a feature I added four hours later.** The dropdown now offers only units
+> the public API actually returned.
+>
+> **Also retested `docs/11_FORM_FIELD_AUDIT.md`**, whose spot-check box from this morning said
+> the remaining rows were unverified. Its **largest claim - the whole `code → uuid` class,
+> three rows - is not live**:
+>
+> | row | what is actually true |
+> |---|---|
+> | `inquiries.room_id` | the UI resolves the code and posts a uuid; the API schema is `z.string().uuid()`, so a code is refused at the boundary, not at the column |
+> | `income_records.room_id` | the API takes `roomNumber` and resolves it |
+> | `assignments.room_id` | the same |
+>
+> The pattern the register read as systemic breakage **is the system's design**: either the
+> client resolves the code or the endpoint does, and six write paths do the latter. Three more
+> rows retested and stale - the inquiry email is required at both ends; `submitInquiry()` does
+> write, and reports failure honestly; and `monthly_income_records.transaction_reference`
+> exists, against an "**ADD** — no reference column on this table".
+>
+> The register's box now says plainly that **its leads have been wrong more often than right**,
+> which is the useful thing to know about it.
+>
+> `vite build` succeeds · `check:fields` clean · frontend typechecks. Nothing written.
+
+> **PREVIOUS - commit `b0013be`: three dead things in one function, and an honest limit
+> written onto `check:fields`.**
 >
 > The last dead trigger for the unmounted chat, removed with a **static proof** rather than a
 > hunt for symptoms.
@@ -1117,7 +1155,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**84 commits, all pushed to `main`. Working tree clean.**
+**86 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
