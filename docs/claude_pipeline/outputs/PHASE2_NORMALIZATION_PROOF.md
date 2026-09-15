@@ -72,7 +72,7 @@ own attributes*, which is what 1NF forbids.
 
 It is not. The audit entity's attributes are *who, what, when, which row, from where*. The JSONB
 holds a **snapshot of a different relation's row**, whose shape is not known until runtime because
-`entity_type` can name any of twenty tables. The document is opaque to the audit relation: no audit
+`entity_type` names one of nine domain labels, not a table — `PROFILE`, `ROOM`, `ROOM_ASSIGNMENT`, `INQUIRY`, `BILL`, `PAYMENT`, `INCOME_RECORD`, `EXPENSE_ENTRY`, `TICKET`, declared as a TypeScript union in `auditService.ts` and unconstrained by the database (`VARCHAR(100)`, no `CHECK`). *This read “any of twenty tables” until 2026-09-15.* The document is opaque to the audit relation: no audit
 query decomposes it, joins on it, or aggregates it — it is retrieved and displayed whole.
 
 The 1NF-respecting alternative is an `audit_log_values(log_id, column_name, old_value, new_value)`

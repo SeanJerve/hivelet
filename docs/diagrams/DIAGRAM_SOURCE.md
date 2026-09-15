@@ -777,7 +777,7 @@ graph TB
     SRV_EXPENSE -.-> DB_GATE
     SRV_FIN_REPORT -.-> DB_GATE
 
-    %% ---------- Boundary to the twenty tables ----------
+    %% ---------- Boundary to the twenty-one tables ----------
     DB_GATE --> DB_IDENTITY
     DB_GATE --> DB_CATALOG
     DB_GATE --> DB_TENANCY

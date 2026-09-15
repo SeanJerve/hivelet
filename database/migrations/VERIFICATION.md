@@ -23,10 +23,17 @@ Live-data preconditions *were* checked directly against production, read-only, w
 
 ## Method
 
-The live schema (`database/FULL_DATABASE_SCHEMA.sql`, 20 tables, 33 seeded units) was loaded into a
-virgin database, then `001`–`009` were applied in order. The three Supabase roles (`anon`,
+The schema **file** (`database/FULL_DATABASE_SCHEMA.sql`, 20 tables, 33 seeded units) was loaded
+into a virgin database, then `001`–`009` were applied in order. The three Supabase roles (`anon`,
 `authenticated`, `service_role`) had to be created first — they are assumed by `002` and do not exist
 in stock PostgreSQL. That is a harness detail, not a defect.
+
+> **A wording correction, 2026-09-15.** The sentence above called that file *“the live schema”*.
+> It is not, and the difference is load-bearing for this record: the file declares **20** tables
+> and the live database holds **21** — `property_areas`, added later by migration
+> `20260913090612`, appears nowhere in it. The container run is unaffected, because what was
+> loaded into the container really was that file. What would be affected is anyone reading this
+> page and concluding the container held a copy of production. It held a copy of the file.
 
 ## Result
 

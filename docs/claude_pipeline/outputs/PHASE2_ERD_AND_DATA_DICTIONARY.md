@@ -302,11 +302,34 @@ The immutable event ledger. BR-028, ARCH-006.
 | `created_at` | `TIMESTAMPTZ` | NULL, `now()` | — | Event time. Append-only. |
 
 **Why `entity_id` is not a foreign key.** The pair (`entity_type`, `entity_id`) is a *polymorphic*
-reference: one column points into any of twenty tables depending on the value of another. SQL
-foreign keys cannot express that — a key names exactly one referenced table. The alternatives are
-twenty nullable columns with twenty keys, or no key. The design takes no key, and accepts the
-consequence honestly: **referential integrity of `audit_logs.entity_id` is not enforced by the
-database.** A log row survives the deletion of its subject, which for an audit trail is arguably
+reference: one column points into a table chosen by the value of another. SQL foreign keys cannot
+express that — a key names exactly one referenced table. The alternatives are one nullable column
+and one key per auditable table, or no key. The design takes no key, and accepts the consequence
+honestly: **referential integrity of `audit_logs.entity_id` is not enforced by the database.**
+
+**Corrected 2026-09-15 — `entity_type` does not hold a table name.** This paragraph said the column
+*“points into any of twenty tables”*, which overstates both the vocabulary and the coverage. The
+column holds one of **nine** uppercase domain labels — `PROFILE`, `ROOM`, `ROOM_ASSIGNMENT`,
+`INQUIRY`, `BILL`, `PAYMENT`, `INCOME_RECORD`, `EXPENSE_ENTRY`, `TICKET` — declared as the
+TypeScript union `AuditEntityType` in `backend/src/services/auditService.ts`. The mapping from a
+label to a table is a convention in code, not a relationship in the schema, which is a stronger
+reason no foreign key is possible than the one originally given.
+
+Two consequences follow, and both are verified rather than asserted:
+
+1. **The vocabulary is enforced by the compiler, not the database.** `audit_logs.entity_type` is
+   `VARCHAR(100) NOT NULL` with no `CHECK` and no enum. A direct SQL insert, or any future writer
+   that is not this TypeScript service, can put anything in it. All **2,773** live rows use
+   exactly the nine declared labels, so the discipline has held so far — but it is discipline,
+   not a constraint, and this document should not imply otherwise.
+2. **Nine labels means nine auditable tables, not twenty-one.** The remaining twelve are never
+   the subject of an audit row. Most are defensible — `audit_logs` itself, `notifications`,
+   `system_settings` (which has no write path at all), and the child tables whose changes are
+   recorded against their parent. It is stated here so that a panelist reading *“twenty tables”*
+   does not infer audit coverage the system does not have.
+
+Live distribution, 2026-09-15: `PROFILE` 2,669 · `PAYMENT` 38 · `EXPENSE_ENTRY` 31 ·
+`INCOME_RECORD` 24 · `BILL` 14 · `TICKET` 8 · `ROOM` 6 · `INQUIRY` 2 · `ROOM_ASSIGNMENT` 1. A log row survives the deletion of its subject, which for an audit trail is arguably
 the desired behaviour rather than a defect. `notifications.related_entity_id` /
 `related_entity_type` is the same pattern for the same reason.
 
