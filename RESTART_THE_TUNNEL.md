@@ -167,7 +167,64 @@ https://shiny-coral-lamp-4821.trycloudflare.com/api/public/payments/adyen/webhoo
 
 ## Step 4 — prove it works before you trust it
 
-Press **Test** in Adyen. You want **200**.
+### Adyen's "Test configuration" button returns 401, and that is NORMAL
+
+**Do not chase this.** Established on 2026-09-15 after an hour of chasing it.
+
+Adyen's Test button sends a **canned sample payload** — `merchantReference:
+testMerchantRef1`, a EUR amount, a placeholder `hmacSignature`. That signature is
+**not computed with your HMAC key**. Three different keys were tested against two
+different test notifications, nine combinations, and **not one matched** — while
+our implementation passes Adyen's own published example 23 times over in
+`npm run check:adyen`.
+
+So a **401 on the Test button is a correctly-secured webhook refusing a
+notification it cannot verify.** It proves the URL is reachable and Basic Auth is
+configured. It proves nothing about your HMAC key either way.
+
+What the Test button DOES tell you:
+
+| Response | Meaning |
+| :--- | :--- |
+| **401 `Unauthorized.`** | Basic Auth wrong — check the username and password against `.env` |
+| **401 `Invalid HMAC signature.`** | Basic Auth is fine. Expected from the Test button. Not a fault |
+| **404** | Wrong URL — the `/api/public/payments/adyen/webhook` path is missing |
+| **timeout / 502** | The tunnel is not reaching the backend |
+
+### The test that actually means something
+
+Sign a notification with the key in your own `.env` and post it. If the handler
+accepts it, the whole chain works — Basic Auth, HMAC and the handler.
+
+```bash
+cd backend && npm run build
+node -e "
+const { computeSignature } = require('./dist/services/adyenWebhook.js');
+const fs = require('fs');
+const key = fs.readFileSync('../.env','utf8').split(/?
+/)
+  .find(l => l.startsWith('ADYEN_HMAC_KEY=')).split('=')[1].trim();
+const item = { pspReference:'PROBE-'+Date.now(), merchantAccountCode:'HiveletECOM',
+  merchantReference:'hivelet-hmac-probe', amount:{currency:'PHP', value:100},
+  eventCode:'AUTHORISATION', success:'true' };
+fs.writeFileSync(process.env.TEMP+'/probe.json', JSON.stringify({ live:'false',
+  notificationItems:[{ NotificationRequestItem:{ ...item,
+    additionalData:{ hmacSignature: computeSignature(item, key) } } }] }));
+console.log('signed', item.pspReference);
+"
+```
+
+Then POST that file to the webhook with your Basic Auth. **`200 [accepted]`** is
+the pass.
+
+It is safe to run: `hivelet-hmac-probe` matches no bill, so the handler audits it
+and deliberately writes **no payment row**. Verified 2026-09-15 — payments stayed
+at 15, income records at 937.
+
+### Then, and only then, the real thing
+
+A genuine GCash payment through the tenant portal. That is the only test that
+exercises Adyen's real signing path end to end.
 
 If you get 200, the path is right, Basic Auth is right, and the tunnel is
 carrying traffic.
