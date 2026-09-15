@@ -42,7 +42,7 @@ Traceability is proven in three directions, and all three must close:
 > All six "20 table" figures below are left as written, because they are an accurate record
 > of what this document was built against. Read them with this note.
 
-2. **Reverse** — every modern data store resolves to physical PostgreSQL tables, and every one of the **20 tables** in `database/FULL_DATABASE_SCHEMA.sql` is claimed by **exactly one** store. No phantom stores, no orphan tables.
+2. **Reverse** — every modern data store resolves to physical PostgreSQL tables, and every one of the **21 tables in the live `public` schema** is claimed by **exactly one** store. No phantom stores, no orphan tables. *(This read “the 20 tables in `database/FULL_DATABASE_SCHEMA.sql`” until 2026-09-15. That file declares 20 and the database holds 21; §1.4 carries the correction.)*
 3. **Downward** — every modern process resolves to a named Tier-3 architecture component and a concrete backing artifact, with that component's implementation status stated plainly.
 
 ### 0.2 Status vocabulary
@@ -136,41 +136,63 @@ The laboratory Level 1 diagram declares six stores. The modern model declares tw
 | **D5** Tenant Bills | `bills` (L211) | 1 | `tenant.ts:445` bill INSERT; bill status update on verification (`admin.ts:836`) | `admin.ts:792` GET bills; `tenant.ts:71` GET my-bills | **PARTIAL** — no administrator-triggered monthly billing batch endpoint exists; the only INSERT path is incidental to checkout |
 | **D6** Payment Records | `payments` (L232) | 1 | gateway completion in `adyenService.ts`; administrator verification at `admin.ts:836` | `admin.ts:808` GET payments; `tenant.ts:95` GET my-payments | MAPPED |
 | **D7** Monthly Income Ledger | `monthly_income_records` (L255) | 1 | `admin.ts:942` INSERT on verification; `admin.ts:1066` manual POST; `admin.ts:1212` PATCH | `admin.ts:1014` GET income-records; `tenant.ts:118` GET my-income-records | **IMPLEMENTED** — **CORRECTED 2026-09-13:** both columns are `GENERATED ALWAYS AS ... STORED` (`is_generated = 'ALWAYS'` in `information_schema.columns`), so PostgreSQL derives them and rejects any write naming them. Their absence from the INSERT is required. All 937 live rows hold correct values. |
-| **D8** Expenses Ledger | `fixed_expense_categories` (L304), `monthly_expense_entries` (L328), `expense_property_allocations` (L350) | 3 | `admin.ts:1379` POST entry; `admin.ts:1435` PATCH; `admin.ts:1477` inserts allocations | `admin.ts:1326` GET entries; `admin.ts:1532` GET categories | MAPPED |
+| **D8** Expenses Ledger | `fixed_expense_categories` (L304), `monthly_expense_entries` (L328), `expense_property_allocations` (L350), **`property_areas`** — *added 2026-09-15; it is in the live database and in no `CREATE TABLE` in that file* | 4 | `admin.ts:1379` POST entry; `admin.ts:1435` PATCH; `admin.ts:1477` inserts allocations | `admin.ts:1326` GET entries; `admin.ts:1532` GET categories | MAPPED |
 | **D9** Maintenance Tickets | `maintenance_tickets` (L363), `ticket_attachments` (L390), `ticket_messages` (L400) | 3 | `tenant.ts:175` POST ticket; `tenant.ts:205` inserts attachments; `admin.ts:1668` PATCH; `admin.ts:1762` close; `tenant.ts:272` / `admin.ts:2013` POST message | `admin.ts:1550` GET tickets; `tenant.ts:137` GET my-tickets; `tenant.ts:243` / `admin.ts:1994` GET thread | MAPPED |
 | **D10** Audit Logs | `audit_logs` (L428) | 1 | `auditService.ts:85` — the single append-only writer; `authService.ts:301` for auth events | `admin.ts:1865` GET audit-logs | MAPPED |
-| **D11** System Parameters | `system_settings` (L441) | 1 | **none** | **none** | **MISSING** — `grep -rn "system_settings" backend/src` returns zero matches. Six keys are correctly seeded at `FULL_DATABASE_SCHEMA.sql:452` and read by no line of backend code |
+| **D11** System Parameters | `system_settings` (L441) | 1 | **none** | `settingsService.ts` `loadSettings()` — `db.from('system_settings').select('key, value')`, cached; reached through `getWaterRatePerOccupant()`, `getLindaFixedWaterCharge()` and `getGracePeriodDays()` from `billingService`, `admin.ts`, `tenant.ts` and `public.ts` | **PARTIAL** — **corrected 2026-09-15.** This cell read *MISSING — `grep -rn "system_settings" backend/src` returns zero matches*. **That grep now returns twelve matches across five files**, and `settingsService.ts` opens with a comment recording when it stopped being true. What is genuinely still missing is the **write** path: no endpoint updates a setting, so the owner cannot change the water rate or the grace window without a database administrator. Read-only is the accurate status, and that is an operational limitation worth stating rather than a gap in the model. |
 | **D12** Notifications | `notifications` (L413) | 1 | `notificationService.ts:90` (insert), `:156` / `:173` (update); `adyenService.ts:246`; `admin.ts:966`; `admin.ts:984` | `admin.ts:1886` GET notifications; `tenant.ts:327` GET my-notifications | MAPPED |
-| | **TOTAL** | **20** | | | |
+| | **TOTAL** | **21** | | | |
 
-### 1.4 Closure proof — reverse census of all 20 physical tables
+### 1.4 Closure proof — reverse census of all 21 physical tables
 
-Every `CREATE TABLE` in `database/FULL_DATABASE_SCHEMA.sql`, in schema order, with the single store that claims it. A table appearing under two stores would be a modelling error; a table appearing under none would be an orphan the DFD fails to describe.
+> [!WARNING]
+> **Corrected 2026-09-15. This census said 20 tables, and it was computed from the wrong source.**
+>
+> It enumerated *"every `CREATE TABLE` in `database/FULL_DATABASE_SCHEMA.sql`"*. That file
+> declares **20** tables. The live database holds **21**. The missing one is **`property_areas`**,
+> created by migration `20260913090612 penthouse_area_and_cluster_routing`, holding six seeded
+> rows, referenced by **two** live foreign keys — `expense_property_allocations.property_area`
+> and `clusters.expense_area`.
+>
+> **The failure is not that someone miscounted.** A census taken from that file *cannot* find a
+> table that file does not contain, so this proof was structurally incapable of finding its own
+> counterexample — and it closed anyway, concluding there is *"no orphan table"* while an
+> unmodelled table sat in production.
+>
+> This is the concrete case behind the standing rule to ask the catalogue rather than that file.
+> The census below is taken from `information_schema.tables` against the live database, and the
+> last column records whether the old source contained each table at all. **One row says No, and
+> that row is the entire defect.**
 
-| # | Physical table | Schema line | Claimed by | Claimed more than once? |
+Every table in the live `public` schema, with the single store that claims it. A table appearing under two stores would be a modelling error; a table appearing under none would be an orphan the DFD fails to describe.
+
+| # | Physical table | Claimed by | Claimed more than once? | In `FULL_DATABASE_SCHEMA.sql`? |
 | :---: | :--- | :---: | :---: | :---: |
-| 1 | `clusters` | 26 | D1 | No |
-| 2 | `profiles` | 45 | D2 | No |
-| 3 | `rooms` | 85 | D1 | No |
-| 4 | `room_photos` | 119 | D1 | No |
-| 5 | `room_price_history` | 136 | D1 | No |
-| 6 | `room_assignments` | 152 | D3 | No |
-| 7 | `inquiries` | 181 | D4 | No |
-| 8 | `inquiry_messages` | 197 | D4 | No |
-| 9 | `bills` | 211 | D5 | No |
-| 10 | `payments` | 232 | D6 | No |
-| 11 | `monthly_income_records` | 255 | D7 | No |
-| 12 | `fixed_expense_categories` | 304 | D8 | No |
-| 13 | `monthly_expense_entries` | 328 | D8 | No |
-| 14 | `expense_property_allocations` | 350 | D8 | No |
-| 15 | `maintenance_tickets` | 363 | D9 | No |
-| 16 | `ticket_attachments` | 390 | D9 | No |
-| 17 | `ticket_messages` | 400 | D9 | No |
-| 18 | `notifications` | 413 | D12 | No |
-| 19 | `audit_logs` | 428 | D10 | No |
-| 20 | `system_settings` | 441 | D11 | No |
+| 1 | `clusters` | D1 | No | Yes |
+| 2 | `profiles` | D2 | No | Yes |
+| 3 | `rooms` | D1 | No | Yes |
+| 4 | `room_photos` | D1 | No | Yes |
+| 5 | `room_price_history` | D1 | No | Yes |
+| 6 | `room_assignments` | D3 | No | Yes |
+| 7 | `inquiries` | D4 | No | Yes |
+| 8 | `inquiry_messages` | D4 | No | Yes |
+| 9 | `bills` | D5 | No | Yes |
+| 10 | `payments` | D6 | No | Yes |
+| 11 | `monthly_income_records` | D7 | No | Yes |
+| 12 | `fixed_expense_categories` | D8 | No | Yes |
+| 13 | `monthly_expense_entries` | D8 | No | Yes |
+| 14 | `expense_property_allocations` | D8 | No | Yes |
+| 15 | `maintenance_tickets` | D9 | No | Yes |
+| 16 | `ticket_attachments` | D9 | No | Yes |
+| 17 | `ticket_messages` | D9 | No | Yes |
+| 18 | `notifications` | D12 | No | Yes |
+| 19 | `audit_logs` | D10 | No | Yes |
+| 20 | `system_settings` | D11 | No | Yes |
+| **21** | **`property_areas`** | **D8** | No | **No — absent from that file entirely** |
 
-**Closure statement.** 20 tables, 20 claims, 12 stores, zero double-claims, zero unclaimed tables. Summing the per-store table counts in Section 1.3 gives 4+1+1+2+1+1+1+3+3+1+1+1 = **20**. There is **no phantom data store** (no store in the DFD lacking a physical table) and **no orphan table** (no table in the schema the DFD does not model).
+**Closure statement.** **21** tables, 21 claims, 12 stores, zero double-claims, zero unclaimed tables. Summing the per-store table counts in Section 1.3 gives 4+1+1+2+1+1+1+**4**+3+1+1+1 = **21**. There is **no phantom data store** (no store in the DFD lacking a physical table) and **no orphan table** (no table in the live schema the DFD does not model).
+
+**On `property_areas` being claimed by D8 when two foreign keys reach it.** It is a reference lookup, not a second ledger. `expense_property_allocations.property_area` is the claim that matters: the table's `is_rental_expense` flag is what decides whether an expense falls inside Net Operating Income, which is the Expenses Ledger's own question. `clusters.expense_area` points at the same lookup so a unit knows which area its costs land in — a foreign key into a lookup is a reference, not ownership, and counting it as a second claim is what would make this a modelling error. Stated here rather than left for a panelist to raise.
 
 ### 1.5 Read/write completeness audit — the submitted Level 1 diagram against the corrected one
 
