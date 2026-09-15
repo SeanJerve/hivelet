@@ -92,7 +92,82 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `0af1c98`, `49ecec8`: the traceability matrix claimed a total of 44 while
+> **LATEST — commits `4a1a3fb`, `14e42c0`: a proof that could not have found its own
+> counterexample, and a tenth suite so the last one cannot happen again.**
+>
+> ### `check:matrix` — the tenth verification suite
+>
+> Yesterday's finding was that the traceability matrix disagreed with itself in arithmetic
+> nobody was going to do by hand. **That is now a suite**, modelled on `check:rules`, which
+> exists for the same reason about the business-rule register. 23 assertions:
+>
+> - all 44 requirements have a row, each exactly once, each with 7 columns
+> - every status is one the document's own §1.3 defines — **read from the document, not
+>   hardcoded**, so a fifth status cannot appear in one place and go uncounted in another
+> - no row contradicts itself: MAPPED with no backing route, MISSING that names one, or a
+>   non-MISSING row with no tier
+> - the summary's counts, id lists, percentages and Total all match the rows they describe
+> - §3.1's tier table totals the same figures
+>
+> **Made to fail before it was trusted**, against five mutations of a copy — a requirement
+> falling out of the summary (the FR-013 bug itself), an undefined status, a MAPPED row
+> claiming no route, a count edited without its id list, a tier table drifting. All five
+> caught. **Green on the day it shipped**, which is the difference between this and the
+> citation measurer that deliberately stays out of the suite.
+>
+> *The handoff prompt also listed **seven** suites and had been wrong since the eighth was
+> added. A suite nobody is told to run is the same as one nobody wrote.*
+>
+> ### The closure proof that closed over the wrong set
+>
+> `PHASE1_DFD_TRACEABILITY.md` §1.4 is titled **Closure proof**. It concludes there is *"no
+> orphan table — no table in the schema the DFD does not model."* It enumerated **every
+> `CREATE TABLE` in `database/FULL_DATABASE_SCHEMA.sql`**, found 20, and closed.
+>
+> **The live database holds 21.** The missing one is **`property_areas`** — migration
+> `20260913090612`, six seeded rows, two live foreign keys pointing at it
+> (`expense_property_allocations.property_area` and `clusters.expense_area`), and read by
+> `expenseReportExport.ts`. Its `is_rental_expense` column is what decides whether an expense
+> falls inside Net Operating Income.
+>
+> **The point is not the miscount.** That file contains **zero occurrences** of
+> `property_areas`. A census taken from it *cannot* find a table it does not contain — so the
+> proof was **structurally incapable of producing its own counterexample**, and it closed
+> anyway. This is the concrete case behind the standing rule to ask the catalogue instead of
+> that file, sitting inside a section called a proof.
+>
+> The census now comes from `information_schema.tables`, and its last column records whether
+> the old source held each table. **One row says No. That row is the whole defect.**
+>
+> *And §7 of the same document already said the live database holds 21. The closure proof 350
+> lines earlier went on saying 20.*
+>
+> ### A store marked MISSING on a grep that returns twelve
+>
+> **D11 System Parameters** read: *MISSING — `grep -rn "system_settings" backend/src` returns
+> zero matches.* **It returns twelve, across five files**, and `settingsService.ts` opens with
+> a comment recording exactly when that stopped being true.
+>
+> The store is **PARTIAL**, and the precise statement is more useful than either label: the
+> **read** path is real and cached; there is **no write** path, so **Mrs. Fe cannot change the
+> water rate or the grace window without a database administrator.** That is an operational
+> limitation worth stating, not a gap in the model.
+>
+> ### One document had been through the wrong encoding
+>
+> `PHASE1_OPEN_DECISIONS_REGISTER.md` carried **29 double-encoded em-dashes**, 4 middots and a
+> section sign — UTF-8 read as cp1252 and written back. Its own **title line** rendered as
+> garbage. The file is *mixed* (7 em-dashes were already correct), so a whole-file round-trip
+> repair fails; it was repaired by targeted substitution with the counts matching exactly, and
+> **no mojibake remains anywhere in the repository.**
+>
+> Also corrected: the BR crosswalk claimed RLS is *"enabled and forced across all twenty
+> tables"* — it is **21**, verified against the live catalogue, with zero policies on every
+> one, which is the intended `service_role`-only posture.
+>
+> **Ten suites green.**
+
+> **PREVIOUS — commits `0af1c98`, `49ecec8`: the traceability matrix claimed a total of 44 while
 > listing 43, and reported six requirements as missing that are implemented. And a check I
 > shipped this morning had a hole in it.**
 >
@@ -1948,7 +2023,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**127 commits, all pushed to `main`. Working tree clean.**
+**130 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
