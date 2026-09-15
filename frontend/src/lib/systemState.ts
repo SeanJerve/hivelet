@@ -92,6 +92,11 @@ export interface IncomeRecord {
   deposit: number;
   linda?: { electricity: number; water: number };
   paymentMethod?: string;
+  /**
+   * Carried so the ledger's edit form can put back what a row already held. It was not
+   * mapped, so the form had nothing to restore and reset every record it touched to Cash.
+   */
+  transactionReference?: string;
   verificationStatus?: string;
   fiftyPercentShare?: number;
   totalRemitted?: number;
@@ -715,6 +720,7 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
           anniversary: rentStart || '1st',
           deposit: 0,
           paymentMethod: inc.payment_method || 'Cash',
+          transactionReference: inc.transaction_reference || '',
           verificationStatus: inc.verification_status || 'Verified',
           fiftyPercentShare: Number(inc.fifty_percent_share || (inc.rent_amount ? inc.rent_amount / 2 : 0)),
           totalRemitted: Number(inc.remitted_amount || 0),

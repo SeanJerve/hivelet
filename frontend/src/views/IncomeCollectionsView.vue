@@ -374,7 +374,22 @@ const editWater = ref(400);
 const editGarbage = ref(0);
 const editInvoice = ref('');
 const editDate = ref('');
-const editMethod = ref<'Cash' | 'Online'>('Cash');
+/**
+ * `payment_method_type` is (Cash | GCash | Bank Transfer | Adyen Online).
+ *
+ * This form is the ledger's twin of the on-site payment modal fixed in 4170dfd, and it had
+ * the same two-option dropdown - "Cash" and "Online Payment", filed as GCash - beside a box
+ * asking for a "Gcash / Bank Ref #".
+ *
+ * 'Adyen Online' is never OFFERED, because only the gateway's webhook may assert that money
+ * came through Adyen. It is accepted as a loaded value and shown disabled, so opening a
+ * gateway-created receipt to correct a typo puts the method back unchanged instead of
+ * quietly restating how the money arrived.
+ */
+const editMethod = ref<'Cash' | 'GCash' | 'Bank Transfer' | 'Adyen Online'>('Cash');
+
+/** Cash has no reference to record; every other method does. */
+const methodHasReference = computed(() => editMethod.value !== 'Cash');
 const editReference = ref('');
 const editMonthsCovered = ref(1);
 const editDateCoveredStart = ref('');
@@ -433,8 +448,21 @@ function startEditIncome(r: IncomeRecord) {
   const occSummary = formatUnitOccupantsSummary(editUnit.value);
   const occRoom = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
   editOccupants.value = occSummary.count > 0 ? occSummary.count : (occRoom?.occupants || 1);
-  editMethod.value = 'Cash';
-  editReference.value = '';
+  /**
+   * Put back what the row actually held.
+   *
+   * These two lines read `editMethod.value = 'Cash'` and `editReference.value = ''`,
+   * discarding the record's own values - and the payload below then PATCHed 'Cash' over the
+   * top. Correcting a typo in the rent amount therefore rewrote how the money was received
+   * and dropped its reference number. Every one of the 937 live rows is Cash with no
+   * reference, so nothing has been lost; it became reachable the moment 4170dfd made GCash
+   * and Bank Transfer recordable.
+   */
+  const loadedMethod = r.paymentMethod === 'GCash' || r.paymentMethod === 'Bank Transfer' || r.paymentMethod === 'Adyen Online'
+    ? r.paymentMethod
+    : 'Cash';
+  editMethod.value = loadedMethod;
+  editReference.value = r.transactionReference || '';
 
   isEditOpen.value = true;
 }
@@ -522,8 +550,8 @@ async function handleEditIncome() {
       invoiceNumber: editInvoice.value,
       rentAmount: Number(editRent.value) || 0,
       occupants: occupants,
-      paymentMethod: editMethod.value === 'Online' ? 'GCash' : 'Cash',
-      transactionReference: editMethod.value === 'Online' ? editReference.value : undefined,
+      paymentMethod: editMethod.value,
+      transactionReference: methodHasReference.value ? editReference.value : undefined,
       monthsCovered: Number(editMonthsCovered.value) || 1,
       // Omitted when blank, so the server derives both from the anniversary. BR-033.
       ...(editDateCoveredStart.value
@@ -1337,12 +1365,15 @@ function exportCSV() {
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Payment Method</label>
               <select v-model="editMethod" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none">
                 <option value="Cash">Cash</option>
-                <option value="Online">Online Payment</option>
+                <option value="GCash">GCash</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <!-- Shown only when the row already carries it, and never selectable by hand. -->
+                <option v-if="editMethod === 'Adyen Online'" value="Adyen Online" disabled>Adyen Online (gateway)</option>
               </select>
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" :class="{ 'opacity-40': editMethod !== 'Online' }">Transaction Reference #</label>
-              <input v-model="editReference" type="text" placeholder="Gcash / Bank Ref #" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:bg-muted" :disabled="editMethod !== 'Online'" :required="editMethod === 'Online'" />
+              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" :class="{ 'opacity-40': !methodHasReference }">Transaction Reference #</label>
+              <input v-model="editReference" type="text" :placeholder="editMethod === 'Bank Transfer' ? 'Bank reference #' : 'GCash reference #'" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:bg-muted" :disabled="!methodHasReference" :required="methodHasReference" />
             </div>
           </div>
 
