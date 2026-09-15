@@ -484,7 +484,16 @@ router.get(
 );
 
 const tenantOnboardSchema = z.object({
-  email: z.string().email('A valid email address is required.'),
+  /**
+   * Optional, per OD-09 (client-confirmed 2026-09-13): "Do tenants need an email address to
+   * exist in the system? No. Every tenant is a record; a portal login is optional and
+   * separate." `profiles.email` was made nullable by migration `006` to allow exactly this,
+   * but this schema still demanded one, so the administrator could not onboard a tenant who
+   * has no email - which is the case the client raised in the first place.
+   *
+   * An empty string is treated as absent, because that is what a cleared form field sends.
+   */
+  email: z.string().email('Enter a valid email address, or leave it blank.').optional().or(z.literal('')),
   fullName: z.string().min(2, 'Full name is required.'),
   phone: z.string().optional(),
   emergencyContactName: z.string().optional(),
@@ -518,28 +527,46 @@ router.post(
       occupantCount, roommateQty 
     } = parsed.data;
 
-    // Check if profile exists
-    const { data: existing, error: checkError } = await db
-      .from('profiles')
-      .select('id')
-      .ilike('email', email)
-      .maybeSingle();
+    // An empty string from a cleared form field means "no email", not "".
+    const normalizedEmail = email && email.trim() ? email.toLowerCase().trim() : null;
 
-    if (checkError) throw ApiError.internal(checkError.message);
-    if (existing) {
-      throw ApiError.badRequest('A profile with this email address already exists.');
+    // Only meaningful when an email was supplied. `profiles.email` is UNIQUE but nullable,
+    // and Postgres does not treat NULLs as duplicates of each other, so several tenants
+    // without an email coexist happily.
+    if (normalizedEmail) {
+      const { data: existing, error: checkError } = await db
+        .from('profiles')
+        .select('id')
+        .ilike('email', normalizedEmail)
+        .maybeSingle();
+
+      if (checkError) throw ApiError.internal(checkError.message);
+      if (existing) {
+        throw ApiError.badRequest('A profile with this email address already exists.');
+      }
     }
 
-    // Default temp password for demo verification
-    const tempPassword = 'Hivelet@Tenant2026';
-    const bcrypt = (await import('bcryptjs')).default;
-    const passwordHash = await bcrypt.hash(tempPassword, 12);
+    /**
+     * A portal login is created only when there is an email to log in with.
+     *
+     * OD-09 makes the login optional and separate from the tenancy record, and the
+     * `profiles_login_identifier_required` CHECK enforces the same thing from below:
+     * `password_hash IS NULL OR email IS NOT NULL OR phone_number IS NOT NULL`. Setting a
+     * password on a profile with no identifier would violate it, so a tenant onboarded
+     * without an email is a record with no credentials - exactly what the client described.
+     */
+    let passwordHash: string | null = null;
+    if (normalizedEmail) {
+      const tempPassword = 'Hivelet@Tenant2026';
+      const bcrypt = (await import('bcryptjs')).default;
+      passwordHash = await bcrypt.hash(tempPassword, 12);
+    }
 
     // Insert new profile
     const { data: profile, error: insertError } = await db
       .from('profiles')
       .insert({
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         password_hash: passwordHash,
         full_name: fullName,
         phone_number: phone || null,
