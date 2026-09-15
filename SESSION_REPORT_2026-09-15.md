@@ -92,8 +92,95 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST: a final verification pass. Two clean cycles in a row - the audit has reached its
-> natural end.**
+> **LATEST — commits `0af1c98`, `49ecec8`: the traceability matrix claimed a total of 44 while
+> listing 43, and reported six requirements as missing that are implemented. And a check I
+> shipped this morning had a hole in it.**
+>
+> ### The summary table a panel actually reads
+>
+> **It did not add up.** It claimed **Total 44 / 100%** and enumerated **43** requirements.
+> FR-013 was moved out of MISSING on 2026-09-14 and never added to any other row, so it fell
+> out of the only table on the page a panelist can check in their head.
+>
+> **It was also physically broken.** 130 lines of blockquote had been inserted *between the
+> rows of the table*, so its last two rows - FRONTEND-ONLY and Total - were orphaned from their
+> header and did not render as part of it.
+>
+> **And three places in one document gave three different answers about the same 44 rows:**
+>
+> | Where | MAPPED | PARTIAL | MISSING | FE | Sums to |
+> |---|---:|---:|---:|---:|---:|
+> | §3 Summary Counts | 20 | 13 | 9 | 1 | **43** |
+> | §3.1 Tier distribution | 20 | 13 | 10 | 1 | 44 |
+> | The body rows themselves | 20 | 12 | 9 | 1 | 42 + **2 marked `IMPLEMENTED`**, a status §1.3 never defines |
+>
+> ### Every status re-derived by reading live code
+>
+> All three now agree, at **26 / 14 / 3 / 1 = 44**, and the summary is derivable from the rows:
+>
+> | FR | Was | Now | What the code says |
+> |---|---|---|---|
+> | FR-006 | MISSING | **MAPPED** | `converted_tenant_id` is written by the inquiry PATCH handler |
+> | FR-012 | MISSING | **MAPPED** | `due_date: period.dueDate` from `computeBillPeriod()` on the tenancy anniversary |
+> | FR-013 | *listed nowhere* | **MAPPED** | `isOverdue()` called by both bill endpoints |
+> | FR-015 | PARTIAL | **MAPPED** | the table disagreed with its own row; the row was right |
+> | FR-036 | MISSING | **MAPPED** | `computeWaterFee()` returns a `linda-fixed` basis for LF and LB |
+> | FR-042 | MISSING | **MAPPED** | the workbook prints `Reconciles (BR-047)` with both sides' figures |
+> | FR-028 | MISSING | **PARTIAL** | export is live and asserted; aggregate retrieval is not |
+> | FR-040 | MISSING | **PARTIAL** | cumulative is in the export only, and **OD-07** is still open |
+> | FR-033 | MISSING | **MISSING** | carries forward from the **tenancy**, not the prior month. It stands. |
+>
+> **Every move but one is in the same direction: the register was more alarming than the code.**
+> FR-040 went the other way - §3 called it *Implemented*, §5 reasoned it *Partial*, and §5 is
+> right. A retest that only ever finds things fixed is not a retest.
+>
+> **The Gap Register still said FR-033 was Done.** §3 overturned that judgement on the same day,
+> 150 lines earlier, and nobody carried the correction across. *Two registers disagreeing about
+> one fact is worse than either being wrong alone: a reader who finds the disagreement cannot
+> tell which side to trust, and a reader who finds only one side never learns there was a
+> question.*
+>
+> ### Also corrected, each verified against the thing it describes
+>
+> - the service legend marked **`billingService.ts` and `settingsService.ts` as "does not exist
+>   today"** while both sit in `backend/src/services/` - a claim a panelist disproves with one `ls`
+> - `admin.ts` **2,263 → 3,033** lines; **20 → 21** tables; **131 of 164** database calls in route
+>   handlers (80%) → **144 of 184** (78%)
+> - the FR-015 note cited two endpoints as **`/payments/mock-gateway`** - a name with **zero
+>   occurrences** in `backend/src`. They are `/payments/local-cashier`, and both return 404
+>   whenever a gateway is configured. *A citation naming a route the system does not have sends
+>   a panelist looking for something that was never there, and they cannot tell that apart from
+>   a feature that is missing.*
+>
+> ### And the hole was in my own check
+>
+> `check:fields` shipped this morning with an allowlist of five "API-computed" fields. **Two of
+> them do not exist.** `water_rate_per_occupant` and `linda_fixed_water_charges` are *settings
+> keys* - string literals naming rows in `system_settings` - not response fields. The route that
+> serves those values, `GET /public/rates`, answers in **camelCase**. Nothing reads the
+> snake_case names, so nothing was broken; but **an allowlist entry for a field that does not
+> exist pre-approves a name that would read as `undefined` forever**, which is the precise bug
+> the check was built to catch.
+>
+> Its header also claimed the API emits **"exactly ELEVEN"** camelCase keys, hand-checked -
+> offered as a bounded, exhaustive, dated fact in place of a check that could not be built.
+> **Re-scanned four ways over the same unchanged source: 11, then 13, then 25, then 16.** At
+> least eighteen are real. Five were invisible to the original scan because they are written as
+> **shorthand properties** - `{ waterRatePerOccupant }` - which a scan looking for `name:`
+> cannot see.
+>
+> **The failure was not the regex.** It was stating a precise number from a single scan that had
+> never been made to fail against a key it was known to contain - the same mistake this file
+> exists to catch, made by the person who wrote the file. The header now says the surface is not
+> reliably enumerable by regex and that no exact count belongs there again.
+>
+> Nine suites green: `check:api` 53, `check:adyen` 23, `check:billing`, `check:writes`,
+> `check:columns`, `check:fields`, `check:tokens` 94/94, `check:rules`, `check:secrets`.
+
+> **PREVIOUS: a final verification pass. Two clean cycles in a row.** *(That block called the
+> audit finished. It was not - see the entry directly above, which found six requirements
+> reported missing that are not. Two clean cycles meant the looking had stopped finding things
+> where it was looking, which is a different statement.)*
 >
 > **Hygiene.** No stray probe scripts in `backend/scripts`; the only scripts committed today
 > are the three intended ones - `check-column-refs.mjs`, `check-frontend-fields.mjs`,
@@ -1861,7 +1948,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**125 commits, all pushed to `main`. Working tree clean.**
+**127 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
