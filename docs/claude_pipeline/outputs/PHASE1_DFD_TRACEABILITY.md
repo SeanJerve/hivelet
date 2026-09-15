@@ -21,6 +21,27 @@ Module 01 sets two non-negotiable audit conditions: **every data store in the DF
 Traceability is proven in three directions, and all three must close:
 
 1. **Forward** — every legacy laboratory element (`CFD.png`, `DFD.png`, `CHILD1.png`, `CHILD2.png`, `PHYSICAL.png`) reaches a modern element, or is explicitly accounted for as absorbed, split, or superseded.
+> **CORRECTION, 2026-09-15 — this document's completeness proof no longer closes.**
+>
+> It counts tables in `database/FULL_DATABASE_SCHEMA.sql`, which **does not describe this
+> database** (project rule 2) and holds 20. The live catalogue holds **21**, verified by
+> `pg_class` on 2026-09-15. The extra table is **`property_areas`**, created by migration
+> `008` and extended by `012` — both applied after this document was written.
+>
+> `property_areas` appears **zero times** below. So the claim "every physical table is
+> claimed by exactly one store — zero orphans" is now false: there is exactly one orphan,
+> and it is that table. Everything else in the mapping still holds, and no table is
+> double-claimed.
+>
+> **Deliberately not repaired here.** Assigning `property_areas` to a data store is a DFD
+> design decision, not a transcription fix, and inventing one would be exactly the failure
+> this project has been bitten by. It needs whoever owns the diagram. The likely home is
+> the expense-ledger store that already carries `expense_property_allocations`, since
+> `property_areas` is that column's lookup — but that is a suggestion, not a mapping.
+>
+> All six "20 table" figures below are left as written, because they are an accurate record
+> of what this document was built against. Read them with this note.
+
 2. **Reverse** — every modern data store resolves to physical PostgreSQL tables, and every one of the **20 tables** in `database/FULL_DATABASE_SCHEMA.sql` is claimed by **exactly one** store. No phantom stores, no orphan tables.
 3. **Downward** — every modern process resolves to a named Tier-3 architecture component and a concrete backing artifact, with that component's implementation status stated plainly.
 
@@ -433,8 +454,8 @@ Every row below is a place where the DFD models something the running system doe
 
 | Audit condition | Result | Where proven |
 | :--- | :--- | :--- |
-| Every DFD data store maps to a specific ERD entity | **Satisfied.** 12 stores → 20 tables | Section 1.3 |
-| Every physical table is claimed by exactly one store | **Satisfied.** 20 of 20; zero double-claims; zero orphans | Section 1.4 |
+| Every DFD data store maps to a specific ERD entity | **Satisfied** for the 20 tables this document was built against. See the note below: the live database now holds **21**. | Section 1.3 |
+| Every physical table is claimed by exactly one store | ~~**Satisfied.** 20 of 20; zero double-claims; zero orphans~~ **NO LONGER SATISFIED — corrected 2026-09-15.** 20 of **21**. `property_areas` is unclaimed by any store and appears **zero times** in this document. Zero double-claims still holds. | Section 1.4 |
 | No phantom data store exists | **Satisfied.** Every store resolves to at least one `CREATE TABLE` | Sections 1.3, 1.4 |
 | Every DFD process maps to a specific architecture component | **Satisfied.** 7 processes plus 3 cross-cutting components, each with a named Tier-3 component and an explicit implementation status | Section 2.5 |
 | Every legacy laboratory element is accounted for | **Satisfied.** 6 of 6 legacy stores; 5 of 5 legacy Level 1 processes; 4 of 4 CHILD1 sub-processes; 4 of 4 CHILD2 sub-processes; 3 of 3 legacy Level 0 entities; 6 of 6 `PHYSICAL.png` activities | Sections 1.1, 1.2, 2.1–2.4, 2.7 |
