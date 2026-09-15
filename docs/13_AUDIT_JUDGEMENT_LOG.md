@@ -234,6 +234,90 @@ closed.
 
 ---
 
+### A seventh sweep, the same day: the code, not the documents
+
+The first six sweeps read documents against the system. This one read the system
+against itself, and found more than all of them together. Four patterns are
+worth carrying to any project, not just this one.
+
+#### 1. In a browser, a wrong field name is not an error. It is a fallback doing its job perfectly, on nothing.
+
+`check:columns` exists because PostgREST answers a bad column with `42703`. The
+frontend has no such backstop. `r.tenant_name` on an object that has no
+`tenant_name` is `undefined` — no throw, no warning, no console line — and the
+carefully written `|| 'Active Resident'` beside it then runs, exactly as its
+author intended, on a value that was never going to arrive.
+
+Five instances in one day, every one in code that typechecked and shipped:
+
+| read | what it produced | commit |
+| :--- | :--- | :--- |
+| `r.tenant_name` | every occupied unit labelled "Active Resident" | `b593166` |
+| `l.entity_table` | the Audit Trail read "system" on every row | `b3c97e4` |
+| `l.old_values` | the Audit Trail read "null" for every change it had recorded | `b3c97e4` |
+| `avatar_url`, `full_name` | silently stripped by Zod; the UI reported success | `b3c97e4` |
+| `currentUser.email` | the literal `tenant@hivelet.com` shown to a resident | `643bdd9` |
+
+The tell is always the same and always looks like good practice: **a defensive
+default next to a field nobody has checked exists.** The default is what hides
+the bug. Code with no fallback would have rendered a blank and been found in a
+day.
+
+`check:fields` now catches this class for snake_case names. Its limits are
+written in its own header rather than left for a reader to discover: it matches
+on name and not on table, so a field that is a real column somewhere else
+passes — which is precisely how `r.tenant_profile_id` survived alongside
+`r.tenant_name` — and it does not see camelCase at all.
+
+#### 2. Static reachability beats a screenshot
+
+The strongest proofs of the day needed no browser:
+
+- A Vue component that **no file imports** cannot render. That settled
+  `LiveChatheadModal` — three separate buttons set its flag, and the flag drew
+  nothing, anywhere.
+- A button whose guard is `!isAdmin && !path.startsWith('/admin')`, inside a
+  modal opened only from a route whose `meta.roles` is `['admin']`, **cannot
+  appear**. Both halves are false for the only role that can get there.
+
+A screenshot shows that something did not happen once. These show it cannot.
+Reach for them first; they are faster and they are stronger.
+
+#### 3. A register of known problems decays by overstating them
+
+`docs/11_FORM_FIELD_AUDIT.md` was retested twice today. Its largest claim — that
+three forms send a unit *code* where the column wants a *uuid* — is not a defect
+at all: either the client resolves the code, or the endpoint does, and six write
+paths do the latter. Six further rows were stale. The box at its head now says
+so in the only terms that help a future reader: **its leads have been wrong more
+often than right.**
+
+This is the sixth-sweep finding again, sharpened. A defect register is a
+snapshot of a moment, and the system moves. The danger is not that it goes out
+of date — everyone expects that — it is that it goes out of date *in the
+alarming direction*, so the reader spends their attention on problems that were
+fixed months ago while the live ones sit unlisted.
+
+#### 4. A fix can create a defect hours later, in a file you already audited
+
+`17095f3` gave the administrator a Public Listing control, so a unit could
+finally be hidden. `fb59517`, four hours later, fixed what that broke: the
+public enquiry dropdown is built from all 33 canonical units, while the lookup
+behind it searches only the *published* ones the API returns. Hide a unit and a
+prospect could select it and be told "Unit X could not be found … please
+refresh", which refreshing never fixes.
+
+That is the identical defect removed that same morning in `53b26a9` — *a form
+must not offer what the system cannot record* — reintroduced through a different
+door by a feature added later the same day.
+
+The habit that found it is the habit that found most of today's best work:
+**when you find one instance of something, grep for its siblings** — and include
+your own commits in the search. The last sweep of the day was run against my own
+changes, and turned up one more (`4180cc8`).
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
