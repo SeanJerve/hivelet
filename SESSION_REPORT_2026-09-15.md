@@ -25,7 +25,48 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `ffdeee3`: the checkout endpoint called its own live gateway a mock.**
+> **LATEST - commit `b0013be`: three dead things in one function, and an honest limit written
+> onto `check:fields`.**
+>
+> The last dead trigger for the unmounted chat, removed with a **static proof** rather than a
+> hunt for symptoms.
+>
+> `RoomDetailModal` is opened from exactly one place - `RoomDirectoryView`, mounted at exactly
+> one route, `/admin/directory`, whose `meta.roles` is `['admin']`. The "Inquire Directly"
+> button's own guard was `v-if="!isAdmin && !route.path.startsWith('/admin')"` - **both halves
+> false for the only role that can reach the page.** The button could not render. Ever.
+>
+> Had it rendered, its handler did three things, none of which work:
+>
+> | it set | what that is |
+> |---|---|
+> | `selectedPublicInquiryUnit` | written here, **read by nothing** |
+> | `selectedInquirerId` | written here, **read by nothing** |
+> | `isLiveChatheadOpen` | opens a component **no file imports**, so never mounted |
+>
+> Both write-only refs are gone from `systemState`. A value nothing reads is not state, it is
+> a note to nobody.
+>
+> **`LiveChatheadModal.vue` is deliberately left on disk.** Whether a live chat should exist,
+> and against which endpoint - it currently posts to an administrator-only route with a
+> hardcoded inquirer id - is a decision for Mrs. Da Silva. Deleting two fake login modals that
+> predated real authentication was tidying; deleting a feature someone may intend to finish is
+> not mine to do.
+>
+> **Separately, `check:fields` now states what it does not cover.** It sees only snake_case.
+> Columns are snake_case, so that is every field read straight off a row - but several
+> endpoints answer in camelCase of their own (`/tenant/payments/checkout` returns
+> `sessionId`, `sessionData`, `clientKey`, `environment`, `isLive`; `/public/water-rate`
+> returns `waterRatePerOccupant`; auth returns `token` and `user`). **A misspelling there is
+> exactly as silent.** Those were verified by hand this session and were correct - but by hand
+> does not scale, and a green run should not be read as more than it is: **the snake_case
+> surface is clean, not the whole of it.**
+>
+> **Verified:** the Specs modal still opens and closes on `/admin/directory` and shows only
+> "Close Specs"; `vite build` succeeds; `check:columns` and `check:fields` clean; frontend
+> typechecks. Nothing written.
+
+> **PREVIOUS - commit `ffdeee3`: the checkout endpoint called its own live gateway a mock.**
 >
 > Two descriptions of the payment flow that do not match the code beneath them. Found while
 > checking the camelCase fields the Adyen modal reads - those turned out **correct**, and the
@@ -1076,7 +1117,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**82 commits, all pushed to `main`. Working tree clean.**
+**84 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
