@@ -25,7 +25,47 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `4178676`: three of your units carried an invented arrears status.**
+> **LATEST - commit `003ebb5`: ran all nine suites end to end. One failed, and it was mine.**
+>
+> ```
+> FAIL raw hex literals in templates: 99 (budget 97)
+> ```
+>
+> Two over, **both mine.** The Close Lead confirmation I added in `6f59ebe` copied
+> `bg-[#fef3c7] text-[#d97706]` from the four confirm modals that already existed. Those four
+> are *why* the budget is 97 - they are grandfathered - and copying the pattern pushed the
+> count past the line the check exists to hold.
+>
+> **Fixed by using the tokens, not by raising the budget.** A ratchet that gets loosened
+> whenever it catches something is not a ratchet.
+>
+> Worth saying plainly: the token shades are **not identical** to the four literals - `#fffbeb`
+> is a lighter amber than `#fef3c7`, `#92400e` a deeper brown than `#d97706`. On a 48px circle
+> behind one icon the difference is not noticeable, and matching the grandfathered literal
+> exactly would have meant adding the literal back. Verified in the browser rather than
+> trusting the linter: the dialog opens and its icon computes to **rgb(255, 251, 235)** on
+> **rgb(146, 64, 14)** - the two token values.
+>
+> **All nine suites now green:**
+>
+> | | | | |
+> |---|---|---|---|
+> | `check:api` | **53 passed** | `check:columns` | clean |
+> | `check:adyen` | **23 passed** | `check:fields` | clean |
+> | `check:billing` | passed | `check:tokens` | **97 / 97** |
+> | `check:writes` | passed | `check:rules` | passed |
+> | `check:secrets` | clean (all tracked files) | | |
+>
+> **Also: the last three PARTIAL notes, retested.** FR-030 **stands unchanged** - the service
+> worker still matches `/api/(public|health)` only and caches nothing authenticated. **FR-035
+> is half changed:** the income POST now reads `anniversary_date` and derives the rent period
+> from it, but `deposit_amount` is still neither selected nor reused - one clause of two, where
+> before it was none. **FR-039 is half changed** in a way worth stating exactly: the Property
+> Area bottom totals and the category summary are now computed **server-side** for the Excel
+> export, but they are stored in no column and the on-screen figures are still derived in the
+> browser. *Computed by the system of record when it exports, not when it renders.*
+
+> **PREVIOUS - commit `4178676`: three of your units carried an invented arrears status.**
 >
 > I had this queued for five cycles as *"remove a dead branch"*. Tracing it properly before
 > deleting it turned it into something else.
@@ -1495,7 +1535,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**106 commits, all pushed to `main`. Working tree clean.**
+**108 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
