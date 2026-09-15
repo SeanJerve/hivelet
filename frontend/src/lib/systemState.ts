@@ -256,7 +256,12 @@ export interface Inquiry {
   email: string;
   date: string;
   message: string;
-  status?: string;
+  /**
+   * Required, not optional. `inquiries.status` is NOT NULL and the one mapper below always
+   * sets it, so an optional here only forced every reader to handle an absence that cannot
+   * happen - which is why the inbox showed a hardcoded badge instead of the real status.
+   */
+  status: string;
 }
 
 export const activeRole = ref<'admin' | 'tenant' | 'guest'>('admin');

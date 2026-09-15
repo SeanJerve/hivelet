@@ -17,7 +17,8 @@ import {
   CheckCircle2, 
   MessageSquare,
   Search,
-  Check
+  Check,
+  XCircle
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -38,6 +39,72 @@ const isSubmitting = ref(false);
 
 // Local conversation store mapped by inquiry id
 const inquiryThreads = ref<Record<string, MessageBubble[]>>({});
+
+/**
+ * `inquiry_status_type` is (Pending | Contacted | Converted | Closed), and this page showed
+ * none of it. Every lead wore a hardcoded "Active Prospect" badge - the one she had already
+ * answered, the one that became a tenancy, and the one that went nowhere, all identical -
+ * and the list rows carried no status at all.
+ *
+ * 'Closed' had no writer anywhere in the system either, so a dead lead stayed in the inbox
+ * forever. The API has accepted it since the schema was written.
+ */
+const STATUS_BADGE: Record<string, string> = {
+  Pending: 'badge-warning',
+  Contacted: 'badge-info',
+  Converted: 'badge-success',
+  Closed: 'badge-neutral',
+};
+
+function statusBadgeClass(status: string) {
+  return STATUS_BADGE[status] || 'badge-neutral';
+}
+
+/** A lead that converted or was closed is finished; it takes no further action. */
+function isLeadOpen(status: string) {
+  return status !== 'Converted' && status !== 'Closed';
+}
+
+// Confirmation modal, same shape as the ledger and expenses pages.
+const isConfirmOpen = ref(false);
+const confirmTitle = ref('');
+const confirmMessage = ref('');
+const confirmAction = ref<(() => void) | null>(null);
+
+function showConfirm(title: string, message: string, action: () => void) {
+  confirmTitle.value = title;
+  confirmMessage.value = message;
+  confirmAction.value = action;
+  isConfirmOpen.value = true;
+}
+
+function handleConfirmAccept() {
+  const action = confirmAction.value;
+  isConfirmOpen.value = false;
+  if (action) action();
+}
+
+function handleCloseLead() {
+  const inq = activeInquiry.value;
+  if (!inq) return;
+
+  showConfirm(
+    'Close this lead',
+    `${inq.name} — Unit ${inq.unit.toUpperCase()}\n\nThe thread stays on record and can still be read. It simply stops sitting in the inbox as something waiting for an answer.`,
+    async () => {
+      isSubmitting.value = true;
+      try {
+        await api.patch(`/admin/inquiries/${inq.id}`, { status: 'Closed' });
+        await fetchInquiriesState();
+        showToast('success', 'Lead closed', `${inq.name}'s enquiry is no longer awaiting a reply.`);
+      } catch (err: any) {
+        showToast('error', 'Could not close lead', err?.message || 'The inquiry was not updated.');
+      } finally {
+        isSubmitting.value = false;
+      }
+    }
+  );
+}
 
 async function fetchInquiries() {
   isLoading.value = true;
@@ -217,6 +284,9 @@ async function handleSendReply() {
                 <span class="inline-block text-[11px] font-semibold text-primary mt-0.5">
                   Unit {{ inq.unit.toUpperCase() }}
                 </span>
+                <span :class="['badge-soft text-[10px] font-bold ml-1.5', statusBadgeClass(inq.status)]">
+                  {{ inq.status }}
+                </span>
               </div>
               <span class="text-[10px] text-muted-foreground shrink-0 font-medium">{{ inq.date || 'Recent' }}</span>
             </div>
@@ -239,7 +309,10 @@ async function handleSendReply() {
             <div>
               <h2 class="font-display font-extrabold text-sm text-foreground flex items-center gap-2">
                 {{ activeInquiry.name }}
-                <span class="badge-soft badge-primary text-[10px]">Active Prospect</span>
+                <!-- Was a hardcoded "Active Prospect" on every lead, whatever its status. -->
+                <span :class="['badge-soft text-[10px]', statusBadgeClass(activeInquiry.status)]">
+                  {{ activeInquiry.status }}
+                </span>
               </h2>
               <div class="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
                 <span class="flex items-center gap-1"><Phone class="size-3" /> {{ activeInquiry.phone }}</span>
@@ -258,6 +331,19 @@ async function handleSendReply() {
             </div>
 
             <button
+              v-if="isLeadOpen(activeInquiry.status)"
+              type="button"
+              :disabled="isSubmitting"
+              @click="handleCloseLead"
+              class="btn-secondary text-xs flex items-center gap-1.5"
+              title="Mark this lead as closed - it stays on record but stops awaiting a reply"
+            >
+              <XCircle class="size-3.5" />
+              <span>Close Lead</span>
+            </button>
+
+            <button
+              v-if="isLeadOpen(activeInquiry.status)"
               @click="router.push({
                 path: '/admin/tenants',
                 query: {
@@ -274,6 +360,13 @@ async function handleSendReply() {
               <UserPlus class="size-3.5 text-white" />
               <span>Convert to Tenant</span>
             </button>
+
+            <span
+              v-else
+              class="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1"
+            >
+              <Check class="size-3.5" /> {{ activeInquiry.status }}
+            </span>
           </div>
         </div>
 
@@ -343,6 +436,35 @@ async function handleSendReply() {
         </div>
       </div>
 
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div
+      v-if="isConfirmOpen"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
+      @click.self="isConfirmOpen = false"
+    >
+      <div class="surface-card w-full max-w-sm shadow-2xl rounded-2xl p-6 bg-white space-y-4 text-center">
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-[#fef3c7] text-[#d97706] flex items-center justify-center">
+            <XCircle class="w-6 h-6" />
+          </div>
+          <h3 class="font-display font-extrabold text-lg text-foreground">{{ confirmTitle }}</h3>
+
+          <div class="w-full text-left bg-background border border-border rounded-xl p-3.5 text-xs text-foreground space-y-1 leading-relaxed whitespace-pre-line font-semibold">
+            {{ confirmMessage }}
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-2 pt-2">
+          <button type="button" @click="isConfirmOpen = false" class="btn-secondary cursor-pointer min-w-[100px]">
+            Cancel
+          </button>
+          <button type="button" @click="handleConfirmAccept" class="btn-primary cursor-pointer min-w-[100px]">
+            Confirm
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
