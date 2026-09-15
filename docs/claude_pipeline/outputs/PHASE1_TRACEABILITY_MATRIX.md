@@ -11,9 +11,9 @@
 
 ## 1. Purpose and Method
 
-This matrix is the single verifiable bridge between the 44 functional requirements in `docs/03_REQUIREMENTS.md` and the code that is actually deployed. Every row was produced by reading the requirement text, then reading the route modules `backend/src/routes/admin.ts` (2,263 lines), `tenant.ts`, `public.ts`, `auth.ts`, `health.ts`, the service modules in `backend/src/services/` (five at the time of writing, nine as of 2026-09-13), the permission table `backend/src/config/rbac.ts`, and the **21** table definitions in `database/live_schema.csv`, which is the source of truth for this project — `database/FULL_DATABASE_SCHEMA.sql` has been wrong about the live schema more than once and is not to be trusted. Every `file:line` citation below was confirmed by opening that line.
+This matrix is the single verifiable bridge between the 44 functional requirements in `docs/03_REQUIREMENTS.md` and the code that is actually deployed. Every row was produced by reading the requirement text, then reading the route modules `backend/src/routes/admin.ts` (2,263 lines when this matrix was written; **3,033** on 2026-09-15), `tenant.ts`, `public.ts`, `auth.ts`, `health.ts`, the service modules in `backend/src/services/` (five at the time of writing; **eleven** as of 2026-09-15), the permission table `backend/src/config/rbac.ts`, and the **21** table definitions in `database/live_schema.csv`, which is the source of truth for this project — `database/FULL_DATABASE_SCHEMA.sql` has been wrong about the live schema more than once and is not to be trusted. Every `file:line` citation below was confirmed by opening that line **on the day it was written**, and that is now the weakest sentence in this document. Measured 2026-09-15: **6 of the 83 route citations still land on the route they name.** A line number is a promise about a file that grows, and nothing in a markdown document can notice when it breaks. **Follow a citation by searching for the route path or the identifier beside it, never by jumping to the line.** The file names, the route paths and the judgements are unaffected; only the line numbers rotted. See the box under §3.0.
 
-The matrix is deliberately unflattering where the code is unfinished. A traceability matrix that reports only successes is not evidence; it is marketing. The 10 MISSING rows are consolidated in the **Gap Register** (§5) with a disposition for each, so that no panelist can surface a gap on defense day that the group has not already surfaced first.
+The matrix is deliberately unflattering where the code is unfinished. A traceability matrix that reports only successes is not evidence; it is marketing. The MISSING rows — **3** as verified on 2026-09-15, 10 as originally written — are consolidated in the **Gap Register** (§5) with a disposition for each, so that no panelist can surface a gap on defense day that the group has not already surfaced first.
 
 ### 1.1 Architectural frame
 
@@ -26,7 +26,7 @@ All tier assignments refer to the project's canonical architecture:
 | Tier 1 | Presentation | Vue 3 + Vite + Pinia + vue-router + vite-plugin-pwa |
 | Tier 2 | API & Security Perimeter | Node.js + Express + TypeScript; Helmet, CORS origin lock, JWT bearer auth, `requireRole` guards, centralized `ApiError` |
 | Tier 3 | Domain Service Layer (Modular Monolith) | `backend/src/services/` |
-| Tier 4 | Data Persistence | PostgreSQL 16 on Supabase — 20 tables, UUID surrogate PKs, RLS, `service_role` containment |
+| Tier 4 | Data Persistence | PostgreSQL 16 on Supabase — **21** tables, UUID surrogate PKs, RLS forced with zero policies, `service_role` containment |
 | Tier 5 | External Integration Boundary | Adyen GCash adapter (sandbox / live), implemented; Supabase Storage, planned for Phase 3 and not implemented today |
 
 > **Footnote on naming.** An earlier synonym, *"Isolated Payment Gateway Adapter"*, appears in `FINAL_PRESENTATION_ARCHITECTURE_AND_DATABASE_DEFENSE.md`. It denotes the same Tier 5 boundary described here. A panelist quoting the earlier slide is not being contradicted — only the label changed.
@@ -54,14 +54,16 @@ All tier assignments refer to the project's canonical architecture:
 
 ### 1.4 Service-layer legend
 
-Tier 3 today contains **five real modules**. Eight further services are *planned* for Phase 3, to be extracted mechanically from route handlers. They do **not** exist in the repository, and this matrix never cites them as a backing component for a MAPPED row.
+Tier 3 contained **five real modules** when this matrix was written. It contains **eleven** on 2026-09-15, and the legend below was rebuilt that day by listing the directory rather than by amending the previous list. **Two entries had to move from planned to implemented: `billingService.ts` and `settingsService.ts` were marked *does not exist today* while sitting in the repository** — a claim a panelist can disprove with one `ls`, and the most direct kind of error a legend can carry.
 
 | Marker | Component | Status |
 |---|---|---|
-| `[I]` | `authService.ts`, `auditService.ts`, `scopeService.ts`, `notificationService.ts`, `adyenService.ts` | **Implemented** (present in `backend/src/services/`) |
-| `[P3]` | `billingService.ts`, `paymentService.ts`, `occupancyService.ts`, `ticketService.ts`, `inquiryService.ts`, `settingsService.ts`, `expenseService.ts`, `financialReportService.ts` | **Planned (Phase 3)** — does not exist today |
+| `[I]` | `authService.ts`, `auditService.ts`, `scopeService.ts`, `notificationService.ts`, `adyenService.ts`, `adyenWebhook.ts`, `adyenWebhookHandler.ts`, **`billingService.ts`**, **`settingsService.ts`**, `expenseReportExport.ts`, `incomeReportExport.ts` | **Implemented** — all eleven present in `backend/src/services/`, verified by directory listing 2026-09-15 |
+| `[P3]` | `paymentService.ts`, `occupancyService.ts`, `ticketService.ts`, `inquiryService.ts`, `expenseService.ts`, `financialReportService.ts` | **Planned (Phase 3)** — six remain; none exists in the repository today |
 
-The reason for the extraction backlog is stated plainly: **131 of 164 database calls (80%) currently sit inside route handlers**, and `backend/src/routes/admin.ts` alone is 2,263 lines. Where a row's Named Component reads `admin.ts` rather than a service, that is the honest answer, not an omission.
+A `[P3]` marker still appearing beside a service name in a row's Named Component column means *the logic is in the route handler and is destined for that service*, which is why a MAPPED row may name one. It has never meant the requirement is unimplemented.
+
+The reason for the extraction backlog is stated plainly, re-measured 2026-09-15: **144 of 184 database calls (78%) sit inside route handlers**, and `backend/src/routes/admin.ts` alone is **3,033** lines. The figures this replaces were 131 of 164 (80%) and 2,263 lines; the ratio has improved by two points while the absolute count grew, which is what partial extraction against continued feature work looks like. Where a row's Named Component reads `admin.ts` rather than a service, that is the honest answer, not an omission.
 
 ---
 
@@ -83,7 +85,7 @@ The reason for the extraction backlog is stated plainly: **131 of 164 database c
 | FR-003 | Public Website | Tier 2 / Tier 4 | `routes/public.ts` → `inquiryService.ts` `[P3]` | `GET /api/public/rooms` (`public.ts:45`); `GET /api/public/rooms/:roomId` (`public.ts:68`); `GET /api/public/clusters` (`public.ts:88`) | `rooms`, `room_photos`, `clusters` | **PARTIAL** |
 | FR-004 | Public Inquiry | Tier 2 / Tier 4 | `routes/public.ts` → `inquiryService.ts` `[P3]` | `POST /api/public/inquiries` (`public.ts:118`) | `rooms`, `inquiries`, `inquiry_messages`, `audit_logs`, `notifications` | **MAPPED** |
 | FR-005 | Inquiry Management | Tier 2 / Tier 4 | `routes/admin.ts` → `inquiryService.ts` `[P3]` | `GET /api/admin/inquiries` (`admin.ts:730`); `PATCH /api/admin/inquiries/:inquiryId` (`admin.ts:748`); `GET /api/admin/inquiries/:id/messages` (`admin.ts:1941`); `POST /api/admin/inquiries/:id/messages` (`admin.ts:1960`) | `inquiries`, `inquiry_messages` | **MAPPED** |
-| FR-006 | Inquiry Conversion | — | none | none | none | **MISSING** |
+| FR-006 | Inquiry Conversion | Tier 2 | `routes/admin.ts` → `inquiryService.ts` `[P3]` | `PATCH /api/admin/inquiries/:inquiryId` (`routes/admin.ts`) — writes `converted_tenant_id` | `inquiries`, `profiles` | **MAPPED** (verified 2026-09-15) |
 
 **FR-003 — what is incomplete.** Property information, room information, photos and availability are all served from real tables. **Amenities are not.** The string `amenit` does not occur anywhere in `backend/src` or in `database/FULL_DATABASE_SCHEMA.sql`; the amenity lists rendered on the public site are a hardcoded client constant, `BH_AMENITIES` at `frontend/src/lib/canonicalUnits.ts:37`. One clause of a five-clause requirement has no persistence and no route.
 
@@ -112,17 +114,17 @@ The reason for the extraction backlog is stated plainly: **131 of 164 database c
 | FR ID | Canonical Name | Tier | Named Component | Backing Route (file:line) | Backing Table(s) | Status |
 |---|---|---|---|---|---|---|
 | FR-011 | Billing | Tier 2 / Tier 4 | `routes/admin.ts`, `routes/tenant.ts` → `billingService.ts` `[P3]` | `GET /api/admin/bills` (`admin.ts:791`); `GET /api/tenant/my-bills` (`tenant.ts:70`); bills created only as a side effect at `tenant.ts:445` | `bills` | **PARTIAL** |
-| FR-012 | Due Dates | — | none | none (no route sets a due date) | `bills.due_date` (column only) | **MISSING** |
-| FR-013 | Overdue Monitoring | Tier 3 | `billingService.isOverdue()` | `GET /api/tenant/my-bills`, `GET /api/admin/bills` — both return `effective_status` | `bills.status`, `bills.due_date`, `bills.grace_period_end_date` | **IMPLEMENTED (2026-09-14)** |
+| FR-012 | Due Dates | Tier 3 | `billingService.computeBillPeriod()` `[I]` | `POST /api/tenant/payments/checkout` (`routes/tenant.ts`) — writes `due_date: period.dueDate` and `grace_period_end_date`, both derived from the tenancy anniversary (BR-033) | `bills.due_date`, `bills.grace_period_end_date`, `room_assignments.anniversary_date`, `system_settings` | **MAPPED** (verified 2026-09-15) |
+| FR-013 | Overdue Monitoring | Tier 3 | `billingService.isOverdue()` | `GET /api/tenant/my-bills`, `GET /api/admin/bills` — both return `effective_status` | `bills.status`, `bills.due_date`, `bills.grace_period_end_date` | **MAPPED** (closed 2026-09-14) |
 | FR-014 | Manual Payments | Tier 2 / Tier 4 | `routes/admin.ts` → `paymentService.ts` `[P3]` | `POST /api/admin/income-records` (`admin.ts:1065`) | `monthly_income_records`, `payments`, `bills`, `rooms`, `room_assignments`, `audit_logs` | **MAPPED** |
-| FR-015 | Online Payments | Tier 5 / Tier 2 | `adyenService.ts` `[I]` | `POST /api/tenant/payments/checkout` (`tenant.ts:379`); `POST /api/tenant/payments/adyen/verify-session` (`tenant.ts:514`); `POST /api/public/payments/adyen/webhook` (signature-verified; the only writer of an online payment) | `bills`, `payments`, `room_assignments`, `rooms`, `profiles`, `notifications` | **IMPLEMENTED** |
+| FR-015 | Online Payments | Tier 5 / Tier 2 | `adyenService.ts` `[I]` | `POST /api/tenant/payments/checkout` (`tenant.ts:379`); `POST /api/tenant/payments/adyen/verify-session` (`tenant.ts:514`); `POST /api/public/payments/adyen/webhook` (signature-verified; the only writer of an online payment) | `bills`, `payments`, `room_assignments`, `rooms`, `profiles`, `notifications` | **MAPPED** (verified 2026-09-15) |
 | FR-016 | Payment Verification | Tier 2 / Tier 4 | `routes/admin.ts` → `paymentService.ts` `[P3]` | `PATCH /api/admin/payments/:paymentId/verify` (`admin.ts:836`); `GET /api/admin/payments` (`admin.ts:807`); `GET /api/tenant/my-payments` (`tenant.ts:94`) | `payments`, `bills`, `monthly_income_records`, `profiles`, `room_assignments`, `notifications`, `audit_logs` | **MAPPED** |
 | FR-017 | Financial Corrections | Tier 2 / Tier 3 | `auditService.ts` `[I]` + `routes/admin.ts` | `PATCH /api/admin/income-records/:id` (`admin.ts:1211`); `DELETE /api/admin/income-records/:id` (`admin.ts:1290`); `PATCH /api/admin/expense-entries/:id` (`admin.ts:1434`); `DELETE /api/admin/expense-entries/:id` (`admin.ts:1496`) | `monthly_income_records`, `monthly_expense_entries`, `audit_logs` | **MAPPED** |
 | FR-031 | Monthly Income Report Layout | Tier 1 / Tier 4 | `IncomeCollectionsView.vue` + `routes/admin.ts` → `financialReportService.ts` `[P3]` | `GET /api/admin/income-records` (`admin.ts:1013`) returns flat rows joined to `rooms(cluster_code)` | `monthly_income_records`, `rooms` | **PARTIAL** |
 | FR-032 | Guided Monthly Payment Entry | Tier 2 / Tier 4 | `routes/admin.ts` → `billingService.ts` `[P3]` | `POST /api/admin/income-records` (`admin.ts:1065`) | `monthly_income_records`, `rooms`, `room_assignments` | **PARTIAL** |
 | FR-033 | Occupant Count Memory | — | none | none (no previous-month lookup) | `monthly_income_records.occupants` (read by no prefill path) | **MISSING** |
 | FR-034 | Water Payment Validation | Tier 1 / Tier 2 | `IncomeCollectionsView.vue` + `routes/admin.ts` → `settingsService.ts` `[P3]` | `POST /api/admin/income-records` (`admin.ts:1065`), which recomputes water at `admin.ts:1103` | `monthly_income_records.water_payment` | **PARTIAL** |
-| FR-036 | Linda Fixed Billing Flow | — | none | none (no Linda branch in any handler) | `rooms.is_linda_unit`, `monthly_income_records.is_linda_billing` / `linda_water_charge` / `linda_electricity_charge` (columns only) | **MISSING** |
+| FR-036 | Linda Fixed Billing Flow | Tier 3 | `billingService.computeWaterFee()` over `settingsService.getLindaFixedWaterCharge()` `[I]` | `POST /api/admin/income-records` (`routes/admin.ts`); `GET /api/public/rates` (`routes/public.ts`) — returns a `linda-fixed` water basis for LF and LB | `rooms.is_linda_unit`, `monthly_income_records.is_linda_billing` / `linda_water_charge` / `linda_electricity_charge`, `system_settings` | **MAPPED** (verified 2026-09-15) |
 
 **FR-011 — what is incomplete.** Both read paths exist and the `bills` table is fully modelled. There is **no bill-authoring endpoint**: no `POST /api/admin/bills`, no `PATCH`, no `DELETE`, and the declared `BILL_MANAGE` permission (`rbac.ts:63`) guards no route. A bill comes into existence only as an incidental side effect of a tenant pressing checkout with no unpaid bill on file (`tenant.ts:445`). The administrator cannot originate the monthly rent-and-water bill that the requirement presumes.
 
@@ -142,7 +144,7 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 
 > **~~Disclosed defect against FR-014 and FR-032.~~ WITHDRAWN 2026-09-13.** This entry claimed both columns retain a `DEFAULT 0.00` because neither appears in either INSERT. They have no default: both are `GENERATED ALWAYS AS … STORED`, so PostgreSQL computes them on every write and **rejects** an INSERT or UPDATE that names them. Their absence from the payload is required, not an omission. All 937 live rows hold correct values. See `PHASE2_ERD_AND_DATA_DICTIONARY.md` section 6, which verifies this against all 937 live rows. FR-032 is **IMPLEMENTED**.
 
-**FR-015 — what is incomplete, and what is not.** The group obtained and configured an **Adyen developer sandbox account** and implemented the GCash checkout flow against it through a decoupled adapter. `adyenService.isLiveConfigured()` (`adyenService.ts:42`) auto-selects sandbox or live credentials, and the sandbox path POSTs to `https://checkout-test.adyen.com/v71/sessions` (`adyenService.ts:61`) — **correct behaviour for a sandbox account, not a defect.** Commercial live processing additionally requires SEC/DTI business underwriting, which is outside the scope of an academic capstone. Two honest caveats hold the row at PARTIAL: (a) `@adyen/api-library` is declared in `backend/package.json` but never imported — the adapter calls the Checkout API over HTTP directly; (b) both gateway-return endpoints, `GET /api/public/payments/mock-gateway` (`public.ts:201`) and `POST /api/public/payments/mock-gateway/complete` (`public.ts:852`), are **unauthenticated**, a Phase 3 hardening item. The administrator's sovereign verification gate is intact: per BR-017, gateway completion inserts the payment as `'Pending Verification'` (`adyenService.ts:212`) and never auto-settles a bill.
+**FR-015 — what is incomplete, and what is not.** The group obtained and configured an **Adyen developer sandbox account** and implemented the GCash checkout flow against it through a decoupled adapter. `adyenService.isLiveConfigured()` (`adyenService.ts:42`) auto-selects sandbox or live credentials, and the sandbox path POSTs to `https://checkout-test.adyen.com/v71/sessions` (`adyenService.ts:61`) — **correct behaviour for a sandbox account, not a defect.** Commercial live processing additionally requires SEC/DTI business underwriting, which is outside the scope of an academic capstone. **This note held the row at PARTIAL on two caveats. Re-read 2026-09-15, one stands and one had dissolved, and the row is now MAPPED.** (a) **Stands:** `@adyen/api-library` is declared in `backend/package.json` and imported by nothing — the adapter calls the Checkout API over HTTP directly. That is an unused dependency to remove, not a gap in the requirement. (b) **Gone, and the route names in it never existed:** this caveat called the two gateway-return endpoints `/api/public/payments/mock-gateway` and `.../complete`. **There are zero occurrences of `mock-gateway` in `backend/src`.** The routes are `GET /api/public/payments/local-cashier` and `POST /api/public/payments/local-cashier/complete`, both behind `refuseWhenGatewayConfigured`, which returns **404 whenever Adyen is configured** — asserted by `npm run check:api`. The completion token is single-use and can only write `'Pending Verification'`, so even a forged call creates a row for a human to reject. *A citation that names a route by a name the system does not use sends a panelist looking for something that was never there, and they cannot tell that from a feature that is missing.* The administrator's sovereign verification gate is intact: per BR-017, gateway completion inserts the payment as `'Pending Verification'` (`adyenService.ts:212`) and never auto-settles a bill.
 
 **FR-016 — how it works.** Verification is the single audited step that moves money in the model. On `Verified`, the handler marks the bill `Paid` (`admin.ts:884`), synthesises the corresponding `monthly_income_records` row if one does not already exist for the transaction reference (`admin.ts:942`), and notifies the tenant (`admin.ts:966`). On `Rejected`, it reverts the bill to `Due` (`admin.ts:978`) and notifies the tenant (`admin.ts:984`). This is BR-016/BR-017 in code.
 
@@ -166,9 +168,9 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 | FR-037 | Monthly Expenses Ledger | Tier 2 / Tier 4 | `routes/admin.ts` → `expenseService.ts` `[P3]` | `POST /api/admin/expense-entries` (`admin.ts:1378`); `GET /api/admin/expense-entries` (`admin.ts:1325`) | `monthly_expense_entries`, `expense_property_allocations`, `fixed_expense_categories` | **MAPPED** |
 | FR-038 | Split Expense Entry | Tier 2 / Tier 4 | `routes/admin.ts` → `expenseService.ts` `[P3]` | `POST /api/admin/expense-entries` (`admin.ts:1378`), fan-out insert at `admin.ts:1414`; re-allocation at `admin.ts:1471`–`admin.ts:1477` | `expense_property_allocations` | **MAPPED** |
 | FR-039 | Automatic Expense Totals | Tier 2 / Tier 4 | `routes/admin.ts` → `financialReportService.ts` `[P3]` | `POST /api/admin/expense-entries` (`admin.ts:1378`), row total at `admin.ts:1389` | `monthly_expense_entries.total_expenses` | **PARTIAL** |
-| FR-040 | Expense Category Cumulative Totals | — | none | none | none (no column, no rollforward) | **MISSING** |
+| FR-040 | Expense Category Cumulative Totals | Tier 3 | `expenseReportExport.ts` `[I]` | `GET /api/admin/reports/expenses.xlsx` (`routes/admin.ts`) | `monthly_expense_entries`, `fixed_expense_categories`, `property_areas` | **PARTIAL** (export only; **OD-07** open, so **BR-046** is not enforced) |
 | FR-041 | Fixed Expense Category Dropdown | Tier 2 / Tier 4 | `routes/admin.ts` → `expenseService.ts` `[P3]` | `GET /api/admin/expense-categories` (`admin.ts:1531`) | `fixed_expense_categories` | **MAPPED** |
-| FR-042 | Expense/Category Reconciliation Check | — | none | none | none | **MISSING** |
+| FR-042 | Expense/Category Reconciliation Check | Tier 3 | `expenseReportExport.ts` `[I]` | `GET /api/admin/reports/expenses.xlsx` (`routes/admin.ts`) — prints `Reconciles (BR-047)` or `DOES NOT RECONCILE (BR-047)` with both sides' figures | `monthly_expense_entries`, `fixed_expense_categories`, `property_areas` | **MAPPED** (verified 2026-09-15) |
 
 **FR-018 — what is incomplete.** Categorisation is sound: `monthly_expense_entries.category_code` is a genuine foreign key to `fixed_expense_categories(code)` (`FULL_DATABASE_SCHEMA.sql:332`), so an entry cannot carry an invented category. The allocation target is not: `expense_property_allocations.property_area` is an unconstrained `VARCHAR(100)` (`FULL_DATABASE_SCHEMA.sql:353`) with no foreign key to `rooms` or `clusters` and no `CHECK` enumeration, and the handler accepts it as free text via `expenseAllocationSchema` (`admin.ts:1362`). A single typo silently creates a phantom property area, which is precisely what would break the FR-042 reconciliation the ledger depends on.
 
@@ -208,7 +210,7 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 |---|---|---|---|---|---|---|
 | FR-019 | Cash Flow | — | none (`financialReportService.ts` `[P3]`) | none | none (derived client-side from `monthly_income_records` + `monthly_expense_entries`) | **MISSING** |
 | FR-020 | Profitability Analytics | — | none (`financialReportService.ts` `[P3]`) | none; `ANALYTICS_VIEW` (`rbac.ts:75`) guards no route | none | **MISSING** |
-| FR-028 | Reports | — | none (`financialReportService.ts` `[P3]`) | none; `REPORT_EXPORT` (`rbac.ts:76`) guards no route | none | **MISSING** |
+| FR-028 | Reports | Tier 3 | `incomeReportExport.ts` + `expenseReportExport.ts` `[I]` | `GET /api/admin/reports/income.xlsx`, `GET /api/admin/reports/expenses.xlsx` (`routes/admin.ts`) | `monthly_income_records`, `room_assignments`, `monthly_expense_entries`, `fixed_expense_categories`, `property_areas` | **PARTIAL** (server-generated export is live; no aggregate retrieval, and `REPORT_EXPORT` still guards no route) |
 | FR-044 | Excel Export of Income/Expense Reports | Tier 1 | `IncomeCollectionsView.vue`, `ExpensesLedgerView.vue` | none — client-side `Blob` download at `IncomeCollectionsView.vue:430` and `ExpensesLedgerView.vue:452` | none | **FRONTEND-ONLY** |
 
 **FR-019 / FR-020 — why MISSING.** The backend exposes both raw ledgers — `GET /api/admin/income-records` (`admin.ts:1013`) and `GET /api/admin/expense-entries` (`admin.ts:1325`) — and nothing else. There is no endpoint that returns income, expenses or net cash flow as an aggregate, no SQL aggregation, and no materialised view. Every figure, trend and graph on the administrator dashboard is arithmetic performed in the browser over rows the client downloaded in full. For a 33-unit property this is operationally adequate and architecturally wrong: the system of record does not know its own net position.
@@ -241,13 +243,53 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 
 ## 3. Summary Counts
 
+**Verified 2026-09-15.** Every status below was re-derived by reading live code, and the
+table sums to 44. It did not before: the reading it replaces enumerated 43 requirements while
+its total row claimed 44, because FR-013 was removed from the MISSING list on 2026-09-14 and
+never added to any other. §3.0 sets out every move and the evidence for it.
+
 | Status | Count | Share of 44 | FR IDs |
 |---|---:|---:|---|
-| **MAPPED** | **20** | 45.5% | FR-001, FR-002, FR-004, FR-005, FR-007, FR-009, FR-010, FR-014, FR-016, FR-017, FR-021, FR-023, FR-024, FR-025, FR-027, FR-029, FR-037, FR-038, FR-041, FR-043 |
-| **PARTIAL** | **13** | 29.5% | FR-003, FR-008, FR-011, FR-015, FR-018, FR-022, FR-026, FR-030, FR-031, FR-032, FR-034, FR-035, FR-039 |
-| **MISSING** | **9** | 20.5% | FR-006, FR-012, FR-019, FR-020, FR-028, FR-033, FR-036, FR-040, FR-042 |
+| **MAPPED** | **26** | 59.1% | FR-001, FR-002, FR-004, FR-005, FR-006, FR-007, FR-009, FR-010, FR-012, FR-013, FR-014, FR-015, FR-016, FR-017, FR-021, FR-023, FR-024, FR-025, FR-027, FR-029, FR-036, FR-037, FR-038, FR-041, FR-042, FR-043 |
+| **PARTIAL** | **14** | 31.8% | FR-003, FR-008, FR-011, FR-018, FR-022, FR-026, FR-028, FR-030, FR-031, FR-032, FR-034, FR-035, FR-039, FR-040 |
+| **MISSING** | **3** | 6.8% | FR-019, FR-020, FR-033 |
+| **FRONTEND-ONLY** | **1** | 2.3% | FR-044 |
+| **Total** | **44** | 100% | — |
 
-*Recounted 2026-09-14: FR-013 moved to IMPLEMENTED, so this row read **10 / 22.7%** until that date.*
+### 3.0 What this table read before, and what moved
+
+*The rows are not silently rewritten. A register that edits its own history is not more
+trustworthy for it, so the previous reading is kept here beside the evidence that changed it.*
+
+| | MAPPED | PARTIAL | MISSING | FRONTEND-ONLY | Enumerated |
+|---|---:|---:|---:|---:|---:|
+| As written, through 2026-09-14 | 20 | 13 | 9 | 1 | **43** of 44 |
+| Verified 2026-09-15 | **26** | **14** | **3** | **1** | **44** of 44 |
+
+| Requirement | Was | Now | Evidence, read 2026-09-15 |
+| :--- | :--- | :--- | :--- |
+| **FR-013** Overdue Monitoring | listed nowhere | **MAPPED** | Closed 2026-09-14 and dropped out of the table instead of moving into it. `isOverdue()` is called by both bill endpoints and surfaced as `effective_status`. |
+| **FR-015** Online Payments | PARTIAL in this table, **IMPLEMENTED** in its own row | **MAPPED** | The table disagreed with its own row; the row is right. `adyenService.ts`, three routes, signature-verified webhook. |
+| **FR-006** Inquiry Conversion | MISSING | **MAPPED** | `patch.converted_tenant_id = parsed.data.convertedTenantId` in the inquiry PATCH handler — the column the row itself calls the link. |
+| **FR-012** Due Dates | MISSING | **MAPPED** | `due_date: period.dueDate` from `computeBillPeriod(assignment.anniversary_date)` — derived from the tenancy anniversary (BR-033), not a constant. |
+| **FR-036** Linda Fixed Billing | MISSING | **MAPPED** | `computeWaterFee()` calls `getLindaFixedWaterCharge()` first and returns a `linda-fixed` basis when it matches — the case BR-040 excludes from the per-occupant model. |
+| **FR-040** Expense Category Cumulative | MISSING | **PARTIAL** | `expenseReportExport.ts` keeps a running cumulative per category across the months of the year. **Not MAPPED, and §5 is why:** the cumulative exists in the Excel export only — not on screen, not persisted — and **OD-07** (does it reset at the calendar year?) is undecided, which is what leaves **BR-046** the one business rule still Not enforced. An earlier pass in this section read it *Implemented*; §5 engaged the reasoning and §5 is right. |
+| **FR-042** Expense/Category Reconciliation | MISSING | **MAPPED** | The workbook prints `Reconciles (BR-047)` or `DOES NOT RECONCILE (BR-047)` with both sides' figures. |
+| **FR-028** Reports | MISSING | **PARTIAL** | The export half is live and asserted — `GET /api/admin/reports/income.xlsx` and its expenses twin, opened by `npm run check:api` to confirm a real workbook. Server-side report *retrieval* remains absent. |
+| **FR-033** Occupant Count Memory | MISSING | **MISSING** | Retested twice. `carriedOccupants = assign?.occupant_count` carries forward from the **tenancy**, not from the previous month's `monthly_income_records` row. Assignment-scoped, where FR-033 asks for month-scoped. It stands. |
+| **FR-019** Cash Flow, **FR-020** Profitability | MISSING | **MISSING** | No route aggregates income, expenses or net position. `ANALYTICS_VIEW` still guards nothing. |
+
+**The direction of the error is the point.** Every one of these moves is in the same direction:
+the table was *more alarming than the code*. A defect register that goes out of date does not
+drift randomly — it ages by overstating, because someone fixes the defect and nobody goes back
+to the register. The reader then spends their attention on work already done.
+
+#### The evidence blocks behind those moves
+
+*These are the working notes from the retests, kept in full and in the order they were made,
+including one correction to a correction. They sit below the table rather than inside it —
+until 2026-09-15 they were interleaved between the table's rows, which split it in two and
+left its last two rows orphaned from their header.*
 
 > [!WARNING]
 > **Measured 2026-09-15: 6 of this table's 83 route citations point at the route they name.**
@@ -383,31 +425,35 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 > **overstating** what is wrong. The danger is not that a defect register goes out of date -
 > everyone expects that - it is that it goes out of date in the alarming direction, so the
 > reader spends their attention on work already done.*
-| **FRONTEND-ONLY** | **1** | 2.3% | FR-044 |
-| **Total** | **44** | 100% | — |
-
 ### 3.1 Distribution by tier of primary ownership
 
 | Tier | MAPPED | PARTIAL | MISSING | FRONTEND-ONLY |
 |---|---:|---:|---:|---:|
 | Tier 1 Presentation | 0 | 3 | 0 | 1 |
-| Tier 2 API & Security Perimeter | 8 | 6 | 0 | 0 |
-| Tier 3 Domain Service Layer | 5 | 0 | 0 | 0 |
+| Tier 2 API & Security Perimeter | 9 | 6 | 0 | 0 |
+| Tier 3 Domain Service Layer | 9 | 2 | 0 | 0 |
 | Tier 4 Data Persistence | 7 | 3 | 0 | 0 |
-| Tier 5 External Integration Boundary | 0 | 1 | 0 | 0 |
-| *No tier — requirement unimplemented* | 0 | 0 | 10 | 0 |
+| Tier 5 External Integration Boundary | 1 | 0 | 0 | 0 |
+| *No tier — requirement unimplemented* | 0 | 0 | 3 | 0 |
+| **Total** | **26** | **14** | **3** | **1** |
 
-**Single-owner allocation rule.** The table above counts each of the 44 requirements **exactly once**, under the tier that owns its *primary* logic today; a row whose Tier column names two tiers is allocated to one of them, never to both, which is why the tier lines sum to 20 / 13 / 10 / 1 and not to a larger number. The rule has to be stated because Tier 3 is where a panelist counting rows would otherwise disagree with the table: **six** MAPPED rows name a Tier-3 service in their Named Component column — FR-001 and FR-010 (`authService.ts`), FR-017 and FR-029 (`auditService.ts`), FR-021 (`scopeService.ts`) and FR-027 (`notificationService.ts`) — while the Tier 3 line reports **five**. The row allocated elsewhere is **FR-029 Audit Logs**, counted under Tier 4: what that requirement delivers is the durable `audit_logs` record, and `auditService.ts:85` is the cross-cutting writer serving every process rather than the owner of this one row. FR-021, by the same rule, is counted under Tier 3, because `scopeService.ts:28` performs the ownership check the requirement itself specifies.
+**Single-owner allocation rule.** The table above counts each of the 44 requirements **exactly once**, under the tier that owns its *primary* logic today; a row whose Tier column names two tiers is allocated to one of them, never to both, which is why the tier lines sum to 26 / 14 / 3 / 1 and not to a larger number. The rule has to be stated because Tier 3 is where a panelist counting rows would otherwise disagree with the table. **FR-029 Audit Logs** is the standing exception: its Named Component is `auditService.ts`, but it is counted under Tier 4, because what that requirement delivers is the durable `audit_logs` record and `auditService` is the cross-cutting writer serving every process rather than the owner of this one row. FR-021, by the same rule, is counted under Tier 3, because `scopeService` performs the ownership check the requirement itself specifies.
 
-Tier 3 therefore owns five MAPPED rows and no PARTIAL rows, which is the expected signature of a service layer that is small but correct. The concentration of MAPPED rows in Tier 2 rather than Tier 3 is the direct numerical expression of the 83% route-handler figure: the domain logic exists and works, but it lives one tier lower than the architecture says it should. Phase 3 extraction moves rows from the Tier 2 line to the Tier 3 line without changing a single status.
+**Tier 3 has nearly doubled, and that is the number here worth reading twice.** It owned **five** MAPPED rows when this matrix was written — FR-001, FR-010 (`authService`), FR-017 (`auditService`), FR-021 (`scopeService`), FR-027 (`notificationService`). It owns **nine** today: FR-012 and FR-013 (`billingService.computeBillPeriod()` and `.isOverdue()`), FR-036 (`billingService.computeWaterFee()` over `settingsService`) and FR-042 (`expenseReportExport`) have joined it, with FR-028 and FR-040 as its two PARTIAL rows. **None of those four moved because a requirement changed.** They moved because `billingService.ts`, `settingsService.ts`, `expenseReportExport.ts` and `incomeReportExport.ts` were extracted from the route handlers and now exist. The extraction backlog is not a plan any more — it has started, and the tier table is where that shows up first.
+
+The concentration of MAPPED rows in Tier 2 remains the numerical expression of the route-handler figure: **144 of 184 database calls (78%)** still sit inside route handlers, measured 2026-09-15. Phase 3 extraction moves further rows from the Tier 2 line to the Tier 3 line without changing a single status.
 
 ### 3.2 Reconciliation against the verified Phase 1 totals
 
-The per-row assignments above sum to **20 / 13 / 10 / 1**, matching the verified Phase 1 totals exactly. No row was reclassified to force the total; each status was derived from the code first and the totals were checked afterwards. The three judgement calls a panelist is most likely to probe are stated openly:
+The per-row assignments above sum to **26 / 14 / 3 / 1**, and to 44. No row was reclassified to force the total; each status was derived from the code first and the totals were checked afterwards. **The totals are checked, not asserted** — the reading this replaces asserted a total of 44 while enumerating 43, which is the arithmetic a panelist can do in their head from the FR ID column.
 
-1. **FR-012 and FR-013 are MISSING, not PARTIAL,** even though `bills.due_date` and `bills.grace_period_end_date` exist as columns. A column that exactly one line writes with a constant, which no administrative route can set and which no logic consumes, is schema, not implementation. Classifying them PARTIAL would credit the system with behaviour it does not perform.
-2. **FR-036 is MISSING, not PARTIAL,** despite four dedicated columns and three seeded settings keys. Zero backend lines read or write any of them, and `admin.ts:1103` actively applies the wrong rule to LF and LB. Infrastructure without a code path is not partial delivery.
+The three judgement calls a panelist is most likely to probe are stated openly. Note that all three are calls that hold a row **down**, not up:
+
+1. **FR-033 is MISSING, not PARTIAL,** even though the administrator does see an occupant count pre-filled. The carry-forward is `assign?.occupant_count` — from the **tenancy**, which is assignment-scoped. FR-033 asks for the figure from *the same tenant's previous month entry*, which is month-scoped, and nothing reads `monthly_income_records.occupants` of a prior month. This row was marked implemented once during the 2026-09-15 retests and put back; the distinction is the requirement, not a technicality.
+2. **FR-040 is PARTIAL, not MAPPED,** even though a running cumulative demonstrably appears in the expenses workbook. It exists in the export only — not on screen and not persisted — and **OD-07**, whether it resets at the calendar year, is still open. That decision is what chooses between a stored column and a computed window, and until it is made **BR-046** cannot be enforced.
 3. **FR-044 is FRONTEND-ONLY, not MAPPED,** even though the feature demonstrably works in the browser. The status describes where the behaviour lives, not whether it satisfies the user.
+
+*FR-012, FR-013 and FR-036 were the three calls stated here until 2026-09-15, each held down to MISSING on the same principle — schema without a code path is not delivery. All three now have the code path, and §3.0 carries the evidence. The principle did not change; the code did.*
 
 ---
 
@@ -426,7 +472,7 @@ Four defects explain most of the PARTIAL and MISSING rows. All are Phase 2 and P
 
 ---
 
-## 5. Gap Register — The 10 MISSING Requirements
+## 5. Gap Register — The 10 Requirements Recorded MISSING in Phase 1
 
 > **Status as at 2026-09-15, verified against live code. Six of these ten are no longer
 > missing, and only FR-013 below is struck through to say so.** This heading and the ten
@@ -436,7 +482,7 @@ Four defects explain most of the PARTIAL and MISSING rows. All are Phase 2 and P
 > | :--- | :--- | :--- |
 > | **FR-012** Due Dates | bills carry an arbitrary 5-day offset (`tenant.ts:452`) | **Done.** Zero 5-day offsets remain in `backend/src`; both bill-creating paths derive the date through `billingService.computeBillPeriod()` (7 call sites). BR-010 Enforced. |
 > | **FR-013** Overdue Monitoring | already struck **DONE 2026-09-14** | **Done.** Unchanged. |
-> | **FR-033** Occupant Count Memory | the count is retyped every month | **Done.** Carried forward at onboarding and reassignment; BR-034 cited in code. |
+> | **FR-033** Occupant Count Memory | the count is retyped every month | **Still missing — this cell read *Done* until 2026-09-15 and was wrong.** What exists is `carriedOccupants = assign?.occupant_count`, a carry-forward from the **tenancy** (BR-034), which is assignment-scoped. FR-033 asks for the same tenant's **previous month entry**, and nothing reads a prior `monthly_income_records.occupants`. The register's own FR-033 row had already considered this evidence and rejected it; the retest that marked it Done had not read that reasoning. |
 > | **FR-036** Linda Fixed Billing | LF and LB billed occupants × 200 | **Done.** Both take their fixed charges from `system_settings` through `billingService`; live values LF 400, LB 200. BR-040. |
 > | **FR-042** Reconciliation Check | nothing proves the expense ledger balances | **Done.** Trigger `trg_update_expense_total` makes the two sides one figure; migration `019` closed the creation hole. Live: 0 of 1,262 entries disagree with their allocations, grand total ₱5,823,586.47. BR-047 Enforced. The row's supporting claim that `property_area` is free text is also stale — it is the enum `property_area_type`. |
 > | **FR-006** Inquiry Conversion | prospect details are retyped at onboarding | **Done.** The carry-over existed; what was missing was the write-back, and `inquiries.converted_tenant_id` is now written. BR-009 Enforced. |
@@ -445,7 +491,14 @@ Four defects explain most of the PARTIAL and MISSING rows. All are Phase 2 and P
 > | **FR-019** Cash Flow | no server-side net position | **Still missing.** No `financialReportService`; every figure is still browser arithmetic. |
 > | **FR-020** Profitability Analytics | trend views not reproducible server-side | **Still missing.** Same cause as FR-019. |
 >
-> So the honest count today is **two missing, two partial, six done** — not ten missing.
+> So the honest count today is **three missing, two partial, five done** — not ten missing.
+>
+> *That line read **two missing … six done** until 2026-09-15, counting FR-033 as done. Both
+> this box and §3.0 made the same mistake about the same row on the same day, in two places
+> 150 lines apart, and only one of them was corrected at the time. **Two registers disagreeing
+> about one fact is worse than either being wrong alone** — a reader who finds the
+> disagreement cannot tell which side to trust, and a reader who finds only one side never
+> learns there was a question. They are now corrected together.*
 > Recorded here rather than by rewriting the rows, because the rows are the Phase 1
 > artifact and their consequence statements are what the sequencing argument below rests on.
 
@@ -532,7 +585,7 @@ The baseline against which every row should be read is the legacy manual process
 
 Measured against that baseline, the 20 MAPPED rows are the substantive replacement: the paper logbook becomes `monthly_income_records` and `monthly_expense_entries` with void-not-delete correction and a complete `audit_logs` trail (FR-014, FR-017, FR-029, FR-037); the verbal maintenance request becomes a scoped, prioritised, photo-bearing ticket with a closure record and an accountable owner (FR-021 – FR-025); the USB spreadsheet becomes a role-guarded database that only the administrator may author (FR-043).
 
-The 13 PARTIAL and 10 MISSING rows are equally part of the honest account. The system does not yet tell Mrs. Fe who is overdue (FR-013), does not yet bill LF and LB by the rule she actually applies (FR-036), and does not yet compute its own net position (FR-019). Those are the three that most directly touch her daily routine, and they are the first three in the Phase 3 sequence for that reason.
+The 14 PARTIAL and 3 MISSING rows are equally part of the honest account. **Two of the three this paragraph named are now delivered**, and it is corrected rather than quietly dropped: the system *does* tell Mrs. Fe who is overdue (FR-013, closed 2026-09-14, `effective_status` on both bill endpoints), and it *does* bill LF and LB by the rule she actually applies (FR-036, `computeWaterFee()` over the seeded `linda_*` settings). What remains true is the third and largest: **the system still does not compute its own net position** (FR-019), nor its profitability trend (FR-020), and it does not remember an occupant count from one month to the next (FR-033). Those three are the Phase 3 sequence, and FR-019 is the one that most directly touches her daily routine.
 
 ---
 
