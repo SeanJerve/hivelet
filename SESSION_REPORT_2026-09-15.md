@@ -25,7 +25,42 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `c5a0390`: "Chat Live" threw away a part-filled inquiry and opened
+> **LATEST - commit `ffdeee3`: the checkout endpoint called its own live gateway a mock.**
+>
+> Two descriptions of the payment flow that do not match the code beneath them. Found while
+> checking the camelCase fields the Adyen modal reads - those turned out **correct**, and the
+> modal is the most defensive code I have read today: it validates the response shape before
+> using it and narrows a union rather than casting.
+>
+> **1. The checkout endpoint.** `POST /api/tenant/payments/checkout` was documented as
+> *"Initiates a mock Adyen checkout session for an unpaid bill."* **It does not.** A probe
+> against this environment's own configuration returns `isLiveConfigured: true` - real API key,
+> real merchant account, neither a placeholder - so the session is created against
+> `https://checkout-test.adyen.com/v71/sessions`. The live database agrees: **8 of your 15
+> payments** carry `payment_method` **Adyen Online** with `payment_source` **GCash Sandbox**.
+>
+> The local cashier page is the fallback for an environment with **no credentials at all**,
+> and both of its routes return **404** the moment a gateway is configured.
+>
+> **2. The pipeline sequence diagram** described a flow that no longer exists, in three ways:
+>
+> | the diagram said | the code does |
+> |---|---|
+> | POST `/api/public/payments/mock-gateway/complete` | **zero occurrences** in the codebase; the local pages are `/public/payments/local-cashier` |
+> | gateway returns `{ sessionId, redirectUrl, isLive }` | `{ sessionId, sessionData, clientKey, environment, isLive }` — **there is no redirect** |
+> | the local fallback drawn as the main path | with a gateway configured the browser confirms via `/api/tenant/payments/adyen/verify-session`, and the payment row is written by the **HMAC-verified webhook** |
+>
+> It now traces the flow the code actually runs, webhook included. `CLAUDE_PIPELINE.md` is a
+> **live instruction document**, not a dated snapshot - a diagram naming a deleted route
+> teaches the next session a system that is not there.
+>
+> **Left alone, because they are accurate:** `createMockCheckoutSession` and the "local
+> cashier" page genuinely are a local stand-in for an unconfigured environment, and calling
+> *that* a mock is correct. The rule is that the **gateway** is not a mock - and it isn't.
+>
+> `check:adyen` 23/23 · `check:api` 53/53 · backend typechecks. Nothing written.
+
+> **PREVIOUS - commit `c5a0390`: "Chat Live" threw away a part-filled inquiry and opened
 > nothing.**
 >
 > Three dead things, found by exercising the five modals nothing had opened yet.
@@ -1041,7 +1076,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**80 commits, all pushed to `main`. Working tree clean.**
+**82 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
