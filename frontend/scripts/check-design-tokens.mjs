@@ -46,8 +46,16 @@ const EXPECTED = {
   'text-muted-foreground-soft': ['color', '#a1a1aa'],
 };
 
-/** Ratchet. Lower this when the tail shrinks; never raise it. */
-const MAX_RAW_HEX = 97;
+/**
+ * Ratchet. Lower this when the tail shrinks; never raise it.
+ *
+ * 97 -> 94 on 2026-09-15. Three dead modals were deleted that day -
+ * LiveChatheadModal, TenantLoginModal and GuestEntryModal, none of them
+ * reachable - and their raw literals went with them. Leaving the budget at 97
+ * would have quietly licensed three new ones, which is the opposite of what a
+ * ratchet is for.
+ */
+const MAX_RAW_HEX = 94;
 
 const assetDir = path.join(root, 'dist', 'assets');
 if (!fs.existsSync(assetDir)) {

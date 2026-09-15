@@ -17,7 +17,7 @@ it for someone arriving cold. Every commit named here resolves in the repository
 | | Commit |
 | :--- | :--- |
 | **The entire enquiry conversation feature was dead.** Every reply failed with "Inquiry not found" - the handler selected columns `inquiries` does not have - and reading a thread returned a 500, because it ordered by a column `inquiry_messages` does not have. She could neither read a lead nor answer one. | `cabe216`, `09de591` |
-| **The Audit Trail showed "null" for every change it had recorded.** Three field names the `audit_logs` table does not have. 2,693 rows, 72 of them carrying a real before-image, none of it reaching the screen. | `b3c97e4` |
+| **The Audit Trail showed "null" for every change it had recorded.** Three field names the `audit_logs` table does not have. 2,693 rows at the time, 72 of them carrying a real before-image, none of it reaching the screen. | `b3c97e4` |
 | **Editing a ledger entry rewrote how the money was received** and dropped its reference number. Open a receipt to fix a typo in the rent, and the payment method silently became Cash. | `21568a5` |
 | **A bank transfer taken at the door was filed as GCash** - beside a field that asked for a bank reference. | `4170dfd` |
 | **Four active residents could not be edited at all**, and every occupied unit was labelled "Active Resident" instead of the tenant's name - a string one empty field away from entering the ledger as a payer. | `df4e817`, `b593166` |
@@ -92,8 +92,36 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST - commit `e1f0f47`: the camelCase check was prototyped, measured, and deliberately
-> not shipped.**
+> **LATEST: everything re-run end to end. All nine green, nothing new found - and one number
+> in this report had gone stale, mine.**
+>
+> | | | | |
+> |---|---|---|---|
+> | `check:api` | **53 passed** | `check:columns` | clean |
+> | `check:adyen` | **23 passed** | `check:fields` | clean |
+> | `check:billing` | passed | `check:tokens` | **94 / 94** |
+> | `check:writes` | passed | `check:rules` | passed |
+> | `check:secrets` | clean (all tracked files) | | |
+>
+> **The token budget was ratcheted 97 → 94.** Deleting three unreachable modals took their raw
+> hex literals with them, and the file's own comment says *"Lower this when the tail shrinks;
+> never raise it."* Leaving it at 97 would have quietly licensed three new literals - the
+> opposite of what a ratchet is for. Doing what the file asked, not inventing a rule.
+>
+> **The figures in the one-page summary were re-verified.** `admin.ts` is still 3,033 lines;
+> still 6 of 83 route citations resolve. But `audit_logs` now holds **2,773** rows, not the
+> 2,693 quoted - it grew by 80 **during this session**, because every administrative action
+> taken through the API today was itself audited. The summary now says *"2,693 at the time"*
+> rather than stating a number that has since moved.
+>
+> A small thing, and exactly the decay this audit has spent the day correcting in other
+> people's documents: **a figure that was true when written, quietly becoming false.** It would
+> have been a poor day's work to leave one in my own.
+>
+> **Nothing new was found.** That is the honest result of the cycle, not a gap in the looking.
+
+> **PREVIOUS - commit `e1f0f47`: the camelCase check was prototyped, measured, and
+> deliberately not shipped.**
 >
 > The obvious next move was a camelCase companion to `check:fields`. It was built far enough to
 > measure, and the measurement said don't.
@@ -1794,7 +1822,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**121 commits, all pushed to `main`. Working tree clean.**
+**123 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
