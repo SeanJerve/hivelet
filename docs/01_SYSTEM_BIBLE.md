@@ -1,5 +1,40 @@
 # HIVELET SYSTEM BIBLE
 
+> [!NOTE]
+> **Read against the running system on 2026-09-15, and it holds.**
+>
+> Every defect register in this repository that was retested that day had gone stale by
+> *overstating* problems - listing defects that were fixed months ago. This document is the
+> opposite case, and a reader should know which kind they are holding.
+>
+> Its normative statements were spot-checked against live code and live data. The ones tested
+> are implemented:
+>
+> | Statement | Where it lives in the code |
+> | :--- | :--- |
+> | §7 "A room marked reserved must not accept new inquiry submissions" | `public.ts:187` refuses with a conflict |
+> | §6 "A room must not lose its historical record" | `bills`, `payments` and `monthly_income_records` are `ON DELETE RESTRICT` (migration `005`), so PostgreSQL refuses to delete a room holding any of them - and all 33 do |
+> | §12 "A payment must be treated as pending until verified by the administrator" | the gateway inserts `'Pending Verification'`; only an explicit admin action settles a bill (BR-017) |
+> | §20 "Authentication and authorization must be enforced on the backend" | RLS forced on all 21 tables with zero policies; every route carries `requirePermission` |
+>
+> **Three statements were true in intent and false in fact that morning. The day's work closed
+> all three** - the document was ahead of the implementation, not behind it:
+>
+> | Statement | What was actually true at 09:00 | Closed by |
+> | :--- | :--- | :--- |
+> | §7 "hidden by administrator decision" | the column, the API and the public filter all existed; **no control anywhere could set it**, so no room could be hidden | `17095f3` |
+> | §9 step 6, "Administrator communicates with the prospect" | replies failed with "Inquiry not found" and reading a thread returned a 500 - **the whole conversation feature was dead** | `cabe216`, `09de591` |
+> | §9 step 10, "If not successful, it is closed with an appropriate outcome" | `inquiry_status_type` carries `Closed` and **nothing in the system ever wrote it**; a dead lead stayed in the inbox forever | `6f59ebe` |
+>
+> That is a better record than any register here, and it is worth saying why: this document
+> describes what the system is *for*, and intent ages slowly. A defect register describes what
+> was *wrong on a particular afternoon*, and that ages the moment someone fixes something.
+>
+> Not every line was tested. Statements phrased as "should" rather than "must" - §19 "A
+> returning tenant should not automatically create a duplicate person/account record", for
+> instance - were not systematically checked, and onboarding currently guards duplicates by
+> email and by credentialed phone number, not by name.
+
 ## 1. Product Identity
 
 **Name:** Hivelet
