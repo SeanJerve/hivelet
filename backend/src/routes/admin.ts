@@ -59,7 +59,11 @@ const roomInsertSchema = z.object({
   cluster_code: z.string().min(1),
   room_number: z.string().min(1),
   floor: z.number().int().min(1).optional(),
-  room_type: z.string().min(1).optional(),
+  // `room_type` is the enum `room_type_enum`, not free text. It was `z.string()` while
+  // `operational_status` and `visibility_status` in this same file were properly
+  // enumerated, so an invalid type reached PostgreSQL and came back as a 22P02 the
+  // caller could not act on. Validated here, it is a 422 naming the allowed values.
+  room_type: z.enum(['Studio', 'One-bedroom', 'Two-bedroom', 'Three-bedroom']).optional(),
   capacity: occupantCount.refine((n) => n >= 1, 'must be at least one').optional(),
   // `money`, not `z.number().min(0)`. Zod's `z.number()` rejects NaN but ACCEPTS
   // Infinity, and JSON carries it in plainly as `1e999`. PostgreSQL sorts Infinity
@@ -127,7 +131,11 @@ router.post(
 
 const roomUpdateSchema = z.object({
   description: z.string().max(2000).nullish(),
-  room_type: z.string().max(100).optional(),
+  // `room_type` is the enum `room_type_enum`, not free text. It was `z.string()` while
+  // `operational_status` and `visibility_status` in this same file were properly
+  // enumerated, so an invalid type reached PostgreSQL and came back as a 22P02 the
+  // caller could not act on. Validated here, it is a 422 naming the allowed values.
+  room_type: z.enum(['Studio', 'One-bedroom', 'Two-bedroom', 'Three-bedroom']).optional(),
   capacity: occupantCount.refine((n) => n >= 1 && n <= 20, 'must be between 1 and 20').optional(),
   // See the note on `roomInsertSchema.current_price` above.
   current_price: money.optional(),

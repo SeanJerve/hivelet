@@ -7,11 +7,21 @@ import { X, Check, Loader2, Upload, ChevronDown, Users, ShieldCheck, Home, Image
 
 const unit = ref<RoomItem | null>(null);
 
+/**
+ * These must be the values of the `room_type_enum` database type, exactly.
+ *
+ * They used to read 'Studio', '1 Bedroom', '2 Bedroom', '3 Bedroom'. Only the first is a
+ * real enum value — the type is `Studio | One-bedroom | Two-bedroom | Three-bedroom` — and
+ * `room_type` is sent on every save of this modal, including saves that only change the
+ * rent. So editing any of the 13 non-Studio units wrote an invalid enum value and the
+ * update was rejected by PostgreSQL (22P02). Twenty units are Studio and saved fine, which
+ * is why it was not obvious.
+ */
 const UNIT_TYPE_CHOICES = [
   'Studio',
-  '1 Bedroom',
-  '2 Bedroom',
-  '3 Bedroom',
+  'One-bedroom',
+  'Two-bedroom',
+  'Three-bedroom',
 ] as const;
 
 const OPERATIONAL_STATUS_OPTIONS = [
@@ -21,13 +31,19 @@ const OPERATIONAL_STATUS_OPTIONS = [
   'Under Maintenance',
 ] as const;
 
+/**
+ * Coerces whatever a room record carries into a valid `room_type_enum` value, so the
+ * select always has something to show and always saves something the column accepts.
+ * Tolerant of the older loose spellings ('1 Bedroom', '3BR', 'penthouse') that this modal
+ * itself used to produce.
+ */
 function normalizeUnitType(val?: string): string {
   if (!val) return 'Studio';
   const lower = val.toLowerCase();
   if (lower.includes('studio')) return 'Studio';
-  if (lower.includes('3') || lower.includes('penthouse')) return '3 Bedroom';
-  if (lower.includes('2')) return '2 Bedroom';
-  if (lower.includes('1')) return '1 Bedroom';
+  if (lower.includes('3') || lower.includes('three') || lower.includes('penthouse')) return 'Three-bedroom';
+  if (lower.includes('2') || lower.includes('two')) return 'Two-bedroom';
+  if (lower.includes('1') || lower.includes('one')) return 'One-bedroom';
   return 'Studio';
 }
 
@@ -44,7 +60,7 @@ function mapUnitStatusToOperational(status?: string): 'Available' | 'Occupied' |
 // Zero rather than a plausible figure. This writes rooms.current_price, which
 // becomes the advance rent at move-in (BR-039) and every bill after it.
 const monthlyRate = ref<number>(0);
-const unitType = ref<string>('1 Bedroom');
+const unitType = ref<string>('One-bedroom');
 const editStatus = ref<'Available' | 'Occupied' | 'Reserved' | 'Under Maintenance'>('Available');
 const billingRule = ref<string>('Rent + ₱200 / occupant water');
 // Empty by default. This field is written straight to `rooms.description` on
