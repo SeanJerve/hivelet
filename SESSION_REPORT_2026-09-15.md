@@ -25,7 +25,39 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `80311d9`: your traceability matrix says nine requirements are MISSING.
+> **LATEST - commit `62ea98b`: 6 of the traceability matrix's 83 route citations point at the
+> right line.**
+>
+> **Measured, not estimated.** A committed script extracts every
+> `` `METHOD /api/path` (`file.ts:N`) `` citation and checks whether the route's path appears
+> within six lines of N. **Six do. Seventy-seven do not.**
+>
+> **This is nobody's carelessness.** A citation is a promise about a line number in a file that
+> grows. `admin.ts` is now **3,033 lines**; the route cited at `730` sits at **1065**. Every
+> insertion above a citation invalidates it silently, and nothing in a markdown file can
+> notice. **The document was accurate when it was written.**
+>
+> The warning now above the table says what is still reliable - **the file name, the route
+> path, and the table's judgements** - and what is not. Follow a citation by searching for the
+> route, not by jumping to the line.
+>
+> **The durable fix is deliberately not renumbering.** Renumbering 83 citations buys accuracy
+> until the next commit. A file name and a route path are stable identifiers; a line number is
+> a convenience that cannot survive a living codebase. Rewriting the table is a large
+> mechanical edit and the call belongs to whoever owns the document, so it is **recorded rather
+> than done**.
+>
+> **The script is committed but not wired as a tenth suite.** A gate that is red on the day it
+> ships teaches people to ignore red. Run it when you want the number:
+> `node backend/scripts/measure-doc-citations.mjs`.
+>
+> **One note on the measurement itself, because a number is only as good as the thing producing
+> it.** The first run reported every `auth.ts` citation as "not found" - which was wrong.
+> `backend/src/types/auth.ts` was shadowing `backend/src/routes/auth.ts` in my file lookup.
+> Fixed before the number was believed. Five of the seventy-seven would otherwise have been my
+> bug, not the document's.
+
+> **PREVIOUS - commit `80311d9`: your traceability matrix says nine requirements are MISSING.
 > Seven of them are not.**
 >
 > That table's headline - **"MISSING 9, 20.5%"** - is the figure a panel reads off the page. It
@@ -1345,7 +1377,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**96 commits, all pushed to `main`. Working tree clean.**
+**98 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
