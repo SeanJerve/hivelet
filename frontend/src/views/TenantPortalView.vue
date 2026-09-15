@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { LANDLADY, maintenanceTickets, showToast, type MaintenanceTicket } from '@/lib/systemState';
+import { TICKET_CATEGORIES, LANDLADY, maintenanceTickets, showToast, type MaintenanceTicket } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
@@ -602,10 +602,7 @@ async function handleCreateTicket() {
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Category</label>
               <select v-model="ticketCat" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
-                <option value="Plumbing">Plumbing</option>
-                <option value="Electrical">Electrical</option>
-                <option value="Appliances">Appliances</option>
-                <option value="General">General</option>
+                <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
               </select>
             </div>
 

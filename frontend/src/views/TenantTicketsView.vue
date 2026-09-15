@@ -10,6 +10,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import {
   Wrench,
@@ -492,11 +493,7 @@ function statusClass(status: string) {
                   v-model="ticketCategory"
                   class="form-select text-xs cursor-pointer"
                 >
-                  <option value="Plumbing">Plumbing</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Appliance">Appliance / Aircon</option>
-                  <option value="Structural / Furniture">Structural / Furniture</option>
-                  <option value="General Maintenance">General Maintenance</option>
+                  <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
                 </select>
               </div>
 

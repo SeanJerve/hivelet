@@ -134,6 +134,38 @@ export const NON_RENTAL_AREAS: readonly PropertyArea[] = [
  * Both now render from this array. Add an area here and to the backend constant; there
  * is no third copy to forget.
  */
+/**
+ * Maintenance ticket categories, shared by every form that writes one.
+ *
+ * `maintenance_tickets.category` is a free `varchar` with no enum and no CHECK, and three
+ * views each carried their own hand-written list. Between them they offered **nine**
+ * distinct strings for about six concepts — `Appliance` and `Appliances`, `General` and
+ * `General Maintenance` — so the same fault stored differently depending on which form the
+ * tenant happened to use, and any grouping or filter split them.
+ *
+ * Worse, the lists disagreed about which categories existed at all: a live ticket is stored
+ * as `Structural / Furniture`, which the admin dispatch view did not offer, so opening that
+ * ticket for editing showed a picker that could not represent its own value.
+ *
+ * This list is the **union of what the three views already offered**, nothing invented. The
+ * two near-duplicate pairs are resolved to whichever spelling was already used by more of
+ * them. Every value present in live data — `Plumbing`, `Structural / Furniture`,
+ * `Carpentry` — is included, because a picker must always be able to show the row it is
+ * editing. That is the same lesson as the Penthouse area (`430d4e1`).
+ *
+ * `docs/11_FORM_FIELD_AUDIT.md` notes this column as "free varchar; consider a lookup".
+ * This is the client-side half of that; a database lookup table would be the other.
+ */
+export const TICKET_CATEGORIES: readonly string[] = [
+  'Plumbing',
+  'Electrical',
+  'Appliances',
+  'Aircon / HVAC',
+  'Carpentry',
+  'Structural / Furniture',
+  'General'
+] as const;
+
 export const PROPERTY_AREA_OPTIONS: readonly { value: PropertyArea; label: string }[] = [
   { value: 'Boarding House', label: 'Boarding House' },
   { value: 'Main House', label: 'Main House (personal)' },

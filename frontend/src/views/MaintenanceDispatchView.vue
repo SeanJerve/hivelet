@@ -5,9 +5,10 @@ import {
   fetchMaintenanceTickets, 
   rooms, 
   fetchRooms, 
-  TECHNICIANS, 
-  showToast, 
-  type MaintenanceTicket 
+  TECHNICIANS,
+  TICKET_CATEGORIES,
+  showToast,
+  type MaintenanceTicket
 } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import { 
@@ -527,12 +528,7 @@ function handleDeleteTicketPrompt() {
             <div>
               <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Category</label>
               <select v-model="editCategory" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white focus:border-primary focus:outline-none" required>
-                <option value="Plumbing">Plumbing</option>
-                <option value="Electrical">Electrical</option>
-                <option value="Carpentry">Carpentry</option>
-                <option value="Aircon / HVAC">Aircon / HVAC</option>
-                <option value="Appliances">Appliances</option>
-                <option value="General">General</option>
+                <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
               </select>
             </div>
           </div>
