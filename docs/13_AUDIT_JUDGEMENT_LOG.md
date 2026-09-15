@@ -251,8 +251,14 @@ and lost an hour of uncommitted crosswalk corrections. Test destructive things o
 a **copy**; `scripts/check-br-crosswalk.mjs` takes an optional path argument for
 exactly this reason.
 
-**`admin.ts` is ~2,600 lines** and line numbers in older documents are stale.
-Anchor edits on surrounding text, never on a line number from a document.
+**`admin.ts` is long and getting longer — 2,873 lines as measured 2026-09-15**,
+and line numbers in older documents are stale. Anchor edits on surrounding text,
+never on a line number from a document. This sentence previously read "~2,600
+lines" with no date, which had itself gone stale by about 270 lines — the exact
+failure mode it exists to warn about. Every figure of this kind in the repository
+is a dated snapshot, not a standing fact: the architecture documents say 2,263
+"Recounted 2026-09-13", and `docs/12_ITERATION_HISTORY.md` says ~2,500 with no
+date. Treat all three as history and measure it yourself.
 
 ---
 
