@@ -111,7 +111,7 @@ Module 01 establishes that an academic software engineering design is complete o
 | **FR-005: Inquiry Management**| `CLIENT_TIER` (`InquiriesView.vue`) | Landlady communication inbox; status filters; threaded messages via `inquiry_messages`. |
 | **FR-006: Inquiry Conversion** | `SERVICE_TIER` (`onboardingService.ts`)| Reuses prospect contact data to generate `profiles` and `room_assignments` without retyping. |
 | **FR-007: Room Management** | `SERVICE_TIER` (`roomService.ts`) | Enforces room status rules (`Available`, `Occupied`, `Maintenance`); dual operational/visibility flags. |
-| **FR-008: Room History** | `DATA_TIER` (`room_price_history`) | Preserves 2% annual increase rate changes over time; tracks historical leases in `room_assignments`. |
+| **FR-008: Room History** | `DATA_TIER` (`room_price_history`) | Preserves ~~2% annual increase~~ **administrator-initiated** rate changes over time (no automatic increase exists — see the errata banner above); tracks historical leases in `room_assignments`. |
 | **FR-009: Tenant Management** | `CLIENT_TIER` (`TenantManagementView`)| Comprehensive tenant record directory with active lease dates and emergency contact details. |
 | **FR-010: Profile Updates** | `API_TIER` (`tenantController.ts`) | Tenants can only edit phone, emergency contact, and occupation; cannot alter room or rent rates. |
 | **FR-011: Billing** | `SERVICE_TIER` (`billingService.ts`) | Server-authoritative rent calculation plus occupant-based water calculation ($₱200/\text{head}$). |

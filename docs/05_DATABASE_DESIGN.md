@@ -61,7 +61,8 @@ Suggested concepts:
 - reason
 - created_by
 
-The 2% annual increase rule must be represented transparently rather than silently overwriting history.
+~~The 2% annual increase rule must be represented transparently rather than silently overwriting history.~~
+**There is no such rule — withdrawn in full, client-confirmed 2026-09-13 (errata E-20, misattribution M-11).** The owner sets rates by hand. What this table exists for still stands, and stands on its own: a rate change must be preserved rather than silently overwriting history, which is canonical **BR-003** Historical Preservation. Migration `020` moves the record to an `AFTER UPDATE` trigger on `rooms`, so it holds regardless of write path.
 
 ### room_assignments
 Historical and current relationships between tenants/contacts and rooms.

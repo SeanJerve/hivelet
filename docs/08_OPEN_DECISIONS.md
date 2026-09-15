@@ -1,5 +1,20 @@
 # HIVELET RESOLVED & FINALIZED SYSTEM DECISIONS
 
+> **This filename is misleading, and the rename it was promised has not happened.**
+> The file is called `08_OPEN_DECISIONS.md` but its contents — including this H1 — are
+> **closed** decisions. Anyone opening it looking for the project's unresolved questions
+> will find none and conclude that none exist.
+>
+> **The open questions live in `docs/claude_pipeline/outputs/PHASE1_OPEN_DECISIONS_REGISTER.md`.**
+> That register's Section 0 prescribed renaming this file to `08_CLOSED_DECISIONS.md` in
+> Phase 2 and striking Section 9. Checked 2026-09-15: the rename has not been done. This
+> banner stands in for it until someone does, because a wrong filename that nobody has
+> time to change is still worth labelling.
+>
+> **Two sections below were wrong and are struck rather than deleted:** Section 8 described
+> an automatic 2% rent adjustment that the client withdrew on 2026-09-13, and Section 9
+> deferred three genuinely open questions to a document that declines to answer them.
+
 This document records the official decisions made for the Hivelet Apartment Management & Financial Operations System based on `01_SYSTEM_BIBLE.md` and `02_BUSINESS_RULES.md`.
 
 ---
@@ -38,7 +53,11 @@ This document records the official decisions made for the Hivelet Apartment Mana
 - **Decision**: To prevent duplicate records (BR-026, BR-027), when a former tenant returns, the administrator re-links their existing historical profile record rather than creating a duplicate entry.
 
 ## 8. Room Rent Adjustment Workflow
-- **Decision**: After 1 year of continuous tenancy, the system presents an automated recommendation for a 2% annual rent adjustment. The change requires explicit administrator confirmation before taking effect on the next billing cycle.
+- ~~**Decision**: After 1 year of continuous tenancy, the system presents an automated recommendation for a 2% annual rent adjustment. The change requires explicit administrator confirmation before taking effect on the next billing cycle.~~
+- **WITHDRAWN IN FULL — the client settled this on 2026-09-13.** She edits a room's rate herself when she decides to change it. There is **no automatic adjustment and no system-generated recommendation of any kind**, and no percentage figure applies. This note was the decision of record that created the feature; every other mention in the repository restated it rather than establishing a rule, and a search of the canonical register `docs/02_BUSINESS_RULES.md` returns zero matches for it. Errata **E-20**, misattribution **M-11**.
+- **What survives is the record-keeping, not the automation.** Rate changes are administrator-initiated, and every change is preserved in `room_price_history` with the previous rate, the new rate, the effective date and its author — **ARCH-004 Rate Change History**, anchored to canonical **BR-003** Historical Preservation. Since migration `020` this is held by an `AFTER UPDATE` trigger on `rooms`, so a rate cannot be changed by any write path without being recorded.
 
 ## 9. Additional Monthly Income & Expense Ledger Notes
-- Monthly Income Report running totals, GBG garbage fee timing, and deposit reconciliation workflows are implemented according to `09_MONTHLY_INCOME_REPORT.md` and `10_MONTHLY_EXPENSES_REPORT.md`.
+- ~~Monthly Income Report running totals, GBG garbage fee timing, and deposit reconciliation workflows are implemented according to `09_MONTHLY_INCOME_REPORT.md` and `10_MONTHLY_EXPENSES_REPORT.md`.~~
+- **STRUCK — this defers three unanswered questions to a document that explicitly declines to answer them.** All three are listed in `09_MONTHLY_INCOME_REPORT.md` **Section 8, "Open Questions"** — running totals at `:133`, GBG timing at `:134`, deposit reconciliation at `:136` — under the preamble *"These are not resolved by this document and must not be silently assumed during implementation."*
+- **They are open client decisions, carried as OD-01, OD-02 and OD-04** in `docs/claude_pipeline/outputs/PHASE1_OPEN_DECISIONS_REGISTER.md`, which is the authoritative list of what is genuinely unresolved. **OD-04 requires a schema migration once answered.** Read that register, not this section.
