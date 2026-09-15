@@ -103,18 +103,37 @@ watch(() => route.query.convertInquiryId, () => {
   checkInquiryConversion();
 });
 
-const statusFilter = ref<'all' | 'active' | 'vacated'>('all');
+const statusFilter = ref<'all' | 'active' | 'vacated' | 'prospect'>('all');
 
-const activeCount = computed(() => tenants.filter(t => t.status === 'active').length);
-const vacatedCount = computed(() => tenants.filter(t => t.status === 'vacated' || t.status === 'notice').length);
+/**
+ * A prospect is not a resident, and this page used to say she was.
+ *
+ * `/admin/tenants` returns `.in('role', ['tenant', 'prospect'])` on purpose, so an enquirer
+ * promoted to a profile shows up here before any unit is assigned. Nothing distinguished
+ * them: the header read "44 residents currently on record" when 43 are residents and one is
+ * a prospect, the Active chip counted her among the residents paying rent, and her row wore
+ * the same green Active badge. With 33 units on the property, a headcount that is quietly
+ * one too high is the kind of number someone checks.
+ */
+const residentCount = computed(() => tenants.filter(t => t.role === 'tenant').length);
+const prospectCount = computed(() => tenants.filter(t => t.role === 'prospect').length);
+
+const activeCount = computed(
+  () => tenants.filter(t => t.role === 'tenant' && t.status === 'active').length
+);
+const vacatedCount = computed(
+  () => tenants.filter(t => t.role === 'tenant' && (t.status === 'vacated' || t.status === 'notice')).length
+);
 
 const rows = computed(() => {
   const query = q.value.toLowerCase().trim();
   return tenants.filter((t) => {
+    // Every chip but "All" is about residents, so a prospect answers only her own.
     const matchesFilter =
       statusFilter.value === 'all' ||
-      (statusFilter.value === 'active' && t.status === 'active') ||
-      (statusFilter.value === 'vacated' && (t.status === 'vacated' || t.status === 'notice'));
+      (statusFilter.value === 'prospect' && t.role === 'prospect') ||
+      (statusFilter.value === 'active' && t.role === 'tenant' && t.status === 'active') ||
+      (statusFilter.value === 'vacated' && t.role === 'tenant' && (t.status === 'vacated' || t.status === 'notice'));
 
     if (!matchesFilter) return false;
 
@@ -310,7 +329,7 @@ async function handleOnboard() {
           Active Tenant Directory
         </h1>
         <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
-          {{ tenants.length }} residents currently on record.
+          {{ residentCount }} residents currently on record<span v-if="prospectCount">, plus {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> not yet assigned a unit</span>.
         </p>
       </div>
 
@@ -378,6 +397,17 @@ async function handleOnboard() {
             ]"
           >
             Past / Vacated ({{ vacatedCount }})
+          </button>
+          <button
+            v-if="prospectCount"
+            type="button"
+            @click="statusFilter = 'prospect'"
+            :class="[
+              'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
+              statusFilter === 'prospect' ? 'bg-white text-primary shadow-xs' : 'text-muted-foreground hover:text-foreground'
+            ]"
+          >
+            Prospects ({{ prospectCount }})
           </button>
         </div>
       </div>
@@ -457,10 +487,10 @@ async function handleOnboard() {
                 <span 
                   :class="[
                     'badge-soft text-xs font-bold',
-                    t.status === 'active' ? 'badge-success' : 'badge-neutral'
+                    t.role === 'prospect' ? 'badge-info' : (t.status === 'active' ? 'badge-success' : 'badge-neutral')
                   ]"
                 >
-                  {{ t.status === 'active' ? 'Active' : 'Vacated' }}
+                  {{ t.role === 'prospect' ? 'Prospect' : (t.status === 'active' ? 'Active' : 'Vacated') }}
                 </span>
               </td>
 
@@ -515,9 +545,13 @@ async function handleOnboard() {
             </span>
             <span :class="[
               'badge-soft text-xs font-bold',
-              editModalTenant.status === 'active' ? 'badge-success' : 'badge-neutral'
+              editModalTenant.role === 'prospect'
+                ? 'badge-info'
+                : (editModalTenant.status === 'active' ? 'badge-success' : 'badge-neutral')
             ]">
-              {{ editModalTenant.status === 'active' ? 'Active Resident' : 'Past / Vacated' }}
+              {{ editModalTenant.role === 'prospect'
+                  ? 'Prospect — not yet a resident'
+                  : (editModalTenant.status === 'active' ? 'Active Resident' : 'Past / Vacated') }}
             </span>
           </div>
 

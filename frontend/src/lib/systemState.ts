@@ -54,6 +54,13 @@ export interface TenantRecord {
   moveInDate: string;
   anniversary: string;
   depositAmount: number;
+  /**
+   * `user_role_type` is (admin, tenant, prospect). `/admin/tenants` deliberately returns
+   * `.in('role', ['tenant', 'prospect'])`, so this list has always held both - it just had
+   * no way to say which was which, and every prospect was therefore drawn, counted and
+   * badged as a resident.
+   */
+  role: 'tenant' | 'prospect';
   status: 'active' | 'notice' | 'vacated';
   emergencyContact: {
     name: string;
@@ -592,6 +599,7 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
           moveInDate,
           anniversary,
           depositAmount: Number(activeAssignment?.deposit_amount || 0),
+          role: (t.role === 'prospect' ? 'prospect' : 'tenant') as 'tenant' | 'prospect',
           status: (t.account_status === 'active' ? 'active' : 'vacated') as 'active' | 'notice' | 'vacated',
           emergencyContact: {
             name: t.emergency_contact_name || '—',
