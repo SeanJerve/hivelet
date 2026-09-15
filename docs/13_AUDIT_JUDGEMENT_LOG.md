@@ -190,7 +190,7 @@ instruction today would **delete a true and defensible claim** — ledger
 protection at the database engine level — on the authority of an erratum. Both
 rows now carry the update, and the distinction that still matters: RESTRICT is
 current fact, and was *not* fact when the Module 01 set was submitted, which is
-what the erratum actually corrects. Fixed in `1a83e0a`.
+what the erratum actually corrects. Fixed in `a3f72f3`.
 
 An errata sheet ages. Its findings stay true — they describe a past document —
 but its *instructions* can be overtaken by the very work they propose.
