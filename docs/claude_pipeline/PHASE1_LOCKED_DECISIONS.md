@@ -40,7 +40,14 @@ floor figure states **11 / 11 / 10 / 1**. See **OD-13**, now closed.
 The seeded per-unit `rooms.floor` values were populated for development rather than surveyed, and with
 `PH` corrected to level 4 they yield 12 / 11 / 9 / 1 — one unit out on floor 1. **The owner's survey is
 authoritative for the published tally**; reconciling the individual `rooms.floor` values is a Phase 2
-data-cleanup migration (known defect 11 below). That caveat is carried in full in exactly two places —
+data-cleanup migration (known defect 11 below).
+
+> **RESOLVED 2026-09-15 — the Phase 2 migration this paragraph anticipates was written and
+> applied.** Migration `015_correct_front_apartment_floor` moved `F1` to floor 3 on
+> 2026-09-13, closing **OD-14**. Verified live 2026-09-15: `rooms.floor` is **11 / 11 / 10 / 1**
+> across 33 rooms, matching the owner's survey exactly, with `PH` alone on level 4. There is
+> no longer any disagreement between the stored values and the published tally, so the caveat
+> above — and the two places it says carry it in full — describe a gap that is closed. That caveat is carried in full in exactly two places —
 `PHASE1_OPEN_DECISIONS_REGISTER.md` and `PHASE1_MODULE01_ERRATA.md` — and is not repeated in the other
 artifacts, which simply publish the settled tally. `database/FULL_DATABASE_SCHEMA.sql` is never edited.
 

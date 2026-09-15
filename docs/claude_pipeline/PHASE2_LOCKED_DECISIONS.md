@@ -157,6 +157,12 @@ Every cluster now routes somewhere; `012` sets the column `NOT NULL` to keep it 
 
 ## OD-14 — still open, and now measured
 
+> **SUPERSEDED — read "OD-14 — CLOSED" further down this file.** This is an append-only log
+> and the section is kept as written, but nothing in the paragraph below is true of the
+> system today. Verified live 2026-09-15: `rooms.floor` is **11 / 11 / 10 / 1**, matching the
+> owner's survey exactly, and migration `015_correct_front_apartment_floor` **was** written
+> and applied on 2026-09-13. The one wrong row was `F1`, now on floor 3.
+
 The owner reconfirmed **11 / 11 / 10 / 1** twice. The live `rooms.floor` data says **12 / 11 / 9 / 1**.
 Both total 33 and the error is symmetrical, so exactly one row's `floor` is wrong. **No migration was
 written** — see `CONTINUE_HERE.md`.
