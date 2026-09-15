@@ -43,12 +43,24 @@ interface AuditRecord {
   id: string;
   actor_profile_id?: string;
   action: string;
-  entity_table?: string;
+  /**
+   * These names must match `audit_logs` exactly, because the endpoint returns `select('*')`
+   * and the row keys ARE the column names. Three of them did not:
+   *
+   *   entity_table  ->  entity_type       the table's column
+   *   old_values    ->  previous_values   the table's column
+   *   user_agent    ->  does not exist    nothing records one
+   *
+   * A wrong name in a browser is not an error - it is `undefined`, and every fallback in
+   * this file then did its job perfectly on nothing. The entity column read "system" for
+   * every row, and the Previous State panel read "null (Initial record insertion)" for every
+   * row, which is the one thing an audit trail exists to show.
+   */
+  entity_type?: string;
   entity_id?: string;
-  old_values?: any;
+  previous_values?: any;
   new_values?: any;
   ip_address?: string;
-  user_agent?: string;
   created_at: string;
   profiles?: {
     id: string;
@@ -150,7 +162,7 @@ const filteredLogs = computed(() => {
 
     return (
       log.action.toLowerCase().includes(query) ||
-      (log.entity_table && log.entity_table.toLowerCase().includes(query)) ||
+      (log.entity_type && log.entity_type.toLowerCase().includes(query)) ||
       (log.entity_id && log.entity_id.toLowerCase().includes(query)) ||
       (log.profiles?.full_name && log.profiles.full_name.toLowerCase().includes(query)) ||
       (log.ip_address && log.ip_address.includes(query))
@@ -209,16 +221,18 @@ function exportAuditCSV() {
     return;
   }
 
-  const headers = ['Timestamp', 'Action', 'Entity Table', 'Entity ID', 'Actor', 'Role', 'IP Address', 'Old Values', 'New Values'];
+  const headers = ['Timestamp', 'Action', 'Entity Type', 'Entity ID', 'Actor', 'Role', 'IP Address', 'Previous Values', 'New Values'];
   const rows = filteredLogs.value.map(l => [
     `"${l.created_at}"`,
     `"${l.action}"`,
-    `"${l.entity_table || '—'}"`,
+    `"${l.entity_type || '—'}"`,
     `"${l.entity_id || '—'}"`,
     `"${l.profiles?.full_name || 'System'}"`,
     `"${l.profiles?.role || 'admin'}"`,
-    `"${l.ip_address || '127.0.0.1'}"`,
-    `"${JSON.stringify(l.old_values || '').replace(/"/g, '""')}"`,
+    // An address that was not recorded is not 127.0.0.1. Exporting a plausible one into an
+    // audit trail is worse than exporting a blank.
+    `"${l.ip_address || '—'}"`,
+    `"${JSON.stringify(l.previous_values || '').replace(/"/g, '""')}"`,
     `"${JSON.stringify(l.new_values || '').replace(/"/g, '""')}"`
   ]);
 
@@ -472,7 +486,7 @@ function exportAuditCSV() {
                 <td class="py-3 px-4 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
                   <div class="flex items-center gap-1.5">
                     <Database class="size-3 text-primary" />
-                    <span class="font-bold text-foreground">{{ l.entity_table || 'system' }}</span>
+                    <span class="font-bold text-foreground">{{ l.entity_type || 'system' }}</span>
                     <span v-if="l.entity_id" class="text-[10px] px-1.5 py-0.2 rounded bg-stone-100 border border-stone-200">
                       {{ l.entity_id }}
                     </span>
@@ -516,8 +530,13 @@ function exportAuditCSV() {
                         <FileText class="size-3.5 text-primary" />
                         Audit State Transition Record (ID: {{ l.id }})
                       </span>
-                      <span class="text-[11px] text-muted-foreground font-normal">
-                        User Agent: {{ l.user_agent || 'not recorded' }}
+                      <!--
+                        The User Agent line is gone: `audit_logs` has no such column and
+                        nothing writes one, so it read "not recorded" on every row forever.
+                        A field that can only ever say "not recorded" is not information.
+                      -->
+                      <span v-if="l.entity_id" class="text-[11px] text-muted-foreground font-normal">
+                        Entity: {{ l.entity_type || 'system' }} · {{ l.entity_id }}
                       </span>
                     </div>
 
@@ -527,7 +546,7 @@ function exportAuditCSV() {
                         <div class="text-[10px] font-bold uppercase text-rose-800 mb-1.5 flex items-center gap-1">
                           <span>Previous State (Before Mutation)</span>
                         </div>
-                        <pre class="text-[11px] text-rose-950 overflow-x-auto whitespace-pre-wrap">{{ l.old_values ? JSON.stringify(l.old_values, null, 2) : 'null (Initial record insertion)' }}</pre>
+                        <pre class="text-[11px] text-rose-950 overflow-x-auto whitespace-pre-wrap">{{ l.previous_values ? JSON.stringify(l.previous_values, null, 2) : 'null (Initial record insertion)' }}</pre>
                       </div>
 
                       <!-- New Values -->

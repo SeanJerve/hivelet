@@ -15,7 +15,6 @@ import {
   AlertTriangle,
   X,
   LifeBuoy,
-  Camera,
   RotateCcw,
   ShieldCheck
 } from 'lucide-vue-next';
@@ -32,7 +31,6 @@ interface EditableProfile {
   emergency_contact_phone: string;
   occupation: string;
   facebook_url: string;
-  avatar_url: string;
 }
 
 /** Administrator-owned identity fields — displayed for confirmation. */
@@ -49,7 +47,6 @@ const form = ref<EditableProfile>({
   emergency_contact_phone: '',
   occupation: '',
   facebook_url: '',
-  avatar_url: '',
 });
 
 /** Snapshot of the last saved server state, used for dirty tracking and reset. */
@@ -103,7 +100,6 @@ async function fetchProfile() {
       emergency_contact_phone: data?.emergency_contact_phone || '',
       occupation: data?.occupation || '',
       facebook_url: data?.facebook_url || '',
-      avatar_url: data?.avatar_url || '',
     };
     savedSnapshot.value = { ...form.value };
   } catch (err: any) {
@@ -111,17 +107,6 @@ async function fetchProfile() {
   } finally {
     loading.value = false;
   }
-}
-
-function handleAvatarSelect(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    form.value.avatar_url = e.target?.result as string;
-  };
-  reader.readAsDataURL(file);
 }
 
 async function handleSave() {
@@ -141,23 +126,32 @@ async function handleSave() {
 
   saving.value = true;
   try {
+    /**
+     * Only the five fields the API actually accepts.
+     *
+     * `full_name` and `avatar_url` were being sent too, and both were silently discarded:
+     * `profileUpdateSchema` on the server lists exactly five tenant-editable columns, by
+     * design (System Bible Section 19 - a resident does not rename themselves), and
+     * `profiles` has no `avatar_url` column at all. Zod strips what it does not declare, so
+     * the request succeeded, the success notice appeared, and nothing had been saved.
+     *
+     * Worse for the name: the line below used to copy it into `currentUser.fullName`, so the
+     * header changed too and the edit looked real until the next reload put it back.
+     */
     const payload = {
-      full_name: form.value.full_name.trim(),
       phone_number: form.value.phone_number.trim(),
       emergency_contact_name: form.value.emergency_contact_name.trim(),
       emergency_contact_phone: form.value.emergency_contact_phone.trim(),
       occupation: form.value.occupation.trim(),
       facebook_url: form.value.facebook_url.trim(),
-      avatar_url: form.value.avatar_url,
     };
 
     // Surfaced rather than swallowed: a profile edit that silently fails leaves
     // the tenant believing their emergency contact is on file when it is not.
     await api.put('/tenant/my-profile', payload);
 
-    if (currentUser.value) {
-      currentUser.value.fullName = form.value.full_name.trim();
-    }
+    // The name is not tenant-editable, so there is nothing to copy back here. Writing it
+    // into the session made an edit the server refused look like it had been accepted.
 
     savedSnapshot.value = { ...form.value };
     successNotice.value = 'Your profile details have been saved successfully!';
@@ -228,29 +222,23 @@ function handleReset() {
       <div class="surface-card rounded-2xl border border-border bg-white p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xs">
         <div class="relative group">
           <div class="size-24 rounded-full bg-neutral-dark text-white flex items-center justify-center text-2xl font-black shadow-md overflow-hidden border-4 border-white ring-2 ring-border">
-            <img
-              v-if="form.avatar_url"
-              :src="form.avatar_url"
-              alt="Profile Avatar"
-              class="w-full h-full object-cover"
-            />
-            <span v-else>{{ initials }}</span>
+            <span>{{ initials }}</span>
           </div>
 
-          <label
-            for="avatar-upload-input"
-            class="absolute bottom-0 right-0 p-2 bg-neutral-dark text-white rounded-full shadow-md cursor-pointer hover:bg-neutral-dark-strong transition-colors"
-            title="Upload photo"
-          >
-            <Camera class="size-3.5" />
-            <input
-              id="avatar-upload-input"
-              type="file"
-              accept="image/*"
-              class="hidden"
-              @change="handleAvatarSelect"
-            />
-          </label>
+          <!--
+            The photo upload is gone, deliberately.
+
+            `profiles` has no `avatar_url` column and the tenant profile API accepts five
+            fields, none of them a photo. The control read the file, showed it, sent it, and
+            the server dropped it - so the resident picked a photo, watched it appear, saved,
+            and lost it on the next reload with a success message in between.
+
+            Storing one properly is a schema decision, not a transcription: a new column and
+            somewhere for the file to live. `room_photos` is the pattern the project already
+            has for images, and a data URL in a varchar is not it. Raised for Mrs. Da Silva
+            rather than invented here. Until then the initials stand, and nothing on screen
+            promises otherwise.
+          -->
         </div>
 
         <div class="text-center sm:text-left space-y-1.5 flex-1">
@@ -300,10 +288,17 @@ function handleReset() {
                 <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="full-name">
                   Full Display Name
                 </label>
+                <!--
+                  Read-only. The API accepts five tenant-editable fields and the name is not
+                  among them - System Bible Section 19 - so typing here changed nothing but
+                  looked as though it had.
+                -->
                 <input
                   id="full-name"
-                  v-model="form.full_name"
+                  :value="form.full_name"
                   type="text"
+                  readonly
+                  title="Your name is on your tenancy record. Ask the landlady to change it."
                   placeholder="Your Full Name"
                   class="form-input text-xs font-semibold"
                   required
