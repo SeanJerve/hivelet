@@ -341,7 +341,7 @@ legend never defined. `check:rules` now prevents all three.
 | 4 | **Service extraction** | **137 of 173** database calls still sit in route handlers (79%), and `admin.ts` is ~2,500 lines. Six planned services do not yet exist. This is the architecture's stated target. |
 | 5 | **Deposit reconciliation on move-out** | Unblocked by **OD-04**. |
 | 6 | **Two unauthenticated payment endpoints** on the public router | Carried as a hardening item since Phase 1. |
-| 7 | **Reconcile per-unit `floor` values** to the client's survey | The published tally is client-confirmed; the seeded per-unit values were populated for development and disagree by one unit on floor 1. A data migration, never an edit to the master schema file. |
+| ~~7~~ | ~~**Reconcile per-unit `floor` values** to the client's survey~~ **DONE 2026-09-13.** `9b04c0d` placed F1 on the third floor, closing **OD-14**. Live count, verified 2026-09-15: floor 1 = 11, floor 2 = 11, floor 3 = 10, floor 4 = 1 — exactly the client-confirmed tally. This row was stale: the fix landed a day before this document's last edit. |
 
 ### 5.2 One documentation inconsistency to settle
 
