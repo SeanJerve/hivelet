@@ -142,8 +142,16 @@ The administrator can:
 
 The property has:
 
-- 3 floors
-- 32 total rooms/units
+- **3 residential floors plus a rooftop penthouse level** (4 levels in all; `PH` occupies the rooftop alone)
+- **33 total rooms/units** — floor 1 = 11, floor 2 = 11, floor 3 = 10, floor 4 = 1
+
+> **Corrected 2026-09-15 (errata E-01, misattribution M-08).** This line read "3 floors" and
+> "32 total rooms/units". The 32 was an arithmetic error in the prose, not in the data: the
+> canonical enumeration under **BR-032** yields 33 — BH 22, Back Apartment 5, Front Apartment 3,
+> Penthouse 1, Linda 2 — and the seeded database has always held 33. M-08 prescribed this
+> correction and it had not been applied to this file, which is the canonical source the rest of
+> the repository defers to. The floor shape was settled by the owner's survey on 2026-09-13
+> (**OD-13**). Verified live 2026-09-15: 33 rooms, distribution 11 / 11 / 10 / 1.
 
 The system treats each unit as a room record.
 

@@ -91,7 +91,7 @@ Hivelet combines the best elements of three world-class productivity platforms t
 ## 4. Component Building Specifications
 
 ### 4.1 Room Visual Matrix (Airtable + Jira Hybrid)
-- Represents the 32 rentable units of Fe Galang Da Silva Boarding House across 3 floors and 5 property clusters:
+- Represents the **33** rentable units of Fe Galang Da Silva Boarding House across 3 residential floors plus a rooftop penthouse level, in 5 property clusters:
   - **Main Boarding House**: Floor 1 (101-110), Floor 2 (201-210), Floor 3 (301-312)
   - **Clusters**: Back Apartment (B1F, B2F, B2B, B3F, B3B), Penthouse (PH), Front Apartment (F1, F2F, F2B), Linda (LF, LB)
 - **Card Design**:

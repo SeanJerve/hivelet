@@ -5,7 +5,7 @@
 ## 1. UI Architecture & Design System
 
 **System Name:** Hivelet  
-**Target Property:** Fe Galang Da Silva Boarding House (3 Floors, 32 Total Units)  
+**Target Property:** Fe Galang Da Silva Boarding House (3 residential floors plus a rooftop penthouse level, **33** total units)  
 **Design Theme:** Minimalist Corporate Workspace (Jira + Notion + Airtable Tri-Inspiration)  
 **Primary Aesthetic Principles:**
 - **Canvas:** Subtle neutral slate-gray background (`#f4f5f7`).
