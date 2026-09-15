@@ -25,7 +25,27 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `82a32fc`: four more notes stale - and one of my own corrections was
+> **LATEST - commit `11a1437`: one more stale, three still true, one half-changed.**
+>
+> Third pass over the matrix's notes. **The mix matters** - a retest that finds everything
+> fixed is not a retest either.
+>
+> | Note | Retested |
+> |---|---|
+> | **FR-018** *"unconstrained `VARCHAR(100)` … no foreign key … a single typo silently creates a phantom property area"* | **Stale, and doubly so.** The live column is the enum `property_area_type` **and** carries a foreign key to `property_areas(code)`. A typo fails at the enum before it reaches the key. The risk the note says would break the FR-042 reconciliation is closed twice over. |
+> | **FR-003** *"amenities have no persistence and no route"* | **Still true.** `amenit` appears nowhere in `backend/src`. |
+> | **FR-002** *"eight permission constants declared and unused"* | **Still true.** All eight guard **zero** routes today. |
+> | **FR-011** *"no bill-authoring endpoint"* | **Still true.** `/admin/bills` is a GET only - she still cannot originate a bill. |
+> | **FR-008** *"written and then unreachable from the admin surface"* | **Half changed, and the half matters.** Since `b593166` the rooms select returns the tenancy with the occupant's profile, so *who lives in a unit* is reachable. **The timeline is not** - no `start_date` or `end_date` in that select, and `room_price_history` is still read only inside the price-change write path, never retrieved for display. |
+>
+> **FR-008 is the shape worth noticing.** A claim can be half true after a change, and writing
+> *"fixed"* would be as wrong as leaving it alone. The precise statement is the useful one.
+>
+> Every claim was checked against live code or the live schema - `information_schema` and
+> `pg_constraint` for the FR-018 column, a grep of `backend/src` for the rest, and the
+> registered HTTP method for `/admin/bills`.
+
+> **PREVIOUS - commit `82a32fc`: four more notes stale - and one of my own corrections was
 > wrong.**
 >
 > Second pass over the same table, this time the PARTIAL rows and the per-requirement notes:
@@ -1407,7 +1427,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**100 commits, all pushed to `main`. Working tree clean.**
+**102 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
