@@ -33,6 +33,13 @@ export interface RoomItem {
   occupants: number;
   maxOccupants: number;
   status: UnitStatus;
+  /**
+   * `visibility_status_type` is (Published | Hidden), and `public.ts` enforces it in three
+   * places: both public listings filter on Published, and an inquiry for a room that is not
+   * Published is refused. Nothing in the interface read or wrote it, so a unit could not be
+   * taken off the public site at all.
+   */
+  visibility: 'Published' | 'Hidden';
   tenant: string | null;
   tenantId?: string | null;
   paid: boolean;
@@ -284,6 +291,8 @@ export const rooms = reactive<RoomItem[]>(
     occupants: 0,
     maxOccupants: u.capacity,
     status: 'vacant' as const,
+    // Placeholder shape only; the real value arrives with the API's room data.
+    visibility: 'Published' as const,
     tenant: '',
     paid: false,
     balance: 0,
@@ -537,6 +546,7 @@ export async function fetchRooms(): Promise<RoomItem[]> {
           occupants: r.capacity ? Math.min(r.capacity, 2) : 1,
           maxOccupants: r.capacity || 2,
           status: mapOperationalStatus(r.operational_status),
+          visibility: r.visibility_status === 'Hidden' ? 'Hidden' : 'Published',
           tenant: r.tenant_name || (isOccupied ? 'Active Resident' : null),
           tenantId: r.tenant_profile_id || null,
           paid: isOccupied,

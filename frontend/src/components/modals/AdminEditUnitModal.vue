@@ -69,6 +69,18 @@ const billingRule = ref<string>('Rent + ₱200 / occupant water');
 // description with a sentence describing no unit in particular.
 const amenitiesText = ref<string>('');
 const editPhotoUrl = ref<string>('');
+
+/**
+ * Whether the unit appears on the public site.
+ *
+ * `visibility_status_type` is (Published | Hidden) and the admin API has accepted both since
+ * the schema was written, but no control ever sent one - so every unit was permanently
+ * Published, including one under maintenance or held back for a returning resident.
+ *
+ * Hidden is not cosmetic: `public.ts` filters both public listings on Published AND refuses
+ * an inquiry for a room that is not Published, so hiding a unit stops new enquiries for it.
+ */
+const editVisibility = ref<'Published' | 'Hidden'>('Published');
 const isSaving = ref(false);
 
 const occupantsSummary = computed(() => {
@@ -101,6 +113,7 @@ watch(
       monthlyRate.value = newVal.price;
       unitType.value = normalizeUnitType(newVal.type);
       editStatus.value = mapUnitStatusToOperational(newVal.status);
+      editVisibility.value = newVal.visibility === 'Hidden' ? 'Hidden' : 'Published';
       billingRule.value = newVal.billingRule || 'Rent + ₱200 / occupant water';
       amenitiesText.value = newVal.desc || newVal.amenities.join(', ');
       editPhotoUrl.value = newVal.photo || '';
@@ -195,6 +208,7 @@ async function handleSave() {
         description: amenitiesText.value,
         room_type: unitType.value,
         operational_status: editStatus.value,
+        visibility_status: editVisibility.value,
         photo: editPhotoUrl.value,
       });
     }
@@ -421,6 +435,30 @@ async function handleSave() {
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Public visibility - the column existed and the API accepted it; nothing sent it. -->
+        <div>
+          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+            PUBLIC LISTING
+          </label>
+          <div class="relative">
+            <select
+              v-model="editVisibility"
+              class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm font-semibold text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
+              required
+            >
+              <option value="Published">Published — shown on the public site</option>
+              <option value="Hidden">Hidden — not listed, no new enquiries</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground">
+              <ChevronDown class="size-4" />
+            </div>
+          </div>
+          <p class="text-[11px] text-muted-foreground mt-1">
+            Hiding a unit removes it from both public room pages and stops the enquiry form
+            accepting messages about it. Residents already in the unit are unaffected.
+          </p>
         </div>
 
         <!-- Billing Rule -->
