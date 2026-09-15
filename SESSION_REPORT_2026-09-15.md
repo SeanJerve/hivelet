@@ -25,7 +25,62 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `09de591`: reading an enquiry conversation returned a 500 - and there is
+> **LATEST - commit `b3c97e4`: your Audit Trail never showed what changed.**
+>
+> I took the column sweep to the frontend, where the same mistake is much quieter. A wrong
+> column name in the backend is a PostgREST 42703. **In the browser it is `undefined`** - no
+> error at all - and every carefully written fallback then does its job perfectly, on nothing.
+>
+> Three of the Audit Trail's fields were names `audit_logs` does not have. The endpoint
+> returns `select('*')`, so the row keys *are* the column names:
+>
+> | the page read | the table has | what you saw |
+> |---|---|---|
+> | `entity_table` | `entity_type` | **"system"** on every row |
+> | `old_values` | `previous_values` | **"null (Initial record insertion)"** on every row |
+> | `user_agent` | *no such column* | **"not recorded"**, forever |
+>
+> **2,693 rows carry 9 distinct entity types, and 72 carry a before-image.** None of it
+> reached the screen. The one question an audit trail exists to answer - *what did this
+> change?* - was answered **null** every time, and the CSV export wrote the same blanks.
+>
+> The export also substituted **`127.0.0.1`** for a missing address. A plausible IP invented
+> into an audit record is worse than an empty cell; it is an em dash now. The User Agent line
+> is **gone** rather than renamed - nothing records one, and a field that can only ever say
+> "not recorded" is not information.
+>
+> **Same pass: the tenant profile form was promising two edits the API refuses.**
+>
+> `profileUpdateSchema` lists exactly five tenant-editable columns - System Bible §19, a
+> resident does not rename themselves - and Zod strips what it does not declare. The form sent
+> `full_name` and `avatar_url` anyway. Both were discarded silently, the request succeeded,
+> and the success notice appeared. For the name it was worse: the handler copied it into
+> `currentUser.fullName`, so **the header changed too** and the edit looked accepted until the
+> next reload put it back. That field is now read-only and says who to ask.
+>
+> `profiles` has **no `avatar_url` column**, so the photo upload could never persist: pick a
+> file, watch it appear, save, lose it, with a success message in between. The control is
+> removed rather than faked. **Storing one properly is a schema decision** - a column and
+> somewhere for the file to live - and `room_photos` is the pattern this project already has
+> for images; a data URL in a varchar is not it. **Raised for Mrs. Da Silva rather than
+> invented here.**
+>
+> **Verified in the running app:**
+>
+> - the entity column now renders **EXPENSE_ENTRY, INCOME_RECORD, PAYMENT, ROOM** where every
+>   row previously read "system"
+> - the diff panel on a ROOM_UPDATE now shows a **real before-image** -
+>   `{"id":"a0100000-…","floor":1,"capacity":2,"room_type":"Studio","base_price":4500,…}` -
+>   where it previously read "null"
+> - no "User Agent" text anywhere on the page
+>
+> Nothing was written. `check:columns` clean; frontend typechecks.
+>
+> **Also checked and found correct:** `bill.amount_paid` and `bill.amount_outstanding` are not
+> columns, but the tenant bills endpoint computes and returns both - traced before calling it
+> a defect.
+
+> **PREVIOUS - commit `09de591`: reading an enquiry conversation returned a 500 - and there is
 > now a suite so this class of bug cannot come back.**
 >
 > Sibling of `cabe216`, found by **going looking for one** rather than waiting to trip over it.
@@ -860,7 +915,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**72 commits, all pushed to `main`. Working tree clean.**
+**74 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
