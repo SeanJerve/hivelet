@@ -509,9 +509,12 @@ the summary still counted it. That predates the session.
   columns are `GENERATED ALWAYS AS … STORED` — PostgreSQL derives them and *rejects* any
   write naming them. All 937 rows are correct. **Violation count is now 1, not 5.**
 - Recounted everything else. Correct as written: 21 tables / RLS forced / zero policies,
-  33 units, floors 11-11-10-1, 39 permissions, ₱3,432,990.47 personal at 58.95%.
+  33 units, floors 11-11-10-1, ₱3,432,990.47 personal at 58.95%.
   Corrected: 158 → **164** database calls, `admin.ts` 2,056 → **2,263** lines,
-  5 → **9** services, "20 tables" → **21**.
+  5 → **9** services, "20 tables" → **21**. **"39 permissions" was itself wrong and
+  survived this recount** — `rbac.ts`'s `PERMISSIONS` object (lines 38-89) holds
+  exactly **35**, matching `docs/claude_pipeline/outputs/PHASE1_ARCHITECTURE_AND_PATTERN.md`,
+  which had it right all along. Found 2026-09-15 while spot-verifying this same line.
 
 ### Interface
 - ~20 fabrications removed. The audit log invented four entries attributed to the owner on

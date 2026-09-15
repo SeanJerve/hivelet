@@ -93,7 +93,7 @@ graph LR
     end
 
     subgraph T2 ["TIER 2 &nbsp; API &amp; Security"]
-        SEC["Helmet &middot; CORS &middot; JWT<br/>requirePermission<br/>39 permissions, 4 roles"]
+        SEC["Helmet &middot; CORS &middot; JWT<br/>requirePermission<br/>35 permissions, 4 roles"]
     end
 
     subgraph T3 ["TIER 3 &nbsp; Domain Services"]
