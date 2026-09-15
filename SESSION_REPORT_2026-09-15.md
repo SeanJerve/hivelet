@@ -25,8 +25,43 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `cabe216`: every reply Mrs. Da Silva sent to an enquiry failed, and blamed
-> the wrong thing.**
+> **LATEST - commit `6f59ebe`: the inbox never showed a lead's status, and a dead lead could
+> never be closed.**
+>
+> Every thread header carried a **hardcoded "Active Prospect"** badge. The lead she had
+> already answered, the one that became a tenancy, and the one that went nowhere all looked
+> identical - and the list rows carried no status at all. `inquiry_status_type` has four
+> values and the page displayed none of them.
+>
+> **'Closed' had no writer anywhere in the system**, so a dead lead stayed in the inbox
+> forever. The API has accepted it since the schema was written.
+>
+> Now the real status appears on every row and in the thread header, colour-coded by meaning;
+> a **Close Lead** action sits beside Convert to Tenant behind the same confirmation pattern
+> the ledger and expenses pages use; and both actions disappear once a lead is Converted or
+> Closed, replaced by a line saying which - a finished lead takes no further action.
+>
+> The confirmation says what closing does *and does not* do: the thread stays on record and can
+> still be read, it simply stops sitting in the inbox as something awaiting an answer. That is
+> the question the button raises.
+>
+> `Inquiry.status` is now **required** rather than optional. The column is NOT NULL and the
+> single mapper always sets it, so the optional only forced every reader to handle an absence
+> that cannot happen - part of why the page reached for a hardcoded badge in the first place.
+>
+> **Verified in the running app with nothing written.** Both rows render their true status
+> (Pending, Contacted) and the header renders the active one's. Close Lead was then driven with
+> `window.fetch` stubbed so the request was **captured and blocked**:
+>
+> ```
+> confirmation title: "Close this lead"
+> PATCH /api/admin/inquiries/82f74d64-...   {"status":"Closed"}
+> ```
+>
+> `inquiries` unchanged: 1 Pending, 1 Contacted, `max(updated_at)` still 2026-08-25.
+
+> **PREVIOUS - commit `cabe216`: every reply Mrs. Da Silva sent to an enquiry failed, and
+> blamed the wrong thing.**
 >
 > `POST /admin/inquiries/:id/messages` looked the lead up with
 >
@@ -784,7 +819,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**68 commits, all pushed to `main`. Working tree clean.**
+**70 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
