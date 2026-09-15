@@ -300,8 +300,15 @@ left its last two rows orphaned from their header.*
 > document was accurate when it was written.**
 >
 > Run `node backend/scripts/measure-doc-citations.mjs` for the current number and the full
-> list. It is deliberately **not** one of the nine verification suites: a gate that is red on
-> the day it ships teaches people to ignore red.
+> list. It is deliberately **not** one of the verification suites: a gate that is red on the
+> day it ships teaches people to ignore red.
+>
+> **What *is* a suite, as of 2026-09-15, is `npm run check:matrix`.** It does not check the line
+> numbers — it checks that this document agrees with itself: that all 44 requirements have a
+> row, that every status is one §1.3 defines, that the Summary Counts table's counts, id lists,
+> percentages and Total match the rows they describe, that §3.1's tier table totals the same,
+> and that no row is marked MAPPED while claiming it has no backing route. Green on the day it
+> shipped, which is the whole difference.
 >
 > **What is still reliable here: the file name, the route path, the table's judgements.** What
 > is not: the line numbers. Follow a citation by searching for the route, not by jumping to the

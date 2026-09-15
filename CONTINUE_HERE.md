@@ -405,11 +405,20 @@ cd backend  && npm run check:api        # 53 endpoint, RBAC, perimeter, export a
             npm run check:fields      # every snake_case field the frontend reads is one the API sends
 cd frontend && npm run check:tokens     # design tokens resolve to the right colours
 cd ..       && npm run check:rules      # the BR register agrees with itself
+            npm run check:matrix     # the traceability matrix agrees with itself
             npm run check:secrets    # scans for committed credentials
             npm run backup            # snapshot the live database before risky work
 ```
 
-`check:columns` and `check:fields` were added on 2026-09-15 and both read the live schema at
+`check:matrix` was added on 2026-09-15, last of the ten. The Summary Counts table in the
+traceability matrix claimed a **Total of 44** while enumerating **43** — FR-013 had been moved
+out of MISSING the day before and never added to any other row, so it fell out of the one
+table a panel adds up. Three places in that document gave three different answers about the
+same 44 rows. All of it is arithmetic, and none of it was visible to a reader. The check reads
+the status vocabulary from the document's own §1.3 rather than hardcoding it, and it was made
+to fail against five separate mutations before it was trusted.
+
+`check:columns` and `check:fields` were added the same day and both read the live schema at
 runtime, so neither can go stale. They exist because two broken column names had survived
 every other suite: `POST /admin/inquiries/:id/messages` selected columns `inquiries` does not
 have and reported it as "Inquiry not found", and the matching GET ordered by a column

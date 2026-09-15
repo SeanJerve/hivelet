@@ -71,10 +71,16 @@ STEP 2 - prove the environment works before changing anything.
               npm run check:adyen       23 HMAC signature checks, no network
               npm run check:billing     water / grace / period / receipt allocation
               npm run check:writes      no database write discards its result
+              npm run check:columns     every column backend/src names exists in the live schema
+              npm run check:fields      every snake_case field the frontend reads is one the API sends
+  cd ../frontend && npm run check:tokens  design tokens resolve to the right colours
   cd .. && npm run check:rules          the business rule register agrees with itself
+           npm run check:matrix         the traceability matrix agrees with itself
            npm run check:secrets        scans for committed credentials
 
-  All seven were green at handoff: 53 / 23 / all / all / all / all / clean.
+  All ten were green at handoff. This list read SEVEN until 2026-09-15 and had
+  been wrong since the eighth was added - if a suite exists and this list omits
+  it, nobody runs it, which is the same as not having written it.
   If any of them is not, that is the first thing to look at - do not start new
   work on a red suite.
 

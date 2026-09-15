@@ -12,6 +12,7 @@
     "verify:rbac": "node database/verify-rbac.mjs",
     "check:secrets": "node scripts/check-secrets.mjs --all",
     "check:rules": "node scripts/check-br-crosswalk.mjs",
+    "check:matrix": "node scripts/check-matrix-crosswalk.mjs",
     "hooks:install": "git config core.hooksPath .githooks && echo \"pre-commit secret scanner installed\"",
     "backup": "node scripts/backup-database.mjs"
   },
