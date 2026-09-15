@@ -341,6 +341,20 @@ panelist has to read. Every row below is a defect already established in
 `docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md`; none is a new finding, and each carries the phase that owns it
 and a one-line remediation.
 
+> **Status as at 2026-09-15, verified against live code and the live catalogue.** A-1, A-5 and
+> A-7 are struck below. **All seven of the remaining rows are also closed or superseded**, and
+> the rows are kept as the Phase 1 record rather than rewritten:
+>
+> | Row | Verified 2026-09-15 |
+> | :--- | :--- |
+> | **A-2** water rate hardcoded as `200` in four places | **Closed.** Zero occurrences of `occupants * 200` remain in `backend/src`; the rate comes from `system_settings` through `billingService.computeWaterFee()`. |
+> | **A-3** share divisor hardcoded as `rentAmount / 2` | **Closed.** The two write sites are gone. The column is `GENERATED ALWAYS AS (rent_amount / 2.0) STORED` and cannot be written at all. One export-only fallback remains at `incomeReportExport.ts:290`. |
+> | **A-4** grace period hardcoded at 10 days | **Closed, and the premise moved.** It is not 10 and it is not the seeded 7: **OD-16** settled that this property grants no grace period, and migration `016` set `grace_period_days` to **0**. `billingService` reads it. |
+> | **A-6** foreign keys 17 CASCADE / 4 SET NULL / 0 RESTRICT | **Closed by `005`, and recounted.** Live: **8 RESTRICT / 11 CASCADE / 18 NO ACTION / 1 SET NULL**. The eighth RESTRICT is `clusters_expense_area_fkey`, added by `012` after the earlier counts were taken. |
+> | **A-8** two unauthenticated payment endpoints | **Superseded — the route names in this row no longer exist.** Zero occurrences of `mock-gateway`; they are `/public/payments/local-cashier` and `/…/complete`, and both return **404 whenever Adyen is configured**, asserted by `npm run check:api`. |
+> | **A-9** `PH` seeded `floor = 3` | **Closed by `007`.** Live: `PH` is on floor **4**. |
+> | **A-10** `rooms.floor` contradicts the survey | **Closed by `015`.** Live distribution is **11 / 11 / 10 / 1** across 33 rooms, matching the owner's survey exactly. |
+
 | # | Defect | Evidence | Phase | Remediation |
 |---|---|---|---|---|
 | A-1 | ~~`system_settings` is read by zero lines of code~~ **CLOSED** | `services/settingsService.ts` owns it; `billingService.ts` consumes it | **Done (2026-09-13)** | `settingsService.ts` was built and every parameter read routes through it. |
