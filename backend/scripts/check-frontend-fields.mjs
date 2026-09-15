@@ -29,6 +29,20 @@
  * Making it table-aware means tracing which endpoint feeds which mapper, and that
  * is a larger piece of work. Recorded rather than overclaimed.
  *
+ * It also sees only snake_case. Database columns are snake_case, so that covers
+ * every field read straight off a row — but several endpoints answer in
+ * camelCase of their own (`/tenant/payments/checkout` returns `sessionId`,
+ * `sessionData`, `clientKey`, `environment`, `isLive`; `/public/water-rate`
+ * returns `waterRatePerOccupant`, `lindaFixedWaterCharges`; auth returns a
+ * `token` and a `user`). A misspelling in those is exactly as silent, and this
+ * check will not see it. They were verified by hand on 2026-09-15 and were
+ * correct; by hand does not scale, and the honest statement is that a green run
+ * here means the snake_case surface is clean, not the whole of it.
+ *
+ * Closing that gap means collecting the API's own response keys from the backend
+ * source, where a response literal and a Zod request schema look alike — worth
+ * doing, not worth guessing at.
+ *
  * The schema is read at runtime from PostgREST's OpenAPI document, not written
  * down here, so it cannot go stale.
  */

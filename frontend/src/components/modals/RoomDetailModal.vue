@@ -1,23 +1,28 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
-import { isRoomDetailModalOpen, activeRoomDetail, isLiveChatheadOpen, selectedInquirerId, selectedPublicInquiryUnit } from '@/lib/systemState';
-import { isAdmin } from '@/lib/authStore';
-import { X, MessageSquare, Building2, Check, ShieldCheck, Clock, Wrench, Home } from 'lucide-vue-next';
-
-const route = useRoute();
+import { isRoomDetailModalOpen, activeRoomDetail } from '@/lib/systemState';
+import { X, Building2, Check, ShieldCheck, Clock, Wrench, Home } from 'lucide-vue-next';
 
 function closeModal() {
   isRoomDetailModalOpen.value = false;
 }
 
-function handleInquireDirectly() {
-  if (activeRoomDetail.value) {
-    selectedPublicInquiryUnit.value = activeRoomDetail.value.unitCode;
-  }
-  closeModal();
-  selectedInquirerId.value = 'inq-1';
-  isLiveChatheadOpen.value = true;
-}
+/**
+ * The "Inquire Directly" button and its handler are gone, and none of it could ever run.
+ *
+ * This modal is opened from exactly one place - `RoomDirectoryView`, mounted at exactly one
+ * route, `/admin/directory`, whose `meta.roles` is `['admin']`. The button's own guard was
+ * `v-if="!isAdmin && !route.path.startsWith('/admin')"`, so both halves were false for the
+ * only role that can reach it. It could not render.
+ *
+ * Had it rendered, the handler set `selectedPublicInquiryUnit` and `selectedInquirerId` -
+ * both write-only, read by nothing in the codebase - and opened `isLiveChatheadOpen`, whose
+ * component `LiveChatheadModal` is imported by no file and therefore never mounted. Three
+ * dead things in one function.
+ *
+ * `LiveChatheadModal.vue` itself is left on disk: whether a live chat should exist, and
+ * against which endpoint - it currently posts to an administrator-only route - is a decision
+ * for Mrs. Da Silva, not a transcription.
+ */
 
 function getStatusBadgeClass(status?: string) {
   if (status === 'settled' || status === 'occupied') return 'badge-success';
@@ -122,15 +127,6 @@ function getStatusBadgeClass(status?: string) {
 
       <!-- Footer Actions -->
       <div class="p-4 px-6 border-t border-border flex items-center justify-end gap-3">
-        <!-- If opened by a guest on the public showcase, show Inquire button -->
-        <button 
-          v-if="!isAdmin && !route.path.startsWith('/admin')"
-          @click="handleInquireDirectly" 
-          class="btn-primary"
-        >
-          <MessageSquare class="size-3.5 text-white" />
-          <span>Inquire Directly</span>
-        </button>
         <button @click="closeModal" class="btn-secondary">
           Close Specs
         </button>

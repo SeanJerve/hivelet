@@ -454,8 +454,9 @@ export const isAdminEditUnitModalOpen = ref(false);
 export const activeAdminEditUnit = ref<RoomItem | null>(null);
 export const isOnsitePaymentModalOpen = ref(false);
 export const isLiveChatheadOpen = ref(false);
-export const selectedInquirerId = ref('inq-1');
-export const selectedPublicInquiryUnit = ref('');
+// `selectedInquirerId` and `selectedPublicInquiryUnit` are gone. Both were written in one
+// place - `RoomDetailModal.handleInquireDirectly()`, on a button that could not render - and
+// read in none. A value nothing reads is not state, it is a note to nobody.
 // `isTenantLoginModalOpen` and `isGuestEntryModalOpen` are gone with the two modals they
 // controlled. Nothing ever set either to true, so neither could be opened; they were left
 // over from before real authentication existed, and carried a hardcoded demo password and an
