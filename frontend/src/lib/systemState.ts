@@ -453,7 +453,6 @@ export const activeRoomDetail = ref<RoomItem | null>(null);
 export const isAdminEditUnitModalOpen = ref(false);
 export const activeAdminEditUnit = ref<RoomItem | null>(null);
 export const isOnsitePaymentModalOpen = ref(false);
-export const isLiveChatheadOpen = ref(false);
 // `selectedInquirerId` and `selectedPublicInquiryUnit` are gone. Both were written in one
 // place - `RoomDetailModal.handleInquireDirectly()`, on a button that could not render - and
 // read in none. A value nothing reads is not state, it is a note to nobody.

@@ -619,10 +619,10 @@ async function submitInquiry() {
 
           <!--
             The "Chat Live" button that stood here closed this form and set
-            `isLiveChatheadOpen` - and `LiveChatheadModal` is imported by nothing. It is not
-            mounted in `App.vue` or in any view, so that flag renders nothing, anywhere. A
-            visitor who had typed their name, number, email and message clicked it and watched
-            the form vanish with nothing in its place.
+            `isLiveChatheadOpen`, whose component was imported by nothing and so could never
+            render. A visitor who had typed their name, number, email and message clicked it
+            and watched the form vanish with nothing in its place. The component has since been
+            deleted along with that flag.
 
             Removed rather than wired up: the chat component posts to
             `/admin/inquiries/:id/messages` with a hardcoded `selectedInquirerId = 'inq-1'` -

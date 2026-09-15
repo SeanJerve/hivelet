@@ -1,7 +1,22 @@
 # Migration Verification Record — `005`–`010`
 
 **Run 2026-09-13 against PostgreSQL 16 (`postgres:16-alpine`) in a throwaway container.**
-Not run against Supabase. These migrations remain **unapplied to the live database**.
+Not run against Supabase.
+
+> [!NOTE]
+> **Status changed since this record was written, and the struck line below no longer holds.**
+> It said these migrations remained unapplied to the live database. They were applied. The
+> live `supabase_migrations.schema_migrations` table lists **12 applied migrations**, from
+> `20260913090534 fix_replace_allocations_enum_cast` through
+> `20260915094251 resolve_login_identifier` - including `security_posture_corrections`, the two
+> `penthouse_area` migrations and `no_grace_period`.
+>
+> The record of the container run is left exactly as written, because it is a record of a run
+> and the run has not changed. Only the present-tense claim about production needed marking: a
+> sentence reading "remains unapplied" is taken as current however old the heading above it is,
+> and acting on it would mean re-applying migrations that are already in place.
+
+~~These migrations remain **unapplied to the live database**.~~
 
 Live-data preconditions *were* checked directly against production, read-only, with
 `database/check-migration-preconditions.mjs`. **No blockers.**

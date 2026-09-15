@@ -19,9 +19,11 @@ function closeModal() {
  * component `LiveChatheadModal` is imported by no file and therefore never mounted. Three
  * dead things in one function.
  *
- * `LiveChatheadModal.vue` itself is left on disk: whether a live chat should exist, and
- * against which endpoint - it currently posts to an administrator-only route - is a decision
- * for Mrs. Da Silva, not a transcription.
+ * `LiveChatheadModal.vue` has since been deleted. It was imported by no file, so it could
+ * never render; its three triggers were removed first; and it posted to
+ * `/admin/inquiries/:id/messages`, an administrator-only route, with a hardcoded inquirer id -
+ * so even mounted it could not have worked for the guests it was shown to. A live chat may
+ * well be worth building; it would not start from that code.
  */
 
 function getStatusBadgeClass(status?: string) {
