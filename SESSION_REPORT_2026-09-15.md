@@ -25,7 +25,48 @@
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `6f59ebe`: the inbox never showed a lead's status, and a dead lead could
+> **LATEST - commit `09de591`: reading an enquiry conversation returned a 500 - and there is
+> now a suite so this class of bug cannot come back.**
+>
+> Sibling of `cabe216`, found by **going looking for one** rather than waiting to trip over it.
+>
+> `GET /admin/inquiries/:id/messages` ordered by `created_at`. **`inquiry_messages` has no
+> such column** - it has `sent_at`. PostgREST answers that with 42703 and the handler reports
+> it as an internal error, so reading any thread was a **500**. Together with `cabe216`, which
+> broke *sending* a reply, **the entire enquiry conversation feature was dead**: Mrs. Da Silva
+> could not read a thread and could not answer one.
+>
+> Proven, not inferred, with a read-only probe through the real client:
+>
+> | query | result |
+> |---|---|
+> | `.order('created_at')` on `inquiry_messages` | **42703** — column does not exist |
+> | `.order('sent_at')` | **OK, 2 rows** |
+> | `.order('created_at')` on `ticket_messages` | **OK** — that table does have it |
+>
+> **Why there is now a suite for this.** Nothing catches this class at build time. It
+> typechecks, it lints, it deploys, and it fails the first time a person uses the feature -
+> disguised, because the surrounding code turns the error into something friendlier and
+> wronger ("Inquiry not found" for a fault in the query). **Two of them survived in a codebase
+> that passes seven verification suites.**
+>
+> **`check:columns`** now reads every `.from()` chain in `backend/src` and checks the select
+> list, the embedded relations, every filter column (`.eq` / `.ilike` / `.in` / `.order` and
+> the rest) and every insert/update key against the live schema. 21 tables; clean with both
+> bugs fixed.
+>
+> **The column map is not written down in the script.** It is read at runtime from PostgREST's
+> own OpenAPI document, so it cannot go stale - which is the exact failure this audit spent
+> the day correcting in the project's *documentation*.
+>
+> **The check was confirmed to actually fail.** Putting `created_at` back produced
+> `FAIL backend/src/routes/admin.ts:2851 inquiry_messages.created_at [.order()]` - and it also
+> caught a `sed` of mine that had flipped `ticket_messages` to the wrong column while
+> restoring the first one. A check that has never failed is not evidence of anything.
+>
+> `check:columns` clean · `check:api` 53/53 · backend typechecks. Nothing written.
+
+> **PREVIOUS - commit `6f59ebe`: the inbox never showed a lead's status, and a dead lead could
 > never be closed.**
 >
 > Every thread header carried a **hardcoded "Active Prospect"** badge. The lead she had
@@ -819,10 +860,10 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**70 commits, all pushed to `main`. Working tree clean.**
+**72 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
-· `check:secrets` · `check:tokens`).
+· `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
 
 ---
 
