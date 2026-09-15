@@ -7,7 +7,29 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST CYCLE - commit `8434d45`: EDITING ANY NON-STUDIO UNIT WAS BEING REJECTED BY THE
+> **LATEST CYCLE: clean - nothing to fix. Inquiry status handling checked and correct.**
+>
+> Chased the inquiry status vocabulary, expecting the same shape as the four bugs above.
+> `InquiriesView` has **no `<option>` elements at all** and declares a filter typed
+> `'all' | 'new' | 'replied'` while the enum is `Pending | Contacted | Converted | Closed` -
+> two completely different vocabularies, which looked promising.
+>
+> **It is not a bug.** Status is never set from that view. Transitions happen server-side:
+> replying moves an inquiry to **Contacted**, and onboarding marks it **Converted** and writes
+> `converted_tenant_id` (the BR-009 fix). Live data confirms it works - Pending 1,
+> Contacted 1. The view only posts messages.
+>
+> The one oddity is a `statusFilter` ref that is **declared and never used** - `filteredInquiries`
+> filters on the search box alone, and there is no status control rendered. So nothing appears
+> broken to a user; it is a dropped intention, not a defect. **Left it alone** rather than
+> refactoring for its own sake, but noting it as a loose end.
+>
+> Also confirmed reachable: all four inquiry states have a path, and two are in live use.
+>
+> A clean cycle is a real result. The same instinct that found four genuine bugs has to be
+> willing to come back empty, or it starts manufacturing them.
+
+> **PREVIOUS CYCLE - commit `8434d45`: EDITING ANY NON-STUDIO UNIT WAS BEING REJECTED BY THE
 > DATABASE. Fourth functional bug, and the most consequential yet.**
 >
 > The Edit Unit modal offered **Studio / 1 Bedroom / 2 Bedroom / 3 Bedroom**. Only the first
