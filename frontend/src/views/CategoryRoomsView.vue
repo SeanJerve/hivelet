@@ -10,7 +10,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { CANONICAL_UNITS, peso, type RentableUnit } from '@/lib/canonicalUnits';
-import { isLiveChatheadOpen, showToast, LANDLADY, rooms, fetchRooms, roomsFetchFailed } from '@/lib/systemState';
+import { showToast, LANDLADY, rooms, fetchRooms, roomsFetchFailed } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -244,10 +244,6 @@ const inquiryMsg = ref('Good day po! Interested ako sa unit. Pwede po bang mag-v
 function openInquiry(unitCode: string) {
   inquiryUnit.value = unitCode || activeUnit.value?.unitCode || '1a';
   isInquiryOpen.value = true;
-}
-
-function openChat() {
-  isLiveChatheadOpen.value = true;
 }
 
 /**
@@ -598,16 +594,20 @@ async function submitInquiry() {
             <textarea v-model="inquiryMsg" rows="4" class="w-full p-3 border border-border rounded-xl text-xs resize-none" required></textarea>
           </div>
 
-          <div class="pt-2 flex justify-between items-center gap-2">
-            <button 
-              type="button" 
-              @click="isInquiryOpen = false; openChat();" 
-              class="btn-secondary"
-            >
-              <MessageCircle class="size-3.5" />
-              <span>Chat Live</span>
-            </button>
+          <!--
+            The "Chat Live" button that stood here closed this form and set
+            `isLiveChatheadOpen` - and `LiveChatheadModal` is imported by nothing. It is not
+            mounted in `App.vue` or in any view, so that flag renders nothing, anywhere. A
+            visitor who had typed their name, number, email and message clicked it and watched
+            the form vanish with nothing in its place.
 
+            Removed rather than wired up: the chat component posts to
+            `/admin/inquiries/:id/messages` with a hardcoded `selectedInquirerId = 'inq-1'` -
+            an administrator-only endpoint a guest holds no token for - so mounting it would
+            put a control in front of exactly the people it cannot work for. Sending the form
+            below reaches the landlady's inbox properly. Raised for Mrs. Da Silva.
+          -->
+          <div class="pt-2 flex justify-end items-center gap-2">
             <button 
               type="submit" 
               :disabled="isSubmitting"

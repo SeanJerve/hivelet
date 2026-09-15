@@ -456,8 +456,10 @@ export const isOnsitePaymentModalOpen = ref(false);
 export const isLiveChatheadOpen = ref(false);
 export const selectedInquirerId = ref('inq-1');
 export const selectedPublicInquiryUnit = ref('');
-export const isTenantLoginModalOpen = ref(false);
-export const isGuestEntryModalOpen = ref(false);
+// `isTenantLoginModalOpen` and `isGuestEntryModalOpen` are gone with the two modals they
+// controlled. Nothing ever set either to true, so neither could be opened; they were left
+// over from before real authentication existed, and carried a hardcoded demo password and an
+// invented resident's name in their markup.
 export const isTicketHoverModalOpen = ref(false);
 export const activeHoverTicket = ref<MaintenanceTicket | null>(null);
 

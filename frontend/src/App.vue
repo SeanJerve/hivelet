@@ -10,8 +10,6 @@ import ToastContainer from '@/components/ui/ToastContainer.vue';
 import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
 import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
-import TenantLoginModal from '@/components/modals/TenantLoginModal.vue';
-import GuestEntryModal from '@/components/modals/GuestEntryModal.vue';
 import TicketHoverModal from '@/components/modals/TicketHoverModal.vue';
 
 const route = useRoute();
@@ -77,8 +75,6 @@ const isPublicPage = computed(() =>
     <AdminEditUnitModal />
     <RoomDetailModal />
     <OnsitePaymentModal />
-    <TenantLoginModal />
-    <GuestEntryModal />
     <TicketHoverModal />
   </div>
 </template>
