@@ -7,7 +7,35 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST: PHONE NUMBER SIGN-IN NOW WORKS, END TO END** - `43c4608`, `d8d6013`, `1732474`,
+> **LATEST - commit `643bdd9`: the tenant profile page was inventing an email address.**
+>
+> Direct follow-through from phone sign-in. Having made phone-only tenants possible, I went
+> looking for whatever in the app assumes an email exists - and the first thing found was
+> `TenantProfileView` falling back to the literal **`tenant@hivelet.com`**, displayed to the
+> resident beside a mail icon as if it were their own address.
+>
+> **The comment three lines below it** describes removing exactly this class of thing from
+> this very file - a fabricated emergency contact "Maria Da Silva", a fake phone
+> "0918-987-6543", an invented Facebook URL. That cleanup left the fake email directly above
+> it.
+>
+> It was harmless while every profile had an email. **It is not any more** - OD-09 permits a
+> tenant with none, and since phone sign-in landed such a tenant can reach this page.
+>
+> Now shows the real address when there is one, and otherwise says there is none, naming the
+> phone they actually sign in with. Display-only; email was never in the save payload, so
+> nothing was ever written.
+>
+> **Honest limit:** verified as Alberto (his real address renders, the fake one is gone), but
+> the empty-email branch is **not** visually confirmed - zero live profiles have a null email
+> today, so there is no tenant to exercise it with. Typechecked and building, but I have not
+> watched it render.
+>
+> Also swept: `TenantManagementView`'s search calls `.toLowerCase()` on the email and would
+> throw on a null - safe only because `systemState` maps it to an em dash first. `AppHeader`
+> degrades to blank rather than breaking.
+
+> **PREVIOUS: PHONE NUMBER SIGN-IN NOW WORKS, END TO END** - `43c4608`, `d8d6013`, `1732474`,
 > plus migration `021`.
 >
 > You caught me doing half the job here, and you were right. My first pass made email optional
