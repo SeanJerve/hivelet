@@ -7,7 +7,38 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-> **LATEST CYCLE - commit `c17958e`: the expenses spec lists five Property Areas; there are
+> **LATEST CYCLE - commit `430d4e1`: A REAL FUNCTIONAL BUG, AND IT HAS BEEN COSTING YOU
+> SOMETHING. Needs a decision from Mrs. Da Silva.**
+>
+> The expense form's Property Area picker was hardcoded in **two** places, both listing five
+> areas. **Penthouse was missing, so there was no way to file an expense against it.**
+> Everything else already supported it - the enum, the lookup table, the backend constant,
+> even the frontend type. Only the two dropdowns were short. Fixed, and both now render from
+> a single shared list so they cannot drift again. **Verified in the running app.**
+>
+> **What it was costing.** The live ledger holds **sixteen entries whose description names the
+> penthouse** - pump repairs, hardware, labour for Randy Millete, "Money Given to Dianna
+> (penthouse rental)". None is filed under Penthouse, because none could be:
+>
+> | Filed under | Entries | Amount |
+> | :--- | ---: | ---: |
+> | Other Expenses / Personal | 5 | **PHP 35,228.00** |
+> | Back Apartment | 4 | PHP 11,075.00 |
+> | Boarding House | 7 | PHP 8,895.00 |
+>
+> **The first row is the one that matters.** "Other Expenses / Personal" is a non-rental area,
+> so it is reported but **never subtracted from rental income** - while the penthouse is let
+> to tenants, which makes its upkeep an operating cost by this project's own stated rule.
+> So roughly **PHP 35,000 of apparent penthouse upkeep is currently outside Net Operating
+> Income**.
+>
+> **I changed no data.** Whether a given row truly belongs to the Penthouse is the owner's
+> accounting judgement - a description mentioning the penthouse does not prove the cost is
+> the penthouse's, and re-filing sixteen historical rows would restate her Net Operating
+> Income. **This one is for Mrs. Da Silva.** What I fixed is that the interface no longer
+> forces the wrong answer.
+
+> **PREVIOUS CYCLE - commit `c17958e`: the expenses spec lists five Property Areas; there are
 > six, and the code already said so.**
 >
 > `docs/10_MONTHLY_EXPENSES_REPORT.md` Section 2 enumerates five areas and omits **Penthouse**.
@@ -164,7 +195,7 @@
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**36 commits, all pushed to `main`. Working tree clean.**
+**38 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`).
