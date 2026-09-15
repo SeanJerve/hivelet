@@ -288,7 +288,33 @@ The grace window it measures against was closed separately on 2026-09-13: `compu
 > | **FR-019** Cash Flow | MISSING | **Still MISSING.** No endpoint aggregates income, expenses or net cash flow; there is no `financialReportService`. |
 > | **FR-020** Profitability Analytics | MISSING | **Still MISSING.** Same absence, and `ANALYTICS_VIEW` still guards no route. |
 >
-> **Corrected counts: MISSING 2 (4.5%), not 9 (20.5%).** The rows above are left in place rather
+> **Corrected counts: MISSING 2 (4.5%), not 9 (20.5%).**
+>
+> ---
+>
+> **Second pass, the PARTIAL rows and the per-requirement notes. Four more are stale, and one
+> of my own corrections above was wrong.**
+>
+> | Note | What it says | Retested 2026-09-15 |
+> | :--- | :--- | :--- |
+> | **FR-034** | *"the backend multiplies by a literal `200` … a configured rate that nothing reads"* | **No longer true.** `computeWaterFee()` in `billingService.ts` reads the configured rate, and the comment beside it names the change: *"Previously `occupants * 200`, which could not be changed without a deploy."* |
+> | **FR-036** | *"**Zero backend lines** read or write any of them … `occupants * 200` applies to every unit, LF and LB included"* | **No longer true.** `computeWaterFee()` calls `getLindaFixedWaterCharge(roomNumber)` first and returns a `linda-fixed` basis when it matches - the exact case BR-040 excludes from the per-occupant model. |
+> | **FR-032** | *"the rent period arrives from the client … the 50% share and the remitted amount are computed and then discarded. **Zero of three** auto-computations persist"* | **Backwards now.** The period is derived by `computeRentPeriod()` from the stored anniversary (BR-033). The other two are `GENERATED ALWAYS` columns in the live database - `fifty_percent_share` as `rent_amount / 2.0` and `remitted_amount` as `rent_amount + water_payment` - which is *why* the handler does not write them. Three of three. |
+> | **FR-015** | row reads **IMPLEMENTED**; the coverage table counts it under **PARTIAL** | **The table disagrees with its own row.** The row is right. Its note also still cites the `mock-gateway` endpoints as unauthenticated; both are `local-cashier` now and return 404 whenever a gateway is configured. |
+>
+> **And a correction to my own work, one section above.**
+>
+> The MISSING retest marked **FR-033 implemented**, citing the occupant count carried forward
+> from the tenancy. **That was too generous, and this document had already answered it.** The
+> FR-033 note considers exactly that evidence and rejects it: the carry-forward is
+> *assignment-scoped*, and FR-033 asks for *month-scoped* pre-fill from the same tenant's
+> previous month entry. Retested today: **nothing reads the prior month's
+> `monthly_income_records.occupants`.** FR-033 stands as **MISSING**, and the corrected count
+> above should read **MISSING 3, not 2**.
+>
+> *Recorded rather than quietly edited. A retest that overturns a register's judgement without
+> engaging its stated reasoning is not a retest - and this document's reasoning was better than
+> mine.* The rows above are left in place rather
 > than rewritten, so a reader can see what the table said and what was found - a register that
 > silently edits its own history is not more trustworthy for it.
 >
