@@ -79,7 +79,40 @@ chat should exist. What "overdue" should mean for a unit rather than a bill.
 > Worth knowing either way: the public enquiry form validates format, not content. Nothing
 > stops the next one.
 
-> **LATEST - commit `4c34b5d`: a one-page summary at the top of this file.**
+> **LATEST - commit `1b3a64a`: the document findings recorded as an eighth sweep.**
+>
+> The seventh sweep put the code lessons into `docs/13_AUDIT_JUDGEMENT_LOG.md`. This one puts
+> the document lessons there, and they generalise past this project:
+>
+> **1. A defect register decays by OVERSTATING - and that is the dangerous direction.**
+> Everyone expects a document to age, and assumes it ages by *missing* new problems. The
+> reverse happens: it lists what was wrong on an afternoon, someone fixes those things, nobody
+> returns. A reader then spends their attention where the register points, and if it points at
+> work already done, **the live problems stay unlisted.** *The cheap habit that prevents it:
+> when you fix something, grep the documents for the thing you fixed - it is the only moment
+> anyone will have both facts in their head at once.*
+>
+> **2. Two registers disagreeing about one fact is worse than either being wrong alone.** One
+> wrong document costs you one wrong belief. Two disagreeing documents cost the standing of
+> both, because the correct response to a contradiction is to trust **neither** - which
+> discards the accurate one too.
+>
+> **3. A line-number citation cannot survive a living codebase.** `admin.ts` is 3,033 lines and
+> the route cited at 730 sits at 1065 - both re-read before writing it down. The durable fix is
+> not renumbering, which buys accuracy until the next commit: **a file name and a route path
+> are stable identifiers, a line number is not.**
+>
+> **4. The System Bible held, and the reason is the useful part.** Not diligence - structure.
+> It describes what the system is *for*, and intent ages slowly. A defect register describes
+> what was *wrong on an afternoon*. **Sort documents by that axis before deciding how far to
+> trust one.**
+>
+> **5. Engage a register's stated reasoning before overturning it.** The FR-033 retest was
+> wrong and the register was right, and it had to be corrected a commit later. A retest that
+> overturns a judgement without reading the reasoning behind it is a second opinion formed with
+> *less* information than the first.
+
+> **PREVIOUS - commit `4c34b5d`: a one-page summary at the top of this file.**
 >
 > This report is newest-first and around thirty blockquotes long. That order is right while the
 > work is running - the newest finding should be the first thing read - and **wrong for anyone
@@ -1609,7 +1642,7 @@ chat should exist. What "overdue" should mean for a unit rather than a bill.
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**110 commits, all pushed to `main`. Working tree clean.**
+**112 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
