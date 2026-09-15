@@ -39,9 +39,26 @@ Smoke-tested at the same time — it reached Cloudflare and issued a working
 tunnel, so the install, the network path and the firewall are all fine. That test
 tunnel was closed immediately; its address was single-use and is already dead.
 
-**One catch:** a terminal that was already open when it installed will not see it.
-If `cloudflared --version` says "not recognized", close that window and open a
-new one.
+**One catch, and you will hit it at least once:** a terminal that was already
+open when the install happened does not see the new PATH. Git Bash says
+`bash: cloudflared: command not found`; PowerShell says "not recognized".
+
+Two ways out:
+
+- **Close that window and open a new one.** Then plain `cloudflared` works
+  everywhere, forever. Worth doing once.
+- **Or call it by full path in the window you already have.** In Git Bash — the
+  quotes matter, there is a space in "Program Files (x86)":
+
+  ```bash
+  "/c/Program Files (x86)/cloudflared/cloudflared.exe" tunnel --url http://localhost:5000
+  ```
+
+  In PowerShell:
+
+  ```powershell
+  & "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --url http://localhost:5000
+  ```
 
 <details>
 <summary>If you ever need to install it again, on another machine</summary>
