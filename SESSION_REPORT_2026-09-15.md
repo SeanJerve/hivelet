@@ -106,7 +106,62 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> # ⚠ **LATEST — commit `5001b0f`: the public sign-in page shipped the administrator's
+> **LATEST — commits `67fa830`, `f43622b`: the rest of what the browser and the laptop are
+> exposed to. Two things verified clean, two recorded for Sean.**
+>
+> ### The bundle carries no resident data — checked, not assumed
+>
+> After the sign-in page finding, the whole built output was swept for anything personal:
+>
+> | | |
+> |---|---:|
+> | Resident names | **0** |
+> | Resident email addresses | **0** |
+> | Resident phone numbers | **0** |
+>
+> The one real phone number in there, `09494150382`, **belongs to no profile** — it is the
+> boarding house's own public contact, used in the footer and as the GCash number. Checked
+> against `profiles` rather than eyeballed.
+>
+> ### The service worker was already right, and now says why
+>
+> Tenants open this on phones, and a boarding-house phone is often a **shared** one. Caching
+> `/api/tenant/*` would leave one resident's bills and tickets in the service worker, ready to
+> serve to whoever opens the app next — **offline, with no token, after a sign-out.**
+>
+> The rule matches `/api/(public|health)` and nothing else, which is correct. **Verified in the
+> shipped worker, not the config:** `dist/sw.js` contains **zero** `api/(admin|tenant|auth)`
+> patterns and precaches 9 static assets only. It had **no comment** saying why, and widening it
+> for offline support would be an easy, well-meant change with no visible symptom. It has one now.
+>
+> ### `npm audit` — backend 0, frontend 4, none of them shipped
+>
+> All four are **devDependencies**: vite 5.4.21 and esbuild 0.21.5. The built app is unaffected.
+> They affect **the machine running `npm run dev`** — and **two are Windows-specific**, which
+> matters because this is a Windows machine:
+>
+> - an **NTLMv2 hash disclosure** through UNC path handling
+> - a **`server.fs.deny` bypass** via alternate paths
+> - plus esbuild: any website you visit can send requests to the dev server and read the response
+>
+> **And `host: true` in `vite.config.ts` binds every network interface**, not just localhost.
+> That is what lets a phone on the same wifi open the tenant portal for testing — a capability
+> worth having — but it means **anyone on that network can reach the dev server while it runs**,
+> and it makes those two Windows advisories reachable from the LAN rather than only from a page
+> in Sean's own browser. On campus wifi that is not a small audience.
+>
+> *Until an hour ago, what that server was handing out included 34 account passwords.*
+>
+> **Documented rather than changed.** The fix is **vite 8, a major upgrade**, and running that
+> unattended on a working build days before a defense is not a trade to make for someone else.
+> Recorded in the handoff with the interim mitigation: **do not leave the dev server running on
+> an untrusted network.**
+>
+> Build re-verified after editing the build config; dev server answering 200.
+>
+> **Thirteen suites green.**
+
+> # ⚠ **PREVIOUS — commit `5001b0f`: the public sign-in page shipped the administrator's
 > password, and every resident's room number.**
 >
 > The login page carried a **"Quick Demo Access — 1-Click Sign In"** panel listing 34 accounts.
@@ -2576,7 +2631,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**159 commits, all pushed to `main`. Working tree clean.**
+**162 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
