@@ -672,6 +672,48 @@ about it, and the shape only exists in how the owner actually issues receipts.
 cheap, it takes one query, and it is the difference between a guard that
 protects the ledger and one that blocks the owner from using it.
 
+#### 15. A check is worthless until it has failed on purpose - three times over
+
+This is the most transferable thing in this document, and it took three
+instances in one session to state it properly.
+
+**A verification suite that passes proves nothing about the suite.** It proves
+the code did not trip the particular string the suite happens to look for. The
+only way to learn what a check actually covers is to break the code deliberately
+and watch it fail - and every time that was done here, the check turned out to be
+narrower than its own headline said.
+
+| Suite | Headline it claimed | What it actually saw |
+| :--- | :--- | :--- |
+| `check:endpoints` | every route has a caller | **Gave a false pass on `/admin/audit-logs`** - a vue-router page path collided with the API path, so an unplugged endpoint read as called. Four wrong versions followed. |
+| `check:writes` | *"every database write must declare what failure means"* | Only writes thrown away **without being named**. `const r = await db...update(...)` with `r` never read walked straight through. |
+| `check:columns` | *"every table, column, filter and write key must exist"* | Not bulk inserts - `.insert(rows.map(a => ({...})))` never matched. Not the column lists inside joins - it read `rooms:room_id (...)` as reaching a table called `room_id`, found that was a column of the parent, and skipped the list. |
+
+Two of those three were found **while writing a sentence claiming the suite had
+it covered**. The sentence was the prompt to test the claim, and the claim was
+wrong both times. That is worth more than either fix.
+
+**None of the three was hiding a live bug.** The codebase was clean underneath
+every hole: 0 unguarded writes, 0 bad columns in any join. So the damage was
+entirely to the *guarantee* - each suite would have let the NEXT one through
+while reporting all clear, which is worse than having no suite at all, because a
+green check stops people looking.
+
+**And the mutation can be the broken thing.** The first attempt at testing
+`check:writes` deleted a `warnIfWriteFailed` call but left an
+`attachResult.error` read two lines below. The suite passed it, correctly - the
+result *was* still examined. From the outside that is indistinguishable from the
+check being broken. **When a mutation is not caught, check the mutation before
+blaming the check.**
+
+**How to run this on any check here:** pick every distinct shape the thing you
+are checking can be written in - not one example of it - then break each shape in
+a real source file, run the suite, and revert in a `finally`. `check:columns` has
+seven such shapes; two of them were invisible. Write the list of shapes down in
+the suite's header, because that list *is* the guarantee.
+
+---
+
 ---
 
 ## 3. Judgement calls a fresh reader might reverse
