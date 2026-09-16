@@ -78,7 +78,25 @@ const registerSchema = z.object({
   emergencyContactPhone: z.string().optional(),
   occupation: z.string().optional(),
   facebookUrl: z.string().optional(),
-  role: z.string().optional(),
+  /**
+   * `role` is NOT accepted here, and must never be added back.
+   *
+   * This schema carried `role: z.string().optional()` until 2026-09-16, on a
+   * route with no `requireAuth` and no `requirePermission`, and
+   * `authService.register()` wrote it straight into the insert as
+   * `role: data.role || 'tenant'`. `user_role_type` accepts `'admin'`.
+   *
+   * So an unauthenticated POST of
+   *     { email, password, fullName, role: 'admin' }
+   * created an administrator and returned a signed token for it - reaching all
+   * 937 income rows, all 45 profiles and the payment verification gate.
+   *
+   * The sign-up form has only ever sent email, password, fullName and
+   * phoneNumber, so removing the field changes nothing any real caller does.
+   * Zod strips unknown keys, so a payload containing `role` is now accepted and
+   * ignored rather than rejected - the attacker learns nothing and the tenant
+   * still gets their account. A role is assigned by the server, never asked for.
+   */
 });
 
 /**

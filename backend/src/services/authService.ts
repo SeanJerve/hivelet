@@ -353,7 +353,8 @@ export interface RegisterData {
   emergencyContactPhone?: string;
   occupation?: string;
   facebookUrl?: string;
-  role?: string;
+  // No `role`. It is not the caller's to choose - see the note in the
+  // register handler and the assignment below.
 }
 
 export async function register(data: RegisterData, ipAddress?: string): Promise<LoginResult> {
@@ -391,7 +392,18 @@ export async function register(data: RegisterData, ipAddress?: string): Promise<
       emergency_contact_phone: data.emergencyContactPhone || null,
       occupation: data.occupation || null,
       facebook_url: data.facebookUrl || null,
-      role: data.role || 'tenant',
+      /**
+       * Always 'tenant'. This read `data.role || 'tenant'`, on a public
+       * endpoint whose schema accepted an arbitrary role string, which made
+       * `POST /api/auth/register` with `role: 'admin'` a working privilege
+       * escalation for anyone who could reach the server.
+       *
+       * Self-registration creates a tenant. An administrator is created by an
+       * administrator, and a prospect by the enquiry flow. If a future caller
+       * genuinely needs to set a role, that belongs on an authenticated route
+       * behind a permission - not here.
+       */
+      role: 'tenant',
       account_status: 'active'
     })
     .select('id, email, full_name, role, account_status')

@@ -308,6 +308,43 @@ if (adminToken) {
   console.log(`  ${eGated ? 'OK  ' : 'FAIL'} ${eNoToken.status}  expenses refused with no token`);
 }
 
+/**
+ * PRIVILEGE ESCALATION GUARD, and it is deliberately STATIC.
+ *
+ * On 2026-09-16 `POST /api/auth/register` - public, no `requireAuth`, no
+ * `requirePermission` - accepted `role` in its body, and `authService.register`
+ * wrote it into the insert as `role: data.role || 'tenant'`. `user_role_type`
+ * accepts `'admin'`. An unauthenticated request could therefore create an
+ * administrator and receive a signed token for it.
+ *
+ * Every other assertion in this file is behavioural, against the running
+ * server. This one cannot be: proving the endpoint IGNORES a role would mean
+ * actually registering an account, and this suite runs against the live
+ * database holding the owner's records. A test that creates an admin to prove
+ * admins cannot be created is not a test worth having.
+ *
+ * So it reads the source instead, and asserts the two halves of the hole are
+ * both gone. Weaker than a behavioural test, stronger than nothing, and honest
+ * about which it is.
+ */
+{
+  const authRoute = fs.readFileSync(path.join(here, '..', 'src', 'routes', 'auth.ts'), 'utf8');
+  const authSvc = fs.readFileSync(path.join(here, '..', 'src', 'services', 'authService.ts'), 'utf8');
+
+  // The schema must not accept a role. Comments are stripped so that the note
+  // explaining the fix does not itself trip the check.
+  const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/[^\n]*/gm, '');
+  const schemaBlock = strip(authRoute).split('const registerSchema')[1]?.split('});')[0] ?? '';
+  const schemaClean = !/\brole\s*:/.test(schemaBlock);
+  schemaClean ? pass++ : (fail++, failures.push('registerSchema accepts a `role` field'));
+  console.log(`  ${schemaClean ? 'OK  ' : 'FAIL'} ---  registerSchema does not accept a role`);
+
+  // The insert must not take a role from the caller.
+  const svcClean = !/role:\s*data\.role\s*\|\|/.test(strip(authSvc));
+  svcClean ? pass++ : (fail++, failures.push('register() writes role from the request body'));
+  console.log(`  ${svcClean ? 'OK  ' : 'FAIL'} ---  register() assigns the role, never the caller`);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 for (const f of failures) console.log('  - ' + f);
 process.exit(fail === 0 ? 0 : 1);
