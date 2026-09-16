@@ -265,6 +265,49 @@ if (live.length) {
     `${rooms.length} units, ${occupied} Occupied, ${assigns.length} active tenancies, no drift`);
 
   /**
+   * A TENANCY THAT ENDED MUST SAY WHEN.
+   *
+   * `vacate` sets `is_active = false` AND `end_date` together, under
+   * `assertWritten`. So a row that is inactive with a NULL `end_date` did not go
+   * through vacate - and you cannot say when that person left, which is the one
+   * thing an ended tenancy is for.
+   *
+   * There are EIGHT, found 2026-09-17. All eight carry **zero income rows**, and
+   * seven of the eight start on or after 2026-08-19 - most of them on
+   * **2026-08-25**, the day the import reassigned units. They are debris from
+   * the same import that left the three duplicate profiles reported above:
+   * superseded rows that were switched off rather than ended.
+   *
+   * No money is attached to any of them, so this is a RATCHET rather than a
+   * failure: eight is the number that exists, and a ninth means a live vacate
+   * left a tenancy hanging - which is a real defect, in a path that runs against
+   * real residents.
+   */
+  const KNOWN_ENDLESS = 8;
+  const endless = (await rows(
+    'room_assignments?select=id&is_active=eq.false&end_date=is.null'
+  )).length;
+
+  if (endless > KNOWN_ENDLESS) {
+    fail(
+      `tenancies ended without an end date: ${endless}, was ${KNOWN_ENDLESS} - ` +
+      'a vacate left one hanging. `vacate` sets is_active and end_date together, ' +
+      'so a new one means that path did not run.'
+    );
+  } else if (endless < KNOWN_ENDLESS) {
+    fail(
+      `tenancies ended without an end date: ${endless}, was ${KNOWN_ENDLESS} - ` +
+      'the import debris has been cleaned up. Lower KNOWN_ENDLESS to ' +
+      `${endless} so the ratchet keeps holding.`
+    );
+  } else {
+    pass(
+      `tenancies ended without an end date: ${endless}, all import debris from ` +
+      '2026-08-25, none carrying income'
+    );
+  }
+
+  /**
    * ACCOUNTS THAT CAN SIGN IN AND BELONG TO NOBODY.
    *
    * BR-026 above proves no two profiles share an email or a phone. That is a
