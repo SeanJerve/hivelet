@@ -106,7 +106,78 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `161aa75`, `697dfd5`: a bill due the 20th wasn't overdue until 8am on the
+> **LATEST — commits `0d93e95`, `5749d5e`: the payment webhook verifier could have been changed
+> to accept everything and no test would have noticed. And the one broken-state check the system
+> most needed did not exist.**
+>
+> ### A signature verifier that could fail OPEN
+>
+> Eleven deliberate defects planted in the Adyen webhook verifier. Seven were caught. **The one
+> that matters most was not:**
+>
+> ```
+> } catch {
+>   return true;      // accept every notification whose signature could not be computed
+> }
+> ```
+>
+> The verifier wraps its signature computation in a try/catch, and **nothing asserted which way
+> that catch returns.** Flipping it to accept broke no test. That is the worst possible direction
+> for a verifier to fail, because the thing calling it is by definition a stranger on the
+> internet.
+>
+> Now pinned, with an item that throws while its payload is assembled.
+>
+> **Also unpinned:** replacing the constant-time signature comparison with a plain `===`. That one
+> **cannot** be caught by result — both return the same answer on every input, and the difference
+> is only visible as timing. So it is asserted against the source instead, which is the one place
+> in that suite where reading the code is the honest test rather than a shortcut.
+>
+> *My first attempt at that assertion was wrong* — it forbade a pattern that also matched a
+> legitimate type check, and failed on the real source. Narrowed, then checked against both the
+> real file and the mutation.
+>
+> ### The broken-state check that did not exist
+>
+> Earlier today I wrote down what happens if one of the ten non-transactional handlers fails
+> halfway. Two of them leave a unit and its tenancy disagreeing:
+>
+> | If it stops | Result |
+> |---|---|
+> | onboarding, after the tenancy is created | tenancy exists, **unit still reads Available** |
+> | vacate, after the tenancy is ended | **unit still reads Occupied, nobody in it** |
+>
+> **Neither was detectable by anything.** The existing occupancy rules compare tenancies against
+> each other and never once look at the unit's own status. So a unit could sit marked Occupied
+> with nobody living in it and every check in the project would report all clear.
+>
+> It is checked now, both directions, and it **names the unit**:
+>
+> ```
+> unit 1c: Available, 1 active tenancy
+> ```
+>
+> A unit under maintenance is deliberately still allowed to hold a tenant — raising a ticket
+> flips an occupied unit to that status with the tenant still living there.
+>
+> **Your data is clean:** 33 units, 32 occupied, 32 active tenancies across 32 distinct units,
+> **zero drift**. I confirmed that against the live rows *before* writing the rule, so it went in
+> green rather than being shaped around whatever happened to be there.
+>
+> **Verified without ever writing to your database** — I mutated what the checker *reads* instead.
+> Four cases: a vanished tenancy, a unit marked Available while tenanted, a unit marked Reserved
+> while tenanted, and a control that must **not** fire. **4 of 4 correct.**
+>
+> ### One thing that looked like a bug and wasn't
+>
+> The `mock_` guard on the webhook key **can never fire** — `mock_` is not hexadecimal, so the
+> pattern beside it already rejects anything starting that way. Deleting it breaks nothing, and
+> that is correct. **Kept**, because it states the intent and costs nothing — now with a comment
+> saying so, rather than sitting there looking load-bearing.
+>
+> **Fifteen suites green.**
+
+> **PREVIOUS — commits `161aa75`, `697dfd5`: a bill due the 20th wasn't overdue until 8am on the
 > 21st. And the credential scanner was ignoring every document in the project.**
 >
 > Same method as the last three cycles, now pointed at the two suites that guard money and
@@ -3405,7 +3476,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**204 commits, all pushed to `main`. Working tree clean.**
+**207 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
