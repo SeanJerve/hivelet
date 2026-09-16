@@ -345,6 +345,56 @@ if (adminToken) {
   console.log(`  ${svcClean ? 'OK  ' : 'FAIL'} ---  register() assigns the role, never the caller`);
 }
 
+/**
+ * PROPERTY CLOCK GUARD.
+ *
+ * Seven places wrote a DATE column from `new Date().toISOString().slice(0, 10)`,
+ * which is UTC's date. The property is UTC+8, so between midnight and 08:00
+ * Manila time that expression returns YESTERDAY - and two of the seven wrote
+ * `anniversary_date`, which anchors the rent cycle for every future month.
+ *
+ * Static, for the same reason as the escalation guard above: proving it
+ * behaviourally would mean onboarding a tenant on the live database at 2am.
+ *
+ * Constructing a specific date from components - `new Date(Date.UTC(y, m, 26))`
+ * - is a different thing and stays allowed. The bug is only ever in asking what
+ * day it is and getting UTC's answer.
+ */
+{
+  const stripComments = (s) =>
+    s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/[^\n]*/gm, '');
+
+  const srcDir = path.join(here, '..', 'src');
+  const walk = (d) => fs.readdirSync(d).flatMap((e) => {
+    const p = path.join(d, e);
+    return fs.statSync(p).isDirectory() ? walk(p) : p.endsWith('.ts') ? [p] : [];
+  });
+
+  const offenders = [];
+  for (const file of walk(srcDir)) {
+    if (file.endsWith('propertyClock.ts')) continue; // the file that documents the bug
+    const code = stripComments(fs.readFileSync(file, 'utf8'));
+    if (/new Date\(\)\.toISOString\(\)\.(?:slice\(0,\s*10\)|split\('T'\)\[0\])/.test(code)) {
+      offenders.push(path.relative(path.join(here, '..'), file).split(path.sep).join('/'));
+    }
+  }
+
+  const clean = offenders.length === 0;
+  clean ? pass++ : (fail++, failures.push(`UTC date derived in: ${offenders.join(', ')}`));
+  console.log(`  ${clean ? 'OK  ' : 'FAIL'} ---  no stored date is derived from UTC's "today"` +
+              (clean ? '' : ` (${offenders.join(', ')})`));
+
+  // ...and the replacement is not a no-op. If the timezone were ignored these
+  // would agree for every instant, and this assertion would be worthless.
+  const inWindow = new Date('2026-09-16T23:30:00Z');
+  const utcDay = inWindow.toISOString().slice(0, 10);
+  const manilaDay = inWindow.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+  const differs = utcDay === '2026-09-16' && manilaDay === '2026-09-17';
+  differs ? pass++ : (fail++, failures.push(`Asia/Manila conversion wrong: UTC ${utcDay}, Manila ${manilaDay}`));
+  console.log(`  ${differs ? 'OK  ' : 'FAIL'} ---  Asia/Manila differs from UTC inside the window ` +
+              `(UTC ${utcDay}, Manila ${manilaDay})`);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 for (const f of failures) console.log('  - ' + f);
 process.exit(fail === 0 ? 0 : 1);

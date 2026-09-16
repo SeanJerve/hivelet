@@ -24,6 +24,7 @@ import {
 } from '../config/propertyAreas.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
+import { propertyToday } from '../utils/propertyClock.js';
 import { assertWritten, warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
@@ -688,8 +689,8 @@ router.post(
         .insert({
           room_id: room.id,
           tenant_profile_id: profile.id,
-          start_date: moveInDate || new Date().toISOString().slice(0, 10),
-          anniversary_date: moveInDate || new Date().toISOString().slice(0, 10),
+          start_date: moveInDate || propertyToday(),
+          anniversary_date: moveInDate || propertyToday(),
           deposit_amount: finalDeposit,
           occupant_count: finalOccupants,
           is_active: true
@@ -817,7 +818,7 @@ router.patch(
       assertWritten(
         await db
           .from('room_assignments')
-          .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
+          .update({ is_active: false, end_date: propertyToday() })
           .eq('tenant_profile_id', req.params.profileId)
           .eq('is_active', true),
         'The previous tenancy could not be closed'
@@ -866,7 +867,7 @@ router.patch(
                 assertWritten(
                   await db
                     .from('room_assignments')
-                    .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
+                    .update({ is_active: false, end_date: propertyToday() })
                     .eq('id', a.id),
                   `Unit ${roomNumber.toUpperCase()} still holds a stale tenancy that could not be closed`
                 );
@@ -891,8 +892,8 @@ router.patch(
           .insert({
             room_id: room.id,
             tenant_profile_id: req.params.profileId,
-            start_date: new Date().toISOString().slice(0, 10),
-            anniversary_date: new Date().toISOString().slice(0, 10),
+            start_date: propertyToday(),
+            anniversary_date: propertyToday(),
             deposit_amount: prevDeposit,
             occupant_count: finalOccupants,
             is_active: true
@@ -1020,7 +1021,7 @@ router.post(
     assertWritten(
       await db
         .from('room_assignments')
-        .update({ is_active: false, end_date: new Date().toISOString().slice(0, 10) })
+        .update({ is_active: false, end_date: propertyToday() })
         .eq('tenant_profile_id', req.params.profileId)
         .eq('is_active', true),
       'The tenancy could not be closed, so this unit is still recorded as occupied'
