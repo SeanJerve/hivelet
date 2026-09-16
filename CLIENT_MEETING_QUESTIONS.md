@@ -12,7 +12,7 @@ written to her ledger.**
 > own book during the meeting.
 
 **How to use this:** work top to bottom. Section 1 is money and takes the longest. Section 2 is
-four accounting habits. Section 3 is three quick confirmations. Section 4 is not for her.
+five accounting habits. Section 3 is three quick confirmations. Section 4 is not for her.
 
 ---
 
@@ -100,17 +100,51 @@ demonstration today shows *"0 collections this month"*.
 ☐ She will provide August and September so we can enter them before testing
 ☐ Leave it — we will say plainly that the ledger is complete through July
 
-### 2c. ₱35,228 of penthouse upkeep — is it a business cost or a personal one?
+### 2c. Penthouse spending is in three different places, and none of them is the Penthouse
 
-It is currently filed under **Other Expenses / Personal**, which is a *non-rental* area. That means
-it sits **outside** the Net Operating Income figure — the property looks ₱35,228 more profitable
-than if it were counted as a cost of running the rental business.
+On **13 September she decided** the Penthouse should have its own expense area (OD-15). It was
+created that day, and marked as a **rental** cost. **It has never been used — zero entries.**
 
-That may be exactly right. It is a classification choice, and it is hers to make.
+Meanwhile the spending that mentions the penthouse sits in three other areas:
+
+| Where it is now | Entries | Amount | Counts as a rental cost? |
+| :--- | ---: | ---: | :--- |
+| **Other Expenses / Personal** | 5 | **₱35,228.00** | **No** — outside Net Operating Income |
+| Back Apartment | 4 | ₱11,075.00 | Yes |
+| Boarding House | 7 | ₱8,895.00 | Yes |
+| | **16** | **₱55,198.00** | |
+
+The area was created; the history was never moved into it. Only the ₱35,228 changes the profit
+figure — while it sits under *Personal*, the property reads ₱35,228 more profitable than if that
+spending were counted as a cost of the rental business.
 
 **What we need:**
-☐ Correct as is — personal, outside the rental business
-☐ It is a rental business cost and should reduce Net Operating Income
+☐ Move all ₱55,198 into the new **Penthouse** area
+☐ Move only the ₱35,228 — the other two are correctly filed where they are
+☐ Leave everything where it is; the Penthouse area is for future spending only
+
+### 2e. In 2025, ₱2.56 million was booked as personal rather than as a rental cost
+
+Read straight from her ledger. **She is profitable every year** — this is not a loss:
+
+| | 2024 | 2025 | 2026 (7 months) |
+| :--- | ---: | ---: | ---: |
+| Rent, water and garbage collected | ₱3,218,140 | ₱3,051,880 | ₱1,826,850 |
+| **Costs of running the rental** | ₱933,347 | ₱1,184,778 | ₱272,470 |
+| **Net Operating Income** | **₱2,284,793** | **₱1,867,102** | **₱1,554,380** |
+| | | | |
+| *Main House (her residence)* | *₱150,039* | ***₱1,226,941*** | *₱60,508* |
+| *Other Expenses / Personal* | *₱365,829* | ***₱1,333,701*** | *₱295,974* |
+| **Booked as NOT a rental cost** | ₱515,868 | **₱2,560,641** | ₱356,482 |
+
+**Main House spending was eight times higher in 2025 than in 2024**, and Other/Personal three and
+a half times higher. That is almost certainly a real year — building work on her own house would
+do exactly this — but it is ₱2.5 million sitting outside the rental accounts and **only she can
+confirm it belongs there.**
+
+**What we need:**
+☐ Correct — 2025 was an unusual year for the house, and none of it is a rental cost
+☐ Some of it should be a rental cost: ____________________________________
 
 ### 2d. Linda's fixed water — which column is it?
 
