@@ -404,6 +404,7 @@ cd backend  && npm run check:api        # 53 endpoint, RBAC, perimeter, export a
             npm run check:columns     # every table/column/filter/write key in backend/src exists
             npm run check:fields      # every snake_case field the frontend reads is one the API sends
 cd frontend && npm run check:tokens     # design tokens resolve to the right colours
+            npm run check:reachable  # every source file is reachable from main.ts
 cd ..       && npm run check:rules      # the BR register agrees with itself
             npm run check:matrix     # the traceability matrix agrees with itself
             npm run check:secrets    # scans for committed credentials

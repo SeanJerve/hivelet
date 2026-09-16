@@ -74,11 +74,12 @@ STEP 2 - prove the environment works before changing anything.
               npm run check:columns     every column backend/src names exists in the live schema
               npm run check:fields      every snake_case field the frontend reads is one the API sends
   cd ../frontend && npm run check:tokens  design tokens resolve to the right colours
+                   npm run check:reachable  no orphaned components
   cd .. && npm run check:rules          the business rule register agrees with itself
            npm run check:matrix         the traceability matrix agrees with itself
            npm run check:secrets        scans for committed credentials
 
-  All ten were green at handoff. This list read SEVEN until 2026-09-15 and had
+  All eleven were green at handoff. This list read SEVEN until 2026-09-15 and had
   been wrong since the eighth was added - if a suite exists and this list omits
   it, nobody runs it, which is the same as not having written it.
   If any of them is not, that is the first thing to look at - do not start new
@@ -137,11 +138,11 @@ them.
 
 **Two things worth doing while you are at it:**
 
-| | |
-| :--- | :--- |
+|                                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| :---------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | ~~Restart the tunnel and repoint the Adyen webhook~~ | **Done 2026-09-15 and verified end to end.** `cloudflared` 2026.9.1 installed; tunnel live; webhook `WBHK4295722322C95PZ9WML8ZQ3MK3` pointing at it with Basic Auth; the HMAC key in `.env` proven against a real signature — a signed notification arriving **through the public tunnel** returned `200 [accepted]`. **When the tunnel restarts you must repoint Adyen:** `RESTART_THE_TUNNEL.md` |
-| ~~Rotate `eljohn`, `kiel` and `bins`~~ | **Done 2026-09-15.** All three deleted in Supabase |
-| **Only real test left** | A genuine GCash payment through the tenant portal. The plumbing is proven, so a failure there is the payment flow, not the webhook |
+| ~~Rotate `eljohn`, `kiel` and `bins`~~         | **Done 2026-09-15.** All three deleted in Supabase                                                                                                                                                                                                                                                                                                                                                                        |
+| **Only real test left**                         | A genuine GCash payment through the tenant portal. The plumbing is proven, so a failure there is the payment flow, not the webhook                                                                                                                                                                                                                                                                                              |
 
 **One thing to avoid:** do not run two Claude sessions against this repo at the
 same time. Two sessions editing the same files and pushing to `main` will
