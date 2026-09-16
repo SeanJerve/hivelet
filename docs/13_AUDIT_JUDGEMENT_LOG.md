@@ -758,6 +758,60 @@ specification.*
 
 ---
 
+#### 17. The tidy-up was the only thing marking the defect
+
+Three profiles carried an invoice number glued onto the name -
+`Mireel Fatima ParcareyINV.#5223` and two more. It sat on the remediation list
+for days as a **data tidy**, and the fix was written and waiting: strip the
+invoice number from each name.
+
+**That fix would have destroyed the evidence.**
+
+They are not the residents' records with a typo. They are **duplicates**. Each of
+those three people already has a separate, complete profile - 26, 10 and 31
+income rows, an active tenancy. The three on the list have **zero of
+everything**: no tenancy ever, no income row, no bill, no payment, no ticket.
+
+Strip the invoice number and you get three profiles **indistinguishable from the
+real residents**. The corruption in the name was the only thing marking them as
+artifacts of the 2026-08-27 import. The tidy-up would have hidden the defect
+perfectly, and left it in place.
+
+**And it was not cosmetic at all.** All three are `active`, all three hold a
+`password_hash` set at the same instant as every other account, and that is the
+shared tenant literal published in this repository's history since 2026-08-25.
+Three working logins into the product, belonging to nobody, that nothing was
+counting.
+
+**Why every check passed.** `check:ledger`'s BR-026 test proves no two profiles
+share an email or a phone. The duplicates carry their own fabricated email,
+derived from the corrupted name -
+`mireel.fatima.parcareyinv5223@gmail.com` - and their own phone number. **The
+duplication is by PERSON; the check was looking at IDENTIFIERS.** A uniqueness
+constraint cannot see a second record for the same human being.
+
+#### The transferable part
+
+**When a defect is described as cosmetic, ask what the cosmetic flaw is
+attached to.** The reasoning that filed this as tidy-up went: *the name looks
+wrong, so fix the name.* Nobody asked why the name looked wrong. One query -
+"what else does this row have?" - answered it, and the answer was "nothing,
+which is the point".
+
+The same question is worth asking of anything on a list as **formatting,
+naming, or tidy-up**:
+
+| Ask | Because |
+| :--- | :--- |
+| What does this row/file/field look like **next to its neighbours**? | The duplicates are obvious the moment you put them beside the real profiles. |
+| Would the fix make it **harder to notice** if I am wrong? | Here, yes, completely - and that alone should have stopped it. |
+| Is the ugly thing **load-bearing**? | The corrupted name was the marker. So was `env.ts`'s `mock_` prefix, which turned out to be the sentinel `isLiveConfigured()` tests for - nearly renamed for tidiness the same day. |
+
+*Two "cosmetic" items in one session where the tidy version was the wrong one.
+That is a pattern, not a coincidence.*
+
+---
+
 ---
 
 ## 3. Judgement calls a fresh reader might reverse
