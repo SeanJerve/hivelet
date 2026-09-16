@@ -283,6 +283,41 @@ if (live.length) {
    * left a tenancy hanging - which is a real defect, in a path that runs against
    * real residents.
    */
+  /**
+   * How much of the income report's Anniv Date / Deposit pair comes out blank.
+   *
+   * Those two columns live on the tenancy, not the receipt, and are resolved by
+   * room AND tenant together. `assignment_id` would have carried the link and is
+   * NULL on every one of the 937 rows.
+   *
+   * Reported, not failed. Blank is the correct answer for every one of these -
+   * inventing a move-in date from the room alone would put a previous tenant's
+   * date against this tenant's receipt. The point is that nobody knew the scale
+   * before it was counted, and the comment in incomeReportExport said 214 when
+   * the real figure was the whole ledger.
+   */
+  const incomeLinkage = await rows(
+    'monthly_income_records?select=room_id,tenant_profile_id&voided_at=is.null'
+  );
+  const tenancyPairs = new Set(
+    (await rows('room_assignments?select=room_id,tenant_profile_id'))
+      .map((a) => `${a.room_id}|${a.tenant_profile_id}`)
+  );
+  const noTenant = incomeLinkage.filter((m) => !m.tenant_profile_id).length;
+  const unmatched = incomeLinkage.filter(
+    (m) => m.tenant_profile_id && !tenancyPairs.has(`${m.room_id}|${m.tenant_profile_id}`)
+  ).length;
+  const blank = noTenant + unmatched;
+
+  console.log(
+    `
+  INCOME REPORT, Anniv Date + Deposit — ${blank} of ${incomeLinkage.length} rows blank ` +
+    `(${Math.round((blank / incomeLinkage.length) * 100)}%):`
+  );
+  console.log(`    ${noTenant} carry no tenant at all - nothing to resolve with`);
+  console.log(`    ${unmatched} name a room/tenant pair that matches no tenancy`);
+  console.log(`    ${incomeLinkage.length - blank} resolve, and are filled`);
+
   const KNOWN_ENDLESS = 8;
   const endless = (await rows(
     'room_assignments?select=id&is_active=eq.false&end_date=is.null'

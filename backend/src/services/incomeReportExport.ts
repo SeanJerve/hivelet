@@ -187,13 +187,31 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
 
   /**
    * Anniv Date and Deposit (columns 11 and 12) live on the tenancy, not on the
-   * receipt. `assignment_id` was meant to carry the link and is **NULL on all
-   * 214 migrated rows**, so reading it produced two permanently empty columns.
+   * receipt. `assignment_id` was meant to carry the link and is **NULL on every
+   * one of the 937 rows** - the column has never been written, by the migration
+   * or by anything since - so reading it produced two permanently empty columns.
+   *
+   * (This said "all 214 migrated rows" until 2026-09-17. 214 is the number of
+   * rows dated 2026; the true figure is the whole ledger. The smaller number
+   * made the gap look like a migration remnant rather than a column nothing
+   * populates.)
    *
    * Resolved by room AND tenant together, never by room alone. A unit that has
    * changed hands would otherwise show the current tenant's move-in date against
    * a previous tenant's receipt - a plausible-looking date that is simply wrong.
    * Where the pair does not match, the cells stay blank, which is honest.
+   *
+   * HOW MUCH OF THE SHEET THAT LEAVES BLANK, measured 2026-09-17:
+   *
+   *     535  resolve to a tenancy          -> both columns filled
+   *     354  have no `tenant_profile_id`   -> blank, nothing to resolve WITH
+   *      48  name a room/tenant pair that matches no tenancy -> blank
+   *     ---
+   *     402 of 937  (43%) blank
+   *
+   * Blank is the right answer for all 402 - inventing a date would be worse -
+   * but the scale is worth knowing before anyone is asked why half a column is
+   * empty. `check:ledger` reports the split on every run.
    */
   const { data: assignments, error: assignError } = await db
     .from('room_assignments')
