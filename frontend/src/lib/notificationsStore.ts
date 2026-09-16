@@ -106,11 +106,28 @@ export async function fetchNotifications() {
   isLoading.value = true;
   try {
     const endpoint = isAdmin.value ? '/admin/notifications' : '/tenant/my-notifications';
-    const res = await api.get<{ data: NotificationItem[]; totalUnread?: number }>(endpoint);
+    /**
+     * `getWithMeta`, not `get`.
+     *
+     * This read `api.get<{ data; totalUnread }>(endpoint)` and then `res.data`.
+     * `api.get` ALREADY returns `payload.data` - so `res` was the array itself,
+     * `res.data` was `undefined`, and the `if` below never ran. The store held
+     * zero notifications and a zero badge from the day it was written, while the
+     * live table held 20 unread rows.
+     *
+     * Nothing failed loudly, because there was nothing to fail: reading `.data`
+     * off an array is `undefined`, not an error, and the `??` beside it produced
+     * a plausible 0. The defensive default is what hid it - the same shape as
+     * `r.tenant_name` and `l.old_values` elsewhere in this audit.
+     */
+    const { data, meta } = await api.getWithMeta<
+      NotificationItem[],
+      { totalUnread?: number }
+    >(endpoint);
 
-    if (res && res.data) {
-      notifications.value = res.data;
-      unreadCount.value = res.totalUnread ?? res.data.filter((n) => !n.is_read).length;
+    if (Array.isArray(data)) {
+      notifications.value = data;
+      unreadCount.value = meta?.totalUnread ?? data.filter((n) => !n.is_read).length;
 
       // Play audio chime if new unread items arrived while active
       if (unreadCount.value > lastKnownUnreadCount && lastKnownUnreadCount > 0) {
@@ -135,9 +152,20 @@ export async function pollUnreadCount() {
     const endpoint = isAdmin.value ? '/admin/notifications/unread-count' : '/tenant/my-notifications';
     const res = await api.get<any>(endpoint);
 
-    const count = typeof res?.data?.unreadCount === 'number' 
-      ? res.data.unreadCount 
-      : (Array.isArray(res?.data) ? res.data.filter((n: any) => !n.is_read).length : 0);
+    /**
+     * One level, not two. `api.get` already unwrapped the envelope, so the admin
+     * endpoint's `{ success, data: { unreadCount } }` arrives here as
+     * `{ unreadCount }`. This read `res.data.unreadCount`, found `undefined`,
+     * fell through to the array branch, found no array, and assigned 0 - every
+     * twelve seconds, for as long as the feature has existed.
+     *
+     * The tenant branch polls the LIST endpoint, which unwraps to an array, so
+     * both shapes are handled explicitly rather than by a fallback that cannot
+     * tell "none" from "could not read".
+     */
+    const count = typeof res?.unreadCount === 'number' 
+      ? res.unreadCount 
+      : (Array.isArray(res) ? res.filter((n: any) => !n.is_read).length : 0);
 
     if (count > unreadCount.value) {
       // New notification detected! Fetch full list and chime

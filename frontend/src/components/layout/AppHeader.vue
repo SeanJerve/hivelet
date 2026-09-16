@@ -4,7 +4,7 @@
  * @description Solid white navbar with public section navigation & authenticated notification center.
  * @systemBibleRef Section 1 - Product Identity, Section 4 - Public Visitor Role & Section 16 - Notifications
  */
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { isMobileSidebarOpen } from '@/lib/systemState';
 import { 
@@ -14,11 +14,36 @@ import {
   isTenant, 
   logout 
 } from '@/lib/authStore';
+/**
+ * The notification centre.
+ *
+ * This import, the bell, the badge and the heartbeat were removed from this file
+ * on 2026-08-26 by `8a34ec9` - a commit titled "complete UI visual audit,
+ * speed-dial FABs, smooth transitions, and header harmonization". Nothing in
+ * that message mentions notifications, and the `@description` above was left
+ * describing an "authenticated notification center" the markup no longer had.
+ *
+ * For the twenty days that followed, `notificationService` went on writing rows
+ * on five events and seven endpoints went on serving them, to a surface no route
+ * could reach. On 2026-09-15 the table held 20 rows and every one was unread,
+ * because nothing in the product was capable of reading one.
+ *
+ * Restored 2026-09-15. Keep this wiring when the header is restyled.
+ */
+import {
+  unreadCount,
+  hasEmergencyUnread,
+  isPopoverOpen,
+  startNotificationsHeartbeat,
+  stopNotificationsHeartbeat
+} from '@/lib/notificationsStore';
+import NotificationPopover from './NotificationPopover.vue';
 import { 
   Menu, 
   LogOut, 
   LogIn,
   User,
+  Bell,
   ChevronDown
 } from 'lucide-vue-next';
 
@@ -71,6 +96,10 @@ function toggleSidebar() {
   isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
 }
 
+function toggleNotifications() {
+  isPopoverOpen.value = !isPopoverOpen.value;
+}
+
 function scrollToSection(sectionId: string) {
   if (route.path === '/public' || route.path === '/') {
     const el = document.getElementById(sectionId);
@@ -105,9 +134,32 @@ function handleMouseLeave() {
 async function handleSignOut() {
   if (popoverTimeout) clearTimeout(popoverTimeout);
   isProfilePopoverOpen.value = false;
+  // Stop polling before the token goes away, or the next tick fires a 401.
+  stopNotificationsHeartbeat();
   await logout();
   router.push('/login');
 }
+
+/**
+ * The poll follows the session, not the component. `immediate` matters: the
+ * header mounts once, and a page reload restores an authenticated session
+ * without ever transitioning false -> true.
+ */
+watch(
+  () => isAuthenticated.value,
+  (authed) => {
+    if (authed) {
+      startNotificationsHeartbeat();
+    } else {
+      stopNotificationsHeartbeat();
+    }
+  },
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  stopNotificationsHeartbeat();
+});
 </script>
 
 <template>
@@ -174,6 +226,32 @@ async function handleSignOut() {
 
         <!-- Authenticated User Profile & Dropdown Avatar -->
         <template v-if="isAuthenticated && currentUser">
+          <!-- Notification Bell + Popover. Restored 2026-09-15; see the note on the import. -->
+          <div class="relative">
+            <button
+              @click="toggleNotifications"
+              class="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              :class="{ 'bg-muted text-foreground': isPopoverOpen }"
+              aria-label="Open notifications"
+              title="Notifications"
+            >
+              <Bell class="size-5" />
+
+              <!-- Unread count. Emergency and High both surface as the danger tone. -->
+              <span
+                v-if="unreadCount > 0"
+                class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-extrabold rounded-full transition-transform"
+                :class="hasEmergencyUnread
+                  ? 'bg-danger text-danger-foreground animate-pulse'
+                  : 'bg-primary text-primary-foreground'"
+              >
+                {{ unreadCount > 99 ? '99+' : unreadCount }}
+              </span>
+            </button>
+
+            <NotificationPopover />
+          </div>
+
           <!-- Avatar Button with Dropdown Arrow (Desktop & Mobile) -->
           <div 
             class="relative py-1"

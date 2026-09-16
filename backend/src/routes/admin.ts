@@ -2820,10 +2820,20 @@ router.get(
       offset,
     });
 
+    /**
+     * `totalUnread` belongs under `meta`, not beside `data`.
+     *
+     * The client envelope is `{ success, data, meta? }` and `requestEnvelope()`
+     * returns exactly `{ data: payload.data, meta: payload.meta }` - every other
+     * top-level key is dropped on the floor. This endpoint sent `totalUnread` as
+     * a sibling of `data`, so the number never reached the browser at all, no
+     * matter which helper called it. `/admin/audit-logs` already does this
+     * correctly with `meta.businessTotal`; this one did not.
+     */
     res.status(200).json({
       success: true,
       data: result.notifications,
-      totalUnread: result.totalUnread,
+      meta: { totalUnread: result.totalUnread },
     });
   })
 );
