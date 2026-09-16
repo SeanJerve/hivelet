@@ -106,7 +106,68 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `e25488c`, `1066f0c`: the snapshot the documents are told to trust is
+> **LATEST — commits `ebd4177`, `0195c90`: 21 migration files against 12 tracked, explained and
+> verified. And the water rate, which BR-014 exists to make configurable, is copied into
+> fourteen places.**
+>
+> ### "Nine missing migrations" — there are none
+>
+> `supabase_migrations.schema_migrations` records **12**. This folder holds **21** numbered
+> files. Read side by side that says **nine migrations were never applied**, which is alarming
+> and wrong.
+>
+> `001`–`010` were applied **through the Supabase SQL editor**, which does not write to that
+> tracker. *It is a record of how each migration was applied, not of whether it was.* Nobody had
+> written that down.
+>
+> Verified against the live catalogue rather than asserted:
+>
+> | Migration | Evidence |
+> |---|---|
+> | `001` RBAC auth columns | `failed_login_count`, `locked_until`, `password_changed_at` — **3 of 3** |
+> | `002` RLS lockdown | **21 of 21 tables** enabled *and* forced |
+> | `005` ledger FK RESTRICT | **8** `ON DELETE RESTRICT` keys |
+> | `006` optional login | `profiles.email` nullable |
+> | `008` property areas | **6** seeded rows |
+> | `009` advance rent | `anniversary_date` present |
+> | `010` atomic allocations | `replace_expense_allocations` present |
+>
+> With a warning not to re-run them — several are not idempotent and the database already holds
+> what they create.
+>
+> ### The water rate is configurable, and copied into fourteen places
+>
+> `/public/rates` serves the configured figures, and **every caller keeps a fallback literal** for
+> when that request fails — `?? 200`, `'LF' ? 400 : 200` — **fourteen** of them across
+> `OnsitePaymentModal.vue`, `systemState.ts` and `IncomeCollectionsView.vue`.
+>
+> All fourteen match `system_settings` today: per-occupant **200**, LF **400**, LB **200**.
+>
+> **It is the same arrangement as `NON_RENTAL_AREAS`** — a configurable value copied into source,
+> kept in step by nothing. **BR-014 exists precisely so the landlady can change the water rate
+> without a developer.** The day she does, every one of these quietly bills the **old** rate
+> whenever the rates request fails — including on the **on-site payment form**, which is where a
+> real amount is written into her ledger.
+>
+> Narrow, because the request has to fail first. **Not narrow enough to leave uncompared.**
+> `check:ledger` now reads the settings and compares all fourteen. Proved by raising two
+> literals as though a rate had changed and the copy been left behind.
+>
+> ### Swept in the same pass, and clean
+>
+> **The `||`-on-money class cannot fire.** `totalRemitted || rent` appears eleven times in the
+> dashboard, and `live.price || u.basePrice` on the public listing. Checked against live data:
+> `remitted_amount` is never 0 or null across **937** rows, no room is priced 0, and the cheapest
+> is **₱4,500**. Latent, not live — recorded rather than churned.
+>
+> **And the catch blocks that matter tell the truth.** `fetchRooms` sets `roomsFetchFailed`, and
+> the dashboard renders *"Occupancy unavailable — refresh to retry"* with an em-dash **instead of
+> a number**. That is the rule this audit set on day one — *show what the database says, or say
+> you do not know* — already working where it matters most.
+>
+> **Fourteen suites green.**
+
+> **PREVIOUS — commits `e25488c`, `1066f0c`: the snapshot the documents are told to trust is
 > honest, and now has to stay that way. And a fact about the data worth knowing before the
 > defense, not during it.**
 >
@@ -2790,7 +2851,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**173 commits, all pushed to `main`. Working tree clean.**
+**177 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
