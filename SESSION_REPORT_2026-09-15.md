@@ -106,7 +106,55 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commit `b4fc49b`: the receipt form had no duplicate guard — and the owner's own
+> **LATEST — commit `9c5f138`: every request string now stops at its column's width, and the
+> same shape has now appeared three times in one session.**
+>
+> PostgreSQL raises `22001` when a value overflows a `varchar(n)`. The handler wraps that as an
+> internal error, and `errorHandler` replaces a 500's message with a flat *"Internal server
+> error."* — **correctly**, so a database string cannot leak. But it leaves the administrator
+> with a form that failed and **no reason why**.
+>
+> ### The project already knew this
+>
+> `PATCH /auth/me` was fixed months ago with lengths matching its columns. The income schema uses
+> `shortText(20 | 100 | 255)` against `room_number`, `invoice_number` and `contact_name`. The
+> helper sits in `utils/validators.ts` and is used **ten times**.
+>
+> These were simply never given it:
+>
+> | Schema | Fields |
+> |---|---|
+> | tenant onboarding | fullName, email, phone, emergency contact ×2, occupation, roomNumber |
+> | tenant update | the same seven |
+> | **registration** | the same, in `auth.ts` |
+> | rooms | `cluster_code(50)`, `room_number(20)` |
+> | tickets | `title(255)`, `category(100)`, `assignedTechnician(160)` — **create and update** |
+> | expenses | `categoryCode(20)` |
+>
+> Every cap is the column's own width, **read from `information_schema` rather than guessed**.
+> `facebook_url` and `or_supplier` are `TEXT` and are deliberately left unbounded.
+>
+> **Nothing that submits successfully today starts failing.** `.max()` was added to the existing
+> schemas rather than swapping in the helper — because `optionalText` also rejects an empty string
+> after trimming, and a form sending `''` for an unfilled optional field would have begun failing.
+> Optionality and messages are untouched; only a ceiling is added.
+>
+> ### Three times in one session is a pattern, not an anecdote
+>
+> | Had it right | Did not |
+> |---|---|
+> | `updateOwnProfile()` filters through an explicit five-name allowlist, **with a comment saying why** | `register()`, twelve files away, wrote `role` straight from the request body |
+> | `tenant.ts` caps a ticket title at **200** and a category at **60** | `admin.ts` capped **the same two fields** at nothing |
+> | The income schema uses `shortText` against its own columns | Onboarding, registration, rooms, tickets and expenses — all uncapped |
+>
+> **In every case the helper already existed, the reasoning was already written down in a
+> comment, and a second site simply never received it.** That is now entry 8 of the judgement
+> log, with all three instances, because it predicts where to look next better than any of the
+> individual findings do.
+>
+> **Fourteen suites green. `check:api` 57 passed.**
+
+> **PREVIOUS — commit `b4fc49b`: the receipt form had no duplicate guard — and the owner's own
 > ledger corrected the guard I wrote for it.**
 >
 > `monthly_income_records` has **one** constraint: a primary key on `id`. Nothing stops the same
@@ -3064,7 +3112,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**188 commits, all pushed to `main`. Working tree clean.**
+**191 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
