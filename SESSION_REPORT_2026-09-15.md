@@ -106,7 +106,99 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — for the client meeting and the week before testing: one sheet she can answer in a
+> **LATEST — three logins into this system belong to nobody, and the fix that was sitting on the
+> list would have hidden them. Plus a rehearsal for testing week, and the RLS landmine defused.**
+>
+> ### The cleanup that would have destroyed the evidence
+>
+> Three profiles carry an invoice number glued onto the name — `Mireel Fatima ParcareyINV.#5223`
+> and two more. It sat on the list for days as a **data tidy**, with the fix written and waiting:
+> strip the invoice number.
+>
+> **They are not the residents' records with a typo. They are duplicates.**
+>
+> | Person | Their real profile | This row |
+> |---|---|---|
+> | Mireel Fatima Parcarey | 1 tenancy, **26** income rows | 0 and 0 |
+> | Nikki Prollamante | 1 tenancy, **10** income rows | 0 and 0 |
+> | Ron Juliene Dominguino | 1 tenancy, **31** income rows | 0 and 0 |
+>
+> Strip the invoice number and you get three profiles **indistinguishable from the real
+> residents**. The corruption in the name was the *only* thing marking them as artifacts of the
+> 27 August import. The tidy-up would have hidden the defect perfectly and left it in place.
+>
+> **And it is not cosmetic.** All three are **`active`** and all three hold a **working password**,
+> set at the same instant as every other account — the shared tenant literal that has been in the
+> GitHub history since 25 August. **Three working logins into the product, belonging to nobody,
+> that nothing was counting.** They see an empty portal, so there is nothing of anyone else's to
+> reach; but an authenticated session is an authenticated session.
+>
+> **Why every check passed.** BR-026 proves no two profiles share an email or a phone. These carry
+> their **own** fabricated email — `mireel.fatima.parcareyinv5223@gmail.com` — and their **own**
+> phone number. *The duplication is by **person**; the check was looking at **identifiers**.* A
+> uniqueness constraint cannot see a second record for the same human being.
+>
+> `check:ledger` now prints **LOGINS THAT BELONG TO NOBODY** every run. It reports rather than
+> fails, because the fix needs a statement the sandbox will not run.
+>
+> **`database/migrations/023` is written and NOT applied** — `UPDATE` on `profiles` was refused
+> three times across two sessions. One statement, by hand. It **deactivates** rather than deletes:
+> reversible, sufficient (a non-active account is rejected at sign-in *and* at token verification,
+> so live tokens die too), and it keeps the evidence of what the import did.
+>
+> ⚠️ **A fourth account matches the same shape and must be left alone** — John Lloyd's own, role
+> `tenant` so the portal can be exercised. Named in both the migration and the check, because a
+> sweep that deactivated *"everyone with no tenancy"* would lock out the database administrator.
+>
+> *My first draft of that migration also asserted the wrong counts — "40, down from 43" when it is
+> **39 down from 42**. The query corrected it before it was committed.*
+>
+> ### The RLS landmine — A-14, defused
+>
+> `current_user_role()` ended:
+>
+> ```
+> IF u_role IS NULL THEN
+>     -- Default to 'admin' in local development environment
+>     RETURN 'admin'::user_role_type;
+> ```
+>
+> A comment about local development, on a **`SECURITY DEFINER` function in the live database**. And
+> it could never identify anyone: it reads `auth.uid()`, this system issues its own tokens, and
+> `auth_user_id` is **NULL on all 45 rows**. It has only ever returned `'admin'`.
+>
+> Harmless today — **0 policies**, 0 views reference it. But it was a trap for whoever writes the
+> first one, because the natural shape
+>
+> ```
+> CREATE POLICY ... USING (public.current_user_role() = 'admin')
+> ```
+>
+> is **TRUE for every caller** under the old body — a policy that reads like a restriction and
+> grants everything.
+>
+> **Migration 022 returns NULL instead**, which is stronger than returning `'tenant'`: in SQL
+> `NULL = 'admin'` is NULL, so the clause denies — and `NULL <> 'admin'` is also NULL, so the
+> inverted spelling denies too. **Verified on the live database: both spellings now deny.**
+>
+> ### `TESTING_REHEARSAL.md` — for the week ahead
+>
+> **Not one write path has ever been used by a person.** Every one of the 937 income rows came from
+> the August migration. Fifteen suites prove the API works; none proves a human can click through
+> it. That is the largest risk going into testing.
+>
+> So: **26 steps, about forty minutes**, in dependency order, each with what you should see and what
+> it means if you do not. It runs entirely on **`PH`** — the only unit of 33 not occupied — with an
+> obviously fake tenant. No real resident, receipt or expense is touched, every writing step is
+> marked, and the teardown runs them in reverse.
+>
+> Several steps are deliberately **failure probes**: type the wrong current password and confirm it
+> shows against the field instead of signing you out; record the same receipt twice and confirm it
+> is refused **by name**; open another resident's ticket id and confirm **404, never 403**.
+>
+> **Fifteen suites green.**
+
+> **PREVIOUS — for the client meeting and the week before testing: one sheet she can answer in a
 > single sitting, and it got SHORTER by checking the code first. Plus the change-password screen.**
 >
 > ### `CLIENT_MEETING_QUESTIONS.md` — everything she needs to decide, in one pass
@@ -3549,7 +3641,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**213 commits, all pushed to `main`. Working tree clean.**
+**220 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
