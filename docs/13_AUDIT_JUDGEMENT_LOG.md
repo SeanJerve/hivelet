@@ -546,6 +546,18 @@ Twelve files away, `updateOwnProfile()` filters a tenant's own profile edit
 through an explicit five-name allowlist, with a comment explaining that `role`
 and `account_status` are stripped *"rather than trusted from the request body"*.
 
+**It happened three times in one session, which is what makes it a pattern rather
+than an anecdote:**
+
+| The place that had it right | The place that did not |
+| :--- | :--- |
+| `updateOwnProfile()` filters a profile edit through an explicit five-name allowlist, with a comment saying why | `register()`, twelve files away, wrote `role` straight from the request body |
+| `tenant.ts` caps a ticket title at `max(200)` and a category at `max(60)` | `admin.ts` capped the same two fields at nothing |
+| The income schema uses `shortText(20 \| 100 \| 255)` against its own columns, and `PATCH /auth/me` was fixed months earlier | Onboarding, registration, rooms, tickets and expenses were all uncapped |
+
+In every case the helper already existed, the reasoning was already written down
+in a comment, and a second site simply never received it.
+
 **The right shape was already in the repository.** One endpoint was written
 without it. That is the usual way a single route ends up out of step with a
 model that is otherwise correct - not because nobody knew better, but because
