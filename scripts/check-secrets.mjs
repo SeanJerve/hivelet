@@ -61,14 +61,29 @@ const RULES = [
   }
 ];
 
-/** Files where a match is expected and harmless - documentation ABOUT the leak. */
+/**
+ * Files where a match is expected and harmless.
+ *
+ * `docs/` USED TO BE ON THIS LIST, and should not have been. The reason given
+ * was that documents discuss the leak and would quote the compromised values -
+ * but exempting the whole tree meant a real key pasted into any of ~200
+ * documents would never be seen. A mutation confirmed it: an `sb_secret_...`
+ * dropped into `docs/04_ARCHITECTURE.md` was the only one of eight test cases
+ * the scanner missed.
+ *
+ * Removing it costs nothing. Scanned on 2026-09-16, `docs/` contains **zero**
+ * matches for any of the seven rules - not even the published JWT secret, which
+ * the documents describe by name rather than by quoting. So the exemption was
+ * protecting nothing and hiding everything.
+ */
 const ALLOWLIST = [
   /^scripts\/check-secrets\.mjs$/,
   /^\.githooks\//,
-  /^docs\//,
   /^database\/migrations\/.*\.sql$/,
   /^backend\/src\/config\/env\.ts$/,
-  /^\.agent\//,   // vendored tool skills - third-party docs, not our source
+  // Vendored third-party tool skills, not our source. Two files there show a
+  // `-----BEGIN RSA PRIVATE KEY-----` header as an illustration.
+  /^\.agent\//,
   /^\.agents\//
 ];
 
