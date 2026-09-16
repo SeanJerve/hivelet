@@ -113,7 +113,15 @@ export function verifyNotificationItem(
   return timingSafeEqual(da, dbb);
 }
 
-/** True when the HMAC key is a real one rather than the placeholder. */
+/**
+ * True when the HMAC key is a real one rather than the placeholder.
+ *
+ * The `mock_` test is belt-and-braces and cannot currently fire: `mock_` is not
+ * hexadecimal, so the pattern below already rejects anything starting with it.
+ * Established by mutation on 2026-09-16 - deleting the test broke no assertion,
+ * and no input exists that would make it matter. Kept anyway, because it states
+ * the intent plainly and costs nothing if the pattern is ever loosened.
+ */
 export function isWebhookConfigured(hexKey: string | undefined): boolean {
   return Boolean(
     hexKey &&

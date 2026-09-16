@@ -12,6 +12,7 @@
  * Customer Area -> Developers -> Webhooks -> Test, and confirm this accepts it.
  */
 import { createHmac } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import {
   buildSignedPayload,
   computeSignature,
@@ -98,6 +99,57 @@ check('placeholder key is not "configured"', isWebhookConfigured('mock_hmac_key'
 check('empty key is not "configured"', isWebhookConfigured(''), false);
 check('non-hex key is not "configured"', isWebhookConfigured('zzzz'), false);
 check('a real hex key is "configured"', isWebhookConfigured(KEY), true);
+
+/**
+ * A SHORT hex key is not "configured".
+ *
+ * Added 2026-09-16 after a mutation exposed that nothing pinned the length. The
+ * existing cases were '' (empty), 'zzzz' (not hex) and the 64-character key, so
+ * relaxing `length >= 32` to `>= 2` broke none of them - and a two-character key
+ * would then have counted as a real one.
+ */
+check('a short hex key is not "configured"', isWebhookConfigured('AABB'), false);
+check('31 hex characters is not "configured"', isWebhookConfigured('A'.repeat(31)), false);
+check('32 hex characters is "configured"', isWebhookConfigured('A'.repeat(32)), true);
+
+/**
+ * MUST FAIL CLOSED when the computation itself throws.
+ *
+ * `verifyNotificationItem` wraps `computeSignature` in try/catch. Nothing
+ * asserted which way that catch returns, so changing it to `return true` -
+ * accepting every notification whose signature could not even be computed -
+ * broke no test at all. That is the worst possible direction for a verifier to
+ * fail, because the caller is by definition untrusted.
+ *
+ * The item below has a getter that throws when the payload is assembled.
+ */
+const throwsOnRead = { additionalData: { hmacSignature: 'AAAA' } };
+Object.defineProperty(throwsOnRead, 'amount', {
+  get() { throw new Error('deliberate'); },
+  enumerable: true,
+});
+check('a throwing item is REJECTED, never accepted',
+  verifyNotificationItem(throwsOnRead, KEY), false);
+
+/**
+ * The comparison must stay constant-time.
+ *
+ * This one cannot be proven by result: `===` and `timingSafeEqual` return the
+ * same boolean, so every behavioural assertion above passes either way. The
+ * difference is only observable as timing, which a test cannot measure
+ * reliably. So it is asserted against the SOURCE - the one place in this suite
+ * where that is the honest thing to do.
+ */
+const verifierSource = readFileSync(
+  new URL('../src/services/adyenWebhook.ts', import.meta.url), 'utf8'
+);
+check('the verifier still uses timingSafeEqual',
+  /return\s+timingSafeEqual\(/.test(verifierSource), true);
+// Not `provided !== 'string'` - that is a legitimate type guard, and asserting
+// against it failed on the real source the first time this was written. What
+// must never appear is a RETURN whose value is a direct comparison.
+check('the verifier never returns a direct === comparison',
+  /return\s+[^;\n]*[!=]==/.test(verifierSource), false);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);
