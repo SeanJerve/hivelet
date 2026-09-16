@@ -765,6 +765,107 @@ If you add a scheduler, you are changing how this business works, not fixing a g
 
 ---
 
+### 3.7 Which multi-table writes are atomic, and what the other twelve do instead
+
+*Written 2026-09-16. The standing note - "any multi-step write NOT routed through
+a database function can still half-complete" - is true, and on its own it sounds
+far worse than the code is. A panel will ask what happens if a write fails
+halfway through. This is the answer, handler by handler, verified against the
+route files rather than remembered.*
+
+**Fifteen handlers touch more than one table.** `supabase-js` cannot open a
+transaction, so the question is real. Four mechanisms answer it, and which one a
+site uses was a decision, not an accident.
+
+**1. Three handlers were moved into PostgreSQL functions**, each of which runs in
+one implicit transaction:
+
+| Function | Handler | Migration |
+| :--- | :--- | :--- |
+| `settle_verified_payment` | `PATCH /admin/payments/:paymentId/verify` | `018` |
+| `create_expense_entry_with_allocations` | `POST /admin/expense-entries` | `019` |
+| `replace_expense_allocations` | `PATCH /admin/expense-entries/:id` | `010`, amended by `013` |
+
+These are the three where **both** writes must land together: money moving
+against a bill, and an expense whose allocations must total it.
+
+**2. One pair is welded by a trigger.** `room_price_history` is not written by
+any handler - `trg_record_room_price_change` (migration `020`) writes it from the
+`rooms` UPDATE itself, in the same transaction. **A rate change cannot leave the
+rate and its history disagreeing**, which matters because BR-003 is anchored to
+that table.
+
+**3. The remaining twelve order their writes so the record that matters lands
+first.** `POST /admin/income-records` is the clearest case, and the one where it
+counts: it is the only path by which cash the owner physically received enters
+the ledger. It inserts `monthly_income_records` **before it reads a single
+bill**. If anything downstream fails, the owner's record of the money exists and
+survives; only the bill status and the payment rows lag. The handler says so
+itself:
+
+> *"The income record was saved and kept, but this tenant's bills could not be
+> read to settle against: ... No bill was changed."*
+
+And the lag is self-healing rather than permanent. `allocateReceipt()` looks for
+bills *"already covered by earlier payments but never re-statused"* and corrects
+them on the next receipt, instead of spending new money on a debt that is already
+gone.
+
+**4. No write fails silently.** A bare `await db.from(...).update(...)` is
+indistinguishable from success, because `supabase-js` resolves `{ data, error }`
+and never throws. Every one of these sites is guarded - **16 `assertWritten`, 8
+`warnIfWriteFailed`, 43 destructuring `error` directly** - and `npm run
+check:writes` holds the line. The choice between the two helpers is itself the
+documented judgement in [SS 3.2](#32); `utils/checkedWrite.ts` records why both
+exist.
+
+> **I wrote that sentence before testing it, and it was wrong.** `check:writes`
+> was anchored `^await db`, so it only saw a result thrown away *without being
+> named*. A result captured in a variable and then ignored -
+> `const result = await db...` with `result` never read - sailed straight
+> through. I found it by deleting a live `warnIfWriteFailed` call and watching
+> the suite report **ALL CHECKS PASSED**.
+>
+> No such write existed in the codebase; the sweep found 43 destructured, 24
+> wrapped, 1 captured-and-examined, 0 bad. So this was a hole in the *guarantee*,
+> not a live bug - the suite was narrower than its own headline, and would have
+> let the next one through. It now fails all three shapes, each proved by
+> mutation. **Second time this session a suite gave a false pass on exactly the
+> scenario it existed for** (see `check:endpoints`), which is why a check is not
+> trusted here until it has failed on purpose.
+
+#### What each of the twelve leaves behind on a partial failure
+
+| Handler | If it stops midway |
+| :--- | :--- |
+| `POST /admin/income-records` | Income recorded; a bill may still read `Due` and payment rows may be missing. **No money is lost from the ledger**, and the next receipt corrects it. |
+| `POST /admin/tenants` | A profile with no tenancy, or a tenancy with the unit not yet `Occupied`. A retry meets the duplicate email/phone guard rather than creating a second person. |
+| `PATCH /admin/tenants/:profileId` | A room move can end the old tenancy before starting the new one. Every step is `assertWritten`, so it stops loudly at the failure. |
+| `POST /admin/tenants/:profileId/vacate` | Tenancy ended, then unit freed, then account deactivated. A stop leaves a unit reading `Occupied` with no active assignment - wrong on the directory, not in the money. |
+| four `/admin/tickets` handlers | The ticket row is always written first and the unit's `operational_status` second, under `assertWritten`. A stop costs the status, not the complaint. |
+| `POST /tenant/tickets` | **The one to watch.** The ticket commits, then attachments insert and *throw* on failure - so the tenant sees an error for a ticket that was in fact filed, and may file it again. |
+| `POST /public/inquiries` | Deliberately cannot half-fail visibly: the thread seed uses `warnIfWriteFailed` because `inquiries.message` is `NOT NULL` and already holds the text. Throwing would show a prospect an error for an inquiry that was received. |
+| `POST` / `PATCH /admin/rooms` | A photo row may lag the unit. Cosmetic - and `room_photos` is empty across all 33 units today. |
+
+#### The conclusion worth carrying
+
+**Nothing in this list loses money, and nothing fails silently.** The three
+places where a partial write would have been unrecoverable are the three that
+were given database functions; the one place where a trigger was the right answer
+got a trigger.
+
+The single honest weak spot is `POST /tenant/tickets`, where a failed attachment
+insert reports a ticket that exists as an error. It is worth fixing, and it is
+worth fixing the way the others were - **not** by chaining more awaits.
+
+**What would justify a fourth database function** is a handler where the
+*second* write is the one that must not be lost. None of the twelve is shaped
+that way today. If one is ever written, follow migrations `010`, `018` and `019`
+- and note that a `.rpc()` call is the visible sign that someone thought about it
+at all.
+
+---
+
 ## 4. Traps that cost real time
 
 **Generated columns.** `fifty_percent_share` and `remitted_amount` are
