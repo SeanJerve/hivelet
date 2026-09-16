@@ -106,7 +106,58 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `67fa830`, `f43622b`: the rest of what the browser and the laptop are
+> **LATEST — commits `7d2333b`, `c59fbe0`: the defense pack's security answer had gone false
+> in the one way that matters — a panelist could contradict it in the room.**
+>
+> The pack's answer to *"how do you know your system is secure?"* ended **"We rotated
+> everything."**
+>
+> True of the Supabase keys and the JWT signing secret, both rotated 2026-09-13. **Not true of
+> the account passwords.** `Hivelet@Admin2026` is still live. A panelist who checks can
+> contradict that sentence **in front of them** — the worst possible failure for an answer whose
+> entire strength is candour.
+>
+> **The corrected answer is a better answer**, because it is a longer list honestly told: the
+> committed keys and the rotation; the registration endpoint that took a `role` from the request
+> body; and the sign-in page that shipped 34 passwords and every resident's room number. Four
+> problems found in their own system, each with what was done about it.
+>
+> A caution now sits **immediately above** the anticipated-questions table: *do not claim
+> everything was rotated unless the passwords have actually been changed* — and if they have
+> not, say so precisely. **The precise answer is the stronger one either way.**
+>
+> ### The figure most likely to be challenged still holds
+>
+> The pack flags its own ₱3.43M breakdown as the number a panel will probe. Re-queried against
+> the live database rather than read off the page:
+>
+> | | Claimed | Live |
+> |---|---|---|
+> | Whole expense ledger | ₱5,823,586.47 | ₱5,823,586.47 |
+> | Non-rental (Main House + Personal) | ₱3,432,990.47 | ₱3,432,990.47 |
+> | Share of ledger | 58.95% | **58.95%** |
+> | Allocation rows | 1,327 | 1,327 |
+>
+> **Exact.** "21 tables" and "33 units" are also still correct throughout.
+>
+> ### And a correction to my own commit message
+>
+> Commit `1d39e26` said a fix was applied *"in both the Phase 2 deliverable and the
+> video-presentation copy"*. **The edit was made; that commit contains four files and none of
+> them is it.**
+>
+> `VIDEO PRESENTATION DOCS/` is **gitignored** — `.gitignore:61` — with only four files in it
+> tracked. Everything else there is a **derived copy** that does not travel with the repository.
+> So the local file is right and the statement about the repository was not. *Recorded rather
+> than quietly left.*
+>
+> **It matters practically:** a clone on another machine — Loyd's, per the filenames in that
+> folder — gets the canonical documents and **stale copies**. Three of those copies carry
+> local-only corrections right now, including today's security answer. Added to the handoff:
+> **regenerate them from `docs/claude_pipeline/outputs/` before filming, or film from the
+> canonical documents.**
+
+> **PREVIOUS — commits `67fa830`, `f43622b`: the rest of what the browser and the laptop are
 > exposed to. Two things verified clean, two recorded for Sean.**
 >
 > ### The bundle carries no resident data — checked, not assumed
@@ -2631,7 +2682,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**162 commits, all pushed to `main`. Working tree clean.**
+**165 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
