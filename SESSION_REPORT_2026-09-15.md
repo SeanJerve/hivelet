@@ -106,7 +106,77 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commit `c2e34c8`: the business rules tested against the data instead of against
+> # ⚠ **LATEST — commit `5001b0f`: the public sign-in page shipped the administrator's
+> password, and every resident's room number.**
+>
+> The login page carried a **"Quick Demo Access — 1-Click Sign In"** panel listing 34 accounts.
+> Each entry had a `password` field, and the button ran a **real login**.
+>
+> **Verified in the built output, not inferred.** `dist/assets/index-*.js` contained:
+>
+> | | |
+> |---|---:|
+> | `Hivelet@Admin2026` | **1** occurrence |
+> | `Hivelet@Tenant2026` | **33** occurrences |
+>
+> **Anyone who loaded the site — or simply downloaded that one JavaScript file — had the
+> landlady's administrator password, and the page offered a button to use it.** No
+> authentication required, on the page that exists to require it.
+>
+> ### The half a password change does not fix
+>
+> The same panel published, to anyone who opened the sign-in page:
+>
+> - the **full name** of all **33 real residents**
+> - each one's **email address**
+> - **the room each of them lives in**
+>
+> These are real people at a real address, and the list pairs a name with the room they sleep
+> in. **BR-024 Tenant Privacy** is recorded as *Enforced*.
+>
+> ### The fix keeps the demo and removes the exposure
+>
+> The list moved to `lib/demoAccounts.dev.ts`, imported **only** inside
+> `if (import.meta.env.DEV)` through a dynamic import. Vite substitutes `false` at build time,
+> so the branch and everything it reaches are eliminated. Proved **both ways**:
+>
+> | | |
+> |---|---|
+> | **Built bundle** | `Hivelet@Admin2026` **0**, `Hivelet@Tenant2026` **0**, resident emails **0**, no stray chunk emitted |
+> | **Dev server** | all 34 accounts still listed, **one-click sign-in intact** |
+>
+> **So the defense demo is unchanged and a deployed app has none of it.**
+>
+> ### The part the fix cannot undo — rotate both passwords
+>
+> The password entered tracked source on **2026-08-25** in `788f321` and has been in the history
+> of `github.com/SeanJerve/hivelet` ever since. **That is the same window this project already
+> records as a public-repository exposure** for the JWT secret — `backend/src/config/env.ts` says
+> so in its own comment, 2026-08-25 to 2026-09-13.
+>
+> **Removing it from HEAD does not remove it from history. Treat both shared passwords as burned
+> and rotate them.** Added to the handoff table as Sean's, because changing a live credential is
+> not mine to do.
+>
+> ### Why `check:secrets` missed it for three weeks
+>
+> Every rule in that suite looks for **key-shaped** material — Supabase keys, JWTs, tokens,
+> private-key blocks. **An account password looks like an ordinary string.** And the suite only
+> ever read files git knows about: `frontend/dist` is gitignored, so **nothing had ever looked at
+> what actually ships.**
+>
+> It now scans the build output for account passwords, resident email addresses and Supabase
+> secret keys, and reports how many built files it read — so a skipped scan is visible rather
+> than silent. Proved by planting a leak in `dist`: both rules fired and the process **exited 1**;
+> exit **0** once removed.
+>
+> *A source-wide password rule was considered and rejected — the same literal legitimately lives
+> in the onboarding handler and the seed migrations, so it would have needed an allowlist wide
+> enough to hide the next real one.*
+>
+> **Thirteen suites green.**
+
+> **PREVIOUS — commit `c2e34c8`: the business rules tested against the data instead of against
 > the register. Eight invariants, all green.**
 >
 > `check:rules` proves the BR crosswalk **agrees with itself** — its counts match its rows, its
@@ -2506,7 +2576,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**154 commits, all pushed to `main`. Working tree clean.**
+**159 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
