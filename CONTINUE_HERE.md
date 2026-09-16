@@ -551,6 +551,37 @@ the summary still counted it. That predates the session.
 
 ---
 
+## 3.9 What needs a person, not a commit — as at 2026-09-16
+
+*The overnight audit of 2026-09-15/16 closed everything it could close. What is left needs
+somebody's decision or somebody's permission, and it is gathered here because it was otherwise
+spread across seven rows of a register, a session report and the output of a check. Each line
+says whose call it is.*
+
+### Mrs. Da Silva's — these are her records and her accounting policy
+
+| | What she needs to decide | Where the detail is |
+| :--- | :--- | :--- |
+| **Seven receipts** | Two carry impossible dates (`OR#4839` is dated **1900-01-17**, the Excel epoch — a cell that never parsed; `INVOICE#5120` is dated a year in the future). Three have a rent period ending the day *before* it starts. Two receipt numbers are used twice — and **`OR#4813` is against two different tenants on the same day**, ₱8,000 and ₱9,000, which cannot both be right. **Nothing has been written to any of them.** | `npm run check:ledger` prints all seven every run; **A-16** |
+| **₱35,228 of penthouse upkeep** | Filed under non-rental *Other Expenses / Personal*, so it sits outside Net Operating Income. That is a classification choice, not a defect. | session report |
+| **Where Linda's fixed water belongs** | The same money now lands in different columns depending on when the row was written — `water_payment` on a new row, `linda_water_charge` on the 62 migrated ones. Because `remitted_amount` is generated as `rent + water_payment`, a new row counts that money as **hers** and an old one does not. BR-040 says it is Linda's. | **FR-036**, now PARTIAL |
+| **OD-07** | Does an expense category's running cumulative reset at the calendar year? It decides stored column versus computed window, so it is a schema decision. **BR-046** cannot be enforced until it is answered. | §4 row 3 |
+
+### Sean's — engineering calls with a real-world consequence
+
+| | What it is | Where |
+| :--- | :--- | :--- |
+| **Three names carrying invoice numbers** | `profiles.full_name` holds *"Mireel Fatima ParcareyINV.#5223"* and two others. Traced and safe — all three invoice numbers already exist in the ledger against the clean name. The three `UPDATE` statements are written. **The sandbox refuses them**, twice, so they need to be run by a person. | session report |
+| **`current_user_role()` fails open** | `SECURITY DEFINER`, returns `'admin'` when it cannot identify the caller — which is always, because `auth_user_id` is NULL on all 45 profiles. **Harmless today**: no RLS policies call it and the public roles cannot execute it. **Fix it before the first policy is ever written**, or the natural way to enable RLS grants admin to everyone. | **A-14** |
+| **An administrator bills screen, or none** | `GET /admin/bills` exists, applies the FR-013 overdue overlay, and **nothing calls it**. Either build the screen or retire the endpoint and say plainly that balances are read from the income ledger. | **A-11** |
+| **A change-password screen** | `POST /auth/change-password` exists and nothing calls it. **There is no way for anyone to change a password from inside the product**, and tenants are onboarded on a shared literal. Highest of these. | **A-12** |
+| **Five superseded endpoints** | Delete them or wire them. An endpoint nothing calls is an untested surface that still answers. | **A-13** |
+
+*Nothing in either table is a blocker for the defense. Everything that could be fixed without
+one of these decisions has been.*
+
+---
+
 ## 4. What to do next
 
 In the order I would take them.
@@ -563,7 +594,7 @@ In the order I would take them.
 | ~~4~~ | ~~**No Overdue transition.**~~ **DONE 2026-09-14.** `billingService.isOverdue()` is wired into both bill endpoints, which return `effective_status` derived from the due date. FR-013 is IMPLEMENTED; BR-011 is Enforced. | — |
 | 3 | **Ask the owner one question (OD-07).** Does each expense category's running cumulative total reset at the start of a calendar year, or run indefinitely? | The only thing standing between **BR-046** and enforced. It decides whether the cumulative is a stored column or a computed window, so it is a schema decision — and answering it ourselves would be inventing the owner's accounting policy. |
 | ~~4~~ | ~~**BR-049** — Excel export.~~ **DONE 2026-09-14.** `GET /api/admin/reports/income.xlsx` and `/expenses.xlsx` build both ledgers in their documented layouts. The open decisions they touch (OD-01, OD-05, OD-06, OD-07) are printed on the sheet rather than assumed. | — |
-| 5 | **Service extraction.** 131 of 164 database calls still sit in route handlers; `admin.ts` is 2,263 lines. Six of the planned services still do not exist. | The architecture's stated target. Not required for the defense. |
+| 5 | **Service extraction.** **144 of 184** database calls still sit in route handlers (78%); `admin.ts` is **3,033** lines. Six of the planned services still do not exist. *(These read 131 of 164 and 2,263 lines until 2026-09-16 — re-measured, and the ratio has improved by two points while the absolute count grew, which is what partial extraction against continued feature work looks like.)* | The architecture's stated target. Not required for the defense. |
 | 6 | Tell teammates the demo passwords changed, and have each create their own Supabase secret key. | Housekeeping from the credential rotation. |
 
 **Every database write must say what failure means.** supabase-js does not throw —
