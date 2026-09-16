@@ -106,7 +106,80 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `0d93e95`, `5749d5e`: the payment webhook verifier could have been changed
+> **LATEST — for the client meeting and the week before testing: one sheet she can answer in a
+> single sitting, and it got SHORTER by checking the code first. Plus the change-password screen.**
+>
+> ### `CLIENT_MEETING_QUESTIONS.md` — everything she needs to decide, in one pass
+>
+> Built from her **actual records**, and that made the list smaller rather than bigger.
+>
+> **Four of the nine "open decisions" were already decided and built.** Each is cited **by number**
+> in `backend/src` while the register still listed it as waiting on her:
+>
+> | | Was listed as open | Actually |
+> |---|---|---|
+> | **OD-03** | mid-cycle proration | **Built.** Rent is never prorated — `billingService.ts:80` cites OD-03 |
+> | **OD-04** | the move-in sum | **Built.** Advance rent, not a refundable deposit — `admin.ts:661` |
+> | **OD-05** | what "Main House" means | **Closed by her on 13 Sep.** Her own residence — `propertyAreas.ts:29` |
+> | **OD-06** | date format | **Resolved by following her own sheet** — `D-MMM-YY` |
+>
+> *Putting a settled question to a client wastes the one meeting you get.* They are listed at the
+> end of the sheet as closed so nobody reopens them in the room.
+>
+> **And one question's premise was simply wrong.** OD-02 asked which month carries *"the annual
+> garbage fee"*. Counted over the live rows, it is **₱20 on every unit every month** — 357 of 366
+> rows in 2024, every one exactly ₱20. The real finding is that it **stopped after June 2025** and
+> has been absent for **fifteen straight months**. That is a question only she can answer, and it
+> is now the one being asked.
+>
+> **Two more things the data surfaced:**
+>
+> - **August and September collections are not entered.** Her ledger is complete through **July
+>   2026** (last payment recorded 7 Aug). Today is 17 September. Not a fault — data nobody has
+>   typed — but it is what a demonstration shows.
+> - **₱35,228 of penthouse upkeep** is filed as *personal*, so it sits outside Net Operating
+>   Income — the property reads ₱35,228 more profitable than if it were a business cost. Hers to
+>   decide.
+>
+> The seven problem receipts are on the sheet with real dates and amounts. **`OR#4813` is ₱17,000
+> across two different households on one receipt number** — that is the one to settle first.
+>
+> **Residents' names are deliberately not in the file.** This project already treated resident
+> names in the built bundle as a leak worth fixing. `npm run check:ledger` prints the same seven
+> **with** names, on screen, for cross-checking against her book during the meeting.
+>
+> ### A-12 — the change-password screen, which you rated highest
+>
+> `POST /auth/change-password` has worked for months with **nothing calling it**. There was no way
+> for anyone — the administrator or any of the 33 residents — to change a password from inside
+> the product. That matters more than usual right now: **both demo passwords are burned**, and
+> until this there was nowhere to set a new one.
+>
+> **A trap fixed on the way in.** A wrong *current* password comes back **401
+> `INVALID_CREDENTIALS`** — the same code the sign-in form gets. `isAuthFailure` treated any 401 as
+> a dead session. It has never misfired only because `setAuthFailureHandler` is exported and
+> **nothing has ever called it**. Whoever wires it up would have found that a typo on the login
+> form triggers a logged-out path, and that getting your current password wrong **ends the session
+> you are sitting in**. Now excluded, with the reasoning at the call site.
+>
+> Built as a **self-contained dialog** taking a prop rather than reading `systemState` — that file
+> is the one most likely to be reworked during the redesign, and this is the easiest thing to
+> restyle and the least likely to collide. **Design tokens only, no raw hex.**
+>
+> **`check:endpoints` caught its own stale exemption** the first run after wiring — *"listed as
+> uncalled but the frontend now calls it"* — which is that check working in the direction it is
+> almost never tested in.
+>
+> **Six new assertions, none of which rotates a credential.** Confirmed against the live rows
+> afterwards: most recent password change still **13 Sep**, zero failed-login counts, zero locked
+> accounts — the rejected attempts wrote nothing, exactly as the code says.
+>
+> **Not verified: the success path.** Asserting it would rotate a credential every other assertion
+> in `check:api` logs in with. **It needs one manual run from you.**
+>
+> **Fifteen suites green. `check:api` now 65 assertions.**
+
+> **PREVIOUS — commits `0d93e95`, `5749d5e`: the payment webhook verifier could have been changed
 > to accept everything and no test would have noticed. And the one broken-state check the system
 > most needed did not exist.**
 >
@@ -3476,7 +3549,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**207 commits, all pushed to `main`. Working tree clean.**
+**213 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
