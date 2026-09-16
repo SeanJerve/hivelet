@@ -106,7 +106,69 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `898b476`, `3303d11`: the documents you would have filmed from had drifted
+> **LATEST — commits `e25488c`, `1066f0c`: the snapshot the documents are told to trust is
+> honest, and now has to stay that way. And a fact about the data worth knowing before the
+> defense, not during it.**
+>
+> ### `live_schema.csv` is true — and was true only by luck
+>
+> This project's standing rule is to trust `database/live_schema.csv` over
+> `FULL_DATABASE_SCHEMA.sql`. Last night vindicated that rule in the worst way: the DFD's
+> *"closure proof"* enumerated every `CREATE TABLE` in the SQL file, found 20, and closed — while
+> `property_areas` sat in production, **absent from that file entirely**.
+>
+> So the CSV was checked against the catalogue it claims to describe: **21 tables, 211 columns,
+> matching exactly, table by table.**
+>
+> **But nothing regenerates it.** The next migration makes it stale silently — which is precisely
+> the history of the file it replaced. *Naming a source of truth does not create one.*
+> `check:columns` now compares them on every run, and the failure text says to regenerate it
+> rather than hand-edit it to pass, because hand-editing is how the other file drifted into
+> being wrong.
+>
+> Proved in both directions: a column added to the snapshot that the database lacks, and a real
+> column dropped from it.
+>
+> ### No ledger row has ever been written by the application
+>
+> The dashboard shows **₱0 collections for September** and *"0 collections recorded this month"*.
+> That looked like it might be a defect. **It is not** — and what it actually is, is worth knowing:
+>
+> | Table | Rows | Written by the app since the migration | Newest row |
+> |---|---:|---:|---|
+> | `monthly_income_records` | 937 | **0** | 2026-08-28 |
+> | `monthly_expense_entries` | 1,262 | **0** | 2026-08-28 |
+> | `payments` | 15 | **0** | 2026-08-25 |
+> | `bills` | 2 | **0** | 2026-08-21 |
+> | `maintenance_tickets` | 5 | **0** | 2026-08-26 |
+>
+> **Every figure in the system arrived in one migration on 2026-08-28.** The system has been in
+> read-only use for nineteen days. *(`notifications` and `audit_logs` do have newer rows — those
+> came from this audit's own probing, not from use.)*
+>
+> Two consequences, neither a fault, both better known in advance:
+>
+> 1. **The income ledger stops at July 2026.** August and September collections are not in the
+>    system. The ₱0 is the data being absent, not the figure being wrong — but it is what a panel
+>    sees on an unprepared demo.
+> 2. **The write paths have been proven by the suites and never used in anger.** `check:api`,
+>    `check:billing` and `check:writes` exercise them, and several real defects in them were
+>    found and fixed during this audit — but no real collection has ever been recorded through
+>    the interface.
+>
+> Recorded in the handoff as a decision: record the two months before the defense, or say plainly
+> that the ledger is complete through July and the system has been read-only since migration.
+>
+> ### The arithmetic holds in aggregate too
+>
+> Checked while there, across all seven months of 2026: `fifty_percent_share` totals
+> **₱880,225.00** against rent of **₱1,760,450.00** — exactly half, to the centavo. `remitted`
+> less `rent` leaves **₱66,400** of water. The generated columns hold in the aggregate, not just
+> row by row.
+>
+> **Fourteen suites green.**
+
+> **PREVIOUS — commits `898b476`, `3303d11`: the documents you would have filmed from had drifted
 > from the documents of record, and one of them still contained a proof this audit disproved.**
 >
 > `VIDEO PRESENTATION DOCS/` is **gitignored**. So its copies of the Phase 1–3 outputs never
@@ -2728,7 +2790,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**168 commits, all pushed to `main`. Working tree clean.**
+**173 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
