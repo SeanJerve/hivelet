@@ -92,7 +92,71 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commit `1322f48`: the owner's own books swept end to end. Seven receipts need her
+> # ⚠ **LATEST — commit `8b09f80`: anyone could have made themselves an administrator.**
+>
+> **`POST /api/auth/register` let the caller choose their own role.**
+>
+> The route is public — no `requireAuth`, no `requirePermission` — and that is **correct**, it is
+> how a person signs up. But its schema accepted `role: z.string().optional()`, and
+> `authService.register()` wrote that value straight into the insert:
+>
+> ```
+> role: data.role || 'tenant',
+> ```
+>
+> and `user_role_type` accepts `'admin'`. So this, from anyone who could reach the server:
+>
+> ```
+> POST /api/auth/register
+> { "email": "…", "password": "…", "fullName": "x", "role": "admin" }
+> ```
+>
+> **created an administrator and returned a signed token for it.** That token reaches all **937
+> income rows**, all **45 tenant profiles** with their phone numbers and emergency contacts, the
+> ledger **edit and void** paths, and the **payment verification gate**.
+>
+> ### It was never used
+>
+> **Exactly one admin account exists**, created **2026-07-30** in the original seed. No account
+> of any role has been created since **2026-08-27**. Checked before anything else, because it is
+> the first thing worth knowing.
+>
+> ### Four facts, each read rather than inferred
+>
+> | Where | What it says |
+> |---|---|
+> | `auth.ts:88` | the route carries no auth guard of any kind |
+> | `auth.ts` | `registerSchema` listed `role` as an optional string |
+> | `authService.ts` | the insert used `role: data.role \|\| 'tenant'` |
+> | `pg_enum` | `user_role_type` = admin \| tenant \| prospect |
+>
+> **I did not prove it by exploiting it.** Creating an account is not mine to do, and creating an
+> admin account on the owner's live database to demonstrate that admin accounts can be created is
+> not a test worth having. The chain above is unambiguous from three files and the catalogue.
+>
+> ### The fix
+>
+> `role` is gone from the schema, and `register()` always inserts `'tenant'`. Zod strips unknown
+> keys, so a payload still carrying `role` is **accepted and ignored** rather than rejected — the
+> caller learns nothing and a genuine tenant still gets their account.
+>
+> **Nothing legitimate changed.** The sign-up form has only ever sent email, password, fullName
+> and phoneNumber, and `'tenant'` was already the default for every request that did not ask for
+> something else.
+>
+> ### The guard, and an honest label on it
+>
+> Two new `check:api` assertions, **53 → 55**. They read the **source**, not the server — and the
+> code says why: every other assertion in that suite is behavioural, but proving this endpoint
+> *ignores* a role would mean registering an account against the live database.
+>
+> Both were made to fire by putting each half of the hole back. **The first attempt reported
+> MISSED for both, and that was a false negative** — the backend runs under `tsx watch`, so
+> editing the source restarted the server mid-run. The probe now waits for `/api/health` and
+> reads the guard's own output lines instead of the exit code. *A guard that appears not to fire
+> is worth a second look before it is believed.*
+
+> **PREVIOUS — commit `1322f48`: the owner's own books swept end to end. Seven receipts need her
 > word. Everything else is clean to the centavo.**
 >
 > Twelve suites check the code. **This one checks the records** — because the code being right
@@ -2317,7 +2381,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**143 commits, all pushed to `main`. Working tree clean.**
+**145 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
