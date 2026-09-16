@@ -54,8 +54,13 @@ const EXPECTED = {
  * reachable - and their raw literals went with them. Leaving the budget at 97
  * would have quietly licensed three new ones, which is the opposite of what a
  * ratchet is for.
+ *
+ * 94 -> 84 on 2026-09-16. Two more unreachable files deleted: TenantPortalView
+ * (670 lines, never routed, a strict subset of the four tenant views that
+ * replaced it - and still receiving bug fixes in five separate commits) and
+ * ConfirmModal (superseded by the PIN confirmation pattern).
  */
-const MAX_RAW_HEX = 94;
+const MAX_RAW_HEX = 84;
 
 const assetDir = path.join(root, 'dist', 'assets');
 if (!fs.existsSync(assetDir)) {
