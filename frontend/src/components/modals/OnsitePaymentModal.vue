@@ -27,7 +27,10 @@ const rentAmount = ref(0);
 const waterAmount = ref(400); 
 const gbgFee = ref(0);
 const orNum = ref('');
-const date = ref(new Date().toISOString().split('T')[0]);
+// The property's today, not UTC's. Before 08:00 Manila the old expression
+// offered YESTERDAY as the default date on a payment form.
+import { propertyToday, periodEnd } from '@/lib/propertyDate';
+const date = ref(propertyToday());
 const isSubmitting = ref(false);
 
 // Payment method & reference
@@ -48,15 +51,14 @@ const transactionReference = ref('');
 
 // Validity duration
 const monthsCovered = ref(1);
-const dateCoveredStart = ref(new Date().toISOString().split('T')[0]);
+const dateCoveredStart = ref(propertyToday());
 
 // Auto-calculate end date based on start date + monthsCovered
 const dateCoveredEnd = computed(() => {
-  const start = new Date(dateCoveredStart.value);
-  if (isNaN(start.getTime())) return '';
-  start.setMonth(start.getMonth() + monthsCovered.value);
-  start.setDate(start.getDate() - 1);
-  return start.toISOString().split('T')[0];
+  // Shared with the server's rule. The version here overflowed on month ends -
+  // 31 January plus one month became 2 March - and the API prefers a supplied
+  // end date over its own, so this preview could overwrite a correct figure.
+  return periodEnd(dateCoveredStart.value, monthsCovered.value);
 });
 
 // Format Helper

@@ -24,7 +24,7 @@ import {
 } from '../config/propertyAreas.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
-import { propertyToday } from '../utils/propertyClock.js';
+import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
 import { assertWritten, warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
@@ -1328,17 +1328,25 @@ router.patch(
       const waterAmount = billData?.water_amount ?? derivedWater.amount;
       const rentAmount = billData?.rent_amount ?? (before.amount - waterAmount);
 
-      const datePaid = new Date(before.paid_at || Date.now());
-      const year = datePaid.getFullYear();
-      const month = datePaid.getMonth() + 1;
+      /**
+      * The property's calendar, not the server's.
+      *
+      * `paid_at` is a `timestamptz` - a moment. `getFullYear()` and `getMonth()`
+      * read it in the SERVER's timezone, so a payment at 2026-09-30T17:00:00Z
+      * (01:00 on 1 October in Manila) filed to October here and to September on
+      * a UTC host. A ledger figure must not depend on where the process runs.
+      */
+      const paidParts = propertyParts(before.paid_at || Date.now());
+      const year = paidParts.year;
+      const month = paidParts.month;
 
       let rentPeriodStart = billData?.billing_period_start;
       let rentPeriodEnd = billData?.billing_period_end;
 
       if (!rentPeriodStart || !rentPeriodEnd) {
-        const y = datePaid.getFullYear();
-        const m = datePaid.getMonth();
-        const d = datePaid.getDate();
+        const y = paidParts.year;
+        const m = paidParts.month - 1;   // Date.UTC() below wants 0-based months
+        const d = paidParts.day;
 
         if (d >= 26) {
           rentPeriodStart = new Date(Date.UTC(y, m, 26)).toISOString().split('T')[0];
@@ -1367,7 +1375,11 @@ router.patch(
               assignment_id: assignment?.id ?? null,
               year,
               month,
-              date_paid: datePaid.toISOString().split('T')[0],
+              // The date the money arrived AT THE PROPERTY. This read
+              // `toISOString()`, which is UTC's date, so anything received
+              // between midnight and 08:00 Manila was recorded a day early in
+              // the owner's ledger.
+              date_paid: paidParts.date,
               contact_name: tenantProfile?.full_name || 'Online Resident',
               invoice_number: before.transaction_reference,
               rent_period_start: rentPeriodStart,
@@ -1484,7 +1496,7 @@ router.get(
   '/admin/reports/income.xlsx',
   requirePermission(PERMISSIONS.INCOME_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = Number(req.query.year ?? new Date().getFullYear());
+    const year = Number(req.query.year ?? propertyParts(Date.now()).year);
 
     const workbook = await buildIncomeReportWorkbook(year);
 
@@ -1522,7 +1534,7 @@ router.get(
   '/admin/reports/expenses.xlsx',
   requirePermission(PERMISSIONS.EXPENSE_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = Number(req.query.year ?? new Date().getFullYear());
+    const year = Number(req.query.year ?? propertyParts(Date.now()).year);
 
     const workbook = await buildExpenseReportWorkbook(year);
 
@@ -1740,9 +1752,13 @@ router.post(
     const carriedOccupants = assign?.occupant_count ?? null;
     const occupantsDiverge = carriedOccupants !== null && occupants !== carriedOccupants;
 
-    const date = new Date(datePaid);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
+    /**
+     * `datePaid` is a `YYYY-MM-DD` string and has no timezone. Reading it through
+     * `new Date()` gave it one - UTC midnight - and then `getDate()` read that
+     * back in the server's zone, which returns the previous day anywhere west of
+     * UTC. Parsed from the string instead, so no timezone is ever introduced.
+     */
+    const { year, month } = isoDateParts(datePaid);
 
     const { data: newRecord, error: insertError } = await db
       .from('monthly_income_records')

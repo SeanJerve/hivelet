@@ -47,3 +47,44 @@ export const PROPERTY_TIMEZONE = 'Asia/Manila';
 export function propertyToday(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: PROPERTY_TIMEZONE });
 }
+
+/**
+ * The calendar parts of an instant, as the property experiences it.
+ *
+ * `payments.paid_at` is a `timestamptz` - a moment, not a date - and the income
+ * ledger files it under a `year` and `month`. Reading those with
+ * `Date.getFullYear()` and `.getMonth()` uses the SERVER's timezone, so the same
+ * payment files to a different month depending on where the process runs:
+ *
+ *   paid_at 2026-09-30T17:00:00Z   Manila 2026-10-01 01:00   ->  October
+ *                                  a UTC server              ->  September
+ *
+ * A ledger figure must not depend on where the server is. These parts are always
+ * the property's.
+ */
+export function propertyParts(instant: Date | string | number): {
+  year: number;
+  month: number;
+  day: number;
+  date: string;
+} {
+  const d = instant instanceof Date ? instant : new Date(instant);  // string or epoch ms
+  const date = d.toLocaleDateString('en-CA', { timeZone: PROPERTY_TIMEZONE });
+  const [year, month, day] = date.split('-').map(Number);
+  return { year, month, day, date };
+}
+
+/**
+ * The calendar parts of a plain `YYYY-MM-DD` string.
+ *
+ * Deliberately does NOT go through `Date`. A date string has no timezone, so
+ * converting it to an instant and back can only introduce one - which is how
+ * `new Date('2026-09-16').getDate()` returns 15 on a server west of UTC.
+ */
+export function isoDateParts(iso: string): { year: number; month: number; day: number } {
+  return {
+    year: Number(iso.slice(0, 4)),
+    month: Number(iso.slice(5, 7)),
+    day: Number(iso.slice(8, 10)),
+  };
+}

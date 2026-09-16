@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { propertyToday, propertyDate } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
 import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
@@ -102,7 +103,8 @@ const monthsList = [
 const yearsList = ['All', '2026', '2025', '2024'];
 
 // New Expense Form Entries (At least one default entry)
-const date = ref(new Date().toISOString().split('T')[0]);
+// The property's today, not UTC's - see lib/propertyDate.
+const date = ref(propertyToday());
 const formEntries = ref<FormExpenseEntry[]>([
   {
     desc: '',
@@ -424,9 +426,9 @@ function startEditExpense(e: ExpenseRecord) {
   editingExpense.value = e;
   const d = new Date(e.date);
   if (!isNaN(d.getTime())) {
-    editDate.value = d.toISOString().split('T')[0];
+    editDate.value = propertyDate(d);
   } else {
-    editDate.value = new Date().toISOString().split('T')[0];
+    editDate.value = propertyToday();
   }
   editDesc.value = e.description;
   editCategory.value = e.category;

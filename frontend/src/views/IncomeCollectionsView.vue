@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { periodEnd, propertyToday, propertyDate } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { 
@@ -409,11 +410,8 @@ const editDateCoveredStart = ref('');
 const editOccupants = ref(1);
 
 const editDateCoveredEnd = computed(() => {
-  const start = new Date(editDateCoveredStart.value);
-  if (isNaN(start.getTime())) return '';
-  start.setMonth(start.getMonth() + editMonthsCovered.value);
-  start.setDate(start.getDate() - 1);
-  return start.toISOString().split('T')[0];
+  // Same rule as the server, and as the on-site payment form. See lib/propertyDate.
+  return periodEnd(editDateCoveredStart.value, editMonthsCovered.value);
 });
 
 const editTotal = computed(() => {
@@ -430,9 +428,9 @@ function startEditIncome(r: IncomeRecord) {
   
   const d = new Date(r.datePaid);
   if (!isNaN(d.getTime())) {
-    editDate.value = d.toISOString().split('T')[0];
+    editDate.value = propertyDate(d);
   } else {
-    editDate.value = new Date().toISOString().split('T')[0];
+    editDate.value = propertyToday();
   }
 
   editMonthsCovered.value = 1;
