@@ -13,7 +13,8 @@
     "check:api": "node scripts/check-api-contract.mjs",
     "check:writes": "node scripts/check-silent-writes.mjs",
     "check:columns": "node scripts/check-column-refs.mjs",
-    "check:fields": "node scripts/check-frontend-fields.mjs"
+    "check:fields": "node scripts/check-frontend-fields.mjs",
+    "check:endpoints": "node scripts/check-endpoint-reach.mjs"
   },
   "dependencies": {
     "@adyen/api-library": "^32.0.0",
