@@ -264,6 +264,70 @@ if (live.length) {
   check('room status agrees with tenancy', statusDrift.length,
     `${rooms.length} units, ${occupied} Occupied, ${assigns.length} active tenancies, no drift`);
 
+  /**
+   * ACCOUNTS THAT CAN SIGN IN AND BELONG TO NOBODY.
+   *
+   * BR-026 above proves no two profiles share an email or a phone. That is a
+   * check on IDENTIFIERS, and it passes happily while the same PERSON holds two
+   * records - which is exactly what the 2026-08-27 import produced. Three rows
+   * carry an invoice number glued onto the name:
+   *
+   *     Mireel Fatima ParcareyINV.#5223
+   *
+   * each with its own fabricated email derived from the corrupted name, its own
+   * phone number, a usable `password_hash` - and zero tenancies, zero income
+   * rows, zero bills, zero payments. The real person has a separate, complete
+   * profile. So BR-026 sees two different identifiers and says nothing.
+   *
+   * They matter because they can SIGN IN, on the shared tenant literal that has
+   * been in this repository's git history since 2026-08-25. Three working
+   * logins belonging to nobody, that nothing was counting.
+   *
+   * Not a failure here, because the fix is `database/migrations/023`, which the
+   * sandbox cannot apply - so failing would only mean a permanently red suite.
+   * Printed every run instead, the way the seven receipts are, so it stays
+   * visible until someone runs it.
+   *
+   * KNOWN_NO_TENANCY exists because the obvious query finds a FOURTH row that
+   * must be left alone: a team member's own account, role 'tenant' so the portal
+   * can be exercised. A later sweep that deactivated "everyone with no tenancy"
+   * would lock out the database administrator.
+   */
+  const KNOWN_NO_TENANCY = new Map([
+    ['luydcuario@gmail.com', "team account - the database administrator's own, role 'tenant' so the portal can be exercised. LEAVE IT."],
+  ]);
+
+  // Filtered on `password_hash` rather than SELECTing it. The distinction that
+  // matters is "can this account sign in", which is a filter; pulling 42 bcrypt
+  // hashes across the wire to compute a boolean would be careless with the one
+  // column in this database that must never travel.
+  const allProfiles = await rows(
+    'profiles?select=id,full_name,email&role=eq.tenant&account_status=eq.active&password_hash=not.is.null'
+  );
+  const hasEverHadTenancy = new Set(
+    (await rows('room_assignments?select=tenant_profile_id')).map((a) => a.tenant_profile_id)
+  );
+  const hasLedger = new Set(
+    (await rows('monthly_income_records?select=tenant_profile_id')).map((m) => m.tenant_profile_id)
+  );
+
+  const nobodys = allProfiles.filter(
+    (p) => !hasEverHadTenancy.has(p.id) && !hasLedger.has(p.id)
+  );
+
+  if (nobodys.length) {
+    console.log(
+      `\n  LOGINS THAT BELONG TO NOBODY — ${nobodys.length} account(s), reported every run:`
+    );
+    for (const p of nobodys) {
+      const known = KNOWN_NO_TENANCY.get((p.email ?? '').toLowerCase());
+      console.log(`    ${p.full_name}`);
+      console.log(
+        `      ${known ?? 'no tenancy ever, no ledger row, and it can sign in - see migration 023'}`
+      );
+    }
+  }
+
   // BR-013: a bill reading Paid must actually be covered by verified payments.
   const paidByBill = new Map();
   for (const p of pays) {
