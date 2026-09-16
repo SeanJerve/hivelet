@@ -106,7 +106,84 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `96f29ec`, `6b57af4`, `448c5de`: I turned the same question on the rest of
+> **LATEST — commits `8b16256`, `b7787ad`, `08f529e`: the wording rules were written down in
+> three places each and still weren't being followed. Two of the files breaking them were the
+> files that tell the next person what to write.**
+>
+> The locked rules — BR-035's wording, no rate escalation, 33 units not 32, the gateway is real
+> — are stated in at least three documents apiece. **None of that stopped four live
+> specification files from breaking them:**
+>
+> | File | What it said |
+> |---|---|
+> | `.agents/AGENTS.md` | document the *"2% annual price increase history"* |
+> | `AI_DEVELOPMENT_WORKFLOW.md` | the same sentence |
+> | `docs/UI_DESIGN_SPECIFICATION.md` | the same sentence again — **twice** |
+> | `docs/UI_DESIGN_SYSTEM_GUIDELINES.md` | *"32 rentable units across 3 floors"* |
+>
+> The first two are **instruction files**. A retired framing there is not a stale sentence —
+> **it is a sentence that writes more stale sentences**, because the next contributor is told to
+> document the thing the rule forbids. That is how this survived being written down three times.
+>
+> The UI spec also described the units as *"101–110, 201–211, 301–311 across three floors"*.
+> **Invented.** The live `rooms` table has 33 units in 5 clusters over four floors holding
+> **11 / 11 / 10 / 1**, named `1a`–`1h`, `2a`–`2g`, `3a`–`3g`, `B1F`/`B2B`/`B2F`/`B3B`/`B3F`,
+> `F1`/`F2B`/`F2F`, `LB`/`LF` and `PH`. All four files corrected from the database.
+>
+> ### The part I nearly got badly wrong
+>
+> The same banned wording is in **nine** documents under `docs/module_01_submission/`, and I
+> started writing the patch to fix all of them.
+>
+> **That would have been a serious mistake.** Those are what your group actually submitted, and
+> the errata sheet says why they stay as they are: *"We publish corrected artifacts and this
+> sheet together rather than silently reissuing the documents."* A panel can hold the submission
+> in one hand and the errata in the other and see that **you found your own errors**. A quietly
+> corrected document proves nothing — and if anyone kept the original, it looks far worse than
+> the error did.
+>
+> **The test is not what a document says, it is what it is for:**
+>
+> | | |
+> |---|---|
+> | **A record** — submitted work, a dated plan with its steps ticked off | correct it with a **banner**, never an edit |
+> | **A specification** — `AGENTS.md`, the UI spec, the code | correct it **in place**, now |
+>
+> Four specifications were corrected. **Nineteen records were given banners and left untouched**,
+> including ten dated `superpowers/` plans — three of which describe building a stand-in for the
+> payment gateway, true in August and not now. Their banners say so and name the current route.
+>
+> ### And now it is enforced, not just written down
+>
+> **`check:canon`** — the fifteenth suite. It decides using one distinction that does the whole
+> job: **a phrase in quotes, backticks, bold or strikethrough is being *cited*; a bare one is
+> being *asserted*.** That is the actual difference between an errata row and a defect, it works
+> per match rather than per file, and it means a careless new use inside the defense pack is
+> still caught.
+>
+> My first version used a list of prohibition words instead. It reached twenty-three entries,
+> kept needing another, excused whole lines that merely contained one, and failed on a wrapped
+> list where *"Do not say"* sat on the line above. Gone.
+>
+> **Seven mutations, all correct**: all four banned framings caught in documents *and* in
+> shipping source; a quoted citation correctly allowed; a bannered record correctly allowed.
+>
+> **Then it caught me.** Writing the judgement-log entry *about* the ban put a bare "32-unit"
+> into the prose, and the check failed my own commit within minutes — which is exactly the case
+> a word list would have waved through.
+>
+> ### Smaller things found in the same pass
+>
+> - Two comments in `public.ts` cited `createMockCheckoutSession` and `completeMockPayment`.
+>   **Both were renamed months ago** — anyone following either one greps for a name that does
+>   not exist.
+> - **Not changed:** `env.ts`'s `mock_api_key_for_testing` defaults. The `mock_` prefix is the
+>   sentinel `isLiveConfigured()` tests for — renaming it would have broken gateway detection.
+>   Checked before touching.
+>
+> **Fifteen suites green.**
+
+> **PREVIOUS — commits `96f29ec`, `6b57af4`, `448c5de`: I turned the same question on the rest of
 > the verification suites. Three checked so far, three had holes, and the third was hiding a
 > real one.**
 >
@@ -3258,7 +3335,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**197 commits, all pushed to `main`. Working tree clean.**
+**201 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
