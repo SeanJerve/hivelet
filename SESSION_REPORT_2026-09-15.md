@@ -106,7 +106,58 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `d026e21`, `884d0e8`: the system kept its dates in UTC. The property is at
+> **LATEST — commit `b4fc49b`: the receipt form had no duplicate guard — and the owner's own
+> ledger corrected the guard I wrote for it.**
+>
+> `monthly_income_records` has **one** constraint: a primary key on `id`. Nothing stops the same
+> receipt being recorded twice.
+>
+> The **gateway** path already guards — on verification it looks for an existing income row by
+> `transaction_reference` before inserting. The **on-site form**, where Mrs. Fe types a receipt by
+> hand, had no equivalent. The browser disables its submit button while saving, which closes the
+> impatient double-click, but **not** a network retry on a request that actually succeeded, nor
+> the same receipt being entered twice. Either double-counts rent among 937 rows with nothing to
+> notice it.
+>
+> ### The data corrected my first version
+>
+> I matched on the obvious four: unit, receipt number, date, amount. **Four groups in the live
+> ledger already match on exactly those:**
+>
+> | Receipt | Rows | Periods |
+> |---|---:|---|
+> | `OR#4895` | **4** | 2024-09, 10, 11, 12 |
+> | `OR#4896` | 3 | 2025-01, 02, 03 |
+> | `OR#4920` | 2 | 2025-04, 05 |
+> | `OR#4952` | 2 | 2025-04, 05 |
+>
+> Every one is **a single receipt split across the months of arrears it settles.** Legitimate, and
+> **not** double-counted money — each row is a different period. That guard would have rejected
+> the next arrears settlement she recorded.
+>
+> It would also have **thrown rather than rejected**: `maybeSingle()` errors on more than one
+> match, so those four would have produced a **500** where a clean **409** was intended.
+>
+> Adding the **period** makes the combination unique across **all 937 rows** — checked, not
+> assumed. That is the real constraint, and **the code could not have told me**: the form has no
+> field saying "this receipt also covers three other months", the schema has no comment about it,
+> and the shape exists only in how the owner actually issues receipts.
+>
+> *I went looking for a missing constraint and the ledger told me what the constraint is.*
+> Recorded as entry 14 in the judgement log: **before writing a uniqueness rule, ask the data what
+> is already true.** One query, and it is the difference between a guard that protects the ledger
+> and one that stops her using it.
+>
+> ### Checked and clean in the same pass
+>
+> **Money precision is properly handled.** `MONEY_DUST = 0.005` and `toCentavos()` guard the
+> receipt-allocation arithmetic, with a comment naming the exact failure — a `4.5e-13` residue
+> passing `CHECK (amount > 0)` and being written as a junk payment row. Both live bills are
+> exactly covered by their verified payments.
+>
+> **Fourteen suites green.**
+
+> **PREVIOUS — commits `d026e21`, `884d0e8`: the system kept its dates in UTC. The property is at
 > UTC+8, so for eight hours of every day it was recording the wrong one.**
 >
 > `new Date().toISOString().slice(0, 10)` is **UTC's** date. Legazpi City is **UTC+8**, no
@@ -3013,7 +3064,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**185 commits, all pushed to `main`. Working tree clean.**
+**188 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
