@@ -106,7 +106,51 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `ab9244a`, `d83db50`: one command for all fourteen suites, and a document
+> **LATEST — commit `58ceea9`: one measured ratio across every document that quotes it, and
+> `check:copies` catching drift on its first real test.**
+>
+> D-9 complained that three documents gave three different call-count ratios and none stated its
+> method. The method is now stated, and the other three carry **the same measured figure**
+> rather than their own:
+>
+> | Document | Was | Now |
+> |---|---|---|
+> | `PHASE1_ARCHITECTURE_AND_PATTERN.md` (×3) | 131 of 164 | **144 of 184** |
+> | `PRESENTATION_INDEX.md` | 131 of 164 | **144 of 184** |
+> | `12_ITERATION_HISTORY.md` | 137 of 173 | **144 of 184** |
+>
+> Each says what it replaced, so the change is auditable rather than silent. `admin.ts` is
+> **3,033** lines everywhere now — not 2,263 in two places and ~2,500 in a third.
+>
+> The architecture paper also claimed **nine** service modules and listed nine. **There are
+> eleven** — `expenseReportExport.ts` and `incomeReportExport.ts` were missing from its own list.
+>
+> ### The number in that distribution worth reading twice
+>
+> `admin.ts` **118**, `tenant.ts` **19**, `public.ts` **7** against **38** across the eleven
+> services. And **`billingService.ts` makes ZERO database calls.**
+>
+> It is pure arithmetic over data handed to it — water fees, billing periods, overdue status,
+> receipt allocation. **That is exactly what a domain service should look like.** But the ratio
+> counts *data access*, so a service that holds rules rather than queries is **invisible** to it,
+> as are the three database functions doing multi-table work. **The measurement understates the
+> extraction that has already happened**, and the paper now says so beside the number.
+>
+> ### `check:copies` earned itself within the hour
+>
+> Editing the architecture paper made its filming copy stale. **The check caught it immediately**
+> — its first real test, on drift I had just created myself. Refreshed; nine pairs at zero.
+>
+> ### Also checked, and clean
+>
+> **`.env.example` is complete.** All fourteen variables `env.ts` reads are declared, and the two
+> extras — `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY` — are genuinely used, by the check
+> scripts and the client. Nothing required is missing, which is the failure that makes a fresh
+> setup fail confusingly.
+>
+> **All 14 suites green in one run. Both builds clean.**
+
+> **PREVIOUS — commits `ab9244a`, `d83db50`: one command for all fourteen suites, and a document
 > that asked to be re-measured, answered.**
 >
 > ### `npm run check:all`
@@ -2907,7 +2951,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**180 commits, all pushed to `main`. Working tree clean.**
+**182 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
