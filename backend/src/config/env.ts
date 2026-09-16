@@ -46,7 +46,24 @@ function either(preferred: string, legacy: string): string {
   return value.trim();
 }
 
-const nodeEnv = optional('NODE_ENV', 'development');
+/**
+ * The default is 'production', and that is deliberate.
+ *
+ * `nodeEnv` decides exactly two things: whether a 500 response carries a stack
+ * trace (`middleware/errorHandler.ts`) and which morgan format is used. Both
+ * fail SAFE at 'production' and fail OPEN at 'development', so an environment
+ * that simply forgets to set the variable used to serve stack traces to the
+ * public - naming files, line numbers and the shape of the query that failed.
+ *
+ * This is the same lesson as the compromised-secret guard below, which the
+ * comment there records: the original version of that guard only fired on
+ * `NODE_ENV === 'production'`, the one environment this project has never run
+ * in. A safety control keyed to an unset variable is not a control.
+ *
+ * Local development sets NODE_ENV=development explicitly in `.env`, so nothing
+ * about the developer experience changes.
+ */
+const nodeEnv = optional('NODE_ENV', 'production');
 const jwtSecret = required('JWT_SECRET');
 
 // Secrets known to be compromised. `hivelet_super_secret_jwt_key_2026_capstone`
