@@ -63,3 +63,6 @@ VIDEO PRESENTATION DOCS/*
 !VIDEO PRESENTATION DOCS/filming-script.html
 !VIDEO PRESENTATION DOCS/SET UP LOYDS LAPTOP.md
 !VIDEO PRESENTATION DOCS/PASTE THIS INTO LOYDS CLAUDE.md
+
+# vite writes these beside the config during a build; they are not source
+vite.config.ts.timestamp-*
