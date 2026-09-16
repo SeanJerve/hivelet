@@ -286,6 +286,77 @@ if (live.length) {
         );
   }
 
+  /**
+   * BR-014 / BR-040: the water rates, and the eleven places the frontend keeps a
+   * copy of them.
+   *
+   * `/public/rates` serves the configured figures. Every caller of it has a
+   * fallback literal for when that request fails - `?? 200`, `'LF' ? 400 : 200` -
+   * across `OnsitePaymentModal.vue`, `systemState.ts` and
+   * `IncomeCollectionsView.vue`.
+   *
+   * Those fallbacks are the same arrangement as `NON_RENTAL_AREAS` above: a
+   * configurable value copied into source, kept in step by nothing. BR-014 exists
+   * precisely so the landlady can change the water rate without a developer. The
+   * day she does, every fallback here quietly bills the OLD rate whenever the
+   * rates request fails - on the on-site payment form, which is where a real
+   * amount gets written into her ledger.
+   *
+   * Narrow, because it needs the request to fail first. Not narrow enough to
+   * leave uncompared.
+   */
+  const settings = await rows('system_settings?select=key,value');
+  const setting = (k) => {
+    const row = settings.find((s) => s.key === k);
+    return row === undefined ? null : Number(row.value);
+  };
+
+  const RATES = [
+    ['water_rate_per_occupant', setting('water_rate_per_occupant')],
+    ['linda_lf_water_charge', setting('linda_lf_water_charge')],
+    ['linda_lb_water_charge', setting('linda_lb_water_charge')],
+  ];
+  const missing = RATES.filter(([, v]) => v === null).map(([k]) => k);
+  if (missing.length) {
+    fail(`BR-014/BR-040 rates — ${missing.join(', ')} missing from system_settings`);
+  } else {
+    const [, perOccupant] = RATES[0];
+    const [, lf] = RATES[1];
+    const [, lb] = RATES[2];
+
+    const FILES = [
+      'frontend/src/components/modals/OnsitePaymentModal.vue',
+      'frontend/src/lib/systemState.ts',
+      'frontend/src/views/IncomeCollectionsView.vue',
+    ];
+
+    const wrong = [];
+    let literals = 0;
+    for (const rel of FILES) {
+      const src = readFileSync(join(here, '..', '..', rel), 'utf8');
+      for (const m of src.matchAll(/(?:waterRatePerOccupant|perOccupant)[^?\n]*\?\?\s*(\d+)/g)) {
+        literals += 1;
+        if (Number(m[1]) !== perOccupant) {
+          wrong.push(`${rel}: per-occupant fallback is ${m[1]}, setting is ${perOccupant}`);
+        }
+      }
+      for (const m of src.matchAll(/'(?:LF|lf)'\s*\?\s*(\d+)\s*:\s*(\d+)/g)) {
+        literals += 2;
+        if (Number(m[1]) !== lf) wrong.push(`${rel}: LF fallback is ${m[1]}, setting is ${lf}`);
+        if (Number(m[2]) !== lb) wrong.push(`${rel}: LB fallback is ${m[2]}, setting is ${lb}`);
+      }
+    }
+
+    if (literals === 0) {
+      fail('BR-014/BR-040 rates — no fallback literals found; the patterns this checks for have moved');
+    } else if (wrong.length === 0) {
+      pass(`BR-014/BR-040 rates — ${literals} frontend fallback literal(s) match system_settings ` +
+           `(per-occupant ${perOccupant}, LF ${lf}, LB ${lb})`);
+    } else {
+      for (const w of wrong) fail(`BR-014/BR-040 rates — ${w}`);
+    }
+  }
+
   // BR-017: the administrator's verification gate. A gateway payment must never
   // settle itself - every Verified row names the person who verified it.
   const selfVerified = pays.filter(
