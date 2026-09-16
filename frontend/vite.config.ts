@@ -103,6 +103,26 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    /**
+     * `host: true` binds every network interface, not just localhost - which is
+     * what lets a phone on the same wifi open the tenant portal for testing.
+     *
+     * The trade-off, stated so it is a choice rather than an accident: while
+     * `npm run dev` is running, **anyone on the same network can reach this
+     * server** and read the source it serves. On campus wifi or the boarding
+     * house's own network that is not a small audience.
+     *
+     * It matters more on this machine than most. `npm audit` (2026-09-16) reports
+     * vite 5.4.21 and esbuild 0.21.5, both dev-only and neither shipped, with
+     * four advisories between them - and **two are Windows-specific**: an NTLMv2
+     * hash disclosure through UNC path handling, and a `server.fs.deny` bypass
+     * via alternate paths. `host: true` makes those reachable from the LAN rather
+     * than only from a malicious page in the developer's own browser.
+     *
+     * The fix is vite 8, a major upgrade. Not something to run days before a
+     * defense on a working build - recorded for Sean to decide. Until then:
+     * do not leave the dev server running on an untrusted network.
+     */
     host: true
   }
 })
