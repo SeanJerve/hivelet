@@ -566,6 +566,37 @@ somebody's decision or somebody's permission, and it is gathered here because it
 spread across seven rows of a register, a session report and the output of a check. Each line
 says whose call it is.*
 
+### Before the defense — a fact about the data, not a defect
+
+**No ledger row has been written by the application. Not one, in either ledger.** Every
+figure in the system arrived in the migration of **2026-08-28**:
+
+| Table | Rows | Written by the app since | Newest row |
+| :--- | ---: | ---: | :--- |
+| `monthly_income_records` | 937 | **0** | 2026-08-28 |
+| `monthly_expense_entries` | 1,262 | **0** | 2026-08-28 |
+| `payments` | 15 | **0** | 2026-08-25 |
+| `bills` | 2 | **0** | 2026-08-21 |
+| `maintenance_tickets` | 5 | **0** | 2026-08-26 |
+
+*(`notifications` and `audit_logs` DO have newer rows — those came from this audit's own
+probing, not from use.)*
+
+Two consequences worth knowing **before** someone notices them on the day:
+
+1. **The income ledger stops at July 2026.** August and September collections are not in
+   the system, so the dashboard correctly shows **₱0 for the current month** and
+   *"0 collections recorded this month"*. That is the data being absent, not the figure
+   being wrong — but it is what a panel would see on an unprepared demo.
+2. **The write paths have been proven by the suites and never used in anger.** They are
+   exercised by `check:api`, `check:billing` and `check:writes`, and several real defects
+   in them were found and fixed during this audit — but no real collection has ever been
+   recorded through the interface.
+
+Neither is a fault. Both are worth deciding about: either record August and September
+before the defense, or be ready to say plainly that the ledger is complete through July
+and the system has been in read-only use since migration.
+
 ### Mrs. Da Silva's — these are her records and her accounting policy
 
 | | What she needs to decide | Where the detail is |
