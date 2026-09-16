@@ -635,6 +635,33 @@ way.
 
 ---
 
+#### 14. The data knows the constraint better than the code does
+
+`monthly_income_records` has one constraint - a primary key. Nothing stops the
+same receipt being recorded twice, and the on-site form had no application guard
+either, though the gateway path beside it does.
+
+Writing that guard, the obvious criteria came straight from the form: same unit,
+same receipt number, same date, same amount. **Four groups in the live ledger
+match on exactly those four** - `OR#4895` across four rows, `OR#4896` three,
+`OR#4920` and `OR#4952` two apiece. Every one is a single receipt split across
+the months of arrears it settles. Legitimate, and the guard would have rejected
+the next one.
+
+It would also have thrown rather than rejected, because `maybeSingle()` errors on
+more than one match: a 500 where a clean 409 was intended.
+
+Adding the **period** makes it unique across all 937 rows. That is the real
+constraint, and **the code could not have told me** - the form has no field that
+says "this receipt also covers three other months", the schema has no comment
+about it, and the shape only exists in how the owner actually issues receipts.
+
+**Before writing a uniqueness rule, ask the data what is already true.** It is
+cheap, it takes one query, and it is the difference between a guard that
+protects the ledger and one that blocks the owner from using it.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
