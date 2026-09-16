@@ -318,6 +318,36 @@ if (live.length) {
   console.log(`    ${unmatched} name a room/tenant pair that matches no tenancy`);
   console.log(`    ${incomeLinkage.length - blank} resolve, and are filled`);
 
+  /**
+   * Test payments still sitting in the live `payments` table.
+   *
+   * All 15 rows date from 2026-07-05 to 2026-08-25 - the build window - and
+   * carry generated references: 8 `ADYEN-GCASH-*` from proving the gateway and
+   * 7 `CASH-REC-*` from proving the cash path. Thirteen are attached to no bill.
+   *
+   * THEY DO NOT TOUCH THE MONEY. Nothing in backend/src or frontend/src sums
+   * this table - checked - so no figure the owner reads includes them, and the
+   * ledger she actually keeps is `monthly_income_records`. BR-013 above is
+   * unaffected, because it asks whether bills marked Paid are covered, and these
+   * are attached to no bill.
+   *
+   * They ARE visible: `GET /admin/payments` returns all 15, so the payments list
+   * shows them during a demonstration. Reported here so nobody meets them for
+   * the first time in front of a panel.
+   */
+  const pays2 = await rows('payments?select=amount,bill_id,transaction_reference');
+  const noBill = pays2.filter((p) => !p.bill_id);
+  if (noBill.length) {
+    const sum = noBill.reduce((a, p) => a + Number(p.amount), 0);
+    console.log(
+      `
+  TEST PAYMENTS FROM THE BUILD WINDOW — ${noBill.length} of ${pays2.length}, ` +
+      `PHP ${sum.toLocaleString('en-PH')}, attached to no bill:`
+    );
+    console.log('    visible in the admin payments list; summed by nothing, so no owner-facing');
+    console.log('    figure includes them. Her ledger is monthly_income_records, not this table.');
+  }
+
   const KNOWN_ENDLESS = 8;
   const endless = (await rows(
     'room_assignments?select=id&is_active=eq.false&end_date=is.null'

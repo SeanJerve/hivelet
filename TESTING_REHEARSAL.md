@@ -143,6 +143,7 @@ Stated plainly, so nobody claims more than was done.
 | **A completed GCash payment.** | Step 15 stops at Adyen's page. A real payment writes a `Pending Verification` row and fires the webhook — worth doing **once**, with the tunnel up, if you want the verification path exercised end to end. Only then does step 18's sibling path (`PATCH /admin/payments/:id/verify`) get used. |
 | **Concurrency.** | One person clicking. Two administrators recording the same receipt at the same moment is not covered, and the duplicate guard is a read-then-write, not a database constraint. |
 | **Volume.** | The ledger is ~1,500 rows. It has never been asked to render or export ten years of them. |
+| **13 test payments are visible.** | The `payments` table holds 15 rows from the build window - 8 `ADYEN-GCASH-*` and 7 `CASH-REC-*`, PHP 67,000 across the 13 with no bill. **Nothing sums them**, so no figure the owner reads is wrong, and her ledger is `monthly_income_records`. But they show in the admin payments list, so know they are there before a panel asks. |
 | **August and September 2026.** | Not in the ledger at all — see `CLIENT_MEETING_QUESTIONS.md` §2b. A demonstration today shows *"0 collections this month"* because the data is absent, not because the figure is wrong. |
 
 ---
