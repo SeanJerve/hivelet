@@ -335,7 +335,7 @@ legend never defined. `check:rules` now prevents all three.
 
 | # | Item | Note |
 | :--- | :--- | :--- |
-| 1 | **One client consultation** covering all nine open decisions | The gating activity. Three of the nine require a migration once answered. |
+| 1 | **One client consultation** covering the **five** decisions that are genuinely still open | Was nine. Reconciled against the code on 2026-09-17: OD-03, OD-04, OD-05 and OD-06 were already decided and built, each cited by number in `backend/src`, and OD-02's premise was wrong — the garbage fee is ₱20 monthly, not annual. What remains is OD-01, OD-02 (rewritten), OD-07, OD-08, OD-10, gathered with the ledger items in `CLIENT_MEETING_QUESTIONS.md`. |
 | 2 | **BR-046** — category cumulative totals | Unblocked by **OD-07**. The last unenforced rule. |
 | ~~3~~ | ~~**BR-049** — Excel export~~ **DONE 2026-09-14.** Both ledgers now build real `.xlsx` files in their documented layouts, and the three open decisions they touch (OD-01, OD-05, OD-06) are shown on the sheet rather than assumed. | — |
 | 4 | **Service extraction** | **144 of 184** database calls still sit in route handlers (78%), and `admin.ts` is **3,033** lines. Six planned services do not yet exist. This is the architecture's stated target. *(Re-measured 2026-09-16 with a stated method — see `docs/04_ARCHITECTURE.md`. This row read 137 of 173 and ~2,500 lines, one of three different ratios in circulation, none of which stated how it counted.)* |
