@@ -174,9 +174,14 @@ async function fetchTenantData() {
         tenantData.value.floor = activeRoom.rooms?.floor || 1;
         tenantData.value.occupants = activeRoom.occupant_count || 1;
         
-        const primaryPhoto = activeRoom.rooms?.room_photos?.find((p: any) => p.is_primary)?.file_url 
-          || activeRoom.rooms?.room_photos?.[0]?.file_url 
-          || activeRoom.rooms?.photo_url;
+        // `rooms` has no photo of its own - the photos live in `room_photos`,
+        // one row each, with `is_primary` picking the one to lead with. A third
+        // fallback to `activeRoom.rooms?.photo_url` used to sit here and could
+        // never have fired: no such column exists and the API never produced
+        // the name. It read as a safety net while being nothing at all.
+        const primaryPhoto =
+          activeRoom.rooms?.room_photos?.find((p: any) => p.is_primary)?.file_url
+          || activeRoom.rooms?.room_photos?.[0]?.file_url;
         if (primaryPhoto) {
           tenantData.value.photoUrl = primaryPhoto;
         }

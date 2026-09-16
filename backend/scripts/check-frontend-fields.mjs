@@ -20,6 +20,35 @@
  *                               insertion)" for every row. On an audit trail.
  *   l.user_agent             -> "not recorded", forever; no such column exists.
  *
+ * THE SHAPES IT READS  (this list IS the guarantee - widened 2026-09-16)
+ *
+ *   obj.field_name              plain access
+ *   obj?.field_name             optional chaining
+ *   someLongVariable.field      any length of object name
+ *   p.field_name                inside a callback
+ *
+ * Until 2026-09-16 the matcher was `\b(\w{1,13})\.(snake_case)\b`, which saw
+ * only the first and third of those. It could not see `?.` at all, and it
+ * capped the object name at 13 characters for no recorded reason.
+ *
+ * **38 optional-chained reads in `frontend/src` were never checked** -
+ * `rooms?.room_number`, `profiles?.full_name`, `bill?.total_amount` and the
+ * rest. Widening the matcher surfaced exactly one real defect and no false
+ * positives:
+ *
+ *   activeRoom.rooms?.photo_url   the third fallback in the tenant overview's
+ *                                 room-photo chain. No such column exists on
+ *                                 `rooms` and the API never produced the name,
+ *                                 so it read as a safety net while being
+ *                                 nothing. The two links before it are right:
+ *                                 photos live in `room_photos`, one row each,
+ *                                 `is_primary` picking the one to lead with.
+ *
+ * It stayed invisible because it was benign - `room_photos` is empty across all
+ * 33 units, so every link in the chain is undefined and the page shows no photo
+ * either way. A defect that cannot currently misbehave is still a defect that
+ * misleads the next reader about what `rooms` has on it.
+ *
  * WHAT THIS CHECK CANNOT DO
  *
  * It matches on NAME, not on table. A field that is a real column on some other
@@ -187,7 +216,7 @@ function walk(dir) {
 }
 
 // `obj.some_snake_case` where obj is a short identifier — the mapper idiom.
-const ACCESS = /\b([a-zA-Z_$][\w$]{0,12})\.([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b/g;
+const ACCESS = /\b([a-zA-Z_$][\w$]*)\??\.([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b/g;
 
 for (const file of walk(SRC)) {
   const rel = relative(repo, file);
