@@ -280,7 +280,7 @@ function refuseWhenGatewayConfigured(_req: Request, res: Response, next: NextFun
  * stopping no attacker.
  *
  * The protection is therefore a **capability token**: `sessionId` is 128 bits from the CSPRNG
- * (`adyenService.createMockCheckoutSession`), is held only in server memory, and is deleted
+ * (`adyenService.createLocalCheckoutSession`), is held only in server memory, and is deleted
  * on completion, so it is unguessable and single-use. Holding it proves you were sent here by
  * a checkout this server started.
  *
@@ -935,7 +935,7 @@ router.get(
   })
 );
 
-const mockGatewayCompleteSchema = z.object({
+const localCashierCompleteSchema = z.object({
   sessionId: z.string(),
 });
 
@@ -948,7 +948,7 @@ const mockGatewayCompleteSchema = z.object({
  *
  * Two properties make this safe to leave open, and both must be preserved:
  *
- *   1. **The token is single-use.** `completeMockPayment` deletes the session, so a replayed
+ *   1. **The token is single-use.** `recordLocalCheckoutPayment` deletes the session, so a replayed
  *      request finds nothing and returns 404 rather than writing a second payment.
  *   2. **It cannot mark anything paid.** The payment is written as `Pending Verification`
  *      (BR-017). Only an administrator holding `payment:verify` can settle a bill. Even a
@@ -959,7 +959,7 @@ router.post(
   '/public/payments/local-cashier/complete',
   refuseWhenGatewayConfigured,
   asyncHandler(async (req, res) => {
-    const parsed = mockGatewayCompleteSchema.safeParse(req.body);
+    const parsed = localCashierCompleteSchema.safeParse(req.body);
     if (!parsed.success) {
       throw ApiError.validation('Invalid callback session ID.');
     }

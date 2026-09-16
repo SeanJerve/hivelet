@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary & Design Core Philosophy
 
-Hivelet is a specialized, web-based apartment management system designed for **Fe Galang Da Silva Boarding House** (32 rentable units across 3 floors and 5 property clusters).
+Hivelet is a specialized, web-based apartment management system designed for **Fe Galang Da Silva Boarding House** (33 rentable units across 4 floors and 5 property clusters).
 
 The system replaces fragmented paper notebooks, Messenger chats, text messages, and spreadsheet ledgers with a unified, high-clarity business operations portal.
 
@@ -30,7 +30,7 @@ Hivelet combines the best elements of three world-class productivity platforms t
 │                               │ - Zero cognitive overload for non-techy users   │
 ├───────────────────────────────┼─────────────────────────────────────────────────┤
 │ 3. AIRTABLE DATA MATRIX       │ - Dense, readable data grids with sticky headers│
-│    (Grid & Financial Clarity) │ - Interactive 32-room unit matrix view          │
+│    (Grid & Financial Clarity) │ - Interactive 33-unit matrix view          │
 │                               │ - Split-expense property area tables            │
 │                               │ - Live column totals & status pill indicators   │
 └───────────────────────────────┴─────────────────────────────────────────────────┘

@@ -1,5 +1,19 @@
 # Hivelet Public Landing Page Redesign Specification
 
+> [!NOTE]
+> **Historical plan — kept as a record, not as a specification.**
+>
+> This document states **32 units**, and some copies describe them as rooms 101–110 /
+> 201–211 / 301–311 across three floors. Neither is right. The property has **33 units**
+> across **5 clusters** — BH, Back Apartment, Front Apartment, Linda, Penthouse — over four
+> floors holding **11 / 11 / 10 / 1**, and the units are named `1a`–`1h`, `2a`–`2g`,
+> `3a`–`3g`, `B1F`/`B2B`/`B2F`/`B3B`/`B3F`, `F1`/`F2B`/`F2F`, `LB`/`LF` and `PH`
+> (verified against the live `rooms` table, 2026-09-16; errata **E-01**, **E-02**).
+>
+> The text below is left exactly as written so the plan still reads as it did when it was
+> followed. Do not quote its figures.
+
+
 **Date:** 2026-08-07  
 **Project:** Fe Galang Da Silva Boarding House Management System (Hivelet)  
 **System Bible Reference:** Section 4 (Public Visitor Role), Section 5 (Property Model), and Section 5.4 / Section 9 (Centralized Inquiries)  

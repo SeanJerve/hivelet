@@ -340,7 +340,8 @@ To satisfy strict institutional academic policies evaluating AI-assisted softwar
    - Functional purpose & System Bible reference
    - Architectural rationale
    - Innovations, custom algorithms, or UI adaptations tailored specifically for Hivelet.
-2. **Inline Logic Comments:** Business rules (e.g., 50% revenue share, ₱200/head water billing, 2% annual price increase history, room-centric model) must be annotated inline.
+2. **Inline Logic Comments:** Business rules (e.g., `fifty_percent_share` — a system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet; ₱200/head water billing; the rate-change history in `room_price_history`; the room-centric model) must be annotated inline.
+   - **Retired framings — do not reintroduce.** No rate escalation exists anywhere: the owner sets rates by hand and only the change history is kept. Describe `fifty_percent_share` by its arithmetic alone — never name a party, recipient, purpose or destination for it.
 
 ## Mobile-First & Corporate UI Mandate
 1. **Mobile-First Responsive Design:** All UI components MUST be developed mobile-first using Tailwind responsive breakpoints (`sm`, `md`, `lg`).

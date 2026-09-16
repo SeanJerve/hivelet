@@ -35,6 +35,7 @@ const SUITES = [
   ['.', 'check:rules', 'the business-rule register agrees with itself'],
   ['.', 'check:matrix', 'the traceability matrix agrees with itself'],
   ['.', 'check:copies', 'the filming copies match the documents of record'],
+  ['.', 'check:canon', 'no live document carries a retired or banned framing'],
   ['frontend', 'check:tokens', 'design tokens resolve, and the raw-hex ratchet holds'],
   ['frontend', 'check:reachable', 'every source file is reachable from main.ts'],
   ['backend', 'check:writes', 'no database write discards its result'],

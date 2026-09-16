@@ -1,5 +1,19 @@
 # Public Unit Catalog Specs, Photos & Direct Landlady Inquiry Specification
 
+> [!NOTE]
+> **Historical plan — kept as a record, not as a specification.**
+>
+> This document states **32 units**, and some copies describe them as rooms 101–110 /
+> 201–211 / 301–311 across three floors. Neither is right. The property has **33 units**
+> across **5 clusters** — BH, Back Apartment, Front Apartment, Linda, Penthouse — over four
+> floors holding **11 / 11 / 10 / 1**, and the units are named `1a`–`1h`, `2a`–`2g`,
+> `3a`–`3g`, `B1F`/`B2B`/`B2F`/`B3B`/`B3F`, `F1`/`F2B`/`F2F`, `LB`/`LF` and `PH`
+> (verified against the live `rooms` table, 2026-09-16; errata **E-01**, **E-02**).
+>
+> The text below is left exactly as written so the plan still reads as it did when it was
+> followed. Do not quote its figures.
+
+
 ## Overview
 This document specifies the enhancement to the Public Guest view (`frontend/src/views/PublicGuestView.vue`) and unit specification modal (`frontend/src/components/modals/RoomDetailModal.vue`) in Hivelet.
 

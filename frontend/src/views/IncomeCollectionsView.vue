@@ -810,8 +810,13 @@ function exportCSV() {
 
       <!-- BR-035 wording is fixed: this is a system-computed figure equal to half
            the row's Rent Amount, retained for parity with the historical
-           spreadsheet. It names no recipient and describes no destination. The
-           card previously read "50% Owner Share - Automatic gross rent cut". -->
+           spreadsheet. It names no recipient and describes no destination.
+
+           This card used to name a party and assert a purpose for the figure,
+           both of which the locked wording forbids. The earlier text is not
+           quoted here - repeating it would put the banned phrasing back into
+           the repository, which is what the rule is for. See BR-035 in
+           docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md. -->
       <div class="surface-card p-5">
         <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">50% Share · BH rows</p>
         <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-accent-ink">{{ peso(totalShare) }}</p>

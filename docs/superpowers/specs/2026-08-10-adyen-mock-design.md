@@ -1,5 +1,19 @@
 # Design Specification: Optional Adyen GCash Mock Payment Integration
 
+> [!NOTE]
+> **Historical design — kept as a record, not as a specification.**
+>
+> This document describes a stand-in for the payment gateway, which is what was intended
+> in August 2026. **That is no longer the situation.** The Adyen integration is committed
+> and configured: a developer sandbox is in place and the GCash flow runs against it.
+> `isLiveConfigured()` decides at runtime which path is used, and the local cashier page
+> described here survives only as the fallback for when Adyen is NOT configured -
+> `refuseWhenGatewayConfigured` turns it off when Adyen is. The route it names has since
+> been renamed to `/api/public/payments/local-cashier/complete`.
+>
+> Do not describe the gateway from this document. The text below is unchanged.
+
+
 **Date:** 2026-08-10  
 **Status:** Approved (Brainstormed with User)  
 **System Bible Reference:** Section 12 (Payment Types)  

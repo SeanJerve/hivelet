@@ -36,7 +36,8 @@ To comply with strict academic software review policies regarding AI-assisted de
     * @innovations [Custom logic, UI adaptations, or algorithms tailored for Hivelet]
     */
    ```
-2. **Business Rule Inline Comments:** Business rules (e.g., 50% revenue share derivation, ₱200/head water billing rule, 2% annual price increase history, room-centric occupancy model) MUST be explicitly commented inline wherever calculations or state transitions occur.
+2. **Business Rule Inline Comments:** Business rules (e.g., the `fifty_percent_share` derivation — a system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet; the ₱200/head water billing rule; the rate-change history in `room_price_history`; the room-centric occupancy model) MUST be explicitly commented inline wherever calculations or state transitions occur.
+   - **Retired framings — do not reintroduce.** No rate escalation exists anywhere: the owner sets rates by hand and only the change history is kept. Describe `fifty_percent_share` by its arithmetic alone — never name a party, recipient, purpose or destination for it.
 
 ---
 
@@ -44,8 +45,8 @@ To comply with strict academic software review policies regarding AI-assisted de
 
 | Module ID | Title | Purpose & System Bible Alignment | Primary Component Specs |
 | :--- | :--- | :--- | :--- |
-| `overview` | **Executive Overview** | Section 2 & 5.1: Actionable daily dashboard answering "What money came in/went out?" | KPI Summary Cards, Overdue Attention Alerts, 32-Room Visual Matrix (3 Floors: 101-110, 201-210, 301-312). |
-| `directory` | **Room Directory** | Section 5.2: Room-centric occupancy & pricing model | Operational status filters, base/current price editor modal, price history tracking (2% annual rule). |
+| `overview` | **Executive Overview** | Section 2 & 5.1: Actionable daily dashboard answering "What money came in/went out?" | KPI Summary Cards, Overdue Attention Alerts, 33-Unit Visual Matrix (5 clusters — BH, Back Apartment, Front Apartment, Linda, Penthouse — over 4 floors holding 11 / 11 / 10 / 1 units). |
+| `directory` | **Room Directory** | Section 5.2: Room-centric occupancy & pricing model | Operational status filters, base/current price editor modal, price history tracking (every manual change preserved in `room_price_history`; there is no automatic adjustment). |
 | `tenants` | **Tenant Management** | Section 5.3: Active tenant directory & emergency contacts | Onboarding move-in dates, emergency contact cards, active room assignment links. |
 | `inquiries` | **Inquiry Inbox** | Section 5.4: Centralized prospect inquiries | Public inquiry submission tracking, prospect contact cards, landlady messaging inbox. |
 | `billing` | **Billing & Income** | Section 5.5 & 09_REPORT: Financial collections & receipts | Record Monthly Payment form, Invoice # generator, 50% Share derivation, Collection Ledger. |

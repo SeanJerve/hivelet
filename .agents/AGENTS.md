@@ -27,7 +27,8 @@ You are assisting in the development of a capstone project for Hivelet (Fe Galan
   - **Component Purpose & System Bible Section Reference**
   - **Architectural Rationale**
   - **Key Innovations & Adaptations** (explaining how standard open-source web patterns were tailored specifically for Hivelet's operational rules).
-- **In-Code Comments:** Every non-trivial data structure, calculation (e.g., 50% revenue share, ₱200/head water billing rule, 2% annual price increase history), and authorization rule must have explicit code comments for capstone auditability.
+- **In-Code Comments:** Every non-trivial data structure, calculation (e.g., `fifty_percent_share` — a system-computed figure equal to half that row's Rent Amount, kept for ledger parity with the owner's historical spreadsheet; the ₱200/head water billing rule; the rate-change history in `room_price_history`), and authorization rule must have explicit code comments for capstone auditability.
+  - **Retired framings — do not reintroduce.** There is no rate escalation of any kind: the owner sets rates by hand and only the change history is kept (the former "2% annual increase" was withdrawn in full, client-confirmed 2026-09-13). And `fifty_percent_share` is described only by its arithmetic — never name a party, recipient, purpose or destination for it.
 
 ### 4. Automatic Git Version Control & Conflict Handling
 - **Proactive Git Sync:** When performing Git operations (`git pull`, `git push`, `git commit`), AI agents must execute and manage the version control workflow safely and automatically.

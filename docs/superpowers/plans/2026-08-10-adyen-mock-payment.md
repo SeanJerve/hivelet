@@ -1,5 +1,19 @@
 # Mock Adyen GCash Payment Integration Implementation Plan
 
+> [!NOTE]
+> **Historical plan — kept as a record, not as a specification.**
+>
+> This plan describes building a stand-in for the payment gateway, which is what was
+> intended in August 2026. **That is no longer the situation.** The Adyen integration is
+> committed and configured: a developer sandbox is in place, the GCash flow runs against
+> it, and `isLiveConfigured()` decides at runtime which path is used. The local cashier
+> page this plan describes still exists as the fallback for when Adyen is NOT configured,
+> and `refuseWhenGatewayConfigured` turns it off when Adyen is.
+>
+> Do not describe the gateway from this document. The text below is left as written so
+> the plan still reads as it did when it was followed.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Create a mock Adyen gateway system that simulates real-life GCash payment checkout, session redirection, webhook updates, and administrator verification workflows in full alignment with Capstone rules BR-016 and BR-017.

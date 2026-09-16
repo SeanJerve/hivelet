@@ -1,5 +1,19 @@
 # Public Landing Page Redesign Implementation Plan
 
+> [!NOTE]
+> **Historical plan — kept as a record, not as a specification.**
+>
+> This document states **32 units**, and some copies describe them as rooms 101–110 /
+> 201–211 / 301–311 across three floors. Neither is right. The property has **33 units**
+> across **5 clusters** — BH, Back Apartment, Front Apartment, Linda, Penthouse — over four
+> floors holding **11 / 11 / 10 / 1**, and the units are named `1a`–`1h`, `2a`–`2g`,
+> `3a`–`3g`, `B1F`/`B2B`/`B2F`/`B3B`/`B3F`, `F1`/`F2B`/`F2F`, `LB`/`LF` and `PH`
+> (verified against the live `rooms` table, 2026-09-16; errata **E-01**, **E-02**).
+>
+> The text below is left exactly as written so the plan still reads as it did when it was
+> followed. Do not quote its figures.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Overhaul the public landing page, navbar, and footer in `website/` to pattern after `wireframe/guest.html` with Hivelet's corporate blue palette (`#0c66e4`, `#0b132b`, `#172b4d`, `#f4f5f7`) for Fe Galang Da Silva Boarding House, excluding all admin-only data.
