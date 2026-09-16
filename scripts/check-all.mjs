@@ -43,6 +43,7 @@ const SUITES = [
   ['backend', 'check:fields', 'every snake_case field the frontend reads is one the API sends'],
   ['backend', 'check:endpoints', 'every route has a caller, or a stated reason it has none'],
   ['backend', 'check:ledger', 'the owner\'s money adds up, and the business rules hold in the data'],
+  ['backend', 'check:reports', 'the exported workbooks agree with the database, month by month'],
   ['backend', 'check:adyen', 'HMAC signature verification'],
   ['backend', 'check:billing', 'water, grace, period and receipt-allocation arithmetic'],
   ['backend', 'check:api', 'endpoint, RBAC, perimeter and input checks'],
