@@ -92,7 +92,63 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `ac197e4`, `f403795`: ₱18,600 of collected water money was in no report,
+> **LATEST — commit `1322f48`: the owner's own books swept end to end. Seven receipts need her
+> word. Everything else is clean to the centavo.**
+>
+> Twelve suites check the code. **This one checks the records** — because the code being right
+> does not make the ledger right. 937 income rows came out of a spreadsheet, and a spreadsheet
+> can hold a date Excel never parsed.
+>
+> ### Two dates that cannot be right
+>
+> | Receipt | What it says |
+> |---|---|
+> | `OR#4839` | dated **1900-01-17** — the Excel epoch, so the source cell never parsed. Its year/month also disagree with its own rent period. |
+> | `INVOICE#5120` | dated **2027-02-26**, a year in the future, against a 2026 rent period. |
+>
+> ### Three rent periods that end the day before they start
+>
+> `OR#4757` 2024-08-03 → 2024-08-02 · `OR#4775` 2024-08-30 → 2024-08-29 · `OR#4872` 2025-02-03
+> → 2025-02-02. A migration off-by-one; each end date looks **one month short**.
+>
+> ### Two receipt numbers used twice — and one of them matters
+>
+> `OR#4774` covers two rooms for one tenant but **twelve days apart**. And **`OR#4813` is
+> against two different tenants on the same day** — Ron Juliene Dominguino (2a, ₱8,000) and
+> M. Juselle Escuro (3a, ₱9,000). **Two people cannot share one official receipt number.**
+>
+> ### Nothing has been written to any of them
+>
+> **Correcting a receipt means knowing what it should say, and that is Mrs. Da Silva's to tell.**
+> So all seven are pinned in the check by receipt number with what is wrong; it passes with
+> them and **prints every one on every run**. A row *not* on the list fails.
+>
+> That is the useful shape of this gate: **a typo entered tomorrow fails immediately**, while
+> these seven wait for an answer instead of being quietly accepted. It also fails if a pinned
+> row later reads clean — so the list cannot rot either.
+>
+> *Proved both ways without writing a byte to the database:* the mutations were made to the
+> pinned list, not the data. Dropping a pin surfaced the row as unrecorded; pinning a clean
+> receipt was reported stale.
+>
+> ### What the sweep found clean, which is the larger half of the result
+>
+> - **no negative amount** anywhere in income, expenses or payments
+> - no expense dated in the future or before 2020
+> - **no payment marked Verified without a verifier**
+> - **no room with two active tenancies** — the invariant that would corrupt every occupancy figure
+> - on **all 937 rows**, `remitted_amount` equals `rent + water` and `fifty_percent_share` equals
+>   half the rent, **to the centavo**
+>
+> And the 254 rows whose `date_paid` falls outside their own `year`/`month` were checked rather
+> than assumed: **all legitimate.** 218 paid the following month, 18 paid in advance, and the
+> larger gaps are an organisation paying several months up front plus one lump settlement of
+> four months' arrears under a single receipt. *An anomaly count is not a defect count until
+> someone reads the rows.*
+>
+> **Thirteen suites green.**
+
+> **PREVIOUS — commits `ac197e4`, `f403795`: ₱18,600 of collected water money was in no report,
 > a requirement I passed yesterday is only two-thirds done, and there is a loaded footgun in
 > the database.**
 >
@@ -2261,7 +2317,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**141 commits, all pushed to `main`. Working tree clean.**
+**143 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
