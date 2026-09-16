@@ -159,7 +159,7 @@ These need no client input. Listed so nothing is lost.
 | :--- | :--- |
 | **Do first** | **Rotate `Hivelet@Admin2026` and `Hivelet@Tenant2026`.** In the GitHub history since 25 Aug 2026. Removing them from the current code does not remove them from history. Treat both as burned. |
 | **Before any RLS** | `current_user_role()` returns `'admin'` when it cannot identify the caller — which is always. Harmless today (no policy calls it), fatal the moment one does. |
-| **Data tidy** | Three residents' names carry an invoice number inside the name field. The three `UPDATE` statements are written; the sandbox refuses them, so a person must run them. |
+| **Do first — security** | **Three logins belong to nobody.** What was carried as a cosmetic name problem is three **duplicate** profiles from the 2026-08-27 import — zero tenancies, zero ledger rows, but `active` and holding a working password, on the shared literal that has been public since 25 Aug. The real residents have separate, complete profiles. **`database/migrations/023` is written and not applied** — the sandbox refuses `UPDATE` on `profiles`. One statement, run by hand. *Do not strip the invoice numbers from the names: that was the original plan and it would make the duplicates indistinguishable from the real residents.* |
 | **Product** | A change-password screen — there is currently **no way to change a password inside the product**. Highest of these. |
 | **Product** | An administrator bills screen, or retire `GET /admin/bills`. Five superseded endpoints to delete or wire. |
 | **Before filming** | `VIDEO PRESENTATION DOCS/` is gitignored — three corrections made on 16 Sep exist **only on this machine**. Regenerate from `docs/claude_pipeline/outputs/`, or film from the canonical documents. |
