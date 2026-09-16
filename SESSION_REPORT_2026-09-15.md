@@ -106,7 +106,78 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commit `9c5f138`: every request string now stops at its column's width, and the
+> **LATEST — commits `623a88a`, `90f6dbf`: a check told me it had my back, and it did not.
+> I only found out because I broke the code on purpose.**
+>
+> ### What I set out to do
+>
+> Write down, per handler, what happens if a multi-table write fails halfway. The standing note
+> — *"any multi-step write not routed through a database function can still half-complete"* — is
+> true and sounds far worse than the code actually is. A panel will ask. There was no answer
+> written anywhere.
+>
+> **Fifteen handlers touch more than one table.** The picture, verified against the route files:
+>
+> | | |
+> |---|---|
+> | **3 are fully atomic** | database functions, migrations `010`, `018`, `019` — the three where *both* writes must land: money against a bill, an expense against its allocations |
+> | **1 pair is welded** | `room_price_history` is written by trigger `trg_record_room_price_change`, in the same transaction as the rate. **A rate cannot drift from its own history**, which matters because BR-003 is anchored there |
+> | **12 are ordered** | the record that matters is written first |
+>
+> That last one is the real defence. `POST /admin/income-records` — the only path by which cash
+> Mrs. Fe physically received enters the ledger — inserts the income row **before it reads a
+> single bill**. If anything downstream fails, **the money is recorded and survives**; only the
+> bill status lags, and the next receipt repairs it. The handler already says so in its own error
+> text.
+>
+> ### Then I checked my own sentence
+>
+> I had written *"and `npm run check:writes` fails the build if a new one is not guarded."* Before
+> publishing it I deleted a live guard to watch the suite catch it.
+>
+> **It reported ALL CHECKS PASSED.**
+>
+> The suite was anchored `^await db`, so it only ever saw a result thrown away *without being
+> named*. This walked straight past it:
+>
+> ```
+> const result = await db.from('bills').update({ status: 'Due' });
+> // ...and `result` is never looked at again
+> ```
+>
+> Same silent write, wearing a variable name — and **harder** to catch by eye, because the line
+> looks like it is doing something with the outcome.
+>
+> **No such write exists in the code.** The sweep found 43 writes destructuring `error`, 24 going
+> through a helper, 1 captured and examined, **0 bad**. So this was a hole in the *guarantee*, not
+> a live bug: the suite was narrower than its own headline and would have let the next one
+> through. Three shapes now fail, each proved by mutation and reverted.
+>
+> **This is the second time this session a check gave a false pass on exactly the scenario it
+> existed for** (`check:endpoints` was the first). That is why nothing here is trusted until it has
+> failed on purpose.
+>
+> *And the first mutation I wrote was itself wrong* — it deleted the guard but left an
+> `attachResult.error` read two lines below, so the suite was right to pass it. **A broken test
+> and a broken check look identical from the outside.** Recorded.
+>
+> ### One real bug fell out of it
+>
+> `POST /tenant/tickets` writes the ticket, then its photos. The ticket commits first — so it is
+> already on Mrs. Fe's screen — but a failed photo insert **threw**, and the tenant saw
+> *"Submission failed."*
+>
+> The obvious thing to do then is submit it again. **A leak would get two tickets**, and she would
+> have to work out they were one leak.
+>
+> `checkedWrite.ts` already describes this exact case, and the notification insert after a payment
+> settlement was given the right treatment for the same reason. This one was missed. The tenant is
+> now told the ticket *was* filed and the photo was not attached — reply to it with the photo,
+> do not send it again.
+>
+> **Fourteen suites green. `check:api` 57 passed.**
+
+> **PREVIOUS — commit `9c5f138`: every request string now stops at its column's width, and the
 > same shape has now appeared three times in one session.**
 >
 > PostgreSQL raises `22001` when a value overflows a `varchar(n)`. The handler wraps that as an
@@ -3112,7 +3183,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**191 commits, all pushed to `main`. Working tree clean.**
+**193 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
