@@ -157,101 +157,115 @@ if (!token) {
   process.exit(0);
 }
 
-const year = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }).slice(0, 4);
+/**
+ * Every year the ledger actually holds, not just this one.
+ *
+ * Checking only the current year covered 214 of the 937 receipts. The other 723
+ * are the years a panel is most likely to ask about, because they are the ones
+ * with twelve complete months.
+ */
+const years = [
+  ...new Set(
+    (await sql('monthly_income_records?select=year&voided_at=is.null')).map((r) => Number(r.year))
+  ),
+].sort();
+console.log(`  ledger years: ${years.join(', ')}\n`);
 
-// ---------------------------------------------------------------- expenses --
-{
-  const { sheet, error } = await workbookFor(token, 'expenses.xlsx', year);
-  if (error) {
-    console.log(`  FAIL  expenses.xlsx -> ${error}`);
-    fail++;
-  } else {
-    const rows = await sql(
-      `monthly_expense_entries?select=total_expenses,expense_date&voided_at=is.null` +
-      `&expense_date=gte.${year}-01-01&expense_date=lte.${year}-12-31`
-    );
-    const byMonth = new Map();
-    for (const r of rows) {
-      const m = Number(r.expense_date.slice(5, 7));
-      byMonth.set(m, (byMonth.get(m) ?? 0) + Number(r.total_expenses ?? 0));
-    }
-
-    const printed = monthTotals(sheet, 'Total Expenses');
-    console.log(`  EXPENSES ${year} — ${rows.length} entries, ${printed.size} month total(s) printed\n`);
-    for (const [name, total] of printed) {
-      check(`${name} total`, total, byMonth.get(MONTHS.indexOf(name) + 1) ?? 0);
-    }
-
-    const sheetSum = [...printed.values()].reduce((a, b) => a + b, 0);
-    const dbSum = [...byMonth.values()].reduce((a, b) => a + b, 0);
-    console.log('');
-    check(`${year} expenses, all months`, sheetSum, dbSum);
-  }
-}
-
-// ------------------------------------------------------------------ income --
-{
-  const { sheet, error } = await workbookFor(token, 'income.xlsx', year);
-  if (error) {
-    console.log(`\n  FAIL  income.xlsx -> ${error}`);
-    fail++;
-  } else {
-    const rows = await sql(
-      `monthly_income_records?select=rent_amount,water_payment,gbg_fee,month&voided_at=is.null&year=eq.${year}`
-    );
-    const byMonth = new Map();
-    for (const r of rows) {
-      const m = Number(r.month);
-      byMonth.set(m, (byMonth.get(m) ?? 0) + Number(r.rent_amount ?? 0));
-    }
-
-    /**
-     * The income sheet subtotals differently from the expense sheet: a month
-     * banner row, then detail, then a cluster subtotal each for BH, Back
-     * Apartment and Front Apartment, then `GRAND SUBTOTAL (excludes Linda)`,
-     * then `Linda total`.
-     *
-     * A month's collections are therefore the grand subtotal PLUS Linda, and the
-     * separation is deliberate - Linda is excluded from grand totals on purpose
-     * (judgement log SS 3.5). Adding them back here compares the whole month,
-     * which is what the query returns.
-     */
-    const col = columnOf(sheet, 'Rent Amount');
-    const printed = new Map();
-
-    if (col === null) {
-      console.log('\n  FAIL  income.xlsx has no "Rent Amount" column');
+for (const year of years) {
+  // ---------------------------------------------------------------- expenses --
+  {
+    const { sheet, error } = await workbookFor(token, 'expenses.xlsx', year);
+    if (error) {
+      console.log(`  FAIL  expenses.xlsx -> ${error}`);
       fail++;
     } else {
-      let current = null;
-      sheet.eachRow((row) => {
-        const first = String(row.getCell(1).value ?? '').trim();
-        const banner = /^([A-Z]+)\s+\d{4}$/.exec(first.toUpperCase());
-        if (banner && MONTHS.includes(banner[1])) {
-          current = banner[1];
-          return;
-        }
-        if (!current) return;
-        if (!/^GRAND SUBTOTAL/i.test(first) && !/^Linda total/i.test(first)) return;
-        const n = cell(row.getCell(col).value);
-        if (typeof n === 'number' && Number.isFinite(n)) {
-          printed.set(current, (printed.get(current) ?? 0) + n);
-        }
-      });
-    }
+      const rows = await sql(
+        `monthly_expense_entries?select=total_expenses,expense_date&voided_at=is.null` +
+        `&expense_date=gte.${year}-01-01&expense_date=lte.${year}-12-31`
+      );
+      const byMonth = new Map();
+      for (const r of rows) {
+        const m = Number(r.expense_date.slice(5, 7));
+        byMonth.set(m, (byMonth.get(m) ?? 0) + Number(r.total_expenses ?? 0));
+      }
 
-    console.log(`\n  INCOME ${year} - ${rows.length} receipts, ${printed.size} month(s) totalled\n`);
-    if (printed.size === 0 && col !== null) {
-      console.log('  SKIP  no month subtotals recognised, so nothing was compared. Not a pass.');
-    }
-    for (const [name, total] of printed) {
-      check(`${name} rent`, total, byMonth.get(MONTHS.indexOf(name) + 1) ?? 0);
-    }
-    if (printed.size) {
+      const printed = monthTotals(sheet, 'Total Expenses');
+      console.log(`  EXPENSES ${year} — ${rows.length} entries, ${printed.size} month total(s) printed\n`);
+      for (const [name, total] of printed) {
+        check(`${name} total`, total, byMonth.get(MONTHS.indexOf(name) + 1) ?? 0);
+      }
+
       const sheetSum = [...printed.values()].reduce((a, b) => a + b, 0);
       const dbSum = [...byMonth.values()].reduce((a, b) => a + b, 0);
       console.log('');
-      check(`${year} rent, all months`, sheetSum, dbSum);
+      check(`${year} expenses, all months`, sheetSum, dbSum);
+    }
+  }
+
+  // ------------------------------------------------------------------ income --
+  {
+    const { sheet, error } = await workbookFor(token, 'income.xlsx', year);
+    if (error) {
+      console.log(`\n  FAIL  income.xlsx -> ${error}`);
+      fail++;
+    } else {
+      const rows = await sql(
+        `monthly_income_records?select=rent_amount,water_payment,gbg_fee,month&voided_at=is.null&year=eq.${year}`
+      );
+      const byMonth = new Map();
+      for (const r of rows) {
+        const m = Number(r.month);
+        byMonth.set(m, (byMonth.get(m) ?? 0) + Number(r.rent_amount ?? 0));
+      }
+
+      /**
+       * The income sheet subtotals differently from the expense sheet: a month
+       * banner row, then detail, then a cluster subtotal each for BH, Back
+       * Apartment and Front Apartment, then `GRAND SUBTOTAL (excludes Linda)`,
+       * then `Linda total`.
+       *
+       * A month's collections are therefore the grand subtotal PLUS Linda, and the
+       * separation is deliberate - Linda is excluded from grand totals on purpose
+       * (judgement log SS 3.5). Adding them back here compares the whole month,
+       * which is what the query returns.
+       */
+      const col = columnOf(sheet, 'Rent Amount');
+      const printed = new Map();
+
+      if (col === null) {
+        console.log('\n  FAIL  income.xlsx has no "Rent Amount" column');
+        fail++;
+      } else {
+        let current = null;
+        sheet.eachRow((row) => {
+          const first = String(row.getCell(1).value ?? '').trim();
+          const banner = /^([A-Z]+)\s+\d{4}$/.exec(first.toUpperCase());
+          if (banner && MONTHS.includes(banner[1])) {
+            current = banner[1];
+            return;
+          }
+          if (!current) return;
+          if (!/^GRAND SUBTOTAL/i.test(first) && !/^Linda total/i.test(first)) return;
+          const n = cell(row.getCell(col).value);
+          if (typeof n === 'number' && Number.isFinite(n)) {
+            printed.set(current, (printed.get(current) ?? 0) + n);
+          }
+        });
+      }
+
+      console.log(`\n  INCOME ${year} - ${rows.length} receipts, ${printed.size} month(s) totalled\n`);
+      if (printed.size === 0 && col !== null) {
+        console.log('  SKIP  no month subtotals recognised, so nothing was compared. Not a pass.');
+      }
+      for (const [name, total] of printed) {
+        check(`${name} rent`, total, byMonth.get(MONTHS.indexOf(name) + 1) ?? 0);
+      }
+      if (printed.size) {
+        const sheetSum = [...printed.values()].reduce((a, b) => a + b, 0);
+        const dbSum = [...byMonth.values()].reduce((a, b) => a + b, 0);
+        console.log('');
+        check(`${year} rent, all months`, sheetSum, dbSum);
+      }
     }
   }
 }
