@@ -20,6 +20,7 @@ import {
   getGracePeriodDays,
   getLindaFixedWaterCharge
 } from './settingsService.js';
+import { propertyEndOfDay } from '../utils/propertyClock.js';
 
 /** A bill's money, rounded to centavos. */
 export interface BillAmounts {
@@ -171,7 +172,10 @@ export async function isOverdue(
   // A bill carries the terms it was issued under (BR-003), so prefer its own stored window
   // over today's policy when one is present.
   const boundary = bill.grace_period_end_date ?? bill.due_date;
-  const cutoff = new Date(`${boundary}T23:59:59.999Z`);
+  // End of that day AT THE PROPERTY, not in UTC. Built as `T23:59:59.999Z`
+  // this granted an unlegislated eight-hour grace: a bill due the 16th only
+  // became overdue at 08:00 Manila on the 17th. See propertyEndOfDay().
+  const cutoff = propertyEndOfDay(boundary);
   return asOf.getTime() > cutoff.getTime();
 }
 

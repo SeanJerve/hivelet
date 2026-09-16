@@ -75,6 +75,41 @@ check('legacy bill honours its own stored 7-day window',
   await isOverdue({ due_date: '2026-07-05', grace_period_end_date: '2026-07-12', status: 'Due' },
                   new Date(Date.UTC(2026, 6, 10))), false);
 
+/**
+ * The boundary, in PROPERTY time.
+ *
+ * Added 2026-09-16 after a mutation exposed that nothing here pinned it. The
+ * cutoff was built as `${boundary}T23:59:59.999Z` - the end of the day in UTC -
+ * and the property is at UTC+8, so a bill due the 20th stayed "not overdue"
+ * until 08:00 Manila on the 21st. An eight-hour grace period nobody granted, in
+ * a system where OD-16 says there is no grace period at all.
+ *
+ * The three times below straddle it. The middle one is the assertion that used
+ * to fail: 00:01 on the day after the due date IS overdue.
+ */
+check('23:59 Manila on the due date is not yet overdue',
+  await isOverdue({ due_date: '2026-09-20', status: 'Due' },
+                  new Date('2026-09-20T23:59:00+08:00')), false);
+check('the last millisecond of the due day is still not overdue',
+  await isOverdue({ due_date: '2026-09-20', status: 'Due' },
+                  new Date('2026-09-20T23:59:59.999+08:00')), false);
+check('00:01 Manila the next day IS overdue',
+  await isOverdue({ due_date: '2026-09-20', status: 'Due' },
+                  new Date('2026-09-21T00:01:00+08:00')), true);
+check('07:59 Manila the next day IS overdue (the old eight-hour gap)',
+  await isOverdue({ due_date: '2026-09-20', status: 'Due' },
+                  new Date('2026-09-21T07:59:00+08:00')), true);
+
+/**
+ * Rent keeps its centavos.
+ *
+ * Also added after a mutation: swapping `toCentavos()` for `Math.round()` on the
+ * rent broke nothing here, so nothing was pinning it. That mutation turns
+ * 3,500.55 into 3,501 on every bill - a peso out, silently, forever.
+ */
+const cents = await computeBillAmounts({ roomNumber: '1a', currentPrice: 3500.55, occupants: 2 });
+check('rent keeps centavos rather than rounding to pesos', cents.rentAmount, 3500.55);
+
 
 // --- receipt allocation (BR-013): partial payment is recorded, never stranded ---
 //

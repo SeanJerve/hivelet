@@ -75,6 +75,36 @@ export function propertyParts(instant: Date | string | number): {
 }
 
 /**
+ * The last instant of a given property date, for comparing against a real moment.
+ *
+ * This is a DIFFERENT shape from the one this file was written for, and the
+ * sweep that fixed the seven stored dates did not cover it. `isOverdue()` built
+ * its cutoff as
+ *
+ *     new Date(`${boundary}T23:59:59.999Z`)
+ *
+ * which is the end of that day in **UTC**. The property is at UTC+8, so a bill
+ * due 16 September did not become overdue until **08:00 Manila on the 17th** -
+ * an eight-hour grace period nobody granted, in a system whose OD-16 says there
+ * is no grace period at all. A tenant paying at 7am on the day after the due
+ * date was recorded as on time.
+ *
+ * `+08:00` is written literally because the Philippines has never observed
+ * daylight saving. If that ever changes, this is the one place to fix.
+ */
+export function propertyEndOfDay(isoDate: string): Date {
+  return new Date(`${isoDate}T23:59:59.999+08:00`);
+}
+
+/**
+ * The first instant of a given property date. Same reasoning as
+ * `propertyEndOfDay`.
+ */
+export function propertyStartOfDay(isoDate: string): Date {
+  return new Date(`${isoDate}T00:00:00.000+08:00`);
+}
+
+/**
  * The calendar parts of a plain `YYYY-MM-DD` string.
  *
  * Deliberately does NOT go through `Date`. A date string has no timezone, so
