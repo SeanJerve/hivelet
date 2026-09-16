@@ -158,7 +158,7 @@ if (live.length) {
  * covered by `check:api`.
  */
 {
-  const rooms = await rows('rooms?select=id,room_number');
+  const rooms = await rows('rooms?select=id,room_number,operational_status');
   const clusters = await rows('clusters?select=code');
   const assigns = await rows('room_assignments?is_active=eq.true&select=room_id,tenant_profile_id,is_primary_contact');
   const people = await rows('profiles?select=id,role,email,phone_number');
@@ -220,6 +220,49 @@ if (live.length) {
   // corrupt every occupancy figure in the system.
   check('BR-004 Room Occupancy', dupes(assigns, (a) => a.room_id),
     'no room has two active tenancies');
+
+  /**
+   * A room's status must agree with whether anyone is actually living in it.
+   *
+   * This is the invariant that catches a HALF-COMPLETED write. Onboarding and
+   * vacate each touch three tables without a transaction - supabase-js cannot
+   * open one - so they are written in a deliberate order with `assertWritten` on
+   * every step. That makes a partial failure loud and recoverable, but it does
+   * not make it impossible:
+   *
+   *   onboarding stops after the assignment  ->  tenancy exists, room still Available
+   *   vacate stops after ending the tenancy  ->  room still Occupied, nobody in it
+   *
+   * Neither shows up in BR-004 or BR-026 above: those compare assignments with
+   * each other and never look at `rooms.operational_status`. Nothing did, until
+   * this. See judgement log SS 3.7.
+   *
+   * `Under Maintenance` is deliberately allowed to hold a tenancy: raising a
+   * ticket flips an occupied room to that status with the tenant still in it.
+   * `Reserved` and `Available` are not.
+   */
+  const activeByRoom = new Map();
+  for (const a of assigns) activeByRoom.set(a.room_id, (activeByRoom.get(a.room_id) ?? 0) + 1);
+
+  const HOLDS_A_TENANT = new Set(['Occupied', 'Under Maintenance']);
+  const statusDrift = rooms.filter((r) => {
+    const n = activeByRoom.get(r.id) ?? 0;
+    if (r.operational_status === 'Occupied' && n === 0) return true;
+    if (n > 0 && !HOLDS_A_TENANT.has(r.operational_status)) return true;
+    return false;
+  });
+
+  for (const r of statusDrift) {
+    const n = activeByRoom.get(r.id) ?? 0;
+    console.log(
+      `        unit ${r.room_number}: ${r.operational_status}, ` +
+      `${n} active tenanc${n === 1 ? 'y' : 'ies'}`
+    );
+  }
+
+  const occupied = rooms.filter((r) => r.operational_status === 'Occupied').length;
+  check('room status agrees with tenancy', statusDrift.length,
+    `${rooms.length} units, ${occupied} Occupied, ${assigns.length} active tenancies, no drift`);
 
   // BR-013: a bill reading Paid must actually be covered by verified payments.
   const paidByBill = new Map();
