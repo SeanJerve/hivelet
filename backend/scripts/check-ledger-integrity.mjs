@@ -139,5 +139,107 @@ if (live.length) {
   }
 }
 
+/**
+ * BUSINESS RULES, TESTED AGAINST THE DATA RATHER THAN AGAINST THE REGISTER
+ * -----------------------------------------------------------------------
+ * `check:rules` proves the BR crosswalk agrees with ITSELF - that its counts
+ * match its rows and its statuses are ones the legend defines. It cannot prove
+ * a rule marked **Enforced** is actually being obeyed, because it never reads
+ * the database.
+ *
+ * These do. Each one is a rule stated in `docs/02_BUSINESS_RULES.md` turned
+ * into a question the live data can answer, and each was zero on 2026-09-16.
+ * They live here rather than in a fourteenth suite because this is already the
+ * one place that reads the owner's records.
+ *
+ * A rule that cannot be falsified by a query does not belong here. BR-024
+ * Tenant Privacy, for instance, is about what an endpoint returns, and is
+ * covered by `check:api`.
+ */
+{
+  const rooms = await rows('rooms?select=id,room_number');
+  const clusters = await rows('clusters?select=code');
+  const assigns = await rows('room_assignments?is_active=eq.true&select=room_id,tenant_profile_id,is_primary_contact');
+  const people = await rows('profiles?select=id,role,email,phone_number');
+  const bills = await rows('bills?select=id,status,total_amount');
+  const pays = await rows('payments?select=bill_id,amount,verification_status,verified_by,payment_source');
+
+  const dupes = (list, key) => {
+    const seen = new Map();
+    for (const x of list) {
+      const k = key(x);
+      if (k === null || k === undefined || k === '') continue;
+      seen.set(k, (seen.get(k) ?? 0) + 1);
+    }
+    return [...seen.values()].filter((n) => n > 1).length;
+  };
+
+  /**
+   * `detail` states what SHOULD be true, so a pass reads as a fact and a failure
+   * reads as the expectation that was broken. Printing the same sentence after
+   * "N violation(s):" made a failure look like it was asserting the thing it had
+   * just disproved.
+   */
+  const check = (label, n, detail) =>
+    n === 0
+      ? pass(`${label} — ${detail}`)
+      : fail(`${label} — ${n} violation(s). Expected: ${detail}`);
+
+  // BR-002: a room is identified by its room number.
+  check('BR-002 Room Identity', dupes(rooms, (r) => r.room_number.toLowerCase()),
+    `${rooms.length} rooms, no duplicate room number`);
+
+  // BR-032: the canonical list is 33 units across 5 clusters.
+  check('BR-032 Canonical Unit List', Math.abs(rooms.length - 33) + Math.abs(clusters.length - 5),
+    `${rooms.length} units, ${clusters.length} clusters`);
+
+  // BR-008: one primary accountable contact per occupied room - and at least one.
+  const byRoom = new Map();
+  for (const a of assigns) {
+    if (!byRoom.has(a.room_id)) byRoom.set(a.room_id, []);
+    byRoom.get(a.room_id).push(a);
+  }
+  const primaryWrong = [...byRoom.values()].filter((list) => {
+    const primaries = list.filter((a) => a.is_primary_contact).length;
+    return primaries !== 1;
+  }).length;
+  check('BR-008 Primary Contact', primaryWrong,
+    `${byRoom.size} occupied rooms, each with exactly one primary contact`);
+
+  // BR-026: no duplicate person, and no tenant holding two tenancies at once.
+  const tenants = people.filter((p) => p.role === 'tenant');
+  const dupPeople = dupes(tenants, (p) => (p.email ?? '').toLowerCase()) +
+                    dupes(tenants, (p) => p.phone_number);
+  check('BR-026 Duplicate Prevention', dupPeople,
+    `${tenants.length} tenants, no repeated email or phone`);
+  check('BR-026 one active tenancy per tenant', dupes(assigns, (a) => a.tenant_profile_id),
+    `${assigns.length} active assignments`);
+
+  // BR-004: and no room let to two tenants at once - the invariant that would
+  // corrupt every occupancy figure in the system.
+  check('BR-004 Room Occupancy', dupes(assigns, (a) => a.room_id),
+    'no room has two active tenancies');
+
+  // BR-013: a bill reading Paid must actually be covered by verified payments.
+  const paidByBill = new Map();
+  for (const p of pays) {
+    if (p.verification_status !== 'Verified' || !p.bill_id) continue;
+    paidByBill.set(p.bill_id, (paidByBill.get(p.bill_id) ?? 0) + Number(p.amount));
+  }
+  const underpaid = bills.filter(
+    (b) => b.status === 'Paid' && (paidByBill.get(b.id) ?? 0) < Number(b.total_amount) - 0.005
+  ).length;
+  check('BR-013 Full Payment', underpaid,
+    `${bills.filter((b) => b.status === 'Paid').length} bills marked Paid, each covered`);
+
+  // BR-017: the administrator's verification gate. A gateway payment must never
+  // settle itself - every Verified row names the person who verified it.
+  const selfVerified = pays.filter(
+    (p) => p.verification_status === 'Verified' && !p.verified_by
+  ).length;
+  check('BR-017 Payment Verification', selfVerified,
+    `${pays.length} payments, none Verified without a verifier`);
+}
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
