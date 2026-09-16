@@ -7,12 +7,26 @@
 > `docs/13_AUDIT_JUDGEMENT_LOG.md` (the reasoning and the failure modes) and the individual
 > commits named below (the evidence). If those disagree with this file, they are right.
 
-## What this day found, in one page
+## What this session found, in one page
 
-*Everything below this section is newest-first and thirty entries deep. This is the shape of
-it for someone arriving cold. Every commit named here resolves in the repository.*
+*Everything below this section is newest-first. This is the shape of it for someone arriving
+cold. Every commit named here resolves in the repository.*
 
-### The six that would have cost the owner something
+> **This summary was written on 2026-09-15 and covered that day alone. Work continued overnight
+> into 2026-09-16 and found larger things than anything below, so the summary is extended rather
+> than left to be mistaken for the whole account** — which is the exact failure this session has
+> spent two days correcting in other people's documents.
+
+### The four from 2026-09-16, in order of what they would have cost
+
+| | Commit |
+| :--- | :--- |
+| **Anyone could have made themselves an administrator.** `POST /api/auth/register` is public, and its schema accepted a `role` field that went straight into the insert. One unauthenticated request with `"role": "admin"` created an administrator and returned a working token — reaching all 937 income rows, all 45 profiles, the ledger void path and the payment verification gate. **Never used:** one admin exists, from the original seed, and no account has been created since 2026-08-27. | `8b09f80` |
+| **The notification feature had never once displayed a notification.** Not since the day it was written. Two independent faults: a cosmetic "header harmonization" deleted the bell, and the store read one level too deep into every response so the badge was always 0. 20 rows, all unread, including four telling the owner an online payment had arrived that could not be matched to a bill. | `522c0f9` |
+| **₱18,600 of collected water money appeared in no report.** `linda_water_charge` is the only place LF and LB's fixed water is recorded, and no line of code read it. The LINDA section of the income workbook showed a total, an old electricity line, and no water at all. | `ac197e4` |
+| **A `SECURITY DEFINER` database function fails open to `admin`.** Unreachable today — no RLS policies call it and the public roles cannot execute it — but the obvious way to enable RLS later is to write policies calling exactly it. Recorded as **A-14**, not fixed, because a live DDL change is the owner's to authorise. | recorded, not applied |
+
+### And the six from 2026-09-15
 
 | | Commit |
 | :--- | :--- |
@@ -23,7 +37,7 @@ it for someone arriving cold. Every commit named here resolves in the repository
 | **Four active residents could not be edited at all**, and every occupied unit was labelled "Active Resident" instead of the tenant's name - a string one empty field away from entering the ledger as a payer. | `df4e817`, `b593166` |
 | **The tenant profile form let residents edit their name and upload a photo, and silently discarded both** - the name edit even updated the header, so it looked saved until the next reload. | `b3c97e4` |
 
-### The pattern behind five of them
+### The pattern behind five of 2026-09-15's six, and behind the notification fault too
 
 In a browser, a field name that does not exist is **not an error**. It is `undefined`, and the
 carefully written fallback beside it then runs exactly as its author intended, on a value that
