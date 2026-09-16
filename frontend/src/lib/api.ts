@@ -30,7 +30,28 @@ export class ApiRequestError extends Error {
     this.details = error.details;
   }
 
+  /**
+   * "Your session is over" - NOT "the password you just typed is wrong".
+   *
+   * `INVALID_CREDENTIALS` is deliberately excluded. The backend returns it with
+   * a 401 in exactly two places, and in both the caller SUPPLIED a password that
+   * did not match:
+   *
+   *   POST /auth/login             - a wrong password on the sign-in form
+   *   POST /auth/change-password   - a wrong CURRENT password
+   *
+   * Neither means the token is dead. Treating them as a session failure fires
+   * `onAuthFailure`, so signing in with a typo would trigger a "logged out"
+   * path, and getting your current password wrong while changing it would end
+   * the session you are sitting in - losing the form instead of saying
+   * "that is not your current password".
+   *
+   * This has never misfired, because `setAuthFailureHandler` is exported and
+   * nothing has ever called it, so `onAuthFailure` is null. It is a trap laid
+   * for whoever wires it up - which the exported setter plainly invites.
+   */
   get isAuthFailure(): boolean {
+    if (this.code === 'INVALID_CREDENTIALS') return false;
     return (
       this.status === 401 ||
       this.code === 'TOKEN_EXPIRED' ||

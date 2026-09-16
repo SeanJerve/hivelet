@@ -183,6 +183,64 @@ if (tenantToken && adminToken) {
 }
 
 
+/**
+ * CHANGE PASSWORD - the failure path, which is the one that must not misbehave.
+ *
+ * `POST /auth/change-password` worked for months with nothing calling it; a
+ * screen now does. These probes exercise the guard rails and **write nothing**:
+ * `changeOwnPassword()` compares the current password with bcrypt and throws
+ * before it touches `profiles`, so a rejected attempt leaves the row untouched
+ * and does not even increment the lockout counter.
+ *
+ * The SUCCESS path is deliberately not probed. It would rotate a live
+ * credential, and the seeded logins are what every other assertion in this file
+ * depends on.
+ *
+ * The 401 matters beyond this endpoint. It returns `INVALID_CREDENTIALS` - the
+ * same code a wrong password on the sign-in form returns - and the frontend's
+ * `ApiRequestError.isAuthFailure` deliberately excludes that code, so typing
+ * your current password wrong ends the attempt rather than the session.
+ */
+if (tenantToken) {
+  console.log('\nCHANGE PASSWORD (failure paths only - no credential is rotated)');
+
+  const cases = [
+    ['wrong current password is 401, not a session failure',
+      { currentPassword: 'definitely-not-the-password', newPassword: 'Correct9Horse' }, 401, 'INVALID_CREDENTIALS'],
+    ['a new password under 10 characters is refused',
+      { currentPassword: 'x', newPassword: 'Short1' }, 422, null],
+    ['a new password with no digit is refused',
+      { currentPassword: 'x', newPassword: 'NoDigitsHereAtAll' }, 422, null],
+    ['a new password with no letter is refused',
+      { currentPassword: 'x', newPassword: '1234567890' }, 422, null],
+    ['a missing current password is refused',
+      { newPassword: 'Correct9Horse' }, 422, null],
+  ];
+
+  for (const [label, body, want, wantCode] of cases) {
+    const r = await fetch(`${BASE}/auth/change-password`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${tenantToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    let code = null;
+    try { code = (await r.json())?.error?.code ?? null; } catch { /* no body */ }
+
+    const ok = r.status === want && (wantCode === null || code === wantCode);
+    ok ? pass++ : (fail++, failures.push(`change-password: ${label} -> ${r.status} ${code ?? ''}`));
+    console.log(`  ${ok ? 'OK  ' : 'FAIL'} ${r.status}  ${label}`);
+  }
+
+  const noToken = await fetch(`${BASE}/auth/change-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword: 'x', newPassword: 'Correct9Horse' }),
+  });
+  const ok401 = noToken.status === 401;
+  ok401 ? pass++ : (fail++, failures.push(`change-password reachable without a token -> ${noToken.status}`));
+  console.log(`  ${ok401 ? 'OK  ' : 'FAIL'} ${noToken.status}  refused with no token`);
+}
+
 // ---- numeric poisoning --------------------------------------------------
 //
 // JSON has no Infinity literal, which is why this looks impossible. It is not:

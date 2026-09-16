@@ -38,14 +38,8 @@ import {
   stopNotificationsHeartbeat
 } from '@/lib/notificationsStore';
 import NotificationPopover from './NotificationPopover.vue';
-import { 
-  Menu, 
-  LogOut, 
-  LogIn,
-  User,
-  Bell,
-  ChevronDown
-} from 'lucide-vue-next';
+import { Menu, LogOut, LogIn, User, Bell, ChevronDown, Lock } from 'lucide-vue-next';
+import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -129,6 +123,18 @@ function handleMouseLeave() {
   popoverTimeout = setTimeout(() => {
     isProfilePopoverOpen.value = false;
   }, 180);
+}
+
+/**
+ * `POST /auth/change-password` worked for months with nothing calling it, so
+ * there was no way to change a password from inside the product at all - and
+ * every tenant was onboarded on the same shared literal.
+ */
+const isChangePasswordOpen = ref(false);
+
+function openChangePassword() {
+  isProfilePopoverOpen.value = false;
+  isChangePasswordOpen.value = true;
 }
 
 async function handleSignOut() {
@@ -322,6 +328,19 @@ onUnmounted(() => {
                     <span>My Profile</span>
                   </router-link>
 
+                  <!--
+                    Not `v-if="isTenant"`. The administrator was onboarded on a
+                    literal too, and until this existed nobody - her included -
+                    could change a password without editing the database.
+                  -->
+                  <button
+                    @click="openChangePassword"
+                    class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-muted transition-colors text-left cursor-pointer"
+                  >
+                    <Lock class="size-4 text-primary" />
+                    <span>Change Password</span>
+                  </button>
+
                   <button
                     @click="handleSignOut"
                     class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
@@ -386,4 +405,6 @@ onUnmounted(() => {
       </button>
     </div>
   </header>
+
+  <ChangePasswordModal :open="isChangePasswordOpen" @close="isChangePasswordOpen = false" />
 </template>

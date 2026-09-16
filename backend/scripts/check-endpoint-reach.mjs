@@ -58,7 +58,6 @@ const NO_BROWSER_CALLER = new Map([
   ['POST /public/payments/local-cashier/complete', { kind: 'EXTERNAL', why: 'gateway return; single-use session token, writes only Pending Verification' }],
 
   ['GET /admin/bills', { kind: 'UNPLUGGED', row: 'A-11', why: 'the administrator has no bills screen; the FR-013 overdue overlay is computed for a caller that does not exist' }],
-  ['POST /auth/change-password', { kind: 'UNPLUGGED', row: 'A-12', why: 'no password-change UI anywhere; tenants share the literal onboarding password and cannot change it' }],
 
   ['PATCH /admin/tenants/:profileId/status', { kind: 'SUPERSEDED', row: 'A-13', why: 'TenantManagementView uses the generic PATCH /admin/tenants/:id' }],
   ['PATCH /admin/tickets/:ticketId/close', { kind: 'SUPERSEDED', row: 'A-13', why: 'the dispatch board uses the generic ticket PATCH, which stamps resolved_at/closed_at correctly; this one sets status Resolved while stamping closed_at' }],
