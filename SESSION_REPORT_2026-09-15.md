@@ -92,7 +92,78 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `4a1a3fb`, `14e42c0`: a proof that could not have found its own
+> **LATEST — commit `522c0f9`: the notification feature has never once displayed a
+> notification. Not since the day it was written.**
+>
+> **Mrs. Fe has 15 unread notifications.** Four of them say:
+>
+> > *Unmatched online payment received. An authorised payment of PHP 101.00 (ref R83KMB2X4VMCLR75)
+> > could not be matched to a bill. It has NOT been recorded as a payment. Reconcile it manually.*
+>
+> **She has never seen one of them.** Neither has any tenant. The table holds 20 rows; every
+> single one is unread, because nothing in the product was capable of reading one.
+>
+> ### Two independent faults. Either alone would have been enough.
+>
+> **Fault 1 — the header lost its bell.**
+>
+> Commit `8a34ec9`, **2026-08-26**, titled *"complete UI visual audit, speed-dial FABs, smooth
+> transitions, and header harmonization"*, deleted from `AppHeader.vue`: the
+> `NotificationPopover` import, the `Bell` icon, the unread badge, `toggleNotifications()`, the
+> polling heartbeat and its lifecycle hooks. **Nothing in that commit message mentions
+> notifications.** The file's own `@description` was left reading *"authenticated notification
+> center"* beside markup that no longer had one, and its `@systemBibleRef` still points at
+> *Section 16 — Notifications*.
+>
+> Static reachability found it: `NotificationPopover.vue` was imported by **nothing**, so no
+> route could render it. `notificationsStore.ts` was imported only by that orphan. Meanwhile
+> `notificationService` writes on five events and **seven endpoints** serve them.
+>
+> **Fault 2 — and it would not have worked anyway.**
+>
+> The store reads **one level too deep**. `api.get()` returns `payload.data`, and has done since
+> `46de90b`, *the same commit that introduced the store*:
+>
+> | | what arrives | what the store read | result |
+> |---|---|---|---|
+> | `fetchNotifications` | the **array** | `res.data` → `undefined` | the `if` guard never ran; the list was never stored |
+> | `pollUnreadCount` | `{ unreadCount: 15 }` | `res.data.unreadCount` → `undefined` | fell to an array branch, found no array, **assigned 0** — every twelve seconds, always |
+>
+> So in the twelve days the bell *was* in the header, it showed no badge and an empty list.
+> **Removing it broke nothing anyone could see** — which is exactly why nobody noticed for the
+> twenty days after.
+>
+> **Nothing failed loudly because there was nothing to fail.** Reading `.data` off an array is
+> `undefined`, not an error, and the `??` beside it produced a plausible **0**. *The defensive
+> default is what hid it* — the same shape as `r.tenant_name` and `l.old_values` earlier in this
+> audit, one level up the stack.
+>
+> ### The fix
+>
+> **Backend.** Both list endpoints sent `totalUnread` as a *sibling* of `data`. The client
+> envelope is `{ success, data, meta? }` and `requestEnvelope()` returns exactly `{ data, meta }`
+> — **every other top-level key is dropped on the floor**, so that number could never reach the
+> browser by any path. `/admin/audit-logs` already does this correctly with `meta.businessTotal`.
+> Both now put it under `meta`.
+>
+> **Frontend.** `fetchNotifications` uses `getWithMeta` and checks `Array.isArray(data)`;
+> `pollUnreadCount` reads `res.unreadCount`, with the tenant branch's array shape handled
+> explicitly rather than by a fallback that cannot tell *"none"* from *"could not read"*.
+>
+> **Header.** Bell, badge and heartbeat restored — in **design tokens**, not the raw hex the
+> 2026-08-26 version used. `check:tokens` still **94 / 94**.
+>
+> ### Verified against the running system, read-only
+>
+> - badge renders **15**, matching the live count exactly
+> - it renders in the **danger tone**, correctly, because unread **Emergency** items exist
+> - the popover lists the real rows with its filter tabs
+> - `notifications` before and after: **20 rows, 20 unread, newest timestamp unchanged.**
+>   *Nothing was marked read in order to test this.*
+>
+> **Ten suites green.**
+
+> **PREVIOUS — commits `4a1a3fb`, `14e42c0`: a proof that could not have found its own
 > counterexample, and a tenth suite so the last one cannot happen again.**
 >
 > ### `check:matrix` — the tenth verification suite
@@ -2023,7 +2094,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**130 commits, all pushed to `main`. Working tree clean.**
+**134 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
