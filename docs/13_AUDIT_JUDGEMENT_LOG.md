@@ -770,11 +770,13 @@ date. Treat all three as history and measure it yourself.
 | :-- | :--- | :--- |
 | 1 | **OD-07** and eight other client decisions | A conversation with Mrs. Da Silva, not code. OD-07 alone keeps BR-046 unenforced. They should be gathered into **one** consultation |
 | 2 | **Adyen webhook, end to end** | Needs a tunnel and someone watching. The webhook is the sole writer, so if it is not working, online payments silently never record |
-| 3 | **Service extraction** | 137 of 173 database calls sit in route handlers. The architecture's stated target; not required for the defense |
+| 3 | **Service extraction** | **144 of 184** database calls sit in route handlers (78%), and `admin.ts` is **3,033** lines. Re-measured 2026-09-16; this row read *137 of 173* until then. The architecture's stated target; not required for the defense |
 | 4 | **BR-020** | Would need a `room_id` on expense allocations, and her own workbook allocates by Property Area, not by room. Arguably out of scope rather than unfinished |
 | 5 | **BR-025** | Waits on OD-04 — deposit disposition on move-out |
 | 6 | **Team roles disagree across documents** | Repository says Sean is System Architect / Full-Stack and Loyd is Database Administrator; the presentation script says Sean is DBA. Eljohn and Vince have no role recorded. **The team's to settle, not Claude's** |
 | ~~7~~ | ~~**The four remaining Supabase secret keys**~~ | **Closed.** `loyd` rotated 2026-09-14; `eljohn`, `kiel` and `bins` deleted 2026-09-15 |
+
+| 8 | **Everything the overnight audit of 2026-09-15/16 could not close** | Gathered in **one place** — `CONTINUE_HERE.md` §3.9 — split by whose call it is: four decisions for Mrs. Da Silva (seven receipts, the ₱35,228 classification, where Linda's fixed water belongs, OD-07) and six for Sean (**rotate the two shared passwords**, the fail-open `current_user_role()`, an administrator bills screen or none, a change-password screen, five superseded endpoints, the vite upgrade). **Deliberately not re-listed here.** Two registers holding one list is the failure this audit found most often; the pointer cannot drift, a copy can |
 
 **Four rules are Partial and each is a decision, not an omission** — see §3.6 and
 the crosswalk rows. Do not treat the count as a backlog.
