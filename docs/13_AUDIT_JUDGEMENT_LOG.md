@@ -717,7 +717,7 @@ the suite's header, because that list *is* the guarantee.
 #### 16. Before correcting a document, ask whether it is a record or a specification
 
 I found the banned BR-035 wording, the withdrawn 2% escalation and the retired
-32-unit figure alive in **nine** documents under `docs/module_01_submission/`,
+retired "32 units" figure alive in **nine** documents under `docs/module_01_submission/`,
 and started writing the patch to fix all of them.
 
 **That would have been wrong, and badly so.** Those documents are what the group
