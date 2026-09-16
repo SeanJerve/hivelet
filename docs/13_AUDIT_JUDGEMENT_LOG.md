@@ -714,6 +714,50 @@ the suite's header, because that list *is* the guarantee.
 
 ---
 
+#### 16. Before correcting a document, ask whether it is a record or a specification
+
+I found the banned BR-035 wording, the withdrawn 2% escalation and the retired
+32-unit figure alive in **nine** documents under `docs/module_01_submission/`,
+and started writing the patch to fix all of them.
+
+**That would have been wrong, and badly so.** Those documents are what the group
+actually submitted. The errata sheet's own preamble says why they stay as they
+are:
+
+> *"We publish corrected artifacts and this sheet together rather than silently
+> reissuing the documents."*
+
+Rewriting a submitted document to match today's facts destroys exactly the thing
+that posture buys: a panel can hold the submission in one hand and the errata in
+the other and see that the group found its own errors. A silently corrected
+document proves nothing, and if anyone kept a copy of the original it looks far
+worse than the error did.
+
+**The test that separates them** is not what a document says, it is what it is
+FOR:
+
+| | |
+| :--- | :--- |
+| **A record** | says what was true, or believed, at a moment. Submitted coursework, a dated plan with its steps checked off, an errata row, a git commit. **Correct it with a banner, never with an edit.** |
+| **A specification** | says what should be true now. `AGENTS.md`, `UI_DESIGN_SPECIFICATION.md`, the code. **Correct it in place, immediately.** |
+
+The same four banned phrases were in both kinds, and the right action was
+opposite in each. Four live specifications were corrected; nineteen records were
+given banners and left alone.
+
+**And the instruction files were the urgent half.** `.agents/AGENTS.md` and
+`AI_DEVELOPMENT_WORKFLOW.md` both told the next contributor to document a *"2%
+annual price increase history"* that does not exist. A retired framing in an
+instruction file **reproduces itself** - it is not a stale sentence, it is a
+sentence that writes more stale sentences. That is why they were the worst of the
+four and why `check:canon` now guards them.
+
+*Related: the same distinction is why `database/FULL_DATABASE_SCHEMA.sql` is
+never edited. It is a record of a schema, and the live database is the
+specification.*
+
+---
+
 ---
 
 ## 3. Judgement calls a fresh reader might reverse
