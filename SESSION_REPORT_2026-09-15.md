@@ -106,7 +106,56 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `30a805b`, `1e7cfb9`: the rest of the perimeter, swept and written down.
+> **LATEST — commit `c2e34c8`: the business rules tested against the data instead of against
+> the register. Eight invariants, all green.**
+>
+> `check:rules` proves the BR crosswalk **agrees with itself** — its counts match its rows, its
+> statuses are ones the legend defines. **It never reads the database**, so it cannot prove a
+> rule marked *Enforced* is actually obeyed.
+>
+> Eight now do, each a rule from `02_BUSINESS_RULES.md` turned into a question the live data can
+> answer:
+>
+> | Rule | Verified against live data |
+> |---|---|
+> | **BR-002** Room Identity | 33 rooms, no duplicate room number |
+> | **BR-032** Canonical Unit List | **33 units, 5 clusters** |
+> | **BR-008** Primary Contact | 32 occupied rooms, **exactly one** primary each |
+> | **BR-026** Duplicate Prevention | 43 tenants, no repeated email or phone |
+> | **BR-026** one tenancy per tenant | 32 active assignments |
+> | **BR-004** Room Occupancy | **no room let to two tenants at once** |
+> | **BR-013** Full Payment | every bill reading Paid is covered by verified payments |
+> | **BR-017** Payment Verification | 15 payments, **none Verified without a verifier** |
+>
+> **All eight pass — that is the finding.** Six *Enforced* rules hold against 937 income rows, 45
+> profiles and 15 payments, and the counts printed beside each match the project's standing
+> facts, which is worth as much as the pass itself.
+>
+> **Proved by injecting violations into the fetched arrays, never into the database.** A
+> duplicated room tripped BR-002 and BR-032; a second active assignment for one room tripped
+> BR-004 and, correctly, **BR-008 as well**, because both rows then claimed to be the primary
+> contact.
+>
+> *Also corrected: a failure printed the expectation after "N violation(s):", so it read as
+> though it were asserting the thing it had just disproved. **A confusing failure message is how
+> a check gets ignored.***
+>
+> ### On the Adyen tunnel
+>
+> **I can start it — `cloudflared 2026.9.1` is installed — and I am not going to, because it
+> would not help.** A new tunnel gets a **new random URL**, and Adyen keeps pointing at the dead
+> one until somebody pastes the new address into the dashboard. **That half needs Sean**: it
+> means signing into Adyen, which is not something to automate.
+>
+> So starting one now would leave a public door open to the laptop that nothing is using.
+> **Nothing in this audit needs it** — `check:adyen` verifies 23 HMAC signatures with no network
+> at all, and everything else talks to the local backend or Supabase directly. Start it when a
+> payment is about to be demonstrated, not before. The runbook box in `CONTINUE_HERE.md` said
+> `cloudflared` was not installed; that was true when written and is now corrected.
+>
+> **Thirteen suites green after the restart**, including `check:adyen` 23/23.
+
+> **PREVIOUS — commits `30a805b`, `1e7cfb9`: the rest of the perimeter, swept and written down.
 > The model is sound. One endpoint was not built to it.**
 >
 > A reader who finds a privilege escalation is entitled to ask **what else was checked**. So the
@@ -2457,7 +2506,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**149 commits, all pushed to `main`. Working tree clean.**
+**154 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
