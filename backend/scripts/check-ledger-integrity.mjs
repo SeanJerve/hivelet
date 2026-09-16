@@ -29,6 +29,7 @@
  * you delete an entry whose row is still wrong.
  */
 import dotenv from 'dotenv';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -231,6 +232,59 @@ if (live.length) {
   ).length;
   check('BR-013 Full Payment', underpaid,
     `${bills.filter((b) => b.status === 'Paid').length} bills marked Paid, each covered`);
+
+  /**
+   * OD-05 / BR-041: which property areas are NOT a cost of the rental business.
+   *
+   * This one fact exists in THREE places. `property_areas.is_rental_expense` is
+   * the column; `backend/src/config/propertyAreas.ts` and
+   * `frontend/src/lib/systemState.ts` each hold a hardcoded `NON_RENTAL_AREAS`
+   * array, and both carry the comment *"Keep the two in step."*
+   *
+   * Nothing kept them in step. **No line of code reads the column** - the
+   * frontend splits a receipt into rental and personal using its own constant,
+   * and the backend's copy is not used at all. A change made in the database,
+   * which is the obvious place to make one, would have moved nothing and told
+   * nobody.
+   *
+   * It matters because of what the split decides: of PHP 5,823,586.47 allocated
+   * across all areas, **PHP 3,432,990.47 sits in the two non-rental ones** -
+   * Main House, the owner's own residence, and Other Expenses / Personal. That
+   * is 59% of the ledger that must not be subtracted from rental income.
+   *
+   * A comment asking a human to remember is not a mechanism. This is.
+   */
+  const areaRows = await rows('property_areas?select=code,is_rental_expense');
+  const dbNonRental = new Set(
+    areaRows.filter((a) => a.is_rental_expense === false).map((a) => a.code)
+  );
+
+  const constantFrom = (file) => {
+    const src = readFileSync(join(here, '..', '..', file), 'utf8');
+    const m = /NON_RENTAL_AREAS[^=]*=\s*\[([^\]]*)\]/.exec(src);
+    if (!m) return null;
+    return new Set([...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]));
+  };
+
+  const sameSet = (a, b) =>
+    a && b && a.size === b.size && [...a].every((x) => b.has(x));
+
+  for (const file of [
+    'backend/src/config/propertyAreas.ts',
+    'frontend/src/lib/systemState.ts',
+  ]) {
+    const inCode = constantFrom(file);
+    if (!inCode) {
+      fail(`OD-05 non-rental areas — could not find NON_RENTAL_AREAS in ${file}`);
+      continue;
+    }
+    sameSet(inCode, dbNonRental)
+      ? pass(`OD-05 non-rental areas — ${file} matches the database: ${[...dbNonRental].join(', ')}`)
+      : fail(
+          `OD-05 non-rental areas — ${file} says [${[...inCode].join(', ')}] but ` +
+          `property_areas.is_rental_expense=false says [${[...dbNonRental].join(', ')}]`
+        );
+  }
 
   // BR-017: the administrator's verification gate. A gateway payment must never
   // settle itself - every Verified row names the person who verified it.
