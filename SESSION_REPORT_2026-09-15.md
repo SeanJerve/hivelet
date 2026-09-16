@@ -106,7 +106,69 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> # ⚠ **LATEST — commit `8b09f80`: anyone could have made themselves an administrator.**
+> **LATEST — commits `30a805b`, `1e7cfb9`: the rest of the perimeter, swept and written down.
+> The model is sound. One endpoint was not built to it.**
+>
+> A reader who finds a privilege escalation is entitled to ask **what else was checked**. So the
+> whole perimeter was, and §5.0 of the matrix now answers eleven questions a panel will ask —
+> every one read in the code or called against the running server, none taken from a design
+> document.
+>
+> ### What holds
+>
+> | | |
+> |---|---|
+> | **Every** `/admin/*` and `/tenant/*` route declares `requirePermission` | on top of router-level `requireAuth` + `requireAdmin` |
+> | **No request schema accepts `role`** any more | onboarding hardcodes `'tenant'`; the two `account_status` schemas are admin-guarded and enum-bound |
+> | `PATCH /auth/me` filters through an **explicit five-name allowlist** | `role`, `account_status`, `email`, `password_hash` are not on it |
+> | **A token cannot carry a forged or stale role** | `requireAuth` takes only the *subject* from the JWT and re-reads `role` and `account_status` **from the database on every request**, throwing if the account is gone or inactive |
+> | **One tenant cannot reach another's data** | all 15 tenant routes scope to the caller; the three taking an id from the path verify ownership explicitly |
+> | Brute force is resisted | `failed_login_count` and `locked_until` maintained, honoured, and cleared on success |
+> | The database itself | RLS enabled and **forced on all 21 tables with zero policies**; `anon` and `authenticated` hold no privileges on any |
+>
+> **The detail worth singling out:** the ticket-thread routes answer **`404 Ticket not found`**,
+> not `403`. A non-owner is not told the ticket exists, so the id space gives no enumeration
+> oracle. That is a deliberate choice somebody made, and it is the right one.
+>
+> **And the allowlist in `updateOwnProfile` is exactly the pattern `register()` was missing.**
+> The codebase already knew the right shape in one place and not the other — which is usually
+> how a single endpoint ends up out of step with a model that is otherwise correct.
+>
+> ### What an unauthenticated visitor actually receives — called, not read
+>
+> `GET /api/public/rooms` returns **33 rooms**. Keys: `id, room_number, floor, cluster_code,
+> room_type, description, capacity, current_price, operational_status, visibility_status,
+> available_from, is_linda_unit, room_photos`. **No tenant name, phone, email, assignment or
+> occupant count in any of them**, and all 33 came back `Published`, so no hidden unit leaked.
+>
+> ### One fix: `NODE_ENV` now defaults to `production`
+>
+> It decides exactly two things — whether a 500 carries a **stack trace**, and the log format.
+> Both fail **safe** at `production` and **open** at `development`, and the default was
+> `development`. A deployment that simply forgot to set the variable would have served stack
+> traces to the public: file names, line numbers, the shape of the failed query.
+>
+> The error handler is otherwise careful — it already replaces a 500's message with a flat
+> *"Internal server error."* so a Postgres string cannot escape. **The stack beside it was gated
+> on a variable that defaulted to the leaky value.**
+>
+> *This is the same lesson this file already records in its own comment:* the compromised-secret
+> guard originally fired only on `NODE_ENV === 'production'` — **"the one environment this
+> project has never run in."** A safety control keyed to an unset variable is not a control.
+> Nothing changes locally, where `.env` sets it explicitly; verified by reading it back.
+>
+> ### Also checked and clean
+>
+> **No 4xx message anywhere is built from a database error string**, so the careful 500 handling
+> is not undone by a 400 carrying the same text. And every money field in every request schema
+> uses the shared `.finite()` primitive — which matters because **PostgreSQL sorts `NaN` above
+> every other numeric**, so `CHECK (rent_amount >= 0)` accepts `'NaN'`, and two `GENERATED`
+> columns derive from it. One malformed request would have turned every `SUM()` over the ledger
+> into NaN.
+>
+> **Thirteen suites green. Both builds clean.**
+
+> # ⚠ **PREVIOUS — commit `8b09f80`: anyone could have made themselves an administrator.**
 >
 > **`POST /api/auth/register` let the caller choose their own role.**
 >
@@ -2395,7 +2457,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**145 commits, all pushed to `main`. Working tree clean.**
+**149 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
