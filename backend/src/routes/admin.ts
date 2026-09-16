@@ -79,8 +79,8 @@ router.get(
 );
 
 const roomInsertSchema = z.object({
-  cluster_code: z.string().min(1),
-  room_number: z.string().min(1),
+  cluster_code: z.string().min(1).max(50),
+  room_number: z.string().min(1).max(20),
   floor: z.number().int().min(1).optional(),
   // `room_type` is the enum `room_type_enum`, not free text. It was `z.string()` while
   // `operational_status` and `visibility_status` in this same file were properly
@@ -516,14 +516,14 @@ const tenantOnboardSchema = z.object({
    *
    * An empty string is treated as absent, because that is what a cleared form field sends.
    */
-  email: z.string().email('Enter a valid email address, or leave it blank.').optional().or(z.literal('')),
-  fullName: z.string().min(2, 'Full name is required.'),
-  phone: z.string().optional(),
-  emergencyContactName: z.string().optional(),
-  emergencyContactPhone: z.string().optional(),
-  occupation: z.string().optional(),
-  facebookUrl: z.string().optional(),
-  roomNumber: z.string().optional(),
+  email: z.string().email('Enter a valid email address, or leave it blank.').max(255).optional().or(z.literal('')),
+  fullName: z.string().min(2, 'Full name is required.').max(255),
+  phone: z.string().max(50).optional(),
+  emergencyContactName: z.string().max(255).optional(),
+  emergencyContactPhone: z.string().max(50).optional(),
+  occupation: z.string().max(100).optional(),
+  facebookUrl: z.string().optional(),   // facebook_url is TEXT, unbounded
+  roomNumber: z.string().max(20).optional(),
   moveInDate: z.string().optional(),
   // Advance rent (OD-04), so it is money and takes the finite check with it.
   depositAmount: money.optional(),
@@ -734,13 +734,13 @@ router.post(
 );
 
 const tenantUpdateSchema = z.object({
-  fullName: z.string().min(2).optional(),
-  phone: z.string().optional(),
-  emergencyContactName: z.string().optional(),
-  emergencyContactPhone: z.string().optional(),
-  occupation: z.string().optional(),
-  facebookUrl: z.string().optional(),
-  roomNumber: z.string().optional(),
+  fullName: z.string().min(2).max(255).optional(),
+  phone: z.string().max(50).optional(),
+  emergencyContactName: z.string().max(255).optional(),
+  emergencyContactPhone: z.string().max(50).optional(),
+  occupation: z.string().max(100).optional(),
+  facebookUrl: z.string().optional(),   // facebook_url is TEXT, unbounded
+  roomNumber: z.string().max(20).optional(),
   accountStatus: z.enum(['active', 'inactive']).optional(),
   occupantCount: occupantCount.refine((n) => n >= 1, 'must be at least one occupant').optional(),
   roommateQty: occupantCount.optional(),
@@ -2232,7 +2232,7 @@ const expenseAllocationSchema = z.object({
 const expenseEntrySchema = z.object({
   expenseDate: z.string(),
   orSupplier: z.string().min(1),
-  categoryCode: z.string().min(1),
+  categoryCode: z.string().min(1).max(20),
   allocations: z.array(expenseAllocationSchema).min(1),
 });
 
@@ -2483,13 +2483,13 @@ router.get(
 );
 
 const ticketCreateSchema = z.object({
-  roomNumber: z.string().optional(),
+  roomNumber: z.string().max(20).optional(),
   roomId: z.string().optional(),
-  title: z.string().min(1),
+  title: z.string().min(1).max(255),
   description: z.string().min(1),
-  category: z.string().optional(),
+  category: z.string().max(100).optional(),
   priority: z.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
-  assignedTechnician: z.string().optional(),
+  assignedTechnician: z.string().max(160).optional(),
   status: z.enum(['Open', 'Submitted', 'In Progress', 'Resolved', 'Closed']).optional(),
   setRoomMaintenance: z.boolean().optional(),
 });
@@ -2571,14 +2571,14 @@ router.post(
 );
 
 const ticketUpdateSchema = z.object({
-  title: z.string().optional(),
+  title: z.string().max(255).optional(),
   description: z.string().optional(),
-  category: z.string().optional(),
+  category: z.string().max(100).optional(),
   priority: z.enum(['Low', 'Medium', 'High', 'Emergency']).optional(),
   status: z.enum(['Open', 'Submitted', 'In Progress', 'Resolved', 'Closed']).optional(),
-  assigned_technician: z.string().optional(),
-  assignedTechnician: z.string().optional(),
-  roomNumber: z.string().optional(),
+  assigned_technician: z.string().max(160).optional(),
+  assignedTechnician: z.string().max(160).optional(),
+  roomNumber: z.string().max(20).optional(),
   roomId: z.string().optional(),
 });
 

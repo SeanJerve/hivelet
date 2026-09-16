@@ -70,13 +70,13 @@ router.post(
 );
 
 const registerSchema = z.object({
-  email: z.string().email('A valid email address is required.'),
+  email: z.string().email('A valid email address is required.').max(255),
   password: z.string().min(10, 'Password must be at least 10 characters.'),
-  fullName: z.string().min(2, 'Full name is required.'),
-  phoneNumber: z.string().optional(),
-  emergencyContactName: z.string().optional(),
-  emergencyContactPhone: z.string().optional(),
-  occupation: z.string().optional(),
+  fullName: z.string().min(2, 'Full name is required.').max(255),
+  phoneNumber: z.string().max(50).optional(),
+  emergencyContactName: z.string().max(255).optional(),
+  emergencyContactPhone: z.string().max(50).optional(),
+  occupation: z.string().max(100).optional(),
   facebookUrl: z.string().optional(),
   /**
    * `role` is NOT accepted here, and must never be added back.
