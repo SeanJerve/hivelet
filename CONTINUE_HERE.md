@@ -231,9 +231,16 @@ Two ways out, and the second is better:
 ### The tunnel URL changes every restart
 
 > **Step-by-step runbook: `RESTART_THE_TUNNEL.md` at the repository root.**
-> Including the `winget` line to install `cloudflared`, which is **not currently
-> installed on Sean's machine** — so the first run needs that step before
-> anything else works.
+>
+> **`cloudflared` IS installed now** — version `2026.9.1`, verified 2026-09-16. This box
+> said it was not, which was true when written and is no longer. The `winget` line in
+> the runbook is only needed on a machine that has never had it.
+>
+> **Starting the tunnel is only half the job, and the other half cannot be automated.**
+> A new tunnel gets a **new random URL**, and Adyen still points at the dead one until
+> somebody pastes the new address into the dashboard by hand. So starting a tunnel
+> without doing that leaves a public door open to this laptop that nothing is using.
+> Start it when you are about to demonstrate a payment, not before.
 
 
 `cloudflared tunnel --url http://localhost:5000` gets a **new random address each
