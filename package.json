@@ -10,6 +10,7 @@
     "build:frontend": "cd frontend && npm run build",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "verify:rbac": "node database/verify-rbac.mjs",
+    "check:all": "node scripts/check-all.mjs",
     "check:secrets": "node scripts/check-secrets.mjs --all",
     "check:rules": "node scripts/check-br-crosswalk.mjs",
     "check:matrix": "node scripts/check-matrix-crosswalk.mjs",

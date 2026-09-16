@@ -67,6 +67,10 @@ STEP 2 - prove the environment works before changing anything.
      "unverified" means the publishable key was rejected before it reached
      PostgreSQL, so nothing was actually tested. "exposed" means stop and tell me.
 
+  npm run check:all                     all fourteen suites, one command, ~95s
+
+  ...or one at a time:
+
   cd backend && npm run check:api       53 endpoint, RBAC, perimeter and input checks
               npm run check:adyen       23 HMAC signature checks, no network
               npm run check:billing     water / grace / period / receipt allocation

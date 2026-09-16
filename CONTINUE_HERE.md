@@ -404,6 +404,17 @@ lockdown was never actually tested. That is exactly what a stale key looks like.
 ## 2. Verification suites — run these before trusting anything
 
 ```bash
+# All fourteen, one command, from the repository root. ~95 seconds.
+npm run check:all
+```
+
+It prints every suite's own output in full, then a summary table, and exits non-zero if
+any of them failed. Three need the backend running (`npm run dev:backend`) because they
+make real HTTP calls; the runner says so if they cannot connect.
+
+To run one at a time:
+
+```bash
 cd backend  && npm run check:api        # 53 endpoint, RBAC, perimeter, export and input checks
             npm run check:adyen       # 23 HMAC signature checks
             npm run check:billing     # water / grace / period / receipt-allocation arithmetic
