@@ -22,6 +22,7 @@ import { PERMISSIONS } from '../config/rbac.js';
 import { resolveTenantScope, isEmptyScope, assertRoomInScope } from '../services/scopeService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
+import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { computeBillAmounts, computeBillPeriod, isOverdue, toCentavos } from '../services/billingService.js';
 import { adyenService } from '../services/adyenService.js';
@@ -345,15 +346,43 @@ router.post(
 
     if (error) throw ApiError.internal(error.message);
 
+    /**
+     * The ticket is already committed by this point, so a failure here must NOT
+     * throw.
+     *
+     * It used to. The consequence was the opposite of what it looked like: the
+     * tenant saw "Submission failed", the ticket existed and was already visible
+     * to the administrator under BR-022, and the obvious response - submit it
+     * again - filed the same complaint twice. A leak got two tickets and the
+     * administrator had to work out that they were one leak.
+     *
+     * This is exactly the case `utils/checkedWrite.ts` describes: a write that
+     * is secondary to one which has already committed. A ticket without its
+     * photo is still an actionable ticket; a duplicate ticket plus an error is
+     * worse than a missing photo.
+     *
+     * Not silent, though. The tenant is told the photo did not attach so they
+     * can add it to the ticket thread, rather than believing it is there.
+     */
+    let attachmentWarning: string | null = null;
+
     if (input.attachments?.length) {
-      const { error: attachError } = await db.from('ticket_attachments').insert(
+      const attachResult = await db.from('ticket_attachments').insert(
         input.attachments.map((a) => ({
           ticket_id: data.id,
           file_url: a.fileUrl,
           file_type: a.fileType ?? null,
         }))
       );
-      if (attachError) throw ApiError.internal(attachError.message);
+      warnIfWriteFailed(attachResult, `Ticket ${data.id} attachments`);
+      if (attachResult.error) {
+        attachmentWarning =
+          input.attachments.length === 1
+            ? 'Your ticket was filed, but the photo could not be attached. Do not submit ' +
+              'the ticket again - reply to it with the photo instead.'
+            : 'Your ticket was filed, but the photos could not be attached. Do not submit ' +
+              'the ticket again - reply to it with the photos instead.';
+      }
     }
 
     await auditFromRequest(req, {
@@ -373,7 +402,7 @@ router.post(
       relatedEntityId: data.id,
     });
 
-    res.status(201).json({ success: true, data });
+    res.status(201).json({ success: true, data: { ...data, attachmentWarning } });
   })
 );
 

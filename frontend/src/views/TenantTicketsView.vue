@@ -340,7 +340,7 @@ async function handleTicketSubmit() {
     // request that never reached the server still read as "submitted to Landlady
     // Fe Galang Da Silva for review". `fetchTickets()` then quietly replaced the
     // fake row with the real list, and the ticket simply was not there.
-    await api.post('/tenant/tickets', {
+    const created = await api.post<{ attachmentWarning?: string | null }>('/tenant/tickets', {
       roomId: activeRoomId.value,
       title: ticketTitle.value.trim(),
       description: ticketDescription.value.trim(),
@@ -349,7 +349,13 @@ async function handleTicketSubmit() {
       attachments,
     });
 
-    ticketNotice.value = `Ticket "${ticketTitle.value.trim()}" has been submitted to Landlady Fe Galang Da Silva for review.`;
+    // The ticket commits before its attachments do. If the photo failed, the
+    // ticket still exists and the server says so here rather than returning an
+    // error - submitting again would file the same complaint twice.
+    ticketNotice.value = created?.attachmentWarning
+      ? `Ticket "${ticketTitle.value.trim()}" has been submitted to Landlady Fe Galang Da Silva ` +
+        `for review. ${created.attachmentWarning}`
+      : `Ticket "${ticketTitle.value.trim()}" has been submitted to Landlady Fe Galang Da Silva for review.`;
     ticketTitle.value = '';
     ticketDescription.value = '';
     ticketCategory.value = 'Plumbing';
