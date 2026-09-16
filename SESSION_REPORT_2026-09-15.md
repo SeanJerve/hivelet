@@ -106,7 +106,63 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `ebd4177`, `0195c90`: 21 migration files against 12 tracked, explained and
+> **LATEST — commits `ab9244a`, `d83db50`: one command for all fourteen suites, and a document
+> that asked to be re-measured, answered.**
+>
+> ### `npm run check:all`
+>
+> Fourteen suites across three `package.json` files meant three `cd`s and fourteen commands, in
+> the right order, remembering which live where. **Before a defense that is exactly the chore
+> that gets half-done — and a suite nobody runs is a suite nobody wrote.**
+>
+> One command from the root. Every suite's own output in full, then a summary table. **It hides
+> nothing:** a green line means that suite said green, not that the runner decided it was fine.
+> It does **not** stop at the first failure, so one broken suite cannot conceal the other
+> thirteen. Proved by planting a leak in `dist` — `check:secrets` marked FAIL, the rest still
+> ran, exit code **1**.
+>
+> ### D-9 asked for the ratio to be re-derived. It has been.
+>
+> `04_ARCHITECTURE.md` carried a row complaining that three documents quote different call
+> counts — *131 of 164* here and in the Phase 1 architecture paper, *137 of 173* in the iteration
+> history — and that **"none states its counting method, so the ratio should be re-derived
+> rather than quoted."**
+>
+> ```
+> grep -ro "\.from(" backend/src/routes/                         144
+> grep -ro "\.from(" backend/src/services/                        38
+> grep -ro "\.from(" backend/src/middleware/ backend/src/config/   2
+>                                                                 ---
+>                                                                 184   → 78%
+> ```
+>
+> `admin.ts` is **3,033** lines. And the method's limits are printed beside it: it counts call
+> *sites*, not queries executed, and **cannot see the three database functions** that do their
+> own work — `settle_verified_payment`, `create_expense_entry_with_allocations`,
+> `replace_expense_allocations` — so it **understates** how much logic has already left the
+> handlers. *Quote the method with the ratio or neither.*
+>
+> ### A-19 — a unit photo can be added but never removed
+>
+> The room PATCH guards its photo write with `if (photo && photo.trim().length > 0)`, so an
+> empty string is ignored and the existing row survives. **There is no delete path for a room
+> photo anywhere.** The modal nevertheless clears its local copy, so **the interface shows the
+> photo removed and a reload brings it back** — the same shape as the tenant profile form that
+> discarded a name edit while updating the header.
+>
+> **Latent:** `room_photos` holds **0 rows** across all 33 units. Which is worth knowing on its
+> own — **the public listing shows every unit without an image.** The upload path works and
+> writes correctly; it has simply never been used, like the rest of the write surface.
+>
+> ### And a correction to my own log
+>
+> It read *"every one of the **32** units with no real photo."* It is **33** — checked, not
+> assumed: all 33 rooms have none. The sentence was wrong about the count **and** used the one
+> figure this project has banned.
+>
+> **All 14 suites green in one run.**
+
+> **PREVIOUS — commits `ebd4177`, `0195c90`: 21 migration files against 12 tracked, explained and
 > verified. And the water rate, which BR-014 exists to make configurable, is copied into
 > fourteen places.**
 >
@@ -2851,7 +2907,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**177 commits, all pushed to `main`. Working tree clean.**
+**180 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
