@@ -348,6 +348,57 @@ if (live.length) {
     console.log('    figure includes them. Her ledger is monthly_income_records, not this table.');
   }
 
+  /**
+   * THE EXPENSE LEDGER'S ARITHMETIC.
+   *
+   * Everything above tests the INCOME side. The expense ledger - 1,262 entries
+   * and 1,327 allocations - had no invariant here at all, which is the larger
+   * half of the two by row count and the one that decides Net Operating Income.
+   *
+   * An entry's `total_expenses` must equal the sum of its area allocations. If
+   * it does not, one figure is wrong and there is no way to tell which: the
+   * total feeds the monthly report, the allocations feed the per-area
+   * breakdown, and they would disagree silently.
+   *
+   * Both write paths go through database functions -
+   * `create_expense_entry_with_allocations` (019) and
+   * `replace_expense_allocations` (010) - so the total and its allocations
+   * commit together or not at all. This proves that held, for every row, rather
+   * than trusting that it must have.
+   */
+  /** Half a centavo. The same tolerance `billingService` uses, and for the same
+   *  reason: summing numerics in floating point leaves residue like 4.5e-13,
+   *  and comparing money with === reports that as a mismatch. */
+  const MONEY_DUST = 0.005;
+
+  const entries = await rows('monthly_expense_entries?select=id,total_expenses&voided_at=is.null');
+  const allocs = await rows('expense_property_allocations?select=expense_entry_id,amount');
+
+  const allocSum = new Map();
+  for (const a of allocs) {
+    allocSum.set(a.expense_entry_id, (allocSum.get(a.expense_entry_id) ?? 0) + Number(a.amount));
+  }
+
+  const mismatched = entries.filter(
+    (e) => Math.abs(Number(e.total_expenses) - (allocSum.get(e.id) ?? 0)) > MONEY_DUST
+  );
+  const unallocated = entries.filter((e) => !allocSum.has(e.id));
+  const orphans = allocs.filter((a) => !entries.some((e) => e.id === a.expense_entry_id)).length;
+
+  for (const e of mismatched.slice(0, 5)) {
+    console.log(
+      `        entry ${e.id}: total ${Number(e.total_expenses).toFixed(2)}, ` +
+      `allocations ${(allocSum.get(e.id) ?? 0).toFixed(2)}`
+    );
+  }
+
+  check('expense totals equal their allocations', mismatched.length,
+    `${entries.length} entries against ${allocs.length} allocations, to the centavo`);
+  check('every expense entry is allocated', unallocated.length,
+    `${entries.length} entries, none unallocated`);
+  check('no allocation without its entry', orphans,
+    `${allocs.length} allocations, every one attached`);
+
   const KNOWN_ENDLESS = 8;
   const endless = (await rows(
     'room_assignments?select=id&is_active=eq.false&end_date=is.null'
