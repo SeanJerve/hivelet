@@ -92,7 +92,92 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `357f7a0`, `914a88b`, `713a24f`: two suites so last night's finding
+> **LATEST — commits `ac197e4`, `f403795`: ₱18,600 of collected water money was in no report,
+> a requirement I passed yesterday is only two-thirds done, and there is a loaded footgun in
+> the database.**
+>
+> The same reachability question as the two suites, asked one layer down: **which database
+> columns does the code never mention?** Thirteen. Most had good explanations. Three did not.
+>
+> ### ₱18,600 the owner's income report did not show
+>
+> **`monthly_income_records.linda_water_charge` appears nowhere in `backend/src`.** Not
+> selected, not typed, not summed. It holds **62 rows and ₱18,600**, and it is the *only* place
+> that money is recorded — LF and LB are not on the per-occupant model, so their `water_payment`
+> is **0 by design**.
+>
+> So the LINDA section of the owner's workbook read:
+>
+> | | |
+> |---|---:|
+> | Linda total | 10,500 |
+> | Linda electricity (historical, retired 2026-09-13) | 325 |
+>
+> **and no water at all**, for two units whose entire water arrangement *is* a fixed charge.
+>
+> **Verified by building the workbook against the live ledger and reading its rows back:**
+> 2024 **₱7,200** · 2025 **₱7,200** · 2026 **₱4,200** — matching the database exactly.
+>
+> It is a separate line rather than folded into the Linda total on purpose: `remitted_amount` is
+> a **generated** column, `rent_amount + water_payment`, and for these units `water_payment` is
+> 0. Adding the charge into the total would make the total disagree with the figure the database
+> itself computes — **a worse error than the one being fixed.**
+>
+> ### FR-036 is PARTIAL, not MAPPED — I marked it wrong yesterday
+>
+> The requirement has three clauses: *"a distinct fixed-rate billing flow for Linda's units
+> (LF, LB), separate from the standard per-occupant water model, **remitted directly to
+> Linda**."*
+>
+> The rate is real. The separation is real. **The destination is not.** `admin.ts` writes the
+> charge as `water_payment: calcWater`, and `remitted_amount` is
+> `GENERATED ALWAYS AS (rent_amount + water_payment)` — so on every new row **the money BR-040
+> calls Linda's is counted into the owner's remittance.** The 62 migrated rows do the opposite.
+>
+> *I checked the rate and did not check the destination.* Counts move **26/14 → 25/15**, and
+> `check:matrix` — built this morning — verified the correction across the row, the summary, the
+> id lists, the percentages and the tier table **in one run**. That is the job it was built for.
+>
+> **The same money now lands in different columns depending on when the row was written.** Which
+> convention Mrs. Da Silva wants is a ledger-shape decision, not one to settle at 4am. *The
+> report fix is safe either way and cannot double-count:* a new row contributes through
+> `water_payment`, a historical row through the new line, each exactly once.
+>
+> ### A fail-open `SECURITY DEFINER` function, and an honest statement of its risk
+>
+> **`public.current_user_role()`** reads `profiles.role WHERE auth_user_id = auth.uid()`.
+> **`auth_user_id` is NULL on all 45 profiles**, so the lookup always finds nothing — and the
+> function then runs:
+>
+> ```
+> IF u_role IS NULL THEN RETURN 'admin'
+> ```
+>
+> Its own comment calls that *"Default to 'admin' in local development environment"*. It is in
+> the **production** database.
+>
+> **Current exposure is nil, and the register says so in those words.** There are **0 RLS
+> policies**, nothing in `backend/src` calls it, and EXECUTE is granted only to `postgres` and
+> `service_role` — **not** to `anon` or `authenticated`. *This is not a live hole and must not be
+> read as one.*
+>
+> **The risk is prospective and precise.** The obvious way to turn RLS on properly later is to
+> write policies calling exactly this helper — and every one of them would grant **admin to
+> every caller**. Fix it before any policy is written: drop it, or return `NULL` and let the
+> policy deny.
+>
+> ### What the census cleared, which matters as much
+>
+> `room_price_history`'s three price columns and `expense_property_allocations.expense_entry_id`
+> are absent from the code because a **trigger** and a **Postgres function** write them —
+> `trg_record_room_price_change` and `create_expense_entry_with_allocations`, both verified
+> present in the live catalogue. The census flagging them was the census working, not a defect.
+> **Login lockout is genuinely implemented**: `authService` reads `locked_until` and maintains
+> `failed_login_count`.
+>
+> **Twelve suites green.**
+
+> **PREVIOUS — commits `357f7a0`, `914a88b`, `713a24f`: two suites so last night's finding
 > cannot happen again, and they immediately found two more of it.**
 >
 > ### `check:reachable` — the eleventh suite
@@ -2176,7 +2261,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**138 commits, all pushed to `main`. Working tree clean.**
+**141 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
