@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DemoAccount } from '@/lib/demoAccounts.dev';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { LogIn, UserPlus, ShieldCheck, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
@@ -79,323 +80,25 @@ async function handleSubmit() {
   }
 }
 
-interface DemoAccount {
-  roleLabel: string;
-  roleType: 'admin' | 'tenant' | 'inactive';
-  name: string;
-  email: string;
-  password: string;
-  room?: string;
-  badgeClass: string;
-}
+/**
+ * The demonstration sign-in list is loaded ONLY in development.
+ *
+ * It used to be a literal array here, which put 34 account passwords - the
+ * administrator's among them - into the production bundle, alongside the name,
+ * email and room number of every real resident. See
+ * `lib/demoAccounts.dev.ts` for what was in `dist` and why.
+ *
+ * `import.meta.env.DEV` becomes `false` at build time, so this branch and the
+ * module it reaches are eliminated. In a built app `demoAccounts` stays empty
+ * and the panel below does not render at all.
+ */
+const demoAccounts = ref<DemoAccount[]>([]);
 
-const demoAccounts: DemoAccount[] = [
-  {
-    roleLabel: 'Landlady Admin',
-    roleType: 'admin',
-    name: 'Mrs. Fe Galang Da Silva',
-    email: 'admin@hivelet.ph',
-    password: 'Hivelet@Admin2026',
-    badgeClass: 'badge-warning',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Lobby Toor',
-    email: 'lobby.toor@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 1A (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Jade Marmol',
-    email: 'jade.marmol@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 1B (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Daryl Rivero',
-    email: 'daryl.rivero@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 1C (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Sandrine Jammeka Mariano',
-    email: 'sandrine.jammeka.mariano@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 1D (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Princess Lana Aviso',
-    email: 'princess.lana.aviso@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 1E (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Alberto Mestiola',
-    email: 'alberto.mestiola@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 1F (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Monica Bea Cabais',
-    email: 'monica.bea.cabais@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 1G (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Trisha Nicole Bellio',
-    email: 'trisha.nicole.bellio@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 1H (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Ron Juliene Dominguino',
-    email: 'ron.juliene.dominguino@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 2A (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Nikki Prollamante',
-    email: 'nikki.prollamante@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 2B (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Alexa Allaine delapaz',
-    email: 'alexa.allaine.delapaz@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 2C (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Joan Rejuso',
-    email: 'joan.rejuso@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 2D (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Sian Danver Morta',
-    email: 'sian.danver.morta@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 2E (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Christine Golpeo',
-    email: 'christine.golpeo@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 2F (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Grace Trina metillo',
-    email: 'grace.trina.metillo@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 2G (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Gupreet Sigh',
-    email: 'gupreet.sigh@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 3A (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Myra Cadag',
-    email: 'myra.cadag@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 3B (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Bob Dumas',
-    email: 'bob.dumas@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 3C (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Alejandro Delarosa',
-    email: 'alejandro.delarosa@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 3D (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Mireel Fatima Parcarey',
-    email: 'mireel.fatima.parcarey@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 3E (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Eunice Francisco',
-    email: 'eunice.francisco@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 3F (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Ann Kristine Diaz',
-    email: 'ann.kristine.diaz@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room 3G (BH)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Arvin Vega',
-    email: 'arvin.vega@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room B1F (Back)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Anna Sherra Jalmasco',
-    email: 'anna.sherra.jalmasco@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room B2F (Back)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Krizza Bellena',
-    email: 'krizza.bellena@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room B2B (Back)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Janna Berlarmino',
-    email: 'janna.berlarmino@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room B3F (Back)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Joecel Royo',
-    email: 'joecel.royo@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room B3B (Back)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Gayon Albay LGBT',
-    email: 'gayon.albay.lgbt@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room F1 (Front)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Brian Sesbreno',
-    email: 'brian.sesbreno@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room F2F (Front)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Alfred John Laurinaria',
-    email: 'alfred.john.laurinaria@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room F2B (Front)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Gayon LGPT',
-    email: 'gayon.lgpt@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room LF (Linda)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Tenant',
-    roleType: 'tenant',
-    name: 'Jaye Casia',
-    email: 'jaye.casia@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Room LB (Linda)',
-    badgeClass: 'badge-success',
-  },
-  {
-    roleLabel: 'Inactive Tenant',
-    roleType: 'inactive',
-    name: 'Miguel Ramos',
-    email: 'miguel.ramos@gmail.com',
-    password: 'Hivelet@Tenant2026',
-    room: 'Vacated (BR-025)',
-    badgeClass: 'badge-danger',
-  },
-];
+if (import.meta.env.DEV) {
+  import('@/lib/demoAccounts.dev').then((m) => {
+    demoAccounts.value = m.demoAccounts;
+  });
+}
 
 async function handleQuickLogin(account: DemoAccount) {
   if (isSignUp.value) {
@@ -547,8 +250,9 @@ async function handleQuickLogin(account: DemoAccount) {
           </div>
         </div>
 
-        <!-- Right: 1-Click Demo Accounts -->
-        <div class="lg:col-span-6 surface-card p-6 sm:p-8 space-y-4">
+        <!-- Right: 1-Click Demo Accounts. Development only - the list is empty in a
+             built app, so the whole panel disappears rather than rendering hollow. -->
+        <div v-if="demoAccounts.length > 0" class="lg:col-span-6 surface-card p-6 sm:p-8 space-y-4">
           <div class="border-b border-border pb-3">
             <div class="flex items-center justify-between">
               <h2 class="font-display text-lg font-extrabold text-foreground">

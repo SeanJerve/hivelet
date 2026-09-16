@@ -17,7 +17,8 @@
  * Exit code 1 means something was found. It is meant to be annoying.
  */
 import { execSync } from 'node:child_process';
-import { readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import path from 'node:path';
 
 const ALL = process.argv.includes('--all');
 
@@ -119,9 +120,101 @@ for (const file of tracked()) {
   }
 }
 
-if (findings.length === 0) {
-  console.log(`check-secrets: clean (${ALL ? 'all tracked files' : 'staged files'})`);
+/**
+ * THE BUILD OUTPUT, WHICH IS NOT TRACKED AND SO WAS NEVER SCANNED
+ * ---------------------------------------------------------------
+ * Everything above reads files git knows about. `frontend/dist` is gitignored,
+ * so nothing here ever looked at what actually ships - and on 2026-09-16 what
+ * shipped was the landlady's administrator password.
+ *
+ * `LoginView.vue` held a "Quick Demo Access" panel with 34 accounts, each with
+ * its password, rendered as one-click sign-in buttons on the PUBLIC login page.
+ * `dist/assets/index-*.js` contained `Hivelet@Admin2026` once and
+ * `Hivelet@Tenant2026` thirty-three times. It also published the name, email
+ * and **room number** of all 33 real residents.
+ *
+ * Every rule above would have missed it, and did, for as long as it existed:
+ * they look for key-shaped material - Supabase keys, JWTs, tokens - and an
+ * account password looks like an ordinary string.
+ *
+ * So this scans what is served, not what is committed. A password belongs in
+ * `backend/src` (it is the onboarding default) and in the dev-only account
+ * module; it must never reach the browser bundle.
+ */
+const BUILD_DIRS = ['frontend/dist'];
+
+const SHIPPED_RULES = [
+  {
+    name: 'Account password in the built bundle',
+    re: /Hivelet@(?:Admin|Tenant)\d{4}/g,
+    why: 'Anyone who loads the site, or just downloads the JS, has this credential.'
+  },
+  {
+    name: 'Resident email address in the built bundle',
+    re: /[a-z][a-z.]{3,}@gmail\.com/g,
+    why: 'Personal data for a real resident. BR-024 Tenant Privacy.'
+  },
+  {
+    name: 'Supabase secret key in the built bundle',
+    re: /sb_secret_[A-Za-z0-9_-]{8,}/g,
+    why: 'Bypasses row-level security. Must never leave the server.'
+  }
+];
+
+function walkBuild(dir) {
+  const out = [];
+  for (const e of readdirSync(dir)) {
+    const p = path.join(dir, e);
+    if (statSync(p).isDirectory()) out.push(...walkBuild(p));
+    else if (/\.(js|css|html|json|map|txt)$/i.test(e)) out.push(p);
+  }
+  return out;
+}
+
+const shipped = [];
+let scannedBuild = 0;
+
+for (const dir of BUILD_DIRS) {
+  if (!existsSync(dir)) continue;
+  for (const file of walkBuild(dir)) {
+    scannedBuild += 1;
+    let text;
+    try {
+      if (statSync(file).size > 20_000_000) continue;
+      text = readFileSync(file, 'utf8');
+    } catch {
+      continue;
+    }
+    for (const rule of SHIPPED_RULES) {
+      rule.re.lastIndex = 0;
+      const seen = new Set();
+      let m;
+      while ((m = rule.re.exec(text)) !== null) {
+        if (seen.has(m[0])) continue;
+        seen.add(m[0]);
+        shipped.push({ file: file.split(path.sep).join('/'), rule, sample: m[0].slice(0, 24) });
+      }
+    }
+  }
+}
+
+if (findings.length === 0 && shipped.length === 0) {
+  const built = scannedBuild
+    ? `, ${scannedBuild} built file(s)`
+    : ' (no build output present - run the frontend build to scan what ships)';
+  console.log(`check-secrets: clean (${ALL ? 'all tracked files' : 'staged files'}${built})`);
   process.exit(0);
+}
+
+if (shipped.length) {
+  console.error('\n  CREDENTIAL OR PERSONAL DATA FOUND IN THE BUILD OUTPUT\n');
+  for (const s of shipped) {
+    console.error(`  ${s.file}`);
+    console.error(`    ${s.rule.name}  (${s.sample}...)`);
+    console.error(`    ${s.rule.why}\n`);
+  }
+  console.error('  This is what the browser receives. Anything here is public.\n');
+  if (findings.length === 0) process.exit(1);
 }
 
 console.error('\n  COMMIT BLOCKED - credential material found\n');
