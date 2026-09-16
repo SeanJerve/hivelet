@@ -327,6 +327,25 @@ It is the right choice for this section because it is the change that *answers t
 
 ---
 
+## Before you answer the security question — read this
+
+**Do not say "we rotated everything" unless the account passwords have actually been changed.**
+
+The Supabase keys and the JWT secret were rotated on 2026-09-13. **The shared account passwords
+were not.** `Hivelet@Admin2026` and `Hivelet@Tenant2026` are still live, and they have been in
+this repository's git history since **2026-08-25** — the same window as the key exposure.
+Removing them from the current code, which was done on 2026-09-16, does not remove them from
+history.
+
+So a panelist who checks can contradict that sentence in front of you. Either rotate the two
+passwords before the defense — see **A-18** in the traceability matrix — or answer precisely:
+*"we rotated the keys and the signing secret; the shared demo passwords are still outstanding
+and are the next thing on the list."* **The precise answer is the stronger one either way.**
+
+---
+
+---
+
 ## Anticipated questions — answer honestly, you are in a strong position
 
 | Question | Answer |
@@ -342,23 +361,6 @@ It is the right choice for this section because it is the change that *answers t
 | *"How do you know your system is secure?"*<br>**Only if it comes up — this is a strong answer, not a volunteered confession. Updated 2026-09-16; see the caution below it.** | "We audited it and kept finding our own worst problems. Our live database key and our JWT signing secret had been committed to a public repository for three weeks — we rotated both and migrated to Supabase’s new key format, so the old keys are revoked everywhere at once, and added a pre-commit scanner so it cannot recur. Then we found two more. Our public registration endpoint accepted a `role` field straight from the request body, so an unauthenticated POST could create an administrator — it was never used, and it is closed, with a regression guard. And our sign-in page carried a demo panel that shipped 34 account passwords, the administrator’s among them, into the JavaScript bundle — together with the name, email and room number of every resident. That is removed from the build and the bundle re-verified clean. The lesson we took is that a correct access-control design protects nothing once its credentials leak, which is why credential handling and what actually ships are now both checked by the suite rather than by memory."
 | *"How do you know the interface shows real data?"*<br>**Only if the panel probes the UI.** | "We audited it and found it was not. Twenty-some places displayed or wrote values the system did not hold: the audit log rendered four invented entries attributed to the landlady whenever the API failed, the resident's profile form was pre-filled with a fabricated emergency contact that would be saved on submit, a payment with no verification status displayed as VERIFIED, and recording cash could report 'posted to the ledger' with nothing written. We swept all 33 write paths and fixed every one. The rule we now hold is that the interface may show what the database says or say it does not know — never a plausible substitute." |
 | *"Did anything in your submitted documents turn out wrong?"* | "Yes, and we keep an errata sheet — it has 22 entries. Three examples: we claimed `ON DELETE RESTRICT` already existed when it did not; we described a 2% annual rent escalation that appears in no business rule, since the owner sets rates by hand; and we overstated the panel's own recommendation, which we corrected once we checked it against what was actually said. We would rather hand you the corrections than have you find them." |
-
----
-
-## Before you answer the security question — read this
-
-**Do not say "we rotated everything" unless the account passwords have actually been changed.**
-
-The Supabase keys and the JWT secret were rotated on 2026-09-13. **The shared account passwords
-were not.** `Hivelet@Admin2026` and `Hivelet@Tenant2026` are still live, and they have been in
-this repository's git history since **2026-08-25** — the same window as the key exposure.
-Removing them from the current code, which was done on 2026-09-16, does not remove them from
-history.
-
-So a panelist who checks can contradict that sentence in front of you. Either rotate the two
-passwords before the defense — see **A-18** in the traceability matrix — or answer precisely:
-*"we rotated the keys and the signing secret; the shared demo passwords are still outstanding
-and are the next thing on the list."* **The precise answer is the stronger one either way.**
 
 ---
 
