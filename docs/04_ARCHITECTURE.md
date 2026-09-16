@@ -76,7 +76,17 @@ Domain logic organized by business capability inside a single deployable process
 | `expenseService.ts` | Expense entry and cluster allocation | Planned (Phase 3) |
 | `financialReportService.ts` | Income-versus-expense aggregation | Planned (Phase 3) |
 
-**The measured gap.** Of 164 database calls in `backend/src/`, **131 (80%) sit in route handlers** rather than in services, and `backend/src/routes/admin.ts` alone is **2,263 lines**. *(Recounted 2026-09-13.)* The Phase 3 extraction moves that logic behind the eight planned service interfaces without changing behaviour.
+**The measured gap.** Of **184** database calls in `backend/src/`, **144 (78%) sit in route handlers** rather than in services, and `backend/src/routes/admin.ts` alone is **3,033 lines**. *(Re-measured 2026-09-16. The figures this replaces were 131 of 164 and 2,263 lines, recounted 2026-09-13.)*
+
+**The counting method, because D-9 below asks for one.** A “database call” is an occurrence of `.from(` under `backend/src/`, counted per directory:
+
+```bash
+grep -ro "\.from(" backend/src/routes/   | wc -l   # 144
+grep -ro "\.from(" backend/src/services/ | wc -l   #  38
+grep -ro "\.from(" backend/src/middleware/ backend/src/config/ | wc -l   # 2
+```
+
+It counts call *sites*, not queries executed, and it does not see the three database functions that do their own work — `settle_verified_payment`, `create_expense_entry_with_allocations`, `replace_expense_allocations` — which is a real understatement of how much logic has already left the handlers. **Quote the method with the ratio or neither.** The Phase 3 extraction moves that logic behind the eight planned service interfaces without changing behaviour.
 
 ### Tier 4 — Data Persistence
 
@@ -217,7 +227,7 @@ Stated here so that no reader mistakes an intention for an implementation — an
 | D-6 | ~~Foreign keys are 17 `CASCADE`, 4 `SET NULL`, 0 `RESTRICT` on financial tables~~ **CLOSED.** Migration `005_ledger_fk_restrict.sql` was applied. Counted against the live catalogue 2026-09-15: **8 `RESTRICT`**, 11 `CASCADE`, 18 `NO ACTION`, 1 `SET NULL`. The RESTRICT set covers `room_id` and `tenant_profile_id` on `bills`, `payments` and `monthly_income_records`, plus the two `property_areas` references. | `pg_constraint`, queried live | **Closed** |
 | D-7 | **Partly closed, and the original wording understates it.** The literal claim still holds — zero `BEGIN`/`COMMIT`/`ROLLBACK` in `backend/src`, because supabase-js cannot open a transaction. But atomic multi-table writes are **no longer a design target; they are current behaviour**, implemented as database functions instead: `010_atomic_expense_allocations`, `018_atomic_payment_settlement`, `019_atomic_expense_entry_creation` and `020_rate_change_history_trigger`. What remains open is the *rule*, not the capability: any NEW multi-step write must follow the same pattern rather than chaining awaits. | `database/migrations/010, 018, 019, 020` | **Pattern established; applies to new work** |
 | D-8 | Two payment endpoints sit on the public router without an auth guard. **The route names in this row were stale** — they are `/public/payments/local-cashier` and `/public/payments/local-cashier/complete`, not `mock-gateway`. Both now return **404 whenever Adyen is configured** (`adyenService.isLiveConfigured()`, `public.ts:257`), so they cannot coexist with the live gateway; `npm run check:api` asserts both 404s. The webhook on the same router is unguarded by design and verified by HMAC instead. | `backend/src/routes/public.ts:257`; `npm run check:api` | **Mitigated; structural hardening still Phase 3** |
-| D-9 | Most database calls still sit in route handlers rather than behind a service boundary, and `admin.ts` is long — **2,873 lines as measured 2026-09-15**. The call-count figures in circulation disagree (131 of 164 here and in `PHASE1_ARCHITECTURE_AND_PATTERN.md`, both "Recounted 2026-09-13"; 137 of 173 in `docs/12_ITERATION_HISTORY.md`) and none states its counting method, so the ratio should be re-derived rather than quoted. The direction is not in doubt: roughly four in five. | `backend/src/routes/` | Phase 3 service extraction |
+| D-9 | Most database calls still sit in route handlers rather than behind a service boundary, and `admin.ts` is long — **3,033 lines as measured 2026-09-16** (2,873 on 2026-09-15; 2,263 when first counted). **This row asked for the ratio to be re-derived with a stated method, and it now has been** — see §the measured gap above: **144 of 184 (78%)**, counting `.from(` call sites per directory, with the command printed. The figures it complained about — 131 of 164 here and in `PHASE1_ARCHITECTURE_AND_PATTERN.md`, 137 of 173 in `docs/12_ITERATION_HISTORY.md` — are superseded by that measurement rather than reconciled; none of them stated a method, so none can be checked. The direction was never in doubt: roughly four in five. | `backend/src/routes/` | Phase 3 service extraction |
 
 No performance figure is asserted anywhere in this document. Claims of "256MB RAM", "sub-50ms" and "100% data consistency" appearing in earlier submissions are unsubstantiated and are withdrawn; see errata item E-16.
 

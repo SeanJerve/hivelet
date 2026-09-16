@@ -124,7 +124,7 @@ content decision is Sean's call, not an engineering one. Sean confirmed:
 authorized two things, both done: the row is deleted, and a second, broader
 issue found while acting on it is fixed too - `fetchRooms()` (systemState.ts)
 had its own generic-photo fallback, a single hardcoded stock image shown for
-every one of the 32 units with no real photo, presented with the same
+every one of the 33 units with no real photo, presented with the same
 confidence as a genuine upload. `canonicalUnits.ts` had already withdrawn its
 own round-robin stock photos in an earlier fix (see its own comment), but this
 second fallback survived that cleanup. Both fallbacks are gone; a unit photo

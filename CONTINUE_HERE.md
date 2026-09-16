@@ -604,6 +604,8 @@ Two consequences worth knowing **before** someone notices them on the day:
    in them were found and fixed during this audit — but no real collection has ever been
    recorded through the interface.
 
+**And no unit has a photograph.** `room_photos` holds **0 rows** across all 33 units, so the public listing shows every unit without an image. Not a defect — the upload path works and writes to `room_photos` correctly — simply unused, like the rest of the write surface. Worth a decision before anyone demonstrates the public site.
+
 Neither is a fault. Both are worth deciding about: either record August and September
 before the defense, or be ready to say plainly that the ledger is complete through July
 and the system has been in read-only use since migration.
