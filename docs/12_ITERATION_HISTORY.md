@@ -338,7 +338,7 @@ legend never defined. `check:rules` now prevents all three.
 | 1 | **One client consultation** covering all nine open decisions | The gating activity. Three of the nine require a migration once answered. |
 | 2 | **BR-046** — category cumulative totals | Unblocked by **OD-07**. The last unenforced rule. |
 | ~~3~~ | ~~**BR-049** — Excel export~~ **DONE 2026-09-14.** Both ledgers now build real `.xlsx` files in their documented layouts, and the three open decisions they touch (OD-01, OD-05, OD-06) are shown on the sheet rather than assumed. | — |
-| 4 | **Service extraction** | **137 of 173** database calls still sit in route handlers (79%), and `admin.ts` is ~2,500 lines. Six planned services do not yet exist. This is the architecture's stated target. |
+| 4 | **Service extraction** | **144 of 184** database calls still sit in route handlers (78%), and `admin.ts` is **3,033** lines. Six planned services do not yet exist. This is the architecture's stated target. *(Re-measured 2026-09-16 with a stated method — see `docs/04_ARCHITECTURE.md`. This row read 137 of 173 and ~2,500 lines, one of three different ratios in circulation, none of which stated how it counted.)* |
 | 5 | **Deposit reconciliation on move-out** | Unblocked by **OD-04**. |
 | 6 | **Two unauthenticated payment endpoints** on the public router | Carried as a hardening item since Phase 1. |
 | ~~7~~ | ~~**Reconcile per-unit `floor` values** to the client's survey~~ **DONE 2026-09-13.** `9b04c0d` placed F1 on the third floor, closing **OD-14**. Live count, verified 2026-09-15: floor 1 = 11, floor 2 = 11, floor 3 = 10, floor 4 = 1 — exactly the client-confirmed tally. This row was stale: the fix landed a day before this document's last edit. |

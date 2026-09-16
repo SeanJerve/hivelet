@@ -161,7 +161,7 @@ Re-derived from the live database on 2026-09-14. If you quote one, quote these.
 | Whole expense ledger | **₱5,823,586.47** |
 | Personal, not operating cost (Main House + Other) | **₱3,432,990.47 — 58.95%** |
 | Business rules violated | **1** (BR-039) |
-| Database calls still in route handlers | **131 of 164 (80%)** |
+| Database calls still in route handlers | **144 of 184 (78%)** *(re-measured 2026-09-16; read 131 of 164)* |
 
 ---
 
