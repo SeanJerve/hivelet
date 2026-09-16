@@ -61,6 +61,23 @@ export default defineConfig({
             }
           },
           {
+            /**
+             * PUBLIC AND HEALTH ONLY. Do not widen this to `/api/`.
+             *
+             * Tenants open this on their phones, and a boarding-house phone is
+             * often a shared one. Caching `/api/tenant/*` or `/api/admin/*` would
+             * leave one resident's bills, payments and tickets in the service
+             * worker's cache, ready to be served to whoever opens the app next -
+             * offline, with no token, after a sign-out.
+             *
+             * Room listings and the health probe carry nothing personal, so they
+             * are safe to serve stale. Verified 2026-09-16 in the SHIPPED worker:
+             * `dist/sw.js` contains zero `api/(admin|tenant|auth)` patterns and
+             * precaches 9 static assets only.
+             *
+             * Widening this for offline support would be an easy, well-meant
+             * change with no visible symptom.
+             */
             urlPattern: /\/api\/(public|health)/i,
             handler: 'NetworkFirst',
             options: {
