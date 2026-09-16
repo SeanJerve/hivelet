@@ -92,7 +92,89 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commit `522c0f9`: the notification feature has never once displayed a
+> **LATEST — commits `357f7a0`, `914a88b`, `713a24f`: two suites so last night's finding
+> cannot happen again, and they immediately found two more of it.**
+>
+> ### `check:reachable` — the eleventh suite
+>
+> A component no file imports cannot render. That is a fact a script can establish in a second,
+> and **no amount of reading the `8a34ec9` diff would reliably catch it**: the deletion looks
+> like tidying, and the file it orphans is never touched by the diff.
+>
+> It walks the import graph from `main.ts` — alias, bare extensions, index files, static
+> imports, side-effect imports, re-exports and dynamic `import()`. **38 source files, 38
+> reachable.** Green on the day it ships.
+>
+> **Proved by replaying the actual regression:** remove the `NotificationPopover` import from
+> `AppHeader.vue` — which is literally what `8a34ec9` did — and the check fails. Two other
+> mutations caught. Tree verified clean afterwards.
+>
+> ### `check:endpoints` — the twelfth
+>
+> The same question asked of the backend. **70 routes, 59 called, 11 accounted for.** An
+> endpoint with no caller is one of three things and only a person can tell which, so each must
+> be named with its kind:
+>
+> | Kind | n | Meaning |
+> |---|---:|---|
+> | EXTERNAL | 4 | a webhook, a probe, a redirect target |
+> | SUPERSEDED | 5 | another route does the job now |
+> | **UNPLUGGED** | **2** | **the job is not being done at all** |
+>
+> ### The two unplugged ones are real, and one of them corrects me
+>
+> **`GET /admin/bills` has no caller.** The administrator has **no bills screen at all**. The
+> FR-013 overdue overlay is computed on every request she never makes; the tenant sees their
+> own. FR-013 stands as MAPPED on the requirement as written — *"identify overdue payments and
+> grace-period status"* — but **a sentence I wrote in §6 last night said the system "tells Mrs.
+> Fe who is overdue". It does not.** Corrected there, and recorded as **A-11**.
+>
+> **`POST /auth/change-password` has no caller, and no password-change screen exists anywhere.**
+> Tenants are onboarded with the shared literal `'Hivelet@Tenant2026'` and **cannot change it
+> from the product.** Recorded as **A-12**, the highest-priority row in that register.
+>
+> ### An allowlist is where defects go to be forgotten
+>
+> That is the exact decay this audit has spent two days correcting in other registers, so the
+> SUPERSEDED and UNPLUGGED entries **print on every run**, with their remediation row. Green
+> means *"no NEW uncalled route"*, never *"nothing to do"*.
+>
+> ### Four wrong versions of that check, each found by making it fail
+>
+> Worth recording, because the first one failed in the exact way the check exists to prevent:
+>
+> 1. **Searching all of `frontend/src` gave a false PASS on the real scenario.**
+>    `/admin/audit-logs` is *also* a vue-router path, so deleting the genuine API call still
+>    looked called. Found only by unplugging that endpoint and watching the check stay green.
+> 2. Matching only the literal argument of `api.get()` reported **all seven notification
+>    routes** as uncalled — the store assigns the endpoint to a variable first.
+> 3. Filtering by a `'lib/api'` import dropped `authStore` and `notificationsStore`, which
+>    import `'./api'` relatively.
+> 4. Anchoring the path to the opening quote truncated `/admin/tenants/${id}/vacate` at the `$`
+>    and missed both `.xlsx` exports, which are raw `fetch` calls beginning `${API_BASE}`.
+>
+> Comments are stripped before scanning: a file that talks to the API may also *mention* a path
+> it does not call, and `/admin/bills` is on the UNPLUGGED list, where one stray comment would
+> quietly flip it to "called".
+>
+> ### Two dead components deleted, one with a warning attached
+>
+> **`TenantPortalView.vue`, 670 lines, has never been routed** — `git log -S` against the route
+> table returns nothing. It was superseded by the four tenant views and left behind. **It has
+> nevertheless been receiving bug fixes in five separate commits.** Every one of those five also
+> touched the live view beside it, so no fix was stranded — checked, because a fix that landed
+> only there would still be an open bug in production.
+>
+> Verified **superseded, not unplugged**, which is the distinction that now matters: it calls
+> six endpoints and the live views call all six plus five more. A strict subset.
+>
+> `ConfirmModal.vue` is superseded by the PIN confirmation pattern; no native `confirm()` exists
+> anywhere. `check:tokens` ratcheted **94 → 84** — the two files held ten raw hex literals and
+> they went with them.
+>
+> **Twelve suites green.**
+
+> **PREVIOUS — commit `522c0f9`: the notification feature has never once displayed a
 > notification. Not since the day it was written.**
 >
 > **Mrs. Fe has 15 unread notifications.** Four of them say:
@@ -2094,7 +2176,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**134 commits, all pushed to `main`. Working tree clean.**
+**138 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
