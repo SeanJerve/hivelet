@@ -57,6 +57,27 @@ const COLS = new Map(
   Object.entries(defs).map(([t, d]) => [t, new Set(Object.keys(d.properties || {}))])
 );
 
+/**
+ * table -> (foreign key column -> table it points at), read from the same
+ * document. PostgREST states it in each column's description:
+ *
+ *   "Note:
+This is a Foreign Key to `rooms.id`.<fk table='rooms' column='id'/>"
+ *
+ * Needed because an embedded select is usually written `rooms:room_id (...)`
+ * here, which names the key rather than the table.
+ */
+const FKS = new Map(
+  Object.entries(defs).map(([t, d]) => {
+    const m = new Map();
+    for (const [col, prop] of Object.entries(d.properties || {})) {
+      const fk = /<fk table='([^']+)'/.exec(prop.description || '');
+      if (fk) m.set(col, fk[1]);
+    }
+    return [t, m];
+  })
+);
+
 const FILTERS = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'like', 'ilike', 'in', 'is', 'order', 'contains'];
 const findings = [];
 
@@ -77,16 +98,60 @@ function splitTop(s) {
   return out.map((x) => x.trim()).filter(Boolean);
 }
 
+/**
+ * Resolves what an embedded select is actually reaching into.
+ *
+ * PostgREST accepts several spellings, and this codebase uses the one that is
+ * hardest to read:
+ *
+ *   profiles (full_name)                  the table, plainly
+ *   author:profiles (full_name)           aliased
+ *   author:profiles!fk_x (full_name)      aliased, with a constraint hint
+ *   profiles:sender_id (full_name)        embedded THROUGH A FOREIGN KEY COLUMN
+ *
+ * In that last form the target table is named BEFORE the colon and `sender_id`
+ * is the key to travel along - the opposite way round from the others. It is
+ * the form used almost everywhere here: `rooms:room_id`, `bills:bill_id`,
+ * `profiles:tenant_profile_id`.
+ *
+ * Returns the table whose columns the inner list belongs to, or null.
+ */
+function resolveEmbed(parent, head) {
+  const before = head.includes(':') ? head.slice(0, head.indexOf(':')).trim() : '';
+  const after = head.split(':').pop().trim();
+  const strip = (s) => (s.endsWith('!inner') ? s.slice(0, -'!inner'.length) : s.split('!')[0]);
+
+  const a = strip(after);
+  if (COLS.has(a)) return a;              // alias:table, or a bare table
+  const viaFk = FKS.get(parent)?.get(a);
+  if (viaFk) return viaFk;                // table:fk_column - travel the key
+
+  const b = strip(before);
+  if (COLS.has(b)) {
+    /**
+     * The table is named before the colon. That is a reverse embed - one row
+     * reaching its many children - and the key lives on the CHILD, pointing
+     * back here: `maintenance_tickets:room_id` read from `rooms`.
+     *
+     * So the key has to be a real column of that child table, and ideally one
+     * that points back at this parent. Without this the name before the colon
+     * was taken on trust, and `profiles:nonexistent_id` resolved happily to
+     * `profiles` - a select PostgREST would refuse at runtime.
+     */
+    if (FKS.get(b)?.get(a) === parent || COLS.get(b)?.has(a)) return b;
+    return null;
+  }
+  return null;
+}
+
 function checkSelect(table, sel, file, line) {
   for (const item of splitTop(sel)) {
     if (item.includes('(')) {
-      // embedded relation: `alias:fk (cols)` or `table (cols)`
       const head = item.slice(0, item.indexOf('(')).trim();
       const inner = item.slice(item.indexOf('(') + 1, item.lastIndexOf(')'));
-      const rel = head.split(':').pop().trim();
-      const base = rel.endsWith('!inner') ? rel.slice(0, -'!inner'.length) : rel.split('!')[0];
-      if (COLS.has(base)) checkSelect(base, inner, file, line);
-      else if (!COLS.get(table)?.has(base)) findings.push([file, line, table, base, 'relation']);
+      const target = resolveEmbed(table, head);
+      if (target) checkSelect(target, inner, file, line);
+      else findings.push([file, line, table, head, 'relation']);
       continue;
     }
     let name = item.split(':').pop().trim().split('->')[0].trim();
@@ -135,8 +200,35 @@ for (const file of walk(join(backend, 'src'))) {
       }
     }
 
-    for (const om of chunk.matchAll(/\.(insert|update|upsert)\(\s*\{/g)) {
-      const start = chunk.indexOf('{', om.index);
+    /**
+     * `.insert(` is NOT always followed by an object literal. The bulk form
+     *
+     *     .insert(input.attachments.map((a) => ({ ticket_id, file_url })))
+     *
+     * used to slip past entirely, because the matcher required `.insert(` then
+     * a brace. A wrong key there is a 42703 at runtime and a LOST WRITE, which
+     * is worse than the wrong-select case this suite was built for - and the
+     * `.update({...})` form beside it was being checked all along, so the gap
+     * was an inconsistency rather than a decision.
+     *
+     * Now: take the balanced argument to the call, and check the first object
+     * literal inside it. `.insert(someVariable)` has no literal to read and is
+     * skipped, as before.
+     */
+    for (const om of chunk.matchAll(/\.(insert|update|upsert)\(/g)) {
+      const open = chunk.indexOf('(', om.index);
+      let pdepth = 0;
+      let argEnd = -1;
+      for (let k = open; k < chunk.length; k++) {
+        if (chunk[k] === '(') pdepth++;
+        else if (chunk[k] === ')' && --pdepth === 0) {
+          argEnd = k;
+          break;
+        }
+      }
+      if (argEnd === -1) continue;
+      const start = chunk.indexOf('{', open);
+      if (start === -1 || start > argEnd) continue;
       let depth = 0;
       let i = start;
       for (; i < chunk.length; i++) {
