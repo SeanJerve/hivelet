@@ -106,7 +106,82 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `623a88a`, `90f6dbf`: a check told me it had my back, and it did not.
+> **LATEST — commits `96f29ec`, `6b57af4`, `448c5de`: I turned the same question on the rest of
+> the verification suites. Three checked so far, three had holes, and the third was hiding a
+> real one.**
+>
+> Having found that `check:writes` was narrower than it claimed, the obvious next question was
+> **which of the others are**. The method: list every *shape* the thing being checked can be
+> written in, break each shape in a real file, run the suite, revert.
+>
+> ### `check:columns` — the suite that guards code against the live schema
+>
+> Seven shapes. **Two were invisible.**
+>
+> **Bulk inserts.** The matcher wanted `.insert(` followed immediately by a brace, so this was
+> never read at all:
+>
+> ```
+> .insert(input.attachments.map((a) => ({ ticket_id, file_url })))
+> ```
+>
+> A wrong name there is a **lost write**, which is worse than the wrong-`select` case the suite
+> was built for — and `.update({...})` sitting right beside it had been checked all along, so
+> this was an inconsistency rather than a decision.
+>
+> **The column lists inside joins.** This one is the bigger miss. The suite read the name *after*
+> the colon as the table — but this codebase almost always writes it the other way round:
+>
+> | Written | It concluded | Actually |
+> |---|---|---|
+> | `rooms:room_id (id, room_number)` | table = `room_id` | table = **`rooms`**, travelled via the key |
+> | `profiles:tenant_profile_id (...)` | table = `tenant_profile_id` | table = **`profiles`** |
+>
+> Finding `room_id` was a real column of the parent, it shrugged and **skipped the inner list**.
+> The column lists of very nearly every join in the codebase were unchecked.
+>
+> Fixed by reading foreign keys out of **the same live document** the column map already comes
+> from — PostgREST states them per column as `<fk table='rooms' column='id'/>` — so nothing new
+> is maintained by hand. **All seven shapes now fail on mutation.**
+>
+> ### `check:fields` — and this one was hiding something
+>
+> Its matcher could not see `?.` at all, and capped the object's name at 13 characters for no
+> recorded reason. **38 reads in the frontend were never examined** — `rooms?.room_number`,
+> `profiles?.full_name`, `bill?.total_amount`.
+>
+> Widening it surfaced exactly one defect and no false positives:
+>
+> ```
+> activeRoom.rooms?.photo_url
+> ```
+>
+> the third fallback in the tenant overview's room-photo chain. **`rooms` has no `photo_url`** —
+> checked against `information_schema`, not the CSV — and the API never produced the name. It
+> read as a safety net while being nothing at all. The two links before it are right: photos live
+> in `room_photos`, one row each, `is_primary` picking the one to lead with.
+>
+> It survived because it is harmless *today*: `room_photos` is empty across all 33 units, so
+> every link is undefined and no photo shows either way. **A defect that cannot currently
+> misbehave still misleads whoever reads it next.**
+>
+> ### The thing worth keeping
+>
+> **None of the three holes was hiding a live bug** — 0 unguarded writes, 0 bad columns in any
+> join. So the damage was to the *guarantee*: each suite would have let the next one through
+> while reporting all clear, **which is worse than having no suite, because a green check stops
+> people looking.**
+>
+> That is now entry 15 of the judgement log, along with the warning that **the mutation can be
+> the broken thing** — my first attempt deleted a guard but left the check two lines below it,
+> and from outside that looks identical to the suite being wrong.
+>
+> Each suite's header now carries the list of shapes it reads, because that list *is* the promise
+> it makes.
+>
+> **Fourteen suites green.**
+
+> **PREVIOUS — commits `623a88a`, `90f6dbf`: a check told me it had my back, and it did not.
 > I only found out because I broke the code on purpose.**
 >
 > ### What I set out to do
@@ -3183,7 +3258,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**193 commits, all pushed to `main`. Working tree clean.**
+**197 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
