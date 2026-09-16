@@ -529,6 +529,27 @@ This is the section that prevents a panelist from discovering a gap on stage. Ea
 
 Recommended Phase 3 sequencing, by dependency rather than by number: **FR-012 → FR-013** (billing dates must exist before overdue can be computed), then **FR-036 → FR-033** (correct the billing rule before optimising its inputs), then **FR-019 → FR-020 → FR-028** (one aggregate serves all three), then **FR-042 → FR-040** (constrain the allocation vocabulary before totalling over it), and finally **FR-006** (inquiry conversion depends on none of the others and touches the administrator’s month least often, so it is sequenced last rather than dropped).
 
+### 5.0 The authorization perimeter, swept end to end on 2026-09-16
+
+*This section exists because §5.1 row **A-17** records a privilege escalation, and a reader who
+finds one is entitled to ask what else was checked. The answer is the whole perimeter, and
+everything below was read in the code rather than taken from a design document.*
+
+| Question a panel will ask | Answer, verified |
+| :--- | :--- |
+| Does every administrator and tenant route carry a permission guard? | **Yes.** Every `/admin/*` and `/tenant/*` route declares `requirePermission`, on top of the router-level `router.use('/admin', requireAuth, requireAdmin)` and `router.use('/tenant', requireAuth)`. The only routes with no permission guard are the six auth endpoints and three public payment endpoints, each checked individually below. |
+| Are the unguarded routes safe? | **Yes.** `POST /auth/login` and `POST /auth/register` are public because they must be. `GET`/`PATCH /auth/me`, `POST /auth/change-password` and `POST /auth/logout` all carry `requireAuth`. The two `local-cashier` routes return **404 whenever a gateway is configured** and can only write `Pending Verification`; the Adyen webhook is HMAC-verified and asserted by `check:adyen`. |
+| Can a request set its own role anywhere? | **No, since 2026-09-16.** `POST /api/auth/register` could until that date — see **A-17**. No request schema in `backend/src` accepts a `role` field today. Tenant onboarding hardcodes `role: 'tenant'`; the two `account_status` schemas are admin-guarded and constrained to an enum of two values. |
+| Can a tenant edit a privileged column on their own profile? | **No.** `PATCH /auth/me` passes through `updateOwnProfile`, which filters against an explicit five-name allowlist — `phone_number`, `emergency_contact_name`, `emergency_contact_phone`, `occupation`, `facebook_url`. `role`, `account_status`, `email` and `password_hash` are not on it. **This is the pattern `register()` was missing:** the codebase already knew the right shape in one place and not the other. |
+| Can a token carry a forged or stale role? | **No.** `requireAuth` takes only the **subject** from the JWT and calls `resolveAuthUser(payload.sub)`, which re-reads `role` and `account_status` **from the database on every single request**, throwing if the account is gone or not `active`. A deactivated tenant loses access on their next call; a role cannot be asserted by the token. |
+| Is brute force resisted? | **Yes.** `authService` maintains `failed_login_count` and honours `locked_until`, refusing a locked account with the remaining minutes, and clears both on a successful sign-in. |
+| What holds the database itself? | RLS is **enabled and forced on all 21 tables with zero policies**, and `anon` / `authenticated` hold no privileges on any of them. Express with the `service_role` key is the only path in. |
+
+**One latent item is open and is recorded as A-14, not here:** `public.current_user_role()` is
+`SECURITY DEFINER` and returns `'admin'` when it cannot identify the caller, which is always.
+It is unreachable today — no policies call it and the public roles cannot execute it — and it
+must be fixed before the first RLS policy is ever written.
+
 ### 5.1 Beyond the FR matrix — additional remediation carried into Phase 2 and Phase 3
 
 Not every incompleteness the Phase 1 audit surfaced carries an FR number. At the group’s request, those that do
