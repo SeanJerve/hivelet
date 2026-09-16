@@ -106,7 +106,69 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commit `58ceea9`: one measured ratio across every document that quotes it, and
+> **LATEST — commits `d026e21`, `884d0e8`: the system kept its dates in UTC. The property is at
+> UTC+8, so for eight hours of every day it was recording the wrong one.**
+>
+> `new Date().toISOString().slice(0, 10)` is **UTC's** date. Legazpi City is **UTC+8**, no
+> daylight saving. **Between midnight and 08:00 Manila those two dates differ.**
+>
+> ```
+> 2026-09-16T16:30:00Z    UTC 2026-09-16    Manila 2026-09-17 00:30
+> 2026-09-16T23:30:00Z    UTC 2026-09-16    Manila 2026-09-17 07:30
+> ```
+>
+> Not a local-machine quirk: `toISOString()` converts to UTC whatever the server's own zone is,
+> so it was **wrong on every machine equally**.
+>
+> ### Four separate consequences, worst first
+>
+> **1. The ledger's filing period depended on where the server runs.** `payments.paid_at` is a
+> *moment*. The verification path read its year and month with `getFullYear()`/`getMonth()` —
+> the **server's** timezone — and wrote `date_paid` from `toISOString()`. Demonstrated:
+>
+> | | `date_paid` | filed under |
+> |---|---|---|
+> | before | 2026-09-30 | **September** |
+> | after | 2026-10-01 | **October** |
+>
+> *for a payment at 01:00 on 1 October, Manila time.* **Recorded a day early, in the wrong
+> month.**
+>
+> **2. The payment form offered yesterday.** Five browser form defaults used `toISOString()`, so
+> before 08:00 they pre-filled **yesterday's date** — on the on-site payment date, the period
+> start, and the expense date. The administrator would have had to notice.
+>
+> **3. The form could overwrite the server's correct period with a wrong one.** Two views computed
+> the period end as `setMonth(+n)` then `setDate(-1)`. That overflows: **31 January plus one month
+> became 2 March.** It was right everywhere else, because a one-day overflow is exactly cancelled
+> by the minus-one-day — **so only February exposed it**, which is the worst way for a bug like
+> this to behave. The server's `computeRentPeriod()` already clamps correctly; the browser kept a
+> second, slightly wrong copy, **and the API prefers a supplied end date over its own**.
+>
+> **4. A plain date string was given a timezone it never had.** `new Date('2026-09-16')` is UTC
+> midnight; read back with local getters it returns the previous day anywhere west of UTC.
+>
+> ### No existing data is affected
+>
+> All **48** tenancies and all **937** income rows came from the 2026-08-28 migration. **The
+> application has never written either.** This is preventive, not remedial — nothing in the
+> database needs correcting.
+>
+> ### One thing I got wrong on the way
+>
+> My first test listed five cases as bugs. **Three of them were correct code and my expectation
+> was wrong** — 31 March plus one month really does end 30 April. Only February breaks. *The
+> narrow truth was the useful one, and reporting the wide version would have sent someone
+> chasing correct arithmetic.*
+>
+> Guarded by two new `check:api` assertions (**55 → 57**): one fails if the UTC pattern returns
+> anywhere in `backend/src`, proved by reintroducing it; the other asserts Asia/Manila genuinely
+> differs from UTC inside the window, **so the first cannot pass by the timezone being silently
+> ignored**.
+>
+> **Fourteen suites green. Both builds clean.**
+
+> **PREVIOUS — commit `58ceea9`: one measured ratio across every document that quotes it, and
 > `check:copies` catching drift on its first real test.**
 >
 > D-9 complained that three documents gave three different call-count ratios and none stated its
@@ -2951,7 +3013,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**182 commits, all pushed to `main`. Working tree clean.**
+**185 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
