@@ -403,6 +403,158 @@ first.
 
 ---
 
+### A ninth sweep, 2026-09-16: asking what is REACHABLE, and being wrong four times on the way
+
+The eighth sweep read registers against code. This one asked a different
+question of everything in turn - **can this actually be reached?** - of
+components, of routes, of database columns. It produced the largest findings of
+the audit, and, more usefully, four occasions where the method itself was wrong.
+Those are recorded first, because a lesson about being wrong is worth more than
+a lesson about being right.
+
+#### 1. A proof computed from the wrong source cannot find its own counterexample
+
+`PHASE1_DFD_TRACEABILITY.md` §1.4 is titled **Closure proof**. It concludes
+there is *"no orphan table - no table in the schema the DFD does not model"*, and
+it establishes that by enumerating **every `CREATE TABLE` in
+`database/FULL_DATABASE_SCHEMA.sql`**.
+
+That file declares 20 tables. The live database holds 21. The missing one,
+`property_areas`, appears in that file **zero times**.
+
+So the census could not have found it. Not "did not" - *could not*. The proof
+was structurally incapable of producing the thing that would disprove it, and it
+closed anyway. **Before trusting a completeness argument, ask what it enumerated
+over, and whether that set could contain a counterexample at all.** Here the
+project already had a standing rule not to trust that file, and the rule was
+being broken inside a section called a proof.
+
+#### 2. An orphan is a question, not a verdict
+
+Static reachability found three unreachable Vue components. The instinct - the
+same instinct that was correct three times the day before, when three dead
+modals were deleted - is to delete them.
+
+One of them, `NotificationPopover.vue`, was a **live feature that had been
+unplugged**. A backend was writing notification rows on five events and serving
+them from seven endpoints, to a component no route could render. Deleting it
+would have destroyed the evidence and finished the job the accident started.
+
+The distinction is worth naming because the two look identical from the outside:
+
+  **SUPERSEDED** - something else does the job now. Delete it.
+  **UNPLUGGED**  - the job is not being done at all. Reconnect it.
+
+Telling them apart takes one question - *what does this do, and is anything else
+doing it?* `TenantPortalView.vue` answered it cleanly: 670 lines, never routed,
+and every endpoint it called was called by the four views that replaced it, plus
+five more. A strict subset, safe to delete. The popover answered the opposite
+way, and 20 unread notifications in the live table proved it.
+
+#### 3. The first version of a check PASSED the exact test it existed for
+
+`check:endpoints` asks whether anything calls each route. Its first version
+searched all of `frontend/src` for each route's path.
+
+It gave a **false PASS on the precise scenario it was written to catch**.
+`/admin/audit-logs` is both an API path and a **vue-router path** - the router
+registers a page at it and the sidebar links to it. Deleting the genuine API
+call left the endpoint still looking called, because the navigation entry
+matched.
+
+This was found only by deliberately unplugging that endpoint and watching the
+check stay green. Three more wrong versions followed: matching only the literal
+argument of `api.get()` reported **all seven notification routes** as uncalled,
+because the store assigns the endpoint to a variable first; filtering files by a
+`'lib/api'` import dropped `authStore` and `notificationsStore`, which import
+`'./api'` relatively; and anchoring the path to the opening quote truncated
+`/admin/tenants/${id}/vacate` at the `$`.
+
+**A check is a claim about the world and deserves the same scepticism as any
+other claim.** Make it fail on the case you built it for, before you believe it
+when it passes.
+
+#### 4. A guard that appears not to fire deserves a second look
+
+Proving the two privilege-escalation guards meant putting each half of the
+vulnerability back and confirming a FAIL. The first attempt reported **MISSED
+for both**.
+
+That was a false negative. The backend runs under `tsx watch`, so editing the
+source restarted the server, and the suite was hitting a half-started process.
+Taken at face value it would have led to weakening two guards that were working
+perfectly.
+
+**A negative result from a test harness is a claim about the harness as much as
+about the code.** The probe now waits for `/api/health` and reads the guard's own
+output lines rather than the process exit code.
+
+#### 5. A number asserted from one scan is not a measurement
+
+`check:fields` shipped with a header stating the API emits **"exactly ELEVEN"**
+camelCase keys, hand-checked - offered explicitly as a bounded, exhaustive,
+dated fact in place of a check that could not be built.
+
+Re-scanned four ways over the same unchanged source: **11, then 13, then 25,
+then 16.** At least eighteen are real. Five were invisible to the original scan
+because they are written as **shorthand properties** - `{ waterRatePerOccupant }`
+- which a scan looking for `name:` cannot see.
+
+The regex was not the failure. **Stating a precise number from a single scan
+that had never been made to fail against a key it was known to contain** was the
+failure - and it was committed by the person who had spent the previous day
+cataloguing exactly that mistake in other people's documents. The header now
+says the surface is not reliably enumerable by regex and that no exact count
+belongs there again.
+
+#### 6. An anomaly count is not a defect count until somebody reads the rows
+
+The ledger sweep flagged **254 of 937** income rows whose `date_paid` falls
+outside their own `year`/`month`. Reported as a number, that is 27% of the
+owner's book looking wrong.
+
+Read row by row: **218 paid the following month, 18 paid in advance**, and the
+larger gaps are an organisation paying several months up front plus one lump
+settlement of four months' arrears under a single receipt. All legitimate. The
+real findings hiding inside that 254 were **two**: a date of `1900-01-17` - the
+Excel epoch, a cell that never parsed - and one dated a year in the future.
+
+Publishing 254 would have been true and useless, and would have sent somebody
+hunting through correct records.
+
+#### 7. A safety control keyed to an unset variable is not a control
+
+`NODE_ENV` decided whether a 500 response carries a stack trace, and defaulted
+to `'development'` - the leaky value. A deployment that simply forgot the
+variable would have served file names, line numbers and failed query shapes to
+the public, beside an error handler carefully written to replace the message so
+a Postgres string could not escape.
+
+This project had already learned this once and written it down. The comment
+above the compromised-secret guard in the same file records that the original
+version of that guard fired only on `NODE_ENV === 'production'` - **"the one
+environment this project has never run in."** The lesson was recorded and the
+adjacent control still had the same shape.
+
+#### 8. The codebase usually knows the right pattern already, somewhere
+
+`POST /api/auth/register` accepted `role` from the request body and wrote it
+into the insert, on a public route. Anyone could have made themselves an
+administrator.
+
+Twelve files away, `updateOwnProfile()` filters a tenant's own profile edit
+through an explicit five-name allowlist, with a comment explaining that `role`
+and `account_status` are stripped *"rather than trusted from the request body"*.
+
+**The right shape was already in the repository.** One endpoint was written
+without it. That is the usual way a single route ends up out of step with a
+model that is otherwise correct - not because nobody knew better, but because
+the knowledge lived in a different file and nothing compared the two. It is also
+why `check:api` now asserts the fix statically: the next person to add a field
+to that schema will not have read this paragraph.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
