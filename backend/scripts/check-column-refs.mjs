@@ -28,7 +28,7 @@
  * which is the failure this audit spent its day correcting elsewhere.
  */
 import dotenv from 'dotenv';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -169,6 +169,65 @@ const uniq = findings.filter((f) => {
 });
 
 console.log(`check:columns — ${COLS.size} tables read from the live schema\n`);
+
+/**
+ * AND THE SNAPSHOT THIS PROJECT IS TOLD TO TRUST MUST STILL BE TRUE
+ * -----------------------------------------------------------------
+ * `database/live_schema.csv` is the file the documents are instructed to believe,
+ * because `database/FULL_DATABASE_SCHEMA.sql` has been wrong about this database
+ * more than once. On 2026-09-16 that instruction was vindicated in the worst way:
+ * the DFD's "closure proof" enumerated every `CREATE TABLE` in the SQL file,
+ * found 20, and closed - while `property_areas` sat in production, absent from
+ * that file entirely.
+ *
+ * But the CSV is a SNAPSHOT. Nothing regenerates it, and the next migration will
+ * make it stale silently - which is precisely how the SQL file became
+ * untrustworthy. A designated source of truth with no mechanism behind it is
+ * just a file that happens to be right today.
+ *
+ * So it is compared, every run, against the catalogue it claims to describe.
+ * Verified 2026-09-16: 21 tables and 211 columns, matching exactly.
+ *
+ * When this fails, regenerate the CSV from the live catalogue. Do not edit it by
+ * hand to make the check pass - that recreates the problem it exists to prevent.
+ */
+{
+  const csvPath = join(repo, 'database', 'live_schema.csv');
+  if (!existsSync(csvPath)) {
+    console.log('  FAIL  database/live_schema.csv is missing - the documents point at it');
+    process.exit(1);
+  }
+
+  const csv = readFileSync(csvPath, 'utf8');
+  const snapshot = new Map();
+  for (const m of csv.matchAll(/Columns,([a-z_]+)\.([a-z_]+)/g)) {
+    if (!snapshot.has(m[1])) snapshot.set(m[1], new Set());
+    snapshot.get(m[1]).add(m[2]);
+  }
+
+  const problems = [];
+  for (const [table, cols] of COLS) {
+    const snap = snapshot.get(table);
+    if (!snap) { problems.push(`${table} is in the database and not in the snapshot`); continue; }
+    for (const c of cols) if (!snap.has(c)) problems.push(`${table}.${c} is in the database and not in the snapshot`);
+    for (const c of snap) if (!cols.has(c)) problems.push(`${table}.${c} is in the snapshot and not in the database`);
+  }
+  for (const table of snapshot.keys()) {
+    if (!COLS.has(table)) problems.push(`${table} is in the snapshot and not in the database`);
+  }
+
+  const snapCols = [...snapshot.values()].reduce((n, s) => n + s.size, 0);
+  if (problems.length === 0) {
+    console.log(`  OK    live_schema.csv matches the catalogue - ${snapshot.size} tables, ${snapCols} columns`);
+  } else {
+    for (const p of problems.slice(0, 20)) console.log(`  FAIL  ${p}`);
+    if (problems.length > 20) console.log(`  FAIL  ...and ${problems.length - 20} more`);
+    console.log('\n  Regenerate database/live_schema.csv from the live catalogue.');
+    console.log('  Do NOT hand-edit it to pass - that is how the other schema file went wrong.');
+    process.exit(1);
+  }
+}
+
 if (uniq.length === 0) {
   console.log('  OK    every table, column, filter and write key resolves');
   console.log('\nALL CHECKS PASSED');
