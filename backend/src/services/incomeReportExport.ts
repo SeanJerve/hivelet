@@ -91,6 +91,16 @@ interface LedgerRow {
   gbg_fee: number;
   remitted_amount: number | null;
   linda_electricity_charge: number | null;
+  /**
+   * BR-040's fixed water charge for LF and LB.
+   *
+   * Their `water_payment` is 0 by design - they are not on the per-occupant
+   * model - so the money sits here and nowhere else. Until 2026-09-16 this
+   * column was not selected, not typed and not summed, and the LINDA section
+   * of the workbook therefore reported zero water for both units against
+   * PHP 18,600 actually collected across 62 rows.
+   */
+  linda_water_charge: number | null;
   anniversary_date: string | null;
   deposit_amount: number | null;
 }
@@ -165,7 +175,8 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
     .select(
       'month, date_paid, contact_name, invoice_number, rent_period_start, rent_period_end, ' +
         'rent_amount, fifty_percent_share, occupants, water_payment, gbg_fee, remitted_amount, ' +
-        'linda_electricity_charge, room_id, tenant_profile_id, rooms:room_id (room_number)'
+        'linda_electricity_charge, linda_water_charge, room_id, tenant_profile_id, ' +
+        'rooms:room_id (room_number)'
     )
     .eq('year', year)
     .is('voided_at', null)
@@ -221,6 +232,8 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
       remitted_amount: raw.remitted_amount === null ? null : n(raw.remitted_amount),
       linda_electricity_charge:
         raw.linda_electricity_charge === null ? null : n(raw.linda_electricity_charge),
+      linda_water_charge:
+        raw.linda_water_charge === null ? null : n(raw.linda_water_charge),
       anniversary_date: null,
       deposit_amount: null,
     };
@@ -362,13 +375,37 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
 
       const lindaTotal = zero();
       let lindaElectricity = 0;
+      let lindaWater = 0;
       for (const r of lindaRows) {
         emitUnitRow(r);
         add(lindaTotal, r);
         lindaElectricity += n(r.linda_electricity_charge);
+        lindaWater += n(r.linda_water_charge);
       }
       emitTotalRow('Linda total', lindaTotal);
       merge(lindaYear, lindaTotal);
+
+      /**
+       * The fixed water charge, shown as its own line rather than folded into
+       * the Linda total.
+       *
+       * `remitted_amount` is a GENERATED column - `rent_amount + water_payment` -
+       * and for these units `water_payment` is 0. Adding the fixed charge into
+       * the total would make the total disagree with the column the database
+       * itself computes, which is a worse error than the one being fixed. A
+       * separate labelled line makes the money visible and keeps the arithmetic
+       * honest. Unlike the electricity line below, this charge is CURRENT: it is
+       * BR-040's live model, read from `system_settings` by
+       * `getLindaFixedWaterCharge()`.
+       */
+      if (lindaWater > 0) {
+        const w = ws.addRow([
+          'Linda fixed water charge (BR-040, remitted directly to Linda)',
+          null, null, null, null, null, null, null, null, lindaWater, null, null,
+        ]);
+        w.font = { size: 9, italic: true, color: { argb: INK } };
+        w.getCell(10).numFmt = MONEY_FMT;
+      }
 
       if (lindaElectricity > 0) {
         // Historical only. Migration 017 retired the flat charge; these figures are
