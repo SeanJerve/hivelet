@@ -1760,6 +1760,61 @@ router.post(
      */
     const { year, month } = isoDateParts(datePaid);
 
+    /**
+     * The same receipt must not be recorded twice.
+     *
+     * `monthly_income_records` has one constraint - a primary key on `id`. There
+     * is no uniqueness on the invoice number, and there cannot be a simple one:
+     * `OR#4895` legitimately covers four consecutive months on four rows, one
+     * receipt settling arrears.
+     *
+     * The sibling path already guards. When a gateway payment is verified, the
+     * handler looks for an existing income row on `transaction_reference` before
+     * inserting. This path - the on-site form, where the administrator types a
+     * receipt by hand - had no equivalent, so a retried request or a re-entered
+     * receipt would double-count rent in the owner's ledger among 937 rows, with
+     * nothing to notice it.
+     *
+     * The browser disables its submit button while saving, which closes the
+     * impatient double-click. It does not close a network retry on a request
+     * that actually succeeded, or the same receipt being entered twice.
+     *
+     * Matched on unit, receipt number, date, amount AND PERIOD - all six.
+     *
+     * The period is not optional, and the live ledger is why. Four receipts
+     * already appear on several rows each: `OR#4895` covers four consecutive
+     * months on four rows, `OR#4896` three, `OR#4920` and `OR#4952` two. One
+     * receipt settling arrears, split across the months it pays for, which is
+     * exactly right. A guard matching only the first four would have rejected
+     * the next one of those as a duplicate.
+     *
+     * Including year and month, the combination is unique across all 937 live
+     * rows - checked, not assumed - so this rejects only what is a duplicate by
+     * any reading, and names the record it collided with rather than failing
+     * vaguely.
+     */
+    const { data: duplicates } = await db
+      .from('monthly_income_records')
+      .select('id')
+      .eq('room_id', room.id)
+      .eq('invoice_number', invoiceNumber)
+      .eq('date_paid', datePaid)
+      .eq('rent_amount', rentAmount)
+      .eq('year', year)
+      .eq('month', month)
+      .is('voided_at', null)
+      .limit(1);
+
+    const duplicate = duplicates?.[0];
+
+    if (duplicate) {
+      throw ApiError.conflict(
+        `Receipt ${invoiceNumber} is already recorded for unit ${roomNumber} on ` +
+          `${datePaid} (record ${duplicate.id}). If this is a second payment, ` +
+          `give it its own receipt number.`
+      );
+    }
+
     const { data: newRecord, error: insertError } = await db
       .from('monthly_income_records')
       .insert({
