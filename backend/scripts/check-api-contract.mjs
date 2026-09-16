@@ -241,6 +241,45 @@ if (tenantToken) {
   console.log(`  ${ok401 ? 'OK  ' : 'FAIL'} ${noToken.status}  refused with no token`);
 }
 
+/**
+ * THE NOTIFICATION BADGE'S NUMBER MUST BE UNDER `meta`.
+ *
+ * The notification feature had never worked, and this was half the reason. The
+ * client envelope is `{ success, data, meta? }` and `requestEnvelope()` returns
+ * exactly `{ data: payload.data, meta: payload.meta }` - **every other top-level
+ * key is dropped on the floor**. Both notification endpoints sent `totalUnread`
+ * as a sibling of `data`, so the count never reached the browser at all, no
+ * matter which helper called it. The bell showed nothing and looked fine.
+ *
+ * A shape like that cannot fail loudly: the endpoint answers 200, the list
+ * renders, and only the number is missing. So it is asserted rather than
+ * trusted, on BOTH endpoints, and it checks that the key is absent from the top
+ * level as well as present under `meta` - putting it in both places would pass a
+ * weaker test while leaving the next reader unsure which one is real.
+ */
+for (const [who, token, path_] of [
+  ['admin', adminToken, '/admin/notifications'],
+  ['tenant', tenantToken, '/tenant/my-notifications'],
+]) {
+  if (!token) continue;
+  const r = await fetch(`${BASE}${path_}`, { headers: { Authorization: `Bearer ${token}` } });
+  let body = null;
+  try { body = await r.json(); } catch { /* not json */ }
+
+  const underMeta = typeof body?.meta?.totalUnread === 'number';
+  const looseKey = body ? Object.prototype.hasOwnProperty.call(body, 'totalUnread') : false;
+  const ok = r.status === 200 && underMeta && !looseKey;
+
+  ok ? pass++ : (fail++, failures.push(
+    `${path_}: totalUnread ${underMeta ? 'is' : 'is NOT'} under meta` +
+    (looseKey ? ', and is ALSO a top-level key' : '')
+  ));
+  console.log(
+    `  ${ok ? 'OK  ' : 'FAIL'} ${r.status}  ${who} notifications carry totalUnread under meta` +
+    (underMeta ? ` (${body.meta.totalUnread} unread)` : '')
+  );
+}
+
 // ---- numeric poisoning --------------------------------------------------
 //
 // JSON has no Infinity literal, which is why this looks impossible. It is not:
