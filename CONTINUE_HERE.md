@@ -416,6 +416,7 @@ cd frontend && npm run check:tokens     # design tokens resolve to the right col
             npm run check:reachable  # every source file is reachable from main.ts
 cd ..       && npm run check:rules      # the BR register agrees with itself
             npm run check:matrix     # the traceability matrix agrees with itself
+            npm run check:copies     # the filming copies match the documents of record
             npm run check:secrets    # scans for committed credentials
             npm run backup            # snapshot the live database before risky work
 ```

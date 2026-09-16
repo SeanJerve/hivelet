@@ -79,9 +79,10 @@ STEP 2 - prove the environment works before changing anything.
                    npm run check:reachable  no orphaned components
   cd .. && npm run check:rules          the business rule register agrees with itself
            npm run check:matrix         the traceability matrix agrees with itself
+           npm run check:copies         the filming copies match the documents of record
            npm run check:secrets        scans for committed credentials
 
-  All thirteen were green at handoff. This list read SEVEN until 2026-09-15 and had
+  All fourteen were green at handoff. This list read SEVEN until 2026-09-15 and had
   been wrong since the eighth was added - if a suite exists and this list omits
   it, nobody runs it, which is the same as not having written it.
   If any of them is not, that is the first thing to look at - do not start new
