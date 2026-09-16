@@ -21,6 +21,42 @@ Not run against Supabase.
 Live-data preconditions *were* checked directly against production, read-only, with
 `database/check-migration-preconditions.mjs`. **No blockers.**
 
+## Why the tracker lists 12 and this folder holds 21
+
+**Checked 2026-09-16, because the discrepancy reads as nine missing migrations and is not one.**
+
+`supabase_migrations.schema_migrations` records **12** entries, from
+`fix_replace_allocations_enum_cast` to `resolve_login_identifier`. This folder holds **21**
+numbered files, `001` through `021`.
+
+**Migrations `001`–`010` were applied through the Supabase SQL editor**, which does not write to
+that tracker — see `database/README.md`, which notes that some statements can only be run that
+way even with the `service_role` key. The tracker began recording once the CLI was used, part
+way through the sequence. **It is a record of how each migration was applied, not of whether it
+was.**
+
+They are applied. Verified against the live catalogue rather than assumed:
+
+| Migration | Evidence in the live database |
+| :--- | :--- |
+| `001` RBAC auth columns | `profiles.failed_login_count`, `locked_until`, `password_changed_at` — **3 of 3 present** |
+| `002` RLS lockdown | **21 of 21 tables** with RLS enabled *and* forced |
+| `005` ledger FK RESTRICT | **8** `ON DELETE RESTRICT` foreign keys |
+| `006` profiles optional login | `profiles.email` is **nullable** |
+| `008` property areas lookup | `property_areas` holds **6 seeded rows** |
+| `009` advance rent | `room_assignments.anniversary_date` present |
+| `010` atomic expense allocations | function `replace_expense_allocations` present |
+
+**Do not re-run `001`–`010`.** Several are not idempotent, and the database already holds what
+they create. If you need to confirm one for yourself, query the catalogue for the object it
+creates — that is what the table above did.
+
+*The three non-numbered files in this folder — `APPLY_ALL_RBAC.sql`, `APPLY_PHASE2.sql`,
+`DRIFT_DIAGNOSTIC.sql` — are bundles and diagnostics, not migrations, and
+`_TEST_FIXTURE_production_drift.sql` is a fixture. None of them is expected in the tracker.*
+
+---
+
 ## Method
 
 The schema **file** (`database/FULL_DATABASE_SCHEMA.sql`, 20 tables, 33 seeded units) was loaded
