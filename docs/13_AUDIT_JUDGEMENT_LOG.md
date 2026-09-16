@@ -555,6 +555,86 @@ to that schema will not have read this paragraph.
 
 ---
 
+#### 9. Check what SHIPS, not what is committed
+
+`check:secrets` had been green for weeks. It reads files git knows about, and
+`frontend/dist` is gitignored - so **nothing had ever looked at what the browser
+actually receives.**
+
+What it received was the landlady's administrator password. The login page
+carried a demo panel of 34 accounts, each with its password, rendered as
+one-click sign-in buttons; `dist/assets/index-*.js` held `Hivelet@Admin2026`
+once and `Hivelet@Tenant2026` thirty-three times, plus the name, email and
+**room number** of every real resident.
+
+Two separate blind spots, and both are general:
+
+  **The rules looked for key-SHAPED material** - Supabase keys, JWTs, tokens,
+  private-key blocks. An account password is an ordinary string and matched
+  nothing.
+
+  **The scope was the repository, not the artifact.** Scanning source answers
+  "did we commit a secret". It does not answer "did we publish one", and those
+  are different questions with different answers.
+
+#### 10. A fix to HEAD does not undo a publication
+
+Removing the passwords fixed the bundle. It did not fix the exposure: the
+literal entered tracked source on 2026-08-25 and has been in the repository's
+history ever since - the same window this project already records as a public
+exposure for its JWT secret.
+
+**The only remedy for a published credential is rotation.** A commit that
+removes it is housekeeping, not containment, and reporting it as containment
+would be the more dangerous error. Recorded as A-18 with the rotation left to
+the person who owns the accounts.
+
+#### 11. A note asking a human to remember is not a mechanism - including mine
+
+On finding that `VIDEO PRESENTATION DOCS/` is gitignored and its copies had
+drifted from the documents of record - the DFD copy by **126 lines**, still
+containing the closure proof disproved the night before - the first action was a
+handoff line telling someone to refresh them before filming.
+
+That is exactly the arrangement this sweep spent its earlier entries condemning:
+`NON_RENTAL_AREAS` in two files with *"Keep the two in step"*, and nothing
+keeping them in step. **The note was written, read back, and replaced with
+`check:copies` within the hour.**
+
+The lesson is not "write checks". It is that **the instinct to write the note
+survives even in someone actively cataloguing why notes fail**, so the question
+has to be asked deliberately every time: *is there a mechanism here, or only a
+sentence?*
+
+#### 12. A designated source of truth still needs a mechanism behind it
+
+This project's standing rule is to trust `database/live_schema.csv` over
+`FULL_DATABASE_SCHEMA.sql`. Checked against the catalogue: **21 tables, 211
+columns, matching exactly.** The rule is sound and the file is currently honest.
+
+But nothing regenerates it. It is right by luck, and the next migration makes it
+wrong silently - which is precisely the history of the file it replaced. Naming
+a source of truth does not create one; **the naming is a decision, the checking
+is what makes it true.** `check:columns` now compares them every run.
+
+#### 13. An answer can go false while nobody touches it
+
+The defense pack answered *"how do you know your system is secure?"* with a
+candid account ending **"We rotated everything."** True when written: the keys
+and the signing secret had been rotated.
+
+Then the meaning of *everything* changed. The account passwords were found still
+live, and still published. Nobody edited that sentence; **the world moved under
+it**, and it became a claim a panelist could disprove in the room - the worst
+possible failure for an answer whose entire value is candour.
+
+Prose that asserts completeness - *everything*, *all*, *none remaining* - is the
+most fragile kind, because it makes a promise about a set whose membership is
+not fixed. The corrected answer enumerates instead, which cannot rot the same
+way.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
