@@ -106,7 +106,77 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — commits `8b16256`, `b7787ad`, `08f529e`: the wording rules were written down in
+> **LATEST — commits `161aa75`, `697dfd5`: a bill due the 20th wasn't overdue until 8am on the
+> 21st. And the credential scanner was ignoring every document in the project.**
+>
+> Same method as the last three cycles, now pointed at the two suites that guard money and
+> credentials. **Both had holes, and this time one of them was hiding a real bug.**
+>
+> ### An eight-hour grace period nobody granted
+>
+> `isOverdue()` decided the cutoff like this:
+>
+> ```
+> new Date(`${boundary}T23:59:59.999Z`)
+> ```
+>
+> That `Z` is **UTC**. The property is at **UTC+8**.
+>
+> | Tenant pays | System says |
+> |---|---|
+> | 23:59 Manila, due date | not overdue — correct |
+> | **00:30 Manila, next day** | **not overdue** — wrong |
+> | **07:59 Manila, next day** | **not overdue** — wrong |
+> | 08:30 Manila, next day | overdue |
+>
+> **A tenant paying at 7am the morning after their due date was recorded as on time** — in a
+> system where **OD-16 says there is no grace period at all**.
+>
+> **No live bill was ever affected.** Both bills in the database are `Paid`, and the function
+> returns `false` on status before it ever reaches the cutoff. The defect was real and
+> reachable; it simply had not been reached.
+>
+> **How it surfaced is the point.** I did not read it. I flipped `>` to `>=` on that comparison
+> to see whether the suite would notice, **and nothing broke** — which meant nothing was pinning
+> the boundary at all. Looking at *why* is what exposed the timezone.
+>
+> This is a shape the earlier timezone sweep never covered. That sweep fixed seven places
+> *deriving today* from UTC. This one *converts a stored date into an instant* to compare
+> against now — and it is the only site in the backend that does. I checked the other nine
+> `T00:00:00Z` constructions: every one parses a date and reads UTC parts straight back, which
+> is the correct timezone-free idiom. Left alone.
+>
+> **Also caught by the same battery:** swapping `toCentavos()` for `Math.round()` on the rent
+> broke nothing either — a change that turns ₱3,500.55 into ₱3,501 **on every bill**, silently.
+> Now pinned. **Seven mutations, 5 caught before, 7 of 7 after.**
+>
+> ### The credential scanner could not see your documents
+>
+> `/^docs\//` was on its allowlist. **Every document in the project was exempt** — roughly two
+> hundred files, including the audit reports, the handoff and the judgement log, all of which
+> discuss credentials.
+>
+> The stated reason was that documents quote the compromised values when describing the leak.
+> **They don't.** I scanned: `docs/` contains **zero** matches for any of the seven rules — not
+> even the published JWT secret, which the documents name rather than quote.
+>
+> **So the exemption was protecting nothing and hiding everything**, and removing it produced no
+> new findings at all.
+>
+> **Eight mutations, each reverted, none ever staged**: a Supabase secret key in backend source,
+> in frontend source, in `.env.example` (**the original leak scenario**), under `docs/`, in the
+> README; a `service_role` JWT; a personal access token; the published signing secret. **7 of 8
+> caught before, 8 of 8 after.** The strings used were shaped like the patterns and authenticate
+> to nothing.
+>
+> ### Still yours to do
+>
+> **The two demo passwords still need rotating** — they have been in the GitHub history since
+> 2026-08-25. That has not changed and I cannot do it for you.
+>
+> **Fifteen suites green.**
+
+> **PREVIOUS — commits `8b16256`, `b7787ad`, `08f529e`: the wording rules were written down in
 > three places each and still weren't being followed. Two of the files breaking them were the
 > files that tell the next person what to write.**
 >
@@ -3335,7 +3405,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**201 commits, all pushed to `main`. Working tree clean.**
+**204 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
