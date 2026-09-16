@@ -106,7 +106,83 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — three logins into this system belong to nobody, and the fix that was sitting on the
+> **LATEST — pulling on the duplicate-profile thread: the August import left debris in three more
+> places, and one number in a code comment was a sixth of the truth.**
+>
+> The three ghost logins were not a one-off. The same import left artifacts in `room_assignments`
+> and `payments`, and none of it was being looked for.
+>
+> ### Eight tenancies ended without saying when
+>
+> `vacate` sets `is_active = false` **and** `end_date` together, under `assertWritten`. So an
+> inactive tenancy with **no end date** did not go through vacate — and nobody can say when that
+> person left, which is the one thing an ended tenancy records.
+>
+> **Eight of 48.** All eight carry **zero income rows**, and seven of the eight start on or after
+> 19 August — most on **25 August**, the day the import reassigned units. Debris, not departures.
+>
+> Found by accident. A near-name sweep over profiles turned up a **fourth** pair — `"John Lloyd"`
+> (a seeded account, UUID `4444…`, dated the original 30 July seed) beside `"John Lloyd Cuario"`.
+> The seeded one holds three tenancies, which is why it never showed in the no-tenancy report;
+> checking whether any was **active** — none is, so no unit is wrongly held — is what exposed the
+> missing end dates.
+>
+> Now a **ratchet**: eight is the number that exists. A **ninth fails** — a live vacate left a
+> tenancy hanging, in a path that runs against real residents. A **seventh also fails**, so the
+> number must come down when the debris is cleaned, or the ratchet stops holding. *Proved in both
+> directions plus a control.*
+>
+> ### "NULL on all 214 migrated rows" was NULL on all 937
+>
+> `incomeReportExport` explains why the **Anniv Date** and **Deposit** columns are resolved by
+> room-and-tenant rather than from `assignment_id`, and says that column is *"NULL on all 214
+> migrated rows"*.
+>
+> **214 is just the rows dated 2026.** The column is NULL on **every one of the 937** — it has never
+> been written, by anything. The smaller figure made it read as a migration remnant rather than a
+> column nothing populates, which is a different problem with a different fix.
+>
+> **Then measured what that actually costs, which nobody had:**
+>
+> | | |
+> |---:|:---|
+> | **535** | resolve to a tenancy → filled |
+> | **354** | carry no tenant at all → blank |
+> | **48** | name a room/tenant pair matching no tenancy → blank |
+> | **402 of 937** | **43% of the sheet, blank in those two columns** |
+>
+> **Blank is the right answer for all 402** — resolving from the room alone would print a previous
+> tenant's move-in date against this tenant's receipt, which is the failure the rule exists to
+> prevent. Nothing about the resolution changed. What changed is that **the scale is now printed
+> every run** instead of being discovered by whoever is asked why half a column is empty.
+>
+> ### ₱67,000 of test payments are visible in the product
+>
+> The `payments` table holds 15 rows, **all from the build window** — 8 `ADYEN-GCASH-*` from proving
+> the gateway, 7 `CASH-REC-*` from proving the cash path. **Thirteen are attached to no bill**,
+> totalling **₱67,000**, and every one reads **Verified**.
+>
+> **They do not touch the money, and I checked rather than assumed:** nothing in the backend or the
+> frontend sums that table, so no figure she reads includes them. Her ledger is
+> `monthly_income_records`. BR-013 is unaffected — it asks whether bills marked Paid are covered,
+> and these are attached to no bill.
+>
+> **But they are visible.** `GET /admin/payments` returns all 15, so the payments list shows them in
+> a demonstration. Now reported every run and named in the rehearsal, so **nobody meets ₱67,000 of
+> test money for the first time in front of a panel.**
+>
+> Not deleted — they are live rows, that is not a call to make on the owner's behalf, and they are
+> the only record that the gateway was ever proven end to end.
+>
+> ### Clean in the same sweep
+>
+> `fifty_percent_share` matches half the rent on **all 937 rows**; no negative rent; no income row
+> without a unit; nothing Verified without a verifier; no tenancy active with an end date; none
+> ending before it starts.
+>
+> **Fifteen suites green.**
+
+> **PREVIOUS — three logins into this system belong to nobody, and the fix that was sitting on the
 > list would have hidden them. Plus a rehearsal for testing week, and the RLS landmine defused.**
 >
 > ### The cleanup that would have destroyed the evidence
@@ -3641,7 +3717,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**220 commits, all pushed to `main`. Working tree clean.**
+**224 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
