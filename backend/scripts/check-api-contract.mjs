@@ -129,6 +129,59 @@ if (tenantToken) {
   console.log(`  ${blocked ? 'OK  ' : 'FAIL'} ${r.status}  tenant calling /admin/tenants`);
 }
 
+/**
+ * A tenant must not reach ANOTHER TENANT's data either.
+ *
+ * The section above only ever proved that a tenant cannot reach ADMIN data.
+ * That is the coarse half. The finer half - one resident reading another
+ * resident's records through a perfectly legitimate tenant endpoint - was
+ * checked by hand on 2026-09-15 and then asserted nowhere, so it could have
+ * regressed without a sound.
+ *
+ * `GET /tenant/tickets/:id/messages` is used because it is a pure read: a pass
+ * and a failure both write nothing. The handler loads the ticket, compares
+ * `tenant_profile_id` against the caller, and answers **404** rather than 403 -
+ * deliberately, because 403 would confirm the row exists to someone who should
+ * not know that.
+ *
+ * The same ownership comparison guards `POST /tenant/payments/checkout`
+ * (`bill.tenant_profile_id !== req.user.profileId`) and
+ * `POST /tenant/my-notifications/:id/read` (scoped by `recipient_profile_id` in
+ * the update itself). Both are writes, so they are not probed here.
+ */
+if (tenantToken && adminToken) {
+  console.log('\nISOLATION (a tenant must not reach another tenant\'s data)');
+
+  const meRes = await fetch(`${BASE}/auth/me`, { headers: { Authorization: `Bearer ${tenantToken}` } });
+  const me = await meRes.json().catch(() => null);
+  const myProfileId = me?.data?.id ?? me?.data?.profileId ?? null;
+
+  const tRes = await fetch(`${BASE}/admin/tickets`, { headers: { Authorization: `Bearer ${adminToken}` } });
+  const tJson = await tRes.json().catch(() => null);
+  const allTickets = Array.isArray(tJson?.data) ? tJson.data : [];
+  const someoneElses = allTickets.find((x) => x.tenant_profile_id && x.tenant_profile_id !== myProfileId);
+
+  const probes = [
+    ['a ticket belonging to another tenant', someoneElses?.id],
+    ['a ticket id that does not exist', '00000000-0000-4000-8000-000000000000'],
+  ];
+
+  for (const [label, id] of probes) {
+    if (!id) {
+      console.log(`  SKIP      ${label} - none available to probe with`);
+      continue;
+    }
+    const r = await fetch(`${BASE}/tenant/tickets/${id}/messages`, {
+      headers: { Authorization: `Bearer ${tenantToken}` },
+    });
+    // 404 is the required answer. 403 would leak the row's existence; 200 would
+    // leak the row.
+    const ok = r.status === 404;
+    ok ? pass++ : (fail++, failures.push(`tenant read ${label} -> ${r.status}`));
+    console.log(`  ${ok ? 'OK  ' : 'FAIL'} ${r.status}  ${label} (404 expected, never 403)`);
+  }
+}
+
 
 // ---- numeric poisoning --------------------------------------------------
 //
