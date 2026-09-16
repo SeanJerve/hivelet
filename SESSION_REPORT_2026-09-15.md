@@ -106,7 +106,64 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — pulling on the duplicate-profile thread: the August import left debris in three more
+> **LATEST — nothing had ever checked that the workbooks she opens contain the right numbers.
+> Now something does, month by month. They do.**
+>
+> `check:api` asserts `income.xlsx` comes back as a real workbook of 25,327 bytes. That proves the
+> endpoint answers and the file is not corrupt. **It proves nothing about the numbers inside it.**
+>
+> Those two workbooks **are the deliverable** — what Mrs. Da Silva opens and what a panel is shown.
+> Every other check in this project verifies the *database*. None of them followed the money the
+> last step: out of the database, through the export, onto the sheet she reads. A month landing in
+> the wrong bucket, a filter applied to one total and not another, a row dropped by a join — all of
+> that lives in that step, and was invisible to everything.
+>
+> ### The workbooks are correct
+>
+> **Sixteen assertions, every one passing:**
+>
+> | | Workbook | Database |
+> |---|---:|---:|
+> | **Expenses 2026**, 7 months | ₱628,951.64 | ₱628,951.64 |
+> | **Income 2026**, 7 months of rent | ₱1,760,450.00 | ₱1,760,450.00 |
+>
+> Compared **month by month**, not one figure for the year, and deliberately: *a receipt filed into
+> the wrong month leaves the annual total correct and two months wrong.* This project has already
+> had one timezone defect that moved a payment across a month boundary.
+>
+> ### Two wrong checkers before one right one — and neither found a real defect
+>
+> Both were **my** error, and both looked exactly like a serious bug:
+>
+> **First version** summed every numeric cell in each money column and reported the workbook at
+> **3–4× the database** — water off by exactly 4.0, expenses by exactly 3.0. Those suspiciously
+> round ratios are what made me read the sheet instead of believing the check. The sheets carry,
+> per month, the detail rows **and** a `MONTH TOTAL` row **and** a category-total column. Summing
+> the column counts the same money three times.
+>
+> **Second version** took "the last numeric cell on the MONTH TOTAL row". Six months matched by
+> luck. **March did not** — its last cell holds the running **cumulative**, ₱282,668.94, which is
+> exactly January + February + March. Fixed by reading the column under the named header.
+>
+> **The export was right both times.** It even prints, under every month:
+> *"Reconciles (BR-047): Property Area total and category total both 129,737.90."*
+>
+> *This is the same lesson as the check that gave a false pass, inverted: when a check fails, check
+> the check before you believe it.*
+>
+> ### Proved by breaking the export on purpose
+>
+> | Mutation | Result |
+> |---|---|
+> | a month's receipts silently dropped | **caught** |
+> | every expense filed one month late | **caught, and precisely** — February shows January's figure, March shows February's |
+>
+> That second one is exactly what a single annual total could never see, and it is the reason for
+> comparing month by month.
+>
+> **Sixteenth suite. All 16 green.**
+
+> **PREVIOUS — pulling on the duplicate-profile thread: the August import left debris in three more
 > places, and one number in a code comment was a sixth of the truth.**
 >
 > The three ghost logins were not a one-off. The same import left artifacts in `room_assignments`
@@ -3717,7 +3774,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**224 commits, all pushed to `main`. Working tree clean.**
+**229 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
