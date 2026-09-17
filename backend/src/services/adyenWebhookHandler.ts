@@ -191,6 +191,29 @@ export async function applyNotificationItem(
     .single();
 
   if (payError) {
+    /**
+     * A unique violation here means the payment is ALREADY RECORDED, which is a
+     * duplicate and not a failure.
+     *
+     * The lookup above catches the ordinary retry. It cannot catch two retries
+     * running at the same moment - both read "not found", both insert - and
+     * that is precisely when Adyen retries: when the first attempt has not
+     * answered yet. Migration `024` added a unique index on
+     * `transaction_reference` so the database refuses the second insert, because
+     * no amount of checking-before-inserting closes a race between two
+     * connections.
+     *
+     * Reporting that as `failed` would be worse than the duplicate it prevents.
+     * `failed` makes the route answer **500**, Adyen retries on 500, and the
+     * retry hits the same index - a notification that can never be acknowledged
+     * and never stops coming. `duplicate` answers 200, which is what tells Adyen
+     * the payment is safely with us.
+     *
+     * `23505` is PostgreSQL's `unique_violation`.
+     */
+    if (payError.code === '23505') {
+      return { pspReference, eventCode, outcome: 'duplicate', detail: 'already recorded' };
+    }
     return { pspReference, eventCode, outcome: 'failed', detail: payError.message };
   }
 
