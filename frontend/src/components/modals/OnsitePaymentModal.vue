@@ -112,9 +112,17 @@ async function loadRates() {
  * How many people this unit is billed for, or 0 when that is not known.
  *
  * Both call sites used `summary.count > 0 ? summary.count : (room?.occupants || 1)`.
- * The `|| 1` was a guess, and `room.occupants` is only trustworthy while the room
- * list is live: `rooms` holds the hardcoded seed until `fetchRooms()` succeeds,
- * and 26 of those 33 seeded counts differ from the real tenancy.
+ * The `|| 1` was a guess: one occupant, asserted about a unit the system had just
+ * failed to find anybody in. At the per-head water rate that is a real charge
+ * invented out of nothing, and the figure is written to
+ * `monthly_income_records.occupants` as the registered headcount.
+ *
+ * `room.occupants` itself is only worth reading while the room list is live. It
+ * is 0 in the seeded initial state - checked, `systemState.ts` sets it to 0
+ * rather than carrying `canonicalUnits`' own figure - so a failed `fetchRooms()`
+ * leaves 0, and 0 is what this should return anyway. `roomsFetchFailed` is
+ * checked regardless, because "the value happens to be harmless today" is not a
+ * property worth depending on.
  *
  * Returning 0 makes the water baseline 0, so the form neither pre-fills a figure
  * nor refuses the one the administrator types off the receipt. That is the right
