@@ -3,35 +3,20 @@
  * @file PublicGuestView.vue
  * @description Public landing and room category overview for Fe Galang Da Silva Boarding House.
  * @systemBibleRef Section 4 - Public Visitor Role & Section 5 - Property Model & Section 16 - Inquiries
- * @rationale Main landing portal displaying property facade hero, category cards with direct navigation,
- *            property highlights, inline rectangular inquiry form, proximity map, and corporate footer.
- * @innovations Direct category routing, embedded wide rectangular inquiry section, and dark corporate footer.
+ * @rationale Main landing portal displaying the property hero, a statement section, category
+ *            plates with direct navigation, the full availability table, FAQs, proximity map,
+ *            and corporate footer.
+ * @innovations Direct category routing and a per-row availability disclosure. The enquiry form
+ *              is no longer here: it has its own screen at `/inquire` (`InquireView.vue`), which
+ *              the navigation and the first-visit prompt both point at.
  */
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { type RentableUnit } from '@/lib/canonicalUnits';
-import { showToast, LANDLADY, fetchRooms, rooms } from '@/lib/systemState';
-import { api } from '@/lib/api';
+import { peso, publicStatusLabel } from '@/lib/canonicalUnits';
+import { fetchRooms, rooms, roomsFetchFailed } from '@/lib/systemState';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
-import { 
-  MapPin, 
-  BedDouble, 
-  Building2, 
-  ShieldCheck, 
-  ArrowRight, 
-  Send, 
-  Loader2,
-  CheckCircle2,
-  Wifi,
-  Sparkles,
-  KeyRound,
-  GraduationCap,
-  Navigation,
-  Footprints,
-  Compass,
-  ChevronDown,
-  HelpCircle
-} from 'lucide-vue-next';
+import BookViewingPrompt from '@/components/modals/BookViewingPrompt.vue';
+import { BedDouble, Building2, ShieldCheck, ChevronDown } from 'lucide-vue-next';
 
 const router = useRouter();
 const isLoading = ref(true);
@@ -114,9 +99,6 @@ const CATEGORIES = [
   },
 ];
 
-function navigateToCategory(slug: string) {
-  router.push(`/category/${slug}`);
-}
 
 /**
  * The live unit list, from `/public/rooms` via `fetchRooms()`.
@@ -137,149 +119,173 @@ onMounted(async () => {
   }
 });
 
-// Inline Rectangular Inquiry Form State
-const inquiryName = ref('');
-const inquiryPhone = ref('');
-const inquiryEmail = ref('');
-const inquiryMsg = ref('Good day po! Interested ako mag-inquire sa boarding house. Pwede po bang mag-viewing?');
-const isSubmitting = ref(false);
 
-function scrollToInquiry() {
-  document.getElementById('inquiry-form')?.scrollIntoView({ behavior: 'smooth' });
+
+/**
+ * The landing hero draws its own navigation, so `AppHeader` is not mounted on
+ * this route and its section links are not available to fall back on. Three
+ * in-page targets remain - categories, faqs, location. Enquiries are a route
+ * now, not an anchor, so that link is a RouterLink rather than a scroll.
+ */
+function scrollToSection(sectionId: string) {
+  document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
 }
 
-async function submitInquiry() {
-  // `inquiries.prospect_email` is NOT NULL in the database, so the form asks for
-  // an address rather than inventing one. It previously sent
-  // 'prospect@hivelet.ph' whenever the field was blank, which put an address the
-  // landlady cannot reply to on an inquiry she is expected to answer.
-  if (!inquiryName.value.trim() || !inquiryPhone.value.trim() || !inquiryEmail.value.trim()) {
-    showToast('error', 'Required Fields', 'Please provide your full name, contact number and email address.');
-    return;
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inquiryEmail.value.trim())) {
-    showToast('error', 'Check your email', 'That does not look like an email address.');
-    return;
-  }
-
-  isSubmitting.value = true;
-  try {
-    // `inquiries.room_id` is required, and this form is a general enquiry with no
-    // unit attached. Every message from this page used to be filed against
-    // `publicRooms[0]` - unit 1a - so the landlady's inbox attributed general
-    // interest to one specific room regardless of what the prospect wanted.
-    // A vacant unit is a better guess than an arbitrary one, and the message body
-    // carries what they actually asked.
-    const publicRooms = await api.get<any[]>('/public/rooms', false);
-    const available = (publicRooms ?? []).filter(
-      (r) => String(r.operational_status || '').toLowerCase() === 'available'
-    );
-    const defaultRoom = available[0] ?? (publicRooms ?? [])[0] ?? null;
-
-    if (!defaultRoom) {
-      showToast('error', 'Inquiry Error', 'No active room available for inquiry submission.');
-      return;
-    }
-
-    await api.post('/public/inquiries', {
-      roomId: defaultRoom.id,
-      prospectName: inquiryName.value.trim(),
-      // Sent blank when blank. This used to substitute 'prospect@hivelet.ph',
-      // writing a fake address into the inquiry the landlady would try to reply to.
-      prospectEmail: inquiryEmail.value.trim(),
-      prospectPhone: inquiryPhone.value.trim(),
-      message: inquiryMsg.value.trim(),
-    }, false);
-
-    // The system saves the inquiry for the landlady to read in her portal. It
-    // sends no email or SMS, so "sent to Mrs. Fe Galang Da Silva" claimed a
-    // delivery channel that does not exist.
-    showToast('success', 'Inquiry received', 'Your message has been saved and will reach Mrs. Fe Galang Da Silva in her portal.');
-    inquiryName.value = '';
-    inquiryPhone.value = '';
-    inquiryEmail.value = '';
-  } catch (err: any) {
-    showToast('error', 'Inquiry Submission Failed', err.message || 'Could not save inquiry to server database.');
-  } finally {
-    isSubmitting.value = false;
-  }
+/**
+ * One row of the availability table is open at a time. All 33 units expanded
+ * at once would push the FAQs and the map several screens down and leave the
+ * reader with no sense of where they were.
+ */
+const openUnitId = ref<string | null>(null);
+function toggleUnit(id: string) {
+  openUnitId.value = openUnitId.value === id ? null : id;
 }
+
+/**
+ * The whole table collapses too, and starts collapsed. Thirty-three rows
+ * between the category plates and the policies is a long scroll for a reader
+ * who has already been told the counts above; the heading and the unit total
+ * stay visible so the section is still findable when shut.
+ */
+const unitsOpen = ref(false);
+
+/**
+ * `/public/rooms` already returns Published units only, but `fetchRooms()`
+ * reads `/admin/rooms` for a signed-in administrator, and that endpoint does
+ * not filter. Without this, an administrator opening the landing page would
+ * publish Hidden units onto it - the same rule `public.ts` enforces in three
+ * places, applied to the one surface that reads the admin list.
+ */
+const listedUnits = computed(() =>
+  rooms
+    .filter((u) => u.visibility === 'Published')
+    .slice()
+    .sort((a, b) => a.floor - b.floor || a.unitCode.localeCompare(b.unitCode, 'en'))
+);
+
+/**
+ * Keyless Google Maps embed. `output=embed` returns a real, interactive map for
+ * a query string with no API key, billing account or script tag; the Maps
+ * JavaScript API needs all three, and none of them exist for this project.
+ *
+ * THE QUERY IS THE BARANGAY, NOT THE STREET, AND THAT IS DELIBERATE.
+ *
+ * Querying the full street address put the pin on "32 Sampaguita Ave, Daraga" -
+ * a different municipality - because Google matched a similarly spelled street
+ * there and nothing at this address in Sagpon. Verified by loading it: the
+ * embed's own info card named Daraga. A confident pin on the wrong town is
+ * worse than an honest one on the right barangay, so this asks for Sagpon,
+ * Legazpi City, which resolves correctly.
+ *
+ * No surveyed coordinate for the compound exists anywhere in this repository
+ * and inventing one would put the pin where nobody is. To place the building
+ * exactly, replace this string with `lat,lng` from the owner - the embed needs
+ * no other change. The precise address stays in text beside the map meanwhile.
+ */
+const MAP_QUERY = 'Sagpon, Legazpi City, Albay, Philippines';
+const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUERY)}&output=embed`;
+
 </script>
 
 <template>
   <div class="flex-1 flex flex-col w-full bg-surface-sunken">
-    <!-- Academic Clean Property Hero Header Section -->
-    <section class="w-full bg-neutral-dark text-white border-b border-[#334155] shadow-xs">
-      <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        
-        <div class="inline-flex items-center gap-2 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider mb-4">
-          <MapPin class="size-3.5 text-blue-400" />
-          <span>32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City</span>
-        </div>
+    <BookViewingPrompt />
+    <!--
+      Editorial full-bleed property hero.
 
-        <h1 class="font-display text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-          Fe Galang Da Silva Boarding House
+      Type is fluid rather than stepped: `clamp()` keeps the display line
+      proportional to a full-bleed field at every width, which Tailwind's
+      stepped `text-*` scale cannot express - it jumps at breakpoints and
+      leaves the line either stranded or overflowing between them. That
+      gap is the whole reason for the arbitrary value here.
+
+      No facade photograph exists in this repository - `public/` holds only
+      `property-map.png`, a location map - so the field is tonal rather than
+      photographic. Dropping a real facade image behind this section is a
+      contained change; inventing one is not, because a stock building would
+      misrepresent the property to a prospective boarder.
+    -->
+    <section class="relative w-full bg-neutral-dark text-white font-editorial overflow-hidden">
+      <div class="relative max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 flex flex-col min-h-[clamp(34rem,94vh,58rem)] pt-7 pb-10 sm:pb-14">
+
+        <!--
+          Navigation is drawn over the hero rather than in a bar above it, so
+          `AppHeader` is not mounted on this route - see `isLandingPage` in
+          App.vue. These five destinations are the ones it carried, with the
+          same four section ids and the same labels; losing any of them here
+          would strip the page's only navigation.
+        -->
+        <header class="flex items-start justify-between gap-6 sm:gap-10">
+          <RouterLink
+            to="/public"
+            class="shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] hover:text-white/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors"
+          >
+            Fe Galang<br />Da Silva<br />Boarding House
+          </RouterLink>
+
+          <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light">
+            <button @click="scrollToSection('categories')" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Category Section</button>
+            <span aria-hidden="true" class="pr-2">,</span>
+            <button @click="scrollToSection('faqs')" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">FAQs</button>
+            <span aria-hidden="true" class="pr-2">,</span>
+            <RouterLink to="/inquire" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Inquire Now</RouterLink>
+            <span aria-hidden="true" class="pr-2">,</span>
+            <button @click="scrollToSection('location')" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Location</button>
+            <span aria-hidden="true" class="pr-2">,</span>
+            <RouterLink to="/login" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Sign In</RouterLink>
+          </nav>
+        </header>
+
+        <h1 class="mt-auto pt-24 font-editorial font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)]">
+          Fe Galang Da Silva<br class="hidden sm:inline" /> Boarding House
         </h1>
 
-        <p class="mt-3 max-w-2xl text-sm sm:text-base text-slate-300 leading-relaxed">
-          Canonical 33-unit residential boarding house across three residential floors plus a rooftop penthouse level, in 5 property clusters. Verified individual electric submeters, ₱200/head monthly water rule, and secure gated perimeter.
+      </div>
+    </section>
+
+    <!--
+      Centred statement, in place of the metric strip that stood here.
+
+      The strip was deleted on request, but three of its facts appear nowhere
+      else on this page - the street address, the ₱4,500 starting rate and the
+      floor count - so they are carried in this section's headline and standfirst
+      rather than dropped. A prospective boarder cannot decide anything without
+      the rate.
+
+      The two standfirst columns are the existing hero sentence split at its
+      full stop, not new copy. The headline is the only authored line here.
+    -->
+    <section aria-label="Property at a glance" class="w-full bg-background font-editorial">
+      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-24 sm:py-32 lg:py-40">
+
+        <h2 class="text-center font-medium text-foreground tracking-[-0.03em] leading-[0.95] text-[clamp(1.9rem,6vw,5.25rem)]">
+          33 Units, 4 Floors<br />5 Property Clusters
+        </h2>
+
+        <div class="mt-12 sm:mt-16 mx-auto max-w-3xl grid gap-8 sm:grid-cols-2 text-xs sm:text-[0.82rem] leading-relaxed text-muted-foreground">
+          <p>
+            Canonical 33-unit residential boarding house across three residential floors plus a rooftop penthouse level, in 5 property clusters.
+          </p>
+          <p>
+            Verified individual electric submeters, ₱200/head monthly water rule, and secure gated perimeter. Starting base rate ₱4,500/mo.
+          </p>
+        </div>
+
+        <p class="mt-14 text-center text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
+          32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
         </p>
-
-        <div class="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            @click="scrollToInquiry"
-            class="btn-primary min-h-11 px-6 text-sm"
-          >
-            <span>Inquire Directly</span>
-            <ArrowRight class="size-4 text-white" />
-          </button>
-          
-          <a
-            href="#categories"
-            class="btn-secondary min-h-11 px-5 text-sm bg-white/10 text-white border-white/20 hover:bg-white/20"
-          >
-            <span>Browse Unit Inventory</span>
-          </a>
-        </div>
-
-        <!-- 4 Key Property Metrics -->
-        <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl">
-          <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
-            <p class="text-xs text-slate-400 font-bold uppercase">Total Inventory</p>
-            <p class="font-display text-2xl font-black text-white mt-1">33 Units</p>
-          </div>
-          <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
-            <p class="text-xs text-slate-400 font-bold uppercase">Property Floors</p>
-            <!--
-              FOUR, not three. `rooms.floor` holds 1, 2, 3 and 4 - eleven units,
-              eleven, ten, and the penthouse alone on the rooftop. The prose two
-              lines above this card has always said "three residential floors plus
-              a rooftop penthouse level"; the number beside it said 3 and
-              contradicted it on the public landing page.
-            -->
-            <p class="font-display text-2xl font-black text-white mt-1">4 Floors</p>
-          </div>
-          <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
-            <p class="text-xs text-slate-400 font-bold uppercase">Starting Base Rate</p>
-            <p class="font-display text-2xl font-black text-blue-400 mt-1">₱4,500/mo</p>
-          </div>
-          <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
-            <p class="text-xs text-slate-400 font-bold uppercase">Water Billing Rule</p>
-            <p class="font-display text-2xl font-black text-emerald-400 mt-1">₱200/head</p>
-          </div>
-        </div>
 
       </div>
     </section>
 
     <!-- 1. Category Explorer (Centered) -->
-    <div id="categories" class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 scroll-mt-20">
-      <section class="space-y-6">
-        <div>
-          <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+    <div id="categories" class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28 scroll-mt-20 font-editorial">
+      <section class="space-y-14">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+          <h2 class="text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
             Explore by unit category
           </h2>
-          <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
+          <p class="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Choose a category to browse live availability across the property. Click any category below to view all rooms in that category.
           </p>
         </div>
@@ -288,300 +294,262 @@ async function submitInquiry() {
           <SkeletonCard variant="category" :count="3" />
         </div>
 
-        <div v-else class="grid gap-5 md:grid-cols-3">
-          <div
-            v-for="c in CATEGORIES"
+        <!--
+          Project-index layout: each category is one framed plate with its
+          caption set beneath it, alternating down the page rather than sitting
+          in a row of equal cards.
+
+          Each plate is a real RouterLink to the `/category/:slug` route that
+          `navigateToCategory` used to push; that function had no other caller
+          and went with the cards. A link restores middle-click, open-in-new-tab
+          and the native Enter/Space handling that `role="button" tabindex="0"`
+          only partly reimplemented.
+
+          The plate is a tonal frame, not a photograph: no room imagery exists
+          in this repository. The reference this follows frames an empty plate
+          the same way, so the placeholder is not a broken state.
+        -->
+        <div v-else class="grid gap-x-12 gap-y-16 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-24">
+          <RouterLink
+            v-for="(c, i) in CATEGORIES"
             :key="c.key"
-            @click="navigateToCategory(c.slug)"
-            role="button"
-            tabindex="0"
-            @keydown.enter="navigateToCategory(c.slug)"
-            class="surface-card group flex min-h-11 flex-col items-start p-6 text-left transition-all hover:shadow-xl hover:-translate-y-0.5 cursor-pointer rounded-2xl border border-border-strong bg-white relative overflow-hidden"
+            :to="`/category/${c.slug}`"
+            :class="[
+              'group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
+              i % 2 === 1 ? 'lg:mt-28' : ''
+            ]"
           >
-            <div class="flex items-center justify-between w-full">
-              <span class="grid size-12 place-items-center rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 group-hover:bg-primary group-hover:text-white transition-colors">
-                <component :is="c.icon" class="size-6" />
-              </span>
-              <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                {{ liveUnits.filter(c.match).filter((u) => u.status === 'vacant').length }} Vacant
+            <div class="relative aspect-[3/2] sm:aspect-[4/3] w-full border border-border bg-muted overflow-hidden transition-colors group-hover:border-foreground/30">
+              <span class="absolute inset-0 grid place-items-center">
+                <component :is="c.icon" class="size-9 text-muted-foreground-soft" />
               </span>
             </div>
 
-            <h3 class="mt-5 font-display text-xl font-extrabold text-foreground group-hover:text-primary transition-colors">
-              {{ c.title }}
-            </h3>
-            <p class="text-xs font-bold uppercase tracking-wider text-accent-ink mt-0.5">{{ c.pax }}</p>
-            <p class="mt-2.5 text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1">{{ c.blurb }}</p>
-            
-            <div class="mt-5 pt-4 border-t border-border w-full flex items-center justify-between text-xs">
-              <span class="font-semibold text-muted-foreground">
-                {{ liveUnits.filter(c.match).length }} Total Units
-              </span>
-              <span class="font-bold text-primary group-hover:text-primary-strong flex items-center gap-1.5 transition-colors">
-                <span>View All Rooms</span>
-                <ArrowRight class="size-4 group-hover:translate-x-1 transition-transform" />
+            <div class="mt-5 flex items-baseline justify-between gap-6">
+              <h3 class="text-base sm:text-lg font-medium text-foreground">{{ c.title }}</h3>
+              <span class="shrink-0 text-sm text-muted-foreground underline underline-offset-4 decoration-1 decoration-border-strong group-hover:text-foreground group-hover:decoration-foreground transition-colors">
+                View All Rooms
               </span>
             </div>
-          </div>
+
+            <div class="mt-2 flex items-baseline justify-between gap-6 text-xs text-muted-foreground">
+              <span>{{ c.pax }}</span>
+              <span>
+                {{ liveUnits.filter(c.match).filter((u) => u.status === 'vacant').length }} vacant
+                of {{ liveUnits.filter(c.match).length }} units
+              </span>
+            </div>
+
+            <p class="mt-3 max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">{{ c.blurb }}</p>
+          </RouterLink>
         </div>
       </section>
     </div>
 
-    <!-- 2. Frequently Asked Questions (FAQ Section) -->
-    <section id="faqs" class="w-full bg-white py-16 sm:py-20 shadow-xs scroll-mt-20">
-      <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-10">
-        <div class="max-w-3xl space-y-2">
-          <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-primary">
-            <HelpCircle class="size-3.5" />
-            Frequently Asked Questions
-          </span>
-          <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-            Boarding House Policies &amp; Guidelines
+    <!--
+      Every published unit, one row each, with the detail behind a per-row
+      disclosure. Tenant names are deliberately absent: `RoomItem.tenant` is
+      populated for occupied units and this is a public page.
+    -->
+    <section id="availability" class="w-full bg-background border-t border-border font-editorial scroll-mt-20">
+      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
+
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+          <h2 class="text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
+            All units
           </h2>
-          <p class="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+          <p class="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            Every unit on the property. Open a row to see its floor, capacity, billing rule and what it includes.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          :aria-expanded="unitsOpen"
+          aria-controls="all-units-panel"
+          class="mt-10 flex w-full items-baseline justify-between gap-6 border-t border-foreground pt-5 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground group"
+          @click="unitsOpen = !unitsOpen"
+        >
+          <span class="text-sm text-foreground group-hover:text-muted-foreground transition-colors">
+            {{ unitsOpen ? 'Hide' : 'Show' }} all {{ listedUnits.length }} units
+          </span>
+          <ChevronDown
+            :class="['size-4 shrink-0 text-muted-foreground transition-transform', unitsOpen ? 'rotate-180' : '']"
+          />
+        </button>
+
+        <div v-show="unitsOpen" id="all-units-panel">
+
+        <!--
+          B-01: `rooms` keeps the always-vacant `CANONICAL_UNITS` seed when the
+          fetch fails, so without this the table would assert 33 free units on a
+          property that is 32 occupied. Disclosing the staleness is presentation;
+          what the counts should then say is Sean's call, logged in BLOCKED_FOR_SEAN.md.
+        -->
+        <p
+          v-if="roomsFetchFailed"
+          role="status"
+          class="mt-8 border border-border-strong bg-muted px-4 py-3 text-xs sm:text-sm text-foreground-soft leading-relaxed"
+        >
+          Live availability could not be reached, so the status column below may not be current. Please confirm with the landlady before relying on it.
+        </p>
+
+        <div class="mt-10 overflow-x-auto">
+          <table class="w-full min-w-[44rem] border-collapse text-sm">
+            <caption class="sr-only">
+              Every published unit on the property, with its cluster, type, floor, monthly rate and current status.
+            </caption>
+            <thead>
+              <tr class="border-b border-foreground text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground">
+                <th scope="col" class="py-3 pr-4 text-left font-normal">Unit</th>
+                <th scope="col" class="py-3 px-4 text-left font-normal">Cluster</th>
+                <th scope="col" class="py-3 px-4 text-left font-normal">Type</th>
+                <th scope="col" class="py-3 px-4 text-left font-normal">Floor</th>
+                <th scope="col" class="py-3 px-4 text-right font-normal">Price</th>
+                <th scope="col" class="py-3 px-4 text-left font-normal">Status</th>
+                <th scope="col" class="py-3 pl-4 w-12"><span class="sr-only">Details</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="u in listedUnits" :key="u.id">
+                <tr class="border-b border-border">
+                  <td class="py-4 pr-4 font-medium text-foreground">{{ u.unitCode }}</td>
+                  <td class="py-4 px-4 text-foreground-soft">{{ u.cluster }}</td>
+                  <td class="py-4 px-4 text-foreground-soft">{{ u.type }}</td>
+                  <td class="py-4 px-4 text-foreground-soft">{{ u.floorLabel }}</td>
+                  <td class="py-4 px-4 text-right text-foreground-soft tabular-nums">{{ peso(u.price) }}</td>
+                  <td class="py-4 px-4 text-foreground-soft">{{ publicStatusLabel(u.status) }}</td>
+                  <td class="py-4 pl-4">
+                    <button
+                      @click="toggleUnit(u.id)"
+                      :aria-expanded="openUnitId === u.id"
+                      :aria-controls="`unit-panel-${u.id}`"
+                      class="grid size-8 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors"
+                    >
+                      <span class="sr-only">
+                        {{ openUnitId === u.id ? 'Hide' : 'Show' }} details for unit {{ u.unitCode }}
+                      </span>
+                      <ChevronDown :class="['size-4 transition-transform', openUnitId === u.id ? 'rotate-180' : '']" />
+                    </button>
+                  </td>
+                </tr>
+
+                <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="border-b border-border bg-muted">
+                  <td colspan="7" class="px-4 py-6">
+                    <dl class="grid gap-x-10 gap-y-5 sm:grid-cols-3 text-xs sm:text-sm">
+                      <div>
+                        <dt class="text-muted-foreground">Floor</dt>
+                        <dd class="mt-1 text-foreground">{{ u.floorLabel }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-muted-foreground">Capacity</dt>
+                        <dd class="mt-1 text-foreground">Up to {{ u.maxOccupants }} occupants</dd>
+                      </div>
+                      <div>
+                        <dt class="text-muted-foreground">Billing</dt>
+                        <dd class="mt-1 text-foreground">{{ u.billingRule }}</dd>
+                      </div>
+                    </dl>
+
+                    <p v-if="u.desc" class="mt-6 max-w-2xl text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                      {{ u.desc }}
+                    </p>
+
+                    <ul v-if="u.amenities && u.amenities.length" class="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
+                      <li v-for="a in u.amenities" :key="a">{{ a }}</li>
+                    </ul>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. Frequently Asked Questions (FAQ Section) -->
+    <section id="faqs" class="w-full bg-background border-t border-border font-editorial py-20 sm:py-28 scroll-mt-20">
+      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10">
+
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+          <h2 class="text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
+            Policies &amp; guidelines
+          </h2>
+          <p class="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Standard operating guidelines, individual utilities submetering, security curfews, and payment methods for Fe Galang Da Silva Boarding House.
           </p>
         </div>
 
-        <div class="grid gap-3.5 max-w-4xl">
-          <div 
-            v-for="(faq, idx) in FAQS" 
-            :key="idx"
-            class="surface-card rounded-2xl border border-border bg-background overflow-hidden transition-all"
-          >
-            <button
-              type="button"
-              @click="toggleFaq(idx)"
-              class="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-white transition-colors"
-            >
-              <span class="font-display font-extrabold text-sm sm:text-base text-foreground">
-                {{ faq.q }}
-              </span>
-              <span class="size-8 rounded-xl bg-white border border-border grid place-items-center shrink-0 text-muted-foreground">
-                <ChevronDown :class="['size-4 transition-transform duration-200', openFaqIndex === idx ? 'rotate-180 text-primary' : '']" />
-              </span>
-            </button>
-
-            <div 
-              v-if="openFaqIndex === idx"
-              class="px-5 sm:px-6 pb-5 sm:pb-6 text-xs sm:text-sm text-foreground-soft leading-relaxed border-t border-border/60 pt-4 bg-white animate-in fade-in duration-150"
-            >
-              {{ faq.a }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. Rectangular Inquiry Form Section (Centered) -->
-    <div id="inquire-now" class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 scroll-mt-20">
-      <section id="inquiry-form" class="scroll-mt-20">
-        <div class="surface-card w-full max-w-5xl mx-auto rounded-3xl border border-border-strong bg-white p-8 sm:p-12 shadow-sm space-y-6">
-          
-          <!-- Header -->
-          <div class="space-y-1">
-            <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-foreground tracking-tight">
-              Inquire with the Landlady
-            </h2>
-            <p class="text-xs sm:text-sm text-muted-foreground">
-              Send your message directly to {{ LANDLADY.name }}.
-            </p>
-          </div>
-
-          <!-- Form Fields -->
-          <form @submit.prevent="submitInquiry" class="space-y-5 text-xs">
-            <!-- Row 1: Full Name & Phone Number -->
-            <div class="grid gap-5 sm:grid-cols-2">
-              <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-                  FULL NAME
-                </label>
-                <input 
-                  v-model="inquiryName" 
-                  type="text" 
-                  placeholder="Juan Dela Cruz" 
-                  class="min-h-12 w-full px-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
-                  required 
-                />
-              </div>
-
-              <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-                  PHONE NUMBER
-                </label>
-                <input 
-                  v-model="inquiryPhone" 
-                  type="tel" 
-                  placeholder="0917-000-0000" 
-                  class="min-h-12 w-full px-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
-                  required 
-                />
-              </div>
-            </div>
-
-            <!-- Row 2: Email -->
-            <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-                EMAIL <span class="text-rose-600">*</span>
-              </label>
-              <input 
-                v-model="inquiryEmail" 
-                type="email" 
-                required
-                placeholder="you@email.com" 
-                class="min-h-12 w-full px-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all" 
-              />
-            </div>
-
-            <!-- Row 3: Message -->
-            <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-                MESSAGE
-              </label>
-              <textarea 
-                v-model="inquiryMsg" 
-                rows="4" 
-                placeholder="Good day po! Interested ako mag-inquire sa boarding house. Pwede po bang mag-viewing?" 
-                class="w-full p-4 border border-border-strong rounded-2xl text-sm bg-white text-foreground focus:border-primary focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-none leading-relaxed" 
-                required
-              ></textarea>
-            </div>
-
-            <!-- Actions Row -->
-            <div class="pt-2 flex justify-end">
-              <button 
-                type="submit" 
-                :disabled="isSubmitting"
-                class="btn-primary min-h-12 px-8 text-sm"
+        <!--
+          Same disclosure pattern as the availability table above: a hairline
+          rule per item, the chevron as the only affordance, and one answer open
+          at a time. `openFaqIndex` already enforced the last of those.
+        -->
+        <dl class="mt-12 border-t border-foreground">
+          <div v-for="(faq, idx) in FAQS" :key="idx" class="border-b border-border">
+            <dt>
+              <button
+                type="button"
+                :aria-expanded="openFaqIndex === idx"
+                :aria-controls="`faq-panel-${idx}`"
+                class="w-full flex items-baseline justify-between gap-6 py-5 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground group"
+                @click="toggleFaq(idx)"
               >
-                <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
-                <Send v-else class="size-4 text-white" />
-                <span>{{ isSubmitting ? 'Sending…' : 'Send Inquiry to Landlady' }}</span>
+                <span class="text-sm sm:text-base text-foreground group-hover:text-muted-foreground transition-colors">
+                  {{ faq.q }}
+                </span>
+                <ChevronDown
+                  :class="['size-4 shrink-0 text-muted-foreground transition-transform', openFaqIndex === idx ? 'rotate-180' : '']"
+                />
               </button>
-            </div>
-          </form>
-        </div>
-      </section>
-    </div>
+            </dt>
 
-    <!-- 4. Location & Proximity Map Section (100% Full-Width Edge-to-Edge with Top Spacing) -->
-    <section id="location" class="w-full bg-white pt-16 sm:pt-20 pb-0 shadow-xs mt-8 sm:mt-12 space-y-8 scroll-mt-20">
-      <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-2">
-        <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-primary">
-          <Compass class="size-3.5" />
-          Location & Proximity
-        </span>
-        <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-          Strategic Location Near Bicol University Main Campus
-        </h2>
-        <p class="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-3xl">
-          Situated at Galang's Compound with direct, well-paved transit access to Bicol University colleges, student libraries, and nearby convenience hubs.
-        </p>
-      </div>
-
-      <!-- 100% Full-Width Edge-to-Edge Map Viewport with Interactive SVG Redline Waypoint Overlay -->
-      <div class="relative w-full overflow-hidden bg-slate-100 aspect-[16/9] sm:aspect-[24/9]">
-        <!-- Base Map Image -->
-        <img 
-          src="/property-map.png" 
-          alt="Map route between Galang's Compound and Bicol University Main Campus" 
-          class="w-full h-full object-cover select-none pointer-events-none"
-        />
-
-        <!-- SVG Waypoint Route Overlay -->
-        <svg 
-          viewBox="0 0 1000 425" 
-          class="absolute inset-0 w-full h-full pointer-events-none"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <defs>
-            <!-- Glow filter for redline -->
-            <filter id="red-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            
-            <!-- Linear Gradient for Route -->
-            <linearGradient id="route-gradient" x1="100%" y1="100%" x2="0%" y2="0%">
-              <stop offset="0%" stop-color="#ef4444" />
-              <stop offset="100%" stop-color="#dc2626" />
-            </linearGradient>
-          </defs>
-
-          <!-- Route Path Background Glow -->
-          <path 
-            d="M 625 240 L 570 286 L 540 260 L 490 215 L 430 180 L 380 145 L 310 120 L 250 145 L 190 140 L 130 95 L 115 78" 
-            fill="none" 
-            stroke="#fee2e2" 
-            stroke-width="10" 
-            stroke-linecap="round" 
-            stroke-linejoin="round"
-            opacity="0.85"
-          />
-
-          <!-- Red Glowing Base Line -->
-          <path 
-            d="M 625 240 L 570 286 L 540 260 L 490 215 L 430 180 L 380 145 L 310 120 L 250 145 L 190 140 L 130 95 L 115 78" 
-            fill="none" 
-            stroke="url(#route-gradient)" 
-            stroke-width="5" 
-            stroke-linecap="round" 
-            stroke-linejoin="round"
-            filter="url(#red-glow)"
-          />
-
-          <!-- Animated Dashed Foreground Waypoint Line -->
-          <path 
-            d="M 625 240 L 570 286 L 540 260 L 490 215 L 430 180 L 380 145 L 310 120 L 250 145 L 190 140 L 130 95 L 115 78" 
-            fill="none" 
-            stroke="#ffffff" 
-            stroke-width="2.5" 
-            stroke-linecap="round" 
-            stroke-linejoin="round"
-            stroke-dasharray="8 6"
-            class="animate-pulse"
-          />
-
-          <!-- Waypoint Origin: Galang's Compound -->
-          <g transform="translate(625, 240)">
-            <circle r="14" fill="#ef4444" opacity="0.3" class="animate-ping" />
-            <circle r="7" fill="#dc2626" stroke="#ffffff" stroke-width="2.5" />
-          </g>
-
-          <!-- Waypoint Destination: Bicol University Main Campus -->
-          <g transform="translate(115, 78)">
-            <circle r="16" fill="#0c66e4" opacity="0.3" class="animate-ping" />
-            <circle r="8" fill="#0c66e4" stroke="#ffffff" stroke-width="2.5" />
-          </g>
-        </svg>
-
-        <!-- Floating Label 1: Galang's Compound (Hivelet) -->
-        <div class="absolute right-[31%] top-[56%] -translate-y-full z-10 pointer-events-auto">
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-dark text-white shadow-xl border border-white/20 text-[11px] font-bold">
-            <MapPin class="size-3.5 text-rose-500" />
-            <span>Hivelet (Galang's Compound)</span>
+            <dd v-if="openFaqIndex === idx" :id="`faq-panel-${idx}`" class="pb-7 pr-10 max-w-3xl text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              {{ faq.a }}
+            </dd>
           </div>
-        </div>
+        </dl>
 
-        <!-- Floating Label 2: Bicol University Main Campus -->
-        <div class="absolute left-[3%] top-[12%] z-10 pointer-events-auto">
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-white shadow-xl border border-white/20 text-[11px] font-bold">
-            <GraduationCap class="size-3.5 text-amber-300" />
-            <span>Bicol University (Main Campus)</span>
-          </div>
-        </div>
-
-        <!-- Route Summary Pill Badge -->
-        <div class="absolute left-[34%] top-[38%] -translate-x-1/2 z-10 pointer-events-auto hidden sm:block">
-          <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-rose-700 shadow-md border border-rose-200 text-[10px] font-extrabold backdrop-blur-xs">
-            <Navigation class="size-3 text-rose-600" />
-            <span>Direct Transit Waypoint</span>
-          </div>
-        </div>
       </div>
     </section>
+
+    <!--
+      A live map, replacing `property-map.png` and the SVG drawn over it. That
+      overlay traced a red route to Bicol University and labelled a transit
+      waypoint; both are gone at the owner's request and the map now shows the
+      compound alone.
+
+      It is a third-party frame, so: lazy-loaded, referrer trimmed, and titled
+      for anyone who reaches it by keyboard or screen reader. It will not render
+      with no network - the PWA caches an offline shell - which is why the
+      address stays in text beside it rather than living only on the map.
+    -->
+    <section id="location" class="w-full bg-background border-t border-border font-editorial scroll-mt-20">
+      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+          <h2 class="text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
+            Location
+          </h2>
+          <p class="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Albay.
+          </p>
+        </div>
+      </div>
+
+      <div class="w-full border-t border-border">
+        <iframe
+          :src="mapEmbedUrl"
+          title="Map showing Galang's Compound at 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City"
+          class="block w-full aspect-[16/11] sm:aspect-[24/9] border-0"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </section>
+
   </div>
 </template>
