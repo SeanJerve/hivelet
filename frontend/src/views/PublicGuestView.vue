@@ -250,7 +250,14 @@ async function submitInquiry() {
           </div>
           <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
             <p class="text-xs text-slate-400 font-bold uppercase">Property Floors</p>
-            <p class="font-display text-2xl font-black text-white mt-1">3 Floors</p>
+            <!--
+              FOUR, not three. `rooms.floor` holds 1, 2, 3 and 4 - eleven units,
+              eleven, ten, and the penthouse alone on the rooftop. The prose two
+              lines above this card has always said "three residential floors plus
+              a rooftop penthouse level"; the number beside it said 3 and
+              contradicted it on the public landing page.
+            -->
+            <p class="font-display text-2xl font-black text-white mt-1">4 Floors</p>
           </div>
           <div class="rounded-xl bg-white/5 p-3.5 border border-white/10">
             <p class="text-xs text-slate-400 font-bold uppercase">Starting Base Rate</p>

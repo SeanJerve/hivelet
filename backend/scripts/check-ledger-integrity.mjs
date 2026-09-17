@@ -29,8 +29,8 @@
  * you delete an entry whose row is still wrong.
  */
 import dotenv from 'dotenv';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
@@ -158,7 +158,7 @@ if (live.length) {
  * covered by `check:api`.
  */
 {
-  const rooms = await rows('rooms?select=id,room_number,operational_status');
+  const rooms = await rows('rooms?select=id,room_number,operational_status,cluster_code,floor');
   const clusters = await rows('clusters?select=code');
   const assigns = await rows('room_assignments?is_active=eq.true&select=room_id,tenant_profile_id,is_primary_contact');
   const people = await rows('profiles?select=id,role,email,phone_number');
@@ -398,6 +398,77 @@ if (live.length) {
     `${entries.length} entries, none unallocated`);
   check('no allocation without its entry', orphans,
     `${allocs.length} allocations, every one attached`);
+
+  /**
+   * THE PROPERTY'S OWN NUMBERS, WHERE THE PUBLIC READS THEM.
+   *
+   * "33 units", "5 clusters", "4 floors" are written into the interface by hand,
+   * in headings and stat cards, because they are part of the copy rather than
+   * data fetched at runtime. Which means they drift, and this project has a
+   * history of exactly that: the **32-unit** figure survived in thirty places
+   * and is still being corrected.
+   *
+   * On 2026-09-17 the public landing page's stat card said **"3 Floors"** two
+   * lines below its own prose saying *"three residential floors plus a rooftop
+   * penthouse level"* - the number contradicting the sentence above it, on the
+   * page a panel opens first. `rooms.floor` holds 1, 2, 3 and 4. The unit
+   * directory said "3 floors" too.
+   *
+   * Nothing could have caught it. `check:fields` reads field NAMES, `check:canon`
+   * polices banned WORDING, and neither looks at a number in a heading.
+   *
+   * Every such claim in `frontend/src` is now read and compared against the live
+   * `rooms` table. A survey before writing this found fourteen unit claims, four
+   * cluster claims and three floor claims, in several spellings - `33-unit`,
+   * `33 Units`, `33-UNIT` - and no other shape, so the pattern below is narrow
+   * without being fragile.
+   */
+  const feFiles = [];
+  (function walkFe(dir) {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      if (e.name === 'node_modules' || e.name === 'dist') continue;
+      const p = join(dir, e.name);
+      if (e.isDirectory()) walkFe(p);
+      else if (e.name.endsWith('.vue') || e.name.endsWith('.ts')) feFiles.push(p);
+    }
+  })(join(here, '..', '..', 'frontend', 'src'));
+
+  const TRUTH = new Map([
+    ['unit', rooms.length],
+    ['cluster', new Set(rooms.map((r) => r.cluster_code)).size],
+    ['floor', new Set(rooms.map((r) => r.floor)).size],
+  ]);
+
+  const CLAIM = /(\d+)[ -]+(units?|clusters?|floors?)\b/gi;
+  const wrongClaims = [];
+
+  for (const f of feFiles) {
+    const src = readFileSync(f, 'utf8');
+    src.split('\n').forEach((line, i) => {
+      for (const m of line.matchAll(CLAIM)) {
+        const noun = m[2].toLowerCase().replace(/s$/, '');
+        const expected = TRUTH.get(noun);
+        if (expected === undefined || Number(m[1]) === expected) continue;
+        wrongClaims.push({
+          file: relative(join(here, '..', '..'), f).replace(/\\/g, '/'),
+          line: i + 1,
+          said: m[0],
+          expected: `${expected} ${noun}${expected === 1 ? '' : 's'}`,
+        });
+      }
+    });
+  }
+
+  for (const w of wrongClaims) {
+    console.log(`        ${w.file}:${w.line} says "${w.said}" - the database says ${w.expected}`);
+  }
+
+  check(
+    "the property's own numbers, as the interface states them",
+    wrongClaims.length,
+    `${TRUTH.get('unit')} units, ${TRUTH.get('cluster')} clusters, ` +
+    `${TRUTH.get('floor')} floors - every claim in frontend/src agrees`
+  );
 
   const KNOWN_ENDLESS = 8;
   const endless = (await rows(

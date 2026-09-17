@@ -213,7 +213,8 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
       >
         <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Inventory</p>
         <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">33 Units</p>
-        <p class="mt-1 text-xs text-muted-foreground">Across 5 clusters &amp; 3 floors</p>
+        <!-- 4 floors: 1-3 residential, 4 the rooftop penthouse. See PublicGuestView. -->
+        <p class="mt-1 text-xs text-muted-foreground">Across 5 clusters &amp; 4 floors</p>
       </div>
 
       <div 
