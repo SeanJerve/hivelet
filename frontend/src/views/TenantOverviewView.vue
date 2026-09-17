@@ -1,72 +1,45 @@
 <!--
   @file views/TenantOverviewView.vue
-  @description Tenant Unit Overview — displays assigned room specifications, high-res unit image, and monthly payment statement.
-  @systemBibleRef Section 4 (Tenant Role), Section 5 (Property Model), Section 5.5 (Water Billing ₱200/head)
-  @rationale Provides active residents with transparent unit photo preview, specs, and an at-a-glance billing statement.
+  @description The resident's overview. Leads with what they owe and the way to pay, then the bill
+    itself, a way to ask for a repair, their payments, and their unit.
+  @systemBibleRef Section 4 (Tenant Role), Section 5.5 (Water Billing)
+  @designRef docs/DESIGN_GUIDELINE.md (workspace system), docs/OVERVIEW_AUDIT_2026-09-17.md
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
+import { peso } from '@/lib/canonicalUnits';
 import { useToast } from '@/lib/useToast';
+import Skeleton from '@/components/ui/Skeleton.vue';
+import OverviewTile from '@/components/overview/OverviewTile.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
+import SegmentBar from '@/components/overview/SegmentBar.vue';
+import { CreditCard, RefreshCw, Wrench, X, CheckCircle2, ChevronDown, Home } from 'lucide-vue-next';
 
-const router = useRouter();
 const { showToast } = useToast();
-import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
-import {
-  Home,
-  CreditCard,
-  CheckCircle2,
-  User,
-  Droplets,
-  Zap,
-  Wifi,
-  Sparkles,
-  X,
-  Calendar,
-  Camera,
-  AlertTriangle,
-  Clock,
-  CheckCircle,
-  RefreshCw,
-  Wrench,
-  Plus
-} from 'lucide-vue-next';
 
 const submissionNotice = ref('');
 const activeBillId = ref<string | null>(null);
 const payingOnline = ref(false);
-const isFabOpen = ref(false);
+const showOtherWaysToPay = ref(false);
 
 /**
  * Resident and assigned-unit data. Everything starts empty.
  *
- * This object used to be seeded with a complete fictional tenancy - Unit 1A on
- * the ground floor, 4,500 rent, a 9,000 deposit, a move-in of Jan 05 2023, a due
- * date of Aug 05 2026 - and the loader below only overwrites the fields the API
- * happens to return. Anything it did not return stayed fictional and was
- * displayed to the resident as their own tenancy.
+ * This object used to be seeded with a complete fictional tenancy, and the loader
+ * only overwrote the fields the API returned, so anything it did not return stayed
+ * fictional. The loader's own fallbacks did the same thing on a smaller scale,
+ * inventing room 1A, cluster BH and a first floor when a field was missing. A
+ * missing fact now shows as not on file.
  *
- * Two of the seeds were worse than cosmetic. `landladyGCash` was
- * '0917-123-4567', a number that is not the landlady's, shown on the page that
- * tells a resident where to send money. And the unit specs asserted a private
- * en-suite, split-type aircon, fibre wifi and an individual electricity
- * sub-meter for every unit in the property - the system holds none of those
- * facts, and it does not model electricity at all.
+ * The template also printed a list of amenities, a garbage fee "Included (₱0)" and
+ * an electricity rate for every unit. The system holds none of those facts; two
+ * are open questions for the owner (CLIENT_MEETING_QUESTIONS.md 2a and 3b). They
+ * are gone until there is something true to print.
  */
-/**
- * Set when the tenant's own data could not be read.
- *
- * `totalAmountDue` initialises to 0, and the amount card renders
- * `'₱' + totalAmountDue` whenever the countdown is not 'paid'. So a failed
- * load showed the resident **₱0 due** - quieter than the sibling defect on the
- * payments screen, and the same claim: that nothing is owed, asserted out of a
- * request that never came back.
- */
-const tenantDataLoadFailed = ref(false);
-
 const tenantData = ref({
   name: currentUser.value?.fullName || '',
   room: '',
@@ -77,9 +50,6 @@ const tenantData = ref({
   photoUrl: '',
   baseRent: 0,
   waterFee: 0,
-  gbgFee: 0,
-  depositAmount: 0,
-  moveInDate: '',
   totalAmountDue: 0,
   dueDate: '',
   dueBadgeText: '',
@@ -88,29 +58,68 @@ const tenantData = ref({
   landladyGCash: LANDLADY.gcash,
   landladyName: LANDLADY.name,
   verifiedAt: '',
-  nextDueDateDisplay: ''
-});
-
-const loading = ref(false);
-
-const tenantFirstName = computed(() => {
-  const full = tenantData.value.name || currentUser.value?.fullName || 'Resident';
-  return full.split(' ')[0];
+  nextDueDateDisplay: '',
 });
 
 /**
- * Computed due-date countdown.
- * Returns { daysLeft: number, label: string, severity: 'safe'|'warning'|'danger'|'overdue'|'paid' }
- * Severity drives the color of the badge on the payment card.
- * @businessRule BR-033 - the cycle runs from each tenancy's own anniversary
- *               date, not from a fixed day of the month. The due date shown here
- *               comes from the bill the backend raised; this only counts down to
- *               it. (The previous note here claimed "the 5th of every month",
- *               which is not what the system does.)
+ * Set when the tenant's own data could not be read.
+ *
+ * `totalAmountDue` initialises to 0, so a failed load used to show the resident
+ * ₱0 due. Every money figure on this page reads this one flag, so the bill and
+ * the amount due can no longer disagree about whether anything loaded.
+ */
+const tenantDataLoadFailed = ref(false);
+const loading = ref(true);
+
+interface PaymentRow {
+  id: string;
+  amount: number;
+  date: string;
+  method: string;
+}
+interface ReceiptRow extends PaymentRow {
+  period: string;
+  verified: boolean;
+}
+
+const pendingOnlinePayments = ref<PaymentRow[]>([]);
+const recordedReceipts = ref<ReceiptRow[]>([]);
+
+const firstName = computed(() => {
+  const full = tenantData.value.name || currentUser.value?.fullName || '';
+  return full.split(/\s+/)[0] ?? '';
+});
+
+const partOfDay = (() => {
+  const h = new Date().getHours();
+  return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
+})();
+
+const todayLabel = new Date().toLocaleDateString('en-PH', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+function shortDate(value: string | null | undefined, withYear = false) {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString('en-PH', {
+    month: 'short',
+    day: 'numeric',
+    ...(withYear ? { year: 'numeric' } : {}),
+  });
+}
+
+/**
+ * Due-date countdown. Severity drives the tone of the status on the amount card.
+ * @businessRule BR-033 - the cycle runs from each tenancy's own anniversary date.
+ *   The due date shown comes from the bill the backend raised; this only counts
+ *   down to it.
  */
 const dueDateCountdown = computed(() => {
   if (tenantData.value.dueBadgeText === 'PAID') {
-    return { daysLeft: 0, label: 'Payment Settled', severity: 'paid' as const };
+    return { daysLeft: 0, label: 'Payment settled', severity: 'paid' as const };
   }
   const raw = tenantData.value.dueDateRaw;
   if (!raw) return { daysLeft: 0, label: tenantData.value.dueDaysRemaining, severity: 'safe' as const };
@@ -122,23 +131,16 @@ const dueDateCountdown = computed(() => {
   if (diff < 0) {
     return { daysLeft: diff, label: `Overdue by ${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'}`, severity: 'overdue' as const };
   }
-  if (diff === 0) {
-    return { daysLeft: 0, label: 'Due Today!', severity: 'danger' as const };
-  }
-  if (diff <= 3) {
-    return { daysLeft: diff, label: `Due in ${diff} day${diff === 1 ? '' : 's'}`, severity: 'warning' as const };
-  }
+  if (diff === 0) return { daysLeft: 0, label: 'Due today', severity: 'danger' as const };
+  if (diff <= 3) return { daysLeft: diff, label: `Due in ${diff} day${diff === 1 ? '' : 's'}`, severity: 'warning' as const };
   return { daysLeft: diff, label: `Due in ${diff} days`, severity: 'safe' as const };
 });
 
+const isSettled = computed(() => dueDateCountdown.value.severity === 'paid');
+
 /**
- * The configured per-occupant water rate. BR-014.
- *
- * The card below stated "₱200 / registered occupant monthly" as a literal. The
- * rate is the owner's to set, so the moment she changed it the tenant's own
- * statement explained their bill with a figure that no longer applied - while
- * the amount beside it, which comes from the server, moved. The two would
- * disagree on screen and the wrong one looks authoritative.
+ * The configured per-occupant water rate (BR-014). The rate is the owner's to set,
+ * so it is read, not written into the page.
  */
 const waterRatePerOccupant = ref<number | null>(null);
 
@@ -147,23 +149,22 @@ async function loadWaterRate() {
     const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
     waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
   } catch {
-    // Left null; the label falls back to wording that quotes no figure.
+    // Left null; the bill then states the amount without quoting a rate.
   }
 }
 
 onMounted(async () => {
   loadWaterRate();
-  // Check for returning payment status from checkout redirect
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get('status');
   const refParam = params.get('ref');
 
   if (statusParam === 'success' && refParam) {
-    submissionNotice.value = `Online GCash payment (Ref: ${refParam}) has been successfully submitted! It is now pending verification by Landlady Fe Galang Da Silva.`;
-    showToast('success', 'Payment Submitted', `Online GCash payment (Ref: ${refParam}) submitted for verification.`);
+    submissionNotice.value = `Your GCash payment (reference ${refParam}) was submitted. It counts as paid once the landlady verifies it.`;
+    showToast('success', 'Payment submitted', `GCash payment ${refParam} is waiting for verification.`);
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (statusParam === 'cancelled') {
-    showToast('info', 'Payment Cancelled', 'Online payment checkout was cancelled.');
+    showToast('info', 'Payment cancelled', 'The online payment was cancelled before it was completed.');
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
@@ -173,29 +174,23 @@ onMounted(async () => {
 async function fetchTenantData() {
   loading.value = true;
   try {
-    // Fetch assigned room info
     const data = await api.get<any[]>('/tenant/my-rooms');
     if (data && data.length > 0) {
       const activeRoom = data.find((r: any) => r.is_active) || data[0];
       if (activeRoom) {
-        const roomNum = activeRoom.rooms?.room_number || activeRoom.room_number || '1A';
-        tenantData.value.room = `Unit ${roomNum.toUpperCase()}`;
-        tenantData.value.roomDetails = activeRoom.rooms?.room_type || '1 Bedroom';
-        tenantData.value.roomType = activeRoom.rooms?.cluster_code || 'BH';
-        tenantData.value.floor = activeRoom.rooms?.floor || 1;
-        tenantData.value.occupants = activeRoom.occupant_count || 1;
-        
-        // `rooms` has no photo of its own - the photos live in `room_photos`,
-        // one row each, with `is_primary` picking the one to lead with. A third
-        // fallback to `activeRoom.rooms?.photo_url` used to sit here and could
-        // never have fired: no such column exists and the API never produced
-        // the name. It read as a safety net while being nothing at all.
+        const roomNum = activeRoom.rooms?.room_number || activeRoom.room_number || '';
+        tenantData.value.room = roomNum ? `Unit ${String(roomNum).toUpperCase()}` : '';
+        tenantData.value.roomDetails = activeRoom.rooms?.room_type || '';
+        tenantData.value.roomType = activeRoom.rooms?.cluster_code || '';
+        tenantData.value.floor = activeRoom.rooms?.floor || 0;
+        tenantData.value.occupants = activeRoom.occupant_count || 0;
+
+        // `rooms` has no photo of its own; photos live in `room_photos`, with
+        // `is_primary` picking the one to lead with.
         const primaryPhoto =
-          activeRoom.rooms?.room_photos?.find((p: any) => p.is_primary)?.file_url
-          || activeRoom.rooms?.room_photos?.[0]?.file_url;
-        if (primaryPhoto) {
-          tenantData.value.photoUrl = primaryPhoto;
-        }
+          activeRoom.rooms?.room_photos?.find((p: any) => p.is_primary)?.file_url ||
+          activeRoom.rooms?.room_photos?.[0]?.file_url;
+        if (primaryPhoto) tenantData.value.photoUrl = primaryPhoto;
 
         if (activeRoom.rooms?.current_price) {
           tenantData.value.baseRent = Number(activeRoom.rooms.current_price);
@@ -203,57 +198,58 @@ async function fetchTenantData() {
       }
     }
 
-    tenantDataLoadFailed.value = false;
-    // Fetch bills, payments and income records for the monthly statement
     const [billsData, paymentsData, incomeData] = await Promise.all([
       api.get<any[]>('/tenant/my-bills'),
       api.get<any[]>('/tenant/my-payments'),
-      api.get<any[]>('/tenant/my-income-records')
+      api.get<any[]>('/tenant/my-income-records'),
     ]);
 
-    // Find the latest covered date from verified payments and income records
+    pendingOnlinePayments.value = (paymentsData ?? [])
+      .filter((p: any) => p.verification_status === 'Pending Verification')
+      .map((p: any) => ({
+        id: String(p.id),
+        amount: Number(p.amount) || 0,
+        date: shortDate(p.paid_at || p.created_at, true),
+        method: p.payment_method || 'Online payment',
+      }));
+
+    recordedReceipts.value = (incomeData ?? []).slice(0, 4).map((inc: any) => ({
+      id: String(inc.id),
+      amount: Number(inc.remitted_amount) || 0,
+      date: shortDate(inc.date_paid, true),
+      method: inc.payment_method || '',
+      period:
+        inc.rent_period_start && inc.rent_period_end
+          ? `${shortDate(inc.rent_period_start)} to ${shortDate(inc.rent_period_end, true)}`
+          : '',
+      verified: inc.verification_status === 'Verified',
+    }));
+
+    // Find the latest covered date from verified payments and income records.
     let maxCoveredDate: Date | null = null;
 
-    // 1. Check verified payments
     paymentsData?.forEach((p: any) => {
       if (p.verification_status === 'Verified') {
         const payDate = new Date(p.paid_at || p.created_at);
-        // Estimate cover end as the 25th of the payment month
+        // Estimate cover end as the 25th of the payment month.
         const estCoverEnd = new Date(payDate.getFullYear(), payDate.getMonth(), 25);
-        if (!maxCoveredDate || estCoverEnd > maxCoveredDate) {
-          maxCoveredDate = estCoverEnd;
-        }
+        if (!maxCoveredDate || estCoverEnd > maxCoveredDate) maxCoveredDate = estCoverEnd;
       }
     });
 
-    // 2. Check verified income records coverage (most precise!)
     incomeData?.forEach((inc: any) => {
       if (inc.verification_status === 'Verified' && inc.rent_period_end) {
         const end = new Date(inc.rent_period_end);
-        if (!maxCoveredDate || end > maxCoveredDate) {
-          maxCoveredDate = end;
-        }
+        if (!maxCoveredDate || end > maxCoveredDate) maxCoveredDate = end;
       }
     });
 
     const unpaidBill = billsData?.find((b: any) => {
-      // `effective_status` is the API's derived value - a bill past its due date
-      // reads Overdue there even though the stored column still says Due.
-      //
-      // Anything not settled counts, INCLUDING 'Partially Paid'. This was a
-      // whitelist of Pending/Due/Overdue, which dropped a partially paid bill
-      // silently: the tenant saw nothing outstanding while still owing the
-      // balance. BR-013.
+      // `effective_status` is the API's derived value. Anything not settled counts,
+      // including 'Partially Paid' (BR-013).
       if (b.status === 'Paid') return false;
       if ((b.effective_status ?? b.status) === 'Paid') return false;
-
-      // If the bill due date is <= covered date, it is already settled by a payment
-      if (maxCoveredDate) {
-        const billDue = new Date(b.due_date);
-        if (billDue <= maxCoveredDate) {
-          return false;
-        }
-      }
+      if (maxCoveredDate && new Date(b.due_date) <= maxCoveredDate) return false;
       return true;
     });
 
@@ -261,18 +257,17 @@ async function fetchTenantData() {
       activeBillId.value = unpaidBill.id;
       tenantData.value.baseRent = unpaidBill.rent_amount;
       tenantData.value.waterFee = unpaidBill.water_amount;
-      // The BALANCE, not the debt as issued - they differ the moment a bill is
-      // partially paid. `amount_outstanding` is derived by the API from the
-      // payments actually linked to the bill. BR-013.
-      tenantData.value.totalAmountDue =
-        (unpaidBill as any).amount_outstanding ?? unpaidBill.total_amount;
-      tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      // The balance, not the debt as issued: they differ once a bill is partly
+      // paid. `amount_outstanding` is derived by the API (BR-013).
+      tenantData.value.totalAmountDue = unpaidBill.amount_outstanding ?? unpaidBill.total_amount;
+      tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
       tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
       tenantData.value.dueDaysRemaining = 'Awaiting payment';
       tenantData.value.dueDateRaw = unpaidBill.due_date;
       tenantData.value.verifiedAt = '';
       tenantData.value.nextDueDateDisplay = '';
     } else {
+      activeBillId.value = null;
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
       const validCoveredDate = maxCoveredDate as Date | null;
       if (validCoveredDate) {
@@ -280,25 +275,23 @@ async function fetchTenantData() {
         tenantData.value.waterFee = paidBill ? paidBill.water_amount : tenantData.value.waterFee;
         tenantData.value.totalAmountDue = 0;
 
-        // Represent the paid period by the 5th of that covered month
+        // TODO(Sean, audit F9): BR-033 derives the cycle from the anniversary date.
+        // This still assumes the 5th of the month after coverage.
         const lastPaidDue = new Date(validCoveredDate.getFullYear(), validCoveredDate.getMonth(), 5);
-        tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
         tenantData.value.dueBadgeText = 'PAID';
         tenantData.value.dueDaysRemaining = 'Settled';
         tenantData.value.dueDateRaw = lastPaidDue.toISOString().split('T')[0];
 
-        // Next due date is 1 month after
         const nextDate = new Date(lastPaidDue);
         nextDate.setMonth(nextDate.getMonth() + 1);
         nextDate.setDate(5);
-        tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
 
         const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
-        if (linkedPayment?.verified_at) {
-          tenantData.value.verifiedAt = new Date(linkedPayment.verified_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        } else {
-          tenantData.value.verifiedAt = '';
-        }
+        tenantData.value.verifiedAt = linkedPayment?.verified_at
+          ? new Date(linkedPayment.verified_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })
+          : '';
       } else {
         tenantData.value.dueBadgeText = 'PAID';
         tenantData.value.dueDaysRemaining = 'No outstanding bills';
@@ -309,6 +302,7 @@ async function fetchTenantData() {
       }
     }
 
+    tenantDataLoadFailed.value = false;
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
     tenantDataLoadFailed.value = true;
@@ -322,368 +316,295 @@ async function handlePayOnline() {
   try {
     const res = await api.post<{ sessionId: string; redirectUrl: string }>('/tenant/payments/checkout', {
       billId: activeBillId.value || undefined,
-      returnUrl: window.location.origin + '/tenant'
+      returnUrl: window.location.origin + '/tenant',
     });
     if (res && res.redirectUrl) {
       window.location.href = res.redirectUrl;
     }
   } catch (err: any) {
-    showToast('error', 'Payment Session Error', err?.message || 'Unable to create checkout session.');
+    showToast('error', 'Payment page did not open', err?.message || 'The checkout session could not be created. Try again.');
   } finally {
     payingOnline.value = false;
   }
 }
+
+const statusTone = computed(() => {
+  const s = dueDateCountdown.value.severity;
+  if (s === 'overdue' || s === 'danger') return 'overdue' as const;
+  if (s === 'warning') return 'verify' as const;
+  return 'on-dark' as const;
+});
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Breadcrumb & Welcome Greeting Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
-      <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-          <span>Tenant Portal</span>
-          <span>/</span>
-          <span class="font-bold text-foreground">Unit Overview</span>
-        </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-          Welcome back, {{ tenantFirstName }}!
+  <div class="ws-focus flex flex-col gap-5 text-ink">
+    <header class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+      <div class="min-w-0">
+        <p class="text-sm text-ink-faint">{{ todayLabel }}</p>
+        <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
+          Good {{ partOfDay }}<template v-if="firstName">, {{ firstName }}</template>
         </h1>
-        <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">
-          Unit {{ tenantData.room }} · Assigned specifications, photo showcase, and active billing statement.
+        <p v-if="tenantData.room" class="mt-1 text-sm text-ink-soft">
+          {{ tenantData.room }}<template v-if="tenantData.floor">, floor {{ tenantData.floor }}</template>
         </p>
       </div>
-
-      <!-- Quick Action Buttons: Desktop Primary Actions & Compact Refresh -->
-      <div class="hidden sm:flex items-center gap-2.5 sm:justify-end">
-        <router-link 
-          to="/tenant/tickets" 
-          class="btn-primary"
-        >
-          <Wrench class="size-3.5 text-white" />
-          <span>Submit Maintenance Ticket</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <router-link to="/tenant/tickets" class="pill-btn">
+          <Wrench class="size-4 text-ink-soft" aria-hidden="true" />
+          Request a repair
         </router-link>
-
-        <router-link 
-          to="/tenant/payments" 
-          class="btn-secondary"
-        >
-          <CreditCard class="size-3.5 text-primary" />
-          <span>Payment &amp; Billing History</span>
+        <router-link to="/tenant/payments" class="pill-btn">
+          <CreditCard class="size-4 text-ink-soft" aria-hidden="true" />
+          Payment history
         </router-link>
-
         <button
-          @click="fetchTenantData"
+          type="button"
+          class="icon-btn"
           :disabled="loading"
-          class="btn-secondary"
-          title="Refresh Account Data"
+          aria-label="Refresh your account"
+          @click="fetchTenantData"
         >
-          <RefreshCw :class="['size-3.5 text-muted-foreground', loading ? 'animate-spin text-primary' : '']" />
-          <span>Refresh</span>
+          <RefreshCw :class="['size-4', loading && 'animate-spin']" aria-hidden="true" />
         </button>
       </div>
+    </header>
+
+    <div
+      v-if="submissionNotice"
+      role="status"
+      class="flex items-start justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm"
+    >
+      <span class="flex items-start gap-2.5">
+        <CheckCircle2 class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+        {{ submissionNotice }}
+      </span>
+      <button type="button" class="icon-btn" aria-label="Dismiss this message" @click="submissionNotice = ''">
+        <X class="size-4" aria-hidden="true" />
+      </button>
     </div>
 
-    <!-- Skeleton Loading -->
-    <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <SkeletonDetail />
-    </div>
-
-    <div v-else class="space-y-6">
-      <!-- Submission Toast Notice -->
+    <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
+      <span class="sr-only" role="status">Loading your account</span>
       <div
-        v-if="submissionNotice"
-        class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm rounded-2xl flex items-center justify-between shadow-xs"
+        v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8']"
+        :key="i"
+        :class="['rounded-tile bg-tile p-6 flex flex-col gap-4', span]"
       >
-        <div class="flex items-center gap-2.5">
-          <CheckCircle2 class="size-5 text-emerald-600 shrink-0" />
-          <span class="font-medium">{{ submissionNotice }}</span>
-        </div>
-        <button @click="submissionNotice = ''" class="text-emerald-700 hover:text-emerald-900 ml-3 p-1 rounded-lg cursor-pointer" title="Dismiss">
-          <X class="size-4" />
-        </button>
-      </div>
-
-      <!-- 4 Top KPI Stat Cards (Matching Admin Overview Style) -->
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div class="surface-card p-5">
-          <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Assigned Unit</p>
-            <span class="rounded-xl p-2 bg-blue-50 text-primary ring-1 ring-blue-200">
-              <Home class="size-4" />
-            </span>
-          </div>
-          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-foreground">{{ tenantData.room }}</p>
-          <p class="mt-1.5 text-xs text-muted-foreground font-medium">{{ tenantData.roomDetails }} · Floor {{ tenantData.floor }}</p>
-        </div>
-
-        <div class="surface-card p-5">
-          <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Monthly Base Rent</p>
-            <span class="rounded-xl p-2 bg-amber-50 text-accent-ink ring-1 ring-amber-200">
-              <CreditCard class="size-4" />
-            </span>
-          </div>
-          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-foreground">₱{{ tenantData.baseRent.toLocaleString() }}</p>
-          <p class="mt-1.5 text-xs text-amber-800 font-medium">Standard rate · Submetered Power</p>
-        </div>
-
-        <div class="surface-card p-5">
-          <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Water Allocation</p>
-            <span class="rounded-xl p-2 bg-sky-50 text-sky-800 ring-1 ring-sky-200">
-              <Droplets class="size-4" />
-            </span>
-          </div>
-          <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-foreground">₱{{ tenantData.waterFee.toLocaleString() }}</p>
-          <p class="mt-1.5 text-xs text-sky-700 font-medium">
-            {{ waterRatePerOccupant === null
-              ? 'Charged per registered occupant, monthly'
-              : `₱${waterRatePerOccupant.toLocaleString()} / registered occupant monthly` }}
-          </p>
-        </div>
-
-        <div class="surface-card p-5">
-          <div class="flex items-start justify-between gap-3">
-            <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Account Status</p>
-            <span :class="[
-              'rounded-xl p-2 ring-1',
-              dueDateCountdown.severity === 'paid' ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-rose-50 text-rose-800 ring-rose-200'
-            ]">
-              <CheckCircle v-if="dueDateCountdown.severity === 'paid'" class="size-4" />
-              <AlertTriangle v-else class="size-4" />
-            </span>
-          </div>
-          <!-- A failed load must not read as a figure. `totalAmountDue` starts at 0,
-               so this card said "₱0" for a request that never came back. -->
-          <p class="tabular mt-3 font-display text-3xl font-black leading-tight" :class="tenantDataLoadFailed ? 'text-muted-foreground' : dueDateCountdown.severity === 'paid' ? 'text-emerald-800' : 'text-rose-800'">
-            {{ tenantDataLoadFailed ? '—' : dueDateCountdown.severity === 'paid' ? 'Settled' : '₱' + tenantData.totalAmountDue.toLocaleString() }}
-          </p>
-          <p class="mt-1.5 text-xs font-medium" :class="tenantDataLoadFailed ? 'text-muted-foreground' : dueDateCountdown.severity === 'paid' ? 'text-emerald-700' : 'text-rose-700'">
-            <template v-if="tenantDataLoadFailed">Could not be loaded — this is not the same as nothing being owed. Refresh to retry.</template>
-            <template v-else>{{ dueDateCountdown.severity === 'paid' ? 'Next Due: ' + (tenantData.nextDueDateDisplay || 'Upcoming Period') : tenantData.dueDaysRemaining }}</template>
-          </p>
-        </div>
-      </div>
-
-      <!-- 2-Column Section: Unit Specs & Monthly Payment Statement -->
-      <div class="grid gap-6 lg:grid-cols-12">
-        
-        <!-- Left: Unit Photo & Specifications (7 of 12 cols) -->
-        <div class="lg:col-span-7 surface-card rounded-2xl border border-border bg-white p-6 shadow-xs flex flex-col justify-between space-y-5">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-border">
-              <div>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider text-primary">Unit Details</span>
-                <h2 class="font-display text-lg font-black text-foreground">{{ tenantData.room }} Specifications</h2>
-              </div>
-              <span class="badge-soft badge-success text-xs font-bold">
-                Active Resident Lease
-              </span>
-            </div>
-
-            <!-- Unit Photo Frame -->
-            <div class="h-52 w-full rounded-xl overflow-hidden border border-border bg-slate-900 relative">
-              <img
-                v-if="tenantData.photoUrl"
-                :src="tenantData.photoUrl"
-                :alt="tenantData.room"
-                class="w-full h-full object-cover"
-              />
-              <div v-else class="size-full flex items-center justify-center text-white/80 space-y-2 p-6">
-                <Home class="size-8 text-white/60" />
-              </div>
-              <div class="absolute bottom-3 left-3 flex items-center gap-2">
-                <span class="badge-soft badge-neutral bg-white/95 font-bold uppercase tracking-wider">
-                  {{ tenantData.roomType }}
-                </span>
-                <span class="badge-soft badge-blue bg-white/95 font-bold">
-                  Floor {{ tenantData.floor }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Metadata Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
-              <div class="p-3 bg-background rounded-xl border border-border">
-                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Room Type</span>
-                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.roomDetails || '—' }}</span>
-              </div>
-              <div class="p-3 bg-background rounded-xl border border-border">
-                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Cluster</span>
-                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.roomType || '—' }}</span>
-              </div>
-              <div class="p-3 bg-background rounded-xl border border-border">
-                <span class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block mb-1">Occupancy</span>
-                <span class="text-foreground font-display font-bold text-xs sm:text-sm">{{ tenantData.occupants > 0 ? tenantData.occupants + ' registered' : '—' }}</span>
-              </div>
-            </div>
-
-            <!-- Unit Amenities Chips -->
-            <div class="space-y-2">
-              <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Standard Amenities &amp; Inclusions</p>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-foreground-soft">
-                <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Private T&amp;B Shower</div>
-                <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Bed &amp; Mattress Base</div>
-                <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> Submetered Power (₱12.50/kWh)</div>
-                <div class="flex items-center gap-1.5"><CheckCircle2 class="size-3 text-emerald-600" /> ₱200/Head Water Rate</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-            <span>Resident: <strong class="text-foreground">{{ tenantData.name }}</strong></span>
-            <span>Move-in: <strong class="text-foreground">{{ tenantData.moveInDate || 'not on file' }}</strong></span>
-          </div>
-        </div>
-
-        <!-- Right: Monthly Payment Statement (5 of 12 cols) -->
-        <div class="lg:col-span-5 surface-card rounded-2xl border border-border bg-white p-6 shadow-xs flex flex-col justify-between space-y-5">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-border">
-              <div>
-                <span class="text-[10px] font-extrabold uppercase tracking-wider text-primary">Billing Statement</span>
-                <h2 class="font-display text-lg font-black text-foreground">Monthly Statement</h2>
-              </div>
-              <span :class="[
-                'badge-soft font-bold text-xs',
-                dueDateCountdown.severity === 'paid' ? 'badge-success' : 'badge-warning'
-              ]">
-                {{ tenantData.dueBadgeText }}
-              </span>
-            </div>
-
-            <!-- Dynamic Countdown Alert Banner -->
-            <div
-              class="p-3.5 rounded-xl border flex items-center gap-3"
-              :class="{
-                'bg-emerald-50 border-emerald-200 text-emerald-950': dueDateCountdown.severity === 'paid' || dueDateCountdown.severity === 'safe',
-                'bg-amber-50 border-amber-200 text-amber-950': dueDateCountdown.severity === 'warning',
-                'bg-rose-50 border-rose-200 text-rose-950': dueDateCountdown.severity === 'danger' || dueDateCountdown.severity === 'overdue'
-              }"
-            >
-              <CheckCircle2 v-if="dueDateCountdown.severity === 'paid' || dueDateCountdown.severity === 'safe'" class="size-5 text-emerald-600 shrink-0" />
-              <AlertTriangle v-else class="size-5 text-rose-600 shrink-0" />
-              <div>
-                <p class="text-xs font-bold">{{ dueDateCountdown.label }}</p>
-                <p class="text-[11px] opacity-80 mt-0.5">
-                  <span v-if="dueDateCountdown.severity === 'paid'">
-                    All dues are cleared. Next rent due on <strong>{{ tenantData.nextDueDateDisplay }}</strong>.
-                  </span>
-                  <span v-else>
-                    Due date on <strong>{{ tenantData.dueDate }}</strong>.
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            <!-- Breakdown Matrix -->
-            <div class="space-y-2.5 pt-2">
-              <div class="flex items-center justify-between text-xs text-foreground-soft">
-                <span>Room {{ tenantData.room }} Base Rental</span>
-                <span class="font-bold text-foreground tabular">₱{{ tenantData.baseRent.toLocaleString() }}.00</span>
-              </div>
-              <div class="flex items-center justify-between text-xs text-foreground-soft">
-                <span class="flex items-center gap-1.5">
-                  Water Allocation
-                  <span class="text-[10px] text-muted-foreground">({{ tenantData.occupants }} × ₱200/head)</span>
-                </span>
-                <span class="font-bold text-foreground tabular">₱{{ tenantData.waterFee.toLocaleString() }}.00</span>
-              </div>
-              <div class="flex items-center justify-between text-xs text-foreground-soft">
-                <span>Garbage Collection Fee</span>
-                <span class="font-semibold text-emerald-700">Included (₱0)</span>
-              </div>
-              <div class="flex items-center justify-between text-xs text-foreground-soft">
-                <span>Electric Submeter</span>
-                <span class="font-semibold text-sky-700">Separate Bill</span>
-              </div>
-              <div class="border-t border-border pt-2.5 flex items-center justify-between">
-                <span class="font-bold text-xs text-foreground">Total Amount Due</span>
-                <span class="font-display font-black text-xl tabular text-foreground">₱{{ tenantData.totalAmountDue.toLocaleString() }}.00</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bottom Action Buttons -->
-          <div class="pt-4 border-t border-border space-y-3">
-            <button
-              v-if="dueDateCountdown.severity !== 'paid'"
-              @click="handlePayOnline"
-              :disabled="payingOnline"
-              class="btn-primary w-full justify-center min-h-11"
-            >
-              <CreditCard class="size-3.5 text-white" />
-              <span>{{ payingOnline ? 'Opening Gateway…' : 'Pay Online (GCash via Adyen)' }}</span>
-            </button>
-
-            <div class="p-3 bg-background rounded-xl border border-border text-[11px] text-muted-foreground space-y-0.5 text-center">
-              <p>Landlady GCash: <strong class="text-foreground font-mono">{{ tenantData.landladyGCash }}</strong></p>
-              <p>Account Name: <strong>{{ tenantData.landladyName }}</strong></p>
-            </div>
-          </div>
-        </div>
-
+        <Skeleton class-name="h-4 w-28 rounded-full" />
+        <Skeleton class-name="h-12 w-40 rounded-2xl" />
+        <Skeleton class-name="h-3 w-full rounded-full" />
       </div>
     </div>
 
-    <!-- Mobile Floating Action Speed-Dial Button (FAB) -->
-    <div class="sm:hidden">
-      <!-- Backdrop overlay when speed dial is open -->
-      <div 
-        v-if="isFabOpen" 
-        class="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-40 animate-in fade-in duration-150" 
-        @click="isFabOpen = false" 
-      />
-
-      <!-- Speed Dial Actions and FAB Trigger -->
-      <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-        <Transition
-          enter-active-class="transition duration-200 ease-out"
-          enter-from-class="transform opacity-0 translate-y-4 scale-90"
-          enter-to-class="transform opacity-100 translate-y-0 scale-100"
-          leave-active-class="transition duration-150 ease-in"
-          leave-from-class="transform opacity-100 translate-y-0 scale-100"
-          leave-to-class="transform opacity-0 translate-y-4 scale-90"
-        >
-          <div v-if="isFabOpen" class="flex flex-col items-end gap-2.5 mb-1">
-            <!-- Action 1: Payment and Billing -->
-            <button
-              @click="isFabOpen = false; router.push('/tenant/payments');"
-              class="px-4 py-2.5 rounded-xl bg-white text-foreground font-extrabold text-xs shadow-xl border border-border hover:bg-primary hover:text-white hover:border-primary active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
-            >
-              <span>Payment &amp; Billing</span>
-            </button>
-
-            <!-- Action 2: Submit Maintenance Ticket -->
-            <button
-              @click="isFabOpen = false; router.push('/tenant/tickets');"
-              class="px-4 py-2.5 rounded-xl bg-white text-foreground font-extrabold text-xs shadow-xl border border-border hover:bg-primary hover:text-white hover:border-primary active:bg-[#0055cc] active:text-white transition-all cursor-pointer select-none whitespace-nowrap"
-            >
-              <span>Submit Maintenance Ticket</span>
-            </button>
+    <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+      <!-- What the resident owes, and the way to pay it. The only brand tile. -->
+      <OverviewTile tone="brand" title="Amount due" class="md:col-span-2 xl:col-span-5">
+        <UnavailableNote
+          v-if="tenantDataLoadFailed"
+          dark
+          message="Your bill could not be loaded. This is not the same as owing nothing."
+          @retry="fetchTenantData"
+        />
+        <template v-else-if="!isSettled">
+          <div>
+            <p class="text-5xl leading-none font-semibold tabular tracking-tight">{{ peso(tenantData.totalAmountDue) }}</p>
+            <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-on-brand-soft">
+              <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
+              <span v-if="tenantData.dueDate">Due {{ tenantData.dueDate }}</span>
+            </div>
           </div>
-        </Transition>
+          <div class="flex flex-col items-start gap-2">
+            <button type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
+              <CreditCard class="size-4" aria-hidden="true" />
+              {{ payingOnline ? 'Opening the payment page' : 'Pay with GCash' }}
+            </button>
+            <p class="text-xs leading-5 text-on-brand-soft">
+              Online payments go through Adyen. Each one counts as paid once the landlady verifies it.
+            </p>
+          </div>
+        </template>
+        <div v-else>
+          <p class="text-5xl leading-none font-semibold tracking-tight">
+            {{ tenantData.dueDaysRemaining === 'Settled' ? 'Settled' : 'Nothing due' }}
+          </p>
+          <p class="mt-3 text-sm text-on-brand-soft">
+            <template v-if="tenantData.nextDueDateDisplay">Next rent is due {{ tenantData.nextDueDateDisplay }}.</template>
+            <template v-else>No bill is waiting for payment.</template>
+          </p>
+        </div>
 
-        <!-- Main FAB Trigger Button -->
-        <button
-          @click="isFabOpen = !isFabOpen"
-          :class="[
-            'size-14 rounded-full shadow-2xl transition-all flex items-center justify-center cursor-pointer border-2 border-white',
-            isFabOpen 
-              ? 'bg-primary text-white ring-4 ring-blue-200' 
-              : 'bg-white text-foreground ring-4 ring-stone-200 hover:bg-primary hover:text-white hover:ring-blue-200 active:bg-[#0055cc] active:text-white'
-          ]"
-          title="Quick Actions"
-          aria-label="Quick Actions Menu"
-        >
-          <Plus 
-            :class="[
-              'size-7 transition-transform duration-200',
-              isFabOpen ? 'rotate-45' : ''
-            ]" 
+        <div class="mt-auto border-t border-white/20 pt-3">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 rounded-xl py-1 text-sm font-semibold cursor-pointer"
+            :aria-expanded="showOtherWaysToPay"
+            aria-controls="other-ways-to-pay"
+            @click="showOtherWaysToPay = !showOtherWaysToPay"
+          >
+            Other ways to pay
+            <ChevronDown :class="['size-4 transition-transform', showOtherWaysToPay && 'rotate-180']" aria-hidden="true" />
+          </button>
+          <div v-show="showOtherWaysToPay" id="other-ways-to-pay" class="pt-2 text-sm leading-6 text-on-brand-soft">
+            <p>
+              Send a GCash transfer to <span class="font-semibold text-on-brand tabular">{{ tenantData.landladyGCash }}</span>,
+              account name {{ tenantData.landladyName }}, or pay the landlady in person.
+            </p>
+          </div>
+        </div>
+      </OverviewTile>
+
+      <OverviewTile
+        :title="isSettled ? 'Latest bill' : 'Current bill'"
+        to="/tenant/payments"
+        to-label="Open payments and billing"
+        class="xl:col-span-4"
+      >
+        <UnavailableNote
+          v-if="tenantDataLoadFailed"
+          message="Your bill could not be loaded. Try again in a moment."
+          @retry="fetchTenantData"
+        />
+        <p v-else-if="!tenantData.baseRent && !tenantData.waterFee" class="text-sm text-ink-soft">No bill is on file yet.</p>
+        <template v-else>
+          <SegmentBar
+            :segments="[
+              { label: 'Rent', value: tenantData.baseRent, tone: 'brand' },
+              { label: 'Water', value: tenantData.waterFee, tone: 'bright' },
+            ]"
+            :label="`Rent ${peso(tenantData.baseRent)} and water ${peso(tenantData.waterFee)}`"
           />
-        </button>
-      </div>
+          <dl class="flex flex-col divide-y divide-line text-sm">
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="flex items-center gap-2">
+                <span aria-hidden="true" class="size-2.5 rounded-full bg-brand" />
+                Rent
+              </dt>
+              <dd class="font-semibold tabular">{{ peso(tenantData.baseRent) }}</dd>
+            </div>
+            <div class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt>
+                <span class="flex items-center gap-2">
+                  <span aria-hidden="true" class="size-2.5 rounded-full bg-brand-bright" />
+                  Water
+                </span>
+                <span v-if="tenantData.occupants" class="block pl-4.5 text-xs text-ink-faint">
+                  {{ tenantData.occupants }} registered {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }}
+                </span>
+              </dt>
+              <dd class="font-semibold tabular">{{ peso(tenantData.waterFee) }}</dd>
+            </div>
+            <div v-if="!isSettled" class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt class="font-semibold">Still to pay</dt>
+              <dd class="text-lg font-semibold tabular">{{ peso(tenantData.totalAmountDue) }}</dd>
+            </div>
+          </dl>
+          <p v-if="waterRatePerOccupant !== null" class="text-xs leading-5 text-ink-faint">
+            Water is charged at {{ peso(waterRatePerOccupant) }} for each registered occupant every month.
+          </p>
+        </template>
+      </OverviewTile>
+
+      <OverviewTile tone="night" title="Repairs" class="xl:col-span-3">
+        <p class="text-sm leading-6 text-on-night-soft">
+          Tell the landlady what needs fixing in your unit, then follow the request until it is done.
+        </p>
+        <router-link to="/tenant/tickets" class="pill-btn-light mt-auto self-start">
+          <Wrench class="size-4" aria-hidden="true" />
+          Request a repair
+        </router-link>
+      </OverviewTile>
+
+      <OverviewTile title="Payments" to="/tenant/payments" to-label="Open payments and billing" class="md:col-span-2 xl:col-span-8">
+        <UnavailableNote
+          v-if="tenantDataLoadFailed"
+          message="Your payments could not be loaded. That does not mean none are recorded."
+          @retry="fetchTenantData"
+        />
+        <p
+          v-else-if="pendingOnlinePayments.length === 0 && recordedReceipts.length === 0"
+          class="text-sm text-ink-soft"
+        >
+          No payments are on file yet.
+        </p>
+        <template v-else>
+          <section v-if="pendingOnlinePayments.length" aria-labelledby="pending-payments-heading">
+            <h3 id="pending-payments-heading" class="text-xs font-medium text-ink-faint">Waiting for verification</h3>
+            <ul class="divide-y divide-line">
+              <li v-for="p in pendingOnlinePayments" :key="p.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
+                <span class="min-w-0">
+                  <span class="block text-sm font-medium">{{ p.method }}</span>
+                  <span class="block text-xs text-ink-faint">Sent {{ p.date }}</span>
+                </span>
+                <span class="flex items-center gap-3">
+                  <StatusPill tone="verify">Waiting for verification</StatusPill>
+                  <span class="text-sm font-semibold tabular">{{ peso(p.amount) }}</span>
+                </span>
+              </li>
+            </ul>
+          </section>
+          <section v-if="recordedReceipts.length" aria-labelledby="recorded-receipts-heading">
+            <h3 id="recorded-receipts-heading" class="text-xs font-medium text-ink-faint">Recorded by the landlady</h3>
+            <ul class="divide-y divide-line">
+              <li v-for="r in recordedReceipts" :key="r.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
+                <span class="min-w-0">
+                  <span class="block text-sm font-medium">
+                    {{ r.period ? `Rent for ${r.period}` : 'Rent payment' }}
+                  </span>
+                  <span class="block text-xs text-ink-faint">
+                    Paid {{ r.date }}<template v-if="r.method">, {{ r.method }}</template>
+                  </span>
+                </span>
+                <span class="flex items-center gap-3">
+                  <StatusPill :tone="r.verified ? 'paid' : 'neutral'">{{ r.verified ? 'Verified' : 'Not yet verified' }}</StatusPill>
+                  <span class="text-sm font-semibold tabular">{{ peso(r.amount) }}</span>
+                </span>
+              </li>
+            </ul>
+          </section>
+        </template>
+      </OverviewTile>
+
+      <OverviewTile :title="tenantData.room || 'Your unit'" class="md:col-span-2 xl:col-span-4">
+        <UnavailableNote
+          v-if="tenantDataLoadFailed && !tenantData.room"
+          message="Your unit details could not be loaded."
+          @retry="fetchTenantData"
+        />
+        <template v-else>
+          <div class="relative h-40 overflow-hidden rounded-2xl">
+            <img
+              v-if="tenantData.photoUrl"
+              :src="tenantData.photoUrl"
+              :alt="`Photo of ${tenantData.room}`"
+              class="size-full object-cover"
+            />
+            <div v-else class="flex size-full items-end justify-between bg-brand-soft p-4">
+              <span class="text-5xl font-semibold tracking-tight text-brand">
+                {{ tenantData.room.replace('Unit ', '') || '' }}
+              </span>
+              <Home class="size-6 text-brand" aria-hidden="true" />
+            </div>
+          </div>
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div>
+              <dt class="text-xs text-ink-faint">Room type</dt>
+              <dd class="font-medium">{{ tenantData.roomDetails || 'Not on file' }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Cluster</dt>
+              <dd class="font-medium">{{ tenantData.roomType || 'Not on file' }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Floor</dt>
+              <dd class="font-medium">{{ tenantData.floor || 'Not on file' }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Registered occupants</dt>
+              <dd class="font-medium">{{ tenantData.occupants || 'Not on file' }}</dd>
+            </div>
+          </dl>
+        </template>
+      </OverviewTile>
     </div>
   </div>
 </template>
