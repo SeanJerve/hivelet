@@ -106,7 +106,61 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — one question produced three money findings in a row. The dashboard was projecting
+> **LATEST — a GCash payment could have been recorded twice, and nothing in the database would
+> have stopped it. Fixed — and then I had to fix what my own fix would have caused.**
+>
+> ### The webhook was idempotent in the code and nowhere else
+>
+> `adyenWebhookHandler` says plainly that it is idempotent by `pspReference`: Adyen retries a
+> notification until it receives a **200**, so the handler stores that reference and looks for it
+> before inserting.
+>
+> **That check is a read followed by a write, and there was no index on `transaction_reference`
+> at all** — not unique, not even a plain one. Nothing in the database stopped two inserts
+> carrying the same reference.
+>
+> **The window is narrow and it is exactly the window retries live in.** Adyen retries when it
+> does not get a timely 200 — that is, *while the first attempt is still running*. Two handlers
+> then read *"not found"* at the same moment and both insert. **The property has been paid once
+> and credited twice.**
+>
+> Migration **024** adds a unique index on the reference, in `payments` and in
+> `monthly_income_records`. *No amount of checking-before-inserting closes a race between two
+> connections — only the database can refuse the second write.*
+>
+> ### Then the part I nearly caused myself
+>
+> A unique violation returned `outcome: 'failed'`. **`failed` makes the route answer 500, and
+> Adyen retries on 500.** So my index would have turned a harmless duplicate into a notification
+> that **can never be acknowledged and never stops arriving** — a worse problem than the one I was
+> fixing.
+>
+> PostgreSQL's `23505` now returns **`duplicate`**, which answers 200, which is what tells Adyen
+> the payment is safely recorded.
+>
+> *Adding a constraint changes what the code has to handle. I went looking for that immediately
+> and found it — but I would have shipped the index without the handler change if I had stopped at
+> "the migration applied cleanly".*
+>
+> ### Verified against the live database, writing nothing
+>
+> A `DO` block inserted a second payment carrying an existing reference. **The index refused it**,
+> and the block then rolled back unconditionally so neither outcome could persist. Confirmed
+> after: still **15 payments, 15 distinct references, ₱76,800**.
+>
+> Checked before creating the index: **zero duplicate references** in either table, so it could be
+> added without a rewrite.
+>
+> ### Also confirmed today
+>
+> **Every migration in the folder is in force.** 21 tables with RLS, the `ON DELETE RESTRICT`
+> foreign keys, the phone-login index, 6 property areas, the atomic functions — re-queried rather
+> than trusted. The **one** exception is `023`, the duplicate-profile deactivation, which the
+> sandbox refuses and which is now named as the single pending file.
+>
+> **Sixteen suites green.**
+
+> **PREVIOUS — one question produced three money findings in a row. The dashboard was projecting
 > double her water, and the cash form could have charged a resident for a person who is not
 > there.**
 >
@@ -4038,7 +4092,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**256 commits, all pushed to `main`. Working tree clean.**
+**264 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
