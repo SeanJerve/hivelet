@@ -63,14 +63,23 @@ thing did not work" is not.
 - **How to know it worked:** the three profiles read inactive; nothing else changes
 - **Raised:** 2026-09-17
 
-### B-03 — Anything Adyen
+### B-03 — The Adyen webhook is shared, so only one machine can receive at a time
 
-- **Blocked on:** the API keys and the webhook tunnel, which only Sean has
-- **What I was doing:** n/a — nothing in Loyd's lane needs it
-- **What I already did:** `check:adyen` runs anywhere (29 HMAC checks, source-only), so signature
-  handling is still covered on both machines
-- **What Sean needs to do:** nothing unless a gateway change is actually required
-- **How to know it worked:** n/a
+- **Blocked on:** coordination, not access. **Both machines have the keys.** There is one webhook
+  registered with Adyen, and it can point at exactly one tunnel
+- **What I was doing:** n/a until someone tests a real GCash payment
+- **What I already did:** `check:adyen` runs anywhere (29 HMAC checks, no network), so signature
+  handling stays covered on both machines regardless
+- **What is needed:** whoever is testing starts `cloudflared tunnel --url http://localhost:5000`
+  and repoints the webhook at their own URL. **The address changes on every restart** — a reboot,
+  a power cut, or closing the terminal — and when it does, payments silently go nowhere. Say in
+  the group chat when you take it
+- **How to know it worked:** a real payment produces a `Pending Verification` row and the webhook
+  handler logs it
+- **Never:** generate a new HMAC key unless you are deliberately creating a *second* webhook.
+  Adyen issues that key and keeps its own copy to sign with, so a different value makes every
+  notification fail verification — indistinguishable from a broken integration, and horrible to
+  debug
 - **Raised:** 2026-09-17
 
 > **Standing note on this one:** the gateway is **configured and working** against Adyen's
