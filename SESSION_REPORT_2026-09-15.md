@@ -106,7 +106,61 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — a GCash payment could have been recorded twice, and nothing in the database would
+> **LATEST — I turned the audit on my own output. The rehearsal named three screens that do not
+> exist, and the command the client sheet tells you to run did not work.**
+>
+> Everything written today is meant to be **used by someone else**, under time pressure, while
+> clicking. So it gets checked the same way the code does.
+>
+> ### The rehearsal told you to open screens that are not called that
+>
+> | It said | It is actually called |
+> |---|---|
+> | Unit Directory | **Room & Rate Directory** |
+> | Inquiries | **Prospect Inquiries** |
+> | Maintenance | **Maintenance Dispatch** |
+>
+> I wrote the document from what the screens **do** rather than what they are **called** — fine for
+> a description, useless for an instruction, and the entire point of that file is that somebody
+> follows it while clicking. Read out of `AppSidebar.vue` now, with the full list at the top and a
+> note that a redesign renaming any of them must rename these steps too.
+>
+> ### And the command it tells you to run did not work
+>
+> The client sheet says *"running `npm run check:ledger` prints the same seven receipts with the
+> names"* — for cross-checking against her book **during the meeting**.
+>
+> **From the repo root that failed with "Missing script".** Five of the sixteen checks live at the
+> root and so does `check:all`, so the root is where a person types; the other eleven were only
+> reachable from inside `backend/` or `frontend/`. **I hit it myself earlier today** and did not
+> think about the two documents written for other people that name these commands without naming a
+> directory.
+>
+> **Thirteen aliases added.** Nothing moved, nothing changed behaviour — each delegates to the
+> workspace that owns it, exactly as `dev:backend` already did. Verified by running them from the
+> root, and `check:all` still reports sixteen passing.
+>
+> ### Two judgement entries from the webhook work
+>
+> **Entry 20 — a constraint changes what the code must handle.** Migration `024`'s index was the
+> easy half; the half that would have caused an outage was what the code then did with it. *"Adding
+> a constraint does not only forbid something. It introduces a new error your code has never seen,
+> on a path that previously could not fail."*
+>
+> **§ 3.6b — the receipt guard stays code-only, and here is the work if you disagree.** The same
+> read-then-write race exists in the on-site receipt guard. A unique index on its six columns
+> **would apply cleanly — zero colliding groups across all 937 rows**, checked. It was still
+> declined: Adyen retries *by design, concurrently*; the receipt form is one administrator at a
+> counter with a disabling button. **A hard constraint on a live financial table wants a real
+> threat**, and a permanent refusal on the owner's own ledger is a poor trade against a race that
+> needs two simultaneous submissions from one person.
+>
+> The feasibility work is recorded so that decision can be **reversed on evidence rather than
+> re-derived**.
+>
+> **Sixteen suites green.**
+
+> **PREVIOUS — a GCash payment could have been recorded twice, and nothing in the database would
 > have stopped it. Fixed — and then I had to fix what my own fix would have caused.**
 >
 > ### The webhook was idempotent in the code and nowhere else
@@ -4092,7 +4146,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**264 commits, all pushed to `main`. Working tree clean.**
+**268 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
