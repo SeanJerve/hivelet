@@ -273,10 +273,10 @@ async function handleSave() {
         <!-- Room Photo Upload (BLOB Database Storage) -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="block font-semibold text-[11px] text-ink-soft">
+            <label class="block font-semibold text-xs text-ink-soft">
               ROOM PHOTO
             </label>
-            <span v-if="uploadedFileName" class="text-[10px] font-medium text-brand">
+            <span v-if="uploadedFileName" class="text-xs font-medium text-brand">
               Selected: {{ uploadedFileName }} ({{ uploadedFileSize }})
             </span>
           </div>
@@ -304,7 +304,7 @@ async function handleSave() {
                 class="size-full flex flex-col items-center justify-center gap-2 text-white/70"
               >
                 <ImageOff class="size-7" />
-                <span class="text-[11px] font-semibold">No photo on file — upload one below</span>
+                <span class="text-xs font-semibold">No photo on file — upload one below</span>
               </div>
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
 
@@ -339,7 +339,7 @@ async function handleSave() {
 
         <!-- Monthly Rate -->
         <div>
-          <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+          <label class="mb-1.5 block text-xs text-ink-faint">
             MONTHLY RATE (₱)
           </label>
           <input
@@ -355,10 +355,10 @@ async function handleSave() {
         <!-- Dynamic Registered Occupants (Based on actual tenants residing) -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="block font-semibold text-[11px] text-ink-soft">
+            <label class="block font-semibold text-xs text-ink-soft">
               REGISTERED OCCUPANTS
             </label>
-            <span class="text-[10px] font-semibold text-brand">
+            <span class="text-xs font-semibold text-brand">
               (Calculated dynamically from active tenant records)
             </span>
           </div>
@@ -372,7 +372,7 @@ async function handleSave() {
                 <p class="font-semibold text-sm text-ink">
                   {{ occupantsSummary.count }} {{ occupantsSummary.count === 1 ? 'Registered Occupant' : 'Registered Occupants' }}
                 </p>
-                <p class="text-[11px] text-ink-soft mt-0.5">
+                <p class="text-xs text-ink-soft mt-0.5">
                   <template v-if="occupantsSummary.count > 0">
                     Active resident(s): <strong class="text-ink">{{ occupantsSummary.text }}</strong>
                   </template>
@@ -393,7 +393,7 @@ async function handleSave() {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <!-- Unit Type Dropdown -->
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+            <label class="mb-1.5 block text-xs text-ink-faint">
               UNIT TYPE
             </label>
             <div class="relative">
@@ -414,7 +414,7 @@ async function handleSave() {
 
           <!-- Operational Status Dropdown -->
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+            <label class="mb-1.5 block text-xs text-ink-faint">
               OPERATIONAL STATUS
             </label>
             <div class="relative">
@@ -436,7 +436,7 @@ async function handleSave() {
 
         <!-- Public visibility - the column existed and the API accepted it; nothing sent it. -->
         <div>
-          <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+          <label class="mb-1.5 block text-xs text-ink-faint">
             PUBLIC LISTING
           </label>
           <div class="relative">
@@ -452,7 +452,7 @@ async function handleSave() {
               <ChevronDown class="size-4" />
             </div>
           </div>
-          <p class="text-[11px] text-ink-soft mt-1">
+          <p class="text-xs text-ink-soft mt-1">
             Hiding a unit removes it from both public room pages and stops the enquiry form
             accepting messages about it. Residents already in the unit are unaffected.
           </p>
@@ -460,7 +460,7 @@ async function handleSave() {
 
         <!-- Billing Rule -->
         <div>
-          <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+          <label class="mb-1.5 block text-xs text-ink-faint">
             BILLING RULE
           </label>
           <input
@@ -473,7 +473,7 @@ async function handleSave() {
 
         <!-- Amenities / Inclusions Textarea -->
         <div>
-          <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+          <label class="mb-1.5 block text-xs text-ink-faint">
             AMENITIES / INCLUSIONS
           </label>
           <textarea

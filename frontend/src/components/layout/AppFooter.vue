@@ -26,7 +26,7 @@ import {
         <div class="space-y-4">
           <div class="flex items-center gap-2">
             <span class="font-semibold text-lg tracking-tight text-white">HIVELET</span>
-            <span class="rounded-md bg-blue-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase text-brand border border-blue-400/30">EST. 2026</span>
+            <span class="rounded-md bg-blue-500/20 px-2 py-0.5 text-xs font-semibold uppercase text-brand border border-blue-400/30">EST. 2026</span>
           </div>
           <p class="text-ink-faint leading-relaxed text-xs">
             Fe Galang Da Silva Boarding House Management System. Centralized operational, financial, and inquiry workflows for 33 rentable units in Legazpi City, Albay.
@@ -77,7 +77,7 @@ import {
             <li class="flex items-start gap-2.5">
               <Phone class="size-4 text-brand mt-0.5 shrink-0" />
               <div>
-                <span class="block text-[10px] uppercase text-ink-faint font-semibold">Contact Number</span>
+                <span class="block text-xs uppercase text-ink-faint font-semibold">Contact Number</span>
                 <a href="tel:09494150382" class="text-white hover:text-brand font-semibold text-xs transition-colors">
                   09494150382
                 </a>
@@ -88,7 +88,7 @@ import {
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
               <div class="min-w-0">
-                <span class="block text-[10px] uppercase text-ink-faint font-semibold">Facebook</span>
+                <span class="block text-xs uppercase text-ink-faint font-semibold">Facebook</span>
                 <a 
                   href="https://www.facebook.com/michelle.millete.16" 
                   target="_blank" 
@@ -112,7 +112,7 @@ import {
           <p class="text-slate-300 leading-relaxed text-xs">
             32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines
           </p>
-          <p class="text-ink-faint text-[11px] leading-relaxed">
+          <p class="text-ink-faint text-xs leading-relaxed">
             Accessible to university campuses, transit terminals &amp; commercial centers in Albay.
           </p>
         </div>

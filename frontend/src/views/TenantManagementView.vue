@@ -409,7 +409,7 @@ async function handleOnboard() {
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[1000px] text-xs sm:text-sm border-collapse">
           <thead class="sticky top-0 z-10 bg-canvas">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
+            <tr class="text-left text-xs uppercase tracking-wide text-ink-soft border-b border-line">
               <th class="whitespace-nowrap px-4 py-3 font-semibold">RESIDENT</th>
               <th class="whitespace-nowrap px-4 py-3 font-semibold">UNIT</th>
               <th class="whitespace-nowrap px-4 py-3 font-semibold">ROOMMATES</th>
@@ -430,7 +430,7 @@ async function handleOnboard() {
               <td class="px-4 py-3.5">
                 <p class="font-semibold text-ink">{{ t.name }}</p>
                 <p class="text-xs text-ink-soft">{{ t.email }}</p>
-                <p class="tabular font-mono text-[11px] text-ink-soft mt-0.5">{{ t.phone }}</p>
+                <p class="tabular font-mono text-xs text-ink-soft mt-0.5">{{ t.phone }}</p>
               </td>
 
               <!-- UNIT -->
@@ -525,7 +525,7 @@ async function handleOnboard() {
         <!-- Section 1: Resident Information Profile Card -->
         <div class="rounded-xl border border-line bg-canvas p-4 space-y-3">
           <div class="flex items-center justify-between border-b border-line/70 pb-2">
-            <span class="font-semibold text-[11px] text-ink-soft">
+            <span class="font-semibold text-xs text-ink-soft">
               Resident Profile
             </span>
             <span :class="[ 'badge-soft text-xs font-semibold', editModalTenant.role === 'prospect' ? 'badge-info' : (editModalTenant.status === 'active' ? 'badge-success' : 'badge-neutral') ]">
@@ -537,31 +537,31 @@ async function handleOnboard() {
 
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
             <div>
-              <p class="text-[10px] uppercase font-semibold text-ink-soft">Phone</p>
+              <p class="text-xs uppercase font-semibold text-ink-soft">Phone</p>
               <p class="font-mono text-xs text-ink mt-0.5">{{ editModalTenant.phone }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-semibold text-ink-soft">Email</p>
+              <p class="text-xs uppercase font-semibold text-ink-soft">Email</p>
               <p class="text-xs text-ink truncate mt-0.5" :title="editModalTenant.email">{{ editModalTenant.email }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-semibold text-ink-soft">Deposit Held</p>
+              <p class="text-xs uppercase font-semibold text-ink-soft">Deposit Held</p>
               <p class="font-semibold text-xs text-ink mt-0.5">{{ peso(editModalTenant.depositAmount) }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-semibold text-ink-soft">Move-In Date</p>
+              <p class="text-xs uppercase font-semibold text-ink-soft">Move-In Date</p>
               <p class="text-xs text-ink mt-0.5">{{ editModalTenant.moveInDate }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-semibold text-ink-soft">Anniversary</p>
+              <p class="text-xs uppercase font-semibold text-ink-soft">Anniversary</p>
               <p class="text-xs text-ink mt-0.5">{{ editModalTenant.anniversary }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-semibold text-ink-soft">Emergency Contact</p>
+              <p class="text-xs uppercase font-semibold text-ink-soft">Emergency Contact</p>
               <p class="text-xs text-ink mt-0.5 truncate" :title="editModalTenant.emergencyContact.name + ' (' + editModalTenant.emergencyContact.phone + ')'">
                 {{ editModalTenant.emergencyContact.name }}
               </p>
-              <p class="font-mono text-[10px] text-ink-soft">{{ editModalTenant.emergencyContact.phone }}</p>
+              <p class="font-mono text-xs text-ink-soft">{{ editModalTenant.emergencyContact.phone }}</p>
             </div>
           </div>
         </div>
@@ -570,7 +570,7 @@ async function handleOnboard() {
         <form @submit.prevent="saveEdit" class="space-y-4 text-xs">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1">Target Unit</label>
+              <label class="block font-semibold text-xs text-ink-soft mb-1">Target Unit</label>
               <!--
                 `systemState` gives a tenant with no room assignment the unit code "—".
                 That matched none of the options below, so the browser rendered this select
@@ -598,14 +598,14 @@ async function handleOnboard() {
                   {{ u.unitCode.toUpperCase() }} — {{ u.cluster }}<template v-if="!roomsFetchFailed"> ({{ peso(u.price) }})</template>
                 </option>
               </select>
-              <p v-if="editUnitCode === '—'" class="text-[11px] text-ink-soft mt-1">
+              <p v-if="editUnitCode === '—'" class="text-xs text-ink-soft mt-1">
                 This resident holds no unit. Pick one to assign them, or save to change the
                 other details and leave them unassigned.
               </p>
             </div>
 
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1">Account Status</label>
+              <label class="block font-semibold text-xs text-ink-soft mb-1">Account Status</label>
               <select v-model="editStatus" class="ws-select w-full" required>
                 <option value="active">Active</option>
                 <option value="vacated">Vacated (Pending)</option>
@@ -616,7 +616,7 @@ async function handleOnboard() {
           <!-- Roommate Options -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-line">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1">Has Roommate?</label>
+              <label class="block font-semibold text-xs text-ink-soft mb-1">Has Roommate?</label>
               <select v-model="editHasRoommates" class="ws-select w-full" required>
                 <option value="no">No (Solo Resident)</option>
                 <option value="yes">Yes (With Roommates)</option>
@@ -624,7 +624,7 @@ async function handleOnboard() {
             </div>
 
             <div v-if="editHasRoommates === 'yes'">
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1">Roommate Qty</label>
+              <label class="block font-semibold text-xs text-ink-soft mb-1">Roommate Qty</label>
               <input v-model.number="editRoommateQty" type="number" min="1" max="8" class="ws-input w-full" required />
             </div>
             <div v-else class="flex items-end">
@@ -708,7 +708,7 @@ async function handleOnboard() {
 
         <form @submit.prevent="handleOnboard" class="grid gap-4 sm:grid-cols-2 text-xs">
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Full Name</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Full Name</label>
             <input v-model="newName" placeholder="Juan Dela Cruz" class="ws-input w-full" required />
           </div>
           <!--
@@ -723,19 +723,19 @@ async function handleOnboard() {
             every tenant onboarded here has one identifier and can sign in.
           -->
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">
+            <label class="block font-semibold text-xs text-ink-soft mb-1">
               Email <span class="font-semibold normal-case tracking-normal text-ink-soft/70">(optional)</span>
             </label>
             <input v-model="newEmail" type="email" placeholder="you@email.com" class="ws-input w-full" />
-            <p class="text-[11px] text-ink-soft mt-1">Leave blank if they have none — they will sign in with their phone number.</p>
+            <p class="text-xs text-ink-soft mt-1">Leave blank if they have none — they will sign in with their phone number.</p>
           </div>
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Phone</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Phone</label>
             <input v-model="newPhone" placeholder="0917-000-0000" class="ws-input w-full" required />
-            <p class="text-[11px] text-ink-soft mt-1">Used to sign in to the tenant portal.</p>
+            <p class="text-xs text-ink-soft mt-1">Used to sign in to the tenant portal.</p>
           </div>
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Target Unit</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Target Unit</label>
             <select v-model="newUnit" class="ws-select w-full" required>
               <!--
                 This one mattered most. `syncDepositToUnit` fills the deposit field from the
@@ -751,7 +751,7 @@ async function handleOnboard() {
 
           <!-- Roommate Options -->
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Has Roommate?</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Has Roommate?</label>
             <select v-model="newHasRoommates" class="ws-select w-full" required>
               <option value="no">No (Solo Resident)</option>
               <option value="yes">Yes (With Roommates)</option>
@@ -759,7 +759,7 @@ async function handleOnboard() {
           </div>
 
           <div v-if="newHasRoommates === 'yes'">
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Roommate Qty</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Roommate Qty</label>
             <input v-model.number="newRoommateQty" type="number" min="1" max="8" class="ws-input w-full" required />
           </div>
           <div v-else class="flex items-end">
@@ -767,29 +767,29 @@ async function handleOnboard() {
           </div>
 
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Move-in Date</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Move-in Date</label>
             <input v-model="newMoveIn" type="date" class="ws-input w-full" required />
           </div>
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Anniversary Anchor Date</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Anniversary Anchor Date</label>
             <input v-model="newAnniv" type="date" class="ws-input w-full" required />
           </div>
           <div>
             <!-- OD-04: this sum is ADVANCE RENT. This business collects no separate
                  refundable security deposit, and calling it one described a financial
                  instrument the property does not use. -->
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">
+            <label class="block font-semibold text-xs text-ink-soft mb-1">
               Advance Rent (₱)
               <span class="normal-case font-medium text-ink-faint">— one month, pre-filled from the unit's rate</span>
             </label>
             <input v-model.number="newDeposit" type="number" class="ws-input w-full" required />
           </div>
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Emergency Contact Name (Optional)</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Emergency Contact Name (Optional)</label>
             <input v-model="newEmergName" placeholder="Maria Santos (optional)" class="ws-input w-full" />
           </div>
           <div class="sm:col-span-2">
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Emergency Contact Phone (Optional)</label>
+            <label class="block font-semibold text-xs text-ink-soft mb-1">Emergency Contact Phone (Optional)</label>
             <input v-model="newEmergPhone" placeholder="0928-000-0000 (optional)" class="ws-input w-full" />
           </div>
 

@@ -843,7 +843,7 @@ function exportCSV() {
     <!-- 4 Summary KPI StatCards (Always Visible at Top) -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">Total Gross Rent</p>
+        <p class="text-xs text-ink-faint">Total Gross Rent</p>
         <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ peso(totalRent) }}</p>
         <p class="mt-1 text-xs text-ink-soft">Before 50% share derivation</p>
       </div>
@@ -858,19 +858,19 @@ function exportCSV() {
            the repository, which is what the rule is for. See BR-035 in
            docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md. -->
       <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">50% Share · BH rows</p>
+        <p class="text-xs text-ink-faint">50% Share · BH rows</p>
         <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-accent-ink">{{ peso(totalShare) }}</p>
         <p class="mt-1 text-xs text-verify font-medium">Half of Rent Amount, computed by the system</p>
       </div>
 
       <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">Water Collections</p>
+        <p class="text-xs text-ink-faint">Water Collections</p>
         <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ peso(totalWater) }}</p>
         <p class="mt-1 text-xs text-ink-soft">₱200 / head monthly rule</p>
       </div>
 
       <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">Total Remitted</p>
+        <p class="text-xs text-ink-faint">Total Remitted</p>
         <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ peso(totalRemitted) }}</p>
         <p class="mt-1 text-xs text-brand font-medium">Rent + Water (BR-038)</p>
         <!-- The spreadsheet's own bottom line is a different sum and used to be
@@ -878,7 +878,7 @@ function exportCSV() {
              database column holding the other figure. -->
         <p class="mt-2 pt-2 border-t border-line text-xs text-ink-soft">
           Spreadsheet line: <strong class="text-ink">{{ peso(totalSpreadsheetLine) }}</strong>
-          <span class="block text-[11px] text-ink-faint">BH at half rent, other clusters at full rent, plus water</span>
+          <span class="block text-xs text-ink-faint">BH at half rent, other clusters at full rent, plus water</span>
         </p>
       </div>
     </div>
@@ -1084,7 +1084,7 @@ function exportCSV() {
               <span class="size-2.5 rounded-full" :class="group.hasShareColumn ? 'bg-verify' : 'bg-brand'"></span>
               <div>
                 <h4 class="font-semibold text-sm text-ink">{{ group.label }}</h4>
-                <p class="text-[11px] text-ink-soft">{{ group.desc }}</p>
+                <p class="text-xs text-ink-soft">{{ group.desc }}</p>
               </div>
             </div>
             <div class="flex items-center gap-2 text-xs">
@@ -1096,7 +1096,7 @@ function exportCSV() {
           <!-- Cluster Table -->
           <div class="overflow-x-auto">
             <table class="w-full text-xs border-collapse">
-              <thead class="bg-canvas text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
+              <thead class="bg-canvas text-left text-xs uppercase tracking-wide text-ink-soft border-b border-line">
                 <tr>
                   <th class="whitespace-nowrap px-3 py-2.5 font-semibold">RM #</th>
                   <th class="whitespace-nowrap px-3 py-2.5 font-semibold">DATE PAID</th>
@@ -1126,7 +1126,7 @@ function exportCSV() {
                   </td>
                   <td class="whitespace-nowrap px-3 py-2 font-semibold text-ink">
                     {{ r.contact }}
-                    <span v-if="r.invoice" class="block font-mono text-[10px] font-normal text-ink-soft">{{ r.invoice }}</span>
+                    <span v-if="r.invoice" class="block font-mono text-xs font-normal text-ink-soft">{{ r.invoice }}</span>
                   </td>
                   <td class="whitespace-nowrap px-3 py-2 text-ink-soft">
                     {{ r.rentFor }}
@@ -1192,7 +1192,7 @@ function exportCSV() {
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full text-xs border-collapse">
           <thead class="sticky top-0 z-10 bg-canvas">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
+            <tr class="text-left text-xs uppercase tracking-wide text-ink-soft border-b border-line">
               <th class="whitespace-nowrap px-3 py-3 font-semibold">UNIT</th>
               <th class="whitespace-nowrap px-3 py-3 font-semibold">CLUSTER</th>
               <th class="whitespace-nowrap px-3 py-3 font-semibold">DATE PAID</th>
@@ -1239,7 +1239,7 @@ function exportCSV() {
               </td>
               <td class="tabular whitespace-nowrap px-3 py-2.5 text-right">
                 <span class="font-semibold text-ink block leading-tight">{{ peso(r.rent) }}</span>
-                <span v-if="r.cluster === 'BH'" class="text-[11px] font-semibold text-accent-ink block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
+                <span v-if="r.cluster === 'BH'" class="text-xs font-semibold text-accent-ink block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
               </td>
               <td class="whitespace-nowrap px-3 py-2.5 text-center font-semibold text-ink">
                 {{ r.occupants }}
@@ -1274,7 +1274,7 @@ function exportCSV() {
               </td>
               <td class="tabular px-3 py-3 text-right">
                 <span class="font-semibold text-ink block leading-tight">{{ peso(totalRent) }}</span>
-                <span class="text-[11px] font-semibold text-accent-ink block leading-tight mt-0.5">50% BH Share: {{ peso(totalShare) }}</span>
+                <span class="text-xs font-semibold text-accent-ink block leading-tight mt-0.5">50% BH Share: {{ peso(totalShare) }}</span>
               </td>
               <td class="px-3 py-3 text-center font-semibold">{{ rows.reduce((s, r) => s + r.occupants, 0) }}</td>
               <td class="tabular px-3 py-3 text-right font-semibold">{{ peso(totalWater) }}</td>
@@ -1353,12 +1353,12 @@ function exportCSV() {
           <div>
             <p
               v-if="roomsFetchFailed"
-              class="mb-1.5 text-[11px] leading-snug text-verify"
+              class="mb-1.5 text-xs leading-snug text-verify"
             >
               The unit list could not be refreshed, so the occupant count has <strong>not</strong>
               been carried forward. Enter it yourself &mdash; it sets the water line on this receipt.
             </p>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Unit</label>
+            <label class="mb-1.5 block text-xs text-ink-faint">Unit</label>
             <select v-model="editUnit" class="ws-select w-full">
               <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
                 {{ r.unitCode.toUpperCase() }} — {{ r.tenant || 'Vacant' }} ({{ r.cluster }})
@@ -1369,11 +1369,11 @@ function exportCSV() {
           <!-- Rent Amount & Water Payment Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Amount for Rent (₱)</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Amount for Rent (₱)</label>
               <input v-model.number="editRent" type="number" min="0" class="ws-input w-full" required />
             </div>
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Payment for Water (₱)</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Payment for Water (₱)</label>
               <input v-model.number="editWater" type="number" min="0" class="ws-input w-full" required />
             </div>
           </div>
@@ -1381,11 +1381,11 @@ function exportCSV() {
           <!-- GBG Fee & OR Receipt Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">GBG Fee (₱)</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">GBG Fee (₱)</label>
               <input v-model.number="editGarbage" type="number" min="0" class="ws-input w-full" required />
             </div>
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">OR / Receipt Number</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">OR / Receipt Number</label>
               <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="ws-input w-full font-mono" required />
             </div>
           </div>
@@ -1393,7 +1393,7 @@ function exportCSV() {
           <!-- Payment Method & Online Reference Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Payment Method</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Payment Method</label>
               <select v-model="editMethod" class="ws-select w-full">
                 <option value="Cash">Cash</option>
                 <option value="GCash">GCash</option>
@@ -1403,7 +1403,7 @@ function exportCSV() {
               </select>
             </div>
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" :class="{ 'opacity-40': !methodHasReference }">Transaction Reference #</label>
+              <label class="mb-1.5 block text-xs text-ink-faint" :class="{ 'opacity-40': !methodHasReference }">Transaction Reference #</label>
               <input v-model="editReference" type="text" :placeholder="editMethod === 'Bank Transfer' ? 'Bank reference #' : 'GCash reference #'" class="ws-input w-full" :disabled="!methodHasReference" :required="methodHasReference" />
             </div>
           </div>
@@ -1411,25 +1411,25 @@ function exportCSV() {
           <!-- Rent Validity / Duration Details Row -->
           <div class="grid gap-4 sm:grid-cols-3">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Months Covered</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Months Covered</label>
               <input v-model.number="editMonthsCovered" type="number" min="1" class="ws-input w-full" required />
             </div>
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+              <label class="mb-1.5 block text-xs text-ink-faint">
                 Occupants
                 <span class="normal-case tracking-normal font-medium text-ink-faint">— carried from the tenancy; water is per occupant</span>
               </label>
               <input v-model.number="editOccupants" type="number" min="1" max="50" class="ws-input w-full" required />
             </div>
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+              <label class="mb-1.5 block text-xs text-ink-faint">
                 Covered Period Start
                 <span class="normal-case tracking-normal font-medium text-ink-faint">— blank uses the tenant's billing cycle</span>
               </label>
               <input v-model="editDateCoveredStart" type="date" class="ws-input w-full" />
             </div>
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Covered Period End</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Covered Period End</label>
               <input :value="editDateCoveredEnd" type="date" class="ws-input w-full" disabled />
             </div>
           </div>
@@ -1437,11 +1437,11 @@ function exportCSV() {
           <!-- Date Received & Read-Only Total Amount calculation -->
           <div class="grid gap-4 sm:grid-cols-2 pt-2">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Date Received</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Date Received</label>
               <input v-model="editDate" type="date" class="ws-input w-full" required />
             </div>
             <div class="bg-canvas border border-line rounded-tile p-3.5 flex flex-col justify-center">
-              <span class="text-[10px] font-semibold text-ink-soft">Total Amount (₱)</span>
+              <span class="text-xs font-semibold text-ink-soft">Total Amount (₱)</span>
               <span class="font-semibold text-lg text-brand pt-0.5">{{ peso(editTotal) }}</span>
             </div>
           </div>

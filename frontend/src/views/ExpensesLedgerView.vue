@@ -813,7 +813,7 @@ function exportFilteredExpenses() {
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[900px] text-xs sm:text-sm border-collapse">
           <thead class="sticky top-0 z-10 bg-canvas border-b border-line">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft">
+            <tr class="text-left text-xs uppercase tracking-wide text-ink-soft">
               <th class="whitespace-nowrap px-4 py-3 font-semibold pl-6">DESCRIPTION / VOUCHER</th>
               <th class="whitespace-nowrap px-4 py-3 font-semibold">CATEGORY</th>
               <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">BOARDING HOUSE (₱)</th>
@@ -920,7 +920,7 @@ function exportFilteredExpenses() {
           <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
             <div class="w-full sm:w-64">
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Expense Date</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Expense Date</label>
               <input v-model="date" type="date" class="ws-input w-full" required />
             </div>
 
@@ -940,7 +940,7 @@ function exportFilteredExpenses() {
                     v-if="formEntries.length > 1" 
                     type="button" 
                     @click="removeFormEntry(index)" 
-                    class="pill-btn text-overdue hover:bg-overdue-soft hover:border-overdue-soft min-h-7 py-0.5 px-2 text-[11px] gap-1 inline-flex items-center cursor-pointer"
+                    class="pill-btn text-overdue hover:bg-overdue-soft hover:border-overdue-soft min-h-7 py-0.5 px-2 text-xs gap-1 inline-flex items-center cursor-pointer"
                     title="Remove Item"
                   >
                     <Trash2 class="size-3 text-overdue" />
@@ -951,7 +951,7 @@ function exportFilteredExpenses() {
                 <!-- Description & Category Row -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label class="block font-semibold text-[10px] text-ink-soft mb-1.5">Description &amp; Receipt #</label>
+                    <label class="mb-1.5 block text-xs text-ink-faint">Description &amp; Receipt #</label>
                     <input 
                       v-model="entry.desc" 
                       placeholder="e.g. OR #88240 — supplies" 
@@ -961,7 +961,7 @@ function exportFilteredExpenses() {
                   </div>
 
                   <div>
-                    <label class="block font-semibold text-[10px] text-ink-soft mb-1.5">Expense Category</label>
+                    <label class="mb-1.5 block text-xs text-ink-faint">Expense Category</label>
                     <select 
                       v-model="entry.category" 
                       class="ws-select w-full" 
@@ -975,8 +975,8 @@ function exportFilteredExpenses() {
                 <!-- Allocations / Splits Section -->
                 <div class="border-t border-line/70 pt-3 space-y-2.5">
                   <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-semibold text-ink-soft">Property Area Allocations (Splits)</span>
-                    <span class="text-[10px] text-ink-soft">Cost distribution</span>
+                    <span class="text-xs font-semibold text-ink-soft">Property Area Allocations (Splits)</span>
+                    <span class="text-xs text-ink-soft">Cost distribution</span>
                   </div>
                   
                   <div class="space-y-2">
@@ -987,7 +987,7 @@ function exportFilteredExpenses() {
                     >
                       <!-- Area Selector -->
                       <div class="flex-1">
-                        <label class="block text-[10px] font-semibold text-ink-soft uppercase mb-1">Target Area</label>
+                        <label class="block text-xs font-semibold text-ink-soft uppercase mb-1">Target Area</label>
                         <select 
                           v-model="alloc.area" 
                           class="ws-select w-full" 
@@ -1003,7 +1003,7 @@ function exportFilteredExpenses() {
 
                       <!-- Amount -->
                       <div class="w-36 sm:w-44">
-                        <label class="block text-[10px] font-semibold text-ink-soft uppercase mb-1">Amount (₱)</label>
+                        <label class="block text-xs font-semibold text-ink-soft uppercase mb-1">Amount (₱)</label>
                         <input 
                           v-model="alloc.amount" 
                           type="number" 
@@ -1100,7 +1100,7 @@ function exportFilteredExpenses() {
           <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
             <div class="w-full sm:w-64">
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+              <label class="mb-1.5 block text-xs text-ink-faint">
                 Expense Date
               </label>
               <input 
@@ -1114,7 +1114,7 @@ function exportFilteredExpenses() {
             <!-- Description & Category Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+                <label class="mb-1.5 block text-xs text-ink-faint">
                   Description &amp; Receipt #
                 </label>
                 <input 
@@ -1126,7 +1126,7 @@ function exportFilteredExpenses() {
               </div>
 
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+                <label class="mb-1.5 block text-xs text-ink-faint">
                   Expense Category
                 </label>
                 <select 
@@ -1142,10 +1142,10 @@ function exportFilteredExpenses() {
             <!-- Allocations / Splits Section -->
             <div class="space-y-3 pt-2">
               <div class="flex items-center justify-between">
-                <label class="block font-semibold text-[11px] text-ink-soft">
+                <label class="block font-semibold text-xs text-ink-soft">
                   Property Area Allocations (Splits)
                 </label>
-                <span class="text-[10px] text-ink-soft">Distribute cost across boarding house &amp; main house</span>
+                <span class="text-xs text-ink-soft">Distribute cost across boarding house &amp; main house</span>
               </div>
 
               <div class="space-y-2">
@@ -1156,7 +1156,7 @@ function exportFilteredExpenses() {
                 >
                   <!-- Area Selector -->
                   <div class="flex-1">
-                    <label class="block text-[10px] font-semibold text-ink-soft uppercase mb-1">Target Area</label>
+                    <label class="block text-xs font-semibold text-ink-soft uppercase mb-1">Target Area</label>
                     <select 
                       v-model="alloc.area" 
                       class="ws-select w-full" 
@@ -1172,7 +1172,7 @@ function exportFilteredExpenses() {
 
                   <!-- Amount -->
                   <div class="w-36 sm:w-44">
-                    <label class="block text-[10px] font-semibold text-ink-soft uppercase mb-1">Amount (₱)</label>
+                    <label class="block text-xs font-semibold text-ink-soft uppercase mb-1">Amount (₱)</label>
                     <input 
                       v-model="alloc.amount" 
                       type="number" 

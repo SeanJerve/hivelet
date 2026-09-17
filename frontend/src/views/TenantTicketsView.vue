@@ -493,7 +493,7 @@ function statusClass(status: string) {
             </div>
 
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ticket-title">
+              <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-title">
                 Issue Title
               </label>
               <input
@@ -508,7 +508,7 @@ function statusClass(status: string) {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ticket-category">
+                <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-category">
                   Category
                 </label>
                 <select
@@ -521,7 +521,7 @@ function statusClass(status: string) {
               </div>
 
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ticket-priority">
+                <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-priority">
                   Priority
                 </label>
                 <select
@@ -538,7 +538,7 @@ function statusClass(status: string) {
             </div>
 
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ticket-desc">
+              <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-desc">
                 Details &amp; Description
               </label>
               <textarea
@@ -552,7 +552,7 @@ function statusClass(status: string) {
             </div>
 
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+              <label class="mb-1.5 block text-xs text-ink-faint">
                 Attach Photo <span class="font-normal text-ink-soft">(optional)</span>
               </label>
 
@@ -573,7 +573,7 @@ function statusClass(status: string) {
                 >
                   <ImageIcon class="size-6 text-brand" />
                   <span class="text-xs font-semibold text-ink">Click to upload a photo</span>
-                  <span class="text-[11px] text-ink-soft">PNG, JPG or WEBP up to 10MB</span>
+                  <span class="text-xs text-ink-soft">PNG, JPG or WEBP up to 10MB</span>
                 </label>
               </div>
 
@@ -591,7 +591,7 @@ function statusClass(status: string) {
                     <span class="text-xs font-semibold text-ink block truncate">
                       {{ ticketPhotoName }}
                     </span>
-                    <span class="text-[11px] text-brand font-semibold">Photo attached</span>
+                    <span class="text-xs text-brand font-semibold">Photo attached</span>
                   </div>
                 </div>
                 <button
@@ -748,7 +748,7 @@ function statusClass(status: string) {
                     photo was the one who took it.
                   -->
                   <div v-if="ticket.ticket_attachments?.length" class="mt-3">
-                    <p class="text-[11px] font-semibold text-ink-soft mb-1.5">
+                    <p class="text-xs font-semibold text-ink-soft mb-1.5">
                       Photo you attached
                     </p>
                     <div class="flex flex-wrap gap-2">
@@ -843,7 +843,7 @@ function statusClass(status: string) {
                   :class="[ 'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors', index <= getStageIndex(activeTimelineTicket.status) ? 'bg-brand border-brand text-white' : 'bg-tile border-line text-ink-soft' ]"
                 >
                   <CheckCircle2 v-if="index <= getStageIndex(activeTimelineTicket.status)" class="size-4" />
-                  <span v-else class="text-[10px] font-semibold">{{ index + 1 }}</span>
+                  <span v-else class="text-xs font-semibold">{{ index + 1 }}</span>
                 </div>
                 <div
                   v-if="index < TIMELINE_STAGES.length - 1"
@@ -859,7 +859,7 @@ function statusClass(status: string) {
                   {{ stage.label }}
                   <span
                     v-if="index === getStageIndex(activeTimelineTicket.status)"
-                    class="badge-soft badge-blue text-[10px] font-semibold ml-2"
+                    class="badge-soft badge-blue text-xs font-semibold ml-2"
                   >CURRENT</span>
                 </p>
                 <p
@@ -893,13 +893,13 @@ function statusClass(status: string) {
               :key="note.id"
               class="flex gap-3"
             >
-              <div class="size-7 rounded-full bg-night text-white text-[10px] font-semibold flex items-center justify-center shrink-0">
+              <div class="size-7 rounded-full bg-night text-white text-xs font-semibold flex items-center justify-center shrink-0">
                 {{ note.author[0] }}
               </div>
               <div class="flex-1 bg-canvas border border-line rounded-xl px-3.5 py-2.5">
                 <p class="text-xs font-semibold text-ink">{{ note.author }}</p>
                 <p class="text-xs text-ink-soft mt-0.5 leading-relaxed">{{ note.text }}</p>
-                <p class="text-[10px] text-ink-soft mt-1">{{ formatDateTime(note.timestamp) }}</p>
+                <p class="text-xs text-ink-soft mt-1">{{ formatDateTime(note.timestamp) }}</p>
               </div>
             </div>
           </div>

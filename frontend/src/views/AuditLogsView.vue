@@ -455,7 +455,7 @@ function exportAuditCSV() {
       <div v-else class="max-h-[600px] overflow-y-auto overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse min-w-[960px]">
           <thead class="sticky top-0 bg-canvas z-10">
-            <tr class="border-b border-line text-ink-soft font-semibold uppercase text-[10px]">
+            <tr class="border-b border-line text-ink-soft font-semibold uppercase text-xs">
               <th class="py-3 px-4">Timestamp</th>
               <th class="py-3 px-4">Action Type</th>
               <th class="py-3 px-4">Target Entity / Table</th>
@@ -471,7 +471,7 @@ function exportAuditCSV() {
                 class="hover:bg-canvas transition-colors cursor-pointer"
               >
                 <!-- Timestamp -->
-                <td class="py-3 px-4 font-mono text-[11px] text-ink whitespace-nowrap">
+                <td class="py-3 px-4 font-mono text-xs text-ink whitespace-nowrap">
                   <div class="flex items-center gap-1.5">
                     <Clock class="size-3.5 text-ink-soft" />
                     <span>{{ formatDate(l.created_at) }}</span>
@@ -480,17 +480,17 @@ function exportAuditCSV() {
 
                 <!-- Action Badge -->
                 <td class="py-3 px-4 whitespace-nowrap">
-                  <span :class="['px-2 py-0.5 rounded-md font-mono text-[10px] font-semibold tracking-tight', getActionBadgeClass(l.action)]">
+                  <span :class="['px-2 py-0.5 rounded-md font-mono text-xs font-semibold tracking-tight', getActionBadgeClass(l.action)]">
                     {{ l.action }}
                   </span>
                 </td>
 
                 <!-- Entity Table -->
-                <td class="py-3 px-4 font-mono text-[11px] text-ink-soft whitespace-nowrap">
+                <td class="py-3 px-4 font-mono text-xs text-ink-soft whitespace-nowrap">
                   <div class="flex items-center gap-1.5">
                     <Database class="size-3 text-brand" />
                     <span class="font-semibold text-ink">{{ l.entity_type || 'system' }}</span>
-                    <span v-if="l.entity_id" class="text-[10px] px-1.5 py-0.2 rounded bg-canvas border border-line">
+                    <span v-if="l.entity_id" class="text-xs px-1.5 py-0.2 rounded bg-canvas border border-line">
                       {{ l.entity_id }}
                     </span>
                   </div>
@@ -499,16 +499,16 @@ function exportAuditCSV() {
                 <!-- Actor -->
                 <td class="py-3 px-4 whitespace-nowrap">
                   <div class="flex items-center gap-1.5">
-                    <div class="size-5 rounded-full bg-brand text-white flex items-center justify-center font-semibold text-[10px]">
+                    <div class="size-5 rounded-full bg-brand text-white flex items-center justify-center font-semibold text-xs">
                       {{ (l.profiles?.full_name || 'A').charAt(0).toUpperCase() }}
                     </div>
                     <span class="font-semibold text-ink">{{ l.profiles?.full_name || 'System (no signed-in actor)' }}</span>
-                    <span class="text-[10px] font-semibold text-ink-soft">({{ l.profiles?.role || 'system' }})</span>
+                    <span class="text-xs font-semibold text-ink-soft">({{ l.profiles?.role || 'system' }})</span>
                   </div>
                 </td>
 
                 <!-- IP -->
-                <td class="py-3 px-4 font-mono text-[11px] text-ink-soft whitespace-nowrap">
+                <td class="py-3 px-4 font-mono text-xs text-ink-soft whitespace-nowrap">
                   {{ l.ip_address || 'not recorded' }}
                 </td>
 
@@ -516,7 +516,7 @@ function exportAuditCSV() {
                 <td class="py-3 px-4 text-right whitespace-nowrap">
                   <button 
                     type="button" 
-                    class="pill-btn min-h-7 px-2 py-0.5 text-[11px] gap-1 inline-flex items-center font-semibold"
+                    class="pill-btn min-h-7 px-2 py-0.5 text-xs gap-1 inline-flex items-center font-semibold"
                   >
                     <span>{{ expandedRowId === l.id ? 'Hide Diff' : 'View Diff' }}</span>
                     <ChevronDown :class="['size-3 transition-transform duration-200', expandedRowId === l.id ? 'rotate-180' : '']" />
@@ -538,7 +538,7 @@ function exportAuditCSV() {
                         nothing writes one, so it read "not recorded" on every row forever.
                         A field that can only ever say "not recorded" is not information.
                       -->
-                      <span v-if="l.entity_id" class="text-[11px] text-ink-soft font-normal">
+                      <span v-if="l.entity_id" class="text-xs text-ink-soft font-normal">
                         Entity: {{ l.entity_type || 'system' }} · {{ l.entity_id }}
                       </span>
                     </div>
@@ -546,18 +546,18 @@ function exportAuditCSV() {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
                       <!-- Old Values -->
                       <div class="p-3 rounded-lg bg-overdue-soft/60 border border-overdue-soft">
-                        <div class="text-[10px] font-semibold uppercase text-overdue mb-1.5 flex items-center gap-1">
+                        <div class="text-xs font-semibold uppercase text-overdue mb-1.5 flex items-center gap-1">
                           <span>Previous State (Before Mutation)</span>
                         </div>
-                        <pre class="text-[11px] text-overdue overflow-x-auto whitespace-pre-wrap">{{ l.previous_values ? JSON.stringify(l.previous_values, null, 2) : 'null (Initial record insertion)' }}</pre>
+                        <pre class="text-xs text-overdue overflow-x-auto whitespace-pre-wrap">{{ l.previous_values ? JSON.stringify(l.previous_values, null, 2) : 'null (Initial record insertion)' }}</pre>
                       </div>
 
                       <!-- New Values -->
                       <div class="p-3 rounded-lg bg-brand-soft/60 border border-brand-soft">
-                        <div class="text-[10px] font-semibold uppercase text-brand mb-1.5 flex items-center gap-1">
+                        <div class="text-xs font-semibold uppercase text-brand mb-1.5 flex items-center gap-1">
                           <span>Committed State (After Mutation)</span>
                         </div>
-                        <pre class="text-[11px] text-brand overflow-x-auto whitespace-pre-wrap">{{ l.new_values ? JSON.stringify(l.new_values, null, 2) : 'null' }}</pre>
+                        <pre class="text-xs text-brand overflow-x-auto whitespace-pre-wrap">{{ l.new_values ? JSON.stringify(l.new_values, null, 2) : 'null' }}</pre>
                       </div>
                     </div>
                   </div>

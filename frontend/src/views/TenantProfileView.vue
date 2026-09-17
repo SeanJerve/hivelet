@@ -244,7 +244,7 @@ function handleReset() {
         <div class="text-center sm:text-left space-y-1.5 flex-1">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
             <h2 class="font-semibold text-xl text-ink">{{ form.full_name }}</h2>
-            <span class="badge-soft badge-success text-[11px] font-semibold w-fit mx-auto sm:mx-0">
+            <span class="badge-soft badge-success text-xs font-semibold w-fit mx-auto sm:mx-0">
               Active Tenant
             </span>
           </div>
@@ -282,10 +282,10 @@ function handleReset() {
         <div class="p-6 space-y-6">
           <!-- Full Name & Phone Number -->
           <div>
-            <h3 class="text-[10px] font-semibold text-ink-soft mb-3">Resident Information</h3>
+            <h3 class="text-xs font-semibold text-ink-soft mb-3">Resident Information</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="full-name">
+                <label class="mb-1.5 block text-xs text-ink-faint" for="full-name">
                   Full Display Name
                 </label>
                 <!--
@@ -306,7 +306,7 @@ function handleReset() {
               </div>
 
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="phone">
+                <label class="mb-1.5 block text-xs text-ink-faint" for="phone">
                   Contact Phone Number
                 </label>
                 <input
@@ -325,10 +325,10 @@ function handleReset() {
 
           <!-- Occupation & Socials -->
           <div>
-            <h3 class="text-[10px] font-semibold text-ink-soft mb-3">Work &amp; Social Profile</h3>
+            <h3 class="text-xs font-semibold text-ink-soft mb-3">Work &amp; Social Profile</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="occupation">
+                <label class="mb-1.5 block text-xs text-ink-faint" for="occupation">
                   Occupation / Course &amp; University
                 </label>
                 <input
@@ -341,7 +341,7 @@ function handleReset() {
               </div>
 
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="facebook">
+                <label class="mb-1.5 block text-xs text-ink-faint" for="facebook">
                   Facebook Profile Link
                 </label>
                 <input
@@ -359,13 +359,13 @@ function handleReset() {
 
           <!-- Emergency Contact -->
           <div>
-            <h3 class="text-[10px] font-semibold text-ink-soft mb-3 flex items-center gap-1.5">
+            <h3 class="text-xs font-semibold text-ink-soft mb-3 flex items-center gap-1.5">
               <LifeBuoy class="size-3.5 text-overdue" />
               Emergency Contact Person
             </h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ec-name">
+                <label class="mb-1.5 block text-xs text-ink-faint" for="ec-name">
                   Emergency Contact Full Name
                 </label>
                 <input
@@ -379,7 +379,7 @@ function handleReset() {
               </div>
 
               <div>
-                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ec-phone">
+                <label class="mb-1.5 block text-xs text-ink-faint" for="ec-phone">
                   Emergency Contact Phone Number
                 </label>
                 <input

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { isRoomDetailModalOpen, activeRoomDetail, roomsFetchFailed } from '@/lib/systemState';
-import { X, Building2, Check, ShieldCheck, Clock, Wrench, Home } from 'lucide-vue-next';
+import { peso } from '@/lib/canonicalUnits';
+import WsModal from '@/components/ui/WsModal.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 function closeModal() {
   isRoomDetailModalOpen.value = false;
@@ -26,114 +28,87 @@ function closeModal() {
  * well be worth building; it would not start from that code.
  */
 
-function getStatusBadgeClass(status?: string) {
-  if (status === 'settled' || status === 'occupied') return 'badge-success';
-  if (status === 'pending') return 'badge-warning';
-  if (status === 'maintenance') return 'badge-purple';
-  return 'badge-neutral';
+function statusTone(status: string) {
+  if (status === 'settled' || status === 'occupied') return 'paid' as const;
+  if (status === 'pending') return 'verify' as const;
+  if (status === 'maintenance') return 'overdue' as const;
+  return 'unentered' as const;
+}
+
+function statusLabel(status: string) {
+  if (status === 'settled' || status === 'occupied') return 'Occupied';
+  if (status === 'pending') return 'Payment pending';
+  if (status === 'maintenance') return 'Under maintenance';
+  return 'Vacant';
 }
 </script>
 
 <template>
-  <div 
-    v-if="isRoomDetailModalOpen && activeRoomDetail" 
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
-    @click.self="closeModal"
+  <WsModal
+    v-if="isRoomDetailModalOpen && activeRoomDetail"
+    :title="`Unit ${activeRoomDetail.unitCode.toUpperCase()}`"
+    :subtitle="`${activeRoomDetail.cluster}, ${activeRoomDetail.floorLabel || `floor ${activeRoomDetail.floor}`}`"
+    size="lg"
+    @close="closeModal"
   >
-    <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl overflow-hidden rounded-tile animate-in fade-in zoom-in-95 duration-150 my-6 bg-tile border border-line">
-      
-      <div class="flex items-center justify-between p-6 pb-4 border-b border-line">
-        <div class="flex items-center gap-2.5">
-          <div class="size-9 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center">
-            <Building2 class="size-5" />
-          </div>
-          <div>
-            <h3 class="font-semibold text-lg text-ink">
-              Unit {{ activeRoomDetail.unitCode.toUpperCase() }} Specifications
-            </h3>
-            <p class="text-xs text-ink-soft">{{ activeRoomDetail.cluster }} · {{ activeRoomDetail.floorLabel || `Floor ${activeRoomDetail.floor}` }}</p>
-          </div>
-        </div>
-        <button @click="closeModal" class="p-1.5 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer" aria-label="Close dialog">
-          <X class="size-5" />
-        </button>
-      </div>
-
-      <div class="p-6 space-y-4 text-xs text-ink max-h-[75vh] overflow-y-auto">
-        
-        <!-- Room Photo Banner -->
-        <div v-if="activeRoomDetail.photo" class="h-48 w-full rounded-xl overflow-hidden relative border border-line bg-neutral-900">
-          <img 
-            :src="activeRoomDetail.photo" 
-            :alt="`Unit ${activeRoomDetail.unitCode}`"
-            class="size-full object-cover"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-          <div class="absolute bottom-3 left-3 flex items-center gap-2">
-            <span class="badge-soft badge-neutral bg-tile/95 font-semibold">
-              {{ activeRoomDetail.cluster }}
-            </span>
-            <span class="badge-soft badge-blue bg-tile/95 font-semibold">
-              Floor {{ activeRoomDetail.floor }}
-            </span>
-          </div>
-        </div>
-
-        <div class="p-4 rounded-xl bg-night text-white flex justify-between items-end">
-          <div>
-            <span class="text-[10px] uppercase font-semibold text-brand">Unit Showcase</span>
-            <h4 class="font-semibold text-xl text-white mt-0.5">Unit {{ activeRoomDetail.unitCode.toUpperCase() }}</h4>
-            <p class="text-xs text-ink-faint mt-0.5">{{ activeRoomDetail.type }} • Up to {{ activeRoomDetail.maxOccupants }} Pax</p>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-ink-faint block uppercase font-semibold">Base Rate</span>
-            <!-- `rooms` is seeded; 30 of the 33 seeded prices are stale. A rate shown
-                 without saying whether it is live is a rate someone will quote. -->
-            <span class="font-semibold text-xl text-white"><template v-if="roomsFetchFailed">—</template><template v-else>₱{{ activeRoomDetail.price.toLocaleString() }}</template><span class="text-xs font-normal text-ink-faint">/mo</span></span>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div class="p-3.5 bg-canvas border border-line rounded-xl">
-            <p class="text-ink-soft text-[10px] font-semibold uppercase">Monthly Rate</p>
-            <p class="text-base font-semibold text-ink mt-0.5">
-              <template v-if="roomsFetchFailed">Rate unavailable — refresh to retry</template><template v-else>₱{{ activeRoomDetail.price.toLocaleString() }} <span class="text-xs font-normal text-ink-soft">/ month</span></template>
-            </p>
-          </div>
-          <div class="p-3.5 bg-canvas border border-line rounded-xl flex flex-col justify-between">
-            <p class="text-ink-soft text-[10px] font-semibold uppercase">Operational Status</p>
-            <div class="mt-0.5">
-              <span :class="['badge-soft text-xs capitalize font-semibold', getStatusBadgeClass(activeRoomDetail.status)]">
-                {{ activeRoomDetail.status }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <p class="font-semibold text-ink-soft text-[11px]">Unit Description</p>
-          <p class="p-3.5 bg-tile border border-line rounded-xl leading-relaxed text-[#44403c]">
-            {{ activeRoomDetail.desc }}
-          </p>
-        </div>
-
-        <div class="space-y-1.5">
-          <p class="font-semibold text-ink-soft text-[11px]">Included Amenities &amp; Fixtures</p>
-          <div class="grid grid-cols-2 gap-2 text-xs text-ink bg-canvas p-3.5 border border-line rounded-xl">
-            <div class="flex items-center gap-1.5"><Check class="w-3.5 h-3.5 text-brand font-semibold" /> Private T&amp;B Bathroom</div>
-            <div class="flex items-center gap-1.5"><Check class="w-3.5 h-3.5 text-brand font-semibold" /> Kitchenette Sink</div>
-            <div class="flex items-center gap-1.5"><Check class="w-3.5 h-3.5 text-brand font-semibold" /> Bed Frame / Base</div>
-            <div class="flex items-center gap-1.5"><Check class="w-3.5 h-3.5 text-brand font-semibold" /> Submetered Electricity</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer Actions -->
-      <div class="p-4 px-6 border-t border-line flex items-center justify-end gap-3">
-        <button @click="closeModal" class="pill-btn">
-          Close Specs
-        </button>
-      </div>
+    <div v-if="activeRoomDetail.photo" class="h-52 overflow-hidden rounded-2xl">
+      <img
+        :src="activeRoomDetail.photo"
+        :alt="`Photo of unit ${activeRoomDetail.unitCode.toUpperCase()}`"
+        class="size-full object-cover"
+      />
     </div>
-  </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl bg-brand-soft p-5">
+        <p class="text-xs text-ink-faint">Monthly rate</p>
+        <!-- `rooms` is seeded, and 30 of the 33 seeded prices are stale. A rate
+             shown without saying whether it is live is a rate someone quotes. -->
+        <p v-if="roomsFetchFailed" class="mt-1 text-sm text-ink-soft">
+          The rate could not be loaded, so it is not shown here.
+        </p>
+        <p v-else class="mt-1 text-3xl font-semibold tabular tracking-tight">
+          {{ peso(activeRoomDetail.price) }}
+          <span class="text-sm font-normal text-ink-soft">/ month</span>
+        </p>
+      </div>
+
+      <dl class="rounded-2xl border border-line p-5 flex flex-col gap-3 text-sm">
+        <div class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Status</dt>
+          <dd><StatusPill :tone="statusTone(activeRoomDetail.status)">{{ statusLabel(activeRoomDetail.status) }}</StatusPill></dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Type</dt>
+          <dd class="font-medium">{{ activeRoomDetail.type }}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Sleeps up to</dt>
+          <dd class="font-medium tabular">{{ activeRoomDetail.maxOccupants }}</dd>
+        </div>
+        <div v-if="activeRoomDetail.tenant" class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Resident</dt>
+          <dd class="font-medium truncate">{{ activeRoomDetail.tenant }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div v-if="activeRoomDetail.billingRule">
+      <h3 class="text-sm font-semibold">How this unit is billed</h3>
+      <p class="mt-1 text-sm leading-6 text-ink-soft">{{ activeRoomDetail.billingRule }}</p>
+    </div>
+
+    <div v-if="activeRoomDetail.desc">
+      <h3 class="text-sm font-semibold">Description</h3>
+      <p class="mt-1 text-sm leading-6 text-ink-soft">{{ activeRoomDetail.desc }}</p>
+    </div>
+
+    <!-- The amenity list that used to sit here was the same four lines for all
+         33 units, seeded in systemState rather than stored per unit. Nothing in
+         the database says which unit has what, so this dialog says nothing. -->
+
+    <template #actions>
+      <button type="button" class="pill-btn" @click="closeModal">Close</button>
+    </template>
+  </WsModal>
 </template>

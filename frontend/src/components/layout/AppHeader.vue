@@ -246,7 +246,7 @@ onUnmounted(() => {
               <!-- Unread count. Emergency and High both surface as the danger tone. -->
               <span
                 v-if="unreadCount > 0"
-                class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-semibold rounded-full transition-transform"
+                class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-xs font-semibold rounded-full transition-transform"
                 :class="hasEmergencyUnread ? 'bg-danger text-danger-foreground animate-pulse' : 'bg-brand text-brand-foreground'"
               >
                 {{ unreadCount > 99 ? '99+' : unreadCount }}
@@ -269,7 +269,7 @@ onUnmounted(() => {
               aria-label="User Account Menu"
             >
               <div class="size-9 rounded-full bg-gradient-to-tr from-primary to-sky-400 p-0.5 group-hover:ring-2 group-hover:ring-brand/40 transition-all flex items-center justify-center">
-                <span class="w-full h-full rounded-full bg-brand flex items-center justify-center text-[11px] font-semibold text-white">
+                <span class="w-full h-full rounded-full bg-brand flex items-center justify-center text-xs font-semibold text-white">
                   {{ userInitials }}
                 </span>
               </div>
@@ -309,7 +309,7 @@ onUnmounted(() => {
                   <p class="text-xs text-ink-soft truncate max-w-[240px] mt-0.5">
                     {{ currentUser.email }}
                   </p>
-                  <span class="badge-soft badge-blue text-[10px] font-semibold uppercase mt-2.5">
+                  <span class="badge-soft badge-blue text-xs font-semibold uppercase mt-2.5">
                     {{ isTenant ? 'Active Resident' : 'Landlady Administrator' }}
                   </span>
                 </div>
@@ -349,7 +349,7 @@ onUnmounted(() => {
                 </div>
 
                 <!-- Discreet Footer -->
-                <div class="pt-3 border-t border-line flex items-center justify-between text-[10px] text-ink-faint">
+                <div class="pt-3 border-t border-line flex items-center justify-between text-xs text-ink-faint">
                   <span>Hivelet Portal</span>
                   <span>Fe Galang Da Silva BH</span>
                 </div>

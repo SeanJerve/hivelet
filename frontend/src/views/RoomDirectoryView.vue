@@ -229,7 +229,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
         @click="selectedStatus = 'All'"
         :class="[ 'rounded-tile bg-tile p-5 cursor-pointer transition-all hover:', selectedStatus === 'All' ? 'ring-2 ring-brand' : '' ]"
       >
-        <p class="text-xs font-semibold text-ink-soft">Total Inventory</p>
+        <p class="text-xs text-ink-faint">Total Inventory</p>
         <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">33 Units</p>
         <!-- 4 floors: 1-3 residential, 4 the rooftop penthouse. See PublicGuestView. -->
         <p class="mt-1 text-xs text-ink-soft">Across 5 clusters &amp; 4 floors</p>
@@ -352,7 +352,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
                     </p>
                     <p class="mt-1 text-xs font-semibold text-ink-soft">{{ u.type }}</p>
                   </div>
-                  <span :class="['badge-soft text-[10px] capitalize font-semibold', getStatusBadgeClass(u.status)]">
+                  <span :class="['badge-soft text-xs capitalize font-semibold', getStatusBadgeClass(u.status)]">
                     {{ getStatusLabel(u.status) }}
                   </span>
                 </div>
@@ -415,7 +415,7 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
       <div class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[950px] text-xs sm:text-sm border-collapse">
           <thead class="sticky top-0 z-10 bg-canvas">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
+            <tr class="text-left text-xs uppercase tracking-wide text-ink-soft border-b border-line">
               <th class="whitespace-nowrap px-4 py-3 font-semibold">UNIT</th>
               <th class="whitespace-nowrap px-4 py-3 font-semibold">CLUSTER</th>
               <th class="whitespace-nowrap px-4 py-3 font-semibold">TYPE</th>

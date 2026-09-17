@@ -149,11 +149,11 @@ onUnmounted(() => {
           <h3 class="font-semibold text-sm text-ink">Notifications</h3>
           <span 
             v-if="unreadCount > 0"
-            class="px-2 py-0.5 text-[10px] font-semibold bg-brand text-white rounded-full"
+            class="px-2 py-0.5 text-xs font-semibold bg-brand text-white rounded-full"
           >
             {{ unreadCount }} new
           </span>
-          <span v-else class="text-[11px] text-ink-soft font-medium">
+          <span v-else class="text-xs text-ink-soft font-medium">
             All caught up
           </span>
         </div>
@@ -166,7 +166,7 @@ onUnmounted(() => {
             title="Mark all as read"
           >
             <CheckCheck class="size-3.5" />
-            <span class="text-[11px]">Mark all read</span>
+            <span class="text-xs">Mark all read</span>
           </button>
           
           <button
@@ -209,7 +209,7 @@ onUnmounted(() => {
         <div v-else-if="filteredNotifications.length === 0" class="py-12 px-4 text-center">
           <ShieldCheck class="size-10 text-brand mx-auto mb-2 opacity-80" />
           <p class="text-xs font-semibold text-ink">No notifications found</p>
-          <p class="text-[11px] text-ink-soft mt-1">
+          <p class="text-xs text-ink-soft mt-1">
             {{ activeFilter === 'unread' ? 'You have read all your notifications.' : 'No alerts in this category.' }}
           </p>
         </div>
@@ -240,7 +240,7 @@ onUnmounted(() => {
               <span class="text-xs font-semibold text-ink truncate group-hover:text-brand transition-colors">
                 {{ item.title }}
               </span>
-              <span class="text-[10px] text-ink-soft shrink-0 whitespace-nowrap">
+              <span class="text-xs text-ink-soft shrink-0 whitespace-nowrap">
                 {{ formatRelativeTime(item.created_at) }}
               </span>
             </div>
@@ -263,7 +263,7 @@ onUnmounted(() => {
               >
                 HIGH
               </span>
-              <span class="text-[10px] text-ink-soft font-medium">
+              <span class="text-xs text-ink-soft font-medium">
                 {{ item.type }}
               </span>
             </div>
@@ -272,7 +272,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Footer -->
-      <div class="px-4 py-2.5 bg-canvas border-t border-line flex items-center justify-between text-[11px] text-ink-soft">
+      <div class="px-4 py-2.5 bg-canvas border-t border-line flex items-center justify-between text-xs text-ink-soft">
         <span>Hivelet Real-time Alerts</span>
         <button
           @click="fetchNotifications"

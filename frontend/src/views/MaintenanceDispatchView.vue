@@ -464,7 +464,7 @@ function handleDeleteTicketPrompt() {
 
         <!-- Quick Action Shortcuts Bar -->
         <div class="p-3 bg-canvas border border-line rounded-xl flex items-center justify-between gap-3 text-xs">
-          <span class="font-semibold text-ink-soft text-[10px]">Quick Actions:</span>
+          <span class="font-semibold text-ink-soft text-xs">Quick Actions:</span>
           <div class="flex items-center gap-2">
             <button
               v-if="editStatus !== 'In Progress' && editStatus !== 'Resolved' && editStatus !== 'Closed'"
@@ -499,14 +499,14 @@ function handleDeleteTicketPrompt() {
         <form @submit.prevent="handleSaveEditTicket" class="space-y-4 text-xs">
           <!-- Issue Title -->
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Issue Title</label>
+            <label class="mb-1.5 block text-xs text-ink-faint">Issue Title</label>
             <input v-model="editTitle" class="ws-input w-full" required />
           </div>
 
           <!-- Unit Code & Category -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Unit</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Unit</label>
               <select v-model="editUnit" class="ws-select w-full" required>
                 <option v-for="r in rooms" :key="r.id" :value="r.unitCode.toLowerCase()">
                   {{ r.unitCode.toUpperCase() }} ({{ r.cluster }})
@@ -514,7 +514,7 @@ function handleDeleteTicketPrompt() {
               </select>
             </div>
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Category</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Category</label>
               <select v-model="editCategory" class="ws-select w-full" required>
                 <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
               </select>
@@ -524,7 +524,7 @@ function handleDeleteTicketPrompt() {
           <!-- Priority & Status -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Priority</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Priority</label>
               <select v-model="editPriority" class="ws-select w-full" required>
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -533,7 +533,7 @@ function handleDeleteTicketPrompt() {
               </select>
             </div>
             <div>
-              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Status</label>
+              <label class="mb-1.5 block text-xs text-ink-faint">Status</label>
               <select v-model="editStatus" class="ws-select w-full" required>
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
@@ -545,7 +545,7 @@ function handleDeleteTicketPrompt() {
 
           <!-- Assigned Technician -->
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Assigned Technician</label>
+            <label class="mb-1.5 block text-xs text-ink-faint">Assigned Technician</label>
             <select v-model="editTech" class="ws-select w-full">
               <option v-for="tech in TECHNICIANS" :key="tech" :value="tech">{{ tech }}</option>
             </select>
@@ -553,35 +553,35 @@ function handleDeleteTicketPrompt() {
 
           <!-- Description -->
           <div>
-            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Description &amp; Repair Notes</label>
+            <label class="mb-1.5 block text-xs text-ink-faint">Description &amp; Repair Notes</label>
             <textarea v-model="editDesc" rows="3" class="ws-textarea w-full" placeholder="Details regarding the maintenance request..."></textarea>
           </div>
 
           <!-- Resident Photo Attachment (if present) -->
           <div v-if="editingTicket?.photo" class="space-y-1.5 pt-2 border-t border-line">
-            <label class="block font-semibold text-[11px] text-ink-soft">
+            <label class="block font-semibold text-xs text-ink-soft">
               Resident Photo Attachment
             </label>
             <div class="rounded-xl border border-line p-3 bg-canvas flex flex-col items-center">
               <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
                 <img :src="editingTicket.photo" alt="Ticket Attachment" class="max-h-52 w-auto object-contain rounded-lg transition-transform group-hover:scale-102" />
-                <span class="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded font-medium">Click to view original</span>
+                <span class="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-0.5 rounded font-medium">Click to view original</span>
               </a>
             </div>
           </div>
 
           <!-- Resident Communication Dialogue Stream -->
           <div class="pt-3 border-t border-line space-y-2">
-            <label class="block font-semibold text-[11px] text-ink-soft">
+            <label class="block font-semibold text-xs text-ink-soft">
               Resident Communication &amp; Follow-up Notes
             </label>
 
             <!-- Message Stream Box -->
             <div class="max-h-36 overflow-y-auto rounded-xl border border-line bg-canvas p-3 space-y-2 text-xs">
-              <div v-if="loadingMessages" class="py-2 text-center text-ink-faint text-[11px]">
+              <div v-if="loadingMessages" class="py-2 text-center text-ink-faint text-xs">
                 Loading conversation thread...
               </div>
-              <div v-else-if="ticketMessages.length === 0" class="py-2 text-center text-ink-faint text-[11px]">
+              <div v-else-if="ticketMessages.length === 0" class="py-2 text-center text-ink-faint text-xs">
                 No comments on this ticket yet.
               </div>
               <div
@@ -592,7 +592,7 @@ function handleDeleteTicketPrompt() {
                 <div
                   :class="[ 'max-w-[85%] rounded-xl px-3 py-1.5 text-xs', msg.profiles?.role === 'admin' ? 'bg-night text-white' : 'bg-tile border border-line text-ink' ]"
                 >
-                  <p class="font-semibold text-[10px] opacity-75 mb-0.5">
+                  <p class="font-semibold text-xs opacity-75 mb-0.5">
                     {{ msg.profiles?.role === 'admin' ? 'You (Landlady)' : (msg.profiles?.full_name || 'Resident') }}
                   </p>
                   <p>{{ msg.message_body }}</p>

@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { LogIn, UserPlus, ShieldCheck, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import { login, registerUser, authError, isAuthenticating, homeRouteForRole } from '@/lib/authStore';
 import { showToast } from '@/lib/systemState';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -118,46 +119,35 @@ async function handleQuickLogin(account: DemoAccount) {
 </script>
 
 <template>
-  <div class="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
-    <div class="w-full max-w-5xl space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        <!-- Left: Sign In / Register Form -->
-        <div class="lg:col-span-6 surface-card p-6 sm:p-8 space-y-6">
-          <div class="text-center space-y-1">
-            <h1 class="font-display text-2xl font-extrabold text-foreground">
-              {{ isSignUp ? 'Create a Hivelet Account' : 'Sign in to Hivelet' }}
+  <div class="ws-focus min-h-[calc(100vh-8rem)] bg-canvas px-4 py-10 text-ink sm:px-6">
+    <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
+      <div class="grid gap-6 lg:grid-cols-12 lg:items-start">
+        <!-- Sign in, or create an account -->
+        <section class="min-w-0 rounded-tile bg-tile p-6 sm:p-8 lg:col-span-6 flex flex-col gap-6">
+          <div>
+            <h1 class="text-3xl leading-tight font-medium tracking-tight">
+              {{ isSignUp ? 'Create an account' : 'Sign in' }}
             </h1>
-            <p class="text-xs text-muted-foreground">Fe Galang Da Silva Boarding House</p>
+            <p class="mt-1 text-sm text-ink-soft">Fe Galang Da Silva Boarding House</p>
           </div>
 
-          <!-- Denied Alert -->
-          <div
+          <p
             v-if="deniedReason && !isSignUp"
-            class="flex gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs text-amber-900"
+            role="status"
+            class="flex items-start gap-2.5 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify"
           >
-            <AlertCircle class="size-4 shrink-0 text-accent mt-0.5" />
-            <span>{{ deniedReason }}</span>
-          </div>
+            <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            {{ deniedReason }}
+          </p>
 
-          <form class="space-y-4 text-xs" @submit.prevent="handleSubmit">
-            <div v-if="isSignUp">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                Full Name
-              </label>
-              <input
-                v-model="fullName"
-                type="text"
-                required
-                placeholder="Juan Dela Cruz"
-                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
-              />
-            </div>
+          <form class="flex flex-col gap-4" @submit.prevent="handleSubmit">
+            <label v-if="isSignUp" class="ws-field">
+              Full name
+              <input v-model="fullName" type="text" required placeholder="Juan Dela Cruz" class="ws-input" />
+            </label>
 
-            <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                {{ isSignUp ? 'Email address' : 'Email or phone number' }}
-              </label>
+            <label class="ws-field">
+              {{ isSignUp ? 'Email address' : 'Email or phone number' }}
               <!--
                 Signing in accepts either identifier (OD-09: a tenant may have no email).
                 type="email" is kept for sign-up, where an address really is required, but
@@ -169,164 +159,119 @@ async function handleQuickLogin(account: DemoAccount) {
                 autocomplete="username"
                 required
                 :placeholder="isSignUp ? 'you@email.com' : 'you@email.com or 0917-000-0000'"
-                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+                class="ws-input"
               />
-            </div>
+            </label>
 
-            <div v-if="isSignUp">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                Phone Number (Optional)
-              </label>
-              <input
-                v-model="phoneNumber"
-                type="text"
-                placeholder="0917-000-0000"
-                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
-              />
-            </div>
+            <label v-if="isSignUp" class="ws-field">
+              Phone number, optional
+              <input v-model="phoneNumber" type="text" placeholder="0917-000-0000" class="ws-input" />
+            </label>
 
-            <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                Password
-              </label>
-              <div class="relative">
+            <label class="ws-field">
+              Password
+              <span class="relative">
                 <input
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
                   autocomplete="current-password"
                   required
-                  placeholder="••••••••"
-                  class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 pr-11 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+                  class="ws-input pr-12"
                 />
                 <button
                   type="button"
-                  class="absolute right-1 top-1/2 -translate-y-1/2 size-9 grid place-items-center text-muted-foreground hover:text-foreground"
+                  class="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full hover:bg-canvas cursor-pointer"
+                  :aria-label="showPassword ? 'Hide password' : 'Show password'"
                   @click="showPassword = !showPassword"
                 >
-                  <component :is="showPassword ? EyeOff : Eye" class="size-4" />
+                  <component :is="showPassword ? EyeOff : Eye" class="size-4 text-ink-soft" aria-hidden="true" />
                 </button>
-              </div>
-              <p v-if="isSignUp" class="text-[11px] text-muted-foreground mt-1">
-                Must be at least 10 characters and contain a letter and a number.
-              </p>
-            </div>
+              </span>
+              <span v-if="isSignUp" class="text-xs text-ink-faint">
+                At least 10 characters, with a letter and a number.
+              </span>
+            </label>
 
-            <div v-if="isSignUp">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                Confirm Password
-              </label>
-              <input
-                v-model="confirmPassword"
-                type="password"
-                required
-                placeholder="••••••••"
-                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
-              />
-            </div>
+            <label v-if="isSignUp" class="ws-field">
+              Confirm password
+              <input v-model="confirmPassword" type="password" required class="ws-input" />
+            </label>
 
-            <!-- Error Banner -->
-            <div
+            <p
               v-if="authError"
-              class="flex gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-800"
+              role="alert"
+              class="flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
             >
-              <AlertCircle class="size-4 shrink-0 mt-0.5" />
-              <span>{{ authError }}</span>
-            </div>
+              <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {{ authError }}
+            </p>
 
-            <button
-              type="submit"
-              :disabled="!canSubmit"
-              class="btn-primary min-h-11 w-full gap-2 text-sm font-bold shadow-xs justify-center"
-            >
-              <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" />
-              <component :is="isSignUp ? UserPlus : LogIn" v-else class="size-4 text-white" />
-              {{ isAuthenticating ? (isSignUp ? 'Creating account…' : 'Signing in…') : (isSignUp ? 'Create Account' : 'Sign in') }}
+            <button type="submit" :disabled="!canSubmit" class="pill-btn-brand w-full">
+              <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />
+              <component :is="isSignUp ? UserPlus : LogIn" v-else class="size-4" aria-hidden="true" />
+              {{ isAuthenticating ? (isSignUp ? 'Creating account' : 'Signing in') : (isSignUp ? 'Create account' : 'Sign in') }}
             </button>
           </form>
 
-          <div class="text-center text-xs pt-2">
-            <button @click="toggleMode" class="text-accent-ink font-bold hover:underline">
-              {{ isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Create one" }}
-            </button>
-          </div>
+          <button type="button" class="self-start text-sm font-semibold text-brand hover:underline" @click="toggleMode">
+            {{ isSignUp ? 'Already have an account? Sign in' : 'No account yet? Create one' }}
+          </button>
 
-          <div class="border-t border-border pt-4 flex items-start gap-2 text-xs text-muted-foreground">
-            <ShieldCheck class="size-4 text-emerald-600 shrink-0 mt-0.5" />
-            <p>Enforced server-side Role-Based Access Control (RBAC). Passwords hashed with bcrypt.</p>
-          </div>
-        </div>
+          <p class="mt-auto flex items-start gap-2.5 border-t border-line pt-4 text-xs text-ink-faint">
+            <ShieldCheck class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+            Roles are enforced on the server, and passwords are stored hashed.
+          </p>
+        </section>
 
-        <!-- Right: 1-Click Demo Accounts. Development only - the list is empty in a
-             built app, so the whole panel disappears rather than rendering hollow. -->
-        <div v-if="demoAccounts.length > 0" class="lg:col-span-6 surface-card p-6 sm:p-8 space-y-4">
-          <div class="border-b border-border pb-3">
-            <div class="flex items-center justify-between">
-              <h2 class="font-display text-lg font-extrabold text-foreground">
-                Quick Demo Access
-              </h2>
-              <span class="badge-soft badge-warning font-bold text-[10px]">
-                1-Click Sign In
-              </span>
-            </div>
-            <p class="text-xs text-muted-foreground mt-1">
-              Select any verified demonstration account below to authenticate immediately.
+        <!-- Demo accounts. Development only: the list is empty in a built app, so
+             the whole panel disappears rather than rendering hollow. -->
+        <section v-if="demoAccounts.length > 0" class="min-w-0 rounded-tile bg-tile p-6 sm:p-8 lg:col-span-6 flex flex-col gap-4">
+          <div>
+            <h2 class="text-lg font-semibold tracking-tight">Demo accounts</h2>
+            <p class="mt-1 text-sm text-ink-soft">
+              One click signs you in. This panel only exists while the dev server is running.
             </p>
           </div>
 
-          <div class="overflow-x-auto border border-border rounded-2xl max-h-[380px] overflow-y-auto">
-            <table class="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr class="bg-muted text-muted-foreground border-b border-border sticky top-0 z-10 shadow-[inset_0_-1px_0_#e7e5e4]">
-                  <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-[10px]">User / Role</th>
-                  <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-[10px]">Target</th>
-                  <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-[10px] text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-border">
-                <tr
-                  v-for="acc in demoAccounts"
-                  :key="acc.email"
-                  class="hover:bg-background transition-colors"
+          <ul class="flex max-h-[26rem] flex-col gap-2 overflow-y-auto pr-1">
+            <li
+              v-for="acc in demoAccounts"
+              :key="acc.email"
+              class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-line p-3"
+            >
+              <span class="min-w-0 flex-1 basis-40">
+                <span class="block truncate text-sm font-medium">{{ acc.name }}</span>
+                <span class="block truncate text-xs text-ink-faint">
+                  {{ acc.room || 'Admin workspace' }}
+                </span>
+              </span>
+              <span class="flex shrink-0 items-center gap-2">
+                <StatusPill :tone="acc.roleType === 'admin' ? 'verify' : acc.roleType === 'inactive' ? 'unentered' : 'neutral'">
+                  {{ acc.roleLabel }}
+                </StatusPill>
+                <button
+                  type="button"
+                  :disabled="isAuthenticating"
+                  class="pill-btn"
+                  :aria-label="`Sign in as ${acc.name}`"
+                  @click="handleQuickLogin(acc)"
                 >
-                  <td class="py-3 px-3">
-                    <div class="font-bold text-foreground">{{ acc.name }}</div>
-                    <div class="text-[11px] text-muted-foreground font-mono">{{ acc.email }}</div>
-                    <span :class="['badge-soft text-[9px] mt-1 inline-block', acc.badgeClass]">
-                      {{ acc.roleLabel }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-3 text-muted-foreground font-medium text-xs">
-                    {{ acc.room || 'Admin Workspace' }}
-                  </td>
-                  <td class="py-3 px-3 text-right">
-                    <button
-                      type="button"
-                      :disabled="isAuthenticating"
-                      @click="handleQuickLogin(acc)"
-                      class="btn-primary min-h-8 px-3 py-1 text-xs gap-1 inline-flex items-center shadow-xs cursor-pointer"
-                    >
-                      <LogIn class="size-3 text-white" />
-                      <span>Sign In</span>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  Sign in
+                </button>
+              </span>
+            </li>
+          </ul>
 
-          <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1">
-            <p class="font-bold">Account Access Protocol:</p>
-            <p>All accounts match credentials seeded in the PostgreSQL database.</p>
-          </div>
-        </div>
-
+          <p class="text-xs leading-5 text-ink-faint">
+            These accounts are real rows in the live database. Their passwords are read from
+            credentials/creds.txt on this machine and are never written into the repository.
+          </p>
+        </section>
       </div>
 
-      <div class="text-center">
-        <router-link to="/public" class="text-xs font-bold text-accent-ink hover:underline">
-          ← Back to the public guest showcase
-        </router-link>
-      </div>
+      <router-link to="/public" class="self-center text-sm font-semibold text-brand hover:underline">
+        Back to the public pages
+      </router-link>
     </div>
   </div>
 </template>

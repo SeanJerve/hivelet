@@ -254,8 +254,8 @@ async function handleSendReply() {
             />
           </div>
           <div class="flex items-center justify-between text-xs text-ink-soft px-1">
-            <span class="font-semibold text-[11px]">Inbox ({{ filteredInquiries.length }})</span>
-            <span class="text-[11px] font-semibold text-brand">Live sync</span>
+            <span class="font-semibold text-xs">Inbox ({{ filteredInquiries.length }})</span>
+            <span class="text-xs font-semibold text-brand">Live sync</span>
           </div>
         </div>
 
@@ -277,14 +277,14 @@ async function handleSendReply() {
             <div class="flex items-start justify-between gap-2">
               <div class="min-w-0">
                 <p class="font-semibold text-xs text-ink truncate">{{ inq.name }}</p>
-                <span class="inline-block text-[11px] font-semibold text-brand mt-0.5">
+                <span class="inline-block text-xs font-semibold text-brand mt-0.5">
                   Unit {{ inq.unit.toUpperCase() }}
                 </span>
-                <span :class="['badge-soft text-[10px] font-semibold ml-1.5', statusBadgeClass(inq.status)]">
+                <span :class="['badge-soft text-xs font-semibold ml-1.5', statusBadgeClass(inq.status)]">
                   {{ inq.status }}
                 </span>
               </div>
-              <span class="text-[10px] text-ink-soft shrink-0 font-medium">{{ inq.date || 'Recent' }}</span>
+              <span class="text-xs text-ink-soft shrink-0 font-medium">{{ inq.date || 'Recent' }}</span>
             </div>
 
             <p class="text-xs text-ink-soft line-clamp-2 mt-1.5 leading-relaxed">
@@ -306,11 +306,11 @@ async function handleSendReply() {
               <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
                 {{ activeInquiry.name }}
                 <!-- Was a hardcoded "Active Prospect" on every lead, whatever its status. -->
-                <span :class="['badge-soft text-[10px]', statusBadgeClass(activeInquiry.status)]">
+                <span :class="['badge-soft text-xs', statusBadgeClass(activeInquiry.status)]">
                   {{ activeInquiry.status }}
                 </span>
               </h2>
-              <div class="flex flex-wrap items-center gap-3 text-[11px] text-ink-soft mt-0.5">
+              <div class="flex flex-wrap items-center gap-3 text-xs text-ink-soft mt-0.5">
                 <span class="flex items-center gap-1"><Phone class="size-3" /> {{ activeInquiry.phone }}</span>
                 <span class="flex items-center gap-1"><Mail class="size-3" /> {{ activeInquiry.email }}</span>
               </div>
@@ -320,7 +320,7 @@ async function handleSendReply() {
           <!-- Unit Info & Conversion Action -->
           <div class="flex items-center gap-3">
             <div v-if="activeUnit" class="text-right hidden sm:block">
-              <span class="text-[10px] font-semibold text-ink-soft">Target Unit</span>
+              <span class="text-xs font-semibold text-ink-soft">Target Unit</span>
               <p class="font-semibold text-xs text-ink">
                 <!-- The rate she quotes a prospective resident. `rooms` is seeded, so a
                      failed refresh would have her quoting a figure up to ₱1,900 out. Better
@@ -362,7 +362,7 @@ async function handleSendReply() {
 
             <span
               v-else
-              class="text-[11px] font-semibold text-ink-soft inline-flex items-center gap-1"
+              class="text-xs font-semibold text-ink-soft inline-flex items-center gap-1"
             >
               <Check class="size-3.5" /> {{ activeInquiry.status }}
             </span>
@@ -376,7 +376,7 @@ async function handleSendReply() {
             :key="msg.id"
             :class="['flex flex-col', msg.from === 'me' ? 'items-end' : 'items-start']"
           >
-            <div class="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-ink-soft">
+            <div class="flex items-center gap-1.5 mb-1 px-1 text-xs text-ink-soft">
               <span class="font-semibold">{{ msg.from === 'me' ? 'Fe Galang Da Silva (Landlady)' : msg.author }}</span>
               <span>· {{ msg.time }}</span>
             </div>
@@ -403,7 +403,7 @@ async function handleSendReply() {
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-[11px] text-ink-soft">
+              <span class="text-xs text-ink-soft">
                 Replies are dispatched directly via SMS / Email to {{ activeInquiry.phone }}.
               </span>
 

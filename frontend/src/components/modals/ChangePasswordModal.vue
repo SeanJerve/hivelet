@@ -24,7 +24,8 @@
 import { ref, computed, watch } from 'vue';
 import { api, ApiRequestError } from '@/lib/api';
 import { showToast } from '@/lib/systemState';
-import { X, Lock, Check, Loader2, Eye, EyeOff } from 'lucide-vue-next';
+import { Check, Loader2, Eye, EyeOff } from 'lucide-vue-next';
+import WsModal from '@/components/ui/WsModal.vue';
 
 const props = defineProps<{ open: boolean }>();
 const emit = defineEmits<{ (e: 'close'): void }>();
@@ -111,148 +112,92 @@ async function submit() {
 </script>
 
 <template>
-  <Transition
-    enter-active-class="transition duration-150 ease-out"
-    enter-from-class="opacity-0"
-    leave-active-class="transition duration-100 ease-in"
-    leave-to-class="opacity-0"
+  <WsModal
+    v-if="open"
+    title="Change password"
+    subtitle="You will stay signed in on this device."
+    size="sm"
+    :dismissible="false"
+    @close="close"
   >
-    <div
-      v-if="open"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
-      @click.self="close"
-    >
-      <div class="rounded-tile bg-tile w-full max-w-md shadow-2xl rounded-tile p-6 space-y-5 bg-tile my-6">
-        <!-- Header -->
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="size-10 rounded-xl bg-canvas flex items-center justify-center shrink-0">
-              <Lock class="size-5 text-brand" />
-            </div>
-            <div>
-              <h2 class="font-semibold text-base text-ink">Change Password</h2>
-              <p class="text-xs text-ink-soft mt-0.5">
-                You will stay signed in on this device.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="rounded-lg p-1.5 hover:bg-canvas transition-colors cursor-pointer"
-            aria-label="Close"
-            @click="close"
-          >
-            <X class="size-4 text-ink-soft" />
-          </button>
-        </div>
+    <form id="change-password-form" class="flex flex-col gap-5" @submit.prevent="submit">
+      <label class="ws-field">
+        Current password
+        <input
+          v-model="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          :class="['ws-input', currentPasswordError && 'border-overdue']"
+          :aria-invalid="currentPasswordError ? 'true' : undefined"
+          aria-describedby="cp-current-error"
+          @input="currentPasswordError = ''"
+        />
+        <span v-if="currentPasswordError" id="cp-current-error" class="text-sm text-overdue">
+          {{ currentPasswordError }}
+        </span>
+      </label>
 
-        <form class="space-y-4" @submit.prevent="submit">
-          <!-- Current -->
-          <div class="space-y-1.5">
-            <label for="cp-current" class="text-xs font-semibold text-ink-soft">
-              Current password
-            </label>
+      <div class="flex flex-col gap-2">
+        <label class="ws-field">
+          New password
+          <span class="relative">
             <input
-              id="cp-current"
-              v-model="currentPassword"
-              type="password"
-              autocomplete="current-password"
-              class="ws-input w-full"
-              :class="currentPasswordError ? 'border-danger' : ''"
-              @input="currentPasswordError = ''"
-            />
-            <p v-if="currentPasswordError" class="text-xs font-semibold text-danger">
-              {{ currentPasswordError }}
-            </p>
-          </div>
-
-          <!-- New -->
-          <div class="space-y-1.5">
-            <label for="cp-new" class="text-xs font-semibold text-ink-soft">
-              New password
-            </label>
-            <div class="relative">
-              <input
-                id="cp-new"
-                v-model="newPassword"
-                :type="reveal ? 'text' : 'password'"
-                autocomplete="new-password"
-                class="ws-input w-full pr-11"
-              />
-              <button
-                type="button"
-                class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 hover:bg-canvas transition-colors cursor-pointer"
-                :aria-label="reveal ? 'Hide password' : 'Show password'"
-                @click="reveal = !reveal"
-              >
-                <EyeOff v-if="reveal" class="size-4 text-ink-soft" />
-                <Eye v-else class="size-4 text-ink-soft" />
-              </button>
-            </div>
-
-            <ul class="space-y-1 pt-1">
-              <li
-                v-for="rule in rules"
-                :key="rule.label"
-                class="flex items-center gap-2 text-xs"
-                :class="rule.met ? 'text-ink' : 'text-ink-soft'"
-              >
-                <Check v-if="rule.met" class="size-3.5 text-brand shrink-0" />
-                <span v-else class="size-3.5 rounded-full border border-line shrink-0" />
-                <span>{{ rule.label }}</span>
-              </li>
-            </ul>
-
-            <p v-if="sameAsCurrent" class="text-xs font-semibold text-danger">
-              The new password must be different from the current one.
-            </p>
-          </div>
-
-          <!-- Confirm -->
-          <div class="space-y-1.5">
-            <label for="cp-confirm" class="text-xs font-semibold text-ink-soft">
-              Confirm new password
-            </label>
-            <input
-              id="cp-confirm"
-              v-model="confirmPassword"
+              v-model="newPassword"
               :type="reveal ? 'text' : 'password'"
               autocomplete="new-password"
-              class="ws-input w-full"
+              class="ws-input pr-12"
             />
-            <p
-              v-if="confirmPassword.length > 0 && !matches"
-              class="text-xs font-semibold text-danger"
-            >
-              The two passwords do not match.
-            </p>
-          </div>
-
-          <p v-if="formError" class="text-xs font-semibold text-danger">{{ formError }}</p>
-
-          <div class="flex items-center justify-end gap-2 pt-1">
             <button
               type="button"
-              class="rounded-xl px-4 py-2.5 text-xs font-semibold text-ink hover:bg-canvas transition-colors cursor-pointer"
-              :disabled="isSubmitting"
-              @click="close"
+              class="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full hover:bg-canvas cursor-pointer"
+              :aria-label="reveal ? 'Hide password' : 'Show password'"
+              @click="reveal = !reveal"
             >
-              Cancel
+              <EyeOff v-if="reveal" class="size-4 text-ink-soft" aria-hidden="true" />
+              <Eye v-else class="size-4 text-ink-soft" aria-hidden="true" />
             </button>
-            <button
-              type="submit"
-              class="rounded-xl bg-brand px-4 py-2.5 text-xs font-semibold text-white transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="!canSubmit"
-            >
-              <span v-if="isSubmitting" class="flex items-center gap-2">
-                <Loader2 class="size-3.5 animate-spin" />
-                Changing…
-              </span>
-              <span v-else>Change password</span>
-            </button>
-          </div>
-        </form>
+          </span>
+        </label>
+
+        <ul class="flex flex-col gap-1.5">
+          <li
+            v-for="rule in rules"
+            :key="rule.label"
+            :class="['flex items-center gap-2 text-sm', rule.met ? 'text-ink' : 'text-ink-soft']"
+          >
+            <Check v-if="rule.met" class="size-4 shrink-0 text-brand" aria-hidden="true" />
+            <span v-else aria-hidden="true" class="size-4 shrink-0 rounded-full border border-line" />
+            {{ rule.label }}<span class="sr-only">{{ rule.met ? ', met' : ', not met yet' }}</span>
+          </li>
+        </ul>
+
+        <p v-if="sameAsCurrent" class="text-sm text-overdue">
+          The new password must be different from the current one.
+        </p>
       </div>
-    </div>
-  </Transition>
+
+      <label class="ws-field">
+        Confirm new password
+        <input
+          v-model="confirmPassword"
+          :type="reveal ? 'text' : 'password'"
+          autocomplete="new-password"
+          class="ws-input"
+        />
+        <span v-if="confirmPassword.length > 0 && !matches" class="text-sm text-overdue">
+          The two passwords do not match.
+        </span>
+      </label>
+
+      <p v-if="formError" role="alert" class="text-sm text-overdue">{{ formError }}</p>
+    </form>
+
+    <template #actions>
+      <button type="button" class="pill-btn" :disabled="isSubmitting" @click="close">Cancel</button>
+      <button type="submit" form="change-password-form" class="pill-btn-brand" :disabled="!canSubmit">
+        <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+        {{ isSubmitting ? 'Changing' : 'Change password' }}
+      </button>
+    </template>
+  </WsModal>
 </template>

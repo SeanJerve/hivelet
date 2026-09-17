@@ -200,7 +200,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
           <div>
             <h2 class="text-sm font-semibold text-ink flex items-center gap-2">
               Adyen Online Checkout
-              <span class="badge-soft badge-success text-[10px] font-semibold">
+              <span class="badge-soft badge-success text-xs font-semibold">
                 SANDBOX TEST
               </span>
             </h2>
@@ -247,7 +247,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
         <div v-if="isLoading" class="py-12 flex flex-col items-center justify-center text-center space-y-3">
           <Loader2 class="size-8 text-brand animate-spin" />
           <p class="text-xs font-semibold text-ink">Connecting to Adyen Test Gateway...</p>
-          <p class="text-[11px] text-ink-soft">Initializing encrypted merchant checkout session</p>
+          <p class="text-xs text-ink-soft">Initializing encrypted merchant checkout session</p>
         </div>
 
         <!-- Success Completed State -->
@@ -292,7 +292,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       </div>
 
       <!-- Footer Security Note -->
-      <div class="bg-canvas border-t border-line px-4 py-3 flex items-center justify-between text-[10px] text-ink-soft">
+      <div class="bg-canvas border-t border-line px-4 py-3 flex items-center justify-between text-xs text-ink-soft">
         <div class="flex items-center gap-1.5">
           <ShieldCheck class="size-3.5 text-brand" />
           <span>Card and wallet details are entered in Adyen's fields and never reach Hivelet's servers</span>
