@@ -115,14 +115,19 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > `rooms` is seeded from a hardcoded list so the page has something to render before the API
 > answers. **Eight views read it. Two check whether the fetch actually worked.**
 >
-> ### What the seed was holding
+> ### Two numbers nobody had checked
 >
-> | Trusted as | Actually |
-> |---|---|
-> | the unit's **price** | a hardcoded snapshot — **30 of 33 no longer match the database**, by up to **₱2,000** |
-> | the unit's **occupant count** | `Math.min(capacity, 2)` — **a number invented from how big the room is** |
+> | Trusted as | Actually | Where it came from |
+> |---|---|---|
+> | the unit's **price** | a hardcoded snapshot — **30 of 33 no longer match the database**, by up to **₱2,000** | the seed, loaded whenever the fetch had not yet succeeded |
+> | the unit's **occupant count** | `Math.min(capacity, 2)` — **a number invented from how big the room is** | the mapping itself, **every time the fetch worked** |
 >
 > **Both feed the on-site cash form**, whose contents become the rent and the water in her ledger.
+>
+> *I first wrote that both came from the seed. Only the price does — the initialiser sets occupants
+> to 0 rather than carrying the seed's figure. I checked that file after making the claim instead
+> of before, and corrected it at the call site and here. The occupant defect is the more serious of
+> the two precisely because it was **not** a fallback: it applied on the normal path.*
 >
 > The occupant count is the worse of the two, because the form **refuses** any water figure below
 > `occupants × rate`. A phantom second occupant does not merely suggest an overcharge — **it
