@@ -7,6 +7,7 @@ import {
   fetchIncomeRecords, 
   isOnsitePaymentModalOpen, 
   rooms, 
+  roomsFetchFailed,
   showToast, 
   fetchTenants, 
   formatUnitOccupantsSummary, 
@@ -449,7 +450,14 @@ function startEditIncome(r: IncomeRecord) {
   // BR-034 - carried forward from the tenancy, and editable from here.
   const occSummary = formatUnitOccupantsSummary(editUnit.value);
   const occRoom = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
-  editOccupants.value = occSummary.count > 0 ? occSummary.count : (occRoom?.occupants || 1);
+  // `rooms` is SEEDED, and the seed carries invented occupant counts. When the
+  // fetch failed, `occRoom.occupants` is one of those - and occupants set the
+  // water line on the receipt about to be saved, so a seeded 3 overcharges a
+  // resident by ₱400. Fall through to 1 rather than to a made-up figure; the
+  // banner below tells the administrator to enter it herself.
+  editOccupants.value = occSummary.count > 0
+    ? occSummary.count
+    : (roomsFetchFailed.value ? 1 : (occRoom?.occupants || 1));
   /**
    * Put back what the row actually held.
    *
@@ -509,7 +517,9 @@ async function handleEditIncome() {
   const room = rooms.find((rm) => rm.unitCode.toLowerCase() === editUnit.value.toLowerCase());
   const summary = formatUnitOccupantsSummary(editUnit.value);
   // What the administrator confirmed on the form, falling back to the tenancy.
-  const carriedForward = summary.count > 0 ? summary.count : (room?.occupants || 1);
+  const carriedForward = summary.count > 0
+    ? summary.count
+    : (roomsFetchFailed.value ? 1 : (room?.occupants || 1));
   const occupants = Number(editOccupants.value) > 0 ? Number(editOccupants.value) : carriedForward;
   // BR-014 / BR-040 - the configured rate, with the seeded value as the fallback.
   const perOccupantRate = waterRatePerOccupant.value ?? 200;
@@ -1356,6 +1366,13 @@ function exportCSV() {
         <form @submit.prevent="handleEditIncome" class="space-y-4 text-xs">
           <!-- Room/Unit selector -->
           <div>
+            <p
+              v-if="roomsFetchFailed"
+              class="mb-1.5 text-[11px] leading-snug text-amber-700"
+            >
+              The unit list could not be refreshed, so the occupant count has <strong>not</strong>
+              been carried forward. Enter it yourself &mdash; it sets the water line on this receipt.
+            </p>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Unit</label>
             <select v-model="editUnit" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none">
               <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
