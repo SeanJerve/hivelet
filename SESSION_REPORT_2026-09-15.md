@@ -106,7 +106,66 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — nothing had ever checked that the workbooks she opens contain the right numbers.
+> **LATEST — the whole ledger now verified end to end, a ₱2.5M question for the owner, and two
+> checks that were watching only half of what they claimed.**
+>
+> ### The workbook check now covers every year
+>
+> Checking 2026 alone covered **214 of the 937 receipts**. The other 723 are the years a panel is
+> most likely to ask about, because they have twelve complete months. The year list is now read
+> from the ledger, so 2027 is checked the day the first 2027 receipt is entered.
+>
+> **68 assertions across 2024, 2025 and 2026 — every month, both workbooks, all passing:**
+>
+> | | receipts / entries | rent | expenses |
+> |---|---|---:|---:|
+> | **2024** | 366 / 308 | ₱3,079,600.00 | ₱1,449,215.32 |
+> | **2025** | 357 / 837 | ₱2,932,200.00 | ₱3,745,419.51 |
+> | **2026** (7 months) | 214 / 117 | ₱1,760,450.00 | ₱628,951.64 |
+>
+> ### A ₱2.5 million question, and one I nearly got wrong
+>
+> That 2025 expense figure is larger than the rent. **My first reading was that she lost ₱813,219
+> in 2025. That is arithmetic that means nothing** — non-rental spending is not a cost of the
+> rental business, which is the entire reason `property_areas.is_rental_expense` exists.
+>
+> **Computed properly, she is profitable every year:**
+>
+> | | 2024 | 2025 | 2026 (7mo) |
+> |---|---:|---:|---:|
+> | **Net Operating Income** | **₱2,284,793** | **₱1,867,102** | **₱1,554,380** |
+> | Booked as NOT a rental cost | ₱515,868 | **₱2,560,641** | ₱356,482 |
+>
+> **2025 put ₱2,560,641 outside the rental accounts** — Main House **eight times** its 2024 figure,
+> Other/Personal three and a half times. Almost certainly a real year of building work on her own
+> house. Only she can confirm it, and it is now on the client sheet with the figures.
+>
+> **The penthouse question got sharper too.** On 13 September she decided the Penthouse should have
+> its own expense area. It was created that day, marked a **rental** cost — and **has never been
+> used**. The spending sits in three other areas: **₱35,228** under *Other/Personal* (outside the
+> profit figure), ₱11,075 under Back Apartment, ₱8,895 under Boarding House. The area was created;
+> the history was never moved into it. She now picks between three options instead of a yes/no.
+>
+> ### Two checks were watching half of what they claimed
+>
+> **The property-area check** proved the two hardcoded *non-rental* lists matched the database. It
+> said nothing about the areas that **are** rental — so a seventh area would have been invisible to
+> both files and to the whole suite. That is not hypothetical: `Penthouse` was added in September
+> and was then **missing from two hardcoded lists** until a later commit put it back. An area the
+> interface does not offer is an area she cannot file to. Now checked in both directions.
+>
+> **The audit trail's category filter** had nothing asserting it. Its newest rows are 3,664
+> authentication events out of 3,998, so **the last 100 rows contain no business activity at all**
+> — a browser-side filter over them returns an empty table. Both halves already handle this
+> correctly and with good comments. What was missing was the assertion: a redesign that stopped
+> sending `?category=` would leave the screen rendering sign-in noise under a tab labelled
+> *"business"*, invisible to every other check.
+>
+> *I went looking for a defect there and did not find one. The team had already solved it.*
+>
+> **Sixteen suites green. `check:api` now 71 assertions.**
+
+> **PREVIOUS — nothing had ever checked that the workbooks she opens contain the right numbers.
 > Now something does, month by month. They do.**
 >
 > `check:api` asserts `income.xlsx` comes back as a real workbook of 25,327 bytes. That proves the
@@ -3774,7 +3833,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**229 commits, all pushed to `main`. Working tree clean.**
+**236 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
