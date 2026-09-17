@@ -106,7 +106,41 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — I turned the audit on my own output. The rehearsal named three screens that do not
+> **LATEST — a quote in a resident's name would have shifted every column of her income CSV. The
+> fix was already in this repository, one file over.**
+>
+> The income export wrapped each text field in `"` and stopped there. **A quote inside the value
+> closes the field early**, and every column after it shifts by one — for that row, and depending
+> on how the reader recovers, for the rest of the file. It is her income ledger, so a shifted
+> column means **a rent figure appearing under Water**.
+>
+> `""` is how RFC 4180 escapes a quote, and it is what `ExpensesLedgerView` next door has been
+> doing all along. *The same shape as judgement entry 8: the codebase knows a pattern in one place
+> and not another.*
+>
+> **Not live today, and checked rather than assumed:** 0 of 937 rows carry a quote in the contact
+> name or invoice number. **Worth fixing anyway because of whose names these are** — a nickname in
+> quotes is ordinary here, and `Jose "Jojo" Cruz` typed into the receipt form is all it takes.
+>
+> **Checked in the same pass, and this is the part that makes the point:** the expense CSV escapes
+> correctly — and **13 of its supplier values DO contain a quote**, 29 contain a comma. That export
+> has been surviving on an escape the income one lacked. Neither has a field beginning with `=`,
+> `+`, `-` or `@`, so neither is currently a formula-injection vector.
+>
+> ### Where the day ended
+>
+> **62 commits today. Sixteen suites green. Working tree clean.**
+>
+> | Needs you | |
+> | :--- | :--- |
+> | **Rotate the two demo passwords** | in GitHub history since 25 Aug. There is now a screen for it. |
+> | **Apply `migration 023`** | three duplicate profiles holding working passwords. One statement; the sandbox refuses it. |
+> | **Run the rehearsal** | including the change-password **success**, which rotates a credential the suites sign in with. |
+> | **The client meeting** | `CLIENT_MEETING_QUESTIONS.md`, answerable in one sitting. |
+>
+> Everything else that could be done without one of those decisions has been.
+
+> **PREVIOUS — I turned the audit on my own output. The rehearsal named three screens that do not
 > exist, and the command the client sheet tells you to run did not work.**
 >
 > Everything written today is meant to be **used by someone else**, under time pressure, while
@@ -4146,7 +4180,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**268 commits, all pushed to `main`. Working tree clean.**
+**271 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
