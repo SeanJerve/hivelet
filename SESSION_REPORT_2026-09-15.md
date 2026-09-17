@@ -106,7 +106,67 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — I opened the app in a browser instead of reading it, and the landing page was
+> **LATEST — one question produced three money findings in a row. The dashboard was projecting
+> double her water, and the cash form could have charged a resident for a person who is not
+> there.**
+>
+> The question was: **which screens read shared data without checking whether it is live?**
+>
+> `rooms` is seeded from a hardcoded list so the page has something to render before the API
+> answers. **Eight views read it. Two check whether the fetch actually worked.**
+>
+> ### What the seed was holding
+>
+> | Trusted as | Actually |
+> |---|---|
+> | the unit's **price** | a hardcoded snapshot — **30 of 33 no longer match the database**, by up to **₱2,000** |
+> | the unit's **occupant count** | `Math.min(capacity, 2)` — **a number invented from how big the room is** |
+>
+> **Both feed the on-site cash form**, whose contents become the rent and the water in her ledger.
+>
+> The occupant count is the worse of the two, because the form **refuses** any water figure below
+> `occupants × rate`. A phantom second occupant does not merely suggest an overcharge — **it
+> enforces one**, and writes the invented headcount into the ledger beside it.
+>
+> ### And it was not only the failure case
+>
+> That invented count was the mapping on the **successful** path too. The real figure was being
+> fetched and used two lines below for the resident's name, while the headcount came from capacity.
+>
+> **On her dashboard that projected ₱12,800 of water a month against a real ₱6,400.** Exactly
+> double — most units house one person and every one of them was counted as two. Annualised,
+> about **₱77,000 of income that does not exist.**
+>
+> *Verified from the very endpoint the frontend calls, not from my own query: 32 occupied units,
+> ₱6,400 from the live tenancies, ₱12,800 from the old guess.*
+>
+> ### What changed
+>
+> - the headcount now comes from the **active tenancy**, and is **0** when there is none — or when
+>   the caller is not an administrator, since the public endpoint does not return tenancies and
+>   should not
+> - the cash form **refuses to pre-fill a rent or a water figure** when the room data is not live,
+>   and says why: *"Live unit rates could not be loaded. Type the amount from the receipt — do not
+>   use a remembered figure."*
+> - `check:ledger` prints the price drift and its worst case every run
+>
+> **Checked before changing:** the two run-rate figures filter to occupied units, so vacant units
+> returning 0 does not skew them — it removes a phantom occupant from each occupied unit that had
+> one.
+>
+> ### The part worth keeping
+>
+> **A fallback is invisible while it is right, and every one of these was right once.** The
+> hardcoded price matched the database the day it was written. `min(capacity, 2)` was a fair guess
+> before anyone had entered real headcounts. They decay in silence, because **nothing fails** — the
+> page renders, the field fills, and a filled field reads as a fact.
+>
+> **The fix is almost never a better guess.** It is refusing to guess, and saying so where the
+> guess used to be. That is entry 19 of the judgement log.
+>
+> **Sixteen suites green.**
+
+> **PREVIOUS — I opened the app in a browser instead of reading it, and the landing page was
 > contradicting itself in the first thing a panel sees.**
 >
 > ### "3 Floors", two lines below its own prose saying four
@@ -3973,7 +4033,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**249 commits, all pushed to `main`. Working tree clean.**
+**256 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
