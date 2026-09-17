@@ -59,8 +59,12 @@ const EXPECTED = {
  * (670 lines, never routed, a strict subset of the four tenant views that
  * replaced it - and still receiving bug fixes in five separate commits) and
  * ConfirmModal (superseded by the PIN confirmation pattern).
+ *
+ * 84 -> 51 on 2026-09-18. The admin and tenant overviews and the workspace
+ * sidebar moved onto the workspace tokens (docs/DESIGN_GUIDELINE.md), taking
+ * 33 raw literals with them, most of them SVG chart strokes.
  */
-const MAX_RAW_HEX = 84;
+const MAX_RAW_HEX = 51;
 
 const assetDir = path.join(root, 'dist', 'assets');
 if (!fs.existsSync(assetDir)) {
