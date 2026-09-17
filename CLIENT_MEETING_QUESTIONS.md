@@ -255,7 +255,7 @@ quietly become untrue and would have sent someone to redo finished work.
 
 | | Item |
 | :--- | :--- |
-| **Do first — security** | **Three logins belong to nobody.** Three **duplicate** profiles from the 2026-08-27 import — zero tenancies, zero ledger rows, but `active` and holding a working password on the shared literal. The real residents have separate, complete profiles. **`database/migrations/023` is written and not applied.** One statement, run by hand. *Do not strip the invoice numbers from the names: that was the original plan and it would make the duplicates indistinguishable from the real residents.* |
+| ~~**Do first — security**~~ **DONE 2026-09-17** | ~~**Three logins belong to nobody.**~~ Migration `023` applied; all three read `inactive`, nothing else moved. Original note: **Three logins belong to nobody.** Three **duplicate** profiles from the 2026-08-27 import — zero tenancies, zero ledger rows, but `active` and holding a working password on the shared literal. The real residents have separate, complete profiles. **`database/migrations/023` is written and not applied.** One statement, run by hand. *Do not strip the invoice numbers from the names: that was the original plan and it would make the duplicates indistinguishable from the real residents.* |
 | **Product** | An administrator bills screen, or retire `GET /admin/bills` — confirmed still present at `backend/src/routes/admin.ts:1160`. Five superseded endpoints to delete or wire. |
 | **Demo** | **No unit has a photograph.** `room_photos` holds **0 rows** across all 33 units — checked today. The upload path works; it has simply never been used. |
 | **Later** | The vite 8 upgrade. 4 advisories, all devDependencies, none shipped. Not something to do days before a defense. |

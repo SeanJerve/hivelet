@@ -62,16 +62,24 @@ nothing. The exposure is historical and closed.
 TODO is a claim with a date on it too. This one had been true, stopped being true, and would have
 cost an hour and a broken teammate's setup before anyone noticed.*
 
-### B-02 — Apply `database/migrations/023`
+### ~~B-02 — Apply `database/migrations/023`~~ — **APPLIED 2026-09-17**
 
-- **Blocked on:** a decision rather than access — it touches accounts, not the ledger
-- **What I was doing:** three duplicate profiles are holding **working passwords** on a shared
-  literal
-- **What I already did:** the migration is written and reviewed. One statement
-- **What Sean needs to do:** confirm, then apply. **Do not strip the invoice numbers from the
-  names** — they are how the rows are identified
-- **How to know it worked:** the three profiles read inactive; nothing else changes
-- **Raised:** 2026-09-17
+Three duplicate profiles from the 27 Aug import were `active` and held a working password on the
+shared literal. Applied on Sean's instruction, after `npm run backup` and after re-verifying all
+four of the migration's own guards: **0 room assignments, 0 income rows, 0 bills, 0 payments** on
+each.
+
+| Read back after applying | |
+| :--- | :--- |
+| `Mireel Fatima ParcareyINV.#5223` | **inactive** |
+| `Nikki ProllamanteINV#5212` | **inactive** |
+| `Ron Juliene DominguinoINV.#5227` | **inactive** |
+
+Nothing else moved: active profiles **44 → 41**, active tenancies still **32**, income rows still
+**937**, `check:ledger` reports no anomaly and all seven pinned rows are still pinned.
+
+*The invoice numbers stay in the names. Stripping them was the original plan and would have made
+these three indistinguishable from the real residents.*
 
 ### B-03 — The Adyen webhook is shared, so only one machine can receive at a time
 
