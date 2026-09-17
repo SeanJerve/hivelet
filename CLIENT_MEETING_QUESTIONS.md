@@ -175,7 +175,31 @@ We picked the option that matches her existing spreadsheet. She only needs to sa
 | **Date format on reports** | `D-MMM-YY` — e.g. `3-Aug-24` — which is what her own sheet shows. | ☐ Correct ☐ Use DD/MM/YYYY |
 | **Adding expense categories** | The 13 categories are fixed and only we can change them. | ☐ Fine ☐ She should be able to add her own |
 
-**One real question left, not a confirmation:**
+**Two real questions left, not confirmations:**
+
+**Should a resident be able to tell her they have paid?**
+
+Today there are exactly two ways a payment reaches the system:
+
+| | |
+| :--- | :--- |
+| **GCash** | The resident pays through the portal. A payment appears for her to verify, automatically. |
+| **Cash or bank transfer** | **She types it in herself.** The resident has no way to say anything. |
+
+So if a resident hands her cash on a Tuesday and she records it on Friday, there is nothing in
+between — no record, and no way for them to ask *"did you get it?"*
+
+The original design had a form for this: the resident enters what they paid and it waits for her
+approval, exactly as a GCash payment does. It was never built, and **nothing would be marked paid
+without her** — an unverified entry is only a claim until she confirms it.
+
+It is a policy choice, not a technical one. Some owners want it; some find it creates arguments
+about what was or was not handed over.
+
+☐ Yes — let residents report a cash payment for me to confirm
+☐ No — I record every payment myself; keep it that way
+
+**And the last one:**
 
 **The bottom-of-page total on her income sheet.** One page shows `1,179,150` while that month's own
 subtotal is `232,350`. We read the big figure as a **year-to-date running total** carried down the
