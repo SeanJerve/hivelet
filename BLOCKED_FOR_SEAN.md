@@ -39,18 +39,28 @@ thing did not work" is not.
 
 ## The ones already known, carried over
 
-### B-01 — Rotate the two demo passwords
+### ~~B-01 — Rotate the two demo passwords~~ — **CLOSED 2026-09-17, it was already done**
 
-- **Blocked on:** whoever holds the accounts should do it once, not both of us at different times
-- **What I was doing:** long-standing item — both passwords have been in GitHub history since
-  **2026-08-25**
-- **What I already did:** there is now a change-password screen (A-12), and
-  `scripts/rotate-demo-passwords.mjs` exists
-- **What Sean needs to do:** rotate both, update `credentials/creds.txt`, and tell Loyd — five of
-  the suites sign in with those credentials, so they break on the other machine until he has the
-  new file
-- **How to know it worked:** `npm run check:api` still passes with the new `creds.txt`
-- **Raised:** 2026-09-17
+**Do not rotate them again.** Doing so would break `check:api`, `check:reports` and three others
+on whichever machine still holds the old `creds.txt`, for no gain.
+
+This sat on the list because `Hivelet@Admin2026` and `Hivelet@Tenant2026` are in the public
+history. They are — **16 and 21 commits** respectively, and they always will be. What nobody had
+checked is whether that still matters. It does not:
+
+| Checked 2026-09-17 | |
+| :--- | :--- |
+| the **current** passwords in `credentials/creds.txt` | **0 commits** contain either. They were never committed |
+| the **old** admin password, tried against the live login | **401 `INVALID_CREDENTIALS`** |
+| the **old** tenant password, same | **401 `INVALID_CREDENTIALS`** |
+| `check:api` afterwards | **75/75**, which also reset the failed-login counter those two attempts raised |
+
+So the rotation happened on **2026-09-13**, `creds.txt` records it, and the leaked pair opens
+nothing. The exposure is historical and closed.
+
+*The lesson is the one from the judgement log, applied to a task list rather than a comment: a
+TODO is a claim with a date on it too. This one had been true, stopped being true, and would have
+cost an hour and a broken teammate's setup before anyone noticed.*
 
 ### B-02 — Apply `database/migrations/023`
 
