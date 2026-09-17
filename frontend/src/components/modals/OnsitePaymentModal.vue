@@ -108,6 +108,27 @@ async function loadRates() {
 }
 
 /** The per-month water baseline for a unit, from the configured rates. */
+/**
+ * How many people this unit is billed for, or 0 when that is not known.
+ *
+ * Both call sites used `summary.count > 0 ? summary.count : (room?.occupants || 1)`.
+ * The `|| 1` was a guess, and `room.occupants` is only trustworthy while the room
+ * list is live: `rooms` holds the hardcoded seed until `fetchRooms()` succeeds,
+ * and 26 of those 33 seeded counts differ from the real tenancy.
+ *
+ * Returning 0 makes the water baseline 0, so the form neither pre-fills a figure
+ * nor refuses the one the administrator types off the receipt. That is the right
+ * behaviour when the system does not know: ask, do not assume.
+ */
+function occupantsFor(
+  summary: { count: number },
+  room: { occupants?: number } | undefined
+): number {
+  if (summary.count > 0) return summary.count;
+  if (roomsFetchFailed.value) return 0;
+  return Number(room?.occupants ?? 0);
+}
+
 function waterBaselineFor(unitCode: string, occupants: number): number {
   const code = unitCode.toUpperCase();
   const fixed = lindaFixedWater.value[code];
@@ -120,7 +141,7 @@ function waterBaselineFor(unitCode: string, occupants: number): number {
 watch([selectedUnit, monthsCovered, roomsFetchFailed], ([newUnit, newMonths]) => {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
   const summary = formatUnitOccupantsSummary(newUnit);
-  const occCount = summary.count > 0 ? summary.count : (room?.occupants || 1);
+  const occCount = occupantsFor(summary, room);
   const isLinda = room?.cluster === 'Linda Units' || newUnit.toLowerCase() === 'lf' || newUnit.toLowerCase() === 'lb';
   
   const mCovered = Math.max(1, Number(newMonths) || 1);
@@ -195,7 +216,7 @@ function triggerRecord() {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase());
   const unitUpper = selectedUnit.value.toUpperCase();
   const summary = formatUnitOccupantsSummary(selectedUnit.value);
-  const occCount = summary.count > 0 ? summary.count : (room?.occupants || 1);
+  const occCount = occupantsFor(summary, room);
   const mCovered = Math.max(1, Number(monthsCovered.value) || 1);
 
   const monthlyWaterBaseline = waterBaselineFor(unitUpper, occCount);

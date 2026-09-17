@@ -551,7 +551,28 @@ export async function fetchRooms(): Promise<RoomItem[]> {
           floorLabel,
           type: r.room_type || 'Studio',
           price: Number(r.current_price || r.base_price || 0),
-          occupants: r.capacity ? Math.min(r.capacity, 2) : 1,
+          /**
+           * The registered headcount on the active tenancy - not a guess from the
+           * unit's size.
+           *
+           * This read `r.capacity ? Math.min(r.capacity, 2) : 1`: a number invented
+           * from capacity, while `activeRoomAssignment` - which carries the real
+           * figure and is already used two lines below for the resident's name -
+           * sat unused.
+           *
+           * It is not cosmetic. The on-site payment form falls back to this when
+           * the unit has no entry in the live tenant list, multiplies it by the
+           * per-head water rate, REFUSES any water figure below that product, and
+           * writes the number into `monthly_income_records.occupants` as the
+           * registered headcount. An invented 2 against a real 1 is PHP 200 of
+           * water the resident did not owe, and a headcount in the owner's ledger
+           * that nobody entered.
+           *
+           * **0** when there is no active tenancy, and when the caller is not an
+           * administrator - `/public/rooms` does not return tenancies, and should
+           * not. Zero is honest; a guess is not.
+           */
+          occupants: Number(activeRoomAssignment?.occupant_count ?? 0),
           maxOccupants: r.capacity || 2,
           status: mapOperationalStatus(r.operational_status),
           visibility: r.visibility_status === 'Hidden' ? 'Hidden' : 'Published',
