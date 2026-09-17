@@ -353,6 +353,68 @@ if (adminToken) {
   );
 }
 
+/**
+ * ACCOUNT LOCKOUT - asserted against the SOURCE, and here is why.
+ *
+ * This is the control that stops password guessing, and it is the reason
+ * `POST /auth/login` is deliberately not rate-limited per address: locking per
+ * ACCOUNT protects a resident in the direction that matters, since an attacker
+ * changes address far more easily than they change whose account they guess at.
+ *
+ * It cannot be tested behaviourally here. Proving it works means actually
+ * locking a real account for fifteen minutes, and every account in this database
+ * belongs to a resident, the administrator, or a teammate. There is no throwaway
+ * to burn - and in this sandbox a `profiles` UPDATE is refused, so a lock could
+ * be set and not cleared.
+ *
+ * So the shape is asserted instead, and labelled as what it is. Three things
+ * have to stay true, and each has a failure that is invisible from outside:
+ *
+ *   1. the lock is checked BEFORE the password is compared - otherwise a locked
+ *      account still leaks whether a guess was right, and the lock stops mattering
+ *   2. a wrong password reaches `registerFailedAttempt` - if that call is ever
+ *      removed the counter never moves and lockout never engages, while every
+ *      response looks identical
+ *   3. a successful login RESETS the counter - otherwise five wrong guesses
+ *      spread over a year eventually lock out the real owner
+ */
+{
+  const authSrc = fs.readFileSync(path.join(root, 'backend/src/services/authService.ts'), 'utf8');
+  const envSrc = fs.readFileSync(path.join(root, 'backend/src/config/env.ts'), 'utf8');
+
+  const lockIdx = authSrc.indexOf('locked_until && new Date');
+  const compareIdx = authSrc.indexOf('bcrypt.compare(password, data.password_hash)');
+
+  const maxFailed = Number(/maxFailedLogins:\s*(\d+)/.exec(envSrc)?.[1] ?? 0);
+  const lockMinutes = Number(/lockoutMinutes:\s*(\d+)/.exec(envSrc)?.[1] ?? 0);
+
+  for (const [label, ok, detail] of [
+    [
+      'the lock is checked before the password is compared',
+      lockIdx > 0 && compareIdx > 0 && lockIdx < compareIdx,
+      null,
+    ],
+    [
+      'a wrong password still reaches registerFailedAttempt',
+      /if \(!passwordMatches\)[\s\S]{0,120}registerFailedAttempt\(/.test(authSrc),
+      null,
+    ],
+    [
+      'a successful login resets the counter',
+      /failed_login_count:\s*0[\s\S]{0,60}locked_until:\s*null/.test(authSrc),
+      null,
+    ],
+    [
+      'lockout is configured to a real threshold',
+      maxFailed > 0 && maxFailed <= 10 && lockMinutes > 0,
+      `${maxFailed} failures, ${lockMinutes} minutes`,
+    ],
+  ]) {
+    ok ? pass++ : (fail++, failures.push(`lockout: ${label}`));
+    console.log(`  ${ok ? 'OK  ' : 'FAIL'} ---  ${label}${detail ? ` (${detail})` : ''}`);
+  }
+}
+
 // ---- numeric poisoning --------------------------------------------------
 //
 // JSON has no Infinity literal, which is why this looks impossible. It is not:
