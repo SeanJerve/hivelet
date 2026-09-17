@@ -49,6 +49,12 @@ export class ApiError extends Error {
   static invalidCredentials() {
     // Same message for unknown email and wrong password: distinguishing them
     // would let an attacker enumerate which tenants have accounts.
+    //
+    // THIS IS NOT COMPLETE, AND THE GAP IS DELIBERATE. `accountLocked` below
+    // answers 429 where this answers 401, and only a real account can be
+    // locked - so five wrong guesses and a sixth attempt will tell a caller
+    // whether an address belongs to a resident. See the block in
+    // `authService.login` that raises it, and § 3.8 of the judgement log.
     return new ApiError(401, 'INVALID_CREDENTIALS', 'Invalid email or password.');
   }
 

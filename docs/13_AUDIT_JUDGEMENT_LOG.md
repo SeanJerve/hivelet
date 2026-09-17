@@ -1277,6 +1277,65 @@ at all.
 
 ---
 
+### 3.8 The lockout message enumerates accounts, and that is the price of the lockout working
+
+**Two comments in this codebase say user enumeration is prevented. A third code
+path defeats both, and nobody had written that down.**
+
+`ApiError.invalidCredentials` returns the same 401 for an unknown email as for a
+wrong password, *"because distinguishing them would let an attacker enumerate
+which tenants have accounts"*. `authService` checks `account_status` only after
+a valid password, *"so the response cannot be used to probe which accounts
+exist"*. Both are true about the paths they sit on.
+
+**`ApiError.accountLocked` answers 429.** Only a real account can be locked. So
+five wrong guesses and a sixth attempt tell a caller whether an address belongs
+to a resident — for free, against every path the other two protect.
+
+#### Why it is not simply fixed
+
+The obvious fix is to compare the password first and reveal the lock only to
+someone who got it right. **That is wrong, and `check:api` already asserts
+against it.** A locked account would then answer differently for a right guess
+than a wrong one, so an attacker could keep guessing *through* the lockout and
+read the result each time — and the lock would stop being a brake on guessing
+at all, which is the only thing it is for.
+
+*I proposed exactly that before reading the existing reasoning. The reasoning was
+right. This is the second entry in this log that exists because a comment
+explaining why something is safe turned out to be worth reading rather than
+overriding — see the tenth sweep, which is about the opposite case.*
+
+#### So the real choice is narrower than it looks
+
+You cannot have a helpful lockout message **and** no enumeration. There are only
+two positions:
+
+| | Enumeration | Lockout brakes guessing | A locked-out resident is told |
+| :--- | :--- | :--- | :--- |
+| **Today** — 429 with the minutes | **leaks** | yes | *"try again in 15 minutes"* |
+| Generic 401 for a locked account | none | yes | **nothing at all** |
+
+#### What was decided, and what would change it
+
+**Kept as it is**, and the code now says so instead of claiming otherwise.
+
+The population is 32 residents, the owner, and a handful of teammates. What
+enumeration buys an attacker here is confirmation that a particular person lives
+at this address — a real privacy concern about real people, but a narrow one,
+and it requires six deliberate attempts per address. Against that, a resident
+who mistypes their password five times and is then told *nothing* will phone the
+landlady, and she has no way to see or clear a lock.
+
+**Change it if** the account base ever stops being a closed list of known
+residents — public registration, say — at which point enumeration becomes
+harvesting and the trade inverts. The change is one line: return
+`ApiError.invalidCredentials()` from the lock branch. Do **not** move the lock
+check below the password compare; that is a different change and it is the wrong
+one.
+
+---
+
 ## 4. Traps that cost real time
 
 **Generated columns.** `fifty_percent_share` and `remitted_amount` are

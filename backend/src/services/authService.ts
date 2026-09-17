@@ -87,6 +87,29 @@ export async function login(
     throw ApiError.invalidCredentials();
   }
 
+  /**
+   * THE LOCK IS CHECKED BEFORE THE PASSWORD, AND THAT ORDER IS LOAD-BEARING.
+   *
+   * Comparing first would mean a locked account still answered differently for
+   * a right guess than a wrong one - so an attacker could keep guessing THROUGH
+   * the lockout and read the result each time, and the lock would stop being a
+   * brake on guessing at all. `check:api` asserts this ordering for that reason.
+   *
+   * THE COST, STATED PLAINLY: this response is a 429 where every other failure
+   * is a 401, and only a real account can be locked. **Five wrong guesses and a
+   * sixth attempt therefore reveal whether an address belongs to a resident.**
+   *
+   * The two enumeration comments in this file and in `ApiError` are true about
+   * the paths they sit on - an unknown email and a wrong password are
+   * indistinguishable, and `account_status` is not revealed until the password
+   * is right - and this path defeats both. That was not written down anywhere
+   * until 2026-09-17.
+   *
+   * It is kept, and § 3.8 of the judgement log records why and what would change
+   * it. The short version: you cannot have a helpful lockout message AND no
+   * enumeration; hiding the lock behind a generic 401 buys the second at the
+   * price of a resident who is locked out being told nothing at all.
+   */
   if (data.locked_until && new Date(data.locked_until) > new Date()) {
     const minutes = Math.max(
       1,
@@ -103,8 +126,9 @@ export async function login(
   }
 
   // BR-025 — a vacated tenant's account is deactivated and must lose access.
-  // Checked only after a valid password so the response cannot be used to probe
-  // which accounts exist.
+  // Checked only after a valid password, so THIS response cannot be used to
+  // probe which accounts exist. The lockout path above can — see the note on
+  // it; that is a separate, deliberate trade and not something this line fixes.
   if (data.account_status !== 'active') {
     throw ApiError.accountInactive();
   }
