@@ -137,6 +137,8 @@ Back to the administrator.
 | 22 | Add an expense entry against **Penthouse**, ₱100, description *"REHEARSAL"*. Then edit the amount, then delete it. | Each step saves; allocations recompute. | ✍ |
 | 23 | Download **income.xlsx** and **expenses.xlsx**. | Real workbooks that open in Excel. Check `REHEARSAL-001` appears in the income sheet, and that the **LINDA** line is present — ₱18,600 across 2024–2026. | |
 
+| 23b | **The one that proves a wrong number cannot hide.** With the dashboard open, **stop the backend** (Ctrl-C in its terminal), then reload the page. | Every money tile shows **—** and *"Figures unavailable — refresh to retry"*. **It must not show ₱0.00, and Net Operating Income must not equal Gross Inflow.** Before 17 Sep a failed expense fetch showed the whole year's takings as profit. Restart the backend and reload; the real figures return. | ✍ |
+
 **Undo 18:** delete the `REHEARSAL-001` income record from the ledger view.
 **Undo 22:** already deleted in the step.
 

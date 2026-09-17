@@ -29,7 +29,7 @@
 3. **Run the rehearsal**, including the one step nothing here could: a change-password **success**,
    which rotates a credential every check in `check:api` signs in with.
 
-**Applied that day — two migrations:**
+**Applied — three migrations:**
 
 - **`022`** — `current_user_role()` returned `'admin'` to any caller it could not identify, which
   was every caller. Inert today (0 policies reference it) and a trap for whoever writes the first
@@ -40,6 +40,11 @@
   the property is paid once and credited twice. **The handler changed with it** — `23505` now
   returns `duplicate` (HTTP 200) rather than `failed` (HTTP 500), because Adyen retries on 500 and
   the index would otherwise have created a notification that can never be acknowledged.
+- **`025`** — wording, and an honesty fix. A `system_settings` row was labelled in a framing
+  BR-035 forbids, and it implied a configurable rate that does not exist:
+  `fifty_percent_share` is `GENERATED ALWAYS AS (rent_amount / 2.0)`, so the divisor is in
+  the column definition and **no code reads that row at all**. Kept rather than deleted, and
+  it now says so.
 
 **The money defects found and fixed that day**, all verified against the live rows:
 
@@ -49,8 +54,10 @@
 | the cash form could pre-fill a rent **₱2,000 wrong** | it read the hardcoded seed price, and **30 of 33 no longer match the database**. It now refuses to pre-fill when the data is not live, and says why |
 | a bill due the 20th was not overdue until **08:00 on the 21st** | the cutoff was built in UTC for a UTC+8 property — an unlegislated grace, where **OD-16 says there is none** |
 | a resident's **income CSV** would shift every column after a quote in a name | the sibling expense export had escaped correctly all along |
+| a **verified payment could be rejected**, and the money stayed booked | the payment read Rejected, the bill reopened to Due, `verified_at` was wiped — and the income row **stayed**. She would have chased rent already paid. Verify was guarded; Reject, twelve lines below, was a bare `.eq('id', …)` |
+| a failed expense fetch would have shown **the year's takings as profit** | `expenseRecords` starts empty, NOI subtracts it from gross. **₱3,745,419.51** of 2025 costs would have silently become ₱0. Its three sibling loaders all raise a fetch-failed flag; this one did not |
 
-**The suites are now sixteen.** New that day: **`check:canon`** (the locked wording is enforced,
+**The suites were sixteen by the end of that day** (seventeen as of 17 Sep — see § 0.0). New that day: **`check:canon`** (the locked wording is enforced,
 not just written down) and **`check:reports`** (both workbooks agree with the database, month by
 month, every year — 68 assertions). `check:api` went from **57 to 75**.
 
@@ -464,30 +471,46 @@ lockdown was never actually tested. That is exactly what a stale key looks like.
 ## 2. Verification suites — run these before trusting anything
 
 ```bash
-# All fourteen, one command, from the repository root. ~95 seconds.
+# All seventeen, one command, from the repository root. ~75 seconds.
 npm run check:all
 ```
 
 It prints every suite's own output in full, then a summary table, and exits non-zero if
-any of them failed. Three need the backend running (`npm run dev:backend`) because they
+any of them failed. Five need the backend running (`npm run dev:backend`) because they
 make real HTTP calls; the runner says so if they cannot connect.
 
-To run one at a time:
+> [!IMPORTANT]
+> **Read the summary table, not the tail.** `| tail` shows the end of whichever suite ran
+> last, which twice let a red check be committed past. Use:
+> ```bash
+> npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"
+> ```
+
+**Every one of these runs from the repository root** — the `cd` below is only there to show
+which workspace owns it. Before 2026-09-17, `npm run check:ledger` from the root failed with
+"Missing script", which is the command two documents tell people to type.
 
 ```bash
-cd backend  && npm run check:api        # 53 endpoint, RBAC, perimeter, export and input checks
-            npm run check:adyen       # 23 HMAC signature checks
+cd backend  && npm run check:api        # 75 endpoint, RBAC, perimeter, export and input checks
+            npm run check:adyen       # 29 HMAC signature checks
             npm run check:billing     # water / grace / period / receipt-allocation arithmetic
             npm run check:writes      # no database write discards its result
             npm run check:columns     # every table/column/filter/write key in backend/src exists
             npm run check:fields      # every snake_case field the frontend reads is one the API sends
             npm run check:endpoints   # every route has a caller, or a stated reason it has none
             npm run check:ledger      # arithmetic and plausibility over the owner's live money
+            npm run check:reports     # 68 assertions: both workbooks agree with the database,
+                                      #   month by month, every year in the ledger
 cd frontend && npm run check:tokens     # design tokens resolve to the right colours
             npm run check:reachable  # every source file is reachable from main.ts
+            npm run check:liveness   # no screen presents cached, seeded or empty shared state
+                                      #   as a live figure, and no hardcoded money fallback has
+                                      #   drifted from the rate it stands in for
 cd ..       && npm run check:rules      # the BR register agrees with itself
             npm run check:matrix     # the traceability matrix agrees with itself
             npm run check:copies     # the filming copies match the documents of record
+            npm run check:canon      # the locked wording is enforced, not just written down
+            npm run check:secrets    # nothing secret is staged
             npm run check:secrets    # scans for committed credentials
             npm run backup            # snapshot the live database before risky work
 ```
