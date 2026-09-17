@@ -106,7 +106,62 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — the one endpoint a stranger can write through now has a limit, the control that
+> **LATEST — I opened the app in a browser instead of reading it, and the landing page was
+> contradicting itself in the first thing a panel sees.**
+>
+> ### "3 Floors", two lines below its own prose saying four
+>
+> The public landing page carries a stat card reading **`3 Floors`**. Two lines above it, its own
+> sentence says *"three residential floors **plus a rooftop penthouse level**"*. `rooms.floor`
+> holds **1, 2, 3 and 4** — eleven units, eleven, ten, and the penthouse alone on the roof.
+>
+> **The number contradicted the sentence directly above it, on the page a panel opens first.** The
+> unit directory said *"Across 5 clusters & 3 floors"* as well.
+>
+> Everything else on that card is right — checked against the live table while I was there: **33
+> units, 5 clusters**, and **₱4,500 really is the lowest rate**.
+>
+> **Nothing could have caught this.** `check:fields` reads field *names*. `check:canon` polices
+> banned *wording*. Neither looks at a number inside a heading — and this project has a history of
+> exactly that: the 32-unit figure survived in **thirty** places.
+>
+> So `check:ledger` now reads every *"N units"*, *"N clusters"*, *"N floors"* claim in
+> `frontend/src` and compares it to the live `rooms` table. I surveyed what was actually there
+> before writing the matcher — fourteen unit claims, four cluster, three floor, across spellings
+> like `33-unit`, `33 Units`, `33-UNIT` — so it is narrow without being fragile.
+>
+> *It failed on its first run, correctly:* `rooms` was being selected without `cluster_code` or
+> `floor`, so both collapsed to one distinct value. I widened the query rather than the tolerance.
+>
+> **Three mutations, all caught**, each naming the file and line: the card back to "3 Floors", a
+> heading claiming "32 Units", the cluster count drifting to 6.
+>
+> ### The change-password screen has now been *seen* working
+>
+> Typechecking and a green build said it compiles. They could not say whether it **appears when
+> you click the menu item**, which is the only question a person cares about.
+>
+> It does. The three rules tick live as you type, *"The two passwords do not match"* appears when
+> they differ, and the submit button stays disabled until everything is satisfied.
+>
+> **No credential was typed into a form.** The session used a token fetched from the API the same
+> way `check:api` does; the new-password fields took throwaway strings; the current-password field
+> was left empty, so no sign-in was attempted. Token removed from the browser and from disk
+> afterwards, `check:secrets` re-run clean.
+>
+> **The success path stays unverified** — running it rotates a credential every other assertion
+> signs in with. **One manual run, yours.**
+>
+> ### Two figures confirmed on the way past
+>
+> The admin overview reads **"FY 2026 to date: ₱1,826,850"** — which matches the SQL exactly — and
+> **"32 / 33 Units, 1 vacant"**, which matches the rooms table. It also reads **"0 collections
+> recorded this month"**, which is the missing August and September, exactly as the client sheet
+> says.
+>
+> **Sixteen suites green.**
+
+> **PREVIOUS — the one endpoint a stranger can write through now has a limit, the control that
 > protects every password is pinned, and "how fast is it?" has a reproducible answer.**
 >
 > ### There was no rate limiting anywhere
@@ -3918,7 +3973,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**241 commits, all pushed to `main`. Working tree clean.**
+**249 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
