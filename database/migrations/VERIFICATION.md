@@ -21,16 +21,17 @@ Not run against Supabase.
 Live-data preconditions *were* checked directly against production, read-only, with
 `database/check-migration-preconditions.mjs`. **No blockers.**
 
-## Why the tracker lists 13 and this folder holds 23
+## Why the tracker lists 14 and this folder holds 24
 
 **Checked 2026-09-16, because the discrepancy reads as nine missing migrations and is not one.**
 
-`supabase_migrations.schema_migrations` records **13** entries, from
-`fix_replace_allocations_enum_cast` to `current_user_role_fails_closed`. This folder holds **23**
-numbered files, `001` through `023`.
+`supabase_migrations.schema_migrations` records **14** entries, from
+`fix_replace_allocations_enum_cast` to `gateway_reference_is_unique`. This folder holds **24**
+numbered files, `001` through `024`.
 
-*Was 12 and 21 when this was written on 2026-09-16. Migration `022` was applied on 2026-09-17 and
-appears in the tracker; `023` is written and **deliberately not applied** — see below.*
+*Was 12 and 21 when this was written on 2026-09-16. Migrations `022` and `024` were applied on
+2026-09-17 and appear in the tracker; `023` is written and **deliberately not applied** — see
+below.*
 
 **Migrations `001`–`010` were applied through the Supabase SQL editor**, which does not write to
 that tracker — see `database/README.md`, which notes that some statements can only be run that
