@@ -9,6 +9,8 @@
   test payment methods, and submit verified transactions.
 -->
 <script setup lang="ts">
+import WsModal from '@/components/ui/WsModal.vue';
+import { peso } from '@/lib/canonicalUnits';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { AdyenCheckout, Dropin } from '@adyen/adyen-web';
 import type { PaymentCompletedData, PaymentFailedData } from '@adyen/adyen-web';
@@ -185,126 +187,84 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
 </script>
 
 <template>
-  <div 
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in"
-    @click.self="emit('close')"
+  <WsModal
+    title="Pay with GCash"
+    subtitle="Adyen handles the payment. Your details are entered in their fields and never reach Hivelet."
+    size="md"
+    :dismissible="false"
+    @close="emit('close')"
   >
-    <div class="rounded-tile bg-tile w-full max-w-lg shadow-2xl overflow-hidden rounded-tile bg-tile flex flex-col max-h-[92vh] border border-line">
-      
-      <!-- Header -->
-      <div class="bg-canvas border-b border-line p-4 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="size-8 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center font-semibold">
-            <Lock class="size-4" />
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold text-ink flex items-center gap-2">
-              Adyen Online Checkout
-              <span class="badge-soft badge-success text-xs font-semibold">
-                SANDBOX TEST
-              </span>
-            </h2>
-            <p class="text-xs text-ink-soft">Official Adyen v71 Sessions Integration</p>
-          </div>
-        </div>
-        <button
-          @click="emit('close')"
-          class="grid size-8 place-items-center rounded-full text-ink-soft hover:bg-canvas border border-line transition-colors cursor-pointer"
-        >
-          <X class="size-4" />
-        </button>
+    <!-- What is being paid -->
+    <dl class="rounded-2xl bg-canvas p-4 flex flex-col gap-2 text-sm">
+      <div class="flex items-baseline justify-between gap-3">
+        <dt class="text-ink-soft">This bill</dt>
+        <dd class="font-medium">
+          {{ props.bill.room_number ? 'Unit ' + String(props.bill.room_number).toUpperCase() : 'Monthly dues' }}
+        </dd>
       </div>
-
-      <!-- Bill Summary Card -->
-      <div class="p-4 bg-canvas border-b border-line space-y-2">
-        <div class="flex justify-between items-center text-xs">
-          <span class="text-ink-soft">Billing Target:</span>
-          <span class="font-semibold text-ink">
-            {{ props.bill.room_number ? 'Unit ' + props.bill.room_number + ' — ' : '' }}Monthly Dues
-          </span>
-        </div>
-        <div class="flex justify-between items-center text-xs">
-          <span class="text-ink-soft">Base Rent + Water Fee:</span>
-          <span class="text-ink">₱{{ props.bill.rent_amount.toLocaleString() }} + ₱{{ props.bill.water_amount.toLocaleString() }}</span>
-        </div>
-        <div v-if="partiallySettled" class="flex justify-between items-center text-xs">
-          <span class="text-ink-soft">Already paid on this bill:</span>
-          <span class="text-ink tabular">
-            &minus;₱{{ Number(props.bill.amount_paid).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
-            <span class="text-ink-soft">of ₱{{ Number(props.bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-          </span>
-        </div>
-        <div class="flex justify-between items-center text-sm font-semibold text-brand pt-1.5 border-t border-line">
-          <span>{{ partiallySettled ? 'Remaining Balance Due:' : 'Total Remittance Due:' }}</span>
-          <span class="tabular text-base font-semibold">₱{{ amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-        </div>
+      <div class="flex items-baseline justify-between gap-3">
+        <dt class="text-ink-soft">Rent and water</dt>
+        <dd class="tabular">
+          {{ peso(props.bill.rent_amount) }} and {{ peso(props.bill.water_amount) }}
+        </dd>
       </div>
-
-      <!-- Main Body -->
-      <div class="p-5 flex-1 overflow-y-auto space-y-4">
-        
-        <!-- Loading State -->
-        <div v-if="isLoading" class="py-12 flex flex-col items-center justify-center text-center space-y-3">
-          <Loader2 class="size-8 text-brand animate-spin" />
-          <p class="text-xs font-semibold text-ink">Connecting to Adyen Test Gateway...</p>
-          <p class="text-xs text-ink-soft">Initializing encrypted merchant checkout session</p>
-        </div>
-
-        <!-- Success Completed State -->
-        <div v-else-if="isCompleted" class="py-8 text-center space-y-3">
-          <CheckCircle2 class="size-12 text-brand mx-auto" />
-          <h3 class="text-base font-semibold text-ink">Adyen confirmed your payment</h3>
-          <p v-if="isRecorded" class="text-xs text-ink-soft max-w-sm mx-auto">
-            It has been recorded and is now awaiting verification by Landlady Fe Galang Da Silva.
-            It will appear in your payment history once she has verified it.
-          </p>
-          <p v-else class="text-xs text-ink-soft max-w-sm mx-auto">
-            The gateway is sending us the signed confirmation now, and the record usually
-            appears within a few seconds. It will then await verification by Landlady
-            Fe Galang Da Silva. Nothing further is needed from you.
-          </p>
-          <button
-            @click="emit('close')"
-            class="pill-btn-brand mt-4"
-          >
-            Done &amp; Return to Portal
-          </button>
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="errorMessage" class="p-4 rounded-xl bg-overdue-soft border border-overdue-soft text-xs text-overdue space-y-3">
-          <div class="flex items-center gap-2 font-semibold text-overdue">
-            <AlertCircle class="size-4" />
-            Adyen Connection Notice
-          </div>
-          <p>{{ errorMessage }}</p>
-          <div class="pt-2">
-            <button @click="initializeAdyen" class="pill-btn-night gap-1.5">
-              <span>Try again</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Adyen Web Component Container -->
-        <div v-else class="space-y-4">
-          <div ref="adyenContainerRef" id="adyen-dropin-container" class="min-h-[220px]"></div>
-        </div>
+      <div v-if="partiallySettled" class="flex items-baseline justify-between gap-3">
+        <dt class="text-ink-soft">Already paid</dt>
+        <dd class="tabular">
+          {{ peso(Number(props.bill.amount_paid), 2) }} of {{ peso(Number(props.bill.total_amount), 2) }}
+        </dd>
       </div>
-
-      <!-- Footer Security Note -->
-      <div class="bg-canvas border-t border-line px-4 py-3 flex items-center justify-between text-xs text-ink-soft">
-        <div class="flex items-center gap-1.5">
-          <ShieldCheck class="size-3.5 text-brand" />
-          <span>Card and wallet details are entered in Adyen's fields and never reach Hivelet's servers</span>
-        </div>
-        <button
-          @click="emit('close')"
-          class="pill-btn min-h-8 h-8 px-3 text-xs"
-        >
-          Cancel
-        </button>
+      <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
+        <dt class="font-semibold">{{ partiallySettled ? 'Left to pay' : 'To pay now' }}</dt>
+        <dd class="text-xl font-semibold tabular">{{ peso(amountDue, 2) }}</dd>
       </div>
+    </dl>
 
+    <!-- Opening the gateway -->
+    <div v-if="isLoading" class="flex flex-col items-center gap-3 py-10 text-center">
+      <Loader2 class="size-7 animate-spin text-brand" aria-hidden="true" />
+      <p class="text-sm font-medium" role="status">Opening the payment page</p>
+      <p class="text-sm text-ink-soft">This takes a few seconds.</p>
     </div>
-  </div>
+
+    <!-- Paid -->
+    <div v-else-if="isCompleted" class="flex flex-col items-center gap-3 py-8 text-center">
+      <CheckCircle2 class="size-10 text-brand" aria-hidden="true" />
+      <h3 class="text-lg font-semibold tracking-tight">Payment sent</h3>
+      <p v-if="isRecorded" class="max-w-sm text-sm leading-6 text-ink-soft">
+        It is recorded and waiting for the landlady to verify it. It appears in your payment
+        history once she has.
+      </p>
+      <p v-else class="max-w-sm text-sm leading-6 text-ink-soft">
+        The gateway is sending us the signed confirmation now, and the record usually appears
+        within a few seconds. It then waits for the landlady to verify it. Nothing further is
+        needed from you.
+      </p>
+    </div>
+
+    <!-- Could not open -->
+    <div v-else-if="errorMessage" class="flex flex-col items-start gap-3 rounded-2xl bg-overdue-soft p-4 text-sm text-overdue">
+      <p class="flex items-center gap-2 font-semibold">
+        <AlertCircle class="size-4" aria-hidden="true" />
+        The payment page could not be opened
+      </p>
+      <p>{{ errorMessage }}</p>
+      <button type="button" class="pill-btn" @click="initializeAdyen">Try again</button>
+    </div>
+
+    <!-- Adyen's own fields -->
+    <div v-else>
+      <div ref="adyenContainerRef" id="adyen-dropin-container" class="min-h-[220px]"></div>
+    </div>
+
+    <template #actions>
+      <p class="mr-auto flex items-center gap-2 text-xs text-ink-faint">
+        <ShieldCheck class="size-4 text-brand" aria-hidden="true" />
+        Payment details stay with Adyen
+      </p>
+      <button type="button" class="pill-btn" @click="emit('close')">
+        {{ isCompleted ? 'Done' : 'Cancel' }}
+      </button>
+    </template>
+  </WsModal>
 </template>

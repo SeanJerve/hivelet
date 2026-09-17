@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import WsModal from '@/components/ui/WsModal.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { periodEnd, propertyToday, propertyDate } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -1326,27 +1328,14 @@ function exportCSV() {
   </div>
 
     <!-- Edit Payment Modal -->
-    <div 
-      v-if="isEditOpen" 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
-      @click.self="isEditOpen = false"
+    <WsModal
+      v-if="isEditOpen"
+      title="Edit this collection"
+      subtitle="Change what was recorded against this entry."
+      size="lg"
+      :dismissible="false"
+      @close="isEditOpen = false"
     >
-      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl p-6 space-y-4 rounded-tile bg-tile my-6">
-        
-        <div class="flex justify-between items-start border-b border-line pb-3">
-          <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft">
-              <Banknote class="size-5" />
-            </div>
-            <div>
-              <h3 class="font-semibold text-base text-ink">Edit Payment Collection</h3>
-              <p class="text-xs text-ink-soft">Modify the rent and utility allocations for this collection record.</p>
-            </div>
-          </div>
-          <button @click="isEditOpen = false" class="p-1 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer">
-            <X class="size-5" />
-          </button>
-        </div>
 
         <form @submit.prevent="handleEditIncome" class="space-y-4 text-xs">
           <!-- Room/Unit selector -->
@@ -1466,44 +1455,18 @@ function exportCSV() {
             </div>
           </div>
         </form>
-      </div>
-    </div>
+    </WsModal>
 
-    <!-- Custom Confirmation Modal -->
-    <div 
-      v-if="isConfirmOpen" 
-      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
-      @click.self="isConfirmOpen = false"
-    >
-      <div class="rounded-tile bg-tile w-full max-w-sm shadow-2xl rounded-tile p-6 bg-tile space-y-4 text-center">
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-12 h-12 rounded-full bg-[#fef3c7] text-[#d97706] flex items-center justify-center">
-            <ReceiptText class="w-6 h-6" />
-          </div>
-          <h3 class="font-semibold text-lg text-ink">{{ confirmTitle }}</h3>
-          
-          <div class="w-full text-left bg-canvas border border-line rounded-xl p-3.5 text-xs text-ink space-y-1 leading-relaxed whitespace-pre-line font-semibold">
-            {{ confirmMessage }}
-          </div>
-        </div>
-
-        <div class="flex items-center justify-center gap-2 pt-2">
-          <button 
-            type="button" 
-            @click="isConfirmOpen = false" 
-            class="pill-btn cursor-pointer min-w-[100px]"
-          >
-            Cancel
-          </button>
-          <button 
-            type="button" 
-            @click="handleConfirmAccept" 
-            class="pill-btn-brand cursor-pointer min-w-[100px]"
-          >
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Confirmation -->
+    <ConfirmDialog
+      v-if="isConfirmOpen"
+      :title="confirmTitle"
+      :message="confirmMessage"
+      confirm-label="Delete record"
+      destructive
+      :busy="isSubmitting"
+      @cancel="isConfirmOpen = false"
+      @confirm="handleConfirmAccept"
+    />
   </div>
 </template>

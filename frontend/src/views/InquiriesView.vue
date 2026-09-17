@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
@@ -432,33 +433,13 @@ async function handleSendReply() {
 
     </div>
 
-    <!-- Confirmation Modal -->
-    <div
+    <ConfirmDialog
       v-if="isConfirmOpen"
-      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
-      @click.self="isConfirmOpen = false"
-    >
-      <div class="rounded-tile bg-tile w-full max-w-sm shadow-2xl rounded-tile p-6 bg-tile space-y-4 text-center">
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-12 h-12 rounded-full bg-warning-soft text-warning-foreground flex items-center justify-center">
-            <XCircle class="w-6 h-6" />
-          </div>
-          <h3 class="font-semibold text-lg text-ink">{{ confirmTitle }}</h3>
-
-          <div class="w-full text-left bg-canvas border border-line rounded-xl p-3.5 text-xs text-ink space-y-1 leading-relaxed whitespace-pre-line font-semibold">
-            {{ confirmMessage }}
-          </div>
-        </div>
-
-        <div class="flex items-center justify-center gap-2 pt-2">
-          <button type="button" @click="isConfirmOpen = false" class="pill-btn cursor-pointer min-w-[100px]">
-            Cancel
-          </button>
-          <button type="button" @click="handleConfirmAccept" class="pill-btn-brand cursor-pointer min-w-[100px]">
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+      :title="confirmTitle"
+      :message="confirmMessage"
+      confirm-label="Close this lead"
+      @cancel="isConfirmOpen = false"
+      @confirm="handleConfirmAccept"
+    />
   </div>
 </template>

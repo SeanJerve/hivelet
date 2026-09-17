@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import WsModal from '@/components/ui/WsModal.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { propertyToday, propertyDate } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
@@ -891,30 +893,14 @@ function exportFilteredExpenses() {
     </div>
 
     <!-- Record Expense Modal (Supports Multiple Entries) -->
-    <div 
-      v-if="isAddOpen" 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
-      @click.self="isAddOpen = false"
+    <WsModal
+      v-if="isAddOpen"
+      title="Record an expense"
+      subtitle="Several entries at once, each split across the property areas."
+      size="lg"
+      :dismissible="false"
+      @close="isAddOpen = false"
     >
-      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl overflow-hidden rounded-tile bg-tile border border-line animate-in fade-in zoom-in-95 duration-150 my-6">
-        
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between p-6 pb-4 border-b border-line">
-          <div class="flex items-center gap-2.5">
-            <div class="size-9 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center">
-              <ReceiptText class="size-5" />
-            </div>
-            <div>
-              <h3 class="font-semibold text-lg text-ink">
-                Record Operating Expenses
-              </h3>
-              <p class="text-xs text-ink-soft">Batch record property expenses and area cost splits</p>
-            </div>
-          </div>
-          <button @click="isAddOpen = false" class="p-1.5 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer" aria-label="Close modal">
-            <X class="size-5" />
-          </button>
-        </div>
 
         <form @submit.prevent="submitAddExpense">
           <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
@@ -1067,34 +1053,17 @@ function exportFilteredExpenses() {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </WsModal>
 
     <!-- Edit Expense Modal -->
-    <div 
-      v-if="isEditOpen" 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
-      @click.self="isEditOpen = false"
+    <WsModal
+      v-if="isEditOpen"
+      title="Edit this expense"
+      subtitle="Change its category and how it splits across the property areas."
+      size="lg"
+      :dismissible="false"
+      @close="isEditOpen = false"
     >
-      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl overflow-hidden rounded-tile bg-tile border border-line animate-in fade-in zoom-in-95 duration-150 my-6">
-        
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between p-6 pb-4 border-b border-line">
-          <div class="flex items-center gap-2.5">
-            <div class="size-9 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center">
-              <ReceiptText class="size-5" />
-            </div>
-            <div>
-              <h3 class="font-semibold text-lg text-ink">
-                Edit Operating Expense
-              </h3>
-              <p class="text-xs text-ink-soft">Update expense classification and property area cost splits</p>
-            </div>
-          </div>
-          <button @click="isEditOpen = false" class="p-1.5 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer" aria-label="Close dialog">
-            <X class="size-5" />
-          </button>
-        </div>
 
         <form @submit.prevent="handleEditExpense">
           <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
@@ -1235,41 +1204,18 @@ function exportFilteredExpenses() {
             </div>
           </div>
         </form>
-      </div>
-    </div>
+    </WsModal>
 
-    <!-- Custom Confirmation Modal -->
-    <div 
-      v-if="isConfirmOpen" 
-      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
-      @click.self="isConfirmOpen = false"
-    >
-      <div class="rounded-tile bg-tile w-full max-w-sm shadow-2xl rounded-tile p-6 bg-tile space-y-4 text-center border border-line">
-        <div class="flex flex-col items-center gap-3">
-          <div class="size-12 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center">
-            <ReceiptText class="size-6" />
-          </div>
-          <h3 class="font-semibold text-base text-ink">{{ confirmTitle }}</h3>
-          <p class="text-xs text-ink-soft leading-relaxed">{{ confirmMessage }}</p>
-        </div>
-
-        <div class="flex items-center justify-center gap-2 pt-2">
-          <button 
-            type="button" 
-            @click="isConfirmOpen = false" 
-            class="pill-btn cursor-pointer min-w-[100px]"
-          >
-            Cancel
-          </button>
-          <button 
-            type="button" 
-            @click="handleConfirmAccept" 
-            class="pill-btn-brand cursor-pointer min-w-[100px]"
-          >
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Confirmation -->
+    <ConfirmDialog
+      v-if="isConfirmOpen"
+      :title="confirmTitle"
+      :message="confirmMessage"
+      confirm-label="Delete entry"
+      destructive
+      :busy="isSubmitting"
+      @cancel="isConfirmOpen = false"
+      @confirm="handleConfirmAccept"
+    />
   </div>
 </template>

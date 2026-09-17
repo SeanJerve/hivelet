@@ -63,8 +63,11 @@ const EXPECTED = {
  * 84 -> 51 on 2026-09-18. The admin and tenant overviews and the workspace
  * sidebar moved onto the workspace tokens (docs/DESIGN_GUIDELINE.md), taking
  * 33 raw literals with them, most of them SVG chart strokes.
+ *
+ * 51 -> 41 later the same day, when every dialog moved onto WsModal and the
+ * hand-built overlays and their icon chips went with it.
  */
-const MAX_RAW_HEX = 51;
+const MAX_RAW_HEX = 41;
 
 const assetDir = path.join(root, 'dist', 'assets');
 if (!fs.existsSync(assetDir)) {

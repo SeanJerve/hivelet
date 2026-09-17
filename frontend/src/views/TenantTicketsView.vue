@@ -9,6 +9,7 @@
                with per-ticket note feed allowing tenant follow-up comments visible to Landlady Fe.
 -->
 <script setup lang="ts">
+import WsModal from '@/components/ui/WsModal.vue';
 import { ref, computed, onMounted } from 'vue';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
@@ -805,27 +806,13 @@ function statusClass(status: string) {
   </div>
 
   <!-- Progress Timeline Modal -->
-  <div
-    v-if="isTimelineOpen && activeTimelineTicket"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
-    @click.self="closeTimeline"
-  >
-    <div class="rounded-tile bg-tile bg-tile rounded-tile shadow-2xl w-full max-w-2xl my-6 overflow-hidden border border-line">
-      <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-line bg-canvas flex items-start justify-between gap-4 sticky top-0">
-        <div class="min-w-0">
-          <h3 class="font-semibold text-base text-ink truncate">{{ activeTimelineTicket.title }}</h3>
-          <p class="text-xs text-ink-soft mt-0.5">
-            Progress Timeline · #{{ activeTimelineTicket.id.slice(0, 8) }}
-          </p>
-        </div>
-        <button
-          @click="closeTimeline"
-          class="p-1.5 rounded-lg text-ink-soft hover:bg-border cursor-pointer shrink-0"
-        >
-          <X class="size-4" />
-        </button>
-      </div>
+  <WsModal
+      v-if="isTimelineOpen && activeTimelineTicket"
+      :title="activeTimelineTicket.title"
+      subtitle="Where your request has got to"
+      size="md"
+      @close="closeTimeline()"
+    >
 
       <div class="p-6 space-y-6">
         <!-- 5-Stage Progress Stepper -->
@@ -924,6 +911,5 @@ function statusClass(status: string) {
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </WsModal>
 </template>

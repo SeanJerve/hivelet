@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WsModal from '@/components/ui/WsModal.vue';
 import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
 import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
@@ -239,36 +240,15 @@ async function handleSave() {
 </script>
 
 <template>
-  <div
+  <WsModal
     v-if="isAdminEditUnitModalOpen && unit"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
-    @click.self="closeModal"
+    :title="`Unit ${unit.unitCode.toUpperCase()}`"
+    :subtitle="`${unit.cluster}, floor ${unit.floor}, ${unit.type}`"
+    size="lg"
+    :dismissible="false"
+    @close="closeModal"
   >
-    <!-- Modal Card -->
-    <div
-      class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl overflow-hidden rounded-tile bg-tile animate-in fade-in zoom-in-95 duration-150 my-6 border border-line"
-    >
-      <!-- Header -->
-      <div class="flex items-center justify-between p-6 pb-4 border-b border-line">
-        <div>
-          <h3 class="font-semibold text-xl text-ink tracking-tight uppercase">
-            UNIT {{ unit.unitCode.toUpperCase() }} — RATE &amp; SPECS
-          </h3>
-          <p class="text-xs text-ink-soft mt-0.5">
-            {{ unit.cluster }} · Floor {{ unit.floor }} · {{ unit.type }}
-          </p>
-        </div>
-        <button
-          @click="closeModal"
-          class="grid size-9 place-items-center rounded-full text-ink-soft hover:bg-canvas border border-line transition-colors cursor-pointer"
-          aria-label="Close"
-        >
-          <X class="size-4" />
-        </button>
-      </div>
-
-      <!-- Form Body -->
-      <form @submit.prevent="handleSave" class="p-6 space-y-4 text-xs text-ink max-h-[75vh] overflow-y-auto">
+      <form id="edit-unit-form" @submit.prevent="handleSave" class="flex flex-col gap-5">
         
         <!-- Room Photo Upload (BLOB Database Storage) -->
         <div>
@@ -484,27 +464,15 @@ async function handleSave() {
           ></textarea>
         </div>
 
-        <!-- Actions -->
-        <div class="pt-3 border-t border-line flex items-center justify-end gap-2.5">
-          <button
-            type="button"
-            @click="closeModal"
-            class="pill-btn"
-          >
-            Cancel
-          </button>
-          
-          <button
-            type="submit"
-            :disabled="isSaving"
-            class="pill-btn-brand"
-          >
-            <Loader2 v-if="isSaving" class="size-3.5 animate-spin" />
-            <Check v-else class="size-3.5 text-white" />
-            <span>{{ isSaving ? 'Saving…' : 'Save Changes' }}</span>
-          </button>
-        </div>
       </form>
-    </div>
-  </div>
+
+    <template #actions>
+      <button type="button" class="pill-btn" @click="closeModal">Cancel</button>
+      <button type="submit" form="edit-unit-form" :disabled="isSaving" class="pill-btn-brand">
+        <Loader2 v-if="isSaving" class="size-4 animate-spin" aria-hidden="true" />
+        <Check v-else class="size-4" aria-hidden="true" />
+        {{ isSaving ? 'Saving' : 'Save changes' }}
+      </button>
+    </template>
+  </WsModal>
 </template>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import WsModal from '@/components/ui/WsModal.vue';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, showToast, type TenantRecord } from '@/lib/systemState';
@@ -496,31 +498,13 @@ async function handleOnboard() {
     </div>
 
     <!-- Edit & Manage Tenant Modal (Profile + Edit Assignment + Vacate Action) -->
-    <div 
-      v-if="editModalTenant" 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
-      @click.self="editModalTenant = null"
+    <WsModal
+      v-if="editModalTenant"
+      title="Edit tenant"
+      size="lg"
+      :dismissible="false"
+      @close="editModalTenant = null"
     >
-      <div class="rounded-tile bg-tile w-full max-w-xl shadow-2xl rounded-tile p-6 bg-tile space-y-4 max-h-[90dvh] overflow-y-auto">
-        <!-- Header -->
-        <div class="flex items-center justify-between pb-3 border-b border-line">
-          <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft">
-              <Pencil class="size-4.5" />
-            </div>
-            <div>
-              <h3 class="font-semibold text-lg text-ink leading-tight">
-                {{ editModalTenant.name }}
-              </h3>
-              <p class="text-xs text-ink-soft">
-                Unit {{ editModalTenant.unitCode }} · Resident Profile &amp; Assignment
-              </p>
-            </div>
-          </div>
-          <button @click="editModalTenant = null" class="p-1 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer">
-            <X class="size-5" />
-          </button>
-        </div>
 
         <!-- Section 1: Resident Information Profile Card -->
         <div class="rounded-xl border border-line bg-canvas p-4 space-y-3">
@@ -662,49 +646,34 @@ async function handleOnboard() {
             </div>
           </div>
         </form>
-      </div>
-    </div>
+    </WsModal>
 
     <!-- Vacate Confirm Dialog -->
-    <div 
-      v-if="vacateModalTenant" 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
-      @click.self="vacateModalTenant = null"
+    <ConfirmDialog
+      v-if="vacateModalTenant"
+      title="Settle and move out"
+      confirm-label="Settle the vacancy"
+      destructive
+      :busy="isSubmitting"
+      @cancel="vacateModalTenant = null"
+      @confirm="confirmVacate"
     >
-      <div class="rounded-tile bg-tile w-full max-w-md shadow-2xl rounded-tile p-6 bg-tile space-y-4">
-        <div class="flex items-center gap-2.5 text-overdue">
-          <AlertTriangle class="size-5" />
-          <h3 class="font-semibold text-lg">Settle vacancy &amp; deactivate</h3>
-        </div>
-        <p class="text-xs text-ink-soft leading-relaxed">
-          This closes the account of <strong>{{ vacateModalTenant.name }}</strong> and marks unit <strong>{{ vacateModalTenant.unitCode }}</strong> as vacant. Deposit settlement will be logged.
-        </p>
-        <div class="pt-2 flex justify-end gap-2">
-          <button type="button" @click="vacateModalTenant = null" class="pill-btn">Cancel</button>
-          <button type="button" :disabled="isSubmitting" @click="confirmVacate" class="pill-pill-btn-danger-quiet">
-            <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
-            <span>Settle Vacancy</span>
-          </button>
-        </div>
-      </div>
-    </div>
+      <p class="text-sm leading-6 text-ink-soft">
+        This closes the account of <strong class="text-ink">{{ vacateModalTenant.name }}</strong> and marks unit
+        <strong class="text-ink">{{ vacateModalTenant.unitCode }}</strong> vacant. The deposit settlement is written
+        to the record.
+      </p>
+    </ConfirmDialog>
 
     <!-- Onboard Tenant Modal -->
-    <div 
-      v-if="isOnboardModalOpen" 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
-      @click.self="isOnboardModalOpen = false"
+    <WsModal
+      v-if="isOnboardModalOpen"
+      title="Move a tenant in"
+      subtitle="Creates the account and assigns the unit."
+      size="lg"
+      :dismissible="false"
+      @close="isOnboardModalOpen = false"
     >
-      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl rounded-tile p-6 bg-tile space-y-4 max-h-[90dvh] overflow-y-auto">
-        <div class="flex items-center justify-between pb-3 border-b border-line">
-          <div class="flex items-center gap-2">
-            <UserPlus class="size-5 text-accent" />
-            <h3 class="font-semibold text-lg text-ink">Onboard New Tenant</h3>
-          </div>
-          <button @click="isOnboardModalOpen = false" class="p-1 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer">
-            <X class="size-5" />
-          </button>
-        </div>
 
         <form @submit.prevent="handleOnboard" class="grid gap-4 sm:grid-cols-2 text-xs">
           <div>
@@ -812,7 +781,6 @@ async function handleOnboard() {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </WsModal>
   </div>
 </template>
