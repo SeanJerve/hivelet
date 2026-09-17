@@ -33,14 +33,63 @@ app.use(
   })
 );
 
+/**
+ * CORS, tightened 2026-09-17.
+ *
+ * It used to allow, with `credentials: true`:
+ *
+ *   - any `http://localhost:*`, on any port
+ *   - the literal string `'null'`
+ *
+ * Neither is exploitable in this system TODAY, and that was checked rather than
+ * assumed: **there is no cookie authentication anywhere**. The token is a Bearer
+ * value in the `Authorization` header, read from storage that a different origin
+ * cannot touch, so a cross-origin page has nothing to send. `credentials: true`
+ * permits cookies that do not exist.
+ *
+ * It was still too wide, in a way that goes off the moment anyone does something
+ * reasonable:
+ *
+ *   `'null'` is what a **sandboxed iframe** sends, and what a `file://` page
+ *   sends. Any site could frame itself sandboxed and be inside the policy.
+ *
+ *   `http://localhost:*` on any port is a development convenience that had
+ *   shipped into every environment.
+ *
+ * The day someone moves the token into a cookie - a normal thing to want, and
+ * safer in other respects - both become a live cross-site request forgery hole,
+ * and nothing about that change would draw attention back here.
+ *
+ * So the width is now spent only where it is earned: in development.
+ *
+ * `!origin` stays allowed in every environment, and must. A request with no
+ * Origin header at all is not a browser doing something cross-site - it is curl,
+ * a health probe, or a server-to-server call. **Adyen's webhook is exactly
+ * that**, and rejecting it would break payment notification.
+ */
+const isProduction = config.nodeEnv === 'production';
+
 app.use(
   cors({
     origin(origin, callback) {
-      // Same-origin/tooling requests (curl, form POSTs, health probes) send no Origin or 'null'.
-      if (!origin || origin === 'null' || config.cors.origins.includes(origin) || origin.startsWith('http://localhost:')) {
+      // No Origin header: not a browser. curl, health probes, Adyen's webhook.
+      if (!origin) {
         callback(null, true);
         return;
       }
+
+      if (config.cors.origins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      // Development only: any localhost port, and the 'null' origin a sandboxed
+      // or file:// page sends. Both are refused in production.
+      if (!isProduction && (origin === 'null' || origin.startsWith('http://localhost:'))) {
+        callback(null, true);
+        return;
+      }
+
       callback(new Error(`Origin ${origin} is not permitted by CORS policy.`));
     },
     credentials: true,
