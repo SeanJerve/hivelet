@@ -60,6 +60,15 @@ const paymentHistory = ref<Array<{
 const currentYear = new Date().getFullYear();
 const selectedYear = ref(currentYear);
 const sortOrder = ref<'latest' | 'oldest'>('latest');
+/**
+ * Set when `/tenant/my-payments` could not be read.
+ *
+ * The empty table said "No payment records found for year N" - to a resident,
+ * about a year they did pay. That reads as the house having no record of their
+ * money, which is a far worse thing to say by accident than "we could not load
+ * this". Same defect as the bills panel above it.
+ */
+const historyLoadFailed = ref(false);
 
 const availableYears = computed(() => {
   const years = new Set<number>();
@@ -143,6 +152,7 @@ async function fetchOutstandingBills() {
 }
 
 async function fetchPaymentHistory() {
+  historyLoadFailed.value = false;
   try {
     const data = await api.get<any[]>('/tenant/my-payments');
     paymentHistory.value = (data ?? []).map(p => ({
@@ -163,6 +173,7 @@ async function fetchPaymentHistory() {
     }));
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
+    historyLoadFailed.value = true;
   }
 }
 
@@ -355,7 +366,12 @@ function handleAdyenSuccess(refId: string) {
             </tr>
             <tr v-if="filteredPayments.length === 0">
               <td colspan="5" class="p-8 text-center text-xs text-muted-foreground">
-                No payment records found for year {{ selectedYear }}.
+                <template v-if="historyLoadFailed">
+                  Your payment history could not be loaded. This does <strong>not</strong> mean
+                  no payments were recorded &mdash; refresh to retry, and contact the
+                  administrator if it keeps failing.
+                </template>
+                <template v-else>No payment records found for year {{ selectedYear }}.</template>
               </td>
             </tr>
           </tbody>
