@@ -106,7 +106,92 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — the whole ledger now verified end to end, a ₱2.5M question for the owner, and two
+> **LATEST — the one endpoint a stranger can write through now has a limit, the control that
+> protects every password is pinned, and "how fast is it?" has a reproducible answer.**
+>
+> ### There was no rate limiting anywhere
+>
+> Three public write endpoints. **Two were never really open** — the local cashier completion
+> answers **404** whenever a gateway is configured, and the Adyen webhook needs Basic Auth *and* a
+> valid HMAC signature. **`POST /public/inquiries` is the one that is.**
+>
+> It is well guarded otherwise — payload length-capped, room must exist and be Published, a
+> Reserved room refused. What it had no answer for was the same visitor sending it a thousand
+> times. Nothing breaks; the administrator simply arrives to an inbox she cannot use.
+>
+> **Ten per fifteen minutes per address.** No new dependency — thirty lines that can be read in
+> full beat adding a package days before a defense to guard one endpoint.
+>
+> `RATE_LIMITED` **already existed** in the error-code union and had never been used by anything.
+> The code was reserved for this and the limiter was never built.
+>
+> **Verified writing nothing:** the limiter sits *before* validation, so twelve requests with an
+> invalid body gave ten 422s then 429s and never reached the insert. The `inquiries` table still
+> holds its single original row from July. The refusal says how long to wait — a limit that does
+> not is indistinguishable from a broken form.
+>
+> **And one thing deliberately NOT done:** `POST /auth/login` is not rate-limited. The control
+> there is stronger — lockout is **per account**, and an attacker changes address far more easily
+> than they change whose account they are guessing at. A per-IP limit would mostly limit *us*: the
+> suites sign in on every run. Recorded in the file, with the reasoning, rather than left as
+> silence.
+>
+> ### Which meant checking that lockout actually works
+>
+> I justified skipping the login limiter by pointing at lockout. **That reasoning is worth nothing
+> unless the lockout is real.** It is: **five failures, fifteen minutes**, bcrypt at 12 rounds.
+> Nothing asserted it.
+>
+> It **cannot** be tested behaviourally here — proving it means locking a real account for fifteen
+> minutes, and every account belongs to a resident, you, or a teammate. There is no throwaway, and
+> this sandbox refuses `profiles` updates, so a lock could be set and **not cleared**. So the shape
+> is asserted against the source and labelled as exactly that. Four things, each guarding an
+> invisible failure:
+>
+> | | If it broke |
+> |---|---|
+> | the lock is checked **before** the password compare | a locked account still leaks whether a guess was right |
+> | a wrong password reaches `registerFailedAttempt` | the counter never moves, lockout never engages, every response looks identical |
+> | a successful login **resets** the counter | five wrong guesses spread over a year lock out the real owner |
+> | the threshold and window are real numbers | 5 failures, 15 minutes |
+>
+> **4 of 4 caught by mutation.**
+>
+> ### "How fast is it?" — withdrawn, and now answerable
+>
+> Module 01 claimed *"sub-50ms indexed database queries"*, *"under 256MB of RAM"* and *"100% data
+> consistency"*. All three were **withdrawn** as errata **E-16**, and the Phase 1 documents assert
+> no performance figure at all. That was right. But **the defense pack had no performance question
+> in it**, and a panel will certainly ask one.
+>
+> `npm run measure` times every read endpoint, five runs each, on the machine in front of you:
+>
+> | | rows | median |
+> |---|---:|---:|
+> | income ledger | 937 | **583ms** |
+> | expense ledger | 1,262 | **957ms** |
+> | everything else | ≤100 | ~320ms |
+>
+> **The shape matters more than any figure, and the script computes it rather than claiming it:**
+> 15 rows cost 322ms, 1,262 cost 957ms — so **~320ms is paid before a single row is read**, and
+> each extra row costs about **half a millisecond**. That floor is the round trip to a hosted
+> database, not our code. *Rows are cheap; the hop is not* — which is the honest answer to "does it
+> scale with the ledger".
+>
+> The pack now points at **the command**, not at a number, which is the only way a figure in a
+> document stays true. RAM and concurrency stay withdrawn, and the answer says so.
+>
+> ### A correction
+>
+> The commit that added all this ended *"All 16 suites green."* **It was not.** `check:copies` had
+> just failed — and failed *because of that commit*: editing the defense pack left its filming copy
+> one line behind. I read the runner's tail, saw the "start the backend first" hint, assumed a
+> connection problem, and committed. The backend was fine; the check was right and I was not
+> reading it. Copy refreshed, all 16 green — checked this time.
+>
+> **Sixteen suites green. `check:api` 75 assertions.**
+
+> **PREVIOUS — the whole ledger now verified end to end, a ₱2.5M question for the owner, and two
 > checks that were watching only half of what they claimed.**
 >
 > ### The workbook check now covers every year
@@ -3833,7 +3918,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**235 commits, all pushed to `main`. Working tree clean.**
+**241 commits, all pushed to `main`. Working tree clean.**
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
