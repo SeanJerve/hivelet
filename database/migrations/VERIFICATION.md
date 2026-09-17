@@ -21,13 +21,16 @@ Not run against Supabase.
 Live-data preconditions *were* checked directly against production, read-only, with
 `database/check-migration-preconditions.mjs`. **No blockers.**
 
-## Why the tracker lists 12 and this folder holds 21
+## Why the tracker lists 13 and this folder holds 23
 
 **Checked 2026-09-16, because the discrepancy reads as nine missing migrations and is not one.**
 
-`supabase_migrations.schema_migrations` records **12** entries, from
-`fix_replace_allocations_enum_cast` to `resolve_login_identifier`. This folder holds **21**
-numbered files, `001` through `021`.
+`supabase_migrations.schema_migrations` records **13** entries, from
+`fix_replace_allocations_enum_cast` to `current_user_role_fails_closed`. This folder holds **23**
+numbered files, `001` through `023`.
+
+*Was 12 and 21 when this was written on 2026-09-16. Migration `022` was applied on 2026-09-17 and
+appears in the tracker; `023` is written and **deliberately not applied** — see below.*
 
 **Migrations `001`–`010` were applied through the Supabase SQL editor**, which does not write to
 that tracker — see `database/README.md`, which notes that some statements can only be run that
@@ -46,6 +49,22 @@ They are applied. Verified against the live catalogue rather than assumed:
 | `008` property areas lookup | `property_areas` holds **6 seeded rows** |
 | `009` advance rent | `room_assignments.anniversary_date` present |
 | `010` atomic expense allocations | function `replace_expense_allocations` present |
+
+### `023` is written and NOT applied
+
+`023_deactivate_duplicate_import_profiles.sql` deactivates three profiles that are duplicates of
+real residents — no tenancy, no ledger row, but `active` and holding a working password on the
+shared literal. **The sandbox refuses `UPDATE` on `profiles`** (three attempts across two
+sessions), so it needs a person. It is the only file here that is not in force.
+
+`npm run check:ledger` prints those accounts on every run until it is.
+
+### Re-verified 2026-09-17
+
+The table above was independently re-run today against the live catalogue, and every row still
+holds: 2 RBAC columns, **21** tables with RLS, **6** `ON DELETE RESTRICT` foreign keys on the three
+ledger tables, `idx_profiles_phone_login`, **6** property areas, `deposit_amount`, and
+`replace_expense_allocations`. Nothing has drifted.
 
 **Do not re-run `001`–`010`.** Several are not idempotent, and the database already holds what
 they create. If you need to confirm one for yourself, query the catalogue for the object it
