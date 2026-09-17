@@ -107,6 +107,15 @@ Sign in as the rehearsal tenant from step 8.
 **Undo 12/13:** delete the ticket in step 21.
 **Undo 15:** an abandoned checkout writes nothing — the session is in memory and expires.
 
+> [!NOTE]
+> **A resident's "My Bills" is empty, and that is correct.** There are **2 bills** in the whole
+> database against **32 active tenancies** — because bills are **raised on demand**, not generated
+> monthly (judgement log § 3.6). All **32** residents do have receipts: their payment history lives
+> in the income ledger, which is the record Mrs. Da Silva actually keeps.
+>
+> So a panel signing in as a resident sees **no bill and a full payment history**. That is the
+> design, not a gap — but it is a question worth being ready for rather than meeting live.
+
 ---
 
 ## Phase 4 — Administrator, the money
