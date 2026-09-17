@@ -33,7 +33,28 @@ thing did not work" is not.
 
 ## Open
 
-*(none yet — this file was created 2026-09-17 when the work split across two machines)*
+### B-05 — Apply `database/migrations/027` to remove two test repair tickets
+
+- **Blocked on:** Claude Code's safety check refused the live-database change on 2026-09-18,
+  although Sean had authorised it in chat. Applying it needs a person.
+- **What I was doing:** removing two junk tickets on unit 1A from the live database. Both still read
+  Submitted, so they sat on the landlady's overview as open repair requests. One title is a slur.
+- **What I already did:**
+  - Ran `npm run backup`. The folder is `backups/2026-09-17T17-20-27/` (UTC).
+  - Read `pg_constraint`: both foreign keys into `maintenance_tickets` cascade, and neither ticket
+    has an attachment or message.
+  - Read `pg_trigger`: the table has no triggers.
+  - Wrote `027_remove_test_maintenance_tickets.sql`. It identifies the rows by id plus a title
+    hash, so the slur is not in the repository, and it aborts unless exactly those two rows match.
+    It also removes the one notification that points at a removed ticket. `audit_logs` is left
+    alone on purpose.
+- **What Sean needs to do:** apply the file's contents to the live database, the same way as
+  023. Paste it into the Supabase SQL editor, or approve the `apply_migration` call when asked.
+- **How to know it worked:**
+  - The migration raises the notice `027: removed 2 test tickets and 1 notification`.
+  - `select count(*) from maintenance_tickets` goes from **5 to 3**.
+  - The admin overview's *Open repair requests* tile reads *No repair requests are open*.
+- **Raised:** 2026-09-18 by Claude, on Sean's machine
 
 ---
 

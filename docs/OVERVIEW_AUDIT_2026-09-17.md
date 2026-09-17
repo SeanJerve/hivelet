@@ -11,6 +11,53 @@ were read first. Nothing below overturns a deliberate call recorded in § 3.
 
 ---
 
+## Status after the redesign, 2026-09-18
+
+Both overviews were rebuilt on the workspace system in `docs/DESIGN_GUIDELINE.md`. Each result
+below was checked in the browser at 375, 768 and 1440 px, with a forced failed load, unless
+marked otherwise. `check:all` passes 17 / 17. The screen contract is unchanged at 59 calls and
+30 writes.
+
+**Resolved on screen:**
+
+| Finding | What changed |
+| :--- | :--- |
+| **F1** | One load flag drives every money figure on the tenant page. On a failed load, the amount due, the bill and the payments all say they could not be loaded, and no ₱0 appears |
+| **F3** | Amenities, "Submetered Power (₱12.50/kWh)", "Garbage Collection Fee Included (₱0)", "Electric Submeter" and the unconditional lease badge are gone. Only stored facts show |
+| **F4** | The archive's 50% Share card uses the permitted wording |
+| **F5** | Months not entered are hatched and labelled *Not entered yet*. Only months with entries are *recorded* |
+| **F6** | Every section that depends on a failed source says so, including sections still holding older figures. A banner says some figures could not be loaded |
+| **F7** | All year labels read the clock. Cash flow lists every month with entries |
+| **F10** | "Unit Unit 1A" is fixed. Invented fallbacks (room 1A, cluster BH, floor 1) now read *Not on file* |
+| **F11** | The tenant's amount due and Pay button are in the first screen on a phone. Refresh is visible at every width |
+| **F12** | The chart is HTML with 12 px labels. It scrolls sideways inside its tile on phones, and each month is a button that states its value |
+| **F13** | No scroll boxes inside tiles for short lists |
+| **F14** | The year menu is a click disclosure with `aria-expanded`. It closes on Escape (focus returns) and on an outside click |
+| **F15** | Both "100%" reassurances are removed |
+| **F17** | *Needs your attention* links to the verification queue and to maintenance dispatch |
+| **F18** | Months paid are in calendar order. Column headings say what the cells hold |
+| **D1–D9** | Rebuilt: one family at weights 400–600, semantic tokens, no nested cards, no dead animation classes, no instant-switch skeleton, no duplicate floating button |
+| **D11** | Both old design documents carry a *replaced* banner |
+| **U1–U7** | Tabs, labels, disclosures and chart semantics added. Designed focus ring. Contrast is measured in the guideline |
+
+**Left for Sean (behaviour):**
+- **F2:** the settled branch still takes water from the newest bill. The page no longer prints a
+  false equation, but a bill with ₱0 water beside one registered occupant is still visible.
+- **F8:** the projection model still comes out about a third below recorded months. It is now
+  labelled separately as *Expected each month*.
+- **F9:** the next due date still assumes the 5th. It is marked with a TODO in the code.
+- **F16:** there are still two definitions of vacant.
+- **Test tickets:** migration 027 is written and not applied (`BLOCKED_FOR_SEAN.md` B-05).
+
+**Not verified:**
+- **Keyboard activation:** Enter and Space on buttons. The browser tool's keypresses do not click
+  any native button, including ones this redesign did not touch. The controls are native
+  `<button>` elements.
+- **First-load failure:** only failure after a successful load was rendered.
+- **Screen reader:** not tested.
+
+---
+
 ## 0. How to read this
 
 Every finding carries an **owner**, a **severity** and the **evidence** behind it.

@@ -1,5 +1,10 @@
 # HIVELET FUNCTIONAL UI & DESIGN SPECIFICATION
 
+> [!CAUTION]
+> **Replaced on 2026-09-18 by [DESIGN_GUIDELINE.md](DESIGN_GUIDELINE.md).** The visual rules below
+> describe the look being retired and are kept as a record. The sidebar module list and role
+> workspaces further down still describe the product.
+
 > **Notice:** Detailed implementation guidelines, tri-inspiration synthesis (Jira + Notion + Airtable), non-techy landlady guidelines, and universal state feedback standards are maintained in [UI_DESIGN_SYSTEM_GUIDELINES.md](file:///c:/Users/seanjerve/OneDrive/Desktop/hivelet/docs/UI_DESIGN_SYSTEM_GUIDELINES.md).
 
 ## 1. UI Architecture & Design System

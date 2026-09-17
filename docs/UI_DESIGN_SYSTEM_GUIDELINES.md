@@ -1,5 +1,11 @@
 # HIVELET MASTER UI/UX DESIGN SYSTEM GUIDELINES
 
+> [!CAUTION]
+> **Replaced on 2026-09-18 by [DESIGN_GUIDELINE.md](DESIGN_GUIDELINE.md).** This file describes
+> the look being retired. It is kept as a record of it. Do not build new screens from it, and
+> ignore the instruction below that tells agents to follow it. Its fonts and colours also
+> disagreed with `frontend/src/index.css` before it was replaced.
+
 > **Authoritative Design Building Standard for Hivelet (Fe Galang Da Silva Boarding House Management System)**  
 > **Mandatory Rule:** All AI agents, developers, and team members MUST adhere strictly to these guidelines when building, modifying, or styling any component or view in this repository.
 
