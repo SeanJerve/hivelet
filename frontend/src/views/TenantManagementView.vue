@@ -6,14 +6,14 @@ import { useRoute } from 'vue-router';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, showToast, type TenantRecord } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Eye, Pencil, LogOut, X, AlertTriangle, RefreshCw, Loader2, Users, User, Check, ShieldCheck, Clock, TrendingUp } from 'lucide-vue-next';
+import { Search, UserPlus, Pencil, LogOut, RefreshCw, Loader2, Users, Check } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 const route = useRoute();
 const q = ref('');
 const isLoading = ref(false);
 const isSubmitting = ref(false);
-const profileModalTenant = ref<TenantRecord | null>(null);
 const editModalTenant = ref<TenantRecord | null>(null);
 const vacateModalTenant = ref<TenantRecord | null>(null);
 const isOnboardModalOpen = ref(false);
@@ -105,7 +105,23 @@ watch(() => route.query.convertInquiryId, () => {
   checkInquiryConversion();
 });
 
-const statusFilter = ref<'all' | 'active' | 'vacated' | 'prospect'>('all');
+type StatusFilter = 'all' | 'active' | 'vacated' | 'prospect';
+
+const statusFilter = ref<StatusFilter>('all');
+
+/**
+ * The ways of looking at the list, each carrying its own count. Prospects only
+ * appear as a choice when there is at least one, because a chip reading zero is
+ * a question nobody asked.
+ */
+const filterChips = computed<{ key: StatusFilter; label: string; count: number }[]>(() => [
+  { key: 'all', label: 'Everyone', count: tenants.length },
+  { key: 'active', label: 'Living here', count: activeCount.value },
+  { key: 'vacated', label: 'Moved out', count: vacatedCount.value },
+  ...(prospectCount.value
+    ? [{ key: 'prospect' as const, label: 'Prospects', count: prospectCount.value }]
+    : []),
+]);
 
 /**
  * A prospect is not a resident, and this page used to say she was.
@@ -149,8 +165,31 @@ const rows = computed(() => {
   });
 });
 
-function openProfile(t: TenantRecord) {
-  profileModalTenant.value = t;
+/**
+ * `systemState` fills a missing emergency contact with an em dash rather than
+ * leaving it blank, so a falsy test never fires and the dialog printed a dash
+ * where it meant to say nobody is on file.
+ */
+function onFile(value: string | null | undefined) {
+  const v = (value ?? '').trim();
+  return v && v !== '—' && v !== '-' ? v : null;
+}
+
+/**
+ * The household in words. BR-014 bills water by headcount, so the number of
+ * people is the fact worth reading, not a yes/no badge.
+ */
+function householdLabel(t: TenantRecord) {
+  const mates = t.roommateQty ?? Math.max(0, (t.occupants || 1) - 1);
+  if (mates === 0) return 'Lives alone';
+  return mates === 1 ? 'With 1 roommate' : `With ${mates} roommates`;
+}
+
+/** A prospect is not a resident. The three states each get their own words. */
+function standing(t: TenantRecord): { label: string; tone: 'paid' | 'verify' | 'neutral' } {
+  if (t.role === 'prospect') return { label: 'Prospect', tone: 'verify' };
+  if (t.status === 'active') return { label: 'Living here', tone: 'paid' };
+  return { label: 'Moved out', tone: 'neutral' };
 }
 
 function openEdit(t: TenantRecord) {
@@ -213,10 +252,6 @@ async function saveEdit() {
   } finally {
     isSubmitting.value = false;
   }
-}
-
-function openVacate(t: TenantRecord) {
-  vacateModalTenant.value = t;
 }
 
 function openVacateFromModal(t: TenantRecord) {
@@ -318,243 +353,241 @@ async function handleOnboard() {
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Page Header -->
-    <div class="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
+  <div class="ws-focus space-y-6">
+    <!-- Page header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
-          <span>Admin</span>
-          <span>/</span>
-          <span class="font-semibold text-ink">Active Tenants</span>
-        </div>
-        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
-          Active Tenant Directory
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+          Residents
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
-          {{ residentCount }} residents currently on record<span v-if="prospectCount">, plus {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> not yet assigned a unit</span>.
+        <p class="mt-1 text-sm leading-6 text-ink-soft">
+          {{ residentCount }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.
         </p>
       </div>
 
       <div class="flex items-center gap-2 self-start sm:self-auto">
         <button
-          @click="fetchTenants"
+          type="button"
+          class="icon-btn size-11"
           :disabled="isLoading"
-          class="pill-btn"
+          aria-label="Load the directory again"
+          @click="fetchTenants"
         >
-          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
-          <span>Refresh</span>
+          <RefreshCw :class="['size-4', isLoading && 'animate-spin']" aria-hidden="true" />
         </button>
 
-        <button 
-          @click="isOnboardModalOpen = true"
-          class="pill-btn-brand"
-        >
-          <UserPlus class="size-3.5 text-white" />
-          <span>Onboard Tenant</span>
+        <button type="button" class="pill-btn-brand" @click="isOnboardModalOpen = true">
+          <UserPlus class="size-4" aria-hidden="true" />
+          <span>Move someone in</span>
         </button>
       </div>
     </div>
 
-    <!-- Section Card with Search & Tenant Table -->
-    <div class="rounded-tile bg-tile overflow-hidden">
-      <!-- Search Bar & Filters -->
-      <div class="border-b border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-tile">
-        <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
-          <input
-            v-model="q"
-            type="text"
-            placeholder="Search name, unit or phone…"
-            class="ws-input w-full pl-10 pr-4 sm:text-sm"
-          />
-        </div>
-
-        <div class="h-10 inline-flex items-center gap-1 self-start sm:self-auto bg-canvas p-1 border border-line rounded-xl text-xs">
-          <button
-            type="button"
-            @click="statusFilter = 'all'"
-            :class="[ 'h-8 px-3 rounded-lg font-semibold transition-colors cursor-pointer inline-flex items-center', statusFilter === 'all' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
-          >
-            All ({{ tenants.length }})
-          </button>
-          <button
-            type="button"
-            @click="statusFilter = 'active'"
-            :class="[ 'h-8 px-3 rounded-lg font-semibold transition-colors cursor-pointer inline-flex items-center', statusFilter === 'active' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
-          >
-            Active ({{ activeCount }})
-          </button>
-          <button
-            type="button"
-            @click="statusFilter = 'vacated'"
-            :class="[ 'h-8 px-3 rounded-lg font-semibold transition-colors cursor-pointer inline-flex items-center', statusFilter === 'vacated' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
-          >
-            Past / Vacated ({{ vacatedCount }})
-          </button>
-          <button
-            v-if="prospectCount"
-            type="button"
-            @click="statusFilter = 'prospect'"
-            :class="[ 'h-8 px-3 rounded-lg font-semibold transition-colors cursor-pointer inline-flex items-center', statusFilter === 'prospect' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
-          >
-            Prospects ({{ prospectCount }})
-          </button>
-        </div>
+    <!-- Search and the four ways of looking at the list -->
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div class="relative lg:max-w-sm lg:flex-1">
+        <Search
+          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+          aria-hidden="true"
+        />
+        <label for="resident-search" class="sr-only">Search residents</label>
+        <input
+          id="resident-search"
+          v-model="q"
+          type="search"
+          placeholder="Name, unit, phone or email"
+          class="ws-input w-full pl-11"
+        />
       </div>
 
-      <!-- SKELETON LOADING STATE -->
-      <div v-if="isLoading" class="p-4">
-        <SkeletonTable :columns="8" :rows="6" />
-      </div>
-
-      <!-- Table (Screenshot 4) -->
-      <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
-        <table class="w-full min-w-[1000px] text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-canvas">
-            <tr class="text-left text-xs uppercase tracking-wide text-ink-soft border-b border-line">
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">RESIDENT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">UNIT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">ROOMMATES</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">EMERGENCY CONTACT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">MOVE-IN</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">DEPOSIT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">STATUS</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr 
-              v-for="t in rows" 
-              :key="t.id"
-              class="border-b border-line last:border-0 hover:bg-canvas transition-colors"
-            >
-              <!-- RESIDENT (Name + Email + Phone stacked for compact layout) -->
-              <td class="px-4 py-3.5">
-                <p class="font-semibold text-ink">{{ t.name }}</p>
-                <p class="text-xs text-ink-soft">{{ t.email }}</p>
-                <p class="tabular font-mono text-xs text-ink-soft mt-0.5">{{ t.phone }}</p>
-              </td>
-
-              <!-- UNIT -->
-              <td class="px-4 py-3.5 font-semibold uppercase text-ink">
-                {{ t.unitCode }}
-              </td>
-
-              <!-- ROOMMATES (BR-014 Water Billing & Headcount Rule) -->
-              <td class="whitespace-nowrap px-4 py-3.5">
-                <span 
-                  v-if="(t.roommateQty ?? (t.occupants - 1)) > 0"
-                  class="badge-soft badge-blue text-xs font-semibold"
-                >
-                  Yes ({{ t.roommateQty ?? (t.occupants - 1) }} {{ (t.roommateQty ?? (t.occupants - 1)) === 1 ? 'roommate' : 'roommates' }})
-                </span>
-                <span 
-                  v-else 
-                  class="badge-soft badge-neutral text-xs font-semibold"
-                >
-                  Solo (1 Pax)
-                </span>
-              </td>
-
-              <!-- EMERGENCY CONTACT -->
-              <td class="whitespace-nowrap px-4 py-3.5">
-                <p class="text-ink font-medium">{{ t.emergencyContact.name }}</p>
-                <p class="tabular font-mono text-xs text-ink-soft">{{ t.emergencyContact.phone }}</p>
-              </td>
-
-              <!-- MOVE-IN -->
-              <td class="whitespace-nowrap px-4 py-3.5 text-ink-soft">
-                {{ t.moveInDate }}
-              </td>
-
-              <!-- DEPOSIT -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 font-semibold text-ink">
-                {{ peso(t.depositAmount) }}
-              </td>
-
-              <!-- STATUS -->
-              <td class="px-4 py-3.5">
-                <span 
-                  :class="[ 'badge-soft text-xs font-semibold', t.role === 'prospect' ? 'badge-info' : (t.status === 'active' ? 'badge-success' : 'badge-neutral') ]"
-                >
-                  {{ t.role === 'prospect' ? 'Prospect' : (t.status === 'active' ? 'Active' : 'Vacated') }}
-                </span>
-              </td>
-
-              <!-- ACTIONS (Compact Single Edit button opening Profile & Edit & Vacate) -->
-              <td class="whitespace-nowrap px-4 py-3.5 text-right">
-                <button 
-                  @click="openEdit(t)"
-                  class="pill-btn min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center font-semibold cursor-pointer hover:border-brand hover:text-brand"
-                >
-                  <Pencil class="size-3.5" />
-                  <span>Edit</span>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Show">
+        <button
+          v-for="chip in filterChips"
+          :key="chip.key"
+          type="button"
+          :aria-pressed="statusFilter === chip.key"
+          :class="[
+            'inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors',
+            statusFilter === chip.key
+              ? 'bg-ink text-canvas'
+              : 'bg-tile text-ink-soft hover:text-ink',
+          ]"
+          @click="statusFilter = chip.key"
+        >
+          {{ chip.label }}
+          <span
+            :class="[
+              'tabular text-xs font-semibold',
+              statusFilter === chip.key ? 'text-on-night-soft' : 'text-ink-faint',
+            ]"
+            >{{ chip.count }}</span
+          >
+        </button>
       </div>
     </div>
 
-    <!-- Edit & Manage Tenant Modal (Profile + Edit Assignment + Vacate Action) -->
+    <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
+
+    <div v-else-if="rows.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center">
+      <Users class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
+      <p class="mt-3 text-base font-semibold text-ink">Nobody matches</p>
+      <p class="mt-1 text-sm leading-6 text-ink-soft">
+        Nothing on this list answers to
+        <span v-if="q">“{{ q }}”</span><span v-else>this filter</span>.
+      </p>
+    </div>
+
+    <template v-else>
+      <!--
+        A register on a wide screen, a record per tile on a narrow one. It used
+        to be one table 1,000px wide at every size, so a laptop and every phone
+        scrolled sideways to reach the status and the Edit button.
+
+        The email and the emergency contact are no longer columns. Both are in
+        the edit dialog, where the whole record is, and search still reads the
+        email. Seven columns of three-line cells was the reason this needed
+        1,000px in the first place.
+      -->
+      <div class="hidden overflow-hidden rounded-tile bg-tile lg:block">
+        <div class="ws-table-wrap max-h-[70vh]">
+          <table class="ws-table">
+            <caption class="sr-only">
+              Residents, with unit, household, move-in date, advance rent and status
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Resident</th>
+                <th scope="col">Unit</th>
+                <th scope="col">Household</th>
+                <th scope="col">Moved in</th>
+                <th scope="col" class="num">Advance rent</th>
+                <th scope="col">Standing</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="t in rows" :key="t.id">
+                <th scope="row">
+                  <span class="block font-semibold text-ink">{{ t.name }}</span>
+                  <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
+                </th>
+                <td class="font-semibold uppercase text-ink">{{ t.unitCode }}</td>
+                <td>{{ householdLabel(t) }}</td>
+                <td>{{ t.moveInDate }}</td>
+                <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
+                <td>
+                  <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
+                </td>
+                <td class="num">
+                  <button type="button" class="pill-btn" @click="openEdit(t)">
+                    <Pencil class="size-3.5" aria-hidden="true" />
+                    <span>Edit</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="space-y-3 lg:hidden">
+        <div v-for="t in rows" :key="t.id" class="rounded-tile bg-tile p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-base font-semibold leading-snug text-ink">{{ t.name }}</p>
+              <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
+            </div>
+            <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
+          </div>
+
+          <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div>
+              <dt class="text-xs text-ink-faint">Unit</dt>
+              <dd class="font-semibold uppercase text-ink">{{ t.unitCode }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Household</dt>
+              <dd class="text-ink">{{ householdLabel(t) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Moved in</dt>
+              <dd class="text-ink">{{ t.moveInDate }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-ink-faint">Advance rent</dt>
+              <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
+            </div>
+          </dl>
+
+          <button type="button" class="pill-btn mt-4 w-full justify-center" @click="openEdit(t)">
+            <Pencil class="size-3.5" aria-hidden="true" />
+            <span>Edit this record</span>
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <!-- The whole record, and the parts of it that can be changed here -->
     <WsModal
       v-if="editModalTenant"
-      title="Edit tenant"
+      :title="editModalTenant.name"
       size="lg"
       :dismissible="false"
       @close="editModalTenant = null"
     >
-
-        <!-- Section 1: Resident Information Profile Card -->
-        <div class="rounded-xl border border-line bg-canvas p-4 space-y-3">
-          <div class="flex items-center justify-between border-b border-line/70 pb-2">
-            <span class="font-semibold text-xs text-ink-soft">
-              Resident Profile
-            </span>
-            <span :class="[ 'badge-soft text-xs font-semibold', editModalTenant.role === 'prospect' ? 'badge-info' : (editModalTenant.status === 'active' ? 'badge-success' : 'badge-neutral') ]">
-              {{ editModalTenant.role === 'prospect'
-                  ? 'Prospect — not yet a resident'
-                  : (editModalTenant.status === 'active' ? 'Active Resident' : 'Past / Vacated') }}
-            </span>
+        <div class="rounded-2xl bg-canvas p-5">
+          <div class="flex items-start justify-between gap-3 border-b border-line pb-3">
+            <p class="text-sm font-semibold text-ink">On record</p>
+            <StatusPill :tone="standing(editModalTenant).tone">
+              {{ standing(editModalTenant).label }}
+            </StatusPill>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+          <dl class="mt-4 grid grid-cols-2 gap-x-5 gap-y-4 text-sm sm:grid-cols-3">
             <div>
-              <p class="text-xs uppercase font-semibold text-ink-soft">Phone</p>
-              <p class="font-mono text-xs text-ink mt-0.5">{{ editModalTenant.phone }}</p>
+              <dt class="text-xs text-ink-faint">Phone</dt>
+              <dd class="tabular mt-0.5 text-ink">{{ editModalTenant.phone }}</dd>
+            </div>
+            <div class="min-w-0">
+              <dt class="text-xs text-ink-faint">Email</dt>
+              <dd class="mt-0.5 truncate text-ink" :title="editModalTenant.email">
+                {{ editModalTenant.email || 'None on file' }}
+              </dd>
             </div>
             <div>
-              <p class="text-xs uppercase font-semibold text-ink-soft">Email</p>
-              <p class="text-xs text-ink truncate mt-0.5" :title="editModalTenant.email">{{ editModalTenant.email }}</p>
+              <dt class="text-xs text-ink-faint">Advance rent</dt>
+              <dd class="tabular mt-0.5 font-semibold text-ink">
+                {{ peso(editModalTenant.depositAmount) }}
+              </dd>
             </div>
             <div>
-              <p class="text-xs uppercase font-semibold text-ink-soft">Deposit Held</p>
-              <p class="font-semibold text-xs text-ink mt-0.5">{{ peso(editModalTenant.depositAmount) }}</p>
+              <dt class="text-xs text-ink-faint">Moved in</dt>
+              <dd class="mt-0.5 text-ink">{{ editModalTenant.moveInDate }}</dd>
             </div>
             <div>
-              <p class="text-xs uppercase font-semibold text-ink-soft">Move-In Date</p>
-              <p class="text-xs text-ink mt-0.5">{{ editModalTenant.moveInDate }}</p>
+              <dt class="text-xs text-ink-faint">Anniversary</dt>
+              <dd class="mt-0.5 text-ink">{{ editModalTenant.anniversary }}</dd>
             </div>
-            <div>
-              <p class="text-xs uppercase font-semibold text-ink-soft">Anniversary</p>
-              <p class="text-xs text-ink mt-0.5">{{ editModalTenant.anniversary }}</p>
+            <div class="min-w-0">
+              <dt class="text-xs text-ink-faint">In an emergency</dt>
+              <dd class="mt-0.5 truncate text-ink">
+                {{ onFile(editModalTenant.emergencyContact.name) ?? 'Nobody on file' }}
+              </dd>
+              <dd
+                v-if="onFile(editModalTenant.emergencyContact.phone)"
+                class="tabular truncate text-xs text-ink-soft"
+              >
+                {{ editModalTenant.emergencyContact.phone }}
+              </dd>
             </div>
-            <div>
-              <p class="text-xs uppercase font-semibold text-ink-soft">Emergency Contact</p>
-              <p class="text-xs text-ink mt-0.5 truncate" :title="editModalTenant.emergencyContact.name + ' (' + editModalTenant.emergencyContact.phone + ')'">
-                {{ editModalTenant.emergencyContact.name }}
-              </p>
-              <p class="font-mono text-xs text-ink-soft">{{ editModalTenant.emergencyContact.phone }}</p>
-            </div>
-          </div>
+          </dl>
         </div>
 
-        <!-- Section 2: Edit Assignment & Roommate Details -->
-        <form @submit.prevent="saveEdit" class="space-y-4 text-xs">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-semibold text-xs text-ink-soft mb-1">Target Unit</label>
+        <form @submit.prevent="saveEdit" class="mt-6 space-y-5">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="ws-field">
+              <label for="edit-unit">Unit</label>
               <!--
                 `systemState` gives a tenant with no room assignment the unit code "—".
                 That matched none of the options below, so the browser rendered this select
@@ -569,7 +602,7 @@ async function handleOnboard() {
                 still be the selected one, and its value is non-empty, so `required` is
                 satisfied.
               -->
-              <select v-model="editUnitCode" class="ws-select w-full" required>
+              <select id="edit-unit" v-model="editUnitCode" class="ws-select w-full" required>
                 <option value="—" disabled>No unit assigned</option>
                 <!--
                   Reads the LIVE list. This iterated CANONICAL_UNITS and printed `basePrice`
@@ -582,66 +615,77 @@ async function handleOnboard() {
                   {{ u.unitCode.toUpperCase() }} — {{ u.cluster }}<template v-if="!roomsFetchFailed"> ({{ peso(u.price) }})</template>
                 </option>
               </select>
-              <p v-if="editUnitCode === '—'" class="text-xs text-ink-soft mt-1">
+              <p v-if="editUnitCode === '—'" class="ws-hint">
                 This resident holds no unit. Pick one to assign them, or save to change the
                 other details and leave them unassigned.
               </p>
             </div>
 
-            <div>
-              <label class="block font-semibold text-xs text-ink-soft mb-1">Account Status</label>
-              <select v-model="editStatus" class="ws-select w-full" required>
-                <option value="active">Active</option>
-                <option value="vacated">Vacated (Pending)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Roommate Options -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-line">
-            <div>
-              <label class="block font-semibold text-xs text-ink-soft mb-1">Has Roommate?</label>
-              <select v-model="editHasRoommates" class="ws-select w-full" required>
-                <option value="no">No (Solo Resident)</option>
-                <option value="yes">Yes (With Roommates)</option>
+            <div class="ws-field">
+              <label for="edit-status">Standing</label>
+              <select id="edit-status" v-model="editStatus" class="ws-select w-full" required>
+                <option value="active">Living here</option>
+                <option value="vacated">Moved out</option>
               </select>
             </div>
 
-            <div v-if="editHasRoommates === 'yes'">
-              <label class="block font-semibold text-xs text-ink-soft mb-1">Roommate Qty</label>
-              <input v-model.number="editRoommateQty" type="number" min="1" max="8" class="ws-input w-full" required />
+            <div class="ws-field">
+              <label for="edit-roommates">Sharing the unit</label>
+              <select
+                id="edit-roommates"
+                v-model="editHasRoommates"
+                class="ws-select w-full"
+                required
+              >
+                <option value="no">Lives alone</option>
+                <option value="yes">With roommates</option>
+              </select>
             </div>
-            <div v-else class="flex items-end">
-              <p class="text-xs text-ink-soft pb-2.5">Solo resident headcount.</p>
+
+            <div v-if="editHasRoommates === 'yes'" class="ws-field">
+              <label for="edit-roommate-qty">How many roommates</label>
+              <input
+                id="edit-roommate-qty"
+                v-model.number="editRoommateQty"
+                type="number"
+                min="1"
+                max="8"
+                class="ws-input w-full"
+                required
+              />
             </div>
           </div>
 
-          <div class="p-3 rounded-xl bg-brand-soft/70 border border-brand-soft text-brand text-xs flex items-center justify-between">
-            <span class="font-medium">Total Registered Occupants:</span>
-            <strong class="font-semibold text-sm">
-              {{ editHasRoommates === 'yes' ? 1 + (Number(editRoommateQty) || 1) : 1 }} Headcount (₱{{ (editHasRoommates === 'yes' ? 1 + (Number(editRoommateQty) || 1) : 1) * 200 }}/mo water fee)
-            </strong>
-          </div>
-
-          <!-- Actions Footer (Vacate on Left, Cancel & Save on Right) -->
-          <div class="pt-3 border-t border-line flex items-center justify-between gap-3">
-            <button 
-              type="button" 
-              @click="openVacateFromModal(editModalTenant)" 
-              class="pill-btn-danger-quiet"
+          <!-- What the headcount means for the water bill, stated as a sentence. -->
+          <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft">
+            <strong class="font-semibold text-ink">{{
+              editHasRoommates === 'yes' ? 1 + (Number(editRoommateQty) || 1) : 1
+            }}</strong>
+            in the unit, so water is
+            <strong class="tabular font-semibold text-ink"
+              >₱{{ (editHasRoommates === 'yes' ? 1 + (Number(editRoommateQty) || 1) : 1) * 200 }}</strong
             >
-              <LogOut class="size-3.5" />
-              <span>Vacate Unit</span>
+            a month.
+          </p>
+
+          <div
+            class="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <button
+              type="button"
+              class="pill-btn-danger-quiet"
+              @click="openVacateFromModal(editModalTenant)"
+            >
+              <LogOut class="size-3.5" aria-hidden="true" />
+              <span>Move them out</span>
             </button>
 
-            <div class="flex items-center gap-2">
-              <button type="button" @click="editModalTenant = null" class="pill-btn">
-                Cancel
-              </button>
+            <div class="flex items-center justify-end gap-2">
+              <button type="button" class="pill-btn" @click="editModalTenant = null">Cancel</button>
               <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
-                <Check v-else class="size-3.5" />
-                <span>Save Changes</span>
+                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
+                <Check v-else class="size-3.5" aria-hidden="true" />
+                <span>Save the changes</span>
               </button>
             </div>
           </div>
@@ -675,10 +719,16 @@ async function handleOnboard() {
       @close="isOnboardModalOpen = false"
     >
 
-        <form @submit.prevent="handleOnboard" class="grid gap-4 sm:grid-cols-2 text-xs">
-          <div>
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Full Name</label>
-            <input v-model="newName" placeholder="Juan Dela Cruz" class="ws-input w-full" required />
+        <form @submit.prevent="handleOnboard" class="grid gap-5 sm:grid-cols-2">
+          <div class="ws-field">
+            <label for="new-name">Full name</label>
+            <input
+              id="new-name"
+              v-model="newName"
+              placeholder="Juan Dela Cruz"
+              class="ws-input w-full"
+              required
+            />
           </div>
           <!--
             Email is optional; the phone number is not.
@@ -691,21 +741,31 @@ async function handleOnboard() {
             holding a password must have an email OR a phone number. Phone stays required, so
             every tenant onboarded here has one identifier and can sign in.
           -->
-          <div>
-            <label class="block font-semibold text-xs text-ink-soft mb-1">
-              Email <span class="font-semibold normal-case tracking-normal text-ink-soft/70">(optional)</span>
-            </label>
-            <input v-model="newEmail" type="email" placeholder="you@email.com" class="ws-input w-full" />
-            <p class="text-xs text-ink-soft mt-1">Leave blank if they have none — they will sign in with their phone number.</p>
+          <div class="ws-field">
+            <label for="new-email">Email, if they have one</label>
+            <input
+              id="new-email"
+              v-model="newEmail"
+              type="email"
+              placeholder="you@email.com"
+              class="ws-input w-full"
+            />
+            <p class="ws-hint">Leave this blank and they sign in with their phone number.</p>
           </div>
-          <div>
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Phone</label>
-            <input v-model="newPhone" placeholder="0917-000-0000" class="ws-input w-full" required />
-            <p class="text-xs text-ink-soft mt-1">Used to sign in to the tenant portal.</p>
+          <div class="ws-field">
+            <label for="new-phone">Phone</label>
+            <input
+              id="new-phone"
+              v-model="newPhone"
+              placeholder="0917-000-0000"
+              class="ws-input w-full"
+              required
+            />
+            <p class="ws-hint">This is what they sign in with.</p>
           </div>
-          <div>
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Target Unit</label>
-            <select v-model="newUnit" class="ws-select w-full" required>
+          <div class="ws-field">
+            <label for="new-unit">Unit</label>
+            <select id="new-unit" v-model="newUnit" class="ws-select w-full" required>
               <!--
                 This one mattered most. `syncDepositToUnit` fills the deposit field from the
                 LIVE price the moment a unit is picked, while this label showed the SEEDED
@@ -718,66 +778,92 @@ async function handleOnboard() {
             </select>
           </div>
 
-          <!-- Roommate Options -->
-          <div>
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Has Roommate?</label>
-            <select v-model="newHasRoommates" class="ws-select w-full" required>
-              <option value="no">No (Solo Resident)</option>
-              <option value="yes">Yes (With Roommates)</option>
+          <div class="ws-field">
+            <label for="new-sharing">Sharing the unit</label>
+            <select id="new-sharing" v-model="newHasRoommates" class="ws-select w-full" required>
+              <option value="no">Living alone</option>
+              <option value="yes">With roommates</option>
             </select>
           </div>
 
-          <div v-if="newHasRoommates === 'yes'">
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Roommate Qty</label>
-            <input v-model.number="newRoommateQty" type="number" min="1" max="8" class="ws-input w-full" required />
+          <div v-if="newHasRoommates === 'yes'" class="ws-field">
+            <label for="new-roommate-qty">How many roommates</label>
+            <input
+              id="new-roommate-qty"
+              v-model.number="newRoommateQty"
+              type="number"
+              min="1"
+              max="8"
+              class="ws-input w-full"
+              required
+            />
           </div>
-          <div v-else class="flex items-end">
-            <p class="text-xs text-ink-soft pb-3">Resident will occupy unit alone (1 Headcount).</p>
-          </div>
+          <div v-else class="hidden sm:block" aria-hidden="true" />
 
-          <div>
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Move-in Date</label>
-            <input v-model="newMoveIn" type="date" class="ws-input w-full" required />
+          <div class="ws-field">
+            <label for="new-move-in">Move-in date</label>
+            <input id="new-move-in" v-model="newMoveIn" type="date" class="ws-input w-full" required />
           </div>
-          <div>
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Anniversary Anchor Date</label>
-            <input v-model="newAnniv" type="date" class="ws-input w-full" required />
+          <div class="ws-field">
+            <label for="new-anniversary">Anniversary date</label>
+            <input
+              id="new-anniversary"
+              v-model="newAnniv"
+              type="date"
+              class="ws-input w-full"
+              required
+            />
+            <p class="ws-hint">The date their year is counted from.</p>
           </div>
-          <div>
+          <div class="ws-field">
             <!-- OD-04: this sum is ADVANCE RENT. This business collects no separate
                  refundable security deposit, and calling it one described a financial
                  instrument the property does not use. -->
-            <label class="block font-semibold text-xs text-ink-soft mb-1">
-              Advance Rent (₱)
-              <span class="normal-case font-medium text-ink-faint">— one month, pre-filled from the unit's rate</span>
-            </label>
-            <input v-model.number="newDeposit" type="number" class="ws-input w-full" required />
+            <label for="new-advance">Advance rent</label>
+            <input
+              id="new-advance"
+              v-model.number="newDeposit"
+              type="number"
+              class="ws-input w-full"
+              required
+            />
+            <p class="ws-hint">One month, filled in from the unit's current rate. Change it if she agreed something else.</p>
           </div>
-          <div>
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Emergency Contact Name (Optional)</label>
-            <input v-model="newEmergName" placeholder="Maria Santos (optional)" class="ws-input w-full" />
+          <div class="ws-field">
+            <label for="new-emerg-name">In an emergency, who to call</label>
+            <input
+              id="new-emerg-name"
+              v-model="newEmergName"
+              placeholder="Maria Santos"
+              class="ws-input w-full"
+            />
           </div>
-          <div class="sm:col-span-2">
-            <label class="block font-semibold text-xs text-ink-soft mb-1">Emergency Contact Phone (Optional)</label>
-            <input v-model="newEmergPhone" placeholder="0928-000-0000 (optional)" class="ws-input w-full" />
+          <div class="ws-field sm:col-span-2">
+            <label for="new-emerg-phone">Their phone number</label>
+            <input
+              id="new-emerg-phone"
+              v-model="newEmergPhone"
+              placeholder="0928-000-0000"
+              class="ws-input w-full"
+            />
           </div>
 
-          <!-- Concluded Summary Banner (Positioned directly above modal action buttons) -->
-          <div class="sm:col-span-2 p-3.5 rounded-xl bg-brand-soft/80 border border-brand-soft text-brand text-xs flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="size-2 rounded-full bg-brand"></span>
-              <span class="font-medium">Total Registered Headcount:</span>
-            </div>
-            <strong class="font-semibold text-sm text-brand">
-              {{ newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1 }} Pax · ₱{{ (newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1) * 200 }}/mo water fee
-            </strong>
-          </div>
+          <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft sm:col-span-2">
+            <strong class="font-semibold text-ink">{{
+              newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1
+            }}</strong>
+            in the unit, so water is
+            <strong class="tabular font-semibold text-ink"
+              >₱{{ (newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1) * 200 }}</strong
+            >
+            a month.
+          </p>
 
-          <div class="sm:col-span-2 pt-2 flex justify-end gap-2.5">
-            <button type="button" @click="isOnboardModalOpen = false" class="pill-btn">Cancel</button>
+          <div class="flex justify-end gap-2 border-t border-line pt-5 sm:col-span-2">
+            <button type="button" class="pill-btn" @click="isOnboardModalOpen = false">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
-              <span>Onboard Tenant</span>
+              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
+              <span>Move them in</span>
             </button>
           </div>
         </form>

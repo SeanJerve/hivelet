@@ -624,6 +624,14 @@ body {
     min-width: 0;
   }
 
+  /* The sentence under a control that says what it will do. It reads at the
+     body size, not the label size, because it is prose and gets read. */
+  .ws-hint {
+    font-size: 0.8125rem;
+    line-height: 1.375rem;
+    color: var(--ink-soft);
+  }
+
   .ws-input,
   .ws-select,
   .ws-textarea {
