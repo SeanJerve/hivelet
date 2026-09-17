@@ -1678,6 +1678,25 @@ const incomeRecordSchema = z.object({
   contactName: shortText(255),
   invoiceNumber: shortText(100),
   rentAmount: money,
+  /**
+   * BR-037. The garbage fee, as typed at the counter.
+   *
+   * There was no field here at all, and the column defaults to 0.00 - so the
+   * receipt form's GBG input was collected, added to the total the administrator
+   * asked the resident for, PRINTED ON THE RECEIPT, and then dropped. Twice
+   * over: it was never in the request body either.
+   *
+   * Dormant only because the fee has been zero since June 2025. It would have
+   * gone live the moment the owner resumed charging it - ₱20 a unit a month,
+   * about ₱640 a month across the occupied units, collected in cash and
+   * recorded as nothing. That question is open as **OD-02**, which is why this
+   * is wired now rather than after she answers.
+   *
+   * Optional and defaulted, so an older client that omits it still posts.
+   * Unlike water it is NOT derived - there is no rule to derive it from; BR-037
+   * says it is charged per unit and the figure is hers.
+   */
+  gbgFee: money.optional().default(0),
   occupants: occupantCount.refine((n) => n >= 1, 'must be at least one occupant'),
   /**
    * `payment_method_type` is (Cash | GCash | Bank Transfer | Adyen Online). Three of those
@@ -1715,7 +1734,7 @@ router.post(
 
     const {
       roomNumber, datePaid, contactName, invoiceNumber, rentAmount,
-      occupants, paymentMethod, transactionReference, monthsCovered,
+      gbgFee, occupants, paymentMethod, transactionReference, monthsCovered,
       dateCoveredStart, dateCoveredEnd
     } = parsed.data;
 
@@ -1890,6 +1909,9 @@ router.post(
         rent_amount: rentAmount,
         occupants,
         water_payment: calcWater,
+        // Taken from the request, not derived: BR-037 gives no rule to derive it
+        // from. Omitting it let the column default to 0.00 silently.
+        gbg_fee: gbgFee,
         payment_method: normalizedMethod,
         transaction_reference: transactionReference || null,
         rent_period_start: periodStart,

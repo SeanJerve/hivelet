@@ -305,6 +305,10 @@ function triggerRecord() {
           // in the landlady's book, and two entries could collide.
           invoiceNumber: orNum.value.trim(),
           rentAmount: Number(rentAmount.value) || 0,
+          // This field is `required` on the form, is added to the total the
+          // resident is asked for, and is printed on the receipt - and it was
+          // not in this payload, so the ledger recorded 0.00 for it every time.
+          gbgFee: Number(gbgFee.value) || 0,
           occupants: occCount,
           paymentMethod: paymentMethod.value,
           transactionReference: methodHasReference.value ? transactionReference.value : undefined,

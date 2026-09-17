@@ -440,6 +440,64 @@ if (adminToken) {
   console.log(`  ${ok ? 'OK  ' : 'FAIL'} ---  ${label} (${detail})`);
 }
 
+/**
+ * NO MONEY COLUMN IS LEFT TO ITS DEFAULT ON A LEDGER INSERT.
+ *
+ * The sibling of the BR-017 rule above, and it caught a live one.
+ *
+ * `monthly_income_records.gbg_fee` is NOT NULL DEFAULT 0.00, and the income
+ * insert did not name it. Meanwhile the on-site receipt form has a **required**
+ * GBG input, adds it to the total the resident is asked to hand over, and prints
+ * it on the receipt. It was not in the request body either, so the figure died
+ * twice before reaching the ledger — cash collected at the counter, recorded as
+ * nothing.
+ *
+ * Dormant only because the fee has been zero since June 2025. It would have gone
+ * live the moment the owner resumed charging it, which is an open question
+ * (OD-02) being put to her now.
+ *
+ * A money column with a default is the dangerous kind: the row still inserts,
+ * the arithmetic still balances, and the only symptom is an amount that is
+ * quietly wrong.
+ */
+{
+  const ledgerInserts = [
+    ['backend/src/routes/admin.ts', 'monthly_income_records', ['rent_amount', 'water_payment', 'gbg_fee', 'occupants']],
+  ];
+
+  for (const [rel, table, required] of ledgerInserts) {
+    const lines = fs.readFileSync(path.join(root, rel), 'utf8').split(/\r?\n/);
+    let found = 0;
+    const missing = [];
+
+    lines.forEach((line, i) => {
+      if (!new RegExp(`from\\(\\s*['"]${table}['"]\\s*\\)`).test(line)) return;
+      const window = lines.slice(i, i + 30).join('\n');
+      if (!/\.insert\(/.test(window.slice(0, 160))) return;
+      found++;
+      const body = window.split(/\.select\(|\.single\(/)[0];
+      for (const col of required) {
+        // `occupants,` is shorthand for `occupants: occupants` and is perfectly
+        // explicit - requiring a colon reported a live insert as omitting a
+        // column it names. Accept both spellings.
+        const named = new RegExp(`(^|[,{\\s])${col}\\s*[:,]`, 'm');
+        if (!named.test(body)) missing.push(`${rel}:${i + 1} omits ${col}`);
+      }
+    });
+
+    const label = `every ${table} insert names its money columns`;
+    const ok = found > 0 && missing.length === 0;
+    const detail = found === 0
+      ? `NO ${table} insert found, so this checked nothing`
+      : missing.length === 0
+        ? `${found} insert(s), all of ${required.join(', ')} named`
+        : missing.join('; ');
+
+    ok ? pass++ : (fail++, failures.push(`ledger defaults: ${label} (${detail})`));
+    console.log(`  ${ok ? 'OK  ' : 'FAIL'} ---  ${label} (${detail})`);
+  }
+}
+
 {
   const authSrc = fs.readFileSync(path.join(root, 'backend/src/services/authService.ts'), 'utf8');
   const envSrc = fs.readFileSync(path.join(root, 'backend/src/config/env.ts'), 'utf8');
