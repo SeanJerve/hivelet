@@ -9,6 +9,7 @@ import {
 import { getStoredToken } from '@/lib/api';
 
 import PublicGuestView from '@/views/PublicGuestView.vue';
+import InquireView from '@/views/InquireView.vue';
 import CategoryRoomsView from '@/views/CategoryRoomsView.vue';
 import LoginView from '@/views/LoginView.vue';
 import AdminOverviewView from '@/views/AdminOverviewView.vue';
@@ -35,6 +36,7 @@ const routes: RouteRecordRaw[] = [
   // Public
   { path: '/', name: 'Home', redirect: '/public' },
   { path: '/public', name: 'PublicGuest', component: PublicGuestView },
+  { path: '/inquire', name: 'Inquire', component: InquireView },
   { path: '/category/:categorySlug', name: 'CategoryRooms', component: CategoryRoomsView },
   { path: '/category/:categorySlug/units', name: 'CategoryUnits', component: CategoryRoomsView },
   { path: '/login', name: 'Login', component: LoginView },

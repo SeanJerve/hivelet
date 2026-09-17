@@ -1,0 +1,224 @@
+<script setup lang="ts">
+/**
+ * @file InquireView.vue
+ * @description Standalone enquiry page for prospective boarders.
+ * @rationale The enquiry form used to be a card partway down the public landing
+ *   page. It is now its own screen so the navigation can send someone straight
+ *   to it, and so the form is the only thing competing for attention once they
+ *   arrive.
+ *
+ * WHAT THIS FORM DOES NOT ASK FOR
+ * -------------------------------
+ * The layout this follows collects a postal address, a postcode, a brochure
+ * preference and per-channel contact consent. `inquiries` has columns for none
+ * of them, so asking would collect answers this system then discards - worse
+ * than not asking. The fields below are exactly the four the endpoint accepts.
+ * Adding the others is a schema change, not a design change.
+ */
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { Loader2 } from 'lucide-vue-next';
+import { showToast, LANDLADY } from '@/lib/systemState';
+import { api } from '@/lib/api';
+
+const router = useRouter();
+
+const inquiryName = ref('');
+const inquiryEmail = ref('');
+const inquiryPhone = ref('');
+const inquiryMsg = ref('');
+const isSubmitting = ref(false);
+
+async function submitInquiry() {
+  // `inquiries.prospect_email` is NOT NULL in the database, so the form asks for
+  // an address rather than inventing one. It previously sent
+  // 'prospect@hivelet.ph' whenever the field was blank, which put an address the
+  // landlady cannot reply to on an inquiry she is expected to answer.
+  if (!inquiryName.value.trim() || !inquiryPhone.value.trim() || !inquiryEmail.value.trim()) {
+    showToast('error', 'Required Fields', 'Please provide your full name, contact number and email address.');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inquiryEmail.value.trim())) {
+    showToast('error', 'Check your email', 'That does not look like an email address.');
+    return;
+  }
+
+  isSubmitting.value = true;
+  try {
+    // `inquiries.room_id` is required, and this form is a general enquiry with no
+    // unit attached. Every message from this page used to be filed against
+    // `publicRooms[0]` - unit 1a - so the landlady's inbox attributed general
+    // interest to one specific room regardless of what the prospect wanted.
+    // A vacant unit is a better guess than an arbitrary one, and the message body
+    // carries what they actually asked.
+    const publicRooms = await api.get<any[]>('/public/rooms', false);
+    const available = (publicRooms ?? []).filter(
+      (r) => String(r.operational_status || '').toLowerCase() === 'available'
+    );
+    const defaultRoom = available[0] ?? (publicRooms ?? [])[0] ?? null;
+
+    if (!defaultRoom) {
+      showToast('error', 'Inquiry Error', 'No active room available for inquiry submission.');
+      return;
+    }
+
+    await api.post('/public/inquiries', {
+      roomId: defaultRoom.id,
+      prospectName: inquiryName.value.trim(),
+      // Sent blank when blank. This used to substitute 'prospect@hivelet.ph',
+      // writing a fake address into the inquiry the landlady would try to reply to.
+      prospectEmail: inquiryEmail.value.trim(),
+      prospectPhone: inquiryPhone.value.trim(),
+      message: inquiryMsg.value.trim(),
+    }, false);
+
+    // The system saves the inquiry for the landlady to read in her portal. It
+    // sends no email or SMS, so "sent to Mrs. Fe Galang Da Silva" claimed a
+    // delivery channel that does not exist.
+    showToast('success', 'Inquiry received', 'Your message has been saved and will reach Mrs. Fe Galang Da Silva in her portal.');
+    inquiryName.value = '';
+    inquiryPhone.value = '';
+    inquiryEmail.value = '';
+    inquiryMsg.value = '';
+  } catch (err: any) {
+    showToast('error', 'Inquiry Submission Failed', err.message || 'Could not save inquiry to server database.');
+  } finally {
+    isSubmitting.value = false;
+  }
+}
+</script>
+
+<template>
+  <div class="flex-1 w-full font-editorial bg-background">
+    <div class="grid min-h-screen lg:grid-cols-2">
+
+      <!-- Left: the form -->
+      <div class="flex flex-col px-6 sm:px-10 lg:px-14 py-10 sm:py-14">
+
+        <div class="flex items-start justify-between gap-6">
+          <RouterLink
+            to="/public"
+            class="text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-foreground hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+          >
+            Fe Galang<br />Da Silva<br />Boarding House
+          </RouterLink>
+
+          <div class="text-right shrink-0">
+            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-muted-foreground">Landlady</p>
+            <p class="mt-1 text-sm font-medium text-foreground">{{ LANDLADY.name }}</p>
+            <a
+              :href="`tel:${LANDLADY.phone}`"
+              class="mt-0.5 inline-block text-sm text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            >
+              {{ LANDLADY.phone }}
+            </a>
+          </div>
+        </div>
+
+        <h1 class="mt-12 sm:mt-16 font-medium text-foreground tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3.6vw,2.75rem)] max-w-lg">
+          Viewings by appointment, register your interest
+        </h1>
+
+        <form class="mt-10 sm:mt-12 max-w-2xl" @submit.prevent="submitInquiry">
+          <div class="grid gap-x-8 gap-y-7 sm:grid-cols-2">
+            <div>
+              <label for="iq-name" class="sr-only">Full name (required)</label>
+              <input
+                id="iq-name"
+                v-model="inquiryName"
+                type="text"
+                required
+                placeholder="Name *"
+                class="w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+              />
+            </div>
+            <div>
+              <label for="iq-email" class="sr-only">Email address (required)</label>
+              <input
+                id="iq-email"
+                v-model="inquiryEmail"
+                type="email"
+                required
+                placeholder="Email *"
+                class="w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+              />
+            </div>
+            <div>
+              <label for="iq-phone" class="sr-only">Contact number (required)</label>
+              <input
+                id="iq-phone"
+                v-model="inquiryPhone"
+                type="tel"
+                required
+                placeholder="Phone *"
+                class="w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+              />
+            </div>
+            <div>
+              <label for="iq-msg" class="sr-only">What would you like to ask?</label>
+              <input
+                id="iq-msg"
+                v-model="inquiryMsg"
+                type="text"
+                placeholder="What would you like to ask?"
+                class="w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+              />
+            </div>
+          </div>
+
+          <!--
+            States what the system actually does with this. The submit handler
+            writes the enquiry to the landlady's portal and sends no email or
+            SMS, so this must not imply a reply will arrive by either.
+          -->
+          <p class="mt-10 max-w-xl text-xs leading-relaxed text-muted-foreground">
+            What you send is saved to Mrs. {{ LANDLADY.name }}'s portal for her to read and reply to
+            directly. The system does not send an automatic email or SMS confirmation, so please
+            include a number or address she can reach you on. Your details are used to answer this
+            enquiry and are not passed to anyone else.
+          </p>
+
+          <button
+            type="submit"
+            :disabled="isSubmitting"
+            class="mt-10 inline-flex items-center gap-2.5 min-h-11 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+          >
+            <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
+            <span>{{ isSubmitting ? 'Sending…' : 'Register your interest' }}</span>
+          </button>
+        </form>
+
+        <p class="mt-12 text-xs text-muted-foreground">
+          <RouterLink
+            to="/public"
+            class="underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+          >
+            Back to the property
+          </RouterLink>
+        </p>
+      </div>
+
+      <!--
+        The reference sets a photograph of the development here. No facade
+        image exists in this repository, so this is a tonal panel carrying the
+        property's own details rather than a stock building that would
+        misrepresent it.
+      -->
+      <aside class="hidden lg:flex flex-col justify-between bg-neutral-dark text-white px-14 py-14">
+        <p class="text-[0.7rem] tracking-[0.18em] uppercase text-white/55">
+          {{ LANDLADY.address }}
+        </p>
+        <div>
+          <p class="font-medium tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,4.4vw,3.75rem)]">
+            Fe Galang Da Silva<br />Boarding House
+          </p>
+          <p class="mt-6 max-w-sm text-sm text-white/70 leading-relaxed">
+            33 units across four levels, in 5 property clusters. Individual electric submeters,
+            ₱200/head monthly water rule, and a secure gated perimeter.
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</template>

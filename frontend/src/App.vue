@@ -40,10 +40,21 @@ const isWorkspaceSection = computed(() =>
   route.path.startsWith('/admin') || route.path.startsWith('/basis') || route.path.startsWith('/tenant')
 );
 
-const isPublicPage = computed(() => 
-  route.path.startsWith('/public') || 
-  route.path.startsWith('/category') || 
+const isPublicPage = computed(() =>
+  route.path.startsWith('/public') ||
+  route.path.startsWith('/category') ||
   route.path === '/'
+);
+
+/**
+ * Two routes draw their own masthead - the landing over its hero, the enquiry
+ * page in its own left column - so the shared bar would be a second one above
+ * it. Narrower than `isPublicPage` on purpose: the category and login routes
+ * have no masthead of their own and keep `AppHeader`. `/` only redirects to
+ * `/public`, so matching it here is belt and braces.
+ */
+const hidesGlobalHeader = computed(() =>
+  route.path === '/public' || route.path === '/' || route.path === '/inquire'
 );
 </script>
 
@@ -63,7 +74,7 @@ const isPublicPage = computed(() =>
       <span>Offline Mode — Viewing cached application resources. Financial mutations and payment updates require an active internet connection (BR-031).</span>
     </div>
 
-    <AppHeader />
+    <AppHeader v-if="!hidesGlobalHeader" />
     
     <div :class="['flex-1 flex w-full', isWorkspaceSection ? 'max-w-[1600px] mx-auto px-4 sm:px-6' : '']">
       <AppSidebar v-if="isWorkspaceSection" />
