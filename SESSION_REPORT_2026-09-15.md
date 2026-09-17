@@ -106,7 +106,57 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — two comments say user enumeration is prevented; a third path defeats both. I
+> **LATEST — a check that adds two figures it is meant to keep apart is blind to the only
+> rule it exists for. `check:reports` went from 68 assertions to 192.**
+>
+> ### The Linda exclusion was checked in a way that could not see a breach
+>
+> Linda's two units are billed under a different rule set and are **excluded from the grand
+> subtotal on purpose**. The checker read `GRAND SUBTOTAL` and `Linda total`, **added them
+> together**, and compared the pair against the month's receipts.
+>
+> **That passes whether or not Linda is in the right half.** A misallocation between the two
+> cancels out — and the separation is the entire rule.
+>
+> Demonstrated rather than argued. Moving `LF` out of the Linda section into the Back Apartment
+> cluster:
+>
+> | | |
+> | :--- | :--- |
+> | the split assertion | **FAIL** — `JANUARY grand (no Linda)` 248,250.00 against 243,250.00, LF's ₱5,000 moved |
+> | the whole-month total | **unchanged** — so the old check could never have seen it |
+>
+> > **The lens:** *a check that adds two figures it is supposed to keep separate can only tell
+> > you the money still exists, not that it is in the right place.* When a rule is about **which
+> > bucket** something belongs in, assert the buckets, never the total — the total is exactly
+> > the statistic that is invariant under the error.
+>
+> ### And the expense workbook's summary block had never been checked at all
+>
+> BR-049 requires `expenses.xlsx` to carry a per-category **"This month"** column and a
+> **"Cumulative"** carried month to month. The export builds both. Nothing verified either —
+> two derived money columns, on the workbook the owner actually opens.
+>
+> Now asserted, per month, per year:
+>
+> - **Reconciliation** — *"MONTH — all categories"* must equal that month's *"MONTH TOTAL"*.
+>   Categories and Property Areas are two cuts of one sum. The export's own header says it:
+>   *"The two must reconcile."*
+> - **The cumulative chain** — each month's cumulative must be the previous plus this month's,
+>   resetting in January. **An off-by-one here is invisible**, because every figure still looks
+>   like a plausible peso amount. It is also the exact cell that broke the second version of
+>   this checker, when ₱282,668.94 turned out to be Jan+Feb+Mar 2026.
+>
+> **Both were already correct**, across all three years — and the year-end cumulatives match
+> what `monthly_expense_entries` gives directly (₱1,449,215.32 / ₱3,745,419.51 / ₱628,951.64),
+> so the workbook and the table agree by two independent routes. Mutation tested 2/2.
+>
+> *It also settles OD-07 in the implementation — the cumulative resets each January. The client
+> still has not been asked, so the question stays on the sheet.*
+>
+> **504 commits total, 84 today. Seventeen suites green. Working tree clean.**
+
+> **PREVIOUS — two comments say user enumeration is prevented; a third path defeats both. I
 > proposed the wrong fix first, and the existing reasoning was right.**
 >
 > ### The login tells you whether an address belongs to a resident
@@ -170,6 +220,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > *"No payment records found for year 2025"* about a year they paid in.
 >
 > **501 commits total, 81 today. Seventeen suites green. Working tree clean.**
+> *(as at that entry — the live figure is in the entry above)*
 
 > **PREVIOUS — a file warned about the stale price table, then printed it twice. One screen
 > shows two different rents for the same unit, right now, with nothing failing.**

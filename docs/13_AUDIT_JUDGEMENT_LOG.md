@@ -1048,6 +1048,34 @@ disaster it exists to detect. The behavioural test went into
 > *A test that is only safe while the code under test is correct is not a safety
 > net. It is a second copy of the risk.*
 
+#### 7. A check that sums two things it is meant to keep apart is blind to the only rule
+
+Found later the same day, in `check:reports`. Linda's two units are billed under
+a different rule set and are **excluded from the grand subtotal on purpose**
+(§ 3.5). The checker read `GRAND SUBTOTAL` and `Linda total`, **added them
+together**, and compared the pair against the month's receipts.
+
+That passes whether or not Linda is in the right half. A misallocation between
+the two **cancels out** — and the separation is the entire rule.
+
+Demonstrated rather than argued. Moving `LF` out of the Linda section and into
+the Back Apartment cluster:
+
+| | |
+| :--- | :--- |
+| the split assertion | **FAIL** — `JANUARY grand (no Linda)` 248,250.00 against 243,250.00, LF's ₱5,000 moved |
+| the whole-month total | **unchanged**, so the old check could never have seen it |
+
+> **The lens:** *a check that adds two figures it is supposed to keep separate
+> can only tell you the money still exists, not that it is in the right place.*
+> Whenever a rule is about WHICH BUCKET something belongs in, assert the buckets,
+> never the total — the total is exactly the statistic that is invariant under
+> the error.
+
+The same pass also found the expense workbook's category summary and its running
+cumulative had never been checked at all. Both were correct; `check:reports`
+went from 68 assertions to 192.
+
 ---
 
 ---
