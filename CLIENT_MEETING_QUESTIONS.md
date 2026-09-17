@@ -243,18 +243,30 @@ way to notice if they go out of date.
 
 ## 4. Not for her — Sean's calls
 
-These need no client input. Listed so nothing is lost.
+These need no client input. **Every row re-verified 2026-09-17**, because four of them had
+quietly become untrue and would have sent someone to redo finished work.
+
+### Still open
 
 | | Item |
 | :--- | :--- |
-| **Do first** | **Rotate `Hivelet@Admin2026` and `Hivelet@Tenant2026`.** In the GitHub history since 25 Aug 2026. Removing them from the current code does not remove them from history. Treat both as burned. |
-| **Before any RLS** | `current_user_role()` returns `'admin'` when it cannot identify the caller — which is always. Harmless today (no policy calls it), fatal the moment one does. |
-| **Do first — security** | **Three logins belong to nobody.** What was carried as a cosmetic name problem is three **duplicate** profiles from the 2026-08-27 import — zero tenancies, zero ledger rows, but `active` and holding a working password, on the shared literal that has been public since 25 Aug. The real residents have separate, complete profiles. **`database/migrations/023` is written and not applied** — the sandbox refuses `UPDATE` on `profiles`. One statement, run by hand. *Do not strip the invoice numbers from the names: that was the original plan and it would make the duplicates indistinguishable from the real residents.* |
-| **Product** | A change-password screen — there is currently **no way to change a password inside the product**. Highest of these. |
-| **Product** | An administrator bills screen, or retire `GET /admin/bills`. Five superseded endpoints to delete or wire. |
-| **Before filming** | `VIDEO PRESENTATION DOCS/` is gitignored — three corrections made on 16 Sep exist **only on this machine**. Regenerate from `docs/claude_pipeline/outputs/`, or film from the canonical documents. |
-| **Demo** | No unit has a photograph — `room_photos` is empty across all 33. The upload path works; it has simply never been used. |
+| **Do first — security** | **Three logins belong to nobody.** Three **duplicate** profiles from the 2026-08-27 import — zero tenancies, zero ledger rows, but `active` and holding a working password on the shared literal. The real residents have separate, complete profiles. **`database/migrations/023` is written and not applied.** One statement, run by hand. *Do not strip the invoice numbers from the names: that was the original plan and it would make the duplicates indistinguishable from the real residents.* |
+| **Product** | An administrator bills screen, or retire `GET /admin/bills` — confirmed still present at `backend/src/routes/admin.ts:1160`. Five superseded endpoints to delete or wire. |
+| **Demo** | **No unit has a photograph.** `room_photos` holds **0 rows** across all 33 units — checked today. The upload path works; it has simply never been used. |
 | **Later** | The vite 8 upgrade. 4 advisories, all devDependencies, none shipped. Not something to do days before a defense. |
+
+### Closed, with the evidence — do not redo these
+
+| | Was | Verified 2026-09-17 |
+| :--- | :--- | :--- |
+| **Rotate the two demo passwords** | both in GitHub history since 25 Aug | **Already done 13 Sep.** The current pair appears in **0 commits**; the old pair returns **401 `INVALID_CREDENTIALS`** against the live login. Rotating again would only break whichever machine still holds the old `creds.txt` |
+| **`current_user_role()` returns `'admin'`** | fatal the moment any RLS policy called it | **Migration `022` applied.** It returns `NULL`, which fails closed in both spellings |
+| **A change-password screen** | no way to change a password inside the product | **Built and wired** — `ChangePasswordModal.vue`, reachable from `AppHeader.vue:409` |
+| **`VIDEO PRESENTATION DOCS/` is gitignored** | three corrections existed on one machine only | **Now tracked.** `git check-ignore` returns nothing for it |
+
+> *A task list is a claim with a date on it, exactly like a code comment. Four of these had been
+> true, stopped being true, and nothing about them said so. The password row was the dangerous
+> one: acting on it today would have invalidated credentials being handed to a second machine.*
 
 ---
 
