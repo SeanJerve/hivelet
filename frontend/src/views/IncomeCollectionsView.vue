@@ -621,6 +621,28 @@ async function exportExcel() {
   }
 }
 
+/**
+ * One CSV field, quoted and with its own quotes doubled.
+ *
+ * The rows here wrapped each text field in `"` and stopped there. A quote INSIDE
+ * the value then closes the field early and every column after it shifts by one
+ * - for that row and, depending on how the reader recovers, for the rest of the
+ * file. It is the owner's income ledger, so a shifted column means a rent figure
+ * appearing under Water.
+ *
+ * `""` is how RFC 4180 escapes a quote, and it is what
+ * `ExpensesLedgerView.exportCSV` next door has been doing all along - the fix
+ * already existed in this repository, one file over.
+ *
+ * Nothing in the ledger triggers it today: 0 of 937 rows carry a quote in the
+ * contact name or the invoice number, checked. It is worth fixing anyway because
+ * of WHOSE names these are - a nickname in quotes is ordinary here, and
+ * `Jose "Jojo" Cruz` typed into the receipt form is all it takes.
+ */
+function csvField(value: unknown): string {
+  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+}
+
 function exportCSV() {
   const headers = ['Unit', 'Cluster', 'Date Paid', 'Contact', 'Invoice', 'Rent For', 'Rent (PHP)', '50% Share (PHP)', 'Occupants', 'Water (PHP)', 'Garbage (PHP)', 'Remitted (PHP)'];
   const csvRows = [headers.join(',')];
@@ -665,12 +687,12 @@ function exportCSV() {
     // Records
     g.records.forEach((r) => {
       const row = [
-        r.unit,
-        r.cluster,
-        `"${r.datePaid}"`,
-        `"${r.contact}"`,
-        `"${r.invoice}"`,
-        `"${r.rentFor}"`,
+        csvField(r.unit),
+        csvField(r.cluster),
+        csvField(r.datePaid),
+        csvField(r.contact),
+        csvField(r.invoice),
+        csvField(r.rentFor),
         r.rent,
         r.rent / 2,
         r.occupants,
