@@ -4,6 +4,15 @@
 **Branch:** `main`. Everything described here is committed and pushed.
 **Read this first, then `docs/claude_pipeline/CONTINUE_HERE.md` for pipeline detail.**
 
+> [!IMPORTANT]
+> **Working on Loyd's machine, without the database or the Adyen keys?
+> Read [`HANDOFF_TO_LOYD.md`](HANDOFF_TO_LOYD.md) instead of this file first.**
+>
+> It says what you can run (eleven of the seventeen suites, and one that goes green while
+> skipping half of itself), what you must not touch, and what the actual job is — which is
+> **`CLIENT_MEETING_QUESTIONS.md`**, answerable by asking Mrs. Da Silva directly. That is the
+> biggest blocker in the project and the one thing Sean cannot do from his side.
+
 ---
 
 ## 0.0 What 2026-09-17 produced, and what it needs from a person
