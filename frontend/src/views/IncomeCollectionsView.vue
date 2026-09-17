@@ -35,6 +35,10 @@ import {
   ChevronDown
 } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import Skeleton from '@/components/ui/Skeleton.vue';
+import OverviewTile from '@/components/overview/OverviewTile.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 const route = useRoute();
@@ -879,124 +883,125 @@ function exportCSV() {
       </div>
     </div>
 
-    <!-- Tab Navigation (Positioned below KPI cards per user requirement) -->
-    <div class="flex items-center gap-2 border-b border-line pb-px">
+    <!-- Ledger or the verification queue -->
+    <div role="tablist" aria-label="Income view" class="inline-flex self-start rounded-full bg-canvas p-1">
       <button
+        id="income-tab-ledger"
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'ledger'"
+        aria-controls="income-panel"
+        :tabindex="activeTab === 'ledger' ? 0 : -1"
+        :class="[
+          'rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
+          activeTab === 'ledger' ? 'bg-night text-on-night' : 'text-ink-soft',
+        ]"
         @click="activeTab = 'ledger'"
-        :class="[ 'px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2', activeTab === 'ledger' ? 'border-brand text-brand' : 'border-transparent text-ink-soft hover:text-ink' ]"
+        @keydown.right.prevent="activeTab = 'verify'"
       >
-        <CreditCard class="size-4" />
-        <span>Collection Ledger</span>
+        Ledger
       </button>
-
       <button
+        id="income-tab-verify"
+        type="button"
+        role="tab"
+        :aria-selected="activeTab === 'verify'"
+        aria-controls="income-panel"
+        :tabindex="activeTab === 'verify' ? 0 : -1"
+        :class="[
+          'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
+          activeTab === 'verify' ? 'bg-night text-on-night' : 'text-ink-soft',
+        ]"
         @click="activeTab = 'verify'"
-        :class="[ 'px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2', activeTab === 'verify' ? 'border-brand text-brand' : 'border-transparent text-ink-soft hover:text-ink' ]"
+        @keydown.left.prevent="activeTab = 'ledger'"
       >
-        <Clock class="size-4" />
-        <span>Online Verification (Adyen)</span>
+        To verify
         <span
           v-if="pendingPayments.length > 0"
-          class="badge-soft badge-warning text-[10px] font-semibold ml-1.5"
+          :class="[
+            'min-w-6 rounded-full px-2 py-0.5 text-xs tabular',
+            activeTab === 'verify' ? 'bg-white/15' : 'bg-verify-soft text-verify',
+          ]"
         >
           {{ pendingPayments.length }}
         </span>
       </button>
     </div>
 
-    <!-- TAB 2: Online Verification Queue -->
-    <div v-if="activeTab === 'verify'" class="space-y-4">
-      <div class="p-4 bg-verify-soft border border-verify-soft rounded-xl flex items-start gap-3 text-xs text-verify">
-        <Clock class="size-4 mt-0.5 text-verify shrink-0" />
-        <div>
-          <strong class="font-semibold">Online Payment Verification Queue (BR-016 &amp; BR-017)</strong>
-          <p class="text-verify mt-0.5">
-            Adyen GCash remittances require administrator validation. Approving an entry marks the resident's bill as Paid and automatically calculates the 50% revenue cut into the Monthly Income Ledger.
-          </p>
-        </div>
+    <!-- Verification queue. Each payment is a decision, so it reads as one. -->
+    <div v-if="activeTab === 'verify'" id="income-panel" role="tabpanel" aria-labelledby="income-tab-verify" class="flex flex-col gap-4">
+      <div v-if="isLoading" class="rounded-tile bg-tile p-6 flex flex-col gap-3" aria-busy="true">
+        <span class="sr-only" role="status">Loading the verification queue</span>
+        <Skeleton class-name="h-4 w-40 rounded-full" />
+        <Skeleton class-name="h-20 w-full rounded-2xl" />
       </div>
 
-      <div v-if="isLoading" class="p-4">
-        <SkeletonTable :columns="6" :rows="4" />
-      </div>
+      <OverviewTile v-else-if="pendingPaymentsError" title="Payments to verify">
+        <UnavailableNote
+          message="The verification queue could not be loaded. This does not mean there is nothing to verify, it means we could not ask."
+          @retry="fetchPayments()"
+        />
+      </OverviewTile>
 
-      <div v-else class="rounded-tile bg-tile overflow-hidden">
-        <div v-if="pendingPaymentsError" class="p-12 text-center text-xs text-ink-soft">
-          <ShieldAlert class="size-8 mx-auto text-verify mb-2 opacity-90" />
-          <p class="font-semibold text-sm text-ink">The verification queue could not be loaded</p>
-          <p class="mt-1">
-            This does <strong class="text-ink">not</strong> mean there is nothing to verify — it means we could not ask.
-          </p>
-          <p class="mt-1 text-ink-faint">{{ pendingPaymentsError }}</p>
-          <button @click="fetchPayments()" class="pill-btn mt-4 text-xs">Try again</button>
-        </div>
+      <OverviewTile v-else-if="pendingPayments.length === 0" tone="soft" title="Payments to verify">
+        <p class="text-2xl font-semibold tracking-tight">Nothing is waiting</p>
+        <p class="text-sm text-ink-soft">
+          No online payment is waiting for your decision. GCash payments arrive here through Adyen and count as
+          paid once you verify them.
+        </p>
+      </OverviewTile>
 
-        <div v-else-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-ink-soft">
-          <ShieldCheck class="size-8 mx-auto text-brand mb-2 opacity-80" />
-          <p class="font-semibold text-sm text-ink">All Remittances Verified</p>
-          <p class="mt-1">No online transactions currently awaiting administrative approval.</p>
-        </div>
+      <template v-else>
+        <p class="text-sm leading-6 text-ink-soft">
+          Each payment below was sent through Adyen with GCash and is waiting for you. Verifying one marks the
+          resident's bill as paid and writes the entry into the ledger, including the 50% Share.
+        </p>
+        <ul class="grid gap-4 md:grid-cols-2">
+          <li v-for="p in pendingPayments" :key="p.id" class="rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium">{{ p.profiles?.full_name || 'Name not on file' }}</p>
+                <p class="mt-0.5 text-xs text-ink-faint">
+                  Unit {{ (p.rooms?.room_number || '').toString().toUpperCase() || 'not on file' }}<template v-if="p.profiles?.phone_number">, {{ p.profiles.phone_number }}</template>
+                </p>
+              </div>
+              <StatusPill tone="verify">Waiting for you</StatusPill>
+            </div>
 
-        <div v-else class="overflow-x-auto">
-          <table class="w-full text-xs border-collapse">
-            <thead class="bg-canvas text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
-              <tr>
-                <th class="px-4 py-3 font-semibold">Resident</th>
-                <th class="px-4 py-3 font-semibold">Target Unit</th>
-                <th class="px-4 py-3 font-semibold">Amount</th>
-                <th class="px-4 py-3 font-semibold">Gateway &amp; Ref #</th>
-                <th class="px-4 py-3 font-semibold">Date &amp; Status</th>
-                <th class="px-4 py-3 font-semibold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-line">
-              <tr v-for="p in pendingPayments" :key="p.id" class="hover:bg-canvas">
-                <td class="px-4 py-3 font-semibold text-ink">
-                  {{ p.profiles?.full_name || 'Resident' }}
-                  <span class="block text-[11px] font-normal text-ink-soft">{{ p.profiles?.phone_number || 'No contact' }}</span>
-                </td>
-                <td class="px-4 py-3 font-semibold uppercase text-ink">
-                  Room {{ p.rooms?.room_number || '—' }}
-                </td>
-                <td class="px-4 py-3 font-semibold text-ink">
-                  {{ peso(p.amount) }}
-                </td>
-                <td class="px-4 py-3 font-mono text-[11px] text-ink-soft">
-                  <span class="font-semibold text-brand">{{ p.payment_method }}</span>
-                  <div class="mt-0.5 text-[10px] text-ink-soft">{{ p.transaction_reference || 'REF-PENDING' }}</div>
-                </td>
-                <td class="px-4 py-3">
-                  <span class="badge-soft badge-warning text-xs font-semibold">
-                    Pending Verification
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div class="flex items-center justify-end gap-2">
-                    <button
-                      @click="verifyPayment(p.id, 'Verified')"
-                      class="px-2.5 py-1.5 bg-brand hover:bg-brand text-white rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
-                    >
-                      <Check class="size-3.5" />
-                      <span>Approve</span>
-                    </button>
-                    <button
-                      @click="verifyPayment(p.id, 'Rejected')"
-                      class="px-2.5 py-1.5 bg-overdue-soft hover:bg-overdue-soft text-overdue border border-overdue-soft rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
-                    >
-                      <X class="size-3.5" />
-                      <span>Decline</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+            <p class="text-3xl leading-none font-semibold tabular tracking-tight">{{ peso(p.amount) }}</p>
+
+            <dl class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-soft">
+              <div class="flex gap-1.5">
+                <dt class="text-ink-faint">Method</dt>
+                <dd>{{ p.payment_method }}</dd>
+              </div>
+              <div class="flex gap-1.5 min-w-0">
+                <dt class="text-ink-faint">Reference</dt>
+                <dd class="truncate">{{ p.transaction_reference || 'None recorded' }}</dd>
+              </div>
+              <div v-if="p.paid_at" class="flex gap-1.5">
+                <dt class="text-ink-faint">Sent</dt>
+                <dd>{{ new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</dd>
+              </div>
+            </dl>
+
+            <div class="mt-auto flex flex-wrap gap-2">
+              <button type="button" class="pill-btn-brand" @click="verifyPayment(p.id, 'Verified')">
+                <Check class="size-4" aria-hidden="true" />
+                Verify payment
+              </button>
+              <button type="button" class="pill-btn-danger-quiet" @click="verifyPayment(p.id, 'Rejected')">
+                <X class="size-4" aria-hidden="true" />
+                Reject
+              </button>
+            </div>
+          </li>
+        </ul>
+      </template>
     </div>
 
-    <!-- TAB 1: Collection Ledger -->
-    <div v-else class="space-y-6">
+    <!-- Ledger -->
+    <div v-else id="income-panel" role="tabpanel" aria-labelledby="income-tab-ledger" class="space-y-6">
 
     <!-- Ledger Table Container -->
     <div class="rounded-tile bg-tile overflow-hidden">

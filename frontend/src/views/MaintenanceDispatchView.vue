@@ -29,8 +29,8 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-vue-next';
-import SkeletonTable from '@/components/ui/SkeletonTable.vue';
-import SkeletonCard from '@/components/ui/SkeletonCard.vue';
+import Skeleton from '@/components/ui/Skeleton.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 const q = ref('');
 const statusFilter = ref('All');
@@ -131,23 +131,34 @@ const filtered = computed(() => {
   });
 });
 
-const openCount = computed(() => maintenanceTickets.filter((t) => t.status === 'Open').length);
-const inProgressCount = computed(() => maintenanceTickets.filter((t) => t.status === 'In Progress').length);
-const resolvedCount = computed(() => maintenanceTickets.filter((t) => isDone(t.status)).length);
+/**
+ * The board reads as the work does: what has not been dispatched, what a
+ * technician is on, and what is finished. Same tickets, same filters and same
+ * sort as the table it replaces, grouped by the status column instead of
+ * repeating it in every row.
+ */
+const columns = computed(() => [
+  {
+    key: 'open',
+    title: 'To dispatch',
+    caption: 'No technician assigned yet',
+    tickets: filtered.value.filter((t) => t.status === 'Open'),
+  },
+  {
+    key: 'progress',
+    title: 'In progress',
+    caption: 'A technician is on it',
+    tickets: filtered.value.filter((t) => t.status === 'In Progress'),
+  },
+  {
+    key: 'done',
+    title: 'Done',
+    caption: 'Resolved or closed',
+    tickets: filtered.value.filter((t) => isDone(t.status)),
+  },
+]);
 
-function getPriorityBadgeClass(p: string) {
-  if (p === 'Emergency') return 'badge-danger';
-  if (p === 'High') return 'badge-warning';
-  if (p === 'Medium') return 'badge-info';
-  return 'badge-neutral';
-}
-
-function getStatusBadgeClass(s: string) {
-  if (s === 'Resolved') return 'badge-success';
-  if (s === 'Closed') return 'badge-neutral';
-  if (s === 'In Progress') return 'badge-info';
-  return 'badge-warning';
-}
+const isUrgent = (p: string) => p === 'Emergency' || p === 'High';
 
 const ticketMessages = ref<any[]>([]);
 const loadingMessages = ref(false);
@@ -323,147 +334,108 @@ function handleDeleteTicketPrompt() {
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Header with Breadcrumbs -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
-      <div>
-        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
-          <span>Admin</span>
-          <span>/</span>
-          <span class="font-semibold text-ink">Maintenance Dispatch</span>
-        </div>
-        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
-          Maintenance Dispatch Board
-        </h1>
-        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
-          Track repair requests, dispatch technicians, and resolve resident work orders.
+  <div class="ws-focus flex flex-col gap-5 text-ink">
+    <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div class="min-w-0">
+        <p class="text-sm text-ink-faint">Admin</p>
+        <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Repairs</h1>
+        <p class="mt-1 text-sm text-ink-soft">
+          What residents have reported, who is attending it, and what is finished.
         </p>
       </div>
+      <button
+        type="button"
+        class="icon-btn"
+        :disabled="isLoading"
+        aria-label="Refresh repair requests"
+        @click="fetchTickets"
+      >
+        <RefreshCw :class="['size-4', isLoading && 'animate-spin']" aria-hidden="true" />
+      </button>
+    </header>
 
-      <div class="flex items-center gap-2 self-start sm:self-auto">
-        <button
-          @click="fetchTickets"
-          :disabled="isLoading"
-          class="pill-btn"
-          title="Refresh Maintenance Data"
-        >
-          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin text-brand' : '']" />
-          <span class="font-semibold">{{ isLoading ? 'Refreshing Table…' : 'Refresh Table' }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Stat Cards -->
-    <div class="grid gap-4 sm:grid-cols-3">
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">Open Tickets</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ openCount }}</p>
-        <p class="mt-1 text-xs text-ink-soft">Awaiting technician assignment</p>
-      </div>
-
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">In Progress</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ inProgressCount }}</p>
-        <p class="mt-1 text-xs text-ink-soft">Technician on site / active repair</p>
-      </div>
-
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">Resolved Tickets</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ resolvedCount }}</p>
-        <p class="mt-1 text-xs text-ink-soft">Completed repairs on record</p>
-      </div>
-    </div>
-
-    <!-- Table Section -->
-    <div class="rounded-tile bg-tile overflow-hidden">
-      <!-- Filter Bar -->
-      <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
-        <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
-          <input
-            v-model="q"
-            type="text"
-            placeholder="Search title, unit code or technician…"
-            class="ws-input w-full pl-10 pr-4 sm:text-sm"
-          />
-        </div>
-
-        <select
-          v-model="statusFilter"
-          class="ws-select sm:text-sm sm:w-56"
-        >
-          <option value="All">All Statuses</option>
-          <option value="Open">Open</option>
-          <option value="In Progress">In Progress</option>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+      <label class="ws-field flex-1">
+        Search by title, unit or technician
+        <span class="relative">
+          <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+          <input v-model="q" type="search" class="ws-input pl-10" />
+        </span>
+      </label>
+      <label class="ws-field sm:w-56">
+        Status
+        <select v-model="statusFilter" class="ws-select">
+          <option value="All">Every status</option>
+          <option value="Open">To dispatch</option>
+          <option value="In Progress">In progress</option>
           <option value="Resolved">Resolved</option>
           <option value="Closed">Closed</option>
         </select>
-      </div>
+      </label>
+    </div>
 
-      <!-- SKELETON LOADING STATE -->
-      <div v-if="isLoading" class="p-4">
-        <SkeletonTable :columns="8" :rows="6" />
+    <div v-if="isLoading" class="grid gap-4 lg:grid-cols-3" aria-busy="true">
+      <span class="sr-only" role="status">Loading repair requests</span>
+      <div v-for="i in 3" :key="i" class="rounded-tile bg-tile p-6 flex flex-col gap-3">
+        <Skeleton class-name="h-4 w-28 rounded-full" />
+        <Skeleton class-name="h-16 w-full rounded-2xl" />
+        <Skeleton class-name="h-16 w-full rounded-2xl" />
       </div>
+    </div>
 
-      <!-- Maintenance Tickets Table -->
-      <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
-        <table class="w-full text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-canvas">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">TICKET ID</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">UNIT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">ISSUE TITLE &amp; CATEGORY</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">PRIORITY</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">REPORTED</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">ASSIGNED TECH</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">STATUS</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold text-center">ACTION</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-line">
-            <tr v-if="filtered.length === 0">
-              <td colspan="8" class="p-8 text-center text-ink-soft bg-tile">
-                No maintenance tickets found matching the search criteria.
-              </td>
-            </tr>
-            <tr 
-              v-else
-              v-for="t in filtered" 
-              :key="t.id"
-              class="hover:bg-canvas transition-colors"
-            >
-              <td class="whitespace-nowrap px-4 py-3 font-mono text-xs font-semibold text-ink">{{ t.id }}</td>
-              <td class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-ink">{{ t.unit }}</td>
-              <td class="px-4 py-3">
-                <p class="font-semibold text-ink leading-snug">{{ t.title }}</p>
-                <p class="text-xs text-ink-soft">{{ t.category }}</p>
-              </td>
-              <td class="whitespace-nowrap px-4 py-3">
-                <span :class="['badge-soft text-xs font-semibold whitespace-nowrap', getPriorityBadgeClass(t.priority)]">
-                  {{ t.priority }}
-                </span>
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-ink-soft">{{ t.reported }}</td>
-              <td class="whitespace-nowrap px-4 py-3 text-ink font-medium">{{ t.technician }}</td>
-              <td class="whitespace-nowrap px-4 py-3">
-                <span :class="['badge-soft text-xs font-semibold whitespace-nowrap', getStatusBadgeClass(t.status)]">
-                  {{ t.status }}
-                </span>
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-center">
-                <button 
-                  @click="openEditModal(t)" 
-                  class="pill-btn min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer hover:border-brand hover:text-brand"
-                  title="Edit & Manage Ticket"
-                >
-                  <Pencil class="size-3.5 text-ink-soft" />
-                  <span>Edit</span>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div v-else class="grid gap-4 lg:grid-cols-3">
+      <section
+        v-for="col in columns"
+        :key="col.key"
+        :aria-labelledby="`col-${col.key}`"
+        class="rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4 min-w-0"
+      >
+        <header class="flex items-start justify-between gap-3">
+          <div>
+            <h2 :id="`col-${col.key}`" class="text-[0.9375rem] leading-5 font-semibold">{{ col.title }}</h2>
+            <p class="mt-0.5 text-xs text-ink-faint">{{ col.caption }}</p>
+          </div>
+          <span class="rounded-full bg-canvas px-2.5 py-1 text-xs font-semibold tabular text-ink-soft">
+            {{ col.tickets.length }}
+          </span>
+        </header>
+
+        <p v-if="col.tickets.length === 0" class="py-4 text-sm text-ink-soft">Nothing here.</p>
+
+        <ul v-else class="flex flex-col gap-3">
+          <li
+            v-for="t in col.tickets"
+            :key="t.id"
+            class="rounded-2xl border border-line p-4 flex flex-col gap-3"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium leading-snug">{{ t.title }}</p>
+                <p class="mt-0.5 text-xs text-ink-faint">
+                  Unit {{ t.unit.toUpperCase() }}, {{ t.category }}
+                </p>
+              </div>
+              <StatusPill :tone="isUrgent(t.priority) ? 'overdue' : 'neutral'">{{ t.priority }}</StatusPill>
+            </div>
+
+            <dl class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
+              <div class="flex gap-1.5">
+                <dt class="text-ink-faint">Reported</dt>
+                <dd>{{ t.reported }}</dd>
+              </div>
+              <div class="flex gap-1.5">
+                <dt class="text-ink-faint">Technician</dt>
+                <dd>{{ t.technician || 'Unassigned' }}</dd>
+              </div>
+            </dl>
+
+            <button type="button" class="pill-btn self-start" @click="openEditModal(t)">
+              <Pencil class="size-4 text-ink-soft" aria-hidden="true" />
+              Manage
+            </button>
+          </li>
+        </ul>
+      </section>
     </div>
 
     <!-- Edit & Manage Ticket Modal -->
