@@ -3059,7 +3059,22 @@ router.post(
       .insert({
         inquiry_id: req.params.id,
         sender_id: req.user!.profileId,
-        sender_name: 'Fe Galang Da Silva (Landlady)',
+        /**
+         * The sender's own name, not a hardcoded one.
+         *
+         * This wrote 'Fe Galang Da Silva (Landlady)' for whoever sent the reply,
+         * beside a `sender_id` recording who actually did. There is one `admin`
+         * profile today, so the two agree - and they stop agreeing the moment a
+         * second account can reply, which would leave a PERSISTED record of
+         * correspondence with a prospective resident attributing words to the
+         * owner that she did not write. That is the sort of row someone reads
+         * back later to settle what was promised.
+         *
+         * The prospect's own message stores `sender_name: input.prospectName`
+         * (routes/public.ts), so the column already means "whoever sent this".
+         * This makes the other side of the thread symmetric.
+         */
+        sender_name: req.user!.fullName,
         message_body: parsed.data.message,
       })
       .select('*')
@@ -3149,11 +3164,28 @@ router.post(
 
     if (error) throw ApiError.internal(error.message);
 
-    // Notify the tenant about the landlady's reply
+    /**
+     * Named from the row that was just written, not assumed.
+     *
+     * This said "Landlady commented" for whoever posted it. There is exactly one
+     * `admin` profile today - Mrs. Fe Galang Da Silva - so it is accurate right
+     * now, and it stops being accurate the moment a second account holds
+     * `TICKET_COMMENT`: a caretaker, or an account added for a demonstration.
+     * The resident would then be told the owner said something she did not say.
+     *
+     * The sender's name is already in hand: the insert above selects
+     * `profiles:sender_id (id, full_name, role)` for exactly this row. It falls
+     * back to a role rather than a name, because "someone commented" is a worse
+     * message than "the administrator commented" and both beat a wrong name.
+     */
+    const senderName =
+      (data as { profiles?: { full_name?: string | null } } | null)?.profiles?.full_name?.trim() ||
+      'The administrator';
+
     await notificationService.notify({
       recipientProfileId: ticket.tenant_profile_id,
       title: 'New Maintenance Ticket Comment',
-      message: `Landlady commented on ticket "${ticket.title}": "${parsed.data.message.slice(0, 80)}${parsed.data.message.length > 80 ? '...' : ''}"`,
+      message: `${senderName} commented on ticket "${ticket.title}": "${parsed.data.message.slice(0, 80)}${parsed.data.message.length > 80 ? '...' : ''}"`,
       type: 'Maintenance',
       priority: 'Medium',
       relatedEntityType: 'TICKET',
