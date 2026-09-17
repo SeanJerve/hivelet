@@ -29,13 +29,40 @@
 3. **Run the rehearsal**, including the one step nothing here could: a change-password **success**,
    which rotates a credential every check in `check:api` signs in with.
 
-**Applied that day:** migration **022** — `current_user_role()` returned `'admin'` to any caller it
-could not identify, which was every caller. Inert today (0 policies reference it) and a trap for
-whoever writes the first one. It returns `NULL` now, which fails closed in both spellings.
+**Applied that day — two migrations:**
+
+- **`022`** — `current_user_role()` returned `'admin'` to any caller it could not identify, which
+  was every caller. Inert today (0 policies reference it) and a trap for whoever writes the first
+  one. It returns `NULL` now, which fails closed in both spellings.
+- **`024`** — a unique index on `transaction_reference`, in `payments` and
+  `monthly_income_records`. The webhook's idempotency was a read-then-write, and Adyen retries
+  *while the first attempt is still running*: two handlers read "not found" and both insert, and
+  the property is paid once and credited twice. **The handler changed with it** — `23505` now
+  returns `duplicate` (HTTP 200) rather than `failed` (HTTP 500), because Adyen retries on 500 and
+  the index would otherwise have created a notification that can never be acknowledged.
+
+**The money defects found and fixed that day**, all verified against the live rows:
+
+| | |
+| :--- | :--- |
+| the dashboard projected **₱12,800** of water a month against a real **₱6,400** | `occupants` was mapped `Math.min(capacity, 2)` — invented from room size — while the real tenancy figure sat unused two lines below |
+| the cash form could pre-fill a rent **₱2,000 wrong** | it read the hardcoded seed price, and **30 of 33 no longer match the database**. It now refuses to pre-fill when the data is not live, and says why |
+| a bill due the 20th was not overdue until **08:00 on the 21st** | the cutoff was built in UTC for a UTC+8 property — an unlegislated grace, where **OD-16 says there is none** |
+| a resident's **income CSV** would shift every column after a quote in a name | the sibling expense export had escaped correctly all along |
 
 **The suites are now sixteen.** New that day: **`check:canon`** (the locked wording is enforced,
 not just written down) and **`check:reports`** (both workbooks agree with the database, month by
-month, every year — 68 assertions). `check:api` went from 57 to 75.
+month, every year — 68 assertions). `check:api` went from **57 to 75**.
+
+**Every check runs from the repo root** as of that day — `npm run check:ledger` used to fail with
+"Missing script" from the one directory a person types in.
+
+**Read the summary table, not the tail.** Twice that day a red check was committed past because
+`| tail` showed the end of a different suite:
+
+```bash
+npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"
+```
 
 ---
 
