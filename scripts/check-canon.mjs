@@ -246,6 +246,25 @@ for (const file of walk(root)) {
 }
 
 console.log('check:canon — the locked wording stays locked\n');
+/**
+ * A REFUSAL TO PASS HAVING READ NOTHING.
+ *
+ * Proved on 2026-09-17 by running this script against an empty tree: it
+ * reported the locked wording intact having opened **zero files**, and exited
+ * 0. This check is what holds BR-035, the 33-unit count and the gateway
+ * description in place, so a silent green here is the most expensive kind.
+ *
+ * The floor is `> 0` rather than a number, because a hardcoded "at least 600
+ * files" is itself a claim with a date on it. The count above is printed so a
+ * collapse from 617 to 3 is visible to a person even when it is legal to the
+ * machine.
+ */
+if (scanned === 0) {
+  console.log('  FAIL  no files were read at all - this check examined NOTHING.');
+  console.log('        Either the tree moved or the walk is broken. It is not a pass.');
+  process.exit(1);
+}
+
 console.log(`               ${scanned} files read, ${frozenCount} carrying a record banner,`);
 console.log(`               ${citedMatches} quoted citation(s) allowed (a phrase named in order to ban or correct it)`);
 console.log(`               ${registerCount} defect register(s) excused by name`);

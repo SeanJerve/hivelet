@@ -9,6 +9,16 @@
         "dev:frontend"
       ],
       "port": 5173
+    },
+    {
+      "name": "dev:backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev:backend"
+      ],
+      "port": 5000,
+      "url": "http://localhost:5000"
     }
   ]
 }

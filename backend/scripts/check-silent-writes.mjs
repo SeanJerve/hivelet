@@ -86,7 +86,36 @@ const BS = String.fromCharCode(92);
 
 const findings = [];
 
-for (const file of walk(SRC).sort()) {
+/**
+ * WHAT THIS CHECK ACTUALLY EXAMINED, AND A REFUSAL TO PASS ON NOTHING.
+ *
+ * Proved on 2026-09-17 by copying this script somewhere `../src` was an empty
+ * directory. It scanned **zero files** and printed:
+ *
+ *     OK    every write declares what failure means
+ *     ALL CHECKS PASSED                                     (exit 0)
+ *
+ * That is the worst failure a check can have. It guards every database write in
+ * the system, and it was capable of reporting them all safe while having read
+ * none of them - if `src` were renamed, moved, or the walk broke on a future
+ * Node, nothing would have said so.
+ *
+ * The floor is `> 0` rather than a number. A hardcoded "at least 30 files" is
+ * itself a claim with a date on it, and this project has been bitten four times
+ * today by exactly that. The COUNT is printed instead, so a drop from 32 to 3 is
+ * visible to a person even though it is legal to the machine.
+ */
+const scanned = walk(SRC).sort();
+
+if (scanned.length === 0) {
+  console.log('SILENT WRITES - every database write must declare what failure means\n');
+  console.log(`  FAIL  no source files found under ${path.relative(root, SRC)}`);
+  console.log('        This check examined NOTHING, so it proves nothing. Either the');
+  console.log('        directory moved, or the walk is broken. It is not a pass.');
+  process.exit(1);
+}
+
+for (const file of scanned) {
   const lines = fs.readFileSync(file, 'utf8').split('\n');
 
   lines.forEach((line, i) => {
@@ -144,7 +173,7 @@ for (const file of walk(SRC).sort()) {
 console.log('SILENT WRITES - every database write must declare what failure means\n');
 
 if (findings.length === 0) {
-  console.log('  OK    every write declares what failure means');
+  console.log(`  OK    every write declares what failure means (${scanned.length} source files read)`);
   console.log('        (discarded, destructured without `error`, and captured-but-');
   console.log('         never-examined results all fail this check)');
   console.log('\nALL CHECKS PASSED');

@@ -13,7 +13,7 @@ business on this.
 
 1. **Never drop, wipe, truncate, or "reset for a clean test".** Every change to the schema **or
    to live data** is a **new numbered migration** in `database/migrations/`. Never an ad-hoc
-   `UPDATE`. `025` is the latest. Run `npm run backup` before the first data change of a session.
+   `UPDATE`. **Check `database/migrations/` for the highest number and go one past it** — a literal number here goes stale the first time anyone adds one. Run `npm run backup` before the first data change of a session.
 
 2. **Never edit `database/FULL_DATABASE_SCHEMA.sql`.** It does not describe this database and has
    been wrong about it repeatedly — the property area type, which indexes exist, generated
