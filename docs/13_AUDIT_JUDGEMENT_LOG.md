@@ -812,6 +812,47 @@ That is a pattern, not a coincidence.*
 
 ---
 
+#### 18. Read the failure, not the tail
+
+Twice on 2026-09-17 I committed past a **red** check, and both times the check
+was right.
+
+| What I ran | What I read | What was actually there |
+| :--- | :--- | :--- |
+| `check:all` after editing `PHASE3_DEFENSE_PACK.md` | the last lines, which end with a hint about starting the backend | `check:copies` had failed **because of that same commit** — the filming copy was now a line behind |
+| `check:all` after writing a report entry | *"ALL CHECKS PASSED"* — from a **different suite** further up | `check:canon` had failed on my own prose, which wrote `32-unit` bare |
+
+Both commits carried the words **"All 16 suites green."** Neither was.
+
+**The mechanism is the same in both, and it is not carelessness about whether
+the suite passed — it is carelessness about WHERE THE ANSWER IS.** `check:all`
+prints each suite's full output and then a summary table. Piping it through
+`tail` shows the end of the last suite, or the runner's closing advice, and both
+of those look reassuring while a failure sits fifty lines above.
+
+**The fix is mechanical, and it is what the runner already offers:**
+
+```bash
+npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"
+```
+
+That prints one line per suite and nothing else. There is nowhere for a failure
+to hide in it. `tail` is for reading a single suite; the **summary table** is for
+reading a run.
+
+#### Why this belongs in a judgement log rather than being quietly fixed
+
+Because the whole standard on this project is that a claim gets checked — and
+**"the suite is green" is a claim like any other.** Entry 15 says a check is
+worthless until it has failed on purpose; this is the other half. A check that
+fails on purpose and is then *not read* is worth exactly as little.
+
+*The second of the two was `check:canon` catching its own author for the third
+time in a day, on prose that was **about** the ban. That check has now found more
+defects in my writing than in anyone else's.*
+
+---
+
 ---
 
 ## 3. Judgement calls a fresh reader might reverse
