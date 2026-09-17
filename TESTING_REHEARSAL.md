@@ -124,6 +124,16 @@ npm run check:all
 npm run check:ledger
 ```
 
+**If `check:copies` is red**, a document of record was edited and its filming copy is a
+revision behind. One command fixes all nine:
+
+```bash
+npm run refresh:copies
+```
+
+That folder is gitignored, so the refresh lives only on the machine you run it on. Run it
+on the machine you will film from.
+
 **`check:ledger` is the one that matters here.** It will tell you:
 
 - **`room status agrees with tenancy`** — 33 units, 32 Occupied, 32 active tenancies, no drift. If a

@@ -15,6 +15,7 @@
     "check:rules": "node scripts/check-br-crosswalk.mjs",
     "check:matrix": "node scripts/check-matrix-crosswalk.mjs",
     "check:copies": "node scripts/check-filming-copies.mjs",
+    "refresh:copies": "node scripts/refresh-filming-copies.mjs",
     "check:canon": "node scripts/check-canon.mjs",
     "hooks:install": "git config core.hooksPath .githooks && echo \"pre-commit secret scanner installed\"",
     "backup": "node scripts/backup-database.mjs"
