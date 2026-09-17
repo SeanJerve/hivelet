@@ -88,7 +88,36 @@ A payment is overdue beginning on the day after its due date.
 
 ## BR-012 — Grace Period
 
-**There is no grace period.** Payment is due on the due date and late payment is not accepted.
+**There is no grace period in billing.** Payment is due on the due date, and a bill is overdue
+from the day after it. **Late payment is accepted**: the owner allows roughly a week before
+following it up. That week is a **follow-up threshold, not a billing window** — it does not change
+when a bill becomes overdue, and `system_settings.grace_period_days` stays `0`.
+
+> **ERRATA (2026-09-17).** This rule's second sentence read *"Payment is due on the due date and
+> **late payment is not accepted**."* The first half was right; **the second was not, and was
+> carried further than its evidence.**
+>
+> Asked what happens when someone pays late, the owner answered: *"The word — or the situation —
+> of it being late is a day after the due date. But then again there is a one week grace period
+> for the tenant to pay the rent."* She accepts late payment routinely; what she does after about
+> a week is follow it up, repeatedly, and eviction is the end of that road rather than a refusal
+> to take the money. Recorded in `CLIENT_ANSWERS_2026-09-17.md` §§ Q2, R1 — **relayed and
+> dictated, not minuted at the table**, which is why this errata corrects a sentence rather than
+> creating a rule.
+>
+> **The 2026-09-13 errata below stands in full**, and this one does not disturb it. The two
+> answers are about different things, which is why they looked like a contradiction: OD-16 asked
+> **when a bill becomes overdue** — the answer is the day after the due date, and
+> `grace_period_days` is `0`. This asks **what she does about it** — the answer is that she waits
+> about a week. **No code changes either way.** The week belongs to notification and escalation,
+> where `docs/08_OPEN_DECISIONS.md` § 6 already tiers overdue reminders at ">7 days" — and where
+> neither a due-date reminder nor an overdue notification currently exists.
+>
+> **On the withdrawn clause's provenance.** The 2026-09-13 errata justified it as *"consistent
+> with OD-03, which established that a departing tenant owes the full month and that late payment
+> is not accepted."* OD-03 settled **mid-cycle vacancy proration** — how much a departing tenant
+> owes, and that nothing is refunded. It says nothing about **when payment may arrive.** The
+> clause was inferred from a rule about a different question.
 
 > **ERRATA (2026-09-13, OD-16).** This rule previously read *"A one-week grace period may apply to an overdue payment depending on the situation"*, and the system was seeded with `grace_period_days = 7` accordingly. **That was never a rule of this business.** The owner has confirmed it was introduced during the original build of the website and then documented as though it were policy, which is how it came to carry a BR- number. It is consistent with OD-03, which established that a departing tenant owes the full month and that late payment is not accepted.
 >
