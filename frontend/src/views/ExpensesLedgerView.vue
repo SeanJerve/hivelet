@@ -812,77 +812,65 @@ function exportFilteredExpenses() {
         <SkeletonTable :columns="7" :rows="6" />
       </div>
 
-      <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
-        <table class="w-full min-w-[900px] text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-canvas border-b border-line">
-            <tr class="text-left text-xs uppercase tracking-wide text-ink-soft">
-              <th class="whitespace-nowrap px-4 py-3 font-semibold pl-6">DESCRIPTION / VOUCHER</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">CATEGORY</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">BOARDING HOUSE (₱)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">MAIN HOUSE (₱)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">APTS &amp; OTHER (₱)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">TOTAL (₱)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold text-center">ACTIONS</th>
+      <!--
+        The ledger, day by day. Three of the seven columns are the areas an
+        expense is split across, which is what makes this table worth being a
+        table: the figures line up down the page and can be compared.
+      -->
+      <div v-else-if="groupedExpenses.length === 0" class="px-6 py-16 text-center">
+        <p class="text-base font-semibold text-ink">
+          <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
+          <template v-else>Nothing here</template>
+        </p>
+        <p class="mt-1 text-sm leading-6 text-ink-soft">
+          <template v-if="expenseRecordsFetchFailed">
+            This is not the same as there being no expenses. Press Refresh to try again.
+          </template>
+          <template v-else>No expense matches what you have asked for.</template>
+        </p>
+      </div>
+
+      <div v-else class="ws-table-wrap max-h-[70vh]">
+        <table class="ws-table">
+          <caption class="sr-only">
+            Expenses by day, each split across the boarding house, the main house and the
+            apartments
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">What it was for</th>
+              <th scope="col">Kind</th>
+              <th scope="col" class="num">Boarding house</th>
+              <th scope="col" class="num">Main house</th>
+              <th scope="col" class="num">Apartments and other</th>
+              <th scope="col" class="num">All of it</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
-          
-          <tbody v-if="groupedExpenses.length === 0">
-            <tr>
-              <td colspan="7" class="p-8 text-center text-ink-soft bg-tile">
-                <template v-if="expenseRecordsFetchFailed">
-                  The expense ledger could not be loaded. This is not the same as there being
-                  none — press Refresh to retry.
-                </template>
-                <template v-else>No expense entries found matching the criteria.</template>
-              </td>
-            </tr>
-          </tbody>
 
-          <tbody v-for="group in groupedExpenses" :key="group.dateStr" v-else>
-            <!-- Date Group Header -->
-            <tr class="bg-canvas border-y border-line">
-              <td colspan="6" class="px-4 py-2.5 text-xs font-semibold text-ink-soft pl-6">
+          <tbody v-for="group in groupedExpenses" :key="group.dateStr">
+            <tr class="bg-canvas">
+              <th scope="colgroup" colspan="5" class="text-sm font-semibold text-ink-soft">
                 {{ group.dateStr }}
-              </td>
-              <td class="tabular px-4 py-2.5 text-right text-xs font-semibold text-ink">
-                Daily: {{ peso(group.dayTotal) }}
-              </td>
+              </th>
+              <td class="num text-sm font-semibold text-ink">{{ peso(group.dayTotal) }}</td>
+              <td><span class="sr-only">that day</span></td>
             </tr>
-            <!-- Individual Expense Records -->
-            <tr 
-              v-for="e in group.records" 
-              :key="e.id"
-              class="border-b border-line last:border-b-0 hover:bg-canvas transition-colors"
-            >
-              <td class="px-4 py-3.5 font-semibold text-ink pl-6">{{ e.description }}</td>
-              <td class="whitespace-nowrap px-4 py-3.5 text-xs text-ink-soft">{{ e.category }}</td>
-              
-              <!-- Boarding House Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-ink">
+
+            <tr v-for="e in group.records" :key="e.id">
+              <th scope="row" class="font-medium text-ink">{{ e.description }}</th>
+              <td>{{ e.category }}</td>
+              <td class="num">
                 {{ getAreaAmount(e, 'Boarding House') ? peso(getAreaAmount(e, 'Boarding House')) : '—' }}
               </td>
-              
-              <!-- Main House Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-ink">
+              <td class="num">
                 {{ getAreaAmount(e, 'Main House') ? peso(getAreaAmount(e, 'Main House')) : '—' }}
               </td>
-              
-              <!-- Apts & Other Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-ink">
-                {{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e)) : '—' }}
-              </td>
-              
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-semibold text-ink">
-                {{ peso(getExpenseTotal(e)) }}
-              </td>
-              
-              <td class="whitespace-nowrap px-4 py-3.5 text-center">
-                <button 
-                  @click="startEditExpense(e)" 
-                  class="pill-btn min-h-8 px-2.5 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer hover:border-brand hover:text-brand"
-                  title="Edit Expense"
-                >
-                  <Pencil class="size-3.5" />
+              <td class="num">{{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e)) : '—' }}</td>
+              <td class="num font-semibold text-ink">{{ peso(getExpenseTotal(e)) }}</td>
+              <td class="num">
+                <button type="button" class="pill-btn" @click="startEditExpense(e)">
+                  <Pencil class="size-3.5" aria-hidden="true" />
                   <span>Edit</span>
                 </button>
               </td>
@@ -934,28 +922,23 @@ function exportFilteredExpenses() {
                   </button>
                 </div>
 
-                <!-- Description & Category Row -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label class="mb-1.5 block text-xs text-ink-faint">Description &amp; Receipt #</label>
-                    <input 
-                      v-model="entry.desc" 
-                      placeholder="e.g. OR #88240 — supplies" 
-                      class="ws-input w-full" 
-                      required 
-                    />
-                  </div>
-
-                  <div>
-                    <label class="mb-1.5 block text-xs text-ink-faint">Expense Category</label>
-                    <select 
-                      v-model="entry.category" 
-                      class="ws-select w-full" 
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <label class="ws-field">
+                    What it was for
+                    <input
+                      v-model="entry.desc"
+                      placeholder="OR #88240, supplies"
+                      class="ws-input w-full"
                       required
-                    >
+                    />
+                  </label>
+
+                  <label class="ws-field">
+                    Kind of expense
+                    <select v-model="entry.category" class="ws-select w-full" required>
                       <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
                     </select>
-                  </div>
+                  </label>
                 </div>
 
                 <!-- Allocations / Splits Section -->
@@ -971,46 +954,39 @@ function exportFilteredExpenses() {
                       :key="aIdx" 
                       class="flex items-center gap-3 bg-tile p-3 border border-line rounded-xl"
                     >
-                      <!-- Area Selector -->
-                      <div class="flex-1">
-                        <label class="block text-xs font-semibold text-ink-soft uppercase mb-1">Target Area</label>
-                        <select 
-                          v-model="alloc.area" 
-                          class="ws-select w-full" 
-                          required
-                        >
+                      <label class="ws-field flex-1">
+                        Which part of the property
+                        <select v-model="alloc.area" class="ws-select w-full" required>
                           <option
                             v-for="areaOption in PROPERTY_AREA_OPTIONS"
                             :key="areaOption.value"
                             :value="areaOption.value"
                           >{{ areaOption.label }}</option>
                         </select>
-                      </div>
+                      </label>
 
-                      <!-- Amount -->
-                      <div class="w-36 sm:w-44">
-                        <label class="block text-xs font-semibold text-ink-soft uppercase mb-1">Amount (₱)</label>
-                        <input 
-                          v-model="alloc.amount" 
-                          type="number" 
-                          placeholder="0.00" 
+                      <label class="ws-field w-36 sm:w-44">
+                        How much
+                        <input
+                          v-model="alloc.amount"
+                          type="number"
+                          placeholder="0.00"
                           min="0"
                           step="any"
-                          class="ws-input w-full tabular" 
-                          required 
+                          class="ws-input tabular w-full"
+                          required
                         />
-                      </div>
+                      </label>
 
-                      <!-- Delete split button -->
                       <div class="self-end pb-0.5">
-                        <button 
-                          v-if="entry.allocations.length > 1" 
-                          type="button" 
-                          @click="removeAllocation(index, aIdx)" 
-                          class="p-2 text-overdue hover:bg-overdue-soft rounded-lg cursor-pointer transition-colors"
-                          title="Remove Area"
+                        <button
+                          v-if="entry.allocations.length > 1"
+                          type="button"
+                          class="icon-btn size-11 text-overdue hover:bg-overdue-soft"
+                          aria-label="Take this part of the property off the split"
+                          @click="removeAllocation(index, aIdx)"
                         >
-                          <Trash2 class="size-4" />
+                          <Trash2 class="size-4" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
@@ -1123,46 +1099,39 @@ function exportFilteredExpenses() {
                   :key="aIdx" 
                   class="flex items-center gap-3 bg-canvas p-3 border border-line rounded-xl"
                 >
-                  <!-- Area Selector -->
-                  <div class="flex-1">
-                    <label class="block text-xs font-semibold text-ink-soft uppercase mb-1">Target Area</label>
-                    <select 
-                      v-model="alloc.area" 
-                      class="ws-select w-full" 
-                      required
-                    >
+                  <label class="ws-field flex-1">
+                    Which part of the property
+                    <select v-model="alloc.area" class="ws-select w-full" required>
                       <option
                         v-for="areaOption in PROPERTY_AREA_OPTIONS"
                         :key="areaOption.value"
                         :value="areaOption.value"
                       >{{ areaOption.label }}</option>
                     </select>
-                  </div>
+                  </label>
 
-                  <!-- Amount -->
-                  <div class="w-36 sm:w-44">
-                    <label class="block text-xs font-semibold text-ink-soft uppercase mb-1">Amount (₱)</label>
-                    <input 
-                      v-model="alloc.amount" 
-                      type="number" 
-                      placeholder="0.00" 
+                  <label class="ws-field w-36 sm:w-44">
+                    How much
+                    <input
+                      v-model="alloc.amount"
+                      type="number"
+                      placeholder="0.00"
                       min="0"
                       step="any"
-                      class="ws-input w-full tabular" 
-                      required 
+                      class="ws-input tabular w-full"
+                      required
                     />
-                  </div>
+                  </label>
 
-                  <!-- Delete split button -->
                   <div class="self-end pb-0.5">
-                    <button 
-                      v-if="editAllocations.length > 1" 
-                      type="button" 
-                      @click="removeEditAllocation(aIdx)" 
-                      class="p-2 text-overdue hover:bg-overdue-soft rounded-lg cursor-pointer transition-colors"
-                      title="Remove Area Split"
+                    <button
+                      v-if="editAllocations.length > 1"
+                      type="button"
+                      class="icon-btn size-11 text-overdue hover:bg-overdue-soft"
+                      aria-label="Take this part of the property off the split"
+                      @click="removeEditAllocation(aIdx)"
                     >
-                      <Trash2 class="size-4" />
+                      <Trash2 class="size-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
