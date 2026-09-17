@@ -123,7 +123,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 >
 > **Nothing could have caught this.** `check:fields` reads field *names*. `check:canon` polices
 > banned *wording*. Neither looks at a number inside a heading — and this project has a history of
-> exactly that: the 32-unit figure survived in **thirty** places.
+> exactly that: the retired "32 units" figure survived in **thirty** places.
 >
 > So `check:ledger` now reads every *"N units"*, *"N clusters"*, *"N floors"* claim in
 > `frontend/src` and compares it to the live `rooms` table. I surveyed what was actually there
