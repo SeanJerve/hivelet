@@ -138,6 +138,39 @@ function monthTotals(sheet, header) {
   return found;
 }
 
+/**
+ * The right-side "Category summary" block of `expenses.xlsx`.
+ *
+ * BR-049 requires the workbook to reproduce the layout in
+ * `10_MONTHLY_EXPENSES_REPORT.md`, which has a per-category "This month" column
+ * and a "Cumulative" carried month to month (§ 6.2). Until 2026-09-17 this
+ * checker verified the MONTH TOTAL figures and said nothing about that block -
+ * two derived money columns nobody looked at.
+ *
+ * Returns, per month, the `MONTH — all categories` footer: its this-month
+ * figure and its running cumulative.
+ */
+function categorySummary(sheet) {
+  const nameCol = columnOf(sheet, 'Category summary');
+  const thisCol = columnOf(sheet, 'This month');
+  const cumCol = columnOf(sheet, 'Cumulative');
+  const found = new Map();
+  if (nameCol === null || thisCol === null || cumCol === null) return { found, layout: false };
+
+  sheet.eachRow((row) => {
+    const label = String(cell(row.getCell(nameCol).value) ?? row.getCell(nameCol).value ?? '')
+      .trim()
+      .toUpperCase();
+    const m = /^([A-Z]+)\s*[—-]\s*ALL CATEGORIES$/.exec(label);
+    if (!m || !MONTHS.includes(m[1])) return;
+    found.set(m[1], {
+      thisMonth: cell(row.getCell(thisCol).value),
+      cumulative: cell(row.getCell(cumCol).value),
+    });
+  });
+  return { found, layout: true };
+}
+
 async function workbookFor(token, report, year) {
   const r = await fetch(`${BASE}/admin/reports/${report}?year=${year}`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -199,6 +232,41 @@ for (const year of years) {
       const dbSum = [...byMonth.values()].reduce((a, b) => a + b, 0);
       console.log('');
       check(`${year} expenses, all months`, sheetSum, dbSum);
+
+      /**
+       * The right-side summary, which is the same money cut a different way.
+       *
+       * Two invariants, both derived and both previously unchecked:
+       *
+       *   1. RECONCILIATION - `MONTH — all categories` must equal that month's
+       *      `MONTH TOTAL`. Categories and Property Areas are two cuts of one
+       *      sum, so they have to land on the same figure. The export's own
+       *      header says it: "The two must reconcile."
+       *   2. THE CUMULATIVE CHAIN - each month's cumulative must be the previous
+       *      month's plus this month's, resetting in January. An off-by-one here
+       *      is invisible, because every figure still looks like a plausible
+       *      peso amount. It is also the exact cell that broke the second
+       *      version of this checker.
+       */
+      const { found: summary, layout } = categorySummary(sheet);
+      if (!layout) {
+        console.log(`  FAIL  ${year} category summary - a required header is missing (BR-049)`);
+        fail++;
+      } else {
+        console.log('');
+        let running = 0;
+        for (const [name, total] of printed) {
+          const s = summary.get(name);
+          if (!s) {
+            console.log(`  FAIL  ${name} category summary - no "all categories" row`);
+            fail++;
+            continue;
+          }
+          running += Number(s.thisMonth ?? 0);
+          check(`${name} categories`, s.thisMonth, total);
+          check(`${name} cumulative`, s.cumulative, running);
+        }
+      }
     }
   }
 
