@@ -21,21 +21,8 @@ import {
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
-import { 
-  Search, 
-  Pencil, 
-  RefreshCw, 
-  LayoutGrid, 
-  Table as TableIcon, 
-  Eye, 
-  Home, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  Wrench,
-  ChevronDown,
-  ShieldCheck
-} from 'lucide-vue-next';
+import { Search, Pencil, RefreshCw, LayoutGrid, Table as TableIcon, Eye } from 'lucide-vue-next';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 type ViewMode = 'matrix' | 'table';
 
@@ -103,33 +90,22 @@ function getUnitsForCluster(clusterName: string) {
   return filteredRooms.value.filter((r) => r.cluster === clusterName);
 }
 
-const STATUS_STYLE: Record<UnitStatus, string> = {
-  settled: 'border-brand-soft bg-brand-soft/40',
-  pending: 'border-verify-soft bg-verify-soft/40',
-  vacant: 'border-line bg-canvas',
-  maintenance: 'border-brand-soft bg-brand-soft/40',
-};
-
 function getStatusLabel(status: UnitStatus) {
   if (status === 'vacant') return 'Vacant';
-  if (status === 'settled') return 'Settled';
-  if (status === 'pending') return 'Pending';
-  if (status === 'maintenance') return 'Under Maintenance';
+  if (status === 'settled') return 'Paid up';
+  if (status === 'pending') return 'Owing';
+  if (status === 'maintenance') return 'Being repaired';
   return status;
 }
 
-function getStatusIcon(status: UnitStatus) {
-  if (status === 'settled') return ShieldCheck;
-  if (status === 'pending') return Clock;
-  if (status === 'maintenance') return Wrench;
-  return Home;
-}
-
-function getStatusBadgeClass(status: UnitStatus) {
-  if (status === 'settled') return 'badge-success';
-  if (status === 'pending') return 'badge-warning';
-  if (status === 'maintenance') return 'badge-purple';
-  return 'badge-neutral';
+/**
+ * Maintenance used to wear the same tone as a settled unit, so a unit out of
+ * action read as one that had paid. It is a waiting state, like owing.
+ */
+function statusTone(status: UnitStatus): 'paid' | 'verify' | 'neutral' {
+  if (status === 'settled') return 'paid';
+  if (status === 'pending' || status === 'maintenance') return 'verify';
+  return 'neutral';
 }
 
 function editUnit(u: RoomItem) {
@@ -341,57 +317,45 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
             <article
               v-for="u in getUnitsForCluster(clusterName)"
               :key="u.unitCode"
-              :class="[ 'rounded-tile border p-4 transition-all hover:shadow-md bg-tile flex flex-col justify-between', STATUS_STYLE[u.status] || 'border-line' ]"
+              class="flex flex-col justify-between rounded-2xl bg-canvas p-4"
             >
-              <!-- Card Header -->
               <div>
                 <div class="flex items-start justify-between gap-2">
-                  <div>
+                  <div class="min-w-0">
                     <p class="text-xl font-semibold uppercase leading-none text-ink">
                       {{ u.unitCode }}
                     </p>
-                    <p class="mt-1 text-xs font-semibold text-ink-soft">{{ u.type }}</p>
+                    <p class="mt-1.5 text-sm text-ink-soft">{{ u.type }}</p>
                   </div>
-                  <span :class="['badge-soft text-xs capitalize font-semibold', getStatusBadgeClass(u.status)]">
-                    {{ getStatusLabel(u.status) }}
-                  </span>
+                  <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
                 </div>
 
-                <!-- Occupant & Price Info -->
-                <div class="mt-3.5 pt-3 border-t border-line/60 space-y-1">
-                  <div class="flex items-center justify-between text-xs gap-1">
-                    <span class="text-ink-soft shrink-0">Occupants:</span>
-                    <span class="font-semibold text-ink truncate max-w-[170px] text-right" :title="formatUnitOccupantsSummary(u.unitCode).text">
+                <dl class="mt-4 space-y-1.5 border-t border-line pt-3 text-sm">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <dt class="shrink-0 text-ink-faint">Lived in by</dt>
+                    <dd
+                      class="max-w-[170px] truncate text-right font-medium text-ink"
+                      :title="formatUnitOccupantsSummary(u.unitCode).text"
+                    >
                       {{ formatUnitOccupantsSummary(u.unitCode).text }}
-                    </span>
+                    </dd>
                   </div>
 
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-ink-soft">Monthly Rate:</span>
-                    <span class="tabular font-semibold text-ink">
-                      {{ peso(u.price) }}
-                    </span>
+                  <div class="flex items-baseline justify-between gap-2">
+                    <dt class="text-ink-faint">A month</dt>
+                    <dd class="tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
                   </div>
-                </div>
+                </dl>
               </div>
 
-              <!-- Action Buttons -->
-              <div class="mt-4 flex gap-2 pt-2">
-                <button
-                  type="button"
-                  @click="openSpecs(u)"
-                  class="pill-btn min-h-9 flex-1 py-1 px-2.5 text-xs gap-1.5 font-semibold cursor-pointer"
-                >
-                  <Eye class="size-3.5 text-ink-soft" />
-                  <span>Specs</span>
+              <div class="mt-4 flex gap-2">
+                <button type="button" class="pill-btn flex-1" @click="openSpecs(u)">
+                  <Eye class="size-3.5" aria-hidden="true" />
+                  <span>Look</span>
                 </button>
-                <button
-                  type="button"
-                  @click="editUnit(u)"
-                  class="pill-btn min-h-9 flex-1 py-1 px-2.5 text-xs gap-1.5 font-semibold hover:border-brand hover:text-brand cursor-pointer"
-                >
-                  <Pencil class="size-3.5" />
-                  <span>Edit Unit</span>
+                <button type="button" class="pill-btn flex-1" @click="editUnit(u)">
+                  <Pencil class="size-3.5" aria-hidden="true" />
+                  <span>Edit</span>
                 </button>
               </div>
             </article>
@@ -410,80 +374,102 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
       </div>
     </div>
 
-    <!-- VIEW MODE 2: TABLE REGISTER VIEW -->
-    <div v-else class="rounded-tile bg-tile overflow-hidden rounded-tile border border-line">
-      <div class="max-h-[70vh] overflow-x-auto overflow-y-auto">
-        <table class="w-full min-w-[950px] text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-canvas">
-            <tr class="text-left text-xs uppercase tracking-wide text-ink-soft border-b border-line">
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">UNIT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">CLUSTER</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">TYPE</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">BILLING RULE</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">RATE (₱/MO)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">STATUS</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold">REGISTERED OCCUPANTS</th>
-              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr 
-              v-for="u in filteredRooms" 
-              :key="u.unitCode"
-              class="border-b border-line last:border-0 hover:bg-canvas transition-colors"
-            >
-              <td class="px-4 py-3.5 font-semibold uppercase text-ink">
-                {{ u.unitCode.toUpperCase() }}
-              </td>
-
-              <td class="whitespace-nowrap px-4 py-3.5 text-ink-soft font-medium">
-                {{ u.cluster }}
-              </td>
-
-              <td class="whitespace-nowrap px-4 py-3.5 font-medium text-ink">
-                {{ u.type }}
-              </td>
-
-              <td class="px-4 py-3.5 text-xs text-ink-soft">
-                {{ u.billingRule }}
-              </td>
-
-              <td class="tabular whitespace-nowrap px-4 py-3.5 font-semibold text-ink">
-                {{ peso(u.price) }}
-              </td>
-
-              <td class="px-4 py-3.5">
-                <span :class="['badge-soft text-xs capitalize font-semibold', getStatusBadgeClass(u.status)]">
-                  {{ getStatusLabel(u.status) }}
-                </span>
-              </td>
-
-              <td class="whitespace-nowrap px-4 py-3.5 text-ink font-medium" :title="formatUnitOccupantsSummary(u.unitCode).text">
-                {{ formatUnitOccupantsSummary(u.unitCode).text }}
-              </td>
-
-              <td class="whitespace-nowrap px-4 py-3.5 text-right">
-                <div class="inline-flex items-center gap-1.5 justify-end">
-                  <button 
-                    @click="openSpecs(u)"
-                    class="pill-btn min-h-8 px-2.5 py-1 text-xs gap-1 inline-flex items-center cursor-pointer"
-                  >
-                    <Eye class="size-3.5 text-ink-soft" />
-                    <span>Specs</span>
-                  </button>
-                  <button 
-                    @click="editUnit(u)"
-                    class="pill-btn min-h-8 px-2.5 py-1 text-xs gap-1 inline-flex items-center font-semibold cursor-pointer hover:border-brand hover:text-brand"
-                  >
-                    <Pencil class="size-3.5" />
-                    <span>Edit</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <!--
+      The register. It needed 950px, so it scrolled sideways on a laptop and on
+      every phone. The cluster and the kind of unit now share one column, the
+      rate and the billing rule share another, and below 1024px the whole thing
+      becomes one tile per unit.
+    -->
+    <template v-else>
+      <div class="hidden overflow-hidden rounded-tile bg-tile lg:block">
+        <div class="ws-table-wrap max-h-[70vh]">
+          <table class="ws-table">
+            <caption class="sr-only">
+              Every unit, with where it is, what it costs, who lives in it and its standing
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Unit</th>
+                <th scope="col">Where and what</th>
+                <th scope="col" class="num">A month</th>
+                <th scope="col">Lived in by</th>
+                <th scope="col">Standing</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="u in filteredRooms" :key="u.unitCode">
+                <th scope="row" class="font-semibold uppercase text-ink">
+                  {{ u.unitCode.toUpperCase() }}
+                </th>
+                <td>
+                  <span class="block text-ink">{{ u.cluster }}, {{ u.type }}</span>
+                  <span class="block text-xs text-ink-faint">{{ u.billingRule }}</span>
+                </td>
+                <td class="num font-semibold text-ink">{{ peso(u.price) }}</td>
+                <td :title="formatUnitOccupantsSummary(u.unitCode).text">
+                  {{ formatUnitOccupantsSummary(u.unitCode).text }}
+                </td>
+                <td>
+                  <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
+                </td>
+                <td class="num">
+                  <div class="inline-flex items-center justify-end gap-2">
+                    <button type="button" class="pill-btn" @click="openSpecs(u)">
+                      <Eye class="size-3.5" aria-hidden="true" />
+                      <span>Look</span>
+                    </button>
+                    <button type="button" class="pill-btn" @click="editUnit(u)">
+                      <Pencil class="size-3.5" aria-hidden="true" />
+                      <span>Edit</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      <div class="space-y-3 lg:hidden">
+        <div v-for="u in filteredRooms" :key="u.unitCode" class="rounded-tile bg-tile p-5">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-lg font-semibold uppercase leading-none text-ink">
+                {{ u.unitCode.toUpperCase() }}
+              </p>
+              <p class="mt-1.5 text-sm text-ink-soft">{{ u.cluster }}, {{ u.type }}</p>
+            </div>
+            <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
+          </div>
+
+          <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div>
+              <dt class="text-xs text-ink-faint">A month</dt>
+              <dd class="tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
+            </div>
+            <div class="min-w-0">
+              <dt class="text-xs text-ink-faint">Lived in by</dt>
+              <dd class="truncate text-ink">{{ formatUnitOccupantsSummary(u.unitCode).text }}</dd>
+            </div>
+            <div class="col-span-2">
+              <dt class="text-xs text-ink-faint">How it is billed</dt>
+              <dd class="text-ink">{{ u.billingRule }}</dd>
+            </div>
+          </dl>
+
+          <div class="mt-4 flex gap-2">
+            <button type="button" class="pill-btn flex-1 justify-center" @click="openSpecs(u)">
+              <Eye class="size-3.5" aria-hidden="true" />
+              <span>Look</span>
+            </button>
+            <button type="button" class="pill-btn flex-1 justify-center" @click="editUnit(u)">
+              <Pencil class="size-3.5" aria-hidden="true" />
+              <span>Edit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
