@@ -106,7 +106,71 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — a failed fetch told a resident their rent was settled. And `vue-tsc` does not
+> **LATEST — a file warned about the stale price table, then printed it twice. One screen
+> shows two different rents for the same unit, right now, with nothing failing.**
+>
+> ### The comment and the violation are in the same file
+>
+> `TenantManagementView` carries this, on `syncDepositToUnit`:
+>
+> > *Reads the LIVE room list rather than the hardcoded `CANONICAL_UNITS` table, whose
+> > `basePrice` is a second copy that drifts as soon as the landlady changes a rate.*
+>
+> **550 and 700 lines below, two dropdowns iterated `CANONICAL_UNITS` and printed
+> `peso(u.basePrice)`.**
+>
+> Measured against `/public/rooms`, not remembered:
+>
+> | | |
+> | :--- | ---: |
+> | seeded units | 33 |
+> | still matching | **3** |
+> | **drifted** | **30** |
+> | seeded rent roll | ₱210,500 |
+> | live rent roll | ₱181,700 |
+> | **overstated by** | **₱28,800 a month** |
+> | worst single unit | **₱1,900** — unit 2B, seeded ₱6,500, live ₱4,600 |
+>
+> **And the second dropdown is the live one.** It is the *new tenant* form, and
+> `syncDepositToUnit` fills the deposit field from the **live** price the moment a unit is
+> picked. So choosing 2B put **₱6,500 on the dropdown and ₱4,600 in the deposit box, on screen
+> at the same time** — no failed request needed. That is visible today.
+>
+> Two more from the same sweep: `InquiriesView` printed the rate **beside a prospect's
+> enquiry** — the figure she quotes someone — and `RoomDetailModal` printed it twice with no
+> guard at all. Both now show nothing rather than something wrong.
+>
+> **`CategoryRoomsView` already did this correctly** — merges live over seeded and carries a
+> banner saying which it is. It is the reference implementation, and the new rule is written so
+> that it passes.
+>
+> ### The check that would have caught it, and why it did not
+>
+> `check:liveness` rule 6: a screen printing a unit rate must consult `roomsFetchFailed`.
+> **Comments are stripped first** — because *a comment explaining the hazard is not the
+> hazard*, and that is precisely why this was missed: the warning and the violation were in one
+> file, and any search for the problem found the warning.
+>
+> ### The rest of the sweep
+>
+> - **The expense ledger's three headline tiles** read **₱0.00** on a failed fetch — same
+>   defect as the dashboard, one screen over. Its empty row said *"no expense entries found"*,
+>   which on a failed load is a claim rather than a result.
+> - **The receipt form carried forward a seeded occupant count.** Occupants set the water line
+>   on the receipt about to be saved, so a seeded 3 against a real 1 **overcharges a resident
+>   ₱400** on a document she hands them.
+> - **The public page**, which is the one place a wrong figure reaches strangers. Two of its
+>   four claims can be checked and are right — ₱200/head, and **₱4,500/mo really is the
+>   cheapest of the 33**, with seven units at it. Rule 5 now pins that against the live list.
+> - **The other two exist nowhere but that page** — *"₱12.50 / kWh"* and *"readings are
+>   recorded on the 25th"*. Not in settings, not in the database, not in the code. **No check
+>   can pin them**, so they went to the client sheet (§ 3b) with tick-boxes. If either is
+>   wrong, the site has been telling prospective residents the wrong thing.
+>
+> **497 commits total, 77 today. Seventeen suites green, `check:liveness` now seven
+> rules. Working tree clean.**
+
+> **PREVIOUS — a failed fetch told a resident their rent was settled. And `vue-tsc` does not
 > catch a component that does not exist, which matters for the redesign.**
 >
 > ### "All Rent Accounts Settled", out of a request that never came back
@@ -173,6 +237,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > the old one.
 >
 > **493 commits total, 73 today. Seventeen suites green. Working tree clean.**
+> *(as at that entry — the live figure is in the entry above)*
 
 > **PREVIOUS — if the expense fetch failed, the dashboard would have shown the whole year's
 > takings as profit. Seventeenth suite added, because that was the third time.**
