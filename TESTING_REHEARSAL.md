@@ -162,6 +162,39 @@ on the machine you will film from.
 
 ---
 
+## What the numbers on screen were checked against, 2026-09-17
+
+Every headline figure on the money screens was read out of the interface and compared against a
+direct query. **All of them matched.** Worth knowing before a panel asks, and worth re-checking if
+the redesign touches these views.
+
+| Screen | Shows | Database |
+| :--- | ---: | ---: |
+| Income ledger — total gross rent | ₱7,772,250 | ₱7,772,250 |
+| Income ledger — 50% column, BH rows | ₱2,343,375 | ₱2,343,375 |
+| Income ledger — water collections | ₱314,000 | ₱314,000 |
+| Income ledger — total remitted | ₱8,086,250 | ₱8,086,250 |
+| Income ledger — spreadsheet parity line | ₱5,742,875 | ₱5,742,875 |
+| Expenses — total disbursed | ₱5,823,586 | ₱5,823,586 |
+| Overview — FY 2026 to date | ₱1,826,850 | ₱1,826,850 |
+| Overview — occupancy | 32 / 33, 1 vacant | 32 / 33, 1 vacant |
+
+**Net Operating Income was the one to check hardest**, and it is right. January 2026 on screen:
+revenue **₱259,250**, operating **₱58,179**, *"Personal (not deducted)"* **₱71,559**, NOI
+**₱201,071**. The query returns 259,250.00 / 58,179.05 / 71,558.85 / 201,070.95.
+
+The important part is the wording: **"Personal (not deducted)"**. Main House and Other/Personal are
+shown beside the figure rather than folded into it, so the screen says what it is excluding instead
+of quietly excluding it. That is the right answer to the ₱2.5M question on the client sheet — the
+system is not hiding that spending, it is declining to call it a cost of the rental business.
+
+**One thing to know before a demo:** the income ledger sorts newest first, so the **first row is
+`INVOICE#5120`, dated 26 February 2027** — one of the seven receipts awaiting the owner. It is the
+first thing anyone sees on that screen. Either settle it with her first, or be ready to say what it
+is.
+
+---
+
 ## What this rehearsal cannot tell you
 
 Stated plainly, so nobody claims more than was done.
