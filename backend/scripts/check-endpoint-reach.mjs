@@ -59,11 +59,6 @@ const NO_BROWSER_CALLER = new Map([
 
   ['GET /admin/bills', { kind: 'UNPLUGGED', row: 'A-11', why: 'the administrator has no bills screen; the FR-013 overdue overlay is computed for a caller that does not exist' }],
 
-  ['PATCH /admin/tenants/:profileId/status', { kind: 'SUPERSEDED', row: 'A-13', why: 'TenantManagementView uses the generic PATCH /admin/tenants/:id' }],
-  ['PATCH /admin/tickets/:ticketId/close', { kind: 'SUPERSEDED', row: 'A-13', why: 'the dispatch board uses the generic ticket PATCH, which stamps resolved_at/closed_at correctly; this one sets status Resolved while stamping closed_at' }],
-  ['GET /public/clusters', { kind: 'SUPERSEDED', row: 'A-13', why: 'the public site derives categories from GET /public/rooms' }],
-  ['POST /admin/rooms/:roomId/photo', { kind: 'SUPERSEDED', row: 'A-13', why: 'AdminEditUnitModal sends a photo URL through the generic unit PATCH; there is no file upload in the product, and object storage is a Phase 3 item' }],
-  ['GET /public/rooms/:roomId', { kind: 'SUPERSEDED', row: 'A-13', why: 'the detail modal uses the row already in the list payload' }],
 ]);
 
 let failures = 0;

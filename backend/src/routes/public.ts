@@ -72,42 +72,6 @@ router.get(
   })
 );
 
-/** GET /api/public/rooms/:roomId — single published room. */
-router.get(
-  '/public/rooms/:roomId',
-  optionalAuth,
-  requirePermission(PERMISSIONS.ROOM_VIEW_PUBLIC),
-  asyncHandler(async (req, res) => {
-    let query = db.from('rooms').select(PUBLIC_ROOM_COLUMNS).eq('id', req.params.roomId);
-
-    if (req.role !== 'admin') {
-      query = query.eq('visibility_status', 'Published');
-    }
-
-    const { data, error } = await query.maybeSingle();
-    if (error) throw ApiError.internal(error.message);
-    if (!data) throw ApiError.notFound('Room not found.');
-
-    res.status(200).json({ success: true, data });
-  })
-);
-
-/** GET /api/public/clusters — BR-032 canonical unit grouping. */
-router.get(
-  '/public/clusters',
-  optionalAuth,
-  requirePermission(PERMISSIONS.PROPERTY_VIEW_PUBLIC),
-  asyncHandler(async (_req, res) => {
-    const { data, error } = await db
-      .from('clusters')
-      .select('code, name, display_order')
-      .order('display_order');
-
-    if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
-  })
-);
-
 /**
  * GET /api/public/rates
  *
