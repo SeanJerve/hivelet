@@ -12,7 +12,7 @@ written to her ledger.**
 > own book during the meeting.
 
 **How to use this:** work top to bottom. Section 1 is money and takes the longest. Section 2 is
-five accounting habits. Section 3 is three quick confirmations. Section 4 is not for her.
+five accounting habits, in the order they are easiest to answer. Section 3 is three quick confirmations. Section 4 is not for her.
 
 ---
 
@@ -68,7 +68,7 @@ Each covers **minus one day**. Almost certainly the end date should be a month l
 
 ---
 
-## 2. Four things about how she keeps the books
+## 2. Five things about how she keeps the books
 
 ### 2a. The ₱20 garbage fee stopped after June 2025 — was that deliberate?
 
@@ -123,6 +123,23 @@ spending were counted as a cost of the rental business.
 ☐ Move only the ₱35,228 — the other two are correctly filed where they are
 ☐ Leave everything where it is; the Penthouse area is for future spending only
 
+### 2d. Linda's fixed water — which column is it?
+
+The two Linda units (**LF ₱400, LB ₱200**) pay a fixed water charge rather than the ₱200-per-head
+rate. The same money currently lands in **two different columns** depending on when the row was
+written:
+
+- the **62 migrated rows** put it in `linda_water_charge`
+- a **newly entered row** puts it in `water_payment`
+
+That matters because the *Remitted Amount* is calculated as rent **+** `water_payment`. So a new row
+counts Linda's water as remitted money and an old one does not — **the same payment, two different
+totals.**
+
+**What we need:** is Linda's fixed water part of the remitted amount?
+☐ Yes — it is remitted like any other water payment
+☐ No — it is recorded separately and not remitted
+
 ### 2e. In 2025, ₱2.56 million was booked as personal rather than as a rental cost
 
 Read straight from her ledger. **She is profitable every year** — this is not a loss:
@@ -145,23 +162,6 @@ confirm it belongs there.**
 **What we need:**
 ☐ Correct — 2025 was an unusual year for the house, and none of it is a rental cost
 ☐ Some of it should be a rental cost: ____________________________________
-
-### 2d. Linda's fixed water — which column is it?
-
-The two Linda units (**LF ₱400, LB ₱200**) pay a fixed water charge rather than the ₱200-per-head
-rate. The same money currently lands in **two different columns** depending on when the row was
-written:
-
-- the **62 migrated rows** put it in `linda_water_charge`
-- a **newly entered row** puts it in `water_payment`
-
-That matters because the *Remitted Amount* is calculated as rent **+** `water_payment`. So a new row
-counts Linda's water as remitted money and an old one does not — **the same payment, two different
-totals.**
-
-**What we need:** is Linda's fixed water part of the remitted amount?
-☐ Yes — it is remitted like any other water payment
-☐ No — it is recorded separately and not remitted
 
 ---
 
