@@ -73,6 +73,28 @@ const SKIP_DIR = new Set([
   // chosen. Not a document anyone reads from, and not worth a banner each.
   'tmp',
 ]);
+
+/**
+ * Repo-relative directories skipped by PATH, not by bare name - `SKIP_DIR`
+ * matches any directory anywhere called e.g. `tmp`, which is too blunt here.
+ *
+ * `.claude/skills` is vendored third-party skill libraries. Their prose is
+ * about other people's products and trips the BR-035 shapes on subjects that
+ * have nothing to do with this property: an iPad doc says "Split View (50/50
+ * or 70/30)", an App Store doc says "revenue-share" about splitting money
+ * between developers. Neither names a party to `fifty_percent_share`.
+ *
+ * KNOWN COST, read this before adding a skill of our own here: the header of
+ * this file argues an instruction file is the WORST place for a retired
+ * framing, because the next contributor is told to write the thing the rule
+ * forbids. Skills are instruction files. Nothing below this line is checked,
+ * so a Hivelet-authored skill can reintroduce banned wording unseen. If we
+ * ever write our own skill, exclude the vendored subdirectories individually
+ * instead of the whole tree.
+ */
+const SKIP_PATH = new Set([
+  path.join('.claude', 'skills'),
+]);
 const EXT = new Set(['.md', '.ts', '.vue', '.sql', '.mjs', '.js', '.cjs', '.json', '.html']);
 
 const BANNED = [
@@ -202,6 +224,7 @@ function walk(dir, out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (SKIP_DIR.has(e.name)) continue;
     const p = path.join(dir, e.name);
+    if (SKIP_PATH.has(path.relative(root, p))) continue;
     if (e.isDirectory()) walk(p, out);
     else if (EXT.has(path.extname(e.name))) out.push(p);
   }
