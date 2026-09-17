@@ -1,0 +1,52 @@
+-- =============================================================================
+-- Migration 026 — A Forgotten Payment Insert Must Fail Closed
+-- =============================================================================
+-- @businessRules  BR-017 (Payment Verification — a human decides)
+-- @relates        OD-10 (tenant-submitted payments), which flagged this first
+--
+-- `payments.verification_status` is NOT NULL with `DEFAULT 'Verified'`. Read from
+-- `information_schema.columns`, not from a document — this is one of the few
+-- things `FULL_DATABASE_SCHEMA.sql` was right about, and it was checked anyway.
+--
+-- So an INSERT that omits the column produces a **Verified** payment that no
+-- human ever approved. That is the single thing BR-017 exists to prevent, and
+-- the schema hands it out as the default.
+--
+-- NOTHING IS STANDING ON IT TODAY. All three insert paths name the column
+-- explicitly, checked:
+--
+--   routes/admin.ts:2025          'Verified'             — an administrator
+--                                                          settling a vacancy,
+--                                                          with verified_by set
+--   services/adyenService.ts:304  'Pending Verification'
+--   services/adyenWebhookHandler.ts:178
+--                                 'Pending Verification'
+--
+-- There is no fourth path, in SQL or anywhere else.
+--
+-- WHY CHANGE IT THEN. Because the next insert path is already being discussed.
+-- OD-10 asks whether a resident may report a cash payment for the owner to
+-- confirm. If the answer is yes, someone writes a new insert — and if they
+-- forget this column, the resident's unverified claim lands in the ledger as
+-- settled money. The register spotted that risk and had no way to close it.
+--
+-- A default is a decision about what happens when someone forgets. This one was
+-- set to the least safe value available. It now fails CLOSED: a forgotten column
+-- produces a payment awaiting a human, which is recoverable and visible, instead
+-- of a payment claiming to have been approved, which is neither.
+--
+-- Same shape as migration `022`, where `current_user_role()` returned 'admin' to
+-- any caller it could not identify.
+--
+-- This changes NO existing row — a default applies only to future inserts, and
+-- every one of the 15 live payments already carries an explicit status.
+--
+-- Idempotent; safe to re-run. No data touched.
+-- =============================================================================
+
+ALTER TABLE payments
+  ALTER COLUMN verification_status SET DEFAULT 'Pending Verification';
+
+-- Verification (expect 'Pending Verification'::verification_status_type):
+--   SELECT column_default FROM information_schema.columns
+--    WHERE table_name = 'payments' AND column_name = 'verification_status';

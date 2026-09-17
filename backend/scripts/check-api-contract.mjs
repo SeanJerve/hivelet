@@ -378,6 +378,68 @@ if (adminToken) {
  *   3. a successful login RESETS the counter - otherwise five wrong guesses
  *      spread over a year eventually lock out the real owner
  */
+/**
+ * BR-017: EVERY INSERT INTO `payments` NAMES ITS VERIFICATION STATUS.
+ *
+ * `payments.verification_status` is NOT NULL, and until migration `026` it
+ * defaulted to **'Verified'** — so an insert that forgot the column produced a
+ * payment nobody had approved. That is the one thing BR-017 exists to prevent,
+ * handed out as the default.
+ *
+ * `026` changed the default to 'Pending Verification', so forgetting it now
+ * fails closed. This is the other half: a default is invisible at the call site,
+ * and relying on it silently is how the next author inherits the assumption
+ * rather than the decision. Naming the column keeps the intent where the insert
+ * is.
+ *
+ * It matters now rather than in the abstract, because **OD-10 is asking whether
+ * a resident may report a cash payment for the owner to confirm.** If she says
+ * yes, someone writes a fourth insert path — and that one is a resident's
+ * unverified claim.
+ *
+ * Source-level, like the lockout ordering below: there is no throwaway payment
+ * to insert against a live ledger to test this from the outside.
+ */
+{
+  const paymentWriters = [
+    'backend/src/routes/admin.ts',
+    'backend/src/routes/tenant.ts',
+    'backend/src/routes/public.ts',
+    'backend/src/services/adyenService.ts',
+    'backend/src/services/adyenWebhookHandler.ts',
+  ];
+
+  const bare = [];
+  let inserts = 0;
+  for (const rel of paymentWriters) {
+    const file = path.join(root, rel);
+    if (!fs.existsSync(file)) continue;
+    const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+    lines.forEach((line, i) => {
+      if (!/from\(\s*['"]payments['"]\s*\)/.test(line)) return;
+      // The insert may sit on this line or the next; the object follows it.
+      const window = lines.slice(i, i + 20).join('\n');
+      const upToNextTable = window.split(/from\(\s*['"](?!payments)/)[0];
+      if (!/\.insert\(/.test(upToNextTable.slice(0, 200))) return;
+      inserts++;
+      if (!/verification_status\s*:/.test(upToNextTable)) {
+        bare.push(`${rel}:${i + 1}`);
+      }
+    });
+  }
+
+  const label = 'every payments insert names verification_status';
+  const ok = inserts > 0 && bare.length === 0;
+  const detail = inserts === 0
+    ? 'NO payments insert found at all, so this checked nothing'
+    : bare.length === 0
+      ? `${inserts} insert path(s)`
+      : `relies on the column default: ${bare.join(', ')} - name it explicitly, BR-017 says a human decides`;
+
+  ok ? pass++ : (fail++, failures.push(`BR-017: ${label} (${detail})`));
+  console.log(`  ${ok ? 'OK  ' : 'FAIL'} ---  ${label} (${detail})`);
+}
+
 {
   const authSrc = fs.readFileSync(path.join(root, 'backend/src/services/authService.ts'), 'utf8');
   const envSrc = fs.readFileSync(path.join(root, 'backend/src/config/env.ts'), 'utf8');
