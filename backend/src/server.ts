@@ -27,37 +27,50 @@ const app = express();
  * in `routes/public.ts` - several hundred lines of HTML with inline `<script>`
  * blocks and `onclick=` handlers.
  *
- * That is where `'unsafe-inline'` and `scriptSrcAttr` come from. They are not
- * carelessness; without them that page does not run.
+ * ^ THAT WAS WRONG, AND IT WAS BACKWARDS. Corrected 2026-09-17.
  *
- * AND THAT PAGE IS CURRENTLY UNREACHABLE. `refuseWhenGatewayConfigured` answers
- * 404 for it whenever Adyen is configured, which it is. So the policy is
- * loosened today for a page nobody can open - true, and not worth changing days
- * before a defense, because the loosening becomes load-bearing again the moment
- * the system runs without gateway credentials, which is exactly the fallback the
- * page exists for.
+ * That route calls `res.setHeader('Content-Security-Policy', ...)` itself, which
+ * REPLACES this header rather than inheriting it. So this policy governs
+ * everything EXCEPT the cashier page - and `'unsafe-inline'` and `scriptSrcAttr`
+ * were being justified here by a page that never receives them.
  *
- * WORTH TIGHTENING LATER, in this order:
- *   1. `connectSrc: 'https://*'` is broader than anything here needs. Nothing on
- *      the cashier page calls out; it posts to its own origin, which `'self'`
- *      already covers.
- *   2. The inline handlers could become a single bundled script, which would let
- *      `'unsafe-inline'` and `scriptSrcAttr` go entirely.
+ * Verified against the running server: `GET /api/health` returns this policy;
+ * the cashier route returns 404, because `refuseWhenGatewayConfigured` answers
+ * 404 whenever Adyen is configured, which it is.
  *
- * Neither is urgent while the page 404s, and both are the kind of change that
- * wants a browser in front of it rather than a week before testing.
+ * The premise having been checked rather than repeated, this express app serves
+ * NO HTML other than that one page - no `express.static`, no `sendFile`, no SPA
+ * build. Errors come back as JSON. So what this policy actually governs is API
+ * responses, where the script directives cannot matter, and it costs nothing to
+ * state it correctly:
+ *
+ *   - `scriptSrc` / `scriptSrcAttr`: no inline script reaches a response this
+ *     policy covers, so the allowances are removed rather than left as a
+ *     justification that does not hold.
+ *   - `connectSrc`: was `'https://*'` plus `http://localhost:*`, broader than
+ *     anything here needs. The one page that calls out posts to its own origin,
+ *     and it is not covered by this header anyway.
+ *
+ * STILL WORTH DOING, AND DELIBERATELY NOT DONE HERE. The cashier page's OWN
+ * policy is looser than this one ever was - it allows `'unsafe-eval'` and
+ * `script-src https:`, neither of which that page uses. It becomes load-bearing
+ * the moment the system runs without gateway credentials, which is exactly the
+ * fallback the page exists for. Tightening it wants the page open in a browser
+ * to confirm it still runs, and it cannot be opened while it 404s. That is a
+ * change for after testing week, not days before it.
  */
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        // Style and font allowances are kept: they cost nothing, and they are
+        // what an HTML response from this origin would need if one is ever added.
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-        connectSrc: ["'self'", 'http://localhost:*', 'https://*'],
+        connectSrc: ["'self'"],
       },
     },
   })
