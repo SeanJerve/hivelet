@@ -106,7 +106,75 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — if the expense fetch failed, the dashboard would have shown the whole year's
+> **LATEST — a failed fetch told a resident their rent was settled. And `vue-tsc` does not
+> catch a component that does not exist, which matters for the redesign.**
+>
+> ### "All Rent Accounts Settled", out of a request that never came back
+>
+> `TenantPaymentsView` caught the failure of `GET /tenant/my-bills`, logged it, and left the
+> list empty — which rendered, **in green, with a tick and a "Paid Up to Date" badge**:
+>
+> > **All Rent Accounts Settled**
+> > You have no outstanding bills.
+>
+> That is an affirmative financial claim made to **the person who owes the money**, out of a
+> request that failed. A resident could read it and not pay. *"No bills" and "we could not read
+> your bills" are different sentences, and only one of them is safe to say.*
+>
+> The green all-clear now sits behind a branch only a list that actually loaded can reach.
+>
+> **The same block also promised** *"your next monthly statement will be issued on the 5th"*.
+> **There is no scheduled bill generator, and deliberately is not one** — collection happens in
+> person, so a nightly run would raise bills against residents she has already been paid by
+> (judgement log § 3.6). `TenantOverviewView` had this exact sentence corrected once already;
+> it survived here.
+>
+> **And the quieter form of it**, on the tenant overview: `totalAmountDue` starts at 0 and the
+> card renders it whenever the countdown is not `paid`, so a failed load showed a confident
+> **₱0 due**.
+>
+> **The Room & Rate Directory**, likewise: `rooms` is seeded, the view rendered `peso(u.price)`
+> straight from it, and **30 of the 33 seeded prices no longer match the database**. It now says
+> when the rates are not live, and tells you not to quote one.
+>
+> ### `vue-tsc` exits 0 on a component that does not exist
+>
+> I made the same slip twice while fixing the above — wrote an icon the file did not import —
+> so I checked what the toolchain does about it.
+>
+> **Vue resolves an unknown tag to nothing.** No throw, no build error; the page renders and the
+> element is simply **absent**, with the layout closing over the gap. `vue-tsc --noEmit`
+> **exits 0**. Demonstrated, not assumed: `<ThisIconDoesNotExist />` went into a real view and
+> the typecheck passed.
+>
+> **This is for the frontend team.** Every screen's markup is about to be rewritten, and a
+> moved, renamed or forgotten import is the easiest mistake to make while moving markup between
+> files — and the hardest to notice, because *the failure is a thing that is not there*.
+> `check:reachable` now asserts every component a template renders is imported by that file.
+> **Zero violations today** across all 41 files. Mutation tested 3/3, including a one-letter
+> misspelling and confirming a commented-out tag is not flagged.
+>
+> ### `check:liveness` was too narrow on its first day
+>
+> It read only `systemState.ts` — so it would have caught **none** of today's four fixes, which
+> are all in views. Widened to all of `frontend/src`, which found two more kinds of the same
+> claim:
+>
+> - `IncomeCollectionsView` keeps its **own** copy of the water fallbacks. **5** per-occupant and
+>   **3** Linda fallbacks across 41 files now, against 2 and 2 in one file before.
+> - **42 sentences state a rate as prose** — *"₱200 / head monthly rule"*, *"Water: ₱400.00 /
+>   month"*, and *"(N × ₱200/head)"* printed on the resident's own statement **beside the
+>   computed total**. None sit behind any fallback logic.
+>
+> Every one is correct today, checked against `system_settings`. All of them go silently wrong
+> the moment she changes a rate — and the one on the statement would then contradict the number
+> next to it. **Rewriting eleven files is not a change to make days before testing**, so the
+> check makes the staleness loud instead: change a rate, and it names every file still claiming
+> the old one.
+>
+> **493 commits total, 73 today. Seventeen suites green. Working tree clean.**
+
+> **PREVIOUS — if the expense fetch failed, the dashboard would have shown the whole year's
 > takings as profit. Seventeenth suite added, because that was the third time.**
 >
 > ### ₱3,745,419.51 of costs, silently becoming ₱0
@@ -173,6 +241,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > error carries one.
 >
 > **490 commits total, 70 today. Seventeen suites green. Working tree clean.**
+> *(as at that entry — the live figure is in the entry above)*
 
 > **PREVIOUS — a verified payment could be rejected, and the money stayed booked. Then the check
 > that guards the locked wording turned out to be excusing the live wording.**
