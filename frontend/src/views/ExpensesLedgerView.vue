@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { propertyToday, propertyDate } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
-import { expenseRecords, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
+import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api, API_BASE, getStoredToken } from '@/lib/api';
 import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
@@ -684,20 +684,29 @@ function exportFilteredExpenses() {
     <div class="grid gap-4 sm:grid-cols-3">
       <div class="surface-card p-5">
         <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Operating Expenses</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(totalJuly) }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">Disbursed in selected period</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ expenseRecordsFetchFailed ? '—' : peso(totalJuly) }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
+          <template v-else>Disbursed in selected period</template>
+        </p>
       </div>
 
       <div class="surface-card p-5">
         <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Utilities Subtotal</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(utilitiesTotal) }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">Water District, Power &amp; Fuel</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ expenseRecordsFetchFailed ? '—' : peso(utilitiesTotal) }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
+          <template v-else>Water District, Power &amp; Fuel</template>
+        </p>
       </div>
 
       <div class="surface-card p-5">
         <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Repairs &amp; Janitorial</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(repairsTotal) }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">Plumbing, fixtures &amp; cleaning</p>
+        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ expenseRecordsFetchFailed ? '—' : peso(repairsTotal) }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
+          <template v-else>Plumbing, fixtures &amp; cleaning</template>
+        </p>
       </div>
     </div>
 
@@ -760,7 +769,11 @@ function exportFilteredExpenses() {
           <tbody v-if="groupedExpenses.length === 0">
             <tr>
               <td colspan="7" class="p-8 text-center text-muted-foreground bg-white">
-                No expense entries found matching the criteria.
+                <template v-if="expenseRecordsFetchFailed">
+                  The expense ledger could not be loaded. This is not the same as there being
+                  none — press Refresh to retry.
+                </template>
+                <template v-else>No expense entries found matching the criteria.</template>
               </td>
             </tr>
           </tbody>

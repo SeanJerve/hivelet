@@ -262,6 +262,62 @@ if (!rates || typeof rates.waterRatePerOccupant !== 'number') {
   );
 }
 
+// ---------------------------------------------------------------- rule 5 ----
+/**
+ * The public site quotes a headline starting rent. It is a hardcoded string, and
+ * it is the one figure on this system that STRANGERS read.
+ *
+ * `₱4,500/mo` is correct today - it is the cheapest of the 33 units, and seven
+ * of them are at it. It stops being correct the moment the owner reprices that
+ * unit, and nothing about the page would change.
+ *
+ * Two other claims on that page CANNOT be pinned, and that is worth knowing
+ * rather than fixing here: `₱12.50 / kWh` and "readings are recorded on the
+ * 25th" exist nowhere but the page itself - not in `system_settings`, not in the
+ * database, not in the code. There is nothing to compare them against. They are
+ * on the client meeting sheet instead (§ 3b), because only the owner can say.
+ */
+const PUBLIC_PAGE = path.join(root, 'src', 'views', 'PublicGuestView.vue');
+if (fs.existsSync(PUBLIC_PAGE)) {
+  const page = fs.readFileSync(PUBLIC_PAGE, 'utf8');
+  const quoted = [...page.matchAll(/₱\s?([\d,]+)(?:\.\d+)?\s*\/\s*mo\b/gi)]
+    .map((m) => Number(m[1].replace(/,/g, '')));
+
+  let rooms = null;
+  try {
+    const r = await fetch(`${API}/public/rooms`);
+    if (r.ok) {
+      const body = await r.json();
+      rooms = body?.data ?? body;
+    }
+  } catch {
+    /* handled below */
+  }
+
+  if (!Array.isArray(rooms) || rooms.length === 0) {
+    notes.push(
+      'the public starting rent was not compared against the live units - ' +
+        '/public/rooms was unreachable. Start the backend and re-run.'
+    );
+    console.log('  SKIP  the advertised starting rent is the cheapest unit — backend unreachable');
+  } else if (quoted.length === 0) {
+    notes.push('no "₱N/mo" headline found on the public page - nothing to compare.');
+  } else {
+    const prices = rooms.map((r) => Number(r.current_price)).filter((n) => Number.isFinite(n));
+    const cheapest = Math.min(...prices);
+    const wrong = quoted.filter((q) => q !== cheapest);
+    check(
+      'the advertised starting rent is the cheapest unit',
+      wrong.length > 0,
+      `₱${cheapest.toLocaleString()}/mo, matching the cheapest of ${prices.length} units ` +
+        `(${prices.filter((p) => p === cheapest).length} of them at it)`,
+      `the public site advertises ${wrong.map((q) => '₱' + q.toLocaleString() + '/mo').join(', ')} ` +
+        `but the cheapest unit is now ₱${cheapest.toLocaleString()}. That page is read by people ` +
+        'who are not the owner, so it is the one figure here that reaches strangers.'
+    );
+  }
+}
+
 console.log('');
 for (const n of notes) console.log(`  note: ${n}`);
 

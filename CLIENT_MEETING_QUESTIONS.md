@@ -209,6 +209,38 @@ page, but we have not been able to prove it from the numbers alone.
 
 ---
 
+## 3b. Four things her public website tells strangers, that nobody has confirmed
+
+**This one is quick, and it is the only section where a wrong answer is visible to people who
+are not her.** The public pages quote these as policy to anyone who visits. Two of the four,
+we can check against the system. **The other two exist nowhere except on that page** — not in
+the database, not in the settings, not in the code — so there is no way to verify them and no
+way to notice if they go out of date.
+
+| | What the site says | Can we check it? |
+| :--- | :--- | :--- |
+| **Water** | *"a fixed standard rate of **₱200 per head** monthly"* | **Yes — matches the configured rate.** |
+| **Rents from** | *"**₱4,500/mo**"* as the headline starting price | **Yes — that is the cheapest of the 33 units, and 7 of them are at it.** |
+| **Electricity** | *"billed at actual consumption rate (**₱12.50 / kWh**)"* | **No.** That figure is not stored anywhere. It was typed onto the page. |
+| **Meter reading day** | *"Readings are recorded on the **25th** of every month"* | **No.** Nothing in the system records or enforces a reading day. |
+
+**So, two questions:**
+
+**Is ₱12.50 per kWh still what you charge?**
+
+☐ Yes, that is right   ☐ No, it is ₱________ / kWh   ☐ It varies — we should not print a figure
+
+**Do you read the meters on the 25th?**
+
+☐ Yes, the 25th   ☐ No, it is the ________   ☐ It varies — we should not print a date
+
+> *Why it is worth thirty seconds: the water rate and the ₱4,500 are pinned by a check now, so
+> if either drifts the build says so. These two cannot be, because there is nothing to pin them
+> to. If either is wrong, the site has been telling prospective residents the wrong thing, and
+> nothing in the system would ever notice.*
+
+---
+
 ## 4. Not for her — Sean's calls
 
 These need no client input. Listed so nothing is lost.
