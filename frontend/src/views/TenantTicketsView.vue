@@ -90,6 +90,22 @@ const activeRoomNumber = ref<string>('');
 
 // Status filter chips. 'All' is the default so nothing is hidden on first paint.
 const statusFilter = ref<'All' | 'Open' | 'Resolved'>('All');
+/**
+ * A repair goes Submitted, then In progress once a technician is attending it,
+ * then Done. The resident sees where theirs has got to rather than one word.
+ */
+const TICKET_STEPS = ['Submitted', 'In progress', 'Done'] as const;
+
+function ticketStep(status: string) {
+  if (RESOLVED_STATES.includes(status)) return 2;
+  if (status === 'In Progress') return 1;
+  return 0;
+}
+
+function ticketStepLabel(status: string) {
+  return TICKET_STEPS[ticketStep(status)];
+}
+
 
 const RESOLVED_STATES = ['Resolved', 'Closed'];
 
@@ -684,11 +700,32 @@ function statusClass(status: string) {
                 </div>
 
                 <div class="flex items-center gap-2.5 shrink-0">
-                  <span
-                    :class="[ 'badge-soft', RESOLVED_STATES.includes(ticket.status) ? 'badge-success' : 'badge-blue' ]"
+                  <!-- Where the request has got to. The words are the meaning;
+                       the marks repeat it. -->
+                  <ol
+                    class="hidden sm:flex items-center gap-1.5"
+                    :aria-label="`Progress: ${ticketStepLabel(ticket.status)}`"
                   >
-                    {{ ticket.status === 'Open' ? 'Submitted' : ticket.status }}
-                  </span>
+                    <li v-for="(step, i) in TICKET_STEPS" :key="step" class="flex items-center gap-1.5">
+                      <span
+                        aria-hidden="true"
+                        :class="[
+                          'size-2 rounded-full',
+                          i <= ticketStep(ticket.status) ? 'bg-brand' : 'bg-line',
+                        ]"
+                      />
+                      <span
+                        :class="[
+                          'text-xs',
+                          i === ticketStep(ticket.status) ? 'font-semibold text-ink' : 'text-ink-faint',
+                        ]"
+                      >
+                        {{ step }}
+                      </span>
+                      <span v-if="i < TICKET_STEPS.length - 1" aria-hidden="true" class="h-px w-4 bg-line" />
+                    </li>
+                  </ol>
+                  <span class="sm:hidden text-xs font-semibold text-ink">{{ ticketStepLabel(ticket.status) }}</span>
                   <div class="p-1 rounded-lg text-ink-soft group-hover:text-ink transition-colors">
                     <ChevronDown
                       :class="[ 'size-4 transition-transform duration-200', isTicketExpanded(ticket.id) ? 'rotate-180 text-brand' : '' ]"

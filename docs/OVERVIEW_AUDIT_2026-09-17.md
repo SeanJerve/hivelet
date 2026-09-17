@@ -40,6 +40,17 @@ marked otherwise. `check:all` passes 17 / 17. The screen contract is unchanged a
 | **D11** | Both old design documents carry a *replaced* banner |
 | **U1–U7** | Tabs, labels, disclosures and chart semantics added. Designed focus ring. Contrast is measured in the guideline |
 
+**Found later, while rolling the system out (2026-09-18):**
+
+- **F19 · Tenant payments screen counts only online payments · S2 · Behaviour.** The payment record
+  reads `/tenant/my-payments`, which is the gateway payments table. Cash that the landlady recorded
+  lives in the income records, and the tenant overview lists it. So a resident who has always paid
+  in person sees *"No payments are recorded for 2026"* on the payments screen while their own
+  overview lists four receipts. The sentence is about the wrong table, not about their money.
+  Rendered as the demo resident for unit 1A.
+- **Test tickets are still on the dispatch board.** Both appear under *To dispatch* until migration
+  027 is applied (`BLOCKED_FOR_SEAN.md` B-05).
+
 **Left for Sean (behaviour):**
 - **F2:** the settled branch still takes water from the newest bill. The page no longer prints a
   false equation, but a bill with ₱0 water beside one registered occupant is still visible.
