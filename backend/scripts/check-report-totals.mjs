@@ -278,12 +278,28 @@ for (const year of years) {
       fail++;
     } else {
       const rows = await sql(
-        `monthly_income_records?select=rent_amount,water_payment,gbg_fee,month&voided_at=is.null&year=eq.${year}`
+        `monthly_income_records?select=rent_amount,water_payment,gbg_fee,month,is_linda_billing` +
+        `&voided_at=is.null&year=eq.${year}`
       );
       const byMonth = new Map();
+      /**
+       * Split, because the sum alone cannot see the rule.
+       *
+       * Linda's two units are billed under a different rule set and are excluded
+       * from the grand subtotal on purpose (report spec 3 item 5, judgement log
+       * SS 3.5). This checker used to add `GRAND SUBTOTAL` and `Linda total`
+       * together and compare the pair against the whole month - which matches
+       * whether or not Linda is in the right half. A misallocation between them
+       * CANCELS OUT, and that misallocation is the only thing the rule forbids.
+       */
+      const byMonthGrand = new Map();
+      const byMonthLinda = new Map();
       for (const r of rows) {
         const m = Number(r.month);
-        byMonth.set(m, (byMonth.get(m) ?? 0) + Number(r.rent_amount ?? 0));
+        const amt = Number(r.rent_amount ?? 0);
+        byMonth.set(m, (byMonth.get(m) ?? 0) + amt);
+        if (r.is_linda_billing) byMonthLinda.set(m, (byMonthLinda.get(m) ?? 0) + amt);
+        else byMonthGrand.set(m, (byMonthGrand.get(m) ?? 0) + amt);
       }
 
       /**
@@ -299,6 +315,8 @@ for (const year of years) {
        */
       const col = columnOf(sheet, 'Rent Amount');
       const printed = new Map();
+      const printedGrand = new Map();
+      const printedLinda = new Map();
 
       if (col === null) {
         console.log('\n  FAIL  income.xlsx has no "Rent Amount" column');
@@ -313,10 +331,14 @@ for (const year of years) {
             return;
           }
           if (!current) return;
-          if (!/^GRAND SUBTOTAL/i.test(first) && !/^Linda total/i.test(first)) return;
+          const isGrand = /^GRAND SUBTOTAL/i.test(first);
+          const isLinda = /^Linda total/i.test(first);
+          if (!isGrand && !isLinda) return;
           const n = cell(row.getCell(col).value);
           if (typeof n === 'number' && Number.isFinite(n)) {
             printed.set(current, (printed.get(current) ?? 0) + n);
+            const half = isGrand ? printedGrand : printedLinda;
+            half.set(current, (half.get(current) ?? 0) + n);
           }
         });
       }
@@ -326,7 +348,11 @@ for (const year of years) {
         console.log('  SKIP  no month subtotals recognised, so nothing was compared. Not a pass.');
       }
       for (const [name, total] of printed) {
-        check(`${name} rent`, total, byMonth.get(MONTHS.indexOf(name) + 1) ?? 0);
+        const m = MONTHS.indexOf(name) + 1;
+        check(`${name} rent`, total, byMonth.get(m) ?? 0);
+        // And each half on its own, so a misallocation cannot cancel out.
+        check(`${name} grand (no Linda)`, printedGrand.get(name) ?? 0, byMonthGrand.get(m) ?? 0);
+        check(`${name} Linda only`, printedLinda.get(name) ?? 0, byMonthLinda.get(m) ?? 0);
       }
       if (printed.size) {
         const sheetSum = [...printed.values()].reduce((a, b) => a + b, 0);
