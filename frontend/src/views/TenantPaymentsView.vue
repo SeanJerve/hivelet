@@ -32,6 +32,15 @@ const selectedBillForAdyen = ref<any | null>(null);
 
 // Outstanding bills from DB
 const outstandingBills = ref<any[]>([]);
+/**
+ * Set when `/tenant/my-bills` could not be read.
+ *
+ * Without it an empty list rendered as **"All Rent Accounts Settled - you have
+ * no outstanding bills"**, in green, with a tick and a "Paid Up to Date" badge.
+ * That is an affirmative financial claim made out of a failed request, shown to
+ * the person who owes the money. A resident could read it and not pay.
+ */
+const billsLoadFailed = ref(false);
 const loadingBills = ref(false);
 const searchQuery = ref('');
 
@@ -119,11 +128,15 @@ function billBalance(bill: any): number {
 
 async function fetchOutstandingBills() {
   loadingBills.value = true;
+  billsLoadFailed.value = false;
   try {
     const data = await api.get<any[]>('/tenant/my-bills');
     outstandingBills.value = (data ?? []).filter(b => ((b as any).effective_status ?? b.status) !== 'Paid');
   } catch (err: any) {
     console.error('Failed to load bills:', err?.message || err);
+    // "No bills" and "we could not read your bills" are different sentences, and
+    // only one of them is safe to say to someone who may owe rent.
+    billsLoadFailed.value = true;
   } finally {
     loadingBills.value = false;
   }
@@ -195,12 +208,32 @@ function handleAdyenSuccess(refId: string) {
       <SkeletonCard variant="room" :count="1" />
     </div>
 
+    <!-- A failed read is NOT "nothing is owed". This branch comes first so the
+         green all-clear below can only be reached by a list that actually loaded. -->
+    <div v-else-if="billsLoadFailed" class="p-4 bg-amber-50/90 border border-amber-200 rounded-2xl flex items-center justify-between shadow-2xs">
+      <div class="flex items-center gap-3">
+        <AlertTriangle class="size-5 text-amber-600 shrink-0" />
+        <div>
+          <p class="text-xs font-bold text-amber-950">Your bills could not be loaded</p>
+          <p class="text-[11px] text-amber-800">This is not the same as having none. Press Refresh, and speak to the administrator if it keeps failing.</p>
+        </div>
+      </div>
+      <span class="badge-soft text-xs font-bold shrink-0">
+        Unknown
+      </span>
+    </div>
+
     <div v-else-if="outstandingBills.length === 0" class="p-4 bg-emerald-50/90 border border-emerald-200 rounded-2xl flex items-center justify-between shadow-2xs">
       <div class="flex items-center gap-3">
         <ShieldCheck class="size-5 text-emerald-600 shrink-0" />
         <div>
           <p class="text-xs font-bold text-emerald-950">All Rent Accounts Settled</p>
-          <p class="text-[11px] text-emerald-800">You have no outstanding bills. Your next monthly statement will be issued on the 5th.</p>
+          <!-- This used to promise "your next monthly statement will be issued on the
+               5th". There is no scheduled bill generator and there is deliberately not
+               one - collection happens in person, so a nightly run would raise bills
+               against residents the owner has already been paid by (judgement log
+               § 3.6). The sentence promised a thing the system does not do. -->
+          <p class="text-[11px] text-emerald-800">You have no outstanding bills. Bills are issued by the administrator as they fall due, not on a fixed date.</p>
         </div>
       </div>
       <span class="badge-soft badge-success text-xs font-bold shrink-0">

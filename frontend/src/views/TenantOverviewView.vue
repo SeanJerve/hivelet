@@ -56,6 +56,17 @@ const isFabOpen = ref(false);
  * sub-meter for every unit in the property - the system holds none of those
  * facts, and it does not model electricity at all.
  */
+/**
+ * Set when the tenant's own data could not be read.
+ *
+ * `totalAmountDue` initialises to 0, and the amount card renders
+ * `'₱' + totalAmountDue` whenever the countdown is not 'paid'. So a failed
+ * load showed the resident **₱0 due** - quieter than the sibling defect on the
+ * payments screen, and the same claim: that nothing is owed, asserted out of a
+ * request that never came back.
+ */
+const tenantDataLoadFailed = ref(false);
+
 const tenantData = ref({
   name: currentUser.value?.fullName || '',
   room: '',
@@ -192,6 +203,7 @@ async function fetchTenantData() {
       }
     }
 
+    tenantDataLoadFailed.value = false;
     // Fetch bills, payments and income records for the monthly statement
     const [billsData, paymentsData, incomeData] = await Promise.all([
       api.get<any[]>('/tenant/my-bills'),
@@ -299,6 +311,7 @@ async function fetchTenantData() {
 
   } catch (err: any) {
     console.error('Failed to load tenant data:', err?.message || err);
+    tenantDataLoadFailed.value = true;
   } finally {
     loading.value = false;
   }
@@ -440,11 +453,14 @@ async function handlePayOnline() {
               <AlertTriangle v-else class="size-4" />
             </span>
           </div>
-          <p class="tabular mt-3 font-display text-3xl font-black leading-tight" :class="dueDateCountdown.severity === 'paid' ? 'text-emerald-800' : 'text-rose-800'">
-            {{ dueDateCountdown.severity === 'paid' ? 'Settled' : '₱' + tenantData.totalAmountDue.toLocaleString() }}
+          <!-- A failed load must not read as a figure. `totalAmountDue` starts at 0,
+               so this card said "₱0" for a request that never came back. -->
+          <p class="tabular mt-3 font-display text-3xl font-black leading-tight" :class="tenantDataLoadFailed ? 'text-muted-foreground' : dueDateCountdown.severity === 'paid' ? 'text-emerald-800' : 'text-rose-800'">
+            {{ tenantDataLoadFailed ? '—' : dueDateCountdown.severity === 'paid' ? 'Settled' : '₱' + tenantData.totalAmountDue.toLocaleString() }}
           </p>
-          <p class="mt-1.5 text-xs font-medium" :class="dueDateCountdown.severity === 'paid' ? 'text-emerald-700' : 'text-rose-700'">
-            {{ dueDateCountdown.severity === 'paid' ? 'Next Due: ' + (tenantData.nextDueDateDisplay || 'Upcoming Period') : tenantData.dueDaysRemaining }}
+          <p class="mt-1.5 text-xs font-medium" :class="tenantDataLoadFailed ? 'text-muted-foreground' : dueDateCountdown.severity === 'paid' ? 'text-emerald-700' : 'text-rose-700'">
+            <template v-if="tenantDataLoadFailed">Could not be loaded — this is not the same as nothing being owed. Refresh to retry.</template>
+            <template v-else>{{ dueDateCountdown.severity === 'paid' ? 'Next Due: ' + (tenantData.nextDueDateDisplay || 'Upcoming Period') : tenantData.dueDaysRemaining }}</template>
           </p>
         </div>
       </div>
