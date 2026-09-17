@@ -35,6 +35,12 @@ Fifteen green. If `check:api`, `check:billing` or `check:adyen` fail to connect,
 running — `npm run dev:backend` first. Run it again at the end: a suite that was green before and
 red after tells you exactly what the rehearsal broke.
 
+**Screen names below are the ones in the sidebar**, read from `AppSidebar.vue` rather than
+remembered: *Executive Overview, Room & Rate Directory, Active Tenants, Income & Collections,
+Monthly Expenses, Maintenance Dispatch, Prospect Inquiries, System Audit Trail* — and for a
+resident, *Unit Overview, Payment & Billing, Maintenance Tickets, My Profile*. **If the redesign
+renames any of them, these steps need renaming with it.**
+
 Keep a note of anything that does not match the "should see" column. **A step that fails is the
 point of doing this** — better now than in front of the panel.
 
@@ -79,7 +85,7 @@ Sign in as the administrator.
 | 4 | **Change Password** from the account menu. Type the wrong current password first, deliberately. | *"That is not your current password."* against the field — **and you stay signed in.** If you get bounced to the login screen, stop and say so: that is the failure this was built to avoid. | |
 | 5 | Now change it for real, to something you will remember. | Toast: *"Password changed."* You stay signed in. | ✍ |
 | 6 | Sign out, sign back in with the **new** password. | Works. | |
-| 7 | Open **Unit Directory**, edit `PH`. Change the rate from ₱12,000 to ₱12,500 and save. | Saved. This also writes a `room_price_history` row — by database trigger, so the history cannot drift from the rate. | ✍ |
+| 7 | Open **Room & Rate Directory**, edit `PH`. Change the rate from ₱12,000 to ₱12,500 and save. | Saved. This also writes a `room_price_history` row — by database trigger, so the history cannot drift from the rate. | ✍ |
 | 8 | Onboard a tenant into `PH`. Use an obviously fake name — *"REHEARSAL Test"* — a phone number you control, move-in date today. | Created, and `PH` flips to **Occupied**. | ✍ |
 | 9 | Try to onboard a **second** tenant with the same phone number. | Refused: *"That phone number already signs someone in to the portal."* | |
 | 10 | Edit the rehearsal tenant — change the occupant count to 2. | Saved. | ✍ |
@@ -126,8 +132,8 @@ Back to the administrator.
 | :-- | :--- | :--- | :-- |
 | 18 | **Record an on-site collection** for `PH`. Receipt number **`REHEARSAL-001`** so it is findable. | Written to the ledger, bills settled against it. **This is the path no real collection has ever taken.** | ✍ |
 | 19 | Record **the exact same receipt again** — same unit, number, date and amount. | Refused: *"Receipt REHEARSAL-001 is already recorded for unit PH on …"* If it accepts it, the duplicate guard is broken and the ledger can double-count. | |
-| 20 | Open **Inquiries**. Reply to the enquiry from step 3, then close it. | Message posts; status moves to **Closed**. | ✍ |
-| 21 | Open **Maintenance**. Move the rehearsal ticket to In Progress, then Resolved, then delete it. | Each transition saves. `PH` returns from **Under Maintenance** to **Occupied**. | ✍ |
+| 20 | Open **Prospect Inquiries**. Reply to the enquiry from step 3, then close it. | Message posts; status moves to **Closed**. | ✍ |
+| 21 | Open **Maintenance Dispatch**. Move the rehearsal ticket to In Progress, then Resolved, then delete it. | Each transition saves. `PH` returns from **Under Maintenance** to **Occupied**. | ✍ |
 | 22 | Add an expense entry against **Penthouse**, ₱100, description *"REHEARSAL"*. Then edit the amount, then delete it. | Each step saves; allocations recompute. | ✍ |
 | 23 | Download **income.xlsx** and **expenses.xlsx**. | Real workbooks that open in Excel. Check `REHEARSAL-001` appears in the income sheet, and that the **LINDA** line is present — ₱18,600 across 2024–2026. | |
 
