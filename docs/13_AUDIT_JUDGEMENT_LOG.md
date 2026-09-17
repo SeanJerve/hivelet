@@ -905,6 +905,38 @@ field without one is a bug report.
 
 ---
 
+#### 20. A constraint changes what the code must handle
+
+Migration `024` put a unique index on `transaction_reference`, because
+`adyenWebhookHandler`'s idempotency was a **read followed by a write** and Adyen
+retries *while the first attempt is still running* — two handlers read "not
+found" at the same moment and both insert.
+
+The index was the easy half. **The half that would have caused an outage was
+what the code then had to do with it.**
+
+A unique violation came back as `outcome: 'failed'`. `failed` makes the route
+answer **500**. **Adyen retries on 500.** So the index would have converted a
+harmless duplicate into a notification that can never be acknowledged and never
+stops arriving — strictly worse than the double-credit it was added to prevent.
+
+`23505` now returns `duplicate`, which answers 200.
+
+**The general rule:** adding a constraint does not only forbid something. It
+introduces a **new error your code has never seen**, on a path that previously
+could not fail. Before applying one, ask:
+
+| | |
+| :--- | :--- |
+| What error does this raise, and where does it surface? | `23505`, from an insert that used to be infallible |
+| What does the caller do with it today? | returned `failed` → HTTP 500 |
+| Is that the right thing? | no — and for a retrying caller, catastrophically not |
+
+*I would have shipped the index without the handler change if I had stopped at
+"the migration applied cleanly".*
+
+---
+
 ---
 
 ## 3. Judgement calls a fresh reader might reverse
@@ -997,6 +1029,39 @@ generator would raise bills for tenants the owner has already been paid by.
 If you add a scheduler, you are changing how this business works, not fixing a gap.
 
 ---
+
+### 3.6b The receipt guard is code only, deliberately — and here is the work if you disagree
+
+`POST /admin/income-records` refuses a duplicate receipt by reading first: room,
+invoice number, date, amount, **year and month**. That is a read-then-write, the
+same shape migration `024` had to close for the Adyen webhook, and it is
+**deliberately left as code**.
+
+**The feasibility work is done.** A unique index on those six columns would apply
+cleanly: **zero colliding groups across all 937 rows**, checked 2026-09-17. The
+year and month columns are what make it safe — without them it would reject the
+arrears settlements, where one receipt number legitimately covers four
+consecutive months on four rows.
+
+**It was still declined, because the threat is not there.** The webhook case is
+different in kind, not degree:
+
+| | the Adyen webhook | the on-site receipt form |
+| :--- | :--- | :--- |
+| who calls it | a gateway that **retries by design**, concurrently, while the first attempt runs | one administrator, at a counter |
+| what stops a repeat | nothing — retrying is the protocol | the submit button disables while saving; a retry arrives after the first completed, so the read catches it |
+| cost of the race | the property is paid once and **credited twice** | the same, but requiring two genuinely concurrent submissions from one person |
+
+Against that, a unique index is a **permanent refusal on the owner's own
+ledger**. If a case exists that none of us thought of, she meets a rejection she
+cannot work around, on the one screen where money is recorded. A hard constraint
+on a live financial table wants a real threat, and this one does not have one.
+
+**If you disagree, the index is safe to add today and the check has been run.**
+What you must not do is add it without also deciding what
+`POST /admin/income-records` does with `23505` — it currently throws
+`ApiError.internal`, which is a **500**, where the guard beside it returns a
+clean **409**. See entry 20.
 
 ### 3.7 Which multi-table writes are atomic, and what the other twelve do instead
 
