@@ -106,7 +106,88 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — a quote in a resident's name would have shifted every column of her income CSV. The
+> **LATEST — a verified payment could be rejected, and the money stayed booked. Then the check
+> that guards the locked wording turned out to be excusing the live wording.**
+>
+> ### A settled payment could be un-settled, and only three of the four records moved
+>
+> `PATCH /admin/payments/:id/verify` updated the row with a bare `.eq('id', …)` on any transition
+> that was not Verify. **It never looked at where the payment already stood.** So Verified →
+> Rejected was accepted, and left four records disagreeing about one sum of money:
+>
+> | | |
+> | :--- | :--- |
+> | the payment | read **Rejected** |
+> | the bill | was reopened to **Due**, so the resident still owed it |
+> | the income row | **stayed**, so the ledger still counted the money |
+> | `verified_at` / `verified_by` | were **nulled**, erasing who had banked it |
+>
+> The owner would have been chasing rent she had already been paid, with no record of who took
+> it. The comment above that branch says rejection *"touches no ledger row, so there is nothing
+> to tear"* — true only while the payment has never been verified.
+>
+> **Two ways in, neither needing bad intent.** `IncomeCollectionsView` filters to Pending
+> Verification **in the client**, from a list fetched on mount and refetched only after an action
+> — so two administrators with the queue open is enough. So is one administrator verifying the
+> wrong row and pressing Reject to undo it.
+>
+> **Not live — checked:** all 15 payments read Verified, none Rejected, every `verified_at`
+> intact. Fixed with an explicit refusal that **names the remedy** (void the income record, which
+> is a soft void keeping `voided_at` / `voided_by` / `void_reason`) and compare-and-set on the
+> status that was read.
+>
+> **The verify path was checked in the same pass and is sound** — `settle_verified_payment` takes
+> `FOR UPDATE` on the payment and re-reads the status, returning `already_done`. Read from
+> `pg_proc`, not from the comment claiming it.
+>
+> **Deliberately not added to `check:api`.** That suite promises it performs no writes and is safe
+> against production. A probe that corrupts a payment when the guard is broken is a check whose
+> failure mode is the disaster it tests for. The behavioural test went into the rehearsal instead,
+> on a payment a human creates.
+>
+> ### And then the wording check, which was green over the worst instance of it
+>
+> `check:canon` excuses a banned phrase inside quotes, because **in prose that is how you forbid
+> one** — you quote it and say not to use it. Every register here is written that way.
+>
+> **In code that reasoning inverts.** Quotes are string delimiters, so a quoted banned phrase is
+> not someone citing it — it is the literal text a user reads. The rule was excusing the most live
+> wording in the repository:
+>
+> - the toast the owner reads **every time she verifies a payment**
+> - a label seeded by migration `004` into a `system_settings` row **still in the live database**
+>
+> Both named a **purpose** for `fifty_percent_share`, which BR-035 forbids as squarely as naming a
+> party — and the pattern was not looking for that phrasing at all, only for the party spellings.
+>
+> **Mutation tested, 7/7 shapes**, each broken in a real file and reverted in a `finally`: string
+> literal naming a purpose (fails), naming a party (fails), quoted inside a comment (passes — a
+> comment explaining the ban *is* a citation), unquoted in a comment (fails), quoted in prose
+> (passes), asserted in prose (fails), `profit-sharing` in prose (fails).
+>
+> **Three violations it then caught, all fixed.** The toast. Migration `004`, which gets a banner
+> rather than an edit — it records what ran on the owner's database that day, and **migration
+> `025` corrects the live row** (applied, read back to confirm). And `AdminOverviewView`'s
+> `@businessRules` tag, which was **wrong twice over**: it cited BR-032 for the 50% column, and
+> BR-032 is the *Canonical Unit List*. Every other `BR-nnn (description)` tag in the codebase was
+> cross-checked against `02_BUSINESS_RULES.md` — this was the only one wrong.
+>
+> **Migration 025 also records what that row is not.** `fifty_percent_share` is
+> `GENERATED ALWAYS AS (rent_amount / 2.0)` — read from `information_schema`. The divisor is in
+> the column definition, so setting the row to 60 would change nothing, and **no code path reads
+> the key**. The row is kept rather than deleted, and now says so.
+>
+> ### A number I published was wrong, and here is why it drifted
+>
+> **The true total is 485 commits, not 271.** The 271 sat in a *historical* section of this file
+> — next to *"seven verification suites"* and *"`check:api` 53/53"*, neither of which has been
+> true for days — and was being incremented each session. A running total embedded in a dated
+> snapshot gets bumped and drifts. That line now states what was true when it was written, and
+> the live figure lives here, at the top, where it is re-measured each time.
+>
+> **485 commits total, 65 today. Sixteen suites green. Working tree clean.**
+
+> **PREVIOUS — a quote in a resident's name would have shifted every column of her income CSV. The
 > fix was already in this repository, one file over.**
 >
 > The income export wrapped each text field in `"` and stopped there. **A quote inside the value
@@ -4180,7 +4261,10 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > Memory, FR-034 Water Payment Validation — both match `03_REQUIREMENTS.md`) and **E-19**
 > (DFD process counts correctly distinguished as legacy 5, submitted 6, corrected 7).
 
-**271 commits, all pushed to `main`. Working tree clean.**
+**All work to this point pushed to `main`. Working tree clean.**
+*(A running commit total stood here and was being incremented every session, which drifted it out
+of step with the rest of the paragraph — and with `git`. The live figure is at the top of this
+file. See the entry for 17 Sep.)*
 Backend up on :5000, `rlsLockdown: "enforced"`, all seven verification suites green
 (`check:api` 53/53 · `check:adyen` 23/23 · `check:billing` · `check:writes` · `check:rules`
 · `check:secrets` · `check:tokens`), plus `check:columns`, added this session.
