@@ -31,6 +31,25 @@
  * addresses sending one request each pass untouched. It stops the realistic
  * case, which is one person or one script, and says so rather than implying
  * more.
+ *
+ * WHY `POST /auth/login` IS NOT WRAPPED IN THIS
+ * ---------------------------------------------
+ * Considered and declined, 2026-09-17.
+ *
+ * The control that matters there already exists and is stronger: `profiles`
+ * carries `failed_login_count` and `locked_until`, so guessing is stopped per
+ * ACCOUNT rather than per address - which is the direction that actually
+ * protects a resident, since an attacker can change address far more easily
+ * than they can change whose account they are guessing at.
+ *
+ * Adding a per-IP limit on top would mostly limit US. `check:api` and
+ * `check:reports` sign in on every run, and `npm run check:all` is run many
+ * times an hour while working. A limit loose enough not to break that is loose
+ * enough not to matter; a limit tight enough to matter breaks the suites. Days
+ * before a defense, that trade is not worth making.
+ *
+ * Worth revisiting when the system is deployed somewhere the verification
+ * suites are not hammering it.
  */
 import type { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/ApiError.js';
