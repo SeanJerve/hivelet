@@ -6,6 +6,9 @@ import { peso } from '@/lib/canonicalUnits';
 import { api, API_BASE, getStoredToken } from '@/lib/api';
 import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import OverviewTile from '@/components/overview/OverviewTile.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
+import SegmentBar from '@/components/overview/SegmentBar.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 
 interface ApiExpense {
@@ -244,6 +247,25 @@ const utilitiesTotal = computed(() =>
     .filter((e) => e.category.toLowerCase().includes('water') || e.category.toLowerCase().includes('light') || e.category.toLowerCase().includes('util'))
     .reduce((s, e) => s + e.splits.reduce((acc, x) => acc + x.amount, 0), 0)
 );
+
+/**
+ * Where the filtered money actually went. Every entry is allocated across the
+ * five property areas (BR-044), and those allocations add up to the entry's
+ * face value, so this is a true part-to-whole and can be drawn as one bar.
+ */
+const areaSplit = computed(() => {
+  const totals = new Map<string, number>();
+  for (const e of filtered.value) {
+    for (const s of e.splits) {
+      totals.set(s.area, (totals.get(s.area) ?? 0) + s.amount);
+    }
+  }
+  const tones = ['brand', 'bright', 'night', 'soft', 'hatch'] as const;
+  return [...totals.entries()]
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({ label, value, tone: tones[i % tones.length] }));
+});
 
 const repairsTotal = computed(() =>
   filtered.value
@@ -680,34 +702,70 @@ function exportFilteredExpenses() {
       </div>
     </div>
 
-    <!-- Stat Cards -->
-    <div class="grid gap-4 sm:grid-cols-3">
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">Total Operating Expenses</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ expenseRecordsFetchFailed ? '—' : peso(totalJuly) }}</p>
-        <p class="mt-1 text-xs text-ink-soft">
-          <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
-          <template v-else>Disbursed in selected period</template>
-        </p>
-      </div>
+    <!-- What was spent, and where it landed -->
+    <div class="grid gap-4 xl:grid-cols-12">
+      <OverviewTile title="Spent in this view" class="xl:col-span-4">
+        <UnavailableNote
+          v-if="expenseRecordsFetchFailed"
+          message="Expenses could not be loaded. That is not the same as nothing being spent."
+          @retry="fetchExpenses"
+        />
+        <template v-else>
+          <p class="text-5xl leading-none font-semibold tabular tracking-tight">{{ peso(totalJuly) }}</p>
+          <p class="text-sm text-ink-soft">Across {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</p>
+          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1 text-sm">
+            <div class="flex items-baseline justify-between gap-3 py-2">
+              <dt class="text-ink-soft">Utilities</dt>
+              <dd class="tabular font-semibold">{{ peso(utilitiesTotal) }}</dd>
+            </div>
+            <div class="flex items-baseline justify-between gap-3 py-2">
+              <dt class="text-ink-soft">Repairs and cleaning</dt>
+              <dd class="tabular font-semibold">{{ peso(repairsTotal) }}</dd>
+            </div>
+          </dl>
+        </template>
+      </OverviewTile>
 
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">Utilities Subtotal</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ expenseRecordsFetchFailed ? '—' : peso(utilitiesTotal) }}</p>
-        <p class="mt-1 text-xs text-ink-soft">
-          <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
-          <template v-else>Water District, Power &amp; Fuel</template>
+      <OverviewTile title="Where it landed" class="xl:col-span-8">
+        <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="fetchExpenses" />
+        <p v-else-if="areaSplit.length === 0" class="text-sm text-ink-soft">
+          No expenses match the filters above.
         </p>
-      </div>
-
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs font-semibold text-ink-soft">Repairs &amp; Janitorial</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ expenseRecordsFetchFailed ? '—' : peso(repairsTotal) }}</p>
-        <p class="mt-1 text-xs text-ink-soft">
-          <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
-          <template v-else>Plumbing, fixtures &amp; cleaning</template>
-        </p>
-      </div>
+        <template v-else>
+          <SegmentBar
+            :segments="areaSplit"
+            :label="`How ${peso(totalJuly)} divides across the property areas`"
+          />
+          <ul class="flex flex-col gap-2.5">
+            <li v-for="a in areaSplit" :key="a.label" class="flex items-center justify-between gap-3 text-sm">
+              <span class="flex min-w-0 items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  :class="[
+                    'size-3 shrink-0 rounded-full',
+                    a.tone === 'brand' && 'bg-brand',
+                    a.tone === 'bright' && 'bg-brand-bright',
+                    a.tone === 'night' && 'bg-night',
+                    a.tone === 'soft' && 'bg-brand-soft',
+                    a.tone === 'hatch' && 'hatch border border-line',
+                  ]"
+                />
+                <span class="truncate">{{ a.label }}</span>
+              </span>
+              <span class="flex shrink-0 items-baseline gap-3">
+                <span class="text-xs text-ink-faint tabular">
+                  {{ totalJuly > 0 ? Math.round((a.value / totalJuly) * 100) : 0 }}%
+                </span>
+                <span class="tabular font-semibold">{{ peso(a.value) }}</span>
+              </span>
+            </li>
+          </ul>
+          <p class="text-xs leading-5 text-ink-faint">
+            Main House and Other are the owner's own costs. They are recorded here but never subtracted from
+            rental income.
+          </p>
+        </template>
+      </OverviewTile>
     </div>
 
     <!-- Table Section -->

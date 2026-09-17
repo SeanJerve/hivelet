@@ -90,6 +90,15 @@ const activeClusters = computed(() => {
   return CLUSTERS;
 });
 
+/** Occupied and total for one cluster, from the same rows the grid draws. */
+function clusterOccupancy(clusterName: string) {
+  const units = getUnitsForCluster(clusterName);
+  return {
+    total: units.length,
+    occupied: units.filter((u) => u.status === 'settled' || u.status === 'pending' || u.tenant !== null).length,
+  };
+}
+
 function getUnitsForCluster(clusterName: string) {
   return filteredRooms.value.filter((r) => r.cluster === clusterName);
 }
@@ -305,20 +314,24 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
         v-show="getUnitsForCluster(clusterName).length > 0"
         class="rounded-tile bg-tile rounded-tile overflow-hidden border border-line"
       >
-        <!-- Cluster Header -->
-        <header class="flex items-center justify-between gap-3 border-b border-line bg-canvas px-5 py-3.5">
-          <div class="flex items-center gap-2.5">
-            <span class="size-2.5 rounded-full bg-foreground"></span>
-            <h2 class="text-sm font-semibold text-ink">
-              {{ clusterName }}
-            </h2>
-            <span class="text-xs font-medium text-ink-soft">
-              ({{ getUnitsForCluster(clusterName).length }} units)
-            </span>
+        <!-- Cluster header. The strip is one mark per unit in this cluster:
+             solid when someone lives there, hatched when it is free. -->
+        <header class="flex flex-col gap-2.5 border-b border-line px-5 py-4">
+          <div class="flex items-baseline justify-between gap-3">
+            <h2 class="text-[0.9375rem] font-semibold text-ink">{{ clusterName }}</h2>
+            <p class="text-xs tabular text-ink-soft">
+              {{ clusterOccupancy(clusterName).occupied }} of {{ clusterOccupancy(clusterName).total }} occupied
+            </p>
           </div>
-
-          <div class="flex items-center gap-2 text-xs text-ink-soft">
-            <span>Active Inventory</span>
+          <div class="flex gap-1" aria-hidden="true">
+            <span
+              v-for="n in clusterOccupancy(clusterName).total"
+              :key="n"
+              :class="[
+                'h-1.5 flex-1 rounded-full',
+                n <= clusterOccupancy(clusterName).occupied ? 'bg-brand' : 'hatch border border-line',
+              ]"
+            />
           </div>
         </header>
 
