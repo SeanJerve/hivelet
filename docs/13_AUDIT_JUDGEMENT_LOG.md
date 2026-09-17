@@ -853,6 +853,58 @@ defects in my writing than in anyone else's.*
 
 ---
 
+#### 19. Ask which screens trust shared state without checking whether it is live
+
+One question produced **three money findings in a row** on 2026-09-17:
+
+> *Which views read `rooms` / `tenants` without checking whether the fetch
+> succeeded?*
+
+Eight views read `rooms`. **Two** check `roomsFetchFailed`. The other six trust
+it unconditionally — and `rooms` is **seeded from `canonicalUnits.ts`** so the
+page has something to render before the API answers.
+
+| What was trusted | What it actually held |
+| :--- | :--- |
+| the unit's **price** | a hardcoded snapshot. **30 of 33 no longer match the database**, by up to ₱2,000 |
+| the unit's **occupant count** | `Math.min(capacity, 2)` — a number invented from how big the room is |
+
+**Both feed the on-site cash form**, whose contents become the rent and the water
+in the owner's ledger. The occupant count is worse than the price, because the
+form *refuses* any water figure below `occupants × rate` — so a phantom second
+occupant does not just suggest an overcharge, **it enforces one**.
+
+And the invented count was not confined to the failure case. It was the mapping
+on the **successful** path too: `activeRoomAssignment` was fetched, and used two
+lines below for the resident's name, while `occupants` came from capacity. On
+the owner's dashboard that projected **₱12,800 of water a month against a real
+₱6,400** — exactly double, because most units house one person and every one of
+them was counted as two.
+
+#### Why this shape is worth hunting deliberately
+
+A fallback is **invisible when it is right**, and every one of these was right
+once. `basePrice` matched the database the day it was written. `min(capacity, 2)`
+was a fair guess when nobody had entered real headcounts. They decay silently,
+because nothing fails — the page renders, the form fills, the number looks like a
+fact.
+
+**The tell is a value that has two possible sources and no way to say which one
+it came from.** Wherever you find that, ask:
+
+| Ask | On this project |
+| :--- | :--- |
+| Is there a flag saying the data is not live? | `roomsFetchFailed` existed already; six of eight views ignored it |
+| Does the fallback feed a **number a person will act on**? | rent and water, straight into the ledger |
+| Would being wrong look like anything? | no — a filled field reads as a fact |
+
+**The fix is almost never a better guess.** It is refusing to guess, and saying
+so where the guess used to be: *"Live unit rates could not be loaded. Type the
+amount from the receipt."* A blank field with a reason is a working form. A blank
+field without one is a bug report.
+
+---
+
 ---
 
 ## 3. Judgement calls a fresh reader might reverse
