@@ -17,6 +17,7 @@ import { db } from '../config/db.js';
 import { optionalAuth, requirePermission } from '../middleware/auth.js';
 import { PERMISSIONS } from '../config/rbac.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { getWaterRatePerOccupant, getLindaFixedWaterCharge } from '../services/settingsService.js';
@@ -158,6 +159,13 @@ const inquirySchema = z.object({
  */
 router.post(
   '/public/inquiries',
+  /**
+   * The only genuinely open write in the system, so the only one that needs
+   * this. Ten in a quarter of an hour from one address is far above anything a
+   * real prospect does and far below anything that fills the administrator's
+   * inbox. See middleware/rateLimit.ts for what it is and is not.
+   */
+  rateLimit({ max: 10, windowMs: 15 * 60 * 1000, what: 'enquiries' }),
   optionalAuth,
   requirePermission(PERMISSIONS.INQUIRY_CREATE),
   asyncHandler(async (req, res) => {

@@ -46,7 +46,7 @@ point of doing this** — better now than in front of the panel.
 | :-- | :--- | :--- | :-- |
 | 1 | Open the public site signed out. Browse the unit catalogue. | 33 units. Every one **without a photo** — `room_photos` is empty, which is expected and is worth deciding about before filming. | |
 | 2 | Open a unit's detail. | Rate, floor, cluster, occupancy. No resident name anywhere — the public payload carries nothing tenant-shaped. | |
-| 3 | Send an enquiry from a unit page. | "Thank you" confirmation. | ✍ |
+| 3 | Send an enquiry from a unit page. | "Thank you" confirmation. **If you get *"Too many enquiries from this connection"*, that is the new per-IP limit doing its job** — ten per fifteen minutes from one address. Wait it out or use another connection. | ✍ |
 
 **Undo 3:** the enquiry appears in **Inquiries**; close it in step 20, or delete the `inquiries` row.
 

@@ -81,6 +81,18 @@ export class ApiError extends Error {
     return new ApiError(409, 'CONFLICT', message);
   }
 
+  /**
+   * 429. Used by the per-IP limiter on the one endpoint a stranger can write
+   * through. The message names the wait, because a limit that cannot be waited
+   * out reads as a broken form.
+   *
+   * `RATE_LIMITED` was already in `ApiErrorCode` and had never been used by
+   * anything - the code was reserved for this and the limiter was never built.
+   */
+  static tooManyRequests(message: string) {
+    return new ApiError(429, 'RATE_LIMITED', message);
+  }
+
   static internal(message = 'Internal server error.') {
     return new ApiError(500, 'INTERNAL', message);
   }
