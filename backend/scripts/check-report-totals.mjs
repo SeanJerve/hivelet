@@ -248,6 +248,68 @@ for (const year of years) {
        *      peso amount. It is also the exact cell that broke the second
        *      version of this checker.
        */
+      /**
+       * EVERY PROPERTY AREA COLUMN, NOT JUST THE ROW TOTAL.
+       *
+       * The month total is invariant under moving money BETWEEN areas, and so is
+       * the per-entry total that `check:ledger` asserts, and so is the category
+       * summary above. All three would pass with an amount sitting in the wrong
+       * column.
+       *
+       * Which column it sits in is not cosmetic. `isRentalArea` decides what is a
+       * cost of running the boarding house and what is the owner's own spending,
+       * and only the former is subtracted from rental income (OD-05). Money moved
+       * from Boarding House to Main House changes **Net Operating Income** while
+       * leaving every figure any other check looks at exactly where it was.
+       *
+       * This is the summed-buckets lens from the Linda split, pointed at the
+       * other axis of the same workbook.
+       */
+      const areaRows = await sql(
+        `expense_property_allocations?select=amount,property_area,` +
+        `monthly_expense_entries!inner(expense_date,voided_at)` +
+        `&monthly_expense_entries.voided_at=is.null` +
+        `&monthly_expense_entries.expense_date=gte.${year}-01-01` +
+        `&monthly_expense_entries.expense_date=lte.${year}-12-31`
+      );
+
+      const byAreaMonth = new Map();   // area -> month -> total
+      for (const r of areaRows) {
+        const d = r.monthly_expense_entries?.expense_date;
+        if (!d) continue;
+        const m = Number(d.slice(5, 7));
+        const area = String(r.property_area);
+        if (!byAreaMonth.has(area)) byAreaMonth.set(area, new Map());
+        const inner = byAreaMonth.get(area);
+        inner.set(m, (inner.get(m) ?? 0) + Number(r.amount ?? 0));
+      }
+
+      /**
+       * The allocation's `property_area` is the enum VALUE ("Boarding House").
+       * The column header is `property_areas.name` ("Boarding House Expenses").
+       * They are not the same string, and looking for the wrong one reported a
+       * missing column on a workbook that had it.
+       */
+      const areaNames = new Map(
+        (await sql('property_areas?select=code,name')).map((a) => [String(a.code), String(a.name)])
+      );
+
+      console.log('');
+      for (const area of [...byAreaMonth.keys()].sort()) {
+        const header = areaNames.get(area) ?? area;
+        const col = columnOf(sheet, header);
+        if (col === null) {
+          console.log(`  FAIL  no "${header}" column in expenses.xlsx (BR-049 layout)`);
+          fail++;
+          continue;
+        }
+        const printedArea = monthTotals(sheet, header);
+        const inner = byAreaMonth.get(area);
+        for (const [name, total] of printedArea) {
+          check(`${name} / ${area}`, total, inner.get(MONTHS.indexOf(name) + 1) ?? 0);
+        }
+      }
+
       const { found: summary, layout } = categorySummary(sheet);
       if (!layout) {
         console.log(`  FAIL  ${year} category summary - a required header is missing (BR-049)`);
