@@ -783,17 +783,17 @@ function exportCSV() {
 <template>
   <div class="space-y-6">
     <!-- Header with Breadcrumbs -->
-    <div class="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-foreground">Income &amp; Collections</span>
+          <span class="font-semibold text-ink">Income &amp; Collections</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Monthly Income &amp; Collections Ledger
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
+        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
           The canonical revenue ledger, reconciled line-for-line with the historical spreadsheet. The 50% column is computed by the system as half of each row's Rent Amount.
         </p>
       </div>
@@ -802,33 +802,33 @@ function exportCSV() {
         <button
           @click="fetchIncome"
           :disabled="isLoading"
-          class="btn-secondary"
+          class="pill-btn"
         >
-          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin' : '']" />
+          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
         </button>
 
         <button 
           @click="exportCSV"
-          class="btn-secondary"
+          class="pill-btn"
         >
-          <Download class="size-3.5 text-muted-foreground" />
+          <Download class="size-3.5 text-ink-soft" />
           <span>Export CSV</span>
         </button>
 
         <button
           @click="exportExcel"
           :disabled="isExportingExcel"
-          class="btn-secondary"
+          class="pill-btn"
           title="The full Monthly Income Report layout — month blocks, cluster subtotals, Linda kept separate"
         >
-          <FileSpreadsheet :class="['size-3.5 text-muted-foreground', isExportingExcel ? 'animate-pulse' : '']" />
+          <FileSpreadsheet :class="['size-3.5 text-ink-soft', isExportingExcel ? 'animate-pulse' : '']" />
           <span>{{ isExportingExcel ? 'Building…' : 'Export Excel (.xlsx)' }}</span>
         </button>
 
         <button 
           @click="isOnsitePaymentModalOpen = true"
-          class="btn-primary"
+          class="pill-btn-brand"
         >
           <Plus class="size-3.5 text-white" />
           <span>Record On-Site Payment</span>
@@ -838,10 +838,10 @@ function exportCSV() {
 
     <!-- 4 Summary KPI StatCards (Always Visible at Top) -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Gross Rent</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(totalRent) }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">Before 50% share derivation</p>
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">Total Gross Rent</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ peso(totalRent) }}</p>
+        <p class="mt-1 text-xs text-ink-soft">Before 50% share derivation</p>
       </div>
 
       <!-- BR-035 wording is fixed: this is a system-computed figure equal to half
@@ -853,42 +853,37 @@ function exportCSV() {
            quoted here - repeating it would put the banned phrasing back into
            the repository, which is what the rule is for. See BR-035 in
            docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md. -->
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">50% Share · BH rows</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-accent-ink">{{ peso(totalShare) }}</p>
-        <p class="mt-1 text-xs text-amber-800 font-medium">Half of Rent Amount, computed by the system</p>
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">50% Share · BH rows</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-accent-ink">{{ peso(totalShare) }}</p>
+        <p class="mt-1 text-xs text-verify font-medium">Half of Rent Amount, computed by the system</p>
       </div>
 
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Water Collections</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ peso(totalWater) }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">₱200 / head monthly rule</p>
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">Water Collections</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ peso(totalWater) }}</p>
+        <p class="mt-1 text-xs text-ink-soft">₱200 / head monthly rule</p>
       </div>
 
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Remitted</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-emerald-800">{{ peso(totalRemitted) }}</p>
-        <p class="mt-1 text-xs text-emerald-700 font-medium">Rent + Water (BR-038)</p>
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">Total Remitted</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ peso(totalRemitted) }}</p>
+        <p class="mt-1 text-xs text-brand font-medium">Rent + Water (BR-038)</p>
         <!-- The spreadsheet's own bottom line is a different sum and used to be
              displayed under the "Total Remitted" heading, which is the name of a
              database column holding the other figure. -->
-        <p class="mt-2 pt-2 border-t border-border text-xs text-muted-foreground">
-          Spreadsheet line: <strong class="text-foreground">{{ peso(totalSpreadsheetLine) }}</strong>
-          <span class="block text-[11px] text-muted-foreground-soft">BH at half rent, other clusters at full rent, plus water</span>
+        <p class="mt-2 pt-2 border-t border-line text-xs text-ink-soft">
+          Spreadsheet line: <strong class="text-ink">{{ peso(totalSpreadsheetLine) }}</strong>
+          <span class="block text-[11px] text-ink-faint">BH at half rent, other clusters at full rent, plus water</span>
         </p>
       </div>
     </div>
 
     <!-- Tab Navigation (Positioned below KPI cards per user requirement) -->
-    <div class="flex items-center gap-2 border-b border-border pb-px">
+    <div class="flex items-center gap-2 border-b border-line pb-px">
       <button
         @click="activeTab = 'ledger'"
-        :class="[
-          'px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2',
-          activeTab === 'ledger'
-            ? 'border-primary text-primary'
-            : 'border-transparent text-muted-foreground hover:text-foreground'
-        ]"
+        :class="[ 'px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2', activeTab === 'ledger' ? 'border-brand text-brand' : 'border-transparent text-ink-soft hover:text-ink' ]"
       >
         <CreditCard class="size-4" />
         <span>Collection Ledger</span>
@@ -896,18 +891,13 @@ function exportCSV() {
 
       <button
         @click="activeTab = 'verify'"
-        :class="[
-          'px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2',
-          activeTab === 'verify'
-            ? 'border-primary text-primary'
-            : 'border-transparent text-muted-foreground hover:text-foreground'
-        ]"
+        :class="[ 'px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2', activeTab === 'verify' ? 'border-brand text-brand' : 'border-transparent text-ink-soft hover:text-ink' ]"
       >
         <Clock class="size-4" />
         <span>Online Verification (Adyen)</span>
         <span
           v-if="pendingPayments.length > 0"
-          class="badge-soft badge-warning text-[10px] font-extrabold ml-1.5"
+          class="badge-soft badge-warning text-[10px] font-semibold ml-1.5"
         >
           {{ pendingPayments.length }}
         </span>
@@ -916,11 +906,11 @@ function exportCSV() {
 
     <!-- TAB 2: Online Verification Queue -->
     <div v-if="activeTab === 'verify'" class="space-y-4">
-      <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-xs text-amber-900">
-        <Clock class="size-4 mt-0.5 text-amber-600 shrink-0" />
+      <div class="p-4 bg-verify-soft border border-verify-soft rounded-xl flex items-start gap-3 text-xs text-verify">
+        <Clock class="size-4 mt-0.5 text-verify shrink-0" />
         <div>
-          <strong class="font-bold">Online Payment Verification Queue (BR-016 &amp; BR-017)</strong>
-          <p class="text-amber-800 mt-0.5">
+          <strong class="font-semibold">Online Payment Verification Queue (BR-016 &amp; BR-017)</strong>
+          <p class="text-verify mt-0.5">
             Adyen GCash remittances require administrator validation. Approving an entry marks the resident's bill as Paid and automatically calculates the 50% revenue cut into the Monthly Income Ledger.
           </p>
         </div>
@@ -930,53 +920,53 @@ function exportCSV() {
         <SkeletonTable :columns="6" :rows="4" />
       </div>
 
-      <div v-else class="surface-card overflow-hidden">
-        <div v-if="pendingPaymentsError" class="p-12 text-center text-xs text-muted-foreground">
-          <ShieldAlert class="size-8 mx-auto text-amber-500 mb-2 opacity-90" />
-          <p class="font-bold text-sm text-foreground">The verification queue could not be loaded</p>
+      <div v-else class="rounded-tile bg-tile overflow-hidden">
+        <div v-if="pendingPaymentsError" class="p-12 text-center text-xs text-ink-soft">
+          <ShieldAlert class="size-8 mx-auto text-verify mb-2 opacity-90" />
+          <p class="font-semibold text-sm text-ink">The verification queue could not be loaded</p>
           <p class="mt-1">
-            This does <strong class="text-foreground">not</strong> mean there is nothing to verify — it means we could not ask.
+            This does <strong class="text-ink">not</strong> mean there is nothing to verify — it means we could not ask.
           </p>
-          <p class="mt-1 text-muted-foreground-soft">{{ pendingPaymentsError }}</p>
-          <button @click="fetchPayments()" class="btn-secondary mt-4 text-xs">Try again</button>
+          <p class="mt-1 text-ink-faint">{{ pendingPaymentsError }}</p>
+          <button @click="fetchPayments()" class="pill-btn mt-4 text-xs">Try again</button>
         </div>
 
-        <div v-else-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-muted-foreground">
-          <ShieldCheck class="size-8 mx-auto text-emerald-500 mb-2 opacity-80" />
-          <p class="font-bold text-sm text-foreground">All Remittances Verified</p>
+        <div v-else-if="pendingPayments.length === 0" class="p-12 text-center text-xs text-ink-soft">
+          <ShieldCheck class="size-8 mx-auto text-brand mb-2 opacity-80" />
+          <p class="font-semibold text-sm text-ink">All Remittances Verified</p>
           <p class="mt-1">No online transactions currently awaiting administrative approval.</p>
         </div>
 
         <div v-else class="overflow-x-auto">
           <table class="w-full text-xs border-collapse">
-            <thead class="bg-muted text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
+            <thead class="bg-canvas text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
               <tr>
-                <th class="px-4 py-3 font-bold">Resident</th>
-                <th class="px-4 py-3 font-bold">Target Unit</th>
-                <th class="px-4 py-3 font-bold">Amount</th>
-                <th class="px-4 py-3 font-bold">Gateway &amp; Ref #</th>
-                <th class="px-4 py-3 font-bold">Date &amp; Status</th>
-                <th class="px-4 py-3 font-bold text-right">Actions</th>
+                <th class="px-4 py-3 font-semibold">Resident</th>
+                <th class="px-4 py-3 font-semibold">Target Unit</th>
+                <th class="px-4 py-3 font-semibold">Amount</th>
+                <th class="px-4 py-3 font-semibold">Gateway &amp; Ref #</th>
+                <th class="px-4 py-3 font-semibold">Date &amp; Status</th>
+                <th class="px-4 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-border">
-              <tr v-for="p in pendingPayments" :key="p.id" class="hover:bg-background">
-                <td class="px-4 py-3 font-bold text-foreground">
+            <tbody class="divide-y divide-line">
+              <tr v-for="p in pendingPayments" :key="p.id" class="hover:bg-canvas">
+                <td class="px-4 py-3 font-semibold text-ink">
                   {{ p.profiles?.full_name || 'Resident' }}
-                  <span class="block text-[11px] font-normal text-muted-foreground">{{ p.profiles?.phone_number || 'No contact' }}</span>
+                  <span class="block text-[11px] font-normal text-ink-soft">{{ p.profiles?.phone_number || 'No contact' }}</span>
                 </td>
-                <td class="px-4 py-3 font-extrabold uppercase text-foreground">
+                <td class="px-4 py-3 font-semibold uppercase text-ink">
                   Room {{ p.rooms?.room_number || '—' }}
                 </td>
-                <td class="px-4 py-3 font-display font-black text-foreground">
+                <td class="px-4 py-3 font-semibold text-ink">
                   {{ peso(p.amount) }}
                 </td>
-                <td class="px-4 py-3 font-mono text-[11px] text-muted-foreground">
-                  <span class="font-bold text-primary">{{ p.payment_method }}</span>
-                  <div class="mt-0.5 text-[10px] text-foreground-soft">{{ p.transaction_reference || 'REF-PENDING' }}</div>
+                <td class="px-4 py-3 font-mono text-[11px] text-ink-soft">
+                  <span class="font-semibold text-brand">{{ p.payment_method }}</span>
+                  <div class="mt-0.5 text-[10px] text-ink-soft">{{ p.transaction_reference || 'REF-PENDING' }}</div>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="badge-soft badge-warning text-xs font-bold">
+                  <span class="badge-soft badge-warning text-xs font-semibold">
                     Pending Verification
                   </span>
                 </td>
@@ -984,14 +974,14 @@ function exportCSV() {
                   <div class="flex items-center justify-end gap-2">
                     <button
                       @click="verifyPayment(p.id, 'Verified')"
-                      class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                      class="px-2.5 py-1.5 bg-brand hover:bg-brand text-white rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
                     >
                       <Check class="size-3.5" />
                       <span>Approve</span>
                     </button>
                     <button
                       @click="verifyPayment(p.id, 'Rejected')"
-                      class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                      class="px-2.5 py-1.5 bg-overdue-soft hover:bg-overdue-soft text-overdue border border-overdue-soft rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
                     >
                       <X class="size-3.5" />
                       <span>Decline</span>
@@ -1009,22 +999,22 @@ function exportCSV() {
     <div v-else class="space-y-6">
 
     <!-- Ledger Table Container -->
-    <div class="surface-card overflow-hidden">
+    <div class="rounded-tile bg-tile overflow-hidden">
       <!-- Filter Bar -->
-      <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
+      <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
         <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
           <input
             v-model="q"
             type="text"
             placeholder="Search unit, resident or OR #…"
-            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+            class="ws-input w-full pl-10 pr-4 sm:text-sm"
           />
         </div>
 
         <select
           v-model="selectedCluster"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
+          class="ws-select sm:text-sm sm:w-44"
         >
           <option value="All">All Clusters</option>
           <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
@@ -1032,29 +1022,24 @@ function exportCSV() {
 
         <select
           v-model="filterMonth"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
+          class="ws-select sm:text-sm sm:w-44"
         >
           <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
         </select>
 
         <select
           v-model="filterYear"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-36 cursor-pointer"
+          class="ws-select sm:text-sm sm:w-36"
         >
           <option value="All">All Years</option>
           <option v-for="y in yearsList" :key="y" :value="y">{{ y === 'All' ? 'All Years' : y }}</option>
         </select>
 
         <!-- View Mode Segmented Switcher -->
-        <div class="inline-flex rounded-xl bg-muted p-1 border border-border shrink-0 self-center">
+        <div class="inline-flex rounded-xl bg-canvas p-1 border border-line shrink-0 self-center">
           <button
             @click="viewMode = 'grouped'"
-            :class="[
-              'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
-              viewMode === 'grouped'
-                ? 'bg-white text-primary shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            ]"
+            :class="[ 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5', viewMode === 'grouped' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
             title="Spreadsheet Cluster Sections"
           >
             <FileSpreadsheet class="size-3.5" />
@@ -1062,12 +1047,7 @@ function exportCSV() {
           </button>
           <button
             @click="viewMode = 'flat'"
-            :class="[
-              'px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5',
-              viewMode === 'flat'
-                ? 'bg-white text-primary shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            ]"
+            :class="[ 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5', viewMode === 'flat' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
             title="Unified Single Ledger Table"
           >
             <Banknote class="size-3.5" />
@@ -1083,7 +1063,7 @@ function exportCSV() {
 
       <!-- VIEW MODE 1: SPREADSHEET CLUSTER-GROUPED TABLES -->
       <div v-else-if="viewMode === 'grouped'" class="p-4 space-y-6 max-h-[75vh] overflow-y-auto">
-        <div v-if="clusterGroups.length === 0" class="p-12 text-center text-xs text-muted-foreground bg-white rounded-2xl border border-border">
+        <div v-if="clusterGroups.length === 0" class="p-12 text-center text-xs text-ink-soft bg-tile rounded-tile border border-line">
           No income collections recorded matching the active filters.
         </div>
 
@@ -1091,89 +1071,89 @@ function exportCSV() {
           v-else
           v-for="group in clusterGroups" 
           :key="group.key"
-          class="rounded-2xl border border-border bg-white overflow-hidden shadow-xs space-y-0"
+          class="rounded-tile border border-line bg-tile overflow-hidden space-y-0"
         >
           <!-- Cluster Section Header -->
-          <div class="px-4 py-3 bg-[#f8fafc] border-b border-border flex flex-wrap items-center justify-between gap-2">
+          <div class="px-4 py-3 bg-[#f8fafc] border-b border-line flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2.5">
-              <span class="size-2.5 rounded-full" :class="group.hasShareColumn ? 'bg-amber-500' : 'bg-primary'"></span>
+              <span class="size-2.5 rounded-full" :class="group.hasShareColumn ? 'bg-verify' : 'bg-brand'"></span>
               <div>
-                <h4 class="font-display font-extrabold text-sm text-foreground">{{ group.label }}</h4>
-                <p class="text-[11px] text-muted-foreground">{{ group.desc }}</p>
+                <h4 class="font-semibold text-sm text-ink">{{ group.label }}</h4>
+                <p class="text-[11px] text-ink-soft">{{ group.desc }}</p>
               </div>
             </div>
             <div class="flex items-center gap-2 text-xs">
-              <span class="badge-soft badge-blue font-bold">{{ group.records.length }} records</span>
-              <span v-if="group.hasShareColumn" class="badge-soft badge-warning font-bold" title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet (BR-035).">Column 6 &mdash; spreadsheet parity</span>
+              <span class="badge-soft badge-blue font-semibold">{{ group.records.length }} records</span>
+              <span v-if="group.hasShareColumn" class="badge-soft badge-warning font-semibold" title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet (BR-035).">Column 6 &mdash; spreadsheet parity</span>
             </div>
           </div>
 
           <!-- Cluster Table -->
           <div class="overflow-x-auto">
             <table class="w-full text-xs border-collapse">
-              <thead class="bg-background text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
+              <thead class="bg-canvas text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
                 <tr>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold">RM #</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold">DATE PAID</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold">TENANT &amp; OR #</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold">RENT PERIOD</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">RENT (₱)</th>
-                  <th v-if="group.hasShareColumn" class="whitespace-nowrap px-3 py-2.5 font-bold text-right text-amber-800">50% SHARE (₱)</th>
-                  <th v-if="group.key === 'Linda'" class="whitespace-nowrap px-3 py-2.5 font-bold text-right text-sky-800">ELECTRIC (₱)</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-center">HEADS</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">WATER (₱)</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">GBG (₱)</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-right">REMITTED (₱)</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-bold text-center">ACTION</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold">RM #</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold">DATE PAID</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold">TENANT &amp; OR #</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold">RENT PERIOD</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-right">RENT (₱)</th>
+                  <th v-if="group.hasShareColumn" class="whitespace-nowrap px-3 py-2.5 font-semibold text-right text-verify">50% SHARE (₱)</th>
+                  <th v-if="group.key === 'Linda'" class="whitespace-nowrap px-3 py-2.5 font-semibold text-right text-brand">ELECTRIC (₱)</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-center">HEADS</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-right">WATER (₱)</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-right">GBG (₱)</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-right">REMITTED (₱)</th>
+                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-center">ACTION</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-border">
+              <tbody class="divide-y divide-line">
                 <tr 
                   v-for="r in group.records" 
                   :key="r.id || (r.unit + r.invoice)"
                   class="hover:bg-[#fcfbf9] transition-colors"
                 >
-                  <td class="whitespace-nowrap px-3 py-2 font-display font-extrabold uppercase text-foreground">
+                  <td class="whitespace-nowrap px-3 py-2 font-semibold uppercase text-ink">
                     {{ r.unit }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                  <td class="whitespace-nowrap px-3 py-2 text-ink-soft">
                     {{ r.datePaid }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-2 font-bold text-foreground">
+                  <td class="whitespace-nowrap px-3 py-2 font-semibold text-ink">
                     {{ r.contact }}
-                    <span v-if="r.invoice" class="block font-mono text-[10px] font-normal text-muted-foreground">{{ r.invoice }}</span>
+                    <span v-if="r.invoice" class="block font-mono text-[10px] font-normal text-ink-soft">{{ r.invoice }}</span>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                  <td class="whitespace-nowrap px-3 py-2 text-ink-soft">
                     {{ r.rentFor }}
                   </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-bold text-foreground">
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-ink">
                     {{ peso(r.rent) }}
                   </td>
-                  <td v-if="group.hasShareColumn" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-amber-800 bg-amber-50/40">
+                  <td v-if="group.hasShareColumn" class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-verify bg-verify-soft/40">
                     {{ peso(r.rent / 2) }}
                   </td>
-                  <td v-if="group.key === 'Linda'" class="tabular whitespace-nowrap px-3 py-2 text-right font-bold text-sky-800 bg-sky-50/40">
+                  <td v-if="group.key === 'Linda'" class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-brand bg-brand-soft/40">
                     {{ peso(r.linda?.electricity || 0) }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-center font-bold text-foreground">
+                  <td class="whitespace-nowrap px-3 py-2 text-center font-semibold text-ink">
                     {{ r.occupants }}
                   </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-foreground">
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-ink">
                     {{ peso(r.water) }}
                   </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right text-muted-foreground">
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right text-ink-soft">
                     {{ peso(r.garbage) }}
                   </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-display font-extrabold text-emerald-800">
+                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-brand">
                     {{ peso(group.hasShareColumn ? (r.rent / 2) + r.water : r.rent + r.water) }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-2 text-center">
                     <button 
                       @click="startEditIncome(r)" 
-                      class="btn-secondary min-h-7 px-2.5 py-0.5 text-xs gap-1 inline-flex items-center shadow-xs cursor-pointer hover:border-primary hover:text-primary"
+                      class="pill-btn min-h-7 px-2.5 py-0.5 text-xs gap-1 inline-flex items-center cursor-pointer hover:border-brand hover:text-brand"
                       title="Edit Collection"
                     >
-                      <Pencil class="size-3 text-muted-foreground" />
+                      <Pencil class="size-3 text-ink-soft" />
                       <span>Edit</span>
                     </button>
                   </td>
@@ -1181,20 +1161,20 @@ function exportCSV() {
               </tbody>
 
               <!-- Cluster Subtotal Row -->
-              <tfoot class="bg-[#f8fafc] border-t-2 border-[#e2e8f0] font-display font-bold text-xs text-foreground">
+              <tfoot class="bg-[#f8fafc] border-t-2 border-[#e2e8f0] font-semibold text-xs text-ink">
                 <tr>
-                  <td colspan="4" class="px-3 py-2.5 uppercase tracking-wider text-[#64748b]">
+                  <td colspan="4" class="px-3 py-2.5 text-[#64748b]">
                     {{ group.label }} SUB-TOTAL ({{ group.records.length }} UNITS)
                   </td>
-                  <td class="tabular px-3 py-2.5 text-right font-black text-foreground">{{ peso(group.totalRent) }}</td>
-                  <td v-if="group.hasShareColumn" class="tabular px-3 py-2.5 text-right font-black text-amber-800">{{ peso(group.totalShare) }}</td>
-                  <td v-if="group.key === 'Linda'" class="tabular px-3 py-2.5 text-right font-black text-sky-800">
+                  <td class="tabular px-3 py-2.5 text-right font-semibold text-ink">{{ peso(group.totalRent) }}</td>
+                  <td v-if="group.hasShareColumn" class="tabular px-3 py-2.5 text-right font-semibold text-verify">{{ peso(group.totalShare) }}</td>
+                  <td v-if="group.key === 'Linda'" class="tabular px-3 py-2.5 text-right font-semibold text-brand">
                     {{ peso(group.records.reduce((s, r) => s + (r.linda?.electricity || 0), 0)) }}
                   </td>
-                  <td class="px-3 py-2.5 text-center font-bold">{{ group.totalOccupants }}</td>
-                  <td class="tabular px-3 py-2.5 text-right font-black">{{ peso(group.totalWater) }}</td>
-                  <td class="tabular px-3 py-2.5 text-right font-black text-muted-foreground">{{ peso(group.totalGarbage) }}</td>
-                  <td class="tabular px-3 py-2.5 text-right font-black text-emerald-800">{{ peso(group.totalRemitted) }}</td>
+                  <td class="px-3 py-2.5 text-center font-semibold">{{ group.totalOccupants }}</td>
+                  <td class="tabular px-3 py-2.5 text-right font-semibold">{{ peso(group.totalWater) }}</td>
+                  <td class="tabular px-3 py-2.5 text-right font-semibold text-ink-soft">{{ peso(group.totalGarbage) }}</td>
+                  <td class="tabular px-3 py-2.5 text-right font-semibold text-brand">{{ peso(group.totalRemitted) }}</td>
                   <td class="px-3 py-2.5 text-center">—</td>
                 </tr>
               </tfoot>
@@ -1206,25 +1186,25 @@ function exportCSV() {
       <!-- VIEW MODE 2: UNIFIED FLAT LEDGER TABLE -->
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full text-xs border-collapse">
-          <thead class="sticky top-0 z-10 bg-muted">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
-              <th class="whitespace-nowrap px-3 py-3 font-bold">UNIT</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold">CLUSTER</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold">DATE PAID</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold">CONTACT / RESIDENT</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold">INVOICE #</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold">RENT FOR</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold text-right">RENT (₱)</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold text-center">OCC.</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold text-right">WATER (₱)</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold text-right">GBG (₱)</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold text-right">TOTAL REMITTED (₱)</th>
-              <th class="whitespace-nowrap px-3 py-3 font-bold text-center">ACTION</th>
+          <thead class="sticky top-0 z-10 bg-canvas">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
+              <th class="whitespace-nowrap px-3 py-3 font-semibold">UNIT</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold">CLUSTER</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold">DATE PAID</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold">CONTACT / RESIDENT</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold">INVOICE #</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold">RENT FOR</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold text-right">RENT (₱)</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold text-center">OCC.</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold text-right">WATER (₱)</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold text-right">GBG (₱)</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold text-right">TOTAL REMITTED (₱)</th>
+              <th class="whitespace-nowrap px-3 py-3 font-semibold text-center">ACTION</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-border">
+          <tbody class="divide-y divide-line">
             <tr v-if="rows.length === 0">
-              <td colspan="12" class="p-8 text-center text-muted-foreground bg-white">
+              <td colspan="12" class="p-8 text-center text-ink-soft bg-tile">
                 No income collections recorded matching the filters.
               </td>
             </tr>
@@ -1232,49 +1212,49 @@ function exportCSV() {
               v-else
               v-for="r in rows" 
               :key="r.unit + r.invoice"
-              class="hover:bg-background transition-colors"
+              class="hover:bg-canvas transition-colors"
             >
-              <td class="whitespace-nowrap px-3 py-2.5 font-display font-extrabold uppercase text-foreground">
+              <td class="whitespace-nowrap px-3 py-2.5 font-semibold uppercase text-ink">
                 {{ r.unit }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-muted-foreground font-medium">
+              <td class="whitespace-nowrap px-3 py-2.5 text-ink-soft font-medium">
                 {{ r.cluster }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+              <td class="whitespace-nowrap px-3 py-2.5 text-ink-soft">
                 {{ r.datePaid }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 font-bold text-foreground">
+              <td class="whitespace-nowrap px-3 py-2.5 font-semibold text-ink">
                 {{ r.contact }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-muted-foreground">
+              <td class="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-ink-soft">
                 {{ r.invoice }}
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+              <td class="whitespace-nowrap px-3 py-2.5 text-ink-soft">
                 {{ r.rentFor }}
               </td>
               <td class="tabular whitespace-nowrap px-3 py-2.5 text-right">
-                <span class="font-display font-bold text-foreground block leading-tight">{{ peso(r.rent) }}</span>
-                <span v-if="r.cluster === 'BH'" class="text-[11px] font-bold text-accent-ink block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
+                <span class="font-semibold text-ink block leading-tight">{{ peso(r.rent) }}</span>
+                <span v-if="r.cluster === 'BH'" class="text-[11px] font-semibold text-accent-ink block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
               </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-center font-bold text-foreground">
+              <td class="whitespace-nowrap px-3 py-2.5 text-center font-semibold text-ink">
                 {{ r.occupants }}
               </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-semibold text-foreground">
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-semibold text-ink">
                 {{ peso(r.water) }}
               </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right text-muted-foreground">
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right text-ink-soft">
                 {{ peso(r.garbage) }}
               </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-display font-extrabold text-emerald-800">
+              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-semibold text-brand">
                 {{ peso((r.cluster === 'BH' ? (r.rent / 2) : r.rent) + r.water) }}
               </td>
               <td class="whitespace-nowrap px-3 py-2.5 text-center">
                 <button 
                   @click="startEditIncome(r)" 
-                  class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer hover:border-primary hover:text-primary"
+                  class="pill-btn min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer hover:border-brand hover:text-brand"
                   title="Edit Collection"
                 >
-                  <Pencil class="size-3.5 text-muted-foreground" />
+                  <Pencil class="size-3.5 text-ink-soft" />
                   <span>Edit</span>
                 </button>
               </td>
@@ -1282,19 +1262,19 @@ function exportCSV() {
           </tbody>
 
           <!-- Table Footer Subtotals -->
-          <tfoot class="sticky bottom-0 bg-muted border-t-2 border-[#d6d3d1] font-display font-bold text-xs text-foreground">
+          <tfoot class="sticky bottom-0 bg-canvas border-t-2 border-[#d6d3d1] font-semibold text-xs text-ink">
             <tr>
-              <td colspan="6" class="px-3 py-3 uppercase tracking-wider text-muted-foreground">
+              <td colspan="6" class="px-3 py-3 text-ink-soft">
                 GRAND TOTALS ({{ rows.length }} ROWS)
               </td>
               <td class="tabular px-3 py-3 text-right">
-                <span class="font-black text-foreground block leading-tight">{{ peso(totalRent) }}</span>
-                <span class="text-[11px] font-bold text-accent-ink block leading-tight mt-0.5">50% BH Share: {{ peso(totalShare) }}</span>
+                <span class="font-semibold text-ink block leading-tight">{{ peso(totalRent) }}</span>
+                <span class="text-[11px] font-semibold text-accent-ink block leading-tight mt-0.5">50% BH Share: {{ peso(totalShare) }}</span>
               </td>
-              <td class="px-3 py-3 text-center font-black">{{ rows.reduce((s, r) => s + r.occupants, 0) }}</td>
-              <td class="tabular px-3 py-3 text-right font-black">{{ peso(totalWater) }}</td>
-              <td class="tabular px-3 py-3 text-right font-black">{{ peso(totalGarbage) }}</td>
-              <td class="tabular px-3 py-3 text-right font-black text-emerald-800">{{ peso(totalRemitted) }}</td>
+              <td class="px-3 py-3 text-center font-semibold">{{ rows.reduce((s, r) => s + r.occupants, 0) }}</td>
+              <td class="tabular px-3 py-3 text-right font-semibold">{{ peso(totalWater) }}</td>
+              <td class="tabular px-3 py-3 text-right font-semibold">{{ peso(totalGarbage) }}</td>
+              <td class="tabular px-3 py-3 text-right font-semibold text-brand">{{ peso(totalRemitted) }}</td>
               <td class="px-3 py-3 text-center">—</td>
             </tr>
           </tfoot>
@@ -1303,12 +1283,12 @@ function exportCSV() {
     </div>
 
     <!-- Linda Units Separate Reference Card (BR-040) -->
-    <div class="surface-card p-6 space-y-3">
+    <div class="rounded-tile bg-tile p-6 space-y-3">
       <div class="flex items-center gap-2">
         <FileSpreadsheet class="size-5 text-accent" />
-        <h3 class="font-display font-extrabold text-base text-foreground">Linda Units Fixed Charge Schedule</h3>
+        <h3 class="font-semibold text-base text-ink">Linda Units Fixed Charge Schedule</h3>
       </div>
-      <p class="text-xs text-muted-foreground leading-relaxed">
+      <p class="text-xs text-ink-soft leading-relaxed">
         The two Linda units sit in the separate structure beside the red gate and are billed a
         fixed monthly water charge instead of the per-occupant rate. They are not part of the
         Front Apartment, whose income is never remitted to Linda. The flat electricity charge
@@ -1317,24 +1297,24 @@ function exportCSV() {
       </p>
 
       <div class="grid gap-4 sm:grid-cols-2 pt-2">
-        <div class="p-4 rounded-xl bg-background border border-border space-y-1">
+        <div class="p-4 rounded-xl bg-canvas border border-line space-y-1">
           <div class="flex justify-between items-center">
-            <span class="font-display font-bold text-sm text-foreground">Linda (LF)</span>
-            <span class="badge-soft badge-blue text-xs font-bold">
+            <span class="font-semibold text-sm text-ink">Linda (LF)</span>
+            <span class="badge-soft badge-blue text-xs font-semibold">
               Fixed Billing
             </span>
           </div>
-          <p class="text-xs text-muted-foreground">Water: <strong>₱400.00 / month</strong></p>
+          <p class="text-xs text-ink-soft">Water: <strong>₱400.00 / month</strong></p>
         </div>
 
-        <div class="p-4 rounded-xl bg-background border border-border space-y-1">
+        <div class="p-4 rounded-xl bg-canvas border border-line space-y-1">
           <div class="flex justify-between items-center">
-            <span class="font-display font-bold text-sm text-foreground">Linda (LB)</span>
-            <span class="badge-soft badge-blue text-xs font-bold">
+            <span class="font-semibold text-sm text-ink">Linda (LB)</span>
+            <span class="badge-soft badge-blue text-xs font-semibold">
               Fixed Billing
             </span>
           </div>
-          <p class="text-xs text-muted-foreground">Water: <strong>₱200.00 / month</strong></p>
+          <p class="text-xs text-ink-soft">Water: <strong>₱200.00 / month</strong></p>
         </div>
       </div>
     </div>
@@ -1346,19 +1326,19 @@ function exportCSV() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
       @click.self="isEditOpen = false"
     >
-      <div class="surface-card w-full max-w-2xl shadow-2xl p-6 space-y-4 rounded-2xl bg-white my-6">
+      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl p-6 space-y-4 rounded-tile bg-tile my-6">
         
-        <div class="flex justify-between items-start border-b border-border pb-3">
+        <div class="flex justify-between items-start border-b border-line pb-3">
           <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200">
+            <div class="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft">
               <Banknote class="size-5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-base text-foreground">Edit Payment Collection</h3>
-              <p class="text-xs text-muted-foreground">Modify the rent and utility allocations for this collection record.</p>
+              <h3 class="font-semibold text-base text-ink">Edit Payment Collection</h3>
+              <p class="text-xs text-ink-soft">Modify the rent and utility allocations for this collection record.</p>
             </div>
           </div>
-          <button @click="isEditOpen = false" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
+          <button @click="isEditOpen = false" class="p-1 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer">
             <X class="size-5" />
           </button>
         </div>
@@ -1368,13 +1348,13 @@ function exportCSV() {
           <div>
             <p
               v-if="roomsFetchFailed"
-              class="mb-1.5 text-[11px] leading-snug text-amber-700"
+              class="mb-1.5 text-[11px] leading-snug text-verify"
             >
               The unit list could not be refreshed, so the occupant count has <strong>not</strong>
               been carried forward. Enter it yourself &mdash; it sets the water line on this receipt.
             </p>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Unit</label>
-            <select v-model="editUnit" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none">
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Unit</label>
+            <select v-model="editUnit" class="ws-select w-full">
               <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
                 {{ r.unitCode.toUpperCase() }} — {{ r.tenant || 'Vacant' }} ({{ r.cluster }})
               </option>
@@ -1384,32 +1364,32 @@ function exportCSV() {
           <!-- Rent Amount & Water Payment Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Amount for Rent (₱)</label>
-              <input v-model.number="editRent" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Amount for Rent (₱)</label>
+              <input v-model.number="editRent" type="number" min="0" class="ws-input w-full" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Payment for Water (₱)</label>
-              <input v-model.number="editWater" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Payment for Water (₱)</label>
+              <input v-model.number="editWater" type="number" min="0" class="ws-input w-full" required />
             </div>
           </div>
 
           <!-- GBG Fee & OR Receipt Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">GBG Fee (₱)</label>
-              <input v-model.number="editGarbage" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">GBG Fee (₱)</label>
+              <input v-model.number="editGarbage" type="number" min="0" class="ws-input w-full" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">OR / Receipt Number</label>
-              <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-mono text-foreground focus:border-primary focus:outline-none" required />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">OR / Receipt Number</label>
+              <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="ws-input w-full font-mono" required />
             </div>
           </div>
 
           <!-- Payment Method & Online Reference Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Payment Method</label>
-              <select v-model="editMethod" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none">
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Payment Method</label>
+              <select v-model="editMethod" class="ws-select w-full">
                 <option value="Cash">Cash</option>
                 <option value="GCash">GCash</option>
                 <option value="Bank Transfer">Bank Transfer</option>
@@ -1418,62 +1398,62 @@ function exportCSV() {
               </select>
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" :class="{ 'opacity-40': !methodHasReference }">Transaction Reference #</label>
-              <input v-model="editReference" type="text" :placeholder="editMethod === 'Bank Transfer' ? 'Bank reference #' : 'GCash reference #'" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-40 disabled:bg-muted" :disabled="!methodHasReference" :required="methodHasReference" />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" :class="{ 'opacity-40': !methodHasReference }">Transaction Reference #</label>
+              <input v-model="editReference" type="text" :placeholder="editMethod === 'Bank Transfer' ? 'Bank reference #' : 'GCash reference #'" class="ws-input w-full" :disabled="!methodHasReference" :required="methodHasReference" />
             </div>
           </div>
 
           <!-- Rent Validity / Duration Details Row -->
           <div class="grid gap-4 sm:grid-cols-3">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Months Covered</label>
-              <input v-model.number="editMonthsCovered" type="number" min="1" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Months Covered</label>
+              <input v-model.number="editMonthsCovered" type="number" min="1" class="ws-input w-full" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
                 Occupants
-                <span class="normal-case tracking-normal font-medium text-muted-foreground-soft">— carried from the tenancy; water is per occupant</span>
+                <span class="normal-case tracking-normal font-medium text-ink-faint">— carried from the tenancy; water is per occupant</span>
               </label>
-              <input v-model.number="editOccupants" type="number" min="1" max="50" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
+              <input v-model.number="editOccupants" type="number" min="1" max="50" class="ws-input w-full" required />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
                 Covered Period Start
-                <span class="normal-case tracking-normal font-medium text-muted-foreground-soft">— blank uses the tenant's billing cycle</span>
+                <span class="normal-case tracking-normal font-medium text-ink-faint">— blank uses the tenant's billing cycle</span>
               </label>
-              <input v-model="editDateCoveredStart" type="date" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" />
+              <input v-model="editDateCoveredStart" type="date" class="ws-input w-full" />
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Covered Period End</label>
-              <input :value="editDateCoveredEnd" type="date" class="min-h-11 w-full px-3.5 bg-background border border-border rounded-xl text-sm text-muted-foreground focus:outline-none" disabled />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Covered Period End</label>
+              <input :value="editDateCoveredEnd" type="date" class="ws-input w-full" disabled />
             </div>
           </div>
 
           <!-- Date Received & Read-Only Total Amount calculation -->
           <div class="grid gap-4 sm:grid-cols-2 pt-2">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Date Received</label>
-              <input v-model="editDate" type="date" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm text-foreground focus:border-primary focus:outline-none" required />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Date Received</label>
+              <input v-model="editDate" type="date" class="ws-input w-full" required />
             </div>
-            <div class="bg-background border border-border rounded-2xl p-3.5 flex flex-col justify-center">
-              <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Amount (₱)</span>
-              <span class="font-display font-black text-lg text-emerald-800 pt-0.5">{{ peso(editTotal) }}</span>
+            <div class="bg-canvas border border-line rounded-tile p-3.5 flex flex-col justify-center">
+              <span class="text-[10px] font-semibold text-ink-soft">Total Amount (₱)</span>
+              <span class="font-semibold text-lg text-brand pt-0.5">{{ peso(editTotal) }}</span>
             </div>
           </div>
 
-          <div class="pt-4 border-t border-border flex items-center justify-between gap-3">
+          <div class="pt-4 border-t border-line flex items-center justify-between gap-3">
             <button 
               type="button" 
               @click="handleDeleteFromModal" 
-              class="btn-danger"
+              class="pill-btn-danger-quiet"
             >
               <Trash2 class="size-3.5" />
               <span>Delete Record</span>
             </button>
 
             <div class="flex items-center gap-2">
-              <button type="button" @click="isEditOpen = false" class="btn-secondary">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="btn-primary">
+              <button type="button" @click="isEditOpen = false" class="pill-btn">Cancel</button>
+              <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
                 <Check v-else class="size-3.5" />
                 <span>Update Collection</span>
@@ -1490,14 +1470,14 @@ function exportCSV() {
       class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
       @click.self="isConfirmOpen = false"
     >
-      <div class="surface-card w-full max-w-sm shadow-2xl rounded-2xl p-6 bg-white space-y-4 text-center">
+      <div class="rounded-tile bg-tile w-full max-w-sm shadow-2xl rounded-tile p-6 bg-tile space-y-4 text-center">
         <div class="flex flex-col items-center gap-3">
           <div class="w-12 h-12 rounded-full bg-[#fef3c7] text-[#d97706] flex items-center justify-center">
             <ReceiptText class="w-6 h-6" />
           </div>
-          <h3 class="font-display font-extrabold text-lg text-foreground">{{ confirmTitle }}</h3>
+          <h3 class="font-semibold text-lg text-ink">{{ confirmTitle }}</h3>
           
-          <div class="w-full text-left bg-background border border-border rounded-xl p-3.5 text-xs text-foreground space-y-1 leading-relaxed whitespace-pre-line font-semibold">
+          <div class="w-full text-left bg-canvas border border-line rounded-xl p-3.5 text-xs text-ink space-y-1 leading-relaxed whitespace-pre-line font-semibold">
             {{ confirmMessage }}
           </div>
         </div>
@@ -1506,14 +1486,14 @@ function exportCSV() {
           <button 
             type="button" 
             @click="isConfirmOpen = false" 
-            class="btn-secondary cursor-pointer min-w-[100px]"
+            class="pill-btn cursor-pointer min-w-[100px]"
           >
             Cancel
           </button>
           <button 
             type="button" 
             @click="handleConfirmAccept" 
-            class="btn-primary cursor-pointer min-w-[100px]"
+            class="pill-btn-brand cursor-pointer min-w-[100px]"
           >
             Confirm
           </button>

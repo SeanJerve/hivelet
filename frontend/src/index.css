@@ -396,35 +396,37 @@ body {
   user-select: none;
   transition: all 0.15s ease;
 }
+/* Badges now read from the workspace roles, so every screen that still uses them
+   matches the system while it waits to be rebuilt. Contrast measured 2026-09-18. */
 .badge-success {
-  background-color: #ecfdf5;
-  color: #065f46;
-  border-color: #a7f3d0;
+  background-color: var(--brand-soft);
+  color: var(--brand);
+  border-color: var(--brand-soft);
 }
 .badge-primary, .badge-blue, .badge-info {
-  background-color: #eff6ff;
-  color: #0c66e4;
-  border-color: #bfdbfe;
+  background-color: var(--brand-soft);
+  color: var(--brand);
+  border-color: var(--brand-soft);
 }
 .badge-warning {
-  background-color: #fffbeb;
-  color: #92400e;
-  border-color: #fde68a;
+  background-color: var(--verify-soft);
+  color: var(--verify);
+  border-color: var(--verify-soft);
 }
 .badge-danger {
-  background-color: #fef2f2;
-  color: #991b1b;
-  border-color: #fecdd3;
+  background-color: var(--overdue-soft);
+  color: var(--overdue);
+  border-color: var(--overdue-soft);
 }
 .badge-purple {
-  background-color: #faf5ff;
-  color: #6b21a8;
-  border-color: #e9d5ff;
+  background-color: var(--canvas);
+  color: var(--ink-soft);
+  border-color: var(--line);
 }
 .badge-neutral {
-  background-color: #f5f5f4;
-  color: #44403c;
-  border-color: #e7e5e4;
+  background-color: var(--canvas);
+  color: var(--ink-soft);
+  border-color: var(--line);
 }
 
 .form-input {
@@ -464,121 +466,259 @@ body {
 /* ------------------------------------------------------------------------- *
  * Workspace system components. See docs/DESIGN_GUIDELINE.md.
  * ------------------------------------------------------------------------- */
+@layer components {
 
-/* Diagonal hatching marks a figure that is known to be missing, such as a month
-   not yet entered. It is never used for decoration. */
-.hatch {
-  background-image: repeating-linear-gradient(
-    135deg,
-    var(--hatch) 0 1.5px,
-    transparent 1.5px 7px
-  );
-}
+  /* Diagonal hatching marks a figure that is known to be missing, such as a month
+     not yet entered. It is never used for decoration. */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--hatch) 0 1.5px,
+      transparent 1.5px 7px
+    );
+  }
 
-.pill-btn,
-.pill-btn-brand,
-.pill-btn-night,
-.pill-btn-light,
-.icon-btn {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-.pill-btn,
-.pill-btn-brand,
-.pill-btn-night,
-.pill-btn-light {
-  min-height: 2.75rem;
-  padding: 0 1.125rem;
-}
-.icon-btn {
-  width: 2.75rem;
-  height: 2.75rem;
-  flex-shrink: 0;
-}
+  .pill-btn,
+  .pill-btn-brand,
+  .pill-btn-night,
+  .pill-btn-light,
+  .icon-btn {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .pill-btn,
+  .pill-btn-brand,
+  .pill-btn-night,
+  .pill-btn-light {
+    min-height: 2.75rem;
+    padding: 0 1.125rem;
+  }
+  .icon-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+  }
 
-.pill-btn,
-.icon-btn {
-  background-color: var(--tile);
-  color: var(--ink);
-  border: 1px solid var(--line);
-}
-.pill-btn:hover:not(:disabled),
-.icon-btn:hover:not(:disabled) {
-  border-color: var(--hatch);
-}
+  .pill-btn,
+  .icon-btn {
+    background-color: var(--tile);
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .pill-btn:hover:not(:disabled),
+  .icon-btn:hover:not(:disabled) {
+    border-color: var(--hatch);
+  }
 
-.pill-btn-brand {
-  background-color: var(--brand);
-  color: var(--on-brand);
-  border: 1px solid var(--brand);
-}
-.pill-btn-brand:hover:not(:disabled) {
-  background-color: var(--brand-strong);
-  border-color: var(--brand-strong);
-}
+  .pill-btn-brand {
+    background-color: var(--brand);
+    color: var(--on-brand);
+    border: 1px solid var(--brand);
+  }
+  .pill-btn-brand:hover:not(:disabled) {
+    background-color: var(--brand-strong);
+    border-color: var(--brand-strong);
+  }
 
-.pill-btn-night {
-  background-color: var(--night);
-  color: var(--on-night);
-  border: 1px solid var(--night);
-}
-.pill-btn-night:hover:not(:disabled) {
-  background-color: var(--night-raised);
-}
+  .pill-btn-night {
+    background-color: var(--night);
+    color: var(--on-night);
+    border: 1px solid var(--night);
+  }
+  .pill-btn-night:hover:not(:disabled) {
+    background-color: var(--night-raised);
+  }
 
-/* For use on the brand and night tiles. */
-.pill-btn-light {
-  background-color: var(--tile);
-  color: var(--ink);
-  border: 1px solid var(--tile);
-}
-.pill-btn-light:hover:not(:disabled) {
-  background-color: var(--brand-soft);
-}
+  /* For use on the brand and night tiles. */
+  .pill-btn-light {
+    background-color: var(--tile);
+    color: var(--ink);
+    border: 1px solid var(--tile);
+  }
+  .pill-btn-light:hover:not(:disabled) {
+    background-color: var(--brand-soft);
+  }
 
-/* An icon button sitting on the brand or night tile. */
-.icon-btn.icon-btn-on-dark {
-  background-color: transparent;
-  color: inherit;
-  border-color: rgba(255, 255, 255, 0.3);
-}
-.icon-btn.icon-btn-on-dark:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.6);
-}
+  /* Destructive actions. Quiet by default; solid only when the destructive action
+     is the point of the control. */
+  .pill-btn-danger,
+  .pill-btn-danger-quiet {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.125rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .pill-btn-danger {
+    background-color: var(--overdue);
+    color: #ffffff;
+    border: 1px solid var(--overdue);
+  }
+  .pill-btn-danger:hover:not(:disabled) {
+    background-color: #8f1e17;
+    border-color: #8f1e17;
+  }
+  .pill-btn-danger-quiet {
+    background-color: var(--tile);
+    color: var(--overdue);
+    border: 1px solid var(--overdue-soft);
+  }
+  .pill-btn-danger-quiet:hover:not(:disabled) {
+    background-color: var(--overdue-soft);
+  }
+  .pill-btn-danger:disabled,
+  .pill-btn-danger-quiet:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-.pill-btn:disabled,
-.pill-btn-brand:disabled,
-.pill-btn-night:disabled,
-.pill-btn-light:disabled,
-.icon-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+  /* An icon button sitting on the brand or night tile. */
+  .icon-btn.icon-btn-on-dark {
+    background-color: transparent;
+    color: inherit;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  .icon-btn.icon-btn-on-dark:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.6);
+  }
 
-/* A visible keyboard focus ring for the workspace system. Dark ring on light
-   surfaces, light ring on the brand and night tiles. */
-.ws-focus :focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
-}
-.ws-focus .on-dark :focus-visible {
-  outline-color: var(--on-night);
-}
+  .pill-btn:disabled,
+  .pill-btn-brand:disabled,
+  .pill-btn-night:disabled,
+  .pill-btn-light:disabled,
+  .icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  .ws-focus * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  /* Form controls. Every input needs a visible label; the label carries the size
+     and colour, the control carries the box. */
+  .ws-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--ink-faint);
+    min-width: 0;
+  }
+
+  .ws-input,
+  .ws-select,
+  .ws-textarea {
+    width: 100%;
+    min-height: 2.75rem;
+    border: 1px solid var(--line);
+    border-radius: 0.875rem;
+    background-color: var(--tile);
+    color: var(--ink);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    transition: border-color 0.15s ease;
+  }
+  .ws-textarea {
+    min-height: 6rem;
+    resize: vertical;
+  }
+  .ws-select {
+    cursor: pointer;
+  }
+  .ws-input:focus,
+  .ws-select:focus,
+  .ws-textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+  }
+  .ws-input::placeholder,
+  .ws-textarea::placeholder {
+    color: var(--ink-faint);
+  }
+  .ws-input:disabled,
+  .ws-select:disabled,
+  .ws-textarea:disabled {
+    background-color: var(--canvas);
+    cursor: not-allowed;
+  }
+
+  /* Tables. Long ledgers scroll inside .ws-table-wrap with a sticky head. */
+  .ws-table-wrap {
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    overflow: auto;
+  }
+  .ws-table {
+    width: 100%;
+    font-size: 0.875rem;
+    border-collapse: collapse;
+  }
+  .ws-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: var(--tile);
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .ws-table tbody td,
+  .ws-table tbody th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 400;
+    vertical-align: middle;
+  }
+  .ws-table tbody tr + tr td,
+  .ws-table tbody tr + tr th {
+    border-top: 1px solid var(--line);
+  }
+  .ws-table tbody tr:hover td,
+  .ws-table tbody tr:hover th {
+    background-color: var(--canvas);
+  }
+  .ws-table .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A visible keyboard focus ring for the workspace system. Dark ring on light
+     surfaces, light ring on the brand and night tiles. */
+  .ws-focus :focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+  .ws-focus .on-dark :focus-visible {
+    outline-color: var(--on-night);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ws-focus * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

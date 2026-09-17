@@ -246,21 +246,21 @@ async function handleSave() {
   >
     <!-- Modal Card -->
     <div
-      class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white animate-in fade-in zoom-in-95 duration-150 my-6 border border-border"
+      class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl overflow-hidden rounded-tile bg-tile animate-in fade-in zoom-in-95 duration-150 my-6 border border-line"
     >
       <!-- Header -->
-      <div class="flex items-center justify-between p-6 pb-4 border-b border-border">
+      <div class="flex items-center justify-between p-6 pb-4 border-b border-line">
         <div>
-          <h3 class="font-display font-black text-xl text-foreground tracking-tight uppercase">
+          <h3 class="font-semibold text-xl text-ink tracking-tight uppercase">
             UNIT {{ unit.unitCode.toUpperCase() }} — RATE &amp; SPECS
           </h3>
-          <p class="text-xs text-muted-foreground mt-0.5">
+          <p class="text-xs text-ink-soft mt-0.5">
             {{ unit.cluster }} · Floor {{ unit.floor }} · {{ unit.type }}
           </p>
         </div>
         <button
           @click="closeModal"
-          class="grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-muted border border-border transition-colors cursor-pointer"
+          class="grid size-9 place-items-center rounded-full text-ink-soft hover:bg-canvas border border-line transition-colors cursor-pointer"
           aria-label="Close"
         >
           <X class="size-4" />
@@ -268,15 +268,15 @@ async function handleSave() {
       </div>
 
       <!-- Form Body -->
-      <form @submit.prevent="handleSave" class="p-6 space-y-4 text-xs text-foreground max-h-[75vh] overflow-y-auto">
+      <form @submit.prevent="handleSave" class="p-6 space-y-4 text-xs text-ink max-h-[75vh] overflow-y-auto">
         
         <!-- Room Photo Upload (BLOB Database Storage) -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+            <label class="block font-semibold text-[11px] text-ink-soft">
               ROOM PHOTO
             </label>
-            <span v-if="uploadedFileName" class="text-[10px] font-medium text-emerald-700">
+            <span v-if="uploadedFileName" class="text-[10px] font-medium text-brand">
               Selected: {{ uploadedFileName }} ({{ uploadedFileSize }})
             </span>
           </div>
@@ -291,7 +291,7 @@ async function handleSave() {
           />
 
           <!-- Upload Dropzone & Photo Card -->
-          <div class="relative group rounded-2xl overflow-hidden border border-border bg-background transition-all">
+          <div class="relative group rounded-tile overflow-hidden border border-line bg-canvas transition-all">
             <div class="h-44 w-full relative bg-neutral-900">
               <img
                 v-if="unitPhoto"
@@ -309,18 +309,18 @@ async function handleSave() {
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
 
               <div class="absolute bottom-3 left-3 flex items-center gap-2">
-                <span class="badge-soft badge-neutral bg-white/95 font-bold uppercase tracking-wider backdrop-blur-xs">
+                <span class="badge-soft badge-neutral bg-tile/95 font-semibold backdrop-blur-xs">
                   {{ unit.cluster }}
                 </span>
-                <span v-if="editPhotoUrl.startsWith('data:')" class="badge-soft badge-success bg-white/95 font-bold">
+                <span v-if="editPhotoUrl.startsWith('data:')" class="badge-soft badge-success bg-tile/95 font-semibold">
                   New Photo Selected
                 </span>
               </div>
             </div>
 
             <!-- Upload Action Bar -->
-            <div class="p-3 bg-white border-t border-border flex items-center justify-between gap-3">
-              <span class="text-xs text-muted-foreground">
+            <div class="p-3 bg-tile border-t border-line flex items-center justify-between gap-3">
+              <span class="text-xs text-ink-soft">
                 {{ uploadedFileName ? uploadedFileName : 'PNG, JPG, or WebP' }}
               </span>
 
@@ -328,7 +328,7 @@ async function handleSave() {
                 type="button"
                 @click="triggerFileInput"
                 :disabled="isUploadingPhoto"
-                class="btn-secondary shrink-0"
+                class="pill-btn shrink-0"
               >
                 <Upload class="size-3.5" />
                 <span>Upload Photo</span>
@@ -339,7 +339,7 @@ async function handleSave() {
 
         <!-- Monthly Rate -->
         <div>
-          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+          <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
             MONTHLY RATE (₱)
           </label>
           <input
@@ -347,7 +347,7 @@ async function handleSave() {
             type="number"
             min="0"
             step="100"
-            class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-base font-bold text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+            class="ws-input w-full"
             required
           />
         </div>
@@ -355,26 +355,26 @@ async function handleSave() {
         <!-- Dynamic Registered Occupants (Based on actual tenants residing) -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+            <label class="block font-semibold text-[11px] text-ink-soft">
               REGISTERED OCCUPANTS
             </label>
-            <span class="text-[10px] font-semibold text-primary">
+            <span class="text-[10px] font-semibold text-brand">
               (Calculated dynamically from active tenant records)
             </span>
           </div>
 
-          <div class="rounded-xl border border-border bg-background p-3.5 flex items-center justify-between">
+          <div class="rounded-xl border border-line bg-canvas p-3.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="grid size-9 place-items-center rounded-lg bg-blue-50 text-primary ring-1 ring-blue-200 shrink-0">
+              <div class="grid size-9 place-items-center rounded-lg bg-brand-soft text-brand ring-1 ring-brand-soft shrink-0">
                 <Users class="size-4" />
               </div>
               <div>
-                <p class="font-display font-extrabold text-sm text-foreground">
+                <p class="font-semibold text-sm text-ink">
                   {{ occupantsSummary.count }} {{ occupantsSummary.count === 1 ? 'Registered Occupant' : 'Registered Occupants' }}
                 </p>
-                <p class="text-[11px] text-muted-foreground mt-0.5">
+                <p class="text-[11px] text-ink-soft mt-0.5">
                   <template v-if="occupantsSummary.count > 0">
-                    Active resident(s): <strong class="text-foreground">{{ occupantsSummary.text }}</strong>
+                    Active resident(s): <strong class="text-ink">{{ occupantsSummary.text }}</strong>
                   </template>
                   <template v-else>
                     No active tenants currently assigned to Unit {{ unit.unitCode.toUpperCase() }}
@@ -383,10 +383,7 @@ async function handleSave() {
               </div>
             </div>
 
-            <span :class="[
-              'badge-soft text-xs font-bold shrink-0',
-              occupantsSummary.count > 0 ? 'badge-success' : 'badge-neutral'
-            ]">
+            <span :class="[ 'badge-soft text-xs font-semibold shrink-0', occupantsSummary.count > 0 ? 'badge-success' : 'badge-neutral' ]">
               {{ occupantsSummary.count > 0 ? 'Occupied' : 'Vacant' }}
             </span>
           </div>
@@ -396,20 +393,20 @@ async function handleSave() {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <!-- Unit Type Dropdown -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
               UNIT TYPE
             </label>
             <div class="relative">
               <select
                 v-model="unitType"
-                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm font-semibold text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
+                class="ws-select w-full pr-10"
                 required
               >
                 <option v-for="opt in UNIT_TYPE_CHOICES" :key="opt" :value="opt">
                   {{ opt }}
                 </option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-ink-soft">
                 <ChevronDown class="size-4" />
               </div>
             </div>
@@ -417,20 +414,20 @@ async function handleSave() {
 
           <!-- Operational Status Dropdown -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
               OPERATIONAL STATUS
             </label>
             <div class="relative">
               <select
                 v-model="editStatus"
-                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm font-semibold text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
+                class="ws-select w-full pr-10"
                 required
               >
                 <option v-for="opt in OPERATIONAL_STATUS_OPTIONS" :key="opt" :value="opt">
                   {{ opt }}
                 </option>
               </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-ink-soft">
                 <ChevronDown class="size-4" />
               </div>
             </div>
@@ -439,23 +436,23 @@ async function handleSave() {
 
         <!-- Public visibility - the column existed and the API accepted it; nothing sent it. -->
         <div>
-          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+          <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
             PUBLIC LISTING
           </label>
           <div class="relative">
             <select
               v-model="editVisibility"
-              class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm font-semibold text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors cursor-pointer appearance-none pr-10"
+              class="ws-select w-full pr-10"
               required
             >
               <option value="Published">Published — shown on the public site</option>
               <option value="Hidden">Hidden — not listed, no new enquiries</option>
             </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground">
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-ink-soft">
               <ChevronDown class="size-4" />
             </div>
           </div>
-          <p class="text-[11px] text-muted-foreground mt-1">
+          <p class="text-[11px] text-ink-soft mt-1">
             Hiding a unit removes it from both public room pages and stops the enquiry form
             accepting messages about it. Residents already in the unit are unaffected.
           </p>
@@ -463,36 +460,36 @@ async function handleSave() {
 
         <!-- Billing Rule -->
         <div>
-          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+          <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
             BILLING RULE
           </label>
           <input
             v-model="billingRule"
             type="text"
-            class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+            class="ws-input w-full"
             required
           />
         </div>
 
         <!-- Amenities / Inclusions Textarea -->
         <div>
-          <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+          <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
             AMENITIES / INCLUSIONS
           </label>
           <textarea
             v-model="amenitiesText"
             rows="3"
-            class="w-full rounded-xl border border-border bg-background p-3 text-xs leading-relaxed text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors resize-none"
+            class="ws-textarea w-full"
             placeholder="Separate items with commas..."
           ></textarea>
         </div>
 
         <!-- Actions -->
-        <div class="pt-3 border-t border-border flex items-center justify-end gap-2.5">
+        <div class="pt-3 border-t border-line flex items-center justify-end gap-2.5">
           <button
             type="button"
             @click="closeModal"
-            class="btn-secondary"
+            class="pill-btn"
           >
             Cancel
           </button>
@@ -500,7 +497,7 @@ async function handleSave() {
           <button
             type="submit"
             :disabled="isSaving"
-            class="btn-primary"
+            class="pill-btn-brand"
           >
             <Loader2 v-if="isSaving" class="size-3.5 animate-spin" />
             <Check v-else class="size-3.5 text-white" />

@@ -12,7 +12,7 @@ import Skeleton from './Skeleton.vue';
     <!-- Top Hero Banner Skeleton -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
       <!-- Media Frame Placeholder -->
-      <div class="lg:col-span-5 h-[240px] sm:h-[260px] rounded-xl overflow-hidden border border-border-strong bg-slate-200/80 animate-pulse" />
+      <div class="lg:col-span-5 h-[240px] sm:h-[260px] rounded-xl overflow-hidden border border-line bg-canvas/80 animate-pulse" />
 
       <!-- Specs & Metadata Placeholder -->
       <div class="lg:col-span-7 flex flex-col justify-center space-y-5">
@@ -43,8 +43,8 @@ import Skeleton from './Skeleton.vue';
     </div>
 
     <!-- Secondary Payment Card / Details Skeleton -->
-    <div class="bg-white border border-border-strong rounded-xl p-6 space-y-6 shadow-xs">
-      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+    <div class="bg-tile border border-line rounded-xl p-6 space-y-6">
+      <div class="flex items-center justify-between pb-4 border-b border-line">
         <Skeleton className="h-6 w-48 rounded" />
         <Skeleton className="h-6 w-24 rounded-full" />
       </div>
@@ -54,7 +54,7 @@ import Skeleton from './Skeleton.vue';
           <Skeleton className="h-5 w-28 rounded" />
         </div>
       </div>
-      <div class="pt-4 border-t border-slate-100 space-y-3">
+      <div class="pt-4 border-t border-line space-y-3">
         <div v-for="i in 3" :key="'li-' + i" class="flex justify-between items-center">
           <Skeleton className="h-4 w-40 rounded" />
           <Skeleton className="h-4 w-20 rounded" />

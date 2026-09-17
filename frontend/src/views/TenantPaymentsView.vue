@@ -1,36 +1,28 @@
 <!--
   @file views/TenantPaymentsView.vue
-  @description Tenant Payment & Billing — outstanding bills with online pay button and year-filtered payment history.
-  @systemBibleRef Section 4 (Tenant Role), Section 12 (Billing), BR-016/BR-017 (Online GCash via Adyen)
-  @rationale Separates payment actions from overview for cleaner UX. Year filter prevents long scrolling lists.
-  @innovations Year-based payment record filtering, Adyen checkout redirect integration, responsive card+table hybrid layout.
+  @description Tenant payments and billing. Outstanding bills with the online pay button, and the
+    payment record filtered by year.
+  @systemBibleRef Section 4 (Tenant Role), Section 12 (Billing), BR-016/BR-017 (GCash via Adyen)
+  @designRef docs/DESIGN_GUIDELINE.md
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
+import { peso } from '@/lib/canonicalUnits';
 import { useToast } from '@/lib/useToast';
-import {
-  CreditCard,
-  FileText,
-  ShieldCheck,
-  Clock,
-  ChevronDown,
-  ExternalLink,
-  Sparkles,
-  Search,
-  RefreshCw,
-  AlertTriangle
-} from 'lucide-vue-next';
+import { CreditCard, RefreshCw, Search } from 'lucide-vue-next';
 import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
-import SkeletonCard from '@/components/ui/SkeletonCard.vue';
+import Skeleton from '@/components/ui/Skeleton.vue';
+import OverviewTile from '@/components/overview/OverviewTile.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 
 const { showToast } = useToast();
 
-// Selected bill for Adyen Web Component Checkout Modal
+// Selected bill for the Adyen web component checkout modal
 const selectedBillForAdyen = ref<any | null>(null);
 
-// Outstanding bills from DB
+// Outstanding bills from the database
 const outstandingBills = ref<any[]>([]);
 /**
  * Set when `/tenant/my-bills` could not be read.
@@ -44,7 +36,7 @@ const billsLoadFailed = ref(false);
 const loadingBills = ref(false);
 const searchQuery = ref('');
 
-// Payment History Records
+// Payment history records
 const paymentHistory = ref<Array<{
   id: string | number;
   invoiceRef: string;
@@ -56,7 +48,7 @@ const paymentHistory = ref<Array<{
   status: string;
 }>>([]);
 
-// Year filter for payment history — BR-015 prevents excessively long lists
+// Year filter for payment history. BR-015 prevents excessively long lists.
 const currentYear = new Date().getFullYear();
 const selectedYear = ref(currentYear);
 const sortOrder = ref<'latest' | 'oldest'>('latest');
@@ -72,21 +64,19 @@ const historyLoadFailed = ref(false);
 
 const availableYears = computed(() => {
   const years = new Set<number>();
-  paymentHistory.value.forEach(p => {
+  paymentHistory.value.forEach((p) => {
     const year = new Date(p.datePaidRaw).getFullYear();
     if (!isNaN(year)) years.add(year);
   });
-  // Always include current year
   years.add(currentYear);
   return Array.from(years).sort((a, b) => b - a);
 });
 
 const filteredPayments = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
-  const filtered = paymentHistory.value.filter(p => {
+  const filtered = paymentHistory.value.filter((p) => {
     const year = new Date(p.datePaidRaw).getFullYear();
-    const matchesYear = year === selectedYear.value;
-    if (!matchesYear) return false;
+    if (year !== selectedYear.value) return false;
     if (!q) return true;
     return (
       p.invoiceRef.toLowerCase().includes(q) ||
@@ -102,9 +92,7 @@ const filteredPayments = computed(() => {
   });
 });
 
-const tenantName = computed(() => currentUser.value?.fullName || 'Resident');
-
-const isInitiatingPayment = ref(false);
+const isVerified = (status: string) => status === 'VERIFIED & SETTLED' || status === 'VERIFIED';
 
 onMounted(async () => {
   const params = new URLSearchParams(window.location.search);
@@ -112,10 +100,14 @@ onMounted(async () => {
   const refParam = params.get('ref');
 
   if (statusParam === 'success') {
-    showToast('success', 'Payment Submitted', refParam ? `GCash payment ${refParam} submitted and is pending verification.` : 'Payment submitted successfully.');
+    showToast(
+      'success',
+      'Payment submitted',
+      refParam ? `GCash payment ${refParam} is waiting for verification.` : 'Your payment was submitted.'
+    );
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (statusParam === 'cancelled') {
-    showToast('warning', 'Payment Cancelled', 'Online payment checkout was cancelled.');
+    showToast('warning', 'Payment cancelled', 'The online payment was cancelled before it was completed.');
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
@@ -127,8 +119,7 @@ onMounted(async () => {
  *
  * The API derives `amount_outstanding` from the payments actually linked to the
  * bill (BR-013). The fallback is the bill's own total, which is correct for any
- * bill nothing has been paid against and is what every bill read before partial
- * settlement existed.
+ * bill nothing has been paid against.
  */
 function billBalance(bill: any): number {
   const outstanding = Number(bill?.amount_outstanding);
@@ -140,7 +131,7 @@ async function fetchOutstandingBills() {
   billsLoadFailed.value = false;
   try {
     const data = await api.get<any[]>('/tenant/my-bills');
-    outstandingBills.value = (data ?? []).filter(b => ((b as any).effective_status ?? b.status) !== 'Paid');
+    outstandingBills.value = (data ?? []).filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid');
   } catch (err: any) {
     console.error('Failed to load bills:', err?.message || err);
     // "No bills" and "we could not read your bills" are different sentences, and
@@ -155,12 +146,12 @@ async function fetchPaymentHistory() {
   historyLoadFailed.value = false;
   try {
     const data = await api.get<any[]>('/tenant/my-payments');
-    paymentHistory.value = (data ?? []).map(p => ({
+    paymentHistory.value = (data ?? []).map((p) => ({
       id: p.id,
       // A cash payment recorded by hand genuinely has no gateway reference, so
       // this label describes the absence rather than inventing a number.
-      invoiceRef: p.transaction_reference || 'No reference (recorded manually)',
-      datePaid: new Date(p.paid_at || p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      invoiceRef: p.transaction_reference || 'No reference, recorded by hand',
+      datePaid: new Date(p.paid_at || p.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }),
       datePaidRaw: p.paid_at || p.created_at,
       billingPeriod: 'Monthly Statement',
       amountPaid: Number(p.amount) || 0,
@@ -169,7 +160,7 @@ async function fetchPaymentHistory() {
       // `|| 'VERIFIED'` displayed a payment with no verification status as
       // settled, which is the single thing BR-017 exists to prevent.
       paymentMethod: (p.payment_method || 'UNKNOWN').toUpperCase(),
-      status: (p.verification_status || 'PENDING VERIFICATION').toUpperCase()
+      status: (p.verification_status || 'PENDING VERIFICATION').toUpperCase(),
     }));
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
@@ -181,205 +172,162 @@ function openAdyenModal(bill: any) {
   selectedBillForAdyen.value = bill;
 }
 
-function handleAdyenSuccess(refId: string) {
+function handleAdyenSuccess(_refId: string) {
   selectedBillForAdyen.value = null;
+  fetchOutstandingBills();
+  fetchPaymentHistory();
+}
+
+function refreshAll() {
   fetchOutstandingBills();
   fetchPaymentHistory();
 }
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Breadcrumb Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
-      <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-          <span>Tenant</span>
-          <span>/</span>
-          <span class="font-bold text-foreground">Payment &amp; Billing</span>
-        </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Payment &amp; Billing</h1>
-        <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">Submit online GCash payments and inspect verified rental receipt records.</p>
+  <div class="ws-focus flex flex-col gap-5 text-ink">
+    <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div class="min-w-0">
+        <p class="text-sm text-ink-faint">Tenant portal</p>
+        <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
+          Payments and billing
+        </h1>
+        <p class="mt-1 text-sm text-ink-soft">Pay a bill with GCash, and see what has been recorded against your unit.</p>
       </div>
+      <button type="button" class="icon-btn" :disabled="loadingBills" aria-label="Refresh bills and payments" @click="refreshAll">
+        <RefreshCw :class="['size-4', loadingBills && 'animate-spin']" aria-hidden="true" />
+      </button>
+    </header>
 
-      <div class="flex items-center gap-2">
-        <button
-          @click="fetchOutstandingBills(); fetchPaymentHistory();"
-          :disabled="loadingBills"
-          class="btn-secondary"
-        >
-          <RefreshCw :class="['size-3.5 text-muted-foreground', loadingBills ? 'animate-spin text-primary' : '']" />
-          <span>Refresh</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Outstanding Bills Status Section -->
-    <div v-if="loadingBills" class="py-2">
-      <SkeletonCard variant="room" :count="1" />
+    <!-- Bills -->
+    <div v-if="loadingBills" class="rounded-tile bg-tile p-6 flex flex-col gap-4" aria-busy="true">
+      <span class="sr-only" role="status">Loading your bills</span>
+      <Skeleton class-name="h-4 w-32 rounded-full" />
+      <Skeleton class-name="h-10 w-48 rounded-2xl" />
     </div>
 
     <!-- A failed read is NOT "nothing is owed". This branch comes first so the
-         green all-clear below can only be reached by a list that actually loaded. -->
-    <div v-else-if="billsLoadFailed" class="p-4 bg-amber-50/90 border border-amber-200 rounded-2xl flex items-center justify-between shadow-2xs">
-      <div class="flex items-center gap-3">
-        <AlertTriangle class="size-5 text-amber-600 shrink-0" />
-        <div>
-          <p class="text-xs font-bold text-amber-950">Your bills could not be loaded</p>
-          <p class="text-[11px] text-amber-800">This is not the same as having none. Press Refresh, and speak to the administrator if it keeps failing.</p>
-        </div>
-      </div>
-      <span class="badge-soft text-xs font-bold shrink-0">
-        Unknown
-      </span>
-    </div>
+         all-clear below can only be reached by a list that actually loaded. -->
+    <OverviewTile v-else-if="billsLoadFailed" title="Bills">
+      <UnavailableNote
+        message="Your bills could not be loaded. This is not the same as having none. Try again, and tell the landlady if it keeps failing."
+        @retry="refreshAll"
+      />
+    </OverviewTile>
 
-    <div v-else-if="outstandingBills.length === 0" class="p-4 bg-emerald-50/90 border border-emerald-200 rounded-2xl flex items-center justify-between shadow-2xs">
-      <div class="flex items-center gap-3">
-        <ShieldCheck class="size-5 text-emerald-600 shrink-0" />
-        <div>
-          <p class="text-xs font-bold text-emerald-950">All Rent Accounts Settled</p>
-          <!-- This used to promise "your next monthly statement will be issued on the
-               5th". There is no scheduled bill generator and there is deliberately not
-               one - collection happens in person, so a nightly run would raise bills
-               against residents the owner has already been paid by (judgement log
-               § 3.6). The sentence promised a thing the system does not do. -->
-          <p class="text-[11px] text-emerald-800">You have no outstanding bills. Bills are issued by the administrator as they fall due, not on a fixed date.</p>
-        </div>
-      </div>
-      <span class="badge-soft badge-success text-xs font-bold shrink-0">
-        Paid Up to Date
-      </span>
-    </div>
+    <OverviewTile v-else-if="outstandingBills.length === 0" tone="soft" title="Bills">
+      <p class="text-2xl font-semibold tracking-tight">Nothing is due</p>
+      <!-- This used to promise "your next monthly statement will be issued on the
+           5th". There is no scheduled bill generator and there is deliberately not
+           one: collection happens in person, so a nightly run would raise bills
+           against residents the owner has already been paid by (judgement log
+           section 3.6). The sentence promised a thing the system does not do. -->
+      <p class="text-sm leading-6 text-ink-soft">
+        You have no outstanding bills. The landlady issues bills as they fall due, not on a fixed date.
+      </p>
+    </OverviewTile>
 
-    <!-- Active Outstanding Bill Action Card -->
-    <div v-else class="space-y-3">
-      <div
+    <div v-else class="grid gap-4 md:grid-cols-2">
+      <OverviewTile
         v-for="bill in outstandingBills"
         :key="bill.id"
-        class="surface-card p-6 border-amber-300 bg-amber-50/20 flex flex-col sm:flex-row justify-between sm:items-center gap-5 shadow-xs"
+        tone="brand"
+        :title="billBalance(bill) < Number(bill.total_amount) ? 'Partly paid bill' : 'Bill to pay'"
       >
-        <div class="space-y-1.5">
-          <div class="flex items-center gap-2">
-            <span class="badge-soft badge-warning font-bold text-xs">
-              {{ billBalance(bill) < Number(bill.total_amount) ? 'PARTIALLY PAID' : 'OUTSTANDING INVOICE' }}
-            </span>
-            <span class="text-xs text-muted-foreground">
-              Due: <strong class="text-foreground">{{ new Date(bill.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }}</strong>
-            </span>
-          </div>
-          <!-- The BALANCE, not the debt as issued. BR-013. -->
-          <p class="text-2xl font-black tabular font-display text-foreground">
-            ₱{{ billBalance(bill).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
-          </p>
-          <p class="text-xs text-muted-foreground space-x-3">
-            <span>Base Rent: <strong class="text-foreground tabular">₱{{ bill.rent_amount.toLocaleString() }}</strong></span>
-            <span>·</span>
-            <span>Water Fee: <strong class="text-foreground tabular">₱{{ bill.water_amount.toLocaleString() }}</strong></span>
-            <template v-if="Number(bill.amount_paid) > 0">
-              <span>·</span>
-              <span>Already paid: <strong class="text-foreground tabular">₱{{ Number(bill.amount_paid).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</strong> of ₱{{ Number(bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
-            </template>
+        <div>
+          <!-- The balance, not the debt as issued. BR-013. -->
+          <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(billBalance(bill), 2) }}</p>
+          <p class="mt-2 text-sm text-on-brand-soft">
+            Due {{ new Date(bill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) }}
           </p>
         </div>
 
-        <button
-          @click="openAdyenModal(bill)"
-          class="btn-primary"
-        >
-          <CreditCard class="size-4 text-white" />
-          <span>Pay Online (GCash via Adyen)</span>
+        <dl class="flex flex-col gap-1.5 text-sm text-on-brand-soft">
+          <div class="flex items-baseline justify-between gap-3">
+            <dt>Rent</dt>
+            <dd class="tabular text-on-brand">{{ peso(bill.rent_amount) }}</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-3">
+            <dt>Water</dt>
+            <dd class="tabular text-on-brand">{{ peso(bill.water_amount) }}</dd>
+          </div>
+          <div v-if="Number(bill.amount_paid) > 0" class="flex items-baseline justify-between gap-3">
+            <dt>Already paid</dt>
+            <dd class="tabular text-on-brand">
+              {{ peso(Number(bill.amount_paid), 2) }} of {{ peso(Number(bill.total_amount), 2) }}
+            </dd>
+          </div>
+        </dl>
+
+        <button type="button" class="pill-btn-light mt-auto self-start" @click="openAdyenModal(bill)">
+          <CreditCard class="size-4" aria-hidden="true" />
+          Pay with GCash
         </button>
-      </div>
+      </OverviewTile>
     </div>
 
-    <!-- Payment Record History (Matching Admin Table Register Style) -->
-    <div class="surface-card overflow-hidden">
-      <!-- Filter Bar (Identical to Admin Income & Expenses) -->
-      <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
-        <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search invoice ref #, payment method, or status…"
-            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
-          />
-        </div>
-
-        <select
-          v-model="selectedYear"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
-        >
-          <option v-for="year in availableYears" :key="year" :value="year">{{ year }} Records</option>
-        </select>
-
-        <select
-          v-model="sortOrder"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
-        >
-          <option value="latest">Latest First</option>
-          <option value="oldest">Oldest First</option>
-        </select>
+    <!-- Payment record -->
+    <OverviewTile title="Payment record">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <label class="ws-field flex-1">
+          Search by reference, method or status
+          <span class="relative">
+            <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+            <input v-model="searchQuery" type="search" class="ws-input pl-10" />
+          </span>
+        </label>
+        <label class="ws-field sm:w-40">
+          Year
+          <select v-model="selectedYear" class="ws-select">
+            <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+          </select>
+        </label>
+        <label class="ws-field sm:w-40">
+          Order
+          <select v-model="sortOrder" class="ws-select">
+            <option value="latest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </label>
       </div>
 
-      <!-- Single-Tier Atlassian Data Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
+      <UnavailableNote
+        v-if="historyLoadFailed"
+        message="Your payment history could not be loaded. This does not mean no payments were recorded."
+        @retry="refreshAll"
+      />
+      <p v-else-if="filteredPayments.length === 0" class="py-6 text-center text-sm text-ink-soft">
+        No payments are recorded for {{ selectedYear }}.
+      </p>
+      <div v-else class="ws-table-wrap max-h-[32rem]">
+        <table class="ws-table">
+          <caption class="sr-only">Your payments in {{ selectedYear }}</caption>
           <thead>
-            <tr class="bg-muted border-b border-border text-muted-foreground uppercase tracking-wide font-bold text-[11px]">
-              <th class="px-4 py-3">Invoice / Ref #</th>
-              <th class="px-4 py-3">Date Paid</th>
-              <th class="px-4 py-3">Amount Paid</th>
-              <th class="px-4 py-3">Payment Method</th>
-              <th class="px-4 py-3">Verification Status</th>
+            <tr>
+              <th scope="col">Reference</th>
+              <th scope="col">Date paid</th>
+              <th scope="col" class="num">Amount</th>
+              <th scope="col">Method</th>
+              <th scope="col">Status</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-border">
-            <tr
-              v-for="record in filteredPayments"
-              :key="record.id"
-              class="hover:bg-background transition-colors"
-            >
-              <td class="px-4 py-3.5 font-mono text-foreground font-bold">
-                {{ record.invoiceRef }}
-              </td>
-              <td class="px-4 py-3.5 text-muted-foreground">{{ record.datePaid }}</td>
-              <td class="px-4 py-3.5 font-black tabular font-display text-foreground text-sm">
-                ₱{{ record.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
-              </td>
-              <td class="px-4 py-3.5">
-                <span class="badge-soft badge-blue font-bold text-xs">
-                  {{ record.paymentMethod }}
-                </span>
-              </td>
-              <td class="px-4 py-3.5">
-                <span
-                  class="badge-soft text-xs font-bold"
-                  :class="record.status === 'VERIFIED & SETTLED' || record.status === 'VERIFIED'
-                    ? 'badge-success'
-                    : 'badge-warning'"
-                >
-                  {{ record.status }}
-                </span>
-              </td>
-            </tr>
-            <tr v-if="filteredPayments.length === 0">
-              <td colspan="5" class="p-8 text-center text-xs text-muted-foreground">
-                <template v-if="historyLoadFailed">
-                  Your payment history could not be loaded. This does <strong>not</strong> mean
-                  no payments were recorded &mdash; refresh to retry, and contact the
-                  administrator if it keeps failing.
-                </template>
-                <template v-else>No payment records found for year {{ selectedYear }}.</template>
+          <tbody>
+            <tr v-for="record in filteredPayments" :key="record.id">
+              <th scope="row" class="font-medium">{{ record.invoiceRef }}</th>
+              <td class="text-ink-soft whitespace-nowrap">{{ record.datePaid }}</td>
+              <td class="num font-semibold">{{ peso(record.amountPaid, 2) }}</td>
+              <td class="text-ink-soft">{{ record.paymentMethod }}</td>
+              <td>
+                <StatusPill :tone="isVerified(record.status) ? 'paid' : 'verify'">
+                  {{ isVerified(record.status) ? 'Verified' : 'Waiting for verification' }}
+                </StatusPill>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </OverviewTile>
 
-    <!-- Official Adyen Web Checkout Modal -->
     <AdyenPaymentModal
       v-if="selectedBillForAdyen"
       :bill="selectedBillForAdyen"

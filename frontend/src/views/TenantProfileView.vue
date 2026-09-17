@@ -174,15 +174,15 @@ function handleReset() {
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
           <span>Tenant</span>
           <span>/</span>
-          <span class="font-bold text-foreground">My Profile</span>
+          <span class="font-semibold text-ink">My Profile</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Resident Profile</h1>
-        <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">Manage your personal contact details, emergency info, and account profile.</p>
+        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Resident Profile</h1>
+        <p class="text-xs sm:text-sm text-ink-soft mt-0.5">Manage your personal contact details, emergency info, and account profile.</p>
       </div>
     </div>
 
@@ -195,15 +195,15 @@ function handleReset() {
       <!-- Notices -->
       <div
         v-if="successNotice"
-        class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm rounded-2xl flex items-center justify-between shadow-xs"
+        class="p-4 bg-brand-soft border border-brand-soft text-brand text-xs sm:text-sm rounded-tile flex items-center justify-between"
       >
         <div class="flex items-center gap-2.5">
-          <CheckCircle2 class="size-5 text-emerald-600 shrink-0" />
+          <CheckCircle2 class="size-5 text-brand shrink-0" />
           <span class="font-medium">{{ successNotice }}</span>
         </div>
         <button
           @click="successNotice = ''"
-          class="text-emerald-700 hover:text-emerald-900 p-1 rounded-lg cursor-pointer"
+          class="text-brand hover:text-brand p-1 rounded-lg cursor-pointer"
           title="Dismiss"
         >
           <X class="size-4" />
@@ -212,16 +212,16 @@ function handleReset() {
 
       <div
         v-if="errorNotice"
-        class="p-4 bg-rose-50 border border-rose-200 text-rose-900 text-xs sm:text-sm rounded-2xl flex items-start gap-2.5 shadow-xs"
+        class="p-4 bg-overdue-soft border border-overdue-soft text-overdue text-xs sm:text-sm rounded-tile flex items-start gap-2.5"
       >
-        <AlertTriangle class="size-5 text-rose-600 shrink-0 mt-0.5" />
-        <span class="font-bold">{{ errorNotice }}</span>
+        <AlertTriangle class="size-5 text-overdue shrink-0 mt-0.5" />
+        <span class="font-semibold">{{ errorNotice }}</span>
       </div>
 
       <!-- Avatar & Account Identity Card -->
-      <div class="surface-card rounded-2xl border border-border bg-white p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xs">
+      <div class="rounded-tile bg-tile rounded-tile border border-line bg-tile p-6 flex flex-col sm:flex-row items-center gap-6">
         <div class="relative group">
-          <div class="size-24 rounded-full bg-neutral-dark text-white flex items-center justify-center text-2xl font-black shadow-md overflow-hidden border-4 border-white ring-2 ring-border">
+          <div class="size-24 rounded-full bg-night text-white flex items-center justify-center text-2xl font-semibold shadow-md overflow-hidden border-4 border-white ring-2 ring-border">
             <span>{{ initials }}</span>
           </div>
 
@@ -243,49 +243,49 @@ function handleReset() {
 
         <div class="text-center sm:text-left space-y-1.5 flex-1">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h2 class="font-display font-black text-xl text-foreground">{{ form.full_name }}</h2>
-            <span class="badge-soft badge-success text-[11px] font-bold w-fit mx-auto sm:mx-0">
+            <h2 class="font-semibold text-xl text-ink">{{ form.full_name }}</h2>
+            <span class="badge-soft badge-success text-[11px] font-semibold w-fit mx-auto sm:mx-0">
               Active Tenant
             </span>
           </div>
-          <p class="text-xs text-muted-foreground flex items-center justify-center sm:justify-start gap-1.5">
+          <p class="text-xs text-ink-soft flex items-center justify-center sm:justify-start gap-1.5">
             <template v-if="identity.email">
-              <Mail class="size-3.5 text-primary" /> {{ identity.email }}
+              <Mail class="size-3.5 text-brand" /> {{ identity.email }}
             </template>
             <template v-else-if="form.phone_number">
-              <Mail class="size-3.5 text-muted-foreground" />
+              <Mail class="size-3.5 text-ink-soft" />
               <span>No email on file — signs in with {{ form.phone_number }}</span>
             </template>
             <template v-else>
-              <Mail class="size-3.5 text-muted-foreground" />
+              <Mail class="size-3.5 text-ink-soft" />
               <span>No email on file</span>
             </template>
           </p>
-          <p class="text-xs text-muted-foreground">
-            Role: <strong class="text-foreground capitalize">{{ identity.role }}</strong> · Status: <strong class="text-emerald-700 capitalize">{{ identity.account_status }}</strong>
+          <p class="text-xs text-ink-soft">
+            Role: <strong class="text-ink capitalize">{{ identity.role }}</strong> · Status: <strong class="text-brand capitalize">{{ identity.account_status }}</strong>
           </p>
         </div>
       </div>
 
       <!-- Editable Profile Form -->
-      <form @submit.prevent="handleSave" class="surface-card rounded-2xl border border-border bg-white overflow-hidden shadow-xs">
-        <div class="px-6 py-4 border-b border-border bg-background flex items-center justify-between">
+      <form @submit.prevent="handleSave" class="rounded-tile bg-tile rounded-tile border border-line bg-tile overflow-hidden">
+        <div class="px-6 py-4 border-b border-line bg-canvas flex items-center justify-between">
           <div>
-            <h2 class="font-display font-extrabold text-sm text-foreground flex items-center gap-2">
-              <User class="size-4 text-primary" />
+            <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
+              <User class="size-4 text-brand" />
               Edit Profile Details
             </h2>
-            <p class="text-xs text-muted-foreground mt-0.5">Update your contact numbers, emergency contact, and links</p>
+            <p class="text-xs text-ink-soft mt-0.5">Update your contact numbers, emergency contact, and links</p>
           </div>
         </div>
 
         <div class="p-6 space-y-6">
           <!-- Full Name & Phone Number -->
           <div>
-            <h3 class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider mb-3">Resident Information</h3>
+            <h3 class="text-[10px] font-semibold text-ink-soft mb-3">Resident Information</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="full-name">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="full-name">
                   Full Display Name
                 </label>
                 <!--
@@ -300,13 +300,13 @@ function handleReset() {
                   readonly
                   title="Your name is on your tenancy record. Ask the landlady to change it."
                   placeholder="Your Full Name"
-                  class="form-input text-xs font-semibold"
+                  class="ws-input"
                   required
                 />
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="phone">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="phone">
                   Contact Phone Number
                 </label>
                 <input
@@ -314,21 +314,21 @@ function handleReset() {
                   v-model="form.phone_number"
                   type="tel"
                   placeholder="e.g. 0917-123-4567"
-                  class="form-input text-xs"
+                  class="ws-input"
                   required
                 />
               </div>
             </div>
           </div>
 
-          <div class="border-t border-border"></div>
+          <div class="border-t border-line"></div>
 
           <!-- Occupation & Socials -->
           <div>
-            <h3 class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider mb-3">Work &amp; Social Profile</h3>
+            <h3 class="text-[10px] font-semibold text-ink-soft mb-3">Work &amp; Social Profile</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="occupation">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="occupation">
                   Occupation / Course &amp; University
                 </label>
                 <input
@@ -336,12 +336,12 @@ function handleReset() {
                   v-model="form.occupation"
                   type="text"
                   placeholder="e.g. BS Nursing Student / IT Specialist"
-                  class="form-input text-xs"
+                  class="ws-input"
                 />
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="facebook">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="facebook">
                   Facebook Profile Link
                 </label>
                 <input
@@ -349,23 +349,23 @@ function handleReset() {
                   v-model="form.facebook_url"
                   type="url"
                   placeholder="https://facebook.com/your.profile"
-                  class="form-input text-xs"
+                  class="ws-input"
                 />
               </div>
             </div>
           </div>
 
-          <div class="border-t border-border"></div>
+          <div class="border-t border-line"></div>
 
           <!-- Emergency Contact -->
           <div>
-            <h3 class="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <LifeBuoy class="size-3.5 text-rose-500" />
+            <h3 class="text-[10px] font-semibold text-ink-soft mb-3 flex items-center gap-1.5">
+              <LifeBuoy class="size-3.5 text-overdue" />
               Emergency Contact Person
             </h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ec-name">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ec-name">
                   Emergency Contact Full Name
                 </label>
                 <input
@@ -373,13 +373,13 @@ function handleReset() {
                   v-model="form.emergency_contact_name"
                   type="text"
                   placeholder="Parent / Guardian Name"
-                  class="form-input text-xs"
+                  class="ws-input"
                   required
                 />
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ec-phone">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ec-phone">
                   Emergency Contact Phone Number
                 </label>
                 <input
@@ -387,7 +387,7 @@ function handleReset() {
                   v-model="form.emergency_contact_phone"
                   type="tel"
                   placeholder="e.g. 0918-987-6543"
-                  class="form-input text-xs"
+                  class="ws-input"
                   required
                 />
               </div>
@@ -396,8 +396,8 @@ function handleReset() {
         </div>
 
         <!-- Action Bar -->
-        <div class="px-6 py-4 border-t border-border bg-background flex items-center justify-between gap-3 flex-wrap">
-          <p class="text-xs text-muted-foreground">
+        <div class="px-6 py-4 border-t border-line bg-canvas flex items-center justify-between gap-3 flex-wrap">
+          <p class="text-xs text-ink-soft">
             {{ isDirty ? 'Unsaved profile modifications.' : 'Profile is up to date.' }}
           </p>
           <div class="flex items-center gap-2">
@@ -405,7 +405,7 @@ function handleReset() {
               type="button"
               @click="handleReset"
               :disabled="!isDirty || saving"
-              class="btn-secondary"
+              class="pill-btn"
             >
               <RotateCcw class="size-3.5" />
               <span>Reset</span>
@@ -413,7 +413,7 @@ function handleReset() {
             <button
               type="submit"
               :disabled="!isDirty || saving"
-              class="btn-primary"
+              class="pill-btn-brand"
             >
               <Save class="size-3.5 text-white" />
               <span>{{ saving ? 'Saving Changes…' : 'Save Profile' }}</span>

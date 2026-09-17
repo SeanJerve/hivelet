@@ -211,17 +211,17 @@ async function handleSendReply() {
 <template>
   <div class="space-y-6">
     <!-- Header with Breadcrumbs -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-foreground">Prospect Inquiries</span>
+          <span class="font-semibold text-ink">Prospect Inquiries</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Prospect Inquiries &amp; Leads
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
+        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
           2-Pane Master-Detail Lead Inbox and real-time prospect conversation console.
         </p>
       </div>
@@ -229,40 +229,41 @@ async function handleSendReply() {
       <button
         @click="fetchInquiries"
         :disabled="isLoading"
-        class="btn-secondary"
+        class="pill-btn"
       >
-        <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin' : '']" />
+        <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
         <span>Refresh</span>
       </button>
     </div>
 
     <!-- 2-Pane Master-Detail Inbox Container -->
-    <div class="surface-card overflow-hidden border border-border rounded-2xl bg-white shadow-xs grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
+    <div class="rounded-tile bg-tile overflow-hidden border border-line rounded-tile bg-tile grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
       
       <!-- LEFT PANE: Leads List (4 of 12 cols on desktop) -->
-      <div class="lg:col-span-4 border-r border-border flex flex-col bg-background">
+      <div class="lg:col-span-4 border-r border-line flex flex-col bg-canvas">
         <!-- Search & Filter Header -->
-        <div class="p-3.5 border-b border-border bg-white space-y-2.5">
+        <div class="p-3.5 border-b border-line bg-tile space-y-2.5">
           <div class="relative">
-            <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
             <input
               v-model="searchQuery"
+              aria-label="Search prospect or unit"
               type="text"
               placeholder="Search prospect or unit..."
-              class="h-10 min-h-10 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+              class="ws-input w-full pl-10 pr-4"
             />
           </div>
-          <div class="flex items-center justify-between text-xs text-muted-foreground px-1">
-            <span class="font-extrabold text-[11px] uppercase tracking-wider">Inbox ({{ filteredInquiries.length }})</span>
-            <span class="text-[11px] font-semibold text-emerald-700">Live sync</span>
+          <div class="flex items-center justify-between text-xs text-ink-soft px-1">
+            <span class="font-semibold text-[11px]">Inbox ({{ filteredInquiries.length }})</span>
+            <span class="text-[11px] font-semibold text-brand">Live sync</span>
           </div>
         </div>
 
         <!-- Inquiries List Scrollable -->
-        <div class="flex-1 overflow-y-auto divide-y divide-border/70 max-h-[540px]">
+        <div class="flex-1 overflow-y-auto divide-y divide-line/70 max-h-[540px]">
           <div 
             v-if="filteredInquiries.length === 0" 
-            class="p-8 text-center text-xs text-muted-foreground"
+            class="p-8 text-center text-xs text-ink-soft"
           >
             No inquiries match your criteria.
           </div>
@@ -271,27 +272,22 @@ async function handleSendReply() {
             v-for="inq in filteredInquiries"
             :key="inq.id"
             @click="activeInquiryId = inq.id"
-            :class="[
-              'p-3.5 cursor-pointer transition-all border-l-3',
-              activeInquiry?.id === inq.id 
-                ? 'bg-white border-l-primary shadow-xs' 
-                : 'border-l-transparent hover:bg-white'
-            ]"
+            :class="[ 'p-3.5 cursor-pointer transition-all border-l-3', activeInquiry?.id === inq.id ? 'bg-tile border-l-primary ' : 'border-l-transparent hover:bg-tile' ]"
           >
             <div class="flex items-start justify-between gap-2">
               <div class="min-w-0">
-                <p class="font-bold text-xs text-foreground truncate">{{ inq.name }}</p>
-                <span class="inline-block text-[11px] font-semibold text-primary mt-0.5">
+                <p class="font-semibold text-xs text-ink truncate">{{ inq.name }}</p>
+                <span class="inline-block text-[11px] font-semibold text-brand mt-0.5">
                   Unit {{ inq.unit.toUpperCase() }}
                 </span>
-                <span :class="['badge-soft text-[10px] font-bold ml-1.5', statusBadgeClass(inq.status)]">
+                <span :class="['badge-soft text-[10px] font-semibold ml-1.5', statusBadgeClass(inq.status)]">
                   {{ inq.status }}
                 </span>
               </div>
-              <span class="text-[10px] text-muted-foreground shrink-0 font-medium">{{ inq.date || 'Recent' }}</span>
+              <span class="text-[10px] text-ink-soft shrink-0 font-medium">{{ inq.date || 'Recent' }}</span>
             </div>
 
-            <p class="text-xs text-foreground-soft line-clamp-2 mt-1.5 leading-relaxed">
+            <p class="text-xs text-ink-soft line-clamp-2 mt-1.5 leading-relaxed">
               {{ inq.message }}
             </p>
           </div>
@@ -299,22 +295,22 @@ async function handleSendReply() {
       </div>
 
       <!-- RIGHT PANE: Conversation Detail & Quick Reply Composer (8 of 12 cols) -->
-      <div v-if="activeInquiry" class="lg:col-span-8 flex flex-col justify-between bg-white min-h-[550px]">
+      <div v-if="activeInquiry" class="lg:col-span-8 flex flex-col justify-between bg-tile min-h-[550px]">
         <!-- Thread Header -->
-        <div class="p-4 border-b border-border flex items-center justify-between bg-background">
+        <div class="p-4 border-b border-line flex items-center justify-between bg-canvas">
           <div class="flex items-center gap-3">
-            <div class="size-10 rounded-full bg-primary text-white flex items-center justify-center font-black text-sm">
+            <div class="size-10 rounded-full bg-brand text-white flex items-center justify-center font-semibold text-sm">
               {{ activeInquiry.name.charAt(0).toUpperCase() }}
             </div>
             <div>
-              <h2 class="font-display font-extrabold text-sm text-foreground flex items-center gap-2">
+              <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
                 {{ activeInquiry.name }}
                 <!-- Was a hardcoded "Active Prospect" on every lead, whatever its status. -->
                 <span :class="['badge-soft text-[10px]', statusBadgeClass(activeInquiry.status)]">
                   {{ activeInquiry.status }}
                 </span>
               </h2>
-              <div class="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+              <div class="flex flex-wrap items-center gap-3 text-[11px] text-ink-soft mt-0.5">
                 <span class="flex items-center gap-1"><Phone class="size-3" /> {{ activeInquiry.phone }}</span>
                 <span class="flex items-center gap-1"><Mail class="size-3" /> {{ activeInquiry.email }}</span>
               </div>
@@ -324,8 +320,8 @@ async function handleSendReply() {
           <!-- Unit Info & Conversion Action -->
           <div class="flex items-center gap-3">
             <div v-if="activeUnit" class="text-right hidden sm:block">
-              <span class="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Target Unit</span>
-              <p class="font-display font-bold text-xs text-foreground">
+              <span class="text-[10px] font-semibold text-ink-soft">Target Unit</span>
+              <p class="font-semibold text-xs text-ink">
                 <!-- The rate she quotes a prospective resident. `rooms` is seeded, so a
                      failed refresh would have her quoting a figure up to ₱1,900 out. Better
                      to show no price than a wrong one. -->
@@ -338,7 +334,7 @@ async function handleSendReply() {
               type="button"
               :disabled="isSubmitting"
               @click="handleCloseLead"
-              class="btn-secondary text-xs flex items-center gap-1.5"
+              class="pill-btn text-xs flex items-center gap-1.5"
               title="Mark this lead as closed - it stays on record but stops awaiting a reply"
             >
               <XCircle class="size-3.5" />
@@ -357,7 +353,7 @@ async function handleSendReply() {
                   unit: activeInquiry.unit
                 }
               })"
-              class="btn-primary text-xs flex items-center gap-1.5 shadow-xs"
+              class="pill-btn-brand text-xs flex items-center gap-1.5"
               title="Pre-fill inquiry details into the tenant onboarding form"
             >
               <UserPlus class="size-3.5 text-white" />
@@ -366,7 +362,7 @@ async function handleSendReply() {
 
             <span
               v-else
-              class="text-[11px] font-bold text-muted-foreground inline-flex items-center gap-1"
+              class="text-[11px] font-semibold text-ink-soft inline-flex items-center gap-1"
             >
               <Check class="size-3.5" /> {{ activeInquiry.status }}
             </span>
@@ -374,24 +370,19 @@ async function handleSendReply() {
         </div>
 
         <!-- Conversation Stream -->
-        <div class="flex-1 p-5 overflow-y-auto space-y-4 max-h-[380px] bg-background/40">
+        <div class="flex-1 p-5 overflow-y-auto space-y-4 max-h-[380px] bg-canvas/40">
           <div 
             v-for="msg in activeMessages" 
             :key="msg.id"
             :class="['flex flex-col', msg.from === 'me' ? 'items-end' : 'items-start']"
           >
-            <div class="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-muted-foreground">
-              <span class="font-bold">{{ msg.from === 'me' ? 'Fe Galang Da Silva (Landlady)' : msg.author }}</span>
+            <div class="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-ink-soft">
+              <span class="font-semibold">{{ msg.from === 'me' ? 'Fe Galang Da Silva (Landlady)' : msg.author }}</span>
               <span>· {{ msg.time }}</span>
             </div>
 
             <div 
-              :class="[
-                'max-w-md p-3.5 rounded-2xl text-xs leading-relaxed shadow-2xs',
-                msg.from === 'me' 
-                  ? 'bg-primary text-white rounded-br-xs' 
-                  : 'bg-white text-foreground border border-border rounded-bl-xs'
-              ]"
+              :class="[ 'max-w-md p-3.5 rounded-tile text-xs leading-relaxed ', msg.from === 'me' ? 'bg-brand text-white rounded-br-xs' : 'bg-tile text-ink border border-line rounded-bl-xs' ]"
             >
               {{ msg.text }}
             </div>
@@ -399,27 +390,27 @@ async function handleSendReply() {
         </div>
 
         <!-- Quick Reply Box Composer -->
-        <div class="p-4 border-t border-border bg-white">
+        <div class="p-4 border-t border-line bg-tile">
           <form @submit.prevent="handleSendReply" class="space-y-3">
             <div class="relative">
               <textarea
                 v-model="replyMessage"
                 rows="3"
                 placeholder="Type your reply to prospect (e.g. Opo, vacant pa po ang unit and viewing is open tomorrow)..."
-                class="w-full p-3 text-xs rounded-xl border border-border bg-background text-foreground focus:bg-white focus:border-primary focus:outline-none resize-none"
+                class="ws-textarea w-full"
                 required
               ></textarea>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-[11px] text-muted-foreground">
+              <span class="text-[11px] text-ink-soft">
                 Replies are dispatched directly via SMS / Email to {{ activeInquiry.phone }}.
               </span>
 
               <button 
                 type="submit" 
                 :disabled="isSubmitting || !replyMessage.trim()" 
-                class="btn-primary"
+                class="pill-btn-brand"
               >
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
                 <Send v-else class="size-3.5 text-white" />
@@ -431,10 +422,10 @@ async function handleSendReply() {
       </div>
 
       <!-- Empty Selection State -->
-      <div v-else class="lg:col-span-8 grid place-items-center p-12 text-center text-xs text-muted-foreground">
+      <div v-else class="lg:col-span-8 grid place-items-center p-12 text-center text-xs text-ink-soft">
         <div>
-          <Inbox class="size-10 mx-auto text-muted-foreground mb-2 opacity-50" />
-          <p class="font-bold text-sm text-foreground">Select an Inquiry</p>
+          <Inbox class="size-10 mx-auto text-ink-soft mb-2 opacity-50" />
+          <p class="font-semibold text-sm text-ink">Select an Inquiry</p>
           <p class="mt-1">Choose a prospect thread on the left to read and reply.</p>
         </div>
       </div>
@@ -447,23 +438,23 @@ async function handleSendReply() {
       class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
       @click.self="isConfirmOpen = false"
     >
-      <div class="surface-card w-full max-w-sm shadow-2xl rounded-2xl p-6 bg-white space-y-4 text-center">
+      <div class="rounded-tile bg-tile w-full max-w-sm shadow-2xl rounded-tile p-6 bg-tile space-y-4 text-center">
         <div class="flex flex-col items-center gap-3">
           <div class="w-12 h-12 rounded-full bg-warning-soft text-warning-foreground flex items-center justify-center">
             <XCircle class="w-6 h-6" />
           </div>
-          <h3 class="font-display font-extrabold text-lg text-foreground">{{ confirmTitle }}</h3>
+          <h3 class="font-semibold text-lg text-ink">{{ confirmTitle }}</h3>
 
-          <div class="w-full text-left bg-background border border-border rounded-xl p-3.5 text-xs text-foreground space-y-1 leading-relaxed whitespace-pre-line font-semibold">
+          <div class="w-full text-left bg-canvas border border-line rounded-xl p-3.5 text-xs text-ink space-y-1 leading-relaxed whitespace-pre-line font-semibold">
             {{ confirmMessage }}
           </div>
         </div>
 
         <div class="flex items-center justify-center gap-2 pt-2">
-          <button type="button" @click="isConfirmOpen = false" class="btn-secondary cursor-pointer min-w-[100px]">
+          <button type="button" @click="isConfirmOpen = false" class="pill-btn cursor-pointer min-w-[100px]">
             Cancel
           </button>
-          <button type="button" @click="handleConfirmAccept" class="btn-primary cursor-pointer min-w-[100px]">
+          <button type="button" @click="handleConfirmAccept" class="pill-btn-brand cursor-pointer min-w-[100px]">
             Confirm
           </button>
         </div>

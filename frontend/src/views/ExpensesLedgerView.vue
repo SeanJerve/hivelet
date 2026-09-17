@@ -626,17 +626,17 @@ function exportFilteredExpenses() {
 <template>
   <div class="space-y-6">
     <!-- Header with Breadcrumbs & Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-foreground">Monthly Expenses</span>
+          <span class="font-semibold text-ink">Monthly Expenses</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Monthly Operating Expenses
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
+        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
           Property disbursements categorized and allocated by property area.
         </p>
       </div>
@@ -645,34 +645,34 @@ function exportFilteredExpenses() {
         <button
           @click="fetchExpenses"
           :disabled="isLoading"
-          class="btn-secondary"
+          class="pill-btn"
         >
-          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin' : '']" />
+          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
         </button>
 
         <button 
           @click="exportFilteredExpenses"
-          class="btn-secondary"
+          class="pill-btn"
           title="Export CSV"
         >
-          <Download class="size-3.5 text-muted-foreground" />
+          <Download class="size-3.5 text-ink-soft" />
           <span>Export CSV</span>
         </button>
 
         <button
           @click="exportExpensesExcel"
           :disabled="isExportingExcel"
-          class="btn-secondary"
+          class="pill-btn"
           title="The full Monthly Expenses Report layout — month blocks, Property Area totals, and the category summary with its running cumulative"
         >
-          <FileSpreadsheet :class="['size-3.5 text-muted-foreground', isExportingExcel ? 'animate-pulse' : '']" />
+          <FileSpreadsheet :class="['size-3.5 text-ink-soft', isExportingExcel ? 'animate-pulse' : '']" />
           <span>{{ isExportingExcel ? 'Building…' : 'Export Excel (.xlsx)' }}</span>
         </button>
 
         <button 
           @click="isAddOpen = true"
-          class="btn-primary"
+          class="pill-btn-brand"
         >
           <Plus class="size-3.5 text-white" />
           <span>Record Expense</span>
@@ -682,28 +682,28 @@ function exportFilteredExpenses() {
 
     <!-- Stat Cards -->
     <div class="grid gap-4 sm:grid-cols-3">
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Total Operating Expenses</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ expenseRecordsFetchFailed ? '—' : peso(totalJuly) }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">Total Operating Expenses</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ expenseRecordsFetchFailed ? '—' : peso(totalJuly) }}</p>
+        <p class="mt-1 text-xs text-ink-soft">
           <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
           <template v-else>Disbursed in selected period</template>
         </p>
       </div>
 
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Utilities Subtotal</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ expenseRecordsFetchFailed ? '—' : peso(utilitiesTotal) }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">Utilities Subtotal</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ expenseRecordsFetchFailed ? '—' : peso(utilitiesTotal) }}</p>
+        <p class="mt-1 text-xs text-ink-soft">
           <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
           <template v-else>Water District, Power &amp; Fuel</template>
         </p>
       </div>
 
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Repairs &amp; Janitorial</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ expenseRecordsFetchFailed ? '—' : peso(repairsTotal) }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">Repairs &amp; Janitorial</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ expenseRecordsFetchFailed ? '—' : peso(repairsTotal) }}</p>
+        <p class="mt-1 text-xs text-ink-soft">
           <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
           <template v-else>Plumbing, fixtures &amp; cleaning</template>
         </p>
@@ -711,22 +711,22 @@ function exportFilteredExpenses() {
     </div>
 
     <!-- Table Section -->
-    <div class="surface-card overflow-hidden">
+    <div class="rounded-tile bg-tile overflow-hidden">
       <!-- Filter Bar -->
-      <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
+      <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
         <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
           <input
             v-model="q"
             type="text"
             placeholder="Search description, receipt # or category…"
-            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+            class="ws-input w-full pl-10 pr-4 sm:text-sm"
           />
         </div>
 
         <select
           v-model="selectedCategory"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-48 cursor-pointer"
+          class="ws-select sm:text-sm sm:w-48"
         >
           <option value="All">All Categories</option>
           <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
@@ -734,14 +734,14 @@ function exportFilteredExpenses() {
 
         <select
           v-model="filterMonth"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-36 cursor-pointer"
+          class="ws-select sm:text-sm sm:w-36"
         >
           <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
         </select>
 
         <select
           v-model="filterYear"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-28 cursor-pointer"
+          class="ws-select sm:text-sm sm:w-28"
         >
           <option v-for="y in yearsList" :key="y" :value="y">{{ y === 'All' ? 'All Years' : y }}</option>
         </select>
@@ -754,21 +754,21 @@ function exportFilteredExpenses() {
 
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[900px] text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-muted border-b border-border">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-              <th class="whitespace-nowrap px-4 py-3 font-bold pl-6">DESCRIPTION / VOUCHER</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">CATEGORY</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold text-right">BOARDING HOUSE (₱)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold text-right">MAIN HOUSE (₱)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold text-right">APTS &amp; OTHER (₱)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold text-right">TOTAL (₱)</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold text-center">ACTIONS</th>
+          <thead class="sticky top-0 z-10 bg-canvas border-b border-line">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft">
+              <th class="whitespace-nowrap px-4 py-3 font-semibold pl-6">DESCRIPTION / VOUCHER</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">CATEGORY</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">BOARDING HOUSE (₱)</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">MAIN HOUSE (₱)</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">APTS &amp; OTHER (₱)</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">TOTAL (₱)</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold text-center">ACTIONS</th>
             </tr>
           </thead>
           
           <tbody v-if="groupedExpenses.length === 0">
             <tr>
-              <td colspan="7" class="p-8 text-center text-muted-foreground bg-white">
+              <td colspan="7" class="p-8 text-center text-ink-soft bg-tile">
                 <template v-if="expenseRecordsFetchFailed">
                   The expense ledger could not be loaded. This is not the same as there being
                   none — press Refresh to retry.
@@ -780,11 +780,11 @@ function exportFilteredExpenses() {
 
           <tbody v-for="group in groupedExpenses" :key="group.dateStr" v-else>
             <!-- Date Group Header -->
-            <tr class="bg-background border-y border-border">
-              <td colspan="6" class="px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-muted-foreground pl-6">
+            <tr class="bg-canvas border-y border-line">
+              <td colspan="6" class="px-4 py-2.5 text-xs font-semibold text-ink-soft pl-6">
                 {{ group.dateStr }}
               </td>
-              <td class="tabular px-4 py-2.5 text-right text-xs font-black text-foreground">
+              <td class="tabular px-4 py-2.5 text-right text-xs font-semibold text-ink">
                 Daily: {{ peso(group.dayTotal) }}
               </td>
             </tr>
@@ -792,34 +792,34 @@ function exportFilteredExpenses() {
             <tr 
               v-for="e in group.records" 
               :key="e.id"
-              class="border-b border-border last:border-b-0 hover:bg-background transition-colors"
+              class="border-b border-line last:border-b-0 hover:bg-canvas transition-colors"
             >
-              <td class="px-4 py-3.5 font-semibold text-foreground pl-6">{{ e.description }}</td>
-              <td class="whitespace-nowrap px-4 py-3.5 text-xs text-muted-foreground">{{ e.category }}</td>
+              <td class="px-4 py-3.5 font-semibold text-ink pl-6">{{ e.description }}</td>
+              <td class="whitespace-nowrap px-4 py-3.5 text-xs text-ink-soft">{{ e.category }}</td>
               
               <!-- Boarding House Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-foreground">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-ink">
                 {{ getAreaAmount(e, 'Boarding House') ? peso(getAreaAmount(e, 'Boarding House')) : '—' }}
               </td>
               
               <!-- Main House Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-foreground">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-ink">
                 {{ getAreaAmount(e, 'Main House') ? peso(getAreaAmount(e, 'Main House')) : '—' }}
               </td>
               
               <!-- Apts & Other Split -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-foreground">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-medium text-ink">
                 {{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e)) : '—' }}
               </td>
               
-              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-display font-bold text-foreground">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 text-right font-semibold text-ink">
                 {{ peso(getExpenseTotal(e)) }}
               </td>
               
               <td class="whitespace-nowrap px-4 py-3.5 text-center">
                 <button 
                   @click="startEditExpense(e)" 
-                  class="btn-secondary min-h-8 px-2.5 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer hover:border-primary hover:text-primary"
+                  class="pill-btn min-h-8 px-2.5 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer hover:border-brand hover:text-brand"
                   title="Edit Expense"
                 >
                   <Pencil class="size-3.5" />
@@ -838,32 +838,32 @@ function exportFilteredExpenses() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
       @click.self="isAddOpen = false"
     >
-      <div class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white border border-border animate-in fade-in zoom-in-95 duration-150 my-6">
+      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl overflow-hidden rounded-tile bg-tile border border-line animate-in fade-in zoom-in-95 duration-150 my-6">
         
         <!-- Modal Header -->
-        <div class="flex items-center justify-between p-6 pb-4 border-b border-border">
+        <div class="flex items-center justify-between p-6 pb-4 border-b border-line">
           <div class="flex items-center gap-2.5">
-            <div class="size-9 rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 flex items-center justify-center">
+            <div class="size-9 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center">
               <ReceiptText class="size-5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-lg text-foreground">
+              <h3 class="font-semibold text-lg text-ink">
                 Record Operating Expenses
               </h3>
-              <p class="text-xs text-muted-foreground">Batch record property expenses and area cost splits</p>
+              <p class="text-xs text-ink-soft">Batch record property expenses and area cost splits</p>
             </div>
           </div>
-          <button @click="isAddOpen = false" class="p-1.5 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer" aria-label="Close modal">
+          <button @click="isAddOpen = false" class="p-1.5 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer" aria-label="Close modal">
             <X class="size-5" />
           </button>
         </div>
 
         <form @submit.prevent="submitAddExpense">
-          <div class="p-6 space-y-4 text-xs text-foreground max-h-[70vh] overflow-y-auto">
+          <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
             <div class="w-full sm:w-64">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Expense Date</label>
-              <input v-model="date" type="date" class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-xs text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors" required />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Expense Date</label>
+              <input v-model="date" type="date" class="ws-input w-full" required />
             </div>
 
             <!-- Dynamic Entries List -->
@@ -871,21 +871,21 @@ function exportFilteredExpenses() {
               <div 
                 v-for="(entry, index) in formEntries" 
                 :key="index" 
-                class="relative p-4 bg-background border border-border rounded-2xl space-y-3"
+                class="relative p-4 bg-canvas border border-line rounded-tile space-y-3"
               >
                 <!-- Header with Item Index and Remove Item Button -->
-                <div class="flex items-center justify-between pb-2 border-b border-border/70">
-                  <span class="font-display font-extrabold text-xs text-foreground">
+                <div class="flex items-center justify-between pb-2 border-b border-line/70">
+                  <span class="font-semibold text-xs text-ink">
                     Expense Item #{{ index + 1 }}
                   </span>
                   <button 
                     v-if="formEntries.length > 1" 
                     type="button" 
                     @click="removeFormEntry(index)" 
-                    class="btn-secondary text-rose-600 hover:bg-rose-50 hover:border-rose-200 min-h-7 py-0.5 px-2 text-[11px] gap-1 inline-flex items-center cursor-pointer"
+                    class="pill-btn text-overdue hover:bg-overdue-soft hover:border-overdue-soft min-h-7 py-0.5 px-2 text-[11px] gap-1 inline-flex items-center cursor-pointer"
                     title="Remove Item"
                   >
-                    <Trash2 class="size-3 text-rose-500" />
+                    <Trash2 class="size-3 text-overdue" />
                     <span>Remove Item</span>
                   </button>
                 </div>
@@ -893,20 +893,20 @@ function exportFilteredExpenses() {
                 <!-- Description & Category Row -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label class="block font-bold text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Description &amp; Receipt #</label>
+                    <label class="block font-semibold text-[10px] text-ink-soft mb-1.5">Description &amp; Receipt #</label>
                     <input 
                       v-model="entry.desc" 
                       placeholder="e.g. OR #88240 — supplies" 
-                      class="min-h-11 w-full rounded-xl border border-border bg-white px-3.5 text-xs text-foreground focus:border-primary focus:outline-none transition-colors" 
+                      class="ws-input w-full" 
                       required 
                     />
                   </div>
 
                   <div>
-                    <label class="block font-bold text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Expense Category</label>
+                    <label class="block font-semibold text-[10px] text-ink-soft mb-1.5">Expense Category</label>
                     <select 
                       v-model="entry.category" 
-                      class="min-h-11 w-full rounded-xl border border-border bg-white px-3.5 text-xs font-medium text-foreground focus:border-primary focus:outline-none transition-colors cursor-pointer" 
+                      class="ws-select w-full" 
                       required
                     >
                       <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
@@ -915,24 +915,24 @@ function exportFilteredExpenses() {
                 </div>
 
                 <!-- Allocations / Splits Section -->
-                <div class="border-t border-border/70 pt-3 space-y-2.5">
+                <div class="border-t border-line/70 pt-3 space-y-2.5">
                   <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Property Area Allocations (Splits)</span>
-                    <span class="text-[10px] text-muted-foreground">Cost distribution</span>
+                    <span class="text-[10px] font-semibold text-ink-soft">Property Area Allocations (Splits)</span>
+                    <span class="text-[10px] text-ink-soft">Cost distribution</span>
                   </div>
                   
                   <div class="space-y-2">
                     <div 
                       v-for="(alloc, aIdx) in entry.allocations" 
                       :key="aIdx" 
-                      class="flex items-center gap-3 bg-white p-3 border border-border rounded-xl shadow-2xs"
+                      class="flex items-center gap-3 bg-tile p-3 border border-line rounded-xl"
                     >
                       <!-- Area Selector -->
                       <div class="flex-1">
-                        <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Target Area</label>
+                        <label class="block text-[10px] font-semibold text-ink-soft uppercase mb-1">Target Area</label>
                         <select 
                           v-model="alloc.area" 
-                          class="min-h-10 w-full px-3 border border-border rounded-lg text-xs bg-background text-foreground focus:bg-white focus:border-primary focus:outline-none" 
+                          class="ws-select w-full" 
                           required
                         >
                           <option
@@ -945,14 +945,14 @@ function exportFilteredExpenses() {
 
                       <!-- Amount -->
                       <div class="w-36 sm:w-44">
-                        <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Amount (₱)</label>
+                        <label class="block text-[10px] font-semibold text-ink-soft uppercase mb-1">Amount (₱)</label>
                         <input 
                           v-model="alloc.amount" 
                           type="number" 
                           placeholder="0.00" 
                           min="0"
                           step="any"
-                          class="min-h-10 w-full px-3 border border-border rounded-lg text-xs font-bold text-foreground bg-background focus:bg-white focus:border-primary focus:outline-none tabular" 
+                          class="ws-input w-full tabular" 
                           required 
                         />
                       </div>
@@ -963,7 +963,7 @@ function exportFilteredExpenses() {
                           v-if="entry.allocations.length > 1" 
                           type="button" 
                           @click="removeAllocation(index, aIdx)" 
-                          class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                          class="p-2 text-overdue hover:bg-overdue-soft rounded-lg cursor-pointer transition-colors"
                           title="Remove Area"
                         >
                           <Trash2 class="size-4" />
@@ -977,9 +977,9 @@ function exportFilteredExpenses() {
                     <button 
                       type="button" 
                       @click="addAllocation(index)" 
-                      class="btn-secondary text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
+                      class="pill-btn text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
                     >
-                      <Plus class="size-3.5 text-primary" />
+                      <Plus class="size-3.5 text-brand" />
                       <span>Split across another area</span>
                     </button>
                   </div>
@@ -992,18 +992,18 @@ function exportFilteredExpenses() {
               <button 
                 type="button" 
                 @click="addFormEntry" 
-                class="btn-secondary min-h-10 text-xs px-3.5 py-2 gap-1.5 inline-flex items-center cursor-pointer"
+                class="pill-btn min-h-10 text-xs px-3.5 py-2 gap-1.5 inline-flex items-center cursor-pointer"
               >
-                <Plus class="size-4 text-primary" />
+                <Plus class="size-4 text-brand" />
                 <span>Add Another Expense Item</span>
               </button>
             </div>
           </div>
 
           <!-- Modal Actions Footer -->
-          <div class="p-4 px-6 border-t border-border flex items-center justify-end gap-2 bg-background">
-            <button type="button" @click="isAddOpen = false" class="btn-secondary cursor-pointer">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="btn-primary cursor-pointer disabled:opacity-50 min-w-[110px]">
+          <div class="p-4 px-6 border-t border-line flex items-center justify-end gap-2 bg-canvas">
+            <button type="button" @click="isAddOpen = false" class="pill-btn cursor-pointer">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand cursor-pointer disabled:opacity-50 min-w-[110px]">
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
               <span>Save Entries</span>
             </button>
@@ -1018,37 +1018,37 @@ function exportFilteredExpenses() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
       @click.self="isEditOpen = false"
     >
-      <div class="surface-card w-full max-w-2xl shadow-2xl overflow-hidden rounded-2xl bg-white border border-border animate-in fade-in zoom-in-95 duration-150 my-6">
+      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl overflow-hidden rounded-tile bg-tile border border-line animate-in fade-in zoom-in-95 duration-150 my-6">
         
         <!-- Modal Header -->
-        <div class="flex items-center justify-between p-6 pb-4 border-b border-border">
+        <div class="flex items-center justify-between p-6 pb-4 border-b border-line">
           <div class="flex items-center gap-2.5">
-            <div class="size-9 rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 flex items-center justify-center">
+            <div class="size-9 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center">
               <ReceiptText class="size-5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-lg text-foreground">
+              <h3 class="font-semibold text-lg text-ink">
                 Edit Operating Expense
               </h3>
-              <p class="text-xs text-muted-foreground">Update expense classification and property area cost splits</p>
+              <p class="text-xs text-ink-soft">Update expense classification and property area cost splits</p>
             </div>
           </div>
-          <button @click="isEditOpen = false" class="p-1.5 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer" aria-label="Close dialog">
+          <button @click="isEditOpen = false" class="p-1.5 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer" aria-label="Close dialog">
             <X class="size-5" />
           </button>
         </div>
 
         <form @submit.prevent="handleEditExpense">
-          <div class="p-6 space-y-4 text-xs text-foreground max-h-[70vh] overflow-y-auto">
+          <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
             <div class="w-full sm:w-64">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
                 Expense Date
               </label>
               <input 
                 v-model="editDate" 
                 type="date" 
-                class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-xs text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors" 
+                class="ws-input w-full" 
                 required 
               />
             </div>
@@ -1056,24 +1056,24 @@ function exportFilteredExpenses() {
             <!-- Description & Category Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
                   Description &amp; Receipt #
                 </label>
                 <input 
                   v-model="editDesc" 
                   placeholder="e.g. OR #88240 — supplies" 
-                  class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-xs text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors" 
+                  class="ws-input w-full" 
                   required 
                 />
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
                   Expense Category
                 </label>
                 <select 
                   v-model="editCategory" 
-                  class="min-h-11 w-full rounded-xl border border-border bg-background px-3.5 text-xs font-medium text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors cursor-pointer" 
+                  class="ws-select w-full" 
                   required
                 >
                   <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
@@ -1084,24 +1084,24 @@ function exportFilteredExpenses() {
             <!-- Allocations / Splits Section -->
             <div class="space-y-3 pt-2">
               <div class="flex items-center justify-between">
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+                <label class="block font-semibold text-[11px] text-ink-soft">
                   Property Area Allocations (Splits)
                 </label>
-                <span class="text-[10px] text-muted-foreground">Distribute cost across boarding house &amp; main house</span>
+                <span class="text-[10px] text-ink-soft">Distribute cost across boarding house &amp; main house</span>
               </div>
 
               <div class="space-y-2">
                 <div 
                   v-for="(alloc, aIdx) in editAllocations" 
                   :key="aIdx" 
-                  class="flex items-center gap-3 bg-background p-3 border border-border rounded-xl"
+                  class="flex items-center gap-3 bg-canvas p-3 border border-line rounded-xl"
                 >
                   <!-- Area Selector -->
                   <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Target Area</label>
+                    <label class="block text-[10px] font-semibold text-ink-soft uppercase mb-1">Target Area</label>
                     <select 
                       v-model="alloc.area" 
-                      class="min-h-10 w-full px-3 border border-border rounded-lg text-xs bg-white text-foreground focus:border-primary focus:outline-none cursor-pointer" 
+                      class="ws-select w-full" 
                       required
                     >
                       <option
@@ -1114,14 +1114,14 @@ function exportFilteredExpenses() {
 
                   <!-- Amount -->
                   <div class="w-36 sm:w-44">
-                    <label class="block text-[10px] font-bold text-muted-foreground uppercase mb-1">Amount (₱)</label>
+                    <label class="block text-[10px] font-semibold text-ink-soft uppercase mb-1">Amount (₱)</label>
                     <input 
                       v-model="alloc.amount" 
                       type="number" 
                       placeholder="0.00" 
                       min="0"
                       step="any"
-                      class="min-h-10 w-full px-3 border border-border rounded-lg text-xs font-bold text-foreground bg-white focus:border-primary focus:outline-none tabular" 
+                      class="ws-input w-full tabular" 
                       required 
                     />
                   </div>
@@ -1132,7 +1132,7 @@ function exportFilteredExpenses() {
                       v-if="editAllocations.length > 1" 
                       type="button" 
                       @click="removeEditAllocation(aIdx)" 
-                      class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                      class="p-2 text-overdue hover:bg-overdue-soft rounded-lg cursor-pointer transition-colors"
                       title="Remove Area Split"
                     >
                       <Trash2 class="size-4" />
@@ -1146,9 +1146,9 @@ function exportFilteredExpenses() {
                 <button 
                   type="button" 
                   @click="addEditAllocation" 
-                  class="btn-secondary text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
+                  class="pill-btn text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
                 >
-                  <Plus class="size-3.5 text-primary" />
+                  <Plus class="size-3.5 text-brand" />
                   <span>Split across another area</span>
                 </button>
               </div>
@@ -1156,21 +1156,21 @@ function exportFilteredExpenses() {
           </div>
 
           <!-- Modal Actions Footer: Delete on the left, Cancel/Save on the right -->
-          <div class="p-4 px-6 border-t border-border flex items-center justify-between gap-3 bg-background">
+          <div class="p-4 px-6 border-t border-line flex items-center justify-between gap-3 bg-canvas">
             <button
               v-if="editingExpense"
               type="button"
               @click="handleDeleteFromEditModal"
-              class="btn-secondary text-rose-600 hover:bg-rose-50 hover:border-rose-200 min-h-10 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center cursor-pointer"
+              class="pill-btn text-overdue hover:bg-overdue-soft hover:border-overdue-soft min-h-10 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center cursor-pointer"
             >
-              <Trash2 class="size-3.5 text-rose-500" />
+              <Trash2 class="size-3.5 text-overdue" />
               <span>Delete Expense</span>
             </button>
             <div v-else />
 
             <div class="flex items-center gap-2">
-              <button type="button" @click="isEditOpen = false" class="btn-secondary cursor-pointer">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="btn-primary cursor-pointer disabled:opacity-50 min-w-[110px]">
+              <button type="button" @click="isEditOpen = false" class="pill-btn cursor-pointer">Cancel</button>
+              <button type="submit" :disabled="isSubmitting" class="pill-btn-brand cursor-pointer disabled:opacity-50 min-w-[110px]">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
                 <span>Update Entry</span>
               </button>
@@ -1186,27 +1186,27 @@ function exportFilteredExpenses() {
       class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
       @click.self="isConfirmOpen = false"
     >
-      <div class="surface-card w-full max-w-sm shadow-2xl rounded-2xl p-6 bg-white space-y-4 text-center border border-border">
+      <div class="rounded-tile bg-tile w-full max-w-sm shadow-2xl rounded-tile p-6 bg-tile space-y-4 text-center border border-line">
         <div class="flex flex-col items-center gap-3">
-          <div class="size-12 rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 flex items-center justify-center">
+          <div class="size-12 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center">
             <ReceiptText class="size-6" />
           </div>
-          <h3 class="font-display font-extrabold text-base text-foreground">{{ confirmTitle }}</h3>
-          <p class="text-xs text-muted-foreground leading-relaxed">{{ confirmMessage }}</p>
+          <h3 class="font-semibold text-base text-ink">{{ confirmTitle }}</h3>
+          <p class="text-xs text-ink-soft leading-relaxed">{{ confirmMessage }}</p>
         </div>
 
         <div class="flex items-center justify-center gap-2 pt-2">
           <button 
             type="button" 
             @click="isConfirmOpen = false" 
-            class="btn-secondary cursor-pointer min-w-[100px]"
+            class="pill-btn cursor-pointer min-w-[100px]"
           >
             Cancel
           </button>
           <button 
             type="button" 
             @click="handleConfirmAccept" 
-            class="btn-primary cursor-pointer min-w-[100px]"
+            class="pill-btn-brand cursor-pointer min-w-[100px]"
           >
             Confirm
           </button>

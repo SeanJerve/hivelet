@@ -14,10 +14,7 @@ defineProps<Props>();
 
 <template>
   <div
-    :class="[
-      'animate-pulse bg-slate-200/80 rounded-md',
-      className || 'h-4 w-full'
-    ]"
+    :class="[ 'animate-pulse bg-canvas/80 rounded-md', className || 'h-4 w-full' ]"
     aria-hidden="true"
   />
 </template>

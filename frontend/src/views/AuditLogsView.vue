@@ -186,15 +186,15 @@ function toggleRow(id: string) {
 function getActionBadgeClass(action: string): string {
   const a = action.toUpperCase();
   if (a.includes('CORRECTION') || a.includes('VOID') || a.includes('DELETE') || a.includes('VACAT')) {
-    return 'bg-amber-50 text-amber-800 ring-1 ring-amber-300';
+    return 'bg-verify-soft text-verify ring-1 ring-verify-soft';
   }
   if (a.includes('PAYMENT') || a.includes('COLLECT') || a.includes('ONBOARD') || a.includes('CREATE')) {
-    return 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-300';
+    return 'bg-brand-soft text-brand ring-1 ring-brand-soft';
   }
   if (a.includes('EXPENSE')) {
-    return 'bg-rose-50 text-rose-800 ring-1 ring-rose-300';
+    return 'bg-overdue-soft text-overdue ring-1 ring-overdue-soft';
   }
-  return 'bg-blue-50 text-blue-800 ring-1 ring-blue-300';
+  return 'bg-brand-soft text-brand ring-1 ring-brand-soft';
 }
 
 function formatDate(isoStr: string): string {
@@ -252,22 +252,22 @@ function exportAuditCSV() {
   <div class="space-y-6">
     
     <!-- Page Header & Action Controls -->
-    <div class="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-foreground">System Audit Trail</span>
+          <span class="font-semibold text-ink">System Audit Trail</span>
         </div>
         <div class="flex items-center gap-2.5">
-          <div class="p-1.5 rounded-lg bg-primary/10 text-primary">
+          <div class="p-1.5 rounded-lg bg-brand-soft text-brand">
             <ShieldCheck class="size-6" />
           </div>
-          <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+          <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
             System Audit Trail &amp; Logs
           </h1>
         </div>
-        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
+        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
           Immutable chronological ledger tracking financial updates, landlady corrections, tenant mutations, and room adjustments (FR-029, BR-018, BR-028).
         </p>
       </div>
@@ -276,15 +276,15 @@ function exportAuditCSV() {
         <button
           @click="fetchAuditLogs"
           :disabled="isLoading"
-          class="btn-secondary text-xs"
+          class="pill-btn text-xs"
         >
-          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin' : '']" />
+          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
         </button>
 
         <button
           @click="exportAuditCSV"
-          class="btn-primary text-xs"
+          class="pill-btn-brand text-xs"
         >
           <Download class="size-3.5 text-white" />
           <span>Export Audit CSV</span>
@@ -294,41 +294,41 @@ function exportAuditCSV() {
 
     <!-- 4 Key Stat Cards -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div class="surface-card p-5">
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
+      <div class="rounded-tile bg-tile p-5">
+        <div class="flex items-center justify-between text-xs font-semibold text-ink-soft">
           <span>Total Audit Events</span>
-          <Activity class="size-4 text-primary" />
+          <Activity class="size-4 text-brand" />
         </div>
-        <p class="font-display text-3xl font-black text-foreground mt-3">
+        <p class="text-3xl font-semibold text-ink mt-3">
           {{ totalEventsCount }}
         </p>
-        <p class="text-xs text-muted-foreground mt-1">
+        <p class="text-xs text-ink-soft mt-1">
           Traceable mutations in database
         </p>
       </div>
 
-      <div class="surface-card p-5">
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
+      <div class="rounded-tile bg-tile p-5">
+        <div class="flex items-center justify-between text-xs font-semibold text-ink-soft">
           <span>Financial Collections</span>
-          <DollarSign class="size-4 text-emerald-600" />
+          <DollarSign class="size-4 text-brand" />
         </div>
-        <p class="font-display text-3xl font-black text-emerald-700 mt-3">
+        <p class="text-3xl font-semibold text-brand mt-3">
           {{ financialEventsCount }}
         </p>
-        <p class="text-xs text-emerald-800 font-semibold mt-1">
+        <p class="text-xs text-brand font-semibold mt-1">
           Income remittances &amp; adjustments
         </p>
       </div>
 
-      <div class="surface-card p-5">
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
+      <div class="rounded-tile bg-tile p-5">
+        <div class="flex items-center justify-between text-xs font-semibold text-ink-soft">
           <span>Expense Logs</span>
-          <FileText class="size-4 text-rose-600" />
+          <FileText class="size-4 text-overdue" />
         </div>
-        <p class="font-display text-3xl font-black text-rose-700 mt-3">
+        <p class="text-3xl font-semibold text-overdue mt-3">
           {{ expenseEventsCount }}
         </p>
-        <p class="text-xs text-rose-800 font-semibold mt-1">
+        <p class="text-xs text-overdue font-semibold mt-1">
           Categorized operational outlays
         </p>
       </div>
@@ -343,73 +343,74 @@ function exportAuditCSV() {
         remove an audit row. Verified by attempting a delete, which PostgreSQL
         refuses with 42501.
       -->
-      <div class="surface-card p-5">
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
+      <div class="rounded-tile bg-tile p-5">
+        <div class="flex items-center justify-between text-xs font-semibold text-ink-soft">
           <span>Tamper Resistance</span>
-          <ShieldCheck class="size-4 text-primary" />
+          <ShieldCheck class="size-4 text-brand" />
         </div>
-        <p class="font-display text-3xl font-black text-primary mt-3">
+        <p class="text-3xl font-semibold text-brand mt-3">
           Append-only
         </p>
-        <p class="text-xs text-muted-foreground mt-1">
+        <p class="text-xs text-ink-soft mt-1">
           UPDATE and DELETE are revoked from every role, including the API's own (BR-028)
         </p>
       </div>
     </div>
 
     <!-- Main Table Container -->
-    <div class="surface-card overflow-hidden rounded-2xl border border-border-strong bg-white shadow-xs">
+    <div class="rounded-tile bg-tile overflow-hidden rounded-tile border border-line bg-tile">
       
       <!-- Toolbar & Search -->
-      <div class="p-4 border-b border-border-strong flex flex-col md:flex-row md:items-center justify-between gap-3 bg-background">
+      <div class="p-4 border-b border-line flex flex-col md:flex-row md:items-center justify-between gap-3 bg-canvas">
         <div class="relative flex-1 max-w-md">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
           <input
             v-model="searchQuery"
+            aria-label="Search action, actor, entity or IP"
             type="text"
             placeholder="Search action, actor, entity ID, or IP..."
-            class="h-10 min-h-10 w-full rounded-xl border border-border-strong bg-white pl-10 pr-4 text-xs text-foreground focus:border-primary focus:outline-none"
+            class="ws-input w-full pl-10 pr-4"
           />
         </div>
 
         <div class="flex flex-wrap items-center gap-2 text-xs">
           <!-- Category Filter -->
-          <div class="inline-flex rounded-xl bg-white p-1 border border-border-strong">
+          <div class="inline-flex rounded-xl bg-tile p-1 border border-line">
             <button
               @click="categoryFilter = 'business'"
-              :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'business' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
+              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'business' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
               title="Payments, expenses, tenants, rooms and tickets - what was actually done to the records"
             >
               Business ({{ businessEventCount }})
             </button>
             <button
               @click="categoryFilter = 'auth'"
-              :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'auth' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
+              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'auth' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
               title="Sign-ins, sign-outs and refused requests"
             >
               Sign-in ({{ authEventCount }})
             </button>
             <button
               @click="categoryFilter = 'all'"
-              :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'all' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
+              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'all' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
             >
               All ({{ grandTotal }})
             </button>
             <button
               @click="categoryFilter = 'financial'"
-              :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'financial' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
+              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'financial' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
             >
               Financial
             </button>
             <button
               @click="categoryFilter = 'expense'"
-              :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'expense' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
+              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'expense' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
             >
               Expenses
             </button>
             <button
               @click="categoryFilter = 'tenant'"
-              :class="['px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer', categoryFilter === 'tenant' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground']"
+              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'tenant' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
             >
               Tenants
             </button>
@@ -418,8 +419,10 @@ function exportAuditCSV() {
           <!-- Limit Selector -->
           <select 
             v-model.number="rowLimit" 
+            aria-label="Number of rows to show"
+            
             @change="fetchAuditLogs" 
-            class="h-8 px-2.5 rounded-lg border border-border-strong bg-white text-xs font-bold text-foreground"
+            class="ws-select"
           >
             <option :value="50">Last 50</option>
             <option :value="100">Last 100</option>
@@ -433,15 +436,15 @@ function exportAuditCSV() {
       <!-- The trail could not be loaded. Shown instead of sample rows, on purpose. -->
       <div
         v-if="loadError"
-        class="m-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800"
+        class="m-4 p-4 rounded-xl bg-overdue-soft border border-overdue-soft text-xs text-overdue"
       >
-        <p class="font-bold text-rose-900">The audit trail could not be loaded.</p>
+        <p class="font-semibold text-overdue">The audit trail could not be loaded.</p>
         <p class="mt-1">{{ loadError }}</p>
-        <p class="mt-2 text-rose-700">
+        <p class="mt-2 text-overdue">
           Nothing is shown below rather than sample data, so what you see here is always
           the real record.
         </p>
-        <button @click="fetchAuditLogs" class="btn-dark mt-3">Try again</button>
+        <button @click="fetchAuditLogs" class="pill-btn-night mt-3">Try again</button>
       </div>
 
       <div v-if="isLoading" class="p-4">
@@ -451,8 +454,8 @@ function exportAuditCSV() {
       <!-- Audit Table -->
       <div v-else class="max-h-[600px] overflow-y-auto overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse min-w-[960px]">
-          <thead class="sticky top-0 bg-background z-10 shadow-xs">
-            <tr class="border-b border-border-strong text-muted-foreground font-bold uppercase text-[10px] tracking-wider">
+          <thead class="sticky top-0 bg-canvas z-10">
+            <tr class="border-b border-line text-ink-soft font-semibold uppercase text-[10px]">
               <th class="py-3 px-4">Timestamp</th>
               <th class="py-3 px-4">Action Type</th>
               <th class="py-3 px-4">Target Entity / Table</th>
@@ -461,33 +464,33 @@ function exportAuditCSV() {
               <th class="py-3 px-4 text-right">Payload Diff</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-border-strong">
+          <tbody class="divide-y divide-line">
             <template v-for="l in filteredLogs" :key="l.id">
               <tr 
                 @click="toggleRow(l.id)"
-                class="hover:bg-background transition-colors cursor-pointer"
+                class="hover:bg-canvas transition-colors cursor-pointer"
               >
                 <!-- Timestamp -->
-                <td class="py-3 px-4 font-mono text-[11px] text-foreground whitespace-nowrap">
+                <td class="py-3 px-4 font-mono text-[11px] text-ink whitespace-nowrap">
                   <div class="flex items-center gap-1.5">
-                    <Clock class="size-3.5 text-muted-foreground" />
+                    <Clock class="size-3.5 text-ink-soft" />
                     <span>{{ formatDate(l.created_at) }}</span>
                   </div>
                 </td>
 
                 <!-- Action Badge -->
                 <td class="py-3 px-4 whitespace-nowrap">
-                  <span :class="['px-2 py-0.5 rounded-md font-mono text-[10px] font-bold tracking-tight', getActionBadgeClass(l.action)]">
+                  <span :class="['px-2 py-0.5 rounded-md font-mono text-[10px] font-semibold tracking-tight', getActionBadgeClass(l.action)]">
                     {{ l.action }}
                   </span>
                 </td>
 
                 <!-- Entity Table -->
-                <td class="py-3 px-4 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                <td class="py-3 px-4 font-mono text-[11px] text-ink-soft whitespace-nowrap">
                   <div class="flex items-center gap-1.5">
-                    <Database class="size-3 text-primary" />
-                    <span class="font-bold text-foreground">{{ l.entity_type || 'system' }}</span>
-                    <span v-if="l.entity_id" class="text-[10px] px-1.5 py-0.2 rounded bg-stone-100 border border-stone-200">
+                    <Database class="size-3 text-brand" />
+                    <span class="font-semibold text-ink">{{ l.entity_type || 'system' }}</span>
+                    <span v-if="l.entity_id" class="text-[10px] px-1.5 py-0.2 rounded bg-canvas border border-line">
                       {{ l.entity_id }}
                     </span>
                   </div>
@@ -496,16 +499,16 @@ function exportAuditCSV() {
                 <!-- Actor -->
                 <td class="py-3 px-4 whitespace-nowrap">
                   <div class="flex items-center gap-1.5">
-                    <div class="size-5 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[10px]">
+                    <div class="size-5 rounded-full bg-brand text-white flex items-center justify-center font-semibold text-[10px]">
                       {{ (l.profiles?.full_name || 'A').charAt(0).toUpperCase() }}
                     </div>
-                    <span class="font-bold text-foreground">{{ l.profiles?.full_name || 'System (no signed-in actor)' }}</span>
-                    <span class="text-[10px] font-semibold text-muted-foreground">({{ l.profiles?.role || 'system' }})</span>
+                    <span class="font-semibold text-ink">{{ l.profiles?.full_name || 'System (no signed-in actor)' }}</span>
+                    <span class="text-[10px] font-semibold text-ink-soft">({{ l.profiles?.role || 'system' }})</span>
                   </div>
                 </td>
 
                 <!-- IP -->
-                <td class="py-3 px-4 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                <td class="py-3 px-4 font-mono text-[11px] text-ink-soft whitespace-nowrap">
                   {{ l.ip_address || 'not recorded' }}
                 </td>
 
@@ -513,7 +516,7 @@ function exportAuditCSV() {
                 <td class="py-3 px-4 text-right whitespace-nowrap">
                   <button 
                     type="button" 
-                    class="btn-secondary min-h-7 px-2 py-0.5 text-[11px] gap-1 inline-flex items-center font-semibold"
+                    class="pill-btn min-h-7 px-2 py-0.5 text-[11px] gap-1 inline-flex items-center font-semibold"
                   >
                     <span>{{ expandedRowId === l.id ? 'Hide Diff' : 'View Diff' }}</span>
                     <ChevronDown :class="['size-3 transition-transform duration-200', expandedRowId === l.id ? 'rotate-180' : '']" />
@@ -522,12 +525,12 @@ function exportAuditCSV() {
               </tr>
 
               <!-- Expandable Row: Old vs New Values Diff -->
-              <tr v-if="expandedRowId === l.id" class="bg-surface-sunken">
+              <tr v-if="expandedRowId === l.id" class="bg-canvas">
                 <td colspan="6" class="p-4">
-                  <div class="rounded-xl border border-border-strong bg-white p-4 space-y-3 shadow-inner">
-                    <div class="flex items-center justify-between text-xs font-bold text-foreground border-b border-border-strong pb-2">
+                  <div class="rounded-xl border border-line bg-tile p-4 space-y-3 shadow-inner">
+                    <div class="flex items-center justify-between text-xs font-semibold text-ink border-b border-line pb-2">
                       <span class="flex items-center gap-1.5">
-                        <FileText class="size-3.5 text-primary" />
+                        <FileText class="size-3.5 text-brand" />
                         Audit State Transition Record (ID: {{ l.id }})
                       </span>
                       <!--
@@ -535,26 +538,26 @@ function exportAuditCSV() {
                         nothing writes one, so it read "not recorded" on every row forever.
                         A field that can only ever say "not recorded" is not information.
                       -->
-                      <span v-if="l.entity_id" class="text-[11px] text-muted-foreground font-normal">
+                      <span v-if="l.entity_id" class="text-[11px] text-ink-soft font-normal">
                         Entity: {{ l.entity_type || 'system' }} · {{ l.entity_id }}
                       </span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
                       <!-- Old Values -->
-                      <div class="p-3 rounded-lg bg-rose-50/60 border border-rose-200">
-                        <div class="text-[10px] font-bold uppercase text-rose-800 mb-1.5 flex items-center gap-1">
+                      <div class="p-3 rounded-lg bg-overdue-soft/60 border border-overdue-soft">
+                        <div class="text-[10px] font-semibold uppercase text-overdue mb-1.5 flex items-center gap-1">
                           <span>Previous State (Before Mutation)</span>
                         </div>
-                        <pre class="text-[11px] text-rose-950 overflow-x-auto whitespace-pre-wrap">{{ l.previous_values ? JSON.stringify(l.previous_values, null, 2) : 'null (Initial record insertion)' }}</pre>
+                        <pre class="text-[11px] text-overdue overflow-x-auto whitespace-pre-wrap">{{ l.previous_values ? JSON.stringify(l.previous_values, null, 2) : 'null (Initial record insertion)' }}</pre>
                       </div>
 
                       <!-- New Values -->
-                      <div class="p-3 rounded-lg bg-emerald-50/60 border border-emerald-200">
-                        <div class="text-[10px] font-bold uppercase text-emerald-800 mb-1.5 flex items-center gap-1">
+                      <div class="p-3 rounded-lg bg-brand-soft/60 border border-brand-soft">
+                        <div class="text-[10px] font-semibold uppercase text-brand mb-1.5 flex items-center gap-1">
                           <span>Committed State (After Mutation)</span>
                         </div>
-                        <pre class="text-[11px] text-emerald-950 overflow-x-auto whitespace-pre-wrap">{{ l.new_values ? JSON.stringify(l.new_values, null, 2) : 'null' }}</pre>
+                        <pre class="text-[11px] text-brand overflow-x-auto whitespace-pre-wrap">{{ l.new_values ? JSON.stringify(l.new_values, null, 2) : 'null' }}</pre>
                       </div>
                     </div>
                   </div>
@@ -563,7 +566,7 @@ function exportAuditCSV() {
             </template>
 
             <tr v-if="filteredLogs.length === 0">
-              <td colspan="6" class="py-12 text-center text-xs text-muted-foreground">
+              <td colspan="6" class="py-12 text-center text-xs text-ink-soft">
                 No audit events match your filter criteria.
               </td>
             </tr>

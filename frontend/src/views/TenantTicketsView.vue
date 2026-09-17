@@ -393,43 +393,43 @@ function formatDateTime(iso: string) {
 function priorityClass(priority: string) {
   switch (priority) {
     case 'Emergency':
-      return 'bg-red-50 text-red-800 border-red-200';
+      return 'bg-overdue-soft text-overdue border-overdue-soft';
     case 'High':
-      return 'bg-amber-50 text-amber-900 border-amber-200';
+      return 'bg-verify-soft text-verify border-verify-soft';
     case 'Medium':
-      return 'bg-blue-50 text-blue-900 border-blue-200';
+      return 'bg-brand-soft text-brand border-brand-soft';
     default:
-      return 'bg-surface-sunken text-[#5e6c84] border-border-strong';
+      return 'bg-canvas text-[#5e6c84] border-line';
   }
 }
 
 function statusClass(status: string) {
-  if (RESOLVED_STATES.includes(status)) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-  if (status === 'In Progress') return 'bg-amber-50 text-amber-900 border-amber-200';
-  return 'bg-primary-soft text-primary border-[#b3d4ff]';
+  if (RESOLVED_STATES.includes(status)) return 'bg-brand-soft text-brand border-brand-soft';
+  if (status === 'In Progress') return 'bg-verify-soft text-verify border-verify-soft';
+  return 'bg-brand-soft text-brand border-[#b3d4ff]';
 }
 </script>
 
 <template>
   <div class="space-y-6">
     <!-- Breadcrumb Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
           <span>Tenant</span>
           <span>/</span>
-          <span class="font-bold text-foreground">Maintenance Tickets</span>
+          <span class="font-semibold text-ink">Maintenance Tickets</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Maintenance Tickets</h1>
-        <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">
+        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Maintenance Tickets</h1>
+        <p class="text-xs sm:text-sm text-ink-soft mt-0.5">
           Report repair requests and track their progress
           <span v-if="activeRoomNumber"> for Unit {{ activeRoomNumber }}</span>
         </p>
       </div>
 
       <div class="flex items-center gap-2">
-        <button @click="fetchTickets" :disabled="loadingTickets" class="btn-secondary">
-          <RefreshCw :class="['size-3.5 text-muted-foreground', loadingTickets ? 'animate-spin text-primary' : '']" />
+        <button @click="fetchTickets" :disabled="loadingTickets" class="pill-btn">
+          <RefreshCw :class="['size-3.5 text-ink-soft', loadingTickets ? 'animate-spin text-brand' : '']" />
           <span>Refresh</span>
         </button>
       </div>
@@ -438,15 +438,15 @@ function statusClass(status: string) {
     <!-- Success Notice -->
     <div
       v-if="ticketNotice"
-      class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm rounded-2xl flex items-center justify-between shadow-xs"
+      class="p-4 bg-brand-soft border border-brand-soft text-brand text-xs sm:text-sm rounded-tile flex items-center justify-between"
     >
       <div class="flex items-center gap-2.5">
-        <CheckCircle2 class="size-5 text-emerald-600 shrink-0" />
+        <CheckCircle2 class="size-5 text-brand shrink-0" />
         <span class="font-medium">{{ ticketNotice }}</span>
       </div>
       <button
         @click="ticketNotice = ''"
-        class="text-emerald-700 hover:text-emerald-900 ml-3 p-1 rounded-lg cursor-pointer"
+        class="text-brand hover:text-brand ml-3 p-1 rounded-lg cursor-pointer"
         title="Dismiss"
       >
         <X class="size-4" />
@@ -455,13 +455,13 @@ function statusClass(status: string) {
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
       <!-- Submit Ticket Form -->
-      <div class="lg:col-span-5 surface-card rounded-2xl border border-border bg-white overflow-hidden shadow-xs h-full flex flex-col">
-        <div class="px-6 py-4 border-b border-border bg-background">
-          <h2 class="font-display font-extrabold text-sm text-foreground flex items-center gap-2">
-            <Wrench class="size-4 text-primary" />
+      <div class="lg:col-span-5 rounded-tile bg-tile rounded-tile border border-line bg-tile overflow-hidden h-full flex flex-col">
+        <div class="px-6 py-4 border-b border-line bg-canvas">
+          <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
+            <Wrench class="size-4 text-brand" />
             Submit a Maintenance Ticket
           </h2>
-          <p class="text-xs text-muted-foreground mt-1">
+          <p class="text-xs text-ink-soft mt-1">
             Reported directly to Landlady Fe Galang Da Silva.
           </p>
         </div>
@@ -470,14 +470,14 @@ function statusClass(status: string) {
           <div class="space-y-4">
             <div
               v-if="ticketError"
-              class="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-start gap-2"
+              class="p-3.5 bg-overdue-soft border border-overdue-soft text-overdue text-xs rounded-xl flex items-start gap-2"
             >
-              <AlertTriangle class="size-4 shrink-0 mt-0.5 text-rose-600" />
+              <AlertTriangle class="size-4 shrink-0 mt-0.5 text-overdue" />
               <span>{{ ticketError }}</span>
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ticket-title">
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ticket-title">
                 Issue Title
               </label>
               <input
@@ -485,33 +485,33 @@ function statusClass(status: string) {
                 v-model="ticketTitle"
                 type="text"
                 placeholder="e.g. Bathroom sink pipe leak"
-                class="form-input text-xs"
+                class="ws-input"
                 required
               />
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ticket-category">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ticket-category">
                   Category
                 </label>
                 <select
                   id="ticket-category"
                   v-model="ticketCategory"
-                  class="form-select text-xs cursor-pointer"
+                  class="ws-select"
                 >
                   <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
                 </select>
               </div>
 
               <div>
-                <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ticket-priority">
+                <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ticket-priority">
                   Priority
                 </label>
                 <select
                   id="ticket-priority"
                   v-model="ticketPriority"
-                  class="form-select text-xs cursor-pointer"
+                  class="ws-select"
                 >
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
@@ -522,7 +522,7 @@ function statusClass(status: string) {
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5" for="ticket-desc">
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5" for="ticket-desc">
                 Details &amp; Description
               </label>
               <textarea
@@ -530,19 +530,19 @@ function statusClass(status: string) {
                 v-model="ticketDescription"
                 rows="4"
                 placeholder="Describe the issue — where it is in the unit, when it started, and how severe it is."
-                class="w-full p-3 border border-border rounded-xl text-xs bg-white text-foreground leading-relaxed focus:border-primary focus:outline-none transition resize-y"
+                class="ws-textarea w-full"
                 required
               ></textarea>
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-                Attach Photo <span class="font-normal text-muted-foreground">(optional)</span>
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">
+                Attach Photo <span class="font-normal text-ink-soft">(optional)</span>
               </label>
 
               <div
                 v-if="!ticketPhotoUrl"
-                class="border-2 border-dashed border-border rounded-xl p-5 text-center bg-background hover:bg-blue-50/40 hover:border-primary/40 transition-colors"
+                class="border-2 border-dashed border-line rounded-xl p-5 text-center bg-canvas hover:bg-brand-soft/40 hover:border-brand/40 transition-colors"
               >
                 <input
                   id="ticket-photo-input"
@@ -555,9 +555,9 @@ function statusClass(status: string) {
                   for="ticket-photo-input"
                   class="cursor-pointer flex flex-col items-center justify-center gap-1.5"
                 >
-                  <ImageIcon class="size-6 text-primary" />
-                  <span class="text-xs font-bold text-foreground">Click to upload a photo</span>
-                  <span class="text-[11px] text-muted-foreground">PNG, JPG or WEBP up to 10MB</span>
+                  <ImageIcon class="size-6 text-brand" />
+                  <span class="text-xs font-semibold text-ink">Click to upload a photo</span>
+                  <span class="text-[11px] text-ink-soft">PNG, JPG or WEBP up to 10MB</span>
                 </label>
               </div>
 
@@ -572,16 +572,16 @@ function statusClass(status: string) {
                     class="size-12 object-cover rounded-lg border border-[#b3d4ff] shrink-0"
                   />
                   <div class="truncate">
-                    <span class="text-xs font-bold text-foreground block truncate">
+                    <span class="text-xs font-semibold text-ink block truncate">
                       {{ ticketPhotoName }}
                     </span>
-                    <span class="text-[11px] text-emerald-700 font-semibold">Photo attached</span>
+                    <span class="text-[11px] text-brand font-semibold">Photo attached</span>
                   </div>
                 </div>
                 <button
                   type="button"
                   @click="removePhoto"
-                  class="p-1 text-muted-foreground hover:text-rose-600 hover:bg-white rounded-lg transition-colors cursor-pointer shrink-0"
+                  class="p-1 text-ink-soft hover:text-overdue hover:bg-tile rounded-lg transition-colors cursor-pointer shrink-0"
                   title="Remove photo"
                 >
                   <X class="size-4" />
@@ -593,7 +593,7 @@ function statusClass(status: string) {
           <button
             type="submit"
             :disabled="submitting"
-            class="btn-primary w-full min-h-11 mt-4"
+            class="pill-btn-brand w-full min-h-11 mt-4"
           >
             <Send class="size-3.5 text-white" />
             <span>{{ submitting ? 'Submitting…' : 'Submit Maintenance Ticket' }}</span>
@@ -602,38 +602,38 @@ function statusClass(status: string) {
       </div>
 
       <!-- Ticket Tracker (Matching Admin Table Style) -->
-      <div class="lg:col-span-7 surface-card rounded-2xl border border-border bg-white overflow-hidden shadow-xs h-full flex flex-col">
-        <div class="px-6 py-4 border-b border-border bg-background flex items-center justify-between gap-3 flex-wrap">
+      <div class="lg:col-span-7 rounded-tile bg-tile rounded-tile border border-line bg-tile overflow-hidden h-full flex flex-col">
+        <div class="px-6 py-4 border-b border-line bg-canvas flex items-center justify-between gap-3 flex-wrap">
           <div class="flex items-center gap-2">
-            <h2 class="font-display font-extrabold text-sm text-foreground flex items-center gap-2">
-              <FileText class="size-4 text-primary" />
+            <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
+              <FileText class="size-4 text-brand" />
               My Ticket Tracker
             </h2>
-            <span class="text-xs text-muted-foreground">
+            <span class="text-xs text-ink-soft">
               ({{ filteredTickets.length }} ticket{{ filteredTickets.length === 1 ? '' : 's' }})
             </span>
           </div>
-          <span class="text-xs text-muted-foreground">
-            <strong class="text-foreground">{{ openCount }}</strong> open ·
-            <strong class="text-foreground">{{ resolvedCount }}</strong> resolved
+          <span class="text-xs text-ink-soft">
+            <strong class="text-ink">{{ openCount }}</strong> open ·
+            <strong class="text-ink">{{ resolvedCount }}</strong> resolved
           </span>
         </div>
 
         <!-- Filter Bar (Identical to Admin Dispatch / Maintenance Tickets) -->
-        <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
+        <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
           <div class="relative flex-1">
-            <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Search title, category or description…"
-              class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+              class="ws-input w-full pl-10 pr-4 sm:text-sm"
             />
           </div>
 
           <select
             v-model="statusFilter"
-            class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-44 cursor-pointer"
+            class="ws-select sm:text-sm sm:w-44"
           >
             <option value="All">All Tickets</option>
             <option value="Open">Open Only</option>
@@ -650,9 +650,9 @@ function statusClass(status: string) {
             v-else-if="filteredTickets.length === 0"
             class="py-12 text-center space-y-2"
           >
-            <Inbox class="size-8 text-muted-foreground/50 mx-auto" />
-            <p class="text-sm font-bold text-foreground">No tickets to show</p>
-            <p class="text-xs text-muted-foreground">
+            <Inbox class="size-8 text-ink-soft/50 mx-auto" />
+            <p class="text-sm font-semibold text-ink">No tickets to show</p>
+            <p class="text-xs text-ink-soft">
               {{
                 statusFilter === 'All'
                   ? 'Submit a ticket using the form and it will appear here.'
@@ -665,19 +665,19 @@ function statusClass(status: string) {
             <article
               v-for="ticket in filteredTickets"
               :key="ticket.id"
-              class="border border-border rounded-2xl overflow-hidden hover:border-primary/40 transition-colors bg-white shadow-xs"
+              class="border border-line rounded-tile overflow-hidden hover:border-brand/40 transition-colors bg-tile"
             >
               <!-- Clickable Header Row: Toggles Collapsible State -->
               <div
                 @click="toggleTicketExpanded(ticket.id)"
-                class="px-5 py-3.5 flex items-start justify-between gap-4 border-b border-border cursor-pointer hover:bg-background transition-colors select-none group"
+                class="px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-canvas transition-colors select-none group"
               >
                 <div class="min-w-0">
-                  <h3 class="font-display font-extrabold text-sm text-foreground group-hover:text-primary transition-colors leading-snug">
+                  <h3 class="font-semibold text-sm text-ink group-hover:text-brand transition-colors leading-snug">
                     {{ ticket.title }}
                   </h3>
-                  <p class="text-xs text-muted-foreground mt-0.5">
-                    <span v-if="ticket.id" class="font-mono font-bold text-muted-foreground">#{{ ticket.id.slice(0, 8) }} · </span>
+                  <p class="text-xs text-ink-soft mt-0.5">
+                    <span v-if="ticket.id" class="font-mono font-semibold text-ink-soft">#{{ ticket.id.slice(0, 8) }} · </span>
                     Submitted {{ formatDate(ticket.created_at) }}
                     <span v-if="ticket.rooms"> · Unit {{ ticket.rooms.room_number }}</span>
                   </p>
@@ -685,19 +685,13 @@ function statusClass(status: string) {
 
                 <div class="flex items-center gap-2.5 shrink-0">
                   <span
-                    :class="[
-                      'badge-soft',
-                      RESOLVED_STATES.includes(ticket.status) ? 'badge-success' : 'badge-blue'
-                    ]"
+                    :class="[ 'badge-soft', RESOLVED_STATES.includes(ticket.status) ? 'badge-success' : 'badge-blue' ]"
                   >
                     {{ ticket.status === 'Open' ? 'Submitted' : ticket.status }}
                   </span>
-                  <div class="p-1 rounded-lg text-muted-foreground group-hover:text-foreground transition-colors">
+                  <div class="p-1 rounded-lg text-ink-soft group-hover:text-ink transition-colors">
                     <ChevronDown
-                      :class="[
-                        'size-4 transition-transform duration-200',
-                        isTicketExpanded(ticket.id) ? 'rotate-180 text-primary' : ''
-                      ]"
+                      :class="[ 'size-4 transition-transform duration-200', isTicketExpanded(ticket.id) ? 'rotate-180 text-brand' : '' ]"
                     />
                   </div>
                 </div>
@@ -706,8 +700,8 @@ function statusClass(status: string) {
               <!-- Collapsible Body & Footer -->
               <div v-show="isTicketExpanded(ticket.id)">
                 <!-- Body: description -->
-                <div class="px-5 py-3.5 bg-background">
-                  <p class="text-xs text-foreground-soft leading-relaxed">{{ ticket.description }}</p>
+                <div class="px-5 py-3.5 bg-canvas">
+                  <p class="text-xs text-ink-soft leading-relaxed">{{ ticket.description }}</p>
 
                   <!--
                     The photo the resident attached, shown back to them.
@@ -717,7 +711,7 @@ function statusClass(status: string) {
                     photo was the one who took it.
                   -->
                   <div v-if="ticket.ticket_attachments?.length" class="mt-3">
-                    <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    <p class="text-[11px] font-semibold text-ink-soft mb-1.5">
                       Photo you attached
                     </p>
                     <div class="flex flex-wrap gap-2">
@@ -727,7 +721,7 @@ function statusClass(status: string) {
                         :href="att.file_url"
                         target="_blank"
                         rel="noopener"
-                        class="block size-20 rounded-xl overflow-hidden border border-border bg-white"
+                        class="block size-20 rounded-xl overflow-hidden border border-line bg-tile"
                         title="Open the full-size photo"
                       >
                         <img :src="att.file_url" alt="Photo attached to this request" class="w-full h-full object-cover" />
@@ -738,15 +732,10 @@ function statusClass(status: string) {
 
                 <!-- Footer: classification metadata + View Timeline button -->
                 <div
-                  class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-border bg-white"
+                  class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-line bg-tile"
                 >
                   <span
-                    :class="[
-                      'badge-soft',
-                      ticket.priority === 'Emergency' ? 'badge-danger' : 
-                      ticket.priority === 'High' ? 'badge-warning' : 
-                      ticket.priority === 'Medium' ? 'badge-blue' : 'badge-neutral'
-                    ]"
+                    :class="[ 'badge-soft', ticket.priority === 'Emergency' ? 'badge-danger' : ticket.priority === 'High' ? 'badge-warning' : ticket.priority === 'Medium' ? 'badge-blue' : 'badge-neutral' ]"
                   >
                     {{ ticket.priority }} priority
                   </span>
@@ -763,9 +752,9 @@ function statusClass(status: string) {
                   <!-- View Timeline Button -->
                   <button
                     @click.stop="openTimeline(ticket)"
-                    class="btn-secondary ml-auto text-xs py-1 px-3 min-h-9 h-9"
+                    class="pill-btn ml-auto text-xs py-1 px-3 min-h-9 h-9"
                   >
-                    <ListChecks class="size-3.5 text-primary" />
+                    <ListChecks class="size-3.5 text-brand" />
                     <span>Timeline</span>
                     <ChevronRight class="size-3" />
                   </button>
@@ -784,18 +773,18 @@ function statusClass(status: string) {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
     @click.self="closeTimeline"
   >
-    <div class="surface-card bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-6 overflow-hidden border border-border">
+    <div class="rounded-tile bg-tile bg-tile rounded-tile shadow-2xl w-full max-w-2xl my-6 overflow-hidden border border-line">
       <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-border bg-background flex items-start justify-between gap-4 sticky top-0">
+      <div class="px-6 py-4 border-b border-line bg-canvas flex items-start justify-between gap-4 sticky top-0">
         <div class="min-w-0">
-          <h3 class="font-display font-extrabold text-base text-foreground truncate">{{ activeTimelineTicket.title }}</h3>
-          <p class="text-xs text-muted-foreground mt-0.5">
+          <h3 class="font-semibold text-base text-ink truncate">{{ activeTimelineTicket.title }}</h3>
+          <p class="text-xs text-ink-soft mt-0.5">
             Progress Timeline · #{{ activeTimelineTicket.id.slice(0, 8) }}
           </p>
         </div>
         <button
           @click="closeTimeline"
-          class="p-1.5 rounded-lg text-muted-foreground hover:bg-border cursor-pointer shrink-0"
+          class="p-1.5 rounded-lg text-ink-soft hover:bg-border cursor-pointer shrink-0"
         >
           <X class="size-4" />
         </button>
@@ -804,7 +793,7 @@ function statusClass(status: string) {
       <div class="p-6 space-y-6">
         <!-- 5-Stage Progress Stepper -->
         <div>
-          <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Repair Progress</p>
+          <p class="text-xs font-semibold text-ink-soft mb-4">Repair Progress</p>
           <div class="space-y-0">
             <div
               v-for="(stage, index) in TIMELINE_STAGES"
@@ -814,44 +803,30 @@ function statusClass(status: string) {
               <!-- Connector column -->
               <div class="flex flex-col items-center">
                 <div
-                  :class="[
-                    'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors',
-                    index <= getStageIndex(activeTimelineTicket.status)
-                      ? 'bg-primary border-primary text-white'
-                      : 'bg-white border-border text-muted-foreground'
-                  ]"
+                  :class="[ 'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors', index <= getStageIndex(activeTimelineTicket.status) ? 'bg-brand border-brand text-white' : 'bg-tile border-line text-ink-soft' ]"
                 >
                   <CheckCircle2 v-if="index <= getStageIndex(activeTimelineTicket.status)" class="size-4" />
-                  <span v-else class="text-[10px] font-bold">{{ index + 1 }}</span>
+                  <span v-else class="text-[10px] font-semibold">{{ index + 1 }}</span>
                 </div>
                 <div
                   v-if="index < TIMELINE_STAGES.length - 1"
-                  :class="[
-                    'w-0.5 flex-1 min-h-[28px]',
-                    index < getStageIndex(activeTimelineTicket.status) ? 'bg-primary' : 'bg-border'
-                  ]"
+                  :class="[ 'w-0.5 flex-1 min-h-[28px]', index < getStageIndex(activeTimelineTicket.status) ? 'bg-brand' : 'bg-border' ]"
                 />
               </div>
 
               <!-- Stage text -->
               <div class="pb-5 flex-1 min-w-0">
                 <p
-                  :class="[
-                    'text-xs sm:text-sm font-bold leading-tight',
-                    index <= getStageIndex(activeTimelineTicket.status) ? 'text-foreground' : 'text-muted-foreground'
-                  ]"
+                  :class="[ 'text-xs sm:text-sm font-semibold leading-tight', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink' : 'text-ink-soft' ]"
                 >
                   {{ stage.label }}
                   <span
                     v-if="index === getStageIndex(activeTimelineTicket.status)"
-                    class="badge-soft badge-blue text-[10px] font-bold ml-2"
+                    class="badge-soft badge-blue text-[10px] font-semibold ml-2"
                   >CURRENT</span>
                 </p>
                 <p
-                  :class="[
-                    'text-xs mt-0.5',
-                    index <= getStageIndex(activeTimelineTicket.status) ? 'text-foreground-soft' : 'text-muted-foreground'
-                  ]"
+                  :class="[ 'text-xs mt-0.5', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink-soft' : 'text-ink-soft' ]"
                 >
                   {{ stage.desc }}
                 </p>
@@ -860,19 +835,19 @@ function statusClass(status: string) {
           </div>
         </div>
 
-        <div class="border-t border-border" />
+        <div class="border-t border-line" />
 
         <!-- Notes / Comment Feed -->
         <div>
-          <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Activity &amp; Notes</p>
+          <p class="text-xs font-semibold text-ink-soft mb-3">Activity &amp; Notes</p>
 
           <p
             v-if="timelineError"
-            class="mb-3 rounded-xl border border-amber-300 bg-amber-50/60 px-3.5 py-2.5 text-xs text-foreground-soft"
+            class="mb-3 rounded-xl border border-verify-soft bg-verify-soft/60 px-3.5 py-2.5 text-xs text-ink-soft"
           >
-            <strong class="text-foreground">Replies could not be loaded.</strong>
+            <strong class="text-ink">Replies could not be loaded.</strong>
             This does not mean nobody has answered — only that we could not check.
-            <span class="text-muted-foreground">{{ timelineError }}</span>
+            <span class="text-ink-soft">{{ timelineError }}</span>
           </p>
 
           <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
@@ -881,13 +856,13 @@ function statusClass(status: string) {
               :key="note.id"
               class="flex gap-3"
             >
-              <div class="size-7 rounded-full bg-neutral-dark text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+              <div class="size-7 rounded-full bg-night text-white text-[10px] font-semibold flex items-center justify-center shrink-0">
                 {{ note.author[0] }}
               </div>
-              <div class="flex-1 bg-background border border-border rounded-xl px-3.5 py-2.5">
-                <p class="text-xs font-bold text-foreground">{{ note.author }}</p>
-                <p class="text-xs text-foreground-soft mt-0.5 leading-relaxed">{{ note.text }}</p>
-                <p class="text-[10px] text-muted-foreground mt-1">{{ formatDateTime(note.timestamp) }}</p>
+              <div class="flex-1 bg-canvas border border-line rounded-xl px-3.5 py-2.5">
+                <p class="text-xs font-semibold text-ink">{{ note.author }}</p>
+                <p class="text-xs text-ink-soft mt-0.5 leading-relaxed">{{ note.text }}</p>
+                <p class="text-[10px] text-ink-soft mt-1">{{ formatDateTime(note.timestamp) }}</p>
               </div>
             </div>
           </div>
@@ -899,12 +874,12 @@ function statusClass(status: string) {
               type="text"
               placeholder="Add a follow-up note for Landlady Fe…"
               @keydown.enter.prevent="postNote"
-              class="form-input flex-1 text-xs"
+              class="ws-input flex-1"
             />
             <button
               @click="postNote"
               :disabled="!newNoteText.trim() || savingNote"
-              class="btn-primary shrink-0"
+              class="pill-btn-brand shrink-0"
             >
               <MessageSquarePlus class="size-3.5" />
               <span>{{ savingNote ? '…' : 'Post' }}</span>

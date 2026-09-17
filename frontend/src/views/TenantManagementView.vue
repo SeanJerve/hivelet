@@ -318,17 +318,17 @@ async function handleOnboard() {
 <template>
   <div class="space-y-6">
     <!-- Page Header -->
-    <div class="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-foreground">Active Tenants</span>
+          <span class="font-semibold text-ink">Active Tenants</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Active Tenant Directory
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
+        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
           {{ residentCount }} residents currently on record<span v-if="prospectCount">, plus {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> not yet assigned a unit</span>.
         </p>
       </div>
@@ -337,15 +337,15 @@ async function handleOnboard() {
         <button
           @click="fetchTenants"
           :disabled="isLoading"
-          class="btn-secondary"
+          class="pill-btn"
         >
-          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin' : '']" />
+          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
           <span>Refresh</span>
         </button>
 
         <button 
           @click="isOnboardModalOpen = true"
-          class="btn-primary"
+          class="pill-btn-brand"
         >
           <UserPlus class="size-3.5 text-white" />
           <span>Onboard Tenant</span>
@@ -354,47 +354,38 @@ async function handleOnboard() {
     </div>
 
     <!-- Section Card with Search & Tenant Table -->
-    <div class="surface-card overflow-hidden">
+    <div class="rounded-tile bg-tile overflow-hidden">
       <!-- Search Bar & Filters -->
-      <div class="border-b border-border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
+      <div class="border-b border-line p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-tile">
         <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
           <input
             v-model="q"
             type="text"
             placeholder="Search name, unit or phone…"
-            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+            class="ws-input w-full pl-10 pr-4 sm:text-sm"
           />
         </div>
 
-        <div class="h-10 inline-flex items-center gap-1 self-start sm:self-auto bg-muted p-1 border border-border rounded-xl text-xs">
+        <div class="h-10 inline-flex items-center gap-1 self-start sm:self-auto bg-canvas p-1 border border-line rounded-xl text-xs">
           <button
             type="button"
             @click="statusFilter = 'all'"
-            :class="[
-              'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
-              statusFilter === 'all' ? 'bg-white text-primary shadow-xs' : 'text-muted-foreground hover:text-foreground'
-            ]"
+            :class="[ 'h-8 px-3 rounded-lg font-semibold transition-colors cursor-pointer inline-flex items-center', statusFilter === 'all' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
           >
             All ({{ tenants.length }})
           </button>
           <button
             type="button"
             @click="statusFilter = 'active'"
-            :class="[
-              'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
-              statusFilter === 'active' ? 'bg-white text-primary shadow-xs' : 'text-muted-foreground hover:text-foreground'
-            ]"
+            :class="[ 'h-8 px-3 rounded-lg font-semibold transition-colors cursor-pointer inline-flex items-center', statusFilter === 'active' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
           >
             Active ({{ activeCount }})
           </button>
           <button
             type="button"
             @click="statusFilter = 'vacated'"
-            :class="[
-              'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
-              statusFilter === 'vacated' ? 'bg-white text-primary shadow-xs' : 'text-muted-foreground hover:text-foreground'
-            ]"
+            :class="[ 'h-8 px-3 rounded-lg font-semibold transition-colors cursor-pointer inline-flex items-center', statusFilter === 'vacated' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
           >
             Past / Vacated ({{ vacatedCount }})
           </button>
@@ -402,10 +393,7 @@ async function handleOnboard() {
             v-if="prospectCount"
             type="button"
             @click="statusFilter = 'prospect'"
-            :class="[
-              'h-8 px-3 rounded-lg font-bold transition-colors cursor-pointer inline-flex items-center',
-              statusFilter === 'prospect' ? 'bg-white text-primary shadow-xs' : 'text-muted-foreground hover:text-foreground'
-            ]"
+            :class="[ 'h-8 px-3 rounded-lg font-semibold transition-colors cursor-pointer inline-flex items-center', statusFilter === 'prospect' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
           >
             Prospects ({{ prospectCount }})
           </button>
@@ -420,33 +408,33 @@ async function handleOnboard() {
       <!-- Table (Screenshot 4) -->
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full min-w-[1000px] text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-muted">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
-              <th class="whitespace-nowrap px-4 py-3 font-bold">RESIDENT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">UNIT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">ROOMMATES</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">EMERGENCY CONTACT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">MOVE-IN</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">DEPOSIT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">STATUS</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold text-right">ACTIONS</th>
+          <thead class="sticky top-0 z-10 bg-canvas">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">RESIDENT</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">UNIT</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">ROOMMATES</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">EMERGENCY CONTACT</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">MOVE-IN</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">DEPOSIT</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">STATUS</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold text-right">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
             <tr 
               v-for="t in rows" 
               :key="t.id"
-              class="border-b border-border last:border-0 hover:bg-background transition-colors"
+              class="border-b border-line last:border-0 hover:bg-canvas transition-colors"
             >
               <!-- RESIDENT (Name + Email + Phone stacked for compact layout) -->
               <td class="px-4 py-3.5">
-                <p class="font-bold text-foreground">{{ t.name }}</p>
-                <p class="text-xs text-muted-foreground">{{ t.email }}</p>
-                <p class="tabular font-mono text-[11px] text-muted-foreground mt-0.5">{{ t.phone }}</p>
+                <p class="font-semibold text-ink">{{ t.name }}</p>
+                <p class="text-xs text-ink-soft">{{ t.email }}</p>
+                <p class="tabular font-mono text-[11px] text-ink-soft mt-0.5">{{ t.phone }}</p>
               </td>
 
               <!-- UNIT -->
-              <td class="px-4 py-3.5 font-display font-extrabold uppercase text-foreground">
+              <td class="px-4 py-3.5 font-semibold uppercase text-ink">
                 {{ t.unitCode }}
               </td>
 
@@ -454,13 +442,13 @@ async function handleOnboard() {
               <td class="whitespace-nowrap px-4 py-3.5">
                 <span 
                   v-if="(t.roommateQty ?? (t.occupants - 1)) > 0"
-                  class="badge-soft badge-blue text-xs font-bold"
+                  class="badge-soft badge-blue text-xs font-semibold"
                 >
                   Yes ({{ t.roommateQty ?? (t.occupants - 1) }} {{ (t.roommateQty ?? (t.occupants - 1)) === 1 ? 'roommate' : 'roommates' }})
                 </span>
                 <span 
                   v-else 
-                  class="badge-soft badge-neutral text-xs font-bold"
+                  class="badge-soft badge-neutral text-xs font-semibold"
                 >
                   Solo (1 Pax)
                 </span>
@@ -468,27 +456,24 @@ async function handleOnboard() {
 
               <!-- EMERGENCY CONTACT -->
               <td class="whitespace-nowrap px-4 py-3.5">
-                <p class="text-foreground font-medium">{{ t.emergencyContact.name }}</p>
-                <p class="tabular font-mono text-xs text-muted-foreground">{{ t.emergencyContact.phone }}</p>
+                <p class="text-ink font-medium">{{ t.emergencyContact.name }}</p>
+                <p class="tabular font-mono text-xs text-ink-soft">{{ t.emergencyContact.phone }}</p>
               </td>
 
               <!-- MOVE-IN -->
-              <td class="whitespace-nowrap px-4 py-3.5 text-muted-foreground">
+              <td class="whitespace-nowrap px-4 py-3.5 text-ink-soft">
                 {{ t.moveInDate }}
               </td>
 
               <!-- DEPOSIT -->
-              <td class="tabular whitespace-nowrap px-4 py-3.5 font-display font-bold text-foreground">
+              <td class="tabular whitespace-nowrap px-4 py-3.5 font-semibold text-ink">
                 {{ peso(t.depositAmount) }}
               </td>
 
               <!-- STATUS -->
               <td class="px-4 py-3.5">
                 <span 
-                  :class="[
-                    'badge-soft text-xs font-bold',
-                    t.role === 'prospect' ? 'badge-info' : (t.status === 'active' ? 'badge-success' : 'badge-neutral')
-                  ]"
+                  :class="[ 'badge-soft text-xs font-semibold', t.role === 'prospect' ? 'badge-info' : (t.status === 'active' ? 'badge-success' : 'badge-neutral') ]"
                 >
                   {{ t.role === 'prospect' ? 'Prospect' : (t.status === 'active' ? 'Active' : 'Vacated') }}
                 </span>
@@ -498,7 +483,7 @@ async function handleOnboard() {
               <td class="whitespace-nowrap px-4 py-3.5 text-right">
                 <button 
                   @click="openEdit(t)"
-                  class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-2xs font-semibold cursor-pointer hover:border-primary hover:text-primary"
+                  class="pill-btn min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center font-semibold cursor-pointer hover:border-brand hover:text-brand"
                 >
                   <Pencil class="size-3.5" />
                   <span>Edit</span>
@@ -516,39 +501,34 @@ async function handleOnboard() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
       @click.self="editModalTenant = null"
     >
-      <div class="surface-card w-full max-w-xl shadow-2xl rounded-2xl p-6 bg-white space-y-4 max-h-[90dvh] overflow-y-auto">
+      <div class="rounded-tile bg-tile w-full max-w-xl shadow-2xl rounded-tile p-6 bg-tile space-y-4 max-h-[90dvh] overflow-y-auto">
         <!-- Header -->
-        <div class="flex items-center justify-between pb-3 border-b border-border">
+        <div class="flex items-center justify-between pb-3 border-b border-line">
           <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200">
+            <div class="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft">
               <Pencil class="size-4.5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-lg text-foreground leading-tight">
+              <h3 class="font-semibold text-lg text-ink leading-tight">
                 {{ editModalTenant.name }}
               </h3>
-              <p class="text-xs text-muted-foreground">
+              <p class="text-xs text-ink-soft">
                 Unit {{ editModalTenant.unitCode }} · Resident Profile &amp; Assignment
               </p>
             </div>
           </div>
-          <button @click="editModalTenant = null" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
+          <button @click="editModalTenant = null" class="p-1 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer">
             <X class="size-5" />
           </button>
         </div>
 
         <!-- Section 1: Resident Information Profile Card -->
-        <div class="rounded-xl border border-border bg-background p-4 space-y-3">
-          <div class="flex items-center justify-between border-b border-border/70 pb-2">
-            <span class="font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+        <div class="rounded-xl border border-line bg-canvas p-4 space-y-3">
+          <div class="flex items-center justify-between border-b border-line/70 pb-2">
+            <span class="font-semibold text-[11px] text-ink-soft">
               Resident Profile
             </span>
-            <span :class="[
-              'badge-soft text-xs font-bold',
-              editModalTenant.role === 'prospect'
-                ? 'badge-info'
-                : (editModalTenant.status === 'active' ? 'badge-success' : 'badge-neutral')
-            ]">
+            <span :class="[ 'badge-soft text-xs font-semibold', editModalTenant.role === 'prospect' ? 'badge-info' : (editModalTenant.status === 'active' ? 'badge-success' : 'badge-neutral') ]">
               {{ editModalTenant.role === 'prospect'
                   ? 'Prospect — not yet a resident'
                   : (editModalTenant.status === 'active' ? 'Active Resident' : 'Past / Vacated') }}
@@ -557,31 +537,31 @@ async function handleOnboard() {
 
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
             <div>
-              <p class="text-[10px] uppercase font-bold text-muted-foreground">Phone</p>
-              <p class="font-mono text-xs text-foreground mt-0.5">{{ editModalTenant.phone }}</p>
+              <p class="text-[10px] uppercase font-semibold text-ink-soft">Phone</p>
+              <p class="font-mono text-xs text-ink mt-0.5">{{ editModalTenant.phone }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-muted-foreground">Email</p>
-              <p class="text-xs text-foreground truncate mt-0.5" :title="editModalTenant.email">{{ editModalTenant.email }}</p>
+              <p class="text-[10px] uppercase font-semibold text-ink-soft">Email</p>
+              <p class="text-xs text-ink truncate mt-0.5" :title="editModalTenant.email">{{ editModalTenant.email }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-muted-foreground">Deposit Held</p>
-              <p class="font-display font-bold text-xs text-foreground mt-0.5">{{ peso(editModalTenant.depositAmount) }}</p>
+              <p class="text-[10px] uppercase font-semibold text-ink-soft">Deposit Held</p>
+              <p class="font-semibold text-xs text-ink mt-0.5">{{ peso(editModalTenant.depositAmount) }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-muted-foreground">Move-In Date</p>
-              <p class="text-xs text-foreground mt-0.5">{{ editModalTenant.moveInDate }}</p>
+              <p class="text-[10px] uppercase font-semibold text-ink-soft">Move-In Date</p>
+              <p class="text-xs text-ink mt-0.5">{{ editModalTenant.moveInDate }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-muted-foreground">Anniversary</p>
-              <p class="text-xs text-foreground mt-0.5">{{ editModalTenant.anniversary }}</p>
+              <p class="text-[10px] uppercase font-semibold text-ink-soft">Anniversary</p>
+              <p class="text-xs text-ink mt-0.5">{{ editModalTenant.anniversary }}</p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold text-muted-foreground">Emergency Contact</p>
-              <p class="text-xs text-foreground mt-0.5 truncate" :title="editModalTenant.emergencyContact.name + ' (' + editModalTenant.emergencyContact.phone + ')'">
+              <p class="text-[10px] uppercase font-semibold text-ink-soft">Emergency Contact</p>
+              <p class="text-xs text-ink mt-0.5 truncate" :title="editModalTenant.emergencyContact.name + ' (' + editModalTenant.emergencyContact.phone + ')'">
                 {{ editModalTenant.emergencyContact.name }}
               </p>
-              <p class="font-mono text-[10px] text-muted-foreground">{{ editModalTenant.emergencyContact.phone }}</p>
+              <p class="font-mono text-[10px] text-ink-soft">{{ editModalTenant.emergencyContact.phone }}</p>
             </div>
           </div>
         </div>
@@ -590,7 +570,7 @@ async function handleOnboard() {
         <form @submit.prevent="saveEdit" class="space-y-4 text-xs">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1">Target Unit</label>
               <!--
                 `systemState` gives a tenant with no room assignment the unit code "—".
                 That matched none of the options below, so the browser rendered this select
@@ -605,7 +585,7 @@ async function handleOnboard() {
                 still be the selected one, and its value is non-empty, so `required` is
                 satisfied.
               -->
-              <select v-model="editUnitCode" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white font-bold" required>
+              <select v-model="editUnitCode" class="ws-select w-full" required>
                 <option value="—" disabled>No unit assigned</option>
                 <!--
                   Reads the LIVE list. This iterated CANONICAL_UNITS and printed `basePrice`
@@ -618,15 +598,15 @@ async function handleOnboard() {
                   {{ u.unitCode.toUpperCase() }} — {{ u.cluster }}<template v-if="!roomsFetchFailed"> ({{ peso(u.price) }})</template>
                 </option>
               </select>
-              <p v-if="editUnitCode === '—'" class="text-[11px] text-muted-foreground mt-1">
+              <p v-if="editUnitCode === '—'" class="text-[11px] text-ink-soft mt-1">
                 This resident holds no unit. Pick one to assign them, or save to change the
                 other details and leave them unassigned.
               </p>
             </div>
 
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Account Status</label>
-              <select v-model="editStatus" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1">Account Status</label>
+              <select v-model="editStatus" class="ws-select w-full" required>
                 <option value="active">Active</option>
                 <option value="vacated">Vacated (Pending)</option>
               </select>
@@ -634,47 +614,47 @@ async function handleOnboard() {
           </div>
 
           <!-- Roommate Options -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-line">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Has Roommate?</label>
-              <select v-model="editHasRoommates" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1">Has Roommate?</label>
+              <select v-model="editHasRoommates" class="ws-select w-full" required>
                 <option value="no">No (Solo Resident)</option>
                 <option value="yes">Yes (With Roommates)</option>
               </select>
             </div>
 
             <div v-if="editHasRoommates === 'yes'">
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Roommate Qty</label>
-              <input v-model.number="editRoommateQty" type="number" min="1" max="8" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold bg-background" required />
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1">Roommate Qty</label>
+              <input v-model.number="editRoommateQty" type="number" min="1" max="8" class="ws-input w-full" required />
             </div>
             <div v-else class="flex items-end">
-              <p class="text-xs text-muted-foreground pb-2.5">Solo resident headcount.</p>
+              <p class="text-xs text-ink-soft pb-2.5">Solo resident headcount.</p>
             </div>
           </div>
 
-          <div class="p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-blue-900 text-xs flex items-center justify-between">
+          <div class="p-3 rounded-xl bg-brand-soft/70 border border-brand-soft text-brand text-xs flex items-center justify-between">
             <span class="font-medium">Total Registered Occupants:</span>
-            <strong class="font-display font-extrabold text-sm">
+            <strong class="font-semibold text-sm">
               {{ editHasRoommates === 'yes' ? 1 + (Number(editRoommateQty) || 1) : 1 }} Headcount (₱{{ (editHasRoommates === 'yes' ? 1 + (Number(editRoommateQty) || 1) : 1) * 200 }}/mo water fee)
             </strong>
           </div>
 
           <!-- Actions Footer (Vacate on Left, Cancel & Save on Right) -->
-          <div class="pt-3 border-t border-border flex items-center justify-between gap-3">
+          <div class="pt-3 border-t border-line flex items-center justify-between gap-3">
             <button 
               type="button" 
               @click="openVacateFromModal(editModalTenant)" 
-              class="btn-danger"
+              class="pill-btn-danger-quiet"
             >
               <LogOut class="size-3.5" />
               <span>Vacate Unit</span>
             </button>
 
             <div class="flex items-center gap-2">
-              <button type="button" @click="editModalTenant = null" class="btn-secondary">
+              <button type="button" @click="editModalTenant = null" class="pill-btn">
                 Cancel
               </button>
-              <button type="submit" :disabled="isSubmitting" class="btn-primary">
+              <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
                 <Check v-else class="size-3.5" />
                 <span>Save Changes</span>
@@ -691,17 +671,17 @@ async function handleOnboard() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
       @click.self="vacateModalTenant = null"
     >
-      <div class="surface-card w-full max-w-md shadow-2xl rounded-2xl p-6 bg-white space-y-4">
-        <div class="flex items-center gap-2.5 text-rose-600">
+      <div class="rounded-tile bg-tile w-full max-w-md shadow-2xl rounded-tile p-6 bg-tile space-y-4">
+        <div class="flex items-center gap-2.5 text-overdue">
           <AlertTriangle class="size-5" />
-          <h3 class="font-display font-extrabold text-lg">Settle vacancy &amp; deactivate</h3>
+          <h3 class="font-semibold text-lg">Settle vacancy &amp; deactivate</h3>
         </div>
-        <p class="text-xs text-muted-foreground leading-relaxed">
+        <p class="text-xs text-ink-soft leading-relaxed">
           This closes the account of <strong>{{ vacateModalTenant.name }}</strong> and marks unit <strong>{{ vacateModalTenant.unitCode }}</strong> as vacant. Deposit settlement will be logged.
         </p>
         <div class="pt-2 flex justify-end gap-2">
-          <button type="button" @click="vacateModalTenant = null" class="btn-secondary">Cancel</button>
-          <button type="button" :disabled="isSubmitting" @click="confirmVacate" class="btn-danger-solid">
+          <button type="button" @click="vacateModalTenant = null" class="pill-btn">Cancel</button>
+          <button type="button" :disabled="isSubmitting" @click="confirmVacate" class="pill-pill-btn-danger-quiet">
             <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
             <span>Settle Vacancy</span>
           </button>
@@ -715,21 +695,21 @@ async function handleOnboard() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
       @click.self="isOnboardModalOpen = false"
     >
-      <div class="surface-card w-full max-w-2xl shadow-2xl rounded-2xl p-6 bg-white space-y-4 max-h-[90dvh] overflow-y-auto">
-        <div class="flex items-center justify-between pb-3 border-b border-border">
+      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl rounded-tile p-6 bg-tile space-y-4 max-h-[90dvh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-line">
           <div class="flex items-center gap-2">
             <UserPlus class="size-5 text-accent" />
-            <h3 class="font-display font-extrabold text-lg text-foreground">Onboard New Tenant</h3>
+            <h3 class="font-semibold text-lg text-ink">Onboard New Tenant</h3>
           </div>
-          <button @click="isOnboardModalOpen = false" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
+          <button @click="isOnboardModalOpen = false" class="p-1 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer">
             <X class="size-5" />
           </button>
         </div>
 
         <form @submit.prevent="handleOnboard" class="grid gap-4 sm:grid-cols-2 text-xs">
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Full Name</label>
-            <input v-model="newName" placeholder="Juan Dela Cruz" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Full Name</label>
+            <input v-model="newName" placeholder="Juan Dela Cruz" class="ws-input w-full" required />
           </div>
           <!--
             Email is optional; the phone number is not.
@@ -743,20 +723,20 @@ async function handleOnboard() {
             every tenant onboarded here has one identifier and can sign in.
           -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-              Email <span class="font-semibold normal-case tracking-normal text-muted-foreground/70">(optional)</span>
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">
+              Email <span class="font-semibold normal-case tracking-normal text-ink-soft/70">(optional)</span>
             </label>
-            <input v-model="newEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" />
-            <p class="text-[11px] text-muted-foreground mt-1">Leave blank if they have none — they will sign in with their phone number.</p>
+            <input v-model="newEmail" type="email" placeholder="you@email.com" class="ws-input w-full" />
+            <p class="text-[11px] text-ink-soft mt-1">Leave blank if they have none — they will sign in with their phone number.</p>
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Phone</label>
-            <input v-model="newPhone" placeholder="0917-000-0000" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
-            <p class="text-[11px] text-muted-foreground mt-1">Used to sign in to the tenant portal.</p>
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Phone</label>
+            <input v-model="newPhone" placeholder="0917-000-0000" class="ws-input w-full" required />
+            <p class="text-[11px] text-ink-soft mt-1">Used to sign in to the tenant portal.</p>
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
-            <select v-model="newUnit" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Target Unit</label>
+            <select v-model="newUnit" class="ws-select w-full" required>
               <!--
                 This one mattered most. `syncDepositToUnit` fills the deposit field from the
                 LIVE price the moment a unit is picked, while this label showed the SEEDED
@@ -771,62 +751,62 @@ async function handleOnboard() {
 
           <!-- Roommate Options -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Has Roommate?</label>
-            <select v-model="newHasRoommates" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Has Roommate?</label>
+            <select v-model="newHasRoommates" class="ws-select w-full" required>
               <option value="no">No (Solo Resident)</option>
               <option value="yes">Yes (With Roommates)</option>
             </select>
           </div>
 
           <div v-if="newHasRoommates === 'yes'">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Roommate Qty</label>
-            <input v-model.number="newRoommateQty" type="number" min="1" max="8" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold bg-background" required />
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Roommate Qty</label>
+            <input v-model.number="newRoommateQty" type="number" min="1" max="8" class="ws-input w-full" required />
           </div>
           <div v-else class="flex items-end">
-            <p class="text-xs text-muted-foreground pb-3">Resident will occupy unit alone (1 Headcount).</p>
+            <p class="text-xs text-ink-soft pb-3">Resident will occupy unit alone (1 Headcount).</p>
           </div>
 
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Move-in Date</label>
-            <input v-model="newMoveIn" type="date" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Move-in Date</label>
+            <input v-model="newMoveIn" type="date" class="ws-input w-full" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Anniversary Anchor Date</label>
-            <input v-model="newAnniv" type="date" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Anniversary Anchor Date</label>
+            <input v-model="newAnniv" type="date" class="ws-input w-full" required />
           </div>
           <div>
             <!-- OD-04: this sum is ADVANCE RENT. This business collects no separate
                  refundable security deposit, and calling it one described a financial
                  instrument the property does not use. -->
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">
               Advance Rent (₱)
-              <span class="normal-case font-medium text-muted-foreground-soft">— one month, pre-filled from the unit's rate</span>
+              <span class="normal-case font-medium text-ink-faint">— one month, pre-filled from the unit's rate</span>
             </label>
-            <input v-model.number="newDeposit" type="number" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold" required />
+            <input v-model.number="newDeposit" type="number" class="ws-input w-full" required />
           </div>
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Emergency Contact Name (Optional)</label>
-            <input v-model="newEmergName" placeholder="Maria Santos (optional)" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" />
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Emergency Contact Name (Optional)</label>
+            <input v-model="newEmergName" placeholder="Maria Santos (optional)" class="ws-input w-full" />
           </div>
           <div class="sm:col-span-2">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Emergency Contact Phone (Optional)</label>
-            <input v-model="newEmergPhone" placeholder="0928-000-0000 (optional)" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" />
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1">Emergency Contact Phone (Optional)</label>
+            <input v-model="newEmergPhone" placeholder="0928-000-0000 (optional)" class="ws-input w-full" />
           </div>
 
           <!-- Concluded Summary Banner (Positioned directly above modal action buttons) -->
-          <div class="sm:col-span-2 p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-blue-950 text-xs flex items-center justify-between shadow-2xs">
+          <div class="sm:col-span-2 p-3.5 rounded-xl bg-brand-soft/80 border border-brand-soft text-brand text-xs flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="size-2 rounded-full bg-primary"></span>
+              <span class="size-2 rounded-full bg-brand"></span>
               <span class="font-medium">Total Registered Headcount:</span>
             </div>
-            <strong class="font-display font-extrabold text-sm text-primary">
+            <strong class="font-semibold text-sm text-brand">
               {{ newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1 }} Pax · ₱{{ (newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1) * 200 }}/mo water fee
             </strong>
           </div>
 
           <div class="sm:col-span-2 pt-2 flex justify-end gap-2.5">
-            <button type="button" @click="isOnboardModalOpen = false" class="btn-secondary">Cancel</button>
-            <button type="submit" :disabled="isSubmitting" class="btn-primary">
+            <button type="button" @click="isOnboardModalOpen = false" class="pill-btn">Cancel</button>
+            <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
               <span>Onboard Tenant</span>
             </button>

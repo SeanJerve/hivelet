@@ -325,17 +325,17 @@ function handleDeleteTicketPrompt() {
 <template>
   <div class="space-y-6">
     <!-- Header with Breadcrumbs -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
       <div>
-        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
           <span>Admin</span>
           <span>/</span>
-          <span class="font-bold text-foreground">Maintenance Dispatch</span>
+          <span class="font-semibold text-ink">Maintenance Dispatch</span>
         </div>
-        <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Maintenance Dispatch Board
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-muted-foreground">
+        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
           Track repair requests, dispatch technicians, and resolve resident work orders.
         </p>
       </div>
@@ -344,53 +344,53 @@ function handleDeleteTicketPrompt() {
         <button
           @click="fetchTickets"
           :disabled="isLoading"
-          class="btn-secondary"
+          class="pill-btn"
           title="Refresh Maintenance Data"
         >
-          <RefreshCw :class="['size-3.5 text-muted-foreground', isLoading ? 'animate-spin text-primary' : '']" />
-          <span class="font-bold">{{ isLoading ? 'Refreshing Table…' : 'Refresh Table' }}</span>
+          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin text-brand' : '']" />
+          <span class="font-semibold">{{ isLoading ? 'Refreshing Table…' : 'Refresh Table' }}</span>
         </button>
       </div>
     </div>
 
     <!-- Stat Cards -->
     <div class="grid gap-4 sm:grid-cols-3">
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Open Tickets</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-foreground">{{ openCount }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">Awaiting technician assignment</p>
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">Open Tickets</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ openCount }}</p>
+        <p class="mt-1 text-xs text-ink-soft">Awaiting technician assignment</p>
       </div>
 
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">In Progress</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-sky-800">{{ inProgressCount }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">Technician on site / active repair</p>
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">In Progress</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ inProgressCount }}</p>
+        <p class="mt-1 text-xs text-ink-soft">Technician on site / active repair</p>
       </div>
 
-      <div class="surface-card p-5">
-        <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Resolved Tickets</p>
-        <p class="tabular mt-2 font-display text-2xl sm:text-3xl font-black text-emerald-800">{{ resolvedCount }}</p>
-        <p class="mt-1 text-xs text-muted-foreground">Completed repairs on record</p>
+      <div class="rounded-tile bg-tile p-5">
+        <p class="text-xs font-semibold text-ink-soft">Resolved Tickets</p>
+        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ resolvedCount }}</p>
+        <p class="mt-1 text-xs text-ink-soft">Completed repairs on record</p>
       </div>
     </div>
 
     <!-- Table Section -->
-    <div class="surface-card overflow-hidden">
+    <div class="rounded-tile bg-tile overflow-hidden">
       <!-- Filter Bar -->
-      <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row">
+      <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
         <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
           <input
             v-model="q"
             type="text"
             placeholder="Search title, unit code or technician…"
-            class="min-h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-xs sm:text-sm text-foreground focus:bg-white focus:border-primary focus:outline-none transition-colors"
+            class="ws-input w-full pl-10 pr-4 sm:text-sm"
           />
         </div>
 
         <select
           v-model="statusFilter"
-          class="min-h-11 rounded-xl border border-border bg-white px-4 text-xs sm:text-sm font-semibold text-foreground focus:border-primary focus:outline-none sm:w-56 cursor-pointer"
+          class="ws-select sm:text-sm sm:w-56"
         >
           <option value="All">All Statuses</option>
           <option value="Open">Open</option>
@@ -408,21 +408,21 @@ function handleDeleteTicketPrompt() {
       <!-- Maintenance Tickets Table -->
       <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
         <table class="w-full text-xs sm:text-sm border-collapse">
-          <thead class="sticky top-0 z-10 bg-muted">
-            <tr class="text-left text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border">
-              <th class="whitespace-nowrap px-4 py-3 font-bold">TICKET ID</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">UNIT</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">ISSUE TITLE &amp; CATEGORY</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">PRIORITY</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">REPORTED</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">ASSIGNED TECH</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold">STATUS</th>
-              <th class="whitespace-nowrap px-4 py-3 font-bold text-center">ACTION</th>
+          <thead class="sticky top-0 z-10 bg-canvas">
+            <tr class="text-left text-[11px] uppercase tracking-wide text-ink-soft border-b border-line">
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">TICKET ID</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">UNIT</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">ISSUE TITLE &amp; CATEGORY</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">PRIORITY</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">REPORTED</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">ASSIGNED TECH</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold">STATUS</th>
+              <th class="whitespace-nowrap px-4 py-3 font-semibold text-center">ACTION</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-border">
+          <tbody class="divide-y divide-line">
             <tr v-if="filtered.length === 0">
-              <td colspan="8" class="p-8 text-center text-muted-foreground bg-white">
+              <td colspan="8" class="p-8 text-center text-ink-soft bg-tile">
                 No maintenance tickets found matching the search criteria.
               </td>
             </tr>
@@ -430,33 +430,33 @@ function handleDeleteTicketPrompt() {
               v-else
               v-for="t in filtered" 
               :key="t.id"
-              class="hover:bg-background transition-colors"
+              class="hover:bg-canvas transition-colors"
             >
-              <td class="whitespace-nowrap px-4 py-3 font-mono text-xs font-bold text-foreground">{{ t.id }}</td>
-              <td class="whitespace-nowrap px-4 py-3 font-display font-black uppercase text-foreground">{{ t.unit }}</td>
+              <td class="whitespace-nowrap px-4 py-3 font-mono text-xs font-semibold text-ink">{{ t.id }}</td>
+              <td class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-ink">{{ t.unit }}</td>
               <td class="px-4 py-3">
-                <p class="font-bold text-foreground leading-snug">{{ t.title }}</p>
-                <p class="text-xs text-muted-foreground">{{ t.category }}</p>
+                <p class="font-semibold text-ink leading-snug">{{ t.title }}</p>
+                <p class="text-xs text-ink-soft">{{ t.category }}</p>
               </td>
               <td class="whitespace-nowrap px-4 py-3">
-                <span :class="['badge-soft text-xs font-bold whitespace-nowrap', getPriorityBadgeClass(t.priority)]">
+                <span :class="['badge-soft text-xs font-semibold whitespace-nowrap', getPriorityBadgeClass(t.priority)]">
                   {{ t.priority }}
                 </span>
               </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">{{ t.reported }}</td>
-              <td class="whitespace-nowrap px-4 py-3 text-foreground font-medium">{{ t.technician }}</td>
+              <td class="whitespace-nowrap px-4 py-3 text-xs text-ink-soft">{{ t.reported }}</td>
+              <td class="whitespace-nowrap px-4 py-3 text-ink font-medium">{{ t.technician }}</td>
               <td class="whitespace-nowrap px-4 py-3">
-                <span :class="['badge-soft text-xs font-bold whitespace-nowrap', getStatusBadgeClass(t.status)]">
+                <span :class="['badge-soft text-xs font-semibold whitespace-nowrap', getStatusBadgeClass(t.status)]">
                   {{ t.status }}
                 </span>
               </td>
               <td class="whitespace-nowrap px-4 py-3 text-center">
                 <button 
                   @click="openEditModal(t)" 
-                  class="btn-secondary min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer hover:border-primary hover:text-primary"
+                  class="pill-btn min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer hover:border-brand hover:text-brand"
                   title="Edit & Manage Ticket"
                 >
-                  <Pencil class="size-3.5 text-muted-foreground" />
+                  <Pencil class="size-3.5 text-ink-soft" />
                   <span>Edit</span>
                 </button>
               </td>
@@ -472,35 +472,35 @@ function handleDeleteTicketPrompt() {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 overflow-y-auto"
       @click.self="isEditModalOpen = false"
     >
-      <div class="surface-card w-full max-w-2xl shadow-2xl rounded-2xl p-6 bg-white space-y-4 my-6">
-        <div class="flex items-center justify-between pb-3 border-b border-border">
+      <div class="rounded-tile bg-tile w-full max-w-2xl shadow-2xl rounded-tile p-6 bg-tile space-y-4 my-6">
+        <div class="flex items-center justify-between pb-3 border-b border-line">
           <div class="flex items-center gap-2.5">
-            <div class="grid size-9 place-items-center rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200">
+            <div class="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft">
               <Wrench class="size-5" />
             </div>
             <div>
-              <h3 class="font-display font-extrabold text-base text-foreground">
+              <h3 class="font-semibold text-base text-ink">
                 Manage Ticket #{{ editingTicket.id }}
               </h3>
-              <p class="text-xs text-muted-foreground">Unit {{ editingTicket.unit.toUpperCase() }} · Reported {{ editingTicket.reported }}</p>
+              <p class="text-xs text-ink-soft">Unit {{ editingTicket.unit.toUpperCase() }} · Reported {{ editingTicket.reported }}</p>
             </div>
           </div>
-          <button @click="isEditModalOpen = false" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
+          <button @click="isEditModalOpen = false" class="p-1 rounded-lg text-ink-soft hover:bg-canvas cursor-pointer">
             <X class="size-5" />
           </button>
         </div>
 
         <!-- Quick Action Shortcuts Bar -->
-        <div class="p-3 bg-background border border-border rounded-xl flex items-center justify-between gap-3 text-xs">
-          <span class="font-bold text-muted-foreground uppercase tracking-wider text-[10px]">Quick Actions:</span>
+        <div class="p-3 bg-canvas border border-line rounded-xl flex items-center justify-between gap-3 text-xs">
+          <span class="font-semibold text-ink-soft text-[10px]">Quick Actions:</span>
           <div class="flex items-center gap-2">
             <button
               v-if="editStatus !== 'In Progress' && editStatus !== 'Resolved' && editStatus !== 'Closed'"
               type="button"
               @click="handleQuickDispatch"
-              class="btn-secondary px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+              class="pill-btn px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
             >
-              <UserCheck class="size-3.5 text-primary" />
+              <UserCheck class="size-3.5 text-brand" />
               <span>Dispatch Tech</span>
             </button>
             <!--
@@ -513,12 +513,12 @@ function handleDeleteTicketPrompt() {
               v-if="editStatus !== 'Resolved' && editStatus !== 'Closed'"
               type="button"
               @click="handleQuickResolve"
-              class="btn-primary px-3 py-1 text-xs gap-1.5 inline-flex items-center shadow-xs cursor-pointer"
+              class="pill-btn-brand px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
             >
               <CheckCircle2 class="size-3.5 text-white" />
               <span>Mark Resolved</span>
             </button>
-            <span v-else class="text-xs font-bold text-emerald-700 inline-flex items-center gap-1">
+            <span v-else class="text-xs font-semibold text-brand inline-flex items-center gap-1">
               <Check class="size-4" /> Ticket {{ editStatus }}
             </span>
           </div>
@@ -527,23 +527,23 @@ function handleDeleteTicketPrompt() {
         <form @submit.prevent="handleSaveEditTicket" class="space-y-4 text-xs">
           <!-- Issue Title -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Issue Title</label>
-            <input v-model="editTitle" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Issue Title</label>
+            <input v-model="editTitle" class="ws-input w-full" required />
           </div>
 
           <!-- Unit Code & Category -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Unit</label>
-              <select v-model="editUnit" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm font-bold bg-white focus:border-primary focus:outline-none" required>
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Unit</label>
+              <select v-model="editUnit" class="ws-select w-full" required>
                 <option v-for="r in rooms" :key="r.id" :value="r.unitCode.toLowerCase()">
                   {{ r.unitCode.toUpperCase() }} ({{ r.cluster }})
                 </option>
               </select>
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Category</label>
-              <select v-model="editCategory" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white focus:border-primary focus:outline-none" required>
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Category</label>
+              <select v-model="editCategory" class="ws-select w-full" required>
                 <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
               </select>
             </div>
@@ -552,8 +552,8 @@ function handleDeleteTicketPrompt() {
           <!-- Priority & Status -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Priority</label>
-              <select v-model="editPriority" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white font-bold focus:border-primary focus:outline-none" required>
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Priority</label>
+              <select v-model="editPriority" class="ws-select w-full" required>
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
@@ -561,8 +561,8 @@ function handleDeleteTicketPrompt() {
               </select>
             </div>
             <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Status</label>
-              <select v-model="editStatus" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white font-bold focus:border-primary focus:outline-none" required>
+              <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Status</label>
+              <select v-model="editStatus" class="ws-select w-full" required>
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Resolved">Resolved</option>
@@ -573,43 +573,43 @@ function handleDeleteTicketPrompt() {
 
           <!-- Assigned Technician -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Assigned Technician</label>
-            <select v-model="editTech" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white focus:border-primary focus:outline-none">
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Assigned Technician</label>
+            <select v-model="editTech" class="ws-select w-full">
               <option v-for="tech in TECHNICIANS" :key="tech" :value="tech">{{ tech }}</option>
             </select>
           </div>
 
           <!-- Description -->
           <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Description &amp; Repair Notes</label>
-            <textarea v-model="editDesc" rows="3" class="w-full p-3 border border-border rounded-xl text-xs resize-none focus:border-primary focus:outline-none" placeholder="Details regarding the maintenance request..."></textarea>
+            <label class="block font-semibold text-[11px] text-ink-soft mb-1.5">Description &amp; Repair Notes</label>
+            <textarea v-model="editDesc" rows="3" class="ws-textarea w-full" placeholder="Details regarding the maintenance request..."></textarea>
           </div>
 
           <!-- Resident Photo Attachment (if present) -->
-          <div v-if="editingTicket?.photo" class="space-y-1.5 pt-2 border-t border-border">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+          <div v-if="editingTicket?.photo" class="space-y-1.5 pt-2 border-t border-line">
+            <label class="block font-semibold text-[11px] text-ink-soft">
               Resident Photo Attachment
             </label>
-            <div class="rounded-xl border border-border p-3 bg-background flex flex-col items-center">
+            <div class="rounded-xl border border-line p-3 bg-canvas flex flex-col items-center">
               <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
-                <img :src="editingTicket.photo" alt="Ticket Attachment" class="max-h-52 w-auto object-contain rounded-lg shadow-xs transition-transform group-hover:scale-102" />
+                <img :src="editingTicket.photo" alt="Ticket Attachment" class="max-h-52 w-auto object-contain rounded-lg transition-transform group-hover:scale-102" />
                 <span class="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded font-medium">Click to view original</span>
               </a>
             </div>
           </div>
 
           <!-- Resident Communication Dialogue Stream -->
-          <div class="pt-3 border-t border-border space-y-2">
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+          <div class="pt-3 border-t border-line space-y-2">
+            <label class="block font-semibold text-[11px] text-ink-soft">
               Resident Communication &amp; Follow-up Notes
             </label>
 
             <!-- Message Stream Box -->
-            <div class="max-h-36 overflow-y-auto rounded-xl border border-border bg-background p-3 space-y-2 text-xs">
-              <div v-if="loadingMessages" class="py-2 text-center text-gray-400 text-[11px]">
+            <div class="max-h-36 overflow-y-auto rounded-xl border border-line bg-canvas p-3 space-y-2 text-xs">
+              <div v-if="loadingMessages" class="py-2 text-center text-ink-faint text-[11px]">
                 Loading conversation thread...
               </div>
-              <div v-else-if="ticketMessages.length === 0" class="py-2 text-center text-gray-400 text-[11px]">
+              <div v-else-if="ticketMessages.length === 0" class="py-2 text-center text-ink-faint text-[11px]">
                 No comments on this ticket yet.
               </div>
               <div
@@ -618,14 +618,9 @@ function handleDeleteTicketPrompt() {
                 :class="['flex flex-col', msg.profiles?.role === 'admin' ? 'items-end' : 'items-start']"
               >
                 <div
-                  :class="[
-                    'max-w-[85%] rounded-xl px-3 py-1.5 text-xs',
-                    msg.profiles?.role === 'admin'
-                      ? 'bg-neutral-dark text-white'
-                      : 'bg-white border border-border text-foreground'
-                  ]"
+                  :class="[ 'max-w-[85%] rounded-xl px-3 py-1.5 text-xs', msg.profiles?.role === 'admin' ? 'bg-night text-white' : 'bg-tile border border-line text-ink' ]"
                 >
-                  <p class="font-bold text-[10px] opacity-75 mb-0.5">
+                  <p class="font-semibold text-[10px] opacity-75 mb-0.5">
                     {{ msg.profiles?.role === 'admin' ? 'You (Landlady)' : (msg.profiles?.full_name || 'Resident') }}
                   </p>
                   <p>{{ msg.message_body }}</p>
@@ -642,13 +637,13 @@ function handleDeleteTicketPrompt() {
                 v-model="newAdminMessage"
                 @keydown.enter.prevent="handleSendAdminComment"
                 placeholder="Type a follow-up comment for the resident…"
-                class="flex-1 px-3 py-1.5 border border-border rounded-xl text-xs bg-white focus:border-primary focus:outline-none"
+                class="ws-input flex-1"
               />
               <button
                 type="button"
                 @click="handleSendAdminComment"
                 :disabled="sendingAdminMessage || !newAdminMessage.trim()"
-                class="btn-primary shrink-0"
+                class="pill-btn-brand shrink-0"
               >
                 Send
               </button>
@@ -656,19 +651,19 @@ function handleDeleteTicketPrompt() {
           </div>
 
           <!-- Modal Action Footer -->
-          <div class="pt-4 border-t border-border flex items-center justify-between gap-3">
+          <div class="pt-4 border-t border-line flex items-center justify-between gap-3">
             <button 
               type="button" 
               @click="handleDeleteTicketPrompt" 
-              class="btn-danger"
+              class="pill-btn-danger-quiet"
             >
               <Trash2 class="size-3.5" />
               <span>Delete Ticket</span>
             </button>
 
             <div class="flex items-center gap-2">
-              <button type="button" @click="isEditModalOpen = false" class="btn-secondary">Cancel</button>
-              <button type="submit" :disabled="isSubmitting" class="btn-primary">
+              <button type="button" @click="isEditModalOpen = false" class="pill-btn">Cancel</button>
+              <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
                 <Check v-else class="size-3.5" />
                 <span>Save Changes</span>
@@ -685,14 +680,14 @@ function handleDeleteTicketPrompt() {
       class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
       @click.self="isConfirmOpen = false"
     >
-      <div class="surface-card w-full max-w-sm shadow-2xl rounded-2xl p-6 bg-white space-y-4 text-center">
+      <div class="rounded-tile bg-tile w-full max-w-sm shadow-2xl rounded-tile p-6 bg-tile space-y-4 text-center">
         <div class="flex flex-col items-center gap-3">
           <div class="w-12 h-12 rounded-full bg-[#fef3c7] text-[#d97706] flex items-center justify-center">
             <ReceiptText class="w-6 h-6" />
           </div>
-          <h3 class="font-display font-extrabold text-lg text-foreground">{{ confirmTitle }}</h3>
+          <h3 class="font-semibold text-lg text-ink">{{ confirmTitle }}</h3>
           
-          <div class="w-full text-left bg-background border border-border rounded-xl p-3.5 text-xs text-foreground space-y-1 leading-relaxed whitespace-pre-line font-semibold">
+          <div class="w-full text-left bg-canvas border border-line rounded-xl p-3.5 text-xs text-ink space-y-1 leading-relaxed whitespace-pre-line font-semibold">
             {{ confirmMessage }}
           </div>
         </div>
@@ -701,14 +696,14 @@ function handleDeleteTicketPrompt() {
           <button 
             type="button" 
             @click="isConfirmOpen = false" 
-            class="btn-secondary min-w-[100px]"
+            class="pill-btn min-w-[100px]"
           >
             Cancel
           </button>
           <button 
             type="button" 
             @click="handleConfirmAccept" 
-            class="btn-primary min-w-[100px]"
+            class="pill-btn-brand min-w-[100px]"
           >
             Confirm
           </button>

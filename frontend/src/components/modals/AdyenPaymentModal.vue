@@ -189,54 +189,54 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in"
     @click.self="emit('close')"
   >
-    <div class="surface-card w-full max-w-lg shadow-2xl overflow-hidden rounded-2xl bg-white flex flex-col max-h-[92vh] border border-border">
+    <div class="rounded-tile bg-tile w-full max-w-lg shadow-2xl overflow-hidden rounded-tile bg-tile flex flex-col max-h-[92vh] border border-line">
       
       <!-- Header -->
-      <div class="bg-background border-b border-border p-4 flex items-center justify-between">
+      <div class="bg-canvas border-b border-line p-4 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="size-8 rounded-xl bg-blue-50 text-primary ring-1 ring-blue-200 flex items-center justify-center font-bold">
+          <div class="size-8 rounded-xl bg-brand-soft text-brand ring-1 ring-brand-soft flex items-center justify-center font-semibold">
             <Lock class="size-4" />
           </div>
           <div>
-            <h2 class="text-sm font-extrabold text-foreground flex items-center gap-2">
+            <h2 class="text-sm font-semibold text-ink flex items-center gap-2">
               Adyen Online Checkout
-              <span class="badge-soft badge-success text-[10px] font-extrabold">
+              <span class="badge-soft badge-success text-[10px] font-semibold">
                 SANDBOX TEST
               </span>
             </h2>
-            <p class="text-xs text-muted-foreground">Official Adyen v71 Sessions Integration</p>
+            <p class="text-xs text-ink-soft">Official Adyen v71 Sessions Integration</p>
           </div>
         </div>
         <button
           @click="emit('close')"
-          class="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted border border-border transition-colors cursor-pointer"
+          class="grid size-8 place-items-center rounded-full text-ink-soft hover:bg-canvas border border-line transition-colors cursor-pointer"
         >
           <X class="size-4" />
         </button>
       </div>
 
       <!-- Bill Summary Card -->
-      <div class="p-4 bg-background border-b border-border space-y-2">
+      <div class="p-4 bg-canvas border-b border-line space-y-2">
         <div class="flex justify-between items-center text-xs">
-          <span class="text-muted-foreground">Billing Target:</span>
-          <span class="font-bold text-foreground">
+          <span class="text-ink-soft">Billing Target:</span>
+          <span class="font-semibold text-ink">
             {{ props.bill.room_number ? 'Unit ' + props.bill.room_number + ' — ' : '' }}Monthly Dues
           </span>
         </div>
         <div class="flex justify-between items-center text-xs">
-          <span class="text-muted-foreground">Base Rent + Water Fee:</span>
-          <span class="text-foreground">₱{{ props.bill.rent_amount.toLocaleString() }} + ₱{{ props.bill.water_amount.toLocaleString() }}</span>
+          <span class="text-ink-soft">Base Rent + Water Fee:</span>
+          <span class="text-ink">₱{{ props.bill.rent_amount.toLocaleString() }} + ₱{{ props.bill.water_amount.toLocaleString() }}</span>
         </div>
         <div v-if="partiallySettled" class="flex justify-between items-center text-xs">
-          <span class="text-muted-foreground">Already paid on this bill:</span>
-          <span class="text-foreground tabular">
+          <span class="text-ink-soft">Already paid on this bill:</span>
+          <span class="text-ink tabular">
             &minus;₱{{ Number(props.bill.amount_paid).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
-            <span class="text-muted-foreground">of ₱{{ Number(props.bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+            <span class="text-ink-soft">of ₱{{ Number(props.bill.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
           </span>
         </div>
-        <div class="flex justify-between items-center text-sm font-extrabold text-primary pt-1.5 border-t border-border">
+        <div class="flex justify-between items-center text-sm font-semibold text-brand pt-1.5 border-t border-line">
           <span>{{ partiallySettled ? 'Remaining Balance Due:' : 'Total Remittance Due:' }}</span>
-          <span class="tabular font-display text-base font-black">₱{{ amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
+          <span class="tabular text-base font-semibold">₱{{ amountDue.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</span>
         </div>
       </div>
 
@@ -245,41 +245,41 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
         
         <!-- Loading State -->
         <div v-if="isLoading" class="py-12 flex flex-col items-center justify-center text-center space-y-3">
-          <Loader2 class="size-8 text-primary animate-spin" />
-          <p class="text-xs font-bold text-foreground">Connecting to Adyen Test Gateway...</p>
-          <p class="text-[11px] text-muted-foreground">Initializing encrypted merchant checkout session</p>
+          <Loader2 class="size-8 text-brand animate-spin" />
+          <p class="text-xs font-semibold text-ink">Connecting to Adyen Test Gateway...</p>
+          <p class="text-[11px] text-ink-soft">Initializing encrypted merchant checkout session</p>
         </div>
 
         <!-- Success Completed State -->
         <div v-else-if="isCompleted" class="py-8 text-center space-y-3">
-          <CheckCircle2 class="size-12 text-emerald-600 mx-auto" />
-          <h3 class="text-base font-bold text-foreground">Adyen confirmed your payment</h3>
-          <p v-if="isRecorded" class="text-xs text-muted-foreground max-w-sm mx-auto">
+          <CheckCircle2 class="size-12 text-brand mx-auto" />
+          <h3 class="text-base font-semibold text-ink">Adyen confirmed your payment</h3>
+          <p v-if="isRecorded" class="text-xs text-ink-soft max-w-sm mx-auto">
             It has been recorded and is now awaiting verification by Landlady Fe Galang Da Silva.
             It will appear in your payment history once she has verified it.
           </p>
-          <p v-else class="text-xs text-muted-foreground max-w-sm mx-auto">
+          <p v-else class="text-xs text-ink-soft max-w-sm mx-auto">
             The gateway is sending us the signed confirmation now, and the record usually
             appears within a few seconds. It will then await verification by Landlady
             Fe Galang Da Silva. Nothing further is needed from you.
           </p>
           <button
             @click="emit('close')"
-            class="btn-primary mt-4"
+            class="pill-btn-brand mt-4"
           >
             Done &amp; Return to Portal
           </button>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="errorMessage" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 space-y-3">
-          <div class="flex items-center gap-2 font-bold text-rose-900">
+        <div v-else-if="errorMessage" class="p-4 rounded-xl bg-overdue-soft border border-overdue-soft text-xs text-overdue space-y-3">
+          <div class="flex items-center gap-2 font-semibold text-overdue">
             <AlertCircle class="size-4" />
             Adyen Connection Notice
           </div>
           <p>{{ errorMessage }}</p>
           <div class="pt-2">
-            <button @click="initializeAdyen" class="btn-dark gap-1.5">
+            <button @click="initializeAdyen" class="pill-btn-night gap-1.5">
               <span>Try again</span>
             </button>
           </div>
@@ -292,14 +292,14 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       </div>
 
       <!-- Footer Security Note -->
-      <div class="bg-background border-t border-border px-4 py-3 flex items-center justify-between text-[10px] text-muted-foreground">
+      <div class="bg-canvas border-t border-line px-4 py-3 flex items-center justify-between text-[10px] text-ink-soft">
         <div class="flex items-center gap-1.5">
-          <ShieldCheck class="size-3.5 text-emerald-600" />
+          <ShieldCheck class="size-3.5 text-brand" />
           <span>Card and wallet details are entered in Adyen's fields and never reach Hivelet's servers</span>
         </div>
         <button
           @click="emit('close')"
-          class="btn-secondary min-h-8 h-8 px-3 text-xs"
+          class="pill-btn min-h-8 h-8 px-3 text-xs"
         >
           Cancel
         </button>

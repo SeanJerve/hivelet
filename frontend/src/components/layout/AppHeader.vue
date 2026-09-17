@@ -169,7 +169,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 w-full bg-white border-b border-border shadow-xs">
+  <header class="sticky top-0 z-40 w-full bg-tile border-b border-line">
     <div class="max-w-[1600px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 relative">
       
       <!-- Left: Mobile Menu Toggle & Brand Logo -->
@@ -178,7 +178,7 @@ onUnmounted(() => {
         <button
           v-if="!isPublicRoute"
           @click="toggleSidebar"
-          class="flex lg:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+          class="flex lg:hidden p-2 rounded-xl text-ink-soft hover:bg-canvas hover:text-ink transition-colors cursor-pointer"
           aria-label="Toggle navigation"
         >
           <Menu class="size-5" />
@@ -188,14 +188,14 @@ onUnmounted(() => {
         <button
           v-if="isPublicRoute"
           @click="isMobilePublicNavOpen = !isMobilePublicNavOpen"
-          class="flex md:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+          class="flex md:hidden p-2 rounded-xl text-ink-soft hover:bg-canvas hover:text-ink transition-colors cursor-pointer"
           aria-label="Toggle navigation menu"
         >
           <Menu class="size-5" />
         </button>
 
         <router-link :to="brandRoute" class="flex items-center gap-2 group">
-          <span class="font-display font-black text-xl tracking-tight text-foreground">HIVELET</span>
+          <span class="font-semibold text-xl tracking-tight text-ink">HIVELET</span>
         </router-link>
       </div>
 
@@ -203,25 +203,25 @@ onUnmounted(() => {
       <nav v-if="isPublicRoute" class="hidden md:flex items-center gap-1 sm:gap-2">
         <button
           @click="scrollToSection('categories')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground hover:text-primary hover:bg-muted transition-all cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-all cursor-pointer"
         >
           Category Section
         </button>
         <button
           @click="scrollToSection('faqs')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground hover:text-primary hover:bg-muted transition-all cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-all cursor-pointer"
         >
           FAQs
         </button>
         <button
           @click="scrollToSection('inquire-now')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground hover:text-primary hover:bg-muted transition-all cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-all cursor-pointer"
         >
           Inquire Now
         </button>
         <button
           @click="scrollToSection('location')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-foreground hover:text-primary hover:bg-muted transition-all cursor-pointer"
+          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-all cursor-pointer"
         >
           Location
         </button>
@@ -236,8 +236,8 @@ onUnmounted(() => {
           <div class="relative">
             <button
               @click="toggleNotifications"
-              class="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-              :class="{ 'bg-muted text-foreground': isPopoverOpen }"
+              class="relative p-2 rounded-xl text-ink-soft hover:text-ink hover:bg-canvas transition-colors cursor-pointer"
+              :class="{ 'bg-canvas text-ink': isPopoverOpen }"
               aria-label="Open notifications"
               title="Notifications"
             >
@@ -246,10 +246,8 @@ onUnmounted(() => {
               <!-- Unread count. Emergency and High both surface as the danger tone. -->
               <span
                 v-if="unreadCount > 0"
-                class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-extrabold rounded-full transition-transform"
-                :class="hasEmergencyUnread
-                  ? 'bg-danger text-danger-foreground animate-pulse'
-                  : 'bg-primary text-primary-foreground'"
+                class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-semibold rounded-full transition-transform"
+                :class="hasEmergencyUnread ? 'bg-danger text-danger-foreground animate-pulse' : 'bg-brand text-brand-foreground'"
               >
                 {{ unreadCount > 99 ? '99+' : unreadCount }}
               </span>
@@ -266,16 +264,16 @@ onUnmounted(() => {
           >
             <button
               @click="isProfilePopoverOpen = !isProfilePopoverOpen"
-              class="flex items-center gap-1.5 p-1 rounded-xl hover:bg-muted transition-colors cursor-pointer group"
+              class="flex items-center gap-1.5 p-1 rounded-xl hover:bg-canvas transition-colors cursor-pointer group"
               title="Account Menu"
               aria-label="User Account Menu"
             >
-              <div class="size-9 rounded-full bg-gradient-to-tr from-primary to-sky-400 p-0.5 shadow-xs group-hover:ring-2 group-hover:ring-primary/40 transition-all flex items-center justify-center">
-                <span class="w-full h-full rounded-full bg-primary flex items-center justify-center text-[11px] font-black tracking-wider text-white">
+              <div class="size-9 rounded-full bg-gradient-to-tr from-primary to-sky-400 p-0.5 group-hover:ring-2 group-hover:ring-brand/40 transition-all flex items-center justify-center">
+                <span class="w-full h-full rounded-full bg-brand flex items-center justify-center text-[11px] font-semibold text-white">
                   {{ userInitials }}
                 </span>
               </div>
-              <ChevronDown :class="['size-3.5 text-muted-foreground transition-transform duration-150', isProfilePopoverOpen && 'rotate-180']" />
+              <ChevronDown :class="['size-3.5 text-ink-soft transition-transform duration-150', isProfilePopoverOpen && 'rotate-180']" />
             </button>
 
             <!-- Transparent click-outside backdrop (mobile) -->
@@ -296,22 +294,22 @@ onUnmounted(() => {
             >
               <div
                 v-if="isProfilePopoverOpen"
-                class="absolute right-0 top-12 z-50 w-72 sm:w-80 rounded-2xl border border-border bg-white p-5 shadow-2xl origin-top-right"
+                class="absolute right-0 top-12 z-50 w-72 sm:w-80 rounded-tile border border-line bg-tile p-5 shadow-2xl origin-top-right"
                 @mouseenter="handleMouseEnter"
                 @mouseleave="handleMouseLeave"
               >
                 <!-- Centered Profile Header with Circular Avatar -->
-                <div class="flex flex-col items-center text-center pb-4 border-b border-border">
-                  <div class="size-16 rounded-full ring-4 ring-blue-100 border-2 border-white shadow-md bg-gradient-to-tr from-primary to-sky-400 flex items-center justify-center text-white text-lg font-black tracking-wider">
+                <div class="flex flex-col items-center text-center pb-4 border-b border-line">
+                  <div class="size-16 rounded-full ring-4 ring-brand-soft border-2 border-white shadow-md bg-gradient-to-tr from-primary to-sky-400 flex items-center justify-center text-white text-lg font-semibold">
                     {{ userInitials }}
                   </div>
-                  <p class="font-display font-black text-sm text-foreground mt-3">
+                  <p class="font-semibold text-sm text-ink mt-3">
                     {{ isTenant ? currentUser.fullName : 'Administrator' }}
                   </p>
-                  <p class="text-xs text-muted-foreground truncate max-w-[240px] mt-0.5">
+                  <p class="text-xs text-ink-soft truncate max-w-[240px] mt-0.5">
                     {{ currentUser.email }}
                   </p>
-                  <span class="badge-soft badge-blue text-[10px] font-extrabold uppercase mt-2.5">
+                  <span class="badge-soft badge-blue text-[10px] font-semibold uppercase mt-2.5">
                     {{ isTenant ? 'Active Resident' : 'Landlady Administrator' }}
                   </span>
                 </div>
@@ -322,9 +320,9 @@ onUnmounted(() => {
                     v-if="isTenant"
                     to="/tenant/profile"
                     @click="isProfilePopoverOpen = false"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-muted transition-colors"
+                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-ink hover:bg-canvas transition-colors"
                   >
-                    <User class="size-4 text-primary" />
+                    <User class="size-4 text-brand" />
                     <span>My Profile</span>
                   </router-link>
 
@@ -335,23 +333,23 @@ onUnmounted(() => {
                   -->
                   <button
                     @click="openChangePassword"
-                    class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-foreground hover:bg-muted transition-colors text-left cursor-pointer"
+                    class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-ink hover:bg-canvas transition-colors text-left cursor-pointer"
                   >
-                    <Lock class="size-4 text-primary" />
+                    <Lock class="size-4 text-brand" />
                     <span>Change Password</span>
                   </button>
 
                   <button
                     @click="handleSignOut"
-                    class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                    class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-overdue hover:bg-overdue-soft transition-colors text-left cursor-pointer"
                   >
-                    <LogOut class="size-4 text-rose-600" />
+                    <LogOut class="size-4 text-overdue" />
                     <span>Sign Out</span>
                   </button>
                 </div>
 
                 <!-- Discreet Footer -->
-                <div class="pt-3 border-t border-border flex items-center justify-between text-[10px] text-muted-foreground-soft">
+                <div class="pt-3 border-t border-line flex items-center justify-between text-[10px] text-ink-faint">
                   <span>Hivelet Portal</span>
                   <span>Fe Galang Da Silva BH</span>
                 </div>
@@ -364,7 +362,7 @@ onUnmounted(() => {
         <template v-else>
           <router-link
             to="/login"
-            class="btn-primary"
+            class="pill-btn-brand"
           >
             <LogIn class="size-3.5 text-white" />
             <span>Sign In</span>
@@ -377,29 +375,29 @@ onUnmounted(() => {
     <!-- Mobile Public Navigation Dropdown Drawer -->
     <div
       v-if="isPublicRoute && isMobilePublicNavOpen"
-      class="md:hidden border-t border-border bg-white px-4 py-3 space-y-1 shadow-md animate-in slide-in-from-top duration-150"
+      class="md:hidden border-t border-line bg-tile px-4 py-3 space-y-1 shadow-md animate-in slide-in-from-top duration-150"
     >
       <button
         @click="scrollToSection('categories'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary transition-all cursor-pointer"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-all cursor-pointer"
       >
         Category Section
       </button>
       <button
         @click="scrollToSection('faqs'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary transition-all cursor-pointer"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-all cursor-pointer"
       >
         FAQs
       </button>
       <button
         @click="scrollToSection('inquire-now'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary transition-all cursor-pointer"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-all cursor-pointer"
       >
         Inquire Now
       </button>
       <button
         @click="scrollToSection('location'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-foreground hover:bg-muted hover:text-primary transition-all cursor-pointer"
+        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-all cursor-pointer"
       >
         Location
       </button>
