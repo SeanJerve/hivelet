@@ -106,7 +106,72 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — a file warned about the stale price table, then printed it twice. One screen
+> **LATEST — two comments say user enumeration is prevented; a third path defeats both. I
+> proposed the wrong fix first, and the existing reasoning was right.**
+>
+> ### The login tells you whether an address belongs to a resident
+>
+> `ApiError.invalidCredentials` returns the same 401 for an unknown email as for a wrong
+> password — *"because distinguishing them would let an attacker enumerate which tenants have
+> accounts"*. `authService` checks `account_status` only after a valid password, *"so the
+> response cannot be used to probe which accounts exist"*. **Both are true about the paths they
+> sit on.**
+>
+> **`ApiError.accountLocked` answers 429**, and only a real account can be locked. So five
+> wrong guesses and a sixth attempt tell a caller whether an address belongs to a resident —
+> against every path the other two protect. That was written down nowhere.
+>
+> ### I proposed the wrong fix, and this is the useful part
+>
+> The obvious repair is to compare the password first and reveal the lock only to someone who
+> got it right. **`check:api` already asserts against exactly that**, and its reasoning is
+> correct: a locked account would then answer differently for a right guess than a wrong one,
+> so an attacker could keep guessing *through* the lockout and read each result — and the lock
+> would stop braking guesses at all, which is the only thing it is for.
+>
+> *I read that reasoning after proposing to override it.* The tenth sweep was about a comment
+> that had expired; this is the opposite case, and the lesson pairs with it: **check the date on
+> the claim, then check whether you have understood it.**
+>
+> ### So the choice is narrower than it looks
+>
+> | | Enumeration | Lockout brakes guessing | A locked-out resident is told |
+> | :--- | :--- | :--- | :--- |
+> | **Today** — 429 with the minutes | **leaks** | yes | *"try again in 15 minutes"* |
+> | Generic 401 for a locked account | none | yes | **nothing at all** |
+>
+> **Kept as it is; no behaviour changed.** 32 residents and the owner, so enumeration buys
+> confirmation that a known person lives at a known address — real, narrow, and six deliberate
+> attempts per address. Against that, a resident who mistypes five times and is told *nothing*
+> phones the landlady, who cannot see or clear a lock. **§ 3.8 records the trade and what would
+> invert it** — public registration — and says explicitly that the fix is then one line in the
+> lock branch and **not** moving the lock below the compare.
+>
+> The two comments now say what is and is not protected instead of implying more.
+>
+> ### Two messages named a person the request never checked
+>
+> - The ticket reply told the resident **"Landlady commented"**, for whoever posted it — with
+>   the sender's real name already in hand two lines above.
+> - **The worse one persists.** The inquiry reply wrote `'Fe Galang Da Silva (Landlady)'` into
+>   `inquiry_messages`, beside a `sender_id` recording who actually sent it. That is a stored
+>   record of correspondence with a prospective resident, **attributing words to the owner** —
+>   the sort of row someone reads back later to settle what was promised.
+>
+> **Neither has ever misfired, checked rather than assumed:** there is exactly one `admin`
+> profile, and `inquiry_messages` holds a single row — a prospect's, with no admin reply ever
+> sent. So that hardcoded line has never written anything. Both stop being accurate the moment a
+> second account can reply.
+>
+> ### The tenant portal sweep is finished
+>
+> Every screen there that makes a claim about money now distinguishes **"none"** from **"could
+> not load"**: outstanding bills, amount due, and payment history — which told a resident
+> *"No payment records found for year 2025"* about a year they paid in.
+>
+> **501 commits total, 81 today. Seventeen suites green. Working tree clean.**
+
+> **PREVIOUS — a file warned about the stale price table, then printed it twice. One screen
 > shows two different rents for the same unit, right now, with nothing failing.**
 >
 > ### The comment and the violation are in the same file
@@ -169,6 +234,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 >
 > **497 commits total, 77 today. Seventeen suites green, `check:liveness` now seven
 > rules. Working tree clean.**
+> *(as at that entry — the live figure is in the entry above)*
 
 > **PREVIOUS — a failed fetch told a resident their rent was settled. And `vue-tsc` does not
 > catch a component that does not exist, which matters for the redesign.**
