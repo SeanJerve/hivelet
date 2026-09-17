@@ -196,15 +196,17 @@ const totalAmountReceived = computed(() => {
   return (Number(rentAmount.value) || 0) + (Number(waterAmount.value) || 0) + (Number(gbgFee.value) || 0);
 });
 
-// Custom Confirm Modal state
+/**
+ * The check before the ledger is written.
+ *
+ * It used to carry a title and a preformatted block of text, which the dialog
+ * stopped rendering when the figures became a proper description list. Both
+ * were still being built on every submit and thrown away.
+ */
 const isConfirmOpen = ref(false);
-const confirmTitle = ref('');
-const confirmMessage = ref('');
 const confirmAction = ref<(() => void) | null>(null);
 
-function showConfirm(title: string, message: string, action: () => void) {
-  confirmTitle.value = title;
-  confirmMessage.value = message;
+function showConfirm(action: () => void) {
   confirmAction.value = action;
   isConfirmOpen.value = true;
 }
@@ -248,17 +250,6 @@ function triggerRecord() {
   const formattedStart = new Date(dateCoveredStart.value).toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
   const formattedEnd = new Date(dateCoveredEnd.value).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 
-  const confirmMsg = `
-    Unit: ${selectedUnit.value.toUpperCase()} (${summary.text || (room?.tenant || 'Vacant')})
-    Occupants: ${occCount} Registered Headcount
-    Rent Amount: ₱${rentAmount.value}
-    Water Payment: ₱${waterAmount.value} (₱${perOccupantRate} per occupant)
-    GBG/Garbage Fee: ₱${gbgFee.value}
-    Total Amount: ₱${totalAmountReceived.value}
-    Validity Period: ${monthsCovered.value} month(s) (${formattedStart} to ${formattedEnd})
-    Payment Method: ${paymentMethod.value} ${methodHasReference.value ? `(Ref: ${transactionReference.value})` : ''}
-  `;
-
   // Every one of the 937 ledger rows carries an OR number from the landlady's
   // receipt book, and the column is NOT NULL. The API no longer invents one, so
   // ask here rather than failing after she has confirmed the amount.
@@ -268,8 +259,6 @@ function triggerRecord() {
   }
 
   showConfirm(
-    'Confirm Payment Entry',
-    confirmMsg,
     async () => {
       isSubmitting.value = true;
       try {
@@ -382,110 +371,116 @@ function triggerRecord() {
     :dismissible="false"
     @close="closeModal"
   >
+    <!--
+      Every label wraps its own control. They were siblings with no `for` and no
+      id, so none of these fields had an accessible name and clicking a label
+      focused nothing.
+    -->
     <form id="onsite-payment-form" @submit.prevent="triggerRecord" class="flex flex-col gap-5">
-        <!-- Room/Unit selector with dynamic occupants info -->
-        <div>
-          <label class="mb-1.5 block text-xs text-ink-faint">Unit</label>
+        <label class="ws-field">
+          Unit
           <select v-model="selectedUnit" class="ws-select w-full">
             <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
               {{ r.unitCode.toUpperCase() }} — {{ formatUnitOccupantsSummary(r.unitCode).text }} ({{ r.cluster }})
             </option>
           </select>
-        </div>
+        </label>
 
-        <!-- Rent Amount & Water Payment Row -->
         <div class="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Amount for Rent (₱)</label>
+          <label class="ws-field">
+            Rent
             <input v-model.number="rentAmount" type="number" min="0" class="ws-input w-full" required />
             <!--
               Says WHY the field is empty. A blank rent with no explanation reads
               as a broken form; a blank rent with this note reads as a deliberate
               refusal to guess, which is what it is.
             -->
-            <p
-              v-if="roomsFetchFailed"
-              class="mt-1.5 text-xs font-semibold text-verify leading-snug"
-            >
+            <span v-if="roomsFetchFailed" class="text-sm font-semibold leading-6 text-verify">
               Live unit rates could not be loaded, so the rent has not been filled in.
-              Type the amount from the receipt — do not use a remembered figure.
-            </p>
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="block font-semibold text-xs text-ink-soft">Payment for Water (₱)</label>
+              Type the amount from the receipt, not a remembered figure.
+            </span>
+          </label>
+
+          <label class="ws-field">
+            <span class="flex flex-wrap items-baseline justify-between gap-2">
+              <span>Water</span>
               <span class="text-xs font-semibold text-brand">
-                ₱{{ waterRatePerOccupant ?? 200 }} × {{ currentOccupantsCount }} {{ currentOccupantsCount === 1 ? 'occupant' : 'occupants' }}
+                ₱{{ waterRatePerOccupant ?? 200 }} × {{ currentOccupantsCount }}
+                {{ currentOccupantsCount === 1 ? 'occupant' : 'occupants' }}
               </span>
-            </div>
+            </span>
             <input v-model.number="waterAmount" type="number" min="0" step="200" class="ws-input w-full" required />
-            <p class="text-xs text-ink-soft mt-1">
-              <span v-if="selectedUnit.toLowerCase() === 'lf' || selectedUnit.toLowerCase() === 'lb'">
-                Fixed Linda utility rule (₱{{ selectedUnit.toLowerCase() === 'lf' ? 400 : 200 }}/mo)
-              </span>
-              <span v-else>
-                Dynamic: <strong class="text-ink">{{ currentOccupantsCount }} Headcount</strong> ({{ unitOccupantsSummary.text }})
-              </span>
-            </p>
-          </div>
+            <span class="ws-hint">
+              <template v-if="selectedUnit.toLowerCase() === 'lf' || selectedUnit.toLowerCase() === 'lb'">
+                Linda's units are a fixed ₱{{ selectedUnit.toLowerCase() === 'lf' ? 400 : 200 }} a month.
+              </template>
+              <template v-else>
+                {{ currentOccupantsCount }} in the unit ({{ unitOccupantsSummary.text }}).
+              </template>
+            </span>
+          </label>
         </div>
 
-        <!-- GBG Fee & OR Receipt Number Row -->
         <div class="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">GBG Fee (₱)</label>
+          <label class="ws-field">
+            Garbage fee
             <input v-model.number="gbgFee" type="number" min="0" class="ws-input w-full" required />
-          </div>
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">OR / Receipt Number</label>
+          </label>
+          <label class="ws-field">
+            Number on the receipt you issued
             <input v-model="orNum" type="text" placeholder="OR#4627" class="ws-input w-full font-mono" required />
-          </div>
+          </label>
         </div>
 
-        <!-- Payment Method & Online Reference Number Row -->
         <div class="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Payment Method</label>
+          <label class="ws-field">
+            How they paid
             <select v-model="paymentMethod" class="ws-select w-full">
               <option value="Cash">Cash</option>
               <option value="GCash">GCash</option>
-              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Bank Transfer">Bank transfer</option>
             </select>
-          </div>
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint" :class="{ 'opacity-40': !methodHasReference }">Transaction Reference #</label>
-            <input v-model="transactionReference" type="text" :placeholder="paymentMethod === 'Bank Transfer' ? 'Bank reference #' : 'GCash reference #'" class="ws-input w-full" :disabled="!methodHasReference" :required="methodHasReference" />
-          </div>
+          </label>
+          <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
+            Their reference number
+            <input
+              v-model="transactionReference"
+              type="text"
+              :placeholder="paymentMethod === 'Bank Transfer' ? 'Bank reference' : 'GCash reference'"
+              class="ws-input w-full"
+              :disabled="!methodHasReference"
+              :required="methodHasReference"
+            />
+          </label>
         </div>
 
-        <!-- Rent Validity / Duration Details Row -->
         <div class="grid gap-4 sm:grid-cols-3">
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Months Covered</label>
+          <label class="ws-field">
+            Months covered
             <input v-model.number="monthsCovered" type="number" min="1" class="ws-input w-full" required />
-          </div>
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Covered Period Start</label>
+          </label>
+          <label class="ws-field">
+            Covering from
             <input v-model="dateCoveredStart" type="date" class="ws-input w-full" required />
-          </div>
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Covered Period End</label>
+          </label>
+          <label class="ws-field">
+            Covering to
             <input :value="dateCoveredEnd" type="date" class="ws-input w-full" disabled />
-          </div>
+          </label>
         </div>
 
-        <!-- Date Received & Read-Only Total Amount calculation -->
-        <div class="grid gap-4 sm:grid-cols-2 pt-2">
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Date Received</label>
+        <div class="grid items-end gap-4 sm:grid-cols-2">
+          <label class="ws-field">
+            Date received
             <input v-model="date" type="date" class="ws-input w-full" required />
-          </div>
-          <div class="bg-canvas border border-line rounded-tile p-3.5 flex flex-col justify-center">
-            <span class="text-xs font-semibold text-ink-soft">Total Amount Received (₱)</span>
-            <span class="font-semibold text-lg text-brand pt-0.5">{{ peso(totalAmountReceived) }}</span>
+          </label>
+          <div class="rounded-2xl bg-canvas px-4 py-3">
+            <p class="text-xs text-ink-faint">Total handed over</p>
+            <p class="tabular mt-0.5 text-2xl font-semibold leading-none text-brand">
+              {{ peso(totalAmountReceived) }}
+            </p>
           </div>
         </div>
-
     </form>
 
     <template #actions>

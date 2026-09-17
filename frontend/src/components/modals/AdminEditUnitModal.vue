@@ -4,7 +4,8 @@ import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
 import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { X, Check, Loader2, Upload, ChevronDown, Users, ShieldCheck, Home, ImageOff } from 'lucide-vue-next';
+import { Check, Loader2, Upload, ImageOff } from 'lucide-vue-next';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 const unit = ref<RoomItem | null>(null);
 
@@ -249,30 +250,21 @@ async function handleSave() {
     @close="closeModal"
   >
       <form id="edit-unit-form" @submit.prevent="handleSave" class="flex flex-col gap-5">
-        
-        <!-- Room Photo Upload (BLOB Database Storage) -->
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block font-semibold text-xs text-ink-soft">
-              ROOM PHOTO
-            </label>
-            <span v-if="uploadedFileName" class="text-xs font-medium text-brand">
-              Selected: {{ uploadedFileName }} ({{ uploadedFileSize }})
-            </span>
-          </div>
+        <!-- The photograph -->
+        <div class="ws-field">
+          <span>Photograph</span>
 
-          <!-- Hidden File Input -->
           <input
             ref="fileInputRef"
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
-            class="hidden"
+            class="sr-only"
+            aria-label="Choose a photograph of this unit"
             @change="onFileSelected"
           />
 
-          <!-- Upload Dropzone & Photo Card -->
-          <div class="relative group rounded-tile overflow-hidden border border-line bg-canvas transition-all">
-            <div class="h-44 w-full relative bg-neutral-900">
+          <div class="overflow-hidden rounded-2xl bg-canvas">
+            <div class="relative h-44 w-full bg-night">
               <img
                 v-if="unitPhoto"
                 :src="unitPhoto"
@@ -281,47 +273,40 @@ async function handleSave() {
               />
               <div
                 v-else
-                class="size-full flex flex-col items-center justify-center gap-2 text-white/70"
+                class="flex size-full flex-col items-center justify-center gap-2 text-on-night-soft"
               >
-                <ImageOff class="size-7" />
-                <span class="text-xs font-semibold">No photo on file — upload one below</span>
+                <ImageOff class="size-6" aria-hidden="true" />
+                <span class="text-sm">No photograph on file</span>
               </div>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
 
-              <div class="absolute bottom-3 left-3 flex items-center gap-2">
-                <span class="badge-soft badge-neutral bg-tile/95 font-semibold backdrop-blur-xs">
-                  {{ unit.cluster }}
-                </span>
-                <span v-if="editPhotoUrl.startsWith('data:')" class="badge-soft badge-success bg-tile/95 font-semibold">
-                  New Photo Selected
-                </span>
-              </div>
+              <span
+                v-if="editPhotoUrl.startsWith('data:')"
+                class="absolute bottom-3 left-3 rounded-full bg-tile px-3 py-1 text-xs font-semibold text-brand"
+              >
+                Chosen, not saved yet
+              </span>
             </div>
 
-            <!-- Upload Action Bar -->
-            <div class="p-3 bg-tile border-t border-line flex items-center justify-between gap-3">
-              <span class="text-xs text-ink-soft">
-                {{ uploadedFileName ? uploadedFileName : 'PNG, JPG, or WebP' }}
+            <div class="flex flex-wrap items-center justify-between gap-3 p-3">
+              <span class="min-w-0 truncate text-sm text-ink-soft">
+                {{ uploadedFileName ? `${uploadedFileName} (${uploadedFileSize})` : 'PNG, JPG or WebP' }}
               </span>
 
               <button
                 type="button"
-                @click="triggerFileInput"
-                :disabled="isUploadingPhoto"
                 class="pill-btn shrink-0"
+                :disabled="isUploadingPhoto"
+                @click="triggerFileInput"
               >
-                <Upload class="size-3.5" />
-                <span>Upload Photo</span>
+                <Upload class="size-3.5" aria-hidden="true" />
+                <span>Choose a photograph</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Monthly Rate -->
-        <div>
-          <label class="mb-1.5 block text-xs text-ink-faint">
-            MONTHLY RATE (₱)
-          </label>
+        <label class="ws-field">
+          Rent a month
           <input
             v-model.number="monthlyRate"
             type="number"
@@ -330,140 +315,72 @@ async function handleSave() {
             class="ws-input w-full"
             required
           />
-        </div>
+        </label>
 
-        <!-- Dynamic Registered Occupants (Based on actual tenants residing) -->
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block font-semibold text-xs text-ink-soft">
-              REGISTERED OCCUPANTS
-            </label>
-            <span class="text-xs font-semibold text-brand">
-              (Calculated dynamically from active tenant records)
-            </span>
-          </div>
-
-          <div class="rounded-xl border border-line bg-canvas p-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="grid size-9 place-items-center rounded-lg bg-brand-soft text-brand ring-1 ring-brand-soft shrink-0">
-                <Users class="size-4" />
-              </div>
-              <div>
-                <p class="font-semibold text-sm text-ink">
-                  {{ occupantsSummary.count }} {{ occupantsSummary.count === 1 ? 'Registered Occupant' : 'Registered Occupants' }}
-                </p>
-                <p class="text-xs text-ink-soft mt-0.5">
-                  <template v-if="occupantsSummary.count > 0">
-                    Active resident(s): <strong class="text-ink">{{ occupantsSummary.text }}</strong>
-                  </template>
-                  <template v-else>
-                    No active tenants currently assigned to Unit {{ unit.unitCode.toUpperCase() }}
-                  </template>
-                </p>
-              </div>
+        <!-- Read from the tenancy records, not typed here. -->
+        <div class="ws-field">
+          <span>Who lives here</span>
+          <div class="flex items-center justify-between gap-3 rounded-2xl bg-canvas px-4 py-3">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-ink">
+                <template v-if="occupantsSummary.count > 0">{{ occupantsSummary.text }}</template>
+                <template v-else>Nobody</template>
+              </p>
+              <p class="ws-hint mt-0.5">
+                Counted from the tenancy records. Change it by moving someone in or out.
+              </p>
             </div>
-
-            <span :class="[ 'badge-soft text-xs font-semibold shrink-0', occupantsSummary.count > 0 ? 'badge-success' : 'badge-neutral' ]">
+            <StatusPill :tone="occupantsSummary.count > 0 ? 'paid' : 'neutral'">
               {{ occupantsSummary.count > 0 ? 'Occupied' : 'Vacant' }}
-            </span>
+            </StatusPill>
           </div>
         </div>
 
-        <!-- 2-Column: Unit Type & Operational Status Dropdowns -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- Unit Type Dropdown -->
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">
-              UNIT TYPE
-            </label>
-            <div class="relative">
-              <select
-                v-model="unitType"
-                class="ws-select w-full pr-10"
-                required
-              >
-                <option v-for="opt in UNIT_TYPE_CHOICES" :key="opt" :value="opt">
-                  {{ opt }}
-                </option>
-              </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-ink-soft">
-                <ChevronDown class="size-4" />
-              </div>
-            </div>
-          </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label class="ws-field">
+            Kind of unit
+            <select v-model="unitType" class="ws-select w-full" required>
+              <option v-for="opt in UNIT_TYPE_CHOICES" :key="opt" :value="opt">{{ opt }}</option>
+            </select>
+          </label>
 
-          <!-- Operational Status Dropdown -->
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">
-              OPERATIONAL STATUS
-            </label>
-            <div class="relative">
-              <select
-                v-model="editStatus"
-                class="ws-select w-full pr-10"
-                required
-              >
-                <option v-for="opt in OPERATIONAL_STATUS_OPTIONS" :key="opt" :value="opt">
-                  {{ opt }}
-                </option>
-              </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-ink-soft">
-                <ChevronDown class="size-4" />
-              </div>
-            </div>
-          </div>
+          <label class="ws-field">
+            Standing
+            <select v-model="editStatus" class="ws-select w-full" required>
+              <option v-for="opt in OPERATIONAL_STATUS_OPTIONS" :key="opt" :value="opt">
+                {{ opt }}
+              </option>
+            </select>
+          </label>
         </div>
 
         <!-- Public visibility - the column existed and the API accepted it; nothing sent it. -->
-        <div>
-          <label class="mb-1.5 block text-xs text-ink-faint">
-            PUBLIC LISTING
-          </label>
-          <div class="relative">
-            <select
-              v-model="editVisibility"
-              class="ws-select w-full pr-10"
-              required
-            >
-              <option value="Published">Published — shown on the public site</option>
-              <option value="Hidden">Hidden — not listed, no new enquiries</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-ink-soft">
-              <ChevronDown class="size-4" />
-            </div>
-          </div>
-          <p class="text-xs text-ink-soft mt-1">
-            Hiding a unit removes it from both public room pages and stops the enquiry form
-            accepting messages about it. Residents already in the unit are unaffected.
-          </p>
-        </div>
+        <label class="ws-field">
+          On the public site
+          <select v-model="editVisibility" class="ws-select w-full" required>
+            <option value="Published">Listed, and open to enquiries</option>
+            <option value="Hidden">Not listed, and closed to enquiries</option>
+          </select>
+          <span class="ws-hint">
+            Hiding a unit takes it off the public room pages and stops the enquiry form accepting
+            messages about it. Anyone already living there is unaffected.
+          </span>
+        </label>
 
-        <!-- Billing Rule -->
-        <div>
-          <label class="mb-1.5 block text-xs text-ink-faint">
-            BILLING RULE
-          </label>
-          <input
-            v-model="billingRule"
-            type="text"
-            class="ws-input w-full"
-            required
-          />
-        </div>
+        <label class="ws-field">
+          How it is billed
+          <input v-model="billingRule" type="text" class="ws-input w-full" required />
+        </label>
 
-        <!-- Amenities / Inclusions Textarea -->
-        <div>
-          <label class="mb-1.5 block text-xs text-ink-faint">
-            AMENITIES / INCLUSIONS
-          </label>
+        <label class="ws-field">
+          What comes with it
           <textarea
             v-model="amenitiesText"
             rows="3"
             class="ws-textarea w-full"
-            placeholder="Separate items with commas..."
+            placeholder="Separate each one with a comma"
           ></textarea>
-        </div>
-
+        </label>
       </form>
 
     <template #actions>
