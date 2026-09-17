@@ -18,24 +18,10 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/useToast';
-import { 
-  ShieldCheck, 
-  Search, 
-  RefreshCw, 
-  Download, 
-  ChevronDown, 
-  ChevronRight, 
-  Filter, 
-  Activity, 
-  DollarSign, 
-  UserCheck, 
-  FileText, 
-  Clock, 
-  Eye, 
-  Database,
-  ArrowRight
-} from 'lucide-vue-next';
+import { ShieldCheck, Search, RefreshCw, Download, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import OverviewTile from '@/components/overview/OverviewTile.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 const { showToast } = useToast();
 
@@ -170,35 +156,86 @@ const filteredLogs = computed(() => {
   });
 });
 
-// KPIs
-const totalEventsCount = computed(() => auditLogs.value.length);
-const financialEventsCount = computed(() => 
-  auditLogs.value.filter(l => l.action.includes('FINANC') || l.action.includes('PAYMENT') || l.action.includes('COLLECT') || l.action.includes('INCOME')).length
+/**
+ * How many of the rows now on screen are of each kind.
+ *
+ * These are deliberately labelled as counts of the listed window, not of the
+ * trail. Three tiles used to print `auditLogs.length` and two filtered subsets
+ * of it under the headings "Total Audit Events", "Financial Collections" and
+ * "Expense Logs", so a page showing the newest 100 of 2,223 rows reported the
+ * total as 100 - on the one screen whose entire worth is that its numbers are
+ * the real ones. The whole-table totals come from the API and are shown apart.
+ */
+const listedCount = computed(() => filteredLogs.value.length);
+
+/**
+ * The kinds of event to read. Business and sign-in carry whole-table counts
+ * from the API. The last three narrow whatever came back, so they carry none
+ * rather than a number that would mean something different from its neighbours.
+ */
+const filterChips = computed<{ key: string; label: string; count: number | null; hint: string }[]>(
+  () => [
+    {
+      key: 'business',
+      label: 'Done to the records',
+      count: businessEventCount.value,
+      hint: 'Payments, expenses, tenants, units and repairs',
+    },
+    { key: 'auth', label: 'Sign-ins', count: authEventCount.value, hint: 'Sign-ins, sign-outs and refused requests' },
+    { key: 'all', label: 'Everything', count: grandTotal.value, hint: 'Both of the above' },
+    { key: 'financial', label: 'Money in', count: null, hint: 'Within what is listed' },
+    { key: 'expense', label: 'Money out', count: null, hint: 'Within what is listed' },
+    { key: 'tenant', label: 'Tenants', count: null, hint: 'Within what is listed' },
+  ]
 );
-const expenseEventsCount = computed(() => 
-  auditLogs.value.filter(l => l.action.includes('EXPENSE')).length
-);
+
+/** Four figures on this page run into the thousands and need their separators. */
+function count(n: number) {
+  return n > 0 ? n.toLocaleString('en-US') : '—';
+}
 
 function toggleRow(id: string) {
   expandedRowId.value = expandedRowId.value === id ? null : id;
 }
 
-function getActionBadgeClass(action: string): string {
+/** The kinds of event, each with its own tone. The words carry the meaning. */
+function actionTone(action: string): 'verify' | 'paid' | 'overdue' | 'neutral' {
   const a = action.toUpperCase();
   if (a.includes('CORRECTION') || a.includes('VOID') || a.includes('DELETE') || a.includes('VACAT')) {
-    return 'bg-verify-soft text-verify ring-1 ring-verify-soft';
+    return 'verify';
   }
+  if (a.includes('DENIED') || a.includes('FAIL')) return 'overdue';
   if (a.includes('PAYMENT') || a.includes('COLLECT') || a.includes('ONBOARD') || a.includes('CREATE')) {
-    return 'bg-brand-soft text-brand ring-1 ring-brand-soft';
+    return 'paid';
   }
-  if (a.includes('EXPENSE')) {
-    return 'bg-overdue-soft text-overdue ring-1 ring-overdue-soft';
-  }
-  return 'bg-brand-soft text-brand ring-1 ring-brand-soft';
+  if (a.includes('EXPENSE')) return 'neutral';
+  return 'neutral';
+}
+
+/** EXPENSE_ENTRY reads as "expense entry". */
+function entityLabel(entity?: string): string {
+  if (!entity) return 'the system';
+  return entity.toLowerCase().replace(/_/g, ' ');
+}
+
+/**
+ * The all-zero UUID is what the export writes when the entry belongs to no one
+ * row. Printing it says "record 00000000-0000-…", which is a record nobody can
+ * look up.
+ */
+function recordId(id?: string): string | null {
+  if (!id) return null;
+  return /^0+(-0+)*$/.test(id) ? null : id;
+}
+
+/** ADMIN_CREATE_EXPENSE reads as "Admin create expense". */
+function actionLabel(action: string): string {
+  const words = action.toLowerCase().replace(/_/g, ' ').trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function formatDate(isoStr: string): string {
-  if (!isoStr) return '—';
+  if (!isoStr) return 'No time recorded';
   try {
     const d = new Date(isoStr);
     return d.toLocaleString('en-US', {
@@ -249,92 +286,71 @@ function exportAuditCSV() {
 </script>
 
 <template>
-  <div class="space-y-6">
-    
-    <!-- Page Header & Action Controls -->
-    <div class="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
+  <div class="ws-focus space-y-6">
+    <!-- Page header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
-          <span>Admin</span>
-          <span>/</span>
-          <span class="font-semibold text-ink">System Audit Trail</span>
-        </div>
-        <div class="flex items-center gap-2.5">
-          <div class="p-1.5 rounded-lg bg-brand-soft text-brand">
-            <ShieldCheck class="size-6" />
-          </div>
-          <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
-            System Audit Trail &amp; Logs
-          </h1>
-        </div>
-        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
-          Immutable chronological ledger tracking financial updates, landlady corrections, tenant mutations, and room adjustments (FR-029, BR-018, BR-028).
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+          What has been done
+        </h1>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
+          Every payment recorded, correction made, tenant moved and unit changed, in the order
+          it happened, with who did it. Nothing here can be edited or removed (FR-029, BR-018,
+          BR-028).
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+      <div class="flex items-center gap-2 self-start sm:self-auto">
         <button
-          @click="fetchAuditLogs"
+          type="button"
+          class="icon-btn size-11"
           :disabled="isLoading"
-          class="pill-btn text-xs"
+          aria-label="Load the trail again"
+          @click="fetchAuditLogs"
         >
-          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
-          <span>Refresh</span>
+          <RefreshCw :class="['size-4', isLoading && 'animate-spin']" aria-hidden="true" />
         </button>
 
-        <button
-          @click="exportAuditCSV"
-          class="pill-btn-brand text-xs"
-        >
-          <Download class="size-3.5 text-white" />
-          <span>Export Audit CSV</span>
+        <button type="button" class="pill-btn-brand" @click="exportAuditCSV">
+          <Download class="size-4" aria-hidden="true" />
+          <span>Download as CSV</span>
         </button>
       </div>
     </div>
 
-    <!-- 4 Key Stat Cards -->
+    <!--
+      What each figure counts is now part of what it says. Three of these tiles
+      used to print the size of the window on screen under the word "Total".
+    -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div class="rounded-tile bg-tile p-5">
-        <div class="flex items-center justify-between text-xs font-semibold text-ink-soft">
-          <span>Total Audit Events</span>
-          <Activity class="size-4 text-brand" />
-        </div>
-        <p class="text-3xl font-semibold text-ink mt-3">
-          {{ totalEventsCount }}
+      <OverviewTile title="Everything on record" tone="night">
+        <p class="tabular text-4xl font-semibold leading-none">{{ count(grandTotal) }}</p>
+        <p class="mt-2 text-sm leading-6 text-on-night-soft">
+          entries in the whole trail, not only the ones listed below
         </p>
-        <p class="text-xs text-ink-soft mt-1">
-          Traceable mutations in database
-        </p>
-      </div>
+      </OverviewTile>
 
-      <div class="rounded-tile bg-tile p-5">
-        <div class="flex items-center justify-between text-xs font-semibold text-ink-soft">
-          <span>Financial Collections</span>
-          <DollarSign class="size-4 text-brand" />
-        </div>
-        <p class="text-3xl font-semibold text-brand mt-3">
-          {{ financialEventsCount }}
+      <OverviewTile title="Done to the records">
+        <p class="tabular text-4xl font-semibold leading-none text-ink">
+          {{ count(businessEventCount) }}
         </p>
-        <p class="text-xs text-brand font-semibold mt-1">
-          Income remittances &amp; adjustments
+        <p class="mt-2 text-sm leading-6 text-ink-soft">
+          payments, expenses, tenants, units and repairs
         </p>
-      </div>
+      </OverviewTile>
 
-      <div class="rounded-tile bg-tile p-5">
-        <div class="flex items-center justify-between text-xs font-semibold text-ink-soft">
-          <span>Expense Logs</span>
-          <FileText class="size-4 text-overdue" />
-        </div>
-        <p class="text-3xl font-semibold text-overdue mt-3">
-          {{ expenseEventsCount }}
+      <OverviewTile title="Sign-ins and refusals">
+        <p class="tabular text-4xl font-semibold leading-none text-ink">
+          {{ count(authEventCount) }}
         </p>
-        <p class="text-xs text-overdue font-semibold mt-1">
-          Categorized operational outlays
+        <p class="mt-2 text-sm leading-6 text-ink-soft">
+          most of them a fault this application has since had fixed
         </p>
-      </div>
+      </OverviewTile>
 
       <!--
-        This card read "100.0% — Non-repudiation audit standard", and the 100.0%
+        This tile read "100.0% - Non-repudiation audit standard", and the 100.0%
         was a hardcoded literal. A percentage of nothing, on the one page whose
         whole value is that it can be trusted. It now states a property that is
         actually true and provable: migration 002 runs
@@ -343,237 +359,180 @@ function exportAuditCSV() {
         remove an audit row. Verified by attempting a delete, which PostgreSQL
         refuses with 42501.
       -->
-      <div class="rounded-tile bg-tile p-5">
-        <div class="flex items-center justify-between text-xs font-semibold text-ink-soft">
-          <span>Tamper Resistance</span>
-          <ShieldCheck class="size-4 text-brand" />
-        </div>
-        <p class="text-3xl font-semibold text-brand mt-3">
-          Append-only
+      <OverviewTile title="Can this be altered" tone="soft">
+        <p class="text-2xl font-semibold leading-tight text-brand">No, by the database</p>
+        <p class="mt-2 text-sm leading-6 text-ink-soft">
+          Changing and deleting are revoked from every role, the API's own included (BR-028)
         </p>
-        <p class="text-xs text-ink-soft mt-1">
-          UPDATE and DELETE are revoked from every role, including the API's own (BR-028)
-        </p>
-      </div>
+      </OverviewTile>
     </div>
 
-    <!-- Main Table Container -->
-    <div class="rounded-tile bg-tile overflow-hidden rounded-tile border border-line bg-tile">
-      
-      <!-- Toolbar & Search -->
-      <div class="p-4 border-b border-line flex flex-col md:flex-row md:items-center justify-between gap-3 bg-canvas">
-        <div class="relative flex-1 max-w-md">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
-          <input
-            v-model="searchQuery"
-            aria-label="Search action, actor, entity or IP"
-            type="text"
-            placeholder="Search action, actor, entity ID, or IP..."
-            class="ws-input w-full pl-10 pr-4"
-          />
+    <!-- Search, the kinds of event, and how far back to read -->
+    <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div class="relative xl:max-w-xs xl:flex-1">
+        <Search
+          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+          aria-hidden="true"
+        />
+        <label for="audit-search" class="sr-only">Search the trail</label>
+        <input
+          id="audit-search"
+          v-model="searchQuery"
+          type="search"
+          placeholder="Action, person, record or address"
+          class="ws-input w-full pl-11"
+        />
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Kind of event">
+          <button
+            v-for="chip in filterChips"
+            :key="chip.key"
+            type="button"
+            :aria-pressed="categoryFilter === chip.key"
+            :title="chip.hint"
+            :class="[
+              'inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors',
+              categoryFilter === chip.key
+                ? 'bg-ink text-canvas'
+                : 'bg-tile text-ink-soft hover:text-ink',
+            ]"
+            @click="categoryFilter = chip.key"
+          >
+            {{ chip.label }}
+            <span
+              v-if="chip.count"
+              :class="[
+                'tabular text-xs font-semibold',
+                categoryFilter === chip.key ? 'text-on-night-soft' : 'text-ink-faint',
+              ]"
+              >{{ chip.count?.toLocaleString('en-US') }}</span
+            >
+          </button>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <!-- Category Filter -->
-          <div class="inline-flex rounded-xl bg-tile p-1 border border-line">
-            <button
-              @click="categoryFilter = 'business'"
-              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'business' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
-              title="Payments, expenses, tenants, rooms and tickets - what was actually done to the records"
-            >
-              Business ({{ businessEventCount }})
-            </button>
-            <button
-              @click="categoryFilter = 'auth'"
-              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'auth' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
-              title="Sign-ins, sign-outs and refused requests"
-            >
-              Sign-in ({{ authEventCount }})
-            </button>
-            <button
-              @click="categoryFilter = 'all'"
-              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'all' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
-            >
-              All ({{ grandTotal }})
-            </button>
-            <button
-              @click="categoryFilter = 'financial'"
-              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'financial' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
-            >
-              Financial
-            </button>
-            <button
-              @click="categoryFilter = 'expense'"
-              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'expense' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
-            >
-              Expenses
-            </button>
-            <button
-              @click="categoryFilter = 'tenant'"
-              :class="['px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer', categoryFilter === 'tenant' ? 'bg-brand text-white ' : 'text-ink-soft hover:text-ink']"
-            >
-              Tenants
-            </button>
-          </div>
-
-          <!-- Limit Selector -->
-          <select 
-            v-model.number="rowLimit" 
-            aria-label="Number of rows to show"
-            
-            @change="fetchAuditLogs" 
-            class="ws-select"
+        <div class="ws-field">
+          <label for="audit-limit" class="sr-only">How many to read</label>
+          <select
+            id="audit-limit"
+            v-model.number="rowLimit"
+            class="ws-select w-auto"
+            @change="fetchAuditLogs"
           >
-            <option :value="50">Last 50</option>
-            <option :value="100">Last 100</option>
-            <option :value="250">Last 250</option>
-            <option :value="500">Last 500</option>
+            <option :value="50">Newest 50</option>
+            <option :value="100">Newest 100</option>
+            <option :value="250">Newest 250</option>
+            <option :value="500">Newest 500</option>
           </select>
         </div>
       </div>
+    </div>
 
-      <!-- Loading Skeleton -->
-      <!-- The trail could not be loaded. Shown instead of sample rows, on purpose. -->
-      <div
-        v-if="loadError"
-        class="m-4 p-4 rounded-xl bg-overdue-soft border border-overdue-soft text-xs text-overdue"
-      >
-        <p class="font-semibold text-overdue">The audit trail could not be loaded.</p>
-        <p class="mt-1">{{ loadError }}</p>
-        <p class="mt-2 text-overdue">
-          Nothing is shown below rather than sample data, so what you see here is always
-          the real record.
-        </p>
-        <button @click="fetchAuditLogs" class="pill-btn-night mt-3">Try again</button>
-      </div>
+    <!-- The trail could not be loaded. Shown instead of sample rows, on purpose. -->
+    <div v-if="loadError" class="rounded-tile bg-overdue-soft p-5 sm:p-6">
+      <p class="text-base font-semibold text-overdue">The trail could not be loaded.</p>
+      <p class="mt-1 text-sm leading-6 text-overdue">{{ loadError }}</p>
+      <p class="mt-2 text-sm leading-6 text-overdue">
+        Nothing is listed below rather than sample entries, so what you read here is always the
+        real record.
+      </p>
+      <button type="button" class="pill-btn-night mt-4" @click="fetchAuditLogs">Try again</button>
+    </div>
 
-      <div v-if="isLoading" class="p-4">
-        <SkeletonTable :columns="6" :rows="8" />
-      </div>
+    <SkeletonTable v-else-if="isLoading" :columns="4" :rows="8" />
 
-      <!-- Audit Table -->
-      <div v-else class="max-h-[600px] overflow-y-auto overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse min-w-[960px]">
-          <thead class="sticky top-0 bg-canvas z-10">
-            <tr class="border-b border-line text-ink-soft font-semibold uppercase text-xs">
-              <th class="py-3 px-4">Timestamp</th>
-              <th class="py-3 px-4">Action Type</th>
-              <th class="py-3 px-4">Target Entity / Table</th>
-              <th class="py-3 px-4">Actor</th>
-              <th class="py-3 px-4">Client IP</th>
-              <th class="py-3 px-4 text-right">Payload Diff</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-line">
-            <template v-for="l in filteredLogs" :key="l.id">
-              <tr 
-                @click="toggleRow(l.id)"
-                class="hover:bg-canvas transition-colors cursor-pointer"
+    <div v-else-if="filteredLogs.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center">
+      <ShieldCheck class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
+      <p class="mt-3 text-base font-semibold text-ink">Nothing matches</p>
+      <p class="mt-1 text-sm leading-6 text-ink-soft">
+        No entry in this window answers to what you have asked for.
+      </p>
+    </div>
+
+    <!--
+      A trail reads in time order, one entry at a time, and each entry carries a
+      different kind of detail. It was a six-column table 960px wide, so on any
+      laptop the actor and the address sat off the right edge and every phone
+      scrolled sideways. Each entry is now a record: when, what, to which row,
+      by whom, and a control that opens what actually changed.
+    -->
+    <div v-else class="overflow-hidden rounded-tile bg-tile">
+      <p class="border-b border-line px-5 py-3 text-sm text-ink-soft sm:px-6">
+        {{ listedCount }} listed, newest first
+      </p>
+
+      <ul class="divide-y divide-line">
+        <li v-for="l in filteredLogs" :key="l.id" class="p-5 sm:p-6">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <StatusPill :tone="actionTone(l.action)">{{ actionLabel(l.action) }}</StatusPill>
+                <time :datetime="l.created_at" class="tabular text-sm text-ink-soft">
+                  {{ formatDate(l.created_at) }}
+                </time>
+              </div>
+
+              <p class="mt-2 text-sm leading-6 text-ink">
+                <span class="font-semibold">{{
+                  l.profiles?.full_name || 'No signed-in person'
+                }}</span>
+                <span class="text-ink-soft"
+                  >, {{ l.profiles?.role || 'the system itself' }}, on
+                </span>
+                <span class="font-semibold">{{ entityLabel(l.entity_type) }}</span>
+              </p>
+
+              <p class="tabular mt-1 break-all text-xs text-ink-faint">
+                <span v-if="recordId(l.entity_id)">Record {{ recordId(l.entity_id) }} · </span>
+                {{ l.ip_address ? `from ${l.ip_address}` : 'no address recorded' }}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              class="pill-btn shrink-0 self-start"
+              :aria-expanded="expandedRowId === l.id"
+              :aria-controls="`audit-change-${l.id}`"
+              @click="toggleRow(l.id)"
+            >
+              <span>{{ expandedRowId === l.id ? 'Hide what changed' : 'What changed' }}</span>
+              <ChevronDown
+                :class="['size-3.5 transition-transform', expandedRowId === l.id && 'rotate-180']"
+                aria-hidden="true"
+              />
+            </button>
+          </div>
+
+          <div
+            v-if="expandedRowId === l.id"
+            :id="`audit-change-${l.id}`"
+            class="mt-4 grid gap-3 md:grid-cols-2"
+          >
+            <div class="rounded-2xl bg-canvas p-4">
+              <p class="text-sm font-semibold text-ink">Before</p>
+              <pre
+                class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-5 text-ink-soft"
+                >{{
+                  l.previous_values
+                    ? JSON.stringify(l.previous_values, null, 2)
+                    : 'Nothing. This entry created the record.'
+                }}</pre
               >
-                <!-- Timestamp -->
-                <td class="py-3 px-4 font-mono text-xs text-ink whitespace-nowrap">
-                  <div class="flex items-center gap-1.5">
-                    <Clock class="size-3.5 text-ink-soft" />
-                    <span>{{ formatDate(l.created_at) }}</span>
-                  </div>
-                </td>
+            </div>
 
-                <!-- Action Badge -->
-                <td class="py-3 px-4 whitespace-nowrap">
-                  <span :class="['px-2 py-0.5 rounded-md font-mono text-xs font-semibold tracking-tight', getActionBadgeClass(l.action)]">
-                    {{ l.action }}
-                  </span>
-                </td>
-
-                <!-- Entity Table -->
-                <td class="py-3 px-4 font-mono text-xs text-ink-soft whitespace-nowrap">
-                  <div class="flex items-center gap-1.5">
-                    <Database class="size-3 text-brand" />
-                    <span class="font-semibold text-ink">{{ l.entity_type || 'system' }}</span>
-                    <span v-if="l.entity_id" class="text-xs px-1.5 py-0.2 rounded bg-canvas border border-line">
-                      {{ l.entity_id }}
-                    </span>
-                  </div>
-                </td>
-
-                <!-- Actor -->
-                <td class="py-3 px-4 whitespace-nowrap">
-                  <div class="flex items-center gap-1.5">
-                    <div class="size-5 rounded-full bg-brand text-white flex items-center justify-center font-semibold text-xs">
-                      {{ (l.profiles?.full_name || 'A').charAt(0).toUpperCase() }}
-                    </div>
-                    <span class="font-semibold text-ink">{{ l.profiles?.full_name || 'System (no signed-in actor)' }}</span>
-                    <span class="text-xs font-semibold text-ink-soft">({{ l.profiles?.role || 'system' }})</span>
-                  </div>
-                </td>
-
-                <!-- IP -->
-                <td class="py-3 px-4 font-mono text-xs text-ink-soft whitespace-nowrap">
-                  {{ l.ip_address || 'not recorded' }}
-                </td>
-
-                <!-- Diff Toggle -->
-                <td class="py-3 px-4 text-right whitespace-nowrap">
-                  <button 
-                    type="button" 
-                    class="pill-btn min-h-7 px-2 py-0.5 text-xs gap-1 inline-flex items-center font-semibold"
-                  >
-                    <span>{{ expandedRowId === l.id ? 'Hide Diff' : 'View Diff' }}</span>
-                    <ChevronDown :class="['size-3 transition-transform duration-200', expandedRowId === l.id ? 'rotate-180' : '']" />
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Expandable Row: Old vs New Values Diff -->
-              <tr v-if="expandedRowId === l.id" class="bg-canvas">
-                <td colspan="6" class="p-4">
-                  <div class="rounded-xl border border-line bg-tile p-4 space-y-3 shadow-inner">
-                    <div class="flex items-center justify-between text-xs font-semibold text-ink border-b border-line pb-2">
-                      <span class="flex items-center gap-1.5">
-                        <FileText class="size-3.5 text-brand" />
-                        Audit State Transition Record (ID: {{ l.id }})
-                      </span>
-                      <!--
-                        The User Agent line is gone: `audit_logs` has no such column and
-                        nothing writes one, so it read "not recorded" on every row forever.
-                        A field that can only ever say "not recorded" is not information.
-                      -->
-                      <span v-if="l.entity_id" class="text-xs text-ink-soft font-normal">
-                        Entity: {{ l.entity_type || 'system' }} · {{ l.entity_id }}
-                      </span>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-                      <!-- Old Values -->
-                      <div class="p-3 rounded-lg bg-overdue-soft/60 border border-overdue-soft">
-                        <div class="text-xs font-semibold uppercase text-overdue mb-1.5 flex items-center gap-1">
-                          <span>Previous State (Before Mutation)</span>
-                        </div>
-                        <pre class="text-xs text-overdue overflow-x-auto whitespace-pre-wrap">{{ l.previous_values ? JSON.stringify(l.previous_values, null, 2) : 'null (Initial record insertion)' }}</pre>
-                      </div>
-
-                      <!-- New Values -->
-                      <div class="p-3 rounded-lg bg-brand-soft/60 border border-brand-soft">
-                        <div class="text-xs font-semibold uppercase text-brand mb-1.5 flex items-center gap-1">
-                          <span>Committed State (After Mutation)</span>
-                        </div>
-                        <pre class="text-xs text-brand overflow-x-auto whitespace-pre-wrap">{{ l.new_values ? JSON.stringify(l.new_values, null, 2) : 'null' }}</pre>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </template>
-
-            <tr v-if="filteredLogs.length === 0">
-              <td colspan="6" class="py-12 text-center text-xs text-ink-soft">
-                No audit events match your filter criteria.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+            <div class="rounded-2xl bg-brand-soft p-4">
+              <p class="text-sm font-semibold text-brand">After</p>
+              <pre
+                class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-5 text-brand"
+                >{{
+                  l.new_values ? JSON.stringify(l.new_values, null, 2) : 'Nothing recorded.'
+                }}</pre
+              >
+            </div>
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
