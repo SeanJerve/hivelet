@@ -106,7 +106,75 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > delete endpoint straight after a denied delete reads as circumvention, whatever the intent.
 > It is a small piece of work if you want it.
 
-> **LATEST — a verified payment could be rejected, and the money stayed booked. Then the check
+> **LATEST — if the expense fetch failed, the dashboard would have shown the whole year's
+> takings as profit. Seventeenth suite added, because that was the third time.**
+>
+> ### ₱3,745,419.51 of costs, silently becoming ₱0
+>
+> `fetchExpenseRecords` caught its own failure, logged a `console.warn` nobody reads, and
+> returned `expenseRecords` — which **starts empty**. The dashboard subtracts that from gross
+> income to get Net Operating Income, so the pair of cards would have read:
+>
+> | Operational Expenses | **₱0** |
+> | :--- | :--- |
+> | **Net Operating Income** | **the whole year's gross** |
+>
+> — with nothing on screen to say the figure was *unknown* rather than *good*. Against the live
+> ledger that is **₱3,745,419.51** of 2025 costs, **₱1,449,215.32** of 2024 and **₱628,951.64**
+> of 2026 so far.
+>
+> **Its three sibling loaders all do this correctly.** Rooms, income and tickets each clear a
+> `*FetchFailed` flag on entry and raise it on failure, and the dashboard already renders a dash
+> and *"Figures unavailable — refresh to retry"* for two of them. Expenses were simply missing
+> from a pattern that was otherwise complete — **judgement entry 8 again**.
+>
+> ### The seventeenth suite, because this was the third one
+>
+> Three money defects in this project have now been **one defect**: a screen presenting cached,
+> seeded or empty shared state as a live figure, *indistinguishable from the truth*. The invented
+> occupant counts. The 30-of-33 stale seeded prices. Now this. So `check:liveness` asserts:
+>
+> 1. a loader that hands back cached state on failure **raises a flag** — with an explicit
+>    exemption list, each entry carrying its reason
+> 2. the flag is **cleared when its loader starts**, so a recovered fetch stops showing the dash
+> 3. every declared flag is **rendered by at least one screen** — a flag nothing shows is no
+>    better than no flag
+> 4. every hardcoded money fallback **still equals the live configured rate**
+>
+> **Rule 4 is the one that generalises.** A fallback is only safe while it agrees with what it
+> stands in for, and nothing was checking that — which is exactly how 30 of 33 seeded prices went
+> stale without a word. Checked today: the ₱200/head, LF ₱400 and LB ₱200 fallbacks all match
+> `system_settings`.
+>
+> **Mutation tested 4/4** — and rule 3 reported a MISS first. **The mutation was wrong, not the
+> rule:** removing the import left the template still naming the flag, so the check correctly
+> still saw it rendered. *Second time that lesson has been needed.*
+>
+> ### Two safety claims checked, one of which was backwards
+>
+> Running this morning's lens — *a comment explaining why something is safe encodes a
+> precondition* — over the codebase:
+>
+> - **The CSP comment had it inverted.** It said the policy exists to cover the server-rendered
+>   cashier page, and that `'unsafe-inline'` comes from it. That route sets its **own** CSP
+>   header, which *replaces* this one — so the policy governs everything **except** that page,
+>   and its two loosest directives were justified by a page that never receives them. Verified
+>   against the running server, then tightened: `script-src 'self'`, `script-src-attr 'none'`,
+>   `connect-src 'self'`.
+> - **The self-promotion claim holds.** `PATCH /auth/me` builds its patch by iterating an
+>   allowlist, so nothing outside it can pass, and the route's schema rejects extra keys first.
+>   Double-guarded.
+> - **The rate-history claim holds**, read from `pg_trigger`: `trg_record_room_price_change`
+>   exists, is enabled, and fires on any update that changes the price.
+>
+> **Also verified clean, not changed:** every expense entry's total equals the sum of its
+> allocations — 1,262 entries against 1,327 allocations, **zero centavos of drift**. No raw
+> database message can reach a client: the handler replaces any ≥500 message, and no sub-500
+> error carries one.
+>
+> **490 commits total, 70 today. Seventeen suites green. Working tree clean.**
+
+> **PREVIOUS — a verified payment could be rejected, and the money stayed booked. Then the check
 > that guards the locked wording turned out to be excusing the live wording.**
 >
 > ### A settled payment could be un-settled, and only three of the four records moved
@@ -186,6 +254,7 @@ inquiry row is no longer among these - it was deleted on 2026-09-15.)*
 > the live figure lives here, at the top, where it is re-measured each time.
 >
 > **485 commits total, 65 today. Sixteen suites green. Working tree clean.**
+> *(as at that entry — the live figure is in the entry above)*
 
 > **PREVIOUS — a quote in a resident's name would have shifted every column of her income CSV. The
 > fix was already in this repository, one file over.**
