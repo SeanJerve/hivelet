@@ -36,3 +36,9 @@ The capstone paper should be placed in:
 `docs/reference/Hivelet_Capstone_Paper.pdf`
 
 The capstone paper provides academic context. The documentation files translate the paper and validated business decisions into implementable system requirements.
+
+## Technical & Code Documentation
+
+For a comprehensive technical walkthrough of the codebase, 5-tier architecture, API contracts, database schema, reactive stores, and end-to-end workflows, see:
+- [`docs/CODE_DOCUMENTATION.md`](docs/CODE_DOCUMENTATION.md) — Complete Architectural & Technical Developer Guide
+
