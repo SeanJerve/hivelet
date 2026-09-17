@@ -149,5 +149,71 @@ if (orphans.length === 0) {
   console.log('  the latter, with a live backend writing rows nobody could see.');
 }
 
+/**
+ * THE SAME GRAPH, THE OTHER WAY ROUND: a component a template renders, that the
+ * file never imported.
+ *
+ * Vue resolves an unknown tag to nothing. It does not throw, the page still
+ * renders, and the element is simply absent - an icon, a modal, a whole panel,
+ * gone, with the layout closing over the gap.
+ *
+ * `vue-tsc --noEmit` does NOT catch it. Demonstrated rather than assumed:
+ * `<ThisIconDoesNotExist />` was put into a real view and the typecheck exited
+ * **0**. So "it typechecks" says nothing at all about this, and neither does the
+ * build.
+ *
+ * This is here because of what happens next. The frontend is being redesigned -
+ * every screen's markup rewritten - and a moved, renamed or forgotten import is
+ * the single easiest mistake to make while moving markup between files. It is
+ * also the hardest to notice, because the failure is a thing that is not there.
+ *
+ * Zero today, across every `.vue` under src. It costs nothing to keep it there.
+ */
+const BUILTIN = new Set([
+  'Transition', 'TransitionGroup', 'KeepAlive', 'Teleport', 'Suspense',
+  'Component', 'Slot', 'RouterLink', 'RouterView',
+]);
+
+// Anything registered app-wide counts as available in every template.
+const globals = new Set();
+const mainFile = path.join(SRC, 'main.ts');
+if (existsSync(mainFile)) {
+  for (const m of readFileSync(mainFile, 'utf8').matchAll(/\.component\(\s*['"]([A-Za-z0-9_]+)['"]/g)) {
+    globals.add(m[1]);
+  }
+}
+
+const unresolvedTags = [];
+for (const file of all) {
+  if (!file.endsWith('.vue')) continue;
+  const text = readFileSync(file, 'utf8');
+  const tplAt = text.indexOf('<template>');
+  if (tplAt < 0) continue;
+
+  const template = text.slice(tplAt).replace(/<!--[\s\S]*?-->/g, '');
+  const script = text.slice(0, tplAt);
+
+  const used = new Set();
+  for (const m of template.matchAll(/<([A-Z][A-Za-z0-9_]*)[\s/>]/g)) used.add(m[1]);
+
+  for (const name of used) {
+    if (BUILTIN.has(name) || globals.has(name)) continue;
+    if (!new RegExp(`\\b${name}\\b`).test(script)) {
+      unresolvedTags.push({ from: rel(file), name });
+    }
+  }
+}
+
+if (unresolvedTags.length === 0) {
+  pass('every component a template renders is imported by that file');
+} else {
+  for (const u of unresolvedTags) {
+    fail(`${u.from} renders <${u.name}>, which it never imports - Vue will render NOTHING there`);
+  }
+  console.log('\n  Vue resolves an unknown tag to nothing: no error, no warning in the build,');
+  console.log('  and `vue-tsc --noEmit` exits 0 on it - that was tested, not assumed. The');
+  console.log('  element is simply absent and the layout closes over the gap.');
+}
+
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

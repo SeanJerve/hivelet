@@ -8,6 +8,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { 
   rooms, 
+  roomsFetchFailed,
   fetchRooms as fetchRoomsState, 
   fetchTenants,
   formatUnitOccupantsSummary,
@@ -141,6 +142,27 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
 
 <template>
   <div class="space-y-6">
+    <!--
+      `rooms` is SEEDED. If the fetch fails it keeps the built-in list, and the
+      rates below are then whatever was hardcoded at build time - 30 of the 33
+      seeded prices no longer match the database. This screen is called the Room
+      and RATE Directory, and its whole job is to be believed, so a failed load
+      has to say so rather than quietly show the old figures.
+    -->
+    <div
+      v-if="roomsFetchFailed"
+      class="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-xs text-amber-900"
+    >
+      <AlertCircle class="size-4 shrink-0 mt-0.5 text-amber-600" />
+      <div>
+        <p class="font-bold">These rates could not be refreshed, and may be out of date.</p>
+        <p class="mt-0.5">
+          The unit list below is the built-in one, not the live database. Do not quote a
+          rate from this screen until it reloads &mdash; refresh to retry.
+        </p>
+      </div>
+    </div>
+
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
       <div>
