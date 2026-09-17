@@ -340,7 +340,8 @@ for (const year of years) {
       fail++;
     } else {
       const rows = await sql(
-        `monthly_income_records?select=rent_amount,water_payment,gbg_fee,month,is_linda_billing` +
+        `monthly_income_records?select=rent_amount,water_payment,gbg_fee,occupants,` +
+        `fifty_percent_share,remitted_amount,month,is_linda_billing` +
         `&voided_at=is.null&year=eq.${year}`
       );
       const byMonth = new Map();
@@ -375,15 +376,23 @@ for (const year of years) {
        * (judgement log SS 3.5). Adding them back here compares the whole month,
        * which is what the query returns.
        */
-      const col = columnOf(sheet, 'Rent Amount');
-      const printed = new Map();
-      const printedGrand = new Map();
-      const printedLinda = new Map();
+      /**
+       * Read ONE column's subtotal rows, per month, split grand / Linda.
+       *
+       * Generalised from a Rent-Amount-only reader. The workbook carries twelve
+       * columns and this checker asserted exactly one of them, so five money and
+       * count columns on the owner's primary ledger were never compared with
+       * anything - including `Remitted Amount`, which is Rent + Water and is
+       * therefore INVARIANT under a mis-split between those two, and the 50%
+       * column, which is half that row's Rent Amount and is not.
+       */
+      const readColumn = (header) => {
+        const col = columnOf(sheet, header);
+        const both = new Map();
+        const grand = new Map();
+        const linda = new Map();
+        if (col === null) return { col, both, grand, linda };
 
-      if (col === null) {
-        console.log('\n  FAIL  income.xlsx has no "Rent Amount" column');
-        fail++;
-      } else {
         let current = null;
         sheet.eachRow((row) => {
           const first = String(row.getCell(1).value ?? '').trim();
@@ -398,11 +407,23 @@ for (const year of years) {
           if (!isGrand && !isLinda) return;
           const n = cell(row.getCell(col).value);
           if (typeof n === 'number' && Number.isFinite(n)) {
-            printed.set(current, (printed.get(current) ?? 0) + n);
-            const half = isGrand ? printedGrand : printedLinda;
+            both.set(current, (both.get(current) ?? 0) + n);
+            const half = isGrand ? grand : linda;
             half.set(current, (half.get(current) ?? 0) + n);
           }
         });
+        return { col, both, grand, linda };
+      };
+
+      const rent = readColumn('Rent Amount');
+      const col = rent.col;
+      const printed = rent.both;
+      const printedGrand = rent.grand;
+      const printedLinda = rent.linda;
+
+      if (col === null) {
+        console.log('\n  FAIL  income.xlsx has no "Rent Amount" column');
+        fail++;
       }
 
       console.log(`\n  INCOME ${year} - ${rows.length} receipts, ${printed.size} month(s) totalled\n`);
@@ -415,6 +436,40 @@ for (const year of years) {
         // And each half on its own, so a misallocation cannot cancel out.
         check(`${name} grand (no Linda)`, printedGrand.get(name) ?? 0, byMonthGrand.get(m) ?? 0);
         check(`${name} Linda only`, printedLinda.get(name) ?? 0, byMonthLinda.get(m) ?? 0);
+      }
+
+      /**
+       * The other columns the owner reads, none of which was compared with
+       * anything before 2026-09-17.
+       *
+       * `Remitted Amount` is Rent + Water, so it cannot see a mis-split between
+       * those two; `Water Payment` and the 50% column can. Both are checked, and
+       * so are the counts the water figure is derived from.
+       */
+      const OTHER_COLUMNS = [
+        ['Water Payment', 'water_payment'],
+        ['GBG', 'gbg_fee'],
+        ['Remitted Amount', 'remitted_amount'],
+        ['Occupants', 'occupants'],
+        ['50% Share', 'fifty_percent_share'],
+      ];
+
+      console.log('');
+      for (const [header, field] of OTHER_COLUMNS) {
+        const read = readColumn(header);
+        if (read.col === null) {
+          console.log(`  FAIL  income.xlsx has no "${header}" column (BR-049 layout)`);
+          fail++;
+          continue;
+        }
+        const dbByMonth = new Map();
+        for (const r of rows) {
+          const mm = Number(r.month);
+          dbByMonth.set(mm, (dbByMonth.get(mm) ?? 0) + Number(r[field] ?? 0));
+        }
+        for (const [name, total] of read.both) {
+          check(`${name} ${header}`, total, dbByMonth.get(MONTHS.indexOf(name) + 1) ?? 0);
+        }
       }
       if (printed.size) {
         const sheetSum = [...printed.values()].reduce((a, b) => a + b, 0);
