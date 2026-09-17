@@ -79,6 +79,7 @@ const PURPOSE = new Map([
   ['GET /admin/inquiries', 'enquiries from the public site'],
   ['PATCH /admin/inquiries/:id', 'advance or close an enquiry'],
   ['POST /admin/inquiries/:id/messages', 'reply to a prospect'],
+  ['GET /admin/inquiries/:id/messages', 'what has already been said to a prospect'],
   ['GET /admin/audit-logs', 'the audit trail'],
   ['GET /admin/notifications', "the administrator's notifications"],
   ['GET /tenant/my-rooms', 'my unit'],

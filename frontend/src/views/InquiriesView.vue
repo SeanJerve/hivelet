@@ -1,26 +1,12 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { 
-  Inbox, 
-  Phone, 
-  Mail, 
-  Send, 
-  RefreshCw, 
-  Loader2, 
-  User, 
-  UserPlus,
-  Building2, 
-  CheckCircle2, 
-  MessageSquare,
-  Search,
-  Check,
-  XCircle
-} from 'lucide-vue-next';
+import { Inbox, Phone, Mail, Send, RefreshCw, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 const router = useRouter();
 
@@ -50,15 +36,27 @@ const inquiryThreads = ref<Record<string, MessageBubble[]>>({});
  * 'Closed' had no writer anywhere in the system either, so a dead lead stayed in the inbox
  * forever. The API has accepted it since the schema was written.
  */
-const STATUS_BADGE: Record<string, string> = {
-  Pending: 'badge-warning',
-  Contacted: 'badge-info',
-  Converted: 'badge-success',
-  Closed: 'badge-neutral',
+const STATUS_TONE: Record<string, 'verify' | 'paid' | 'neutral'> = {
+  Pending: 'verify',
+  Contacted: 'neutral',
+  Converted: 'paid',
+  Closed: 'neutral',
 };
 
-function statusBadgeClass(status: string) {
-  return STATUS_BADGE[status] || 'badge-neutral';
+/** The four states of `inquiry_status_type`, said the way a person would. */
+const STATUS_WORD: Record<string, string> = {
+  Pending: 'Waiting for an answer',
+  Contacted: 'Answered',
+  Converted: 'Moved in',
+  Closed: 'Nothing came of it',
+};
+
+function statusTone(status: string) {
+  return STATUS_TONE[status] ?? 'neutral';
+}
+
+function statusWord(status: string) {
+  return STATUS_WORD[status] ?? status;
 }
 
 /** A lead that converted or was closed is finished; it takes no further action. */
@@ -149,21 +147,87 @@ const activeUnit = computed(() => {
   return rooms.find(u => u.unitCode.toLowerCase() === activeInquiry.value?.unit.toLowerCase()) || null;
 });
 
-const activeMessages = computed(() => {
+/**
+ * The whole conversation, oldest first.
+ *
+ * The prospect's own message is a row in `inquiry_messages` too - the public
+ * form writes it there with `sender_name` set to their name - so it comes back
+ * with the replies and must not be prepended a second time. The fallback below
+ * covers an enquiry stored before that was true, and a failed load.
+ */
+const activeMessages = computed<MessageBubble[]>(() => {
   if (!activeInquiry.value) return [];
-  if (!inquiryThreads.value[activeInquiry.value.id]) {
-    inquiryThreads.value[activeInquiry.value.id] = [
-      {
-        id: `init-${activeInquiry.value.id}`,
-        from: 'them',
-        author: activeInquiry.value.name,
-        text: activeInquiry.value.message,
-        time: activeInquiry.value.date || 'Recent'
-      }
-    ];
-  }
-  return inquiryThreads.value[activeInquiry.value.id];
+  const stored = inquiryThreads.value[activeInquiry.value.id];
+  if (stored?.length) return stored;
+
+  return [
+    {
+      id: `init-${activeInquiry.value.id}`,
+      from: 'them',
+      author: activeInquiry.value.name,
+      text: activeInquiry.value.message,
+      time: activeInquiry.value.date || 'When they wrote in',
+    },
+  ];
 });
+
+/**
+ * Reads the replies already on record.
+ *
+ * The thread was built in local state only: a reply appeared under the enquiry
+ * and was gone on the next reload, even though the API stored it and has served
+ * `GET /admin/inquiries/:id/messages` all along. So the landlady could not see
+ * what she had already answered, which is the one thing an inbox is for.
+ */
+const threadError = ref<string | null>(null);
+
+async function loadThread(inquiryId: string) {
+  threadError.value = null;
+  try {
+    /**
+     * The column names are the row keys: the endpoint returns `select('*')`.
+     * The body is `message_body`, not `message` - asking for the wrong one is
+     * `undefined` in a browser, not an error, so the bubbles rendered empty.
+     * Checked against `information_schema.columns`, not against the schema file.
+     */
+    const data = await api.get<
+      {
+        id: string;
+        message_body: string;
+        sender_id: string | null;
+        sender_name?: string;
+        sent_at?: string;
+      }[]
+    >(`/admin/inquiries/${inquiryId}/messages`);
+    inquiryThreads.value[inquiryId] = (data ?? []).map((m) => ({
+      id: m.id,
+      // The prospect has no profile, so a null sender is their side of it.
+      from: m.sender_id ? ('me' as const) : ('them' as const),
+      author: m.sender_name || 'The office',
+      text: m.message_body,
+      time: m.sent_at ? new Date(m.sent_at).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }) : 'Time not recorded',
+    }));
+  } catch (err: unknown) {
+    // Said plainly rather than shown as an empty thread, which would read as
+    // "nothing was ever sent".
+    inquiryThreads.value[inquiryId] = [];
+    threadError.value =
+      err instanceof Error ? err.message : 'The replies on record could not be loaded.';
+  }
+}
+
+watch(
+  activeInquiryId,
+  (id) => {
+    if (id) loadThread(id);
+  },
+  { immediate: true }
+);
 
 async function handleSendReply() {
   if (!activeInquiry.value || !replyMessage.value.trim()) return;
@@ -180,19 +244,10 @@ async function handleSendReply() {
       message: messageToSend,
     });
 
-    if (!inquiryThreads.value[currentInq.id]) {
-      inquiryThreads.value[currentInq.id] = [];
-    }
+    // Read it back rather than guessing, so what is on screen is what is stored.
+    await loadThread(currentInq.id);
 
-    inquiryThreads.value[currentInq.id].push({
-      id: Date.now(),
-      from: 'me',
-      author: 'Fe Galang Da Silva',
-      text: messageToSend,
-      time: 'Just now'
-    });
-
-    showToast('success', 'Reply sent', `Your response to ${currentInq.name} has been saved.`);
+    showToast('success', 'Reply written down', `Your answer to ${currentInq.name} is on record.`);
     replyMessage.value = '';
   } catch (err: unknown) {
     // Without this the failure propagated silently: the reply box emptied, no
@@ -211,226 +266,259 @@ async function handleSendReply() {
 
 <template>
   <div class="space-y-6">
-    <!-- Header with Breadcrumbs -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
+    <!-- Page header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
-          <span>Admin</span>
-          <span>/</span>
-          <span class="font-semibold text-ink">Prospect Inquiries</span>
-        </div>
-        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
-          Prospect Inquiries &amp; Leads
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+          People asking about a unit
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
-          2-Pane Master-Detail Lead Inbox and real-time prospect conversation console.
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
+          Each enquiry, what they asked, and what has been answered. Pick one to read it.
         </p>
       </div>
 
       <button
-        @click="fetchInquiries"
+        type="button"
+        class="icon-btn size-11 self-start sm:self-auto"
         :disabled="isLoading"
-        class="pill-btn"
+        aria-label="Load the enquiries again"
+        @click="fetchInquiries"
       >
-        <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
-        <span>Refresh</span>
+        <RefreshCw :class="['size-4', isLoading && 'animate-spin']" aria-hidden="true" />
       </button>
     </div>
 
-    <!-- 2-Pane Master-Detail Inbox Container -->
-    <div class="rounded-tile bg-tile overflow-hidden border border-line rounded-tile bg-tile grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
-      
-      <!-- LEFT PANE: Leads List (4 of 12 cols on desktop) -->
-      <div class="lg:col-span-4 border-r border-line flex flex-col bg-canvas">
-        <!-- Search & Filter Header -->
-        <div class="p-3.5 border-b border-line bg-tile space-y-2.5">
+    <div class="grid min-h-[620px] grid-cols-1 gap-4 lg:grid-cols-12">
+      <!-- The enquiries -->
+      <div class="flex flex-col overflow-hidden rounded-tile bg-tile lg:col-span-4">
+        <div class="space-y-3 border-b border-line p-4">
           <div class="relative">
-            <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
+            <Search
+              class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+              aria-hidden="true"
+            />
+            <label for="inquiry-search" class="sr-only">Search enquiries</label>
             <input
+              id="inquiry-search"
               v-model="searchQuery"
-              aria-label="Search prospect or unit"
-              type="text"
-              placeholder="Search prospect or unit..."
-              class="ws-input w-full pl-10 pr-4"
+              type="search"
+              placeholder="Name, unit, phone or email"
+              class="ws-input w-full pl-11"
             />
           </div>
-          <div class="flex items-center justify-between text-xs text-ink-soft px-1">
-            <span class="font-semibold text-xs">Inbox ({{ filteredInquiries.length }})</span>
-            <span class="text-xs font-semibold text-brand">Live sync</span>
-          </div>
+          <p class="text-sm text-ink-soft">
+            {{ filteredInquiries.length }}
+            {{ filteredInquiries.length === 1 ? 'enquiry' : 'enquiries' }}
+          </p>
         </div>
 
-        <!-- Inquiries List Scrollable -->
-        <div class="flex-1 overflow-y-auto divide-y divide-line/70 max-h-[540px]">
-          <div 
-            v-if="filteredInquiries.length === 0" 
-            class="p-8 text-center text-xs text-ink-soft"
-          >
-            No inquiries match your criteria.
-          </div>
+        <div class="max-h-[540px] flex-1 overflow-y-auto">
+          <p v-if="filteredInquiries.length === 0" class="p-8 text-center text-sm text-ink-soft">
+            Nothing matches what you have typed.
+          </p>
 
-          <div
-            v-for="inq in filteredInquiries"
-            :key="inq.id"
-            @click="activeInquiryId = inq.id"
-            :class="[ 'p-3.5 cursor-pointer transition-all border-l-3', activeInquiry?.id === inq.id ? 'bg-tile border-l-primary ' : 'border-l-transparent hover:bg-tile' ]"
-          >
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <p class="font-semibold text-xs text-ink truncate">{{ inq.name }}</p>
-                <span class="inline-block text-xs font-semibold text-brand mt-0.5">
-                  Unit {{ inq.unit.toUpperCase() }}
-                </span>
-                <span :class="['badge-soft text-xs font-semibold ml-1.5', statusBadgeClass(inq.status)]">
-                  {{ inq.status }}
-                </span>
-              </div>
-              <span class="text-xs text-ink-soft shrink-0 font-medium">{{ inq.date || 'Recent' }}</span>
-            </div>
+          <!--
+            Each enquiry is a button. They were clickable divs, so the inbox
+            could not be worked through from the keyboard at all.
+          -->
+          <ul v-else class="divide-y divide-line">
+            <li v-for="inq in filteredInquiries" :key="inq.id">
+              <button
+                type="button"
+                :aria-current="activeInquiry?.id === inq.id ? 'true' : undefined"
+                :class="[
+                  'w-full border-l-4 p-4 text-left transition-colors',
+                  activeInquiry?.id === inq.id
+                    ? 'border-l-brand bg-brand-soft/50'
+                    : 'border-l-transparent hover:bg-canvas',
+                ]"
+                @click="activeInquiryId = inq.id"
+              >
+                <div class="flex items-start justify-between gap-2">
+                  <p class="min-w-0 truncate text-sm font-semibold text-ink">{{ inq.name }}</p>
+                  <span class="shrink-0 text-xs text-ink-faint">{{ inq.date || 'Recently' }}</span>
+                </div>
 
-            <p class="text-xs text-ink-soft line-clamp-2 mt-1.5 leading-relaxed">
-              {{ inq.message }}
-            </p>
-          </div>
+                <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                  <span class="text-sm font-semibold text-brand">
+                    Unit {{ inq.unit.toUpperCase() }}
+                  </span>
+                  <StatusPill :tone="statusTone(inq.status)">{{ statusWord(inq.status) }}</StatusPill>
+                </div>
+
+                <p class="mt-2 line-clamp-2 text-sm leading-6 text-ink-soft">{{ inq.message }}</p>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
 
-      <!-- RIGHT PANE: Conversation Detail & Quick Reply Composer (8 of 12 cols) -->
-      <div v-if="activeInquiry" class="lg:col-span-8 flex flex-col justify-between bg-tile min-h-[550px]">
-        <!-- Thread Header -->
-        <div class="p-4 border-b border-line flex items-center justify-between bg-canvas">
-          <div class="flex items-center gap-3">
-            <div class="size-10 rounded-full bg-brand text-white flex items-center justify-center font-semibold text-sm">
-              {{ activeInquiry.name.charAt(0).toUpperCase() }}
-            </div>
-            <div>
-              <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
-                {{ activeInquiry.name }}
+      <!-- The one being read -->
+      <div
+        v-if="activeInquiry"
+        class="flex min-h-[550px] flex-col overflow-hidden rounded-tile bg-tile lg:col-span-8"
+      >
+        <div class="border-b border-line p-5 sm:p-6">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-lg font-semibold tracking-tight text-ink">
+                  {{ activeInquiry.name }}
+                </h2>
                 <!-- Was a hardcoded "Active Prospect" on every lead, whatever its status. -->
-                <span :class="['badge-soft text-xs', statusBadgeClass(activeInquiry.status)]">
-                  {{ activeInquiry.status }}
-                </span>
-              </h2>
-              <div class="flex flex-wrap items-center gap-3 text-xs text-ink-soft mt-0.5">
-                <span class="flex items-center gap-1"><Phone class="size-3" /> {{ activeInquiry.phone }}</span>
-                <span class="flex items-center gap-1"><Mail class="size-3" /> {{ activeInquiry.email }}</span>
+                <StatusPill :tone="statusTone(activeInquiry.status)">
+                  {{ statusWord(activeInquiry.status) }}
+                </StatusPill>
               </div>
-            </div>
-          </div>
 
-          <!-- Unit Info & Conversion Action -->
-          <div class="flex items-center gap-3">
-            <div v-if="activeUnit" class="text-right hidden sm:block">
-              <span class="text-xs font-semibold text-ink-soft">Target Unit</span>
-              <p class="font-semibold text-xs text-ink">
+              <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-soft">
+                <a
+                  :href="`tel:${activeInquiry.phone}`"
+                  class="tabular inline-flex items-center gap-1.5 font-semibold text-ink hover:text-brand"
+                >
+                  <Phone class="size-3.5" aria-hidden="true" />{{ activeInquiry.phone }}
+                </a>
+                <a
+                  v-if="activeInquiry.email"
+                  :href="`mailto:${activeInquiry.email}`"
+                  class="inline-flex min-w-0 items-center gap-1.5 hover:text-brand"
+                >
+                  <Mail class="size-3.5 shrink-0" aria-hidden="true" />
+                  <span class="truncate">{{ activeInquiry.email }}</span>
+                </a>
+              </div>
+
+              <p v-if="activeUnit" class="mt-2 text-sm text-ink-soft">
                 <!-- The rate she quotes a prospective resident. `rooms` is seeded, so a
                      failed refresh would have her quoting a figure up to ₱1,900 out. Better
                      to show no price than a wrong one. -->
-                Room {{ activeUnit.unitCode.toUpperCase() }}<template v-if="!roomsFetchFailed"> ({{ peso(activeUnit.price) }}/mo)</template>
+                Asking about unit
+                <span class="font-semibold uppercase text-ink">{{ activeUnit.unitCode }}</span
+                ><template v-if="!roomsFetchFailed">, which lets at
+                  <span class="tabular font-semibold text-ink">{{ peso(activeUnit.price) }}</span>
+                  a month</template
+                >.
               </p>
             </div>
 
-            <button
-              v-if="isLeadOpen(activeInquiry.status)"
-              type="button"
-              :disabled="isSubmitting"
-              @click="handleCloseLead"
-              class="pill-btn text-xs flex items-center gap-1.5"
-              title="Mark this lead as closed - it stays on record but stops awaiting a reply"
-            >
-              <XCircle class="size-3.5" />
-              <span>Close Lead</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              <template v-if="isLeadOpen(activeInquiry.status)">
+                <button
+                  type="button"
+                  class="pill-btn"
+                  :disabled="isSubmitting"
+                  @click="handleCloseLead"
+                >
+                  <XCircle class="size-3.5" aria-hidden="true" />
+                  <span>Nothing came of it</span>
+                </button>
 
-            <button
-              v-if="isLeadOpen(activeInquiry.status)"
-              @click="router.push({
-                path: '/admin/tenants',
-                query: {
-                  convertInquiryId: activeInquiry.id,
-                  name: activeInquiry.name,
-                  phone: activeInquiry.phone,
-                  email: activeInquiry.email,
-                  unit: activeInquiry.unit
-                }
-              })"
-              class="pill-btn-brand text-xs flex items-center gap-1.5"
-              title="Pre-fill inquiry details into the tenant onboarding form"
-            >
-              <UserPlus class="size-3.5 text-white" />
-              <span>Convert to Tenant</span>
-            </button>
+                <button
+                  type="button"
+                  class="pill-btn-brand"
+                  @click="
+                    router.push({
+                      path: '/admin/tenants',
+                      query: {
+                        convertInquiryId: activeInquiry.id,
+                        name: activeInquiry.name,
+                        phone: activeInquiry.phone,
+                        email: activeInquiry.email,
+                        unit: activeInquiry.unit,
+                      },
+                    })
+                  "
+                >
+                  <UserPlus class="size-4" aria-hidden="true" />
+                  <span>Move them in</span>
+                </button>
+              </template>
 
-            <span
-              v-else
-              class="text-xs font-semibold text-ink-soft inline-flex items-center gap-1"
-            >
-              <Check class="size-3.5" /> {{ activeInquiry.status }}
-            </span>
+              <StatusPill v-else tone="neutral">{{ statusWord(activeInquiry.status) }}</StatusPill>
+            </div>
           </div>
         </div>
 
-        <!-- Conversation Stream -->
-        <div class="flex-1 p-5 overflow-y-auto space-y-4 max-h-[380px] bg-canvas/40">
-          <div 
-            v-for="msg in activeMessages" 
+        <!-- What was said -->
+        <div class="max-h-[380px] flex-1 space-y-5 overflow-y-auto bg-canvas p-5 sm:p-6">
+          <p v-if="threadError" class="rounded-2xl bg-overdue-soft p-4 text-sm leading-6 text-overdue">
+            The replies already on record could not be loaded, so only their original message is
+            shown. {{ threadError }}
+          </p>
+
+          <div
+            v-for="msg in activeMessages"
             :key="msg.id"
             :class="['flex flex-col', msg.from === 'me' ? 'items-end' : 'items-start']"
           >
-            <div class="flex items-center gap-1.5 mb-1 px-1 text-xs text-ink-soft">
-              <span class="font-semibold">{{ msg.from === 'me' ? 'Fe Galang Da Silva (Landlady)' : msg.author }}</span>
-              <span>· {{ msg.time }}</span>
-            </div>
+            <p class="mb-1 px-1 text-xs text-ink-faint">
+              <span class="font-semibold text-ink-soft">{{ msg.author }}</span>
+              · {{ msg.time }}
+            </p>
 
-            <div 
-              :class="[ 'max-w-md p-3.5 rounded-tile text-xs leading-relaxed ', msg.from === 'me' ? 'bg-brand text-white rounded-br-xs' : 'bg-tile text-ink border border-line rounded-bl-xs' ]"
+            <div
+              :class="[
+                'max-w-md rounded-2xl px-4 py-3 text-sm leading-6',
+                msg.from === 'me' ? 'bg-brand text-on-brand' : 'bg-tile text-ink',
+              ]"
             >
               {{ msg.text }}
             </div>
           </div>
         </div>
 
-        <!-- Quick Reply Box Composer -->
-        <div class="p-4 border-t border-line bg-tile">
-          <form @submit.prevent="handleSendReply" class="space-y-3">
-            <div class="relative">
-              <textarea
-                v-model="replyMessage"
-                rows="3"
-                placeholder="Type your reply to prospect (e.g. Opo, vacant pa po ang unit and viewing is open tomorrow)..."
-                class="ws-textarea w-full"
-                required
-              ></textarea>
-            </div>
+        <!-- Writing back -->
+        <form @submit.prevent="handleSendReply" class="space-y-3 border-t border-line p-5 sm:p-6">
+          <div class="ws-field">
+            <label for="reply">Your answer</label>
+            <textarea
+              id="reply"
+              v-model="replyMessage"
+              rows="3"
+              placeholder="Opo, vacant pa po ang unit. Pwede po kayong mag-viewing bukas."
+              class="ws-textarea w-full"
+              required
+            ></textarea>
+          </div>
 
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-ink-soft">
-                Replies are dispatched directly via SMS / Email to {{ activeInquiry.phone }}.
-              </span>
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <!--
+              This said replies were "dispatched directly via SMS / Email". They
+              are not: the message is written to `inquiry_messages` and nothing
+              in the system sends anything to anybody. The landlady was being
+              told her answer had gone out when it had not left the building.
+            -->
+            <p class="ws-hint max-w-md">
+              This is kept here as a record of what you answered. It does not reach
+              {{ activeInquiry.name }} on its own, so ring or message them as well.
+            </p>
 
-              <button 
-                type="submit" 
-                :disabled="isSubmitting || !replyMessage.trim()" 
-                class="pill-btn-brand"
-              >
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
-                <Send v-else class="size-3.5 text-white" />
-                <span>Send Response</span>
-              </button>
-            </div>
-          </form>
-        </div>
+            <button
+              type="submit"
+              :disabled="isSubmitting || !replyMessage.trim()"
+              class="pill-btn-brand shrink-0"
+            >
+              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
+              <Send v-else class="size-4" aria-hidden="true" />
+              <span>Write it down</span>
+            </button>
+          </div>
+        </form>
       </div>
 
-      <!-- Empty Selection State -->
-      <div v-else class="lg:col-span-8 grid place-items-center p-12 text-center text-xs text-ink-soft">
+      <div
+        v-else
+        class="grid place-items-center rounded-tile bg-tile p-12 text-center lg:col-span-8"
+      >
         <div>
-          <Inbox class="size-10 mx-auto text-ink-soft mb-2 opacity-50" />
-          <p class="font-semibold text-sm text-ink">Select an Inquiry</p>
-          <p class="mt-1">Choose a prospect thread on the left to read and reply.</p>
+          <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
+          <p class="mt-3 text-base font-semibold text-ink">Nothing picked yet</p>
+          <p class="mt-1 text-sm leading-6 text-ink-soft">
+            Choose an enquiry on the left to read it and answer.
+          </p>
         </div>
       </div>
-
     </div>
 
     <ConfirmDialog
