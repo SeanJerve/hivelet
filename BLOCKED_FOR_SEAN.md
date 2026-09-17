@@ -104,8 +104,12 @@ cost an hour and a broken teammate's setup before anyone noticed.*
   system has ever been used by a human being
 - **What I already did:** the document is written, every writing step carries an Undo, and it
   runs on `PH`, the only vacant unit
-- **What Sean needs to do:** run it, or hand it to Loyd — **either machine can**, and whoever
-  does it should tick the boxes in the file and commit them
+- **Assigned 2026-09-17: Loyd, tonight.** He has full access and is already in the repository.
+  Tick the boxes in the file as you go and commit them — a half-filled sheet is still evidence,
+  an unfilled one is not
+- **Do the garbage fee while you are in there.** Step 18 records an on-site collection; type a
+  **non-zero** GBG figure. Until today that number was collected, added to the total, printed on
+  the receipt and recorded as **₱0.00**. It is wired now and **no human has ever entered one**
 - **How to know it worked:** the sheet is filled in, and step 23b in particular shows em dashes
   rather than ₱0.00 with the backend stopped
 - **Raised:** 2026-09-17

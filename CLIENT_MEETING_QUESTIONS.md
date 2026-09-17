@@ -165,13 +165,18 @@ confirm it belongs there.**
 
 ---
 
-## 3. Three quick confirmations (we have already chosen a sensible default)
+## 3. Two quick confirmations (we have already chosen a sensible default)
 
 We picked the option that matches her existing spreadsheet. She only needs to say "yes" or correct us.
 
+> **A third row was here and has been removed.** It asked whether the expense category cumulative
+> restarts each January. **It does** — read out of the built report and checked against every
+> month of 2024, 2025 and 2026, where each month's figure is exactly the previous month's plus
+> its own. Carried as **OD-07**; settled by the implementation and by `check:reports`, which now
+> asserts the whole chain. Her time is better spent on the rows that are genuinely open.
+
 | | What we assumed | Confirm |
 | :--- | :--- | :--- |
-| **Expense category running total** | The cumulative for each expense category **restarts each January**, rather than running forever. | ☐ Correct ☐ It runs continuously |
 | **Date format on reports** | `D-MMM-YY` — e.g. `3-Aug-24` — which is what her own sheet shows. | ☐ Correct ☐ Use DD/MM/YYYY |
 | **Adding expense categories** | The 13 categories are fixed and only we can change them. | ☐ Fine ☐ She should be able to add her own |
 
