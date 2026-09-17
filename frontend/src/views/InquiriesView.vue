@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { inquiries, fetchInquiries as fetchInquiriesState, rooms, showToast, type Inquiry } from '@/lib/systemState';
+import { inquiries, fetchInquiries as fetchInquiriesState, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { 
@@ -326,7 +326,10 @@ async function handleSendReply() {
             <div v-if="activeUnit" class="text-right hidden sm:block">
               <span class="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Target Unit</span>
               <p class="font-display font-bold text-xs text-foreground">
-                Room {{ activeUnit.unitCode.toUpperCase() }} ({{ peso(activeUnit.price) }}/mo)
+                <!-- The rate she quotes a prospective resident. `rooms` is seeded, so a
+                     failed refresh would have her quoting a figure up to ₱1,900 out. Better
+                     to show no price than a wrong one. -->
+                Room {{ activeUnit.unitCode.toUpperCase() }}<template v-if="!roomsFetchFailed"> ({{ peso(activeUnit.price) }}/mo)</template>
               </p>
             </div>
 

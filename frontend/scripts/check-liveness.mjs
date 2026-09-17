@@ -318,6 +318,49 @@ if (fs.existsSync(PUBLIC_PAGE)) {
   }
 }
 
+// ---------------------------------------------------------------- rule 6 ----
+/**
+ * A screen that prints a UNIT RATE must know whether that rate is live.
+ *
+ * `rooms` is seeded from `canonicalUnits.ts`, and **30 of the 33 seeded prices
+ * no longer match the database** — measured, not remembered. The seeded rent
+ * roll totals ₱210,500 against a real ₱181,700, so it overstates by ₱28,800 a
+ * month, and the worst single unit is out by ₱1,900.
+ *
+ * `TenantManagementView` had a comment warning that `CANONICAL_UNITS.basePrice`
+ * "is a second copy that drifts as soon as the landlady changes a rate" — and
+ * then printed it in two dropdowns, 550 and 700 lines below. One of those sits
+ * beside a deposit field that `syncDepositToUnit` fills from the LIVE price, so
+ * for unit 2B the page showed ₱6,500 and ₱4,600 at the same time, with nothing
+ * failing.
+ *
+ * `CategoryRoomsView` is the reference implementation: it merges live over
+ * seeded and shows a banner saying which it is.
+ */
+const unguarded = [];
+for (const f of srcFiles) {
+  if (!f.endsWith('.vue')) continue;
+  const body = fs.readFileSync(f, 'utf8');
+  const at = body.indexOf('<template>');
+  if (at < 0) continue;
+  // Comments stripped: a comment EXPLAINING the hazard is not the hazard.
+  const template = body.slice(at).replace(/<!--[\s\S]*?-->/g, '');
+  const m = /\b(?:basePrice|\w+\.price)\b/.exec(template);
+  if (!m) continue;
+  if (/\broomsFetchFailed\b/.test(body)) continue;
+  unguarded.push({ rel: path.relative(root, f).replace(/\\/g, '/'), what: m[0] });
+}
+
+check(
+  'a screen printing a unit rate knows whether it is live',
+  unguarded.length > 0,
+  'every screen that prints a rate consults roomsFetchFailed',
+  'prints a rate without ever checking whether the list is live:\n        ' +
+    unguarded.map((u) => `${u.rel} renders \`${u.what}\``).join('\n        ') +
+    '\n        `rooms` falls back to the seed, and 30 of the 33 seeded prices are ' +
+    'stale — the worst by ₱1,900. Guard it the way CategoryRoomsView does.'
+);
+
 console.log('');
 for (const n of notes) console.log(`  note: ${n}`);
 

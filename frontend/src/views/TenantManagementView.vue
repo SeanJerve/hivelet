@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, showToast, type TenantRecord } from '@/lib/systemState';
-import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
+import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, showToast, type TenantRecord } from '@/lib/systemState';
+import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Search, UserPlus, Eye, Pencil, LogOut, X, AlertTriangle, RefreshCw, Loader2, Users, User, Check, ShieldCheck, Clock, TrendingUp } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
@@ -607,8 +607,15 @@ async function handleOnboard() {
               -->
               <select v-model="editUnitCode" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white font-bold" required>
                 <option value="—" disabled>No unit assigned</option>
-                <option v-for="u in CANONICAL_UNITS" :key="u.unitCode" :value="u.unitCode.toUpperCase()">
-                  {{ u.unitCode.toUpperCase() }} — {{ u.cluster }} ({{ peso(u.basePrice) }})
+                <!--
+                  Reads the LIVE list. This iterated CANONICAL_UNITS and printed `basePrice`
+                  - the exact second copy the comment on `syncDepositToUnit` warns about, 550
+                  lines above. 30 of the 33 seeded prices no longer match the database; the
+                  worst is out by ₱1,900, and the seeded rent roll overstates the real one
+                  by ₱28,800 a month.
+                -->
+                <option v-for="u in rooms" :key="u.unitCode" :value="u.unitCode.toUpperCase()">
+                  {{ u.unitCode.toUpperCase() }} — {{ u.cluster }}<template v-if="!roomsFetchFailed"> ({{ peso(u.price) }})</template>
                 </option>
               </select>
               <p v-if="editUnitCode === '—'" class="text-[11px] text-muted-foreground mt-1">
@@ -750,8 +757,14 @@ async function handleOnboard() {
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
             <select v-model="newUnit" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white" required>
-              <option v-for="u in CANONICAL_UNITS" :key="u.unitCode" :value="u.unitCode">
-                {{ u.unitCode.toUpperCase() }} — {{ peso(u.basePrice) }} ({{ u.cluster }})
+              <!--
+                This one mattered most. `syncDepositToUnit` fills the deposit field from the
+                LIVE price the moment a unit is picked, while this label showed the SEEDED
+                one - so for unit 2B the dropdown read ₱6,500 and the deposit box ₱4,600,
+                at the same time, with nothing failing.
+              -->
+              <option v-for="u in rooms" :key="u.unitCode" :value="u.unitCode">
+                {{ u.unitCode.toUpperCase() }}<template v-if="!roomsFetchFailed"> — {{ peso(u.price) }}</template> ({{ u.cluster }})
               </option>
             </select>
           </div>

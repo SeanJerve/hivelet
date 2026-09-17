@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isRoomDetailModalOpen, activeRoomDetail } from '@/lib/systemState';
+import { isRoomDetailModalOpen, activeRoomDetail, roomsFetchFailed } from '@/lib/systemState';
 import { X, Building2, Check, ShieldCheck, Clock, Wrench, Home } from 'lucide-vue-next';
 
 function closeModal() {
@@ -87,7 +87,9 @@ function getStatusBadgeClass(status?: string) {
           </div>
           <div class="text-right">
             <span class="text-[10px] text-muted-foreground-soft block uppercase font-bold">Base Rate</span>
-            <span class="font-display font-extrabold text-xl text-white">₱{{ activeRoomDetail.price.toLocaleString() }}<span class="text-xs font-normal text-muted-foreground-soft">/mo</span></span>
+            <!-- `rooms` is seeded; 30 of the 33 seeded prices are stale. A rate shown
+                 without saying whether it is live is a rate someone will quote. -->
+            <span class="font-display font-extrabold text-xl text-white"><template v-if="roomsFetchFailed">—</template><template v-else>₱{{ activeRoomDetail.price.toLocaleString() }}</template><span class="text-xs font-normal text-muted-foreground-soft">/mo</span></span>
           </div>
         </div>
 
@@ -95,7 +97,7 @@ function getStatusBadgeClass(status?: string) {
           <div class="p-3.5 bg-background border border-border rounded-xl">
             <p class="text-muted-foreground text-[10px] font-bold uppercase">Monthly Rate</p>
             <p class="font-display text-base font-extrabold text-foreground mt-0.5">
-              ₱{{ activeRoomDetail.price.toLocaleString() }} <span class="text-xs font-normal text-muted-foreground">/ month</span>
+              <template v-if="roomsFetchFailed">Rate unavailable — refresh to retry</template><template v-else>₱{{ activeRoomDetail.price.toLocaleString() }} <span class="text-xs font-normal text-muted-foreground">/ month</span></template>
             </p>
           </div>
           <div class="p-3.5 bg-background border border-border rounded-xl flex flex-col justify-between">
