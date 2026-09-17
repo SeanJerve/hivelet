@@ -1266,6 +1266,58 @@ router.patch(
     let after: Record<string, unknown> | null = null;
 
     if (!isVerified) {
+      /**
+       * A VERIFIED PAYMENT CANNOT BE UNDONE FROM HERE, AND THE RACE IS CLOSED ON THE ROW.
+       *
+       * The comment above says rejection "touches no ledger row, so there is nothing
+       * to tear". That is true only while the payment has never been verified. Once
+       * it has, `settle_verified_payment` has already written the
+       * `monthly_income_records` row - and this branch did not look at the current
+       * status before overwriting it.
+       *
+       * So a payment could go Verified -> Rejected, and the result was four records
+       * disagreeing about one sum of money:
+       *
+       *   - the payment      read Rejected
+       *   - the bill         was reopened to Due, below, so the tenant still owed it
+       *   - the income row   STAYED, so the ledger still counted the money
+       *   - `verified_at` and `verified_by` were nulled, erasing who had verified it
+       *
+       * The owner would have been chasing a debt she had already been paid, and the
+       * audit trail of who banked it was gone.
+       *
+       * Two ways in, and neither needs bad intent:
+       *
+       *   1. Two administrators with the queue open. `IncomeCollectionsView` filters
+       *      to `Pending Verification` in the CLIENT from a list fetched on mount,
+       *      and only refetches after an action - so the stale window is as long as
+       *      the tab is left open. One verifies, the other rejects the row still
+       *      showing as pending on their screen.
+       *   2. One administrator changing their mind: verify, notice it was the wrong
+       *      resident, press Reject to undo it.
+       *
+       * Not live today - checked: all 15 payments read Verified, none Rejected, and
+       * every one still carries its `verified_at`.
+       *
+       * The right way to reverse a settled payment is to VOID the income record
+       * (`DELETE /admin/income-records/:id`), which is a soft void - it sets
+       * `voided_at`, `voided_by` and `void_reason` and keeps the history. That is
+       * what the message points the administrator at, because refusing an action
+       * without naming the alternative just moves the problem to the help desk.
+       */
+      if (before.verification_status === 'Verified') {
+        throw ApiError.conflict(
+          'This payment has already been verified, and its income row is in the ledger. ' +
+            'Undoing it here would reopen the bill while the money stayed booked, so the ' +
+            'resident would be chased for rent that was already paid. To reverse it, void ' +
+            'the income record in Income & Collections instead - that reverses the ledger ' +
+            'entry and keeps the history.'
+        );
+      }
+
+      // Compare-and-set on the status we read. If another administrator moved the
+      // row in between, zero rows match and nothing is written - rather than this
+      // request silently overwriting their decision.
       const { data: updated, error } = await db
         .from('payments')
         .update({
@@ -1274,10 +1326,18 @@ router.patch(
           verified_by: null,
         })
         .eq('id', req.params.paymentId)
+        .eq('verification_status', before.verification_status)
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) throw ApiError.internal(error.message);
+      if (!updated) {
+        throw ApiError.conflict(
+          'This payment changed while it was on your screen - another administrator has ' +
+            'already acted on it. Nothing was altered. Reload the verification queue and ' +
+            'check where it stands before acting again.'
+        );
+      }
       after = updated;
     }
 
