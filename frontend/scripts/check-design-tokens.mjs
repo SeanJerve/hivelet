@@ -66,8 +66,12 @@ const EXPECTED = {
  *
  * 51 -> 41 later the same day, when every dialog moved onto WsModal and the
  * hand-built overlays and their icon chips went with it.
+ *
+ * 41 -> 28 the same day again, with the toasts, the loading placeholders, the
+ * notification drawer and the header's account menu. The toasts alone held
+ * twelve, one triplet per kind.
  */
-const MAX_RAW_HEX = 41;
+const MAX_RAW_HEX = 28;
 
 const assetDir = path.join(root, 'dist', 'assets');
 if (!fs.existsSync(assetDir)) {

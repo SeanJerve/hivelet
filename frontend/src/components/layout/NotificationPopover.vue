@@ -1,42 +1,49 @@
-<!--
-  @file components/layout/NotificationPopover.vue
-  @description Atlassian/Jira inspired Notification Popover Drawer with live filtering and deep-link actions.
-  @systemBibleRef Section 16 (Communication Centralization), Section 22 (Core Design Principles)
-  @requirements   FR-026, FR-027
--->
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+/**
+ * The notification drawer, on the workspace system.
+ *
+ * Every row is a real button rather than a clickable div, so the list can be
+ * reached and opened from the keyboard. Opening the drawer moves focus into it
+ * and closing returns focus to the bell, so nobody is left at the top of the
+ * page. The filters are a pressed-state group, not tabs: they narrow one list
+ * rather than swapping panels.
+ */
+import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { 
-  notifications, 
-  unreadCount, 
-  isLoading, 
-  isPopoverOpen, 
-  activeFilter, 
+import {
+  unreadCount,
+  isLoading,
+  isPopoverOpen,
+  activeFilter,
   filteredNotifications,
-  markAsRead, 
-  markAllAsRead, 
+  markAsRead,
+  markAllAsRead,
   fetchNotifications,
   type NotificationItem,
-  type NotificationFilter
 } from '@/lib/notificationsStore';
 import { isAdmin } from '@/lib/authStore';
-import { 
-  Bell, 
-  CheckCheck, 
-  X, 
-  CreditCard, 
-  Wrench, 
-  Mail, 
-  AlertTriangle, 
-  ShieldCheck, 
-  ExternalLink,
+import Skeleton from '@/components/ui/Skeleton.vue';
+import {
+  CheckCheck,
+  X,
+  CreditCard,
+  Wrench,
+  Mail,
+  AlertTriangle,
+  Inbox,
   MessageSquare,
-  Clock,
-  Loader2
 } from 'lucide-vue-next';
 
 const router = useRouter();
+const panel = ref<HTMLElement | null>(null);
+
+const FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'unread', label: 'Unread' },
+  { key: 'payments', label: 'Billing' },
+  { key: 'maintenance', label: 'Maintenance' },
+  { key: 'inquiries', label: 'Inquiries' },
+] as const;
 
 function getIconForType(type: string) {
   switch (type) {
@@ -54,29 +61,28 @@ function getIconForType(type: string) {
   }
 }
 
-function getIconColorForType(type: string, priority: string) {
-  if (priority === 'Emergency') return 'text-overdue bg-overdue-soft border-overdue-soft';
-  if (priority === 'High') return 'text-verify bg-verify-soft border-verify-soft';
-  
+/**
+ * The icon chip carries the same meaning as the badge beside it, so colour is
+ * never the only thing saying a notice is urgent.
+ */
+function chipTone(type: string, priority: string) {
+  if (priority === 'Emergency') return 'bg-overdue-soft text-overdue';
+  if (priority === 'High') return 'bg-verify-soft text-verify';
   switch (type) {
     case 'Payment':
     case 'Billing':
-      return 'text-brand bg-brand-soft border-brand-soft';
     case 'Maintenance':
-      return 'text-brand bg-brand-soft border-brand-soft';
     case 'Inquiry':
-      return 'text-teal-600 bg-teal-50 border-teal-200';
+      return 'bg-brand-soft text-brand';
     default:
-      return 'text-ink-soft bg-canvas border-line';
+      return 'bg-canvas text-ink-soft';
   }
 }
 
 function formatRelativeTime(dateStr: string) {
   try {
     const d = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffMins = Math.floor((Date.now() - d.getTime()) / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
@@ -94,7 +100,6 @@ async function handleNotificationClick(item: NotificationItem) {
   await markAsRead(item.id);
   isPopoverOpen.value = false;
 
-  // Contextual deep-linking
   if (isAdmin.value) {
     if (item.type === 'Payment' || item.type === 'Billing') {
       router.push('/admin/income?tab=verify');
@@ -104,7 +109,6 @@ async function handleNotificationClick(item: NotificationItem) {
       router.push('/admin/inquiries');
     }
   } else {
-    // Tenant navigation
     if (item.type === 'Payment' || item.type === 'Billing') {
       router.push('/tenant/payments');
     } else if (item.type === 'Maintenance') {
@@ -115,173 +119,209 @@ async function handleNotificationClick(item: NotificationItem) {
   }
 }
 
-// Close on escape key
+/** Where focus came from, so Escape can put it back on the bell. */
+let openedFrom: HTMLElement | null = null;
+
+watch(isPopoverOpen, async (open) => {
+  if (open) {
+    openedFrom = document.activeElement as HTMLElement | null;
+    await nextTick();
+    panel.value?.focus();
+  } else if (openedFrom?.isConnected) {
+    openedFrom.focus();
+    openedFrom = null;
+  }
+});
+
 function onKeyDown(e: KeyboardEvent) {
   if (e.key === 'Escape' && isPopoverOpen.value) {
+    e.stopPropagation();
     isPopoverOpen.value = false;
   }
 }
 
+/**
+ * A click anywhere else closes the drawer. The bell itself is excluded, because
+ * it already toggles, and closing here would let it reopen on the same click.
+ */
+function onDocumentPointerDown(e: PointerEvent) {
+  if (!isPopoverOpen.value) return;
+  const target = e.target as Node;
+  if (panel.value?.contains(target)) return;
+  // The bell toggles on its own. Closing here too would reopen it on one click.
+  const el = target instanceof Element ? target : target.parentElement;
+  if (el?.closest('[data-notifications-trigger]')) return;
+  isPopoverOpen.value = false;
+}
+
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown);
+  document.addEventListener('pointerdown', onDocumentPointerDown);
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
+  document.removeEventListener('pointerdown', onDocumentPointerDown);
 });
 </script>
 
 <template>
-  <div v-if="isPopoverOpen" class="relative">
-    <!-- Backdrop overlay for mobile -->
-    <div 
-      class="fixed inset-0 z-40 bg-black/20 backdrop-blur-xs sm:hidden"
-      @click="isPopoverOpen = false"
-    />
+  <div v-if="isPopoverOpen" class="ws-focus relative">
+    <div class="fixed inset-0 z-40 bg-night/30 sm:hidden" aria-hidden="true" />
 
-    <!-- Popover Card -->
-    <div 
-      class="fixed sm:absolute right-2 sm:right-0 top-16 z-50 w-[calc(100vw-1rem)] sm:w-[420px] max-h-[calc(100vh-5rem)] bg-tile rounded-tile border border-line shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+    <div
+      ref="panel"
+      tabindex="-1"
+      role="dialog"
+      aria-label="Notifications"
+      class="fixed right-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:right-0 sm:w-[420px]"
     >
       <!-- Header -->
-      <div class="px-4 py-3.5 border-b border-line bg-canvas flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <h3 class="font-semibold text-sm text-ink">Notifications</h3>
-          <span 
-            v-if="unreadCount > 0"
-            class="px-2 py-0.5 text-xs font-semibold bg-brand text-white rounded-full"
-          >
-            {{ unreadCount }} new
+      <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+        <div class="flex min-w-0 items-baseline gap-2">
+          <h2 class="text-sm font-semibold text-ink">Notifications</h2>
+          <span v-if="unreadCount > 0" class="text-xs font-semibold text-brand">
+            {{ unreadCount }} unread
           </span>
-          <span v-else class="text-xs text-ink-soft font-medium">
-            All caught up
-          </span>
+          <span v-else class="text-xs text-ink-faint">All read</span>
         </div>
 
-        <div class="flex items-center gap-1">
+        <div class="flex shrink-0 items-center gap-1">
           <button
             v-if="unreadCount > 0"
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft"
             @click="markAllAsRead"
-            class="p-1.5 text-xs text-brand hover:bg-brand-soft rounded-lg font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-            title="Mark all as read"
           >
-            <CheckCheck class="size-3.5" />
-            <span class="text-xs">Mark all read</span>
+            <CheckCheck class="size-3.5" aria-hidden="true" />
+            Mark all read
           </button>
-          
+
           <button
+            type="button"
+            class="icon-btn size-9"
+            aria-label="Close notifications"
             @click="isPopoverOpen = false"
-            class="grid size-7 place-items-center rounded-full text-ink-soft hover:bg-canvas border border-line transition-colors cursor-pointer"
           >
-            <X class="size-3.5" />
+            <X class="size-4" aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      <!-- Filter Tabs -->
-      <div class="flex items-center gap-1 px-3 py-2 border-b border-line bg-tile overflow-x-auto">
+      <!-- Filters -->
+      <div
+        class="flex items-center gap-1.5 overflow-x-auto border-b border-line px-3 py-2"
+        role="group"
+        aria-label="Show only"
+      >
         <button
-          v-for="tab in ([
-            { key: 'all', label: 'All' },
-            { key: 'unread', label: 'Unread' },
-            { key: 'payments', label: 'Billing' },
-            { key: 'maintenance', label: 'Maintenance' },
-            { key: 'inquiries', label: 'Inquiries' }
-          ] as const)"
+          v-for="tab in FILTERS"
           :key="tab.key"
+          type="button"
+          :aria-pressed="activeFilter === tab.key"
+          :class="[
+            'whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold',
+            activeFilter === tab.key
+              ? 'bg-ink text-canvas'
+              : 'text-ink-soft hover:bg-canvas hover:text-ink',
+          ]"
           @click="activeFilter = tab.key"
-          :class="[ 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer', activeFilter === tab.key ? 'bg-brand text-white font-semibold' : 'text-ink-soft hover:bg-canvas hover:text-ink' ]"
         >
           {{ tab.label }}
         </button>
       </div>
 
-      <!-- Notifications List Stream -->
-      <div class="flex-1 overflow-y-auto divide-y divide-line/60 max-h-[440px]">
-        
-        <!-- Loading State -->
-        <div v-if="isLoading" class="py-12 text-center text-xs text-ink-soft flex flex-col items-center gap-2">
-          <Loader2 class="size-5 text-brand animate-spin" />
-          <span>Refreshing notifications...</span>
+      <!-- The stream -->
+      <div class="max-h-[440px] flex-1 overflow-y-auto">
+        <div v-if="isLoading" class="divide-y divide-line">
+          <div v-for="i in 3" :key="'sk-' + i" class="flex items-start gap-3 p-4">
+            <Skeleton class-name="size-9 shrink-0 rounded-xl" />
+            <div class="min-w-0 flex-1 space-y-2">
+              <Skeleton class-name="h-4 w-40 rounded-full" />
+              <Skeleton class-name="h-3 w-full rounded-full" />
+              <Skeleton class-name="h-3 w-2/3 rounded-full" />
+            </div>
+          </div>
         </div>
 
-        <!-- Empty State -->
-        <div v-else-if="filteredNotifications.length === 0" class="py-12 px-4 text-center">
-          <ShieldCheck class="size-10 text-brand mx-auto mb-2 opacity-80" />
-          <p class="text-xs font-semibold text-ink">No notifications found</p>
-          <p class="text-xs text-ink-soft mt-1">
-            {{ activeFilter === 'unread' ? 'You have read all your notifications.' : 'No alerts in this category.' }}
+        <div v-else-if="filteredNotifications.length === 0" class="px-6 py-12 text-center">
+          <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
+          <p class="mt-3 text-sm font-semibold text-ink">Nothing here</p>
+          <p class="mt-1 text-sm leading-6 text-ink-soft">
+            {{
+              activeFilter === 'unread'
+                ? 'You have read everything.'
+                : 'Nothing has come in under this filter.'
+            }}
           </p>
         </div>
 
-        <!-- Items Stream -->
-        <div
-          v-for="item in filteredNotifications"
-          :key="item.id"
-          @click="handleNotificationClick(item)"
-          :class="[ 'p-3.5 flex items-start gap-3 hover:bg-canvas transition-colors cursor-pointer group relative', !item.is_read ? 'bg-brand-soft/40' : 'bg-tile' ]"
-        >
-          <!-- Unread Dot Indicator -->
-          <span 
-            v-if="!item.is_read"
-            class="absolute left-1.5 top-5 size-1.5 rounded-full bg-brand"
-          />
-
-          <!-- Category Icon -->
-          <div 
-            :class="[ 'size-8 rounded-xl border flex items-center justify-center shrink-0 mt-0.5', getIconColorForType(item.type, item.priority) ]"
+        <div v-else class="divide-y divide-line">
+          <button
+            v-for="item in filteredNotifications"
+            :key="item.id"
+            type="button"
+            :class="[
+              'group flex w-full items-start gap-3 p-4 text-left hover:bg-canvas',
+              item.is_read ? 'bg-tile' : 'bg-brand-soft/50',
+            ]"
+            @click="handleNotificationClick(item)"
           >
-            <component :is="getIconForType(item.type)" class="size-4" />
-          </div>
+            <span
+              :class="[
+                'grid size-9 shrink-0 place-items-center rounded-xl',
+                chipTone(item.type, item.priority),
+              ]"
+              aria-hidden="true"
+            >
+              <component :is="getIconForType(item.type)" class="size-4" />
+            </span>
 
-          <!-- Content Details -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between gap-1 mb-0.5">
-              <span class="text-xs font-semibold text-ink truncate group-hover:text-brand transition-colors">
-                {{ item.title }}
+            <span class="min-w-0 flex-1">
+              <span class="flex items-baseline justify-between gap-3">
+                <span class="truncate text-sm font-semibold text-ink group-hover:text-brand">
+                  {{ item.title }}
+                </span>
+                <time
+                  :datetime="item.created_at"
+                  class="shrink-0 whitespace-nowrap text-xs text-ink-faint"
+                >
+                  {{ formatRelativeTime(item.created_at) }}
+                </time>
               </span>
-              <span class="text-xs text-ink-soft shrink-0 whitespace-nowrap">
-                {{ formatRelativeTime(item.created_at) }}
-              </span>
-            </div>
 
-            <p class="text-xs text-ink-soft line-clamp-2 leading-relaxed">
-              {{ item.message }}
-            </p>
+              <span class="mt-0.5 line-clamp-2 block text-sm leading-6 text-ink-soft">
+                {{ item.message }}
+              </span>
 
-            <!-- Metadata Badges -->
-            <div class="flex items-center gap-2 mt-1.5">
-              <span 
-                v-if="item.priority === 'Emergency'"
-                class="px-1.5 py-0.2 text-[9px] font-semibold bg-overdue-soft text-overdue rounded"
-              >
-                EMERGENCY
+              <span class="mt-2 flex flex-wrap items-center gap-2">
+                <span v-if="item.priority === 'Emergency'" class="badge-soft badge-danger">
+                  Emergency
+                </span>
+                <span v-else-if="item.priority === 'High'" class="badge-soft badge-warning">
+                  High
+                </span>
+                <span class="text-xs font-medium text-ink-faint">{{ item.type }}</span>
+                <span v-if="!item.is_read" class="text-xs font-semibold text-brand">Unread</span>
               </span>
-              <span 
-                v-else-if="item.priority === 'High'"
-                class="px-1.5 py-0.2 text-[9px] font-semibold bg-verify-soft text-verify rounded"
-              >
-                HIGH
-              </span>
-              <span class="text-xs text-ink-soft font-medium">
-                {{ item.type }}
-              </span>
-            </div>
-          </div>
+            </span>
+          </button>
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="px-4 py-2.5 bg-canvas border-t border-line flex items-center justify-between text-xs text-ink-soft">
-        <span>Hivelet Real-time Alerts</span>
+      <div
+        class="flex items-center justify-between gap-3 border-t border-line px-4 py-3 text-xs text-ink-faint"
+      >
+        <span>Updates as they arrive</span>
         <button
+          type="button"
+          class="rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft"
           @click="fetchNotifications"
-          class="hover:text-brand font-semibold transition-colors cursor-pointer"
         >
-          Refresh
+          Check again
         </button>
       </div>
-
     </div>
   </div>
 </template>

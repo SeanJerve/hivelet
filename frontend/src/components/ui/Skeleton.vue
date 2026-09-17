@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /**
- * @file components/ui/Skeleton.vue
- * @description Base pulse-animated skeleton placeholder primitive.
- * @systemBibleRef Section 1 - Product Identity & Jira Aesthetic
- * @rationale Standardizes subtle #e7e5e4 shimmer across all components without layout shifts.
+ * The one loading placeholder shape. Everything that loads is built from this,
+ * so a screen mid-load has the same rhythm as the screen that replaces it.
+ *
+ * It holds still for anyone who has asked their system to reduce motion.
  */
 interface Props {
   className?: string | string[] | Record<string, boolean>;
@@ -13,8 +13,5 @@ defineProps<Props>();
 </script>
 
 <template>
-  <div
-    :class="[ 'animate-pulse bg-canvas/80 rounded-md', className || 'h-4 w-full' ]"
-    aria-hidden="true"
-  />
+  <div :class="['ws-skeleton', className || 'h-4 w-full']" aria-hidden="true" />
 </template>

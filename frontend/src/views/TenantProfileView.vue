@@ -188,7 +188,7 @@ function handleReset() {
 
     <!-- Loading Skeleton -->
     <div v-if="loading" class="space-y-4">
-      <SkeletonCard variant="room" :count="2" />
+      <SkeletonCard variant="list" :count="2" />
     </div>
 
     <div v-else class="space-y-6">

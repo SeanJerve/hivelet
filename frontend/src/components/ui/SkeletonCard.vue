@@ -1,20 +1,17 @@
 <script setup lang="ts">
 /**
- * @file components/ui/SkeletonCard.vue
- * @description Standardized card skeleton placeholder with thumbnail, titles, and action slots.
- * @systemBibleRef Section 1 - Minimalist Corporate Aesthetic
+ * Tile-shaped loading placeholders, so what appears while loading has the same
+ * shape as what arrives. Variants match the four tiles in use: a unit card with
+ * a photograph, a category card, a figure tile, and a record in a stacked list.
  */
 import Skeleton from './Skeleton.vue';
 
 interface Props {
-  variant?: 'room' | 'category' | 'metric';
+  variant?: 'room' | 'category' | 'metric' | 'list';
   count?: number;
 }
 
-withDefaults(defineProps<Props>(), {
-  variant: 'room',
-  count: 1
-});
+withDefaults(defineProps<Props>(), { variant: 'room', count: 1 });
 </script>
 
 <template>
@@ -22,52 +19,43 @@ withDefaults(defineProps<Props>(), {
     <div
       v-for="i in count"
       :key="i"
-      class="rounded-tile border border-line bg-tile p-5 space-y-4 overflow-hidden"
+      class="rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4"
+      aria-hidden="true"
     >
-      <!-- Variant: Room Card -->
       <template v-if="variant === 'room'">
-        <Skeleton className="h-44 w-full rounded-xl bg-canvas/90" />
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <Skeleton className="h-5 w-24 rounded" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-          </div>
-          <Skeleton className="h-4 w-3/4 rounded" />
+        <Skeleton class-name="h-36 w-full rounded-2xl" />
+        <div class="flex items-center justify-between gap-3">
+          <Skeleton class-name="h-5 w-20 rounded-full" />
+          <Skeleton class-name="h-6 w-20 rounded-full" />
         </div>
-        <div class="pt-3 border-t border-line flex items-center justify-between">
-          <Skeleton className="h-6 w-20 rounded" />
-          <Skeleton className="h-8 w-24 rounded-lg" />
-        </div>
+        <Skeleton class-name="h-4 w-3/4 rounded-full" />
+        <Skeleton class-name="h-4 w-1/2 rounded-full" />
       </template>
 
-      <!-- Variant: Category Card -->
       <template v-else-if="variant === 'category'">
-        <div class="flex items-center justify-between w-full">
-          <Skeleton className="size-12 rounded-xl" />
-          <Skeleton className="h-5 w-20 rounded-full" />
+        <Skeleton class-name="h-6 w-40 rounded-full" />
+        <Skeleton class-name="h-4 w-24 rounded-full" />
+        <Skeleton class-name="h-4 w-full rounded-full" />
+        <Skeleton class-name="h-4 w-4/5 rounded-full" />
+      </template>
+
+      <template v-else-if="variant === 'list'">
+        <div class="flex items-start justify-between gap-4">
+          <Skeleton class-name="h-5 w-48 rounded-full" />
+          <Skeleton class-name="h-7 w-24 shrink-0 rounded-full" />
         </div>
-        <div class="space-y-2 pt-2">
-          <Skeleton className="h-6 w-40 rounded" />
-          <Skeleton className="h-3 w-24 rounded" />
-          <Skeleton className="h-4 w-full rounded" />
-          <Skeleton className="h-4 w-4/5 rounded" />
-        </div>
-        <div class="pt-4 border-t border-line flex items-center justify-between">
-          <Skeleton className="h-4 w-24 rounded" />
-          <Skeleton className="h-4 w-28 rounded" />
+        <Skeleton class-name="h-4 w-full rounded-full" />
+        <Skeleton class-name="h-4 w-2/3 rounded-full" />
+        <div class="flex items-center gap-3">
+          <Skeleton class-name="h-3 w-24 rounded-full" />
+          <Skeleton class-name="h-3 w-20 rounded-full" />
         </div>
       </template>
 
-      <!-- Variant: Metric KPI -->
-      <template v-else-if="variant === 'metric'">
-        <div class="flex items-center justify-between">
-          <Skeleton className="h-3.5 w-24 rounded" />
-          <Skeleton className="size-8 rounded-lg" />
-        </div>
-        <div class="space-y-1.5 pt-1">
-          <Skeleton className="h-7 w-28 rounded" />
-          <Skeleton className="h-3 w-36 rounded" />
-        </div>
+      <template v-else>
+        <Skeleton class-name="h-4 w-28 rounded-full" />
+        <Skeleton class-name="h-12 w-40 rounded-2xl" />
+        <Skeleton class-name="h-4 w-36 rounded-full" />
       </template>
     </div>
   </div>

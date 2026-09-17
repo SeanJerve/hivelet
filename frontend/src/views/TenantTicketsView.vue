@@ -660,7 +660,7 @@ function statusClass(status: string) {
 
         <div class="p-6 flex-1 overflow-y-auto max-h-[580px]">
           <div v-if="loadingTickets" class="space-y-4">
-            <SkeletonCard variant="room" :count="2" />
+            <SkeletonCard variant="list" :count="2" />
           </div>
 
           <div

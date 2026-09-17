@@ -1,42 +1,55 @@
 <script setup lang="ts">
+/**
+ * Toasts on the workspace system. One dark surface for every kind, because the
+ * words carry the meaning; the icon and its colour only repeat it. They are
+ * announced politely, so a screen reader hears them without losing its place.
+ */
 import { useToast } from '../../lib/useToast';
-import { 
-  CheckCircle2, 
-  AlertTriangle, 
-  AlertCircle, 
-  Info, 
-  X 
-} from 'lucide-vue-next';
+import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-vue-next';
 
 const { toasts, dismissToast } = useToast();
+
+const iconTone: Record<string, string> = {
+  success: 'text-brand-bright',
+  warning: 'text-verify-soft',
+  error: 'text-overdue-soft',
+  info: 'text-on-night-soft',
+};
 </script>
 
 <template>
-  <div class="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+  <div
+    class="ws-focus pointer-events-none fixed inset-x-4 top-4 z-[60] flex flex-col items-end gap-2 sm:inset-x-auto sm:right-6 sm:top-6 sm:max-w-sm"
+    role="region"
+    aria-label="Notifications"
+  >
     <TransitionGroup name="toast">
-      <div 
-        v-for="toast in toasts" 
+      <div
+        v-for="toast in toasts"
         :key="toast.id"
-        :class="[ 'pointer-events-auto p-4 rounded-tile border shadow-xl flex items-start gap-3 transition-all duration-200 backdrop-blur-xs', toast.type === 'success' ? 'bg-[#ecfdf5] border-[#a7f3d0] text-[#065f46]' : '', toast.type === 'warning' ? 'bg-[#fffbeb] border-[#fde68a] text-[#92400e]' : '', toast.type === 'error' ? 'bg-[#fef2f2] border-[#fecaca] text-[#991b1b]' : '', toast.type === 'info' ? 'bg-[#f0f9ff] border-[#b9e6fe] text-[#075985]' : '' ]"
+        role="status"
+        aria-live="polite"
+        class="on-dark pointer-events-auto flex w-full items-start gap-3 rounded-2xl bg-night p-4 text-on-night shadow-lift"
       >
-        <div class="shrink-0 mt-0.5">
-          <CheckCircle2 v-if="toast.type === 'success'" class="w-5 h-5 text-brand" />
-          <AlertTriangle v-else-if="toast.type === 'warning'" class="w-5 h-5 text-verify" />
-          <AlertCircle v-else-if="toast.type === 'error'" class="w-5 h-5 text-overdue" />
-          <Info v-else class="w-5 h-5 text-brand" />
+        <span class="mt-0.5 shrink-0" aria-hidden="true">
+          <CheckCircle2 v-if="toast.type === 'success'" :class="['size-5', iconTone.success]" />
+          <AlertTriangle v-else-if="toast.type === 'warning'" :class="['size-5', iconTone.warning]" />
+          <AlertCircle v-else-if="toast.type === 'error'" :class="['size-5', iconTone.error]" />
+          <Info v-else :class="['size-5', iconTone.info]" />
+        </span>
+
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-semibold leading-snug">{{ toast.title }}</p>
+          <p class="mt-0.5 text-sm leading-6 text-on-night-soft">{{ toast.message }}</p>
         </div>
 
-        <div class="flex-1">
-          <h4 class="font-semibold text-xs leading-tight mb-0.5">{{ toast.title }}</h4>
-          <p class="text-xs opacity-90 leading-relaxed">{{ toast.message }}</p>
-        </div>
-
-        <button 
+        <button
+          type="button"
+          class="icon-btn icon-btn-on-dark size-9 shrink-0"
+          aria-label="Dismiss this message"
           @click="dismissToast(toast.id)"
-          class="shrink-0 text-current opacity-50 hover:opacity-100 p-0.5 rounded-lg transition-opacity"
-          aria-label="Dismiss Toast"
         >
-          <X class="w-4 h-4" />
+          <X class="size-4" aria-hidden="true" />
         </button>
       </div>
     </TransitionGroup>
@@ -46,14 +59,21 @@ const { toasts, dismissToast } = useToast();
 <style scoped>
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.25s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(30px) scale(0.95);
+  transform: translateY(-6px);
 }
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-10px) scale(0.95);
+  transform: translateY(-6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter-active,
+  .toast-leave-active {
+    transition: none;
+  }
 }
 </style>

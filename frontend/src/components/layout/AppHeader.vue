@@ -4,7 +4,7 @@
  * @description Solid white navbar with public section navigation & authenticated notification center.
  * @systemBibleRef Section 1 - Product Identity, Section 4 - Public Visitor Role & Section 16 - Notifications
  */
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { isMobileSidebarOpen } from '@/lib/systemState';
 import { 
@@ -94,6 +94,18 @@ function toggleNotifications() {
   isPopoverOpen.value = !isPopoverOpen.value;
 }
 
+/**
+ * The bell says how many are waiting and whether any is an emergency, so that
+ * reading does not depend on seeing the red dot.
+ */
+const notificationsLabel = computed(() => {
+  if (unreadCount.value === 0) return 'Notifications, none unread';
+  const count = `${unreadCount.value} unread`;
+  return hasEmergencyUnread.value
+    ? `Notifications, ${count}, one of them an emergency`
+    : `Notifications, ${count}`;
+});
+
 function scrollToSection(sectionId: string) {
   if (route.path === '/public' || route.path === '/') {
     const el = document.getElementById(sectionId);
@@ -111,19 +123,38 @@ function scrollToSection(sectionId: string) {
   }
 }
 
-let popoverTimeout: ReturnType<typeof setTimeout> | null = null;
+/**
+ * The account menu opens on click, not on hover.
+ *
+ * It used to do both, and the two fought each other: moving the pointer onto
+ * the avatar opened the menu, and the click that followed toggled it shut
+ * again, so a click appeared to do nothing at all. Hover also gives a touch
+ * screen no way in. One trigger, one behaviour.
+ */
+const profileMenu = ref<HTMLElement | null>(null);
 
-function handleMouseEnter() {
-  if (popoverTimeout) clearTimeout(popoverTimeout);
-  isProfilePopoverOpen.value = true;
+function closeProfileMenu() {
+  isProfilePopoverOpen.value = false;
 }
 
-function handleMouseLeave() {
-  if (popoverTimeout) clearTimeout(popoverTimeout);
-  popoverTimeout = setTimeout(() => {
-    isProfilePopoverOpen.value = false;
-  }, 180);
+function onProfileKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && isProfilePopoverOpen.value) {
+    closeProfileMenu();
+    (document.querySelector('[data-account-trigger]') as HTMLElement | null)?.focus();
+  }
 }
+
+function onProfilePointerDown(e: PointerEvent) {
+  if (!isProfilePopoverOpen.value) return;
+  const target = e.target as Node;
+  if (profileMenu.value?.contains(target)) return;
+  closeProfileMenu();
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onProfileKeyDown);
+  document.addEventListener('pointerdown', onProfilePointerDown);
+});
 
 /**
  * `POST /auth/change-password` worked for months with nothing calling it, so
@@ -138,7 +169,6 @@ function openChangePassword() {
 }
 
 async function handleSignOut() {
-  if (popoverTimeout) clearTimeout(popoverTimeout);
   isProfilePopoverOpen.value = false;
   // Stop polling before the token goes away, or the next tick fires a 401.
   stopNotificationsHeartbeat();
@@ -165,6 +195,8 @@ watch(
 
 onUnmounted(() => {
   stopNotificationsHeartbeat();
+  window.removeEventListener('keydown', onProfileKeyDown);
+  document.removeEventListener('pointerdown', onProfilePointerDown);
 });
 </script>
 
@@ -233,21 +265,26 @@ onUnmounted(() => {
         <!-- Authenticated User Profile & Dropdown Avatar -->
         <template v-if="isAuthenticated && currentUser">
           <!-- Notification Bell + Popover. Restored 2026-09-15; see the note on the import. -->
-          <div class="relative">
+          <div class="ws-focus relative">
             <button
+              data-notifications-trigger
               @click="toggleNotifications"
-              class="relative p-2 rounded-xl text-ink-soft hover:text-ink hover:bg-canvas transition-colors cursor-pointer"
+              class="icon-btn relative size-10"
               :class="{ 'bg-canvas text-ink': isPopoverOpen }"
-              aria-label="Open notifications"
-              title="Notifications"
+              :aria-label="notificationsLabel"
+              :aria-expanded="isPopoverOpen"
             >
-              <Bell class="size-5" />
+              <Bell class="size-5" aria-hidden="true" />
 
-              <!-- Unread count. Emergency and High both surface as the danger tone. -->
+              <!--
+                The count is a second reading of what the label already says, so
+                nobody depends on seeing the colour to know something is urgent.
+              -->
               <span
                 v-if="unreadCount > 0"
-                class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-xs font-semibold rounded-full transition-transform"
-                :class="hasEmergencyUnread ? 'bg-danger text-danger-foreground animate-pulse' : 'bg-brand text-brand-foreground'"
+                class="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-xs font-semibold"
+                :class="hasEmergencyUnread ? 'bg-overdue text-white' : 'bg-brand text-on-brand'"
+                aria-hidden="true"
               >
                 {{ unreadCount > 99 ? '99+' : unreadCount }}
               </span>
@@ -256,34 +293,28 @@ onUnmounted(() => {
             <NotificationPopover />
           </div>
 
-          <!-- Avatar Button with Dropdown Arrow (Desktop & Mobile) -->
-          <div 
-            class="relative py-1"
-            @mouseenter="handleMouseEnter"
-            @mouseleave="handleMouseLeave"
-          >
+          <!-- The account menu. Opens on click; see the note in the script. -->
+          <div ref="profileMenu" class="ws-focus relative py-1">
             <button
+              data-account-trigger
               @click="isProfilePopoverOpen = !isProfilePopoverOpen"
-              class="flex items-center gap-1.5 p-1 rounded-xl hover:bg-canvas transition-colors cursor-pointer group"
-              title="Account Menu"
-              aria-label="User Account Menu"
+              class="group flex cursor-pointer items-center gap-1.5 rounded-full p-1 transition-colors hover:bg-canvas"
+              :aria-label="`Account menu for ${isTenant ? currentUser.fullName : 'the administrator'}`"
+              :aria-expanded="isProfilePopoverOpen"
+              aria-haspopup="true"
             >
-              <div class="size-9 rounded-full bg-gradient-to-tr from-primary to-sky-400 p-0.5 group-hover:ring-2 group-hover:ring-brand/40 transition-all flex items-center justify-center">
-                <span class="w-full h-full rounded-full bg-brand flex items-center justify-center text-xs font-semibold text-white">
-                  {{ userInitials }}
-                </span>
-              </div>
-              <ChevronDown :class="['size-3.5 text-ink-soft transition-transform duration-150', isProfilePopoverOpen && 'rotate-180']" />
+              <span
+                class="grid size-9 place-items-center rounded-full bg-brand text-xs font-semibold text-on-brand"
+                aria-hidden="true"
+              >
+                {{ userInitials }}
+              </span>
+              <ChevronDown
+                :class="['size-3.5 text-ink-soft transition-transform duration-150', isProfilePopoverOpen && 'rotate-180']"
+                aria-hidden="true"
+              />
             </button>
 
-            <!-- Transparent click-outside backdrop (mobile) -->
-            <div 
-              v-if="isProfilePopoverOpen" 
-              class="fixed inset-0 z-40 sm:hidden" 
-              @click="isProfilePopoverOpen = false"
-            />
-
-            <!-- Interactive Popover Modal (School Portal Style) with Subtle Animation -->
             <Transition
               enter-active-class="transition-all duration-200 ease-out"
               enter-from-class="opacity-0 -translate-y-2 scale-95"
@@ -294,36 +325,36 @@ onUnmounted(() => {
             >
               <div
                 v-if="isProfilePopoverOpen"
-                class="absolute right-0 top-12 z-50 w-72 sm:w-80 rounded-tile border border-line bg-tile p-5 shadow-2xl origin-top-right"
-                @mouseenter="handleMouseEnter"
-                @mouseleave="handleMouseLeave"
+                class="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
               >
-                <!-- Centered Profile Header with Circular Avatar -->
-                <div class="flex flex-col items-center text-center pb-4 border-b border-line">
-                  <div class="size-16 rounded-full ring-4 ring-brand-soft border-2 border-white shadow-md bg-gradient-to-tr from-primary to-sky-400 flex items-center justify-center text-white text-lg font-semibold">
+                <!-- Who is signed in, read left to right like everything else. -->
+                <div class="flex items-center gap-3 border-b border-line p-5">
+                  <span
+                    class="grid size-12 shrink-0 place-items-center rounded-full bg-brand text-sm font-semibold text-on-brand"
+                    aria-hidden="true"
+                  >
                     {{ userInitials }}
-                  </div>
-                  <p class="font-semibold text-sm text-ink mt-3">
-                    {{ isTenant ? currentUser.fullName : 'Administrator' }}
-                  </p>
-                  <p class="text-xs text-ink-soft truncate max-w-[240px] mt-0.5">
-                    {{ currentUser.email }}
-                  </p>
-                  <span class="badge-soft badge-blue text-xs font-semibold uppercase mt-2.5">
-                    {{ isTenant ? 'Active Resident' : 'Landlady Administrator' }}
                   </span>
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-semibold text-ink">
+                      {{ isTenant ? currentUser.fullName : 'Administrator' }}
+                    </p>
+                    <p class="truncate text-xs text-ink-soft">{{ currentUser.email }}</p>
+                    <p class="mt-1 text-xs font-semibold text-brand">
+                      {{ isTenant ? 'Resident' : 'Owner' }}
+                    </p>
+                  </div>
                 </div>
 
-                <!-- Quick Action Navigation Links -->
-                <div class="py-3 space-y-1">
+                <div class="space-y-1 p-3">
                   <router-link
                     v-if="isTenant"
                     to="/tenant/profile"
                     @click="isProfilePopoverOpen = false"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-ink hover:bg-canvas transition-colors"
+                    class="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas"
                   >
-                    <User class="size-4 text-brand" />
-                    <span>My Profile</span>
+                    <User class="size-4 text-ink-soft" aria-hidden="true" />
+                    <span>My details</span>
                   </router-link>
 
                   <!--
@@ -333,25 +364,23 @@ onUnmounted(() => {
                   -->
                   <button
                     @click="openChangePassword"
-                    class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-ink hover:bg-canvas transition-colors text-left cursor-pointer"
+                    class="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-ink transition-colors hover:bg-canvas"
                   >
-                    <Lock class="size-4 text-brand" />
-                    <span>Change Password</span>
+                    <Lock class="size-4 text-ink-soft" aria-hidden="true" />
+                    <span>Change password</span>
                   </button>
 
                   <button
                     @click="handleSignOut"
-                    class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-overdue hover:bg-overdue-soft transition-colors text-left cursor-pointer"
+                    class="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold text-overdue transition-colors hover:bg-overdue-soft"
                   >
-                    <LogOut class="size-4 text-overdue" />
-                    <span>Sign Out</span>
+                    <LogOut class="size-4" aria-hidden="true" />
+                    <span>Sign out</span>
                   </button>
                 </div>
 
-                <!-- Discreet Footer -->
-                <div class="pt-3 border-t border-line flex items-center justify-between text-xs text-ink-faint">
-                  <span>Hivelet Portal</span>
-                  <span>Fe Galang Da Silva BH</span>
+                <div class="border-t border-line px-5 py-3 text-xs text-ink-faint">
+                  Fe Galang Da Silva Boarding House
                 </div>
               </div>
             </Transition>

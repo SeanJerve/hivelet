@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * @file components/ui/SkeletonTable.vue
- * @description Standardized data table skeleton placeholder for Jira-inspired admin data grids.
- * @systemBibleRef Section 1 - Jira Inspired Data Grids
+ * A register loading. The shape matches the register itself: a tile, a header
+ * strip, then rows separated by hairlines, with the last column right-aligned
+ * the way a figure is.
  */
 import Skeleton from './Skeleton.vue';
 
@@ -15,33 +15,39 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   columns: 5,
   rows: 5,
-  showHeader: true
+  showHeader: true,
 });
 </script>
 
 <template>
-  <div class="w-full bg-tile border border-line rounded-xl overflow-hidden">
-    <!-- Table Header Placeholder -->
-    <div v-if="showHeader" class="bg-canvas border-b border-line px-6 py-3.5 flex items-center justify-between gap-4">
+  <div class="w-full overflow-hidden rounded-tile bg-tile" aria-hidden="true">
+    <div
+      v-if="showHeader"
+      class="flex items-center gap-4 border-b border-line px-5 py-4 sm:px-6"
+    >
       <div v-for="c in columns" :key="'th-' + c" class="flex-1">
-        <Skeleton className="h-3.5 w-20 rounded" />
+        <Skeleton
+          :class-name="['h-3 rounded-full', c === columns ? 'ml-auto w-14' : 'w-20']"
+        />
       </div>
     </div>
 
-    <!-- Table Rows Placeholder -->
     <div class="divide-y divide-line">
       <div
         v-for="r in rows"
         :key="'tr-' + r"
-        class="px-6 py-4 flex items-center justify-between gap-4"
+        class="flex items-center gap-4 px-5 py-4 sm:px-6"
       >
-        <div v-for="c in columns" :key="'td-' + r + '-' + c" class="flex-1 flex items-center gap-2">
-          <!-- First column often has avatar/icon -->
-          <Skeleton v-if="c === 1" className="size-7 rounded-full shrink-0" />
+        <div
+          v-for="c in columns"
+          :key="'td-' + r + '-' + c"
+          class="flex flex-1 items-center gap-3"
+        >
+          <Skeleton v-if="c === 1" class-name="size-8 shrink-0 rounded-full" />
           <Skeleton
-            :className="[
-              'h-4 rounded',
-              c === 1 ? 'w-28' : c === columns ? 'w-16' : 'w-20 sm:w-24'
+            :class-name="[
+              'h-4 rounded-full',
+              c === 1 ? 'w-28' : c === columns ? 'ml-auto w-16' : 'w-20 sm:w-24',
             ]"
           />
         </div>

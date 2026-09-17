@@ -705,6 +705,30 @@ body {
     font-variant-numeric: tabular-nums;
   }
 
+  /* Loading placeholders. One shape, one pulse, so a screen mid-load reads as
+     the same screen rather than as a different one. It settles at a visible
+     tint rather than fading to nothing, and holds still when the reader has
+     asked their system to reduce motion. */
+  .ws-skeleton {
+    background-color: color-mix(in srgb, var(--line) 78%, var(--canvas));
+    border-radius: 0.375rem;
+    animation: ws-skeleton-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes ws-skeleton-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ws-skeleton {
+      animation: none;
+    }
+  }
+
   /* A visible keyboard focus ring for the workspace system. Dark ring on light
      surfaces, light ring on the brand and night tiles. */
   .ws-focus :focus-visible {
