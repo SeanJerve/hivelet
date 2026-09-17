@@ -33,6 +33,31 @@ thing did not work" is not.
 
 ## Open
 
+### B-01 — the public landing shows every unit as vacant when `/public/rooms` fails
+
+- **Blocked on:** a decision that is not the design account's to make — this is what a screen
+  computes, not how it looks, so per `HANDOFF_TO_DESIGN.md` § 1 it was written down instead of
+  reached across for.
+- **What I was doing:** rebuilding the public landing's category section. The counts are
+  unchanged from the cards that stood there; the redesign only made them legible.
+- **What I already did:** nothing to the data path. The category plates read the same
+  expression the old cards did: `liveUnits.filter(c.match).filter(u => u.status === 'vacant')`.
+- **The defect:** `rooms` is seeded from `CANONICAL_UNITS`, whose `status` is vacant for all 33
+  units (`frontend/src/lib/systemState.ts:287`). `fetchRooms()` sets `roomsFetchFailed = true`
+  on failure (same file, ~636) **but the seed stays in `rooms`**, and `PublicGuestView` never
+  reads that flag. With the backend down the page told me *"10 vacant of 10 units"*, *"15 vacant
+  of 15 units"*, *"8 vacant of 8 units"* — 33 of 33 free, on a property that is 32 occupied.
+  This is the failure path of the same defect the comment at `PublicGuestView.vue` ~line 121
+  says was fixed: the source now fetches live, the *fallback* still publishes the seed silently.
+- **What Sean needs to do:** decide what a prospective boarder should see when the room list
+  cannot be reached — suppress the counts, or show them with an explicit "availability
+  unavailable" state. Either is a small change in `PublicGuestView.vue`; the design account can
+  implement the state once the call is made.
+- **How to know it worked:** stop the backend, load `/public`. The page must not claim a
+  vacancy it cannot verify. With the backend up, the three counts should sum to 1 vacant of 33,
+  not 33 of 33.
+- **Raised:** 2026-09-17 by the design account (Kiel's machine)
+
 ### B-05 — Apply `database/migrations/027` to remove two test repair tickets
 
 - **Blocked on:** Claude Code's safety check refused the live-database change on 2026-09-18,
