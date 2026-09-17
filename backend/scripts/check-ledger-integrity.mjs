@@ -158,7 +158,7 @@ if (live.length) {
  * covered by `check:api`.
  */
 {
-  const rooms = await rows('rooms?select=id,room_number,operational_status,cluster_code,floor');
+  const rooms = await rows('rooms?select=id,room_number,operational_status,cluster_code,floor,current_price');
   const clusters = await rows('clusters?select=code');
   const assigns = await rows('room_assignments?is_active=eq.true&select=room_id,tenant_profile_id,is_primary_contact');
   const people = await rows('profiles?select=id,role,email,phone_number');
@@ -469,6 +469,69 @@ if (live.length) {
     `${TRUTH.get('unit')} units, ${TRUTH.get('cluster')} clusters, ` +
     `${TRUTH.get('floor')} floors - every claim in frontend/src agrees`
   );
+
+  /**
+   * THE HARDCODED UNIT PRICES, AND HOW FAR THEY HAVE DRIFTED.
+   *
+   * `frontend/src/lib/canonicalUnits.ts` carries a `basePrice` per unit so the
+   * catalogue has something to render before the API answers. It is a snapshot
+   * of a column that changes - `rooms.current_price`, with its own history table
+   * and an `AFTER UPDATE` trigger - so it goes stale by design, and it has:
+   * **30 of the 33 no longer match**, by as much as PHP 2,000. Unit `2b` is
+   * seeded at 6,500 and rents at 4,600.
+   *
+   * The money path is guarded. `OnsitePaymentModal` pre-fills the rent from
+   * `rooms`, and `rooms` holds this seed until `fetchRooms()` succeeds - so on a
+   * failed fetch it would have offered a figure wrong by up to two thousand
+   * pesos, in the form whose contents become the rent in the owner's ledger. It
+   * now refuses to pre-fill anything when `roomsFetchFailed` is set, and says
+   * why.
+   *
+   * REPORTED, NOT FAILED, and deliberately. Failing would mean a permanently red
+   * suite, because the fix is not "correct the 30 numbers" - they would drift
+   * again on the next rate change. The fix is for the seed to stop carrying a
+   * figure that pretends to be current, and that is a product decision about
+   * what the public catalogue shows while it loads.
+   */
+  const seedSrc = readFileSync(
+    join(here, '..', '..', 'frontend', 'src', 'lib', 'canonicalUnits.ts'),
+    'utf8'
+  );
+  const seeded = new Map();
+  for (const m of seedSrc.matchAll(/unitCode:\s*"([^"]+)"[^}]*?basePrice:\s*([0-9]+)/g)) {
+    seeded.set(m[1], Number(m[2]));
+  }
+
+  const priceDrift = [];
+  for (const r of rooms) {
+    const s = seeded.get(r.room_number);
+    if (s === undefined) continue;
+    const live = Number(r.current_price);
+    if (Number.isFinite(live) && s !== live) {
+      priceDrift.push({ unit: r.room_number, seed: s, live, by: s - live });
+    }
+  }
+
+  if (priceDrift.length) {
+    const worst = priceDrift.reduce((a, b) => (Math.abs(a.by) >= Math.abs(b.by) ? a : b));
+    console.log(
+      `\n  HARDCODED UNIT PRICES — ${priceDrift.length} of ${seeded.size} no longer match the database:`
+    );
+    console.log(
+      `    worst is ${worst.unit}: seeded ${worst.seed.toLocaleString('en-PH')}, ` +
+      `actually ${worst.live.toLocaleString('en-PH')} - out by ` +
+      `${Math.abs(worst.by).toLocaleString('en-PH')}`
+    );
+    console.log(
+      '    These render in the public catalogue before the API answers, behind an'
+    );
+    console.log(
+      '    "unavailable, may not reflect a recent change" notice when it fails. The'
+    );
+    console.log(
+      '    on-site payment form refuses to pre-fill a rent from them at all.'
+    );
+  }
 
   const KNOWN_ENDLESS = 8;
   const endless = (await rows(

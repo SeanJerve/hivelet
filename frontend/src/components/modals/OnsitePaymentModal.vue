@@ -8,7 +8,8 @@ import {
   fetchRooms, 
   fetchTenants, 
   formatUnitOccupantsSummary, 
-  showToast 
+  showToast,
+  roomsFetchFailed
 } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
@@ -116,7 +117,7 @@ function waterBaselineFor(unitCode: string, occupants: number): number {
   return occupants * (waterRatePerOccupant.value ?? 200);
 }
 
-watch([selectedUnit, monthsCovered], ([newUnit, newMonths]) => {
+watch([selectedUnit, monthsCovered, roomsFetchFailed], ([newUnit, newMonths]) => {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
   const summary = formatUnitOccupantsSummary(newUnit);
   const occCount = summary.count > 0 ? summary.count : (room?.occupants || 1);
@@ -126,11 +127,29 @@ watch([selectedUnit, monthsCovered], ([newUnit, newMonths]) => {
 
   waterAmount.value = waterBaselineFor(isLinda ? newUnit : newUnit, occCount) * mCovered;
 
-  // Cleared when the unit has no price, rather than left holding the PREVIOUS
-  // unit's figure. Picking unit A at 8,000 and then unit B, which has no price
-  // on record, used to keep 8,000 in the field - unit A's rent, about to be
-  // recorded against unit B.
-  rentAmount.value = room && room.price ? room.price * mCovered : 0;
+  /**
+   * Cleared when the unit has no price, rather than left holding the PREVIOUS
+   * unit's figure. Picking unit A at 8,000 and then unit B, which has no price
+   * on record, used to keep 8,000 in the field - unit A's rent, about to be
+   * recorded against unit B.
+   *
+   * AND cleared when the room data is not live, which is the more dangerous
+   * case. `rooms` is seeded from `canonicalUnits.ts` so the page has something
+   * to render before the API answers - and **30 of those 33 hardcoded prices no
+   * longer match the database**, by up to PHP 2,000. Unit `2b` is seeded at
+   * 6,500 and actually rents at 4,600.
+   *
+   * If `fetchRooms()` fails, that seed is what stays in `rooms`. Pre-filling
+   * from it would put a figure that is wrong by up to two thousand pesos into
+   * the on-site cash form - and whatever is in this field is what gets written
+   * to the owner's ledger as the rent she collected.
+   *
+   * So: no live price, no pre-filled rent. The form still works; the
+   * administrator types the figure from the receipt in her hand, which is the
+   * authority anyway.
+   */
+  rentAmount.value =
+    !roomsFetchFailed.value && room && room.price ? room.price * mCovered : 0;
 }, { immediate: true });
 
 
@@ -359,6 +378,18 @@ function triggerRecord() {
           <div>
             <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">Amount for Rent (₱)</label>
             <input v-model.number="rentAmount" type="number" min="0" class="min-h-11 w-full px-3.5 bg-white border border-border rounded-xl text-sm font-bold text-foreground focus:border-primary focus:outline-none" required />
+            <!--
+              Says WHY the field is empty. A blank rent with no explanation reads
+              as a broken form; a blank rent with this note reads as a deliberate
+              refusal to guess, which is what it is.
+            -->
+            <p
+              v-if="roomsFetchFailed"
+              class="mt-1.5 text-[11px] font-bold text-amber-700 leading-snug"
+            >
+              Live unit rates could not be loaded, so the rent has not been filled in.
+              Type the amount from the receipt — do not use a remembered figure.
+            </p>
           </div>
           <div>
             <div class="flex items-center justify-between mb-1.5">
