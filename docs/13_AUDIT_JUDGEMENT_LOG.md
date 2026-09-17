@@ -937,6 +937,119 @@ could not fail. Before applying one, ask:
 
 ---
 
+### A tenth sweep, 2026-09-17: a comment that explains why something is safe is a claim with an expiry date
+
+This sweep started somewhere dull — *which state-changing endpoints write no
+audit row?* — and the first answer was wrong in a way worth recording before
+the findings.
+
+#### 1. Scan at the wrong layer and everything looks missing
+
+Grepping the route bodies for `auditFromRequest` reported **nine** unaudited
+write endpoints, including the Adyen webhook and `POST /auth/login`. Both are
+audited. They call `recordAudit` **inside their service**, one layer down from
+where I was looking.
+
+Of the nine, four were notification-read endpoints (fairly audited as noise),
+one was dead in production (`refuseWhenGatewayConfigured` returns 404 while
+Adyen is configured, which it is), and the rest were fine. **A completeness scan
+is only as good as its idea of where the thing being counted is allowed to
+live.** The same error as the ninth sweep's closure proof, in a smaller costume.
+
+A second pass on the same question found something real but minor:
+`ROOM_STATUS_CHANGE`, `BILL_CREATE` and `BILL_UPDATE` are declared in
+`AuditAction` and **emitted by nothing**. Not a defect — there is no
+bill-create or bill-edit feature; bills only change status as a consequence of a
+payment, which is audited. But the enum advertises capability the system does
+not have, which is worth knowing before a panel reads it as a feature list.
+
+#### 2. The finding: a guard on one transition, and none on its sibling
+
+`PATCH /admin/payments/:id/verify` handles three transitions. **Verify** goes
+through `settle_verified_payment`, which takes `FOR UPDATE` on the payment row
+and re-reads the status before doing anything — genuinely idempotent, confirmed
+by reading the body out of `pg_proc` rather than trusting the comment that
+claimed it.
+
+**Reject**, in the `else` twelve lines below, was a bare `.eq('id', …)`. It
+never looked at where the payment already stood. So a **verified** payment could
+be rejected, and only three of the four records moved: the payment read
+Rejected, the bill reopened to Due, `verified_at` and `verified_by` were nulled
+— and **the income row stayed**. The owner chases rent she has already been
+paid, and the record of who banked it is gone.
+
+> **The lens:** *when one transition out of a state is carefully guarded, ask
+> what guards the other transitions out of that same state.* A guard tends to be
+> written where the author was thinking hardest, which is rarely the whole
+> surface.
+
+#### 3. And the reason it was left unguarded was written down, and had expired
+
+Above that branch is a comment saying rejection *"touches no ledger row, so
+there is nothing to tear"*. **That was true when it was written.** It stopped
+being true when migration `018` moved settlement into
+`settle_verified_payment`, which writes the `monthly_income_records` row. From
+then on there *was* a ledger row to tear, and the comment went on explaining why
+there wasn't.
+
+> **The lens, and the most generalisable thing in this sweep:** *a comment that
+> explains why something is safe encodes a precondition. When the code around it
+> changes, the precondition can fail silently — and the comment will keep
+> asserting the conclusion.* A comment justifying an ABSENCE is more dangerous
+> than one describing a presence, because there is no code next to it to
+> contradict it.
+>
+> Read them as claims with a date on them, and check the date.
+
+#### 4. A check can be green precisely because of the thing it is meant to catch
+
+`check:canon` excuses a banned phrase inside quotes. That is right for prose:
+quoting a phrase is how you forbid it, and every register here is written that
+way.
+
+**In code the same rule inverts.** Quotes are string delimiters, so a quoted
+banned phrase is not a citation — it is the literal text a user reads. The
+exemption was therefore strongest exactly where the wording was most live, and
+the check sat green over the toast an administrator reads **every time she
+verifies a payment**, and over a label seeded into a `system_settings` row still
+in the live database.
+
+> **The lens:** *an exemption rule carries an assumption about the medium it was
+> written for. Ask whether the same syntax means something different somewhere
+> else it will run.* Here `"` meant "I am quoting this in order to ban it" in
+> `.md` and "this is the value" in `.ts`, `.vue` and `.sql` — opposite meanings,
+> one regex.
+
+The fix is code-aware: in prose, quotes may excuse; in code, only a **comment**
+may, because a comment explaining the ban is a citation and an executable or
+data line never is. Mutation tested across all seven shapes.
+
+#### 5. A number that must be re-measured should not live next to frozen prose
+
+The session report published **271 commits**. `git` says **486**. The figure sat
+inside a *dated historical section* — beside *"seven verification suites"* and
+*"`check:api` 53/53"*, neither true for days — and was being incremented each
+session instead of measured.
+
+> **The lens:** *a live figure embedded in a frozen snapshot will be maintained
+> as if the snapshot were live, and will drift.* Either re-measure it where it
+> is read, or freeze it with the prose around it. Doing neither produces a
+> number that is wrong and looks maintained.
+
+#### 6. What was declined, and why
+
+The obvious place for a regression test on the reject guard is `check:api`. It
+was **not** put there. That suite's header promises it *"performs NO writes -
+this is safe to run against production"*, and a probe that corrupts a live
+payment whenever the guard is broken is a check whose failure mode is the
+disaster it exists to detect. The behavioural test went into
+`TESTING_REHEARSAL.md` instead, to be run by a human on a payment they created.
+
+> *A test that is only safe while the code under test is correct is not a safety
+> net. It is a second copy of the risk.*
+
+---
+
 ---
 
 ## 3. Judgement calls a fresh reader might reverse
