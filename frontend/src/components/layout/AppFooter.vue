@@ -1,130 +1,95 @@
 <script setup lang="ts">
 /**
  * @file components/layout/AppFooter.vue
- * @description Hivelet corporate footer spanning 100% full viewport width with deep navy background (#0b132b).
+ * @description Public footer for the landing and category pages.
  * @systemBibleRef Section 1 - Product Identity & Section 4 - Public Visitor Role
- * @rationale Full edge-to-edge corporate footer with zero left/right/bottom whitespace margins.
+ * @rationale Set in the same register as the rest of the public site: the hero's
+ *   dark field, hairline rules, and text links rather than icon-and-pill rows.
+ *   Rendered only where `isPublicPage` is true in App.vue, so the workspace
+ *   screens are untouched by it.
+ *
+ * The colours are tokens now. This was `bg-[#0b132b]`, and the Facebook mark
+ * carried `text-[#1877F2]`; both were raw literals of the kind
+ * `check:design-tokens` ratchets down, and the marks went with the icons when
+ * the rows became text.
  */
-import { 
-  Building2, 
-  MapPin, 
-  Phone, 
-  PhoneCall, 
-  ChevronRight,
-  ExternalLink
-} from 'lucide-vue-next';
+import { LANDLADY } from '@/lib/systemState';
 </script>
 
 <template>
-  <footer class="w-full bg-[#0b132b] text-slate-300 pt-16 pb-12 text-xs mt-auto">
-    <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8">
-      
-      <!-- 4 Columns Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
-        
-        <!-- Col 1: Brand & Description -->
-        <div class="space-y-4">
-          <div class="flex items-center gap-2">
-            <span class="font-semibold text-lg tracking-tight text-white">HIVELET</span>
-            <span class="rounded-md bg-blue-500/20 px-2 py-0.5 text-xs font-semibold uppercase text-brand border border-blue-400/30">EST. 2026</span>
-          </div>
-          <p class="text-ink-faint leading-relaxed text-xs">
-            Fe Galang Da Silva Boarding House Management System. Centralized operational, financial, and inquiry workflows for 33 rentable units in Legazpi City, Albay.
+  <footer class="w-full bg-neutral-dark text-white font-editorial mt-auto">
+    <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-24">
+
+      <div class="grid gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
+
+        <div class="lg:col-span-2 max-w-sm">
+          <p class="text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em]">
+            Fe Galang<br />Da Silva<br />Boarding House
+          </p>
+          <p class="mt-6 text-xs leading-relaxed text-white/60">
+            Managed with Hivelet. Centralised operational, financial and enquiry workflows for 33
+            rentable units in Legazpi City, Albay.
           </p>
         </div>
 
-        <!-- Col 2: Property Quick Links -->
-        <div class="space-y-3">
-          <h4 class="font-semibold text-white text-xs flex items-center gap-1.5">
-            <Building2 class="size-3.5 text-brand" />
-            <span>Property Portal</span>
-          </h4>
-          <ul class="space-y-2.5 text-ink-faint">
+        <div>
+          <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-white/50">Property</h2>
+          <ul class="mt-5 space-y-2.5 text-sm">
             <li>
-              <router-link to="/public" class="hover:text-white transition-colors flex items-center gap-1.5">
-                <ChevronRight class="size-3 text-ink-faint" />
-                <span>Overview</span>
-              </router-link>
+              <RouterLink to="/public" class="text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+                Overview
+              </RouterLink>
             </li>
             <li>
-              <router-link to="/category/1-bedroom" class="hover:text-white transition-colors flex items-center gap-1.5">
-                <ChevronRight class="size-3 text-ink-faint" />
-                <span>Rentable Units</span>
-              </router-link>
+              <RouterLink to="/category/1-bedroom" class="text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+                Rentable units
+              </RouterLink>
             </li>
             <li>
-              <router-link to="/public" class="hover:text-white transition-colors flex items-center gap-1.5">
-                <ChevronRight class="size-3 text-ink-faint" />
-                <span>Utility Rates &amp; Rules</span>
-              </router-link>
+              <!-- Was a second link to /public, which went nowhere in particular. -->
+              <RouterLink to="/inquire" class="text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+                Register your interest
+              </RouterLink>
             </li>
             <li>
-              <router-link to="/public" class="hover:text-white transition-colors flex items-center gap-1.5">
-                <ChevronRight class="size-3 text-ink-faint" />
-                <span>Submit Inquiry</span>
-              </router-link>
+              <RouterLink to="/login" class="text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+                Sign in
+              </RouterLink>
             </li>
           </ul>
         </div>
 
-        <!-- Col 3: Contact Us -->
-        <div class="space-y-3">
-          <h4 class="font-semibold text-white text-xs flex items-center gap-1.5">
-            <PhoneCall class="size-3.5 text-brand" />
-            <span>Contact Us</span>
-          </h4>
-          <ul class="space-y-3 text-ink-faint">
-            <li class="flex items-start gap-2.5">
-              <Phone class="size-4 text-brand mt-0.5 shrink-0" />
-              <div>
-                <span class="block text-xs uppercase text-ink-faint font-semibold">Contact Number</span>
-                <a href="tel:09494150382" class="text-white hover:text-brand font-semibold text-xs transition-colors">
-                  09494150382
-                </a>
-              </div>
+        <div>
+          <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-white/50">Contact</h2>
+          <ul class="mt-5 space-y-2.5 text-sm">
+            <li>
+              <a :href="`tel:${LANDLADY.phone}`" class="text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+                {{ LANDLADY.phone }}
+              </a>
             </li>
-            <li class="flex items-start gap-2.5">
-              <svg class="size-4 text-[#1877F2] mt-0.5 shrink-0 fill-current" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              <div class="min-w-0">
-                <span class="block text-xs uppercase text-ink-faint font-semibold">Facebook</span>
-                <a 
-                  href="https://www.facebook.com/michelle.millete.16" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  class="text-white hover:text-brand font-semibold text-xs transition-colors flex items-center gap-1 group"
-                >
-                  <span class="truncate">michelle.millete.16</span>
-                  <ExternalLink class="size-3 text-ink-faint group-hover:text-brand shrink-0" />
-                </a>
-              </div>
+            <li>
+              <a
+                href="https://www.facebook.com/michelle.millete.16"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors"
+              >
+                Facebook<span class="sr-only"> (opens in a new tab)</span>
+              </a>
             </li>
           </ul>
-        </div>
 
-        <!-- Col 4: Location & Property Address -->
-        <div class="space-y-3">
-          <h4 class="font-semibold text-white text-xs flex items-center gap-1.5">
-            <MapPin class="size-3.5 text-brand" />
-            <span>Property Location</span>
-          </h4>
-          <p class="text-slate-300 leading-relaxed text-xs">
-            32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines
-          </p>
-          <p class="text-ink-faint text-xs leading-relaxed">
-            Accessible to university campuses, transit terminals &amp; commercial centers in Albay.
+          <h2 class="mt-9 text-[0.7rem] tracking-[0.16em] uppercase text-white/50">Address</h2>
+          <p class="mt-5 max-w-xs text-sm leading-relaxed text-white/70">
+            {{ LANDLADY.address }}
           </p>
         </div>
 
       </div>
 
-      <!-- Bottom Copyright Bar -->
-      <div class="pt-8 mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-ink-faint text-xs border-t border-slate-800">
-        <p>© 2026 Hivelet. Fe Galang Da Silva Boarding House. All rights reserved.</p>
-        <div class="flex items-center gap-4 text-ink-faint">
-          <span>Fe Galang Da Silva Boarding House</span>
-        </div>
+      <div class="mt-20 flex flex-col gap-3 border-t border-white/15 pt-7 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+        <p>© 2026 Hivelet. Fe Galang Da Silva Boarding House.</p>
+        <p>Legazpi City, Albay</p>
       </div>
 
     </div>
