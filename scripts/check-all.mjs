@@ -38,6 +38,7 @@ const SUITES = [
   ['.', 'check:canon', 'no live document carries a retired or banned framing'],
   ['frontend', 'check:tokens', 'design tokens resolve, and the raw-hex ratchet holds'],
   ['frontend', 'check:reachable', 'every source file is reachable from main.ts'],
+  ['frontend', 'check:liveness', 'no screen presents cached or seeded state as a live figure'],
   ['backend', 'check:writes', 'no database write discards its result'],
   ['backend', 'check:columns', 'every column reference resolves, and live_schema.csv is current'],
   ['backend', 'check:fields', 'every snake_case field the frontend reads is one the API sends'],

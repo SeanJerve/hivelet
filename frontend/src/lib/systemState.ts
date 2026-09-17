@@ -384,6 +384,17 @@ export const inquiries = reactive<Inquiry[]>([]);
 export const roomsFetchFailed = ref(false);
 export const incomeRecordsFetchFailed = ref(false);
 export const maintenanceTicketsFetchFailed = ref(false);
+/**
+ * Expenses had no flag while its three siblings did.
+ *
+ * `expenseRecords` starts EMPTY, so a failed fetch reads as ₱0 of costs -
+ * and the dashboard subtracts that from gross income to get Net Operating
+ * Income. The screen would have shown the whole year's takings as profit,
+ * with nothing on it to say the figure was unknown rather than good.
+ * Against the live ledger that is ₱3,745,419.51 of 2025 costs, ₱1,449,215.32
+ * of 2024 and ₱628,951.64 of 2026 so far.
+ */
+export const expenseRecordsFetchFailed = ref(false);
 
 export const EXPENSE_CATEGORIES = [
   "1 — Supplies",
@@ -810,6 +821,8 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
 
+  expenseRecordsFetchFailed.value = false;
+
   try {
     const res = await api.get<any[]>('/admin/expense-entries');
     if (Array.isArray(res)) {
@@ -864,6 +877,10 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
   } catch (err) {
     console.warn('fetchExpenseRecords error:', err);
   }
+  // Reached on a thrown error AND on a response that is not an array, which
+  // is the same shape the income loader uses. A `console.warn` was the only
+  // signal this produced, and nobody is watching the console.
+  expenseRecordsFetchFailed.value = true;
   return expenseRecords;
 }
 

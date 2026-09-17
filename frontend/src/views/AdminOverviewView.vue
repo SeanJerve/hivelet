@@ -31,6 +31,7 @@ import {
   type RoomItem,
   roomsFetchFailed,
   incomeRecordsFetchFailed,
+  expenseRecordsFetchFailed,
   maintenanceTicketsFetchFailed,
 } from '@/lib/systemState';
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
@@ -1400,14 +1401,19 @@ function exportHistoricalCSV() {
                 <ReceiptText class="size-4" />
               </span>
             </div>
+            <!-- `expenseRecords` starts EMPTY, so a failed fetch reads as ₱0 of
+                 costs - and the NOI card next door subtracts that from gross
+                 income. The pair would have shown the whole year's takings as
+                 profit. Same treatment as Collections above. -->
             <p class="tabular mt-3 font-display text-3xl font-black leading-tight text-rose-700">
-              {{ peso(historicalAnnualExpenseTotal) }}
+              {{ expenseRecordsFetchFailed ? '—' : peso(historicalAnnualExpenseTotal) }}
             </p>
             <p class="mt-1.5 text-xs text-rose-600 font-semibold">
-              {{ historicalExpenseRecords.length }} categorized expense entries
+              <template v-if="expenseRecordsFetchFailed">Figures unavailable — refresh to retry</template>
+              <template v-else>{{ historicalExpenseRecords.length }} categorized expense entries</template>
             </p>
             <p
-              v-if="historicalAnnualPersonalTotal > 0"
+              v-if="!expenseRecordsFetchFailed && historicalAnnualPersonalTotal > 0"
               class="mt-1 text-[11px] leading-snug text-muted-foreground"
               title="Main House is the owner's own residence and Other / Personal is personal by definition. Both are recorded in the same ledger but are not a cost of running the boarding house, so they are not subtracted from rental income."
             >
@@ -1429,12 +1435,17 @@ function exportHistoricalCSV() {
             </div>
             <p :class="[
               'tabular mt-3 font-display text-3xl font-black leading-tight',
-              historicalAnnualNOI >= 0 ? 'text-emerald-700' : 'text-rose-700'
+              expenseRecordsFetchFailed || incomeRecordsFetchFailed
+                ? 'text-muted-foreground'
+                : historicalAnnualNOI >= 0 ? 'text-emerald-700' : 'text-rose-700'
             ]">
-              {{ peso(historicalAnnualNOI) }}
+              {{ expenseRecordsFetchFailed || incomeRecordsFetchFailed ? '—' : peso(historicalAnnualNOI) }}
             </p>
             <p class="mt-1.5 text-xs text-muted-foreground">
-              Inflow minus operating outflows
+              <template v-if="expenseRecordsFetchFailed || incomeRecordsFetchFailed">
+                Figures unavailable — refresh to retry
+              </template>
+              <template v-else>Inflow minus operating outflows</template>
             </p>
           </div>
         </div>
@@ -1661,7 +1672,7 @@ function exportHistoricalCSV() {
 
             <div class="mt-4 pt-3 border-t border-border-strong flex items-center justify-between text-xs text-muted-foreground">
               <span>Annual Inflow: <strong>{{ peso(historicalAnnualGrossTotal) }}</strong></span>
-              <span>Annual Outflow: <strong>{{ peso(historicalAnnualExpenseTotal) }}</strong></span>
+              <span>Annual Outflow: <strong>{{ expenseRecordsFetchFailed ? '—' : peso(historicalAnnualExpenseTotal) }}</strong></span>
             </div>
           </div>
 
