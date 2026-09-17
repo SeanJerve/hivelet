@@ -18,7 +18,20 @@
     "refresh:copies": "node scripts/refresh-filming-copies.mjs",
     "check:canon": "node scripts/check-canon.mjs",
     "hooks:install": "git config core.hooksPath .githooks && echo \"pre-commit secret scanner installed\"",
-    "backup": "node scripts/backup-database.mjs"
+    "backup": "node scripts/backup-database.mjs",
+    "check:writes": "cd backend && npm run check:writes",
+    "check:columns": "cd backend && npm run check:columns",
+    "check:fields": "cd backend && npm run check:fields",
+    "check:endpoints": "cd backend && npm run check:endpoints",
+    "check:ledger": "cd backend && npm run check:ledger",
+    "check:reports": "cd backend && npm run check:reports",
+    "check:adyen": "cd backend && npm run check:adyen",
+    "check:billing": "cd backend && npm run check:billing",
+    "check:api": "cd backend && npm run check:api",
+    "check:tokens": "cd frontend && npm run check:tokens",
+    "check:reachable": "cd frontend && npm run check:reachable",
+    "contract": "cd frontend && npm run contract",
+    "measure": "cd backend && npm run measure"
   },
   "keywords": [
     "hivelet",
