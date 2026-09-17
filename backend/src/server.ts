@@ -17,6 +17,36 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
+/**
+ * WHAT THIS CONTENT SECURITY POLICY IS ACTUALLY PROTECTING, since it looks
+ * looser than it should and the reason is not obvious.
+ *
+ * This server answers JSON. The interface is a separate Vite build served from
+ * its own origin, and a CSP on a JSON response governs almost nothing. The one
+ * thing this policy really covers is the **server-rendered local cashier page**
+ * in `routes/public.ts` - several hundred lines of HTML with inline `<script>`
+ * blocks and `onclick=` handlers.
+ *
+ * That is where `'unsafe-inline'` and `scriptSrcAttr` come from. They are not
+ * carelessness; without them that page does not run.
+ *
+ * AND THAT PAGE IS CURRENTLY UNREACHABLE. `refuseWhenGatewayConfigured` answers
+ * 404 for it whenever Adyen is configured, which it is. So the policy is
+ * loosened today for a page nobody can open - true, and not worth changing days
+ * before a defense, because the loosening becomes load-bearing again the moment
+ * the system runs without gateway credentials, which is exactly the fallback the
+ * page exists for.
+ *
+ * WORTH TIGHTENING LATER, in this order:
+ *   1. `connectSrc: 'https://*'` is broader than anything here needs. Nothing on
+ *      the cashier page calls out; it posts to its own origin, which `'self'`
+ *      already covers.
+ *   2. The inline handlers could become a single bundled script, which would let
+ *      `'unsafe-inline'` and `scriptSrcAttr` go entirely.
+ *
+ * Neither is urgent while the page 404s, and both are the kind of change that
+ * wants a browser in front of it rather than a week before testing.
+ */
 app.use(
   helmet({
     contentSecurityPolicy: {
