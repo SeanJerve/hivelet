@@ -64,6 +64,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SKIP_DIR = new Set([
   'node_modules', '.git', 'dist', 'build', '.vite', 'coverage',
   'VIDEO PRESENTATION DOCS',
+  // A snapshot of what the live database CONTAINED at a moment. Rewriting one
+  // would make it lie about the thing it exists to record. Where a backup shows
+  // banned wording, the fix is a migration against the live row, not an edit
+  // here - see `025_revenue_share_setting_wording.sql`.
+  'backups',
   // `.agent/tmp` is scratch: brainstorm mockups kept while a design was being
   // chosen. Not a document anyone reads from, and not worth a banner each.
   'tmp',
@@ -71,7 +76,15 @@ const SKIP_DIR = new Set([
 const EXT = new Set(['.md', '.ts', '.vue', '.sql', '.mjs', '.js', '.cjs', '.json', '.html']);
 
 const BANNED = [
-  ['BR-035 wording', /\bco-?owner(?:ship|s)?\b|\b50\/50\b|\bowner'?s?\s+share\b|\blandlad(?:y|ies)'?s?\s+share\b/i],
+  /**
+   * BR-035 forbids naming a party, recipient, purpose OR DESTINATION. The first
+   * four spellings here name a party. `revenue share` and `profit share` name a
+   * PURPOSE, and were missed entirely - which is how
+   * `'Income record generated with 50% revenue share calculated.'` sat in a toast
+   * an administrator reads every time she verifies a payment, with this check
+   * green over the top of it.
+   */
+  ['BR-035 wording', /\bco-?owner(?:ship|s)?\b|\b50\/50\b|\bowner'?s?\s+share\b|\blandlad(?:y|ies)'?s?\s+share\b|\brevenue[-\s]shar(?:e|es|ing)\b|\bprofit[-\s]shar(?:e|es|ing)\b/i],
   ['retired rate escalation', /\b2\s*%\s*(?:annual|increase|price)|annual\s+rate\s+escalation/i],
   /**
    * `(?<!other )` and `(?<!remaining )` because "the other 32 units" is correct
@@ -121,7 +134,11 @@ function isCited(line, start, end) {
   // Markdown strikethrough is how this project retires a sentence in place -
   // `docs/08_OPEN_DECISIONS.md:56` still carries the withdrawn rate decision that
   // way, which is the right thing to do with a decision someone may ask about.
-  for (const re of [/"[^"]*"/g, /'[^']*'/g, /`[^`]*`/g, /\*\*[^*]*\*\*/g, /~~[\s\S]*?~~/g]) {
+  for (const re of [
+    /"[^"]*"/g, /'[^']*'/g, /`[^`]*`/g,
+    /“[^”]*”/g, /‘[^’]*’/g,   // a document that has been through a word processor
+    /\*\*[^*]*\*\*/g, /~~[\s\S]*?~~/g,
+  ]) {
     for (const m of line.matchAll(re)) spans.push([m.index, m.index + m[0].length]);
   }
   return spans.some(([a, b]) => start >= a && end <= b);
@@ -159,6 +176,28 @@ const IMMUTABLE = new Map([
 
 const BANNER = /SUPERSEDED IN PART|\[!CAUTION\]|Historical (?:plan|design|record) — kept as a record/;
 
+/**
+ * A COMMENT LINE, IN ANY OF THE LANGUAGES HERE.
+ *
+ * The citation rule below excuses a banned phrase inside quotes, because in
+ * prose that is how you forbid a phrase: you quote it and then say not to use
+ * it. Every register in this repository is written that way.
+ *
+ * In CODE that reasoning inverts. Quotes there are string delimiters, so a
+ * quoted banned phrase is not someone citing it - it is the literal text a user
+ * reads on screen. The rule was therefore excusing the most live wording in the
+ * repository, and two things sat behind it with this check green:
+ *
+ *   - the toast after verifying a payment, in `IncomeCollectionsView`
+ *   - `'Revenue share percentage'`, seeded by migration `004` into a
+ *     `system_settings` row that is still in the live database
+ *
+ * So: in `.md`, quotes may excuse. In code, only a COMMENT may - because a
+ * comment explaining the ban is a citation, and an executable or data line
+ * never is.
+ */
+const COMMENT_LINE = /^\s*(\/\/|\/\*|\*|#|--)/;
+
 function walk(dir, out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (SKIP_DIR.has(e.name)) continue;
@@ -183,12 +222,16 @@ for (const file of walk(root)) {
   const src = fs.readFileSync(file, 'utf8');
   const lines = src.split('\n');
 
+  // `.md` is prose; everything else here is code or data. See COMMENT_LINE.
+  const proseFile = path.extname(file) === '.md';
+
   const hits = [];
   lines.forEach((line, i) => {
+    const mayCite = proseFile || COMMENT_LINE.test(line);
     for (const [kind, re] of BANNED) {
       const rx = new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
       for (const m of line.matchAll(rx)) {
-        if (isCited(line, m.index, m.index + m[0].length)) { citedMatches++; continue; }
+        if (mayCite && isCited(line, m.index, m.index + m[0].length)) { citedMatches++; continue; }
         hits.push({ line: i + 1, kind, text: line.trim().slice(0, 100) });
       }
     }

@@ -160,7 +160,11 @@ async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected')
       verification_status: status
     });
     if (status === 'Verified') {
-      showToast('success', 'Payment Verified & Settled', 'Income record generated with 50% revenue share calculated.');
+      // BR-035: the 50% column is described only as what it arithmetically is.
+      // This said "50% revenue share calculated", which names a purpose for it -
+      // forbidden as squarely as naming a party, and read by the owner every time
+      // she verified a payment.
+      showToast('success', 'Payment Verified & Settled', 'Income record written to the ledger. The 50% column is computed as half the rent amount.');
     } else {
       showToast('warning', 'Payment Rejected', 'Bill remains marked as Due.');
     }

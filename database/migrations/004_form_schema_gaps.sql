@@ -6,6 +6,16 @@
 -- @businessRules  BR-014, BR-036, BR-040 (rates), BR-044 (split allocation)
 -- @requirements   FR-022 Attachments, FR-032 Guided Payment Entry
 --
+-- SUPERSEDED IN PART — see 025_fifty_percent_setting_wording.sql.
+--
+-- Section 2 below seeds `system_settings.revenue_share_percent` with the label
+-- 'Revenue share percentage'. That names a PURPOSE for `fifty_percent_share`,
+-- which BR-035 forbids. Migration 025 corrects the live row.
+--
+-- The line is left standing here rather than edited, because this file records
+-- what was applied to the owner's database on the day it ran. 025 is the
+-- correction, and replaying 004 then 025 lands on the corrected wording.
+--
 -- Adds the storage the existing forms need but the schema does not yet have.
 -- Apply AFTER 001-003. Idempotent; safe to re-run.
 --

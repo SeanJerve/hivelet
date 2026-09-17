@@ -3,7 +3,7 @@
   @description Executive Operations Overview Dashboard with Pinned Live 2026 Operations, Dedicated Historical Fiscal Archive (FY 2025 / 2024), and Collapsible & Scrollable High-Density Audit Tables.
   @systemBibleRef docs/01_SYSTEM_BIBLE.md Section 17 (Dashboard & Financial Reporting), Section 1 (Product Identity), Section 2 (Product Philosophy: "I finally know exactly where my money goes")
   @architectureRef docs/04_ARCHITECTURE.md
-  @businessRules BR-017 (Payment Verification), BR-028 (Auditability), BR-032 (50% Revenue Share Calculation), BR-043/BR-044 (Categorized Operating Expenses & 5 Property Split Allocations), BR-048 (Admin-Only Financial Ledger Authorship)
+  @businessRules BR-017 (Payment Verification), BR-028 (Auditability), BR-035 (50% Share Is Derived), BR-043/BR-044 (Categorized Operating Expenses & 5 Property Split Allocations), BR-048 (Admin-Only Financial Ledger Authorship)
   @innovations
     - Pinned Live Operations: Default executive dashboard strictly tracks live FY 2026 occupancy, pending remittances, and maintenance alerts.
     - Deep Historical Fiscal Year Archive: One-click transformation into an audit-grade historical review interface for past years (FY 2025, FY 2024).
