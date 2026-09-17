@@ -532,6 +532,67 @@ if (live.length) {
     return new Set([...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]));
   };
 
+  /**
+   * THE WHOLE LIST, not only the non-rental half.
+   *
+   * The check below proves the two hardcoded `NON_RENTAL_AREAS` constants agree
+   * with `property_areas.is_rental_expense`. It says nothing about the areas
+   * that ARE rental - so a seventh area added to the database would be invisible
+   * to both files and to this suite.
+   *
+   * That is not hypothetical. `Penthouse` was added on 2026-09-13 by migration
+   * 012 (OD-15) and `systemState.ts` records that it was then missing from TWO
+   * hardcoded lists until commit `430d4e1` put it back. An area the interface
+   * does not offer is an area the administrator cannot file to - and the
+   * penthouse's own spending is still sitting in three other areas today
+   * because of exactly that kind of gap.
+   */
+  const dbAreas = new Set(areaRows.map((a) => a.code));
+  /**
+   * The two files spell the same list differently, so both spellings are read:
+   * the backend exports `PROPERTY_AREAS = [...]`, the frontend declares
+   * `type PropertyArea = 'a' | 'b' | ...`. Matching only the array form reported
+   * the frontend as having no list at all, which is a false alarm - and a check
+   * that cries wolf gets switched off.
+   */
+  const fullListFrom = (file) => {
+    const src = readFileSync(join(here, '..', '..', file), 'utf8');
+
+    const arr = /PROPERTY_AREAS[^=]*=\s*\[([^\]]*)\]/.exec(src);
+    if (arr) return new Set([...arr[1].matchAll(/'([^']+)'/g)].map((x) => x[1]));
+
+    const union = /type\s+PropertyArea\s*=([\s\S]*?);/.exec(src);
+    if (union) return new Set([...union[1].matchAll(/'([^']+)'/g)].map((x) => x[1]));
+
+    return null;
+  };
+
+  for (const file of [
+    'backend/src/config/propertyAreas.ts',
+    'frontend/src/lib/systemState.ts',
+  ]) {
+    const inCode = fullListFrom(file);
+    if (!inCode) {
+      fail(`property areas — could not find PROPERTY_AREAS in ${file}`);
+      continue;
+    }
+    const missing = [...dbAreas].filter((a) => !inCode.has(a));
+    const extra = [...inCode].filter((a) => !dbAreas.has(a));
+    if (missing.length === 0 && extra.length === 0) {
+      pass(`property areas — ${file} offers all ${dbAreas.size}`);
+    } else {
+      if (missing.length) {
+        fail(
+          `property areas — ${file} does NOT offer [${missing.join(', ')}], so nothing can be ` +
+          'filed to it from there'
+        );
+      }
+      if (extra.length) {
+        fail(`property areas — ${file} offers [${extra.join(', ')}], which the database does not have`);
+      }
+    }
+  }
+
   const sameSet = (a, b) =>
     a && b && a.size === b.size && [...a].every((x) => b.has(x));
 
