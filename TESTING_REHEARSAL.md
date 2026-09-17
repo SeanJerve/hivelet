@@ -38,6 +38,24 @@ red after tells you exactly what the rehearsal broke.
 Keep a note of anything that does not match the "should see" column. **A step that fails is the
 point of doing this** — better now than in front of the panel.
 
+**And once, from scratch, after the passwords are rotated:**
+
+```bash
+cd frontend && rm -rf dist && npm run build && cd .. && npm run check:secrets
+```
+
+`check:secrets` reads whatever `dist/` happens to be sitting there, so scanning an old build
+proves nothing about the current code. **Deleting it first is what makes the scan mean something.**
+
+This matters because of what happened: the login page's demo panel put **34 passwords and every
+resident's name, email and unit number** into the built bundle, and it stayed there from
+2026-08-25 until it was found. The code is fixed — a clean rebuild on 2026-09-17 carried **no
+passwords and no resident addresses**, checked both by the suite and by hand.
+
+**Do it again after rotating the two demo passwords.** The fix keeps secrets out of the bundle by
+loading the demo list only in development; a new password added the wrong way would go straight
+back in, and the only thing that would notice is this command.
+
 ---
 
 ## Phase 1 — Public site, signed out
