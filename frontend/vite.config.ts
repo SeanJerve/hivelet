@@ -1,11 +1,38 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+/**
+ * Hands the demo sign-in panel its passwords from the gitignored
+ * `credentials/creds.txt`, and only to the dev server. A build gets `null`, so
+ * no password can reach `dist` even if the panel's module somehow did.
+ *
+ * Parsing relies on the layout `scripts/rotate-demo-passwords.mjs` writes: the
+ * administrator's `Password:` line first, the shared one for everyone else
+ * second. Anything else yields `null`, and the panel then refuses to submit
+ * rather than spend a real resident's failed-login allowance on a guess.
+ */
+function demoPasswords(): Plugin {
+  return {
+    name: 'hivelet-demo-passwords',
+    config(_, { command }) {
+      let value: { admin: string; tenant: string } | null = null
+      const file = fileURLToPath(new URL('../credentials/creds.txt', import.meta.url))
+      if (command === 'serve' && existsSync(file)) {
+        const found = [...readFileSync(file, 'utf8').matchAll(/^Password:\s*(\S+)\s*$/gm)].map((m) => m[1])
+        if (found.length === 2) value = { admin: found[0], tenant: found[1] }
+      }
+      return { define: { __DEMO_PASSWORDS__: JSON.stringify(value) } }
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
+    demoPasswords(),
     vue(),
     tailwindcss(),
     VitePWA({

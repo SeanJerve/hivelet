@@ -105,6 +105,12 @@ async function handleQuickLogin(account: DemoAccount) {
     isSignUp.value = false;
   }
   email.value = account.email;
+  // A wrong guess counts toward locking a real resident out, so never submit one.
+  if (!account.password) {
+    password.value = '';
+    authError.value = 'Demo passwords not found. Add credentials/creds.txt to this machine and restart the dev server.';
+    return;
+  }
   password.value = account.password;
   authError.value = null;
   await handleSubmit();
