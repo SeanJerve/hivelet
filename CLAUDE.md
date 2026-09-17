@@ -77,6 +77,7 @@ here:
 | | |
 | :--- | :--- |
 | `CONTINUE_HERE.md` | Where the project stands. Section 0.0 first |
+| `HANDOFF_TO_DESIGN.md` | **For the design account.** What is decoration and what is load-bearing |
 | `HANDOFF_TO_LOYD.md` | For the machine without Sean's setup — what runs, and the seven-receipt workflow |
 | `BLOCKED_FOR_SEAN.md` | The queue. **Add to it rather than stopping**, and read it before starting |
 | `CLIENT_MEETING_QUESTIONS.md` | Everything the owner must decide, answerable in one sitting |
