@@ -1,6 +1,6 @@
 # CONTINUE HERE — handoff for the next machine
 
-**Last updated:** 2026-09-17.
+**Last updated:** 2026-09-18.
 **Branch:** `main`. Everything described here is committed and pushed.
 **Read this first, then `docs/claude_pipeline/CONTINUE_HERE.md` for pipeline detail.**
 
@@ -15,7 +15,71 @@
 
 ---
 
-## 0.0 What 2026-09-17 produced, and what it needs from a person
+## 0.0 What 2026-09-18 produced
+
+**The interface was rebuilt, a privacy defect was closed, and two verification suites turned out
+to have been lying — one of them for five days.**
+
+### The redesign landed
+
+Roughly twenty commits from the design side: a workspace design system, every admin and resident
+screen moved onto it, the public site rebuilt with real photographs, one shared table component,
+one dialog, one status pill, and pagination so long lists stop running off the page.
+
+**The screen contract held through all of it** — it went from 59 to 60 calls with **30 writes
+unchanged**. A read was added and no write was lost, which is the thing that document exists to
+prove. Read the totals off its own footer; every figure quoted elsewhere has gone stale at least
+once.
+
+### The privacy defect, and the half of it that is still open
+
+**A clean frontend build was shipping 33 residents’ email addresses** in a chunk served at 200.
+Closed from the design side in `ba3b82a`: the roster moved to the gitignored
+`credentials/demo-accounts.json`, injected by the vite plugin and `null` in a build, and
+**`check:secrets` was hardened to scan tracked files rather than only the build** — which is the
+half that would have caught it in the repository.
+
+> **`B-10` is the part that is not fixed and is not a code change.** The repository is **public**
+> — confirmed, not assumed: an unauthenticated `api.github.com` request returns `"private":
+> false`. The tracked tree is down to 11 noted addresses from 19, but **the history still holds
+> the 33**, because the roster file was gutted rather than erased. Making the repository private
+> is the only option that touches what is already published.
+
+### Two suites that were not checking what they claimed
+
+| | |
+| :--- | :--- |
+| **`verify:rbac`** | Had **not signed in successfully since 13 September** — it hardcoded the passwords burned in that rotation, so every sign-in returned 401. Worse, *“deactivated tenant CANNOT sign in”* was still counted, and a dead password makes it fail for the wrong reason. **21 passed / 3 failed → 53 passed / 0 failed.** It now discovers its accounts |
+| **`check:api`** | Was silently running **58 of 76**. The missing 18 included the assertion that a tenant cannot reach admin data. It needs `database/seeded-tenant-credentials.json`, gitignored and sent separately |
+| **`check:billing`** | Passed all 39 assertions and exited **127** on a libuv teardown crash, so `check:all` called it FAILED. Fixed |
+
+**Eighteen suites now, and all eighteen pass.**
+
+### The owner answered, and one answer closed OD-04
+
+Two rounds, recorded in `CLIENT_ANSWERS_2026-09-17.md`. **OD-04 closed:** *“the labeled advance is
+actually the deposit”* — one sentence that resolved five days of apparent contradiction. Both her
+earlier answers were true; a **label** had been taken for a **definition**, and the figure in the
+system was correct throughout. The grace period settled the same way (late on day one, a week of
+forbearance before she presses), and rent and water stay one combined bill because her own report
+is one row per unit per month.
+
+### Needs a person, and nothing here can do it
+
+1. **`TESTING_REHEARSAL.md` — 0 of 27 steps ticked.** No write path in this system has ever been
+   used by a human being. It blocks Chapter 4’s Table 4.5, the ISO evaluation, and the defense.
+2. **Migration `027`** (`B-05`). Two junk tickets sit on the owner’s dispatch board **right now**,
+   one titled with a slur. Confirmed visible in the running product, not just in the queue.
+3. **`B-10`** — repository visibility, and whether the residents are told.
+4. **Mrs. Da Silva** — the seven receipts and five accounting habits in
+   `CLIENT_MEETING_QUESTIONS.md` §§ 1–2 are still untouched.
+
+**The full task board is `PROGRESS_REPORT.md`.** The functional audit behind most of the above is
+`docs/AUDIT_2026-09-18_FUNCTIONAL.md`.
+
+---
+
+## 0.1 What 2026-09-17 produced, and what it needs from a person
 
 **Three documents were written that day and are the ones to open first:**
 
@@ -189,7 +253,7 @@ ledger — with no error anywhere. See "Two people cannot share one webhook" bel
 ## 0.5 What CANNOT come from this document — Sean must hand these over
 
 This file is committed to a **public** repository, so it holds no secrets and no
-access. Reading it is not enough to run the system. These five things pass
+access. Reading it is not enough to run the system. These **seven** things pass
 person-to-person, and nothing in the repo can substitute for them.
 
 | # | What | Why the doc cannot do it |
@@ -199,6 +263,13 @@ person-to-person, and nothing in the repo can substitute for them.
 | 3 | **`credentials/creds.txt`** | Gitignored, and `npm run check:api` fails without it. |
 | 4 | **`.env`**, or at least the Supabase and Adyen values. `JWT_SECRET` he should generate himself. | Gitignored by design. |
 | 5 | **A second Adyen webhook** — see the warning below. | Requires clicking in the Adyen Customer Area. |
+| 6 | **`credentials/demo-accounts.json`** — the demo sign-in roster | Gitignored since 2026-09-18, because it holds 34 real residents' names, addresses and units and the build was shipping them. **Absent, the sign-in panel simply does not render** — no error, no warning. That is how it looked on Loyd's machine until the file was put in place. |
+| 7 | **`database/seeded-tenant-credentials.json`** | Gitignored. **Absent, `check:api` reports `58 passed, 0 failed` instead of 76** — it skips all 8 `/tenant/*` checks and both RBAC isolation assertions, and counts none of them as failures. The only sign is one line reading `TENANT (none found) - token FAILED`. |
+
+> **Items 6 and 7 fail silently, which is what makes them worth listing.** A missing `.env`
+> stops the backend and you know within seconds. These two leave a working system that is quietly
+> doing less than it reports — a sign-in panel that is simply absent, and a suite that says
+> `0 failed` having skipped a quarter of itself. **Check the totals, not the zeros.**
 
 ### The 16 variables, sorted by how much care each needs
 
