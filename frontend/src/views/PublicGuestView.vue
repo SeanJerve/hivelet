@@ -459,7 +459,10 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 <span>Availability could not be loaded</span>
               </template>
               <template v-else>
-                <span>{{ unitsInCategory(c.key).length }} units</span>
+                <span>
+                  {{ unitsInCategory(c.key).length }}
+                  {{ unitsInCategory(c.key).length === 1 ? 'unit' : 'units' }}
+                </span>
                 <span>{{ availableInCategory(c.key) }} available now</span>
               </template>
             </div>
