@@ -189,7 +189,7 @@ function refreshAll() {
   <div class="ws-focus flex flex-col gap-5 text-ink">
     <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div class="min-w-0">
-        <p class="text-sm text-ink-faint">Tenant portal</p>
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
           Payments and billing
         </h1>

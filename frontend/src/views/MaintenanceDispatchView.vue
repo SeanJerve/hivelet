@@ -338,7 +338,7 @@ function handleDeleteTicketPrompt() {
   <div class="ws-focus flex flex-col gap-5 text-ink">
     <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div class="min-w-0">
-        <p class="text-sm text-ink-faint">Admin</p>
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Repairs</h1>
         <p class="mt-1 text-sm text-ink-soft">
           What residents have reported, who is attending it, and what is finished.
