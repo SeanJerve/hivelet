@@ -41,7 +41,7 @@ Read that table, not the tail.
 ## Next, in order
 
 ### 1. Run the rehearsal — this blocks the most
-`TESTING_REHEARSAL.md`, 27 steps, ~40 minutes. **0 ticked.** No write path in this system has ever
+`TESTING_REHEARSAL.md`, 26 steps, ~40 minutes. **0 ticked.** No write path in this system has ever
 been used by a person.
 
 Three steps matter most: **18** (type a non-zero garbage fee), **19** (same receipt twice must be

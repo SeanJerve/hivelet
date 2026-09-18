@@ -24,7 +24,7 @@ That gap is exactly what testing week measures, and it is yours to close.
 
 ## 2. Start here: `TESTING_REHEARSAL.md`
 
-27 steps, about forty minutes, **every write path once**. It runs on `PH`, the only vacant unit,
+26 steps, about forty minutes, **every write path once**. It runs on `PH`, the only vacant unit,
 with a fake tenant, and every writing step carries an Undo.
 
 **Tick the boxes in the file as you go and commit them.** A half-filled sheet is evidence; an

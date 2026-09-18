@@ -25,7 +25,7 @@ a half-ticked board is evidence of progress, an untouched one is not.
 
 ### ☐ 1.1 Functional walkthrough — **~40 minutes, blocks everything downstream**
 
-Queued as **B-04**. **0 of 27 steps are ticked.**
+Queued as **B-04**. **0 of 26 steps are ticked.**
 
 - ☐ `npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"` — record the result **before** starting
 - ☐ Work `TESTING_REHEARSAL.md` top to bottom. It runs on unit **PH**, the only vacant one, with a
@@ -139,8 +139,9 @@ Not yours to do — listed so you know what is moving.
   2026-09-18**, reasoning in `HANDOFF_TO_DOCS.md` § 4.1. The filename is misleading, but 13 of its
   34 mentions pin a line number inside records of what it said on a date; renaming makes them cite
   a file that never existed. The banner in the file does the job without falsifying a citation
-- ☑ ~~Fix stale suite counts~~ — done 2026-09-18 across seven files. **There are eighteen**, and the
-  rehearsal is **27 steps**, not 26
+- ☑ ~~Fix stale suite counts~~ — done 2026-09-18 across seven files. **There are nineteen** suites
+  as of `check:relations`. The rehearsal is **26 steps** — I briefly "corrected" it to 27 off a raw
+  row count, which was wrong: there are 28 rows because `23b` and `24b` are sub-steps
 - ☑ ~~Amend the **Module 02 answer sheet** for the Eljohn/Kiel role swap~~ — done 2026-09-18 as a
   dated amendment beneath the roles block. Section 6 per-requirement credits left as they stand:
   they record who did each item, which a later title change does not alter

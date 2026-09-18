@@ -53,7 +53,7 @@ half that would have caught it in the repository.
 | **`check:api`** | Was silently running **58 of 76**. The missing 18 included the assertion that a tenant cannot reach admin data. It needs `database/seeded-tenant-credentials.json`, gitignored and sent separately |
 | **`check:billing`** | Passed all 39 assertions and exited **127** on a libuv teardown crash, so `check:all` called it FAILED. Fixed |
 
-**Eighteen suites now, and all eighteen pass.**
+**Nineteen suites now, and all nineteen pass.**
 
 ### The owner answered, and one answer closed OD-04
 
@@ -66,7 +66,7 @@ is one row per unit per month.
 
 ### Needs a person, and nothing here can do it
 
-1. **`TESTING_REHEARSAL.md` — 0 of 27 steps ticked.** No write path in this system has ever been
+1. **`TESTING_REHEARSAL.md` — 0 of 26 steps ticked.** No write path in this system has ever been
    used by a human being. It blocks Chapter 4’s Table 4.5, the ISO evaluation, and the defense.
 2. **Migration `027`** (`B-05`). Two junk tickets sit on the owner’s dispatch board **right now**,
    one titled with a slur. Confirmed visible in the running product, not just in the queue.

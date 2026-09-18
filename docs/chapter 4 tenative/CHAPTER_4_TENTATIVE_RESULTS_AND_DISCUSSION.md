@@ -161,7 +161,7 @@ horizontal scrolling on small screens.
 
 ### 4.3.1 Automated Verification Results — **real data, use it**
 
-Eighteen suites. **Table 4.4** carries the principal ones. Figures verified 2026-09-18:
+Nineteen suites. **Table 4.4** carries the principal ones. Figures verified 2026-09-18:
 
 | Suite | Scope | Assertions |
 | :--- | :--- | :--- |
@@ -184,7 +184,7 @@ embarrassment — it shows the verification detects anomalies it was not written
 
 ### 4.3.2 Functional Walkthrough Testing — **PENDING**
 
-27 steps, every write path once, run against the single unoccupied unit so no real tenancy,
+26 steps, every write path once, run against the single unoccupied unit so no real tenancy,
 receipt or expense is touched.
 
 > **Not yet performed. Table 4.5 stays empty until it is.** When it is run, report steps executed,
