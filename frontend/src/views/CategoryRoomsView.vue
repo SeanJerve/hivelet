@@ -458,10 +458,13 @@ async function submitInquiry() {
             </p>
 
             <dl class="mt-5 divide-y divide-line border-y border-line text-sm">
+              <!-- Phrased as the limit it is. "4 people" on its own, beside a
+                   status, reads as the number living there. -->
               <div class="flex items-baseline justify-between gap-3 py-3">
-                <dt class="text-ink-soft">How many can stay</dt>
+                <dt class="text-ink-soft">Room for</dt>
                 <dd class="font-semibold text-ink">
-                  {{ activeUnit.capacity }} {{ activeUnit.capacity === 1 ? 'person' : 'people' }}
+                  up to {{ activeUnit.capacity }}
+                  {{ activeUnit.capacity === 1 ? 'person' : 'people' }}
                 </dd>
               </div>
               <div class="flex items-baseline justify-between gap-3 py-3">
@@ -536,14 +539,20 @@ async function submitInquiry() {
 
                 <span class="tabular text-base font-semibold">{{ peso(u.current_price) }}</span>
 
+                <!--
+                  Whether it is free, and nothing else. This card used to read
+                  "4 people - occupied", which is the unit's CAPACITY beside its
+                  status - but nobody reads it that way. It reads as four people
+                  living there, which is a fact about residents and none of a
+                  visitor's business. BR-024.
+                -->
                 <span
                   :class="[
                     'text-xs',
                     u.room_number === activeUnit.room_number ? 'text-on-brand-soft' : 'text-ink-soft',
                   ]"
                 >
-                  {{ u.capacity }} {{ u.capacity === 1 ? 'person' : 'people' }} &middot;
-                  {{ isAvailable(u) ? 'free to rent' : 'occupied' }}
+                  {{ isAvailable(u) ? 'Free to rent' : 'Occupied' }}
                 </span>
               </button>
             </li>
