@@ -49,25 +49,23 @@ before the redesign started.
 
 ### `views/ExpensesLedgerView.vue`
 
-5 call(s), **3 of them write**.
+4 call(s), **3 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | **writes** | `DELETE /admin/expense-entries/:id` | delete an expense |
 | reads | `GET /admin/expense-categories` | the thirteen expense categories |
-| reads | `GET /admin/reports/expenses.xlsx` | the expense workbook, in her own layout |
 | **writes** | `PATCH /admin/expense-entries/:id` | edit an expense and re-allocate — atomic |
 | **writes** | `POST /admin/expense-entries` | add an expense and its area allocations — atomic |
 
 ### `views/IncomeCollectionsView.vue`
 
-6 call(s), **4 of them write**.
+5 call(s), **4 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | **writes** | `DELETE /admin/income-records/:id` | void a receipt |
 | reads | `GET /admin/payments` | payments awaiting verification |
-| reads | `GET /admin/reports/income.xlsx` | the owner's income workbook, in her own layout |
 | **writes** | `PATCH /admin/income-records/:id` | correct a receipt |
 | **writes** | `PATCH /admin/payments/:id/verify` | verify a payment — atomic, settles the bill and the ledger together |
 | **writes** | `POST /admin/income-records` | record an on-site collection — the money path |
@@ -204,6 +202,14 @@ before the redesign started.
 | **writes** | `POST /auth/logout` | sign out, recorded in the audit trail |
 | **writes** | `POST /auth/register` | create an account |
 
+### `lib/downloadReport.ts`
+
+1 call(s), **0 of them write**.
+
+| | Endpoint | What it is for |
+| :--- | :--- | :--- |
+| reads | `GET :id` | — |
+
 ### `lib/systemState.ts`
 
 5 call(s), **0 of them write**.
@@ -218,4 +224,4 @@ before the redesign started.
 
 ---
 
-**19 files make 60 distinct calls, 30 of which write.** Generated 2026-09-18.
+**20 files make 59 distinct calls, 30 of which write.** Generated 2026-09-19.

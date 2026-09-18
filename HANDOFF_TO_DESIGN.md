@@ -88,7 +88,8 @@ and fixed on 17 September, one at a time, against the live ledger.
 | `AdminOverviewView` | em dashes on the money tiles | **₱0 of costs**, making Net Operating Income equal the whole year's takings |
 | `ExpensesLedgerView` | em dashes on three tiles | **₱0.00** totals |
 | `RoomDirectoryView` | a banner saying rates are not live | **stale seeded prices**, 30 of 33 of which no longer match the database |
-| `CategoryRoomsView` | "live pricing unavailable" banner | same |
+| `CategoryRoomsView` | shows **nothing** and says "the units could not be loaded", with the landlady's number | a banner reading "live pricing unavailable" over a listing built from the seed - whose unit TYPES are wrong, so it advertised studios as one-bedrooms |
+| `PublicGuestView` | each category plate reads "Availability could not be loaded" and prints no figure | "n vacant of m units", counted from the always-vacant seed (B-01) |
 | `RoomDetailModal`, `InquiriesView`, `TenantManagementView` | no figure at all | a rate up to **₱1,900** wrong, quoted to a prospect |
 | `OnsitePaymentModal`, `IncomeCollectionsView` | refuses to pre-fill, and says why | a rent **₱2,000** wrong on a receipt |
 

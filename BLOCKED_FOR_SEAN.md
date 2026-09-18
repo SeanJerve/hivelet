@@ -33,6 +33,41 @@ thing did not work" is not.
 
 ## Open
 
+### B-12 — Supabase has disabled this project's legacy API keys, so the live data is unreachable
+
+- **Blocked on:** the Supabase keys in `.env`. Nothing in the repository can fix this; the new
+  key has to be copied out of the Supabase dashboard.
+- **What I was doing:** rebuilding the public category pages on the design machine, and
+  verifying them against the running app rather than against a typecheck.
+- **The symptom, measured 2026-09-19 with `npm run dev:backend` up on this machine:**
+  ```
+  GET http://127.0.0.1:5000/api/health        -> 503
+  GET http://127.0.0.1:5000/api/public/rooms  -> 500
+      {"code":"INTERNAL","stack":"ApiError: Legacy API keys are disabled ..."}
+  GET http://127.0.0.1:5000/api/public/rates  -> 200
+  ```
+  The process starts and the settings endpoint answers; everything that reads a table returns
+  500. The browser console shows `fetchRooms fallback warning: {status: 500}` on both public
+  pages, so the fallbacks are doing their job - the landing says availability could not be
+  loaded and the category page shows nothing and says so.
+- **Why it is a key and not the code:** `.env` holds `SUPABASE_ANON_KEY` and
+  `SUPABASE_SERVICE_ROLE_KEY` - the legacy JWT pair - and Supabase has switched this project to
+  publishable/secret keys and turned the old pair off. The backend's own check scripts already
+  expect the new name: `check:columns`, `check:fields` and `check:ledger` each exit with
+  *"SUPABASE_URL / SUPABASE_SECRET_KEY are not set"*.
+- **What Sean needs to do:** in the Supabase dashboard, Project Settings -> API Keys, copy the
+  **secret key** (`sb_secret_...`) and the **publishable key** (`sb_publishable_...`) and send a
+  `.env` that sets `SUPABASE_SECRET_KEY` separately - it is gitignored and must not be
+  committed. Check whether `backend/src` reads `SUPABASE_SERVICE_ROLE_KEY` by name; if it
+  does, that rename is `backend/src` and so yours.
+- **How to know it worked:** `GET /api/public/rooms` returns 33 rows; `/public` shows real
+  counts on the four category plates instead of "Availability could not be loaded";
+  `/category/studio` lists 20 units; and `check:all` goes from **14 passing to 17** on this
+  machine. The last two, `check:api` and `check:relations`, additionally need
+  `credentials/creds.txt`, which has never been on this machine - so 19 of 19 is still only
+  reachable on yours.
+- **Raised:** 2026-09-19 by the design account (Kiel's machine)
+
 ### B-11 — 16 ended tenancies do not record when they ended
 
 - **Blocked on:** a backfill migration, which is live data and therefore yours
@@ -326,6 +361,20 @@ thing did not work" is not.
   vacancy it cannot verify. With the backend up, the three counts should sum to 1 vacant of 33,
   not 33 of 33.
 - **Raised:** 2026-09-17 by the design account (Kiel's machine)
+- **The state you asked for now exists, 2026-09-19 — confirm it is the one you wanted.** You
+  offered two acceptable outcomes: suppress the counts, or show them with an explicit
+  "availability unavailable" state. The second is implemented. The plates no longer print a
+  vacancy figure they cannot verify; with `/public/rooms` unreachable each one reads
+  **"Availability could not be loaded"** and prints no number at all. Verified against the
+  running app with the backend returning 500 (B-12).
+
+  Two things changed underneath it. The plates now group units by `room_type` rather than by
+  the first character of the unit code, so they agree with the category page your `e1d6e68`
+  corrected - until 2026-09-19 the landing still advertised the old three categories and their
+  old counts. And the seed can no longer masquerade as a count: its `room_type` strings are
+  the wrong ones, so grouping it matches nothing, which is why the state above is a sentence
+  rather than a row of zeros. **If you want suppression instead - no line at all - say so; it
+  is one `v-if`.**
 
 ### B-05 — Apply `database/migrations/027` to remove two test repair tickets
 
