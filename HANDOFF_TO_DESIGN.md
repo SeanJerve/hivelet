@@ -112,7 +112,9 @@ A blank state is a claim. `₱0` is a claim. An empty list is a claim.
 ## 5. The contract each screen must still meet
 
 **`docs/SCREEN_CONTRACT.md`** — every screen, every call it makes, and **which ones write**.
-Currently 19 files, 59 calls, 30 writes. It is generated:
+Currently 19 files, 60 calls, 30 writes — but read the totals off the file itself, not from
+this sentence. It is generated, so a number quoted here goes stale the moment somebody adds a
+call:
 
 ```bash
 cd frontend && npm run contract

@@ -177,7 +177,7 @@ and the fact that **nothing in the system tells a resident their rent is due or 
 | :--- | :--- |
 | `docs/13_AUDIT_JUDGEMENT_LOG.md` **§ 3** | **Read before reporting a bug.** Several things that look wrong are deliberate and say why: bills raised on demand, the receipt guard being code-only, Linda excluded from grand totals, the lockout message that enumerates accounts |
 | § 2 of the same file | The defect classes worth re-running, and the ten sweeps that found them |
-| `docs/SCREEN_CONTRACT.md` | Every screen, every call, which ones write. 19 files, 59 calls, **30 writes** |
+| `docs/SCREEN_CONTRACT.md` | Every screen, every call, which ones write. **Read the totals off its own footer** — it is generated, so a figure quoted elsewhere goes stale |
 | `docs/02_BUSINESS_RULES.md` | The rules themselves |
 | `BLOCKED_FOR_SEAN.md` | The queue. **Add to it rather than stopping** |
 

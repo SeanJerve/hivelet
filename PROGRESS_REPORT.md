@@ -158,8 +158,10 @@ OD-10** remain. **OD-04 closed 2026-09-18.**
   own report layout is one row per unit per month
 - ☑ **Chapter 4 drafted** in the manuscript's own formatting
 - ☑ **Handoffs reconciled** — one per seat, not one per person
-- ☑ **Screen contract verified intact** through Sean's full frontend redesign: 19 files, 59 calls,
-  30 writes, unchanged
+- ☑ **Screen contract held through the redesign.** Across Sean's rebuild it went **59 → 60 calls
+  with 30 writes unchanged** — a read was added and no write was lost, which is exactly what that
+  document exists to prove. Read the totals off its own footer; a figure quoted elsewhere goes
+  stale the moment somebody adds a call
 
 ---
 
