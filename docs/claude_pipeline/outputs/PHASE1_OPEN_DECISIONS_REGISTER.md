@@ -151,13 +151,33 @@ corrected on that basis either.
 > *"When you give back what is left of the deposit — does that show anywhere in your books? Or
 > does it just go back to them and nothing is written down?"*
 
-☐ **It is written down** *(then settlement writes a ledger row, and the schema must say which
-one — an expense entry, or a negative income line)*
-☐ **Nothing is written down** *(then settlement is a disposition on the tenancy only, and the
-books never see the refund)*
+**ANSWERED 2026-09-18:** *"When we give back, it is stated in the expenses, but is upon written by
+the landlady. So it is not part of the system that is super technical."*
 
-**This decides whether the deposit settlement touches the ledger at all**, which is a larger
-schema question than the disposition columns themselves. Ask it in the same breath as the first.
+**The refund is recorded — as an ordinary expense entry, written by her, by hand.**
+
+> [!IMPORTANT]
+> **This shrinks OD-04 from a Phase 2 schema gate to a naming question.** The whole settlement is
+> her bookkeeping, through screens that already exist:
+>
+> | Step | Where it already lives |
+> | :--- | :--- |
+> | the move-out repairs | expense entries, category **8 — Repairs and Maintenance** |
+> | the refund of the remainder | an expense entry she writes |
+> | the sum itself | `room_assignments.deposit_amount`, and **Column 12** of her income report |
+>
+> **So no settlement engine is needed, and the vacate endpoint does not need a settlement step.**
+> The disposition columns this register asked for — refunded amount, forfeited amount, settlement
+> date — would be recording by hand what she is already recording by hand, in a second place, with
+> nothing keeping the two in step. **That is the shape this project has been burned by before.**
+>
+> **BR-025 should be re-read in that light.** It is recorded as *Partial* in the crosswalk
+> because the vacate path has no settlement step. If settlement is deliberately manual, *Partial*
+> may be the wrong verdict rather than an outstanding gap.
+
+**What remains of OD-04 is the first question only — same money, or a separate sum.** It now
+decides **what the figure is called** in BR-039, the register and her report, not what gets built.
+**Still worth asking, and no longer blocking anything.**
 
 **What each answer costs.** The first is the cheaper path and mostly confirms what is already
 stored: one figure, plus disposition columns and a settlement step on the vacate endpoint. The

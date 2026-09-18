@@ -453,13 +453,31 @@ paid bills and pays for it with the one thing the reports must not lose.
 covered — not the ability to know the split. **Implementation is Sean's lane** (`backend/src/`
 and a migration); this settles *what*, not *how*.
 
-**One question for her remains, and it is small:**
+**Answered 2026-09-18, and there is no allocation order to decide.**
 
-> *"If someone owes ₱8,000 rent and ₱400 water and hands you ₱8,000 — is that the rent paid and
-> the water still outstanding, or would you ask them which they meant?"*
+> "The tenant makes sure that the landlady knows what they're paying for — if it's rent or just
+> for the water."
 
-That fixes the allocation order. **Until it is answered, do not guess one** — a default that
-silently clears water first would mis-state what a resident still owes.
+**The payer declares it.** So the system never has to infer rent-first or water-first; it has to
+**record what was declared**. That is a better answer than either default would have been.
+
+**And the path that matters already does exactly that.** Checked in the code rather than assumed:
+
+| Path | Does it capture the split? |
+| :--- | :--- |
+| **On-site cash — she records it herself** (`OnsitePaymentModal.vue:28-30`) | **Yes.** Separate `rentAmount`, `waterAmount` and `gbgFee` fields, each editable, each written to the ledger |
+| **Tenant portal / GCash** (`AdyenPaymentModal.vue:52-58`) | **No.** It displays `₱rent + ₱water`, but charges one combined `amount_outstanding` and records no component |
+
+**Q1 says collection is overwhelmingly in person** — residents come to her and she enters it. **So
+the dominant path is already complete**, and the residual gap is the online one, which **BR-016
+makes strictly optional** and which is the minority route.
+
+> **One correction, because it changes what gets built.** The tenant portal does *not* let a
+> resident choose how much of their payment goes to rent and how much to water — there is no
+> amount input in that modal at all; the server derives the charge from the bill's outstanding
+> balance. It shows the two figures and one combined balance. **If a resident should be able to
+> declare a split online, that is new work** — and given the collection pattern, it is reasonable
+> to decide it is not worth building.
 
 **Settled before the redesign fixes a layout around one combined figure**, which is what this
 item was blocking — see `HANDOFF_TO_DESIGN.md` § 5.
