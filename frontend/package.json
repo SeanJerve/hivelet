@@ -10,6 +10,7 @@
     "check:tokens": "node scripts/check-design-tokens.mjs",
     "contract": "node scripts/screen-contract.mjs",
     "check:reachable": "node scripts/check-reachable.mjs",
+    "check:components": "node scripts/check-components.mjs",
     "check:liveness": "node scripts/check-liveness.mjs"
   },
   "dependencies": {

@@ -790,6 +790,16 @@ body {
     text-align: right;
     font-variant-numeric: tabular-nums;
   }
+  /* A subtotal line. Reads as a conclusion rather than another row. */
+  .ws-table tfoot td,
+  .ws-table tfoot th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink);
+    background-color: var(--canvas);
+    border-top: 2px solid var(--line);
+  }
 
   /* Loading placeholders. One shape, one pulse, so a screen mid-load reads as
      the same screen rather than as a different one. It settles at a visible

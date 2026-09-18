@@ -3,8 +3,8 @@
  *
  * WHY THIS EXISTS
  * ---------------
- * There are fourteen suites spread across three package.json files. Running
- * them by hand means three `cd`s and fourteen commands, in the right order,
+ * There are eighteen suites spread across three package.json files. Running
+ * them by hand means three `cd`s and eighteen commands, in the right order,
  * remembering which live where. Before a defense, or after any change, that is
  * exactly the kind of chore that gets half-done - and a suite nobody runs is a
  * suite nobody wrote.
@@ -38,6 +38,7 @@ const SUITES = [
   ['.', 'check:canon', 'no live document carries a retired or banned framing'],
   ['frontend', 'check:tokens', 'design tokens resolve, and the raw-hex ratchet holds'],
   ['frontend', 'check:reachable', 'every source file is reachable from main.ts'],
+  ['frontend', 'check:components', 'every rendered component is one the file can resolve'],
   ['frontend', 'check:liveness', 'no screen presents cached or seeded state as a live figure'],
   ['backend', 'check:writes', 'no database write discards its result'],
   ['backend', 'check:columns', 'every column reference resolves, and live_schema.csv is current'],

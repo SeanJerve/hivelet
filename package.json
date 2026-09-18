@@ -31,6 +31,7 @@
     "check:api": "cd backend && npm run check:api",
     "check:tokens": "cd frontend && npm run check:tokens",
     "check:reachable": "cd frontend && npm run check:reachable",
+    "check:components": "cd frontend && npm run check:components",
     "check:liveness": "cd frontend && npm run check:liveness",
     "contract": "cd frontend && npm run contract",
     "measure": "cd backend && npm run measure"

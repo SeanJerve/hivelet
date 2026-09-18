@@ -17,27 +17,14 @@ import {
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api, API_BASE, getStoredToken } from '@/lib/api';
-import { 
-  Download, 
-  Plus, 
-  Search, 
-  Pencil,
-  Trash2,
-  ReceiptText,
-  X,
-  Loader2,
-  Clock,
-  ShieldCheck,
-  ShieldAlert,
-  Check,
-  CreditCard,
-  FileSpreadsheet,
-  Banknote,
-  ChevronDown
-} from 'lucide-vue-next';
+import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Banknote } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
+import MonthCapsules from '@/components/overview/MonthCapsules.vue';
+import SegmentBar from '@/components/overview/SegmentBar.vue';
+import RecordTable from '@/components/ui/RecordTable.vue';
+import type { CapsuleMonth } from '@/components/overview/types';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -285,6 +272,55 @@ const totalSpreadsheetLine = computed(() =>
 
 /** BR-038, matching the generated column exactly: Rent Amount + Water Payment. */
 const totalRemitted = computed(() => rows.value.reduce((s, r) => s + r.rent + r.water, 0));
+
+/**
+ * Collections by month, for the same capsule chart the overview uses.
+ *
+ * Built from the rows already on screen, so it answers to the filters above it.
+ * A month with no row is `unentered` rather than zero: this ledger is entered by
+ * hand and a blank month means nobody has typed it in yet, which is a different
+ * fact from having collected nothing. The overview makes the same distinction.
+ *
+ * When a single month is being filtered for, the chart would be one capsule and
+ * eleven blanks, so it is not drawn at all.
+ */
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] as const;
+const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'] as const;
+
+const collectionsByMonth = computed<CapsuleMonth[]>(() => {
+  const totals = new Array(12).fill(0);
+  const seen = new Array(12).fill(false);
+
+  for (const r of rows.value) {
+    if (!r.datePaid || r.datePaid === '—') continue;
+    const d = new Date(r.datePaid);
+    if (isNaN(d.getTime())) continue;
+    const m = d.getMonth();
+    seen[m] = true;
+    totals[m] += r.rent + r.water + r.garbage;
+  }
+
+  return MONTH_SHORT.map((short, i) => ({
+    short,
+    long: MONTH_FULL[i],
+    kind: seen[i] ? ('recorded' as const) : ('unentered' as const),
+    value: seen[i] ? totals[i] : null,
+  }));
+});
+
+const showMonthChart = computed(() => filterMonth.value === 'All' && rows.value.length > 0);
+
+/**
+ * What the money on screen is made of. A true part-to-whole: rent, water and
+ * the garbage fee add up to what was collected, so a bar is honest here.
+ */
+const collectionParts = computed(() => [
+  { label: 'Rent', value: totalRent.value, tone: 'brand' as const },
+  { label: 'Water', value: totalWater.value, tone: 'bright' as const },
+  { label: 'Garbage', value: totalGarbage.value, tone: 'soft' as const },
+]);
+
+const collectedAltogether = computed(() => totalRent.value + totalWater.value + totalGarbage.value);
 
 // Grouped rows matching Excel's 5 physical sub-sections
 const clusterGroups = computed(() => {
@@ -597,11 +633,14 @@ async function handleEditIncome() {
 /**
  * The Monthly Income Report as a real spreadsheet. BR-049.
  *
- * The CSV button beside this one satisfies BR-030 - the rows leave the system in
- * a format Excel opens. This is the stricter rule: the documented layout, with
- * the month blocks, the per-cluster subtotals, and Linda kept in her own section
- * rather than folded into the grand total. CSV cannot express any of that, so
- * the file is built server-side and streamed back.
+ * This is the one export on this screen, and it satisfies both BR-030 - the rows
+ * leave the system in a format Excel opens - and the stricter BR-049: the
+ * documented layout, with the month blocks, the per-cluster subtotals, and Linda
+ * kept in her own section rather than folded into the grand total.
+ *
+ * A CSV button used to sit beside it writing a flat dump of the same rows. CSV
+ * cannot express any of that structure, so the two files disagreed about what
+ * the ledger looks like, and the flat one was the easier button to reach.
  *
  * Fetched rather than linked, because the endpoint needs the bearer token and an
  * `<a href>` cannot carry one.
@@ -640,206 +679,68 @@ async function exportExcel() {
   }
 }
 
-/**
- * One CSV field, quoted and with its own quotes doubled.
- *
- * The rows here wrapped each text field in `"` and stopped there. A quote INSIDE
- * the value then closes the field early and every column after it shifts by one
- * - for that row and, depending on how the reader recovers, for the rest of the
- * file. It is the owner's income ledger, so a shifted column means a rent figure
- * appearing under Water.
- *
- * `""` is how RFC 4180 escapes a quote, and it is what
- * `ExpensesLedgerView.exportCSV` next door has been doing all along - the fix
- * already existed in this repository, one file over.
- *
- * Nothing in the ledger triggers it today: 0 of 937 rows carry a quote in the
- * contact name or the invoice number, checked. It is worth fixing anyway because
- * of WHOSE names these are - a nickname in quotes is ordinary here, and
- * `Jose "Jojo" Cruz` typed into the receipt form is all it takes.
- */
-function csvField(value: unknown): string {
-  return `"${String(value ?? '').replace(/"/g, '""')}"`;
-}
-
-function exportCSV() {
-  const headers = ['Unit', 'Cluster', 'Date Paid', 'Contact', 'Invoice', 'Rent For', 'Rent (PHP)', '50% Share (PHP)', 'Occupants', 'Water (PHP)', 'Garbage (PHP)', 'Remitted (PHP)'];
-  const csvRows = [headers.join(',')];
-
-  // Sort chronologically ascending
-  const sortedRecords = [...rows.value].sort((a, b) => {
-    const da = new Date(a.datePaid).getTime();
-    const db = new Date(b.datePaid).getTime();
-    return da - db;
-  });
-
-  // Group rows by month
-  const groups: { monthKey: string; records: typeof rows.value }[] = [];
-  
-  sortedRecords.forEach(r => {
-    let monthKey = 'Unknown Month';
-    if (r.datePaid && r.datePaid !== '—') {
-      const d = new Date(r.datePaid);
-      if (!isNaN(d.getTime())) {
-        monthKey = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-      }
-    }
-    let group = groups.find(g => g.monthKey === monthKey);
-    if (!group) {
-      group = { monthKey, records: [] };
-      groups.push(group);
-    }
-    group.records.push(r);
-  });
-
-  groups.forEach((g, gIdx) => {
-    // 3 blank rows before subsequent months
-    if (gIdx > 0) {
-      csvRows.push(',,,,,,,,,,,');
-      csvRows.push(',,,,,,,,,,,');
-      csvRows.push(',,,,,,,,,,,');
-    }
-
-    // Month header row
-    csvRows.push([`"** ${g.monthKey.toUpperCase()} **"`, '', '', '', '', '', '', '', '', '', '', ''].join(','));
-
-    // Records
-    g.records.forEach((r) => {
-      const row = [
-        csvField(r.unit),
-        csvField(r.cluster),
-        csvField(r.datePaid),
-        csvField(r.contact),
-        csvField(r.invoice),
-        csvField(r.rentFor),
-        r.rent,
-        r.rent / 2,
-        r.occupants,
-        r.water,
-        r.garbage,
-        (r.rent / 2) + r.water
-      ];
-      csvRows.push(row.join(','));
-    });
-
-    // Monthly Subtotals row
-    const rentSubtotal = g.records.reduce((sum, r) => sum + r.rent, 0);
-    const shareSubtotal = rentSubtotal / 2;
-    const occupantsSubtotal = g.records.reduce((sum, r) => sum + r.occupants, 0);
-    const waterSubtotal = g.records.reduce((sum, r) => sum + r.water, 0);
-    const garbageSubtotal = g.records.reduce((sum, r) => sum + r.garbage, 0);
-    const remittedSubtotal = shareSubtotal + waterSubtotal;
-
-    csvRows.push([
-      `"SUBTOTAL (${g.monthKey.toUpperCase()})"`,
-      '',
-      '',
-      '',
-      '',
-      '',
-      rentSubtotal,
-      shareSubtotal,
-      occupantsSubtotal,
-      waterSubtotal,
-      garbageSubtotal,
-      remittedSubtotal
-    ].join(','));
-  });
-
-  // Yearly Grand Totals
-  const rentGrand = rows.value.reduce((sum, r) => sum + r.rent, 0);
-  const shareGrand = rentGrand / 2;
-  const occupantsGrand = rows.value.reduce((sum, r) => sum + r.occupants, 0);
-  const waterGrand = rows.value.reduce((sum, r) => sum + r.water, 0);
-  const garbageGrand = rows.value.reduce((sum, r) => sum + r.garbage, 0);
-  const remittedGrand = shareGrand + waterGrand;
-
-  csvRows.push(',,,,,,,,,,,');
-  csvRows.push([
-    '"GRAND YEARLY TOTALS"',
-    '',
-    '',
-    '',
-    '',
-    '',
-    rentGrand,
-    shareGrand,
-    occupantsGrand,
-    waterGrand,
-    garbageGrand,
-    remittedGrand
-  ].join(','));
-
-  const blob = new Blob(['\uFEFF' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  const monthName = filterMonth.value !== 'All' ? filterMonth.value : 'AllMonths';
-  const yearName = filterYear.value !== 'All' ? filterYear.value : 'AllYears';
-  link.setAttribute('download', `hivelet_income_${monthName}_${yearName}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  showToast('success', 'Excel CSV Exported', 'Income collections ledger successfully downloaded.');
-}
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- Header with Breadcrumbs -->
-    <div class="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <!-- Page header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
-          <span>Admin</span>
-          <span>/</span>
-          <span class="font-semibold text-ink">Income &amp; Collections</span>
-        </div>
-        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
-          Monthly Income &amp; Collections Ledger
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+          Money coming in
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
-          The canonical revenue ledger, reconciled line-for-line with the historical spreadsheet. The 50% column is computed by the system as half of each row's Rent Amount.
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
+          Every payment recorded against a unit, reconciled line for line with the spreadsheet.
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-
-        <button 
-          @click="exportCSV"
-          class="pill-btn"
-        >
-          <Download class="size-3.5 text-ink-soft" />
-          <span>Export CSV</span>
-        </button>
-
+        <!--
+          One export, not two. A CSV button sat beside this one writing a flat
+          dump, while this writes her actual layout: month blocks, cluster
+          subtotals, Linda kept separate. Two buttons meant two files that
+          disagreed about what the ledger looks like.
+        -->
         <button
-          @click="exportExcel"
-          :disabled="isExportingExcel"
+          type="button"
           class="pill-btn"
-          title="The full Monthly Income Report layout — month blocks, cluster subtotals, Linda kept separate"
+          :disabled="isExportingExcel"
+          @click="exportExcel"
         >
-          <FileSpreadsheet :class="['size-3.5 text-ink-soft', isExportingExcel ? 'animate-pulse' : '']" />
-          <span>{{ isExportingExcel ? 'Building…' : 'Export Excel (.xlsx)' }}</span>
+          <FileSpreadsheet
+            :class="['size-4', isExportingExcel && 'animate-pulse']"
+            aria-hidden="true"
+          />
+          <span>{{ isExportingExcel ? 'Building the file' : 'Download for Excel' }}</span>
         </button>
 
-        <button 
-          @click="isOnsitePaymentModalOpen = true"
-          class="pill-btn-brand"
-        >
-          <Plus class="size-3.5 text-white" />
-          <span>Record On-Site Payment</span>
+        <button type="button" class="pill-btn-brand" @click="isOnsitePaymentModalOpen = true">
+          <Plus class="size-4" aria-hidden="true" />
+          <span>Record a payment</span>
         </button>
       </div>
     </div>
 
-    <!-- 4 Summary KPI StatCards (Always Visible at Top) -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs text-ink-faint">Total Gross Rent</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ peso(totalRent) }}</p>
-        <p class="mt-1 text-xs text-ink-soft">Before 50% share derivation</p>
-      </div>
+    <!-- The four figures -->
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <OverviewTile title="Collected altogether" tone="night">
+        <p class="tabular text-4xl font-semibold leading-none">{{ peso(totalRemitted) }}</p>
+        <p class="mt-2 text-sm leading-6 text-on-night-soft">
+          Rent plus water, across {{ rows.length }}
+          {{ rows.length === 1 ? 'entry' : 'entries' }} (BR-038)
+        </p>
+      </OverviewTile>
+
+      <OverviewTile title="Rent">
+        <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalRent) }}</p>
+        <p class="mt-2 text-sm leading-6 text-ink-soft">Before the 50% column is derived</p>
+      </OverviewTile>
+
+      <OverviewTile title="Water">
+        <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalWater) }}</p>
+        <p class="mt-2 text-sm leading-6 text-ink-soft">₱200 a head, each month</p>
+      </OverviewTile>
 
       <!-- BR-035 wording is fixed: this is a system-computed figure equal to half
            the row's Rent Amount, retained for parity with the historical
@@ -850,30 +751,55 @@ function exportCSV() {
            quoted here - repeating it would put the banned phrasing back into
            the repository, which is what the rule is for. See BR-035 in
            docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md. -->
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs text-ink-faint">50% Share · BH rows</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-accent-ink">{{ peso(totalShare) }}</p>
-        <p class="mt-1 text-xs text-verify font-medium">Half of Rent Amount, computed by the system</p>
-      </div>
-
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs text-ink-faint">Water Collections</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">{{ peso(totalWater) }}</p>
-        <p class="mt-1 text-xs text-ink-soft">₱200 / head monthly rule</p>
-      </div>
-
-      <div class="rounded-tile bg-tile p-5">
-        <p class="text-xs text-ink-faint">Total Remitted</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ peso(totalRemitted) }}</p>
-        <p class="mt-1 text-xs text-brand font-medium">Rent + Water (BR-038)</p>
-        <!-- The spreadsheet's own bottom line is a different sum and used to be
-             displayed under the "Total Remitted" heading, which is the name of a
-             database column holding the other figure. -->
-        <p class="mt-2 pt-2 border-t border-line text-xs text-ink-soft">
-          Spreadsheet line: <strong class="text-ink">{{ peso(totalSpreadsheetLine) }}</strong>
-          <span class="block text-xs text-ink-faint">BH at half rent, other clusters at full rent, plus water</span>
+      <OverviewTile title="50% Share, on BH rows">
+        <p class="tabular text-3xl font-semibold leading-none text-verify">{{ peso(totalShare) }}</p>
+        <p class="mt-2 text-sm leading-6 text-ink-soft">
+          Half of each row's Rent Amount, computed by the system
         </p>
-      </div>
+      </OverviewTile>
+    </div>
+
+    <!--
+      What came in, month by month, and what it was made of. The same two
+      components the overview and the expenses ledger draw with, because a
+      second chart language on a third screen is how a system stops being one.
+    -->
+    <div v-if="rows.length > 0" class="grid gap-4 xl:grid-cols-5">
+      <OverviewTile
+        v-if="showMonthChart"
+        :title="`Collected each month${filterYear !== 'All' ? ` in ${filterYear}` : ''}`"
+        class="xl:col-span-3"
+      >
+        <MonthCapsules :months="collectionsByMonth" label="Collections by month" />
+      </OverviewTile>
+
+      <OverviewTile title="What it was made of" :class="showMonthChart ? 'xl:col-span-2' : 'xl:col-span-5'">
+        <p class="tabular text-3xl font-semibold leading-none text-ink">
+          {{ peso(collectedAltogether) }}
+        </p>
+        <SegmentBar
+          class="mt-4"
+          :segments="collectionParts"
+          label="Rent, water and the garbage fee as parts of what was collected"
+        />
+        <dl class="mt-4 space-y-2 text-sm">
+          <div
+            v-for="part in collectionParts"
+            :key="part.label"
+            class="flex items-baseline justify-between gap-3"
+          >
+            <dt class="text-ink-soft">{{ part.label }}</dt>
+            <dd class="tabular font-semibold text-ink">{{ peso(part.value) }}</dd>
+          </div>
+        </dl>
+        <!-- Her spreadsheet's own bottom line is a different sum from BR-038's
+             remitted_amount, and both were once shown under the same heading. -->
+        <p class="mt-4 border-t border-line pt-4 text-sm leading-6 text-ink-soft">
+          The spreadsheet's own line reads
+          <strong class="tabular font-semibold text-ink">{{ peso(totalSpreadsheetLine) }}</strong
+          >: BH at half rent, every other cluster at full rent, plus water.
+        </p>
+      </OverviewTile>
     </div>
 
     <!-- Ledger or the verification queue -->
@@ -996,289 +922,364 @@ function exportCSV() {
     <!-- Ledger -->
     <div v-else id="income-panel" role="tabpanel" aria-labelledby="income-tab-ledger" class="space-y-6">
 
-    <!-- Ledger Table Container -->
-    <div class="rounded-tile bg-tile overflow-hidden">
-      <!-- Filter Bar -->
-      <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
-        <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
-          <input
-            v-model="q"
-            type="text"
-            placeholder="Search unit, resident or OR #…"
-            class="ws-input w-full pl-10 pr-4 sm:text-sm"
-          />
-        </div>
+    <!-- Narrowing the ledger -->
+    <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div class="relative xl:max-w-xs xl:flex-1">
+        <Search
+          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+          aria-hidden="true"
+        />
+        <label for="income-search" class="sr-only">Search the ledger</label>
+        <input
+          id="income-search"
+          v-model="q"
+          type="search"
+          placeholder="Unit, resident or receipt number"
+          class="ws-input w-full pl-11"
+        />
+      </div>
 
-        <select
-          v-model="selectedCluster"
-          class="ws-select sm:text-sm sm:w-44"
-        >
-          <option value="All">All Clusters</option>
-          <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
-        </select>
+      <div class="flex flex-wrap items-center gap-2">
+        <label class="ws-field">
+          <span class="sr-only">Cluster</span>
+          <select v-model="selectedCluster" class="ws-select w-auto">
+            <option value="All">Every cluster</option>
+            <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
+          </select>
+        </label>
 
-        <select
-          v-model="filterMonth"
-          class="ws-select sm:text-sm sm:w-44"
-        >
-          <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
-        </select>
+        <label class="ws-field">
+          <span class="sr-only">Month</span>
+          <select v-model="filterMonth" class="ws-select w-auto">
+            <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
+          </select>
+        </label>
 
-        <select
-          v-model="filterYear"
-          class="ws-select sm:text-sm sm:w-36"
-        >
-          <option value="All">All Years</option>
-          <option v-for="y in yearsList" :key="y" :value="y">{{ y === 'All' ? 'All Years' : y }}</option>
-        </select>
+        <label class="ws-field">
+          <span class="sr-only">Year</span>
+          <select v-model="filterYear" class="ws-select w-auto">
+            <option value="All">Every year</option>
+            <option v-for="y in yearsList" :key="y" :value="y">
+              {{ y === 'All' ? 'Every year' : y }}
+            </option>
+          </select>
+        </label>
 
-        <!-- View Mode Segmented Switcher -->
-        <div class="inline-flex rounded-xl bg-canvas p-1 border border-line shrink-0 self-center">
+        <!-- Two ways of reading the same ledger, on the one chip style -->
+        <div class="flex items-center gap-2" role="group" aria-label="How to show the ledger">
           <button
+            type="button"
+            class="chip"
+            :aria-pressed="viewMode === 'grouped'"
             @click="viewMode = 'grouped'"
-            :class="[ 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5', viewMode === 'grouped' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
-            title="Spreadsheet Cluster Sections"
           >
-            <FileSpreadsheet class="size-3.5" />
-            <span class="hidden md:inline">Spreadsheet View</span>
+            <FileSpreadsheet class="size-4" aria-hidden="true" />
+            <span>By cluster</span>
           </button>
           <button
+            type="button"
+            class="chip"
+            :aria-pressed="viewMode === 'flat'"
             @click="viewMode = 'flat'"
-            :class="[ 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5', viewMode === 'flat' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
-            title="Unified Single Ledger Table"
           >
-            <Banknote class="size-3.5" />
-            <span class="hidden md:inline">Flat Ledger</span>
+            <Banknote class="size-4" aria-hidden="true" />
+            <span>All together</span>
           </button>
         </div>
-      </div>
-
-      <!-- SKELETON LOADING STATE -->
-      <div v-if="isLoading" class="p-4">
-        <SkeletonTable :columns="10" :rows="8" />
-      </div>
-
-      <!-- VIEW MODE 1: SPREADSHEET CLUSTER-GROUPED TABLES -->
-      <div v-else-if="viewMode === 'grouped'" class="p-4 space-y-6 max-h-[75vh] overflow-y-auto">
-        <div v-if="clusterGroups.length === 0" class="p-12 text-center text-xs text-ink-soft bg-tile rounded-tile border border-line">
-          No income collections recorded matching the active filters.
-        </div>
-
-        <div 
-          v-else
-          v-for="group in clusterGroups" 
-          :key="group.key"
-          class="rounded-tile border border-line bg-tile overflow-hidden space-y-0"
-        >
-          <!-- Cluster Section Header -->
-          <div class="px-4 py-3 bg-[#f8fafc] border-b border-line flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
-              <span class="size-2.5 rounded-full" :class="group.hasShareColumn ? 'bg-verify' : 'bg-brand'"></span>
-              <div>
-                <h4 class="font-semibold text-sm text-ink">{{ group.label }}</h4>
-                <p class="text-xs text-ink-soft">{{ group.desc }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 text-xs">
-              <span class="badge-soft badge-blue font-semibold">{{ group.records.length }} records</span>
-              <span v-if="group.hasShareColumn" class="badge-soft badge-warning font-semibold" title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet (BR-035).">Column 6 &mdash; spreadsheet parity</span>
-            </div>
-          </div>
-
-          <!-- Cluster Table -->
-          <div class="overflow-x-auto">
-            <table class="w-full text-xs border-collapse">
-              <thead class="bg-canvas text-left text-xs uppercase tracking-wide text-ink-soft border-b border-line">
-                <tr>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold">RM #</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold">DATE PAID</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold">TENANT &amp; OR #</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold">RENT PERIOD</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-right">RENT (₱)</th>
-                  <th v-if="group.hasShareColumn" class="whitespace-nowrap px-3 py-2.5 font-semibold text-right text-verify">50% SHARE (₱)</th>
-                  <th v-if="group.key === 'Linda'" class="whitespace-nowrap px-3 py-2.5 font-semibold text-right text-brand">ELECTRIC (₱)</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-center">HEADS</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-right">WATER (₱)</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-right">GBG (₱)</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-right">REMITTED (₱)</th>
-                  <th class="whitespace-nowrap px-3 py-2.5 font-semibold text-center">ACTION</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-line">
-                <tr 
-                  v-for="r in group.records" 
-                  :key="r.id || (r.unit + r.invoice)"
-                  class="hover:bg-[#fcfbf9] transition-colors"
-                >
-                  <td class="whitespace-nowrap px-3 py-2 font-semibold uppercase text-ink">
-                    {{ r.unit }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-ink-soft">
-                    {{ r.datePaid }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-2 font-semibold text-ink">
-                    {{ r.contact }}
-                    <span v-if="r.invoice" class="block font-mono text-xs font-normal text-ink-soft">{{ r.invoice }}</span>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-ink-soft">
-                    {{ r.rentFor }}
-                  </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-ink">
-                    {{ peso(r.rent) }}
-                  </td>
-                  <td v-if="group.hasShareColumn" class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-verify bg-verify-soft/40">
-                    {{ peso(r.rent / 2) }}
-                  </td>
-                  <td v-if="group.key === 'Linda'" class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-brand bg-brand-soft/40">
-                    {{ peso(r.linda?.electricity || 0) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-center font-semibold text-ink">
-                    {{ r.occupants }}
-                  </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-ink">
-                    {{ peso(r.water) }}
-                  </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right text-ink-soft">
-                    {{ peso(r.garbage) }}
-                  </td>
-                  <td class="tabular whitespace-nowrap px-3 py-2 text-right font-semibold text-brand">
-                    {{ peso(group.hasShareColumn ? (r.rent / 2) + r.water : r.rent + r.water) }}
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-2 text-center">
-                    <button 
-                      @click="startEditIncome(r)" 
-                      class="pill-btn min-h-7 px-2.5 py-0.5 text-xs gap-1 inline-flex items-center cursor-pointer hover:border-brand hover:text-brand"
-                      title="Edit Collection"
-                    >
-                      <Pencil class="size-3 text-ink-soft" />
-                      <span>Edit</span>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-
-              <!-- Cluster Subtotal Row -->
-              <tfoot class="bg-[#f8fafc] border-t-2 border-[#e2e8f0] font-semibold text-xs text-ink">
-                <tr>
-                  <td colspan="4" class="px-3 py-2.5 text-[#64748b]">
-                    {{ group.label }} SUB-TOTAL ({{ group.records.length }} UNITS)
-                  </td>
-                  <td class="tabular px-3 py-2.5 text-right font-semibold text-ink">{{ peso(group.totalRent) }}</td>
-                  <td v-if="group.hasShareColumn" class="tabular px-3 py-2.5 text-right font-semibold text-verify">{{ peso(group.totalShare) }}</td>
-                  <td v-if="group.key === 'Linda'" class="tabular px-3 py-2.5 text-right font-semibold text-brand">
-                    {{ peso(group.records.reduce((s, r) => s + (r.linda?.electricity || 0), 0)) }}
-                  </td>
-                  <td class="px-3 py-2.5 text-center font-semibold">{{ group.totalOccupants }}</td>
-                  <td class="tabular px-3 py-2.5 text-right font-semibold">{{ peso(group.totalWater) }}</td>
-                  <td class="tabular px-3 py-2.5 text-right font-semibold text-ink-soft">{{ peso(group.totalGarbage) }}</td>
-                  <td class="tabular px-3 py-2.5 text-right font-semibold text-brand">{{ peso(group.totalRemitted) }}</td>
-                  <td class="px-3 py-2.5 text-center">—</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIEW MODE 2: UNIFIED FLAT LEDGER TABLE -->
-      <div v-else class="max-h-[70vh] overflow-x-auto overflow-y-auto">
-        <table class="w-full text-xs border-collapse">
-          <thead class="sticky top-0 z-10 bg-canvas">
-            <tr class="text-left text-xs uppercase tracking-wide text-ink-soft border-b border-line">
-              <th class="whitespace-nowrap px-3 py-3 font-semibold">UNIT</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold">CLUSTER</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold">DATE PAID</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold">CONTACT / RESIDENT</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold">INVOICE #</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold">RENT FOR</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold text-right">RENT (₱)</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold text-center">OCC.</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold text-right">WATER (₱)</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold text-right">GBG (₱)</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold text-right">TOTAL REMITTED (₱)</th>
-              <th class="whitespace-nowrap px-3 py-3 font-semibold text-center">ACTION</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-line">
-            <tr v-if="rows.length === 0">
-              <td colspan="12" class="p-8 text-center text-ink-soft bg-tile">
-                No income collections recorded matching the filters.
-              </td>
-            </tr>
-            <tr 
-              v-else
-              v-for="r in rows" 
-              :key="r.unit + r.invoice"
-              class="hover:bg-canvas transition-colors"
-            >
-              <td class="whitespace-nowrap px-3 py-2.5 font-semibold uppercase text-ink">
-                {{ r.unit }}
-              </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-ink-soft font-medium">
-                {{ r.cluster }}
-              </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-ink-soft">
-                {{ r.datePaid }}
-              </td>
-              <td class="whitespace-nowrap px-3 py-2.5 font-semibold text-ink">
-                {{ r.contact }}
-              </td>
-              <td class="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-ink-soft">
-                {{ r.invoice }}
-              </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-ink-soft">
-                {{ r.rentFor }}
-              </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right">
-                <span class="font-semibold text-ink block leading-tight">{{ peso(r.rent) }}</span>
-                <span v-if="r.cluster === 'BH'" class="text-xs font-semibold text-accent-ink block leading-tight mt-0.5">50%: {{ peso(r.rent / 2) }}</span>
-              </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-center font-semibold text-ink">
-                {{ r.occupants }}
-              </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-semibold text-ink">
-                {{ peso(r.water) }}
-              </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right text-ink-soft">
-                {{ peso(r.garbage) }}
-              </td>
-              <td class="tabular whitespace-nowrap px-3 py-2.5 text-right font-semibold text-brand">
-                {{ peso((r.cluster === 'BH' ? (r.rent / 2) : r.rent) + r.water) }}
-              </td>
-              <td class="whitespace-nowrap px-3 py-2.5 text-center">
-                <button 
-                  @click="startEditIncome(r)" 
-                  class="pill-btn min-h-8 px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer hover:border-brand hover:text-brand"
-                  title="Edit Collection"
-                >
-                  <Pencil class="size-3.5 text-ink-soft" />
-                  <span>Edit</span>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-
-          <!-- Table Footer Subtotals -->
-          <tfoot class="sticky bottom-0 bg-canvas border-t-2 border-[#d6d3d1] font-semibold text-xs text-ink">
-            <tr>
-              <td colspan="6" class="px-3 py-3 text-ink-soft">
-                GRAND TOTALS ({{ rows.length }} ROWS)
-              </td>
-              <td class="tabular px-3 py-3 text-right">
-                <span class="font-semibold text-ink block leading-tight">{{ peso(totalRent) }}</span>
-                <span class="text-xs font-semibold text-accent-ink block leading-tight mt-0.5">50% BH Share: {{ peso(totalShare) }}</span>
-              </td>
-              <td class="px-3 py-3 text-center font-semibold">{{ rows.reduce((s, r) => s + r.occupants, 0) }}</td>
-              <td class="tabular px-3 py-3 text-right font-semibold">{{ peso(totalWater) }}</td>
-              <td class="tabular px-3 py-3 text-right font-semibold">{{ peso(totalGarbage) }}</td>
-              <td class="tabular px-3 py-3 text-right font-semibold text-brand">{{ peso(totalRemitted) }}</td>
-              <td class="px-3 py-3 text-center">—</td>
-            </tr>
-          </tfoot>
-        </table>
       </div>
     </div>
+
+    <SkeletonTable v-if="isLoading" :columns="7" :rows="8" />
+
+    <!-- By cluster: her spreadsheet's own five sections, each with its subtotal -->
+    <div v-else-if="viewMode === 'grouped'" class="space-y-6">
+      <p
+        v-if="clusterGroups.length === 0"
+        class="rounded-tile bg-tile px-6 py-16 text-center text-sm text-ink-soft"
+      >
+        No collection matches what you have asked for.
+      </p>
+
+      <section
+        v-for="group in clusterGroups"
+        :key="group.key"
+        class="overflow-hidden rounded-tile bg-tile"
+      >
+        <header
+          class="flex flex-wrap items-start justify-between gap-3 border-b border-line p-5 sm:p-6"
+        >
+          <div class="min-w-0">
+            <h2 class="text-base font-semibold text-ink">{{ group.label }}</h2>
+            <p class="mt-1 text-sm leading-6 text-ink-soft">{{ group.desc }}</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <StatusPill tone="neutral">
+              {{ group.records.length }} {{ group.records.length === 1 ? 'entry' : 'entries' }}
+            </StatusPill>
+            <StatusPill
+              v-if="group.hasShareColumn"
+              tone="verify"
+              title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet (BR-035)."
+            >
+              Carries the 50% column
+            </StatusPill>
+          </div>
+        </header>
+
+        <div class="p-5 sm:p-6">
+          <RecordTable
+            flat
+            :rows="group.records"
+            :caption="`${group.label}, by unit`"
+            noun="entry"
+            :page-size="8"
+            empty-title="Nothing in this cluster"
+          >
+            <template #head>
+              <tr>
+                <th scope="col">Unit</th>
+                <th scope="col">Paid</th>
+                <th scope="col">Who</th>
+                <th scope="col" class="num">Rent</th>
+                <th v-if="group.hasShareColumn" scope="col" class="num">50% Share</th>
+                <th v-if="group.key === 'Linda'" scope="col" class="num">Electricity</th>
+                <th scope="col" class="num">Heads</th>
+                <th scope="col" class="num">Water</th>
+                <th scope="col" class="num">Garbage</th>
+                <th scope="col" class="num">Remitted</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </template>
+
+            <template #row="{ row: r }">
+              <tr>
+                <th scope="row" class="font-semibold uppercase text-ink">{{ r.unit }}</th>
+                <td>
+                  <span class="block">{{ r.datePaid }}</span>
+                  <span class="block text-xs text-ink-faint">{{ r.rentFor }}</span>
+                </td>
+                <td>
+                  <span class="block text-ink">{{ r.contact }}</span>
+                  <span v-if="r.invoice" class="block font-mono text-xs text-ink-faint">{{
+                    r.invoice
+                  }}</span>
+                </td>
+                <td class="num font-semibold text-ink">{{ peso(r.rent) }}</td>
+                <td v-if="group.hasShareColumn" class="num font-semibold text-verify">
+                  {{ peso(r.rent / 2) }}
+                </td>
+                <td v-if="group.key === 'Linda'" class="num font-semibold text-brand">
+                  {{ peso(r.linda?.electricity || 0) }}
+                </td>
+                <td class="num">{{ r.occupants }}</td>
+                <td class="num font-semibold text-ink">{{ peso(r.water) }}</td>
+                <td class="num">{{ peso(r.garbage) }}</td>
+                <td class="num font-semibold text-brand">
+                  {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water) }}
+                </td>
+                <td class="num">
+                  <button type="button" class="pill-btn" @click="startEditIncome(r)">
+                    <Pencil class="size-3.5" aria-hidden="true" />
+                    <span>Edit</span>
+                  </button>
+                </td>
+              </tr>
+            </template>
+
+            <template #foot>
+              <tr>
+                <th scope="row" colspan="3">{{ group.label }}, all {{ group.records.length }}</th>
+                <td class="num">{{ peso(group.totalRent) }}</td>
+                <td v-if="group.hasShareColumn" class="num text-verify">
+                  {{ peso(group.totalShare) }}
+                </td>
+                <td v-if="group.key === 'Linda'" class="num text-brand">
+                  {{ peso(group.records.reduce((sum, r) => sum + (r.linda?.electricity || 0), 0)) }}
+                </td>
+                <td class="num">{{ group.totalOccupants }}</td>
+                <td class="num">{{ peso(group.totalWater) }}</td>
+                <td class="num">{{ peso(group.totalGarbage) }}</td>
+                <td class="num text-brand">{{ peso(group.totalRemitted) }}</td>
+                <td></td>
+              </tr>
+            </template>
+
+            <template #card="{ row: r }">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-base font-semibold uppercase leading-none text-ink">{{ r.unit }}</p>
+                  <p class="mt-1.5 truncate text-sm text-ink-soft">{{ r.contact }}</p>
+                </div>
+                <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
+                  {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water) }}
+                </p>
+              </div>
+
+              <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                <div>
+                  <dt class="text-xs text-ink-faint">Paid</dt>
+                  <dd class="text-ink">{{ r.datePaid }}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-ink-faint">Covering</dt>
+                  <dd class="text-ink">{{ r.rentFor }}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-ink-faint">Rent</dt>
+                  <dd class="tabular font-semibold text-ink">{{ peso(r.rent) }}</dd>
+                </div>
+                <div v-if="group.hasShareColumn">
+                  <dt class="text-xs text-ink-faint">50% Share</dt>
+                  <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2) }}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-ink-faint">Water, {{ r.occupants }} heads</dt>
+                  <dd class="tabular font-semibold text-ink">{{ peso(r.water) }}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-ink-faint">Garbage</dt>
+                  <dd class="tabular text-ink">{{ peso(r.garbage) }}</dd>
+                </div>
+              </dl>
+
+              <button
+                type="button"
+                class="pill-btn mt-4 w-full justify-center"
+                @click="startEditIncome(r)"
+              >
+                <Pencil class="size-3.5" aria-hidden="true" />
+                <span>Edit this entry</span>
+              </button>
+            </template>
+          </RecordTable>
+        </div>
+      </section>
+    </div>
+
+    <!-- All together: every cluster in one register -->
+    <RecordTable
+      v-else
+      :rows="rows"
+      caption="Every collection on screen, with unit, date, who paid, rent, water, garbage and what was remitted"
+      noun="entry"
+      :page-size="12"
+      empty-title="Nothing matches"
+      empty-note="No collection answers to what you have asked for."
+    >
+      <template #head>
+        <tr>
+          <th scope="col">Unit</th>
+          <th scope="col">Paid</th>
+          <th scope="col">Who</th>
+          <th scope="col" class="num">Rent</th>
+          <th scope="col" class="num">Heads</th>
+          <th scope="col" class="num">Water</th>
+          <th scope="col" class="num">Garbage</th>
+          <th scope="col" class="num">Remitted</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </template>
+
+      <template #row="{ row: r }">
+        <tr>
+          <th scope="row">
+            <span class="block font-semibold uppercase text-ink">{{ r.unit }}</span>
+            <span class="block text-xs font-normal text-ink-faint">{{ r.cluster }}</span>
+          </th>
+          <td>
+            <span class="block">{{ r.datePaid }}</span>
+            <span class="block text-xs text-ink-faint">{{ r.rentFor }}</span>
+          </td>
+          <td>
+            <span class="block text-ink">{{ r.contact }}</span>
+            <span v-if="r.invoice" class="block font-mono text-xs text-ink-faint">{{
+              r.invoice
+            }}</span>
+          </td>
+          <td class="num">
+            <span class="block font-semibold text-ink">{{ peso(r.rent) }}</span>
+            <span v-if="r.cluster === 'BH'" class="block text-xs font-semibold text-verify">
+              50%: {{ peso(r.rent / 2) }}
+            </span>
+          </td>
+          <td class="num">{{ r.occupants }}</td>
+          <td class="num font-semibold text-ink">{{ peso(r.water) }}</td>
+          <td class="num">{{ peso(r.garbage) }}</td>
+          <td class="num font-semibold text-brand">
+            {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water) }}
+          </td>
+          <td class="num">
+            <button type="button" class="pill-btn" @click="startEditIncome(r)">
+              <Pencil class="size-3.5" aria-hidden="true" />
+              <span>Edit</span>
+            </button>
+          </td>
+        </tr>
+      </template>
+
+      <template #foot>
+        <tr>
+          <th scope="row" colspan="3">All {{ rows.length }} on screen</th>
+          <td class="num">
+            <span class="block">{{ peso(totalRent) }}</span>
+            <span class="block text-xs text-verify">50% on BH: {{ peso(totalShare) }}</span>
+          </td>
+          <td class="num">{{ rows.reduce((sum, r) => sum + r.occupants, 0) }}</td>
+          <td class="num">{{ peso(totalWater) }}</td>
+          <td class="num">{{ peso(totalGarbage) }}</td>
+          <td class="num text-brand">{{ peso(totalRemitted) }}</td>
+          <td></td>
+        </tr>
+      </template>
+
+      <template #card="{ row: r }">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-base font-semibold uppercase leading-none text-ink">{{ r.unit }}</p>
+            <p class="mt-1.5 truncate text-sm text-ink-soft">{{ r.cluster }}, {{ r.contact }}</p>
+          </div>
+          <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
+            {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water) }}
+          </p>
+        </div>
+
+        <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <div>
+            <dt class="text-xs text-ink-faint">Paid</dt>
+            <dd class="text-ink">{{ r.datePaid }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">Covering</dt>
+            <dd class="text-ink">{{ r.rentFor }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">Rent</dt>
+            <dd class="tabular font-semibold text-ink">{{ peso(r.rent) }}</dd>
+          </div>
+          <div v-if="r.cluster === 'BH'">
+            <dt class="text-xs text-ink-faint">50% Share</dt>
+            <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">Water, {{ r.occupants }} heads</dt>
+            <dd class="tabular font-semibold text-ink">{{ peso(r.water) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">Garbage</dt>
+            <dd class="tabular text-ink">{{ peso(r.garbage) }}</dd>
+          </div>
+        </dl>
+
+        <button
+          type="button"
+          class="pill-btn mt-4 w-full justify-center"
+          @click="startEditIncome(r)"
+        >
+          <Pencil class="size-3.5" aria-hidden="true" />
+          <span>Edit this entry</span>
+        </button>
+      </template>
+    </RecordTable>
 
     <!-- Linda Units Separate Reference Card (BR-040) -->
     <div class="rounded-tile bg-tile p-6 space-y-3">

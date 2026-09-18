@@ -72,6 +72,10 @@ const total = computed(() => props.rows.length);
             <tbody>
               <slot v-for="(row, i) in visible" :key="i" name="row" :row="row" :index="i" />
             </tbody>
+            <!-- A subtotal row, where the register carries one. -->
+            <tfoot v-if="$slots.foot">
+              <slot name="foot" />
+            </tfoot>
           </table>
         </div>
       </div>
