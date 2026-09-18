@@ -24,14 +24,6 @@ const { showToast } = useToast();
 const submissionNotice = ref('');
 const activeBillId = ref<string | null>(null);
 
-/**
- * Whether a bill row actually came back.
- *
- * The tile used to decide by testing whether its own figures were falsy, which
- * is a different question: once rent had been filled in from the unit's rate,
- * the "no bill" branch could never be reached, whatever the ledger held.
- */
-const hasBill = ref(false);
 const payingOnline = ref(false);
 const showOtherWaysToPay = ref(false);
 
@@ -57,6 +49,18 @@ const tenantData = ref({
   floor: 0,
   occupants: 0,
   photoUrl: '',
+  /**
+  /**
+   * Whether a bill actually exists for this resident.
+   *
+   * Kept apart from `baseRent` and `waterFee` on purpose. The panel used to ask
+   * whether both figures were zero, which is a different question: `baseRent`
+   * used to fall back to the unit's own rate, so once that fallback ran the
+   * "no bill" branch could never be reached. A resident with no bill was shown
+   * `Rent 4,500 / Water 0` under the heading "Latest bill", with the 200-per-head
+   * rule printed directly beneath it. A bill nobody issued is not a bill.
+   */
+  hasBill: false,
   /**
    * From the BILL, and only from the bill. Neither of these may be filled in
    * from anywhere else - see `unitRent` below, and the guard in the template.
@@ -267,6 +271,9 @@ async function fetchTenantData() {
       }
     });
 
+    // Taken from the response itself, not inferred from the amounts afterwards.
+    tenantData.value.hasBill = (billsData?.length ?? 0) > 0;
+
     const unpaidBill = billsData?.find((b: any) => {
       // `effective_status` is the API's derived value. Anything not settled counts,
       // including 'Partially Paid' (BR-013).
@@ -278,7 +285,6 @@ async function fetchTenantData() {
 
     if (unpaidBill) {
       activeBillId.value = unpaidBill.id;
-      hasBill.value = true;
       tenantData.value.baseRent = unpaidBill.rent_amount;
       tenantData.value.waterFee = unpaidBill.water_amount;
       // The balance, not the debt as issued: they differ once a bill is partly
@@ -293,7 +299,6 @@ async function fetchTenantData() {
     } else {
       activeBillId.value = null;
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
-      hasBill.value = paidBill !== null;
       const validCoveredDate = maxCoveredDate as Date | null;
       if (validCoveredDate) {
         // Only from the bill. There is deliberately no fallback: a resident with
@@ -482,7 +487,7 @@ const statusTone = computed(() => {
           message="Your bill could not be loaded. Try again in a moment."
           @retry="fetchTenantData"
         />
-        <div v-else-if="!hasBill" class="flex flex-col gap-2">
+        <div v-else-if="!tenantData.hasBill" class="flex flex-col gap-2">
           <p class="text-sm leading-6 text-ink-soft">No bill is on file yet.</p>
           <!-- The unit's rate is a fact worth having. It is labelled as the
                rate, not printed in the shape of a bill. -->

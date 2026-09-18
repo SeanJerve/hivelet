@@ -230,4 +230,22 @@ check('monthsCovered 0 or negative is treated as a single cycle',
   { start: '2026-09-13', end: '2026-10-12' });
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
-process.exit(failures === 0 ? 0 : 1);
+/**
+ * `process.exitCode`, not `process.exit()`.
+ *
+ * `billingService` opens a Supabase client to read the configured rates, and its
+ * connection pool was still closing when this line was reached. Calling
+ * `process.exit()` here tore the loop down mid-close and tripped a libuv
+ * assertion on Windows:
+ *
+ *   Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 94
+ *
+ * The process then exited **127** having printed `ALL CHECKS PASSED` with zero
+ * failures, so `check:all` reported `FAIL check:billing` while every billing rule
+ * it guards was satisfied. On a project whose rule is 'read the summary table', a
+ * suite that is permanently red for a reason unrelated to its assertions is worse
+ * than no suite: it teaches people to read past red.
+ *
+ * Setting the code and letting the loop drain exits cleanly with the same status.
+ */
+process.exitCode = failures === 0 ? 0 : 1;

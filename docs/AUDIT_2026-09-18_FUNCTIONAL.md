@@ -261,3 +261,70 @@ still confuse someone reading them side by side. This also touches the **OD-04**
 - **A completed online payment.** Requires a tunnel and the shared webhook (B-03).
 - **The failure states under a genuinely dead backend** — rehearsal step 23b.
 - **Concurrency and volume.** Single operator, single session throughout.
+
+---
+
+# Second pass — re-audited and fixed, 2026-09-18
+
+Re-run in full after pulling six further commits (`e53cbdd`). **All three defects reproduced exactly**, nothing new was broken, and the new `check:components` suite passes. Then fixed.
+
+## All 18 suites now pass
+
+```
+secrets 0 · rules 0 · matrix 0 · copies 0 · canon 0 · writes 0 · columns 0 · fields 0 · endpoints 0
+ledger 0 · reports 0 · adyen 0 · billing 0 · api 0 · tokens 0 · reachable 0 · components 0 · liveness 0
+```
+
+Endpoints re-swept: **35 / 35**. All eight admin screens re-walked: zero console errors, zero failed requests, now paginated as intended.
+
+## D-0 — fixed, and it was worse than first reported
+
+**The roster was not only in the bundle. It was tracked in git, and the repository is public** — an unauthenticated `api.github.com` request returns `"private": false`. **40 distinct real email addresses appear in tracked files**, 33 of them beside each resident's name and unit number.
+
+**The cause was not the type import.** Removing it changed nothing: the chunk was emitted from the dynamic `import()` itself. **Rollup emits a dynamically-imported chunk while building the module graph, which happens before the dead branch is eliminated** — so `if (import.meta.env.DEV)` could never have prevented it. The comment asserting otherwise had been wrong since it was written.
+
+**The fix is substitution, not elimination** — see the note at the end of this file: Sean landed the same fix independently and his is the one in the tree. The roster now lives in the gitignored `credentials/demo-accounts.json`; `vite.config.ts` reads it when serving and substitutes it through `define` as `__DEMO_ACCOUNTS__`, and a build substitutes `null`. **There is no module, so there is no chunk.** This mirrors the `__DEMO_PASSWORDS__` pattern that was already there and already working.
+
+| Verified after the fix | |
+| :--- | :--- |
+| `demoAccounts` chunk in `dist` | **gone** |
+| Any email address anywhere in `dist` | **none** |
+| `check:secrets` | **exit 0**, *having scanned 6 built files* — it examined the build, not nothing |
+| Dev sign-in panel | **34 buttons**, and signing in still works |
+| `frontend/src/lib/demoAccounts.dev.ts` | removed from the working tree |
+
+**What this does not fix: the history.** The file is readable in every commit that contained it. That is **B-10**, and it is a decision — repository visibility, whether to rewrite history against `AGENTS.md`'s warning, and whether the residents are told. **Not mine to take.**
+
+**A handover follows from it:** `credentials/demo-accounts.json` travels person-to-person like `creds.txt`. Without it the demo panel does not render; nothing else changes.
+
+## D-1 — fixed
+
+`TenantOverviewView` now carries `hasBill`, set from the bills response rather than inferred from whether the amounts happen to be zero, and the panel asks that question instead. **Both branches verified:** no bill → *"No bill is on file yet."*; one bill stubbed into the response → the panel renders its own **₱4,500 rent and ₱400 water**.
+
+## D-2 — fixed and mutation-tested
+
+`process.exit()` → `process.exitCode`. The Supabase pool `billingService` opens was still closing when the process was torn down. Now **exit 0 in about four seconds**. Mutation-tested as the project requires: one expectation broken → **exit 1** and `1 CHECK(S) FAILED`; reverted → exit 0.
+
+## One thing my own fix broke, and what it showed
+
+`check:reachable` went red on the new types file, because my doc comment **quoted a literal import line** and the check scans source text for import specifiers without exempting comments. I reworded the comment rather than relax the check: **that strictness is what stops a commented-out import being quietly uncommented later.** Worth knowing when writing comments in this codebase.
+
+## Also repaired
+
+`CLAUDE.md`'s *Where things are written down* table — an earlier edit of mine inserted a paragraph between two rows, which ended the table early and orphaned the five rows below it.
+
+---
+
+# Note on D-0: Sean fixed it independently, and his is the one in the tree
+
+While I was fixing D-0, Sean pushed **`ba3b82a` — *"take 33 residents out of the repository, not just out of dist"*** — the same diagnosis and broadly the same design, arrived at separately. My version was discarded rather than merged; **his is canonical** and it is wider than mine was:
+
+- the roster moved to the gitignored **`credentials/demo-accounts.json`**, read by the vite plugin and substituted through `define`, exactly as `__DEMO_PASSWORDS__` already was;
+- `demoAccounts.dev.ts` **kept but gutted** — it merges `__DEMO_ACCOUNTS__` with `__DEMO_PASSWORDS__`, both `null` in a build. The chunk is still emitted and is now **empty of personal data**, which is what matters;
+- **`scripts/check-secrets.mjs` hardened (+93 lines)** so it scans *tracked files*, not only the build. That is the better half of the fix: it is what would have caught this in the repository rather than in `dist`.
+
+**Verified on his tree:** no email address anywhere in `dist`, `check:secrets` exits 0, the dev panel still offers 34 buttons and signs in, and **all 18 suites pass**.
+
+Two things follow. **`credentials/demo-accounts.json` must be sent machine-to-machine like `creds.txt`** — without it the panel silently does not render, which is exactly what happened on this machine until the file was put in place. And **the git history is still untouched** — that remains **B-10**, and it is a decision rather than a change.
+
+*Worth recording plainly: two people fixed the same privacy defect within an hour of each other without knowing it. That is the cost of not claiming an item in the queue before starting on it.*
