@@ -22,7 +22,8 @@ import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
-import { Search, Pencil, LayoutGrid, Table as TableIcon, Eye } from 'lucide-vue-next';
+import ShowMore from '@/components/ui/ShowMore.vue';
+import { Search, Pencil, LayoutGrid, Table as TableIcon, Eye, ChevronDown } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
 type ViewMode = 'matrix' | 'table';
@@ -31,6 +32,57 @@ const q = ref('');
 const cluster = ref('All');
 const selectedStatus = ref<string>('All');
 const viewMode = ref<ViewMode>('matrix');
+
+/**
+ * Which clusters are open.
+ *
+ * All five rendered every unit at once - 33 cards - which made this screen ten
+ * viewports tall on a phone. A closed cluster still shows its name, its
+ * occupancy and the strip, so the page reads as the whole property at a glance
+ * and you open the cluster you want.
+ *
+ * The first opens by default, because a screen that starts entirely closed
+ * looks broken.
+ */
+const openClusters = ref<Record<string, boolean>>({});
+
+function isClusterOpen(name: string, index: number) {
+  return openClusters.value[name] ?? index === 0;
+}
+
+/**
+ * How many units are drawn in each open cluster.
+ *
+ * The Boarding House holds 22, and on a phone that is one card per row: four
+ * thousand pixels inside a single cluster. Eight is about a screen and a half,
+ * and the rest is one control away - the same control the registers use.
+ */
+const UNITS_PER_STEP = 8;
+const shownUnits = ref<Record<string, number>>({});
+
+function unitsShown(name: string) {
+  return shownUnits.value[name] ?? UNITS_PER_STEP;
+}
+
+function visibleUnits(name: string) {
+  return getUnitsForCluster(name).slice(0, unitsShown(name));
+}
+
+function unitsRemaining(name: string) {
+  return Math.max(0, getUnitsForCluster(name).length - unitsShown(name));
+}
+
+function showMoreUnits(name: string) {
+  shownUnits.value[name] = unitsShown(name) + UNITS_PER_STEP;
+}
+
+function showAllUnits(name: string) {
+  shownUnits.value[name] = getUnitsForCluster(name).length;
+}
+
+function toggleCluster(name: string, index: number) {
+  openClusters.value[name] = !isClusterOpen(name, index);
+}
 const isLoading = ref(true);
 
 async function fetchRooms() {
@@ -250,38 +302,62 @@ const statusChips = computed(() => [
 
     <!-- VIEW MODE 1: VISUAL MATRIX VIEW (Live Unit Matrix moved from Overview) -->
     <div v-else-if="viewMode === 'matrix'" class="space-y-6">
-      <div 
-        v-for="clusterName in activeClusters" 
+      <div
+        v-for="(clusterName, clusterIndex) in activeClusters"
         :key="clusterName"
         v-show="getUnitsForCluster(clusterName).length > 0"
-        class="rounded-tile bg-tile rounded-tile overflow-hidden border border-line"
+        class="overflow-hidden rounded-tile bg-tile"
       >
-        <!-- Cluster header. The strip is one mark per unit in this cluster:
-             solid when someone lives there, hatched when it is free. -->
-        <header class="flex flex-col gap-2.5 border-b border-line px-5 py-4">
-          <div class="flex items-baseline justify-between gap-3">
-            <h2 class="text-[0.9375rem] font-semibold text-ink">{{ clusterName }}</h2>
-            <p class="text-xs tabular text-ink-soft">
-              {{ clusterOccupancy(clusterName).occupied }} of {{ clusterOccupancy(clusterName).total }} occupied
-            </p>
-          </div>
-          <div class="flex gap-1" aria-hidden="true">
-            <span
-              v-for="n in clusterOccupancy(clusterName).total"
-              :key="n"
-              :class="[
-                'h-1.5 flex-1 rounded-full',
-                n <= clusterOccupancy(clusterName).occupied ? 'bg-brand' : 'hatch border border-line',
-              ]"
-            />
-          </div>
-        </header>
+        <!-- The strip is one mark per unit in this cluster: solid when someone
+             lives there, hatched when it is free. It stays visible when the
+             cluster is closed, so the page is still a picture of the property. -->
+        <h2>
+          <button
+            type="button"
+            class="flex w-full flex-col gap-2.5 px-5 py-4 text-left transition-colors hover:bg-canvas"
+            :aria-expanded="isClusterOpen(clusterName, clusterIndex)"
+            :aria-controls="`cluster-units-${clusterName}`"
+            @click="toggleCluster(clusterName, clusterIndex)"
+          >
+            <span class="flex items-baseline justify-between gap-3">
+              <span class="flex items-center gap-2">
+                <ChevronDown
+                  :class="[
+                    'size-4 shrink-0 text-ink-soft transition-transform',
+                    isClusterOpen(clusterName, clusterIndex) ? '' : '-rotate-90',
+                  ]"
+                  aria-hidden="true"
+                />
+                <span class="text-[0.9375rem] font-semibold text-ink">{{ clusterName }}</span>
+              </span>
+              <span class="tabular text-xs text-ink-soft">
+                {{ clusterOccupancy(clusterName).occupied }} of
+                {{ clusterOccupancy(clusterName).total }} occupied
+              </span>
+            </span>
+            <span class="flex gap-1" aria-hidden="true">
+              <span
+                v-for="n in clusterOccupancy(clusterName).total"
+                :key="n"
+                :class="[
+                  'h-1.5 flex-1 rounded-full',
+                  n <= clusterOccupancy(clusterName).occupied
+                    ? 'bg-brand'
+                    : 'hatch border border-line',
+                ]"
+              />
+            </span>
+          </button>
+        </h2>
 
-        <!-- Units Grid -->
-        <div class="p-5">
+        <div
+          v-if="isClusterOpen(clusterName, clusterIndex)"
+          :id="`cluster-units-${clusterName}`"
+          class="border-t border-line p-5"
+        >
           <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <article
-              v-for="u in getUnitsForCluster(clusterName)"
+              v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
               class="flex flex-col justify-between rounded-2xl bg-canvas p-4"
             >
@@ -326,6 +402,16 @@ const statusChips = computed(() => [
               </div>
             </article>
           </div>
+
+          <ShowMore
+            :shown="visibleUnits(clusterName).length"
+            :total="getUnitsForCluster(clusterName).length"
+            :remaining="unitsRemaining(clusterName)"
+            :next-step="Math.min(8, unitsRemaining(clusterName)) || 8"
+            noun="unit"
+            @more="showMoreUnits(clusterName)"
+            @all="showAllUnits(clusterName)"
+          />
         </div>
       </div>
 

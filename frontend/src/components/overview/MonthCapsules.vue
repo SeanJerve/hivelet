@@ -80,7 +80,7 @@ const current = computed(() => props.months[selected.value]);
         <div
           role="group"
           :aria-label="label"
-          class="grid h-48 gap-1.5 sm:gap-2 min-w-[26rem]"
+          class="grid h-48 gap-0.5 sm:gap-2 sm:min-w-[26rem]"
           :style="{ gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))` }"
         >
           <button
@@ -98,7 +98,7 @@ const current = computed(() => props.months[selected.value]);
             @keydown.home.prevent="move(-months.length)"
             @keydown.end.prevent="move(months.length)"
           >
-            <span class="relative flex-1 w-full max-w-11 flex items-end">
+            <span class="relative flex w-full max-w-11 flex-1 items-end">
               <span
                 v-if="m.kind === 'unentered'"
                 class="absolute inset-0 rounded-full hatch border border-line"
@@ -120,8 +120,21 @@ const current = computed(() => props.months[selected.value]);
                 :style="{ height: `max(1.75rem, ${((m.value ?? 0) / scaleMax) * 100}%)` }"
               />
             </span>
-            <span :class="['text-xs leading-4', i === selected ? 'font-semibold text-ink' : 'text-ink-soft']">
-              {{ m.short }}
+            <span
+              :class="[
+                'leading-4',
+                i === selected ? 'font-semibold text-ink' : 'text-ink-soft',
+              ]"
+            >
+              <!--
+                Twelve months across 375px leaves about 30px a column, and "Jan"
+                does not fit that at a readable size. The initial does, the full
+                name is in each button's aria-label, and the selected month is
+                written out in full beneath the chart either way - so nothing is
+                only available by reading three letters.
+              -->
+              <span class="text-xs sm:hidden">{{ m.short.charAt(0) }}</span>
+              <span class="hidden text-xs sm:inline">{{ m.short }}</span>
             </span>
           </button>
         </div>

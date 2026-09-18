@@ -790,6 +790,18 @@ body {
     text-align: right;
     font-variant-numeric: tabular-nums;
   }
+  /* On a phone the same padding costs a quarter of the width. A four-column
+     summary overflowed its tile by 15px at 375 purely on cell padding, which
+     put the whole table behind a sideways swipe for the sake of one column. */
+  @media (max-width: 640px) {
+    .ws-table thead th,
+    .ws-table tbody td,
+    .ws-table tbody th {
+      padding-left: 0.625rem;
+      padding-right: 0.625rem;
+    }
+  }
+
   /* A subtotal line. Reads as a conclusion rather than another row. */
   .ws-table tfoot td,
   .ws-table tfoot th {

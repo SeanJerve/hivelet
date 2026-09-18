@@ -14,7 +14,6 @@ import { ref, computed, onMounted } from 'vue';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import {
-  Wrench,
   FileText,
   Send,
   CheckCircle2,
@@ -447,53 +446,44 @@ function statusClass(status: string) {
 
 <template>
   <div class="space-y-6">
-    <!-- Breadcrumb Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
-      <div>
-        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
-          <span>Tenant</span>
-          <span>/</span>
-          <span class="font-semibold text-ink">Maintenance Tickets</span>
-        </div>
-        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Maintenance Tickets</h1>
-        <p class="text-xs sm:text-sm text-ink-soft mt-0.5">
-          Report repair requests and track their progress
-          <span v-if="activeRoomNumber"> for Unit {{ activeRoomNumber }}</span>
-        </p>
-      </div>
-
-      <div class="flex items-center gap-2">
-      </div>
+    <!-- Page header -->
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
+      <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+        Something needs fixing
+      </h1>
+      <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
+        Tell the landlady what is wrong<span v-if="activeRoomNumber"> in unit {{ activeRoomNumber }}</span>, and
+        follow what happens next.
+      </p>
     </div>
 
-    <!-- Success Notice -->
     <div
       v-if="ticketNotice"
-      class="p-4 bg-brand-soft border border-brand-soft text-brand text-xs sm:text-sm rounded-tile flex items-center justify-between"
+      class="flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
+      role="status"
     >
-      <div class="flex items-center gap-2.5">
-        <CheckCircle2 class="size-5 text-brand shrink-0" />
-        <span class="font-medium">{{ ticketNotice }}</span>
-      </div>
+      <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
+        <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
+        {{ ticketNotice }}
+      </p>
       <button
+        type="button"
+        class="icon-btn size-9 shrink-0"
+        aria-label="Dismiss this message"
         @click="ticketNotice = ''"
-        class="text-brand hover:text-brand ml-3 p-1 rounded-lg cursor-pointer"
-        title="Dismiss"
       >
-        <X class="size-4" />
+        <X class="size-4" aria-hidden="true" />
       </button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
       <!-- Submit Ticket Form -->
-      <div class="lg:col-span-5 rounded-tile bg-tile rounded-tile border border-line bg-tile overflow-hidden h-full flex flex-col">
-        <div class="px-6 py-4 border-b border-line bg-canvas">
-          <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
-            <Wrench class="size-4 text-brand" />
-            Submit a Maintenance Ticket
-          </h2>
-          <p class="text-xs text-ink-soft mt-1">
-            Reported directly to Landlady Fe Galang Da Silva.
+      <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-5">
+        <div class="border-b border-line p-5 sm:p-6">
+          <h2 class="text-base font-semibold text-ink">Report it</h2>
+          <p class="mt-1 text-sm leading-6 text-ink-soft">
+            This goes straight to Mrs. Da Silva.
           </p>
         </div>
 
@@ -501,10 +491,11 @@ function statusClass(status: string) {
           <div class="space-y-4">
             <div
               v-if="ticketError"
-              class="p-3.5 bg-overdue-soft border border-overdue-soft text-overdue text-xs rounded-xl flex items-start gap-2"
+              class="flex items-start gap-2.5 rounded-2xl bg-overdue-soft p-4"
+              role="alert"
             >
-              <AlertTriangle class="size-4 shrink-0 mt-0.5 text-overdue" />
-              <span>{{ ticketError }}</span>
+              <AlertTriangle class="mt-0.5 size-4 shrink-0 text-overdue" aria-hidden="true" />
+              <p class="text-sm leading-6 text-overdue">{{ ticketError }}</p>
             </div>
 
             <div>
