@@ -1,37 +1,61 @@
 <script setup lang="ts">
 /**
  * @file CategoryRoomsView.vue
- * @description Dedicated category room showcase page for Fe Galang Da Silva Boarding House.
- * @systemBibleRef Section 4 - Public Visitor Role & Section 5 - Property Model & Section 16 - Inquiries
- * @rationale Displays a focused category view with full breadcrumb navigation, category header, 
- *            large active room showcase, and horizontal scrollable room cards specific to that category.
- * @innovations Dedicated category routing, synchronized inquiry dispatch, and active room amber highlight.
+ * @description One kind of unit, the units of that kind, and the way to ask about one.
+ * @systemBibleRef Section 4 - Public Visitor Role, Section 5 - Property Model, Section 16 - Inquiries
+ *
+ * THE CATEGORIES ARE THE UNIT'S OWN TYPE, AND USED NOT TO BE
+ * ----------------------------------------------------------
+ * This page offered three categories - "1-Bedroom", "2-Bedroom", "3-Bedroom /
+ * Penthouse" - and sorted units into them by the FIRST CHARACTER OF THE UNIT
+ * CODE. That digit is the floor. `2A` is room A on floor two, and the page read
+ * it as two bedrooms.
+ *
+ * So "2-Bedroom Unit" listed fifteen units, opened on `2A`, and printed
+ * "One-bedroom" underneath its own heading. Checked against the live database
+ * rather than inferred:
+ *
+ *     Studio          x20   1a-1h, 2b-2g, 3b-3g
+ *     One-bedroom      x8   2a, 3a, B1F, B2B, B2F, F1, LB, LF
+ *     Two-bedroom      x4   B3B, B3F, F2B, F2F
+ *     Three-bedroom    x1   PH
+ *
+ * Twenty of the thirty-three are studios and the site had no studio category at
+ * all. A prospect looking for a two-bedroom was shown fifteen of them, of which
+ * four were.
+ *
+ * The categories are now the four `room_type` values the database actually
+ * holds, read from `/public/rooms`.
+ *
+ * WHY THIS PAGE NO LONGER MERGES THE SEEDED LIST
+ * ----------------------------------------------
+ * It used to overlay live data onto `CANONICAL_UNITS` and fall back to the seed
+ * when a field was missing. The seed's types are wrong - it calls 1b through 1g
+ * "1-Bedroom Apartment" where the database says every one of 1a-1h is a Studio -
+ * so a fallback here does not degrade gracefully, it advertises the property
+ * incorrectly.
+ *
+ * `/public/rooms` is therefore the only source. When it has not answered, the
+ * page says so and shows nothing, which is the honest state for a public
+ * listing whose whole job is to be accurate about what is for rent.
  */
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { CANONICAL_UNITS, peso, publicStatusLabel, type RentableUnit } from '@/lib/canonicalUnits';
-import { showToast, LANDLADY, rooms, fetchRooms, roomsFetchFailed } from '@/lib/systemState';
+import { peso } from '@/lib/canonicalUnits';
+import { showToast } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
-import SkeletonCard from '@/components/ui/SkeletonCard.vue';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Users, 
-  Droplets, 
-  Wifi, 
-  Check, 
-  MessageCircle, 
-  X, 
-  Send, 
-  Loader2,
-  BedDouble,
-  Building2,
-  ShieldCheck,
-  ImageOff
-} from 'lucide-vue-next';
+import StatusPill from '@/components/overview/StatusPill.vue';
+import WsModal from '@/components/ui/WsModal.vue';
+import { ArrowLeft, MapPin, Loader2, ImageOff, Send } from 'lucide-vue-next';
+
+const route = useRoute();
+const router = useRouter();
 
 const isLoading = ref(true);
+/** Set when `/public/rooms` could not be read. Never replaced with seeded units. */
+const loadFailed = ref(false);
+const isSubmitting = ref(false);
 
 interface DbRoom {
   id: string;
@@ -49,6 +73,8 @@ interface DbRoom {
   room_photos?: { id: string; file_url: string; is_primary: boolean }[];
 }
 
+const publicRooms = ref<DbRoom[]>([]);
+
 /**
  * Publicly quotable rates, from `/public/rates`.
  *
@@ -60,20 +86,134 @@ interface DbRoom {
 const waterRatePerOccupant = ref<number | null>(null);
 const lindaFixedWaterCharge = ref<number | null>(null);
 
-// `publicStatusLabel` moved to `lib/canonicalUnits.ts`, beside the UnitStatus
-// union, so the public landing's availability table reads the same switch this
-// badge does rather than repeating it. Its rationale travelled with it.
-
 /** Never states a figure it has not been given. */
-function waterLabel(rateType: string): string {
-  if (rateType === 'linda_fixed') {
+function waterLabel(room: DbRoom): string {
+  if (room.is_linda_unit) {
     return lindaFixedWaterCharge.value !== null
-      ? `${peso(lindaFixedWaterCharge.value)} fixed water`
-      : 'Fixed water charge';
+      ? `${peso(lindaFixedWaterCharge.value)} fixed for water`
+      : 'A fixed charge for water';
   }
   return waterRatePerOccupant.value !== null
-    ? `${peso(waterRatePerOccupant.value)} water / occupant`
-    : 'Water charged per occupant';
+    ? `${peso(waterRatePerOccupant.value)} for water, each person`
+    : 'Water charged for each person';
+}
+
+/**
+ * The four kinds of unit the property actually has, in the order someone
+ * shopping would meet them: smallest first.
+ *
+ * `slug` is what appears in the address bar. The three old slugs still resolve,
+ * because they have been linked from the landing page and may be in somebody's
+ * history - see `resolveSlug`.
+ */
+const CATEGORIES = [
+  {
+    key: 'Studio',
+    slug: 'studio',
+    title: 'Studio',
+    blurb:
+      'One room with its own bathroom, in the main boarding house. Electricity is submetered, so you pay for what you use.',
+  },
+  {
+    key: 'One-bedroom',
+    slug: 'one-bedroom',
+    title: 'One-bedroom',
+    blurb:
+      'A separate bedroom, in the boarding house and in the apartments beside it. The two Linda units are here too, and they are billed a fixed charge for water.',
+  },
+  {
+    key: 'Two-bedroom',
+    slug: 'two-bedroom',
+    title: 'Two-bedroom',
+    blurb: 'The larger apartments at the back and front, with a kitchenette and room to park.',
+  },
+  {
+    key: 'Three-bedroom',
+    slug: 'three-bedroom',
+    title: 'Three-bedroom',
+    blurb: 'The penthouse on the top floor, with the roof deck and the view over Legazpi.',
+  },
+];
+
+/**
+ * Accepts the old addresses as well as the new ones.
+ *
+ * `1-bedroom`, `2-bedroom` and `3-bedroom` were this page's slugs until the
+ * categories were corrected. They are linked from the landing page and may sit
+ * in somebody's history, so they resolve to the category of that name rather
+ * than 404 - which also means the old link now lands on units that really are
+ * that kind, which it did not before.
+ */
+function resolveSlug(slugOrKey: string | null | undefined): string {
+  const s = (slugOrKey ?? '').toLowerCase();
+  const direct = CATEGORIES.find((c) => c.slug === s || c.key.toLowerCase() === s);
+  if (direct) return direct.key;
+
+  if (s === '1-bedroom' || s === '1br' || s === '1') return 'One-bedroom';
+  if (s === '2-bedroom' || s === '2br' || s === '2') return 'Two-bedroom';
+  if (s === '3-bedroom' || s === '3br' || s === '3' || s === 'ph' || s === 'penthouse') {
+    return 'Three-bedroom';
+  }
+  return 'Studio';
+}
+
+const selectedCategoryKey = ref('Studio');
+const selectedUnitCode = ref('');
+
+const currentCat = computed(
+  () => CATEGORIES.find((c) => c.key === selectedCategoryKey.value) ?? CATEGORIES[0]
+);
+
+/** How many of each kind are listed, so a category with none can say so. */
+const countFor = (key: string) => publicRooms.value.filter((r) => r.room_type === key).length;
+
+const categoryUnits = computed(() =>
+  publicRooms.value
+    .filter((r) => r.room_type === selectedCategoryKey.value)
+    .sort((a, b) => a.room_number.localeCompare(b.room_number))
+);
+
+const activeUnit = computed(
+  () =>
+    categoryUnits.value.find(
+      (u) => u.room_number.toLowerCase() === selectedUnitCode.value.toLowerCase()
+    ) ?? categoryUnits.value[0]
+);
+
+/** `room_photos` carries the pictures; `is_primary` picks the one to lead with. */
+function photoOf(room: DbRoom): string | null {
+  const photos = room.room_photos ?? [];
+  return photos.find((p) => p.is_primary)?.file_url ?? photos[0]?.file_url ?? null;
+}
+
+/**
+ * What a visitor is told about availability.
+ *
+ * Only two answers matter to someone looking for a room: they can ask about it,
+ * or somebody lives there. The operational states behind that - under repair,
+ * reserved - are the owner's business and not a prospect's.
+ */
+function isAvailable(room: DbRoom): boolean {
+  return room.operational_status === 'Available';
+}
+
+function selectUnit(unitCode: string) {
+  selectedUnitCode.value = unitCode;
+}
+
+function syncFromRoute() {
+  const param = (route.params.categorySlug as string) || (route.query.category as string);
+  selectedCategoryKey.value = resolveSlug(param);
+
+  const units = categoryUnits.value;
+  const stillHere = units.some(
+    (u) => u.room_number.toLowerCase() === selectedUnitCode.value.toLowerCase()
+  );
+  if (!stillHere) selectedUnitCode.value = units[0]?.room_number ?? '';
+}
+
+function goToCategory(slug: string) {
+  router.push(`/category/${slug}`);
 }
 
 async function loadRates() {
@@ -89,168 +229,37 @@ async function loadRates() {
   }
 }
 
-const route = useRoute();
-const router = useRouter();
-
-const CATEGORIES = [
-  {
-    key: '1BR',
-    slug: '1-bedroom',
-    title: '1-Bedroom Unit',
-    pax: 'Up to 3 Pax',
-    blurb: 'Main boarding house 1-bedroom rooms with private bathroom and submetered electricity.',
-    icon: BedDouble,
-    match: (u: RentableUnit) => 
-      (u.unitCode.toLowerCase().startsWith('1') || u.cluster === 'Linda Units') &&
-      !u.unitCode.toLowerCase().startsWith('2') &&
-      !u.unitCode.toLowerCase().startsWith('3') &&
-      !u.type.toLowerCase().includes('2-bedroom') &&
-      !u.type.toLowerCase().includes('3-bedroom') &&
-      u.cluster !== 'Back Apartment' &&
-      u.cluster !== 'Front Apartment' &&
-      u.cluster !== 'Penthouse',
-  },
-  {
-    key: '2BR',
-    slug: '2-bedroom',
-    title: '2-Bedroom Unit',
-    pax: 'Up to 4 Pax',
-    blurb: 'Front and back apartments and spacious 2-bedroom units with kitchenette and parking slot.',
-    icon: Building2,
-    match: (u: RentableUnit) => 
-      u.unitCode.toLowerCase().startsWith('2') || 
-      u.type.toLowerCase().includes('2-bedroom') || 
-      u.cluster === 'Back Apartment' || 
-      u.cluster === 'Front Apartment',
-  },
-  {
-    key: 'PH',
-    slug: '3-bedroom',
-    title: '3-Bedroom / Penthouse Suite',
-    pax: 'Up to 5 Pax',
-    blurb: 'Top-floor suites and 3-bedroom penthouse with roof deck and panoramic view of Legazpi City.',
-    icon: ShieldCheck,
-    match: (u: RentableUnit) => 
-      u.unitCode.toLowerCase().startsWith('3') || 
-      u.type.toLowerCase().includes('3-bedroom') || 
-      u.cluster === 'Penthouse' || 
-      u.unitCode.toLowerCase() === 'ph',
-  },
-];
-
-const selectedCategoryKey = ref('1BR');
-const selectedUnitCode = ref('1a');
-const publicRooms = ref<DbRoom[]>([]);
-const isSubmitting = ref(false);
-
-function resolveCategoryKey(slugOrKey: string | null | undefined): string {
-  if (!slugOrKey) return '1BR';
-  const s = slugOrKey.toLowerCase();
-  if (s === '1-bedroom' || s === '1br' || s === '1-bed-room' || s === '1') return '1BR';
-  if (s === '2-bedroom' || s === '2br' || s === '2-bed-room' || s === '2') return '2BR';
-  if (s === '3-bedroom' || s === 'ph' || s === '3br' || s === '3-bed-room' || s === 'penthouse' || s === '3') return 'PH';
-  return '1BR';
-}
-
-function syncFromRoute() {
-  const param = (route.params.categorySlug as string) || (route.query.category as string);
-  const key = resolveCategoryKey(param);
-  selectedCategoryKey.value = key;
-
-  const cat = CATEGORIES.find(c => c.key === key) || CATEGORIES[0];
-  const unitsInCat = categoryUnits.value;
-  if (unitsInCat.length > 0) {
-    const isCurrentInCat = unitsInCat.some(u => u.unitCode.toLowerCase() === selectedUnitCode.value.toLowerCase());
-    if (!isCurrentInCat) {
-      selectedUnitCode.value = unitsInCat[0].unitCode;
-    }
-  }
-}
-
 onMounted(async () => {
+  await loadRates();
   try {
-    await Promise.all([fetchRooms(), loadRates()]);
     const data = await api.get<DbRoom[]>('/public/rooms', false);
-    if (data && data.length) {
-      publicRooms.value = data;
-    }
+    publicRooms.value = Array.isArray(data) ? data : [];
+    loadFailed.value = publicRooms.value.length === 0;
   } catch {
-    // The listing falls back to the canonical unit structure - unit codes,
-    // clusters, floors and capacities, which do not change - but never to
-    // invented prices, photos or occupancy.
+    // No seeded fallback. See the note at the top of this file: the seed's types
+    // are wrong, so falling back to it would advertise the property incorrectly.
+    publicRooms.value = [];
+    loadFailed.value = true;
   } finally {
     isLoading.value = false;
   }
   syncFromRoute();
 });
 
-watch(() => [route.params.categorySlug, route.query.category], () => {
-  syncFromRoute();
-});
+watch(() => [route.params.categorySlug, route.query.category], syncFromRoute);
+watch(publicRooms, syncFromRoute);
 
-const mergedUnits = computed<RentableUnit[]>(() => {
-  return CANONICAL_UNITS.map((u) => {
-    const live = rooms.find((r) => r.unitCode.toLowerCase() === u.unitCode.toLowerCase());
-    if (live) {
-      return {
-        ...u,
-        basePrice: live.price || u.basePrice,
-        type: live.type || u.type,
-        photo: live.photo || u.photo,
-        desc: live.desc || u.desc,
-        cluster: live.cluster || u.cluster,
-        billingRule: live.billingRule || u.billingRule,
-        status: live.status || u.status,
-      };
-    }
-    return u;
-  });
-});
+// ---------------------------------------------------------------- inquiries
 
-const currentCat = computed(() => CATEGORIES.find((c) => c.key === selectedCategoryKey.value) || CATEGORIES[0]);
-const categoryUnits = computed(() => mergedUnits.value.filter(currentCat.value.match));
-
-/**
- * The units this form may actually send an inquiry about.
- *
- * `categoryUnits` is built from `CANONICAL_UNITS` - all 33, always - with live data overlaid
- * where the API supplied it. `/public/rooms` returns only rooms whose `visibility_status` is
- * 'Published', so the two lists are not the same list, and the gap between them became real
- * the moment hiding a unit became possible (17095f3).
- *
- * Offering a hidden unit here would reproduce exactly the defect the comment on the dropdown
- * below describes: the lookup in `submitInquiry()` searches `publicRooms`, finds nothing, and
- * the prospect is told "Unit X could not be found ... please refresh", which refreshing never
- * fixes. A form must not offer what the system cannot record.
- *
- * When `/public/rooms` has not answered at all, the canonical list still drives the page - the
- * catch in `loadPublicRooms()` says why - and the send path's own guard reports the failure
- * honestly rather than silently.
- */
-const inquirableUnits = computed(() => {
-  if (!publicRooms.value.length) return categoryUnits.value;
-  const published = new Set(publicRooms.value.map((r) => r.room_number.toLowerCase()));
-  return categoryUnits.value.filter((u) => published.has(u.unitCode.toLowerCase()));
-});
-
-const activeUnit = computed(() => {
-  return categoryUnits.value.find((u) => u.unitCode.toLowerCase() === selectedUnitCode.value.toLowerCase()) || categoryUnits.value[0];
-});
-
-function selectUnit(unitCode: string) {
-  selectedUnitCode.value = unitCode;
-}
-
-// Inquiry Modal State
 const isInquiryOpen = ref(false);
-const inquiryUnit = ref('1a');
+const inquiryUnit = ref('');
 const inquiryName = ref('');
 const inquiryPhone = ref('');
 const inquiryEmail = ref('');
 const inquiryMsg = ref('Good day po! Interested ako sa unit. Pwede po bang mag-viewing?');
 
 function openInquiry(unitCode: string) {
-  inquiryUnit.value = unitCode || activeUnit.value?.unitCode || '1a';
+  inquiryUnit.value = unitCode || activeUnit.value?.room_number || '';
   isInquiryOpen.value = true;
 }
 
@@ -267,7 +276,7 @@ function openInquiry(unitCode: string) {
 async function submitInquiry() {
   // `inquiries.prospect_email` is NOT NULL, so ask rather than invent.
   if (!inquiryName.value.trim() || !inquiryPhone.value.trim() || !inquiryEmail.value.trim()) {
-    showToast('error', 'Required fields', 'Please provide your name, contact number and email address.');
+    showToast('error', 'Something is missing', 'Please give your name, phone number and email.');
     return;
   }
 
@@ -285,23 +294,27 @@ async function submitInquiry() {
   if (!matchedRoom) {
     showToast(
       'error',
-      'Unit not available',
-      `Unit ${inquiryUnit.value} could not be found, so the inquiry was not sent. Please refresh and try again.`
+      'That unit is not listed',
+      `Unit ${inquiryUnit.value} could not be found, so nothing was sent. Reload the page and try again.`
     );
     return;
   }
 
   isSubmitting.value = true;
   try {
-    await api.post('/public/inquiries', {
-      roomId: matchedRoom.id,
-      prospectName: inquiryName.value.trim(),
-      prospectEmail: inquiryEmail.value.trim(),
-      prospectPhone: inquiryPhone.value.trim(),
-      message: inquiryMsg.value.trim(),
-    }, false);
+    await api.post(
+      '/public/inquiries',
+      {
+        roomId: matchedRoom.id,
+        prospectName: inquiryName.value.trim(),
+        prospectEmail: inquiryEmail.value.trim(),
+        prospectPhone: inquiryPhone.value.trim(),
+        message: inquiryMsg.value.trim(),
+      },
+      false
+    );
 
-    showToast('success', 'Inquiry sent', 'Fe Galang Da Silva has received your message.');
+    showToast('success', 'Message sent', 'Mrs. Da Silva has your message.');
     isInquiryOpen.value = false;
     inquiryName.value = '';
     inquiryPhone.value = '';
@@ -309,7 +322,7 @@ async function submitInquiry() {
   } catch (err: unknown) {
     showToast(
       'error',
-      'Inquiry not sent',
+      'Message not sent',
       err instanceof Error ? err.message : 'Your message could not be delivered. Please try again.'
     );
   } finally {
@@ -319,315 +332,278 @@ async function submitInquiry() {
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col w-full">
-    <!-- Top Breadcrumbs & Header (Centered) -->
-    <div class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-4 space-y-6">
-      <!-- Breadcrumbs Bar -->
-      <div class="flex items-center justify-between pb-2">
-        <router-link 
-          to="/public" 
-          class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-primary hover:text-primary-strong transition-colors cursor-pointer"
-        >
-          <ArrowLeft class="size-4" />
-          <span>Back to All Categories</span>
-        </router-link>
-      </div>
+  <div class="ws-focus w-full flex-1 bg-canvas">
+    <div class="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
+      <router-link
+        to="/public"
+        class="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink-soft hover:text-ink"
+      >
+        <ArrowLeft class="size-4" aria-hidden="true" />
+        <span>All the kinds of unit</span>
+      </router-link>
 
-      <!-- Category Header -->
-      <div class="space-y-1">
-        <div class="flex items-center gap-2 text-xs font-bold text-accent-ink">
-          <MapPin class="size-3.5 text-accent" />
-          <span>32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines • Fe Galang Da Silva Boarding House</span>
-        </div>
-        <h1 class="font-display font-black text-3xl sm:text-4xl text-foreground tracking-tight">
+      <!-- What this page is -->
+      <div class="mt-4">
+        <p class="flex items-start gap-2 text-sm text-ink-soft">
+          <MapPin class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span>
+            32 Sapaguita Street, Brgy. 4 Sagpon, Old Albay, Legazpi City &middot; Fe Galang Da Silva
+            Boarding House
+          </span>
+        </p>
+        <h1 class="mt-2 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           {{ currentCat.title }}
         </h1>
-        <p class="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-          {{ currentCat.blurb }} Showing all {{ categoryUnits.length }} units in this category. Click any unit card below to inspect details.
+        <p class="mt-2 max-w-2xl text-sm leading-6 text-ink-soft">
+          {{ currentCat.blurb }}
         </p>
-        <!-- fetchRooms() falls back to the canonical seed prices/photos on a
-             failed request rather than leaving the page blank - reasonable for
-             a public listing, but that fallback must not be presented as a
-             confirmed live rate. roomsFetchFailed (systemState.ts) says which
-             it is. -->
-        <div
-          v-if="!isLoading && roomsFetchFailed"
-          class="mt-2 inline-flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800"
-        >
-          <span class="font-bold">Live pricing unavailable right now.</span>
-          <span>Rates below are the property's standard listing and may not reflect a recent change. Contact us to confirm before visiting.</span>
-        </div>
       </div>
-    </div>
 
-    <!-- Loading Skeleton -->
-    <div v-if="isLoading" class="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
-      <SkeletonDetail />
-    </div>
+      <!-- The four kinds, with how many of each there are -->
+      <div
+        v-if="!isLoading && !loadFailed"
+        class="mt-6 flex flex-wrap items-center gap-2"
+        role="group"
+        aria-label="Kind of unit"
+      >
+        <button
+          v-for="c in CATEGORIES"
+          :key="c.key"
+          type="button"
+          class="chip"
+          :aria-pressed="selectedCategoryKey === c.key"
+          @click="goToCategory(c.slug)"
+        >
+          {{ c.title }}
+          <span class="chip-count">{{ countFor(c.key) }}</span>
+        </button>
+      </div>
 
-    <!-- 100% Full-Width Edge-to-Edge Showcase Section (Frameless, No Dividing Lines) -->
-    <section v-else-if="activeUnit" class="w-full bg-white shadow-xs mt-4">
-      <div class="max-w-[1400px] mx-auto w-full">
-        <!-- Showcase Main Grid -->
-        <div class="grid lg:grid-cols-[1fr_420px]">
-          <!-- Large Unit Image with Reserved/Available Badge -->
-          <div class="relative min-h-[340px] sm:min-h-[440px] bg-neutral-900 overflow-hidden">
-            <img
-              v-if="activeUnit.photo"
-              :src="activeUnit.photo"
-              :alt="`Interior of Unit ${activeUnit.unitCode}`"
-              class="absolute inset-0 size-full object-cover transition-opacity duration-300"
-              loading="eager"
-            />
-            <!-- Only one of the 33 units has a photograph on file. The rest used
-                 to borrow a stock image of an unrelated apartment. -->
-            <div
-              v-else
-              class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface-sunken text-muted-foreground"
-            >
-              <ImageOff class="size-10" />
-              <span class="text-sm font-semibold">No photo yet</span>
-              <span class="text-xs">Ask about a viewing to see this unit in person</span>
-            </div>
-            <div class="absolute left-5 top-5 z-10">
-              <span 
-                :class="[
-                  'inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-bold shadow-md capitalize',
-                  activeUnit.status === 'vacant' 
-                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
-                    : 'bg-[#fffbeb] text-[#92400e] border border-[#fef3c7]'
-                ]"
+      <!-- Loading -->
+      <!-- The shape that is about to arrive: a photograph, its facts beside
+           it, then the money. -->
+      <div v-if="isLoading" class="mt-6">
+        <SkeletonDetail />
+      </div>
+
+      <!--
+        The listing could not be read. Nothing is shown rather than the seeded
+        list, whose unit types are wrong - see the note at the top of this file.
+      -->
+      <div v-else-if="loadFailed" class="mt-6 rounded-tile bg-tile p-6 sm:p-8" role="alert">
+        <p class="text-base font-semibold text-ink">The units could not be loaded.</p>
+        <p class="mt-1 max-w-xl text-sm leading-6 text-ink-soft">
+          This is not the same as having nothing free. Reload the page, and if it keeps happening,
+          ring the landlady on
+          <strong class="text-ink">0917-123-4567</strong> and she will tell you what is available.
+        </p>
+      </div>
+
+      <div
+        v-else-if="categoryUnits.length === 0"
+        class="mt-6 rounded-tile bg-tile px-6 py-16 text-center"
+      >
+        <p class="text-base font-semibold text-ink">Nothing of this kind is listed</p>
+        <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+          Try another kind above, or ask the landlady what is coming free.
+        </p>
+      </div>
+
+      <template v-else-if="activeUnit">
+        <!-- The unit being looked at -->
+        <div class="mt-6 grid gap-4 lg:grid-cols-12">
+          <div class="overflow-hidden rounded-tile bg-tile lg:col-span-7">
+            <div class="relative aspect-[4/3] w-full bg-night sm:aspect-[16/10]">
+              <img
+                v-if="photoOf(activeUnit)"
+                :src="photoOf(activeUnit)!"
+                :alt="`Inside unit ${activeUnit.room_number.toUpperCase()}`"
+                class="absolute inset-0 size-full object-cover"
+                loading="eager"
+              />
+              <!-- Only one of the 33 units has a photograph on file. The rest
+                   used to borrow a stock image of an unrelated apartment. -->
+              <div
+                v-else
+                class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-on-night-soft"
               >
-                {{ publicStatusLabel(activeUnit.status) }}
-              </span>
+                <ImageOff class="size-8" aria-hidden="true" />
+                <p class="text-sm font-semibold">No photograph yet</p>
+                <p class="max-w-xs px-6 text-center text-sm leading-6">
+                  Ask for a viewing and you can see it for yourself.
+                </p>
+              </div>
             </div>
           </div>
 
-          <!-- Unit Details Pane -->
-          <div class="flex flex-col justify-between p-6 sm:p-8 space-y-4 bg-white">
-            <div class="space-y-3.5">
-              <div>
-                <p class="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-                  {{ activeUnit.cluster }} · FLOOR {{ activeUnit.floor }}
+          <div class="flex flex-col rounded-tile bg-tile p-6 sm:p-8 lg:col-span-5">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                  {{ activeUnit.cluster_code }} &middot; Floor {{ activeUnit.floor }}
                 </p>
-                <h3 class="font-display font-black text-3xl sm:text-4xl uppercase text-foreground tracking-tight mt-0.5">
-                  UNIT {{ activeUnit.unitCode.toUpperCase() }}
-                </h3>
-                <p class="text-xs sm:text-sm text-primary font-semibold">{{ activeUnit.type }}</p>
+                <h2 class="mt-1 text-3xl font-semibold uppercase leading-none tracking-tight text-ink">
+                  Unit {{ activeUnit.room_number }}
+                </h2>
+                <p class="mt-1.5 text-sm text-ink-soft">{{ activeUnit.room_type }}</p>
               </div>
-
-              <!-- Price -->
-              <p class="font-display font-black text-3xl sm:text-4xl text-foreground">
-                {{ peso(activeUnit.basePrice) }}
-                <span class="text-xs sm:text-sm font-normal text-muted-foreground">/ month</span>
-              </p>
-
-              <!-- Tags / Pills -->
-              <div class="flex flex-wrap gap-2 text-xs">
-                <span class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground">
-                  <Users class="size-3.5 text-muted-foreground" /> Up to {{ activeUnit.capacity }} pax
-                </span>
-                <span class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground">
-                  <Droplets class="size-3.5 text-muted-foreground" /> {{ waterLabel(activeUnit.waterRateType) }}
-                </span>
-                <span
-                  v-if="activeUnit.floor"
-                  class="inline-flex items-center gap-1.5 rounded-lg bg-muted border border-border-strong px-3 py-1.5 font-semibold text-foreground"
-                >
-                  <Building2 class="size-3.5 text-muted-foreground" /> Floor {{ activeUnit.floor }}
-                </span>
-              </div>
-
-              <!-- The unit's own description, as the landlady recorded it. -->
-              <p v-if="activeUnit.desc" class="text-xs sm:text-sm text-foreground-soft pt-1 leading-relaxed">
-                {{ activeUnit.desc }}
-              </p>
-
-              <!-- Cluster amenities. Labelled as typical rather than promised per
-                   unit: the system stores no amenity list, so this is a
-                   description of the cluster, not a guarantee about this room. -->
-              <div v-if="activeUnit.amenities?.length" class="pt-2">
-                <p class="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground mb-2">
-                  Typical for this cluster
-                </p>
-                <ul class="grid gap-2 text-xs sm:text-sm text-foreground">
-                  <li v-for="a in activeUnit.amenities" :key="a" class="flex items-start gap-2">
-                    <Check class="mt-0.5 size-4 shrink-0 text-emerald-600 font-bold" />
-                    <span>{{ a }}</span>
-                  </li>
-                </ul>
-                <p class="text-[11px] text-muted-foreground mt-2">
-                  Ask about a viewing to confirm what this unit includes.
-                </p>
-              </div>
+              <StatusPill :tone="isAvailable(activeUnit) ? 'paid' : 'neutral'">
+                {{ isAvailable(activeUnit) ? 'Free to rent' : 'Someone lives here' }}
+              </StatusPill>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="pt-4">
-              <button
-                @click="openInquiry(activeUnit.unitCode)"
-                class="w-full min-h-12 inline-flex items-center justify-center rounded-xl bg-neutral-dark px-6 py-3 font-bold text-sm text-white hover:bg-neutral-dark-strong transition-colors shadow-xs cursor-pointer"
-              >
-                Inquire for Unit {{ activeUnit.unitCode.toUpperCase() }}
-              </button>
-            </div>
+            <p class="tabular mt-5 text-4xl font-semibold leading-none text-ink">
+              {{ peso(activeUnit.current_price) }}
+              <span class="text-base font-normal text-ink-soft">a month</span>
+            </p>
+
+            <dl class="mt-5 divide-y divide-line border-y border-line text-sm">
+              <div class="flex items-baseline justify-between gap-3 py-3">
+                <dt class="text-ink-soft">How many can stay</dt>
+                <dd class="font-semibold text-ink">
+                  {{ activeUnit.capacity }} {{ activeUnit.capacity === 1 ? 'person' : 'people' }}
+                </dd>
+              </div>
+              <div class="flex items-baseline justify-between gap-3 py-3">
+                <dt class="text-ink-soft">Water</dt>
+                <dd class="text-right font-semibold text-ink">{{ waterLabel(activeUnit) }}</dd>
+              </div>
+            </dl>
+
+            <!-- The unit's own description, as the landlady recorded it. -->
+            <p v-if="activeUnit.description" class="mt-5 text-sm leading-6 text-ink-soft">
+              {{ activeUnit.description }}
+            </p>
+
+            <!--
+              There is no amenity list here any more. The system stores none per
+              unit, so the five ticks this panel used to show - private bathroom,
+              submetered electricity, ceiling fan, study desk, wifi - were a
+              hardcoded list printed under the heading "typical for this
+              cluster", beside a sentence admitting it might not be true of the
+              unit being looked at. A prospect cannot tell a promise from a
+              guess, so it is better to say nothing and let them come and look.
+            -->
+            <button
+              type="button"
+              class="pill-btn-brand mt-auto w-full justify-center pt-0"
+              @click="openInquiry(activeUnit.room_number)"
+            >
+              Ask about unit {{ activeUnit.room_number.toUpperCase() }}
+            </button>
           </div>
         </div>
 
-        <!-- Non-Scrolling Wrap Grid with Image on Every Room -->
-        <div class="bg-background p-4 sm:p-8">
-          <div class="text-xs font-extrabold uppercase tracking-wider text-muted-foreground mb-4">
-            Select a Unit to Inspect ({{ categoryUnits.length }} Units Available):
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <button
-              v-for="u in categoryUnits"
-              :key="u.unitCode"
-              type="button"
-              @click="selectUnit(u.unitCode)"
-              :class="[
-                'group overflow-hidden rounded-2xl border bg-white text-left transition-all hover:shadow-lg cursor-pointer flex flex-col',
-                u.unitCode.toLowerCase() === activeUnit.unitCode.toLowerCase()
-                  ? 'border-2 border-primary shadow-md ring-2 ring-blue-100'
-                  : 'border-border-strong hover:border-gray-300'
-              ]"
-            >
-              <!-- Room Photo -->
-              <div class="relative w-full aspect-[4/3] bg-neutral-900 overflow-hidden">
-                <img 
-                  v-if="u.photo"
-                  :src="u.photo" 
-                  :alt="`Room ${u.unitCode}`"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-                <div
-                  v-else
-                  class="w-full h-full flex flex-col items-center justify-center gap-1.5 bg-surface-sunken text-muted-foreground"
-                >
-                  <ImageOff class="size-6" />
-                  <span class="text-[11px] font-semibold">No photo yet</span>
-                </div>
-                <div class="absolute left-2.5 top-2.5">
-                  <span 
+        <!--
+          Picking a unit. No photographs: one unit in thirty-three has one, so a
+          picture-led grid was thirty-two identical grey placeholders. What a
+          person choosing between units actually compares is the rate, the size
+          and whether it is free, so that is what each one shows.
+        -->
+        <div class="mt-4 rounded-tile bg-tile p-5 sm:p-6">
+          <h2 class="text-base font-semibold text-ink">
+            The {{ categoryUnits.length }}
+            {{ categoryUnits.length === 1 ? 'unit' : 'units' }} of this kind
+          </h2>
+          <p class="mt-1 text-sm leading-6 text-ink-soft">Pick one to see it above.</p>
+
+          <ul class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <li v-for="u in categoryUnits" :key="u.id">
+              <button
+                type="button"
+                :aria-current="u.room_number === activeUnit.room_number ? 'true' : undefined"
+                :class="[
+                  'flex w-full flex-col gap-2 rounded-2xl p-4 text-left transition-colors',
+                  u.room_number === activeUnit.room_number
+                    ? 'bg-brand text-on-brand'
+                    : 'bg-canvas text-ink hover:bg-brand-soft',
+                ]"
+                @click="selectUnit(u.room_number)"
+              >
+                <span class="flex items-baseline justify-between gap-2">
+                  <span class="text-lg font-semibold uppercase leading-none">
+                    {{ u.room_number }}
+                  </span>
+                  <span
                     :class="[
-                      'inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold shadow-xs capitalize backdrop-blur-xs',
-                      u.status === 'vacant' 
-                        ? 'bg-emerald-600/95 text-white' 
-                        : 'bg-black/60 text-gray-200'
+                      'text-xs',
+                      u.room_number === activeUnit.room_number ? 'text-on-brand-soft' : 'text-ink-faint',
                     ]"
                   >
-                    {{ publicStatusLabel(u.status) }}
+                    Floor {{ u.floor }}
                   </span>
-                </div>
-              </div>
+                </span>
 
-              <!-- Room Info -->
-              <div class="p-3.5 flex flex-col justify-between flex-1 space-y-2">
-                <div>
-                  <p class="font-display text-sm font-extrabold uppercase text-foreground group-hover:text-primary transition-colors">
-                    UNIT {{ u.unitCode.toUpperCase() }}
-                  </p>
-                  <p class="truncate text-[11px] text-muted-foreground mt-0.5">{{ u.type }}</p>
-                </div>
-                <div class="pt-2 flex items-center justify-between border-t border-muted">
-                  <span class="tabular font-display text-xs font-bold text-foreground">{{ peso(u.basePrice) }}<span class="text-[10px] font-normal text-muted-foreground">/mo</span></span>
-                  <span class="text-[10px] font-bold text-primary">View Unit</span>
-                </div>
-              </div>
-            </button>
-          </div>
+                <span class="tabular text-base font-semibold">{{ peso(u.current_price) }}</span>
+
+                <span
+                  :class="[
+                    'text-xs',
+                    u.room_number === activeUnit.room_number ? 'text-on-brand-soft' : 'text-ink-soft',
+                  ]"
+                >
+                  {{ u.capacity }} {{ u.capacity === 1 ? 'person' : 'people' }} &middot;
+                  {{ isAvailable(u) ? 'free to rent' : 'occupied' }}
+                </span>
+              </button>
+            </li>
+          </ul>
         </div>
-      </div>
-    </section>
-
-    <!-- Bottom Spacing -->
-    <div class="pb-16"></div>
-
-    <!-- Direct Inquiry Dialog -->
-    <div 
-      v-if="isInquiryOpen" 
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
-      @click.self="isInquiryOpen = false"
-    >
-      <div class="surface-card w-full max-w-lg shadow-2xl rounded-2xl p-6 bg-white space-y-4 max-h-[90dvh] overflow-y-auto">
-        <div class="flex items-center justify-between pb-3 border-b border-border">
-          <div>
-            <h3 class="font-display font-extrabold text-xl text-foreground">Inquire about a unit</h3>
-            <p class="text-xs text-muted-foreground">Send your message directly to {{ LANDLADY.name }}. She usually replies within the day.</p>
-          </div>
-          <button @click="isInquiryOpen = false" class="p-1 rounded-lg text-muted-foreground hover:bg-muted cursor-pointer">
-            <X class="size-5" />
-          </button>
-        </div>
-
-        <form @submit.prevent="submitInquiry" class="space-y-4 text-xs">
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Full Name</label>
-              <input v-model="inquiryName" placeholder="Juan Dela Cruz" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
-            </div>
-            <div>
-              <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Phone Number</label>
-              <input v-model="inquiryPhone" placeholder="0917-000-0000" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
-            </div>
-          </div>
-
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Email</label>
-            <input v-model="inquiryEmail" type="email" placeholder="you@email.com" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm" required />
-          </div>
-
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Target Unit</label>
-            <select v-model="inquiryUnit" class="min-h-11 w-full px-3.5 border border-border rounded-xl text-sm bg-white">
-              <!--
-                There was an `<option value="">Any available unit</option>` here, and it
-                could not work: `inquiries.room_id` is NOT NULL, so an inquiry must name a
-                unit. Choosing it left `inquiryUnit` empty, the lookup below matched no
-                room, and the prospect was told "Unit  could not be found ... please
-                refresh" - which refreshing never fixed. It was the first option in the
-                list, so the most natural choice for someone still browsing was the one
-                that silently could not be sent. A form must not offer what the system
-                cannot record.
-              -->
-              <option v-for="u in inquirableUnits" :key="u.unitCode" :value="u.unitCode">
-                {{ u.unitCode.toUpperCase() }} — {{ u.cluster }} ({{ peso(u.basePrice) }})
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block font-bold text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Message</label>
-            <textarea v-model="inquiryMsg" rows="4" class="w-full p-3 border border-border rounded-xl text-xs resize-none" required></textarea>
-          </div>
-
-          <!--
-            The "Chat Live" button that stood here closed this form and set
-            `isLiveChatheadOpen`, whose component was imported by nothing and so could never
-            render. A visitor who had typed their name, number, email and message clicked it
-            and watched the form vanish with nothing in its place. The component has since been
-            deleted along with that flag.
-
-            Removed rather than wired up: the chat component posts to
-            `/admin/inquiries/:id/messages` with a hardcoded `selectedInquirerId = 'inq-1'` -
-            an administrator-only endpoint a guest holds no token for - so mounting it would
-            put a control in front of exactly the people it cannot work for. Sending the form
-            below reaches the landlady's inbox properly. Raised for Mrs. Da Silva.
-          -->
-          <div class="pt-2 flex justify-end items-center gap-2">
-            <button 
-              type="submit" 
-              :disabled="isSubmitting"
-              class="btn-primary"
-            >
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
-              <Send v-else class="size-3.5 text-white" />
-              <span>{{ isSubmitting ? 'Sending…' : 'Send Inquiry to Landlady' }}</span>
-            </button>
-          </div>
-        </form>
-      </div>
+      </template>
     </div>
+
+    <!-- Asking about a unit -->
+    <WsModal
+      v-if="isInquiryOpen"
+      :title="`Ask about unit ${inquiryUnit.toUpperCase()}`"
+      subtitle="Mrs. Da Silva reads these herself."
+      size="md"
+      :dismissible="false"
+      @close="isInquiryOpen = false"
+    >
+      <form id="inquiry-form" class="flex flex-col gap-5" @submit.prevent="submitInquiry">
+        <label class="ws-field">
+          Your name
+          <input v-model="inquiryName" class="ws-input w-full" required />
+        </label>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="ws-field">
+            Your phone number
+            <input
+              v-model="inquiryPhone"
+              type="tel"
+              placeholder="0917-123-4567"
+              class="ws-input w-full"
+              required
+            />
+          </label>
+          <label class="ws-field">
+            Your email
+            <input
+              v-model="inquiryEmail"
+              type="email"
+              placeholder="you@email.com"
+              class="ws-input w-full"
+              required
+            />
+          </label>
+        </div>
+
+        <label class="ws-field">
+          What you would like to ask
+          <textarea v-model="inquiryMsg" rows="4" class="ws-textarea w-full"></textarea>
+        </label>
+      </form>
+
+      <template #actions>
+        <button type="button" class="pill-btn" @click="isInquiryOpen = false">Cancel</button>
+        <button type="submit" form="inquiry-form" :disabled="isSubmitting" class="pill-btn-brand">
+          <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+          <Send v-else class="size-4" aria-hidden="true" />
+          <span>{{ isSubmitting ? 'Sending' : 'Send it' }}</span>
+        </button>
+      </template>
+    </WsModal>
   </div>
 </template>
