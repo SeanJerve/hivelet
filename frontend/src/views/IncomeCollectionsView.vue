@@ -1366,42 +1366,46 @@ async function exportExcel() {
               The unit list could not be refreshed, so the occupant count has <strong>not</strong>
               been carried forward. Enter it yourself &mdash; it sets the water line on this receipt.
             </p>
-            <label class="mb-1.5 block text-xs text-ink-faint">Unit</label>
-            <select v-model="editUnit" class="ws-select w-full">
-              <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
-                {{ r.unitCode.toUpperCase() }} — {{ r.tenant || 'Vacant' }} ({{ r.cluster }})
-              </option>
-            </select>
+            <!-- The warning above belongs to this field, so the label wraps the
+                 select rather than sitting beside it unassociated. -->
+            <label class="ws-field">
+              Unit
+              <select v-model="editUnit" class="ws-select w-full">
+                <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
+                  {{ r.unitCode.toUpperCase() }} — {{ r.tenant || 'Vacant' }} ({{ r.cluster }})
+                </option>
+              </select>
+            </label>
           </div>
 
           <!-- Rent Amount & Water Payment Row -->
           <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Amount for Rent (₱)</label>
+            <label class="ws-field">
+            Amount for Rent (₱)
               <input v-model.number="editRent" type="number" min="0" class="ws-input w-full" required />
-            </div>
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Payment for Water (₱)</label>
+            </label>
+            <label class="ws-field">
+            Payment for Water (₱)
               <input v-model.number="editWater" type="number" min="0" class="ws-input w-full" required />
-            </div>
+            </label>
           </div>
 
           <!-- GBG Fee & OR Receipt Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">GBG Fee (₱)</label>
+            <label class="ws-field">
+            GBG Fee (₱)
               <input v-model.number="editGarbage" type="number" min="0" class="ws-input w-full" required />
-            </div>
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">OR / Receipt Number</label>
+            </label>
+            <label class="ws-field">
+            OR / Receipt Number
               <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="ws-input w-full font-mono" required />
-            </div>
+            </label>
           </div>
 
           <!-- Payment Method & Online Reference Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Payment Method</label>
+            <label class="ws-field">
+            Payment Method
               <select v-model="editMethod" class="ws-select w-full">
                 <option value="Cash">Cash</option>
                 <option value="GCash">GCash</option>
@@ -1409,45 +1413,41 @@ async function exportExcel() {
                 <!-- Shown only when the row already carries it, and never selectable by hand. -->
                 <option v-if="editMethod === 'Adyen Online'" value="Adyen Online" disabled>Adyen Online (gateway)</option>
               </select>
-            </div>
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint" :class="{ 'opacity-40': !methodHasReference }">Transaction Reference #</label>
-              <input v-model="editReference" type="text" :placeholder="editMethod === 'Bank Transfer' ? 'Bank reference #' : 'GCash reference #'" class="ws-input w-full" :disabled="!methodHasReference" :required="methodHasReference" />
-            </div>
+            </label>
+            <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
+              Their reference number
+              <input v-model="editReference" type="text" :placeholder="editMethod === 'Bank Transfer' ? 'Bank reference' : 'GCash reference'" class="ws-input w-full" :disabled="!methodHasReference" :required="methodHasReference" />
+            </label>
           </div>
 
           <!-- Rent Validity / Duration Details Row -->
           <div class="grid gap-4 sm:grid-cols-3">
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Months Covered</label>
+            <label class="ws-field">
+            Months Covered
               <input v-model.number="editMonthsCovered" type="number" min="1" class="ws-input w-full" required />
-            </div>
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">
-                Occupants
-                <span class="normal-case tracking-normal font-medium text-ink-faint">— carried from the tenancy; water is per occupant</span>
-              </label>
+            </label>
+            <label class="ws-field">
+              How many people
               <input v-model.number="editOccupants" type="number" min="1" max="50" class="ws-input w-full" required />
-            </div>
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">
-                Covered Period Start
-                <span class="normal-case tracking-normal font-medium text-ink-faint">— blank uses the tenant's billing cycle</span>
-              </label>
+              <span class="ws-hint">Carried from the tenancy. Water is charged for each of them.</span>
+            </label>
+            <label class="ws-field">
+              Covering from
               <input v-model="editDateCoveredStart" type="date" class="ws-input w-full" />
-            </div>
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Covered Period End</label>
+              <span class="ws-hint">Leave it blank to use the tenant's own billing cycle.</span>
+            </label>
+            <label class="ws-field">
+            Covered Period End
               <input :value="editDateCoveredEnd" type="date" class="ws-input w-full" disabled />
-            </div>
+            </label>
           </div>
 
           <!-- Date Received & Read-Only Total Amount calculation -->
           <div class="grid gap-4 sm:grid-cols-2 pt-2">
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Date Received</label>
+            <label class="ws-field">
+            Date Received
               <input v-model="editDate" type="date" class="ws-input w-full" required />
-            </div>
+            </label>
             <div class="bg-canvas border border-line rounded-tile p-3.5 flex flex-col justify-center">
               <span class="text-xs font-semibold text-ink-soft">Total Amount (₱)</span>
               <span class="font-semibold text-lg text-brand pt-0.5">{{ peso(editTotal) }}</span>

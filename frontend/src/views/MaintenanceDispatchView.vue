@@ -476,64 +476,64 @@ function handleDeleteTicketPrompt() {
 
         <form @submit.prevent="handleSaveEditTicket" class="space-y-4 text-xs">
           <!-- Issue Title -->
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Issue Title</label>
+          <label class="ws-field">
+            Issue Title
             <input v-model="editTitle" class="ws-input w-full" required />
-          </div>
+          </label>
 
           <!-- Unit Code & Category -->
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Unit</label>
+            <label class="ws-field">
+            Unit
               <select v-model="editUnit" class="ws-select w-full" required>
                 <option v-for="r in rooms" :key="r.id" :value="r.unitCode.toLowerCase()">
                   {{ r.unitCode.toUpperCase() }} ({{ r.cluster }})
                 </option>
               </select>
-            </div>
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Category</label>
+            </label>
+            <label class="ws-field">
+            Category
               <select v-model="editCategory" class="ws-select w-full" required>
                 <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
               </select>
-            </div>
+            </label>
           </div>
 
           <!-- Priority & Status -->
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Priority</label>
+            <label class="ws-field">
+            Priority
               <select v-model="editPriority" class="ws-select w-full" required>
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
                 <option value="Emergency">Emergency</option>
               </select>
-            </div>
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">Status</label>
+            </label>
+            <label class="ws-field">
+            Status
               <select v-model="editStatus" class="ws-select w-full" required>
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Resolved">Resolved</option>
                 <option value="Closed">Closed</option>
               </select>
-            </div>
+            </label>
           </div>
 
           <!-- Assigned Technician -->
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Assigned Technician</label>
+          <label class="ws-field">
+            Assigned Technician
             <select v-model="editTech" class="ws-select w-full">
               <option v-for="tech in TECHNICIANS" :key="tech" :value="tech">{{ tech }}</option>
             </select>
-          </div>
+          </label>
 
           <!-- Description -->
-          <div>
-            <label class="mb-1.5 block text-xs text-ink-faint">Description &amp; Repair Notes</label>
+          <label class="ws-field">
+            Description &amp; Repair Notes
             <textarea v-model="editDesc" rows="3" class="ws-textarea w-full" placeholder="Details regarding the maintenance request..."></textarea>
-          </div>
+          </label>
 
           <!-- Resident Photo Attachment (if present) -->
           <div v-if="editingTicket?.photo" class="space-y-1.5 pt-2 border-t border-line">
@@ -583,10 +583,12 @@ function handleDeleteTicketPrompt() {
 
             <!-- Quick Comment Box -->
             <div class="flex gap-2">
+              <label for="dispatch-reply" class="sr-only">Write back to the resident</label>
               <input
+                id="dispatch-reply"
                 v-model="newAdminMessage"
                 @keydown.enter.prevent="handleSendAdminComment"
-                placeholder="Type a follow-up comment for the resident…"
+                placeholder="Write back to the resident"
                 class="ws-input flex-1"
               />
               <button

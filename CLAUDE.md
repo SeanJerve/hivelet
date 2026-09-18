@@ -49,7 +49,7 @@ npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"
 **Read the summary table, not the tail.** `| tail` shows the end of whichever suite ran last, and
 a red check has been committed past that way twice.
 
-Nineteen suites. **12 run on a bare clone**; **16** with `.env`; **all 19** with the backend up
+Twenty suites. **13 run on a bare clone**; **17** with `.env`; **all 20** with the backend up
 (`npm run dev:backend`) and `credentials/creds.txt`. Both of those are gitignored and must be
 sent separately — they never come down with a pull.
 

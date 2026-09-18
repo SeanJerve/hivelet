@@ -645,15 +645,19 @@ function statusClass(status: string) {
         <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
           <div class="relative flex-1">
             <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
+            <label for="ticket-search" class="sr-only">Search your requests</label>
             <input
+              id="ticket-search"
               v-model="searchQuery"
-              type="text"
-              placeholder="Search title, category or description…"
+              type="search"
+              placeholder="What it was about"
               class="ws-input w-full pl-10 pr-4 sm:text-sm"
             />
           </div>
 
+          <label for="ticket-filter" class="sr-only">Show which requests</label>
           <select
+            id="ticket-filter"
             v-model="statusFilter"
             class="ws-select sm:text-sm sm:w-44"
           >
@@ -893,10 +897,12 @@ function statusClass(status: string) {
 
           <!-- Add Note Input -->
           <div class="flex gap-2">
+            <label for="ticket-note" class="sr-only">Add a note for the landlady</label>
             <input
+              id="ticket-note"
               v-model="newNoteText"
               type="text"
-              placeholder="Add a follow-up note for Landlady Fe…"
+              placeholder="Add a note for Mrs. Da Silva"
               @keydown.enter.prevent="postNote"
               class="ws-input flex-1"
             />

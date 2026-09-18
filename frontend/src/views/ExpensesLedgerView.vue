@@ -804,10 +804,10 @@ async function handleEditExpense() {
         <form @submit.prevent="submitAddExpense">
           <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
-            <div class="w-full sm:w-64">
-              <label class="mb-1.5 block text-xs text-ink-faint">Expense Date</label>
+            <label class="ws-field w-full sm:w-64">
+            Expense Date
               <input v-model="date" type="date" class="ws-input w-full" required />
-            </div>
+            </label>
 
             <!-- Dynamic Entries List -->
             <div class="space-y-4">
@@ -955,36 +955,30 @@ async function handleEditExpense() {
         <form @submit.prevent="handleEditExpense">
           <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
-            <div class="w-full sm:w-64">
-              <label class="mb-1.5 block text-xs text-ink-faint">
-                Expense Date
-              </label>
+            <label class="ws-field w-full sm:w-64">
+            Expense Date
               <input 
                 v-model="editDate" 
                 type="date" 
                 class="ws-input w-full" 
                 required 
               />
-            </div>
+            </label>
 
             <!-- Description & Category Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="mb-1.5 block text-xs text-ink-faint">
-                  Description &amp; Receipt #
-                </label>
+              <label class="ws-field">
+            Description &amp; Receipt #
                 <input 
                   v-model="editDesc" 
                   placeholder="e.g. OR #88240 — supplies" 
                   class="ws-input w-full" 
                   required 
                 />
-              </div>
+              </label>
 
-              <div>
-                <label class="mb-1.5 block text-xs text-ink-faint">
-                  Expense Category
-                </label>
+              <label class="ws-field">
+            Expense Category
                 <select 
                   v-model="editCategory" 
                   class="ws-select w-full" 
@@ -992,7 +986,7 @@ async function handleEditExpense() {
                 >
                   <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
                 </select>
-              </div>
+              </label>
             </div>
 
             <!-- Allocations / Splits Section -->
