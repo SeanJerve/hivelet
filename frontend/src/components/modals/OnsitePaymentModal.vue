@@ -147,7 +147,28 @@ function waterBaselineFor(unitCode: string, occupants: number): number {
   return occupants * (waterRatePerOccupant.value ?? 200);
 }
 
-watch([selectedUnit, monthsCovered, roomsFetchFailed], ([newUnit, newMonths]) => {
+/**
+ * `unitOccupantsSummary` is in this list because the calculation READS it.
+ *
+ * It was not, and the omission cost a money figure. The watch fired once as the
+ * modal opened - before the occupancy data had arrived - so `occupantsFor()`
+ * saw nothing, water was set to `0 x 200 = 0`, and it never ran again because
+ * none of its three dependencies changed afterwards. The label beside the field
+ * is a computed and DID update, so the form sat there reading:
+ *
+ *     Water    ₱200 × 3 occupants          [ 0 ]
+ *
+ * Stating the rule and the occupant count next to a figure that contradicts
+ * both. Touching the unit dropdown re-fired the watch and corrected it to 600,
+ * which is why it survived: anyone who changed the unit never saw it.
+ *
+ * This is the garbage fee again - collected at the counter, printed on the
+ * receipt, recorded as ₱0.00 - and it is the third time on this project that a
+ * money field has been computed from data that had not loaded yet. **A watch's
+ * dependency list has to name everything the body reads, not everything the
+ * author was thinking about.**
+ */
+watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([newUnit, newMonths]) => {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
   const summary = formatUnitOccupantsSummary(newUnit);
   const occCount = occupantsFor(summary, room);
