@@ -1323,22 +1323,18 @@ async function exportExcel() {
       </p>
 
       <div class="grid gap-4 sm:grid-cols-2 pt-2">
-        <div class="p-4 rounded-xl bg-canvas border border-line space-y-1">
+        <div class="space-y-1 rounded-2xl bg-canvas p-4">
           <div class="flex justify-between items-center">
             <span class="font-semibold text-sm text-ink">Linda (LF)</span>
-            <span class="badge-soft badge-blue text-xs font-semibold">
-              Fixed Billing
-            </span>
+            <StatusPill tone="neutral">A fixed charge</StatusPill>
           </div>
           <p class="text-xs text-ink-soft">Water: <strong>₱400.00 / month</strong></p>
         </div>
 
-        <div class="p-4 rounded-xl bg-canvas border border-line space-y-1">
+        <div class="space-y-1 rounded-2xl bg-canvas p-4">
           <div class="flex justify-between items-center">
             <span class="font-semibold text-sm text-ink">Linda (LB)</span>
-            <span class="badge-soft badge-blue text-xs font-semibold">
-              Fixed Billing
-            </span>
+            <StatusPill tone="neutral">A fixed charge</StatusPill>
           </div>
           <p class="text-xs text-ink-soft">Water: <strong>₱200.00 / month</strong></p>
         </div>

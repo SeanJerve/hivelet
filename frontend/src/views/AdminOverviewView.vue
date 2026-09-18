@@ -974,22 +974,22 @@ const isExportingArchive = ref(false);
             </ul>
           </template>
 
-          <table class="w-full text-sm">
+          <table class="ws-table">
             <caption class="sr-only">Collections, operating expenses and net operating income by month</caption>
             <thead>
-              <tr class="text-xs text-ink-faint">
-                <th scope="col" class="py-2 text-left font-medium">Month</th>
-                <th scope="col" class="py-2 text-right font-medium">Collected</th>
-                <th scope="col" class="py-2 text-right font-medium">Operating</th>
-                <th scope="col" class="py-2 text-right font-medium">Net</th>
+              <tr>
+                <th scope="col">Month</th>
+                <th scope="col" class="num">Collected</th>
+                <th scope="col" class="num">Operating</th>
+                <th scope="col" class="num">Net</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-line tabular">
+            <tbody>
               <tr v-for="d in liveRecordedMonths" :key="d.month">
-                <th scope="row" class="py-2 text-left font-medium">{{ d.month }}</th>
-                <td class="py-2 text-right">{{ peso(d.grossIncome) }}</td>
-                <td class="py-2 text-right text-ink-soft">{{ peso(d.expenses) }}</td>
-                <td :class="['py-2 text-right font-semibold', d.noi < 0 && 'text-overdue']">{{ peso(d.noi) }}</td>
+                <th scope="row">{{ d.month }}</th>
+                <td class="num">{{ peso(d.grossIncome) }}</td>
+                <td class="num text-ink-soft">{{ peso(d.expenses) }}</td>
+                <td :class="['num font-semibold', d.noi < 0 && 'text-overdue']">{{ peso(d.noi) }}</td>
               </tr>
             </tbody>
           </table>
@@ -1129,30 +1129,30 @@ const isExportingArchive = ref(false);
           message="Income or expenses could not be loaded, so net figures cannot be worked out."
           @retry="refreshAllData"
         />
-        <div v-else class="overflow-x-auto">
-          <table class="w-full min-w-[36rem] text-sm">
+        <div v-else class="ws-table-wrap">
+          <table class="ws-table">
             <caption class="sr-only">Collections, expenses and net operating income by month, {{ selectedArchiveYear }}</caption>
             <thead>
-              <tr class="text-xs text-ink-faint">
-                <th scope="col" class="py-2 text-left font-medium">Month</th>
-                <th scope="col" class="py-2 text-right font-medium">Collected</th>
-                <th scope="col" class="py-2 text-right font-medium">Operating expenses</th>
-                <th scope="col" class="py-2 text-right font-medium">Net operating income</th>
-                <th scope="col" class="py-2 text-right font-medium">Personal, not deducted</th>
+              <tr>
+                <th scope="col">Month</th>
+                <th scope="col" class="num">Collected</th>
+                <th scope="col" class="num">Operating expenses</th>
+                <th scope="col" class="num">Net operating income</th>
+                <th scope="col" class="num">Personal, not deducted</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-line tabular">
+            <tbody>
               <tr v-for="d in historical12MonthsData" :key="d.month">
-                <th scope="row" class="py-2.5 text-left font-medium">{{ MONTH_LONG[d.monthNum - 1] }}</th>
-                <td class="py-2.5 text-right">
+                <th scope="row">{{ MONTH_LONG[d.monthNum - 1] }}</th>
+                <td class="num">
                   <StatusPill v-if="!d.hasIncome" tone="unentered">Not entered</StatusPill>
                   <template v-else>{{ peso(d.grossIncome) }}</template>
                 </td>
-                <td class="py-2.5 text-right text-ink-soft">{{ peso(d.expenses) }}</td>
-                <td :class="['py-2.5 text-right font-semibold', d.noi < 0 && 'text-overdue']">
+                <td class="num text-ink-soft">{{ peso(d.expenses) }}</td>
+                <td :class="['num font-semibold', d.noi < 0 && 'text-overdue']">
                   {{ d.hasIncome ? peso(d.noi) : '' }}
                 </td>
-                <td class="py-2.5 text-right text-ink-faint">{{ peso(d.personalExpenses) }}</td>
+                <td class="num text-ink-faint">{{ peso(d.personalExpenses) }}</td>
               </tr>
             </tbody>
           </table>
@@ -1201,10 +1201,10 @@ const isExportingArchive = ref(false);
                 {{ historicalTenantRoster.length }} {{ historicalTenantRoster.length === 1 ? 'tenant' : 'tenants' }}
               </p>
             </div>
-            <div class="max-h-[28rem] overflow-auto rounded-2xl border border-line">
-              <table class="w-full min-w-[48rem] text-sm">
+            <div class="ws-table-wrap max-h-[28rem]">
+              <table class="ws-table">
                 <caption class="sr-only">Tenants who paid in {{ selectedArchiveYear }}</caption>
-                <thead class="sticky top-0 bg-tile">
+                <thead>
                   <tr class="text-xs text-ink-faint border-b border-line">
                     <th scope="col" class="px-4 py-3 text-left font-medium">Tenant</th>
                     <th scope="col" class="px-4 py-3 text-left font-medium">Unit</th>
@@ -1215,7 +1215,7 @@ const isExportingArchive = ref(false);
                     <th scope="col" class="px-4 py-3 text-left font-medium">Receipt no., first found</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-line">
+                <tbody>
                   <tr v-for="t in historicalTenantRoster" :key="`${t.name}-${t.unit}`">
                     <th scope="row" class="px-4 py-3 text-left font-medium">{{ t.name }}</th>
                     <td class="px-4 py-3 tabular">{{ t.unit }}</td>
@@ -1251,10 +1251,10 @@ const isExportingArchive = ref(false);
         </template>
         <div v-show="historicalUnitTableOpen" id="archive-units">
           <UnavailableNote v-if="incomeRecordsFetchFailed || roomsFetchFailed" @retry="refreshAllData" />
-          <div v-else class="max-h-[28rem] overflow-auto rounded-2xl border border-line">
-            <table class="w-full min-w-[40rem] text-sm">
+          <div v-else class="ws-table-wrap max-h-[28rem]">
+            <table class="ws-table">
               <caption class="sr-only">Entries and collections per unit in {{ selectedArchiveYear }}</caption>
-              <thead class="sticky top-0 bg-tile">
+              <thead>
                 <tr class="text-xs text-ink-faint border-b border-line">
                   <th scope="col" class="px-4 py-3 text-left font-medium">Unit</th>
                   <th scope="col" class="px-4 py-3 text-left font-medium">Cluster</th>
@@ -1264,7 +1264,7 @@ const isExportingArchive = ref(false);
                   <th scope="col" class="px-4 py-3 text-right font-medium">Total</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-line tabular">
+              <tbody>
                 <tr v-for="u in historicalRoomUtilization" :key="u.unitCode">
                   <th scope="row" class="px-4 py-3 text-left font-semibold">{{ u.unitCode.toUpperCase() }}</th>
                   <td class="px-4 py-3 text-ink-soft">{{ u.cluster }}</td>
@@ -1334,10 +1334,10 @@ const isExportingArchive = ref(false);
           >
             <template v-if="historicalLedgerTab === 'income'">
               <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-              <div v-else class="max-h-[32rem] overflow-auto rounded-2xl border border-line">
-                <table class="w-full min-w-[56rem] text-sm">
+              <div v-else class="ws-table-wrap max-h-[32rem]">
+                <table class="ws-table">
                   <caption class="sr-only">Income entries, {{ selectedArchiveYear }}</caption>
-                  <thead class="sticky top-0 bg-tile">
+                  <thead>
                     <tr class="text-xs text-ink-faint border-b border-line">
                       <th scope="col" class="px-4 py-3 text-left font-medium">Date paid</th>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Unit</th>
@@ -1350,17 +1350,17 @@ const isExportingArchive = ref(false);
                       <th scope="col" class="px-4 py-3 text-left font-medium">Receipt no.</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-line tabular">
+                  <tbody>
                     <tr v-for="r in historicalIncomeRecords" :key="r.id">
-                      <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft">{{ r.datePaid }}</td>
-                      <td class="px-4 py-2.5 font-semibold">{{ r.unit }}</td>
-                      <td class="px-4 py-2.5">{{ r.contact }}</td>
-                      <td class="px-4 py-2.5 text-xs text-ink-soft">{{ r.rentFor }}</td>
-                      <td class="px-4 py-2.5 text-right text-ink-soft">{{ peso(r.rent) }}</td>
-                      <td class="px-4 py-2.5 text-right text-ink-soft">{{ peso(r.fiftyPercentShare || 0) }}</td>
-                      <td class="px-4 py-2.5 text-right text-ink-soft">{{ peso(r.water) }}</td>
-                      <td class="px-4 py-2.5 text-right font-semibold">{{ peso(r.totalRemitted || r.rent) }}</td>
-                      <td class="px-4 py-2.5 text-xs text-ink-soft">{{ r.invoice }}</td>
+                      <td class="whitespace-nowrap text-ink-soft">{{ r.datePaid }}</td>
+                      <td class="font-semibold">{{ r.unit }}</td>
+                      <td>{{ r.contact }}</td>
+                      <td class="text-xs text-ink-soft">{{ r.rentFor }}</td>
+                      <td class="num text-ink-soft">{{ peso(r.rent) }}</td>
+                      <td class="num text-ink-soft">{{ peso(r.fiftyPercentShare || 0) }}</td>
+                      <td class="num text-ink-soft">{{ peso(r.water) }}</td>
+                      <td class="num font-semibold">{{ peso(r.totalRemitted || r.rent) }}</td>
+                      <td class="text-xs text-ink-soft">{{ r.invoice }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1368,10 +1368,10 @@ const isExportingArchive = ref(false);
             </template>
             <template v-else>
               <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
-              <div v-else class="max-h-[32rem] overflow-auto rounded-2xl border border-line">
-                <table class="w-full min-w-[48rem] text-sm">
+              <div v-else class="ws-table-wrap max-h-[32rem]">
+                <table class="ws-table">
                   <caption class="sr-only">Expense entries, {{ selectedArchiveYear }}</caption>
-                  <thead class="sticky top-0 bg-tile">
+                  <thead>
                     <tr class="text-xs text-ink-faint border-b border-line">
                       <th scope="col" class="px-4 py-3 text-left font-medium">Date</th>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Receipt or supplier</th>
@@ -1380,17 +1380,17 @@ const isExportingArchive = ref(false);
                       <th scope="col" class="px-4 py-3 text-right font-medium">Total</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-line">
+                  <tbody>
                     <tr v-for="e in historicalExpenseRecords" :key="e.id">
-                      <td class="px-4 py-2.5 whitespace-nowrap text-ink-soft tabular">{{ e.date }}</td>
-                      <td class="px-4 py-2.5">{{ e.description }}</td>
-                      <td class="px-4 py-2.5 text-ink-soft">{{ e.category }}</td>
-                      <td class="px-4 py-2.5 text-xs text-ink-soft tabular">
+                      <td class="tabular whitespace-nowrap text-ink-soft">{{ e.date }}</td>
+                      <td>{{ e.description }}</td>
+                      <td class="text-ink-soft">{{ e.category }}</td>
+                      <td class="tabular text-xs text-ink-soft">
                         <span v-for="(s, sIdx) in e.splits" :key="sIdx" class="mr-3 inline-block">
                           {{ s.area }} {{ peso(s.amount) }}
                         </span>
                       </td>
-                      <td class="px-4 py-2.5 text-right font-semibold tabular">{{ peso(e.totalAmount || 0) }}</td>
+                      <td class="num font-semibold">{{ peso(e.totalAmount || 0) }}</td>
                     </tr>
                   </tbody>
                 </table>

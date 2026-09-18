@@ -32,6 +32,7 @@ import {
   Search,
 } from 'lucide-vue-next';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
 
 interface TicketRow {
   id: string;
@@ -94,6 +95,24 @@ const statusFilter = ref<'All' | 'Open' | 'Resolved'>('All');
  * A repair goes Submitted, then In progress once a technician is attending it,
  * then Done. The resident sees where theirs has got to rather than one word.
  */
+/**
+ * How urgent a request is, in words a resident would use. "Emergency priority"
+ * and "Low priority" are the system's four enum values with a noun stuck on
+ * the end; these say what they mean.
+ */
+function priorityWord(priority: string) {
+  if (priority === 'Emergency') return 'Needs someone now';
+  if (priority === 'High') return 'Soon';
+  if (priority === 'Medium') return 'When you can';
+  return 'No rush';
+}
+
+function priorityTone(priority: string): 'overdue' | 'verify' | 'neutral' {
+  if (priority === 'Emergency') return 'overdue';
+  if (priority === 'High') return 'verify';
+  return 'neutral';
+}
+
 const TICKET_STEPS = ['Submitted', 'In progress', 'Done'] as const;
 
 function ticketStep(status: string) {
@@ -767,20 +786,13 @@ function statusClass(status: string) {
                 <div
                   class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-line bg-tile"
                 >
-                  <span
-                    :class="[ 'badge-soft', ticket.priority === 'Emergency' ? 'badge-danger' : ticket.priority === 'High' ? 'badge-warning' : ticket.priority === 'Medium' ? 'badge-blue' : 'badge-neutral' ]"
-                  >
-                    {{ ticket.priority }} priority
-                  </span>
-                  <span class="badge-soft badge-neutral">
-                    {{ ticket.category }}
-                  </span>
-                  <span
-                    v-if="ticket.resolved_at"
-                    class="badge-soft badge-success"
-                  >
-                    Resolved {{ formatDate(ticket.resolved_at) }}
-                  </span>
+                  <StatusPill :tone="priorityTone(ticket.priority)">
+                    {{ priorityWord(ticket.priority) }}
+                  </StatusPill>
+                  <StatusPill tone="neutral">{{ ticket.category }}</StatusPill>
+                  <StatusPill v-if="ticket.resolved_at" tone="paid">
+                    Done {{ formatDate(ticket.resolved_at) }}
+                  </StatusPill>
 
                   <!-- View Timeline Button -->
                   <button
@@ -839,10 +851,12 @@ function statusClass(status: string) {
                   :class="[ 'text-xs sm:text-sm font-semibold leading-tight', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink' : 'text-ink-soft' ]"
                 >
                   {{ stage.label }}
-                  <span
+                  <StatusPill
                     v-if="index === getStageIndex(activeTimelineTicket.status)"
-                    class="badge-soft badge-blue text-xs font-semibold ml-2"
-                  >CURRENT</span>
+                    tone="paid"
+                    class="ml-2"
+                    >Where it is now</StatusPill
+                  >
                 </p>
                 <p
                   :class="[ 'text-xs mt-0.5', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink-soft' : 'text-ink-soft' ]"

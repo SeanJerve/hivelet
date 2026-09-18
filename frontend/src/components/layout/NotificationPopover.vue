@@ -23,6 +23,7 @@ import {
 } from '@/lib/notificationsStore';
 import { isAdmin } from '@/lib/authStore';
 import Skeleton from '@/components/ui/Skeleton.vue';
+import StatusPill from '@/components/overview/StatusPill.vue';
 import {
   CheckCheck,
   X,
@@ -295,12 +296,10 @@ onUnmounted(() => {
               </span>
 
               <span class="mt-2 flex flex-wrap items-center gap-2">
-                <span v-if="item.priority === 'Emergency'" class="badge-soft badge-danger">
-                  Emergency
-                </span>
-                <span v-else-if="item.priority === 'High'" class="badge-soft badge-warning">
-                  High
-                </span>
+                <StatusPill v-if="item.priority === 'Emergency'" tone="overdue">
+                  Needs someone now
+                </StatusPill>
+                <StatusPill v-else-if="item.priority === 'High'" tone="verify">Soon</StatusPill>
                 <span class="text-xs font-medium text-ink-faint">{{ item.type }}</span>
                 <span v-if="!item.is_read" class="text-xs font-semibold text-brand">Unread</span>
               </span>
