@@ -59,7 +59,14 @@ export type AuditEntityType =
   | 'PAYMENT'
   | 'INCOME_RECORD'
   | 'EXPENSE_ENTRY'
-  | 'TICKET';
+  | 'TICKET'
+  /**
+   * The trail itself, for an export of it. `audit_logs.entity_type` is a
+   * varchar, not an enum, so this union is a convention this code keeps rather
+   * than a constraint the database enforces - checked against
+   * `information_schema.columns`, not the schema file.
+   */
+  | 'AUDIT_LOG';
 
 export interface AuditEntry {
   actorProfileId: string | null;

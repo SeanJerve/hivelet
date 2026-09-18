@@ -31,6 +31,7 @@ import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
+import { buildAuditTrailWorkbook, type AuditCategory } from '../services/auditTrailExport.js';
 import { money, occupantCount, isoDate, shortText, uuid } from '../utils/validators.js';
 
 const router = Router();
@@ -1482,6 +1483,46 @@ router.get(
       entityType: 'EXPENSE_ENTRY',
       entityId: String(year),
       newValues: { export: 'xlsx', ledger: 'expenses', year },
+    });
+
+    await workbook.xlsx.write(res);
+    res.end();
+  })
+);
+
+/**
+ * GET /api/admin/reports/audit.xlsx?category=business|auth|all&limit=N
+ *
+ * FR-029, BR-028. The trail left the system as a CSV while both financial
+ * ledgers left as workbooks - the weakest format for the one artifact whose
+ * whole claim is that it can be trusted, and the worst case for CSV besides:
+ * `previous_values` and `new_values` are JSON, and every comma and quote in
+ * them is a chance to shift a column and change what the record appears to say.
+ *
+ * The export itself is audited, like the other two.
+ */
+router.get(
+  '/admin/reports/audit.xlsx',
+  requirePermission(PERMISSIONS.AUDIT_READ),
+  asyncHandler(async (req, res) => {
+    const raw = String(req.query.category ?? 'business');
+    const category: AuditCategory =
+      raw === 'auth' || raw === 'all' || raw === 'business' ? raw : 'business';
+    const limit = Number(req.query.limit ?? 500);
+
+    const { workbook, rowCount } = await buildAuditTrailWorkbook(category, limit);
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader('Content-Disposition', 'attachment; filename="hivelet-audit-trail.xlsx"');
+
+    await auditFromRequest(req, {
+      action: 'LEDGER_EXPORT',
+      entityType: 'AUDIT_LOG',
+      entityId: category,
+      newValues: { export: 'xlsx', trail: category, limit, rows: rowCount },
     });
 
     await workbook.xlsx.write(res);

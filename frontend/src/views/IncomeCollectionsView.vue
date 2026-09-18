@@ -16,7 +16,8 @@ import {
   type IncomeRecord 
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
-import { api, API_BASE, getStoredToken } from '@/lib/api';
+import { api } from '@/lib/api';
+import { downloadReport } from '@/lib/downloadReport';
 import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Banknote, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -662,9 +663,6 @@ async function handleEditIncome() {
  * A CSV button used to sit beside it writing a flat dump of the same rows. CSV
  * cannot express any of that structure, so the two files disagreed about what
  * the ledger looks like, and the flat one was the easier button to reach.
- *
- * Fetched rather than linked, because the endpoint needs the bearer token and an
- * `<a href>` cannot carry one.
  */
 const isExportingExcel = ref(false);
 
@@ -673,28 +671,9 @@ async function exportExcel() {
   isExportingExcel.value = true;
   // The workbook is a per-year report, so "All Years" falls back to this year
   // rather than silently exporting one of them.
-  const year = filterYear.value !== 'All'
-    ? filterYear.value
-    : String(new Date().getFullYear());
+  const year = filterYear.value !== 'All' ? filterYear.value : String(new Date().getFullYear());
   try {
-    const res = await fetch(`${API_BASE}/admin/reports/income.xlsx?year=${year}`, {
-      headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
-    });
-    if (!res.ok) {
-      throw new Error(`The report could not be generated (HTTP ${res.status}).`);
-    }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hivelet-income-${year}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    showToast('success', 'Report downloaded', `Monthly Income Report for ${year}.`);
-  } catch (err: any) {
-    showToast('error', 'Export failed', err?.message || 'The report could not be generated.');
+    await downloadReport('income', year);
   } finally {
     isExportingExcel.value = false;
   }

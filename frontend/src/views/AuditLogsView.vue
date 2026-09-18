@@ -17,8 +17,11 @@
  */
 import { ref, computed, onMounted, watch } from 'vue';
 import { api } from '@/lib/api';
+import { downloadReport } from '@/lib/downloadReport';
+import { usePaged } from '@/lib/usePaged';
+import ShowMore from '@/components/ui/ShowMore.vue';
 import { useToast } from '@/lib/useToast';
-import { ShieldCheck, Search, Download, ChevronDown } from 'lucide-vue-next';
+import { ShieldCheck, Search, FileSpreadsheet, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -156,17 +159,21 @@ const filteredLogs = computed(() => {
   });
 });
 
+
 /**
- * How many of the rows now on screen are of each kind.
+ * A first page of entries, with the rest behind a control.
  *
- * These are deliberately labelled as counts of the listed window, not of the
- * trail. Three tiles used to print `auditLogs.length` and two filtered subsets
- * of it under the headings "Total Audit Events", "Financial Collections" and
- * "Expense Logs", so a page showing the newest 100 of 2,223 rows reported the
- * total as 100 - on the one screen whose entire worth is that its numbers are
- * the real ones. The whole-table totals come from the API and are shown apart.
+ * All of them rendered at once. At the default limit that is 100 records each
+ * carrying its own disclosure, and the reader's chosen limit goes to 500 - a
+ * page five hundred entries long before anyone has asked to read one.
  */
-const listedCount = computed(() => filteredLogs.value.length);
+const {
+  visible: visibleLogs,
+  remaining: remainingLogs,
+  nextStep: nextLogStep,
+  showMore: showMoreLogs,
+  showEverything: showAllLogs,
+} = usePaged(filteredLogs, 12);
 
 /**
  * The kinds of event to read. Business and sign-in carry whole-table counts
@@ -252,36 +259,28 @@ function formatDate(isoStr: string): string {
   }
 }
 
-function exportAuditCSV() {
+/**
+ * The trail as a workbook, not a CSV.
+ *
+ * The CSV wrote `previous_values` and `new_values` as quoted JSON. Every comma,
+ * quote and newline in them was a chance to shift a column, on the one artifact
+ * whose whole claim is that it records exactly what happened. The workbook is
+ * built server-side and its columns cannot slip.
+ */
+const isExporting = ref(false);
+
+async function exportAuditTrail() {
+  if (isExporting.value) return;
   if (filteredLogs.value.length === 0) {
-    showToast('warning', 'Export Empty', 'No audit logs available to export.');
+    showToast('warning', 'Nothing to export', 'No entry is listed to export.');
     return;
   }
-
-  const headers = ['Timestamp', 'Action', 'Entity Type', 'Entity ID', 'Actor', 'Role', 'IP Address', 'Previous Values', 'New Values'];
-  const rows = filteredLogs.value.map(l => [
-    `"${l.created_at}"`,
-    `"${l.action}"`,
-    `"${l.entity_type || '—'}"`,
-    `"${l.entity_id || '—'}"`,
-    `"${l.profiles?.full_name || 'System'}"`,
-    `"${l.profiles?.role || 'admin'}"`,
-    // An address that was not recorded is not 127.0.0.1. Exporting a plausible one into an
-    // audit trail is worse than exporting a blank.
-    `"${l.ip_address || '—'}"`,
-    `"${JSON.stringify(l.previous_values || '').replace(/"/g, '""')}"`,
-    `"${JSON.stringify(l.new_values || '').replace(/"/g, '""')}"`
-  ]);
-
-  const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `Hivelet-Audit-Trail-Export-${new Date().toISOString().slice(0, 10)}.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
-  showToast('success', 'Audit Exported', 'Audit trail downloaded as CSV.');
+  isExporting.value = true;
+  try {
+    await downloadReport('audit', categoryFilter.value, { limit: rowLimit.value });
+  } finally {
+    isExporting.value = false;
+  }
 }
 </script>
 
@@ -303,9 +302,17 @@ function exportAuditCSV() {
 
       <div class="flex items-center gap-2 self-start sm:self-auto">
 
-        <button type="button" class="pill-btn-brand" @click="exportAuditCSV">
-          <Download class="size-4" aria-hidden="true" />
-          <span>Download as CSV</span>
+        <button
+          type="button"
+          class="pill-btn-brand"
+          :disabled="isExporting"
+          @click="exportAuditTrail"
+        >
+          <FileSpreadsheet
+            :class="['size-4', isExporting && 'animate-pulse']"
+            aria-hidden="true"
+          />
+          <span>{{ isExporting ? 'Building the file' : 'Download for Excel' }}</span>
         </button>
       </div>
     </div>
@@ -440,11 +447,11 @@ function exportAuditCSV() {
     -->
     <div v-else class="overflow-hidden rounded-tile bg-tile">
       <p class="border-b border-line px-5 py-3 text-sm text-ink-soft sm:px-6">
-        {{ listedCount }} listed, newest first
+        Newest first
       </p>
 
       <ul class="divide-y divide-line">
-        <li v-for="l in filteredLogs" :key="l.id" class="p-5 sm:p-6">
+        <li v-for="l in visibleLogs" :key="l.id" class="p-5 sm:p-6">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
@@ -515,5 +522,16 @@ function exportAuditCSV() {
         </li>
       </ul>
     </div>
+
+    <ShowMore
+      v-if="!isLoading && !loadError && filteredLogs.length > 0"
+      :shown="visibleLogs.length"
+      :total="filteredLogs.length"
+      :remaining="remainingLogs"
+      :next-step="nextLogStep || 12"
+      noun="entry"
+      @more="showMoreLogs"
+      @all="showAllLogs"
+    />
   </div>
 </template>

@@ -47,10 +47,11 @@ import {
   Calendar,
   ChevronDown,
   Check,
-  Download,
+  FileSpreadsheet,
   ArrowLeft,
   Search,
 } from 'lucide-vue-next';
+import { downloadReport } from '@/lib/downloadReport';
 
 const router = useRouter();
 const route = useRoute();
@@ -620,64 +621,29 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
     .sort((a, b) => b.totalRevenue - a.totalRevenue)
 );
 
-// CSV export for the selected archive year. Quotes are escaped RFC 4180 style so
-// a name such as Jose "Jojo" Cruz cannot shift every column.
-function exportHistoricalCSV() {
-  const year = selectedArchiveYear.value;
-  const headers = ['Type', 'Date', 'Month', 'Unit / OR', 'Contact / Supplier', 'Category / Cluster', 'Rent / Base', '50% Share', 'Water', 'Total Remitted / Expense'];
-
-  const incomeRows = historicalIncomeRecords.value.map((r) => [
-    'INCOME',
-    r.datePaid,
-    r.month,
-    r.unit,
-    `"${(r.contact || '').replace(/"/g, '""')}"`,
-    r.cluster,
-    r.rent,
-    r.fiftyPercentShare,
-    r.water,
-    r.totalRemitted,
-  ]);
-
-  const expenseRows = historicalExpenseRecords.value.map((e) => [
-    'EXPENSE',
-    e.date,
-    e.month,
-    `"${(e.description || '').replace(/"/g, '""')}"`,
-    'Supplier',
-    `"${(e.category || '').replace(/"/g, '""')}"`,
-    0,
-    0,
-    0,
-    e.totalAmount,
-  ]);
-
-  const csvContent =
-    'data:text/csv;charset=utf-8,' +
-    [
-      [`HIVELET FINANCIAL AUDIT REPORT - FISCAL YEAR ${year}`],
-      [
-        `Gross Inflow: ${historicalAnnualGrossTotal.value}`,
-        `50% Share (half of Rent Amount): ${historicalAnnualHalfOfRentShare.value}`,
-        `Operating Expenses: ${historicalAnnualExpenseTotal.value}`,
-        `Personal (not deducted): ${historicalAnnualPersonalTotal.value}`,
-        `Net Operating Income: ${historicalAnnualNOI.value}`,
-      ],
-      [],
-      headers,
-      ...incomeRows,
-      ...expenseRows,
-    ]
-      .map((e) => (Array.isArray(e) ? e.join(',') : e))
-      .join('\n');
-
-  const link = document.createElement('a');
-  link.setAttribute('href', encodeURI(csvContent));
-  link.setAttribute('download', `Hivelet_FY${year}_Financial_Audit_Report.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+/**
+ * The year's two reports, as the workbooks she already keeps.
+ *
+ * This used to build a third format nobody else produces: one CSV with income
+ * and expense rows stacked under a shared ten-column header, five of which were
+ * always 0 for an expense row, plus a banner row and a totals row above the
+ * header. Nothing verified it, no other screen wrote it, and it disagreed in
+ * shape with both of the real reports.
+ *
+ * `check:reports` checks these two against the database month by month, which
+ * is the whole reason to prefer them.
+ */
+async function exportArchiveYear(kind: 'income' | 'expenses') {
+  if (isExportingArchive.value) return;
+  isExportingArchive.value = true;
+  try {
+    await downloadReport(kind, selectedArchiveYear.value);
+  } finally {
+    isExportingArchive.value = false;
+  }
 }
+
+const isExportingArchive = ref(false);
 </script>
 
 <template>
@@ -749,9 +715,23 @@ function exportHistoricalCSV() {
           </router-link>
         </template>
         <template v-else>
-          <button type="button" class="pill-btn" @click="exportHistoricalCSV">
-            <Download class="size-4 text-ink-soft" aria-hidden="true" />
-            Export {{ selectedArchiveYear }} as CSV
+          <button
+            type="button"
+            class="pill-btn"
+            :disabled="isExportingArchive"
+            @click="exportArchiveYear('income')"
+          >
+            <FileSpreadsheet class="size-4" aria-hidden="true" />
+            {{ selectedArchiveYear }} income
+          </button>
+          <button
+            type="button"
+            class="pill-btn"
+            :disabled="isExportingArchive"
+            @click="exportArchiveYear('expenses')"
+          >
+            <FileSpreadsheet class="size-4" aria-hidden="true" />
+            {{ selectedArchiveYear }} expenses
           </button>
           <button type="button" class="pill-btn-brand" @click="exitHistoricalMode">
             <ArrowLeft class="size-4" aria-hidden="true" />

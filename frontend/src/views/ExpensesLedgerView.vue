@@ -5,9 +5,11 @@ import { propertyToday, propertyDate } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
-import { api, API_BASE, getStoredToken } from '@/lib/api';
-import { Plus, Search, ReceiptText, X, Loader2, Calendar, Download, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
+import { api } from '@/lib/api';
+import { downloadReport } from '@/lib/downloadReport';
+import { Plus, Search, X, Loader2, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import RecordTable from '@/components/ui/RecordTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
@@ -69,21 +71,7 @@ async function exportExpensesExcel() {
   // silently exporting one of them.
   const year = filterYear.value !== 'All' ? filterYear.value : String(new Date().getFullYear());
   try {
-    const res = await fetch(`${API_BASE}/admin/reports/expenses.xlsx?year=${year}`, {
-      headers: { Authorization: `Bearer ${getStoredToken() ?? ''}` },
-    });
-    if (!res.ok) throw new Error(`The report could not be generated (HTTP ${res.status}).`);
-    const url = URL.createObjectURL(await res.blob());
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hivelet-expenses-${year}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    showToast('success', 'Report downloaded', `Monthly Expenses Report for ${year}.`);
-  } catch (err: any) {
-    showToast('error', 'Export failed', err?.message || 'The report could not be generated.');
+    await downloadReport('expenses', year);
   } finally {
     isExportingExcel.value = false;
   }
@@ -532,166 +520,45 @@ async function handleEditExpense() {
   }
 }
 
-// CSV export function
-function exportFilteredExpenses() {
-  const headers = [
-    'Date', 
-    'Description / Voucher', 
-    'Category', 
-    'Boarding House Split (PHP)', 
-    'Main House Split (PHP)', 
-    'Apts & Other Split (PHP)', 
-    'Total (PHP)'
-  ];
-  const csvRows = [headers.join(',')];
-  
-  // Sort chronologically ascending
-  const sortedRecords = [...filtered.value].sort((a, b) => {
-    const da = new Date(a.date).getTime();
-    const db = new Date(b.date).getTime();
-    return da - db;
-  });
-
-  // Group rows by month
-  const groups: { monthKey: string; records: typeof filtered.value }[] = [];
-  
-  sortedRecords.forEach(e => {
-    const d = new Date(e.date);
-    let monthKey = 'Unknown Month';
-    if (!isNaN(d.getTime())) {
-      monthKey = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-    }
-    let group = groups.find(g => g.monthKey === monthKey);
-    if (!group) {
-      group = { monthKey, records: [] };
-      groups.push(group);
-    }
-    group.records.push(e);
-  });
-
-  groups.forEach((g, gIdx) => {
-    // 3 blank rows before subsequent months
-    if (gIdx > 0) {
-      csvRows.push(',,,,,,');
-      csvRows.push(',,,,,,');
-      csvRows.push(',,,,,,');
-    }
-
-    // Month header row
-    csvRows.push([`"** ${g.monthKey.toUpperCase()} **"`, '', '', '', '', '', ''].join(','));
-
-    // Records
-    g.records.forEach(e => {
-      const dateStr = `"${e.date.replace(/"/g, '""')}"`;
-      const descStr = `"${e.description.replace(/"/g, '""')}"`;
-      const catStr = `"${e.category.replace(/"/g, '""')}"`;
-      const bhAmt = getAreaAmount(e, 'Boarding House') || '';
-      const mhAmt = getAreaAmount(e, 'Main House') || '';
-      const aptsOtherAmt = getAptsOtherAmount(e) || '';
-      const totalVal = getExpenseTotal(e);
-      
-      csvRows.push([dateStr, descStr, catStr, bhAmt, mhAmt, aptsOtherAmt, totalVal].join(','));
-    });
-
-    // Monthly Subtotal row
-    const bhSubtotal = g.records.reduce((sum, e) => sum + getAreaAmount(e, 'Boarding House'), 0);
-    const mhSubtotal = g.records.reduce((sum, e) => sum + getAreaAmount(e, 'Main House'), 0);
-    const aptsOtherSubtotal = g.records.reduce((sum, e) => sum + getAptsOtherAmount(e), 0);
-    const totalSubtotal = g.records.reduce((sum, e) => sum + getExpenseTotal(e), 0);
-    
-    csvRows.push([
-      `"SUBTOTAL (${g.monthKey.toUpperCase()})"`,
-      '',
-      '',
-      bhSubtotal,
-      mhSubtotal,
-      aptsOtherSubtotal,
-      totalSubtotal
-    ].join(','));
-  });
-
-  // Yearly Grand Totals
-  const bhGrand = filtered.value.reduce((sum, e) => sum + getAreaAmount(e, 'Boarding House'), 0);
-  const mhGrand = filtered.value.reduce((sum, e) => sum + getAreaAmount(e, 'Main House'), 0);
-  const aptsOtherGrand = filtered.value.reduce((sum, e) => sum + getAptsOtherAmount(e), 0);
-  const totalGrand = filtered.value.reduce((sum, e) => sum + getExpenseTotal(e), 0);
-  
-  csvRows.push(',,,,,,');
-  csvRows.push([
-    '"GRAND YEARLY TOTALS"',
-    '',
-    '',
-    bhGrand,
-    mhGrand,
-    aptsOtherGrand,
-    totalGrand
-  ].join(','));
-  
-  // Use Blob with \uFEFF BOM to ensure Excel opens it as UTF-8
-  const csvContent = "\uFEFF" + csvRows.join("\n");
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  
-  const link = document.createElement("a");
-  const monthName = filterMonth.value === 'All' ? 'All-Months' : filterMonth.value;
-  const yearName = filterYear.value === 'All' ? 'All-Years' : filterYear.value;
-  
-  link.setAttribute("href", url);
-  link.setAttribute("download", `hivelet_expenses_${monthName}_${yearName}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-  
-  showToast('success', 'Export Successful', `CSV exported for ${monthName} ${yearName}`);
-}
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- Header with Breadcrumbs & Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
+    <!-- Page header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
-          <span>Admin</span>
-          <span>/</span>
-          <span class="font-semibold text-ink">Monthly Expenses</span>
-        </div>
-        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
-          Monthly Operating Expenses
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+          Money going out
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
-          Property disbursements categorized and allocated by property area.
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
+          What was spent, what kind of thing it was, and which part of the property it belongs to.
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-
-        <button 
-          @click="exportFilteredExpenses"
-          class="pill-btn"
-          title="Export CSV"
-        >
-          <Download class="size-3.5 text-ink-soft" />
-          <span>Export CSV</span>
-        </button>
-
+        <!--
+          One export. A CSV button sat beside this one writing a flat dump,
+          while this writes her layout: month blocks, Property Area totals, and
+          the category summary with its running cumulative. Two buttons meant
+          two files that disagreed about what the ledger looks like.
+        -->
         <button
-          @click="exportExpensesExcel"
-          :disabled="isExportingExcel"
+          type="button"
           class="pill-btn"
-          title="The full Monthly Expenses Report layout — month blocks, Property Area totals, and the category summary with its running cumulative"
+          :disabled="isExportingExcel"
+          @click="exportExpensesExcel"
         >
-          <FileSpreadsheet :class="['size-3.5 text-ink-soft', isExportingExcel ? 'animate-pulse' : '']" />
-          <span>{{ isExportingExcel ? 'Building…' : 'Export Excel (.xlsx)' }}</span>
+          <FileSpreadsheet
+            :class="['size-4', isExportingExcel && 'animate-pulse']"
+            aria-hidden="true"
+          />
+          <span>{{ isExportingExcel ? 'Building the file' : 'Download for Excel' }}</span>
         </button>
 
-        <button 
-          @click="isAddOpen = true"
-          class="pill-btn-brand"
-        >
-          <Plus class="size-3.5 text-white" />
-          <span>Record Expense</span>
+        <button type="button" class="pill-btn-brand" @click="isAddOpen = true">
+          <Plus class="size-4" aria-hidden="true" />
+          <span>Record an expense</span>
         </button>
       </div>
     </div>
@@ -762,115 +629,167 @@ function exportFilteredExpenses() {
       </OverviewTile>
     </div>
 
-    <!-- Table Section -->
-    <div class="rounded-tile bg-tile overflow-hidden">
-      <!-- Filter Bar -->
-      <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
-        <div class="relative flex-1">
-          <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
-          <input
-            v-model="q"
-            type="text"
-            placeholder="Search description, receipt # or category…"
-            class="ws-input w-full pl-10 pr-4 sm:text-sm"
-          />
-        </div>
-
-        <select
-          v-model="selectedCategory"
-          class="ws-select sm:text-sm sm:w-48"
-        >
-          <option value="All">All Categories</option>
-          <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
-        </select>
-
-        <select
-          v-model="filterMonth"
-          class="ws-select sm:text-sm sm:w-36"
-        >
-          <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
-        </select>
-
-        <select
-          v-model="filterYear"
-          class="ws-select sm:text-sm sm:w-28"
-        >
-          <option v-for="y in yearsList" :key="y" :value="y">{{ y === 'All' ? 'All Years' : y }}</option>
-        </select>
+    <!-- Narrowing the ledger -->
+    <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div class="relative xl:max-w-sm xl:flex-1">
+        <Search
+          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+          aria-hidden="true"
+        />
+        <label for="expense-search" class="sr-only">Search the ledger</label>
+        <input
+          id="expense-search"
+          v-model="q"
+          type="search"
+          placeholder="What it was for, receipt number or kind"
+          class="ws-input w-full pl-11"
+        />
       </div>
 
-      <!-- SKELETON LOADING STATE -->
-      <div v-if="isLoading" class="p-4">
-        <SkeletonTable :columns="7" :rows="6" />
-      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <label class="ws-field">
+          <span class="sr-only">Kind of expense</span>
+          <select v-model="selectedCategory" class="ws-select w-auto">
+            <option value="All">Every kind</option>
+            <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
+          </select>
+        </label>
 
-      <!--
-        The ledger, day by day. Three of the seven columns are the areas an
-        expense is split across, which is what makes this table worth being a
-        table: the figures line up down the page and can be compared.
-      -->
-      <div v-else-if="groupedExpenses.length === 0" class="px-6 py-16 text-center">
-        <p class="text-base font-semibold text-ink">
-          <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
-          <template v-else>Nothing here</template>
-        </p>
-        <p class="mt-1 text-sm leading-6 text-ink-soft">
-          <template v-if="expenseRecordsFetchFailed">
-            This is not the same as there being no expenses. Press Refresh to try again.
-          </template>
-          <template v-else>No expense matches what you have asked for.</template>
-        </p>
-      </div>
+        <label class="ws-field">
+          <span class="sr-only">Month</span>
+          <select v-model="filterMonth" class="ws-select w-auto">
+            <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
+          </select>
+        </label>
 
-      <div v-else class="ws-table-wrap max-h-[70vh]">
-        <table class="ws-table">
-          <caption class="sr-only">
-            Expenses by day, each split across the boarding house, the main house and the
-            apartments
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">What it was for</th>
-              <th scope="col">Kind</th>
-              <th scope="col" class="num">Boarding house</th>
-              <th scope="col" class="num">Main house</th>
-              <th scope="col" class="num">Apartments and other</th>
-              <th scope="col" class="num">All of it</th>
-              <th scope="col"><span class="sr-only">Actions</span></th>
-            </tr>
-          </thead>
-
-          <tbody v-for="group in groupedExpenses" :key="group.dateStr">
-            <tr class="bg-canvas">
-              <th scope="colgroup" colspan="5" class="text-sm font-semibold text-ink-soft">
-                {{ group.dateStr }}
-              </th>
-              <td class="num text-sm font-semibold text-ink">{{ peso(group.dayTotal) }}</td>
-              <td><span class="sr-only">that day</span></td>
-            </tr>
-
-            <tr v-for="e in group.records" :key="e.id">
-              <th scope="row" class="font-medium text-ink">{{ e.description }}</th>
-              <td>{{ e.category }}</td>
-              <td class="num">
-                {{ getAreaAmount(e, 'Boarding House') ? peso(getAreaAmount(e, 'Boarding House')) : '—' }}
-              </td>
-              <td class="num">
-                {{ getAreaAmount(e, 'Main House') ? peso(getAreaAmount(e, 'Main House')) : '—' }}
-              </td>
-              <td class="num">{{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e)) : '—' }}</td>
-              <td class="num font-semibold text-ink">{{ peso(getExpenseTotal(e)) }}</td>
-              <td class="num">
-                <button type="button" class="pill-btn" @click="startEditExpense(e)">
-                  <Pencil class="size-3.5" aria-hidden="true" />
-                  <span>Edit</span>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <label class="ws-field">
+          <span class="sr-only">Year</span>
+          <select v-model="filterYear" class="ws-select w-auto">
+            <option v-for="y in yearsList" :key="y" :value="y">
+              {{ y === 'All' ? 'Every year' : y }}
+            </option>
+          </select>
+        </label>
       </div>
     </div>
+
+    <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
+
+    <div v-else-if="groupedExpenses.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center">
+      <p class="text-base font-semibold text-ink">
+        <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
+        <template v-else>Nothing here</template>
+      </p>
+      <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+        <template v-if="expenseRecordsFetchFailed">
+          This is not the same as there being no expenses. Reload the page to try again.
+        </template>
+        <template v-else>No expense matches what you have asked for.</template>
+      </p>
+    </div>
+
+    <!--
+      A day at a time. Every expense on record used to render at once - 1,327
+      allocations - so the page scrollbar became a sliver and the way to the
+      bottom of this screen was through the whole ledger.
+
+      Three of the six columns are the areas an expense is split across, which
+      is what makes this worth being a table: the figures line up down the page
+      and can be compared. Below 1024px each day becomes a stack of tiles,
+      because three money columns read sideways on a phone is not a table.
+    -->
+    <RecordTable
+      v-else
+      :rows="groupedExpenses"
+      caption="Expenses by day, each split across the boarding house, the main house and the apartments"
+      noun="day"
+      :page-size="6"
+    >
+      <template #head>
+        <tr>
+          <th scope="col">What it was for</th>
+          <th scope="col">Kind</th>
+          <th scope="col" class="num">Boarding house</th>
+          <th scope="col" class="num">Main house</th>
+          <th scope="col" class="num">Apartments and other</th>
+          <th scope="col" class="num">All of it</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </template>
+
+      <template #row="{ row: group }">
+        <tr>
+          <th scope="colgroup" colspan="5" class="bg-canvas text-sm text-ink-soft">
+            {{ group.dateStr }}
+          </th>
+          <td class="num bg-canvas text-sm font-semibold text-ink">{{ peso(group.dayTotal) }}</td>
+          <td class="bg-canvas"><span class="sr-only">that day</span></td>
+        </tr>
+        <tr v-for="e in group.records" :key="e.id">
+          <th scope="row" class="font-medium text-ink">{{ e.description }}</th>
+          <td>{{ e.category }}</td>
+          <td class="num">
+            {{ getAreaAmount(e, 'Boarding House') ? peso(getAreaAmount(e, 'Boarding House')) : '—' }}
+          </td>
+          <td class="num">
+            {{ getAreaAmount(e, 'Main House') ? peso(getAreaAmount(e, 'Main House')) : '—' }}
+          </td>
+          <td class="num">{{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e)) : '—' }}</td>
+          <td class="num font-semibold text-ink">{{ peso(getExpenseTotal(e)) }}</td>
+          <td class="num">
+            <button type="button" class="pill-btn" @click="startEditExpense(e)">
+              <Pencil class="size-3.5" aria-hidden="true" />
+              <span>Edit</span>
+            </button>
+          </td>
+        </tr>
+      </template>
+
+      <template #card="{ row: group }">
+        <div class="flex items-baseline justify-between gap-3 border-b border-line pb-3">
+          <p class="text-sm font-semibold text-ink">{{ group.dateStr }}</p>
+          <p class="tabular text-sm font-semibold text-ink">{{ peso(group.dayTotal) }}</p>
+        </div>
+
+        <ul class="mt-3 space-y-4">
+          <li v-for="e in group.records" :key="e.id">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-medium leading-snug text-ink">{{ e.description }}</p>
+                <p class="mt-0.5 text-xs text-ink-faint">{{ e.category }}</p>
+              </div>
+              <p class="tabular shrink-0 text-sm font-semibold text-ink">
+                {{ peso(getExpenseTotal(e)) }}
+              </p>
+            </div>
+
+            <dl class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+              <div v-if="getAreaAmount(e, 'Boarding House')" class="flex gap-1.5">
+                <dt class="text-ink-faint">Boarding house</dt>
+                <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Boarding House')) }}</dd>
+              </div>
+              <div v-if="getAreaAmount(e, 'Main House')" class="flex gap-1.5">
+                <dt class="text-ink-faint">Main house</dt>
+                <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Main House')) }}</dd>
+              </div>
+              <div v-if="getAptsOtherAmount(e)" class="flex gap-1.5">
+                <dt class="text-ink-faint">Apartments and other</dt>
+                <dd class="tabular text-ink">{{ peso(getAptsOtherAmount(e)) }}</dd>
+              </div>
+            </dl>
+
+            <button
+              type="button"
+              class="pill-btn mt-3 w-full justify-center"
+              @click="startEditExpense(e)"
+            >
+              <Pencil class="size-3.5" aria-hidden="true" />
+              <span>Edit this expense</span>
+            </button>
+          </li>
+        </ul>
+      </template>
+    </RecordTable>
 
     <!-- Record Expense Modal (Supports Multiple Entries) -->
     <WsModal
