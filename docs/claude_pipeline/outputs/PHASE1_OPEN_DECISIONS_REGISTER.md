@@ -59,6 +59,14 @@ Bicol University — College of Science — IT 124 Capstone Project 2 — **Grou
 > They are struck through below with their evidence. *Putting a settled question to a client wastes
 > the one meeting you get.*
 >
+> **~~Four~~ — three. `OD-04` was reopened later the same day, and it is now CONTESTED rather
+> than settled.** It was closed here on the reading that the move-in sum is advance rent — which
+> `backend/src/routes/admin.ts:800` records as **"OD-04, confirmed 2026-09-13"**, so the closure
+> rested on the owner's own answer, not on an inference. **On 2026-09-17 she described the same
+> money differently**: held, spent on repairs when the tenant leaves, and the remainder returned.
+> **Two client answers, four days apart, and neither is discarded.** See its row below, and
+> `CLIENT_ANSWERS_2026-09-17.md` § F-2.
+>
 > **One question's premise was wrong.** OD-02 asked which month carries "the annual garbage fee".
 > Counting the live rows shows it is **₱20 per unit per month**, not annual — and that it stopped
 > after June 2025. The question is rewritten below to ask the thing that actually needs answering.
@@ -73,7 +81,7 @@ Bicol University — College of Science — IT 124 Capstone Project 2 — **Grou
 | **OD-01** | **Income running-total scope.** The source spreadsheet's bottom-of-page total (e.g. `1,179,150`) far exceeds a single month's grand subtotal (e.g. `232,350`), implying a year-to-date running total across all months on the sheet rather than a per-month figure. Confirm whether Hivelet's report shows per-month totals only, year-to-date totals, or both. | `docs/09_MONTHLY_INCOME_REPORT.md:133` | **Client decision** — Mrs. Fe Galang Da Silva; elicited and minuted by Kiel Hedrix V. Relos (QA / Systems Analyst) | The Monthly Income Report footer layout; the Excel export required by **BR-049** / **FR-044**; the aggregate contract of the planned `financialReportService.ts`. ~~**BR-019** (Report Recalculation) cannot be specified until the totals being recalculated are defined.~~ **Withdrawn 2026-09-14** - this conflated two questions. OD-01 settles which totals the report *shows*; BR-019 asks whether a correction reaches them. It does, by construction: the database holds 0 views, 0 materialized views and no aggregate table, and every report figure is derived on read from raw rows. OD-01 still governs the report footer and the BR-049 / FR-044 Excel export, and remains open for those. | **Phase 2** |
 | **OD-02** | **GBG fee — the question was wrong, 2026-09-17.** This asked which month carries *the annual garbage fee*. **It is not annual.** Counted over the live ledger: **₱20 on every unit every month** — 357 of 366 rows in 2024, 174 across Jan–Jun 2025, every one of them exactly ₱20. The real question is that it **stopped after June 2025** and has been absent for fifteen consecutive months. Was that deliberate? | `docs/09_MONTHLY_INCOME_REPORT.md:134` | **Client decision**; modelled by Victor Noel A. Napay (Backend / Integration) | Any write to `monthly_income_records.gbg_fee` (`database/FULL_DATABASE_SCHEMA.sql:271`). The column exists and the token `gbg` appears **zero times** in `backend/src` — **BR-037** is currently *Schema only*. An anniversary-month answer additionally couples the fee to `room_assignments.anniversary_date` (`:158`) and changes the planned `billingService.ts` signature. | **Phase 3** |
 | ~~**OD-03**~~ | **Mid-cycle vacancy proration.** Confirm how Rent Amount, Water Payment and Remitted Amount are handled when a tenant vacates partway through a billing period. | `docs/09_MONTHLY_INCOME_REPORT.md:135` | **Client decision**; arithmetic owned by Sean Jerve Ll. Rebancos (System Architect) | The **BR-038** Remitted Amount formula and the **BR-035** derived half-of-rent arithmetic for a partial month. Also blocks the vacate handler (`backend/src/routes/admin.ts:671-723`), which today ends the assignment and frees the unit without generating any final or prorated ledger row. | **CLOSED 2026-09-17 — already built.** Rent is **never prorated**: a tenant leaving mid-month owes the whole month and nothing is refunded. Stated and cited at `backend/src/services/billingService.ts:80-81`, and again at `:142` for the collection window. |
-| ~~**OD-04**~~ | **Deposit refund or forfeiture on move-out.** Confirm whether and how a stored deposit is reconciled, refunded or forfeited when a tenant vacates. Ties directly to **BR-025** Tenant Deactivation. | `docs/09_MONTHLY_INCOME_REPORT.md:136` | **Client decision**; schema owned by John Lloyd M. Cuario (Database Administrator) | A schema gap, not just a code gap. `room_assignments.deposit_amount` (`database/FULL_DATABASE_SCHEMA.sql:159`) has no disposition column — no `deposit_refunded_amount`, no `deposit_forfeited_amount`, no settlement date. The vacate endpoint (`backend/src/routes/admin.ts:692-708`) deactivates the account and frees the unit with no deposit settlement step at all, so **BR-025** is recorded as *Partial* in the crosswalk. A refund answer requires a Phase 2 migration before any Phase 3 code. | **CLOSED 2026-09-17 — already built.** The move-in sum is **advance rent, not a refundable security deposit**. Cited at `backend/src/routes/admin.ts:661`; the column is `room_assignments.deposit_amount`, `NOT NULL DEFAULT 0.00`, `CHECK (>= 0)`. |
+| **OD-04** | **Deposit refund or forfeiture on move-out.** Confirm whether and how a stored deposit is reconciled, refunded or forfeited when a tenant vacates. Ties directly to **BR-025** Tenant Deactivation. | `docs/09_MONTHLY_INCOME_REPORT.md:136` | **Client decision**; schema owned by John Lloyd M. Cuario (Database Administrator) | A schema gap, not just a code gap. `room_assignments.deposit_amount` (`database/FULL_DATABASE_SCHEMA.sql:159`) has no disposition column — no `deposit_refunded_amount`, no `deposit_forfeited_amount`, no settlement date. The vacate endpoint (`backend/src/routes/admin.ts:692-708`) deactivates the account and frees the unit with no deposit settlement step at all, so **BR-025** is recorded as *Partial* in the crosswalk. A refund answer requires a Phase 2 migration before any Phase 3 code. | ~~**CLOSED 2026-09-17 — already built.** The move-in sum is **advance rent, not a refundable security deposit**. Cited at `backend/src/routes/admin.ts:661`; the column is `room_assignments.deposit_amount`, `NOT NULL DEFAULT 0.00`, `CHECK (>= 0)`.~~ **REOPENED 2026-09-17 — CONTESTED. Two client answers, four days apart, and both are recorded.** **(a) 2026-09-13**, cited in code at `admin.ts:800` as *"ADVANCE RENT, not a refundable security deposit — this business collects no separate damage or security sum (OD-04, confirmed 2026-09-13)"*, and again at `:577-594` under BR-039. **(b) 2026-09-17**, relayed: *"the deposit is usually used to fix and maintain the apartment when the tenant leaves… whatever is left of that entire expenses will be refunded to the tenant"* — ₱6,500 held, ₱6,400 of repairs, ₱100 returned — and the repairs go into the expenses book **labelled as deposit-funded**, settled when the unit is ready to re-let. **Do not build from either.** One question separates them, and it is in § 1.5 below. |
 
 ### 1.2 Expense ledger — sourced from `docs/10_MONTHLY_EXPENSES_REPORT.md` Section 8
 
@@ -93,6 +101,168 @@ Bicol University — College of Science — IT 124 Capstone Project 2 — **Grou
 ### 1.4 Additional items surfaced during Phase 1 verification (all three now closed)
 
 All three items surfaced in this category during Phase 1 verification, **OD-11**, **OD-12** and **OD-13**, were closed by owner confirmation on 2026-09-13 and now appear in Section 2 with their resolutions. Their identifiers are retained there so that cross-references from the sibling artifacts continue to resolve. Nothing in this category remains open.
+
+### 1.5 Reopened by the client conversation of 2026-09-17
+
+**One item. `OD-04` is contested, not reversed** — see its row in § 1.1 for both answers in full.
+
+> [!WARNING]
+> **Nothing is to be designed, migrated or built from either answer until this is asked.** The
+> 2026-09-13 answer is cited in live code with its date; the 2026-09-17 answer was relayed and
+> dictated. **Neither outranks the other**, and picking one is how eight business rules were
+> recorded wrongly on this project.
+
+**The question that separates them, and it is one question:**
+
+> *"When someone moves out and you repaint or repair the unit — is the money you use for that the
+> same one month's rent they paid when they moved in? Or is it a separate amount you hold on top
+> of that?"*
+
+☐ **The same money.** The one month's rent is held, repairs come out of it, the remainder is
+returned. *(Then the 2026-09-13 answer described the sum's name and the 2026-09-17 answer described
+its fate. Both are true, and **OD-04 closes as a refundable deposit with a settlement step.**)*
+
+☐ **A separate amount**, on top of the month's rent. *(Then there are **two** sums and the system
+models only one. That is a larger gap than OD-04 originally described, and `room_assignments` needs
+a second figure before any settlement columns make sense.)*
+
+☐ Something else: ______________________________________________
+
+**Why it cannot be inferred.** Her ₱6,500 example is close to one month's rent on many units,
+which points at one sum — **but "close to" is exactly the kind of resemblance this project has been
+wrong about before.** Three of the seven pinned receipts look like an off-by-one and are not being
+corrected on that basis either.
+
+> **Evidence found 2026-09-18, and it cuts both ways — which is why it is recorded rather than
+> used to decide.** Her own income report carries the deposit as **Column 12**, *"Equal to the
+> Rent Amount at the time the tenant moved in (BR-039). Entered once, at onboarding"*
+> (`docs/09_MONTHLY_INCOME_REPORT.md` § 4). **It is excluded from Column 10, Remitted Amount**,
+> which is Rent + Water only. So her sheet **records the sum without counting it as income** —
+> which is how a held deposit behaves, and is also how a memo column behaves. It is one figure,
+> equal to one month's rent, which favours *"the same money"*; it is tracked apart from income,
+> which favours *"held and returned"*. **Neither reading is excluded.**
+>
+> Note also that **§ 8 item 4 of that same report lists the deposit refund as an open question**.
+> It was never settled in the source document either — so this register is not reopening
+> something the documents had agreed on.
+
+**A second question, needed before the schema and easy to forget:**
+
+> *"When you give back what is left of the deposit — does that show anywhere in your books? Or
+> does it just go back to them and nothing is written down?"*
+
+**ANSWERED 2026-09-18:** *"When we give back, it is stated in the expenses, but is upon written by
+the landlady. So it is not part of the system that is super technical."*
+
+**The refund is recorded — as an ordinary expense entry, written by her, by hand.**
+
+> [!IMPORTANT]
+> **This shrinks OD-04 from a Phase 2 schema gate to a naming question.** The whole settlement is
+> her bookkeeping, through screens that already exist:
+>
+> | Step | Where it already lives |
+> | :--- | :--- |
+> | the move-out repairs | expense entries, category **8 — Repairs and Maintenance** |
+> | the refund of the remainder | an expense entry she writes |
+> | the sum itself | `room_assignments.deposit_amount`, and **Column 12** of her income report |
+>
+> **So no settlement engine is needed, and the vacate endpoint does not need a settlement step.**
+> The disposition columns this register asked for — refunded amount, forfeited amount, settlement
+> date — would be recording by hand what she is already recording by hand, in a second place, with
+> nothing keeping the two in step. **That is the shape this project has been burned by before.**
+>
+> **BR-025 should be re-read in that light.** It is recorded as *Partial* in the crosswalk
+> because the vacate path has no settlement step. If settlement is deliberately manual, *Partial*
+> may be the wrong verdict rather than an outstanding gap.
+
+### ANSWERED 2026-09-18 — **a separate sum**, and it unwinds a change made on 14 Sep
+
+> *"It's not the same money — it will be different."*
+
+**So the money used for move-out repairs is not the month's rent.** The 2026-09-13 reading —
+*"this sum is ADVANCE RENT, not a refundable security deposit; this business collects no separate
+damage or security sum"* — **does not survive this.**
+
+**Both of her answers were true. The error was ours, for collapsing two sums into one field.**
+The arrangement she is describing is the ordinary Philippine one: **one month in advance, plus a
+separate deposit.** On 13 Sep she named the advance; on 17–18 Sep she described the deposit. A
+single `deposit_amount` column cannot hold both, so whichever we asked about, the answer sounded
+like it contradicted the other.
+
+**BR-039 was right all along, and does not change.** It reads: *"A tenant's **deposit** is set
+once, at onboarding, **equal to** the Rent Amount in effect when they moved in."* A deposit whose
+**size equals** one month's rent — not a sum that **is** the rent. The 14 Sep reinterpretation is
+the deviation, not the rule.
+
+**What that reinterpretation changed, and now needs re-examining — `backend/src/`, so Sean's:**
+
+| | |
+| :--- | :--- |
+| `admin.ts:577-594` and `:800` | Two comments assert the sum is advance rent and that *"this business collects no separate damage or security sum (OD-04, confirmed 2026-09-13)"*. **Both are now contradicted by the owner.** They are claims with a date on them, and the date has passed |
+| Commit `56c49c0` (14 Sep) | Made `deposit_amount` default to `rooms.current_price` — **1× rent** — reasoning *"OD-04 makes that definitional"*. The premise is gone |
+| The default it replaced | `current_price * 2`, described in the code as *"the familiar one-month-advance-plus-one-month-deposit arrangement, which invented a figure that was never collected"*. **On her answer, that arrangement is exactly what she runs.** The 2× default may have been right and was removed on a reading she has since contradicted |
+
+**How far this reaches, stated precisely so it is neither dismissed nor inflated:**
+
+- **It does not corrupt any figure she reads.** The deposit is **Column 12** and is excluded from
+  **Column 10, Remitted Amount** (Rent + Water). No owner-facing total includes it, `check:ledger`
+  passes on all 937 rows, and `check:reports` still agrees with the workbooks.
+- **It is a modelling error, not a live money defect.** The historical rows came from the 28 Aug
+  import; the 14 Sep default applies to onboardings *through the system*, and the property has
+  been 32-of-33 occupied throughout.
+- **It would bite on the next onboarding**, which Q10 says happens within days of a unit falling
+  vacant.
+
+### CLOSED 2026-09-18 — **one held sum, and the system already records it correctly**
+
+> *"The tenant has two separate amounts. One for the rent for the month, and one rent for advance.
+> **The labeled advance is actually the deposit.**"*
+
+**That last sentence resolves everything, and it is a naming problem rather than a modelling one.**
+
+| What changes hands at move-in | What it is | Where the system holds it |
+| :--- | :--- | :--- |
+| the **month's rent** | ordinary rent for the first month | an ordinary row in `monthly_income_records`, like every other month |
+| the **"advance"** | **the deposit** — held, spent on move-out repairs, remainder returned | `room_assignments.deposit_amount`; **Column 12** of her report |
+
+**There is no third sum and no missing figure.** The word *advance* is her label for the held sum;
+its **function** is a deposit. Every answer she has given is consistent once that is known:
+
+- **13 Sep — "advance rent"** — her own word for it. Accurate as a **label**.
+- **17–18 Sep — spent on repairs, remainder refunded** — accurate as its **function**.
+- **18 Sep — "not the same money"** — accurate: the repair money is the advance, **not** the
+  first month's rent.
+
+**So `deposit_amount` holds the right sum, and `56c49c0`'s 1× default is right** — the held sum
+equals one month's rent, which is exactly **BR-039**. The `current_price * 2` default it replaced
+would have doubled it, and removing it was correct.
+
+**What is wrong is only the characterisation**, and it is confined to prose:
+
+| | |
+| :--- | :--- |
+| `backend/src/routes/admin.ts:577-594`, `:800` | *"ADVANCE RENT, **not a refundable security deposit** … this business collects **no separate damage or security sum**"* — **both halves are contradicted.** It is refundable, and it is the damage sum |
+| This register's 17 Sep closure note | same wording, struck above |
+
+**No migration. No second column. No settlement engine.** The repairs and the refund are expense
+entries she writes by hand, and `room_assignments.deposit_amount` already carries the figure.
+**`B-06` in `BLOCKED_FOR_SEAN.md` is reduced to correcting two comments**, and the data check
+proposed there is no longer needed.
+
+> **The lesson, and it is the register's own.** Three client answers read as contradictions for
+> five days because a **label** was taken for a **definition**. Nobody asked what the word meant
+> to her. *"Is the advance refundable?"* would have cost ten seconds on 13 Sep.
+
+**What each answer costs.** The first is the cheaper path and mostly confirms what is already
+stored: one figure, plus disposition columns and a settlement step on the vacate endpoint. The
+second means the ledger has never recorded a sum the business actually collects — which would be a
+**money defect**, not a schema gap, and would outrank everything else in this register.
+
+**Also carried by whichever answer wins:** the repairs are ordinary expense-ledger entries
+(category **8, Repairs and Maintenance**) that her own book marks as deposit-funded. Nothing in
+the system ties an expense entry to a tenancy, so **that link is the schema decision**, not the
+disposition columns. Settlement is event-driven — *"as early as the room is ready"* — so nothing
+should wait on a date.
 
 ---
 

@@ -9,7 +9,7 @@
  */
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { CANONICAL_UNITS, peso, type RentableUnit } from '@/lib/canonicalUnits';
+import { CANONICAL_UNITS, peso, publicStatusLabel, type RentableUnit } from '@/lib/canonicalUnits';
 import { showToast, LANDLADY, rooms, fetchRooms, roomsFetchFailed } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
@@ -60,24 +60,9 @@ interface DbRoom {
 const waterRatePerOccupant = ref<number | null>(null);
 const lindaFixedWaterCharge = ref<number | null>(null);
 
-/**
- * How a unit's live status reads to a prospect.
- *
- * Was `status === 'vacant' ? 'Available' : 'Reserved'` in both places this
- * badge is drawn, so an OCCUPIED unit displayed as "Reserved" - verified
- * against the live database: unit 1A is `operational_status = 'Occupied'`,
- * mapped by `mapOperationalStatus()` to `'settled'`, and the badge read
- * "Reserved" regardless. A prospect reads "Reserved" as held, not taken -
- * the wrong signal for a unit that already has a tenant.
- */
-function publicStatusLabel(status: RentableUnit['status']): string {
-  switch (status) {
-    case 'vacant': return 'Available';
-    case 'pending': return 'Reserved';
-    case 'maintenance': return 'Under Maintenance';
-    default: return 'Occupied';
-  }
-}
+// `publicStatusLabel` moved to `lib/canonicalUnits.ts`, beside the UnitStatus
+// union, so the public landing's availability table reads the same switch this
+// badge does rather than repeating it. Its rationale travelled with it.
 
 /** Never states a figure it has not been given. */
 function waterLabel(rateType: string): string {

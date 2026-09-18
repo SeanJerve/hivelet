@@ -172,3 +172,29 @@ export function peso(value: number, decimals = 0) {
     maximumFractionDigits: decimals,
   })}`;
 }
+
+/**
+ * How a unit's live status reads to a prospect.
+ *
+ * Was `status === 'vacant' ? 'Available' : 'Reserved'` in both places this
+ * badge is drawn, so an OCCUPIED unit displayed as "Reserved" - verified
+ * against the live database: unit 1A is `operational_status = 'Occupied'`,
+ * mapped by `mapOperationalStatus()` to `'settled'`, and the badge read
+ * "Reserved" regardless. A prospect reads "Reserved" as held, not taken -
+ * the wrong signal for a unit that already has a tenant.
+ *
+ * It lives here, beside the `UnitStatus` union it switches on, because that
+ * defect was found in two copies of the same switch. A third copy now has to
+ * be a deliberate act rather than the default.
+ *
+ * `settled` is the default arm on purpose: it is what `mapOperationalStatus`
+ * returns for 'Occupied', and the name says nothing about occupancy.
+ */
+export function publicStatusLabel(status: UnitStatus): string {
+  switch (status) {
+    case "vacant": return "Available";
+    case "pending": return "Reserved";
+    case "maintenance": return "Under Maintenance";
+    default: return "Occupied";
+  }
+}

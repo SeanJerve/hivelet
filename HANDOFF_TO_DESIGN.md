@@ -145,6 +145,25 @@ Do not go back to hex literals in components.
 
 ---
 
+## 6b. Three things that reach outside `frontend/src/`
+
+**Renaming a screen has a cost in another file.** `TESTING_REHEARSAL.md` walks 26 steps by
+**sidebar label**, read out of `AppSidebar.vue` rather than remembered: *Executive Overview, Room
+& Rate Directory, Active Tenants, Income & Collections, Monthly Expenses, Maintenance Dispatch,
+Prospect Inquiries, System Audit Trail* — and for a resident, *Unit Overview, Payment & Billing,
+Maintenance Tickets, My Profile*. **If you rename any of them, rename them there in the same
+commit.** A rehearsal sheet that sends a person hunting for a screen that no longer exists under
+that name is worse than no sheet.
+
+**`room_photos` is empty**, so all 33 units render without a photo. That is expected, not a bug —
+but decide **before filming** what an unphotographed unit should look like on the public
+catalogue. "Broken image" and "deliberately minimal" are the same pixels until someone chooses.
+
+**`wireframe/` at the repository root is empty.** If this redesign produces wireframes, that is
+where they belong, and they should be committed — the history here is the reasoning.
+
+---
+
 ## 7. How to verify anything
 
 ```bash

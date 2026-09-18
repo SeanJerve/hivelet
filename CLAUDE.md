@@ -77,8 +77,13 @@ here:
 | | |
 | :--- | :--- |
 | `CONTINUE_HERE.md` | Where the project stands. Section 0.0 first |
-| `HANDOFF_TO_DESIGN.md` | **For the design account.** What is decoration and what is load-bearing |
+| `HANDOFF_TO_DESIGN.md` | **For the design account** (Kiel). What is decoration and what is load-bearing |
+| `HANDOFF_TO_QA.md` | **QA and systems analysis** (Eljohn). The rehearsal, what the suites do and do not prove, the open client decisions |
+| `HANDOFF_TO_DOCS.md` | **Documentation** (Vince). Which file is the authority, and the four checks that fail the build on a document |
 | `HANDOFF_TO_LOYD.md` | For the machine without Sean's setup — what runs, and the seven-receipt workflow |
+
+**Handoffs are named for the seat, not the occupant** — Eljohn and Kiel swapped roles on 17 Sep
+and person-named files were addressed to the wrong people overnight.
 | `BLOCKED_FOR_SEAN.md` | The queue. **Add to it rather than stopping**, and read it before starting |
 | `CLIENT_MEETING_QUESTIONS.md` | Everything the owner must decide, answerable in one sitting |
 | `docs/13_AUDIT_JUDGEMENT_LOG.md` | The reasoning, the defect classes, the deliberate calls |

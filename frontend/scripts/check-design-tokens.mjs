@@ -60,6 +60,18 @@ const EXPECTED = {
  * replaced it - and still receiving bug fixes in five separate commits) and
  * ConfirmModal (superseded by the PIN confirmation pattern).
  *
+ * 84 -> 83 on 2026-09-17. The public hero was rebuilt as a full-bleed editorial
+ * section and its one literal went with it: `border-[#334155]`, a slate border
+ * that had no token behind it, is now `border-white/10` against the same
+ * `bg-neutral-dark` field.
+ *
+ * 83 -> 72 on 2026-09-18. Eleven at once, and only two of them were decisions:
+ * the footer's `bg-[#0b132b]` became `bg-neutral-dark`, and the Facebook mark's
+ * `text-[#1877F2]` went when that row became a text link. The other nine were
+ * the rose and slate stops inside the SVG route overlay on the location map -
+ * a red line drawn to Bicol University, deleted with the static map it sat on
+ * when that section became a live embed.
+ *
  * 84 -> 51 on 2026-09-18. The admin and tenant overviews and the workspace
  * sidebar moved onto the workspace tokens (docs/DESIGN_GUIDELINE.md), taking
  * 33 raw literals with them, most of them SVG chart strokes.
@@ -70,8 +82,14 @@ const EXPECTED = {
  * 41 -> 28 the same day again, with the toasts, the loading placeholders, the
  * notification drawer and the header's account menu. The toasts alone held
  * twelve, one triplet per kind.
+ *
+ * 28 -> 16 on 2026-09-18, when the workspace branch and the public-site branch
+ * met. Two people were lowering this number at the same time from different
+ * ends of the application - the entries above interleave two histories, which
+ * is why they do not read as one descending run. The value here is the count
+ * measured after the merge, not either side's last figure.
  */
-const MAX_RAW_HEX = 28;
+const MAX_RAW_HEX = 16;
 
 const assetDir = path.join(root, 'dist', 'assets');
 if (!fs.existsSync(assetDir)) {

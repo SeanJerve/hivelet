@@ -14,6 +14,12 @@ written to her ledger.**
 **How to use this:** work top to bottom. Section 1 is money and takes the longest. Section 2 is
 five accounting habits, in the order they are easiest to answer. Section 3 is three quick confirmations. Section 4 is not for her.
 
+> **A separate round of ten questions — about how the business runs rather than about her books —
+> was answered on 2026-09-17 and is recorded in [`CLIENT_ANSWERS_2026-09-17.md`](CLIENT_ANSWERS_2026-09-17.md).**
+> Read its findings before this sheet: **two of those answers contradict decisions closed on
+> 2026-09-13 and 2026-09-17** (the grace period, and whether the deposit is refundable), and both
+> need one more question put to her. Sections 1, 2 and 3 below are untouched by that round.
+
 ---
 
 ## 1. Seven receipts that cannot be right as written

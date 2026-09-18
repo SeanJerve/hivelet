@@ -10,6 +10,13 @@
 
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: 'Sora', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  /* Neo-grotesque, for the public landing's editorial surfaces only. The
+     reference this was drawn from sets its display line in Helvetica Now or
+     Suisse Int'l; both are commercially licensed, so Inter stands in - same
+     lineage, and already served from the Google Fonts link in index.html.
+     Deliberately NOT --font-display: that token sets every admin and tenant
+     heading, and this is one page's direction, not a system-wide change. */
+  --font-editorial: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --color-background: var(--background);

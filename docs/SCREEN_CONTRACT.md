@@ -72,6 +72,15 @@ before the redesign started.
 | **writes** | `PATCH /admin/payments/:id/verify` | verify a payment — atomic, settles the bill and the ledger together |
 | **writes** | `POST /admin/income-records` | record an on-site collection — the money path |
 
+### `views/InquireView.vue`
+
+2 call(s), **1 of them write**.
+
+| | Endpoint | What it is for |
+| :--- | :--- | :--- |
+| reads | `GET /public/rooms` | the public unit catalogue |
+| **writes** | `POST /public/inquiries` | a prospect sends an enquiry |
+
 ### `views/InquiriesView.vue`
 
 3 call(s), **2 of them write**.
@@ -92,15 +101,6 @@ before the redesign started.
 | reads | `GET /admin/tickets/:id/messages` | read a ticket thread |
 | **writes** | `PATCH /admin/tickets/:id` | move a ticket, and the unit status with it |
 | **writes** | `POST /admin/tickets/:id/messages` | reply on a ticket |
-
-### `views/PublicGuestView.vue`
-
-2 call(s), **1 of them write**.
-
-| | Endpoint | What it is for |
-| :--- | :--- | :--- |
-| reads | `GET /public/rooms` | the public unit catalogue |
-| **writes** | `POST /public/inquiries` | a prospect sends an enquiry |
 
 ### `views/TenantManagementView.vue`
 

@@ -33,6 +33,93 @@ thing did not work" is not.
 
 ## Open
 
+> **Two entries are both numbered `B-01`** — the open one below, and the closed demo-password one
+> further down. Left as they are rather than renumbered, in case the new one is already referenced
+> somewhere. Worth settling before a third appears, since this queue is referred to by number.
+
+### B-06 — two comments call the deposit "not a refundable security deposit". It is one
+
+> [!NOTE]
+> **Reduced 2026-09-18, an hour after it was raised, and the figure is fine.** The owner: *"The
+> labeled advance is actually the deposit."* **Advance is her word for the held sum; a deposit is
+> what it does.** So `deposit_amount` holds the right money, **`56c49c0`'s 1× default is correct**
+> (the held sum equals one month's rent — BR-039), and the `current_price * 2` default you removed
+> would have doubled it. **No migration, no second column, no settlement engine** — the repairs and
+> the refund are expense entries she writes by hand.
+>
+> **All that is left is two wrong sentences in comments.** The detail below is kept because it is
+> the record of how it looked before her last answer. Full reconciliation:
+> `PHASE1_OPEN_DECISIONS_REGISTER.md` § 1.5.
+>
+> **What you actually need to do:** correct `admin.ts:577-594` and `:800`, which say *"ADVANCE
+> RENT, not a refundable security deposit … this business collects no separate damage or security
+> sum (OD-04, confirmed 2026-09-13)"*. **Both halves are contradicted**: it is refundable, and it
+> is the damage sum. The data check proposed below is no longer needed.
+
+- **Blocked on:** your call, not access. It is `backend/src/`, it was your change, and it wants a
+  decision before the next onboarding rather than a patch from this side
+- **What happened:** commit `56c49c0` made `deposit_amount` default to `rooms.current_price` —
+  **1× rent** — reasoning *"OD-04 makes that definitional: this sum is ADVANCE RENT, not a
+  refundable security deposit."* **Asked on 2026-09-18 whether the move-out repair money is the
+  same money as the move-in month's rent, the owner said: *"It's not the same money — it will be
+  different."*** So there is a deposit, separate from the advance
+- **The uncomfortable part:** the default `56c49c0` replaced was `current_price * 2`, which the
+  code describes as *"the familiar one-month-advance-plus-one-month-deposit arrangement, which
+  invented a figure that was never collected."* **On her answer, that is the arrangement she
+  runs** — so the 2× default may have been right, and was removed on a reading she has since
+  contradicted
+- **What I already did:**
+  - Worked the consequences through in `PHASE1_OPEN_DECISIONS_REGISTER.md` § 1.5, including why
+    **BR-039 as written survives**: *a tenant's **deposit** … **equal to** the Rent Amount* is a
+    deposit the size of one month's rent, not a sum that **is** the rent. The 14 Sep
+    reinterpretation is the deviation, not the rule
+  - Established the blast radius. The deposit is **Column 12** and is **excluded from Column 10,
+    Remitted Amount**, so **no owner-facing total moves**. `check:ledger` passes on 937 rows;
+    `check:reports` still agrees with both workbooks. **A modelling error, not money going astray**
+    — but it lands on the next onboarding, and Q10 says a vacated unit re-lets within days
+  - Left `backend/src/` untouched. Two comments there — `admin.ts:577-594` and `:800` — now assert
+    something the owner has contradicted, including *"this business collects no separate damage or
+    security sum (OD-04, confirmed 2026-09-13)"*
+- **What you need to decide:** whether `room_assignments` carries a **second** figure for the
+  advance, and what the onboarding default becomes. Then correct those two comments — they are the
+  judgement log's own lesson made flesh: a comment explaining why something is safe, carrying a
+  date that has now passed
+- **What would narrow it without asking her again:** `deposit_amount` against each unit's price
+  across the 32 live tenancies. Clustering at **1×** points one way; any at **2×** the other.
+  Read-only, and **not run — it needs approval for a production read**
+- **The one question still hers**, written out in § 1.5: does a tenant hand over **two** amounts at
+  move-in, or just the deposit and their first month as normal
+- **How to know it is settled:** BR-039's crosswalk status is re-argued deliberately rather than
+  inherited, and an onboarding on `PH` records what she actually collects
+- **Raised:** 2026-09-18 by Claude, on Loyd's machine
+
+---
+
+### B-01 — the public landing shows every unit as vacant when `/public/rooms` fails
+
+- **Blocked on:** a decision that is not the design account's to make — this is what a screen
+  computes, not how it looks, so per `HANDOFF_TO_DESIGN.md` § 1 it was written down instead of
+  reached across for.
+- **What I was doing:** rebuilding the public landing's category section. The counts are
+  unchanged from the cards that stood there; the redesign only made them legible.
+- **What I already did:** nothing to the data path. The category plates read the same
+  expression the old cards did: `liveUnits.filter(c.match).filter(u => u.status === 'vacant')`.
+- **The defect:** `rooms` is seeded from `CANONICAL_UNITS`, whose `status` is vacant for all 33
+  units (`frontend/src/lib/systemState.ts:287`). `fetchRooms()` sets `roomsFetchFailed = true`
+  on failure (same file, ~636) **but the seed stays in `rooms`**, and `PublicGuestView` never
+  reads that flag. With the backend down the page told me *"10 vacant of 10 units"*, *"15 vacant
+  of 15 units"*, *"8 vacant of 8 units"* — 33 of 33 free, on a property that is 32 occupied.
+  This is the failure path of the same defect the comment at `PublicGuestView.vue` ~line 121
+  says was fixed: the source now fetches live, the *fallback* still publishes the seed silently.
+- **What Sean needs to do:** decide what a prospective boarder should see when the room list
+  cannot be reached — suppress the counts, or show them with an explicit "availability
+  unavailable" state. Either is a small change in `PublicGuestView.vue`; the design account can
+  implement the state once the call is made.
+- **How to know it worked:** stop the backend, load `/public`. The page must not claim a
+  vacancy it cannot verify. With the backend up, the three counts should sum to 1 vacant of 33,
+  not 33 of 33.
+- **Raised:** 2026-09-17 by the design account (Kiel's machine)
+
 ### B-05 — Apply `database/migrations/027` to remove two test repair tickets
 
 - **Blocked on:** Claude Code's safety check refused the live-database change on 2026-09-18,

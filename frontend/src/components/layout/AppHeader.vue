@@ -245,12 +245,17 @@ onUnmounted(() => {
         >
           FAQs
         </button>
-        <button
-          @click="scrollToSection('inquire-now')"
+        <!--
+          Enquiries are their own screen now (`/inquire`), not an anchor on the
+          landing page. This was `scrollToSection('inquire-now')`, and that id
+          left with the form.
+        -->
+        <RouterLink
+          to="/inquire"
           class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-all cursor-pointer"
         >
           Inquire Now
-        </button>
+        </RouterLink>
         <button
           @click="scrollToSection('location')"
           class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-all cursor-pointer"
@@ -418,12 +423,13 @@ onUnmounted(() => {
       >
         FAQs
       </button>
-      <button
-        @click="scrollToSection('inquire-now'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-all cursor-pointer"
+      <RouterLink
+        to="/inquire"
+        @click="isMobilePublicNavOpen = false"
+        class="block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-all cursor-pointer"
       >
         Inquire Now
-      </button>
+      </RouterLink>
       <button
         @click="scrollToSection('location'); isMobilePublicNavOpen = false"
         class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-all cursor-pointer"
