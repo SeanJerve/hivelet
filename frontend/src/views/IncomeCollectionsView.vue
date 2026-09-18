@@ -17,7 +17,7 @@ import {
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api, API_BASE, getStoredToken } from '@/lib/api';
-import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Banknote } from 'lucide-vue-next';
+import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Banknote, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -71,6 +71,27 @@ const isSubmitting = ref(false);
 const filterMonth = ref('All');
 const filterYear = ref('All');
 const viewMode = ref<'grouped' | 'flat'>('grouped');
+
+/**
+ * Which cluster sections are open.
+ *
+ * All five used to render at once, which made this screen six viewports tall
+ * before anyone had asked to read a single entry. The header of a closed
+ * section still carries its subtotals, so the page reads as a summary of the
+ * five and you open the one you actually want.
+ *
+ * The first opens by default, because a screen that starts entirely closed
+ * looks broken.
+ */
+const openClusters = ref<Record<string, boolean>>({});
+
+function isClusterOpen(key: string, index: number) {
+  return openClusters.value[key] ?? index === 0;
+}
+
+function toggleCluster(key: string, index: number) {
+  openClusters.value[key] = !isClusterOpen(key, index);
+}
 
 const monthsList = [
   { val: 'All', label: 'All Months' },
@@ -1001,32 +1022,59 @@ async function exportExcel() {
       </p>
 
       <section
-        v-for="group in clusterGroups"
+        v-for="(group, groupIndex) in clusterGroups"
         :key="group.key"
         class="overflow-hidden rounded-tile bg-tile"
       >
-        <header
-          class="flex flex-wrap items-start justify-between gap-3 border-b border-line p-5 sm:p-6"
-        >
-          <div class="min-w-0">
-            <h2 class="text-base font-semibold text-ink">{{ group.label }}</h2>
-            <p class="mt-1 text-sm leading-6 text-ink-soft">{{ group.desc }}</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <StatusPill tone="neutral">
-              {{ group.records.length }} {{ group.records.length === 1 ? 'entry' : 'entries' }}
-            </StatusPill>
-            <StatusPill
-              v-if="group.hasShareColumn"
-              tone="verify"
-              title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet (BR-035)."
-            >
-              Carries the 50% column
-            </StatusPill>
-          </div>
-        </header>
+        <h2>
+          <button
+            type="button"
+            class="flex w-full flex-wrap items-start justify-between gap-3 p-5 text-left transition-colors hover:bg-canvas sm:p-6"
+            :aria-expanded="isClusterOpen(group.key, groupIndex)"
+            :aria-controls="`cluster-${group.key}`"
+            @click="toggleCluster(group.key, groupIndex)"
+          >
+            <span class="min-w-0">
+              <span class="flex items-center gap-2">
+                <ChevronDown
+                  :class="[
+                    'size-4 shrink-0 text-ink-soft transition-transform',
+                    isClusterOpen(group.key, groupIndex) ? '' : '-rotate-90',
+                  ]"
+                  aria-hidden="true"
+                />
+                <span class="text-base font-semibold text-ink">{{ group.label }}</span>
+              </span>
+              <span class="mt-1 block text-sm leading-6 text-ink-soft">{{ group.desc }}</span>
+            </span>
 
-        <div class="p-5 sm:p-6">
+            <!-- A closed section still says what it holds. -->
+            <span class="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <span class="text-right">
+                <span class="block text-xs text-ink-faint">Remitted</span>
+                <span class="tabular block font-semibold text-brand">{{
+                  peso(group.totalRemitted)
+                }}</span>
+              </span>
+              <StatusPill tone="neutral">
+                {{ group.records.length }} {{ group.records.length === 1 ? 'entry' : 'entries' }}
+              </StatusPill>
+              <StatusPill
+                v-if="group.hasShareColumn"
+                tone="verify"
+                title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet (BR-035)."
+              >
+                Carries the 50% column
+              </StatusPill>
+            </span>
+          </button>
+        </h2>
+
+        <div
+          v-if="isClusterOpen(group.key, groupIndex)"
+          :id="`cluster-${group.key}`"
+          class="border-t border-line p-5 sm:p-6"
+        >
           <RecordTable
             flat
             :rows="group.records"
