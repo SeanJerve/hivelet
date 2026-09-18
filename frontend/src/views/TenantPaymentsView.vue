@@ -15,6 +15,7 @@ import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 
 const { showToast } = useToast();
@@ -293,36 +294,65 @@ function refreshAll() {
         message="Your payment history could not be loaded. This does not mean no payments were recorded."
         @retry="refreshAll"
       />
-      <p v-else-if="filteredPayments.length === 0" class="py-6 text-center text-sm text-ink-soft">
-        No payments are recorded for {{ selectedYear }}.
-      </p>
-      <div v-else class="ws-table-wrap max-h-[32rem]">
-        <table class="ws-table">
-          <caption class="sr-only">Your payments in {{ selectedYear }}</caption>
-          <thead>
-            <tr>
-              <th scope="col">Reference</th>
-              <th scope="col">Date paid</th>
-              <th scope="col" class="num">Amount</th>
-              <th scope="col">Method</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="record in filteredPayments" :key="record.id">
-              <th scope="row" class="font-medium">{{ record.invoiceRef }}</th>
-              <td class="text-ink-soft whitespace-nowrap">{{ record.datePaid }}</td>
-              <td class="num font-semibold">{{ peso(record.amountPaid, 2) }}</td>
-              <td class="text-ink-soft">{{ record.paymentMethod }}</td>
-              <td>
-                <StatusPill :tone="isVerified(record.status) ? 'paid' : 'verify'">
-                  {{ isVerified(record.status) ? 'Verified' : 'Waiting for verification' }}
-                </StatusPill>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <RecordTable
+        v-else
+        :rows="filteredPayments"
+        flat
+        :caption="`Your payments in ${selectedYear}`"
+        noun="payment"
+        :page-size="8"
+        empty-title="Nothing recorded"
+        :empty-note="`No payments are on record for ${selectedYear}.`"
+      >
+        <template #head>
+          <tr>
+            <th scope="col">Reference</th>
+            <th scope="col">Date paid</th>
+            <th scope="col" class="num">Amount</th>
+            <th scope="col">How</th>
+            <th scope="col">Standing</th>
+          </tr>
+        </template>
+
+        <template #row="{ row: record }">
+          <tr>
+            <th scope="row" class="font-medium">{{ record.invoiceRef }}</th>
+            <td class="whitespace-nowrap text-ink-soft">{{ record.datePaid }}</td>
+            <td class="num font-semibold">{{ peso(record.amountPaid, 2) }}</td>
+            <td class="text-ink-soft">{{ record.paymentMethod }}</td>
+            <td>
+              <StatusPill :tone="isVerified(record.status) ? 'paid' : 'verify'">
+                {{ isVerified(record.status) ? 'Verified' : 'Waiting for verification' }}
+              </StatusPill>
+            </td>
+          </tr>
+        </template>
+
+        <template #card="{ row: record }">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="tabular text-lg font-semibold leading-none text-ink">
+                {{ peso(record.amountPaid, 2) }}
+              </p>
+              <p class="mt-1.5 text-sm text-ink-soft">{{ record.datePaid }}</p>
+            </div>
+            <StatusPill :tone="isVerified(record.status) ? 'paid' : 'verify'">
+              {{ isVerified(record.status) ? 'Verified' : 'Waiting' }}
+            </StatusPill>
+          </div>
+
+          <dl class="mt-4 space-y-3 text-sm">
+            <div>
+              <dt class="text-xs text-ink-faint">How you paid</dt>
+              <dd class="text-ink">{{ record.paymentMethod }}</dd>
+            </div>
+            <div class="min-w-0">
+              <dt class="text-xs text-ink-faint">Reference</dt>
+              <dd class="break-words text-ink">{{ record.invoiceRef }}</dd>
+            </div>
+          </dl>
+        </template>
+      </RecordTable>
     </OverviewTile>
 
     <AdyenPaymentModal

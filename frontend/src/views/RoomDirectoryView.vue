@@ -21,6 +21,7 @@ import {
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import RecordTable from '@/components/ui/RecordTable.vue';
 import { Search, Pencil, LayoutGrid, Table as TableIcon, Eye } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
@@ -342,99 +343,97 @@ const statusChips = computed(() => [
     <!--
       The register. It needed 950px, so it scrolled sideways on a laptop and on
       every phone. The cluster and the kind of unit now share one column, the
-      rate and the billing rule share another, and below 1024px the whole thing
-      becomes one tile per unit.
+      rate and the billing rule share another, and below 1024px it becomes one
+      tile per unit.
     -->
-    <template v-else>
-      <div class="hidden overflow-hidden rounded-tile bg-tile lg:block">
-        <div class="ws-table-wrap max-h-[70vh]">
-          <table class="ws-table">
-            <caption class="sr-only">
-              Every unit, with where it is, what it costs, who lives in it and its standing
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Unit</th>
-                <th scope="col">Where and what</th>
-                <th scope="col" class="num">A month</th>
-                <th scope="col">Lived in by</th>
-                <th scope="col">Standing</th>
-                <th scope="col"><span class="sr-only">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="u in filteredRooms" :key="u.unitCode">
-                <th scope="row" class="font-semibold uppercase text-ink">
-                  {{ u.unitCode.toUpperCase() }}
-                </th>
-                <td>
-                  <span class="block text-ink">{{ u.cluster }}, {{ u.type }}</span>
-                  <span class="block text-xs text-ink-faint">{{ u.billingRule }}</span>
-                </td>
-                <td class="num font-semibold text-ink">{{ peso(u.price) }}</td>
-                <td :title="formatUnitOccupantsSummary(u.unitCode).text">
-                  {{ formatUnitOccupantsSummary(u.unitCode).text }}
-                </td>
-                <td>
-                  <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
-                </td>
-                <td class="num">
-                  <div class="inline-flex items-center justify-end gap-2">
-                    <button type="button" class="pill-btn" @click="openSpecs(u)">
-                      <Eye class="size-3.5" aria-hidden="true" />
-                      <span>Look</span>
-                    </button>
-                    <button type="button" class="pill-btn" @click="editUnit(u)">
-                      <Pencil class="size-3.5" aria-hidden="true" />
-                      <span>Edit</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <RecordTable
+      v-else
+      :rows="filteredRooms"
+      caption="Every unit, with where it is, what it costs, who lives in it and its standing"
+      noun="unit"
+      :page-size="12"
+      empty-title="No unit matches"
+      empty-note="Nothing in the directory answers to what you have asked for."
+    >
+      <template #head>
+        <tr>
+          <th scope="col">Unit</th>
+          <th scope="col">Where and what</th>
+          <th scope="col" class="num">A month</th>
+          <th scope="col">Lived in by</th>
+          <th scope="col">Standing</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </template>
 
-      <div class="space-y-3 lg:hidden">
-        <div v-for="u in filteredRooms" :key="u.unitCode" class="rounded-tile bg-tile p-5">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="text-lg font-semibold uppercase leading-none text-ink">
-                {{ u.unitCode.toUpperCase() }}
-              </p>
-              <p class="mt-1.5 text-sm text-ink-soft">{{ u.cluster }}, {{ u.type }}</p>
-            </div>
+      <template #row="{ row: u }">
+        <tr>
+          <th scope="row" class="font-semibold uppercase text-ink">
+            {{ u.unitCode.toUpperCase() }}
+          </th>
+          <td>
+            <span class="block text-ink">{{ u.cluster }}, {{ u.type }}</span>
+            <span class="block text-xs text-ink-faint">{{ u.billingRule }}</span>
+          </td>
+          <td class="num font-semibold text-ink">{{ peso(u.price) }}</td>
+          <td :title="formatUnitOccupantsSummary(u.unitCode).text">
+            {{ formatUnitOccupantsSummary(u.unitCode).text }}
+          </td>
+          <td>
             <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
-          </div>
+          </td>
+          <td class="num">
+            <div class="inline-flex items-center justify-end gap-2">
+              <button type="button" class="pill-btn" @click="openSpecs(u)">
+                <Eye class="size-3.5" aria-hidden="true" />
+                <span>Look</span>
+              </button>
+              <button type="button" class="pill-btn" @click="editUnit(u)">
+                <Pencil class="size-3.5" aria-hidden="true" />
+                <span>Edit</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </template>
 
-          <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <div>
-              <dt class="text-xs text-ink-faint">A month</dt>
-              <dd class="tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
-            </div>
-            <div class="min-w-0">
-              <dt class="text-xs text-ink-faint">Lived in by</dt>
-              <dd class="truncate text-ink">{{ formatUnitOccupantsSummary(u.unitCode).text }}</dd>
-            </div>
-            <div class="col-span-2">
-              <dt class="text-xs text-ink-faint">How it is billed</dt>
-              <dd class="text-ink">{{ u.billingRule }}</dd>
-            </div>
-          </dl>
-
-          <div class="mt-4 flex gap-2">
-            <button type="button" class="pill-btn flex-1 justify-center" @click="openSpecs(u)">
-              <Eye class="size-3.5" aria-hidden="true" />
-              <span>Look</span>
-            </button>
-            <button type="button" class="pill-btn flex-1 justify-center" @click="editUnit(u)">
-              <Pencil class="size-3.5" aria-hidden="true" />
-              <span>Edit</span>
-            </button>
+      <template #card="{ row: u }">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-lg font-semibold uppercase leading-none text-ink">
+              {{ u.unitCode.toUpperCase() }}
+            </p>
+            <p class="mt-1.5 text-sm text-ink-soft">{{ u.cluster }}, {{ u.type }}</p>
           </div>
+          <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
         </div>
-      </div>
-    </template>
+
+        <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <div>
+            <dt class="text-xs text-ink-faint">A month</dt>
+            <dd class="tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
+          </div>
+          <div class="min-w-0">
+            <dt class="text-xs text-ink-faint">Lived in by</dt>
+            <dd class="truncate text-ink">{{ formatUnitOccupantsSummary(u.unitCode).text }}</dd>
+          </div>
+          <div class="col-span-2">
+            <dt class="text-xs text-ink-faint">How it is billed</dt>
+            <dd class="text-ink">{{ u.billingRule }}</dd>
+          </div>
+        </dl>
+
+        <div class="mt-4 flex gap-2">
+          <button type="button" class="pill-btn flex-1 justify-center" @click="openSpecs(u)">
+            <Eye class="size-3.5" aria-hidden="true" />
+            <span>Look</span>
+          </button>
+          <button type="button" class="pill-btn flex-1 justify-center" @click="editUnit(u)">
+            <Pencil class="size-3.5" aria-hidden="true" />
+            <span>Edit</span>
+          </button>
+        </div>
+      </template>
+    </RecordTable>
   </div>
 </template>

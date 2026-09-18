@@ -6,8 +6,9 @@ import { useRoute } from 'vue-router';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, showToast, type TenantRecord } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Pencil, LogOut, Loader2, Users, Check } from 'lucide-vue-next';
+import { Search, UserPlus, Pencil, LogOut, Loader2, Check } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import RecordTable from '@/components/ui/RecordTable.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
 const route = useRoute();
@@ -409,104 +410,92 @@ async function handleOnboard() {
 
     <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
 
-    <div v-else-if="rows.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center">
-      <Users class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
-      <p class="mt-3 text-base font-semibold text-ink">Nobody matches</p>
-      <p class="mt-1 text-sm leading-6 text-ink-soft">
-        Nothing on this list answers to
-        <span v-if="q">“{{ q }}”</span><span v-else>this filter</span>.
-      </p>
-    </div>
+    <!--
+      A register on a wide screen, a record per tile on a narrow one, and a
+      first page of ten with the rest behind a control. It used to be one table
+      1,000px wide at every size rendering all 44 rows, so a laptop scrolled
+      sideways and every phone scrolled both ways.
 
-    <template v-else>
-      <!--
-        A register on a wide screen, a record per tile on a narrow one. It used
-        to be one table 1,000px wide at every size, so a laptop and every phone
-        scrolled sideways to reach the status and the Edit button.
+      The email and the emergency contact are no longer columns. Both are in
+      the edit dialog, where the whole record is, and search still reads the
+      email.
+    -->
+    <RecordTable
+      v-else
+      :rows="rows"
+      caption="Residents, with unit, household, move-in date, advance rent and standing"
+      noun="resident"
+      empty-title="Nobody matches"
+      :empty-note="q ? `Nothing on this list answers to “${q}”.` : 'Nothing on this list answers to this filter.'"
+    >
+      <template #head>
+        <tr>
+          <th scope="col">Resident</th>
+          <th scope="col">Unit</th>
+          <th scope="col">Household</th>
+          <th scope="col">Moved in</th>
+          <th scope="col" class="num">Advance rent</th>
+          <th scope="col">Standing</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </template>
 
-        The email and the emergency contact are no longer columns. Both are in
-        the edit dialog, where the whole record is, and search still reads the
-        email. Seven columns of three-line cells was the reason this needed
-        1,000px in the first place.
-      -->
-      <div class="hidden overflow-hidden rounded-tile bg-tile lg:block">
-        <div class="ws-table-wrap max-h-[70vh]">
-          <table class="ws-table">
-            <caption class="sr-only">
-              Residents, with unit, household, move-in date, advance rent and status
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Resident</th>
-                <th scope="col">Unit</th>
-                <th scope="col">Household</th>
-                <th scope="col">Moved in</th>
-                <th scope="col" class="num">Advance rent</th>
-                <th scope="col">Standing</th>
-                <th scope="col"><span class="sr-only">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="t in rows" :key="t.id">
-                <th scope="row">
-                  <span class="block font-semibold text-ink">{{ t.name }}</span>
-                  <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
-                </th>
-                <td class="font-semibold uppercase text-ink">{{ t.unitCode }}</td>
-                <td>{{ householdLabel(t) }}</td>
-                <td>{{ t.moveInDate }}</td>
-                <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
-                <td>
-                  <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
-                </td>
-                <td class="num">
-                  <button type="button" class="pill-btn" @click="openEdit(t)">
-                    <Pencil class="size-3.5" aria-hidden="true" />
-                    <span>Edit</span>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="space-y-3 lg:hidden">
-        <div v-for="t in rows" :key="t.id" class="rounded-tile bg-tile p-5">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="text-base font-semibold leading-snug text-ink">{{ t.name }}</p>
-              <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
-            </div>
+      <template #row="{ row: t }">
+        <tr>
+          <th scope="row">
+            <span class="block font-semibold text-ink">{{ t.name }}</span>
+            <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
+          </th>
+          <td class="font-semibold uppercase text-ink">{{ t.unitCode }}</td>
+          <td>{{ householdLabel(t) }}</td>
+          <td>{{ t.moveInDate }}</td>
+          <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
+          <td>
             <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
+          </td>
+          <td class="num">
+            <button type="button" class="pill-btn" @click="openEdit(t)">
+              <Pencil class="size-3.5" aria-hidden="true" />
+              <span>Edit</span>
+            </button>
+          </td>
+        </tr>
+      </template>
+
+      <template #card="{ row: t }">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-base font-semibold leading-snug text-ink">{{ t.name }}</p>
+            <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
           </div>
-
-          <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <div>
-              <dt class="text-xs text-ink-faint">Unit</dt>
-              <dd class="font-semibold uppercase text-ink">{{ t.unitCode }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Household</dt>
-              <dd class="text-ink">{{ householdLabel(t) }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Moved in</dt>
-              <dd class="text-ink">{{ t.moveInDate }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Advance rent</dt>
-              <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
-            </div>
-          </dl>
-
-          <button type="button" class="pill-btn mt-4 w-full justify-center" @click="openEdit(t)">
-            <Pencil class="size-3.5" aria-hidden="true" />
-            <span>Edit this record</span>
-          </button>
+          <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
         </div>
-      </div>
-    </template>
+
+        <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <div>
+            <dt class="text-xs text-ink-faint">Unit</dt>
+            <dd class="font-semibold uppercase text-ink">{{ t.unitCode }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">Household</dt>
+            <dd class="text-ink">{{ householdLabel(t) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">Moved in</dt>
+            <dd class="text-ink">{{ t.moveInDate }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">Advance rent</dt>
+            <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
+          </div>
+        </dl>
+
+        <button type="button" class="pill-btn mt-4 w-full justify-center" @click="openEdit(t)">
+          <Pencil class="size-3.5" aria-hidden="true" />
+          <span>Edit this record</span>
+        </button>
+      </template>
+    </RecordTable>
 
     <!-- The whole record, and the parts of it that can be changed here -->
     <WsModal
