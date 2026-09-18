@@ -14,7 +14,7 @@ a half-ticked board is evidence of progress, an untouched one is not.
 
 | | |
 | :--- | :--- |
-| **The system** | Built and verified. **All 18 suites pass**, and `verify:rbac` exits 0 after being dead since 13 Sep |
+| **The system** | Built and verified. **All 19 suites pass** (a relationship suite was added 18 Sep), and `verify:rbac` exits 0 after being dead since 13 Sep |
 | **The manuscript** | Chapters 1–3 exist. **Chapter 4 is drafted but cannot be finished without test data** |
 | **The blocker** | **No write path has ever been used by a person.** That one fact blocks Chapter 4, the evaluation, and the defense |
 | **Your next single action** | Run `TESTING_REHEARSAL.md`. Forty minutes. Everything else queues behind it |

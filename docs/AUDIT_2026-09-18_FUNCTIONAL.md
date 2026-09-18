@@ -424,3 +424,55 @@ and injected key events do not reliably drive user-agent actions even when the D
 landing page — ten seconds during the rehearsal. **What I can say is that the code is right; what
 I cannot say is that the behaviour works.** Those are different claims and this audit should not
 conflate them.
+
+---
+
+# Fifth pass — relationships, and a nineteenth suite
+
+Every suite until now asked whether **one** thing is internally consistent. `check:ledger`
+re-derives the money; `check:columns` proves a column reference resolves; `check:rules` keeps a
+register honest with itself. **None asked whether two records describing the same situation agree
+with each other** — and that is where this system had gone wrong quietly.
+
+## What the question found
+
+**A bill for a unit its tenant never occupied.** Bill `b3415b46`, period 21 Aug – 5 Sep 2026, rent
+₱4,500 + water ₱400, is against **unit 1A**. Its tenant's only two tenancies are both **1B**. Both
+records are internally fine; they disagree with each other, and nothing looked.
+
+**Every ended tenancy is undated.** Not some — **all 16, across 8 profiles, without exception.**
+
+| | |
+| :--- | :--- |
+| Is the code wrong? | **No.** All three deactivation sites write `end_date: propertyToday()`, and have since `d026e21` on **2026-09-16** |
+| So why is every row null? | They all **predate that commit** and were never backfilled |
+| Why has no correct row appeared since? | **No write path in this system has ever been used by a person.** The fixed code has never run |
+
+It reaches real residents, not just test rows: one left Linda's **LB** and nothing says when,
+and another is the deactivated tenant **BR-025** is argued from. And it is not tidiness —
+**OD-04's deposit settlement needs a move-out date**, and there isn't one for any past tenancy.
+
+## `check:relations` — the nineteenth suite
+
+Written so this class is caught from now on rather than by somebody asking once. It asserts the
+property's shape; that occupancy agrees across **three** sources with no unit double-let; that
+every tenancy, bill, payment, ticket and enquiry points at a row that exists; that **a bill's unit
+is one its tenant has held**; that a bill's total is rent + water and its water is occupants ×
+rate, Linda excepted under BR-040; and that every income row names a canonical unit.
+
+**Two things are pinned and printed on every run** rather than silenced — the same shape
+`check:ledger` uses for the seven receipts. The undated tenancies are a **ratchet**: the count is
+pinned at 16 and the check **fails if it grows**, because a new one means the fixed path was
+bypassed. Fixing the existing 16 needs a migration, which is not a script's business.
+
+**Mutation-tested both ways**, as this project requires: asserting 34 units fails with *"got 33"*,
+and lowering the baseline to 15 fails with *"16 undated, 1 more than the baseline"*. Restored, it
+exits 0.
+
+**23 relationship assertions pass. All 19 suites pass.**
+
+## And a step in the rehearsal that pays for itself
+
+**Step 24b**: run `check:relations` straight after vacating the rehearsal tenant. The pinned count
+must still read **16, not 17**. That single step decides whether **B-11 is a data gap or a code
+defect** — and it produces the first correctly-dated tenancy row this system will ever have had.

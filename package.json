@@ -13,6 +13,7 @@
     "verify:rbac": "node database/verify-rbac.mjs",
     "check:all": "node scripts/check-all.mjs",
     "check:secrets": "node scripts/check-secrets.mjs --all",
+    "check:relations": "node scripts/check-relations.mjs",
     "check:rules": "node scripts/check-br-crosswalk.mjs",
     "check:matrix": "node scripts/check-matrix-crosswalk.mjs",
     "check:copies": "node scripts/check-filming-copies.mjs",

@@ -149,6 +149,7 @@ Back to the administrator.
 | # | Do | Should see | ✍ |
 | :-- | :--- | :--- | :-- |
 | 24 | Vacate the rehearsal tenant from `PH`. | Tenancy ends, `PH` returns to **Available**, the account goes inactive. | ✍ |
+| 24b | **Immediately after step 24, run `npm run check:relations`.** | Its pinned line must still read **16** ended tenancies with no end date — **not 17**. This is the one step that proves the vacate path records *when* a tenancy ended. The code has written `end_date` since 2026-09-16, and **no human has used that path since**, so this is the first correctly-dated row the system will ever have produced. If the count rises to 17, the date was not written and **B-11 is a code defect rather than a data gap**. | |
 | 25 | Delete the `REHEARSAL-001` income record if you have not. | Gone from the ledger. | ✍ |
 | 26 | Set `PH` back to ₱12,000. | Saved. | ✍ |
 

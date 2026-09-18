@@ -33,6 +33,37 @@ thing did not work" is not.
 
 ## Open
 
+### B-11 — 16 ended tenancies do not record when they ended
+
+- **Blocked on:** a backfill migration, which is live data and therefore yours
+- **The code is not the problem.** All three places that deactivate a tenancy write
+  `end_date: propertyToday()`, and have since `d026e21` on 2026-09-16
+- **The rows predate it and were never backfilled.** Every inactive tenancy in the database has
+  `end_date` null — **16 of them, across 8 profiles, and not one exception.** Verified through the
+  admin API on 2026-09-18
+- **It reaches real residents, not only test rows.** the resident who left Linda's **LB** — nothing
+  records when; the deactivated tenant **BR-025** is argued from has a tenancy from
+  2024-05-01, no end date
+- **Why it matters beyond tidiness:** **OD-04's deposit settlement needs a move-out date.** The
+  owner spends the held sum on repairs "as early as the room is ready" — which is a date nobody
+  can currently produce for any past tenancy. It also leaves BR-003 unable to say when a unit
+  became vacant
+- **What I already did:** wrote `check:relations` (new, nineteenth suite). It pins the count at
+  **16**, prints it every run, and **fails if it grows** — a new undated tenancy means the fixed
+  path was bypassed. Mutation-tested both ways
+- **What you need to do:** a migration setting `end_date` on those 16. **The honest value is not
+  `today()`** — these ended at various points in the past. If the real date cannot be recovered,
+  writing one that looks precise is worse than leaving null; consider the tenancy's last
+  income-record period as the evidence, and say in the migration header which it was
+- **How to know it worked:** `npm run check:relations` reports a lower count and says the baseline
+  can come down; then lower `UNDATED_BASELINE` in the same commit
+- **Related, and cheaper:** the rehearsal now asserts this on the way through — vacating the test
+  tenant should produce **the first correctly-dated row this system has ever had**, because no
+  write path has been exercised by a person since the fix landed
+- **Raised:** 2026-09-18 by Claude, on Loyd's machine
+
+---
+
 > **Two entries are both numbered `B-01`** — the open one below, and the closed demo-password one
 > further down. Left as they are rather than renumbered, in case the new one is already referenced
 > somewhere. Worth settling before a third appears, since this queue is referred to by number.
