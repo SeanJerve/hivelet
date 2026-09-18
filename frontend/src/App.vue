@@ -47,14 +47,31 @@ const isPublicPage = computed(() =>
 );
 
 /**
- * Two routes draw their own masthead - the landing over its hero, the enquiry
- * page in its own left column - so the shared bar would be a second one above
- * it. Narrower than `isPublicPage` on purpose: the category and login routes
- * have no masthead of their own and keep `AppHeader`. `/` only redirects to
- * `/public`, so matching it here is belt and braces.
+ * The public routes that draw their own masthead - the landing over its hero,
+ * the enquiry page in its own left column, and the category pages in a hairline
+ * bar at the top of the screen - so the shared bar would be a second masthead
+ * above the first. Still narrower than `isPublicPage`: `/login` has no masthead
+ * of its own and keeps `AppHeader`. `/` only redirects to `/public`, so
+ * matching it here is belt and braces.
+ *
+ * THIS COMMENT HAD A PRECONDITION IN IT, AND THE PRECONDITION EXPIRED.
+ * Until 2026-09-19 it read "the category and login routes have no masthead of
+ * their own and keep AppHeader", which stopped being true the moment
+ * `CategoryRoomsView` was rebuilt in the public register and grew one. Read it
+ * as a claim with a date on it when the next public route appears.
+ *
+ * What a signed-in visitor loses on these four routes is the bell and the
+ * profile menu, which live in `AppHeader` only. An administrator cannot reach
+ * them at all - the router guard in `router/index.ts` sends `/public`,
+ * `/category` and `/tenant` back to `/admin/overview` - and a resident who
+ * wanders onto the public site has the same experience there as on `/public`
+ * and `/inquire` today.
  */
 const hidesGlobalHeader = computed(() =>
-  route.path === '/public' || route.path === '/' || route.path === '/inquire'
+  route.path === '/public' ||
+  route.path === '/' ||
+  route.path === '/inquire' ||
+  route.path.startsWith('/category')
 );
 </script>
 
