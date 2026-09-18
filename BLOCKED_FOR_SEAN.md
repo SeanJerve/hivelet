@@ -76,31 +76,12 @@ thing did not work" is not.
 <details>
 <summary>The original entry, as raised</summary>
 
-### B-09 — the production build ships 34 residents' email addresses · **do this first**
+### ~~B-09 — the open duplicate of the entry above~~ — **folded in, 2026-09-18**
 
-- **Blocked on:** whoever owns the build config. It is a bundling question, not a UI one
-- **What is wrong:** a clean `npm run build:frontend` emits
-  `frontend/dist/assets/demoAccounts.dev-*.js` — **4,998 bytes containing 34 real residents' email
-  addresses.** `check:secrets` fails on it and names every one. **BR-024 Tenant Privacy**
-- **What is NOT exposed, checked rather than assumed:** the administrator's password and the shared
-  tenant password are both **absent** from the chunk — tested against the live values
-- **But it is reachable.** The chunk's filename is written into the built entry chunk
-  `index-6JCxG2DS.js`, and it serves: `GET /assets/demoAccounts.dev-*.js` returns **200**. The
-  panel does not render in production, so **the guard prevents display, not distribution**
-- **The source says this cannot happen.** `LoginView.vue:92-94` states *"this branch and the module
-  it reaches are eliminated."* The branch may be; **the module is not.** A comment asserting a
-  conclusion whose precondition has quietly failed — the judgement log's own lesson
-- **It was clean on 17 Sep.** `TESTING_REHEARSAL.md` records a clean rebuild carrying no passwords
-  and no resident addresses, *"checked both by the suite and by hand."* **Something since then
-  changed it.** `b403e77` — *"one-click demo sign-in reads passwords from creds.txt"* — is the
-  obvious suspect because it changed how that module is produced, **but I have not confirmed
-  causation and am not asserting it**
-- **How to know it worked:** `rm -rf frontend/dist && npm run build:frontend && npm run check:secrets`
-  exits **0**, and no `demoAccounts` chunk exists in `dist/assets/`
-- **`check:secrets` needs no change.** It caught this the moment a build existed, and when none
-  existed it said so in its own output. I read the exit code and not the note, which is how I
-  initially reported the bundle as clean
-- **Raised:** 2026-09-18 by Claude, on Loyd's machine. Detail: `docs/AUDIT_2026-09-18_FUNCTIONAL.md` § D-0
+> This was a second, still-open copy of B-09 carrying the original diagnosis. It has been
+> replaced by this line rather than left standing: **two entries under one number, one closed and
+> one open, is how a queue read by number stops being trusted.** The closed entry above holds the
+> resolution, and `docs/AUDIT_2026-09-18_FUNCTIONAL.md` § D-0 holds the detail it used to carry.
 
 ---
 
@@ -342,7 +323,12 @@ thing did not work" is not.
 
 ## The ones already known, carried over
 
-### ~~B-01 — Rotate the two demo passwords~~ — **CLOSED 2026-09-17, it was already done**
+### ~~B-01 · 17 Sep — Rotate the two demo passwords~~ — **CLOSED, it was already done**
+
+> **Dated in its heading because the number was reused.** The open `B-01` further up is the
+> landing-page fault, and that one keeps the bare number: it is cited in `HANDOFF_TO_DESIGN.md`,
+> in `PROGRESS_REPORT.md`, and in a code comment at `PublicGuestView.vue:402`. This entry is
+> closed and nothing points at it, so it is the one that moves.
 
 **Do not rotate them again.** Doing so would break `check:api`, `check:reports` and three others
 on whichever machine still holds the old `creds.txt`, for no gain.

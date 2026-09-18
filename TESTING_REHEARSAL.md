@@ -4,7 +4,7 @@
 
 ## Why this exists
 
-The write paths are covered by fifteen verification suites and **have never been used for real**.
+The write paths are covered by eighteen verification suites and **have never been used for real**.
 Not once. Every one of the 937 income rows and 1,262 expense entries came from the 2026-08-28
 migration — no collection has ever been recorded through the interface, by anybody.
 
@@ -31,7 +31,7 @@ what it means if you do not.
 npm run check:all
 ```
 
-Fifteen green. If `check:api`, `check:billing` or `check:adyen` fail to connect, the backend is not
+Eighteen green. If `check:api`, `check:billing` or `check:adyen` fail to connect, the backend is not
 running — `npm run dev:backend` first. Run it again at the end: a suite that was green before and
 red after tells you exactly what the rehearsal broke.
 

@@ -14,7 +14,7 @@ a half-ticked board is evidence of progress, an untouched one is not.
 
 | | |
 | :--- | :--- |
-| **The system** | Built and verified. 13 of 17 suites pass; the other 4 need a build or a running backend, not fixes |
+| **The system** | Built and verified. **All 18 suites pass**, and `verify:rbac` exits 0 after being dead since 13 Sep |
 | **The manuscript** | Chapters 1–3 exist. **Chapter 4 is drafted but cannot be finished without test data** |
 | **The blocker** | **No write path has ever been used by a person.** That one fact blocks Chapter 4, the evaluation, and the defense |
 | **Your next single action** | Run `TESTING_REHEARSAL.md`. Forty minutes. Everything else queues behind it |
@@ -129,14 +129,17 @@ Not yours to do — listed so you know what is moving.
 
 ## 5. Documentation tidy-ups — small, safe, do them when stuck
 
-- ☐ Rename `docs/08_OPEN_DECISIONS.md` → `08_CLOSED_DECISIONS.md` and strike §9. Everything in it
-  is closed; the filename says the opposite
-- ☐ Fix stale suite counts: `TESTING_REHEARSAL.md` says "fifteen", `scripts/check-all.mjs`'s own
-  header says "fourteen". **There are seventeen**
+- ☑ ~~Rename `docs/08_OPEN_DECISIONS.md` → `08_CLOSED_DECISIONS.md`~~ — **considered and declined
+  2026-09-18**, reasoning in `HANDOFF_TO_DOCS.md` § 4.1. The filename is misleading, but 13 of its
+  34 mentions pin a line number inside records of what it said on a date; renaming makes them cite
+  a file that never existed. The banner in the file does the job without falsifying a citation
+- ☑ ~~Fix stale suite counts~~ — done 2026-09-18 across seven files. **There are eighteen**, and the
+  rehearsal is **27 steps**, not 26
 - ☐ Amend the **Module 02 answer sheet** for the Eljohn/Kiel role swap. The repository records it;
   the submitted artifact does not. Publish a dated note rather than editing silently
 - ☐ `CONTINUE_HERE.md` says "Last updated 2026-09-17" and predates the redesign and everything since
-- ☐ Two queue entries are both numbered **B-01** — settle it before a third appears
+- ☑ ~~Two queue entries are both numbered **B-01**~~ — settled 2026-09-18. The open one keeps the
+  bare number (it is cited in a code comment); the closed one is now dated in its heading
 
 ---
 

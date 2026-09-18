@@ -149,7 +149,7 @@ Do not go back to hex literals in components.
 
 ## 6b. Three things that reach outside `frontend/src/`
 
-**Renaming a screen has a cost in another file.** `TESTING_REHEARSAL.md` walks 26 steps by
+**Renaming a screen has a cost in another file.** `TESTING_REHEARSAL.md` walks 27 steps by
 **sidebar label**, read out of `AppSidebar.vue` rather than remembered: *Executive Overview, Room
 & Rate Directory, Active Tenants, Income & Collections, Monthly Expenses, Maintenance Dispatch,
 Prospect Inquiries, System Audit Trail* — and for a resident, *Unit Overview, Payment & Billing,
@@ -172,7 +172,7 @@ where they belong, and they should be committed — the history here is the reas
 npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"
 ```
 
-Seventeen suites. **Read that summary table, not the tail** — `| tail` shows the end of whichever
+Eighteen suites. **Read that summary table, not the tail** — `| tail` shows the end of whichever
 suite ran last, and a red check has been committed past that way twice.
 
 The four that matter to you: **`check:reachable`**, **`check:tokens`**, **`check:liveness`**,
@@ -224,7 +224,7 @@ in a morning.
 | `CLAUDE.md` | Loads automatically. The five project rules |
 | `docs/SCREEN_CONTRACT.md` | Your contract. Generated, never hand-edited |
 | `docs/13_AUDIT_JUDGEMENT_LOG.md` § 3 | Things that look like bugs and are deliberate. **Read before "fixing" anything** |
-| `TESTING_REHEARSAL.md` | 26 steps through every write path. Step 23b is the one that proves the states in § 4 |
+| `TESTING_REHEARSAL.md` | 27 steps through every write path. Step 23b is the one that proves the states in § 4 |
 | `BLOCKED_FOR_SEAN.md` | The queue. Add to it rather than stopping |
 
 ---

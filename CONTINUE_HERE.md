@@ -8,7 +8,7 @@
 > **Working on Loyd's machine, without the database or the Adyen keys?
 > Read [`HANDOFF_TO_LOYD.md`](HANDOFF_TO_LOYD.md) instead of this file first.**
 >
-> It says what you can run (eleven of the seventeen suites, and one that goes green while
+> It says what you can run (twelve of the eighteen suites, and one that goes green while
 > skipping half of itself), what you must not touch, and what the actual job is — which is
 > **`CLIENT_MEETING_QUESTIONS.md`**, answerable by asking Mrs. Da Silva directly. That is the
 > biggest blocker in the project and the one thing Sean cannot do from his side.
@@ -66,7 +66,7 @@
 | a **verified payment could be rejected**, and the money stayed booked | the payment read Rejected, the bill reopened to Due, `verified_at` was wiped — and the income row **stayed**. She would have chased rent already paid. Verify was guarded; Reject, twelve lines below, was a bare `.eq('id', …)` |
 | a failed expense fetch would have shown **the year's takings as profit** | `expenseRecords` starts empty, NOI subtracts it from gross. **₱3,745,419.51** of 2025 costs would have silently become ₱0. Its three sibling loaders all raise a fetch-failed flag; this one did not |
 
-**The suites were sixteen by the end of that day** (seventeen as of 17 Sep — see § 0.0). New that day: **`check:canon`** (the locked wording is enforced,
+**The suites were sixteen by the end of that day** (**eighteen as of 18 Sep**). New that day: **`check:canon`** (the locked wording is enforced,
 not just written down) and **`check:reports`** (both workbooks agree with the database, month by
 month, every year — 68 assertions). `check:api` went from **57 to 75**.
 
@@ -480,7 +480,7 @@ lockdown was never actually tested. That is exactly what a stale key looks like.
 ## 2. Verification suites — run these before trusting anything
 
 ```bash
-# All seventeen, one command, from the repository root. ~75 seconds.
+# All eighteen, one command, from the repository root. ~75 seconds.
 npm run check:all
 ```
 

@@ -161,7 +161,7 @@ horizontal scrolling on small screens.
 
 ### 4.3.1 Automated Verification Results — **real data, use it**
 
-Seventeen suites. **Table 4.4** carries the principal ones. Figures verified 2026-09-18:
+Eighteen suites. **Table 4.4** carries the principal ones. Figures verified 2026-09-18:
 
 | Suite | Scope | Assertions |
 | :--- | :--- | :--- |

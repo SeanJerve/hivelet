@@ -12,7 +12,7 @@ There is no staging copy.
 
 ## 1. The one sentence that defines your job
 
-> **Seventeen automated suites pass. No human being has ever clicked through this system.**
+> **Eighteen automated suites pass. No human being has ever clicked through this system.**
 
 Every claim made about Hivelet this week was verified through the API or against the database.
 Not one write path — recording a payment, raising a bill, closing a ticket, vacating a tenant —
@@ -24,7 +24,7 @@ That gap is exactly what testing week measures, and it is yours to close.
 
 ## 2. Start here: `TESTING_REHEARSAL.md`
 
-26 steps, about forty minutes, **every write path once**. It runs on `PH`, the only vacant unit,
+27 steps, about forty minutes, **every write path once**. It runs on `PH`, the only vacant unit,
 with a fake tenant, and every writing step carries an Undo.
 
 **Tick the boxes in the file as you go and commit them.** A half-filled sheet is evidence; an
@@ -64,7 +64,7 @@ a red check has been committed past that way twice.
 | `check:canon` `check:rules` `check:matrix` `check:copies` | Wording and register consistency |
 | `check:tokens` `check:reachable` `check:liveness` | The interface. Kiel's lane, but they are yours to run |
 
-**Eleven run on a bare clone. Fourteen with `.env`. All seventeen with the backend up and
+**Twelve run on a bare clone. Fifteen with `.env`. All eighteen with the backend up and
 `credentials/creds.txt`.** Neither file comes down with a pull; ask Sean for both. `creds.txt`
 also powers the one-click demo sign-in buttons on the local login page.
 
@@ -90,7 +90,8 @@ an empty scan and report what they read — *"(32 source files read)"*, *"623 fi
 **Point this at anything you are handed.** The question is never "did it pass" but "what did it
 examine, and would it have said the same having examined nothing".
 
-**There is a live example of exactly that, and it is in `check:api` right now.**
+**There was a live example of exactly that, in `check:api`. It is fixed, and it will come back on
+any machine that lacks one gitignored file — so the shape is worth keeping in mind.**
 
 The suite discovers a tenant login by reading **`database/seeded-tenant-credentials.json`** —
 gitignored, and absent on at least one machine. With the file missing, the login loop never runs,
@@ -107,6 +108,10 @@ TENANT (none found) - token FAILED
 
 So **read the total, not just the zero.** A lower total with `0 failed` means checks were skipped,
 not passed. If that line says `none found`, ask Sean for the file — and **do not commit it.**
+
+**Measured on 2026-09-18:** without the file the suite reported **58 passed, 0 failed**; with it,
+**76 passed, 0 failed**. Eighteen checks were not running, and one of them was the assertion that
+proves a tenant cannot reach admin data.
 
 *The generalisable form: an absent input that disables an assertion looks exactly like an
 assertion that passed.* When you write a check, make a missing precondition **fail**, or at

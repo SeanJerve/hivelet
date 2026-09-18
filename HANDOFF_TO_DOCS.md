@@ -115,16 +115,45 @@ struck text rather than deletion, with the reason and the date — is the house 
 
 ## 4. Your first three concrete tasks
 
-**1. Rename `08_OPEN_DECISIONS.md` to `08_CLOSED_DECISIONS.md` and strike Section 9.**
-Prescribed by the open-decisions register's Section 0 for Phase 2. Checked 2026-09-15: not done.
-Its banner is standing in for the rename. The file's own H1 already says "RESOLVED & FINALIZED",
-so anyone opening it looking for unresolved questions finds none and concludes none exist.
-Update every inbound reference in the same commit.
+**1. ~~Rename `08_OPEN_DECISIONS.md` to `08_CLOSED_DECISIONS.md`.~~ Considered and declined,
+2026-09-18 — reopen it if you disagree, but read this first.**
 
-**2. Fix the suite count wherever it is stale.** `TESTING_REHEARSAL.md` says **"Fifteen green"**
-and *"covered by fifteen verification suites"*. `check-all.mjs`'s own header still says
-**"fourteen suites"**. **There are seventeen.** This is exactly the class of drift that
-`check:matrix` was written for, in files no check covers.
+The register's Section 0 prescribed the rename in Phase 2, and on its face it is obviously right:
+a file called *open decisions* containing only closed ones is a trap. **Counted before doing it:**
+
+| | |
+| :--- | ---: |
+| mentions of the filename across the repository | **34** |
+| files that would need editing | **17** |
+| **citations that pin a specific line number** | **13** |
+
+**The 13 are the reason.** They sit in `PHASE1_MODULE01_ERRATA.md`, `PHASE1_BR_CROSSWALK.md`,
+`PHASE1_TRACEABILITY_MATRIX.md` and `docs/13_AUDIT_JUDGEMENT_LOG.md` — *records of what that file
+said at a moment in time*, in the form `08_OPEN_DECISIONS.md:41`. Renaming makes every one of them
+cite a filename that **did not exist when the observation was made**. One of them is also in
+`scripts/check-canon.mjs`.
+
+**That is the same objection Sean raised in B-10** about replacing a resident's address inside an
+audit note: it cleans the present by falsifying the record. A misleading filename is a smaller
+harm than a citation that points at something that never existed.
+
+**What stands in for it, and is already there:** the file opens with a banner saying it is
+misnamed, that everything in it is closed, and where the real register is. **That banner is the
+fix.** It costs nothing and it breaks no citation.
+
+**If you do overrule this**, the honest form is a new file plus a stub at the old path that says
+where the content went — not a rename, so the 13 citations still resolve.
+
+**2. ~~Fix the suite count wherever it is stale.~~ Done 2026-09-18 — and worth reading as a
+worked example.** Seven files disagreed about how many suites there are and how long the rehearsal
+is: `TESTING_REHEARSAL.md` said *"Fifteen green"*, both handoffs said *"Seventeen"*, `CLAUDE.md`
+and two handoffs put the rehearsal at 26 steps when the file has **27**, and the tier counts
+(11 / 14 / 17) had all moved to **12 / 15 / 18**.
+
+**Nothing was wrong when it was written.** Each number was copied out of a counted or generated
+source at a moment when it was true, and then the source moved. **That is the drift `check:matrix`
+exists for, in files no check covers** — so the durable fix is not to recount them next month but
+to stop quoting counts that something else owns. Where a figure has an owner, point at the owner.
 
 **3. The role attributions — see § 5.** Do this one before the next submission, not after.
 
