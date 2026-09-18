@@ -37,6 +37,79 @@ thing did not work" is not.
 > further down. Left as they are rather than renumbered, in case the new one is already referenced
 > somewhere. Worth settling before a third appears, since this queue is referred to by number.
 
+### B-09 — the production build ships 34 residents' email addresses · **do this first**
+
+- **Blocked on:** whoever owns the build config. It is a bundling question, not a UI one
+- **What is wrong:** a clean `npm run build:frontend` emits
+  `frontend/dist/assets/demoAccounts.dev-*.js` — **4,998 bytes containing 34 real residents' email
+  addresses.** `check:secrets` fails on it and names every one. **BR-024 Tenant Privacy**
+- **What is NOT exposed, checked rather than assumed:** the administrator's password and the shared
+  tenant password are both **absent** from the chunk — tested against the live values
+- **But it is reachable.** The chunk's filename is written into the built entry chunk
+  `index-6JCxG2DS.js`, and it serves: `GET /assets/demoAccounts.dev-*.js` returns **200**. The
+  panel does not render in production, so **the guard prevents display, not distribution**
+- **The source says this cannot happen.** `LoginView.vue:92-94` states *"this branch and the module
+  it reaches are eliminated."* The branch may be; **the module is not.** A comment asserting a
+  conclusion whose precondition has quietly failed — the judgement log's own lesson
+- **It was clean on 17 Sep.** `TESTING_REHEARSAL.md` records a clean rebuild carrying no passwords
+  and no resident addresses, *"checked both by the suite and by hand."* **Something since then
+  changed it.** `b403e77` — *"one-click demo sign-in reads passwords from creds.txt"* — is the
+  obvious suspect because it changed how that module is produced, **but I have not confirmed
+  causation and am not asserting it**
+- **How to know it worked:** `rm -rf frontend/dist && npm run build:frontend && npm run check:secrets`
+  exits **0**, and no `demoAccounts` chunk exists in `dist/assets/`
+- **`check:secrets` needs no change.** It caught this the moment a build existed, and when none
+  existed it said so in its own output. I read the exit code and not the note, which is how I
+  initially reported the bundle as clean
+- **Raised:** 2026-09-18 by Claude, on Loyd's machine. Detail: `docs/AUDIT_2026-09-18_FUNCTIONAL.md` § D-0
+
+---
+
+### B-07 — a resident with no bill is shown one, with water at ₱0
+
+- **Blocked on:** a judgement about what a resident is told, plus `frontend/src/` being actively
+  rebuilt. Not mine to patch mid-redesign
+- **What is wrong:** the resident portal shows *"Latest bill — Rent ₱4,500 · Water · 1 registered
+  occupant · **₱0**"* to a tenant with **no bill on file**, directly above the sentence *"Water is
+  charged at ₱200 for each registered occupant every month."* **The screen contradicts itself.**
+- **Verified against live data, not inferred:** unit `1F` has `occupant_count = 1`,
+  `current_price = 4500`, `/public/rates` returns `waterRatePerOccupant: 200`, and
+  `/tenant/my-bills` returns **0 rows**
+- **Cause** — `frontend/src/views/TenantOverviewView.vue`:
+  - `:195` with no bill, **rent falls back** to the unit's `current_price`
+  - `:52` **water has no fallback** and keeps its initial `0`
+  - `:458` the *"No bill is on file yet"* guard needs **both** figures falsy, so once rent falls
+    back it can never fire
+- **Why no check caught it:** `check:liveness` asserts loaders raise flags, flags are rendered, and
+  hardcoded rate fallbacks equal the configured rate — **all true here**. Nothing asserts that a
+  *derived* figure agrees with the rule printed beside it
+- **What you need to decide:** compute `waterFee = occupants × rate` on that path, or — better, and
+  what the project's own doctrine argues for — **stop presenting a bill that was never raised** by
+  testing whether a bill exists rather than whether its numbers are zero
+- **How to know it worked:** a resident with no bill sees *"No bill is on file yet"*, and a resident
+  with one sees the bill's own rent and water
+- **Raised:** 2026-09-18 by Claude, on Loyd's machine. Full detail: `docs/AUDIT_2026-09-18_FUNCTIONAL.md` § D-1
+
+---
+
+### B-08 — `check:billing` passes everything and still reports failure on Windows
+
+- **Blocked on:** nothing; it wants twenty minutes from whoever knows the suite
+- **What happens:** 39 assertions pass, it prints **`ALL CHECKS PASSED`**, then exits **127** on
+  `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 94`.
+  **Reproduced on three consecutive runs**, zero `FAIL` lines in the output
+- **Effect:** `npm run check:all` reports `FAIL check:billing` on Windows while every billing rule
+  it guards is satisfied
+- **Why it matters more than it looks:** the doctrine here is *read the summary table*. A suite
+  that is permanently red for a reason unrelated to its assertions **teaches people to read past
+  red**, and a red check has already been committed past twice on this project
+- **Likely cause:** an open handle at exit — a timer or socket not closed before the process ends.
+  Not a defect in the billing rules
+- **How to know it worked:** `npm run check:billing; echo $?` prints `0`
+- **Raised:** 2026-09-18 by Claude, on Loyd's machine
+
+---
+
 ### B-06 — two comments call the deposit "not a refundable security deposit". It is one
 
 > [!NOTE]
