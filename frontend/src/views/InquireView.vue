@@ -15,7 +15,7 @@
  * than not asking. The fields below are exactly the four the endpoint accepts.
  * Adding the others is a schema change, not a design change.
  */
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Loader2 } from 'lucide-vue-next';
 import { showToast, LANDLADY } from '@/lib/systemState';
@@ -28,6 +28,30 @@ const inquiryEmail = ref('');
 const inquiryPhone = ref('');
 const inquiryMsg = ref('');
 const isSubmitting = ref(false);
+
+/**
+ * The water rate, from `/public/rates`.
+ *
+ * The panel beside this form quoted "P200/head monthly water rule" as a
+ * literal. That number lives in `system_settings` and is applied by the
+ * backend's billingService, so a copy written into the page quotes a
+ * prospective tenant a price that stops being true the moment the landlady
+ * changes the setting - the same defect this project has already fixed on the
+ * category page, the on-site payment form and the tenant portal.
+ *
+ * Null until it answers, and the sentence then omits the figure rather than
+ * guessing one.
+ */
+const waterRatePerOccupant = ref<number | null>(null);
+
+onMounted(async () => {
+  try {
+    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
+    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+  } catch {
+    // Leave it null. The sentence below drops the figure rather than inventing one.
+  }
+});
 
 async function submitInquiry() {
   // `inquiries.prospect_email` is NOT NULL in the database, so the form asks for
@@ -119,49 +143,71 @@ async function submitInquiry() {
           Viewings by appointment, register your interest
         </h1>
 
+        <!--
+          The labels are visible, and were placeholders.
+
+          A placeholder disappears the moment somebody types, so a half-filled
+          form became four identical rules with no way to tell which was the
+          phone and which was the email - worst for the person coming back to
+          check before sending, which is exactly when it matters. The asterisks
+          went with them: every field here but the last is required, and the
+          three that are carry `required`.
+        -->
         <form class="mt-10 sm:mt-12 max-w-2xl" @submit.prevent="submitInquiry">
           <div class="grid gap-x-8 gap-y-7 sm:grid-cols-2">
             <div>
-              <label for="iq-name" class="sr-only">Full name (required)</label>
+              <label
+                for="iq-name"
+                class="block text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground"
+                >Your name</label
+              >
               <input
                 id="iq-name"
                 v-model="inquiryName"
                 type="text"
                 required
-                placeholder="Name *"
-                class="w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+                class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
               />
             </div>
             <div>
-              <label for="iq-email" class="sr-only">Email address (required)</label>
+              <label
+                for="iq-email"
+                class="block text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground"
+                >Email</label
+              >
               <input
                 id="iq-email"
                 v-model="inquiryEmail"
                 type="email"
                 required
-                placeholder="Email *"
-                class="w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+                class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
               />
             </div>
             <div>
-              <label for="iq-phone" class="sr-only">Contact number (required)</label>
+              <label
+                for="iq-phone"
+                class="block text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground"
+                >Phone</label
+              >
               <input
                 id="iq-phone"
                 v-model="inquiryPhone"
                 type="tel"
                 required
-                placeholder="Phone *"
-                class="w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+                class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
               />
             </div>
             <div>
-              <label for="iq-msg" class="sr-only">What would you like to ask?</label>
+              <label
+                for="iq-msg"
+                class="block text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground"
+                >What would you like to ask</label
+              >
               <input
                 id="iq-msg"
                 v-model="inquiryMsg"
                 type="text"
-                placeholder="What would you like to ask?"
-                class="w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+                class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
               />
             </div>
           </div>
@@ -221,7 +267,10 @@ async function submitInquiry() {
           </p>
           <p class="mt-6 max-w-sm text-sm text-white/80 leading-relaxed drop-shadow-sm">
             33 units across four levels, in 5 property clusters. Individual electric submeters,
-            ₱200/head monthly water rule, and a secure gated perimeter.
+            <template v-if="waterRatePerOccupant !== null"
+              >water at &#8369;{{ waterRatePerOccupant }} for each person each month,</template
+            ><template v-else>water charged for each person each month,</template>
+            and a secure gated perimeter.
           </p>
         </div>
       </aside>
