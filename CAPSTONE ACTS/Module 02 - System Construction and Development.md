@@ -24,6 +24,29 @@
 4. **Victor Noel A. Napay** — Backend Developer / Integration Engineer
 5. **Kiel Hedrix V. Relos** — Quality Assurance / Systems Analyst
 
+> [!IMPORTANT]
+> **AMENDMENT — 2026-09-18. Two roles above were exchanged on 17 September, after this was
+> submitted. This supersedes the list rather than correcting an error in it: both versions were
+> accurate on their own date.**
+>
+> | Member | As submitted | In force from 17 Sep 2026 |
+> | :--- | :--- | :--- |
+> | **Eljohn Paulo C. Loterte** | Frontend Developer / UI-UX Designer | **Quality Assurance / Systems Analyst** |
+> | **Kiel Hedrix V. Relos** | Quality Assurance / Systems Analyst | **Frontend Developer / UI-UX Designer** |
+>
+> The other three are unchanged.
+>
+> **The per-requirement attributions in Section 6 are deliberately left as they stand.** They
+> record *who did that item*, which does not change because a title later moved — Requirement 3
+> was worked by Eljohn and Requirement 5 by Kiel, and both remain true. Rewriting them to match
+> current titles would make the sheet describe a division of labour that never happened.
+>
+> **Published as an amendment rather than an edit**, in keeping with the errata posture this group
+> has used since Module 01: *corrected artifacts and the note that explains them travel together,
+> and a submitted document is never quietly reissued.* The repository has recorded the exchange
+> since 17 Sep in `HANDOFF_TO_QA.md`; this closes the gap between the repository and the
+> submission.
+
 ---
 
 ## SECTION 6: GROUP ANSWER SHEET

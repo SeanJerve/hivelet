@@ -96,7 +96,8 @@ each other in front of the panel.
 folder, dated **17 September**. Anything in the repo citing "the capstone paper" is citing an old
 draft.
 
-- ☐ Replace the file in `docs/reference/` with the current version
+- ☑ ~~Replace the file in `docs/reference/` with the current version~~ — done 2026-09-18. The
+  repository now carries the 17 September manuscript, not the 21 August one
 
 ---
 
@@ -135,8 +136,9 @@ Not yours to do — listed so you know what is moving.
   a file that never existed. The banner in the file does the job without falsifying a citation
 - ☑ ~~Fix stale suite counts~~ — done 2026-09-18 across seven files. **There are eighteen**, and the
   rehearsal is **27 steps**, not 26
-- ☐ Amend the **Module 02 answer sheet** for the Eljohn/Kiel role swap. The repository records it;
-  the submitted artifact does not. Publish a dated note rather than editing silently
+- ☑ ~~Amend the **Module 02 answer sheet** for the Eljohn/Kiel role swap~~ — done 2026-09-18 as a
+  dated amendment beneath the roles block. Section 6 per-requirement credits left as they stand:
+  they record who did each item, which a later title change does not alter
 - ☐ `CONTINUE_HERE.md` says "Last updated 2026-09-17" and predates the redesign and everything since
 - ☑ ~~Two queue entries are both numbered **B-01**~~ — settled 2026-09-18. The open one keeps the
   bare number (it is cited in a code comment); the closed one is now dated in its heading
