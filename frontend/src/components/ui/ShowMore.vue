@@ -16,8 +16,24 @@ const props = defineProps<{
 
 const emit = defineEmits<{ more: []; all: [] }>();
 
+/**
+ * Pluralise the counter's noun.
+ *
+ * This appended a bare `s`, which reads correctly for `payment` and `row` and
+ * not for `entry` — the income ledger passes `noun="entry"` and the counter said
+ * **"8 of 626 entrys"** on the screen the owner reads most often.
+ *
+ * Deliberately small: consonant + y becomes -ies, sibilants take -es, everything
+ * else takes -s. It is not a general English pluraliser and does not try to be —
+ * it covers the nouns this component is actually passed, and an irregular one
+ * (`person`) would need handling here rather than silently coming out wrong.
+ */
 function plural(n: number) {
-  return n === 1 ? props.noun : `${props.noun}s`;
+  if (n === 1) return props.noun;
+  const word = props.noun;
+  if (/[^aeiou]y$/i.test(word)) return `${word.slice(0, -1)}ies`;
+  if (/(s|x|z|ch|sh)$/i.test(word)) return `${word}es`;
+  return `${word}s`;
 }
 </script>
 

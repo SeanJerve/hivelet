@@ -958,7 +958,11 @@ async function exportExcel() {
         <label class="ws-field">
           <span class="sr-only">Year</span>
           <select v-model="filterYear" class="ws-select w-auto">
-            <option value="All">Every year</option>
+            <!--
+              `yearsList` already begins with `All`, so a hardcoded "Every year"
+              option here produced two entries with the same value — the select
+              listed "Every year" twice, above 2026.
+            -->
             <option v-for="y in yearsList" :key="y" :value="y">
               {{ y === 'All' ? 'Every year' : y }}
             </option>
