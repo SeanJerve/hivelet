@@ -56,7 +56,7 @@ panel sees two chapters disagreeing. Four such points:
 | Deployment to a university-managed server | Confirm the actual arrangement and state it | §3.2.5 |
 
 **The third one also breaks a build check.** `npm run check:canon` fails on any tracked document
-that describes the gateway as a mock, a simulator, or pending consultation. The manuscript is not
+that calls the gateway `"mock"`, `"simulator"`, or `"pending consultation"`. The manuscript is not
 in the repository so the check does not see it — but the same wording rule applies to what the
 group submits.
 
