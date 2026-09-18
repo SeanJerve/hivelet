@@ -108,7 +108,7 @@ function closeMobileNav() {
       enter-active-class="transition-opacity duration-300 ease-out"
       enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-active-class="transition-opacity duration-200 ease-in"
+      leave-active-class="transition-opacity duration-200 ease-out"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
@@ -119,10 +119,10 @@ function closeMobileNav() {
       >
         <Transition
           appear
-          enter-active-class="transition duration-300 ease-out transform"
+          enter-active-class="transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
           enter-from-class="-translate-x-full"
           enter-to-class="translate-x-0"
-          leave-active-class="transition duration-200 ease-in transform"
+          leave-active-class="transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]"
           leave-from-class="translate-x-0"
           leave-to-class="-translate-x-full"
         >
