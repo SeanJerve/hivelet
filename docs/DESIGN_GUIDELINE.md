@@ -118,14 +118,39 @@ No text below 12 px.
 - **Buttons** are pills, at least 44 px tall. Use these CSS classes only:
   - `pill-btn` is secondary.
   - `pill-btn-brand` is the one primary action in a header.
+  - `pill-btn-quiet` is the second choice beside a real button, with no box.
   - `pill-btn-light` sits on a brand or night tile.
   - `pill-btn-night` exists for a dark action on a light tile.
   - `icon-btn` is a 44 px circle that needs an `aria-label`. On a dark tile add
     `icon-btn-on-dark`.
+- **Chips** narrow a list: `chip`, with `aria-pressed` for the selected one and `chip-count` for
+  the number it carries. Every filter on every screen uses these. Do not build a segmented control.
+- **Fields** are `ws-field` wrapping the control, so the label names it without needing `for`.
+  `ws-input`, `ws-select`, `ws-textarea` for the box; `ws-hint` for the sentence underneath, which
+  reads at 13 px because it is prose and gets read.
 - **Focus:** wrap a screen in `ws-focus`. Keyboard focus then shows a 3 px ring, dark on light
   surfaces and light inside `on-dark` tiles. Never remove it.
-- **Motion:** colour transitions only. Reduced motion is honoured inside `ws-focus`. No fade-up on
-  load, and no skeleton shown when the data is already in memory.
+
+### Motion
+
+Every pressable control scales to `0.97` on `:active`, over 160 ms. This is not decoration. On a
+touch screen it is the only feedback there is — no hover, no cursor — and a tap that does not move
+reads as a tap that did not land, so people press again.
+
+- **Curves are tokens.** `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)` for anything a person just
+  did; `--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)` for something moving across the screen.
+  The built-in CSS easings are too weak to read as intentional.
+- **Never `ease-in`.** It starts slow, which reads as the interface hesitating — worst at the exact
+  moment the reader is watching hardest.
+- **Exit faster than entry.** Closing is a decision already made. 150 ms out against 200 ms in.
+- **Name the properties.** `transition: transform 160ms var(--ease-out)`, never `transition: all`,
+  which animates whatever happens to change including properties that force paint.
+- **Under 300 ms** for anything in the workspace. Longer only for a decorative reveal on the public
+  editorial pages.
+- **Never animate from `scale(0)`.** Nothing in the world appears from nothing; start at `0.95`
+  with opacity.
+- Reduced motion keeps colour and keeps the press, and drops movement. Honoured inside `ws-focus`.
+- No fade-up on load, and no skeleton shown when the data is already in memory.
 
 ---
 
@@ -161,6 +186,20 @@ All of them are in `frontend/src/components/overview/`. Types are in `types.ts`.
 | `MonthCapsules` | Twelve months of one amount, with the four month kinds. Keyboard: arrows, Home, End | Unordered categories |
 | `OccupancyArc` | The 33 units as one segment each, grouped by cluster, vacant hatched | Percentages of anything else |
 | `SegmentBar` | A true part-to-whole: rent and water on one bill, expenses and net within one month's income | Parts that do not add up to the whole shown |
+
+These live in `frontend/src/components/ui/`:
+
+| Component | Use it for | Do not use it for |
+| :--- | :--- | :--- |
+| `WsModal` | Every dialog. Escape, focus trap, focus return, scroll lock, `#actions` footer | A non-modal popover |
+| `ConfirmDialog` | A yes/no on something destructive. The confirm button names the action | Anything the reader can simply undo |
+| `RecordTable` | Every register. Caption, sticky head, empty state, a first page with the rest behind `ShowMore`, and one tile per row below `lg` | A list of two things |
+| `ShowMore` | Lengthening any capped list, including a grid of cards | Pagination with page numbers |
+| `Skeleton` and friends | A shape that matches what is about to arrive | A spinner |
+
+**A register is never unbounded.** `RecordTable` shows a first page and asks. The expense ledger
+is 460 days and the audit trail runs to thousands; rendering all of them turned the page scrollbar
+into a sliver and put the bottom of the screen behind the whole ledger.
 
 ---
 
@@ -212,10 +251,23 @@ aligned figures, not a redesign.
 
 ## 9. Before you call a screen done
 
-- `npm run check:all`: read the summary table and any `note:` lines.
+- `npm run check:all`: read the summary table and any `note:` lines. Twenty suites.
 - `cd frontend && npm run contract`: the call counts for the screen must not change unless that
   was the point.
 - View it at 375, 768 and 1440 px wide, with real data.
 - Force a failed load and confirm no section still shows a figure.
 - Tab through it and confirm the focus ring shows on every control.
 - Measure contrast for any new colour pair.
+
+**Four of these are now checks rather than habits**, because each caught something a person had
+already read past:
+
+| Check | What it catches |
+| :--- | :--- |
+| `check:tokens` | A colour written as a hex literal instead of a role |
+| `check:components` | A component the template renders and the file never imported. **`npm run build` exits 0 on this**, and so does `vue-tsc` |
+| `check:labels` | A form control with no accessible name. It found 27 of 115 — a quarter of every field in the product |
+| `check:liveness` | A screen presenting seeded or cached state as a live figure |
+
+**A green build is not verification.** It has twice passed on a component that did not exist. When
+you claim something renders, open it; when you claim a figure is right, measure it.
