@@ -207,7 +207,21 @@ thing did not work" is not.
 
 </details>
 
-### B-12 — the public FAQ quoted an electricity rate the system does not hold
+### B-12 — the public FAQ quoted an electricity rate the system does not hold · **mostly answered**
+
+> **She had already answered this, and the answer was stronger than the question.**
+> `CLIENT_ANSWERS_2026-09-17.md` Q5: *"No, the electricity is not a feature or a part of the scope
+> in our system. Every unit has its own electric meter which is paid separately by each tenant, and
+> also is not recorded in the income or even expenses."*
+>
+> So the page was not merely quoting an unverifiable rate - it was describing a billing
+> arrangement **that does not exist**. The boarding house does not bill for electricity at all.
+> The answer now says each unit has its own meter, the tenant pays separately, and it is not part
+> of the rent.
+>
+> **What is left is a confirmation, not a question**, because that answer was relayed and dictated
+> rather than minuted and is now being used to change what the public site says about money. It is
+> on `CLIENT_CONFIRMATION.md` § 1 as a yes/no with a fallback if she does in fact collect it.
 
 - **Blocked on:** the owner. Two of these are house facts nobody has written down, not code
 - **What was wrong:** the landing page's FAQ answered *"How is electricity metered and billed?"*
@@ -234,6 +248,8 @@ thing did not work" is not.
 ---
 
 ### B-13 — the FAQ asked new tenants for two months' money; OD-04 says nobody knows
+
+> **On `CLIENT_CONFIRMATION.md` § 2**, written out with both of her answers, the question that separates them, and the evidence that does not decide it.
 
 - **Blocked on:** **OD-04, which is CONTESTED.** This is not mine to settle and the register says
   so in terms

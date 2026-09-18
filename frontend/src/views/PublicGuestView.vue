@@ -39,15 +39,20 @@ function toggleFaq(index: number) {
  *                 `/public/rates`, and omitted entirely when that call fails.
  *
  *   electricity   quoted "P12.50 / kWh" and "readings are recorded on the 25th
- *                 of every month". There is no electricity rate in
- *                 `system_settings` - it holds five keys and none of them is
- *                 one - and there is NO meter, reading or utility table in the
- *                 database at all, checked against `information_schema.tables`.
- *                 Both may well be true of the house; neither is something this
- *                 system knows, and a rate quoted publicly is one a prospect
- *                 budgets against. The answer now describes the arrangement
- *                 without asserting a price or a reading day. Raised for the
- *                 owner to confirm - B-12.
+ *                 of every month", which says the boarding house bills for
+ *                 electricity. It does not. The owner answered this directly on
+ *                 2026-09-17 (`CLIENT_ANSWERS_2026-09-17.md` Q5): *"the
+ *                 electricity is not a feature or a part of the scope in our
+ *                 system. Every unit has its own electric meter which is paid
+ *                 separately by each tenant, and also is not recorded in the
+ *                 income or even expenses."*
+ *
+ *                 That matches the build: `system_settings` holds five keys and
+ *                 none is an electricity rate, and there is NO meter, reading or
+ *                 utility table in the database at all - checked against
+ *                 `information_schema.tables`. So the page was describing a
+ *                 billing arrangement that exists nowhere, to people deciding
+ *                 what living here would cost them.
  *
  *   move-in       said "1 month advance rent AND 1 month security deposit",
  *                 which is two months of somebody's money. OD-04 is CONTESTED:
@@ -68,8 +73,8 @@ const FAQS = computed(() => [
         : 'Water is billed per person, for each registered occupant every month. It follows the number of people registered as living in the unit. Ask the landlady for the current rate.',
   },
   {
-    q: 'How is electricity metered and billed?',
-    a: 'Each of the 33 rentable units has its own electric submeter, and you are billed for what the meter shows you used rather than a share of a single bill. Ask the landlady for the current rate per unit of electricity and when she takes the readings.',
+    q: 'How is electricity handled?',
+    a: 'Every unit has its own electric meter and you pay for your own electricity separately. It is not part of your rent, and the boarding house does not bill you for it.',
   },
   {
     q: 'What payment methods does the boarding house accept?',
