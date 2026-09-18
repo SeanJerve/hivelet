@@ -319,14 +319,21 @@ entries, labelled as deposit-funded**; **settlement lands when the unit is ready
 > same one month's rent they paid when they moved in? Or is it a separate amount you hold on top
 > of that?"*
 
-**Same money** → both answers were true, describing the sum's name and then its fate; OD-04 closes
-as a refundable deposit with a settlement step. **Separate amount** → there are **two** sums, the
-system models one, and the ledger has never recorded money the business collects — a **money
-defect**, outranking everything else in the register.
-
-**Her ₱6,500 is close to one month's rent on many units, which points at the first.** It is not
-evidence. Three of the seven pinned receipts look like an off-by-one and are not being corrected
-on that basis either.
+> [!IMPORTANT]
+> **Answered 2026-09-18: *"It's not the same money — it will be different."* A separate sum.**
+> The full consequences are worked through in `PHASE1_OPEN_DECISIONS_REGISTER.md` § 1.5. In short:
+> **both of her answers were true**, describing the **advance** and the **deposit** — the ordinary
+> *one month advance, one month deposit* arrangement — and the error was ours, for collapsing two
+> sums into one column.
+>
+> **BR-039 was right all along** and does not change: *a tenant's **deposit** … **equal to** the
+> Rent Amount*. A deposit the size of one month's rent, not a sum that is the rent.
+>
+> **I should correct my own framing above.** I called the separate-sum branch *"a money defect,
+> outranking everything else in the register."* **That was too strong.** The deposit is Column 12
+> of her report and is **excluded from Column 10, Remitted Amount** — no owner-facing total
+> includes it, `check:ledger` passes on all 937 rows, and the workbooks still agree. It is a
+> **modelling error that would bite on the next onboarding**, not money going astray in her books.
 
 **What the answer now specifies, which the first round could not:**
 

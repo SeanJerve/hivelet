@@ -33,6 +33,51 @@ thing did not work" is not.
 
 ## Open
 
+> **Two entries are both numbered `B-01`** — the open one below, and the closed demo-password one
+> further down. Left as they are rather than renumbered, in case the new one is already referenced
+> somewhere. Worth settling before a third appears, since this queue is referred to by number.
+
+### B-06 — `deposit_amount` was redefined on 14 Sep, and the owner has since contradicted the premise
+
+- **Blocked on:** your call, not access. It is `backend/src/`, it was your change, and it wants a
+  decision before the next onboarding rather than a patch from this side
+- **What happened:** commit `56c49c0` made `deposit_amount` default to `rooms.current_price` —
+  **1× rent** — reasoning *"OD-04 makes that definitional: this sum is ADVANCE RENT, not a
+  refundable security deposit."* **Asked on 2026-09-18 whether the move-out repair money is the
+  same money as the move-in month's rent, the owner said: *"It's not the same money — it will be
+  different."*** So there is a deposit, separate from the advance
+- **The uncomfortable part:** the default `56c49c0` replaced was `current_price * 2`, which the
+  code describes as *"the familiar one-month-advance-plus-one-month-deposit arrangement, which
+  invented a figure that was never collected."* **On her answer, that is the arrangement she
+  runs** — so the 2× default may have been right, and was removed on a reading she has since
+  contradicted
+- **What I already did:**
+  - Worked the consequences through in `PHASE1_OPEN_DECISIONS_REGISTER.md` § 1.5, including why
+    **BR-039 as written survives**: *a tenant's **deposit** … **equal to** the Rent Amount* is a
+    deposit the size of one month's rent, not a sum that **is** the rent. The 14 Sep
+    reinterpretation is the deviation, not the rule
+  - Established the blast radius. The deposit is **Column 12** and is **excluded from Column 10,
+    Remitted Amount**, so **no owner-facing total moves**. `check:ledger` passes on 937 rows;
+    `check:reports` still agrees with both workbooks. **A modelling error, not money going astray**
+    — but it lands on the next onboarding, and Q10 says a vacated unit re-lets within days
+  - Left `backend/src/` untouched. Two comments there — `admin.ts:577-594` and `:800` — now assert
+    something the owner has contradicted, including *"this business collects no separate damage or
+    security sum (OD-04, confirmed 2026-09-13)"*
+- **What you need to decide:** whether `room_assignments` carries a **second** figure for the
+  advance, and what the onboarding default becomes. Then correct those two comments — they are the
+  judgement log's own lesson made flesh: a comment explaining why something is safe, carrying a
+  date that has now passed
+- **What would narrow it without asking her again:** `deposit_amount` against each unit's price
+  across the 32 live tenancies. Clustering at **1×** points one way; any at **2×** the other.
+  Read-only, and **not run — it needs approval for a production read**
+- **The one question still hers**, written out in § 1.5: does a tenant hand over **two** amounts at
+  move-in, or just the deposit and their first month as normal
+- **How to know it is settled:** BR-039's crosswalk status is re-argued deliberately rather than
+  inherited, and an onboarding on `PH` records what she actually collects
+- **Raised:** 2026-09-18 by Claude, on Loyd's machine
+
+---
+
 ### B-01 — the public landing shows every unit as vacant when `/public/rooms` fails
 
 - **Blocked on:** a decision that is not the design account's to make — this is what a screen

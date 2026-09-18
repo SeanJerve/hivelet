@@ -175,9 +175,57 @@ the landlady. So it is not part of the system that is super technical."*
 > because the vacate path has no settlement step. If settlement is deliberately manual, *Partial*
 > may be the wrong verdict rather than an outstanding gap.
 
-**What remains of OD-04 is the first question only — same money, or a separate sum.** It now
-decides **what the figure is called** in BR-039, the register and her report, not what gets built.
-**Still worth asking, and no longer blocking anything.**
+### ANSWERED 2026-09-18 — **a separate sum**, and it unwinds a change made on 14 Sep
+
+> *"It's not the same money — it will be different."*
+
+**So the money used for move-out repairs is not the month's rent.** The 2026-09-13 reading —
+*"this sum is ADVANCE RENT, not a refundable security deposit; this business collects no separate
+damage or security sum"* — **does not survive this.**
+
+**Both of her answers were true. The error was ours, for collapsing two sums into one field.**
+The arrangement she is describing is the ordinary Philippine one: **one month in advance, plus a
+separate deposit.** On 13 Sep she named the advance; on 17–18 Sep she described the deposit. A
+single `deposit_amount` column cannot hold both, so whichever we asked about, the answer sounded
+like it contradicted the other.
+
+**BR-039 was right all along, and does not change.** It reads: *"A tenant's **deposit** is set
+once, at onboarding, **equal to** the Rent Amount in effect when they moved in."* A deposit whose
+**size equals** one month's rent — not a sum that **is** the rent. The 14 Sep reinterpretation is
+the deviation, not the rule.
+
+**What that reinterpretation changed, and now needs re-examining — `backend/src/`, so Sean's:**
+
+| | |
+| :--- | :--- |
+| `admin.ts:577-594` and `:800` | Two comments assert the sum is advance rent and that *"this business collects no separate damage or security sum (OD-04, confirmed 2026-09-13)"*. **Both are now contradicted by the owner.** They are claims with a date on them, and the date has passed |
+| Commit `56c49c0` (14 Sep) | Made `deposit_amount` default to `rooms.current_price` — **1× rent** — reasoning *"OD-04 makes that definitional"*. The premise is gone |
+| The default it replaced | `current_price * 2`, described in the code as *"the familiar one-month-advance-plus-one-month-deposit arrangement, which invented a figure that was never collected"*. **On her answer, that arrangement is exactly what she runs.** The 2× default may have been right and was removed on a reading she has since contradicted |
+
+**How far this reaches, stated precisely so it is neither dismissed nor inflated:**
+
+- **It does not corrupt any figure she reads.** The deposit is **Column 12** and is excluded from
+  **Column 10, Remitted Amount** (Rent + Water). No owner-facing total includes it, `check:ledger`
+  passes on all 937 rows, and `check:reports` still agrees with the workbooks.
+- **It is a modelling error, not a live money defect.** The historical rows came from the 28 Aug
+  import; the 14 Sep default applies to onboardings *through the system*, and the property has
+  been 32-of-33 occupied throughout.
+- **It would bite on the next onboarding**, which Q10 says happens within days of a unit falling
+  vacant.
+
+**One question left, and it is the last one on this item:**
+
+> *"At move-in, does a tenant hand you two separate amounts — one month's rent in advance, and a
+> deposit on top — or just the deposit and their first month as normal?"*
+
+☐ **Two amounts** *(then the system models one of them, and `room_assignments` needs the second
+before the next onboarding)*
+☐ **Just the deposit** *(then one field is right, and only the comments and the closure note are
+wrong)*
+
+**A data check would narrow this without her.** `room_assignments.deposit_amount` against each
+unit's price across the 32 live tenancies: clustering at **1×** points one way, any at **2×** the
+other. Read-only, and **not yet run — it needs approval for a production read.**
 
 **What each answer costs.** The first is the cheaper path and mostly confirms what is already
 stored: one figure, plus disposition columns and a settlement step on the vacate endpoint. The
