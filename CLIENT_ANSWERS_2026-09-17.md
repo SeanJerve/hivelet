@@ -419,7 +419,7 @@ changes the bill-creation path and the statement layout, and retires `'Combined'
 so it is Sean's call, not a quiet refactor.
 
 **Either way, settle it before the redesign fixes a layout around one combined figure.** This is
-the item on this page that most directly affects Kiel's lane — see `HANDOFF_TO_KIEL.md` § 1.
+the item on this page that most directly affects Kiel's lane — see `HANDOFF_TO_DESIGN.md` § 5.
 
 ---
 

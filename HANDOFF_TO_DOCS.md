@@ -1,6 +1,15 @@
-# Handoff — Vince, Documentation — 2026-09-17
+# Handoff — Documentation (Vince)
 
-**Written for Victor Noel "Vince" Napay and for whoever is working alongside him.** On most
+**Victor Noel "Vince" Napay**, and whoever is working alongside him.
+
+> **Renamed from `HANDOFF_TO_VINCE.md` on 2026-09-18, and the reason is itself a documentation
+> lesson.** Person-named handoffs go stale the moment roles move — which happened here on 17 Sep,
+> when Eljohn and Kiel swapped and two files were suddenly addressed to the wrong people. The
+> surviving handoffs are named for the **seat**, not the occupant: `HANDOFF_TO_DESIGN.md`,
+> `HANDOFF_TO_QA.md`, this one. The name inside the document can change without the filename,
+> every inbound link, and the `CLAUDE.md` index having to change with it.
+
+On most
 projects documentation is the thing written after the work. **Here it is the work that has gone
 wrong most often**, and it is the only part of this project with checks that fail the build.
 
@@ -90,6 +99,9 @@ The single most useful thing you can maintain is a correct answer to "which file
 | `docs/02_BUSINESS_RULES.md` | **Canonical** register of the rules themselves |
 | `docs/claude_pipeline/outputs/PHASE1_OPEN_DECISIONS_REGISTER.md` | **The authoritative list of what is genuinely unresolved** (OD-xx) |
 | `docs/SCREEN_CONTRACT.md` | **Generated** by `npm run contract` from `frontend/src`. Never hand-edit; it exists precisely so it cannot drift |
+| `docs/DESIGN_GUIDELINE.md` | **Canonical for the interface, as of 2026-09-18.** Nine sections, from colour roles to "before you call a screen done" |
+| `docs/UI_DESIGN_SYSTEM_GUIDELINES.md` | **Retired 2026-09-18** and banner-marked. Describes the look being replaced, and its fonts and colours disagreed with `frontend/src/index.css` even before that. Kept as a record — **do not build from it** |
+| `docs/UI_DESIGN_SPECIFICATION.md` | **Partly retired 2026-09-18.** Its visual rules are superseded; its **sidebar module list and role workspaces still describe the product**. A half-retired document is the easiest kind to misread, so keep that boundary sharp |
 | `docs/08_OPEN_DECISIONS.md` | **Misnamed.** Everything in it is *closed*. It carries a banner saying so, and two struck sections. **See § 4 — the rename is your first concrete task** |
 | `docs/11_FORM_FIELD_AUDIT.md` | **Historical defect register, substantially stale.** It audits `website/src/`, a directory that no longer exists. Every row spot-checked on 2026-09-15 was already resolved. Labelled, not deleted |
 | `SESSION_REPORT_*.md` | **A dated snapshot, not current state.** Newest first |
@@ -134,6 +146,11 @@ The submitted Module 02 answer sheet
 The split assigned on **2026-09-17** is different: **Kiel on UI/UX, Eljohn on analyst and QA,
 Vince on documentation.** The same five names appear in `PHASE1_MODULE01_ERRATA.md`'s header
 block, and the filming script assigns sections by speaker (§4 Eljohn, §5 Vince, §6 Kiel).
+
+> **Half of this is now done, and by someone else.** `HANDOFF_TO_QA.md` opens by recording the
+> swap — *"you and Kiel have swapped, confirmed 17 Sep"* — so **the repository states it.** What
+> is still outstanding is the **submitted** artifact, which is the harder half and the one a panel
+> reads.
 
 **This is a documentation problem, and it is yours.** The answer sheet is a **submitted**
 deliverable that names who did which requirement, item by item — Requirement 3 credits Eljohn,

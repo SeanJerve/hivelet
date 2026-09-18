@@ -90,6 +90,28 @@ an empty scan and report what they read — *"(32 source files read)"*, *"623 fi
 **Point this at anything you are handed.** The question is never "did it pass" but "what did it
 examine, and would it have said the same having examined nothing".
 
+**There is a live example of exactly that, and it is in `check:api` right now.**
+
+The suite discovers a tenant login by reading **`database/seeded-tenant-credentials.json`** —
+gitignored, and absent on at least one machine. With the file missing, the login loop never runs,
+and two blocks sit behind `if (tenantToken)` with **no `else`**: the **8 `/tenant/*` endpoint
+checks**, and the **1 isolation check** — *a tenant must not reach admin data*, which is the
+single assertion proving RBAC holds.
+
+**Skipped checks are not counted as failures.** The only thing in the output that says a third of
+the suite did not run is one line:
+
+```
+TENANT (none found) - token FAILED
+```
+
+So **read the total, not just the zero.** A lower total with `0 failed` means checks were skipped,
+not passed. If that line says `none found`, ask Sean for the file — and **do not commit it.**
+
+*The generalisable form: an absent input that disables an assertion looks exactly like an
+assertion that passed.* When you write a check, make a missing precondition **fail**, or at
+minimum print a count that does not add up.
+
 **The companion discipline: mutation testing.** A check that has never failed on purpose has not
 been verified. Break each shape it claims to catch in a real file, confirm it fails, revert in a
 `finally`. Three times on 17 Sep the *plumbing* of a mutation test was wrong rather than the rule
@@ -111,6 +133,41 @@ not ours to infer."*
 rehearsal is caught on the next run, while the historical seven wait for an answer. Loyd is
 putting them to his mother; when one is corrected, `check:ledger` **fails** saying the row is
 pinned but now reads clean. **That failure is the confirmation the fix landed.**
+
+---
+
+## 5b. The systems-analysis half of the title
+
+Your role is **QA and Systems Analysis**, and the second half is not test work. It is getting what
+only Mrs. Da Silva knows out of her head and onto paper, and keeping the record of it honest.
+
+**The authoritative list of what is genuinely unresolved is
+`docs/claude_pipeline/outputs/PHASE1_OPEN_DECISIONS_REGISTER.md` (OD-xx).** **Not**
+`docs/08_OPEN_DECISIONS.md` — despite its filename, everything in that file is *closed*, and it
+carries a banner saying so.
+
+**`CLIENT_MEETING_QUESTIONS.md`** is the sheet for her: the seven receipts, five accounting
+habits, three quick confirmations, and four things her public website tells strangers that nobody
+has confirmed.
+
+**Two rounds of answers came back on 17 Sep and are recorded in `CLIENT_ANSWERS_2026-09-17.md`**,
+which also carries the findings still open — the grace period (resolved: late on day one, with a
+week before she presses), the deposit (**contested**, see below), rent and water paid separately,
+and the fact that **nothing in the system tells a resident their rent is due or late.**
+
+> **The one to know about: `OD-04` is CONTESTED, not settled.** The owner described the move-in
+> sum one way on 13 Sep — cited in live code at `backend/src/routes/admin.ts:800` **with that
+> date** — and differently on 17 Sep. **Both answers are recorded and neither is discarded.** One
+> question separates them, written up at `PHASE1_OPEN_DECISIONS_REGISTER.md` § 1.5. **Nothing is
+> to be designed or built from either until it is asked.**
+
+**How to record an answer**, and this is the part that has cost this project most:
+
+- **In her words, next to the question. Never paraphrase a number.**
+- **If she contradicts something written down, write down both and flag it.** The contradiction
+  is the finding. *Resolving it by picking one is how eight business rules were recorded wrongly.*
+- **Say how you know.** A relayed, dictated answer and a minuted one are not the same evidence,
+  and the record should say which it is.
 
 ---
 
