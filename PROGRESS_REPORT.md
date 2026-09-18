@@ -68,10 +68,15 @@ Queued as **B-04**. **0 of 27 steps are ticked.**
 
 ## 2. Manuscript
 
-### ☐ 2.1 Reconcile Chapter 3 with what was actually built — **cheapest task, biggest risk**
+### ◐ 2.1 Reconcile Chapter 3 with what was actually built — **replacement text is written**
 
 Chapter 4 reports what exists. Where Chapter 3 says something else, the two chapters contradict
 each other in front of the panel.
+
+**Every replacement sentence is written and paste-ready in `docs/CHAPTER_3_RECONCILIATION.md`**,
+with versions read off `package.json` rather than estimated. The manuscript is not edited — it
+lives outside the repository and you may have it open. Five of the six are matters of fact; the
+sixth (deployment) is a decision only you can make.
 
 - ☐ §3.1.1 says **MySQL** → it is **PostgreSQL on Supabase**
 - ☐ §3.1.1 says **HTML5, Tailwind, JavaScript, Node.js** → it is **Vue 3 + TypeScript** and
