@@ -13,14 +13,13 @@
  *              rendering and balanced fluid typography.
  */
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { peso, publicStatusLabel } from '@/lib/canonicalUnits';
+import { CATEGORIES } from '@/lib/unitCategories';
 import { fetchRooms, rooms, roomsFetchFailed } from '@/lib/systemState';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import BookViewingPrompt from '@/components/modals/BookViewingPrompt.vue';
-import { BedDouble, Building2, ShieldCheck, ChevronDown } from 'lucide-vue-next';
+import { ArrowRight, ChevronDown, MapPin } from 'lucide-vue-next';
 
-const router = useRouter();
 const isLoading = ref(true);
 const openFaqIndex = ref<number | null>(0);
 
@@ -55,52 +54,47 @@ const FAQS = [
   }
 ];
 
-const CATEGORIES = [
-  {
-    key: '1BR',
-    slug: '1-bedroom',
-    title: '1-Bedroom Unit',
-    pax: 'Up to 3 Pax',
-    blurb: 'Main boarding house 1-bedroom rooms with private bathroom and submetered electricity.',
-    icon: BedDouble,
-    match: (u: { unitCode: string; cluster: string; type: string }) => 
-      (u.unitCode.toLowerCase().startsWith('1') || u.cluster === 'Linda Units') &&
-      !u.unitCode.toLowerCase().startsWith('2') &&
-      !u.unitCode.toLowerCase().startsWith('3') &&
-      !u.type.toLowerCase().includes('2-bedroom') &&
-      !u.type.toLowerCase().includes('3-bedroom') &&
-      u.cluster !== 'Back Apartment' &&
-      u.cluster !== 'Front Apartment' &&
-      u.cluster !== 'Penthouse',
-  },
-  {
-    key: '2BR',
-    slug: '2-bedroom',
-    title: '2-Bedroom Unit',
-    pax: 'Up to 4 Pax',
-    blurb: 'Front and back apartments and spacious 2-bedroom units with kitchenette and parking slot.',
-    icon: Building2,
-    match: (u: { unitCode: string; cluster: string; type: string }) => 
-      u.unitCode.toLowerCase().startsWith('2') || 
-      u.type.toLowerCase().includes('2-bedroom') || 
-      u.cluster === 'Back Apartment' || 
-      u.cluster === 'Front Apartment',
-  },
-  {
-    key: 'PH',
-    slug: '3-bedroom',
-    title: '3-Bedroom / Penthouse Suite',
-    pax: 'Up to 5 Pax',
-    blurb: 'Top-floor suites and 3-bedroom penthouse with roof deck and panoramic view of Legazpi City.',
-    icon: ShieldCheck,
-    match: (u: { unitCode: string; cluster: string; type: string }) => 
-      u.unitCode.toLowerCase().startsWith('3') || 
-      u.type.toLowerCase().includes('3-bedroom') || 
-      u.cluster === 'Penthouse' || 
-      u.unitCode.toLowerCase() === 'ph',
-  },
-];
+/**
+ * Which category plate the cursor or the keyboard is on.
+ *
+ * The plate being read is the only one at full strength; the others step back
+ * to 40%. What steps them back is opacity alone - no blur and no filter -
+ * because the counts under the dimmed plates still have to be readable, and a
+ * prospect comparing four kinds of unit is doing exactly that.
+ *
+ * `focusin`/`focusout` sit beside the pointer handlers so tabbing through the
+ * plates produces the same emphasis a mouse does; the transform half of the
+ * effect is behind `motion-safe:` throughout, so a reader who has asked for
+ * reduced motion gets the tonal change without the movement.
+ */
+const hoveredCategory = ref<string | null>(null);
 
+function isDimmed(key: string): boolean {
+  return hoveredCategory.value !== null && hoveredCategory.value !== key;
+}
+
+/**
+ * The units in a category, and how many of them are free.
+ *
+ * Grouped on `room_type` - the unit's own kind - which is what
+ * `lib/unitCategories.ts` keys on and what the category page behind each plate
+ * lists. These plates used to group on the FIRST CHARACTER OF THE UNIT CODE,
+ * which is the floor: the fix landed on the category page on 2026-09-18
+ * (`e1d6e68`) and did not reach here, so the plate advertised "1-Bedroom Unit -
+ * 10 units" over a link to the eight real one-bedrooms, and not one of the ten
+ * was among them.
+ *
+ * `visibility` is filtered for the same reason `listedUnits` filters it: a
+ * signed-in administrator's `fetchRooms()` reads `/admin/rooms`, which does not
+ * hide anything, and a Hidden unit must not be counted on the public site.
+ */
+function unitsInCategory(key: string) {
+  return liveUnits.filter((u) => u.visibility === 'Published' && u.type === key);
+}
+
+function availableInCategory(key: string) {
+  return unitsInCategory(key).filter((u) => u.status === 'vacant').length;
+}
 
 /**
  * The live unit list, from `/public/rooms` via `fetchRooms()`.
@@ -144,12 +138,24 @@ function toggleUnit(id: string) {
 }
 
 /**
- * The whole table collapses too, and starts collapsed. Thirty-three rows
- * between the category plates and the policies is a long scroll for a reader
- * who has already been told the counts above; the heading and the unit total
- * stay visible so the section is still findable when shut.
+ * Five rows are always on the page; the rest are behind the arrow.
+ *
+ * The whole table used to be collapsed, which meant the section read as a
+ * heading and a button - nothing about the property was visible until the
+ * reader guessed there was something worth opening. Thirty-three rows unrolled
+ * by default is the other failure: it pushes the policies and the map several
+ * screens down. Five is enough to show what a row contains and what the
+ * columns mean, which is what makes the arrow worth pressing.
  */
-const unitsOpen = ref(false);
+const UNITS_PREVIEW_COUNT = 5;
+const allUnitsShown = ref(false);
+
+function toggleAllUnits() {
+  allUnitsShown.value = !allUnitsShown.value;
+  // A row opened among the hidden units would otherwise stay open behind the
+  // fold, and its chevron would come back already rotated on the next reveal.
+  if (!allUnitsShown.value) openUnitId.value = null;
+}
 
 /**
  * `/public/rooms` already returns Published units only, but `fetchRooms()`
@@ -165,27 +171,58 @@ const listedUnits = computed(() =>
     .sort((a, b) => a.floor - b.floor || a.unitCode.localeCompare(b.unitCode, 'en'))
 );
 
+/** The rows actually rendered: the first five, or all of them. */
+const visibleUnits = computed(() =>
+  allUnitsShown.value ? listedUnits.value : listedUnits.value.slice(0, UNITS_PREVIEW_COUNT)
+);
+
+const hiddenUnitCount = computed(() =>
+  Math.max(0, listedUnits.value.length - UNITS_PREVIEW_COUNT)
+);
+
 /**
- * Keyless Google Maps embed. `output=embed` returns a real, interactive map for
- * a query string with no API key, billing account or script tag; the Maps
- * JavaScript API needs all three, and none of them exist for this project.
+ * Keyless Google Maps embed, pinned by coordinate.
  *
- * THE QUERY IS THE BARANGAY, NOT THE STREET, AND THAT IS DELIBERATE.
+ * `output=embed` returns a real, interactive map with no API key, billing
+ * account or script tag; the Maps JavaScript API needs all three and none of
+ * them exist for this project. A `q=` of `lat,lng` puts Google's own red
+ * marker on that point - which is the pin, rather than something drawn over
+ * the iframe: an overlay would sit still while the map panned under it.
  *
- * Querying the full street address put the pin on "32 Sampaguita Ave, Daraga" -
- * a different municipality - because Google matched a similarly spelled street
- * there and nothing at this address in Sagpon. Verified by loading it: the
- * embed's own info card named Daraga. A confident pin on the wrong town is
- * worse than an honest one on the right barangay, so this asks for Sagpon,
- * Legazpi City, which resolves correctly.
+ * WHERE THE COORDINATE COMES FROM, AND WHAT IT MARKS
+ * --------------------------------------------------
+ * This was the barangay name, and the reason was that querying the full street
+ * address put the pin on "32 Sampaguita Ave, Daraga" - a different
+ * municipality - because Google matched a similarly spelled street there.
+ * Verified at the time by loading it: the embed's own info card named Daraga.
+ * Asking for the barangay instead resolved correctly but marked the whole of
+ * Sagpon, which is not an address.
  *
- * No surveyed coordinate for the compound exists anywhere in this repository
- * and inventing one would put the pin where nobody is. To place the building
- * exactly, replace this string with `lat,lng` from the owner - the embed needs
- * no other change. The precise address stays in text beside the map meanwhile.
+ * The coordinate below is the OpenStreetMap geometry of Sampaguita Street in
+ * Sagpon, Legazpi - "Sapaguita" on the owner's paperwork is the local spelling
+ * of the same street - and it round-trips: the forward search for that street
+ * returns this point, and reversing this point returns "Sampaguita Street,
+ * Sagpon, Legazpi, Albay, 4500". Checked against Nominatim on 2026-09-19.
+ *
+ * THEN IT WAS LOADED AND LOOKED AT, which is the only reason it is here.
+ * The embed was opened at this coordinate on 2026-09-19 and Google's own map
+ * puts a labelled place - "Galang's Compound" - within a few metres of the
+ * marker, on the street it labels Sampaguita Street, with the Sagumayun River,
+ * Rizal Avenue and the Bicol University campus around it. Old Albay, Legazpi.
+ * Not Daraga. That is the same standard the Daraga mistake was caught by: the
+ * previous author loaded the embed and read its info card, and so did this one.
+ *
+ * It is still not a surveyed position for the gate, so if Mrs. Da Silva gives a
+ * `lat,lng` for the entrance, replace this one string - the embed, the marker
+ * and the directions link all read it. The full address stays in text beside
+ * the map because a third-party frame will not render with no network, and the
+ * PWA caches an offline shell.
  */
-const MAP_QUERY = 'Sagpon, Legazpi City, Albay, Philippines';
-const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUERY)}&output=embed`;
+const MAP_PIN = '13.1416835,123.7302874';
+const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_PIN)}&z=18&hl=en&output=embed`;
+
+/** The same point, for the reader who wants it in their own maps app. */
+const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(MAP_PIN)}`;
 
 </script>
 
@@ -304,12 +341,13 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
             Explore by unit category
           </h2>
           <p class="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Choose a category to browse live availability across the property. Click any category below to view all rooms in that category.
+            The four kinds of unit on the property, smallest first. Choose one to browse live
+            availability and view all rooms of that kind.
           </p>
         </div>
 
-        <div v-if="isLoading" class="grid gap-5 md:grid-cols-3">
-          <SkeletonCard variant="category" :count="3" />
+        <div v-if="isLoading" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <SkeletonCard variant="category" :count="4" />
         </div>
 
         <!--
@@ -327,35 +365,103 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
           in this repository. The reference this follows frames an empty plate
           the same way, so the placeholder is not a broken state.
         -->
-        <div v-else class="grid gap-x-12 gap-y-16 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-24">
+        <!--
+          Interactive focus plates.
+
+          Hovering or tab-focusing one plate is what brings it forward: the
+          others drop to 40% (`isDimmed`), a hairline frame draws itself in
+          inside the border, the icon lifts, and the "View all rooms" strip
+          slides up from the bottom edge. Only one plate is ever at full
+          strength, which is the point - four equal frames with no photography
+          in them give a reader nothing to fix on.
+
+          Everything that MOVES is behind `motion-safe:`, so a reader who has
+          asked their system for reduced motion still gets the whole effect in
+          tone and colour, with nothing sliding or scaling. Every hover state
+          has a `group-focus-visible:` twin, so the keyboard sees what the
+          mouse sees rather than a bare outline.
+
+          The strip is decoration over a link that already says where it goes;
+          the caption beneath the plate carries the same words as text, so
+          nothing here is only available to a pointer.
+        -->
+        <div
+          v-else
+          class="grid gap-x-12 gap-y-16 sm:grid-cols-2 sm:gap-x-10 lg:gap-x-16 lg:gap-y-20"
+          @mouseleave="hoveredCategory = null"
+        >
           <RouterLink
             v-for="(c, i) in CATEGORIES"
             :key="c.key"
             :to="`/category/${c.slug}`"
             :class="[
-              'group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
-              i % 2 === 1 ? 'lg:mt-28' : ''
+              'group block transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
+              i % 2 === 1 ? 'sm:mt-20 lg:mt-28' : '',
+              isDimmed(c.key) ? 'opacity-40' : 'opacity-100'
             ]"
+            @mouseenter="hoveredCategory = c.key"
+            @focusin="hoveredCategory = c.key"
+            @focusout="hoveredCategory = null"
           >
-            <div class="relative aspect-[3/2] sm:aspect-[4/3] w-full border border-border bg-muted overflow-hidden transition-colors group-hover:border-foreground/30">
+            <div
+              class="relative aspect-[3/2] sm:aspect-[4/3] w-full overflow-hidden border border-border bg-muted transition-colors duration-500 group-hover:border-foreground/40 group-focus-visible:border-foreground/40"
+            >
+              <!-- A tonal wash, deepening under the cursor. -->
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-0 bg-foreground/0 transition-colors duration-500 group-hover:bg-foreground/[0.04] group-focus-visible:bg-foreground/[0.04]"
+              />
+
+              <!-- The inner frame, drawing itself in. -->
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-5 border border-foreground/15 opacity-0 transition-all duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100 motion-safe:group-focus-visible:scale-100"
+              />
+
               <span class="absolute inset-0 grid place-items-center">
-                <component :is="c.icon" class="size-9 text-muted-foreground-soft" />
+                <component
+                  :is="c.icon"
+                  class="size-9 text-muted-foreground-soft transition-all duration-500 ease-out group-hover:text-foreground motion-safe:group-hover:-translate-y-1.5 motion-safe:group-hover:scale-110 group-focus-visible:text-foreground"
+                />
+              </span>
+
+              <span
+                aria-hidden="true"
+                class="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-between gap-4 bg-foreground px-5 py-3.5 text-background transition-transform duration-500 ease-out group-hover:translate-y-0 group-focus-visible:translate-y-0 motion-reduce:transition-none"
+              >
+                <span class="text-[0.7rem] tracking-[0.18em] uppercase">View all rooms</span>
+                <ArrowRight class="size-4 shrink-0 transition-transform duration-500 motion-safe:group-hover:translate-x-1" />
               </span>
             </div>
 
             <div class="mt-5 flex items-baseline justify-between gap-6">
               <h3 class="text-base sm:text-lg font-medium text-foreground">{{ c.title }}</h3>
-              <span class="shrink-0 text-sm text-muted-foreground underline underline-offset-4 decoration-1 decoration-border-strong group-hover:text-foreground group-hover:decoration-foreground transition-colors">
+              <span class="shrink-0 text-sm text-muted-foreground underline underline-offset-4 decoration-1 decoration-border-strong group-hover:text-foreground group-hover:decoration-foreground group-focus-visible:text-foreground transition-colors">
                 View All Rooms
               </span>
             </div>
 
+            <!--
+              The counts, or an admission that they are not known.
+
+              With the room list unreachable, `rooms` still holds the seed from
+              `systemState.ts` - and the seed's types are the wrong ones
+              (`"Studio Type Apartment"`, `"1-Bedroom Apartment"`), so grouping it
+              by `room_type` matches nothing and every plate would read "0 units".
+              A zero is a claim: it says this property has no studios. The
+              category page behind these plates refuses to show a seeded listing
+              for the same reason, so the plate says which state it is in
+              instead. B-01 in BLOCKED_FOR_SEAN.md is the open decision about
+              what the landing should do here; this is the honest interim.
+            -->
             <div class="mt-2 flex items-baseline justify-between gap-6 text-xs text-muted-foreground">
-              <span>{{ c.pax }}</span>
-              <span>
-                {{ liveUnits.filter(c.match).filter((u) => u.status === 'vacant').length }} vacant
-                of {{ liveUnits.filter(c.match).length }} units
-              </span>
+              <template v-if="roomsFetchFailed">
+                <span>Availability could not be loaded</span>
+              </template>
+              <template v-else>
+                <span>{{ unitsInCategory(c.key).length }} units</span>
+                <span>{{ availableInCategory(c.key) }} available now</span>
+              </template>
             </div>
 
             <p class="mt-3 max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">{{ c.blurb }}</p>
@@ -377,26 +483,10 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
             All units
           </h2>
           <p class="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Every unit on the property. Open a row to see its floor, capacity, billing rule and what it includes.
+            Every unit on the property. Five are listed here and the arrow below opens the
+            rest; open a row to see its floor, capacity, billing rule and what it includes.
           </p>
         </div>
-
-        <button
-          type="button"
-          :aria-expanded="unitsOpen"
-          aria-controls="all-units-panel"
-          class="mt-10 flex w-full items-baseline justify-between gap-6 border-t border-foreground pt-5 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground group"
-          @click="unitsOpen = !unitsOpen"
-        >
-          <span class="text-sm text-foreground group-hover:text-muted-foreground transition-colors">
-            {{ unitsOpen ? 'Hide' : 'Show' }} all {{ listedUnits.length }} units
-          </span>
-          <ChevronDown
-            :class="['size-4 shrink-0 text-muted-foreground transition-transform', unitsOpen ? 'rotate-180' : '']"
-          />
-        </button>
-
-        <div v-show="unitsOpen" id="all-units-panel">
 
         <!--
           B-01: `rooms` keeps the always-vacant `CANONICAL_UNITS` seed when the
@@ -428,8 +518,8 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
                 <th scope="col" class="py-3 pl-4 w-12"><span class="sr-only">Details</span></th>
               </tr>
             </thead>
-            <tbody>
-              <template v-for="u in listedUnits" :key="u.id">
+            <tbody id="all-units-body">
+              <template v-for="u in visibleUnits" :key="u.id">
                 <tr class="border-b border-border">
                   <td class="py-4 pr-4 font-medium text-foreground">{{ u.unitCode }}</td>
                   <td class="py-4 px-4 text-foreground-soft">{{ u.cluster }}</td>
@@ -483,6 +573,33 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
           </table>
         </div>
 
+        <!--
+          The arrow, under the five rows rather than over them.
+
+          `aria-expanded` and `aria-controls` point at the table body that
+          grows, so a screen reader is told this is a disclosure and what it
+          discloses - the chevron alone says that to sighted readers only. The
+          button is not rendered at all when there is nothing behind it, which
+          is the case if the property is ever listed with five units or fewer.
+        -->
+        <div v-if="hiddenUnitCount > 0" class="border-t border-foreground">
+          <button
+            type="button"
+            :aria-expanded="allUnitsShown"
+            aria-controls="all-units-body"
+            class="group flex w-full items-baseline justify-between gap-6 pt-5 pb-1 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+            @click="toggleAllUnits"
+          >
+            <span class="text-sm text-foreground group-hover:text-muted-foreground transition-colors">
+              {{ allUnitsShown ? `Show only the first ${UNITS_PREVIEW_COUNT} units` : `Show the remaining ${hiddenUnitCount} units` }}
+            </span>
+            <ChevronDown
+              :class="[
+                'size-4 shrink-0 text-muted-foreground transition-transform duration-300',
+                allUnitsShown ? 'rotate-180' : ''
+              ]"
+            />
+          </button>
         </div>
 
       </div>
@@ -551,16 +668,38 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
           <h2 class="text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
             Location
           </h2>
-          <p class="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Albay.
-          </p>
+          <div class="max-w-md">
+            <p class="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Albay.
+            </p>
+
+            <!--
+              What the pin on the map below is, in words, because a marker on
+              its own does not say how precise it is. The comment on MAP_PIN
+              has the provenance: it is the street in the right barangay, not a
+              surveyed position for the gate.
+            -->
+            <p class="mt-5 flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed">
+              <MapPin class="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
+              <span>
+                The red pin marks the compound on Sapaguita Street in Brgy. 4 Sagpon.
+                <a
+                  :href="mapLinkUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+                >Open in Google Maps<span class="sr-only"> (opens in a new tab)</span></a>
+                for directions, or call the landlady for the gate.
+              </span>
+            </p>
+          </div>
         </div>
       </div>
 
       <div class="w-full border-t border-border">
         <iframe
           :src="mapEmbedUrl"
-          title="Map showing Galang's Compound at 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City"
+          title="Map with a red pin on Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City"
           class="block w-full aspect-[16/11] sm:aspect-[24/9] border-0"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
