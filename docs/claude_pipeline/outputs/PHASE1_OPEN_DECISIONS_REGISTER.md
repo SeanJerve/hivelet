@@ -213,19 +213,45 @@ the deviation, not the rule.
 - **It would bite on the next onboarding**, which Q10 says happens within days of a unit falling
   vacant.
 
-**One question left, and it is the last one on this item:**
+### CLOSED 2026-09-18 — **one held sum, and the system already records it correctly**
 
-> *"At move-in, does a tenant hand you two separate amounts — one month's rent in advance, and a
-> deposit on top — or just the deposit and their first month as normal?"*
+> *"The tenant has two separate amounts. One for the rent for the month, and one rent for advance.
+> **The labeled advance is actually the deposit.**"*
 
-☐ **Two amounts** *(then the system models one of them, and `room_assignments` needs the second
-before the next onboarding)*
-☐ **Just the deposit** *(then one field is right, and only the comments and the closure note are
-wrong)*
+**That last sentence resolves everything, and it is a naming problem rather than a modelling one.**
 
-**A data check would narrow this without her.** `room_assignments.deposit_amount` against each
-unit's price across the 32 live tenancies: clustering at **1×** points one way, any at **2×** the
-other. Read-only, and **not yet run — it needs approval for a production read.**
+| What changes hands at move-in | What it is | Where the system holds it |
+| :--- | :--- | :--- |
+| the **month's rent** | ordinary rent for the first month | an ordinary row in `monthly_income_records`, like every other month |
+| the **"advance"** | **the deposit** — held, spent on move-out repairs, remainder returned | `room_assignments.deposit_amount`; **Column 12** of her report |
+
+**There is no third sum and no missing figure.** The word *advance* is her label for the held sum;
+its **function** is a deposit. Every answer she has given is consistent once that is known:
+
+- **13 Sep — "advance rent"** — her own word for it. Accurate as a **label**.
+- **17–18 Sep — spent on repairs, remainder refunded** — accurate as its **function**.
+- **18 Sep — "not the same money"** — accurate: the repair money is the advance, **not** the
+  first month's rent.
+
+**So `deposit_amount` holds the right sum, and `56c49c0`'s 1× default is right** — the held sum
+equals one month's rent, which is exactly **BR-039**. The `current_price * 2` default it replaced
+would have doubled it, and removing it was correct.
+
+**What is wrong is only the characterisation**, and it is confined to prose:
+
+| | |
+| :--- | :--- |
+| `backend/src/routes/admin.ts:577-594`, `:800` | *"ADVANCE RENT, **not a refundable security deposit** … this business collects **no separate damage or security sum**"* — **both halves are contradicted.** It is refundable, and it is the damage sum |
+| This register's 17 Sep closure note | same wording, struck above |
+
+**No migration. No second column. No settlement engine.** The repairs and the refund are expense
+entries she writes by hand, and `room_assignments.deposit_amount` already carries the figure.
+**`B-06` in `BLOCKED_FOR_SEAN.md` is reduced to correcting two comments**, and the data check
+proposed there is no longer needed.
+
+> **The lesson, and it is the register's own.** Three client answers read as contradictions for
+> five days because a **label** was taken for a **definition**. Nobody asked what the word meant
+> to her. *"Is the advance refundable?"* would have cost ten seconds on 13 Sep.
 
 **What each answer costs.** The first is the cheaper path and mostly confirms what is already
 stored: one figure, plus disposition columns and a settlement step on the vacate endpoint. The

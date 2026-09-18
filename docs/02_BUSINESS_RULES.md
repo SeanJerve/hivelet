@@ -247,6 +247,26 @@ Remitted Amount = Rent Amount + Water Payment. It is calculated by the system, n
 
 A tenant's deposit is set once, at onboarding, equal to the Rent Amount in effect when they moved in.
 
+> **CLARIFIED 2026-09-18 (OD-04). The rule is unchanged; what it means was being read two ways.**
+>
+> **The owner calls this sum the "advance".** That is a label, not a definition —
+> *"the labeled advance is actually the deposit."* It is **held, spent on repairs when the tenant
+> leaves, and the remainder returned** to them: ₱6,500 held against ₱6,400 of work returns ₱100.
+>
+> It is **separate from the first month's rent**, which is an ordinary income row like any other
+> month. Two amounts change hands at move-in; this rule governs the second.
+>
+> **Settlement is her bookkeeping, deliberately.** The move-out repairs are expense entries under
+> category 8, Repairs and Maintenance, and the refund is an entry she writes herself. **The system
+> stores the figure and does not settle it** — `room_assignments.deposit_amount`, and Column 12 of
+> the Monthly Income Report, which is excluded from Column 10, Remitted Amount.
+>
+> **Retired reading — do not reintroduce.** That this sum is *"advance rent, not a refundable
+> security deposit"*, and that *"this business collects no separate damage or security sum"*.
+> Both were recorded on 2026-09-13 and are contradicted by the owner. **BR-025**'s *Partial*
+> status in the crosswalk rests on the vacate path having no settlement step, and is worth
+> re-arguing now that settlement is known to be manual by choice.
+
 ## BR-040 — Linda's Fixed Billing Exception
 
 Linda's units (LF, LB) are billed a **fixed monthly water charge** rather than the per-occupant water model (BR-014): **LF ₱400/month, LB ₱200/month**. This is remitted directly to Linda and kept separate from the standard rent/water subtotal.

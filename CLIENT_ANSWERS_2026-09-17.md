@@ -319,6 +319,15 @@ entries, labelled as deposit-funded**; **settlement lands when the unit is ready
 > same one month's rent they paid when they moved in? Or is it a separate amount you hold on top
 > of that?"*
 
+> [!NOTE]
+> **CLOSED 2026-09-18. It was a naming problem, not a modelling one.** *"The labeled advance is
+> actually the deposit."* **Advance** is her word for the held sum; a **deposit** is what it does.
+> Two amounts change hands at move-in — the first month's rent, which is an ordinary income row,
+> and the held sum, which `room_assignments.deposit_amount` already carries at the right value.
+> **No migration, no second column, no settlement engine.** Full reconciliation in
+> `PHASE1_OPEN_DECISIONS_REGISTER.md` § 1.5; the rule is clarified at `docs/02_BUSINESS_RULES.md`
+> BR-039. What follows is the record of how it looked before that answer.
+
 > [!IMPORTANT]
 > **Answered 2026-09-18: *"It's not the same money — it will be different."* A separate sum.**
 > The full consequences are worked through in `PHASE1_OPEN_DECISIONS_REGISTER.md` § 1.5. In short:

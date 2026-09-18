@@ -37,7 +37,24 @@ thing did not work" is not.
 > further down. Left as they are rather than renumbered, in case the new one is already referenced
 > somewhere. Worth settling before a third appears, since this queue is referred to by number.
 
-### B-06 — `deposit_amount` was redefined on 14 Sep, and the owner has since contradicted the premise
+### B-06 — two comments call the deposit "not a refundable security deposit". It is one
+
+> [!NOTE]
+> **Reduced 2026-09-18, an hour after it was raised, and the figure is fine.** The owner: *"The
+> labeled advance is actually the deposit."* **Advance is her word for the held sum; a deposit is
+> what it does.** So `deposit_amount` holds the right money, **`56c49c0`'s 1× default is correct**
+> (the held sum equals one month's rent — BR-039), and the `current_price * 2` default you removed
+> would have doubled it. **No migration, no second column, no settlement engine** — the repairs and
+> the refund are expense entries she writes by hand.
+>
+> **All that is left is two wrong sentences in comments.** The detail below is kept because it is
+> the record of how it looked before her last answer. Full reconciliation:
+> `PHASE1_OPEN_DECISIONS_REGISTER.md` § 1.5.
+>
+> **What you actually need to do:** correct `admin.ts:577-594` and `:800`, which say *"ADVANCE
+> RENT, not a refundable security deposit … this business collects no separate damage or security
+> sum (OD-04, confirmed 2026-09-13)"*. **Both halves are contradicted**: it is refundable, and it
+> is the damage sum. The data check proposed below is no longer needed.
 
 - **Blocked on:** your call, not access. It is `backend/src/`, it was your change, and it wants a
   decision before the next onboarding rather than a patch from this side
