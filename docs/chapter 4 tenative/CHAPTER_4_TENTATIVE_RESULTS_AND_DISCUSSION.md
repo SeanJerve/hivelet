@@ -203,10 +203,21 @@ receipt or expense is touched.
 
 - **4.4.1** Respondent profile — Table 4.7
 - **4.4.2** Scale of interpretation — Table 4.8 *(real; taken from Chapter 3's Likert table)*
-- **4.4.3**–**4.4.10** the eight characteristics, one table each (Tables 4.9–4.16), each with its
-  indicator statements already written and a composite mean row:
+- **4.4.3**–**4.4.10** the eight characteristics, one table each (Tables 4.9–4.16):
   functional suitability · performance efficiency · compatibility · usability · reliability ·
   security · maintainability · portability
+
+**The tables carry the items exactly as the survey asks them**, with a **Rated by** column, a
+**group mean** row per respondent group, and a composite across all groups. That structure exists
+because the three groups answer differently-worded items for the same characteristic — each is
+asked about what it is placed to judge — and a single-statement table could not report that
+honestly. Two consequences worth knowing:
+
+- **Residents do not rate Security**, and **only the technical evaluators rate Maintainability.**
+  Both tables say so in their own text, so the absence reads as a decision rather than an omission.
+- **Decide and state** whether the composite is the mean of all responses or the mean of the group
+  means. Group sizes differ enormously — one owner against N residents — so the two are not the
+  same number. Either is defensible; **saying which you did is not optional.**
 - **4.4.11** Summary — Table 4.17, composite mean per characteristic plus overall
 
 **The indicator statements are already drafted in the `.docx`** and are written against what the
