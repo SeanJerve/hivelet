@@ -58,6 +58,33 @@ const RULES = [
     name: 'Adyen live API key',
     re: /\bAQE[A-Za-z0-9+/]{40,}/g,
     why: 'Payment gateway credential.'
+  },
+  /**
+   * A resident's own email address.
+   *
+   * Not a credential, and the only rule here that is not. It is in this file
+   * because the breach it catches happened, was found by a person rather than
+   * by a check, and would have been caught here on the day it landed.
+   *
+   * `frontend/src/lib/demoAccounts.dev.ts` carried the full name, email address
+   * and room number of 33 real residents, as a literal array, in a tracked
+   * file, in a public repository. The whole discussion around it was about
+   * whether the bundler eliminated the module - which only ever decided whether
+   * a visitor to the SITE could read the list. Anyone who opened the REPOSITORY
+   * could read it regardless, and had been able to for weeks.
+   *
+   * BR-024 Tenant Privacy. The list now lives in the gitignored
+   * `credentials/demo-accounts.json`, handed to the dev server by vite.config.
+   *
+   * The pattern is deliberately narrow - the free mail providers the residents
+   * actually use - because a general address pattern would match every example
+   * and placeholder across ~200 documents and get this switched off.
+   * `@hivelet.ph` is the property's own domain and is not personal.
+   */
+  {
+    name: "A resident's email address",
+    re: /\b[A-Za-z0-9._%+-]+@(?:gmail|yahoo|outlook|hotmail|icloud)\.com\b/g,
+    why: 'Personal contact details of a real resident. BR-024. These belong in gitignored credentials/.'
   }
 ];
 
@@ -130,7 +157,7 @@ for (const file of tracked()) {
       if (PLACEHOLDER.test(whole)) continue;
 
       const line = text.slice(0, m.index).split('\n').length;
-      findings.push({ file, line, rule, sample: m[0].slice(0, 12) });
+      findings.push({ file, line, rule, match: m[0], sample: m[0].slice(0, 12) });
     }
   }
 }
@@ -212,6 +239,70 @@ for (const dir of BUILD_DIRS) {
     }
   }
 }
+
+/**
+ * WHERE A RESIDENT'S ADDRESS FAILS THE BUILD, AND WHERE IT IS ONLY REPORTED
+ * -------------------------------------------------------------------------
+ * In `frontend/src`, `backend/src` and the scripts, an address is a defect with
+ * an owner and a fix: it belongs in the gitignored `credentials/`. Those fail.
+ *
+ * In `docs/` and `database/` the same address is usually quoted inside a record
+ * of something that happened - a seed listing, an audit note, a RBAC script's
+ * fixtures - and several of them are the team's own accounts rather than a
+ * resident's. Deleting them is a judgement about the documents, made by whoever
+ * owns them, not something a scanner should force at commit time.
+ *
+ * So they are listed on every run instead of failing it, the same way
+ * `check:endpoints` reports its unplugged route. The point is that they cannot
+ * be forgotten, not that they must be fixed this minute. B-10.
+ */
+const RESIDENT_RULE = "A resident's email address";
+
+/**
+ * Prose, and the database fixtures. A document quoting an address is a record
+ * of something that happened; a fixture is a seed listing. Both are judgement
+ * calls for whoever owns them.
+ */
+const REPORT_ONLY_PATHS = /(\.md$|^database\/)/;
+
+/**
+ * The team's own addresses, which are not residents'.
+ *
+ * `luydcuario@gmail.com` is the database administrator's own, carried as a
+ * `tenant` role so the resident portal can be exercised.
+ * `backend/scripts/check-ledger-integrity.mjs` says so on the line above it and
+ * ends the note with "LEAVE IT". A scanner that overrules that is a scanner
+ * people route around.
+ */
+const TEAM_ADDRESSES = new Set(['luydcuario@gmail.com']);
+
+const isReportOnly = (f) => {
+  if (f.rule.name !== RESIDENT_RULE) return false;
+  if (TEAM_ADDRESSES.has(f.match)) return null; // dropped entirely below
+  return REPORT_ONLY_PATHS.test(f.file);
+};
+
+const ours = findings.filter((f) => isReportOnly(f) === null);
+const rest = findings.filter((f) => isReportOnly(f) !== null);
+const reportOnly = rest.filter(isReportOnly);
+const failing = rest.filter((f) => !isReportOnly(f));
+
+if (ours.length > 0) {
+  console.log(`  (${ours.length} match(es) are the team's own addresses, not residents'.)`);
+}
+
+if (reportOnly.length > 0) {
+  console.log(
+    `\n  NOTED - ${reportOnly.length} resident address(es) in docs/ and database/, reported every run so they are not forgotten (B-10):`
+  );
+  for (const f of reportOnly) {
+    console.log(`    ${f.file}:${f.line}  ${f.sample}...`);
+  }
+  console.log('');
+}
+
+findings.length = 0;
+findings.push(...failing);
 
 if (findings.length === 0 && shipped.length === 0) {
   const built = scannedBuild

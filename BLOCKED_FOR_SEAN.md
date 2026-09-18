@@ -37,6 +37,45 @@ thing did not work" is not.
 > further down. Left as they are rather than renumbered, in case the new one is already referenced
 > somewhere. Worth settling before a third appears, since this queue is referred to by number.
 
+### B-09 — the production build ships 34 residents' email addresses · **CLOSED 2026-09-18**
+
+> **Closed by the design side the same day it was raised, and the fix is not the one the entry
+> asks for.** Read this note before the original below, which is kept in full because its
+> reasoning is right even where its conclusion was incomplete.
+>
+> **The chunk does not reproduce on current `main`.** A clean `npm run build:frontend` at
+> `e53cbdd` emits two assets, `index-*.js` and `index-*.css`, and neither contains a resident's
+> name or address. `check:secrets --all` passes on the built output. Whatever produced
+> `demoAccounts.dev-CmTmdIki.js` is not in the tree now, and I have not established what did —
+> the same restraint the entry itself shows about `b403e77`.
+>
+> **The larger breach was real, and was never about the bundler.**
+> `frontend/src/lib/demoAccounts.dev.ts` held 33 real residents' names, email addresses and room
+> numbers as a literal array, **in a tracked file, in a public repository.** Whether Rollup
+> eliminated the module only ever decided whether a visitor to the *site* could read the list.
+> Anyone who opened the *repository* could read it either way, and had been able to for weeks.
+> That is the BR-024 exposure, and it is bigger than the one the chunk represents.
+>
+> **What changed.** The list moved to the gitignored `credentials/demo-accounts.json`, handed to
+> the dev server by `vite.config.ts` exactly as `creds.txt` already was. So a built app now
+> carries no resident data for two independent reasons, and only one of them is the bundler:
+> the define is `null` for any `command !== 'serve'`, **and there is nothing in the tracked
+> source for a bundler to include.** The second does not depend on tree-shaking behaving the way
+> a comment claims.
+>
+> **Verified:** `grep` for resident names and `@gmail.com` across `frontend/src` and
+> `frontend/dist` returns nothing; the demo panel still lists 34 accounts on the dev server and
+> one-click sign-in still lands on `/admin/overview`.
+>
+> **You still need to send `credentials/demo-accounts.json`** to any machine that should have the
+> demo panel, alongside `creds.txt`. Without it the panel simply does not appear, which is correct
+> for a machine that was never sent the credentials.
+>
+> **A check now covers it.** `check:secrets` gained a resident-address rule — see B-10.
+
+<details>
+<summary>The original entry, as raised</summary>
+
 ### B-09 — the production build ships 34 residents' email addresses · **do this first**
 
 - **Blocked on:** whoever owns the build config. It is a bundling question, not a UI one
@@ -64,6 +103,43 @@ thing did not work" is not.
 - **Raised:** 2026-09-18 by Claude, on Loyd's machine. Detail: `docs/AUDIT_2026-09-18_FUNCTIONAL.md` § D-0
 
 ---
+
+</details>
+
+### B-10 — 20 resident and team email addresses in tracked documents and fixtures
+
+- **Blocked on:** a judgement about documents and seed fixtures, which belongs to whoever owns
+  them — not something a scanner should force at commit time
+- **What is wrong:** `check:secrets` now has a rule for a resident's email address. It finds **20
+  more** outside the login panel, in prose and in database fixtures. They are listed on every run
+  rather than failing it, the same way `check:endpoints` reports its unplugged route, so they
+  cannot be forgotten:
+
+  | Where | How many | What they are |
+  | :--- | :--- | :--- |
+  | `database/README.md` | 6 | the seed credentials table |
+  | `database/verify-rbac.mjs` | 2 | RBAC test fixtures |
+  | `docs/13_AUDIT_JUDGEMENT_LOG.md` | 1 | quoted inside an audit note |
+  | `docs/superpowers/**` | 4 | Adyen design and plan documents |
+  | `SESSION_REPORT_2026-09-15.md` | 1 | quoted in a session report |
+  | others in `docs/` | 6 | quoted in records of what happened |
+
+- **Not all of them are residents'.** `sean.jerve@`, `john.lloyd@` and `mark.cruz@` are team and
+  test accounts. `luydcuario@gmail.com` is the database administrator's own and is excluded by the
+  rule outright — `backend/scripts/check-ledger-integrity.mjs` says so on the line above it and
+  ends the note with *"LEAVE IT"*. A scanner that overrules that is one people route around.
+- **The ones that are residents':** `jaye.casia@`, `miguel.ramos@`, `rhea.mendoza@`,
+  `mireel.fatima.parcarey@`. Four real people, in a public repository.
+- **What Sean needs to decide:** whether those four are replaced with `resident-a@example.com`
+  style stand-ins in the documents, or whether the repository is made private. Replacing them in
+  `database/README.md` and `verify-rbac.mjs` is mechanical; replacing them inside an audit note
+  changes a record of what happened, which is the part that needs a person.
+- **What NOT to do:** do not edit `database/FULL_DATABASE_SCHEMA.sql` — CLAUDE.md rule 2. Its six
+  matches are in that file and it is already known to be wrong about this database.
+- **How to know it worked:** `npm run check:secrets` prints a shorter NOTED list. It is designed
+  not to fail on these, so the number in the list is the measure.
+- **Raised:** 2026-09-18 by the design side, while closing B-09
+
 
 ### B-07 — a resident with no bill is shown one, with water at ₱0
 

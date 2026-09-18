@@ -183,6 +183,40 @@ The four that matter to you: **`check:reachable`**, **`check:tokens`**, **`check
 
 ---
 
+## 7b. Asked for on 18 Sep — the landing page's unit section
+
+**Sean asked for this out loud rather than in a document, so it is written here before it is
+lost.** It is the public landing page, which is your lane, not the workspace side.
+
+**Two changes, and they are one idea:** the section that currently shows unit categories becomes a
+**floor plan showcase**, and the unit selector moves out of it into its own section underneath.
+
+| | |
+| :--- | :--- |
+| **The first section** | Floor plans for the 1st, 2nd and 3rd floors. One image per floor, in place of the unit photographs that are there now |
+| **Keep** | **The same collage layout.** Sean was explicit that the arrangement he likes stays; only what sits inside it changes |
+| **The second section, new, below it** | The unit selector, moved down out of the first section |
+| **In that selector** | **No images.** It reveals on click rather than showing a photograph per unit |
+
+**What is not yet decided, and needs Sean before you build it:**
+
+- **Where the floor plan images come from.** There are none in `frontend/public/` today — it holds
+  `galang-compound.jpg`, `galang-building.jpg` and `property-map.png`. Three floor plans have to be
+  drawn or photographed and handed over.
+- **The fourth floor.** The property has four — 1 to 3 residential and the rooftop penthouse
+  (`PublicGuestView` says so, and `RoomDirectoryView` repeats it). Sean named 1st to 3rd. Ask
+  whether the penthouse gets a fourth plan, is folded into the third, or is deliberately left out.
+- **What "on click only" reveals.** A unit's rate and availability are already public through
+  `/public/rooms`. Whether the click opens the same detail the category cards show today, or
+  something shorter, is a design decision that is yours once the content is settled.
+
+**One thing to carry over rather than rebuild:** whatever the selector becomes, it still has to
+survive `/public/rooms` failing. `B-01` in `BLOCKED_FOR_SEAN.md` is exactly that fault on this
+page — every unit read as vacant when the fetch failed — and a rebuilt selector can reintroduce it
+in a morning.
+
+---
+
 ## 8. Where everything else is
 
 | | |

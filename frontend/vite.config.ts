@@ -6,33 +6,78 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 /**
- * Hands the demo sign-in panel its passwords from the gitignored
- * `credentials/creds.txt`, and only to the dev server. A build gets `null`, so
- * no password can reach `dist` even if the panel's module somehow did.
+ * Hands the demo sign-in panel everything it needs, from the gitignored
+ * `credentials/` folder, and only to the dev server. A build gets `null` for
+ * both, so neither a password nor a resident's details can reach `dist` even if
+ * the panel's module somehow did.
  *
- * Parsing relies on the layout `scripts/rotate-demo-passwords.mjs` writes: the
- * administrator's `Password:` line first, the shared one for everyone else
- * second. Anything else yields `null`, and the panel then refuses to submit
- * rather than spend a real resident's failed-login allowance on a guess.
+ * TWO FILES, BOTH SENT SEPARATELY AND NEITHER TRACKED
+ * ---------------------------------------------------
+ *   `creds.txt`            the two shared passwords, in the layout
+ *                          `scripts/rotate-demo-passwords.mjs` writes: the
+ *                          administrator's `Password:` line first, the shared
+ *                          one for everyone else second. Anything else yields
+ *                          `null`, and the panel then refuses to submit rather
+ *                          than spend a real resident's failed-login allowance
+ *                          on a guess.
+ *
+ *   `demo-accounts.json`   who the buttons are for. This used to be a literal
+ *                          array inside `src/lib/demoAccounts.dev.ts` - 33 real
+ *                          residents' names, email addresses and room numbers,
+ *                          in a tracked file, in a public repository. Keeping
+ *                          it out of `dist` was never the whole problem: it was
+ *                          readable by anyone who opened the repository,
+ *                          whatever the bundler did. BR-024.
+ *
+ * Absent either file, the panel simply does not appear. That is the correct
+ * behaviour on a machine that was never sent them.
  */
-function demoPasswords(): Plugin {
+function demoPanel(): Plugin {
   return {
-    name: 'hivelet-demo-passwords',
+    name: 'hivelet-demo-panel',
     config(_, { command }) {
-      let value: { admin: string; tenant: string } | null = null
-      const file = fileURLToPath(new URL('../credentials/creds.txt', import.meta.url))
-      if (command === 'serve' && existsSync(file)) {
-        const found = [...readFileSync(file, 'utf8').matchAll(/^Password:\s*(\S+)\s*$/gm)].map((m) => m[1])
-        if (found.length === 2) value = { admin: found[0], tenant: found[1] }
+      const read = (name: string): string | null => {
+        const file = fileURLToPath(new URL(`../credentials/${name}`, import.meta.url))
+        if (command !== 'serve' || !existsSync(file)) return null
+        try {
+          return readFileSync(file, 'utf8')
+        } catch {
+          return null
+        }
       }
-      return { define: { __DEMO_PASSWORDS__: JSON.stringify(value) } }
+
+      let passwords: { admin: string; tenant: string } | null = null
+      const creds = read('creds.txt')
+      if (creds) {
+        const found = [...creds.matchAll(/^Password:\s*(\S+)\s*$/gm)].map((m) => m[1])
+        if (found.length === 2) passwords = { admin: found[0], tenant: found[1] }
+      }
+
+      let accounts: unknown = null
+      const listed = read('demo-accounts.json')
+      if (listed) {
+        try {
+          const parsed = JSON.parse(listed)
+          if (Array.isArray(parsed)) accounts = parsed
+        } catch {
+          // A malformed file means no panel, not a broken dev server.
+          accounts = null
+        }
+      }
+
+      return {
+        define: {
+          __DEMO_PASSWORDS__: JSON.stringify(passwords),
+          __DEMO_ACCOUNTS__: JSON.stringify(accounts),
+        },
+      }
     },
   }
 }
 
 export default defineConfig({
   plugins: [
-    demoPasswords(),
+    demoPanel(),
     vue(),
     tailwindcss(),
     VitePWA({
