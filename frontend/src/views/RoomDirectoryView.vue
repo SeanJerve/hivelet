@@ -418,7 +418,7 @@ const statusChips = computed(() => [
       <!-- Empty Filter State -->
       <div 
         v-if="filteredRooms.length === 0" 
-        class="rounded-tile bg-tile p-12 text-center rounded-tile border border-line text-ink-soft"
+        class="rounded-tile bg-tile px-6 py-16 text-center text-ink-soft"
       >
         <Search class="size-8 mx-auto mb-2 text-ink-faint" />
         <p class="font-semibold text-sm text-ink">No units match your filter criteria</p>

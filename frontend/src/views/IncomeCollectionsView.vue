@@ -1381,11 +1381,11 @@ async function exportExcel() {
           <!-- Rent Amount & Water Payment Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
-            Amount for Rent (₱)
+              Rent
               <input v-model.number="editRent" type="number" min="0" class="ws-input w-full" required />
             </label>
             <label class="ws-field">
-            Payment for Water (₱)
+              Payment for Water (₱)
               <input v-model.number="editWater" type="number" min="0" class="ws-input w-full" required />
             </label>
           </div>
@@ -1393,11 +1393,11 @@ async function exportExcel() {
           <!-- GBG Fee & OR Receipt Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
-            GBG Fee (₱)
+              GBG Fee (₱)
               <input v-model.number="editGarbage" type="number" min="0" class="ws-input w-full" required />
             </label>
             <label class="ws-field">
-            OR / Receipt Number
+              OR / Receipt Number
               <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="ws-input w-full font-mono" required />
             </label>
           </div>
@@ -1405,7 +1405,7 @@ async function exportExcel() {
           <!-- Payment Method & Online Reference Number Row -->
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
-            Payment Method
+              Payment Method
               <select v-model="editMethod" class="ws-select w-full">
                 <option value="Cash">Cash</option>
                 <option value="GCash">GCash</option>
@@ -1423,7 +1423,7 @@ async function exportExcel() {
           <!-- Rent Validity / Duration Details Row -->
           <div class="grid gap-4 sm:grid-cols-3">
             <label class="ws-field">
-            Months Covered
+              Months covered
               <input v-model.number="editMonthsCovered" type="number" min="1" class="ws-input w-full" required />
             </label>
             <label class="ws-field">
@@ -1437,7 +1437,7 @@ async function exportExcel() {
               <span class="ws-hint">Leave it blank to use the tenant's own billing cycle.</span>
             </label>
             <label class="ws-field">
-            Covered Period End
+              Covering to
               <input :value="editDateCoveredEnd" type="date" class="ws-input w-full" disabled />
             </label>
           </div>
@@ -1445,7 +1445,7 @@ async function exportExcel() {
           <!-- Date Received & Read-Only Total Amount calculation -->
           <div class="grid gap-4 sm:grid-cols-2 pt-2">
             <label class="ws-field">
-            Date Received
+              Date Received
               <input v-model="editDate" type="date" class="ws-input w-full" required />
             </label>
             <div class="bg-canvas border border-line rounded-tile p-3.5 flex flex-col justify-center">

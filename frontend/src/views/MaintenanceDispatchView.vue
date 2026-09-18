@@ -477,14 +477,14 @@ function handleDeleteTicketPrompt() {
         <form @submit.prevent="handleSaveEditTicket" class="space-y-4 text-xs">
           <!-- Issue Title -->
           <label class="ws-field">
-            Issue Title
+              What is wrong
             <input v-model="editTitle" class="ws-input w-full" required />
           </label>
 
           <!-- Unit Code & Category -->
           <div class="grid grid-cols-2 gap-3">
             <label class="ws-field">
-            Unit
+              Unit
               <select v-model="editUnit" class="ws-select w-full" required>
                 <option v-for="r in rooms" :key="r.id" :value="r.unitCode.toLowerCase()">
                   {{ r.unitCode.toUpperCase() }} ({{ r.cluster }})
@@ -492,7 +492,7 @@ function handleDeleteTicketPrompt() {
               </select>
             </label>
             <label class="ws-field">
-            Category
+              Category
               <select v-model="editCategory" class="ws-select w-full" required>
                 <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
               </select>
@@ -502,7 +502,7 @@ function handleDeleteTicketPrompt() {
           <!-- Priority & Status -->
           <div class="grid grid-cols-2 gap-3">
             <label class="ws-field">
-            Priority
+              Priority
               <select v-model="editPriority" class="ws-select w-full" required>
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -511,7 +511,7 @@ function handleDeleteTicketPrompt() {
               </select>
             </label>
             <label class="ws-field">
-            Status
+              Status
               <select v-model="editStatus" class="ws-select w-full" required>
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
@@ -523,7 +523,7 @@ function handleDeleteTicketPrompt() {
 
           <!-- Assigned Technician -->
           <label class="ws-field">
-            Assigned Technician
+              Who is going
             <select v-model="editTech" class="ws-select w-full">
               <option v-for="tech in TECHNICIANS" :key="tech" :value="tech">{{ tech }}</option>
             </select>
@@ -531,7 +531,7 @@ function handleDeleteTicketPrompt() {
 
           <!-- Description -->
           <label class="ws-field">
-            Description &amp; Repair Notes
+              What was reported, and what was done
             <textarea v-model="editDesc" rows="3" class="ws-textarea w-full" placeholder="Details regarding the maintenance request..."></textarea>
           </label>
 
@@ -540,7 +540,7 @@ function handleDeleteTicketPrompt() {
             <label class="block font-semibold text-xs text-ink-soft">
               Resident Photo Attachment
             </label>
-            <div class="rounded-xl border border-line p-3 bg-canvas flex flex-col items-center">
+            <div class="flex flex-col items-center rounded-2xl bg-canvas p-3">
               <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
                 <img :src="editingTicket.photo" alt="Ticket Attachment" class="max-h-52 w-auto object-contain rounded-lg transition-transform group-hover:scale-102" />
                 <span class="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-0.5 rounded font-medium">Click to view original</span>
@@ -555,7 +555,7 @@ function handleDeleteTicketPrompt() {
             </label>
 
             <!-- Message Stream Box -->
-            <div class="max-h-36 overflow-y-auto rounded-xl border border-line bg-canvas p-3 space-y-2 text-xs">
+            <div class="max-h-36 space-y-2 overflow-y-auto rounded-2xl bg-canvas p-3 text-sm">
               <div v-if="loadingMessages" class="py-2 text-center text-ink-faint text-xs">
                 Loading conversation thread...
               </div>

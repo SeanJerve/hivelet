@@ -624,7 +624,7 @@ function statusClass(status: string) {
       </div>
 
       <!-- Ticket Tracker (Matching Admin Table Style) -->
-      <div class="lg:col-span-7 rounded-tile bg-tile rounded-tile border border-line bg-tile overflow-hidden h-full flex flex-col">
+      <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-7">
         <div class="px-6 py-4 border-b border-line bg-canvas flex items-center justify-between gap-3 flex-wrap">
           <div class="flex items-center gap-2">
             <h2 class="font-semibold text-sm text-ink flex items-center gap-2">

@@ -805,7 +805,7 @@ async function handleEditExpense() {
           <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
-            Expense Date
+              Date it was spent
               <input v-model="date" type="date" class="ws-input w-full" required />
             </label>
 
@@ -956,7 +956,7 @@ async function handleEditExpense() {
           <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
-            Expense Date
+              Expense Date
               <input 
                 v-model="editDate" 
                 type="date" 
@@ -968,7 +968,7 @@ async function handleEditExpense() {
             <!-- Description & Category Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="ws-field">
-            Description &amp; Receipt #
+              Description &amp; Receipt #
                 <input 
                   v-model="editDesc" 
                   placeholder="e.g. OR #88240 — supplies" 
@@ -978,7 +978,7 @@ async function handleEditExpense() {
               </label>
 
               <label class="ws-field">
-            Expense Category
+              Expense Category
                 <select 
                   v-model="editCategory" 
                   class="ws-select w-full" 
