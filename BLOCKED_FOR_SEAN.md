@@ -158,6 +158,22 @@ thing did not work" is not.
 > against — the Lovable sync rewrites with it — and it still does not reach forks, clones or
 > GitHub's caches. **I have not attempted one and would not without being asked.**
 
+> **Update, same day, from the QA side: 19 → 11.** The mechanical half is done, and it fell out
+> of fixing `verify:rbac`:
+>
+> - **`database/README.md`** — the *Seeded credentials* table listed the two burned passwords
+>   beside six addresses, four of them residents'. Replaced with a pointer to `creds.txt` and
+>   `demo-accounts.json`. **−6**
+> - **`database/verify-rbac.mjs`** — names nobody now. It reads passwords from `creds.txt` and
+>   **discovers** one active and one deactivated resident through the admin API, so it also
+>   survives a roster change. **−2**
+>
+> **The 11 left are the ones a script should not touch:** six in `FULL_DATABASE_SCHEMA.sql`,
+> which **CLAUDE.md rule 2 forbids editing**; two inside dated records, where a stand-in would
+> alter an account of what happened; and three team accounts that are not residents'. **The
+> decision stays exactly where you put it** — stand-ins in those two records, or making the
+> repository private.
+
 
 ### ~~B-07 — a resident with no bill is shown one, with water at ₱0~~ — **FIXED 2026-09-18**
 
