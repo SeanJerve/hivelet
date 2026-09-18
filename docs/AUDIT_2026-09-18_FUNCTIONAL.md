@@ -233,7 +233,7 @@ exit, not a defect in the billing rules.
 | :-- | :--- |
 | **m-1** | **The slur ticket is live on the dispatch board.** Migration `027` (B-05) is not a data tidy-up — the two junk tickets on Unit 1A are **visible in the product right now**, under *To dispatch*, one of them titled with the slur. This raises B-05's priority |
 | **m-2** | **No 404.** An unknown path redirects to `/public` when signed out and to `/admin/overview` when signed in. A mistyped URL silently becomes the dashboard |
-| **m-3** | **The first-visit viewing prompt does not close on `Escape`** — only its Close control dismisses it |
+| **m-3** | ~~The first-visit viewing prompt does not close on `Escape`~~ — **withdrawn 2026-09-18. Not established, and probably not true.** See § Fourth pass |
 | **m-4** | **Clearing site data does not end the session until reload.** In-memory auth survives, so the admin shell keeps rendering and `/login` bounces back to `/admin/overview`. A real sign-out is unaffected |
 | **m-5** | `/category/:slug` and `/category/:slug/units` render **identical output** — two routes, one result |
 | **m-6** | `NotificationsStore` logs an unhandled `Failed to load notifications` console error when the token disappears mid-session |
@@ -368,3 +368,59 @@ The script now **discovers** its accounts — passwords from the gitignored `cre
 | after | **11** |
 
 **The 11 that remain are the ones that should not be touched by a script:** six in `FULL_DATABASE_SCHEMA.sql`, which **CLAUDE.md rule 2 forbids editing**; two inside dated records of what happened, where a stand-in would alter the record; and three team accounts that are not residents'. **All 18 suites pass, and `verify:rbac` exits 0.**
+
+---
+
+# Fourth pass — exercising the controls, and withdrawing a finding
+
+The first audit checked that screens **render**. It never touched the controls on them. This pass
+drove search, filters, pagination and modals across the admin screens. **Two real defects, both
+fixed; two suspicions that were my own testing artifacts; and one finding withdrawn.**
+
+## Fixed
+
+| | |
+| :--- | :--- |
+| **"8 of 626 entrys"** | `ShowMore.vue` pluralised by appending a bare `s`. Correct for *payment* and *row*, wrong for *entry* — on the income ledger and the audit trail. Now handles consonant + y → *-ies* and sibilants → *-es*, leaving *days* alone because *day* is vowel + y |
+| **`Every year` listed twice** | Both options carried `value="All"`: `yearsList` already begins with `All`, and the template added a hardcoded option above it |
+
+## Verified working, and worth recording because nobody had tested them
+
+Residents: search matches across **name, unit and phone**, with a real empty state
+(*“Nobody matches…”*); the four filters return **44 / 39 / 4 / 1**, matching the totals; pagination
+runs **10 → 20 → 44** and **resets to the first page when the filter or the search changes**, which
+is the behaviour you want. Income ledger: cluster, month and year filters compose correctly
+(**626 → 230** for 2024 → **22** for Linda), and the empty state renders.
+
+## Three things that looked like defects and were not
+
+**Recording these because the checking is the point, and because each one would have been a false
+report in a document the group relies on.**
+
+1. **Month buttons reading `JJan`.** A responsive pair — one `<span>` for narrow screens, one for
+   wide, only ever one visible. `textContent` concatenates regardless of CSS. The pane reports
+   `viewportWidth: 0` when hidden, so everything resolves to the mobile variant.
+2. **The income ledger appearing to have no empty state.** It has one. My search pattern looked
+   for `no match` and the text reads *“No collection **matches** what you have asked for”*.
+3. **`Escape` not closing modals.** My first test dispatched the event on `document`, which never
+   reaches a listener bound inside the dialog. Dispatched from the focused element, the admin
+   `WsModal` **does** close.
+
+## m-3 withdrawn: Escape on the public prompt
+
+`BookViewingPrompt` is a **native `<dialog>`** and Escape-to-close is the browser's own behaviour,
+not a JS listener. Checked, and every one of these says the component is correct:
+
+- `:modal` returns **true** — it is genuinely in the top layer
+- content outside it is **inert**; focus is contained inside
+- `@cancel` only records the dismissal and **never calls `preventDefault()`**
+- real key events **do** reach the page — a listener logged `Escape` and `a`
+
+**And the dialog still did not close.** The most likely explanation is not a defect in the
+component but a limit of the tooling: closing a modal `<dialog>` on Escape is a user-agent action,
+and injected key events do not reliably drive user-agent actions even when the DOM event arrives.
+
+**So it is withdrawn rather than confirmed.** It needs a person pressing the key on the public
+landing page — ten seconds during the rehearsal. **What I can say is that the code is right; what
+I cannot say is that the behaviour works.** Those are different claims and this audit should not
+conflate them.
