@@ -328,3 +328,43 @@ While I was fixing D-0, Sean pushed **`ba3b82a` — *"take 33 residents out of t
 Two things follow. **`credentials/demo-accounts.json` must be sent machine-to-machine like `creds.txt`** — without it the panel silently does not render, which is exactly what happened on this machine until the file was put in place. And **the git history is still untouched** — that remains **B-10**, and it is a decision rather than a change.
 
 *Worth recording plainly: two people fixed the same privacy defect within an hour of each other without knowing it. That is the cost of not claiming an item in the queue before starting on it.*
+
+---
+
+# Third pass — `verify:rbac` had been dead since 13 September
+
+Not in the original audit because **`verify:rbac` is not one of the 18 suites** and `check:all` does not run it. It was found while doing the mechanical half of **B-10**, and it was the most valuable thing in this pass.
+
+## It could not sign in at all
+
+`database/verify-rbac.mjs` hardcoded `Hivelet@Admin2026` and `Hivelet@Tenant2026`. **Those were rotated on 2026-09-13**, so from that day every sign-in returned 401:
+
+```
+before   21 passed, 3 failed     ← all three failures were 401s
+after    53 passed, 0 failed
+```
+
+**The quiet half is worse than the loud half.** The assertion *"deactivated tenant CANNOT sign in"* was still being counted — and a burned password makes it fail for the wrong reason. The account was refused because the password was dead, not because the account was deactivated. **An assertion that cannot tell those two apart is not checking BR-025 at all**, and it had been in that state for five days.
+
+## And a second assertion that could not see what it was testing
+
+With sign-in working, one check failed: *tenant CANNOT self-promote to admin via PATCH /auth/me*. **The system is correct** — verified independently: the PATCH returns **422**, and **zero profiles hold `role = 'admin'`** afterwards.
+
+**The assertion was wrong.** It read `escalate.payload?.data?.role`, and that endpoint does not echo `role` at all, so the field read `undefined` and the check reported a privilege-escalation failure that had not happened.
+
+> **The direction that matters is the other one.** Had the endpoint replied with a polite `role: 'tenant'` while writing something else, **the old assertion would have passed on the echo and never looked at the account.** An escalation check has to read the state after the attempt, not the reply to it. It now re-reads `/auth/me` and asserts on the stored role.
+
+**Mutation-tested**, as this project requires: inverted to expect `admin`, it fails with *role reads tenant* — so it is genuinely reading the role rather than passing vacuously.
+
+## Both fixes also removed real addresses from the repository
+
+The script now **discovers** its accounts — passwords from the gitignored `creds.txt`, and one active plus one deactivated resident found through the admin API. It names nobody in source, and it keeps working when the roster changes.
+
+`database/README.md`'s *Seeded credentials* table went the same way: it listed the two burned passwords beside six addresses, four of them residents'. Replaced with a pointer to `creds.txt` and `demo-accounts.json`.
+
+| B-10 noted addresses | |
+| :--- | ---: |
+| before | **19** |
+| after | **11** |
+
+**The 11 that remain are the ones that should not be touched by a script:** six in `FULL_DATABASE_SCHEMA.sql`, which **CLAUDE.md rule 2 forbids editing**; two inside dated records of what happened, where a stand-in would alter the record; and three team accounts that are not residents'. **All 18 suites pass, and `verify:rbac` exits 0.**

@@ -44,9 +44,70 @@ const API = process.env.API_BASE ?? 'http://localhost:5000/api';
 const SUPABASE_URL = env.SUPABASE_URL;
 const ANON_KEY = env.SUPABASE_ANON_KEY;
 
-const ADMIN = { email: 'admin@hivelet.ph', password: 'Hivelet@Admin2026' };
-const TENANT = { email: 'mark.cruz@gmail.com', password: 'Hivelet@Tenant2026' };
-const INACTIVE_TENANT = { email: 'miguel.ramos@gmail.com', password: 'Hivelet@Tenant2026' };
+/**
+ * The three accounts this script signs in as are DISCOVERED, not hardcoded.
+ *
+ * They used to be literals here, carrying `Hivelet@Admin2026` and
+ * `Hivelet@Tenant2026`. Those were rotated on 2026-09-13, so from that day every
+ * sign-in assertion below returned 401 and the script reported 3 failures on any
+ * machine that ran it - measured 2026-09-18, not assumed.
+ *
+ * The quiet part is worse than the loud part. `deactivated tenant CANNOT sign in`
+ * was still being counted, and a burned password makes it fail for the wrong
+ * reason: the account was refused because the password was dead, not because the
+ * account was deactivated. An assertion that cannot tell those two apart is not
+ * checking BR-025 at all.
+ *
+ * Two real addresses also sat in this file, in a public repository (B-10).
+ * Discovery removes both problems at once: the passwords come from the gitignored
+ * `credentials/creds.txt`, and the accounts are found through the API.
+ */
+function readCreds() {
+  try {
+    const raw = readFileSync(path.join(root, 'credentials', 'creds.txt'), 'utf8');
+    const email = raw.match(/Email:\s*(\S+)/)?.[1];
+    const passwords = [...raw.matchAll(/^Password:\s*(\S+)\s*$/gm)].map((m) => m[1]);
+    if (!email || passwords.length < 2) return null;
+    return { adminEmail: email, adminPassword: passwords[0], tenantPassword: passwords.at(-1) };
+  } catch {
+    return null;
+  }
+}
+
+const creds = readCreds();
+if (!creds) {
+  console.error('credentials/creds.txt not found or not in the expected layout.');
+  console.error('It is gitignored and travels separately - ask Sean for it.');
+  process.exit(1);
+}
+
+const ADMIN = { email: creds.adminEmail, password: creds.adminPassword };
+
+/** Filled in by `discoverAccounts()` before any sign-in assertion runs. */
+const TENANT = { email: '', password: creds.tenantPassword };
+const INACTIVE_TENANT = { email: '', password: creds.tenantPassword };
+
+/**
+ * Finds one active and one deactivated resident through the admin API, so the
+ * script keeps working when the roster changes and names nobody in the source.
+ */
+async function discoverAccounts() {
+  const res = await fetch(`${API}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(ADMIN),
+  });
+  if (!res.ok) return false;
+  const token = (await res.json())?.data?.token;
+  const list = await fetch(`${API}/admin/tenants`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!list.ok) return false;
+  const rows = (await list.json())?.data ?? [];
+  const active = rows.find((r) => r.email && (r.account_status ?? 'active') === 'active');
+  const inactive = rows.find((r) => r.email && (r.account_status ?? 'active') !== 'active');
+  TENANT.email = active?.email ?? '';
+  INACTIVE_TENANT.email = inactive?.email ?? '';
+  return Boolean(TENANT.email && INACTIVE_TENANT.email);
+}
 
 let passed = 0;
 let failed = 0;
@@ -204,9 +265,24 @@ async function testTenant() {
     method: 'PATCH',
     body: { role: 'admin', account_status: 'active', occupation: 'Engineer' },
   });
-  const stillTenant = escalate.payload?.data?.role === 'tenant';
-  check('tenant CANNOT self-promote to admin via PATCH /auth/me', stillTenant,
-    `role is now ${escalate.payload?.data?.role}`);
+  // Read the role back rather than trusting the PATCH response to echo it.
+  //
+  // This asserted `escalate.payload?.data?.role === 'tenant'`, and that endpoint
+  // does not return `role` at all - so the field read `undefined` and the check
+  // reported FAILED while the escalation was in fact refused. Verified 2026-09-18:
+  // zero profiles hold `role = 'admin'` after this runs.
+  //
+  // The direction that matters is the other one. Had the endpoint echoed back a
+  // polite `role: 'tenant'` while writing something else, the old assertion would
+  // have PASSED on the echo and never looked. An escalation check has to read the
+  // state after the attempt, not the reply to it.
+  const after = await apiCall('/auth/me', { token });
+  const roleAfter =
+    after.payload?.data?.user?.role ??
+    after.payload?.data?.profile?.role ??
+    after.payload?.data?.role;
+  check('tenant CANNOT self-promote to admin via PATCH /auth/me', roleAfter === 'tenant',
+    `role reads ${roleAfter ?? 'undefined'} after the attempt (PATCH returned HTTP ${escalate.status})`);
 
   // BR-023 — closing a ticket is administrator-only.
   const close = await apiCall('/admin/tickets/00000000-0000-0000-0000-000000000000/status', {
@@ -285,6 +361,14 @@ async function testBadTokens() {
   const health = await apiCall('/health');
   if (health.status === 0 || !health.payload) {
     console.error('\nCannot reach the API. Start it with: npm run dev:backend');
+    process.exit(1);
+  }
+
+  // Discovery first: every sign-in assertion below depends on it, and a silent
+  // failure here would make them all fail for a reason unrelated to RBAC.
+  if (!(await discoverAccounts())) {
+    console.error('Could not discover an active and a deactivated resident through the API.');
+    console.error('Is the backend running, and does credentials/creds.txt hold the current pair?');
     process.exit(1);
   }
 

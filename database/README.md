@@ -95,18 +95,23 @@ until `002` has been applied.
 
 ## Seeded credentials (development only)
 
-| Role | Email | Password |
-| --- | --- | --- |
-| admin | `admin@hivelet.ph` | `Hivelet@Admin2026` |
-| tenant | `mark.cruz@gmail.com` | `Hivelet@Tenant2026` |
-| tenant | `sean.jerve@gmail.com` | `Hivelet@Tenant2026` |
-| tenant | `john.lloyd@gmail.com` | `Hivelet@Tenant2026` |
-| tenant | `jaye.casia@gmail.com` | `Hivelet@Tenant2026` |
-| tenant (inactive) | `miguel.ramos@gmail.com` | `Hivelet@Tenant2026` — sign-in is refused by design (BR-025) |
-| prospect | `rhea.mendoza@gmail.com` | no password; a prospect holds no account access (System Bible §4) |
+**The table that was here is gone, and both halves of it were a liability.**
 
-Rotate all of these before deploying to the university server. They are
-published in this repository.
+It listed `Hivelet@Admin2026` and `Hivelet@Tenant2026` beside six email addresses, four of them
+real residents', in a public repository. **Those passwords were rotated on 2026-09-13 and open
+nothing** — verified against the live login on 2026-09-17, both returning `401
+INVALID_CREDENTIALS`. The addresses were the half that a rotation does not fix (**BR-024**, and
+**B-10** in `BLOCKED_FOR_SEAN.md`).
+
+**Where the current credentials live:** `credentials/creds.txt`, which is gitignored and travels
+person-to-person. The administrator's `Email:`/`Password:` pair is first and the shared resident
+password is last; `scripts/rotate-demo-passwords.mjs` writes that layout and several checks parse
+it. The dev sign-in panel additionally needs `credentials/demo-accounts.json`, sent the same way.
+
+**Nothing needs editing here when a password is rotated.** Everything that signs in reads
+`creds.txt` at run time — including `database/verify-rbac.mjs`, which used to hardcode the pair
+and had been failing its three sign-in assertions on every machine since the rotation without
+anyone noticing.
 
 ## Note on `server/` and `database/*.js`
 
