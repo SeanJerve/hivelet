@@ -140,8 +140,32 @@ thing did not work" is not.
   not to fail on these, so the number in the list is the measure.
 - **Raised:** 2026-09-18 by the design side, while closing B-09
 
+> **Two things added 2026-09-18 from the QA side, both verified rather than assumed.**
+>
+> **1. The repository is public — confirmed, not inferred.** An unauthenticated request to
+> `api.github.com/repos/SeanJerve/hivelet` returns **200** with `"private": false` and
+> `"visibility": "public"`. Worth having on the record, because every option below is priced
+> against it.
+>
+> **2. The count above is of the *current tree*. The history holds more.** `demoAccounts.dev.ts`
+> was gutted in `ba3b82a`, not erased: **33 residents' names, addresses and unit numbers remain
+> readable in every commit that carried them**, and GitHub serves those. So replacing the four
+> remaining addresses in documents cleans the tree and leaves the larger set where it is.
+>
+> **Which makes the choice sharper than it looks.** Substituting stand-ins is mechanical and
+> worth doing, but only **making the repository private** takes effect on what is already
+> published. A history rewrite would reach further and is the one option `AGENTS.md` warns
+> against — the Lovable sync rewrites with it — and it still does not reach forks, clones or
+> GitHub's caches. **I have not attempted one and would not without being asked.**
 
-### B-07 — a resident with no bill is shown one, with water at ₱0
+
+### ~~B-07 — a resident with no bill is shown one, with water at ₱0~~ — **FIXED 2026-09-18**
+
+> `TenantOverviewView` now carries `hasBill`, taken from the bills response itself rather than
+> inferred from whether the amounts happen to be zero, and the panel asks that instead.
+> **Verified both ways:** a resident with no bill sees *"No bill is on file yet."*, and with a
+> bill stubbed into the response the panel renders its own **₱4,500 rent and ₱400 water**.
+
 
 - **Blocked on:** a judgement about what a resident is told, plus `frontend/src/` being actively
   rebuilt. Not mine to patch mid-redesign
@@ -168,7 +192,13 @@ thing did not work" is not.
 
 ---
 
-### B-08 — `check:billing` passes everything and still reports failure on Windows
+### ~~B-08 — `check:billing` passes everything and still reports failure on Windows~~ — **FIXED 2026-09-18**
+
+> `process.exit()` replaced with `process.exitCode`. The Supabase pool `billingService` opens was
+> still closing when the process was torn down, which tripped the libuv assertion. Now exits **0**
+> in about four seconds. **Mutation-tested on this tree**: one expectation broken → exit **1**;
+> reverted → exit **0**.
+
 
 - **Blocked on:** nothing; it wants twenty minutes from whoever knows the suite
 - **What happens:** 39 assertions pass, it prints **`ALL CHECKS PASSED`**, then exits **127** on

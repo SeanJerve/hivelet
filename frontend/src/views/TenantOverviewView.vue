@@ -48,6 +48,17 @@ const tenantData = ref({
   floor: 0,
   occupants: 0,
   photoUrl: '',
+  /**
+   * Whether a bill actually exists for this resident.
+   *
+   * Kept apart from `baseRent` and `waterFee` on purpose. The panel used to ask
+   * whether both figures were zero, which is a different question: `baseRent`
+   * falls back to the unit's own rate further down, so once that fallback ran the
+   * "no bill" branch could never be reached. A resident with no bill was shown
+   * `Rent 4,500 / Water 0` under the heading "Latest bill", with the 200-per-head
+   * rule printed directly beneath it. A bill nobody issued is not a bill.
+   */
+  hasBill: false,
   baseRent: 0,
   waterFee: 0,
   totalAmountDue: 0,
@@ -243,6 +254,9 @@ async function fetchTenantData() {
         if (!maxCoveredDate || end > maxCoveredDate) maxCoveredDate = end;
       }
     });
+
+    // Taken from the response itself, not inferred from the amounts afterwards.
+    tenantData.value.hasBill = (billsData?.length ?? 0) > 0;
 
     const unpaidBill = billsData?.find((b: any) => {
       // `effective_status` is the API's derived value. Anything not settled counts,
@@ -455,7 +469,7 @@ const statusTone = computed(() => {
           message="Your bill could not be loaded. Try again in a moment."
           @retry="fetchTenantData"
         />
-        <p v-else-if="!tenantData.baseRent && !tenantData.waterFee" class="text-sm text-ink-soft">No bill is on file yet.</p>
+        <p v-else-if="!tenantData.hasBill" class="text-sm text-ink-soft">No bill is on file yet.</p>
         <template v-else>
           <SegmentBar
             :segments="[
