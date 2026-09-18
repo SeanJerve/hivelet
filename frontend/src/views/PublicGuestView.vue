@@ -9,6 +9,8 @@
  * @innovations Direct category routing and a per-row availability disclosure. The enquiry form
  *              is no longer here: it has its own screen at `/inquire` (`InquireView.vue`), which
  *              the navigation and the first-visit prompt both point at.
+ *              Real compound entrance gate image placed at hero background with unblurred crisp
+ *              rendering and balanced fluid typography.
  */
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -199,14 +201,30 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
       leaves the line either stranded or overflowing between them. That
       gap is the whole reason for the arbitrary value here.
 
-      No facade photograph exists in this repository - `public/` holds only
-      `property-map.png`, a location map - so the field is tonal rather than
-      photographic. Dropping a real facade image behind this section is a
-      contained change; inventing one is not, because a stock building would
-      misrepresent the property to a prospective boarder.
+      Editorial full-bleed property hero with real Galang Compound entrance photograph.
+
+      Image is rendered clear and unblurred (no blur filters or backdrop-blur) to preserve
+      authentic visual fidelity of the boarding house gate and grounds. A subtle dark gradient
+      scrim ensures text legibility for the navigation and title without degrading image clarity.
+
+      Type uses fluid typography: `clamp(2.5rem, 8vw, 7rem)` to keep the display line
+      proportional to the full-bleed field at every viewport width.
     -->
     <section class="relative w-full bg-neutral-dark text-white font-editorial overflow-hidden">
-      <div class="relative max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 flex flex-col min-h-[clamp(34rem,94vh,58rem)] pt-7 pb-10 sm:pb-14">
+      <!-- Crisp entrance photograph background (unblurred, leveled) -->
+      <div class="absolute inset-0 z-0 overflow-hidden">
+        <img
+          src="/galang-compound.jpg"
+          alt="Fe Galang Da Silva Boarding House - Galang Compound Gate"
+          class="w-full h-full object-cover object-center"
+        />
+        <!-- Subtle contrast overlay: unblurred to keep image details crystal clear and vibrant -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/40" />
+        <!-- Bottom black gradient for smooth anchoring of the hero frame -->
+        <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none" />
+      </div>
+
+      <div class="relative z-10 max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 flex flex-col min-h-[clamp(34rem,94vh,58rem)] pt-7 pb-10 sm:pb-14">
 
         <!--
           Navigation is drawn over the hero rather than in a bar above it, so
@@ -218,12 +236,12 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
         <header class="flex items-start justify-between gap-6 sm:gap-10">
           <RouterLink
             to="/public"
-            class="shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] hover:text-white/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors"
+            class="shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] hover:text-white/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors drop-shadow-sm"
           >
             Fe Galang<br />Da Silva<br />Boarding House
           </RouterLink>
 
-          <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light">
+          <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light drop-shadow-sm">
             <button @click="scrollToSection('categories')" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Category Section</button>
             <span aria-hidden="true" class="pr-2">,</span>
             <button @click="scrollToSection('faqs')" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">FAQs</button>
@@ -236,7 +254,7 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUER
           </nav>
         </header>
 
-        <h1 class="mt-auto pt-24 font-editorial font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)]">
+        <h1 class="mt-auto pt-24 font-editorial font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)] drop-shadow-sm">
           Fe Galang Da Silva<br class="hidden sm:inline" /> Boarding House
         </h1>
 

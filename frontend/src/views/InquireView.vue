@@ -198,21 +198,28 @@ async function submitInquiry() {
         </p>
       </div>
 
-      <!--
-        The reference sets a photograph of the development here. No facade
-        image exists in this repository, so this is a tonal panel carrying the
-        property's own details rather than a stock building that would
-        misrepresent it.
-      -->
-      <aside class="hidden lg:flex flex-col justify-between bg-neutral-dark text-white px-14 py-14">
-        <p class="text-[0.7rem] tracking-[0.18em] uppercase text-white/55">
-          {{ LANDLADY.address }}
-        </p>
-        <div>
-          <p class="font-medium tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,4.4vw,3.75rem)]">
+      <!-- Right: Real building exterior showcase with clear background image -->
+      <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 py-10 sm:py-14 overflow-hidden bg-neutral-dark">
+        <!-- Crisp building background photograph (unblurred) -->
+        <img
+          src="/galang-building.jpg"
+          alt="Fe Galang Da Silva Boarding House Building"
+          class="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <!-- Contrast gradient overlay: unblurred to keep building details clear and vibrant -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/50" />
+
+        <div class="relative z-10">
+          <p class="text-[0.7rem] tracking-[0.18em] uppercase text-white/80 drop-shadow-sm">
+            {{ LANDLADY.address }}
+          </p>
+        </div>
+
+        <div class="relative z-10">
+          <p class="font-medium tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,4.4vw,3.75rem)] drop-shadow-sm">
             Fe Galang Da Silva<br />Boarding House
           </p>
-          <p class="mt-6 max-w-sm text-sm text-white/70 leading-relaxed">
+          <p class="mt-6 max-w-sm text-sm text-white/80 leading-relaxed drop-shadow-sm">
             33 units across four levels, in 5 property clusters. Individual electric submeters,
             ₱200/head monthly water rule, and a secure gated perimeter.
           </p>

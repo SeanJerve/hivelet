@@ -37,7 +37,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'property-map.png'],
+      includeAssets: ['favicon.svg', 'property-map.png', 'galang-compound.jpg', 'galang-building.jpg'],
       manifest: {
         name: 'Hivelet — Apartment Management & Financial Operations',
         short_name: 'Hivelet',
