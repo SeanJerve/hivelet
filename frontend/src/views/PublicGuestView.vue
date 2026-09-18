@@ -16,6 +16,7 @@ import { ref, computed, onMounted } from 'vue';
 import { peso, publicStatusLabel } from '@/lib/canonicalUnits';
 import { CATEGORIES } from '@/lib/unitCategories';
 import { fetchRooms, rooms, roomsFetchFailed } from '@/lib/systemState';
+import { api } from '@/lib/api';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import BookViewingPrompt from '@/components/modals/BookViewingPrompt.vue';
 import { ArrowRight, ChevronDown, MapPin } from 'lucide-vue-next';
@@ -27,32 +28,67 @@ function toggleFaq(index: number) {
   openFaqIndex.value = openFaqIndex.value === index ? null : index;
 }
 
-const FAQS = [
+/**
+ * The answers a prospective tenant reads before they ring.
+ *
+ * A computed, not a constant, because one of them quotes a configured rate.
+ *
+ * THREE OF THESE USED TO ASSERT THINGS THE SYSTEM CANNOT SUPPORT
+ * --------------------------------------------------------------
+ *   water         quoted "P200 per head/occupant" as a literal. Now read from
+ *                 `/public/rates`, and omitted entirely when that call fails.
+ *
+ *   electricity   quoted "P12.50 / kWh" and "readings are recorded on the 25th
+ *                 of every month". There is no electricity rate in
+ *                 `system_settings` - it holds five keys and none of them is
+ *                 one - and there is NO meter, reading or utility table in the
+ *                 database at all, checked against `information_schema.tables`.
+ *                 Both may well be true of the house; neither is something this
+ *                 system knows, and a rate quoted publicly is one a prospect
+ *                 budgets against. The answer now describes the arrangement
+ *                 without asserting a price or a reading day. Raised for the
+ *                 owner to confirm - B-12.
+ *
+ *   move-in       said "1 month advance rent AND 1 month security deposit",
+ *                 which is two months of somebody's money. OD-04 is CONTESTED:
+ *                 on 2026-09-13 the owner described the move-in sum as advance
+ *                 rent and NOT a refundable deposit; on 2026-09-17 she
+ *                 described the same money as held, spent on repairs at
+ *                 move-out and partly refunded. The decisions register says in
+ *                 terms: "Do not build from either." Two months matches NEITHER
+ *                 answer - both describe one month. The answer no longer states
+ *                 a total, and points them at the person who can.
+ */
+const FAQS = computed(() => [
   {
     q: 'How does the monthly water fee work?',
-    a: 'Per Fe Galang Da Silva Boarding House policy, water is billed at a fixed standard rate of ₱200 per head/occupant monthly. This is computed dynamically according to the number of registered occupants residing in the unit.'
+    a:
+      waterRatePerOccupant.value !== null
+        ? `Water is billed per person, at \u20B1${waterRatePerOccupant.value} for each registered occupant every month. It follows the number of people registered as living in the unit, so it changes if that changes.`
+        : 'Water is billed per person, for each registered occupant every month. It follows the number of people registered as living in the unit. Ask the landlady for the current rate.',
   },
   {
     q: 'How is electricity metered and billed?',
-    a: 'Each of the 33 rentable units is fitted with an individual electric submeter. Readings are recorded on the 25th of every month and billed at actual consumption rate (₱12.50 / kWh).'
+    a: 'Each of the 33 rentable units has its own electric submeter, and you are billed for what the meter shows you used rather than a share of a single bill. Ask the landlady for the current rate per unit of electricity and when she takes the readings.',
   },
   {
     q: 'What payment methods does the boarding house accept?',
-    a: 'Tenants can pay online conveniently via GCash through our integrated Adyen payment gateway, or pay directly on-site in cash to Landlady Fe Galang Da Silva.'
+    a: 'You can pay online with GCash through the portal, or hand the money to Mrs. Fe Galang Da Silva on site. Either way it is recorded against your unit and you can see it in your own account.',
   },
   {
     q: 'What are the curfew hours and security policies?',
-    a: 'The property has a secure gated perimeter with an evening curfew of 10:00 PM for tenant safety. All registered tenants hold key access for necessary late arrivals or academic schedules.'
+    a: 'The property has a gated perimeter with a 10:00 PM curfew. Registered tenants hold key access for late arrivals and academic schedules.',
   },
   {
-    q: 'What are the move-in requirements and advance deposit?',
-    a: 'Standard move-in requires 1 month advance rent and 1 month security deposit, a valid government/student ID, and completion of the resident profile registration form.'
+    q: 'What do I need to move in?',
+    a: 'A valid government or student ID, the resident registration form, and one month of rent up front. Ask Mrs. Da Silva to confirm the total before you come - what is held and how it is settled when you leave is something she will explain herself.',
   },
   {
     q: 'Are visitors and guests allowed inside the rooms?',
-    a: 'Daytime visitors are permitted in designated common receiving areas between 8:00 AM and 8:00 PM. Overnight visitors must be registered with the landlady in advance.'
-  }
-];
+    a: 'Daytime visitors are welcome in the common receiving areas between 8:00 AM and 8:00 PM. Anyone staying overnight has to be registered with the landlady beforehand.',
+  },
+]);
+
 
 /**
  * Which category plate the cursor or the keyboard is on.
@@ -107,9 +143,30 @@ function availableInCategory(key: string) {
  */
 const liveUnits = rooms;
 
+/**
+ * The water rate, from `/public/rates`.
+ *
+ * The FAQ below quoted "a fixed standard rate of P200 per head/occupant" as a
+ * literal. That figure lives in `system_settings` under `water_rate_per_occupant`
+ * and is applied by billingService, so a copy written into the answer quotes a
+ * prospective tenant a price that stops being true the moment she changes it.
+ * Null until it answers; the answer then omits the figure rather than guessing.
+ */
+const waterRatePerOccupant = ref<number | null>(null);
+
 onMounted(async () => {
   try {
-    await fetchRooms();
+    await Promise.all([
+      fetchRooms(),
+      api
+        .get<{ waterRatePerOccupant: number }>('/public/rates', false)
+        .then((r) => {
+          waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+        })
+        .catch(() => {
+          // Leave it null. The FAQ drops the figure rather than inventing one.
+        }),
+    ]);
   } finally {
     isLoading.value = false;
   }

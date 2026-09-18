@@ -207,6 +207,57 @@ thing did not work" is not.
 
 </details>
 
+### B-12 — the public FAQ quoted an electricity rate the system does not hold
+
+- **Blocked on:** the owner. Two of these are house facts nobody has written down, not code
+- **What was wrong:** the landing page's FAQ answered *"How is electricity metered and billed?"*
+  with **"Readings are recorded on the 25th of every month and billed at actual consumption rate
+  (₱12.50 / kWh)"** — a price and a date quoted to prospective tenants on a public page
+- **Checked rather than assumed:**
+  - `system_settings` holds **five** keys — `grace_period_days`, `linda_lb_water_charge`,
+    `linda_lf_water_charge`, `revenue_share_percent`, `water_rate_per_occupant`. **None is an
+    electricity rate.**
+  - `information_schema.tables` has **no** table matching `%meter%`, `%electric%`, `%reading%` or
+    `%utility%`. The system records no meter reading anywhere, so nothing produces a bill "at
+    actual consumption rate"
+- **This does not make it false.** She may well read the meters by hand on the 25th and charge
+  ₱12.50. It makes it **unverifiable from here**, and an electricity rate is the kind of number
+  that moves — quoting a stale one to somebody deciding where to live is the harm
+- **What the page says now:** that each unit has its own submeter and you are billed for what it
+  shows, then asks them to get the rate and the reading day from her. No figure, no date
+- **What Sean needs to do:** ask her two things — *what do you charge per kWh, and when do you
+  read the meters?* If the answers are stable, they belong in `system_settings` beside the water
+  rate, not in page copy
+- **How to know it worked:** the FAQ quotes a rate again, and it comes from the API
+- **Raised:** 2026-09-19 by the design side, while auditing the public site
+
+---
+
+### B-13 — the FAQ asked new tenants for two months' money; OD-04 says nobody knows
+
+- **Blocked on:** **OD-04, which is CONTESTED.** This is not mine to settle and the register says
+  so in terms
+- **What was wrong:** the public FAQ answered the move-in question with **"1 month advance rent
+  and 1 month security deposit"** — two months of somebody's money, stated as fact to a person
+  deciding whether they can afford to live here
+- **Neither client answer says that.** Both describe **one** month:
+  - **2026-09-13**, cited in live code at `admin.ts:800` — advance rent, and *"this business
+    collects no separate damage or security sum"*
+  - **2026-09-17**, relayed — the same money **is** a deposit: held, spent on repairs at move-out,
+    the remainder refunded (₱6,500 held, ₱6,400 of repairs, ₱100 back)
+  - The decisions register: *"Do not build from either."* The FAQ was not built from either — it
+    asserted **both at once**, which is the one reading nobody gave
+- **What the page says now:** a valid ID, the registration form, and one month of rent up front —
+  which is what the system actually records under BR-039 and is uncontested — then asks them to
+  confirm the total with her, and says plainly that what is held and how it is settled is hers to
+  explain
+- **What Sean needs to do:** ask the question already drafted in the register § 1.5. Until then
+  the page should keep stating no total
+- **How to know it worked:** OD-04 closes, and the FAQ can state the move-in sum plainly
+- **Raised:** 2026-09-19 by the design side, while auditing the public site
+
+---
+
 ### B-10 — resident and team email addresses in tracked documents · **CLOSED 2026-09-19, accepted by Sean**
 
 > **Sean read the remaining eleven on 19 Sep and accepted them.** Recorded here with what they
