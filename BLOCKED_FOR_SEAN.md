@@ -33,39 +33,59 @@ thing did not work" is not.
 
 ## Open
 
-### B-12 — Supabase has disabled this project's legacy API keys, so the live data is unreachable
+### B-12 — this machine's `.env` still holds the legacy keys you disabled on 13 September
 
-- **Blocked on:** the Supabase keys in `.env`. Nothing in the repository can fix this; the new
-  key has to be copied out of the Supabase dashboard.
+> [!NOTE]
+> **Corrected an hour after it was raised, and the correction is the useful part.**
+> This entry first said "Supabase has disabled this project's legacy API keys", as though the
+> platform had done it on a schedule. It did not. **You** disabled them, deliberately, on
+> 2026-09-13, because the legacy pair had been sitting in `.env.example` in a public repository
+> since 2026-08-25 and there is no reset for a legacy key any more - migrating and disabling was
+> the remediation. It is written down in `backend/src/config/env.ts:104-112`.
+>
+> So this is not a fault. It is the remediation working exactly as intended on a machine that
+> never received the new keys. **Do not re-enable the legacy keys to fix it** - that restores a
+> credential that is in a public repository's history.
+
+- **Blocked on:** the `sb_secret_…` key. It has to be copied out of the Supabase dashboard and
+  sent out of band; nothing in the repository can supply it, and it must not be committed.
 - **What I was doing:** rebuilding the public category pages on the design machine, and
   verifying them against the running app rather than against a typecheck.
 - **The symptom, measured 2026-09-19 with `npm run dev:backend` up on this machine:**
   ```
-  GET http://127.0.0.1:5000/api/health        -> 503
-  GET http://127.0.0.1:5000/api/public/rooms  -> 500
-      {"code":"INTERNAL","stack":"ApiError: Legacy API keys are disabled ..."}
-  GET http://127.0.0.1:5000/api/public/rates  -> 200
+  GET /api/health        -> 503  {"database":{"status":"disconnected"}}
+  GET /api/public/rooms  -> 500  ApiError: Legacy API keys are disabled
+                                 (backend/src/routes/public.ts:65)
+  GET /api/public/rates  -> 200
   ```
-  The process starts and the settings endpoint answers; everything that reads a table returns
-  500. The browser console shows `fetchRooms fallback warning: {status: 500}` on both public
-  pages, so the fallbacks are doing their job - the landing says availability could not be
-  loaded and the category page shows nothing and says so.
-- **Why it is a key and not the code:** `.env` holds `SUPABASE_ANON_KEY` and
-  `SUPABASE_SERVICE_ROLE_KEY` - the legacy JWT pair - and Supabase has switched this project to
-  publishable/secret keys and turned the old pair off. The backend's own check scripts already
-  expect the new name: `check:columns`, `check:fields` and `check:ledger` each exit with
-  *"SUPABASE_URL / SUPABASE_SECRET_KEY are not set"*.
-- **What Sean needs to do:** in the Supabase dashboard, Project Settings -> API Keys, copy the
-  **secret key** (`sb_secret_...`) and the **publishable key** (`sb_publishable_...`) and send a
-  `.env` that sets `SUPABASE_SECRET_KEY` separately - it is gitignored and must not be
-  committed. Check whether `backend/src` reads `SUPABASE_SERVICE_ROLE_KEY` by name; if it
-  does, that rename is `backend/src` and so yours.
-- **How to know it worked:** `GET /api/public/rooms` returns 33 rows; `/public` shows real
-  counts on the four category plates instead of "Availability could not be loaded";
-  `/category/studio` lists 20 units; and `check:all` goes from **14 passing to 17** on this
-  machine. The last two, `check:api` and `check:relations`, additionally need
-  `credentials/creds.txt`, which has never been on this machine - so 19 of 19 is still only
-  reachable on yours.
+  The process boots and the settings endpoint answers from its own defaults; everything that
+  reads a table is refused by Supabase's gateway before it reaches PostgreSQL. Both public
+  pages then show their honest states - the landing says availability could not be loaded, the
+  category page shows nothing and says so - which is the first time those paths have been seen
+  working against a real failure rather than a simulated one.
+- **The cause, not inferred:** `.env` on this machine defines `SUPABASE_ANON_KEY` and
+  `SUPABASE_SERVICE_ROLE_KEY`, and both values are legacy JWTs (they begin `eyJ`). The project
+  stopped accepting that shape on 13 September. The file was last touched here on 17 September
+  and still carries the pre-migration pair.
+- **NOT a rename, and my first version of this entry said it might be.** `config/env.ts:124` and
+  `:131` read `either('SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_ANON_KEY')` and
+  `either('SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY')` - precisely so a stale `.env` does
+  not break the boot. The backend is reading the key it is given. The key is the problem, and
+  there is nothing to change in `backend/src`.
+- **What Sean needs to do:** Supabase dashboard -> Project Settings -> API Keys, copy the
+  **secret key** (`sb_secret_…`) and the **publishable key** (`sb_publishable_…`), and send a
+  `.env` that sets `SUPABASE_SECRET_KEY` and `SUPABASE_PUBLISHABLE_KEY` - the same channel
+  `credentials/creds.txt` travels by, since both are gitignored and neither comes down with a
+  pull. (`.env.example` is already correct - it names `SUPABASE_PUBLISHABLE_KEY` and
+  `SUPABASE_SECRET_KEY` with `sb_` placeholders, checked 2026-09-19 - so a machine set up from
+  it today would ask for the right two. This one predates that.)
+- **How to know it worked:** `GET /api/health` returns 200 with `"status":"connected"` and the
+  boot log reads "Supabase connected (service_role)" followed by the RLS lockdown line;
+  `/api/public/rooms` returns 33 rows; `/public` shows real counts on the four category plates
+  instead of "Availability could not be loaded"; `/category/studio` lists 20 units; and
+  `check:all` goes from **14 passing to 17** on this machine. The last two, `check:api` and
+  `check:relations`, additionally need `credentials/creds.txt`, which has never been here - so
+  19 of 19 is still only reachable on yours.
 - **Raised:** 2026-09-19 by the design account (Kiel's machine)
 
 ### B-11 — 16 ended tenancies do not record when they ended
