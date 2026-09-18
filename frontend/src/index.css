@@ -103,6 +103,19 @@
   --color-overdue: var(--overdue);
   --color-overdue-soft: var(--overdue-soft);
   --radius-tile: 1.5rem;
+
+  /* Motion.
+     The built-in CSS easings are weak - they lack the punch that makes a
+     transition read as intentional rather than as lag. These are the stronger
+     variants (easing.dev), and they are tokens so that every control in the
+     application accelerates the same way.
+
+     `--ease-out` is the default for anything a person just did: it starts fast,
+     so the interface answers at the moment they are watching most closely.
+     `ease-in` is deliberately absent - it starts slow, which reads as the
+     interface hesitating. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 :root {
@@ -316,7 +329,10 @@ body {
   height: 2.5rem;
   min-height: 2.5rem;
   max-height: 2.5rem;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s var(--ease-out),
+    border-color 0.15s var(--ease-out),
+    color 0.15s var(--ease-out);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
@@ -435,7 +451,10 @@ body {
   border-style: solid;
   white-space: nowrap;
   user-select: none;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s var(--ease-out),
+    border-color 0.15s var(--ease-out),
+    color 0.15s var(--ease-out);
 }
 /* Badges now read from the workspace roles, so every screen that still uses them
    matches the system while it waits to be rebuilt. Contrast measured 2026-09-18. */
@@ -536,7 +555,11 @@ body {
     white-space: nowrap;
     cursor: pointer;
     user-select: none;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition:
+      background-color 0.15s var(--ease-out),
+      border-color 0.15s var(--ease-out),
+      color 0.15s var(--ease-out),
+      transform 0.16s var(--ease-out);
   }
   .pill-btn,
   .pill-btn-brand,
@@ -544,6 +567,30 @@ body {
   .pill-btn-light {
     min-height: 2.75rem;
     padding: 0 1.125rem;
+  }
+
+  /*
+   * Every pressable control answers the press.
+   *
+   * There were five `:active` rules in this file and all five were on the
+   * legacy `.btn-*` classes, which nothing renders any more. Not one of the
+   * controls the application actually uses - the pills, the icon buttons, the
+   * filter chips - moved when it was pressed. On a touch screen that is the
+   * only feedback there is: no hover, no cursor, so a tap that does not move
+   * reads as a tap that did not land, and people press again.
+   *
+   * 0.97 is deliberately small. It should be felt rather than seen.
+   */
+  .pill-btn:active:not(:disabled),
+  .pill-btn-brand:active:not(:disabled),
+  .pill-btn-night:active:not(:disabled),
+  .pill-btn-light:active:not(:disabled),
+  .pill-btn-quiet:active:not(:disabled),
+  .pill-btn-danger:active:not(:disabled),
+  .pill-btn-danger-quiet:active:not(:disabled),
+  .icon-btn:active:not(:disabled),
+  .chip:active:not(:disabled) {
+    transform: scale(0.97);
   }
   .icon-btn {
     width: 2.75rem;
@@ -611,7 +658,10 @@ body {
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition:
+      background-color 0.15s var(--ease-out),
+      color 0.15s var(--ease-out),
+      transform 0.16s var(--ease-out);
   }
   .pill-btn-quiet:hover:not(:disabled) {
     background-color: var(--tile);
@@ -642,7 +692,10 @@ body {
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition:
+      background-color 0.15s var(--ease-out),
+      color 0.15s var(--ease-out),
+      transform 0.16s var(--ease-out);
   }
   .chip:hover:not(:disabled) {
     color: var(--ink);
@@ -881,10 +934,41 @@ body {
     outline-color: var(--on-night);
   }
 
+  /*
+   * A touch screen fires :hover on tap and leaves it stuck there until
+   * something else is touched, so a hover style on a phone is a state the
+   * reader cannot clear. Gating it keeps hover for the devices that have a
+   * pointer; press feedback above is what a touch device gets instead, and it
+   * is the better signal anyway.
+   */
+  @media (hover: none) {
+    .pill-btn:hover:not(:disabled),
+    .icon-btn:hover:not(:disabled),
+    .chip:hover:not(:disabled),
+    .pill-btn-quiet:hover:not(:disabled) {
+      background-color: inherit;
+      border-color: inherit;
+      color: inherit;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .ws-focus * {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
+    }
+    /* Reduced motion means gentler, not none: colour still transitions, and
+       the press still answers - it just stops moving. */
+    .pill-btn:active:not(:disabled),
+    .pill-btn-brand:active:not(:disabled),
+    .pill-btn-night:active:not(:disabled),
+    .pill-btn-light:active:not(:disabled),
+    .pill-btn-quiet:active:not(:disabled),
+    .pill-btn-danger:active:not(:disabled),
+    .pill-btn-danger-quiet:active:not(:disabled),
+    .icon-btn:active:not(:disabled),
+    .chip:active:not(:disabled) {
+      transform: none;
     }
   }
 }
