@@ -80,9 +80,9 @@ function isDimmed(key: string): boolean {
  * `lib/unitCategories.ts` keys on and what the category page behind each plate
  * lists. These plates used to group on the FIRST CHARACTER OF THE UNIT CODE,
  * which is the floor: the fix landed on the category page on 2026-09-18
- * (`e1d6e68`) and did not reach here, so the plate advertised "1-Bedroom Unit -
- * 10 units" over a link to the eight real one-bedrooms, and not one of the ten
- * was among them.
+ * (`e1d6e68`) and did not reach here, so the plate headed "1-Bedroom Unit"
+ * counted ten of them over a link to the eight real one-bedrooms, and not one
+ * of that ten was among them.
  *
  * `visibility` is filtered for the same reason `listedUnits` filters it: a
  * signed-in administrator's `fetchRooms()` reads `/admin/rooms`, which does not
@@ -447,8 +447,9 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               With the room list unreachable, `rooms` still holds the seed from
               `systemState.ts` - and the seed's types are the wrong ones
               (`"Studio Type Apartment"`, `"1-Bedroom Apartment"`), so grouping it
-              by `room_type` matches nothing and every plate would read "0 units".
-              A zero is a claim: it says this property has no studios. The
+              by `room_type` matches nothing and every plate would report a
+              count of nought. A zero is a claim: it says this property has no
+              studios. The
               category page behind these plates refuses to show a seeded listing
               for the same reason, so the plate says which state it is in
               instead. B-01 in BLOCKED_FOR_SEAN.md is the open decision about

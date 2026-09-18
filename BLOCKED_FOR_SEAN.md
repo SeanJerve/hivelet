@@ -33,7 +33,41 @@ thing did not work" is not.
 
 ## Open
 
-### B-12 — this machine's `.env` still holds the legacy keys you disabled on 13 September
+### ~~B-12 — this machine's `.env` still holds the legacy keys you disabled on 13 September~~ — **RESOLVED 2026-09-19**
+
+> [!NOTE]
+> **The keys arrived and the database is reachable from this machine.** Kiel pasted the current
+> pair, they went into `.env`, the `tsx watch` child was respawned to re-read it, and:
+>
+> - `GET /api/health` -> 200, `"status":"online"`, database **connected**, rlsLockdown
+>   **enforced** - "the public key reached PostgreSQL and was refused", which is migration 002
+>   still holding.
+> - `GET /api/public/rooms` -> **33 rows**: Studio 20, One-bedroom 8, Two-bedroom 4,
+>   Three-bedroom 1. One Available, and it is `PH`.
+> - `check:all` **17 of 19** on this machine. The two left are `check:relations` and
+>   `check:api`, both waiting on `credentials/creds.txt`, which has never been here.
+> - `check:liveness` runs all seven rules for the first time here, including the one that
+>   could only SKIP before: *"the advertised starting rent is the cheapest unit - PHP 4,500/mo,
+>   matching the cheapest of 33 units (7 of them at it)"*.
+>
+> **Two things did not go away with it, and both are Kiel's machine rather than yours:**
+>
+> 1. **The secret key was pasted into `.env.example` first** - the tracked template, and the
+>    same file whose leaked legacy keys started all of this. It was moved into `.env` and the
+>    template restored to its `sb_secret_your_key_here` placeholders before anything was
+>    staged, so nothing entered git. It was then shown in a screenshot in a chat window. Not a
+>    public leak, but the value has been somewhere it should not have been twice in one evening:
+>    **rotating it is the cautious call, and cheap** - new secret key, into `.env`, revoke the
+>    old.
+> 2. **The pre-commit secret scanner was not installed here** (`core.hooksPath` unset), which
+>    is why nothing objected to step 1. `npm run hooks:install`. Mutation-tested the same
+>    evening: a staged `sb_secret_…` of realistic shape is refused with "COMMIT BLOCKED", while
+>    one containing the word "fake" is correctly excused as a placeholder
+>    (`check-secrets.mjs:121`).
+>
+> The detail below is the record of the diagnosis and is left as it was.
+
+
 
 > [!NOTE]
 > **Corrected an hour after it was raised, and the correction is the useful part.**

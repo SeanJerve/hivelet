@@ -26,10 +26,10 @@
  * ------------------------------------------------------
  * Because the correction reached one of the two screens that categorise units.
  * `CategoryRoomsView` was fixed; `PublicGuestView`'s plates kept their own copy
- * of the old three, so from 2026-09-18 the landing page advertised
- * "1-Bedroom Unit - 10 units" over a link to a page listing the eight real
- * one-bedrooms, none of which were the same eight. The plate promised a set the
- * page behind it did not show.
+ * of the old three, so from 2026-09-18 the landing page advertised a plate
+ * headed "1-Bedroom Unit" with a count of ten beside it, over a link to a page
+ * listing the eight real one-bedrooms - and not one of that ten was among them.
+ * The plate promised a set the page behind it did not show.
  *
  * One copy, read by both. Same reason `publicStatusLabel` lives in
  * `canonicalUnits.ts`: it was found wrong in two copies of one switch.
