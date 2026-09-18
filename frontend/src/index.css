@@ -235,7 +235,41 @@ body {
 * {
   scrollbar-width: thin;
   scrollbar-color: #d6d3d1 #f5f5f4;
-  border-color: var(--border);
+}
+
+/**
+ * The default border tint - and it has to be INSIDE `@layer base`.
+ *
+ * This declaration sat on the bare `* { }` rule above, outside any layer. An
+ * unlayered declaration outranks every layered one no matter how specific the
+ * layered selector is, and `@import "tailwindcss"` puts every utility in the
+ * `utilities` layer - so `border-color: var(--border)` silently beat every
+ * border colour utility in the interface. All of them.
+ *
+ * Measured in the running app on 2026-09-19, before this change: a div with
+ * `class="border border-foreground"` computed `rgb(231, 229, 228)`, which is
+ * `--border`, not the `rgb(28, 25, 23)` of `--foreground` it asks for. The
+ * public pages' whole hairline hierarchy is built on that distinction - the
+ * strong rule above the FAQ list, the rule under the units table's head, the
+ * specification list on the category page - and every one of those rendered as
+ * the weak tint. Twenty-one uses across four files, plus `border-brand`,
+ * `border-hatch`, `border-l-primary` and `border-amber-600` in the workspace.
+ *
+ * It is the kind of defect that cannot be seen in a diff and does not look like
+ * a bug on screen: the border is THERE, it is simply the wrong colour, and the
+ * two greys involved are a shade apart. It showed up because a
+ * `group-hover:border-foreground/40` written on the category plates did
+ * nothing, and the rule it was losing to turned out to be this one.
+ *
+ * Tailwind's own preflight sets `border-color: currentColor` in this same
+ * layer, and this file is imported after it, so the tint still applies to every
+ * element that does not name a colour of its own. Nothing about the DEFAULT
+ * changes; what changes is that a utility can now override it.
+ */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 }
 
 @layer base {
