@@ -133,6 +133,32 @@ which points at one sum — **but "close to" is exactly the kind of resemblance 
 wrong about before.** Three of the seven pinned receipts look like an off-by-one and are not being
 corrected on that basis either.
 
+> **Evidence found 2026-09-18, and it cuts both ways — which is why it is recorded rather than
+> used to decide.** Her own income report carries the deposit as **Column 12**, *"Equal to the
+> Rent Amount at the time the tenant moved in (BR-039). Entered once, at onboarding"*
+> (`docs/09_MONTHLY_INCOME_REPORT.md` § 4). **It is excluded from Column 10, Remitted Amount**,
+> which is Rent + Water only. So her sheet **records the sum without counting it as income** —
+> which is how a held deposit behaves, and is also how a memo column behaves. It is one figure,
+> equal to one month's rent, which favours *"the same money"*; it is tracked apart from income,
+> which favours *"held and returned"*. **Neither reading is excluded.**
+>
+> Note also that **§ 8 item 4 of that same report lists the deposit refund as an open question**.
+> It was never settled in the source document either — so this register is not reopening
+> something the documents had agreed on.
+
+**A second question, needed before the schema and easy to forget:**
+
+> *"When you give back what is left of the deposit — does that show anywhere in your books? Or
+> does it just go back to them and nothing is written down?"*
+
+☐ **It is written down** *(then settlement writes a ledger row, and the schema must say which
+one — an expense entry, or a negative income line)*
+☐ **Nothing is written down** *(then settlement is a disposition on the tenancy only, and the
+books never see the refund)*
+
+**This decides whether the deposit settlement touches the ledger at all**, which is a larger
+schema question than the disposition columns themselves. Ask it in the same breath as the first.
+
 **What each answer costs.** The first is the cheaper path and mostly confirms what is already
 stored: one figure, plus disposition columns and a settlement step on the vacate endpoint. The
 second means the ledger has never recorded a sum the business actually collects — which would be a

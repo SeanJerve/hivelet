@@ -365,7 +365,20 @@ from at the defense. Two things worth weighing: the lock exists because earlier 
 a framing **without evidence**, and this is the first time the owner has given one — but it arrived
 dictated and second-hand, about a column she also says does nothing.
 
-## F-4 — Nothing tells a resident their rent is due, or late
+## F-4 — ~~Nothing tells a resident their rent is due, or late~~ **OVERSTATED — corrected 2026-09-18**
+
+> [!IMPORTANT]
+> **The portal does tell them, and this finding was wrong to say otherwise.**
+> `TenantOverviewView.vue:120-132` computes a live countdown from the bill's own due date and
+> renders **"Overdue by N days"** with its own severity level. A resident who opens the portal
+> sees exactly where they stand.
+>
+> **What is absent is an *outbound* reminder** — nothing reaches out to them. All eight
+> notification titles in `backend/src` are payment, ticket or inquiry events. **Reviewed
+> 2026-09-18 and accepted as sufficient**: the week in § F-1 hangs on the portal countdown rather
+> than on nothing, and she follows up in person anyway, which is what § Q2 describes her doing.
+>
+> The detail below is retained because it is accurate about notifications specifically.
 
 Q2 states the system *"notifies the tenant on when the due date is, or if they are already
 delayed, so everyone is notified."* **It does not.**
@@ -418,8 +431,38 @@ outstanding figure and **nothing says which component it is.**
 changes the bill-creation path and the statement layout, and retires `'Combined'` in practice —
 so it is Sean's call, not a quiet refactor.
 
-**Either way, settle it before the redesign fixes a layout around one combined figure.** This is
-the item on this page that most directly affects Kiel's lane — see `HANDOFF_TO_DESIGN.md` § 5.
+### Settled 2026-09-18: **(a)**, one bill with per-component tracking
+
+**Her own report layout decides this, and it is not close.** `docs/09_MONTHLY_INCOME_REPORT.md`
+§ 4 defines one row per unit per month carrying **both**:
+
+| Col | |
+| :-- | :--- |
+| **5** | Rent Amount |
+| **8** | Water Payment |
+| **10** | **Remitted Amount = Column 5 + Column 8** (BR-038), computed automatically |
+
+**Two bills would produce two income rows where her sheet has one**, splitting a single month's
+entry for a unit across two lines and breaking the shape of the workbook that
+**`check:reports` asserts against the database month by month, every year — 490 assertions.**
+BR-049 and FR-044 require the export to match her layout. Option (b) buys precision on partially
+paid bills and pays for it with the one thing the reports must not lose.
+
+**So: keep the combined bill, and record the allocation per component.** The bill already stores
+`rent_amount` and `water_amount` separately, so what is missing is only which part a payment
+covered — not the ability to know the split. **Implementation is Sean's lane** (`backend/src/`
+and a migration); this settles *what*, not *how*.
+
+**One question for her remains, and it is small:**
+
+> *"If someone owes ₱8,000 rent and ₱400 water and hands you ₱8,000 — is that the rent paid and
+> the water still outstanding, or would you ask them which they meant?"*
+
+That fixes the allocation order. **Until it is answered, do not guess one** — a default that
+silently clears water first would mis-state what a resident still owes.
+
+**Settled before the redesign fixes a layout around one combined figure**, which is what this
+item was blocking — see `HANDOFF_TO_DESIGN.md` § 5.
 
 ---
 
