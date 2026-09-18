@@ -503,11 +503,24 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           role="status"
           class="mt-8 border border-border-strong bg-muted px-4 py-3 text-xs sm:text-sm text-foreground-soft leading-relaxed"
         >
-          Live availability could not be reached, so the status column below may not be current. Please confirm with the landlady before relying on it.
+          Live details could not be reached, so what follows is the property's standard listing.
+          The status, the rate and the kind of unit may all be out of date &mdash; 30 of the 33
+          built-in rates no longer match, the worst by &#8369;2,000. Please confirm with the
+          landlady before relying on any of it.
         </p>
 
-        <div class="mt-10 overflow-x-auto">
-          <table class="w-full min-w-[44rem] border-collapse text-sm">
+        <!--
+          Seven columns need 44rem, so on a phone this table was 704px inside a
+          375px screen: a sideways swipe to reach the rate and the status, which
+          are the two things a person came to read.
+
+          Below `sm` the same rows are stacked instead, in this page's own
+          editorial manner - hairline rules, no tile, no card - rather than
+          importing the workspace surfaces, which belong to the admin and tenant
+          side and would read as a different site.
+        -->
+        <div class="mt-10 hidden sm:block">
+          <table class="w-full border-collapse text-sm">
             <caption class="sr-only">
               Every published unit on the property, with its cluster, type, floor, monthly rate and current status.
             </caption>
@@ -577,6 +590,60 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           </table>
         </div>
 
+        <!-- The same units, stacked, for a phone. -->
+        <ul id="all-units-list" class="mt-10 sm:hidden">
+          <li v-for="u in visibleUnits" :key="u.id" class="border-b border-border">
+            <button
+              type="button"
+              :aria-expanded="openUnitId === u.id"
+              :aria-controls="`unit-card-${u.id}`"
+              class="flex w-full items-start justify-between gap-4 py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              @click="toggleUnit(u.id)"
+            >
+              <span class="min-w-0">
+                <span class="block font-medium text-foreground">{{ u.unitCode }}</span>
+                <span class="mt-0.5 block text-xs text-muted-foreground">
+                  {{ u.type }} &middot; {{ u.cluster }} &middot; {{ u.floorLabel }}
+                </span>
+              </span>
+              <span class="shrink-0 text-right">
+                <span class="block tabular-nums text-foreground">{{ peso(u.price) }}</span>
+                <span class="mt-0.5 block text-xs text-muted-foreground">
+                  {{ publicStatusLabel(u.status) }}
+                </span>
+              </span>
+            </button>
+
+            <div v-if="openUnitId === u.id" :id="`unit-card-${u.id}`" class="pb-6">
+              <dl class="grid grid-cols-2 gap-x-6 gap-y-4 text-xs">
+                <div>
+                  <dt class="text-muted-foreground">Floor</dt>
+                  <dd class="mt-1 text-foreground">{{ u.floorLabel }}</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground">Capacity</dt>
+                  <dd class="mt-1 text-foreground">Up to {{ u.maxOccupants }} occupants</dd>
+                </div>
+                <div class="col-span-2">
+                  <dt class="text-muted-foreground">Billing</dt>
+                  <dd class="mt-1 text-foreground">{{ u.billingRule }}</dd>
+                </div>
+              </dl>
+
+              <p v-if="u.desc" class="mt-5 text-xs text-muted-foreground leading-relaxed">
+                {{ u.desc }}
+              </p>
+
+              <ul
+                v-if="u.amenities && u.amenities.length"
+                class="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted-foreground"
+              >
+                <li v-for="a in u.amenities" :key="a">{{ a }}</li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+
         <!--
           The arrow, under the five rows rather than over them.
 
@@ -590,7 +657,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           <button
             type="button"
             :aria-expanded="allUnitsShown"
-            aria-controls="all-units-body"
+            aria-controls="all-units-body all-units-list"
             class="group flex w-full items-baseline justify-between gap-6 pt-5 pb-1 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
             @click="toggleAllUnits"
           >

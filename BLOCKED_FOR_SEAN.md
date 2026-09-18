@@ -207,7 +207,30 @@ thing did not work" is not.
 
 </details>
 
-### B-10 — 20 resident and team email addresses in tracked documents and fixtures
+### B-10 — resident and team email addresses in tracked documents · **CLOSED 2026-09-19, accepted by Sean**
+
+> **Sean read the remaining eleven on 19 Sep and accepted them.** Recorded here with what they
+> actually are, because the count on its own overstates the exposure and the next person to read
+> this queue should not have to work that out again.
+>
+> | What | How many | What it actually is |
+> | :--- | :--- | :--- |
+> | `mireel.fatima.parcareyinv5223@gmail.com` | 2 | **A fabricated address**, quoted in a session report and in the judgement log as *evidence of a defect*. Not a real person's address at all |
+> | `database/FULL_DATABASE_SCHEMA.sql:515-520` | 6 | Seed `INSERT` fixtures. The phone numbers beside them are sequential inventions - 09181234567, 09191234567, 09201234567 - and the passwords are bcrypt hashes of the burned `Hivelet@Tenant2026` |
+> | `mark.cruz@gmail.com` in `docs/superpowers/**` | 3 | Adyen test instructions, quoted beside that same burned password |
+>
+> **Four of the addresses do match live `profiles` rows** - Mark Cruz, Jaye Casia, Miguel Ramos and
+> Rhea Mendoza - because the live database was seeded from that block. Two more are team members'
+> own (`sean.jerve@`, `john.lloyd@`).
+>
+> **Editing the files would not have helped much.** These sit in git history and stay readable in
+> old commits whatever the working tree says. The only action that closes that is making the
+> repository private, which was offered on 19 Sep and declined for now. It remains the thing to do
+> if the exposure ever stops being acceptable.
+>
+> `check:secrets` still lists all eleven on every run. That is deliberate: accepted is not the same
+> as forgotten, and that list is how a later reader finds them.
+
 
 - **Blocked on:** a judgement about documents and seed fixtures, which belongs to whoever owns
   them — not something a scanner should force at commit time
