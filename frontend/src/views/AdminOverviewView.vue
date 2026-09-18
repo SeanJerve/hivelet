@@ -44,7 +44,6 @@ import type { ArcUnit, CapsuleMonth } from '@/components/overview/types';
 import {
   Plus,
   ReceiptText,
-  RefreshCw,
   Calendar,
   ChevronDown,
   Check,
@@ -748,15 +747,6 @@ function exportHistoricalCSV() {
             <ReceiptText class="size-4 text-ink-soft" aria-hidden="true" />
             Record expense
           </router-link>
-          <button
-            type="button"
-            class="icon-btn"
-            :disabled="isRefreshing"
-            aria-label="Refresh figures"
-            @click="refreshAllData"
-          >
-            <RefreshCw :class="['size-4', isRefreshing && 'animate-spin']" aria-hidden="true" />
-          </button>
         </template>
         <template v-else>
           <button type="button" class="pill-btn" @click="exportHistoricalCSV">

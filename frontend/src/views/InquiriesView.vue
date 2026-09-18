@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { Inbox, Phone, Mail, Send, RefreshCw, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
+import { Inbox, Phone, Mail, Send, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
 const router = useRouter();
@@ -278,15 +278,6 @@ async function handleSendReply() {
         </p>
       </div>
 
-      <button
-        type="button"
-        class="icon-btn size-11 self-start sm:self-auto"
-        :disabled="isLoading"
-        aria-label="Load the enquiries again"
-        @click="fetchInquiries"
-      >
-        <RefreshCw :class="['size-4', isLoading && 'animate-spin']" aria-hidden="true" />
-      </button>
     </div>
 
     <div class="grid min-h-[620px] grid-cols-1 gap-4 lg:grid-cols-12">

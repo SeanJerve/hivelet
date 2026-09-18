@@ -550,6 +550,77 @@ body {
     background-color: var(--brand-soft);
   }
 
+  /* A pill with no box around it, for the second choice beside a real button:
+     "Show all 900" next to "Show 10 more". Same height, so a row of controls
+     keeps one baseline. */
+  .pill-btn-quiet {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.125rem;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .pill-btn-quiet:hover:not(:disabled) {
+    background-color: var(--tile);
+    color: var(--ink);
+  }
+
+  /* One filter chip, used by every screen that narrows a list. Selected is the
+     ink fill, because it has to read as chosen at a glance across a row of
+     them. Every screen wrote its own before this: a boxed segmented control on
+     the room directory, a bordered strip on the residents page, a brand-filled
+     strip on the audit trail, three different heights.
+
+     Pair with aria-pressed on the button. Colour is never the only signal:
+     the pressed state is what a screen reader announces. */
+  .chip {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1rem;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    background-color: var(--tile);
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .chip:hover:not(:disabled) {
+    color: var(--ink);
+  }
+  .chip[aria-pressed='true'] {
+    background-color: var(--ink);
+    color: var(--canvas);
+  }
+  /* The count that rides inside a chip. */
+  .chip-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+  }
+  .chip[aria-pressed='true'] .chip-count {
+    color: var(--on-night-soft);
+  }
+
   /* Destructive actions. Quiet by default; solid only when the destructive action
      is the point of the control. */
   .pill-btn-danger,

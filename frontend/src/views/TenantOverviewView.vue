@@ -17,7 +17,7 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
-import { CreditCard, RefreshCw, Wrench, X, CheckCircle2, ChevronDown, Home } from 'lucide-vue-next';
+import { CreditCard, Wrench, X, CheckCircle2, ChevronDown, Home } from 'lucide-vue-next';
 
 const { showToast } = useToast();
 
@@ -357,15 +357,6 @@ const statusTone = computed(() => {
           <CreditCard class="size-4 text-ink-soft" aria-hidden="true" />
           Payment history
         </router-link>
-        <button
-          type="button"
-          class="icon-btn"
-          :disabled="loading"
-          aria-label="Refresh your account"
-          @click="fetchTenantData"
-        >
-          <RefreshCw :class="['size-4', loading && 'animate-spin']" aria-hidden="true" />
-        </button>
       </div>
     </header>
 

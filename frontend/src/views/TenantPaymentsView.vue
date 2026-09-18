@@ -10,7 +10,7 @@ import { ref, computed, onMounted } from 'vue';
 import { api } from '@/lib/api';
 import { peso } from '@/lib/canonicalUnits';
 import { useToast } from '@/lib/useToast';
-import { CreditCard, RefreshCw, Search } from 'lucide-vue-next';
+import { CreditCard, Search } from 'lucide-vue-next';
 import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -194,9 +194,6 @@ function refreshAll() {
         </h1>
         <p class="mt-1 text-sm text-ink-soft">Pay a bill with GCash, and see what has been recorded against your unit.</p>
       </div>
-      <button type="button" class="icon-btn" :disabled="loadingBills" aria-label="Refresh bills and payments" @click="refreshAll">
-        <RefreshCw :class="['size-4', loadingBills && 'animate-spin']" aria-hidden="true" />
-      </button>
     </header>
 
     <!-- Bills -->

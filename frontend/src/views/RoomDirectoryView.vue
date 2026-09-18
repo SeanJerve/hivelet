@@ -21,7 +21,7 @@ import {
 import { CLUSTERS, peso, type UnitStatus } from '@/lib/canonicalUnits';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
-import { Search, Pencil, RefreshCw, LayoutGrid, Table as TableIcon, Eye } from 'lucide-vue-next';
+import { Search, Pencil, LayoutGrid, Table as TableIcon, Eye } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
 type ViewMode = 'matrix' | 'table';
@@ -118,11 +118,22 @@ function openSpecs(u: RoomItem) {
   isRoomDetailModalOpen.value = true;
 }
 
-// Summary Statistics
-const totalCount = computed(() => rooms.length);
-const occupiedCount = computed(() => rooms.filter(r => r.status === 'settled' || r.status === 'pending' || r.tenant !== null).length);
-const vacantCount = computed(() => rooms.filter(r => r.status === 'vacant').length);
-const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintenance').length);
+/**
+ * The counts, which are also the filter. One chip per state, each carrying the
+ * number of units in it, so the figures and the way of narrowing the list are
+ * the same control rather than two that can disagree.
+ */
+const statusChips = computed(() => [
+  { key: 'All', label: 'Every unit', count: rooms.length },
+  { key: 'settled', label: 'Paid up', count: rooms.filter((r) => r.status === 'settled').length },
+  { key: 'pending', label: 'Owing', count: rooms.filter((r) => r.status === 'pending').length },
+  { key: 'vacant', label: 'Vacant', count: rooms.filter((r) => r.status === 'vacant').length },
+  {
+    key: 'maintenance',
+    label: 'Being repaired',
+    count: rooms.filter((r) => r.status === 'maintenance').length,
+  },
+]);
 </script>
 
 <template>
@@ -134,144 +145,98 @@ const maintenanceCount = computed(() => rooms.filter(r => r.status === 'maintena
       and RATE Directory, and its whole job is to be believed, so a failed load
       has to say so rather than quietly show the old figures.
     -->
-    <div
-      v-if="roomsFetchFailed"
-      class="p-4 bg-verify-soft border border-verify-soft rounded-tile flex items-start gap-3 text-xs text-verify"
-    >
-      <AlertCircle class="size-4 shrink-0 mt-0.5 text-verify" />
-      <div>
-        <p class="font-semibold">These rates could not be refreshed, and may be out of date.</p>
-        <p class="mt-0.5">
-          The unit list below is the built-in one, not the live database. Do not quote a
-          rate from this screen until it reloads &mdash; refresh to retry.
-        </p>
-      </div>
+    <div v-if="roomsFetchFailed" class="rounded-tile bg-verify-soft p-5 sm:p-6" role="alert">
+      <p class="text-base font-semibold text-verify">
+        These rates could not be loaded, and may be out of date.
+      </p>
+      <p class="mt-1 text-sm leading-6 text-verify">
+        What you see below is the built-in list, not the live database. Do not quote a rate from
+        this screen until it loads. Reload the page to try again.
+      </p>
     </div>
 
-    <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line pb-5">
+    <!-- Page header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xs text-ink-soft mb-1">
-          <span>Admin</span>
-          <span>/</span>
-          <span class="font-semibold text-ink">Room &amp; Rate Directory</span>
-        </div>
-        <h1 class="text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
-          Room &amp; Rate Directory
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+          Rooms and rates
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-ink-soft">
-          Canonical 33-unit inventory with live operational statuses, rates, and occupancy across 5 clusters.
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
+          All 33 units across 5 clusters, what each one lets for, and who is in it.
         </p>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="flex items-center gap-3">
-        <!-- View Mode Switcher -->
-        <div class="h-10 inline-flex items-center rounded-xl border border-line bg-canvas p-1">
-          <button
-            type="button"
-            @click="viewMode = 'matrix'"
-            :class="[ 'h-8 inline-flex items-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold transition-all cursor-pointer', viewMode === 'matrix' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
-          >
-            <LayoutGrid class="size-3.5" />
-            <span>Visual Matrix</span>
-          </button>
-
-          <button
-            type="button"
-            @click="viewMode = 'table'"
-            :class="[ 'h-8 inline-flex items-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold transition-all cursor-pointer', viewMode === 'table' ? 'bg-tile text-brand ' : 'text-ink-soft hover:text-ink' ]"
-          >
-            <TableIcon class="size-3.5" />
-            <span>Table Register</span>
-          </button>
-        </div>
+      <!-- Two ways of reading the same 33 units -->
+      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="How to show the units">
+        <button
+          type="button"
+          class="chip"
+          :aria-pressed="viewMode === 'matrix'"
+          @click="viewMode = 'matrix'"
+        >
+          <LayoutGrid class="size-4" aria-hidden="true" />
+          <span>By cluster</span>
+        </button>
 
         <button
-          @click="fetchRooms"
-          :disabled="isLoading"
-          class="pill-btn"
-          title="Refresh Directory"
+          type="button"
+          class="chip"
+          :aria-pressed="viewMode === 'table'"
+          @click="viewMode = 'table'"
         >
-          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin text-brand' : '']" />
-          <span>Refresh</span>
+          <TableIcon class="size-4" aria-hidden="true" />
+          <span>As a list</span>
         </button>
       </div>
     </div>
 
-    <!-- Inventory Quick Stats Bar (Standardized rounded-tile bg-tile p-5 size) -->
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div 
-        @click="selectedStatus = 'All'"
-        :class="[ 'rounded-tile bg-tile p-5 cursor-pointer transition-all hover:', selectedStatus === 'All' ? 'ring-2 ring-brand' : '' ]"
-      >
-        <p class="text-xs text-ink-faint">Total Inventory</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-ink">33 Units</p>
-        <!-- 4 floors: 1-3 residential, 4 the rooftop penthouse. See PublicGuestView. -->
-        <p class="mt-1 text-xs text-ink-soft">Across 5 clusters &amp; 4 floors</p>
-      </div>
-
-      <div 
-        @click="selectedStatus = 'settled'"
-        :class="[ 'rounded-tile bg-tile p-5 cursor-pointer transition-all hover:', selectedStatus === 'settled' ? 'ring-2 ring-emerald-600' : '' ]"
-      >
-        <p class="text-xs font-semibold text-brand">Occupied / Settled</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ occupiedCount }} Units</p>
-        <p class="mt-1 text-xs text-brand">Active resident leases</p>
-      </div>
-
-      <div 
-        @click="selectedStatus = 'vacant'"
-        :class="[ 'rounded-tile bg-tile p-5 cursor-pointer transition-all hover:', selectedStatus === 'vacant' ? 'ring-2 ring-sky-600' : '' ]"
-      >
-        <p class="text-xs font-semibold text-brand">Vacant / Available</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ vacantCount }} Units</p>
-        <p class="mt-1 text-xs text-brand">Ready for occupancy</p>
-      </div>
-
-      <div 
-        @click="selectedStatus = 'maintenance'"
-        :class="[ 'rounded-tile bg-tile p-5 cursor-pointer transition-all hover:', selectedStatus === 'maintenance' ? 'ring-2 ring-purple-600' : '' ]"
-      >
-        <p class="text-xs font-semibold text-brand">Under Maintenance</p>
-        <p class="tabular mt-2 text-2xl sm:text-3xl font-semibold text-brand">{{ maintenanceCount }} Units</p>
-        <p class="mt-1 text-xs text-brand">Active repair work orders</p>
-      </div>
-    </div>
-
-    <!-- Search & Filter Controls -->
-    <div class="rounded-tile bg-tile p-4 rounded-tile border border-line flex flex-col sm:flex-row gap-3">
-      <div class="relative flex-1">
-        <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
+    <!--
+      The counts and the filter are the same control. Four stat tiles used to
+      sit above a status dropdown holding the same four numbers, and each tile
+      was a clickable div wearing `ring-2 ring-emerald-600`, `ring-sky-600` and
+      `ring-purple-600` - three colours from outside the system, on a screen
+      whose own status colours mean something.
+    -->
+    <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div class="relative xl:max-w-sm xl:flex-1">
+        <Search
+          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+          aria-hidden="true"
+        />
+        <label for="unit-search" class="sr-only">Search units</label>
         <input
+          id="unit-search"
           v-model="q"
-          aria-label="Search by unit code, resident name, or unit type"
-          type="text"
-          placeholder="Search by unit code, resident name, or unit type…"
-          class="ws-input w-full pl-10 pr-4 sm:text-sm"
+          type="search"
+          placeholder="Unit, resident or kind of unit"
+          class="ws-input w-full pl-11"
         />
       </div>
 
-      <select
-        v-model="cluster"
-        aria-label="Filter by cluster"
-        class="ws-select sm:text-sm sm:w-56"
-      >
-        <option value="All">All Clusters (5)</option>
-        <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
-      </select>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Show">
+          <button
+            v-for="chip in statusChips"
+            :key="chip.key"
+            type="button"
+            class="chip"
+            :aria-pressed="selectedStatus === chip.key"
+            @click="selectedStatus = chip.key"
+          >
+            {{ chip.label }}
+            <span class="chip-count">{{ chip.count }}</span>
+          </button>
+        </div>
 
-      <select
-        v-model="selectedStatus"
-        aria-label="Filter by unit status"
-        class="ws-select sm:text-sm sm:w-48"
-      >
-        <option value="All">All Statuses</option>
-        <option value="settled">Settled / Occupied</option>
-        <option value="pending">Pending</option>
-        <option value="vacant">Vacant</option>
-        <option value="maintenance">Maintenance</option>
-      </select>
+        <label class="ws-field">
+          <span class="sr-only">Cluster</span>
+          <select v-model="cluster" class="ws-select w-auto">
+            <option value="All">Every cluster</option>
+            <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
+          </select>
+        </label>
+      </div>
     </div>
 
     <!-- SKELETON LOADING STATE -->

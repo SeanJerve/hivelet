@@ -22,7 +22,6 @@ import {
   Pencil, 
   Trash2, 
   X, 
-  RefreshCw, 
   Loader2, 
   ReceiptText,
   Check,
@@ -345,15 +344,6 @@ function handleDeleteTicketPrompt() {
           What residents have reported, who is attending it, and what is finished.
         </p>
       </div>
-      <button
-        type="button"
-        class="icon-btn"
-        :disabled="isLoading"
-        aria-label="Refresh repair requests"
-        @click="fetchTickets"
-      >
-        <RefreshCw :class="['size-4', isLoading && 'animate-spin']" aria-hidden="true" />
-      </button>
     </header>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end">

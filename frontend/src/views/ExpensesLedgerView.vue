@@ -6,7 +6,7 @@ import { ref, computed, onMounted } from 'vue';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api, API_BASE, getStoredToken } from '@/lib/api';
-import { Plus, Search, ReceiptText, X, RefreshCw, Loader2, Calendar, Download, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
+import { Plus, Search, ReceiptText, X, Loader2, Calendar, Download, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -666,14 +666,6 @@ function exportFilteredExpenses() {
       </div>
 
       <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-        <button
-          @click="fetchExpenses"
-          :disabled="isLoading"
-          class="pill-btn"
-        >
-          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
-          <span>Refresh</span>
-        </button>
 
         <button 
           @click="exportFilteredExpenses"

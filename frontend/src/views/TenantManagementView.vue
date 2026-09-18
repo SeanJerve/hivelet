@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, showToast, type TenantRecord } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Pencil, LogOut, RefreshCw, Loader2, Users, Check } from 'lucide-vue-next';
+import { Search, UserPlus, Pencil, LogOut, Loader2, Users, Check } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
@@ -367,15 +367,6 @@ async function handleOnboard() {
       </div>
 
       <div class="flex items-center gap-2 self-start sm:self-auto">
-        <button
-          type="button"
-          class="icon-btn size-11"
-          :disabled="isLoading"
-          aria-label="Load the directory again"
-          @click="fetchTenants"
-        >
-          <RefreshCw :class="['size-4', isLoading && 'animate-spin']" aria-hidden="true" />
-        </button>
 
         <button type="button" class="pill-btn-brand" @click="isOnboardModalOpen = true">
           <UserPlus class="size-4" aria-hidden="true" />
@@ -407,22 +398,11 @@ async function handleOnboard() {
           :key="chip.key"
           type="button"
           :aria-pressed="statusFilter === chip.key"
-          :class="[
-            'inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors',
-            statusFilter === chip.key
-              ? 'bg-ink text-canvas'
-              : 'bg-tile text-ink-soft hover:text-ink',
-          ]"
+          class="chip"
           @click="statusFilter = chip.key"
         >
           {{ chip.label }}
-          <span
-            :class="[
-              'tabular text-xs font-semibold',
-              statusFilter === chip.key ? 'text-on-night-soft' : 'text-ink-faint',
-            ]"
-            >{{ chip.count }}</span
-          >
+          <span class="chip-count">{{ chip.count }}</span>
         </button>
       </div>
     </div>

@@ -1,7 +1,12 @@
 <script setup lang="ts">
 /**
- * A status in words, with a marker shaped by what kind of status it is. The
- * words always carry the meaning; colour and marker only repeat it.
+ * A status in words. The words carry the meaning; colour only repeats it.
+ *
+ * These carried a coloured dot before the word, everywhere, which said nothing
+ * the word did not already say and made two pills side by side read as a list
+ * of bullets. A marker earns its place only in a chart legend, where the shape
+ * has to match a mark drawn in the chart. The one legend that needs that draws
+ * its own marks (MonthCapsules), so no pill carries one.
  */
 import { computed } from 'vue';
 
@@ -24,29 +29,15 @@ const pillClass = computed(
       'on-dark': 'bg-white/10 text-on-night',
     })[props.tone]
 );
-
-const markerClass = computed(
-  () =>
-    ({
-      paid: 'size-1.5 rounded-full bg-brand',
-      verify: 'size-1.5 rounded-full bg-verify',
-      overdue: 'size-1.5 rounded-full bg-overdue',
-      neutral: 'size-1.5 rounded-full bg-ink-faint',
-      unentered: 'size-3 rounded-full hatch border border-line',
-      expected: 'size-3 rounded-full border border-dashed border-ink-faint',
-      'on-dark': 'size-1.5 rounded-full bg-on-night-soft',
-    })[props.tone]
-);
 </script>
 
 <template>
   <span
     :class="[
-      'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold leading-4 whitespace-nowrap',
+      'inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold leading-4',
       pillClass,
     ]"
   >
-    <span aria-hidden="true" :class="markerClass" />
     <slot />
   </span>
 </template>

@@ -29,7 +29,6 @@ import {
   ChevronDown,
   MessageSquarePlus,
   ListChecks,
-  RefreshCw,
   Search,
 } from 'lucide-vue-next';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -445,10 +444,6 @@ function statusClass(status: string) {
       </div>
 
       <div class="flex items-center gap-2">
-        <button @click="fetchTickets" :disabled="loadingTickets" class="pill-btn">
-          <RefreshCw :class="['size-3.5 text-ink-soft', loadingTickets ? 'animate-spin text-brand' : '']" />
-          <span>Refresh</span>
-        </button>
       </div>
     </div>
 

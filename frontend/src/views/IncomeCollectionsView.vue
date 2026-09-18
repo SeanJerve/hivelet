@@ -21,7 +21,6 @@ import {
   Download, 
   Plus, 
   Search, 
-  RefreshCw,
   Pencil,
   Trash2,
   ReceiptText,
@@ -805,14 +804,6 @@ function exportCSV() {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button
-          @click="fetchIncome"
-          :disabled="isLoading"
-          class="pill-btn"
-        >
-          <RefreshCw :class="['size-3.5 text-ink-soft', isLoading ? 'animate-spin' : '']" />
-          <span>Refresh</span>
-        </button>
 
         <button 
           @click="exportCSV"

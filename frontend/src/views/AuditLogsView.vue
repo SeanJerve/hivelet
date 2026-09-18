@@ -18,7 +18,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { api } from '@/lib/api';
 import { useToast } from '@/lib/useToast';
-import { ShieldCheck, Search, RefreshCw, Download, ChevronDown } from 'lucide-vue-next';
+import { ShieldCheck, Search, Download, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -302,15 +302,6 @@ function exportAuditCSV() {
       </div>
 
       <div class="flex items-center gap-2 self-start sm:self-auto">
-        <button
-          type="button"
-          class="icon-btn size-11"
-          :disabled="isLoading"
-          aria-label="Load the trail again"
-          @click="fetchAuditLogs"
-        >
-          <RefreshCw :class="['size-4', isLoading && 'animate-spin']" aria-hidden="true" />
-        </button>
 
         <button type="button" class="pill-btn-brand" @click="exportAuditCSV">
           <Download class="size-4" aria-hidden="true" />
@@ -392,23 +383,13 @@ function exportAuditCSV() {
             type="button"
             :aria-pressed="categoryFilter === chip.key"
             :title="chip.hint"
-            :class="[
-              'inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors',
-              categoryFilter === chip.key
-                ? 'bg-ink text-canvas'
-                : 'bg-tile text-ink-soft hover:text-ink',
-            ]"
+            class="chip"
             @click="categoryFilter = chip.key"
           >
             {{ chip.label }}
-            <span
-              v-if="chip.count"
-              :class="[
-                'tabular text-xs font-semibold',
-                categoryFilter === chip.key ? 'text-on-night-soft' : 'text-ink-faint',
-              ]"
-              >{{ chip.count?.toLocaleString('en-US') }}</span
-            >
+            <span v-if="chip.count" class="chip-count">{{
+              chip.count?.toLocaleString('en-US')
+            }}</span>
           </button>
         </div>
 
