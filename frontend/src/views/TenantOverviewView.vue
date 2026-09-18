@@ -23,6 +23,15 @@ const { showToast } = useToast();
 
 const submissionNotice = ref('');
 const activeBillId = ref<string | null>(null);
+
+/**
+ * Whether a bill row actually came back.
+ *
+ * The tile used to decide by testing whether its own figures were falsy, which
+ * is a different question: once rent had been filled in from the unit's rate,
+ * the "no bill" branch could never be reached, whatever the ledger held.
+ */
+const hasBill = ref(false);
 const payingOnline = ref(false);
 const showOtherWaysToPay = ref(false);
 
@@ -48,8 +57,22 @@ const tenantData = ref({
   floor: 0,
   occupants: 0,
   photoUrl: '',
+  /**
+   * From the BILL, and only from the bill. Neither of these may be filled in
+   * from anywhere else - see `unitRent` below, and the guard in the template.
+   */
   baseRent: 0,
   waterFee: 0,
+  /**
+   * What the unit lets at, from `rooms.current_price`. This is a rate, not a
+   * bill, and the two were being confused: with no bill on file, rent fell back
+   * to this value while water kept its initial 0, so a resident with nothing
+   * owing was shown "Rent P4,500 - Water, 1 registered occupant - P0" directly
+   * above the sentence "Water is charged at P200 for each registered occupant
+   * every month". The screen contradicted itself, and the figure it printed was
+   * one the rule beside it could not produce.
+   */
+  unitRent: 0,
   totalAmountDue: 0,
   dueDate: '',
   dueBadgeText: '',
@@ -193,7 +216,7 @@ async function fetchTenantData() {
         if (primaryPhoto) tenantData.value.photoUrl = primaryPhoto;
 
         if (activeRoom.rooms?.current_price) {
-          tenantData.value.baseRent = Number(activeRoom.rooms.current_price);
+          tenantData.value.unitRent = Number(activeRoom.rooms.current_price);
         }
       }
     }
@@ -255,6 +278,7 @@ async function fetchTenantData() {
 
     if (unpaidBill) {
       activeBillId.value = unpaidBill.id;
+      hasBill.value = true;
       tenantData.value.baseRent = unpaidBill.rent_amount;
       tenantData.value.waterFee = unpaidBill.water_amount;
       // The balance, not the debt as issued: they differ once a bill is partly
@@ -269,10 +293,13 @@ async function fetchTenantData() {
     } else {
       activeBillId.value = null;
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
+      hasBill.value = paidBill !== null;
       const validCoveredDate = maxCoveredDate as Date | null;
       if (validCoveredDate) {
-        tenantData.value.baseRent = paidBill ? paidBill.rent_amount : tenantData.value.baseRent;
-        tenantData.value.waterFee = paidBill ? paidBill.water_amount : tenantData.value.waterFee;
+        // Only from the bill. There is deliberately no fallback: a resident with
+        // no bill is told there is none, rather than shown a made-up one.
+        tenantData.value.baseRent = paidBill ? paidBill.rent_amount : 0;
+        tenantData.value.waterFee = paidBill ? paidBill.water_amount : 0;
         tenantData.value.totalAmountDue = 0;
 
         // TODO(Sean, audit F9): BR-033 derives the cycle from the anniversary date.
@@ -455,7 +482,16 @@ const statusTone = computed(() => {
           message="Your bill could not be loaded. Try again in a moment."
           @retry="fetchTenantData"
         />
-        <p v-else-if="!tenantData.baseRent && !tenantData.waterFee" class="text-sm text-ink-soft">No bill is on file yet.</p>
+        <div v-else-if="!hasBill" class="flex flex-col gap-2">
+          <p class="text-sm leading-6 text-ink-soft">No bill is on file yet.</p>
+          <!-- The unit's rate is a fact worth having. It is labelled as the
+               rate, not printed in the shape of a bill. -->
+          <p v-if="tenantData.unitRent" class="text-sm leading-6 text-ink-soft">
+            Your unit lets at
+            <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent) }}</strong>
+            a month. A bill appears here once the landlady raises one.
+          </p>
+        </div>
         <template v-else>
           <SegmentBar
             :segments="[
