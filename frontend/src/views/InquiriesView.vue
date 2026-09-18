@@ -312,6 +312,11 @@ async function handleSendReply() {
           <!--
             Each enquiry is a button. They were clickable divs, so the inbox
             could not be worked through from the keyboard at all.
+
+            The selected one is a filled row, not a thick coloured left border.
+            That side-tab is the most recognisable tell of a generated
+            interface, and the fill says the same thing without the bar - the
+            unit picker on the public category page already selects this way.
           -->
           <ul v-else class="divide-y divide-line">
             <li v-for="inq in filteredInquiries" :key="inq.id">
@@ -319,10 +324,10 @@ async function handleSendReply() {
                 type="button"
                 :aria-current="activeInquiry?.id === inq.id ? 'true' : undefined"
                 :class="[
-                  'w-full border-l-4 p-4 text-left transition-colors',
+                  'w-full p-4 text-left transition-colors',
                   activeInquiry?.id === inq.id
-                    ? 'border-l-brand bg-brand-soft/50'
-                    : 'border-l-transparent hover:bg-canvas',
+                    ? 'bg-brand-soft'
+                    : 'hover:bg-canvas',
                 ]"
                 @click="activeInquiryId = inq.id"
               >

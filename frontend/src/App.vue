@@ -82,13 +82,28 @@ const hidesGlobalHeader = computed(() =>
       isWorkspaceSection ? 'bg-canvas' : 'bg-background',
     ]"
   >
-    <!-- Offline status notification banner (BR-031, System Bible Section 21) -->
-    <div 
-      v-if="isOffline" 
-      class="bg-amber-500 text-slate-900 px-4 py-2 text-xs font-bold flex items-center justify-center gap-2 border-b border-amber-600 shadow-xs z-50 sticky top-0"
+    <!--
+      No connection (BR-031, System Bible Section 21).
+
+      This was slate text on an amber fill, which is the one colour pairing
+      that always reads as washed out - a grey on a saturated background has
+      neither the contrast of near-black nor the intent of the fill's own
+      darker shade. It is on the verify role now, which is the system's colour
+      for "this needs your attention" and is measured against its own text.
+
+      The wording changed too. "Financial mutations" is not a phrase anyone
+      says, and the person reading it is a landlady who has just lost signal.
+    -->
+    <div
+      v-if="isOffline"
+      role="status"
+      class="sticky top-0 z-50 flex items-center justify-center gap-2 border-b border-verify-soft bg-verify-soft px-4 py-2.5 text-sm font-medium text-verify"
     >
-      <WifiOff class="size-4 shrink-0 text-slate-900" />
-      <span>Offline Mode — Viewing cached application resources. Financial mutations and payment updates require an active internet connection (BR-031).</span>
+      <WifiOff class="size-4 shrink-0" aria-hidden="true" />
+      <span>
+        No connection. You can read what is already loaded, but nothing can be saved or paid
+        until it is back.
+      </span>
     </div>
 
     <AppHeader v-if="!hidesGlobalHeader" />
