@@ -14,7 +14,7 @@ without touching appearance.
 
 ## 0. The headline
 
-**Fourteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
+**Fifteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
 was invisible: none produced an error, a failing suite, or a console warning. Two more findings
 need a person and are `B-15` and `B-16`.
 
@@ -305,6 +305,26 @@ Left alone: `TenantTicketsView`'s `new Date().toISOString()` on a note, which is
 rather than a calendar date. UTC is correct there. The backend was swept too and is clean — its
 only match is the comment in `propertyClock.ts` describing its own fix.
 
+### 2.15 The notification bell asserted a count from a boolean, and the wrong word for it
+
+The bell's accessible name read *"N unread, **one** of them an emergency"* whenever
+`hasEmergencyUnread` was true. Its own comment says the label exists *"so that reading does not
+depend on seeing the red dot"* — which makes a wrong number in it a wrong **fact**, not a wording
+preference.
+
+Two things were wrong. **"one" was hardcoded**: read live while signed in as the administrator,
+the inbox held 16 unread of which **2 Emergency and 4 High**, and the screen said one. And
+`hasEmergencyUnread` is true for Emergency **or High**, so four High notifications were being
+announced as an emergency.
+
+`urgentUnreadCount` counts them now, `hasEmergencyUnread` derives from it so the badge colour and
+the sentence cannot disagree, and the wording says *"needing urgent attention"* — which is what
+the flag has always actually meant.
+
+*How it was found is the reusable part: comparing what the header rendered in the browser against
+a query. The count of 16 was right, and that is exactly what made the word beside it worth
+checking.*
+
 ---
 
 ## 2b. The public surface, probed rather than read
@@ -342,6 +362,10 @@ looked like defects until they were checked.
 | the other four edit forms, after §2.7 | tenants, units, expenses and maintenance all send only fields their form exposes. `TenantManagementView` guards the class explicitly |
 | `AdminEditUnitModal` saving a generated description | the field pre-fills from a composed fallback and **is** sent — but all 33 rooms hold a real description, so it cannot fire. Left alone, recorded here |
 | the income ledger's per-cluster hardcoded unit lists | **every income row's unit is covered** — asked the database, zero uncovered |
+| `PROPERTY_AREA_OPTIONS` against `property_area_type` | all six values exact, no drift |
+| the expense create form | sends allocations only and lets the database function derive the total, so there is no typed figure to diverge — the shape §2.2 was about |
+| `downloadReport` | checks `res.ok` before making a blob, so an error response cannot be saved as a corrupt `.xlsx` |
+| the notification bell's **count** of 16 | correct; it was the word beside it that was not — §2.15 |
 | `markAsRead` returning `true` when nothing matched | ownership is enforced (`recipient_profile_id`), so no cross-tenant write is possible; it reports success having changed nothing, which costs only a badge |
 
 **B-01's fix is real**, confirmed against a genuine simulated outage: the four category plates
@@ -376,6 +400,23 @@ catalogue agreeing, checked independently.
 | total remitted | **₱8,086,250.00** |
 | 50% column, BH rows | **₱2,343,375.00** |
 | FY 2026 to date, remitted | **₱1,826,850.00** |
+
+**And the administrator's dashboard, reconciled figure by figure** against the catalogue — every
+number below was read off the screen in the browser at the start of this session and then
+derived independently in SQL:
+
+| On screen | Derived from the database |
+| :--- | :--- |
+| Occupancy **32 / 33**, vacant `PH` | 33 rooms, 32 Occupied, 1 Available, and it is `PH` |
+| BH **22 / 22**, ₱103,800 · Back Apt **5 / 5**, ₱33,400 · Front Apt **3 / 3**, ₱22,500 · Linda **2 / 2**, ₱10,000 · Penthouse **0 / 1**, ₱0 | each matches `sum(current_price)` over that cluster's Occupied units |
+| *"Expected each month"* **₱176,300** | ₱169,700 rent **+** ₱6,000 per-occupant water (30 heads × 200) **+** ₱600 Linda fixed (LF 400, LB 200). Exact |
+| July operating expenses **₱19,354** | 15,596.25 + 3,181.50 + 575.75 = 19,353.50 over the three **rental** areas |
+| *"Personal (not deducted)"* **₱356,482** YTD | 60,507.60 Main House + 295,973.91 Other/Personal = 356,481.51 |
+| Net operating income, July **₱253,697** | 273,050.00 collected − 19,353.50 operating |
+
+The Linda ₱600 is the part worth keeping: *"expected each month"* would be ₱175,700 if their
+fixed charges were dropped, and ₱176,300 is what the screen says. The separation §3.5 of the
+judgement log describes is being applied correctly here rather than only in the workbook.
 
 ---
 
