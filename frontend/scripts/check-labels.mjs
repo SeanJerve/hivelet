@@ -65,7 +65,25 @@ for (const file of files) {
   if (open === -1) continue;
 
   // Comments are not markup. A control quoted inside one is not rendered.
-  const template = source.slice(open).replace(/<!--[\s\S]*?-->/g, '');
+  //
+  // They are BLANKED RATHER THAN REMOVED, and that is the whole reason this is
+  // two lines instead of one. `m.index` below is an offset into this string,
+  // and the line number is counted by slicing `source` with it. Deleting a
+  // comment shortens the string, so every offset after it points somewhere
+  // earlier in the file than the control really is, and the FAIL line sends
+  // the reader to the wrong place.
+  //
+  // Measured rather than assumed: an unnamed input placed at the end of
+  // ExpensesLedgerView's template - true line 1161, with 1,478 characters of
+  // comment above it inside the template - was reported at line 1123. The
+  // drift is exactly the comment text above the control, so it is worst in the
+  // files that explain themselves best.
+  //
+  // Replacing each comment with spaces, and keeping its newlines, holds both
+  // the length and the line count steady.
+  const template = source
+    .slice(open)
+    .replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ' '));
 
   for (const m of template.matchAll(/<(input|select|textarea)\b([^>]*)>/g)) {
     const [, tag, attrs] = m;
