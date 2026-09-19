@@ -14,9 +14,13 @@ without touching appearance.
 
 ## 0. The headline
 
-**Five defects found and fixed, three of them on the path the owner's cash takes into the
-ledger.** All five were invisible: none produced an error, a failing suite, or a console
-warning. Two more findings need a person and are `B-15` and `B-16`.
+**Eleven defects found and fixed, six of them on the paths the owner's money takes.** Every one
+was invisible: none produced an error, a failing suite, or a console warning. Two more findings
+need a person and are `B-15` and `B-16`.
+
+**The one to read first, if you read one:** editing any row in the income ledger rewrote **who
+paid it**. The form has no contact field, and sent one anyway, recomputed from whoever occupies
+that unit today. **402 of 937 rows were exposed** — §2.7.
 
 **The 20 automated suites passed before this session and pass after it**, which is the point —
 they were never going to catch any of these. Each defect lives in a gap the suites are known not
@@ -154,6 +158,103 @@ water_payment)`.
 Latent: the edit form sends both fields on every save, so the condition was always true. It was
 correct because of what its one caller happens to send.
 
+### 2.7 Editing a ledger row rewrote who paid it
+
+The edit form has **no contact field** — `startEditIncome` never reads `r.contact` — and every
+save sent one anyway, recomputed from the unit's **current** occupancy:
+`summary.residents.join(', ')`, then `room?.tenant`, then the literal `'Walk-in Resident'`. So
+correcting a typo in a rent figure replaced the record of who handed the money over, as a side
+effect, with whoever lives there now.
+
+Measured against the live ledger: **396 of 937 rows carry a contact that differs from their
+unit's current tenant**, and **6** sit on units with no active tenant at all. Editing any of
+those **402** would have destroyed the payer — 42% of her book — and on the six, replaced them
+with a literal.
+
+The field is simply not sent now; `PATCH` applies it only `if (contactName)`, so the stored
+value is left alone. Creation still derives it, because a new row has no previous payer.
+
+*The generalisable form, and it is worth sweeping for: **a PATCH payload carrying a field the
+form does not expose.** Swept the other four edit forms — tenants, units, expenses, maintenance
+— and this was the only one. `TenantManagementView` had already met the same class and guards
+against it explicitly, in a comment about `roomNumber` ending a tenancy as a side effect.*
+
+### 2.8 A photo from a phone could not be sent, and reported the server broken
+
+Rehearsal step 12 attaches a photo. It is read with `readAsDataURL` and sent as base64 inside
+the JSON body, which express caps at 1 MB — about **740 KB of image**, smaller than most phone
+photographs. Nothing checked the size. Measured against the running server: a body of 0.91 MB
+reached the route, 1.04 MB did not.
+
+What the resident saw was worse than the limit. `PayloadTooLargeError` is not an `ApiError`, and
+the handler gave every non-`ApiError` a **500** — so a photo that was merely too big came back
+as *"Internal server error"*. Malformed JSON did the same. Both are the caller's error and now
+say so: **413** and **400**, each with a message saying what to do.
+
+That also closed a small leak: those responses were classified 500, and `NODE_ENV` is
+`development` locally, so the stack went with them — an unauthenticated caller could read
+absolute paths out of this repository by sending `{"broken":`. They are 4xx now and carry no
+stack. *(The guard itself is sound: `nodeEnv` defaults to `'production'`, so an unset variable
+fails closed — checked.)*
+
+### 2.9 Two more invented values, in the same file
+
+`fileType` was hardcoded `'image/png'`, so a JPEG was filed as a PNG in the one column that
+exists to say what the thing is. And the active room fell back to `activeRoom.id || 'room-1a'`
+and `|| '1A'` — each row from `/tenant/my-rooms` is an **assignment** with the unit nested under
+`rooms`, so the middle fallback is a real uuid of the wrong entity, and the last showed a
+resident **somebody else's unit as their own**. The invented id is truthy, so the *"you have no
+active unit"* guard could never fire on the case it exists for.
+
+### 2.10 Four invented values on the income mapping
+
+`unit || '1A'`, `cluster || 'BH'`, an invoice number **composed** as `INV-2026-09`, and
+`verificationStatus || 'Verified'`.
+
+None can fire today — `room_id`, `invoice_number` and `verification_status` are all `NOT NULL`
+and 0 of 937 rows are null — **and that is the argument for removing them, not for leaving
+them.** They do not fire on bad data; they fire on a changed shape. Narrow a select or rename a
+join and every unreadable row is attributed to 1A, folded into BH's subtotal, given a receipt
+number matching nothing in her book, and marked Verified. Two of the four are re-creations of
+defects already removed from this interface once.
+
+### 2.11 Two date fields took a bare string, and one sets a rent cycle
+
+`isoDate` exists and `PATCH /admin/expense-entries` uses it. Two siblings did not.
+`POST /admin/expense-entries` took `z.string()`, so a malformed date reached the database
+function as a cast error — a 500 where the PATCH beside it returns a clean 422 — and an
+**ambiguous** one was accepted and filed under whichever month PostgreSQL's DateStyle preferred.
+`03/04/2026` is March to one reader and April to another.
+
+`POST /admin/tenants` took `z.string()` for `moveInDate`, which is written to **both**
+`start_date` and `anniversary_date` — and `anniversary_date` is what BR-033 derives every future
+rent period from. A merely-parseable value sets the cycle to the wrong day and every later "Rent
+For" follows it, silently. An unparseable one fails at the assignment insert, *after* the profile
+has committed.
+
+Ran the compiled primitive against the inputs rather than trusting it: refuses `03/04/2026`,
+`2026-8-1`, month 13, `2026-02-30` and a full ISO timestamp; accepts `2024-02-29` and refuses
+`2026-02-29`, so it knows leap years. It accepts `1900-01-17`, correctly — `isoDate` is about
+format and reality, not plausibility, and plausibility is `check:ledger`'s job.
+
+---
+
+## 2b. The public surface, probed rather than read
+
+Everything a stranger can reach, tested with real requests. **Every probe that could have
+written something was refused, and the row counts confirm nothing was written.**
+
+| | |
+| :--- | :--- |
+| `/public/rooms` payload | **33 rows, nothing tenant-shaped** — no name, email, phone, profile, assignment or occupant field anywhere. Rehearsal step 2's requirement, checked against the endpoint |
+| visibility | filters to `Published` for anyone who is not an administrator. All 33 are Published today, so the filter is a no-op — but it is correct, not absent |
+| enquiry validation | empty body **422**, bad uuid/email **422**, oversized name and message **422** |
+| a room that does not exist | **404 "Room not found"** — the same answer a Hidden room gets, so the endpoint cannot be used to discover which units exist |
+| rate limit | engaged on the 11th request in the window, exactly as documented (10 per 15 minutes). It counts refused requests too, which is right — otherwise a flood of invalid ones is free |
+| Adyen, server-to-server | **200** from `checkout-test.adyen.com`, methods `scheme (Cards), gcash (GCash)`. All seven config values present |
+| Adyen webhook, unsigned | **401** |
+| local checkout page | **404**, as it must be while a real gateway is configured |
+
 ---
 
 ## 3. Checked and found sound
@@ -170,6 +271,10 @@ looked like defects until they were checked.
 | `r.totalRemitted` / `r.fiftyPercentShare` — camelCase, which `check:fields` cannot see | mapped in `systemState.ts:822-823` from the snake_case columns, which `check:fields` **does** cover |
 | tenant routes taking an id | ticket messages check ownership and return **404, not 403**; notifications filter on `recipient_profile_id` |
 | `POST /tenant/tickets` — the judgement log's "one honest weak spot" | **fixed in `623a88a`**; the log still said otherwise and has been corrected |
+| the other four edit forms, after §2.7 | tenants, units, expenses and maintenance all send only fields their form exposes. `TenantManagementView` guards the class explicitly |
+| `AdminEditUnitModal` saving a generated description | the field pre-fills from a composed fallback and **is** sent — but all 33 rooms hold a real description, so it cannot fire. Left alone, recorded here |
+| the income ledger's per-cluster hardcoded unit lists | **every income row's unit is covered** — asked the database, zero uncovered |
+| `markAsRead` returning `true` when nothing matched | ownership is enforced (`recipient_profile_id`), so no cross-tenant write is possible; it reports success having changed nothing, which costs only a badge |
 
 **B-01's fix is real**, confirmed against a genuine simulated outage: the four category plates
 print *"Availability could not be loaded"* and no number, and the standfirst drops its *"Rents
