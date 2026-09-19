@@ -21,6 +21,22 @@
 -- It is reachable by doing the obvious thing. Every screen displays unit codes
 -- uppercased, so an administrator adding a unit types the case she was shown.
 --
+-- THIS IS NOT A NEW IDEA HERE - IT IS THE PATTERN THIS SCHEMA ALREADY USES
+-- ------------------------------------------------------------------------
+-- `profiles` already solves the identical problem twice, and both were read out
+-- of pg_index on 2026-09-19:
+--
+--   idx_profiles_email_lower   UNIQUE (lower(email)) WHERE email IS NOT NULL
+--   idx_profiles_phone_login   UNIQUE (normalize_ph_phone(phone_number))
+--                              WHERE phone_number IS NOT NULL
+--                                AND password_hash IS NOT NULL
+--
+-- So "one row per person regardless of how the identifier is spelled" is already
+-- enforced at the database level for an email and for a phone number. `rooms`
+-- is the one identifier that never received it, and it is the one an
+-- administrator types most often. The handler halves match too: both
+-- `register()` and `POST /admin/tenants` lower-case an email before writing it.
+--
 -- WHAT THIS DOES NOT DO
 -- ---------------------
 -- It does NOT rewrite the 22 lowercase codes. Their case is how they were

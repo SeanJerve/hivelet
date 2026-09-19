@@ -61,6 +61,12 @@ thing did not work" is not.
   - It does **not** rewrite the 22 lowercase codes. Their case is how they were migrated and
     documents quote them that way; normalising them is a decision about her data, not a
     constraint
+- **This is not a new idea in this schema — it is the pattern `profiles` already uses twice.**
+  Read out of `pg_index`: `idx_profiles_email_lower` is `UNIQUE (lower(email))` and
+  `idx_profiles_phone_login` is `UNIQUE (normalize_ph_phone(phone_number))`. "One row per person
+  however the identifier is spelled" is already enforced in the database for an email and a
+  phone number; `rooms.room_number` is the one identifier that never got it, and it is the one
+  an administrator types most often
 - **What Sean needs to do:** re-run the collision query in the migration's header, then apply
   the file the same way as `023` and `027`
 - **How to know it worked:** the migration raises
