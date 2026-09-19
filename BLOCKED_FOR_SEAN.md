@@ -33,6 +33,36 @@ thing did not work" is not.
 
 ## Open
 
+### B-25 — `check:columns` tells you to regenerate a file nothing can regenerate
+
+- **Blocked on:** a way for a script to run SQL. Not urgent; recorded so the next person does
+  not spend the time I did discovering it cannot be done.
+- **What the check says when it fails:**
+
+  > Regenerate database/live_schema.csv from the live catalogue.
+  > Do NOT hand-edit it to pass - that is how the other schema file went wrong.
+
+  There is no such script. `scripts/` has a backup, a handful of checks and two refreshers,
+  and none of them writes `live_schema.csv`. So the only way past that check has always been
+  the exact hand-edit it warns against — and CLAUDE.md records what that cost: **six of eight
+  wrongly-recorded business rules took their evidence from a schema file nobody could
+  regenerate.**
+- **Why I could not write one.** I tried. Scripts reach the database through **PostgREST**,
+  which serves rows and an OpenAPI document. That is enough for two of the file's ten sections
+  — columns, and foreign keys from the FK notes. It cannot see CHECK constraints, PK/UNIQUE
+  definitions, indexes, function signatures, triggers, or RLS. There is no `DATABASE_URL` in
+  `.env` and no `pg` client installed on either side.
+- **A generator that refreshed one section of ten and left nine stale, under a name promising
+  a full refresh, would be its own lie.** I deleted the one I had written rather than ship it.
+- **What it would take:** a `DATABASE_URL` (Supabase Settings → Database → Connection string)
+  and `npm i pg` in the root. The ten queries are straightforward — `pg_constraint`,
+  `pg_indexes`, `pg_proc`, `pg_trigger`, `pg_class.relrowsecurity`, and
+  `information_schema.columns`. An hour's work once the connection exists.
+- **Until then:** the snapshot is updated by hand from the catalogue, never from memory and
+  never from `FULL_DATABASE_SCHEMA.sql`, and the change is shown in the commit so it can be
+  read against the migration that caused it.
+- **Raised:** 2026-09-19
+
 ### B-24 — going live on Adyen needs a merchant prefix nobody has yet
 
 - **Blocked on:** nothing today. This is a note for whenever real money is meant to move, so
@@ -103,7 +133,7 @@ thing did not work" is not.
   are the lists to use.
 - **Raised:** 2026-09-19
 
-### B-21 — 58 income rows are filed under a year their rent period does not fall in
+### B-21 — 58 income rows were filed under a year their rent period did not fall in · **APPLIED 2026-09-19**
 
 - **Blocked on:** the owner. This is her own book disagreeing with itself, and the data cannot
   say which half is right. I have not written a correcting migration and will not guess.
@@ -158,11 +188,29 @@ thing did not work" is not.
   December rows cover exactly one month (29–32 days, ₱5,000–₱12,000), so none is a prepayment
   of the year ahead, and **43 of the 48 are their unit's only December row for that year**.
 
-- **`database/migrations/030_correct_rent_period_year_drift.sql` is written and NOT applied.**
-  It is transactional, records every old value in `rent_period_drift_backup_030` so it can be
-  undone from the database itself, and refuses to commit unless it lands on exactly 0 mismatched
-  rows and exactly 2 remaining duplicates. Run `npm run backup` first. It rewrites 58 rows of
-  the live ledger, so it is yours to run, not mine.
+- **APPLIED 2026-09-19 on Sean's instruction**, after `npm run backup` wrote
+  `backups/2026-09-19T08-06-43` (14,829 rows, 21 tables). Measured before and after:
+
+  | | before | after |
+  | :--- | ---: | ---: |
+  | rows | 937 | 937 |
+  | rent total | 7,772,250.00 | 7,772,250.00 |
+  | water total | 314,000.00 | 314,000.00 |
+  | garbage total | 10,620.00 | 10,620.00 |
+  | **remitted total** | **8,086,250.00** | **8,086,250.00** |
+  | period year disagrees with `year` | 58 | **0** |
+  | impossible payment dates | 1 | **0** |
+  | duplicate (unit, period) pairs | 14 | **2** |
+
+  **Not one peso moved.** Only period labels and two payment dates changed. The 58 old values
+  are in `rent_period_drift_backup_030`, so it is reversible from the database as well as from
+  the file backup — the undo statement is at the bottom of the migration.
+
+- **Still open, and not touched by 030:** the two remaining duplicate pairs. Unit **3e**
+  (month=3, paid 2024-04-05) and unit **PH** (month=10, paid 2024-11-10) each carry a period
+  that was never advanced to the next month. Their `month` column says which month they belong
+  to, but the correct day follows the tenancy anniversary and should be confirmed with her
+  before anything is written.
 
 - **What I did instead:** `database/migrations/DIAGNOSTIC_rent_period_year_drift.sql` — read-only,
   writes nothing. Five queries: the scope, the two groups, every affected row listed for reading
