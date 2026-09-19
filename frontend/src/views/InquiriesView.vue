@@ -247,6 +247,20 @@ async function handleSendReply() {
     // Read it back rather than guessing, so what is on screen is what is stored.
     await loadThread(currentInq.id);
 
+    /**
+     * The reply also moves the lead on, and the list has to be told.
+     *
+     * Sending a message advances a Pending inquiry to 'Contacted' server-side
+     * ('Converted' and 'Closed' are left alone). `loadThread` only reloads the
+     * message bubbles, so the status pill beside the name kept saying Pending
+     * however many times she had answered. Nothing was wrong in the database -
+     * the screen was just reading a copy fetched before the reply.
+     *
+     * The effect was that answered leads were indistinguishable from unanswered
+     * ones, which is the one thing this inbox exists to tell her.
+     */
+    await fetchInquiriesState();
+
     showToast('success', 'Reply written down', `Your answer to ${currentInq.name} is on record.`);
     replyMessage.value = '';
   } catch (err: unknown) {
