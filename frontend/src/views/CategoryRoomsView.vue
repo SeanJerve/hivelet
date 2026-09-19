@@ -362,21 +362,21 @@ async function submitInquiry() {
         <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-foreground">
           <RouterLink
             to="/public"
-            class="press inline-block underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Property
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/inquire"
-            class="press inline-block underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Inquire Now
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/login"
-            class="press inline-block underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Sign In
           </RouterLink>
@@ -449,7 +449,7 @@ async function submitInquiry() {
               :to="`/category/${c.slug}`"
               :aria-current="c.key === selectedCategoryKey ? 'page' : undefined"
               :class="[
-                'press inline-flex items-baseline gap-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
+                'press inline-flex items-baseline gap-2 py-1 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
                 c.key === selectedCategoryKey
                   ? 'text-foreground underline underline-offset-4 decoration-1 decoration-foreground'
                   : 'text-muted-foreground hover:text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground',

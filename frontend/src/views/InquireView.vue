@@ -132,7 +132,7 @@ async function submitInquiry() {
             <p class="mt-1 text-sm font-medium text-foreground">{{ LANDLADY.name }}</p>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="mt-0.5 inline-block text-sm text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+              class="press mt-0.5 inline-block py-1 text-sm text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
@@ -237,7 +237,7 @@ async function submitInquiry() {
         <p class="mt-12 text-xs text-muted-foreground">
           <RouterLink
             to="/public"
-            class="press inline-block underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Back to the property
           </RouterLink>

@@ -36,7 +36,7 @@ import { LANDLADY } from '@/lib/systemState';
           <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-white/50">Property</h2>
           <ul class="mt-5 space-y-2.5 text-sm">
             <li>
-              <RouterLink to="/public" class="press inline-block text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <RouterLink to="/public" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
                 Overview
               </RouterLink>
             </li>
@@ -50,18 +50,18 @@ import { LANDLADY } from '@/lib/systemState';
               also what `resolveSlug` falls back to.
             -->
             <li>
-              <RouterLink to="/category/studio" class="press inline-block text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <RouterLink to="/category/studio" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
                 Rentable units
               </RouterLink>
             </li>
             <li>
               <!-- Was a second link to /public, which went nowhere in particular. -->
-              <RouterLink to="/inquire" class="press inline-block text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <RouterLink to="/inquire" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
                 Register your interest
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/login" class="press inline-block text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <RouterLink to="/login" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
                 Sign in
               </RouterLink>
             </li>
@@ -72,7 +72,7 @@ import { LANDLADY } from '@/lib/systemState';
           <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-white/50">Contact</h2>
           <ul class="mt-5 space-y-2.5 text-sm">
             <li>
-              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
                 {{ LANDLADY.phone }}
               </a>
             </li>
@@ -81,7 +81,7 @@ import { LANDLADY } from '@/lib/systemState';
                 href="https://www.facebook.com/michelle.millete.16"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="press inline-block text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors"
+                class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors"
               >
                 Facebook<span class="sr-only"> (opens in a new tab)</span>
               </a>

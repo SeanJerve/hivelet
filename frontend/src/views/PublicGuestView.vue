@@ -371,15 +371,15 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           </RouterLink>
 
           <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light drop-shadow-sm">
-            <button @click="scrollToSection('categories')" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Category Section</button>
+            <button @click="scrollToSection('categories')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Category Section</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <button @click="scrollToSection('faqs')" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">FAQs</button>
+            <button @click="scrollToSection('faqs')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">FAQs</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <RouterLink to="/inquire" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Inquire Now</RouterLink>
+            <RouterLink to="/inquire" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Inquire Now</RouterLink>
             <span aria-hidden="true" class="pr-2">,</span>
-            <button @click="scrollToSection('location')" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Location</button>
+            <button @click="scrollToSection('location')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Location</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <RouterLink to="/login" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Sign In</RouterLink>
+            <RouterLink to="/login" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Sign In</RouterLink>
           </nav>
         </header>
 

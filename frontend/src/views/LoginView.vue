@@ -213,7 +213,7 @@ async function handleQuickLogin(account: DemoAccount) {
             </button>
           </form>
 
-          <button type="button" class="press self-start text-sm font-semibold text-brand hover:underline" @click="toggleMode">
+          <button type="button" class="press self-start py-1 text-sm font-semibold text-brand hover:underline" @click="toggleMode">
             {{ isSignUp ? 'Already have an account? Sign in' : 'No account yet? Create one' }}
           </button>
 
@@ -269,7 +269,7 @@ async function handleQuickLogin(account: DemoAccount) {
         </section>
       </div>
 
-      <router-link to="/public" class="self-center text-sm font-semibold text-brand hover:underline">
+      <router-link to="/public" class="press self-center py-1 text-sm font-semibold text-brand hover:underline">
         Back to the public pages
       </router-link>
     </div>
