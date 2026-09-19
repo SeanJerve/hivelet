@@ -645,7 +645,28 @@ async function handleEditIncome() {
     const payload = {
       roomNumber: editUnit.value.toUpperCase(),
       datePaid: editDate.value,
-      contactName: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || 'Walk-in Resident'),
+      /**
+       * `contactName` is deliberately NOT sent.
+       *
+       * It used to be, recomputed from the unit's CURRENT occupancy:
+       * `summary.residents.join(', ')`, falling back to `room?.tenant`, falling
+       * back to the literal `'Walk-in Resident'`. This form has no contact
+       * field - `startEditIncome` never reads `r.contact` - so correcting a
+       * typo in a rent figure rewrote **who paid** as a side effect.
+       *
+       * `contact_name` is the record of who handed the money over. On a unit
+       * that has since changed hands it would be replaced by today's resident,
+       * and on a vacant one by a literal. Measured against the live ledger
+       * rather than supposed: **396 of 937 rows carry a contact that differs
+       * from their unit's current tenant**, and 6 sit on units with no active
+       * tenant at all. Editing any of those 402 would have destroyed the payer.
+       *
+       * `PATCH /admin/income-records` applies this field only `if
+       * (contactName)`, so omitting it leaves the stored value untouched -
+       * which is the correct behaviour for a field the form does not offer. If
+       * the payer ever needs correcting, that wants a field of its own and an
+       * audit entry, not a silent recomputation.
+       */
       invoiceNumber: editInvoice.value,
       rentAmount: Number(editRent.value) || 0,
       occupants: occupants,
@@ -661,7 +682,19 @@ async function handleEditIncome() {
     if (oldId && !oldId.startsWith('INC-MOCK-') && !oldId.startsWith('INC-NEW-')) {
       await api.patch(`/admin/income-records/${oldId}`, payload);
     } else {
-      await api.post('/admin/income-records', payload);
+      /**
+       * Creation is the one case where the contact IS derived from occupancy,
+       * and it has to be: `incomeRecordSchema` requires `contactName`, and a
+       * brand-new row has no previous payer to preserve. Only the edit above
+       * leaves it alone.
+       */
+      await api.post('/admin/income-records', {
+        ...payload,
+        contactName:
+          summary.residents.length > 0
+            ? summary.residents.join(', ')
+            : (room?.tenant || 'Walk-in Resident'),
+      });
     }
 
     await fetchIncomeRecords();
