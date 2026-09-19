@@ -62,3 +62,32 @@ export function warnIfWriteFailed(result: WriteResult, what: string): void {
     console.warn(`[hivelet] ${what} failed: ${result.error.message}`);
   }
 }
+
+/**
+ * Did this write lose to a unique index, and to WHICH one?
+ *
+ * A pre-check before an insert answers the ordinary case well: the caller gets
+ * "a profile with this email already exists" rather than a constraint name. It
+ * cannot answer the race. Two requests that interleave both read "not found"
+ * and both insert, and the second one comes back as a bare 500 carrying
+ * `duplicate key value violates unique constraint "..."` to whoever is looking
+ * at the screen.
+ *
+ * That is not hypothetical here. It is the shape of every duplicate this
+ * project has actually had: a double-click recorded one receipt five times
+ * (migration 033), two taps on Pay could raise one bill twice (038), and Adyen
+ * retries a notification precisely when the first attempt has not answered yet
+ * (024). **No amount of checking before inserting closes a race between two
+ * connections** - the index is the guard, and this is how a handler recognises
+ * the index having done its job.
+ *
+ * Matched on the index NAME and not on 23505 alone, deliberately. A different
+ * unique violation on the same table is a different bug, and swallowing it as
+ * "someone beat us to it" would hide it. Callers name the index they expect.
+ */
+export function uniqueViolationOn(
+  err: { code?: string; message?: string } | null | undefined,
+  indexName: string
+): boolean {
+  return err?.code === '23505' && String(err?.message ?? '').includes(indexName);
+}

@@ -25,7 +25,7 @@ import {
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
-import { assertWritten, warnIfWriteFailed } from '../utils/checkedWrite.js';
+import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom } from '../services/billingService.js';
@@ -630,17 +630,23 @@ router.post(
      * Reading first costs one query and makes the common failure - a typo - leave
      * nothing behind at all.
      */
-    let resolvedRoom: { id: string; current_price: number } | null = null;
+    /**
+     * `room_number` is selected alongside the id so messages can quote the unit
+     * as the PROPERTY spells it. The lookup is `ilike`, so "b2f" finds B2F - and
+     * echoing the administrator's own typing back at her, or upper-casing it,
+     * prints a code that does not exist on any door. Her units are 1a, B2F, PH.
+     */
+    let resolvedRoom: { id: string; current_price: number; room_number: string } | null = null;
     if (roomNumber) {
       const { data: room, error: roomError } = await db
         .from('rooms')
-        .select('id, current_price')
+        .select('id, current_price, room_number')
         .ilike('room_number', roomNumber)
         .maybeSingle();
 
       if (roomError) throw ApiError.internal(roomError.message);
       if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
-      resolvedRoom = room as { id: string; current_price: number };
+      resolvedRoom = room as { id: string; current_price: number; room_number: string };
     }
 
     // Insert new profile
@@ -661,6 +667,33 @@ router.post(
       .select('*')
       .single();
 
+    /**
+     * The two pre-checks above answer the ordinary case. They cannot answer a
+     * DOUBLE-CLICK on Add Tenant: both requests read "no such email", both
+     * insert, and the second loses to `idx_profiles_email_lower` or
+     * `idx_profiles_phone_login`. That surfaced as a 500 carrying the raw
+     * constraint name, at the exact moment the administrator most needs to know
+     * whether the person was saved - so she cannot tell whether to try again,
+     * and trying again is how one record becomes two.
+     *
+     * 409, naming the identifier that clashed and saying the tenant is on file.
+     * The same double-click already produced a duplicate receipt (033) and could
+     * have produced a duplicate bill (038); this is the third instance of it.
+     */
+    if (uniqueViolationOn(insertError, 'idx_profiles_email_lower')) {
+      throw ApiError.conflict(
+        `A profile with the email ${normalizedEmail} already exists - it was created a moment ` +
+        'ago, most likely by this form being submitted twice. The tenant is on file. Open ' +
+        'their record to assign the unit rather than adding them again.'
+      );
+    }
+    if (uniqueViolationOn(insertError, 'idx_profiles_phone_login')) {
+      throw ApiError.conflict(
+        'That phone number already signs someone in to the portal - the profile was created a ' +
+        'moment ago, most likely by this form being submitted twice. Check the resident list ' +
+        'before adding them again.'
+      );
+    }
     if (insertError) throw ApiError.internal(insertError.message);
 
     // Already resolved above, before the profile was written.
@@ -735,11 +768,27 @@ router.post(
        * administrator sees a failure, assumes nothing was saved, and onboards the
        * same person a second time - which is how one mistake becomes two records.
        */
+      /**
+       * `idx_single_active_assignment_per_room` is UNIQUE on `room_id` among
+       * active assignments - it is what makes "no unit is let to two people at
+       * once" true rather than merely checked. Losing to it means somebody was
+       * moved into this unit between the lookup above and this insert, so the
+       * honest answer names the unit rather than the constraint.
+       *
+       * The profile is already committed either way, which the message has to
+       * say: without it the administrator sees a failure, assumes nothing was
+       * saved, and onboards the same person a second time.
+       */
       if (assignError) {
+        const clash = uniqueViolationOn(assignError, 'idx_single_active_assignment_per_room');
         throw ApiError.internal(
-          `${fullName} was created, but could not be assigned to ${roomNumber}: ` +
-          `${assignError.message}. The person is on file - assign the unit from their ` +
-          'record rather than adding them again.'
+          `${fullName} was created, but could not be assigned to ${room.room_number}: ` +
+          (clash
+            ? `unit ${room.room_number} already has an active resident - somebody was ` +
+              'moved in while this form was open.'
+            : assignError.message) +
+          ' The person is on file - assign the unit from their record rather than adding them ' +
+          'again.'
         );
       }
 
@@ -964,6 +1013,16 @@ router.patch(
             is_active: true
           });
 
+        // The occupancy check a few lines up cannot close the gap between
+        // itself and this insert. `idx_single_active_assignment_per_room`
+        // does, and losing to it means someone was moved in meanwhile - which
+        // is a 409 naming the unit, not a 500 naming the constraint.
+        if (uniqueViolationOn(assignError, 'idx_single_active_assignment_per_room')) {
+          throw ApiError.conflict(
+            `Unit ${roomNumber.toUpperCase()} already has an active resident - somebody was ` +
+            'moved in while this was open. Reload the resident list and try again.'
+          );
+        }
         if (assignError) throw ApiError.internal(assignError.message);
 
         assertWritten(
