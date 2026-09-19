@@ -1282,7 +1282,7 @@ exist.
 | `PATCH /admin/tenants/:profileId` | A room move can end the old tenancy before starting the new one. Every step is `assertWritten`, so it stops loudly at the failure. |
 | `POST /admin/tenants/:profileId/vacate` | Tenancy ended, then unit freed, then account deactivated. A stop leaves a unit reading `Occupied` with no active assignment - wrong on the directory, not in the money. |
 | four `/admin/tickets` handlers | The ticket row is always written first and the unit's `operational_status` second, under `assertWritten`. A stop costs the status, not the complaint. |
-| `POST /tenant/tickets` | **The one to watch.** The ticket commits, then attachments insert and *throw* on failure - so the tenant sees an error for a ticket that was in fact filed, and may file it again. |
+| `POST /tenant/tickets` | ~~**The one to watch.** The ticket commits, then attachments insert and *throw* on failure - so the tenant sees an error for a ticket that was in fact filed, and may file it again.~~ **FIXED in `623a88a`, verified by reading the route 2026-09-19.** The attachment insert is `warnIfWriteFailed` and sets an `attachmentWarning` returned beside the ticket; nothing throws after the ticket has committed. |
 | `POST /public/inquiries` | Deliberately cannot half-fail visibly: the thread seed uses `warnIfWriteFailed` because `inquiries.message` is `NOT NULL` and already holds the text. Throwing would show a prospect an error for an inquiry that was received. |
 | `POST` / `PATCH /admin/rooms` | A photo row may lag the unit. Cosmetic - and `room_photos` is empty across all 33 units today. |
 
@@ -1293,9 +1293,22 @@ places where a partial write would have been unrecoverable are the three that
 were given database functions; the one place where a trigger was the right answer
 got a trigger.
 
-The single honest weak spot is `POST /tenant/tickets`, where a failed attachment
+~~The single honest weak spot is `POST /tenant/tickets`, where a failed attachment
 insert reports a ticket that exists as an error. It is worth fixing, and it is
-worth fixing the way the others were - **not** by chaining more awaits.
+worth fixing the way the others were - **not** by chaining more awaits.~~
+
+**Closed in `623a88a`, and re-read on 2026-09-19 to confirm rather than inherit
+the claim.** The attachment insert goes through `warnIfWriteFailed` and sets an
+`attachmentWarning` that travels back beside the ticket, so the tenant is told
+the photo did not attach *and* told not to file it again. Nothing throws once the
+ticket has committed. **There is now no handler in this list that reports a
+committed write as a failure.**
+
+*Left here as a struck line rather than deleted, because this paragraph is the
+one §2 of this document warns about: a defect register that keeps asserting a
+problem after it is fixed sends the next reader's attention somewhere there is
+nothing to find. Six of these were found in one sweep on 2026-09-15; this is the
+same shape, and it was written by the same document that catalogues it.*
 
 **What would justify a fourth database function** is a handler where the
 *second* write is the one that must not be lost. None of the twelve is shaped
