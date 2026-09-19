@@ -439,6 +439,23 @@ export const expenseRecordsFetchFailed = ref(false);
  */
 export const inquiriesFetchFailed = ref(false);
 
+/**
+ * Set when `/admin/tenants` could not be refreshed.
+ *
+ * `fetchTenants` swallows its own error and returns the array untouched, which
+ * on a first load is empty. The residents screen then took that at face value
+ * and rendered `RecordTable`'s empty state: **"Nobody matches"**, with the note
+ * "Nothing on this list answers to this filter."
+ *
+ * That is worse than a blank board. A refused or broken request was reported as
+ * a search result, so the landlady was told her filter excluded everyone - on a
+ * property where 32 of 33 units are occupied. The natural response is to clear
+ * the filter and be told the same thing again.
+ *
+ * Same pattern as [roomsFetchFailed] and the four flags above it.
+ */
+export const tenantsFetchFailed = ref(false);
+
 export const EXPENSE_CATEGORIES = [
   "1 — Supplies",
   "2 — Taxes & Licenses",
@@ -684,6 +701,7 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
+  tenantsFetchFailed.value = false;
 
   try {
     const data = await api.get<any[]>('/admin/tenants');
@@ -729,6 +747,7 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
   } catch (err) {
     console.warn('fetchTenants error:', err);
   }
+  tenantsFetchFailed.value = true;
   return tenants;
 }
 

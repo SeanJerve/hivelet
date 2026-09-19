@@ -3,11 +3,12 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, showToast, asListedUnitCode, type TenantRecord } from '@/lib/systemState';
+import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, tenantsFetchFailed, showToast, asListedUnitCode, type TenantRecord } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Search, UserPlus, Pencil, LogOut, Loader2, Check } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
@@ -426,6 +427,22 @@ async function handleOnboard() {
     </div>
 
     <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
+
+    <!--
+      A failed load must not be reported as a search result.
+
+      `fetchTenants` swallows its error and leaves the array as it found it -
+      empty, on a first load - and the table below then rendered its empty state:
+      "Nobody matches", noting that nothing answers to this filter. So a refused
+      or broken request told the landlady her filter excluded everyone, on a
+      property where 32 of 33 units are occupied, and clearing the filter said
+      the same thing again.
+    -->
+    <UnavailableNote
+      v-else-if="tenantsFetchFailed"
+      message="The resident list could not be loaded. That is not the same as there being no residents — nothing is shown rather than an empty register."
+      @retry="fetchTenants"
+    />
 
     <!--
       A register on a wide screen, a record per tile on a narrow one, and a
