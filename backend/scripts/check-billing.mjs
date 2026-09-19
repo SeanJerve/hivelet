@@ -47,6 +47,43 @@ check('anniversary 10th, ref 3 Jan -> 10 Dec..9 Jan', p4,
   { billingPeriodStart: '2025-12-10', billingPeriodEnd: '2026-01-09',
     dueDate: '2025-12-10', gracePeriodEndDate: '2025-12-10' });
 
+/**
+ * THE HOUR OF THE DAY MUST NOT CHANGE THE CYCLE.
+ *
+ * Every assertion above builds its reference as `new Date(Date.UTC(...))`, which
+ * is midnight UTC - 08:00 Manila. That is the ONE HOUR of the day when the two
+ * calendars agree, so this suite was green while `computeBillPeriod` read UTC
+ * parts off a UTC+8 property and produced the wrong MONTH for anything raised
+ * before breakfast:
+ *
+ *     anniversary day 1, raised 07:30 Manila on 1 Oct 2026
+ *         gave  2026-09-01 .. 2026-09-30, due 2026-09-01
+ *
+ * A bill for a period that has already ended, born overdue - and with a
+ * different `billing_period_start` it slips past migration 038's unique index,
+ * so the same resident paying once before breakfast and once after gets TWO
+ * bills for one month.
+ *
+ * These four instants are the same property day, 1 Oct 2026, either side of the
+ * UTC boundary. They must all produce the same cycle.
+ */
+const MANILA_1_OCT = [
+  ['00:30 Manila', Date.UTC(2026, 8, 30, 16, 30)],
+  ['07:30 Manila', Date.UTC(2026, 8, 30, 23, 30)],
+  ['09:00 Manila', Date.UTC(2026, 9, 1, 1, 0)],
+  ['23:00 Manila', Date.UTC(2026, 9, 1, 15, 0)],
+];
+
+for (const [label, ms] of MANILA_1_OCT) {
+  const p = await computeBillPeriod('2026-07-01', new Date(ms));
+  check(`anniversary 1st, 1 Oct ${label} -> October, whatever the hour`, p.billingPeriodStart, '2026-10-01');
+}
+
+// The same, on an anchor where the boundary crosses the anniversary itself:
+// 15 Oct at 07:00 Manila is 14 Oct in UTC, which used to bill September.
+const pTz = await computeBillPeriod('2026-07-15', new Date(Date.UTC(2026, 9, 14, 23, 0)));
+check('anniversary 15th, 15 Oct 07:00 Manila -> 15 Oct..14 Nov', pTz.billingPeriodStart, '2026-10-15');
+
 // --- grace is zero everywhere (OD-16) ---
 check('grace equals due date', p1.gracePeriodEndDate === p1.dueDate, true);
 

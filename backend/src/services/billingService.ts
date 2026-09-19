@@ -20,7 +20,7 @@ import {
   getGracePeriodDays,
   getLindaFixedWaterCharge
 } from './settingsService.js';
-import { propertyEndOfDay } from '../utils/propertyClock.js';
+import { propertyEndOfDay, propertyParts, isoDateParts } from '../utils/propertyClock.js';
 
 /** A bill's money, rounded to centavos. */
 export interface BillAmounts {
@@ -114,12 +114,60 @@ export async function computeBillPeriod(
   anniversaryDate: string | Date,
   reference: Date = new Date()
 ): Promise<BillPeriod> {
-  const anniversary = new Date(anniversaryDate);
-  const anchorDay = Number.isNaN(anniversary.getTime()) ? 1 : anniversary.getUTCDate();
+  /**
+   * THE PROPERTY'S CALENDAR, NOT THE SERVER'S. This function read
+   * `getUTCFullYear/Month/Date` off `reference`, which defaults to `new Date()`
+   * - so between midnight and 08:00 Manila it was working from YESTERDAY, and
+   * yesterday can be last month.
+   *
+   * That is not a day out. It is a whole cycle out. Measured, not reasoned:
+   *
+   *   anniversary day 1, bill raised 07:30 Manila on 1 Oct 2026
+   *       was  2026-09-01 .. 2026-09-30   due 2026-09-01
+   *       now  2026-10-01 .. 2026-10-31   due 2026-10-01
+   *
+   *   anniversary day 15, bill raised 07:00 Manila on 15 Oct 2026
+   *       was  2026-09-15 .. 2026-10-14
+   *       now  2026-10-15 .. 2026-11-14
+   *
+   * Three things followed from it, all money:
+   *
+   *   1. The resident is billed for a period that has already ended.
+   *   2. The bill is BORN OVERDUE. `isOverdue()` is correct - it uses
+   *      `propertyEndOfDay` - so a due date of 1 September is already past when
+   *      the bill is created on 1 October. They open the portal to a debt that
+   *      was created seconds earlier and is marked late.
+   *   3. **Migration 038's unique index does not catch the duplicate.** It is on
+   *      `(tenant_profile_id, billing_period_start, bill_type)`. A tap at 07:30
+   *      writes `2026-09-01` and a tap at 09:00 writes `2026-10-01` - different
+   *      keys, so both insert. Two bills, one month, from one resident paying
+   *      once before breakfast and once after.
+   *
+   * `propertyClock.ts` exists for exactly this and its own header names
+   * `computeBillPeriod()` as a consumer of the anniversary column. The sweep
+   * that converted seven stored dates never reached inside this function.
+   *
+   * `check:billing` could not have caught it: every assertion passes an explicit
+   * reference built as `new Date(Date.UTC(...))`, which is 08:00 Manila - the
+   * one hour of the day when the two calendars agree.
+   *
+   * The ANCHOR takes the same treatment. A date-only column parses to midnight
+   * UTC and `getUTCDate()` is right for it, but both callers pass
+   * `anniversary_date ?? new Date()`, and on that fallback the UTC reading
+   * shifts the anchor day too.
+   */
+  const anchorDay = (() => {
+    if (typeof anniversaryDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(anniversaryDate)) {
+      return isoDateParts(anniversaryDate).day;          // a DATE column, no instant involved
+    }
+    const d = anniversaryDate instanceof Date ? anniversaryDate : new Date(anniversaryDate);
+    return Number.isNaN(d.getTime()) ? 1 : propertyParts(d).day;
+  })();
 
-  const year = reference.getUTCFullYear();
-  const month = reference.getUTCMonth();
-  const day = reference.getUTCDate();
+  const refParts = propertyParts(reference);
+  const year = refParts.year;
+  const month = refParts.month - 1;   // propertyParts is 1-based; the arithmetic below is 0-based
+  const day = refParts.day;
 
   // The cycle that contains `reference`: it starts on the anchor day of this month if we
   // have reached it, otherwise on the anchor day of last month.
