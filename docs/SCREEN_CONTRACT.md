@@ -72,10 +72,11 @@ before the redesign started.
 
 ### `views/InquireView.vue`
 
-2 call(s), **1 of them write**.
+3 call(s), **1 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
+| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
 | reads | `GET /public/rooms` | the public unit catalogue |
 | **writes** | `POST /public/inquiries` | a prospect sends an enquiry |
 
@@ -224,4 +225,4 @@ before the redesign started.
 
 ---
 
-**20 files make 59 distinct calls, 30 of which write.** Generated 2026-09-19.
+**20 files make 60 distinct calls, 30 of which write.** Generated 2026-09-19.

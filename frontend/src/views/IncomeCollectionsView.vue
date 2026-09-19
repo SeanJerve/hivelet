@@ -255,39 +255,77 @@ onMounted(() => {
   loadWaterRates();
 });
 
-const rows = computed(() => {
-  return incomeRecords.filter((r) => {
-    const matchesCluster = selectedCluster.value === 'All' || r.cluster === selectedCluster.value;
-    const query = q.value.toLowerCase().trim();
-    const matchesQuery =
-      !query ||
-      r.unit.toLowerCase().includes(query) ||
-      r.contact.toLowerCase().includes(query) ||
-      r.invoice.toLowerCase().includes(query);
+/**
+ * Every narrowing EXCEPT the cluster.
+ *
+ * Split out so the cluster chips below can count what each one would actually
+ * give you, from the same predicate the list itself uses. A count and a list
+ * computed separately are two things that can disagree, and the number is the
+ * one nobody checks.
+ *
+ * The date handling is the original's, unchanged: a row whose `datePaid` will
+ * not parse is left in rather than silently dropped, and a row with no date at
+ * all is excluded only once a month or year has actually been asked for.
+ */
+function matchesExceptCluster(r: IncomeRecord): boolean {
+  const query = q.value.toLowerCase().trim();
+  if (
+    query &&
+    !r.unit.toLowerCase().includes(query) &&
+    !r.contact.toLowerCase().includes(query) &&
+    !r.invoice.toLowerCase().includes(query)
+  ) {
+    return false;
+  }
 
-    let matchesMonth = true;
-    let matchesYear = true;
-    if (r.datePaid && r.datePaid !== '—') {
-      const d = new Date(r.datePaid);
-      if (!isNaN(d.getTime())) {
-        const itemYear = String(d.getFullYear());
-        const itemMonthName = d.toLocaleString('en-US', { month: 'short' }); 
-        
-        if (filterYear.value !== 'All') {
-          matchesYear = itemYear === filterYear.value;
-        }
-        if (filterMonth.value !== 'All') {
-          matchesMonth = itemMonthName === filterMonth.value;
-        }
-      }
-    } else {
-      if (filterYear.value !== 'All' || filterMonth.value !== 'All') {
+  if (r.datePaid && r.datePaid !== '—') {
+    const d = new Date(r.datePaid);
+    if (!isNaN(d.getTime())) {
+      if (filterYear.value !== 'All' && String(d.getFullYear()) !== filterYear.value) return false;
+      if (
+        filterMonth.value !== 'All' &&
+        d.toLocaleString('en-US', { month: 'short' }) !== filterMonth.value
+      ) {
         return false;
       }
     }
-    
-    return matchesCluster && matchesQuery && matchesMonth && matchesYear;
-  });
+  } else if (filterYear.value !== 'All' || filterMonth.value !== 'All') {
+    return false;
+  }
+
+  return true;
+}
+
+const rows = computed(() =>
+  incomeRecords.filter(
+    (r) =>
+      matchesExceptCluster(r) &&
+      (selectedCluster.value === 'All' || r.cluster === selectedCluster.value)
+  )
+);
+
+/**
+ * The counts, which are also the filter.
+ *
+ * The same control the room and rate directory uses, for the same reason: the
+ * figures and the way of narrowing the list are one thing rather than two that
+ * can drift. This was a dropdown, which said nothing about how much was in
+ * each cluster until you picked one and looked.
+ *
+ * Counted over everything the OTHER filters already allow, so a chip reading
+ * 12 gives twelve rows when pressed. Counting the whole ledger instead would
+ * promise rows that the month and year in force would then withhold.
+ */
+const clusterChips = computed(() => {
+  const inScope = incomeRecords.filter(matchesExceptCluster);
+  return [
+    { key: 'All', label: 'Every cluster', count: inScope.length },
+    ...CLUSTERS.map((c) => ({
+      key: c as string,
+      label: c as string,
+      count: inScope.filter((r) => r.cluster === c).length,
+    })),
+  ];
 });
 
 const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
@@ -1033,13 +1071,19 @@ async function exportExcel() {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <label class="ws-field">
-          <span class="sr-only">Cluster</span>
-          <select v-model="selectedCluster" class="ws-select w-auto">
-            <option value="All">Every cluster</option>
-            <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
-          </select>
-        </label>
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Cluster">
+          <button
+            v-for="chip in clusterChips"
+            :key="chip.key"
+            type="button"
+            class="chip"
+            :aria-pressed="selectedCluster === chip.key"
+            @click="selectedCluster = chip.key"
+          >
+            {{ chip.label }}
+            <span class="chip-count">{{ chip.count }}</span>
+          </button>
+        </div>
 
         <label class="ws-field">
           <span class="sr-only">Month</span>
