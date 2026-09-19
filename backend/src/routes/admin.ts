@@ -1254,7 +1254,35 @@ const inquiryStatusSchema = z.object({
    * sets it.
    */
   convertedTenantId: uuid.optional(),
-});
+}).refine(
+  (v) => v.status !== 'Converted' || v.convertedTenantId !== undefined,
+  {
+    path: ['convertedTenantId'],
+    message:
+      'An enquiry marked Converted must name the tenancy it became. Onboard the prospect ' +
+      'first, then link their record here.',
+  }
+);
+
+/**
+ * WHY THAT REFINE EXISTS.
+ *
+ * BR-009 is not "mark the lead as converted" - it is "record WHICH tenancy the
+ * lead became", and `converted_tenant_id` is the only thing that records it. The
+ * status could be set to Converted on its own, which left the inbox looking
+ * tidy and the link it exists for still empty. Half a rule enforced is the half
+ * nobody notices is missing.
+ *
+ * It costs the interface nothing: the only path to Converted in `frontend/src`
+ * is `TenantManagementView.vue`, which already sends `convertedTenantId` on the
+ * same request, straight after onboarding. This makes the contract say what the
+ * one caller already does.
+ *
+ * The link is NOT cleared when the status moves on afterwards. Unlike a ticket's
+ * `resolved_at`, which claims a current state, this records something that
+ * happened: an enquiry that became a tenancy and was later closed still became
+ * that tenancy, and her inbox is better for saying so.
+ */
 
 router.patch(
   '/admin/inquiries/:inquiryId',
