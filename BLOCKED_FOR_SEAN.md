@@ -33,6 +33,80 @@ thing did not work" is not.
 
 ## Open
 
+### B-22 — the landlady cannot log a repair she is told about in person
+
+- **Blocked on:** Kiel, or your say-so. The endpoint exists and works; what is missing is a form,
+  and a form is design. I have not invented one.
+- **What is there:** `POST /admin/tickets` is written, guarded by `TICKET_MANAGE`, audited, and
+  able to mark a unit Under Maintenance. **Nothing in the interface calls it.** The dispatch
+  screen can list, assign, comment on, resolve and delete tickets — every verb except create.
+- **What that means day to day:** the only way a repair enters the system is a resident filing it
+  through the tenant portal (`POST /tenant/tickets`). If she notices a broken pipe herself, or a
+  resident texts her or stops her on the stairs — which with 32 occupied units is most of how
+  this actually happens — there is nowhere to put it.
+- **`check:endpoints` does not catch it.** The vue-router path `/admin/tickets` collides with the
+  API path, so the check sees the route as reached and the unplugged POST is invisible to it.
+- **What I did do:** hardened the handler so it is safe whenever it is wired up. It used to fall
+  back to `.from('rooms').select('id').limit(1)` — an arbitrary unit — when the unit could not be
+  resolved, which would have attached a stranger as the reporter and could have marked their
+  occupied flat Under Maintenance over a typo. Both misses are 400s now (commit `e5a7023`).
+- **What it needs:** a "Log a repair" control on the dispatch screen opening a form with unit,
+  title, description, category, priority, technician, and the "mark this unit under maintenance"
+  checkbox the endpoint already accepts. `TICKET_CATEGORIES` and `TECHNICIANS` in `systemState`
+  are the lists to use.
+- **Raised:** 2026-09-19
+
+### B-21 — 58 income rows are filed under a year their rent period does not fall in
+
+- **Blocked on:** the owner. This is her own book disagreeing with itself, and the data cannot
+  say which half is right. I have not written a correcting migration and will not guess.
+- **The measurement**, taken 2026-09-19 against `monthly_income_records` (937 rows):
+
+  | | rows | rent involved |
+  | :--- | ---: | ---: |
+  | `rent_period_start` year disagrees with the `year` column | **58** | |
+  | — of those, period is exactly **one year ahead** | 48 | |
+  | rows where the **month** also disagrees | 30 | |
+
+  It is not scattered noise. It splits cleanly in two:
+
+  **Group A — 48 December rows whose period is a year ahead.** 27 rows filed `year=2024,
+  month=12` carry periods in **Dec 2025 – Jan 2026** (₱220,250); 21 filed `year=2025, month=12`
+  carry periods in **Dec 2026 – Jan 2027** (₱175,750). Unit 2a makes the pattern plain: an
+  unbroken ₱8,000 monthly run from Jan 2024 to Jul 2026, every row paid at the end of its own
+  month — except the December 2024 one, which is paid 1 Jan 2025 and claims the period
+  **1–31 Dec 2025**, the same period as its genuine Dec 2025 row.
+
+  **Group B — 10 non-December rows whose period is a year behind.** Seven of them are one
+  unit's consecutive Jan–Jul run at ₱10,000 filed under 2026 with periods in 2025.
+
+- **Why it matters now:** 21 rows currently carry rent periods in **Dec 2026 – Jan 2027**, about
+  fifteen months in the future. Anything reading "what period is this receipt for" — the
+  `Rent For` column on the exported report, and the rent-cycle arithmetic under BR-033 — reads
+  those. The ledger's own month grouping is unaffected, because it groups on the `month` column.
+
+- **Why I did not fix it:** subtracting a year from Group A makes all 48 rows agree with **both**
+  their `year` and `month` columns, which is strong evidence it is the right correction — but
+  **14 (room, period) pairs already hold more than one receipt**, and the shift lands three more
+  on top of existing rows (3a 2025-12-04, 2c and 2e 2025-12-28). Those pre-existing duplicates
+  are their own question: a genuine second payment, or the same receipt entered twice. Correcting
+  one defect into another, across ₱396,000 of real records, is not a call I should make alone.
+
+- **What I did instead:** `database/migrations/DIAGNOSTIC_rent_period_year_drift.sql` — read-only,
+  writes nothing. Five queries: the scope, the two groups, every affected row listed for reading
+  against her book, the duplicates that already exist, and the handful of out-of-range payment
+  dates. Run it and the answer is on one screen.
+
+- **The two payment dates that are plainly typed wrong** (§5 of the diagnostic): unit **2g**,
+  Sheena Mae Guianan, `date_paid = 1900-01-17`; and unit **1c**, Daryl Rivero,
+  `date_paid = 2027-02-26` against a rent period starting 2026-02-26 — same day and month, one
+  year out. The other four out-of-range dates are genuine late-December payments for a January
+  period and are correct as they stand.
+
+- **What to ask her:** for a December receipt paid in early January, which does she mean — the
+  December just gone, or the one coming? That single answer settles all 48 of Group A.
+- **Raised:** 2026-09-19
+
 ### B-18 — every `check:all` writes ~45 permanent rows into the owner's audit trail
 
 - **Blocked on:** your judgement. Nothing here is a bug, and the fix is not obvious enough for
