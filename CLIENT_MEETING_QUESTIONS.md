@@ -12,7 +12,9 @@ written to her ledger.**
 > own book during the meeting.
 
 **How to use this:** work top to bottom. Section 1 is money and takes the longest. Section 2 is
-five accounting habits, in the order they are easiest to answer. Section 3 is three quick confirmations. Section 4 is not for her.
+five accounting habits, in the order they are easiest to answer, **plus 2f — three things the
+system had to guess, added 2026-09-19, of which the rent question is the single most valuable
+thing in this document.** Section 3 is three quick confirmations. Section 4 is not for her.
 
 > **A separate round of ten questions — about how the business runs rather than about her books —
 > was answered on 2026-09-17 and is recorded in [`CLIENT_ANSWERS_2026-09-17.md`](CLIENT_ANSWERS_2026-09-17.md).**
@@ -168,6 +170,79 @@ confirm it belongs there.**
 **What we need:**
 ☐ Correct — 2025 was an unusual year for the house, and none of it is a rental cost
 ☐ Some of it should be a rental cost: ____________________________________
+
+---
+
+## 2f. Three things the system had to guess, because her book does not spell them out · **added 2026-09-19**
+
+> **Say this first, and mean it: nothing is broken and no money is missing.** Nobody has used the
+> system to take a payment yet, so none of this has reached a tenant. When her records were copied
+> in, three things her book does not state outright were filled in with a placeholder, and the
+> same placeholder went onto every unit. These are the three, in the order worth asking.
+
+### 2f-i. What is the rent for each unit today?
+
+**This is the big one and it is worth most of the meeting.** The system still holds the prices from
+when the units were first set up. Her receipts show tenants paying **about 1.6x more** than that on
+average — 31 of 33 units disagree with the stored rate.
+
+**Why it matters now:** the rent a tenant is shown, and charged, when they pay online comes from
+that stored price. **If a resident paid through the portal today they would be asked for roughly
+half of what they owe** — across the property, ₱91,850 a month short. The public website advertises
+from the same number, which is why the Penthouse is listed at ₱12,000 when it last let for ₱30,000.
+
+**How to ask it, and it is one question, not thirty-three:** print the list of what each unit last
+paid, put it in front of her, and ask *"are these right?"* Her ledger already implies every answer;
+she only has to confirm or correct.
+
+**Do not infer the rates and write them in.** A rent paid may include something agreed for that
+month. She sets rates; the system records them.
+
+### 2f-ii. What day of the month does each tenant's rent start?
+
+The system currently believes **every** resident's rent starts on the **1st**. Her book says
+otherwise for 29 of the 32: 1a has run from the **7th for 31 straight months**, B2F the 21st, LB
+the 25th, LF the 13th, B2B the 3rd — each unbroken across its whole recorded history.
+
+**Sixteen can be read straight out of her receipts** and need no question. **Sixteen cannot**, and
+these are the ones to ask about:
+
+| | which units | why her book cannot settle it |
+| :--- | :--- | :--- |
+| end of the month | **3c, B3B**, and less cleanly **2g, 3d, 1e** | the receipts follow the last day — 31st, 30th, 28th in February — then sit on the 28th from March 2026. Probably "end of the month", but probably is not good enough to write into her records |
+| changed this year | **1b, 1g, 1h, 2c, 2e, 2f, 3b, 3f, 3g, B3F, F2F** | the day moved at some point in the last year. Either the resident changed or the day was renegotiated, and the book cannot say which |
+
+**Why it matters:** this day decides what period a receipt covers and when a bill falls due. Every
+receipt entered from now on would be stamped with the wrong month for those units — and worse, the
+system would flag the administrator as being wrong when she typed the **correct** dates.
+
+### 2f-iii. How many people live in these seven units right now?
+
+Water is ₱200 a head (BR-014), so this number is money. The system currently thinks **one person
+lives in every unit**.
+
+Most can be read from her receipts. **Seven changed within the last four months**, and a change
+that recent is as likely to be real as a slip — so they need her, not a guess:
+
+| | units |
+| :--- | :--- |
+| went up to 2 recently | **1h, B3B, B3F** |
+| dropped to 1 recently | **2e, 3b, 3d, 3g** |
+
+**Tell her this while the subject is open, as a check rather than a complaint:** her own records
+show **1b and 1f each holding 3 people in a 2-person unit**, and have done for eleven straight
+months. That is a fact about the property rather than an error, and the system records a note
+whenever a payment is taken for more people than a unit holds. It is worth confirming she knows.
+
+### 2f-iv. One word on her screen
+
+Her admin screen calls the move-in money **"Advance rent"** in four places. On 2026-09-17 she
+described that money as the **deposit** — held while the tenant lives there, spent at move-out on
+fixing and maintaining the unit, and *"whatever is left of that entire expenses will be refunded."*
+
+**Nothing has been renamed.** "Advance" is her own word and may well be what she wants to keep.
+**Ask: should the screen say "Deposit", or leave it as "Advance rent"?** Either is fine; we only
+need to know which she reads more easily. The amount itself is correct and is not changing.
 
 ---
 
