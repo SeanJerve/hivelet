@@ -1825,6 +1825,25 @@ router.post(
      */
     const spans = monthlySpansFrom(periodStart, monthsCovered);
 
+    /**
+     * A supplied end date still wins, which is BR-033's posture and not a detail.
+     *
+     * Judgement log SS 3.1: the system computes the right value, pre-fills it, and
+     * **accepts a different one** - 937 rows were migrated with periods from her
+     * own book and a back-dated correction is legitimate. Building the spans from
+     * `periodStart` alone quietly dropped `dateCoveredEnd`, so a period she had
+     * typed herself was replaced by a derived one. That is precisely the tightening
+     * SS 3.1 warns will "break real entry", and I introduced it in the commit that
+     * added the spans.
+     *
+     * The supplied end describes the whole stretch the receipt covers, so it
+     * belongs on the LAST span. For a single month that is the only span, which
+     * restores the previous behaviour exactly.
+     */
+    if (dateCoveredEnd) {
+      spans[spans.length - 1].end = dateCoveredEnd;
+    }
+
     // `periodStart`/`periodEnd` describe the whole stretch the receipt covers and
     // are used only for the divergence audit above. Each ROW carries its own
     // month's start and end, from `spans`.
