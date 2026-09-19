@@ -42,13 +42,13 @@
 -- year per unit, not on every monthly entry, so multiplying it by the months a
 -- receipt covers would invent money she did not collect.
 --
--- APPLY AS: a person, the same way 023 and 027 are applied. Not applied by the
--- session that wrote it.
+-- APPLIED 2026-09-19 by Claude, on Sean's instruction ("try it now yourself").
+-- Read back from pg_proc afterwards with all thirteen arguments in place, and
+-- the ledger unchanged at 937 rows - installing a function writes no data.
 --
--- AFTER APPLYING: `POST /api/admin/income-records` with monthsCovered > 1 starts
--- working. Until then it returns a 501 naming this migration, and single-month
--- recording - which is every collection ever made through this interface - is
--- untouched either way.
+-- So `POST /api/admin/income-records` with monthsCovered > 1 now works. The 501
+-- branch in the handler stays: it is what any environment without this migration
+-- will answer, and saying which migration is missing is more useful than a 500.
 
 BEGIN;
 

@@ -71,7 +71,13 @@ thing did not work" is not.
 
 ---
 
-### B-17 — apply `database/migrations/028`: unit codes are unique only by case
+### ~~B-17 — apply `database/migrations/028`: unit codes are unique only by case~~ — **APPLIED 2026-09-19**
+
+> **Applied by Claude on your instruction.** `idx_rooms_room_number_lower` exists as
+> `UNIQUE (lower(room_number))`; the collision guard passed with 0, and nothing else moved -
+> 33 rooms, 937 income rows. `1A` can no longer be created beside `1a`, at the database level
+> as well as in the handler.
+
 
 - **Blocked on:** it is a live schema change, so it is yours — the same way `023` and `027` are.
   **The code half is already in and pushed**; this is the database backstop
@@ -153,7 +159,14 @@ thing did not work" is not.
 
 ---
 
-### B-19 — apply `database/migrations/029` to turn on multi-month receipts
+### ~~B-19 — apply `database/migrations/029` to turn on multi-month receipts~~ — **APPLIED 2026-09-19**
+
+> **Applied by Claude on your instruction ("try it now yourself").** `record_income_for_months`
+> reads back from `pg_proc` with all thirteen arguments, and the ledger is unchanged at 937 rows
+> - installing a function writes no data. A multi-month receipt now records one row per month.
+> The 501 branch in the handler stays, because it is what an environment without this migration
+> should answer.
+
 
 - **Blocked on:** applying it. A live schema change, so yours, same as `023` and `027`
 - **Why it exists:** Sean, 2026-09-19 — *"we should follow her way and have a way to accommodate
@@ -764,6 +777,16 @@ thing did not work" is not.
   is one `v-if`.**
 
 ### B-05 — Apply `database/migrations/027` to remove two test repair tickets
+
+> **Retried 2026-09-19 on Sean's instruction, and refused again.** 028 and 029 applied fine the
+> same minute, so it is not access or credentials — it is that this one **deletes rows**, and the
+> environment blocks a destructive statement against a shared database whatever the chat says.
+> The guard was re-checked read-only first and still returns exactly **2**, so the file will do
+> what it says whenever a person runs it. Counts after the other two migrations: still
+> **5 tickets, 2 Submitted** — the junk ones are still on her overview.
+>
+> **This is now the only one of the three left, and it is the one she can see.**
+
 
 - **Blocked on:** Claude Code's safety check refused the live-database change on 2026-09-18,
   although Sean had authorised it in chat. Applying it needs a person.

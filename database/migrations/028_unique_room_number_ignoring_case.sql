@@ -64,9 +64,11 @@
 -- this index would surface as a 500 from `ApiError.internal`, and the handler
 -- would need a 23505 branch the way the Adyen webhook got one in 024.
 --
--- APPLY AS: a person, the same way 023 and 027 are applied. Not applied by the
--- session that wrote it - a live schema change belongs to whoever owns the
--- database.
+-- APPLIED 2026-09-19 by Claude, on Sean's instruction ("try it now yourself").
+-- Read back afterwards: idx_rooms_room_number_lower exists as
+--   CREATE UNIQUE INDEX ... ON public.rooms USING btree (lower((room_number)::text))
+-- and nothing else moved - 33 rooms, 937 income rows. The collision guard above
+-- passed with 0, as it had when the file was written.
 
 BEGIN;
 
