@@ -1030,16 +1030,24 @@ thing did not work" is not.
   rather than a row of zeros. **If you want suppression instead - no line at all - say so; it
   is one `v-if`.**
 
-### B-05 — Apply `database/migrations/027` to remove two test repair tickets
+### B-05 — Apply `database/migrations/027` to remove two test repair tickets · **CLOSED 2026-09-19 — do not run it**
 
-> **Retried 2026-09-19 on Sean's instruction, and refused again.** 028 and 029 applied fine the
-> same minute, so it is not access or credentials — it is that this one **deletes rows**, and the
-> environment blocks a destructive statement against a shared database whatever the chat says.
-> The guard was re-checked read-only first and still returns exactly **2**, so the file will do
-> what it says whenever a person runs it. Counts after the other two migrations: still
-> **5 tickets, 2 Submitted** — the junk ones are still on her overview.
+> **Both tickets are already gone, and 027 must NOT be run now.** Checked on 2026-09-19:
+> neither `ff4f757f-…` nor `9e49c691-…` exists in `maintenance_tickets` any more. Somebody
+> removed them by another route.
 >
-> **This is now the only one of the three left, and it is the one she can see.**
+> The migration's guard requires both rows to exist AND still read `Submitted`. It now finds
+> **0** and would raise *"expected 2 guarded test tickets, found 0"* — harmless, it deletes
+> nothing, but it reads as a failure and would send the next person looking for a fault that
+> is not there.
+>
+> `maintenance_tickets` now holds **3 rows, all Resolved**, and all three are test data too:
+> "Water Pipe Leak under Sink" (1a, reported by the test resident Mark Cruz), "Bed Frame Slat
+> Loose" and "BASAG" (both 1b, reported by Sean). **No real repair has ever been recorded in
+> this system** — which is B-22, the missing form, seen from the other end.
+>
+> Whether those last three should go before the client sees the system is a separate decision
+> and has no migration written for it.
 
 
 - **Blocked on:** Claude Code's safety check refused the live-database change on 2026-09-18,
