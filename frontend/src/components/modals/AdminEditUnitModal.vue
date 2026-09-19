@@ -2,6 +2,7 @@
 import WsModal from '@/components/ui/WsModal.vue';
 import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
+import type { UnitStatus } from '@/lib/canonicalUnits';
 import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Check, Loader2, Upload, ImageOff } from 'lucide-vue-next';
@@ -49,13 +50,45 @@ function normalizeUnitType(val?: string): string {
   return 'Studio';
 }
 
-function mapUnitStatusToOperational(status?: string): 'Available' | 'Occupied' | 'Reserved' | 'Under Maintenance' {
+/**
+ * The exact inverse of `mapOperationalStatus` in systemState, which is what turned
+ * the database value into the `UnitStatus` this modal receives.
+ *
+ * It has to be the inverse, because `operational_status` is sent on every save of
+ * this modal - including a save that only changes the rent. Whatever this returns
+ * is written back over the unit's real standing.
+ *
+ * It was not the inverse. `'pending'` is the `UnitStatus` that `mapOperationalStatus`
+ * produces from a **Reserved** unit, and this mapped it to `'Occupied'`. So opening
+ * a reserved unit and pressing Save - to correct a typo in its description, or set a
+ * photo - silently reclassified it as occupied, and the toast then reported that as
+ * a success. A unit held for someone arriving next month would read as tenanted, and
+ * drop off the list of what is free to let.
+ *
+ * The other three round-tripped correctly by luck rather than by design, and the
+ * branches for 'occupied', 'overdue' and 'reserved' were dead: `UnitStatus` is
+ * (settled | pending | vacant | maintenance) and never carries any of those words.
+ *
+ * Switching exhaustively on the union means adding a fifth `UnitStatus` fails the
+ * build here rather than quietly writing 'Available' over it.
+ */
+function mapUnitStatusToOperational(status?: UnitStatus): 'Available' | 'Occupied' | 'Reserved' | 'Under Maintenance' {
   if (!status) return 'Available';
-  const s = status.toLowerCase();
-  if (s === 'occupied' || s === 'settled' || s === 'pending' || s === 'overdue') return 'Occupied';
-  if (s === 'reserved') return 'Reserved';
-  if (s === 'under maintenance' || s === 'maintenance') return 'Under Maintenance';
-  return 'Available';
+  switch (status) {
+    case 'settled':
+      return 'Occupied';
+    case 'pending':
+      return 'Reserved';
+    case 'maintenance':
+      return 'Under Maintenance';
+    case 'vacant':
+      return 'Available';
+  }
+  // No `default`. A fifth `UnitStatus` reaches this line, and the `never`
+  // assignment fails the build here - which is the point. A default branch
+  // would have silently written 'Available' over whatever it was.
+  const unhandled: never = status;
+  return unhandled;
 }
 
 // Form Fields matching Screenshot 2
@@ -64,7 +97,22 @@ function mapUnitStatusToOperational(status?: string): 'Available' | 'Occupied' |
 const monthlyRate = ref<number>(0);
 const unitType = ref<string>('One-bedroom');
 const editStatus = ref<'Available' | 'Occupied' | 'Reserved' | 'Under Maintenance'>('Available');
-const billingRule = ref<string>('Rent + ₱200 / occupant water');
+/**
+ * How this unit is billed, shown so the rent above can be read in context.
+ *
+ * It is derived, not stored. `buildBillingRule` in systemState composes it from the
+ * water rates on every fetch - ₱200 a head under BR-014, or Linda's fixed monthly
+ * figure under BR-040 - and there is no `billing_rule` column for it to be saved to.
+ *
+ * It was a `required` text input bound to a writable ref, so it invited the landlady
+ * to type a different arrangement. Nothing sent it anywhere. The sentence she typed
+ * survived until the next `fetchRooms`, then reverted, and the bills had been raised
+ * on the real rate the whole time. Read-only and derived, so it can only report.
+ *
+ * Changing how a unit is billed means changing the water rate, which BR-003 keeps a
+ * dated history of - it is not free text on a unit.
+ */
+const billingRule = computed(() => unit.value?.billingRule || '');
 // Empty by default. This field is written straight to `rooms.description` on
 // save, so a default of 'Private bathroom, Submetered electricity, Study desk'
 // meant that opening a unit and pressing Save could overwrite the unit's real
@@ -116,7 +164,6 @@ watch(
       unitType.value = normalizeUnitType(newVal.type);
       editStatus.value = mapUnitStatusToOperational(newVal.status);
       editVisibility.value = newVal.visibility === 'Hidden' ? 'Hidden' : 'Published';
-      billingRule.value = newVal.billingRule || 'Rent + ₱200 / occupant water';
       amenitiesText.value = newVal.desc || newVal.amenities.join(', ');
       editPhotoUrl.value = newVal.photo || '';
       uploadedFileName.value = '';
@@ -204,16 +251,28 @@ async function handleSave() {
   try {
     const allRooms = await api.get<{ id: string; room_number: string }[]>('/admin/rooms');
     const matched = allRooms.find((r) => r.room_number.toLowerCase() === unit.value?.unitCode.toLowerCase());
-    if (matched) {
-      await api.patch(`/admin/rooms/${matched.id}`, {
-        current_price: Number(monthlyRate.value),
-        description: amenitiesText.value,
-        room_type: unitType.value,
-        operational_status: editStatus.value,
-        visibility_status: editVisibility.value,
-        photo: editPhotoUrl.value,
-      });
+
+    // A miss used to fall straight through: no PATCH was sent, and the code below
+    // still refreshed, still wrote the new figures onto the local object, and still
+    // showed "Unit 2C Updated - Status set to Occupied at ₱6,500/mo." The rent had
+    // not moved. The next hard refresh put the old figure back, and the only record
+    // of the edit was a success message the landlady had already believed.
+    //
+    // Nothing recoverable happens on a miss, so it is an error, not a quiet no-op.
+    if (!matched) {
+      throw new Error(
+        `No unit numbered "${unit.value.unitCode.toUpperCase()}" came back from the server, so nothing was saved. Reload the unit list and try again.`
+      );
     }
+
+    await api.patch(`/admin/rooms/${matched.id}`, {
+      current_price: Number(monthlyRate.value),
+      description: amenitiesText.value,
+      room_type: unitType.value,
+      operational_status: editStatus.value,
+      visibility_status: editVisibility.value,
+      photo: editPhotoUrl.value,
+    });
 
     // Refresh reactive rooms cache across the app
     await fetchRooms();
@@ -369,7 +428,11 @@ async function handleSave() {
 
         <label class="ws-field">
           How it is billed
-          <input v-model="billingRule" type="text" class="ws-input w-full" required />
+          <input :value="billingRule" type="text" class="ws-input w-full" readonly disabled />
+          <span class="ws-hint">
+            Worked out from the water rate, not stored on the unit. To change it, change the
+            water rate - the rate history is what the bills are raised from.
+          </span>
         </label>
 
         <label class="ws-field">
