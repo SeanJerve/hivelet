@@ -159,6 +159,35 @@ thing did not work" is not.
 - **☐ You run:** migration **038**, in the paste-ready file. One index, no rows.
 - **Raised and fixed:** 2026-09-19
 
+### B-35 — I left 37 test rows in her live database, and here is the migration that removes them
+
+- **Mine, not hers.** Testing the write paths meant using them, and there is no staging copy. All
+  37 were created on **2026-09-19** by this audit.
+- **The proof they are all mine:** *her ledger has never had a voided row.* Every one of the **35
+  voided income records** is dated today and named after the probe that made it — TEST, EDGE,
+  CAP, RACE, MM, HARD, PP, PROTO. The single **voided expense entry** reads *"FUNCTIONAL TEST …
+  - edited"*. Checked against every voided row in both tables, not sampled.
+- **Nothing is in any total.** They are voided, so the ledger reads **937 live rows and
+  ₱8,086,250.00** with them present, exactly as it did before. This is litter, not liability.
+- **The one that actually shows is the enquiry.** `inquiries` has no voided state, so *"REHEARSAL
+  Test / QA audit test enquiry, safe to ignore/delete"* is sitting in her Inquiries screen as
+  **Pending**, looking like somebody who wants a unit.
+- **☐ You run:** migration **039**, from its own file rather than the combined one — it names 37
+  UUIDs and they should not be retyped. Every row is named by **id and nothing else**: no pattern
+  on the invoice number, no date range. A pattern can widen; a list of UUIDs cannot. Each DELETE
+  also carries `AND voided_at IS NOT NULL` as belt and braces.
+- **Checked before writing it:** `monthly_income_records` has **no inbound foreign keys** at all,
+  and `expense_property_allocations` is **ON DELETE CASCADE** — both read from `pg_constraint`,
+  so nothing dangles. Afterwards both void counts read 0 and the ledger total is unchanged.
+- **Why a hard delete, when the first rule is never to delete:** that rule is about *her* data.
+  These are debris from testing her system, and leaving them voided-but-present means every
+  future reader has to work out what they are.
+- **The lesson worth keeping:** a functional audit of write paths against a live database leaves
+  a footprint, and the footprint has to be removed by the same discipline as everything else — a
+  numbered migration with exact ids, not a quick DELETE. **Check this queue for a cleanup entry
+  before assuming the database is clean.**
+- **Raised:** 2026-09-19
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet

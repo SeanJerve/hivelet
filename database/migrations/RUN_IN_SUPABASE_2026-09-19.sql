@@ -32,6 +32,13 @@
 --        the unique index that makes the second one lose.
 --        -> one index. No rows at all.
 --
+--   039  Removes the 37 rows THIS AUDIT put in her database while testing
+--        write paths - 35 voided income rows, 1 voided expense, and one test
+--        enquiry that shows in her Inquiries screen as Pending. None of them
+--        is a record of hers. **Run this one from its own file**, not from
+--        here: it names 37 UUIDs and they should not be retyped.
+--        -> database/migrations/039_remove_the_audit_test_rows_from_her_ledger.sql
+--
 -- The full reasoning for each is in its own numbered file. This one exists so
 -- nothing is missed, not to replace them.
 --
@@ -174,3 +181,7 @@ WHERE  schemaname='public' AND tablename='bills'
 --
 -- Lower both baselines in backend/scripts/check-ledger-integrity.mjs to match,
 -- so they keep guarding at the new level rather than leaving slack.
+--
+-- Then run 039 from its own file. After it, both void counts read 0, and the
+-- ledger still reads 937 live rows and PHP 8,086,250.00 - unchanged, because
+-- voided rows were never in that total.
