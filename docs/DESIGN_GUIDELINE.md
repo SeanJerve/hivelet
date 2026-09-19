@@ -137,6 +137,21 @@ Every pressable control scales to `0.97` on `:active`, over 160 ms. This is not 
 touch screen it is the only feedback there is — no hover, no cursor — and a tap that does not move
 reads as a tap that did not land, so people press again.
 
+The pill, icon and chip classes carry it themselves. **A control that is none of those gets it from
+`press`**, or from `press-plate` on a large surface, where `0.97` moves the edges far enough to read
+as a shove rather than a press. The public pages are drawn in their own editorial language and wear
+none of the workspace classes, so for a while thirty-six controls there answered a press with
+nothing at all.
+
+Two things about those two classes are load-bearing, and both are commented in `index.css`:
+
+- They set `scale`, not `transform`, so they **compose** with a control that already positions
+  itself rather than replacing its transform.
+- They sit **outside every `@layer`**. Every control they go on also carries Tailwind's
+  `transition-colors`, and a utility beats the components layer outright — written inside
+  `components`, the transition was silently dropped and the scale snapped. Taking `transition` over
+  means restating the colour transitions too, which is what the extra lines in that rule are.
+
 - **Curves are tokens.** `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)` for anything a person just
   did; `--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)` for something moving across the screen.
   The built-in CSS easings are too weak to read as intentional.
@@ -258,6 +273,11 @@ aligned figures, not a redesign.
 - Force a failed load and confirm no section still shows a figure.
 - Tab through it and confirm the focus ring shows on every control.
 - Measure contrast for any new colour pair.
+- Measure tap targets at 375 px. WCAG 2.2 AA asks for 24×24 CSS px, and the exception is a target
+  **inside a sentence**, not one that merely happens to be a text link. Sixteen of them across the
+  public pages sat at 16–20 px, including the landlady's tap-to-call number and the only navigation
+  the landing page has on a phone. `py-1` takes a text link to 27–28 px. Nothing in the markup tells
+  you how tall a bare link ends up, which is why this one has to be measured rather than read.
 
 **Four of these are now checks rather than habits**, because each caught something a person had
 already read past:

@@ -829,7 +829,7 @@ const isExportingArchive = ref(false);
                 urgent {{ urgentTickets.length === 1 ? 'repair' : 'repairs' }} open
               </span>
             </p>
-            <router-link to="/admin/tickets" class="text-sm font-semibold underline underline-offset-4">
+            <router-link to="/admin/tickets" class="press inline-block py-1 text-sm font-semibold underline underline-offset-4">
               Open maintenance dispatch
             </router-link>
           </div>

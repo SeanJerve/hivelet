@@ -830,7 +830,7 @@ async function submitInquiry() {
 
           <button
             type="button"
-            class="press inline-block text-xs text-muted-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:text-foreground hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
+            class="press inline-block py-1 text-xs text-muted-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:text-foreground hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
             @click="closeInquiry"
           >
             Cancel

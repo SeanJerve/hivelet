@@ -386,14 +386,14 @@ async function handleSendReply() {
               <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-soft">
                 <a
                   :href="`tel:${activeInquiry.phone}`"
-                  class="tabular inline-flex items-center gap-1.5 font-semibold text-ink hover:text-brand"
+                  class="press tabular inline-flex items-center gap-1.5 py-1 font-semibold text-ink hover:text-brand"
                 >
                   <Phone class="size-3.5" aria-hidden="true" />{{ activeInquiry.phone }}
                 </a>
                 <a
                   v-if="activeInquiry.email"
                   :href="`mailto:${activeInquiry.email}`"
-                  class="inline-flex min-w-0 items-center gap-1.5 hover:text-brand"
+                  class="press inline-flex min-w-0 items-center gap-1.5 py-1 hover:text-brand"
                 >
                   <Mail class="size-3.5 shrink-0" aria-hidden="true" />
                   <span class="truncate">{{ activeInquiry.email }}</span>
