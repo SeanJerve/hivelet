@@ -14,7 +14,7 @@ without touching appearance.
 
 ## 0. The headline
 
-**Seventeen defects found and fixed, six of them on the paths the owner's money takes.** Every one
+**Eighteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
 was invisible: none produced an error, a failing suite, or a console warning. Four more findings
 need a person and are `B-15`, `B-16`, `B-17` and `B-18`.
 
@@ -378,6 +378,47 @@ rather than in SQL alone: **134 business + 8,142 auth + 1,589 export = 9,865**.
 permanent rows** into that table, and 88% of the trail is now machine traffic. Nothing is wrong
 with auditing them, and `DELETE` is revoked by design — but the ratio only worsens, and what to
 do about it trades a security record against a readable one. That is a decision, not a defect.*
+
+### 2.18 The check for outstanding repairs could never find any
+
+Resolving or closing a ticket asks whether the unit has other tickets still open, and returns it
+from **Under Maintenance** if not. The query was:
+
+```js
+.in('status', ['Submitted', 'In Progress', 'Open'])
+```
+
+**`'Open'` is not a value of `ticket_status_type`.** It is the *frontend's* word for
+`'Submitted'` — `systemState.ts` maps it on the way in and the handler maps it back twenty lines
+above — so it should never have reached a query. And asking the database for it does not return
+nothing, it throws. Run against the live database rather than reasoned about:
+
+```
+ERROR: 22P02: invalid input value for enum ticket_status_type: "Open"
+```
+
+**It failed open, which is the direction that costs something.** `error` was not destructured, so
+the throw left the result `null`, `!remainingUnresolved` was **true**, and the branch concluded
+*"nothing is still open"* and cleared the unit. Resolve one ticket on a unit with three
+outstanding and it comes out of Under Maintenance anyway.
+
+Demonstrated on real rows: unit `1A` holds **Submitted, Resolved, Submitted**. The old predicate
+threw and read as 0 unresolved — it would have freed the unit. The corrected one returns **2**
+and correctly leaves it alone.
+
+**Rehearsal step 21 asserts the unit returns to Occupied, so the rehearsal would have passed on a
+query that never once worked** — a test confirming the bug rather than catching it. And
+`check:writes` does not cover it: this is a **read**, and that suite guards writes that discard
+their result.
+
+Grepping for siblings found the identical query in the **delete** path — the same step of the
+same rehearsal. Both halves are fixed in both places: the enum value, and the swallowed error,
+which now refuses to report a unit clear when it could not check.
+
+*Everything else checked out. Every other status filter in `backend/src` names real enum
+members, and the values the frontend sends match their schemas — including the unit modal, whose
+own comment records this exact class being fixed once before, when 13 non-Studio units could not
+be saved at all.*
 
 ---
 
