@@ -299,7 +299,7 @@ the same as *was refused*.
 **☐ For the rehearsal:** once a bill, a payment and a ticket exist, re-run this. Those three are
 the untested half of BR-024, and they only become testable after a person has used the system.
 
-### B-38 — Linda's water would land in the wrong column the first time anyone records it
+### B-38 — Linda's water landed in the wrong column · **CLOSED 2026-09-19 — 041 applied**
 
 - **What is wrong.** BR-040 puts LF and LB on a fixed monthly water charge, and her ledger keeps
   it in its own column — all **26 historical Linda rows** read `water_payment = 0`,
@@ -321,7 +321,9 @@ the untested half of BR-024, and they only become testable after a person has us
   units water_payment is 0."* True of the imported data, false of anything the application would
   have written. That is the exact failure CLAUDE.md names — a comment asserting a precondition
   the surrounding code stopped maintaining.
-- **☐ You run:** migration **041**. One trigger, no rows changed.
+- **☑ APPLIED 2026-09-19.** Confirmed from `pg_trigger`: `trg_route_linda_water` fires BEFORE
+  INSERT OR UPDATE OF the four relevant columns. Ledger unchanged — 937 rows, ₱8,086,250.00
+  remitted — and `check:ledger` reports 0 misfiled.
 - **Why a trigger, and not fixing the callers.** I wrote the caller-by-caller version first and
   threw it away. There are **four** write paths — the single-month insert,
   `record_income_for_months`, `settle_verified_payment`, and the ledger edit — and two of them

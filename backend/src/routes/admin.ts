@@ -3373,14 +3373,55 @@ router.patch(
     const tech = parsed.data.assigned_technician ?? parsed.data.assignedTechnician;
     if (tech !== undefined) patch.assigned_technician = tech;
     
+    /**
+     * THE TIMESTAMPS FOLLOW THE TRANSITION, NOT THE REQUEST.
+     *
+     * This used to stamp `resolved_at`, `closed_at` and `closed_by` from the
+     * value in the payload, with no reference to the status the ticket was
+     * already in. Two consequences, and both are the double-click shape that
+     * has now turned up five times in this codebase:
+     *
+     *   1. Closing a ticket that is ALREADY Closed rewrote `closed_at` and
+     *      `closed_by`. That is the same defect as voiding a void row - it
+     *      destroys who did it first, which is the one thing the column exists
+     *      to record. A second click on Close was enough.
+     *
+     *   2. REOPENING left the old stamps behind. A ticket moved from Resolved
+     *      back to In Progress kept a `resolved_at`, so it read as resolved and
+     *      in progress at once, and any report counting resolved tickets by that
+     *      column counted it twice over its life.
+     *
+     * So: stamp only on the way IN to a state, and clear on the way OUT. All
+     * three columns are nullable - checked in `information_schema` - so clearing
+     * them is a legal state and not a workaround.
+     */
     if (parsed.data.status !== undefined) {
       let dbStatus = parsed.data.status;
       if (dbStatus === 'Open') dbStatus = 'Submitted';
       patch.status = dbStatus;
-      if (dbStatus === 'Resolved') patch.resolved_at = new Date().toISOString();
-      if (dbStatus === 'Closed') {
-        patch.closed_at = new Date().toISOString();
-        patch.closed_by = req.user!.profileId;
+
+      const wasClosed = before.status === 'Closed';
+      const wasResolvedOrClosed = before.status === 'Resolved' || wasClosed;
+
+      if (dbStatus === 'Resolved') {
+        // Entering Resolved from an open state stamps it; Closed -> Resolved is
+        // a reopen of sorts and keeps the original resolution time.
+        if (!wasResolvedOrClosed) patch.resolved_at = new Date().toISOString();
+        if (wasClosed) { patch.closed_at = null; patch.closed_by = null; }
+      } else if (dbStatus === 'Closed') {
+        // Only the FIRST close is recorded. A second one changes nothing.
+        if (!wasClosed) {
+          patch.closed_at = new Date().toISOString();
+          patch.closed_by = req.user!.profileId;
+        }
+      } else {
+        // Back to Submitted or In Progress: it is neither resolved nor closed
+        // any more, and the record should not claim otherwise.
+        if (wasResolvedOrClosed) {
+          patch.resolved_at = null;
+          patch.closed_at = null;
+          patch.closed_by = null;
+        }
       }
     }
 
