@@ -876,6 +876,31 @@ router.post(
     if (profileError) throw ApiError.internal(profileError.message);
     if (!profile) throw ApiError.notFound('Tenant profile not found.');
 
+    /**
+     * An administrator is not a tenancy, and this route ends by writing
+     * `account_status: 'inactive'`.
+     *
+     * `role` was already being selected here and never read. Nothing else
+     * stopped it either: the guard above is `requirePermission`, which asks who
+     * is CALLING, not who is being vacated. So this endpoint, pointed at an
+     * administrator's own profile id, deactivates that administrator - and
+     * `authService` checks `account_status` after a valid password, so the
+     * owner would be refused her own login with a correct one. Recovering that
+     * means editing the live database, which on this project means Sean and a
+     * migration.
+     *
+     * Not reachable from the interface, which is why it has not happened:
+     * `GET /admin/tenants` filters `.in('role', ['tenant','prospect'])`, so an
+     * administrator never appears in the list the Vacate button is drawn from.
+     * That is the list endpoint knowing something this one was never told.
+     */
+    if (profile.role === 'admin') {
+      throw ApiError.forbidden(
+        'That profile is an administrator, not a tenancy. Vacating ends a tenancy and ' +
+          'deactivates the account, which would lock this administrator out of the system.'
+      );
+    }
+
     // Find active assignment
     const { data: activeAssignments } = await db
       .from('room_assignments')
