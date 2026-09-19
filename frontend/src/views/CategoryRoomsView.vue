@@ -156,6 +156,24 @@ const rateCeiling = computed(() =>
   categoryUnits.value.length ? Math.max(...categoryUnits.value.map((u) => u.current_price)) : 0
 );
 
+/**
+ * The floors this property actually has, newest-first down the page.
+ *
+ * Read off the live list rather than written as four. The building's shape is
+ * already stated in several documents here and two of them have been wrong
+ * about it, so a fifth hardcoded copy is a liability rather than a shortcut.
+ * With the list unreachable this is empty and the stack below does not render
+ * at all, which is the honest state - the page refuses to draw a building it
+ * could not read.
+ */
+const floorsDescending = computed(() => {
+  const seen = new Set<number>();
+  for (const r of publicRooms.value) {
+    if (typeof r.floor === 'number') seen.add(r.floor);
+  }
+  return [...seen].sort((a, b) => b - a);
+});
+
 const activeUnit = computed(
   () =>
     categoryUnits.value.find(
@@ -515,18 +533,72 @@ async function submitInquiry() {
               class="absolute inset-0 size-full object-cover"
               loading="eager"
             />
-            <!-- Only one of the 33 units has a photograph on file. The rest used
-                 to borrow a stock image of an unrelated apartment; a tonal
-                 frame says what is true instead. -->
-            <div v-else class="absolute inset-0 grid place-items-center px-6 text-center">
-              <div>
-                <p class="text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
-                  No photograph yet
-                </p>
-                <p class="mt-3 mx-auto max-w-xs text-xs sm:text-sm text-muted-foreground-soft leading-relaxed">
-                  Ask for a viewing and you can see it for yourself.
+            <!--
+              Only one of the thirty-three units has a photograph on file, so
+              this is not the edge case - it is what almost every visitor sees.
+              It used to borrow a stock image of an unrelated apartment, which
+              was replaced by an honest tonal frame: two small grey lines
+              centred in a panel about 600 by 640, apologising and saying
+              nothing else.
+
+              Honest, and still the largest thing on the page saying nothing. A
+              prospect choosing between twenty studios wants to know WHERE the
+              unit is - stairs, heat and street noise all follow from the
+              floor - and the page stated that only as "BH — Floor 1" in small
+              type in the column beside it.
+
+              So the panel carries the building instead: one rule per floor,
+              top-most floor at the top, the unit's own floor drawn solid and
+              named. The floors come from the live list, so this is the same
+              data the rest of the page is answerable to.
+
+              This is also where the floor plans go when Sean exports them.
+              They are coming as SVG (HANDOFF_TO_DESIGN section 7b), and an SVG
+              plan with the unit shapes carrying their codes replaces this
+              stack in the same box without the section being rebuilt.
+            -->
+            <div v-else class="absolute inset-0 flex flex-col justify-between px-6 py-8 sm:px-10 sm:py-10">
+              <p class="text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
+                No photograph yet
+              </p>
+
+              <!--
+                Measured at 375px: the panel is 281 tall and this stack filled
+                280 of it, which is a fit with nothing left. A fifth floor, or
+                one label wrapping, would have pushed it out. The gaps and both
+                fixed columns step down below `sm` so the rule itself keeps the
+                width instead.
+              -->
+              <div v-if="floorsDescending.length > 0" class="mx-auto w-full max-w-md">
+                <ul class="flex flex-col gap-2 sm:gap-3">
+                  <li v-for="f in floorsDescending" :key="f" class="flex items-center gap-4">
+                    <span
+                      :class="[
+                        'w-16 sm:w-20 shrink-0 text-[0.7rem] tracking-[0.14em] uppercase',
+                        f === activeUnit.floor ? 'text-foreground' : 'text-muted-foreground-soft',
+                      ]"
+                    >Floor {{ f }}</span>
+                    <span
+                      aria-hidden="true"
+                      :class="[
+                        'flex-1 transition-colors',
+                        f === activeUnit.floor ? 'h-0.5 bg-foreground' : 'h-px bg-border-strong',
+                      ]"
+                    />
+                    <span
+                      class="w-14 sm:w-24 shrink-0 text-right text-[0.7rem] tracking-[0.14em] uppercase text-foreground"
+                    >{{ f === activeUnit.floor ? 'This unit' : '' }}</span>
+                  </li>
+                </ul>
+                <p class="sr-only">
+                  Unit {{ activeUnit.room_number.toUpperCase() }} is on floor {{ activeUnit.floor }}
+                  of {{ floorsDescending.length }}.
                 </p>
               </div>
+
+              <p class="max-w-xs text-xs sm:text-sm text-muted-foreground-soft leading-relaxed">
+                Ask for a viewing and you can see it for yourself.
+              </p>
             </div>
 
             <!--
