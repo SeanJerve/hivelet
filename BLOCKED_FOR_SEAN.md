@@ -914,23 +914,28 @@ thing did not work" is not.
 
 </details>
 
-### B-20 — unit F1 says floor 3, and its own description says 1st Floor
+### B-20 — unit F1 says floor 3, and its own description says 1st Floor · **ANSWERED, migration ready to run**
 
-- **What it is:** `rooms` holds `floor = 3` for unit **F1** (Front Apartment), and the same row's
-  `description` reads **"Front Apartment 1st Floor"**. One of the two is wrong and only the owner
-  knows which.
-- **How it was found:** the public unit row now prints the floor label directly above the
-  description, so the page said "3rd Floor" and "Front Apartment 1st Floor" about the same unit
-  in adjacent lines. Checked against all 33 published rows: F1 is the ONLY one whose description
-  disagrees with its `floor`. Every other row agrees - 1st, 2nd, 3rd and Penthouse, unanimously.
-- **Why I did not fix it:** it is live data, and it is not a formatting question. If `floor` is
-  wrong then F1 sits on the wrong floor everywhere in the application - the directory, the floor
-  stack on the category page, and any floor plan drawn later. If the description is wrong it is a
-  typo. Guessing picks one and hides the other.
-- **What to ask her:** is F1 on the 1st floor or the 3rd?
-- **Then:** a numbered migration in `database/migrations/` correcting whichever field she names.
-  One row, one column. Do not touch the other 32.
-- **Raised:** 2026-09-19
+- **What it was:** `rooms` held `floor = 3` for unit **F1** (Front Apartment) while the same row's
+  `description` read **"Front Apartment 1st Floor"**. The only one of the 33 published units whose
+  description disagreed with its floor. Sean's own floor-plan export named it
+  `FRONT1STFLOOR-F1.svg`, agreeing independently.
+- **Sean's answer, 2026-09-19:** *"it's a separate building that consists of 3 units. F1 is 1st
+  floor of that building, up it is 2 units which are the F2F and F2B."* So the Front Apartment is
+  its own two-storey building. `floor` is the floor WITHIN a building, not a property-wide level.
+  F2F and F2B are already correct at `floor = 2`; only F1 was wrong.
+- **☑ Already done in the interface.** The category page's floor stack was drawing every floor on
+  the PROPERTY, so it told somebody looking at F2F they were on the second of four levels of a
+  building that has two. It groups by `cluster_code` now: the Back Apartment reads 3 levels, the
+  Front Apartment 2. Verified on the live page.
+- **☐ What is left for you — one migration, one row, one column.**
+  `database/migrations/034_f1_is_on_the_first_floor_of_the_front_apartment.sql`. Run
+  `npm run backup` first, as with any change to live data. It carries its own verification: the
+  second SELECT should return **0 rows**, meaning every published unit's description now agrees
+  with its floor. The undo is in the header.
+- **Until it runs**, the Front Apartment stack reads "3rd Floor / 2nd Floor" instead of
+  "2nd Floor / 1st Floor" — the count is right, one label is not.
+- **Raised:** 2026-09-19. **Answered:** 2026-09-19.
 
 ### B-12 — the public FAQ quoted an electricity rate the system does not hold · **mostly answered**
 

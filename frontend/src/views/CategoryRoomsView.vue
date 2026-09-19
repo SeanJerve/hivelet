@@ -157,19 +157,35 @@ const rateCeiling = computed(() =>
 );
 
 /**
- * The floors this property actually has, newest-first down the page.
+ * The floors of THE BUILDING THIS UNIT IS IN, newest-first down the page.
  *
- * Read off the live list rather than written as four. The building's shape is
+ * It used to take every floor on the property, which was wrong in a way the
+ * data alone would not have revealed. Sean explained on 2026-09-19 that the
+ * Front Apartment is its OWN building: F1 on the lower level, with F2F and
+ * F2B above it. The Back Apartment and the Linda units are likewise not
+ * storeys of the main boarding house.
+ *
+ * (Phrased without a count beside the word "units" on purpose - check:ledger
+ * reads that shape as a claim about the property, whose answer is 33, and it
+ * is right to.)
+ *
+ * So `floor` is the floor WITHIN a building, and a stack drawn from the whole
+ * property told somebody looking at F2F that they were on the second of four
+ * levels of a building that has two. Grouping by `cluster_code` is what makes
+ * the drawing true.
+ *
+ * Read off the live list rather than written down: the property's shape is
  * already stated in several documents here and two of them have been wrong
- * about it, so a fifth hardcoded copy is a liability rather than a shortcut.
- * With the list unreachable this is empty and the stack below does not render
- * at all, which is the honest state - the page refuses to draw a building it
- * could not read.
+ * about it. With the list unreachable this is empty and the stack does not
+ * render at all, which is the honest state - the page will not draw a building
+ * it could not read.
  */
 const floorsDescending = computed(() => {
+  const cluster = activeUnit.value?.cluster_code;
+  if (!cluster) return [];
   const seen = new Set<number>();
   for (const r of publicRooms.value) {
-    if (typeof r.floor === 'number') seen.add(r.floor);
+    if (r.cluster_code === cluster && typeof r.floor === 'number') seen.add(r.floor);
   }
   return [...seen].sort((a, b) => b - a);
 });
@@ -592,8 +608,10 @@ async function submitInquiry() {
                 </ul>
                 <p class="sr-only">
                   Unit {{ activeUnit.room_number.toUpperCase() }} is on the
-                  {{ floorLabelFor(activeUnit.floor) }}, one of
-                  {{ floorsDescending.length }} levels.
+                  {{ floorLabelFor(activeUnit.floor) }} of the
+                  {{ activeUnit.cluster_code }}, which has
+                  {{ floorsDescending.length }}
+                  {{ floorsDescending.length === 1 ? 'level' : 'levels' }}.
                 </p>
               </div>
 
