@@ -478,6 +478,35 @@ written something was refused, and the row counts confirm nothing was written.**
 | Adyen webhook, unsigned | **401** |
 | local checkout page | **404**, as it must be while a real gateway is configured |
 
+### The webhook, proven end to end with a genuine signature
+
+The webhook is the **only thing in this system that writes an online payment**, and it had been
+verified once — on 2026-09-15, through a tunnel. Re-proved on 2026-09-19 against the running
+server, by signing notifications with the real HMAC key exactly as Adyen does:
+
+| Sent | Answer |
+| :--- | :--- |
+| correctly signed, valid Basic Auth | **200 `[accepted]`** |
+| forged signature | **401** Invalid HMAC signature |
+| **signed, then the amount altered** | **401** — so the signature covers the payload, not merely its presence |
+| no signature at all | **401** |
+| correctly signed, **wrong** Basic Auth | **401 Unauthorized** — a different message, so Basic Auth runs first and a bad caller never reaches the crypto |
+
+**Deliberately used `REPORT_AVAILABLE`, not `AUTHORISATION`.** The handler acknowledges anything
+that is not an authorisation, audits it, and writes no ledger row — so the whole chain could be
+proved without creating a payment against the owner's records. Counted afterwards: **payments
+still 15, income still 937**, and exactly one audit row, carrying the reference. The four
+refused notifications wrote nothing at all.
+
+*One nuance worth knowing before anyone investigates a payment:* an Adyen notification's audit
+row carries `entity_id = 00000000-0000-0000-0000-000000000000`. `audit_logs.entity_id` is a
+`uuid` and a `pspReference` is not one, so `recordAudit` substitutes a sentinel rather than
+losing the row. **Search `new_values->>'pspReference'`, not `entity_id`.**
+
+What is still unproven is a *completed GCash payment* by a real person — that needs the tunnel,
+a tenant session and someone watching, and it is the one thing `TESTING_REHEARSAL.md` says
+stops at Adyen's page.
+
 ---
 
 ## 3. Checked and found sound
