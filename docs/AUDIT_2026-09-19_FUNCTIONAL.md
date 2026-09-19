@@ -14,7 +14,7 @@ without touching appearance.
 
 ## 0. The headline
 
-**Thirteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
+**Fourteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
 was invisible: none produced an error, a failing suite, or a console warning. Two more findings
 need a person and are `B-15` and `B-16`.
 
@@ -284,6 +284,27 @@ The comment case is not hypothetical: the register schema's own note *about* the
 uses the words `requireAuth` and `requirePermission`, so a scan counting prose would have read
 the explanation of a hole as the guard for it.
 
+### 2.14 Five dates came from the viewer's clock rather than the property's
+
+`lib/propertyDate.ts` exists because form defaults used UTC and offered **yesterday** to anyone
+collecting rent before 08:00 Manila. Its header says both halves "anchor to the property, not to
+whoever happens to be looking". Five sites still did the looking-at version, all deriving a
+**year** from `new Date()`:
+
+| | |
+| :--- | :--- |
+| `AdminOverviewView` | `CURRENT_YEAR` / `CURRENT_MONTH` — and **every** live figure filters on them: year to date, the month chart, the archive list, six labels |
+| `IncomeCollectionsView` | the year filter list, so the current year could be missing from it |
+| `IncomeCollectionsView`, `ExpensesLedgerView` | the export's fallback year. Both workbooks are per-year and "All Years" falls back to this one, so a wrong year exports the wrong workbook |
+| `TenantPaymentsView` | the resident's own payment-history year |
+
+Demonstrated rather than reasoned: at **02:00 Manila on 1 January 2027** the property is in 2027
+and a UTC browser still reports 2026.
+
+Left alone: `TenantTicketsView`'s `new Date().toISOString()` on a note, which is a **moment**
+rather than a calendar date. UTC is correct there. The backend was swept too and is clean — its
+only match is the comment in `propertyClock.ts` describing its own fix.
+
 ---
 
 ## 2b. The public surface, probed rather than read
@@ -337,6 +358,24 @@ start at ₱4,500"* sentence rather than quoting the seed.
 | **`B-15`** | Zero-water receipts cannot be recorded, and every multi-month settlement in her book is one row per month — which is not the shape `monthsCovered` produces. Both hers |
 | **`B-16`** | During one outage `/category/studio` says availability cannot be determined while `/public` lists 33 units as Available. Design account's lane and file |
 | **`B-05`** | Still open, re-confirmed live today: two junk tickets on `1A`, one titled with a slur, still `Submitted` and still on the owner's overview. Migration `027` written, not applied |
+
+---
+
+## 4b. The money, re-checked at the end against the database
+
+Run after every change in this document, so the figures below are the state the session leaves
+behind rather than the one it found. **Every one matches the value
+`TESTING_REHEARSAL.md` recorded on 2026-09-17**, and the FY2026 line matches what the
+administrator's dashboard printed in the browser at the start of this session — screen and
+catalogue agreeing, checked independently.
+
+| | Database, 2026-09-19 |
+| :--- | ---: |
+| total gross rent, 937 rows | **₱7,772,250.00** |
+| water collections | **₱314,000.00** |
+| total remitted | **₱8,086,250.00** |
+| 50% column, BH rows | **₱2,343,375.00** |
+| FY 2026 to date, remitted | **₱1,826,850.00** |
 
 ---
 
