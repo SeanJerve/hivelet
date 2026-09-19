@@ -2084,8 +2084,25 @@ router.patch(
     if (contactName) updatePatch.contact_name = contactName;
     if (invoiceNumber) updatePatch.invoice_number = invoiceNumber;
     if (rentAmount !== undefined) updatePatch.rent_amount = rent;
-    if (occupants !== undefined) {
-      updatePatch.occupants = occ;
+    if (occupants !== undefined) updatePatch.occupants = occ;
+    /**
+     * Water is derived from TWO things - the occupants and the unit - so it is
+     * rewritten when either of them was supplied, not when the occupants were.
+     *
+     * The guard was `if (occupants !== undefined)`, with `water_payment` set
+     * inside it. Moving a record to a different unit without touching the
+     * headcount therefore left the previous unit's water on it: a row moved
+     * onto `LB`, whose water is a fixed charge (BR-040), would keep
+     * `occupants x rate` from wherever it came from, and `remitted_amount` is
+     * `GENERATED ALWAYS AS (rent_amount + water_payment)`, so the owner's
+     * remitted total would carry the wrong figure with nothing to notice.
+     *
+     * Latent, not live: the ledger's edit form sends `roomNumber` and
+     * `occupants` on every save, so the old condition was always true and the
+     * water always recomputed. It held because of what the single caller
+     * happens to send, which is a precondition rather than a guarantee.
+     */
+    if (occupants !== undefined || roomNumber) {
       updatePatch.water_payment = water;
     }
     if (paymentMethod) {
