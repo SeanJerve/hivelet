@@ -343,6 +343,39 @@ the untested half of BR-024, and they only become testable after a person has us
   a Linda unit, which correctly flags all 31 of its rows.
 - **Raised:** 2026-09-19
 
+### B-39 — rate-change attribution claimed the newest row, not the row it caused · **fixed; 042 waiting**
+
+- **Why this one matters now:** **B-29 is about to put up to 31 real rate changes through this
+  path in a single sitting.** BR-003's whole value is an honest record of who changed a rate and
+  when. This is the code that writes it.
+- **What was wrong.** After changing a unit's price, the handler read *"the latest history row
+  for this room"* and stamped its own `created_by` on it. Correct when changes are spaced out;
+  wrong for two changes to the **same unit** in quick succession — both read the same newest row,
+  so one administrator's attribution overwrites the other's and a second row is left with nobody
+  against it.
+- **☑ Fixed.** It now matches the **exact transition** — `previous_price` and `new_price` are
+  NOT NULL on that table, so the trigger always records it — **and** `created_by IS NULL`. The
+  trigger writes the row unattributed and this is the only thing that fills it in, so an
+  unattributed row is by definition unclaimed: two concurrent changes take two different rows,
+  and re-running can never overwrite an attribution already there.
+- **The live data is the defect's own shape.** The four rows in that table are two *identical*
+  transitions repeated — `PH 12,000 → 12,001` twice and the reverse twice. Sequentially they
+  attributed correctly, which is why nothing was damaged; concurrently they are exactly the
+  collision described above.
+- **☐ You run: migration 042**, and this is my litter again. Those four rows came from verifying
+  that migration 020's trigger fires — a change and a revert, twice. **PH's rate never actually
+  changed**, and it sits at 12,000 today exactly where it started.
+  - Leaving them is worse than the income test rows were: those were voided and outside every
+    total. **There is no voided state here — a row in this table is a claim that a rate
+    changed**, and right now it claims the Penthouse changed price four times in one day.
+  - The real changes are about to land. They should not open with four that are noise.
+  - Named by id, not by a pattern: a pattern on the reason string would also match every genuine
+    change she makes next week, because that is the string the code writes.
+- **Worth keeping in view:** this table held **zero** rows before 2026-09-19. No rate has ever
+  been changed through the system, which is why the rate card is still the seeded value — the
+  root of B-29.
+- **Raised and fixed:** 2026-09-19
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet

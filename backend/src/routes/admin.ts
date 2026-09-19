@@ -334,10 +334,35 @@ router.patch(
      */
     const previousPrice = Number((before as Record<string, unknown>).current_price);
     if (parsed.data.current_price !== undefined && parsed.data.current_price !== previousPrice) {
+      /**
+       * FIND THE ROW THIS CHANGE CAUSED, not simply the newest one.
+       *
+       * This read "the latest history row for this room" and claimed it. That is
+       * right whenever rate changes are spaced out, and wrong in the one
+       * situation that is actually coming: B-29 has up to 31 rates to correct in
+       * a single sitting, and two changes to the SAME unit in quick succession
+       * would both read the same newest row - one administrator's attribution
+       * overwriting the other's, and a second row left with nobody against it.
+       *
+       * `previous_price` and `new_price` are NOT NULL on this table - checked in
+       * `information_schema` - so the trigger always records the exact
+       * transition, and the transition identifies the row far better than its
+       * timestamp does.
+       *
+       * `created_by IS NULL` is the other half. The trigger writes the row
+       * unattributed and this is the only thing that fills it in, so an
+       * unattributed row is by definition one nobody has claimed. Two concurrent
+       * changes therefore claim two different rows instead of fighting over one,
+       * and re-running this can never overwrite an attribution that is already
+       * there.
+       */
       const { data: recorded, error: findError } = await db
         .from('room_price_history')
         .select('id')
         .eq('room_id', req.params.roomId)
+        .eq('previous_price', previousPrice)
+        .eq('new_price', parsed.data.current_price)
+        .is('created_by', null)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -353,10 +378,14 @@ router.patch(
       if (!recorded) {
         // The trigger is the only thing that writes this row, so its absence means
         // the trigger is gone - which would make every future rate change silent.
+        // Now that the search is narrowed to the exact transition, the message
+        // says which one, so a missing trigger is told apart from a row that
+        // exists but was attributed by something else a moment earlier.
         throw ApiError.internal(
-          'The rate was changed, but no history row was written for it. The trigger ' +
+          `The rate was changed from ${previousPrice} to ${parsed.data.current_price}, but no ` +
+            'unattributed history row was found for that change. The trigger ' +
             '`trg_record_room_price_change` (migration 020) may be missing - check it before ' +
-            'changing any further rates.'
+            'changing any further rates. The change itself IS recorded in the audit log.'
         );
       }
 
