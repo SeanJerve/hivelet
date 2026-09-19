@@ -148,6 +148,12 @@ Not yours to do — listed so you know what is moving.
 - ☐ `CONTINUE_HERE.md` says "Last updated 2026-09-17" and predates the redesign and everything since
 - ☑ ~~Two queue entries are both numbered **B-01**~~ — settled 2026-09-18. The open one keeps the
   bare number (it is cited in a code comment); the closed one is now dated in its heading
+- ☑ ~~Two queue entries were both numbered **B-12**~~ — settled 2026-09-19, the same way. The open
+  one (the electricity question) keeps the bare number because `CLIENT_CONFIRMATION.md` cites it and
+  that sheet goes to the owner; the resolved one (this machine's `.env` keys) became **B-30**, and
+  the single reference to it inside the queue moved with it. **B-01 and B-09 still show as
+  duplicates and are meant to** — both are struck-through tombstones that say so in their own
+  headings. Checking for collisions means reading the headings, not counting the numbers
 
 ---
 

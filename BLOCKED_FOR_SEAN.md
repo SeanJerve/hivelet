@@ -736,7 +736,11 @@ thing did not work" is not.
   sign-in with the value now in `creds.txt` succeeds.
 - **Raised:** 2026-09-19 by Claude, functional-audit session
 
-### ~~B-12 — this machine's `.env` still holds the legacy keys you disabled on 13 September~~ — **RESOLVED 2026-09-19**
+### ~~B-30 — this machine's `.env` still holds the legacy keys you disabled on 13 September~~ — **RESOLVED 2026-09-19**
+
+> Renumbered from B-12 on 2026-09-19. Two different items carried that number: this one and
+> the open electricity question further down. The open one keeps B-12 because
+> `CLIENT_CONFIRMATION.md` cites it and that sheet goes to the owner.
 
 > [!NOTE]
 > **The keys arrived and the database is reachable from this machine.** Kiel pasted the current
@@ -1231,7 +1235,7 @@ thing did not work" is not.
   "availability unavailable" state. The second is implemented. The plates no longer print a
   vacancy figure they cannot verify; with `/public/rooms` unreachable each one reads
   **"Availability could not be loaded"** and prints no number at all. Verified against the
-  running app with the backend returning 500 (B-12).
+  running app with the backend returning 500 (B-30).
 
   Two things changed underneath it. The plates now group units by `room_type` rather than by
   the first character of the unit code, so they agree with the category page your `e1d6e68`
