@@ -1003,6 +1003,49 @@ body {
 }
 
 
+/* ------------------------------------------------------------------- page --
+ * The one page gutter, shared by the public pages and the workspace.
+ *
+ * They had drifted apart and it showed: the workspace lays its screens out in
+ * `max-w-[1600px] px-4 sm:px-6` from App.vue, and the public pages each
+ * repeated `max-w-[1400px] px-6 sm:px-8 lg:px-10` - fifteen copies of a
+ * different measure. Two hundred pixels narrower with wider gutters is enough
+ * that moving between the landing page and the workspace feels like moving
+ * between two products, which is exactly what Sean said it felt like.
+ *
+ * One class, so they cannot drift again. The workspace keeps applying it from
+ * App.vue for its own routes.
+ */
+.ws-page {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+@media (min-width: 640px) {
+  .ws-page {
+    padding-inline: 1.5rem;
+  }
+}
+
+/*
+ * The vertical rhythm of a public section.
+ *
+ * These were `py-20 sm:py-28` and in one place `py-24 sm:py-32 lg:py-40` -
+ * up to 160px of air above and below every band, against the workspace's
+ * `py-6` and `gap-5`. The public pages are editorial and should breathe more
+ * than a dashboard, but not five times more. This is generous and recognisably
+ * the same system.
+ */
+.ws-band {
+  padding-block: 3rem;
+}
+@media (min-width: 640px) {
+  .ws-band {
+    padding-block: 4rem;
+  }
+}
+
 /* ----------------------------------------------------------------- reveal --
  * Content that appears when a disclosure opens: a unit row, an FAQ answer.
  *

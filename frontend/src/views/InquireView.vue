@@ -113,7 +113,7 @@ async function submitInquiry() {
 </script>
 
 <template>
-  <div class="flex-1 w-full font-editorial bg-canvas">
+  <div class="ws-focus flex-1 w-full font-editorial bg-canvas">
     <div class="grid min-h-screen lg:grid-cols-2">
 
       <!-- Left: the form -->
@@ -122,7 +122,7 @@ async function submitInquiry() {
         <div class="flex items-start justify-between gap-6">
           <RouterLink
             to="/public"
-            class="press text-xl font-semibold tracking-tight text-ink hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+            class="press text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
           >
             Hivelet
           </RouterLink>
@@ -132,7 +132,7 @@ async function submitInquiry() {
             <p class="mt-1 text-sm font-medium text-ink">{{ LANDLADY.name }}</p>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press mt-0.5 inline-block py-1 text-sm text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+              class="press mt-0.5 inline-block py-1 text-sm text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
@@ -237,7 +237,7 @@ async function submitInquiry() {
         <p class="mt-12 text-xs text-ink-soft">
           <RouterLink
             to="/public"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Back to the property
           </RouterLink>

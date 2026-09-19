@@ -17,8 +17,8 @@ import { LANDLADY } from '@/lib/systemState';
 </script>
 
 <template>
-  <footer class="w-full bg-night text-on-night font-editorial mt-auto">
-    <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-24">
+  <footer class="ws-focus on-dark w-full bg-night text-on-night font-editorial mt-auto">
+    <div class="ws-page ws-band">
 
       <div class="grid gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
 
@@ -42,7 +42,7 @@ import { LANDLADY } from '@/lib/systemState';
           <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Property</h2>
           <ul class="mt-5 space-y-2.5 text-sm">
             <li>
-              <RouterLink to="/public" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
+              <RouterLink to="/public" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Overview
               </RouterLink>
             </li>
@@ -56,18 +56,18 @@ import { LANDLADY } from '@/lib/systemState';
               also what `resolveSlug` falls back to.
             -->
             <li>
-              <RouterLink to="/category/studio" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
+              <RouterLink to="/category/studio" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Rentable units
               </RouterLink>
             </li>
             <li>
               <!-- Was a second link to /public, which went nowhere in particular. -->
-              <RouterLink to="/inquire" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
+              <RouterLink to="/inquire" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Register your interest
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/login" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
+              <RouterLink to="/login" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Sign in
               </RouterLink>
             </li>
@@ -78,7 +78,7 @@ import { LANDLADY } from '@/lib/systemState';
           <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Contact</h2>
           <ul class="mt-5 space-y-2.5 text-sm">
             <li>
-              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
+              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 {{ LANDLADY.phone }}
               </a>
             </li>
@@ -87,7 +87,7 @@ import { LANDLADY } from '@/lib/systemState';
                 href="https://www.facebook.com/michelle.millete.16"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors"
+                class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
               >
                 Facebook<span class="sr-only"> (opens in a new tab)</span>
               </a>

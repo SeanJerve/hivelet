@@ -128,6 +128,15 @@ No text below 12 px.
 - **Fields** are `ws-field` wrapping the control, so the label names it without needing `for`.
   `ws-input`, `ws-select`, `ws-textarea` for the box; `ws-hint` for the sentence underneath, which
   reads at 13 px because it is prose and gets read.
+- **Page gutter:** every page, public and workspace, uses `ws-page` - 1600px, 16px of gutter
+  rising to 24px at `sm`. The public pages used to repeat `max-w-[1400px] px-6 sm:px-8 lg:px-10`
+  in fifteen places, 200px narrower with wider gutters, and moving between the landing page and the
+  workspace felt like moving between two products.
+- **Section rhythm:** `ws-band` on a public band. It was up to 160px of air against the workspace's
+  24px; editorial pages should breathe more than a dashboard, not five times more.
+- **Registers:** `ws-table` inside `ws-table-wrap` on a `rounded-tile bg-tile` card, on the public
+  pages as well. A row then highlights to `--canvas`, which is the only reason the public table
+  used to highlight to white: it had no surface of its own to be brighter than.
 - **Focus:** wrap a screen in `ws-focus`. Keyboard focus then shows a 3 px ring, dark on light
   surfaces and light inside `on-dark` tiles. Never remove it.
 

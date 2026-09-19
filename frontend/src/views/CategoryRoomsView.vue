@@ -360,7 +360,7 @@ async function submitInquiry() {
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col w-full bg-canvas font-editorial">
+  <div class="ws-focus flex-1 flex flex-col w-full bg-canvas font-editorial">
 
     <!--
       This page draws its own masthead, in the three-line lockup the landing
@@ -369,10 +369,10 @@ async function submitInquiry() {
       first thing that gave the seam away.
     -->
     <header class="w-full border-b border-line">
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 pt-7 pb-6 flex items-start justify-between gap-6 sm:gap-10">
+      <div class="ws-page pt-7 pb-6 flex items-start justify-between gap-6 sm:gap-10">
         <RouterLink
           to="/public"
-          class="press shrink-0 text-xl font-semibold tracking-tight text-ink hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+          class="press shrink-0 text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
         >
           Hivelet
         </RouterLink>
@@ -380,21 +380,21 @@ async function submitInquiry() {
         <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-ink">
           <RouterLink
             to="/public"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Property
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/inquire"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Inquire Now
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/login"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Sign In
           </RouterLink>
@@ -410,7 +410,7 @@ async function submitInquiry() {
       field at every width, where the stepped scale jumps at breakpoints.
     -->
     <section aria-label="Category overview" class="w-full">
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 pt-16 pb-12 sm:pt-24 sm:pb-16">
+      <div class="ws-page ws-band">
 
         <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
           Kind of unit
@@ -460,14 +460,14 @@ async function submitInquiry() {
       aria-label="Kind of unit"
       class="w-full border-t border-line"
     >
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10">
+      <div class="ws-page">
         <ul class="flex flex-wrap items-baseline gap-x-8 gap-y-3 py-5 sm:gap-x-12">
           <li v-for="c in CATEGORIES" :key="c.key">
             <RouterLink
               :to="`/category/${c.slug}`"
               :aria-current="c.key === selectedCategoryKey ? 'page' : undefined"
               :class="[
-                'press inline-flex items-baseline gap-2 py-1 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink',
+                'press inline-flex items-baseline gap-2 py-1 text-sm transition-colors',
                 c.key === selectedCategoryKey
                   ? 'text-ink underline underline-offset-4 decoration-1 decoration-ink'
                   : 'text-ink-soft hover:text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink',
@@ -482,7 +482,7 @@ async function submitInquiry() {
     </nav>
 
     <!-- The shape that is about to arrive: a frame, its figures beside it, then the plates. -->
-    <div v-if="isLoading" class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-16">
+    <div v-if="isLoading" class="ws-page py-16">
       <SkeletonDetail />
     </div>
 
@@ -500,7 +500,7 @@ async function submitInquiry() {
     />
 
     <section v-else-if="categoryUnits.length === 0" class="w-full border-t border-line">
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
+      <div class="ws-page ws-band">
         <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
           Nothing of this kind is listed
         </h2>
@@ -508,7 +508,7 @@ async function submitInquiry() {
           Try another kind above, or
           <RouterLink
             to="/inquire"
-            class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+            class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >ask the landlady</RouterLink>
           what is coming free.
         </p>
@@ -523,7 +523,7 @@ async function submitInquiry() {
         separator the rest of the public site uses.
       -->
       <section aria-label="The unit being looked at" class="w-full border-t border-line">
-        <div class="max-w-[1400px] mx-auto w-full grid lg:grid-cols-[1fr_26rem]">
+        <div class="ws-page grid lg:grid-cols-[1fr_26rem]">
 
           <div class="relative aspect-[4/3] lg:aspect-auto lg:min-h-[30rem] border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden">
             <img
@@ -695,7 +695,7 @@ async function submitInquiry() {
         alone is not a state a screen reader can hear; `aria-pressed` carries it.
       -->
       <section aria-label="The units of this kind" class="w-full border-t border-line">
-        <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-16 sm:py-24">
+        <div class="ws-page ws-band">
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
             <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
@@ -718,7 +718,7 @@ async function submitInquiry() {
               type="button"
               :aria-pressed="u.room_number === activeUnit.room_number"
               :class="[
-                'press-plate group block w-full text-left cursor-pointer transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink',
+                'press-plate group block w-full text-left cursor-pointer transition-opacity duration-500',
                 isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
               ]"
               @click="selectUnit(u.room_number)"
@@ -903,7 +903,7 @@ async function submitInquiry() {
 
           <button
             type="button"
-            class="press inline-block py-1 text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors cursor-pointer"
+            class="press inline-block py-1 text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
             @click="closeInquiry"
           >
             Cancel

@@ -282,7 +282,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col w-full bg-canvas">
+  <div class="ws-focus flex-1 flex flex-col w-full bg-canvas">
     <BookViewingPrompt />
     <!--
       Editorial full-bleed property hero.
@@ -302,7 +302,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       Type uses fluid typography: `clamp(2.5rem, 8vw, 7rem)` to keep the display line
       proportional to the full-bleed field at every viewport width.
     -->
-    <section class="relative w-full bg-night text-white font-editorial overflow-hidden">
+    <section class="on-dark relative w-full bg-night text-white font-editorial overflow-hidden">
       <!-- Crisp entrance photograph background (unblurred, leveled) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
         <!--
@@ -331,7 +331,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
       </div>
 
-      <div class="relative z-10 max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 flex flex-col min-h-[clamp(34rem,94vh,58rem)] pt-7 pb-10 sm:pb-14">
+      <div class="relative z-10 ws-page flex flex-col min-h-[clamp(34rem,94vh,58rem)] pt-7 pb-10 sm:pb-14">
 
         <!--
           Navigation is drawn over the hero rather than in a bar above it, so
@@ -351,21 +351,21 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           -->
           <RouterLink
             to="/public"
-            class="press shrink-0 text-xl font-semibold tracking-tight hover:text-white/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors drop-shadow-sm"
+            class="press shrink-0 text-xl font-semibold tracking-tight hover:text-white/65 transition-colors drop-shadow-sm"
           >
             Hivelet
           </RouterLink>
 
           <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light drop-shadow-sm">
-            <button @click="scrollToSection('categories')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Category Section</button>
+            <button @click="scrollToSection('categories')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">Category Section</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <button @click="scrollToSection('faqs')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">FAQs</button>
+            <button @click="scrollToSection('faqs')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">FAQs</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <RouterLink to="/inquire" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Inquire Now</RouterLink>
+            <RouterLink to="/inquire" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">Inquire Now</RouterLink>
             <span aria-hidden="true" class="pr-2">,</span>
-            <button @click="scrollToSection('location')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Location</button>
+            <button @click="scrollToSection('location')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">Location</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <RouterLink to="/login" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Sign In</RouterLink>
+            <RouterLink to="/login" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">Sign In</RouterLink>
           </nav>
         </header>
 
@@ -406,7 +406,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       counting.
     -->
     <section aria-label="Property at a glance" class="w-full bg-canvas font-editorial">
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-24 sm:py-32 lg:py-40">
+      <div class="ws-page ws-band">
 
         <h2 class="text-center font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(1.9rem,6vw,5.25rem)]">
           33 Units, 4 Floors
@@ -420,7 +420,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
     </section>
 
     <!-- 1. Category Explorer (Centered) -->
-    <div id="categories" class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28 scroll-mt-20 font-editorial">
+    <div id="categories" class="ws-page ws-band scroll-mt-20 font-editorial">
       <section class="space-y-14">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
@@ -452,11 +452,11 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           Each row is a real RouterLink, so middle-click, open-in-new-tab and
           the native Enter handling all work. The whole row is the target.
         -->
-        <div v-else class="border-t border-ink">
+        <div v-else class="overflow-hidden rounded-tile bg-tile">
           <p class="sr-only">Four kinds of unit. Each row opens that kind.</p>
 
           <div
-            class="hidden border-b border-line py-3 text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:gap-6"
+            class="hidden border-b border-line px-5 py-3 text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:gap-6"
           >
             <span>Kind</span>
             <span>What it is</span>
@@ -468,7 +468,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             v-for="c in CATEGORIES"
             :key="c.key"
             :to="'/category/' + c.slug"
-            class="press-plate group block border-b border-line py-5 transition-colors hover:bg-tile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:items-baseline sm:gap-6"
+            class="press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-canvas sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:items-baseline sm:gap-6"
           >
             <span class="flex items-baseline gap-2 text-base font-medium text-ink">
               {{ c.title }}
@@ -516,7 +516,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       populated for occupied units and this is a public page.
     -->
     <section id="availability" class="w-full bg-canvas border-t border-line font-editorial scroll-mt-20">
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
+      <div class="ws-page ws-band">
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
@@ -552,37 +552,54 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           importing the workspace surfaces, which belong to the admin and tenant
           side and would read as a different site.
         -->
-        <div v-if="!roomsFetchFailed" class="mt-10 hidden sm:block">
-          <table class="w-full border-collapse text-sm">
+        <!--
+          The workspace's own register, not a second one.
+
+          This was a hand-rolled table set in the editorial manner - hairline
+          rules, no surface under it, sitting straight on the page. Every
+          register in the admin and tenant screens is `ws-table` inside
+          `ws-table-wrap` on a `rounded-tile bg-tile` card, and the difference
+          was one of the loudest things telling a reader the public site was a
+          different product.
+
+          It also fixes the hover Sean objected to. A row on the old table had
+          no surface of its own, so highlighting it meant painting it WHITE -
+          brighter than the page. On a white tile the workspace highlight is
+          `--canvas`, the pale green used on the active-tenants register, and
+          `ws-table` brings it with no extra rule here.
+        -->
+        <div v-if="!roomsFetchFailed" class="mt-8 hidden overflow-hidden rounded-tile bg-tile sm:block">
+          <div class="ws-table-wrap">
+          <table class="ws-table">
             <caption class="sr-only">
               Every published unit on the property, with its cluster, type, floor, monthly rate and current status.
             </caption>
             <thead>
-              <tr class="border-b border-ink text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft">
-                <th scope="col" class="py-3 pr-4 text-left font-normal">Unit</th>
-                <th scope="col" class="py-3 px-4 text-left font-normal">Cluster</th>
-                <th scope="col" class="py-3 px-4 text-left font-normal">Type</th>
-                <th scope="col" class="py-3 px-4 text-left font-normal">Floor</th>
-                <th scope="col" class="py-3 px-4 text-right font-normal">Price</th>
-                <th scope="col" class="py-3 px-4 text-left font-normal">Status</th>
-                <th scope="col" class="py-3 pl-4 w-12"><span class="sr-only">Details</span></th>
+              <tr>
+                <th scope="col">Unit</th>
+                <th scope="col">Cluster</th>
+                <th scope="col">Type</th>
+                <th scope="col">Floor</th>
+                <th scope="col" class="num">Price</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="w-12"><span class="sr-only">Details</span></th>
               </tr>
             </thead>
             <tbody id="all-units-body">
               <template v-for="u in visibleUnits" :key="u.id">
-                <tr class="border-b border-line">
-                  <td class="py-4 pr-4 font-medium text-ink">{{ u.unitCode }}</td>
-                  <td class="py-4 px-4 text-ink-soft">{{ u.cluster }}</td>
-                  <td class="py-4 px-4 text-ink-soft">{{ u.type }}</td>
-                  <td class="py-4 px-4 text-ink-soft">{{ u.floorLabel }}</td>
-                  <td class="py-4 px-4 text-right text-ink-soft tabular-nums">{{ peso(u.price) }}</td>
-                  <td class="py-4 px-4 text-ink-soft">{{ publicStatusLabel(u.status) }}</td>
-                  <td class="py-4 pl-4">
+                <tr>
+                  <td class="font-medium text-ink">{{ u.unitCode }}</td>
+                  <td class="text-ink-soft">{{ u.cluster }}</td>
+                  <td class="text-ink-soft">{{ u.type }}</td>
+                  <td class="text-ink-soft">{{ u.floorLabel }}</td>
+                  <td class="num text-ink-soft">{{ peso(u.price) }}</td>
+                  <td class="text-ink-soft">{{ publicStatusLabel(u.status) }}</td>
+                  <td>
                     <button
                       @click="toggleUnit(u.id)"
                       :aria-expanded="openUnitId === u.id"
                       :aria-controls="`unit-panel-${u.id}`"
-                      class="press grid size-8 place-items-center text-ink-soft hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink transition-colors"
+                      class="press grid size-8 place-items-center text-ink-soft hover:text-ink transition-colors"
                     >
                       <span class="sr-only">
                         {{ openUnitId === u.id ? 'Hide' : 'Show' }} details for unit {{ u.unitCode }}
@@ -592,7 +609,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                   </td>
                 </tr>
 
-                <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="border-b border-line bg-tile">
+                <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="bg-canvas">
                   <!--
                     Two columns: what the unit is on the left, where it is on
                     the right.
@@ -667,6 +684,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               </template>
             </tbody>
           </table>
+          </div>
         </div>
 
         <!-- The same units, stacked, for a phone. -->
@@ -676,7 +694,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               type="button"
               :aria-expanded="openUnitId === u.id"
               :aria-controls="`unit-card-${u.id}`"
-              class="press-plate flex w-full items-start justify-between gap-4 py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              class="press-plate flex w-full items-start justify-between gap-4 py-4 text-left"
               @click="toggleUnit(u.id)"
             >
               <span class="min-w-0">
@@ -766,7 +784,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             type="button"
             :aria-expanded="allUnitsShown"
             aria-controls="all-units-body all-units-list"
-            class="press-plate group flex w-full items-baseline justify-between gap-6 pt-5 pb-1 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
+            class="press-plate group flex w-full items-baseline justify-between gap-6 pt-5 pb-1 text-left"
             @click="toggleAllUnits"
           >
             <span class="text-sm text-ink group-hover:text-ink-soft transition-colors">
@@ -785,8 +803,8 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
     </section>
 
     <!-- 2. Frequently Asked Questions (FAQ Section) -->
-    <section id="faqs" class="w-full bg-canvas border-t border-line font-editorial py-20 sm:py-28 scroll-mt-20">
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10">
+    <section id="faqs" class="w-full bg-canvas border-t border-line font-editorial ws-band scroll-mt-20">
+      <div class="ws-page">
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
@@ -809,7 +827,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 type="button"
                 :aria-expanded="openFaqIndex === idx"
                 :aria-controls="`faq-panel-${idx}`"
-                class="press-plate w-full flex items-baseline justify-between gap-6 py-5 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink group"
+                class="press-plate w-full flex items-baseline justify-between gap-6 py-5 text-left group"
                 @click="toggleFaq(idx)"
               >
                 <span class="text-sm sm:text-base text-ink group-hover:text-ink-soft transition-colors">
@@ -842,7 +860,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       address stays in text beside it rather than living only on the map.
     -->
     <section id="location" class="w-full bg-canvas border-t border-line font-editorial scroll-mt-20">
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
+      <div class="ws-page ws-band">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
             Location
@@ -874,7 +892,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                   :href="mapLinkUrl"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+                  class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
                 >Open in Google Maps<span class="sr-only"> (opens in a new tab)</span></a>
                 for directions, or call the landlady for the gate.
               </span>
