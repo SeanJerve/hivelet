@@ -46,6 +46,12 @@ section,item,detail
 1. Columns,copied_period_backup_031.new_period_start,date NULL
 1. Columns,copied_period_backup_031.old_period_end,date NULL
 1. Columns,copied_period_backup_031.old_period_start,date NULL
+1. Columns,date_paid_import_backup_032.corrected_at,timestamp with time zone NOT NULL DEFAULT now()
+1. Columns,date_paid_import_backup_032.how,text NULL
+1. Columns,date_paid_import_backup_032.id,uuid NOT NULL
+1. Columns,date_paid_import_backup_032.invoice_number,text NULL
+1. Columns,date_paid_import_backup_032.new_date_paid,date NULL
+1. Columns,date_paid_import_backup_032.old_date_paid,date NULL
 1. Columns,expense_property_allocations.amount,"numeric(10,2) NOT NULL"
 1. Columns,expense_property_allocations.created_at,timestamp with time zone NULL DEFAULT now()
 1. Columns,expense_property_allocations.expense_entry_id,uuid NOT NULL

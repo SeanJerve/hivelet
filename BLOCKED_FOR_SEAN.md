@@ -33,7 +33,37 @@ thing did not work" is not.
 
 ## Open
 
-### B-27 — every imported payment date is a day early · **migration 032 written, NOT applied**
+### B-28 — a repair cannot be recorded for an empty unit
+
+- **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
+  (B-22). Nothing is broken today; the failure is now legible instead of a 500.
+- **What happens:** `maintenance_tickets.tenant_profile_id` is **NOT NULL** — checked in
+  `information_schema`, not assumed. The table was designed around the tenant portal, where a
+  repair always has the resident who raised it. The admin path has no such guarantee: it read
+  the active tenancy and inserted whatever it found, and for a unit with nobody in it that is
+  `null`.
+- **Found by testing it, 2026-09-19**, not by reading:
+
+  | request | result |
+  | :--- | :--- |
+  | `POST /admin/tickets` for **PH** (vacant) | **500 "Internal server error."** |
+  | the same request for **1a** (occupied) | **201** |
+
+- **Why it matters.** PH is the one vacant unit *and* the one being made ready to let — which
+  is exactly when repairs get logged. And when the form in B-22 is built, this is the first
+  thing that would break.
+- **Fixed as far as is honest:** it now refuses with a clear message — *"That unit has no
+  resident on record. A repair is filed against the resident of the unit, and this one has
+  nobody in it."* — instead of a bare 500.
+- **The real question, for whoever builds the form:** should `tenant_profile_id` be nullable? A
+  repair to an empty flat genuinely has no tenant, so arguably yes. Relaxing it changes what a
+  ticket means and wants deciding alongside the interface, not bolted onto a handler nothing
+  calls.
+- **Do not solve it by attaching the administrator as the reporter.** That invents an
+  attribution, which is the defect class this audit has spent the day removing.
+- **Raised:** 2026-09-19
+
+### B-27 — every imported payment date was a day early · **APPLIED 2026-09-19**
 
 - **Blocked on:** the same permission refusal that stopped 031. The SQL is in
   `database/migrations/032_correct_imported_date_paid.sql`; running it is a copy-paste.
@@ -75,10 +105,29 @@ thing did not work" is not.
   leaves it at the invented 2026-07-01 rather than replacing one invented date with another.
   It is pinned in `check:ledger` for her to answer.
 
-- **Why it is worth doing now rather than later.** Every payment recorded through the app from
-  here on will be dated correctly. Today the wrong rows are all of them, and identifiable in
-  one statement. Once she starts using the system the ledger becomes a mix, and separating
-  them gets harder every week.
+- **APPLIED 2026-09-19.** Backup first: `backups/2026-09-19T09-09-30`. 929 dates shifted a day
+  forward, 5 set from the text cells, 3 left alone. Measured after:
+
+  | | |
+  | :--- | ---: |
+  | live rows | 937 |
+  | remitted total | **8,086,250.00** — unchanged |
+  | dates in the future | 0 |
+  | dates before the ledger starts | 0 |
+  | rows backed up in `date_paid_import_backup_032` | 934 |
+
+  And the point of it, re-measured against her spreadsheet afterwards:
+
+  | | before | after |
+  | :--- | ---: | ---: |
+  | **matching her sheet** | **0** | **929** |
+  | still one day early | 929 | **0** |
+
+  Undo is at the bottom of the migration; the old value of every changed row is kept.
+
+- **Why it was worth doing now rather than later.** Every payment recorded through the app from
+  here on is dated correctly. Today the wrong rows were all of them and fixable in one
+  statement; once she starts using the system the ledger becomes a mix.
 - **Raised:** 2026-09-19
 
 ### B-26 — five receipt numbers were mistyped, and the book says what each should be

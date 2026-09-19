@@ -2944,15 +2944,47 @@ router.post(
       });
     }
 
+    /**
+     * Who the repair is recorded against.
+     *
+     * `maintenance_tickets.tenant_profile_id` is **NOT NULL** - checked in
+     * `information_schema`, not assumed - because the table was designed around
+     * the tenant portal, where a ticket always has the resident who raised it.
+     * This admin path has no such guarantee, and it read the active tenancy with
+     * the error discarded and then inserted whatever it got. For a unit with
+     * nobody in it that is `null`, and the insert failed on the constraint as a
+     * bare **500 "Internal server error."**
+     *
+     * Verified live: `POST /admin/tickets` for **PH** returned 500, and the same
+     * request for **1a** returned 201. PH is the one vacant unit - and the unit
+     * being made ready to let, which is exactly when a repair gets logged.
+     *
+     * A clear refusal is the honest answer while the column stays NOT NULL. That
+     * the column is NOT NULL at all is a real question - a repair to an empty
+     * flat genuinely has no tenant - but relaxing it changes what a ticket means
+     * and belongs with the form that has never been built (B-22), not with a
+     * handler nothing calls yet.
+     */
     let tenantProfileId: string | null = null;
     if (roomId) {
-      const { data: assignment } = await db
+      const { data: assignment, error: assignmentError } = await db
         .from('room_assignments')
         .select('tenant_profile_id')
         .eq('room_id', roomId)
         .eq('is_active', true)
         .maybeSingle();
+
+      if (assignmentError) throw ApiError.internal(assignmentError.message);
       if (assignment) tenantProfileId = assignment.tenant_profile_id;
+    }
+
+    if (!tenantProfileId) {
+      throw ApiError.validation('That unit has no resident on record.', {
+        roomNumber: [
+          'A repair is filed against the resident of the unit, and this one has nobody in it. ' +
+            'Assign the tenancy first, or raise the repair once someone has moved in.',
+        ],
+      });
     }
 
     let createStatus = parsed.data.status || 'Submitted';
