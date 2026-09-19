@@ -27,9 +27,25 @@
 > password into the login form, and the environment's safety layer refuses that action outright
 > (`Secret-Store Writes` — entering credentials into a form field is a hard-blocked action
 > category for this agent, not a judgement call, and it does not lift for an authorized test
-> account). This is not a defect in Hivelet. **A person needs to run steps 7-26** — the doc
-> below is unchanged and ready. Whoever does should sign in with the **new** admin password
-> above.
+> account). This is not a defect in Hivelet. **A person needs to run steps 7-26.** Whoever does
+> should sign in with the **new** admin password above.
+
+> [!IMPORTANT]
+> **Five steps behave differently from how they are written below, because the audit of
+> 2026-09-19 fixed what they walk through.** Read this before running them; the steps
+> themselves are otherwise still accurate.
+>
+> | Step | What changed |
+> | :--- | :--- |
+> | **8** — onboard a tenant | The unit dropdown used to render **blank** once the live list loaded, while still posting against `1A`. Fixed: it shows the unit it will use. Pick `PH` and check it stays selected |
+> | **12** — ticket with a photo | A phone photo could not be sent at all — base64 in a 1 MB body, so anything over ~740 KB was refused, and refused as *"Internal server error"*. Now the form checks the size first and says so in plain words. **Use a real photo from a phone to test it**, and expect to be told if it is too big |
+> | **18** — record a collection | Rent and water are now **per month**, not per receipt. If you set *months covered* to 1 nothing differs. If you set it higher, the form says how many ledger entries it will create and the total multiplies — **and it now writes one row per month**, which is how her book already holds arrears (`OR#4895` across four rows). Needs migration `029`, which **is applied** |
+> | **18** — water again | Typing a water figure that differs from `occupants × rate` now **warns** and names the figure the ledger will keep. It never sent your figure; the server derives it. BR-036 asked for that warning and it was silently accepting instead |
+> | **21** — ticket to Resolved, then delete | The check for *other* open tickets on that unit **threw on every call** and the error was swallowed, so the unit was always reported clear. Both the resolve and the delete path are fixed. To test it properly, raise **two** tickets on `PH`, resolve one, and confirm the unit does **not** leave Under Maintenance until the second is dealt with |
+>
+> Also: the **year and month** a receipt is filed under now come from the month the rent is
+> **for**, not the day it was received — which is what her 937 rows do. A back-dated receipt
+> lands in the right month now.
 
 ## Why this exists
 
