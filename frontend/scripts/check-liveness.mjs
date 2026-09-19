@@ -301,7 +301,10 @@ if (fs.existsSync(PUBLIC_PAGE)) {
     );
     console.log('  SKIP  the advertised starting rent is the cheapest unit — backend unreachable');
   } else if (quoted.length === 0) {
-    notes.push('no "₱N/mo" headline found on the public page - nothing to compare.');
+    notes.push(
+      'no "₱N/mo" headline on the public page. Nothing to compare, and nothing to get ' +
+        'wrong - every rate there is read from /public/rooms. See the note above this rule.'
+    );
   } else {
     const prices = rooms.map((r) => Number(r.current_price)).filter((n) => Number.isFinite(n));
     const cheapest = Math.min(...prices);

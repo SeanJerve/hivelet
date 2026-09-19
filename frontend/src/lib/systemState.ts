@@ -349,6 +349,34 @@ export async function fetchWaterRates(): Promise<void> {
 }
 
 /**
+ * What to call a floor, in the owner's own words.
+ *
+ * This was written inline as "Ground Floor", "Second Floor", "Third Floor",
+ * "Rooftop (Level 4)" and it was wrong in two ways at once.
+ *
+ * It contradicted her. Every unit description in the database names its floor,
+ * and the vocabulary is unanimous: 1st Floor, 2nd Floor, 3rd Floor, Penthouse.
+ * Checked against all 33 published rows rather than assumed. So the public
+ * unit row read "Ground Floor" directly above a description reading
+ * "1st Floor Studio with private bathroom & cabinets" - the same unit, two
+ * floors, in adjacent lines.
+ *
+ * And it was not consistent with itself: if floor 1 is the GROUND floor then
+ * floor 2 is the first, not the second. "Ground Floor" followed by "Second
+ * Floor" skips a name.
+ *
+ * Exported because the public category page draws a floor stack from the same
+ * numbers, and a second copy of this mapping is how the two drift apart.
+ */
+export function floorLabelFor(floor: number): string {
+  if (floor === 1) return '1st Floor';
+  if (floor === 2) return '2nd Floor';
+  if (floor === 3) return '3rd Floor';
+  if (floor === 4) return 'Penthouse';
+  return `Floor ${floor}`;
+}
+
+/**
  * The monthly water charge for one unit, at the configured rates. BR-014 / BR-040.
  *
  * Exported because the dashboard's run-rate needs the same figures and was
@@ -562,10 +590,7 @@ export async function fetchRooms(): Promise<RoomItem[]> {
         const unitCode = (r.room_number || '').toUpperCase();
         const isLinda = r.is_linda_unit || cluster === 'Linda Units';
         const floor = (r.floor || 1) as 1 | 2 | 3 | 4;
-        const floorLabel = floor === 1 ? 'Ground Floor'
-          : floor === 2 ? 'Second Floor'
-          : floor === 3 ? 'Third Floor'
-          : 'Rooftop (Level 4)';
+        const floorLabel = floorLabelFor(floor);
         const isOccupied = (r.operational_status || '').toLowerCase() === 'occupied';
         const activeRoomAssignment = r.room_assignments?.find((a: any) => a.is_active);
 

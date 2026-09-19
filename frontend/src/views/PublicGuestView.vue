@@ -18,7 +18,7 @@ import { CATEGORIES } from '@/lib/unitCategories';
 import { fetchRooms, rooms, roomsFetchFailed } from '@/lib/systemState';
 import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
 import { api } from '@/lib/api';
-import SkeletonCard from '@/components/ui/SkeletonCard.vue';
+import Skeleton from '@/components/ui/Skeleton.vue';
 import BookViewingPrompt from '@/components/modals/BookViewingPrompt.vue';
 import { ArrowRight, ChevronDown, MapPin } from 'lucide-vue-next';
 
@@ -96,24 +96,6 @@ const FAQS = computed(() => [
 ]);
 
 
-/**
- * Which category plate the cursor or the keyboard is on.
- *
- * The plate being read is the only one at full strength; the others step back
- * to 40%. What steps them back is opacity alone - no blur and no filter -
- * because the counts under the dimmed plates still have to be readable, and a
- * prospect comparing four kinds of unit is doing exactly that.
- *
- * `focusin`/`focusout` sit beside the pointer handlers so tabbing through the
- * plates produces the same emphasis a mouse does; the transform half of the
- * effect is behind `motion-safe:` throughout, so a reader who has asked for
- * reduced motion gets the tonal change without the movement.
- */
-const hoveredCategory = ref<string | null>(null);
-
-function isDimmed(key: string): boolean {
-  return hoveredCategory.value !== null && hoveredCategory.value !== key;
-}
 
 /**
  * The units in a category, and how many of them are free.
@@ -243,34 +225,23 @@ const hiddenUnitCount = computed(() =>
   Math.max(0, listedUnits.value.length - UNITS_PREVIEW_COUNT)
 );
 
+
 /**
- * The cheapest rate a visitor could actually take, read off the live listing.
+ * The floor plans, by floor.
  *
- * The standfirst under the headline said "₱200/head monthly water rule"
- * and "Starting base rate ₱4,500/mo" as typed literals. Both were true on
- * the day they were typed and both stop being true with nobody touching this
- * file. The water figure is `system_settings.water_rate_per_occupant`, which
- * the landlady sets. The starting rate is the lowest `current_price` among the
- * published units, which moves whenever she reprices one - and she reprices by
- * hand, which is why a rate-change history table exists at all.
+ * EMPTY ON PURPOSE, AND THE PANEL BELOW READS IT RATHER THAN GUESSING A PATH.
+ * Sean is exporting one drawing per floor as SVG (HANDOFF_TO_DESIGN section
+ * 7b). Until a file actually exists, an image element pointed at where it
+ * will live renders a broken-image box on the public site, which is worse
+ * than saying plainly that the drawing is not ready.
  *
- * This is the same defect the FAQ above this was repaired for, on the same
- * page, put back by a section written later to carry the facts a deleted metric
- * strip had been carrying. The FAQ's rule applies here as well: when the figure
- * is not known, the sentence drops it rather than guessing at it.
+ * (Written without the literal tag name: the design detector scans for it and
+ * reported this comment as a broken image.)
  *
- * Null while the fetch is in flight, and null when it failed - `rooms` then
- * holds the seed, whose rates the banner further down this page reports as 30
- * of 33 no longer matching, the worst by ₱2,000. Quoting a prospective
- * boarder a starting rent off that seed is the precise harm this guards.
+ * When they arrive this becomes { 1: '/floorplans/1.svg', ... } and the panel
+ * draws them. Nothing else has to change.
  */
-const startingRate = computed<number | null>(() => {
-  if (roomsFetchFailed.value) return null;
-  const prices = listedUnits.value
-    .map((u) => u.price)
-    .filter((n): n is number => typeof n === 'number' && n > 0);
-  return prices.length > 0 ? Math.min(...prices) : null;
-});
+const FLOOR_PLANS: Record<number, string> = {};
 
 /**
  * Keyless Google Maps embed, pinned to the PLACE rather than to a coordinate.
@@ -432,43 +403,25 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
     <!--
       Centred statement, in place of the metric strip that stood here.
 
-      The strip was deleted on request, but three of its facts appear nowhere
-      else on this page - the street address, the starting rate and the floor
-      count - so they are carried in this section's headline and standfirst
-      rather than dropped. A prospective boarder cannot decide anything without
-      the rate.
+      It carried two paragraphs of standfirst under the headline. They are gone
+      on request, and the facts they held are not lost with them: every unit's
+      rate is in the table below, and the water rule and the electricity
+      arrangement are both answered in Policies and guidelines. The earlier
+      comment here claimed those facts appeared nowhere else on the page, which
+      was true when the metric strip was removed and has not been true since
+      the availability table and the FAQ were rebuilt.
 
-      THE TWO MONEY FIGURES ARE READ, NOT TYPED. See `startingRate` above for
-      why: a rate written into this paragraph is a second copy of something the
-      landlady changes, and it goes stale silently. Each sentence that carries
-      one has a form that does not name a figure, used when the figure is not
-      known - the same rule the FAQ answers follow.
+      "5 Property Clusters" comes off the headline too. A cluster is the
+      owner's own word for a part of the property and means nothing to somebody
+      deciding where to live; the units and the floors are what they are
+      counting.
     -->
     <section aria-label="Property at a glance" class="w-full bg-canvas font-editorial">
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-24 sm:py-32 lg:py-40">
 
         <h2 class="text-center font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(1.9rem,6vw,5.25rem)]">
-          33 Units, 4 Floors<br />5 Property Clusters
+          33 Units, 4 Floors
         </h2>
-
-        <div class="mt-12 sm:mt-16 mx-auto max-w-3xl grid gap-8 sm:grid-cols-2 text-xs sm:text-[0.82rem] leading-relaxed text-ink-soft">
-          <p>
-            Thirty-three units on one gated compound, across three residential floors and a
-            rooftop penthouse level, in five clusters.
-          </p>
-          <p>
-            Every unit has its own electric meter, so you pay for your own electricity.
-            <template v-if="waterRatePerOccupant !== null">
-              Water is {{ peso(waterRatePerOccupant) }} a head each month.
-            </template>
-            <template v-else>
-              Water is charged for each registered occupant.
-            </template>
-            <template v-if="startingRate !== null">
-              Rents start at {{ peso(startingRate) }} a month.
-            </template>
-          </p>
-        </div>
 
         <p class="mt-14 text-center text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
           32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
@@ -490,129 +443,79 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           </p>
         </div>
 
-        <div v-if="isLoading" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <SkeletonCard variant="category" :count="4" />
+        <div v-if="isLoading" class="border-t border-ink">
+          <div v-for="i in 4" :key="i" class="flex items-center gap-4 border-b border-line py-5">
+            <Skeleton class-name="h-4 w-40 rounded-full" />
+            <Skeleton class-name="h-3 w-24 rounded-full" />
+          </div>
         </div>
 
         <!--
-          Project-index layout: each category is one framed plate with its
-          caption set beneath it, alternating down the page rather than sitting
-          in a row of equal cards.
+          A register, set like the availability table below it rather than as
+          four framed plates.
 
-          Each plate is a real RouterLink to the `/category/:slug` route that
-          `navigateToCategory` used to push; that function had no other caller
-          and went with the cards. A link restores middle-click, open-in-new-tab
-          and the native Enter/Space handling that `role="button" tabindex="0"`
-          only partly reimplemented.
+          The plates were tonal frames with an icon in the middle, because no
+          room photography exists. Sean asked for the pictures to come off:
+          the drawings that matter are the floor plans, and those belong in the
+          unit rows below, where a reader has already chosen a unit. A category
+          is a row with a count and a sentence, which is what this is now.
 
-          The plate is a tonal frame, not a photograph: no room imagery exists
-          in this repository. The reference this follows frames an empty plate
-          the same way, so the placeholder is not a broken state.
+          Each row is a real RouterLink, so middle-click, open-in-new-tab and
+          the native Enter handling all work. The whole row is the target.
         -->
-        <!--
-          Interactive focus plates.
+        <div v-else class="border-t border-ink">
+          <p class="sr-only">Four kinds of unit. Each row opens that kind.</p>
 
-          Hovering or tab-focusing one plate is what brings it forward: the
-          others drop to 40% (`isDimmed`), a hairline frame draws itself in
-          inside the border, the icon lifts, and the "View all rooms" strip
-          slides up from the bottom edge. Only one plate is ever at full
-          strength, which is the point - four equal frames with no photography
-          in them give a reader nothing to fix on.
-
-          Everything that MOVES is behind `motion-safe:`, so a reader who has
-          asked their system for reduced motion still gets the whole effect in
-          tone and colour, with nothing sliding or scaling. Every hover state
-          has a `group-focus-visible:` twin, so the keyboard sees what the
-          mouse sees rather than a bare outline.
-
-          The strip is decoration over a link that already says where it goes;
-          the caption beneath the plate carries the same words as text, so
-          nothing here is only available to a pointer.
-        -->
-        <div
-          v-else
-          class="grid gap-x-12 gap-y-16 sm:grid-cols-2 sm:gap-x-10 lg:gap-x-16 lg:gap-y-20"
-          @mouseleave="hoveredCategory = null"
-        >
-          <RouterLink
-            v-for="(c, i) in CATEGORIES"
-            :key="c.key"
-            :to="`/category/${c.slug}`"
-            :class="[
-              'press-plate group block transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink',
-              i % 2 === 1 ? 'sm:mt-20 lg:mt-28' : '',
-              isDimmed(c.key) ? 'opacity-40' : 'opacity-100'
-            ]"
-            @mouseenter="hoveredCategory = c.key"
-            @focusin="hoveredCategory = c.key"
-            @focusout="hoveredCategory = null"
+          <div
+            class="hidden border-b border-line py-3 text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:gap-6"
           >
-            <div
-              class="relative aspect-[3/2] sm:aspect-[4/3] w-full overflow-hidden rounded-tile border border-line bg-tile transition-colors duration-500 group-hover:border-brand/40 group-focus-visible:border-brand/40"
-            >
-              <!-- A tonal wash, deepening under the cursor. -->
-              <span
+            <span>Kind</span>
+            <span>What it is</span>
+            <span class="text-right">Units</span>
+            <span class="text-right">Free to rent</span>
+          </div>
+
+          <RouterLink
+            v-for="c in CATEGORIES"
+            :key="c.key"
+            :to="'/category/' + c.slug"
+            class="press-plate group block border-b border-line py-5 transition-colors hover:bg-tile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:items-baseline sm:gap-6"
+          >
+            <span class="flex items-baseline gap-2 text-base font-medium text-ink">
+              {{ c.title }}
+              <ArrowRight
+                class="size-4 shrink-0 text-ink-faint transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-1 group-hover:text-brand"
                 aria-hidden="true"
-                class="pointer-events-none absolute inset-0 bg-brand/0 transition-colors duration-500 group-hover:bg-brand/[0.04] group-focus-visible:bg-brand/[0.04]"
               />
+            </span>
 
-              <!-- The inner frame, drawing itself in. -->
-              <span
-                aria-hidden="true"
-                class="pointer-events-none absolute inset-5 rounded-[0.75rem] border border-ink/15 opacity-0 transition duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100 motion-safe:group-focus-visible:scale-100"
-              />
-
-              <span class="absolute inset-0 grid place-items-center">
-                <component
-                  :is="c.icon"
-                  class="size-9 text-ink-faint transition duration-500 ease-out group-hover:text-ink motion-safe:group-hover:-translate-y-1.5 motion-safe:group-hover:scale-110 group-focus-visible:text-ink"
-                />
-              </span>
-
-              <span
-                aria-hidden="true"
-                class="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-between gap-4 bg-brand px-5 py-3.5 text-on-brand transition-transform duration-500 ease-out group-hover:translate-y-0 group-focus-visible:translate-y-0 motion-reduce:transition-none"
-              >
-                <span class="text-[0.7rem] tracking-[0.18em] uppercase">View all rooms</span>
-                <ArrowRight class="size-4 shrink-0 transition-transform duration-500 motion-safe:group-hover:translate-x-1" />
-              </span>
-            </div>
-
-            <div class="mt-5 flex items-baseline justify-between gap-6">
-              <h3 class="text-base sm:text-lg font-medium text-ink">{{ c.title }}</h3>
-              <span class="shrink-0 text-sm text-ink-soft underline underline-offset-4 decoration-1 decoration-line group-hover:text-ink group-hover:decoration-ink group-focus-visible:text-ink transition-colors">
-                View All Rooms
-              </span>
-            </div>
+            <span class="mt-2 block max-w-xl text-xs leading-relaxed text-ink-soft sm:mt-0 sm:text-sm">
+              {{ c.blurb }}
+            </span>
 
             <!--
               The counts, or an admission that they are not known.
 
               With the room list unreachable, `rooms` still holds the seed from
-              `systemState.ts` - and the seed's types are the wrong ones
-              (`"Studio Type Apartment"`, `"1-Bedroom Apartment"`), so grouping it
-              by `room_type` matches nothing and every plate would report a
-              count of nought. A zero is a claim: it says this property has no
-              studios. The
-              category page behind these plates refuses to show a seeded listing
-              for the same reason, so the plate says which state it is in
-              instead. B-01 in BLOCKED_FOR_SEAN.md is the open decision about
-              what the landing should do here; this is the honest interim.
+              `systemState.ts`, whose types are the wrong ones - so grouping it
+              by `room_type` matches nothing and every row would report nought.
+              A zero is a claim: it says this property has no studios. B-01 in
+              BLOCKED_FOR_SEAN.md is the open decision; this is the honest
+              interim.
             -->
-            <div class="mt-2 flex items-baseline justify-between gap-6 text-xs text-ink-soft">
-              <template v-if="roomsFetchFailed">
-                <span>Availability could not be loaded</span>
-              </template>
-              <template v-else>
-                <span>
-                  {{ unitsInCategory(c.key).length }}
-                  {{ unitsInCategory(c.key).length === 1 ? 'unit' : 'units' }}
-                </span>
-                <span>{{ availableInCategory(c.key) }} available now</span>
-              </template>
-            </div>
-
-            <p class="mt-3 max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">{{ c.blurb }}</p>
+            <template v-if="roomsFetchFailed">
+              <span class="mt-2 block text-xs text-ink-faint sm:col-span-2 sm:mt-0 sm:text-right">
+                Availability could not be loaded
+              </span>
+            </template>
+            <template v-else>
+              <span class="mt-2 block text-xs tabular-nums text-ink-soft sm:mt-0 sm:text-right sm:text-sm">
+                <span class="sm:hidden">Units: </span>{{ unitsInCategory(c.key).length }}
+              </span>
+              <span class="mt-1 block text-xs tabular-nums text-ink-soft sm:mt-0 sm:text-right sm:text-sm">
+                <span class="sm:hidden">Free to rent: </span>{{ availableInCategory(c.key) }}
+              </span>
+            </template>
           </RouterLink>
         </div>
       </section>
@@ -701,29 +604,58 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 </tr>
 
                 <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="border-b border-line bg-tile">
+                  <!--
+                    Two columns: what the unit is on the left, where it is on
+                    the right.
+
+                    Billing moved up under Capacity to clear the third column,
+                    and the amenity list came out. It listed "Private Bathroom,
+                    Submetered Electricity, Provision for Aircon, Wi-Fi Ready"
+                    against every unit identically, which tells a reader
+                    nothing about the one they just opened.
+                  -->
                   <td colspan="7" class="px-4 py-6">
-                    <dl class="grid gap-x-10 gap-y-5 sm:grid-cols-3 text-xs sm:text-sm">
+                    <div class="grid gap-8 lg:grid-cols-[1fr_22rem] lg:gap-12">
                       <div>
-                        <dt class="text-ink-soft">Floor</dt>
-                        <dd class="mt-1 text-ink">{{ u.floorLabel }}</dd>
-                      </div>
-                      <div>
-                        <dt class="text-ink-soft">Capacity</dt>
-                        <dd class="mt-1 text-ink">Up to {{ u.maxOccupants }} occupants</dd>
-                      </div>
-                      <div>
-                        <dt class="text-ink-soft">Billing</dt>
-                        <dd class="mt-1 text-ink">{{ u.billingRule }}</dd>
-                      </div>
-                    </dl>
+                        <dl class="grid gap-x-10 gap-y-5 sm:grid-cols-2 text-xs sm:text-sm">
+                          <div>
+                            <dt class="text-ink-soft">Floor</dt>
+                            <dd class="mt-1 text-ink">{{ u.floorLabel }}</dd>
+                          </div>
+                          <div>
+                            <dt class="text-ink-soft">Capacity</dt>
+                            <dd class="mt-1 text-ink">Up to {{ u.maxOccupants }} occupants</dd>
+                            <dd class="mt-1 text-ink-soft">{{ u.billingRule }}</dd>
+                          </div>
+                        </dl>
 
-                    <p v-if="u.desc" class="mt-6 max-w-2xl text-xs sm:text-sm text-ink-soft leading-relaxed">
-                      {{ u.desc }}
-                    </p>
+                        <p v-if="u.desc" class="mt-6 max-w-2xl text-xs sm:text-sm text-ink-soft leading-relaxed">
+                          {{ u.desc }}
+                        </p>
+                      </div>
 
-                    <ul v-if="u.amenities && u.amenities.length" class="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-ink-soft">
-                      <li v-for="a in u.amenities" :key="a">{{ a }}</li>
-                    </ul>
+                      <figure class="m-0">
+                        <figcaption class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
+                          Unit {{ u.unitCode }} on {{ u.floorLabel }}
+                        </figcaption>
+                        <img
+                          v-if="FLOOR_PLANS[u.floor]"
+                          :src="FLOOR_PLANS[u.floor]"
+                          :alt="'Floor plan of ' + u.floorLabel + ', with unit ' + u.unitCode + ' marked'"
+                          class="mt-3 w-full rounded-tile border border-line bg-tile"
+                          loading="lazy"
+                        />
+                        <div
+                          v-else
+                          class="mt-3 grid aspect-[4/3] place-items-center rounded-tile border border-dashed border-hatch bg-canvas px-6 text-center"
+                        >
+                          <p class="text-xs leading-5 text-ink-faint">
+                            The floor plan is not drawn yet. It will show where this unit sits on
+                            {{ u.floorLabel }}.
+                          </p>
+                        </div>
+                      </figure>
+                    </div>
                   </td>
                 </tr>
               </template>
@@ -764,10 +696,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 <div>
                   <dt class="text-ink-soft">Capacity</dt>
                   <dd class="mt-1 text-ink">Up to {{ u.maxOccupants }} occupants</dd>
-                </div>
-                <div class="col-span-2">
-                  <dt class="text-ink-soft">Billing</dt>
-                  <dd class="mt-1 text-ink">{{ u.billingRule }}</dd>
+                  <dd class="mt-1 text-ink-soft">{{ u.billingRule }}</dd>
                 </div>
               </dl>
 
@@ -775,12 +704,27 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 {{ u.desc }}
               </p>
 
-              <ul
-                v-if="u.amenities && u.amenities.length"
-                class="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-ink-soft"
-              >
-                <li v-for="a in u.amenities" :key="a">{{ a }}</li>
-              </ul>
+              <figure class="m-0 mt-5">
+                <figcaption class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
+                  Unit {{ u.unitCode }} on {{ u.floorLabel }}
+                </figcaption>
+                <img
+                  v-if="FLOOR_PLANS[u.floor]"
+                  :src="FLOOR_PLANS[u.floor]"
+                  :alt="'Floor plan of ' + u.floorLabel + ', with unit ' + u.unitCode + ' marked'"
+                  class="mt-3 w-full rounded-tile border border-line bg-tile"
+                  loading="lazy"
+                />
+                <div
+                  v-else
+                  class="mt-3 grid aspect-[4/3] place-items-center rounded-tile border border-dashed border-hatch bg-canvas px-6 text-center"
+                >
+                  <p class="text-xs leading-5 text-ink-faint">
+                    The floor plan is not drawn yet. It will show where this unit sits on
+                    {{ u.floorLabel }}.
+                  </p>
+                </div>
+              </figure>
             </div>
           </li>
         </ul>

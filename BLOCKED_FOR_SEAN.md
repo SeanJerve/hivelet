@@ -477,6 +477,24 @@ thing did not work" is not.
 
 </details>
 
+### B-20 — unit F1 says floor 3, and its own description says 1st Floor
+
+- **What it is:** `rooms` holds `floor = 3` for unit **F1** (Front Apartment), and the same row's
+  `description` reads **"Front Apartment 1st Floor"**. One of the two is wrong and only the owner
+  knows which.
+- **How it was found:** the public unit row now prints the floor label directly above the
+  description, so the page said "3rd Floor" and "Front Apartment 1st Floor" about the same unit
+  in adjacent lines. Checked against all 33 published rows: F1 is the ONLY one whose description
+  disagrees with its `floor`. Every other row agrees - 1st, 2nd, 3rd and Penthouse, unanimously.
+- **Why I did not fix it:** it is live data, and it is not a formatting question. If `floor` is
+  wrong then F1 sits on the wrong floor everywhere in the application - the directory, the floor
+  stack on the category page, and any floor plan drawn later. If the description is wrong it is a
+  typo. Guessing picks one and hides the other.
+- **What to ask her:** is F1 on the 1st floor or the 3rd?
+- **Then:** a numbered migration in `database/migrations/` correcting whichever field she names.
+  One row, one column. Do not touch the other 32.
+- **Raised:** 2026-09-19
+
 ### B-12 — the public FAQ quoted an electricity rate the system does not hold · **mostly answered**
 
 > **She had already answered this, and the answer was stronger than the question.**

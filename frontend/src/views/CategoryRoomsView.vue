@@ -62,7 +62,7 @@ import { useRoute } from 'vue-router';
 import { peso } from '@/lib/canonicalUnits';
 import { CATEGORIES, resolveSlug, type CategoryKey } from '@/lib/unitCategories';
 import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
-import { showToast, LANDLADY } from '@/lib/systemState';
+import { showToast, LANDLADY, floorLabelFor } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
 import { ArrowRight, Loader2, Send, X } from 'lucide-vue-next';
@@ -577,7 +577,7 @@ async function submitInquiry() {
                         'w-16 sm:w-20 shrink-0 text-[0.7rem] tracking-[0.14em] uppercase',
                         f === activeUnit.floor ? 'text-ink' : 'text-ink-faint',
                       ]"
-                    >Floor {{ f }}</span>
+                    >{{ floorLabelFor(f) }}</span>
                     <span
                       aria-hidden="true"
                       :class="[
@@ -591,8 +591,9 @@ async function submitInquiry() {
                   </li>
                 </ul>
                 <p class="sr-only">
-                  Unit {{ activeUnit.room_number.toUpperCase() }} is on floor {{ activeUnit.floor }}
-                  of {{ floorsDescending.length }}.
+                  Unit {{ activeUnit.room_number.toUpperCase() }} is on the
+                  {{ floorLabelFor(activeUnit.floor) }}, one of
+                  {{ floorsDescending.length }} levels.
                 </p>
               </div>
 
