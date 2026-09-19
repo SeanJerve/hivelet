@@ -2,6 +2,35 @@
 
 **Written 2026-09-17.** Hivelet, Group 4.
 
+> [!NOTE]
+> **Steps 1-6 run live 2026-09-19** (Claude, functional-audit session, admin machine —
+> `npm run backup` taken first, snapshot `backups/2026-09-19T00-01-15/`). All matched "Should
+> see" exactly:
+> - **1-2**: 33 units confirmed (20/8/4/1), unit `PH` detail correct — ₱12,000, floor 4,
+>   penthouse, no resident name, live water rate and live starting rate render correctly (the
+>   two uncommitted fixes in `IncomeCollectionsView.vue`/`PublicGuestView.vue` sitting in the
+>   working tree at session start were verified working against this exact render, not just
+>   typechecked — see commit that follows this one).
+> - **3**: enquiry POST → `201 Created`, no console error, no rate-limit hit.
+> - **4**: wrong current password → *"That is not your current password."* inline, stayed
+>   signed in. Confirmed via screenshot; `get_page_text` misses this dialog because it renders
+>   outside `<main>` — read_page/screenshot, not get_page_text, for anything in a portal/modal.
+> - **5**: real change → `POST /api/auth/change-password` → `200 OK`, stayed signed in.
+>   **This is the one step the team could never test before** (HANDOFF_TO_QA.md §2) because it
+>   rotates the credential every check signs in with. **The admin password is now rotated for
+>   real** — `credentials/creds.txt` updated in place; anyone on another machine needs the new
+>   value, sent out of band same as always (see `BLOCKED_FOR_SEAN.md`).
+> - **6**: signed out, and confirmed the session actually ended (redirected to `/login`,
+>   protected routes no longer reachable).
+>
+> **Steps 7-26 were not run by this session.** Signing back in to continue needs typing a
+> password into the login form, and the environment's safety layer refuses that action outright
+> (`Secret-Store Writes` — entering credentials into a form field is a hard-blocked action
+> category for this agent, not a judgement call, and it does not lift for an authorized test
+> account). This is not a defect in Hivelet. **A person needs to run steps 7-26** — the doc
+> below is unchanged and ready. Whoever does should sign in with the **new** admin password
+> above.
+
 ## Why this exists
 
 The write paths are covered by eighteen verification suites and **have never been used for real**.

@@ -33,6 +33,42 @@ thing did not work" is not.
 
 ## Open
 
+### B-14 — admin password rotated for real; rehearsal steps 7-26 still need a human
+
+- **Blocked on:** nothing technical for the password — it is done. Steps 7-26 are blocked on a
+  person, same as B-04 always was, but for a sharper reason now: **this agent cannot type a
+  password into a browser form at all.** It is a hard-blocked action category
+  (`Secret-Store Writes`), not a judgement call, and it does not lift for an authorized
+  internal test account. It fired mid-rehearsal, after steps 1-6 were already run live.
+- **What I was doing:** the functional audit asked for — `TESTING_REHEARSAL.md` steps 1-6,
+  live, in a real browser, against the live database. `npm run backup` first
+  (`backups/2026-09-19T00-01-15/`).
+- **What actually happened, all verified against the running app and its network calls:**
+  - Public enquiry from unit `PH` → `POST /api/public/inquiries` → **201**.
+  - Admin sign-in, wrong-password rejection (*"That is not your current password."*, stayed
+    signed in), then a **real** password change → `POST /api/auth/change-password` → **200**.
+    Signed out, confirmed the session actually ended.
+  - This is the one step `HANDOFF_TO_QA.md` §2 says nothing could ever test before, because it
+    burns the credential every check signs in with. It is now tested, and the credential is
+    burned on purpose.
+- **The admin password is rotated. `credentials/creds.txt` is updated in place** (gitignored,
+  not in this diff — the new value lives only there, never in a tracked file). **Anyone running
+  `check:api`, `check:billing`, or signing in as admin on another machine needs it**, same
+  out-of-band channel as always. The password this replaced is burned, same as the 13 Sep one.
+- **What Sean needs to do:**
+  1. Send the new admin password to whoever else has `creds.txt` (Loyd's machine, teammates).
+  2. Run — or assign — `TESTING_REHEARSAL.md` steps 7-26 in a real browser, signed in with the
+     new password. Nothing about the doc changed; it is exactly as ready as it was.
+- **Also re-confirmed live, unrelated to the block:** the two junk maintenance tickets from
+  **B-05** (`asd`, and one titled with a slur) are still sitting on `1A`, still `Submitted`,
+  still visible on the administrator's own overview under "Open repair requests" — migration
+  `027` is written and still not applied. Nothing new here; just confirming it is still true
+  today rather than assuming last week's note still holds.
+- **How to know it worked:** `check:all` continues to pass with the new password (it discovers
+  credentials from `creds.txt` rather than hardcoding them, since the 17 Sep fix); a manual
+  sign-in with the value now in `creds.txt` succeeds.
+- **Raised:** 2026-09-19 by Claude, functional-audit session
+
 ### ~~B-12 — this machine's `.env` still holds the legacy keys you disabled on 13 September~~ — **RESOLVED 2026-09-19**
 
 > [!NOTE]
