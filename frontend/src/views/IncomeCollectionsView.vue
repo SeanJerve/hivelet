@@ -115,7 +115,10 @@ const monthsList = [
 const yearsList = computed(() => {
   const years = new Set<string>();
   for (const r of incomeRecords) if (r.year) years.add(String(r.year));
-  years.add(String(new Date().getFullYear()));
+  // The property's year, not the viewer's - `lib/propertyDate.ts` exists so both
+  // anchor to Legazpi rather than to whoever is looking. A browser behind UTC+8
+  // is still in the old year for its first eight hours of January.
+  years.add(propertyToday().slice(0, 4));
   return ['All', ...Array.from(years).sort((a, b) => Number(b) - Number(a))];
 });
 
@@ -728,7 +731,8 @@ async function exportExcel() {
   isExportingExcel.value = true;
   // The workbook is a per-year report, so "All Years" falls back to this year
   // rather than silently exporting one of them.
-  const year = filterYear.value !== 'All' ? filterYear.value : String(new Date().getFullYear());
+  // The property's year, not the viewer's (lib/propertyDate.ts).
+  const year = filterYear.value !== 'All' ? filterYear.value : propertyToday().slice(0, 4);
   try {
     await downloadReport('income', year);
   } finally {

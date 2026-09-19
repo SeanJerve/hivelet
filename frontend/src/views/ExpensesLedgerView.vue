@@ -69,7 +69,8 @@ async function exportExpensesExcel() {
   isExportingExcel.value = true;
   // A per-year report, so "All Years" falls back to this year rather than
   // silently exporting one of them.
-  const year = filterYear.value !== 'All' ? filterYear.value : String(new Date().getFullYear());
+  // The property's year, not the viewer's (lib/propertyDate.ts).
+  const year = filterYear.value !== 'All' ? filterYear.value : propertyToday().slice(0, 4);
   try {
     await downloadReport('expenses', year);
   } finally {

@@ -9,6 +9,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { api } from '@/lib/api';
 import { peso } from '@/lib/canonicalUnits';
+import { propertyToday } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
 import { CreditCard, Search } from 'lucide-vue-next';
 import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
@@ -50,7 +51,9 @@ const paymentHistory = ref<Array<{
 }>>([]);
 
 // Year filter for payment history. BR-015 prevents excessively long lists.
-const currentYear = new Date().getFullYear();
+// The property's year, not the viewer's - lib/propertyDate.ts exists so both
+// anchor to Legazpi rather than to whoever happens to be looking.
+const currentYear = Number(propertyToday().slice(0, 4));
 const selectedYear = ref(currentYear);
 const sortOrder = ref<'latest' | 'oldest'>('latest');
 /**
