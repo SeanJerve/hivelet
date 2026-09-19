@@ -323,6 +323,22 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
 
   const yearToDate = zero();
   const lindaYear = zero();
+  /**
+   * The two fixed charges, carried across the year as well as within each month.
+   *
+   * They were accumulated per month and printed per month, and then dropped:
+   * `lindaYear` is merged only from `lindaTotal`, which is the rent-and-remitted
+   * shape and holds neither charge. So the Linda section reconciled month by
+   * month and silently under-reported at the bottom of the page.
+   *
+   * Real money, not a rounding: **18,600.00 fixed water and 12,035.76
+   * electricity** across the three years the ledger covers (7,200 + 7,200 +
+   * 4,200, and 5,860.76 + 3,900 + 2,275), from `monthly_income_records`.
+   * Anyone totalling Linda for a year from the year line was 30,635.76 short
+   * over the ledger's life.
+   */
+  let lindaYearWater = 0;
+  let lindaYearElectricity = 0;
   const monthsPresent = [...byMonth.keys()].sort((a, b) => a - b);
 
   const moneyCells = (r: ExcelJS.Row) => {
@@ -417,6 +433,8 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
         add(lindaTotal, r);
         lindaElectricity += n(r.linda_electricity_charge);
         lindaWater += n(r.linda_water_charge);
+        lindaYearElectricity += n(r.linda_electricity_charge);
+        lindaYearWater += n(r.linda_water_charge);
       }
       emitTotalRow('Linda total', lindaTotal);
       merge(lindaYear, lindaTotal);
@@ -495,6 +513,30 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   if (lindaYear.rent > 0 || lindaYear.remitted > 0) {
     const lytd = emitTotalRow(`Linda, year to date ${year} — remitted directly to Linda`, lindaYear);
     lytd.font = { bold: true, size: 10, italic: true, color: { argb: INK } };
+  }
+
+  // The year-level counterparts of the two lines each month block already
+  // carries. Kept out of the total above for the same reason they are kept out
+  // of the monthly total: `remitted_amount` is a GENERATED column computed as
+  // `rent_amount + water_payment`, and folding a fixed charge into it would make
+  // the sheet disagree with the database. Separate labelled lines make the money
+  // visible without breaking that arithmetic.
+  if (lindaYearWater > 0) {
+    const w = ws.addRow([
+      `Linda fixed water charge, year to date ${year} (BR-040, remitted directly to Linda)`,
+      null, null, null, null, null, null, null, null, lindaYearWater, null, null,
+    ]);
+    w.font = { size: 9, italic: true, color: { argb: INK } };
+    w.getCell(10).numFmt = MONEY_FMT;
+  }
+
+  if (lindaYearElectricity > 0) {
+    const e = ws.addRow([
+      `Linda electricity, year to date ${year} (historical, retired 2026-09-13)`,
+      null, null, null, null, null, null, null, null, lindaYearElectricity, null, null,
+    ]);
+    e.font = { size: 9, italic: true, color: { argb: INK } };
+    e.getCell(10).numFmt = MONEY_FMT;
   }
 
   const note = ws.addRow([
