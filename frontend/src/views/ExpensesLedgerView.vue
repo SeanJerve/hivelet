@@ -73,10 +73,43 @@ const dbCategories = ref<ApiCat[]>([]);
  * construction, which is the only way these two stay in step.
  */
 const categoryOptions = computed<string[]>(() => {
-  if (dbCategories.value.length === 0) return [...EXPENSE_CATEGORIES];
-  return [...dbCategories.value]
-    .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
-    .map((c) => `${c.code} — ${c.name}`);
+  if (dbCategories.value.length > 0) {
+    return [...dbCategories.value]
+      .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+      .map((c) => `${c.code} — ${c.name}`);
+  }
+
+  /**
+   * The categories the rows on screen actually carry, when the lookup could not
+   * be read.
+   *
+   * `/admin/expense-categories` is fetched with `.catch(() => [])`, so a refused
+   * or broken call left `dbCategories` empty and this fell back to
+   * `EXPENSE_CATEGORIES` - the hardcoded list of ten that does not match the
+   * database's thirteen. That is precisely the mismatch this computed was added
+   * to remove: the filter compares `e.category` by strict equality, so the
+   * fallback silently reinstates the defect where **927 of 1,262 entries could
+   * not be filtered or edited without being re-categorised**.
+   *
+   * The rows are built from the database's own names, so deriving the options
+   * from them gives a picker that can always represent what is on screen, which
+   * is the property that matters. The hardcoded list is now only reached when
+   * there are no rows either, where nothing can be wrong about it.
+   */
+  const fromRows = [...new Set(expenseRecords.map((e) => e.category).filter(Boolean))];
+  if (fromRows.length === 0) return [...EXPENSE_CATEGORIES];
+
+  // '1', '2', ... '6a', '6b', '6c', ... '10' - numeric part first, then the suffix.
+  const key = (c: string): [number, string] => {
+    const code = c.split(' —')[0]?.trim() ?? '';
+    const digits = code.match(/^\d+/)?.[0] ?? '';
+    return [digits ? Number(digits) : Number.MAX_SAFE_INTEGER, code.slice(digits.length)];
+  };
+  return fromRows.sort((a, b) => {
+    const [an, as_] = key(a);
+    const [bn, bs] = key(b);
+    return an - bn || as_.localeCompare(bs);
+  });
 });
 
 /** The first option, whichever list is in force. */
