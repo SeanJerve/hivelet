@@ -15,6 +15,7 @@ import {
 } from '../services/authService.js';
 import { requireAuth } from '../middleware/auth.js';
 import { rateLimit, failureLimit } from '../middleware/rateLimit.js';
+import { config } from '../config/env.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { permissionsForRole } from '../config/rbac.js';
@@ -164,6 +165,25 @@ const registerSchema = z.object({
 router.post(
   '/auth/register',
   rateLimit({ max: 5, windowMs: 15 * 60 * 1000, what: 'sign-up attempts' }),
+  /**
+   * Refused unless `ALLOW_PUBLIC_SIGNUP=true`. See the note on the setting.
+   *
+   * Placed AFTER the rate limit deliberately, so someone hammering a closed
+   * endpoint is still throttled rather than being handed an unlimited supply of
+   * cheap 403s.
+   */
+  (req, _res, next) => {
+    if (!config.allowPublicSignup) {
+      next(
+        ApiError.forbidden(
+          'This system does not accept public sign-ups. A resident is admitted by the ' +
+            'administrator, who records the unit and the move-in date at the same time.'
+        )
+      );
+      return;
+    }
+    next();
+  },
   asyncHandler(async (req, res) => {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {

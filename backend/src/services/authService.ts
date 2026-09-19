@@ -14,6 +14,7 @@ import { db } from '../config/db.js';
 import { config } from '../config/env.js';
 import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
+import { recordAudit } from './auditService.js';
 import type { AuthUser, JwtPayload } from '../types/auth.js';
 import type { StoredRole } from '../config/rbac.js';
 
@@ -153,6 +154,40 @@ export async function login(
     role: data.role,
     accountStatus: data.account_status,
   };
+
+  /**
+   * The account's creation, recorded as its own event.
+   *
+   * Only `recordLoginAudit` ran here, so a brand-new profile appeared in the
+   * audit trail as `AUTH_LOGIN` and nothing else - the trail could say somebody
+   * signed in, and could not say an account had come into existence. On a
+   * PUBLIC endpoint that inserts a live `profiles` row with role 'tenant' and
+   * account_status 'active', "where did this account come from?" is the one
+   * question the log has to be able to answer.
+   *
+   * `TENANT_CREATE` is the same action the administrator's onboarding path
+   * writes, which is right - the same thing happened. The two are told apart by
+   * their actor: an onboarding carries the administrator's profile id, and this
+   * carries the new account's own, because nobody else was involved.
+   *
+   * Awaited rather than fired and forgotten, unlike the login row below it: this
+   * is the record OF the account, and a registration that returns a token while
+   * its audit row is still in flight can lose the row to a process exit.
+   */
+  await recordAudit({
+    actorProfileId: user.profileId,
+    action: 'TENANT_CREATE',
+    entityType: 'PROFILE',
+    entityId: user.profileId,
+    newValues: {
+      email: user.email,
+      full_name: user.fullName,
+      role: user.role,
+      account_status: user.accountStatus,
+      note: 'Self-registered through the public sign-up endpoint.',
+    },
+    ipAddress: ipAddress ?? null,
+  });
 
   void recordLoginAudit(user, ipAddress);
 

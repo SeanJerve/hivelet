@@ -97,6 +97,29 @@ if (jwtSecret.length < 32) {
 export const config = {
   nodeEnv,
   isProduction: nodeEnv === 'production',
+
+  /**
+   * Whether `POST /auth/register` accepts anyone.
+   *
+   * **Off unless explicitly turned on.** Nobody signs themselves up to live
+   * somewhere: the landlady admits a resident, and that path already exists at
+   * `POST /admin/tenants` - audited, behind a permission, with the unit and the
+   * move-in date attached.
+   *
+   * The sign-in screen dropped "No account yet? Create one" on 2026-09-19 for
+   * exactly that reason, and its comment says so. But removing the button did
+   * not close the endpoint: it stayed public, and a `profiles` row inserted
+   * there carries role 'tenant' and account_status 'active', which puts a
+   * stranger straight into the owner's Active Tenants list - `/admin/tenants`
+   * returns `.in('role', ['tenant', 'prospect'])`.
+   *
+   * Nothing in the interface reaches it. Checked across `frontend/src`: the only
+   * reference is `registerUser` in authStore, which no screen calls.
+   *
+   * A flag rather than a deletion, so the decision is reversible by one line in
+   * `.env` and the route, its schema and its tests all stay where they are.
+   */
+  allowPublicSignup: optional('ALLOW_PUBLIC_SIGNUP', 'false').toLowerCase() === 'true',
   port: parseInt(optional('PORT', '5000'), 10),
 
   /**
