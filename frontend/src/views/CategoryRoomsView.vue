@@ -354,7 +354,7 @@ async function submitInquiry() {
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 pt-7 pb-6 flex items-start justify-between gap-6 sm:gap-10">
         <RouterLink
           to="/public"
-          class="shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-foreground hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+          class="press shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-foreground hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
         >
           Fe Galang<br />Da Silva<br />Boarding House
         </RouterLink>
@@ -362,21 +362,21 @@ async function submitInquiry() {
         <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-foreground">
           <RouterLink
             to="/public"
-            class="underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Property
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/inquire"
-            class="underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Inquire Now
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/login"
-            class="underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Sign In
           </RouterLink>
@@ -449,7 +449,7 @@ async function submitInquiry() {
               :to="`/category/${c.slug}`"
               :aria-current="c.key === selectedCategoryKey ? 'page' : undefined"
               :class="[
-                'inline-flex items-baseline gap-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
+                'press inline-flex items-baseline gap-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
                 c.key === selectedCategoryKey
                   ? 'text-foreground underline underline-offset-4 decoration-1 decoration-foreground'
                   : 'text-muted-foreground hover:text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground',
@@ -490,7 +490,7 @@ async function submitInquiry() {
           Try another kind above, or
           <RouterLink
             to="/inquire"
-            class="text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >ask the landlady</RouterLink>
           what is coming free.
         </p>
@@ -592,7 +592,7 @@ async function submitInquiry() {
             <div class="mt-12">
               <button
                 type="button"
-                class="inline-flex min-h-11 w-full items-center justify-center gap-2.5 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
+                class="press inline-flex min-h-11 w-full items-center justify-center gap-2.5 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
                 @click="openInquiry(activeUnit.room_number)"
               >
                 <span>Ask about unit {{ activeUnit.room_number.toUpperCase() }}</span>
@@ -645,7 +645,7 @@ async function submitInquiry() {
               type="button"
               :aria-pressed="u.room_number === activeUnit.room_number"
               :class="[
-                'group block w-full text-left cursor-pointer transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
+                'press-plate group block w-full text-left cursor-pointer transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
                 isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
               ]"
               @click="selectUnit(u.room_number)"
@@ -729,7 +729,7 @@ async function submitInquiry() {
       <form class="relative px-6 py-10 sm:px-12 sm:py-14" @submit.prevent="submitInquiry">
         <button
           type="button"
-          class="absolute right-3 top-3 grid size-9 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors cursor-pointer"
+          class="press absolute right-3 top-3 grid size-9 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors cursor-pointer"
           @click="closeInquiry"
         >
           <span class="sr-only">Close</span>
@@ -821,7 +821,7 @@ async function submitInquiry() {
           <button
             type="submit"
             :disabled="isSubmitting"
-            class="inline-flex min-h-11 items-center gap-2.5 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
+            class="press inline-flex min-h-11 items-center gap-2.5 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
           >
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
             <Send v-else class="size-4" />
@@ -830,7 +830,7 @@ async function submitInquiry() {
 
           <button
             type="button"
-            class="text-xs text-muted-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:text-foreground hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
+            class="press inline-block text-xs text-muted-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:text-foreground hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
             @click="closeInquiry"
           >
             Cancel

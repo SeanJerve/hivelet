@@ -592,6 +592,7 @@ body {
   .chip:active:not(:disabled) {
     transform: scale(0.97);
   }
+
   .icon-btn {
     width: 2.75rem;
     height: 2.75rem;
@@ -970,5 +971,86 @@ body {
     .chip:active:not(:disabled) {
       transform: none;
     }
+  }
+}
+
+
+/* ------------------------------------------------------------------ press --
+ * Deliberately unlayered. See the comment below for why that is load-bearing.
+ */
+  /*
+   * The same answer, for a control that is not one of the workspace pills.
+   *
+   * The public pages - landing, category, enquiry, sign-in - are drawn in their
+   * own editorial language and deliberately use none of the pill classes, so
+   * the rule above reached none of them. Nineteen buttons and sixteen links,
+   * on the pages a prospective boarder is most likely to open on a phone, with
+   * no answer to a press at all. The reasoning above applies here exactly: on
+   * touch there is no hover and no cursor, so a tap that does not move reads as
+   * a tap that did not land.
+   *
+   * It carries the press and nothing else - no box, no height, no colour - so
+   * it can sit on an editorial underlined link without turning it into a
+   * workspace button.
+   *
+   * `.press-plate` is for a large tappable surface. 0.97 on a 600 px plate
+   * moves its edges nine pixels, which is a shove rather than a press; the
+   * scale that reads as subtle depends on what is being scaled.
+   *
+   * IT SETS `scale`, NOT `transform`, AND THAT IS NOT A STYLE CHOICE. These go
+   * on controls that already position themselves - the password reveal on the
+   * sign-in form is centred with `-translate-y-1/2` - and `transform: scale()`
+   * replaces a whole `transform` rather than adding to it. `scale` is an
+   * individual transform property, so it composes with `translate` and with
+   * `transform` instead of overwriting either.
+   *
+   * Checked in the built bundle rather than assumed, because the assumption
+   * was wrong in the safe direction: Tailwind 4 compiles `-translate-y-1/2` to
+   * `translate: var(--tw-translate-x) var(--tw-translate-y)`, the individual
+   * property, so that particular button would have survived `transform` too.
+   * The hand-written rules in this file are the ones that do use `transform` -
+   * the pill press above is one - and `scale` is what keeps a control wearing
+   * both from losing one of them. The pills keep `transform` because nothing
+   * wearing them translates.
+   *
+   * IT SITS OUTSIDE EVERY `@layer`, AND THAT IS ALSO NOT A STYLE CHOICE.
+   * Unlayered declarations beat layered ones no matter what the specificity
+   * is. Every control this class goes on already carries Tailwind's
+   * `transition-colors`, which is a UTILITY - a later layer than `components`,
+   * so a `transition` written in `components` loses to it outright and the
+   * scale snapped instead of easing. Verified in the browser rather than
+   * reasoned about: `.press` on a bare element resolved to
+   * `transition-property: scale`, and on a real control on the landing page it
+   * resolved to Tailwind's colour list with no `scale` in it.
+   *
+   * Because `transition` is one property and not a list that merges, taking it
+   * over means restating what `transition-colors` was giving those controls.
+   * That is what the colour lines below are; drop them and every underlined
+   * link on the public site loses its hover fade.
+   */
+.press,
+.press-plate {
+  transition:
+    scale 0.16s var(--ease-out),
+    color 0.15s var(--ease-out),
+    background-color 0.15s var(--ease-out),
+    border-color 0.15s var(--ease-out),
+    text-decoration-color 0.15s var(--ease-out),
+    outline-color 0.15s var(--ease-out);
+}
+.press:active:not(:disabled) {
+  scale: 0.97;
+}
+.press-plate:active:not(:disabled) {
+  scale: 0.985;
+}
+
+/* Reduced motion keeps the colour and drops the movement, same as the pills.
+   It has to live out here too: a layered override would lose to the unlayered
+   rule above, which is the trap this whole block is built around. */
+@media (prefers-reduced-motion: reduce) {
+  .press:active:not(:disabled),
+  .press-plate:active:not(:disabled) {
+    scale: none;
   }
 }

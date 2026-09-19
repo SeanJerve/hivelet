@@ -180,7 +180,7 @@ async function handleQuickLogin(account: DemoAccount) {
                 />
                 <button
                   type="button"
-                  class="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full hover:bg-canvas cursor-pointer"
+                  class="press-plate absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full hover:bg-canvas cursor-pointer"
                   :aria-label="showPassword ? 'Hide password' : 'Show password'"
                   @click="showPassword = !showPassword"
                 >
@@ -213,7 +213,7 @@ async function handleQuickLogin(account: DemoAccount) {
             </button>
           </form>
 
-          <button type="button" class="self-start text-sm font-semibold text-brand hover:underline" @click="toggleMode">
+          <button type="button" class="press self-start text-sm font-semibold text-brand hover:underline" @click="toggleMode">
             {{ isSignUp ? 'Already have an account? Sign in' : 'No account yet? Create one' }}
           </button>
 

@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
     <div class="relative px-8 py-12 sm:px-14 sm:py-16 text-center">
       <button
         type="button"
-        class="absolute right-3 top-3 grid size-9 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors"
+        class="press absolute right-3 top-3 grid size-9 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors"
         @click="close"
       >
         <span class="sr-only">Close</span>
@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="mt-10 inline-flex min-h-11 items-center justify-center border border-foreground px-10 py-3.5 text-sm font-medium text-foreground hover:bg-foreground hover:text-background focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+        class="press mt-10 inline-flex min-h-11 items-center justify-center border border-foreground px-10 py-3.5 text-sm font-medium text-foreground hover:bg-foreground hover:text-background focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
         @click="bookNow"
       >
         Book now

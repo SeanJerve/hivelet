@@ -365,21 +365,21 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         <header class="flex items-start justify-between gap-6 sm:gap-10">
           <RouterLink
             to="/public"
-            class="shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] hover:text-white/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors drop-shadow-sm"
+            class="press shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] hover:text-white/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors drop-shadow-sm"
           >
             Fe Galang<br />Da Silva<br />Boarding House
           </RouterLink>
 
           <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light drop-shadow-sm">
-            <button @click="scrollToSection('categories')" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Category Section</button>
+            <button @click="scrollToSection('categories')" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Category Section</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <button @click="scrollToSection('faqs')" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">FAQs</button>
+            <button @click="scrollToSection('faqs')" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">FAQs</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <RouterLink to="/inquire" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Inquire Now</RouterLink>
+            <RouterLink to="/inquire" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Inquire Now</RouterLink>
             <span aria-hidden="true" class="pr-2">,</span>
-            <button @click="scrollToSection('location')" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Location</button>
+            <button @click="scrollToSection('location')" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Location</button>
             <span aria-hidden="true" class="pr-2">,</span>
-            <RouterLink to="/login" class="underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Sign In</RouterLink>
+            <RouterLink to="/login" class="press inline-block underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">Sign In</RouterLink>
           </nav>
         </header>
 
@@ -500,7 +500,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             :key="c.key"
             :to="`/category/${c.slug}`"
             :class="[
-              'group block transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
+              'press-plate group block transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
               i % 2 === 1 ? 'sm:mt-20 lg:mt-28' : '',
               isDimmed(c.key) ? 'opacity-40' : 'opacity-100'
             ]"
@@ -651,7 +651,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                       @click="toggleUnit(u.id)"
                       :aria-expanded="openUnitId === u.id"
                       :aria-controls="`unit-panel-${u.id}`"
-                      class="grid size-8 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors"
+                      class="press grid size-8 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors"
                     >
                       <span class="sr-only">
                         {{ openUnitId === u.id ? 'Hide' : 'Show' }} details for unit {{ u.unitCode }}
@@ -699,7 +699,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               type="button"
               :aria-expanded="openUnitId === u.id"
               :aria-controls="`unit-card-${u.id}`"
-              class="flex w-full items-start justify-between gap-4 py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              class="press-plate flex w-full items-start justify-between gap-4 py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               @click="toggleUnit(u.id)"
             >
               <span class="min-w-0">
@@ -760,7 +760,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             type="button"
             :aria-expanded="allUnitsShown"
             aria-controls="all-units-body all-units-list"
-            class="group flex w-full items-baseline justify-between gap-6 pt-5 pb-1 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+            class="press-plate group flex w-full items-baseline justify-between gap-6 pt-5 pb-1 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
             @click="toggleAllUnits"
           >
             <span class="text-sm text-foreground group-hover:text-muted-foreground transition-colors">
@@ -803,7 +803,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 type="button"
                 :aria-expanded="openFaqIndex === idx"
                 :aria-controls="`faq-panel-${idx}`"
-                class="w-full flex items-baseline justify-between gap-6 py-5 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground group"
+                class="press-plate w-full flex items-baseline justify-between gap-6 py-5 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground group"
                 @click="toggleFaq(idx)"
               >
                 <span class="text-sm sm:text-base text-foreground group-hover:text-muted-foreground transition-colors">
@@ -860,7 +860,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                   :href="mapLinkUrl"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+                  class="press inline-block text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
                 >Open in Google Maps<span class="sr-only"> (opens in a new tab)</span></a>
                 for directions, or call the landlady for the gate.
               </span>

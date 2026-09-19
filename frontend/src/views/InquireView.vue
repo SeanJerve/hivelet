@@ -122,7 +122,7 @@ async function submitInquiry() {
         <div class="flex items-start justify-between gap-6">
           <RouterLink
             to="/public"
-            class="text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-foreground hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-foreground hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Fe Galang<br />Da Silva<br />Boarding House
           </RouterLink>
@@ -227,7 +227,7 @@ async function submitInquiry() {
           <button
             type="submit"
             :disabled="isSubmitting"
-            class="mt-10 inline-flex items-center gap-2.5 min-h-11 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press mt-10 inline-flex items-center gap-2.5 min-h-11 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
             <span>{{ isSubmitting ? 'Sending…' : 'Register your interest' }}</span>
@@ -237,7 +237,7 @@ async function submitInquiry() {
         <p class="mt-12 text-xs text-muted-foreground">
           <RouterLink
             to="/public"
-            class="underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
           >
             Back to the property
           </RouterLink>
