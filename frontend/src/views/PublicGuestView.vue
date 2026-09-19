@@ -273,49 +273,56 @@ const startingRate = computed<number | null>(() => {
 });
 
 /**
- * Keyless Google Maps embed, pinned by coordinate.
+ * Keyless Google Maps embed, pinned to the PLACE rather than to a coordinate.
  *
- * `output=embed` returns a real, interactive map with no API key, billing
- * account or script tag; the Maps JavaScript API needs all three and none of
- * them exist for this project. A `q=` of `lat,lng` puts Google's own red
- * marker on that point - which is the pin, rather than something drawn over
- * the iframe: an overlay would sit still while the map panned under it.
+ * WHY THIS IS A `pb=` URL AND NOT A TIDY `q=lat,lng`
+ * ---------------------------------------------------
+ * It used to be `output=embed` with `q=13.1416835,123.7302874`, a coordinate
+ * taken from the OpenStreetMap geometry of Sapaguita Street. That coordinate
+ * round-tripped correctly through Nominatim and was checked by loading it, and
+ * it was still wrong in the way that matters: it marks a point ON THE STREET,
+ * about twenty metres south of the compound gate. Google's own map drew its
+ * place marker for "Galang's Compound" up the road, and our red pin sat below
+ * it on the carriageway - two markers, disagreeing, on the page whose job is to
+ * tell someone where to turn up.
  *
- * WHERE THE COORDINATE COMES FROM, AND WHAT IT MARKS
- * --------------------------------------------------
- * This was the barangay name, and the reason was that querying the full street
- * address put the pin on "32 Sampaguita Ave, Daraga" - a different
- * municipality - because Google matched a similarly spelled street there.
- * Verified at the time by loading it: the embed's own info card named Daraga.
- * Asking for the barangay instead resolved correctly but marked the whole of
- * Sagpon, which is not an address.
+ * Sean spotted it on screen on 2026-09-19 and supplied this embed from Google
+ * Maps directly. The part that matters inside the opaque `pb` string is
+ * `1s0x33a103648fe297e5:0x54153ecf77cd6a`, which is Google's own identifier for
+ * the place named Galang's Compound. Because the embed resolves the PLACE, the
+ * marker is positioned by Google from its own record instead of by a number we
+ * maintain, and it carries the name as a label. There is no second pin to
+ * disagree with it.
  *
- * The coordinate below is the OpenStreetMap geometry of Sampaguita Street in
- * Sagpon, Legazpi - "Sapaguita" on the owner's paperwork is the local spelling
- * of the same street - and it round-trips: the forward search for that street
- * returns this point, and reversing this point returns "Sampaguita Street,
- * Sagpon, Legazpi, Albay, 4500". Checked against Nominatim on 2026-09-19.
+ * `2d`/`3d` in that string are the longitude and latitude Google centres on,
+ * 123.73023905008277 and 13.141856739297554, and `1d` is the zoom span. The
+ * trailing `4v...` is the timestamp Google stamps on a generated embed; it is
+ * inert.
  *
- * THEN IT WAS LOADED AND LOOKED AT, which is the only reason it is here.
- * The embed was opened at this coordinate on 2026-09-19 and Google's own map
- * puts a labelled place - "Galang's Compound" - within a few metres of the
- * marker, on the street it labels Sampaguita Street, with the Sagumayun River,
- * Rizal Avenue and the Bicol University campus around it. Old Albay, Legazpi.
- * Not Daraga. That is the same standard the Daraga mistake was caught by: the
- * previous author loaded the embed and read its info card, and so did this one.
- *
- * It is still not a surveyed position for the gate, so if Mrs. Da Silva gives a
- * `lat,lng` for the entrance, replace this one string - the embed, the marker
- * and the directions link all read it. The full address stays in text beside
- * the map because a third-party frame will not render with no network, and the
- * PWA caches an offline shell.
+ * A `pb` string cannot be edited by hand safely. If the compound is ever
+ * remapped, do not patch it: open Google Maps, find the place, Share, Embed a
+ * map, and replace this whole constant with what it gives you.
  */
-const MAP_PIN = '13.1416835,123.7302874';
-const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(MAP_PIN)}&z=18&hl=en&output=embed`;
+const MAP_EMBED_PB =
+  "!1m18!1m12!1m3!1d242.83284358103325!2d123.73023905008277!3d13.141856739297554" +
+  "!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2" +
+  "!1s0x33a103648fe297e5%3A0x54153ecf77cd6a!2sGalang's%20Compound" +
+  "!5e0!3m2!1sen!2sph!4v1789792852887!5m2!1sen!2sph";
+const mapEmbedUrl = `https://www.google.com/maps/embed?pb=${MAP_EMBED_PB}`;
 
-/** The same point, for the reader who wants it in their own maps app. */
-const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(MAP_PIN)}`;
-
+/**
+ * The same place, for the reader who wants it in their own maps app.
+ *
+ * A plus code rather than a coordinate: `4PRJ+P4J` with its locality resolves
+ * to roughly a fourteen-metre square, it is the form Sean gave for the
+ * compound, and unlike a decimal pair a person can read it back and check it.
+ */
+const MAP_PLUS_CODE = "4PRJ+P4J";
+/** A short plus code needs its locality to resolve. The sentence shows only the code. */
+const MAP_PLUS_CODE_LOCALITY = "Old Albay District, Legazpi City, Albay";
+const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+  `${MAP_PLUS_CODE} ${MAP_PLUS_CODE_LOCALITY}`
+)}`;
 </script>
 
 <template>
@@ -858,15 +865,23 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             </p>
 
             <!--
-              What the pin on the map below is, in words, because a marker on
-              its own does not say how precise it is. The comment on MAP_PIN
-              has the provenance: it is the street in the right barangay, not a
-              surveyed position for the gate.
+              What the marker on the map below is, in words, because a marker
+              on its own does not say how precise it is.
+
+              This said "the red pin", and a red pin is exactly what was wrong
+              with it: the embed was pinned by a COORDINATE we maintained, and
+              that coordinate sat on the carriageway about twenty metres south
+              of the gate, below Google's own marker for the compound. Two
+              markers disagreeing, on the section whose one job is to say where
+              to turn up. The map now resolves the PLACE, so the only marker on
+              it is Google's, positioned from Google's own record and carrying
+              the name. See MAP_EMBED_PB above.
             -->
             <p class="mt-5 flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed">
-              <MapPin class="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
+              <MapPin class="mt-0.5 size-4 shrink-0 text-muted-foreground-soft" aria-hidden="true" />
               <span>
-                The red pin marks the compound on Sapaguita Street in Brgy. 4 Sagpon.
+                The marker below is Google's own record of Galang's Compound, on Sapaguita Street
+                in Brgy. 4 Sagpon. Its plus code is {{ MAP_PLUS_CODE }}.
                 <a
                   :href="mapLinkUrl"
                   target="_blank"
@@ -883,7 +898,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       <div class="w-full border-t border-border">
         <iframe
           :src="mapEmbedUrl"
-          title="Map with a red pin on Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City"
+          title="Map showing Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City"
           class="block w-full aspect-[16/11] sm:aspect-[24/9] border-0"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
