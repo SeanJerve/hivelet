@@ -14,9 +14,9 @@ without touching appearance.
 
 ## 0. The headline
 
-**Sixteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
-was invisible: none produced an error, a failing suite, or a console warning. Three more findings
-need a person and are `B-15`, `B-16` and `B-17`.
+**Seventeen defects found and fixed, six of them on the paths the owner's money takes.** Every one
+was invisible: none produced an error, a failing suite, or a console warning. Four more findings
+need a person and are `B-15`, `B-16`, `B-17` and `B-18`.
 
 **The one to read first, if you read one:** editing any row in the income ledger rewrote **who
 paid it**. The form has no contact field, and sent one anyway, recomputed from whoever occupies
@@ -33,7 +33,7 @@ ignores, a guard whose condition names one of its two inputs.
 
 | | Evidence |
 | :--- | :--- |
-| `npm run check:all` — **20 / 20**, run five times across the session | summary table, never the tail |
+| `npm run check:all` — **20 / 20**, run more than a dozen times across the session | summary table, never the tail |
 | `TESTING_REHEARSAL.md` **steps 1-6, live in a browser** | network calls (`201`, `200`), screenshots, not just the screen |
 | Frontend production build + `vue-tsc` | clean |
 | Backend build (`tsc`) | clean |
@@ -351,6 +351,34 @@ belongs to whoever owns the database. It aborts with a named count if any collis
 migrated and documents quote them that way, so normalising them is a decision about her data
 rather than a constraint.
 
+### 2.17 The audit trail's own tab had gone back to being 92% noise
+
+The Audit Trail defaults to *"Done to the records"* because the trail is dominated by
+`AUTH_ACCESS_DENIED` from a bug fixed weeks ago, and the table is append-only so those rows are
+permanent. The comment on that default states the reasoning: *"a log that opens on 77% noise is
+a log nobody reads."*
+
+It had quietly happened again from a different source. **`LEDGER_EXPORT` does not begin with
+`AUTH_`**, so every workbook download landed in the business bucket — and the verification
+suites export one on every run. Counted on the day: **1,581 of the 1,715 business rows were
+exports, 92%**, leaving **134** real events. At the default limit of 100 newest-first, the
+administrator's entire first page was downloads and the rows describing what was actually done
+to her records were off the end of it.
+
+The tab is labelled "Done to the records" and an export does nothing to them, so splitting it out
+is what that label already promised rather than a new definition. Downloads are still audited —
+who took a copy of the ledger is a real access record — they simply have their own category.
+
+**`check:api` caught the consequence itself**, which is the system working as intended: its meta
+assertion was `auth + business = grand`, and that stops being true under a three-way split. It
+now asserts the partition and pins the new guarantee. Verified through the running endpoint
+rather than in SQL alone: **134 business + 8,142 auth + 1,589 export = 9,865**.
+
+*The separate finding underneath it is `B-18`: every `npm run check:all` writes about **45
+permanent rows** into that table, and 88% of the trail is now machine traffic. Nothing is wrong
+with auditing them, and `DELETE` is revoked by design — but the ratio only worsens, and what to
+do about it trades a security record against a readable one. That is a decision, not a defect.*
+
 ---
 
 ## 2b. The public surface, probed rather than read
@@ -407,6 +435,7 @@ start at ₱4,500"* sentence rather than quoting the seed.
 | **`B-14`** | Admin password **rotated for real** by rehearsal step 5 — `creds.txt` updated, other machines need it out of band. Steps 7-26 still need a human. One test enquiry left on the owner's board (`REHEARSAL Test`, unit PH) |
 | **`B-15`** | Zero-water receipts cannot be recorded, and every multi-month settlement in her book is one row per month — which is not the shape `monthsCovered` produces. Both hers |
 | **`B-16`** | During one outage `/category/studio` says availability cannot be determined while `/public` lists 33 units as Available. Design account's lane and file |
+| **`B-18`** | Every `check:all` writes ~45 permanent rows into the audit trail; 88% of it is now machine traffic. `DELETE` is revoked by design, so this is a decision about what to say or stop doing, not a cleanup |
 | **`B-17`** | Apply migration `028` — unit codes are unique only by case, so `1A` can be created beside `1a` and the cash path 500s on it. Code guard already in; this is the database backstop. Written, checked against the live table, **not applied** |
 | **`B-05`** | Still open, re-confirmed live today: two junk tickets on `1A`, one titled with a slur, still `Submitted` and still on the owner's overview. Migration `027` written, not applied |
 

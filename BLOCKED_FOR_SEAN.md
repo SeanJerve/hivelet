@@ -33,6 +33,44 @@ thing did not work" is not.
 
 ## Open
 
+### B-18 — every `check:all` writes ~45 permanent rows into the owner's audit trail
+
+- **Blocked on:** your judgement. Nothing here is a bug, and the fix is not obvious enough for
+  me to pick one on your behalf — it trades a security record against a readable one
+- **The measurement**, taken 2026-09-19 against the live table:
+
+  | | rows | |
+  | :--- | ---: | :--- |
+  | `AUTH_ACCESS_DENIED` | **6,770** | mostly `check:api` deliberately probing endpoints it must be refused by |
+  | `LEDGER_EXPORT` | **1,581** | `check:reports` exporting workbooks, first seen 2026-09-14 |
+  | `AUTH_LOGIN` | **1,201** | four suites sign in on every run |
+  | everything a person actually did | **134** | |
+
+  **88% of the trail is machine traffic**, and `audit_logs` is append-only by design — migration
+  002 revokes `DELETE` from every role, so none of it can ever be removed. On this one day my
+  own runs added **368 denied, 160 exports and 81 sign-ins**
+- **Already fixed, and separately:** the *view* no longer counts downloads as events "done to
+  the records", so the administrator's default tab went from 1,715 rows (92% exports) to the
+  **134** real ones. That makes the screen honest. It does not stop the table growing
+- **Why it is worth a decision rather than a shrug:** the trail is FR-029 and BR-028 — the
+  record that important operations are traceable. A panel may well open it. Right now its
+  contents are overwhelmingly our own test runs, and the ratio gets worse every working day
+- **Three options, and I would not pick one for you:**
+  1. **Accept it and say so.** The view already filters; the noise is just storage. Cheapest,
+     and defensible out loud
+  2. **Stop auditing a refusal that came from a suite.** Needs the suites to authenticate as a
+     distinguishable principal, and that is a hole worth thinking hard about — an attacker who
+     could set it would turn off the audit trail
+  3. **Make `check:reports` stop exporting through the HTTP route**, or export once per run
+     rather than per assertion. Narrowest of the three, and it removes 1,581 of the rows
+- **What NOT to do:** delete rows. Append-only is deliberate, `DELETE` is revoked, and the
+  permanence is the point of an audit trail
+- **How to know it is settled:** either a line in the defense pack saying plainly what the
+  trail contains and why, or the export count stops climbing on a `check:all` run
+- **Raised:** 2026-09-19 by Claude, functional-audit session
+
+---
+
 ### B-17 — apply `database/migrations/028`: unit codes are unique only by case
 
 - **Blocked on:** it is a live schema change, so it is yours — the same way `023` and `027` are.
