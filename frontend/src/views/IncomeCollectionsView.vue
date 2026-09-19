@@ -904,7 +904,20 @@ async function exportExcel() {
         <MonthCapsules :months="collectionsByMonth" label="Collections by month" />
       </OverviewTile>
 
+      <!--
+        The month chart beside this one hides itself when there are no rows
+        (`showMonthChart` requires `rows.length > 0`), so a failed load never
+        draws an empty capsule strip. This tile had no such guard and drew the
+        whole breakdown at zero: a part-to-whole bar with no parts, "Rent ₱0,
+        Water ₱0, Garbage ₱0", and the spreadsheet's own line at ₱0 under it.
+      -->
       <OverviewTile title="What it was made of" :class="showMonthChart ? 'xl:col-span-2' : 'xl:col-span-5'">
+        <UnavailableNote
+          v-if="incomeRecordsFetchFailed"
+          message="The collections could not be loaded, so there is nothing to break down."
+          @retry="fetchIncome"
+        />
+        <template v-else>
         <p class="tabular text-3xl font-semibold leading-none text-ink">
           {{ peso(collectedAltogether) }}
         </p>
@@ -930,6 +943,7 @@ async function exportExcel() {
           <strong class="tabular font-semibold text-ink">{{ peso(totalSpreadsheetLine) }}</strong
           >: BH at half rent, every other cluster at full rent, plus water.
         </p>
+        </template>
       </OverviewTile>
     </div>
 

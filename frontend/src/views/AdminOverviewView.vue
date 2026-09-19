@@ -986,6 +986,17 @@ const isExportingArchive = ref(false);
             </ul>
           </template>
 
+          <!--
+            Wrapped, like the five other `ws-table`s on this screen. This was
+            the one bare one: `.ws-table` is `width: 100%`, which compresses a
+            table but does not stop it overflowing once the columns cannot get
+            any narrower - a month name and three peso figures on a 375px
+            screen. Without `.ws-table-wrap` there is nothing to scroll inside,
+            so the overflow becomes the PAGE's, and the dashboard scrolls
+            sideways. Its sibling at "Month by month" has had the wrapper all
+            along; this one was simply missed.
+          -->
+          <div class="ws-table-wrap">
           <table class="ws-table">
             <caption class="sr-only">Collections, operating expenses and net operating income by month</caption>
             <thead>
@@ -1005,6 +1016,7 @@ const isExportingArchive = ref(false);
               </tr>
             </tbody>
           </table>
+          </div>
           <p class="text-xs leading-5 text-ink-faint">
             Operating expenses leave out personal costs for the Main House and Other, which are recorded in the
             same ledger but not subtracted. So far this year they come to {{ peso(livePersonalTotal) }}.
