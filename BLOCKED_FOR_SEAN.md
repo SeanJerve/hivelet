@@ -431,6 +431,36 @@ the untested half of BR-024, and they only become testable after a person has us
   its own function and says what happened when it did not.
 - **Raised, fixed and corrected:** 2026-09-19 / 2026-09-20
 
+### B-42 — the audit trail's IP address is only as true as `trust proxy`
+
+- **Improved, not solved, and the difference matters** because the audit row is the *only*
+  durable record for an unmatched online payment.
+- **What was wrong.** `clientIp()` read `X-Forwarded-For` itself and took the **leftmost** entry —
+  whatever the caller typed. On the two unauthenticated payment routes (the Adyen webhook and the
+  local cashier) that made the only identity in the trail a value the sender chose. It also
+  bypassed `app.set('trust proxy', 1)` entirely, because it ran first and always won.
+- **☑ Fixed to ask Express**, so `trust proxy` is the single place that decides. Measured against
+  the running server rather than assumed:
+
+  | request | recorded |
+  | :--- | :--- |
+  | no proxy header | `::ffff:127.0.0.1` — the real socket |
+  | one spoofed `X-Forwarded-For` | `203.0.113.9` |
+  | a chain of three | `192.0.2.1` — the **rightmost**, not the attacker's first |
+
+  The old code returned the attacker's value in **all three**. Hop counting defeats the chain.
+- **☐ What is left is yours, and it is a deployment decision.** `trust proxy` is set to `1`, so
+  Express believes exactly one proxy is in front. A **direct** request carrying a single XFF
+  header still has that header believed. That is only correct while every real request genuinely
+  arrives through exactly one proxy.
+  - With `cloudflared` that holds for tunnel traffic.
+  - The API is also reachable directly on `localhost:5000`, where it does not.
+- **The honest reading of the column:** it records *what the chain reported*, not *where the
+  request came from*. Do not treat it as proof in any investigation. If that is not good enough,
+  the fix is to pin `trust proxy` to the tunnel's address rather than a hop count — one line, but
+  it needs to match how the machine is actually exposed, which only you can say.
+- **Raised and partly fixed:** 2026-09-20
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet

@@ -78,12 +78,44 @@ export interface AuditEntry {
   ipAddress?: string | null;
 }
 
-/** Extracts the client IP, honouring a proxy header when present. */
+/**
+ * The client's address, as far as it can be trusted.
+ *
+ * This read `X-Forwarded-For` itself and took the LEFTMOST entry - which is
+ * whatever the caller typed. On the two unauthenticated payment routes, the
+ * Adyen webhook and the local cashier, that made the only identity in the audit
+ * trail a value the sender chose. Anyone could POST with
+ * `X-Forwarded-For: 203.0.113.9` and have it persisted, and the audit row is the
+ * SOLE durable record for an unmatched payment.
+ *
+ * `server.ts` already does this properly: `app.set('trust proxy', 1)` tells
+ * Express how many hops to believe, and `req.ip` is the result. The manual
+ * parse bypassed that configuration entirely and always won, because it ran
+ * first.
+ *
+ * So: ask Express, and let `trust proxy` be the single place that decides.
+ *
+ * WHAT THIS DOES AND DOES NOT BUY, measured against the running server rather
+ * than assumed:
+ *
+ *     no proxy header          -> ::ffff:127.0.0.1   (the real socket)
+ *     one spoofed XFF entry    -> 203.0.113.9
+ *     a chain of three         -> 192.0.2.1          (the rightmost, not the first)
+ *
+ * The old code returned the attacker's chosen value in ALL THREE cases. Hop
+ * counting now defeats the chain - prepending addresses no longer lets a caller
+ * pick what is recorded.
+ *
+ * It does NOT make the value proof. With `trust proxy` set to 1, Express
+ * believes exactly one proxy is in front, so a DIRECT request carrying a single
+ * XFF header still has that header believed. That is a deployment fact, not a
+ * code one: the setting is only as true as the topology. Treat this field as
+ * "what the chain reported", never as "where the request came from" - see B-42.
+ *
+ * `req.socket.remoteAddress` remains the last resort for a request that arrived
+ * with no proxy handling at all.
+ */
 export function clientIp(req: Request): string | null {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.length > 0) {
-    return forwarded.split(',')[0]!.trim();
-  }
   return req.ip ?? req.socket.remoteAddress ?? null;
 }
 
