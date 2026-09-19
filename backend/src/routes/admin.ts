@@ -2918,12 +2918,31 @@ router.patch(
       }
 
       if (remainingUnresolved.length === 0) {
-        const { data: activeAssign } = await db
+        /**
+         * A failed read here must not decide the unit is empty.
+         *
+         * `activeAssign` alone is falsy both when nobody lives there AND when
+         * the query failed, and the line below turns the second into
+         * **'Available'** - a unit with a resident in it, advertised as free.
+         * `operational_status` is in the `/public/rooms` payload, so that answer
+         * reaches the public listing, not just the directory.
+         *
+         * The same fail-open shape as the `'Open'` query above it, which is why
+         * this was worth checking while in here.
+         */
+        const { data: activeAssign, error: assignError } = await db
           .from('room_assignments')
           .select('id')
           .eq('room_id', targetRoomId)
           .eq('is_active', true)
           .maybeSingle();
+
+        if (assignError) {
+          throw ApiError.internal(
+            `The ticket was updated, but this unit's tenancy could not be read, so its ` +
+              `status has been left as it was rather than guessed: ${assignError.message}`
+          );
+        }
 
         const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
         assertWritten(
@@ -3005,12 +3024,22 @@ router.delete(
       }
 
       if (remainingUnresolved.length === 0) {
-        const { data: activeAssign } = await db
+        // Same fail-open as the PATCH path: falsy covers both "nobody lives
+        // there" and "the query failed", and the second would advertise an
+        // occupied unit as free on the public listing.
+        const { data: activeAssign, error: assignError } = await db
           .from('room_assignments')
           .select('id')
           .eq('room_id', before.room_id)
           .eq('is_active', true)
           .maybeSingle();
+
+        if (assignError) {
+          throw ApiError.internal(
+            `The ticket was deleted, but this unit's tenancy could not be read, so its ` +
+              `status has been left as it was rather than guessed: ${assignError.message}`
+          );
+        }
 
         const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
         assertWritten(
