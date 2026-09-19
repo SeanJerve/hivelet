@@ -7,6 +7,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
@@ -21,6 +22,7 @@ import SegmentBar from '@/components/overview/SegmentBar.vue';
 import { CreditCard, Wrench, X, CheckCircle2, ChevronDown, Home } from 'lucide-vue-next';
 
 const { showToast } = useToast();
+const router = useRouter();
 
 const submissionNotice = ref('');
 const activeBillId = ref<string | null>(null);
@@ -275,14 +277,30 @@ async function fetchTenantData() {
     // Find the latest covered date from verified payments and income records.
     let maxCoveredDate: Date | null = null;
 
-    paymentsData?.forEach((p: any) => {
-      if (p.verification_status === 'Verified') {
-        const payDate = new Date(p.paid_at || p.created_at);
-        // Estimate cover end as the 25th of the payment month.
-        const estCoverEnd = new Date(payDate.getFullYear(), payDate.getMonth(), 25);
-        if (!maxCoveredDate || estCoverEnd > maxCoveredDate) maxCoveredDate = estCoverEnd;
-      }
-    });
+    /**
+     * THE 25th OF THE MONTH WAS INVENTED, AND IT HID REAL DEBT.
+     *
+     * This read every verified payment, guessed that it covered rent up to the
+     * 25th of the month it was paid in, and then used that guess to filter bills
+     * out of the unpaid list. A resident with any verified payment in a month
+     * had every bill due on or before the 25th suppressed - and was then shown
+     * the settled branch: total due 0, badge PAID.
+     *
+     * Nothing in this business bills on the 25th. BR-033 runs each tenancy from
+     * its own anniversary day, and per B-32 those days are spread across the
+     * month, so the guess was wrong for nearly everyone and wrong in the
+     * dangerous direction.
+     *
+     * It is also unnecessary. The API already answers this question properly:
+     * `withEffectiveStatus` derives `amount_outstanding` on every bill from the
+     * payments actually linked to it (BR-013), which is the real relationship
+     * between a payment and a bill rather than a guess from its date. The two
+     * lines above already use `effective_status`; this now uses the balance
+     * beside it.
+     *
+     * The income-record branch below is kept: `rent_period_end` is a recorded
+     * fact, not an estimate, and it is what drives the next-due-date display.
+     */
 
     incomeData?.forEach((inc: any) => {
       if (inc.verification_status === 'Verified' && inc.rent_period_end) {
@@ -299,7 +317,9 @@ async function fetchTenantData() {
       // including 'Partially Paid' (BR-013).
       if (b.status === 'Paid') return false;
       if ((b.effective_status ?? b.status) === 'Paid') return false;
-      if (maxCoveredDate && new Date(b.due_date) <= maxCoveredDate) return false;
+      // BR-013: the balance the API derived from verified payments, not a date
+      // guessed from when a payment happened to be made.
+      if (Number(b.amount_outstanding ?? b.total_amount ?? 0) <= 0) return false;
       return true;
     });
 
@@ -389,21 +409,26 @@ async function fetchTenantData() {
   }
 }
 
-async function handlePayOnline() {
-  payingOnline.value = true;
-  try {
-    const res = await api.post<{ sessionId: string; redirectUrl: string }>('/tenant/payments/checkout', {
-      billId: activeBillId.value || undefined,
-      returnUrl: window.location.origin + '/tenant',
-    });
-    if (res && res.redirectUrl) {
-      window.location.href = res.redirectUrl;
-    }
-  } catch (err: any) {
-    showToast('error', 'Payment page did not open', err?.message || 'The checkout session could not be created. Try again.');
-  } finally {
-    payingOnline.value = false;
-  }
+/**
+ * THIS BUTTON DID NOTHING, AND SAID NOTHING.
+ *
+ * It called `/tenant/payments/checkout` and navigated only `if (res.redirectUrl)`.
+ * That field is null whenever a real gateway is configured - the route says so
+ * itself: "Only the local development checkout has a page of ours to redirect
+ * to. A real Adyen session is paid inside the Drop-in on the tenant's own page."
+ * Adyen IS configured, so the branch never ran.
+ *
+ * The failure was silent because the POST SUCCEEDED. No navigation, no toast,
+ * no error - and a real Adyen session created plus a PAYMENT_RECORD audit row
+ * written on every press. A resident could press it all day.
+ *
+ * The working path already exists: TenantPaymentsView mounts the Adyen Drop-in
+ * with the sessionId, sessionData and clientKey this response carries. So the
+ * honest thing is to take them there rather than open a second checkout session
+ * here and abandon it. No session is created until the Drop-in asks for one.
+ */
+function handlePayOnline() {
+  router.push({ path: '/tenant/payments', query: { pay: activeBillId.value || undefined } });
 }
 
 const statusTone = computed(() => {

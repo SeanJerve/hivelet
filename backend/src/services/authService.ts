@@ -155,40 +155,6 @@ export async function login(
     accountStatus: data.account_status,
   };
 
-  /**
-   * The account's creation, recorded as its own event.
-   *
-   * Only `recordLoginAudit` ran here, so a brand-new profile appeared in the
-   * audit trail as `AUTH_LOGIN` and nothing else - the trail could say somebody
-   * signed in, and could not say an account had come into existence. On a
-   * PUBLIC endpoint that inserts a live `profiles` row with role 'tenant' and
-   * account_status 'active', "where did this account come from?" is the one
-   * question the log has to be able to answer.
-   *
-   * `TENANT_CREATE` is the same action the administrator's onboarding path
-   * writes, which is right - the same thing happened. The two are told apart by
-   * their actor: an onboarding carries the administrator's profile id, and this
-   * carries the new account's own, because nobody else was involved.
-   *
-   * Awaited rather than fired and forgotten, unlike the login row below it: this
-   * is the record OF the account, and a registration that returns a token while
-   * its audit row is still in flight can lose the row to a process exit.
-   */
-  await recordAudit({
-    actorProfileId: user.profileId,
-    action: 'TENANT_CREATE',
-    entityType: 'PROFILE',
-    entityId: user.profileId,
-    newValues: {
-      email: user.email,
-      full_name: user.fullName,
-      role: user.role,
-      account_status: user.accountStatus,
-      note: 'Self-registered through the public sign-up endpoint.',
-    },
-    ipAddress: ipAddress ?? null,
-  });
-
   void recordLoginAudit(user, ipAddress);
 
   return {
@@ -479,6 +445,48 @@ export async function register(data: RegisterData, ipAddress?: string): Promise<
     role: newProfile.role as StoredRole,
     accountStatus: newProfile.account_status as 'active' | 'inactive',
   };
+
+  /**
+   * The account's creation, recorded as its own event.
+   *
+   * Only `recordLoginAudit` ran here, so a brand-new profile appeared in the
+   * audit trail as `AUTH_LOGIN` and nothing else - the trail could say somebody
+   * signed in, and could not say an account had come into existence. On a
+   * PUBLIC endpoint that inserts a live `profiles` row with role 'tenant' and
+   * account_status 'active', "where did this account come from?" is the one
+   * question the log has to be able to answer.
+   *
+   * `TENANT_CREATE` is the same action the administrator's onboarding path
+   * writes, which is right - the same thing happened. The two are told apart by
+   * their actor: an onboarding carries the administrator's profile id, and this
+   * carries the new account's own, because nobody else was involved.
+   *
+   * Awaited rather than fired and forgotten, unlike the login row below it: this
+   * is the record OF the account, and a registration that returns a token while
+   * its audit row is still in flight can lose the row to a process exit.
+   *
+   * THIS BLOCK SPENT HALF A DAY INSIDE `login()`, which is why the comment now
+   * names the function it belongs to. Put there on 2026-09-19, it wrote a false
+   * "self-registered" creation record on EVERY SUCCESSFUL SIGN-IN - 267 of them
+   * before it was caught, into a table that revokes DELETE. Every sentence above
+   * reads perfectly well in `login()` too, which is precisely why nothing
+   * noticed: the comment was true about the code it described and silent about
+   * where that code was sitting. See B-41.
+   */
+  await recordAudit({
+    actorProfileId: user.profileId,
+    action: 'TENANT_CREATE',
+    entityType: 'PROFILE',
+    entityId: user.profileId,
+    newValues: {
+      email: user.email,
+      full_name: user.fullName,
+      role: user.role,
+      account_status: user.accountStatus,
+      note: 'Self-registered through the public sign-up endpoint.',
+    },
+    ipAddress: ipAddress ?? null,
+  });
 
   void recordLoginAudit(user, ipAddress);
 

@@ -398,6 +398,39 @@ the untested half of BR-024, and they only become testable after a person has us
   appears. Mutation-tested: removing one from the known list fails and names the resident.
 - **Raised:** 2026-09-19
 
+### B-41 — I put an audit block in the wrong function and wrote 276 false records · **fixed; 043 applied**
+
+- **Mine, and the worst mistake I have made on this project.** On 2026-09-19 I added a
+  `TENANT_CREATE` audit row so a public self-registration would leave a record of the account
+  coming into existence. **I put it in `login()` instead of `register()`.**
+- **What it did.** Between 09:02 and 14:58 that day, **every successful sign-in wrote a row saying
+  the account had just been self-registered** — 276 of them, across 7 accounts. Every one is
+  false: none of those accounts was created that day, and `ALLOW_PUBLIC_SIGNUP` is `false`, so no
+  account *could* have been self-registered.
+- **Found by a subagent audit of the services layer**, not by me and not by any of the 20 suites.
+  `check:writes` had just been taught to assert that every write route leaves a trail — it does
+  not, and cannot, assert that the trail says something **true**.
+- **☑ Code fixed and verified behaviourally**, not just by reading: signed in and watched
+  `TENANT_CREATE` hold at 284 while `AUTH_LOGIN` went 1687 → 1688.
+- **☑ Migration 043 applied — and it deletes nothing.**
+  - `service_role` holds INSERT, SELECT, REFERENCES, TRIGGER and TRUNCATE on `audit_logs` and
+    **not DELETE** — read from `information_schema.role_table_grants`. The append-only guarantee
+    is enforced at the grant level, not merely intended. Removing those rows would mean reaching
+    past it with the `postgres` role.
+  - **And it should not be done even though it could be.** An audit log you edit when its
+    contents are inconvenient is not an audit log. These rows are embarrassing rather than
+    dangerous, which is exactly the case where the temptation is strongest and the principle
+    matters most.
+  - So 043 does what a ledger does with an error: **posts a correction and leaves the original
+    entries standing.** One `AUDIT_CORRECTION` row naming the cause, the exact window, the count
+    and how to find them — in the same table, at the same authority, so a reader who meets the
+    276 finds the explanation without needing to open this file.
+- **The lesson, and it is not "be careful".** Every sentence of that comment block describes
+  `register()`. All of it read perfectly well sitting in `login()`. **A comment can be entirely
+  true about the code it describes and silent about where that code is.** The comment now names
+  its own function and says what happened when it did not.
+- **Raised, fixed and corrected:** 2026-09-19 / 2026-09-20
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
