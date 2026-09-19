@@ -573,7 +573,12 @@ if (adminToken) {
   console.log('\nNUMERIC POISONING (Infinity must never reach a money column)');
 
   const poison = [
-    ['POST',  '/admin/rooms',          { cluster_code: 'BH', room_number: `ZZ-PROBE-${Date.now()}`,
+    // floor and capacity are sent and VALID. They became required when the schema
+    // was aligned with the NOT NULL columns, and without them this probe would be
+    // refused for a missing field rather than for the Infinity it exists to test -
+    // a test passing for the wrong reason.
+    ['POST',  '/admin/rooms',          { cluster_code: 'BH', room_number: `ZZPROBE${Date.now()}`,
+                                         floor: 1, capacity: 1,
                                          current_price: 1e999 },                 'room create, current_price'],
     ['POST',  '/admin/income-records', { roomNumber: '1a', datePaid: '2026-09-14',
                                          contactName: 'Probe', invoiceNumber: 'OR#PROBE',

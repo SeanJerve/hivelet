@@ -82,13 +82,30 @@ router.get(
 const roomInsertSchema = z.object({
   cluster_code: z.string().min(1).max(50),
   room_number: unitCode(20),
-  floor: z.number().int().min(1).optional(),
+  /**
+   * REQUIRED, because the database requires it.
+   *
+   * `rooms.floor` and `rooms.capacity` are both NOT NULL with NO DEFAULT - read
+   * from `pg_attribute`, not from the schema file. They were `.optional()` here,
+   * so creating a unit without them got as far as the INSERT and came back as a
+   * 500 carrying a raw not-null-violation, when the honest answer is a 422
+   * naming the field the form did not send.
+   *
+   * Latent rather than live: nothing in `frontend/src` calls POST /admin/rooms
+   * at all - there is no create-unit screen, and the property's 33 units were
+   * seeded. It is fixed because the route is reachable and its contract should
+   * not promise something the database refuses.
+   *
+   * `floor` is the level WITHIN a building, not across the property - see
+   * migration 034 and `scripts/check-relations.mjs`.
+   */
+  floor: z.number().int().min(1),
   // `room_type` is the enum `room_type_enum`, not free text. It was `z.string()` while
   // `operational_status` and `visibility_status` in this same file were properly
   // enumerated, so an invalid type reached PostgreSQL and came back as a 22P02 the
   // caller could not act on. Validated here, it is a 422 naming the allowed values.
   room_type: z.enum(['Studio', 'One-bedroom', 'Two-bedroom', 'Three-bedroom']).optional(),
-  capacity: occupantCount.refine((n) => n >= 1, 'must be at least one').optional(),
+  capacity: occupantCount.refine((n) => n >= 1, 'must be at least one'),
   // `money`, not `z.number().min(0)`. Zod's `z.number()` rejects NaN but ACCEPTS
   // Infinity, and JSON carries it in plainly as `1e999`. PostgreSQL sorts Infinity
   // above every numeric, so a `>= 0` CHECK passes it. This is the unit's rent: it
