@@ -11,6 +11,7 @@ import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
+import { propertyDate } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -96,6 +97,12 @@ const tenantData = ref({
  * the amount due can no longer disagree about whether anything loaded.
  */
 const tenantDataLoadFailed = ref(false);
+/**
+ * The day of the month this tenancy's cycle is anchored to (BR-033), from
+ * `room_assignments.anniversary_date`. Null when there is no tenancy on file,
+ * in which case no due date is shown rather than a guessed one.
+ */
+const anniversaryDay = ref<number | null>(null);
 const loading = ref(true);
 
 interface PaymentRow {
@@ -222,6 +229,19 @@ async function fetchTenantData() {
         if (activeRoom.rooms?.current_price) {
           tenantData.value.unitRent = Number(activeRoom.rooms.current_price);
         }
+
+        /**
+         * BR-033's anchor, read from the tenancy rather than assumed.
+         *
+         * `/tenant/my-rooms` has always returned `anniversary_date` and this view
+         * never looked at it, which is why the block below could only guess.
+         * Kept as a day-of-month because that is all the cycle needs.
+         */
+        const anniv = activeRoom.anniversary_date;
+        anniversaryDay.value =
+          typeof anniv === 'string' && /^\d{4}-\d{2}-\d{2}/.test(anniv)
+            ? Number(anniv.slice(8, 10))
+            : null;
       }
     }
 
@@ -307,18 +327,44 @@ async function fetchTenantData() {
         tenantData.value.waterFee = paidBill ? paidBill.water_amount : 0;
         tenantData.value.totalAmountDue = 0;
 
-        // TODO(Sean, audit F9): BR-033 derives the cycle from the anniversary date.
-        // This still assumes the 5th of the month after coverage.
-        const lastPaidDue = new Date(validCoveredDate.getFullYear(), validCoveredDate.getMonth(), 5);
-        tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+        /**
+         * BR-033: the cycle runs from THIS tenancy's anniversary day, not the 5th.
+         *
+         * This carried `TODO(Sean, audit F9)` and hardcoded `5` in two places, so
+         * a resident whose tenancy is anchored on the 13th was told their next
+         * payment falls on the 5th - a date that is simply not theirs. The
+         * anniversary was in the response the whole time; nothing read it.
+         *
+         * Clamped to the length of the month, the same way the server clamps:
+         * `setMonth(+1)` then `setDate(31)` overflows into the month after, which
+         * is the bug `periodEnd` was already rewritten to avoid.
+         *
+         * When there is no anniversary on file, no date is shown rather than a
+         * guessed one. A resident reading a wrong date acts on it.
+         */
         tenantData.value.dueBadgeText = 'PAID';
         tenantData.value.dueDaysRemaining = 'Settled';
-        tenantData.value.dueDateRaw = lastPaidDue.toISOString().split('T')[0];
 
-        const nextDate = new Date(lastPaidDue);
-        nextDate.setMonth(nextDate.getMonth() + 1);
-        nextDate.setDate(5);
-        tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+        const day = anniversaryDay.value;
+        if (day) {
+          const clamp = (y: number, m: number, d: number) =>
+            Math.min(d, new Date(y, m + 1, 0).getDate());
+
+          const y = validCoveredDate.getFullYear();
+          const m = validCoveredDate.getMonth();
+          const lastPaidDue = new Date(y, m, clamp(y, m, day));
+          tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+          tenantData.value.dueDateRaw = propertyDate(lastPaidDue);
+
+          const nextY = m + 1 > 11 ? y + 1 : y;
+          const nextM = (m + 1) % 12;
+          const nextDate = new Date(nextY, nextM, clamp(nextY, nextM, day));
+          tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+        } else {
+          tenantData.value.dueDate = '';
+          tenantData.value.dueDateRaw = '';
+          tenantData.value.nextDueDateDisplay = '';
+        }
 
         const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
         tenantData.value.verifiedAt = linkedPayment?.verified_at
