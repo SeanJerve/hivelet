@@ -1,6 +1,6 @@
 # CONTINUE HERE — handoff for the next machine
 
-**Last updated:** 2026-09-18.
+**Last updated:** 2026-09-19.
 **Branch:** `main`. Everything described here is committed and pushed.
 **Read this first, then `docs/claude_pipeline/CONTINUE_HERE.md` for pipeline detail.**
 
@@ -15,7 +15,68 @@
 
 ---
 
-## 0.0 What 2026-09-18 produced
+## 0.0 What 2026-09-19 produced
+
+**A functional audit found nineteen defects, six of them on the paths the owner's money takes,
+and not one of them produced an error, a failing suite or a console warning.** The twenty
+suites passed before the session and pass after it — which is the point. Each defect sat in a
+gap the suites are known not to cover.
+
+**The full record is `docs/AUDIT_2026-09-19_FUNCTIONAL.md`.** Every claim in it names the
+evidence it was checked against. The five worth knowing without opening it:
+
+| | |
+| :--- | :--- |
+| **Editing a ledger row rewrote who paid it** | The form has no contact field and sent one anyway, recomputed from whoever occupies that unit *today*. **402 of 937 rows were exposed** — 396 whose contact differs from the current tenant, 6 on units with no tenant at all |
+| **The cash form's unit dropdown rendered blank and posted to `1A`** | The seed carries lowercase unit codes, `fetchRooms()` uppercases them, and a `<select>` matches by strict equality. Same defect on the onboarding form, where it also silently dropped `?unit=PH` |
+| **The check for outstanding repairs could never find any** | It filtered on `'Open'`, which is the frontend's word for `'Submitted'` and not a value of `ticket_status_type`. PostgreSQL answers `22P02`; the error was swallowed and the null read as "nothing open", so resolving one ticket cleared a unit with others outstanding. **Rehearsal step 21 would have passed on it** |
+| **Vacate would deactivate an administrator** | And there is exactly one admin row. `authService` refuses an inactive account, so recovery meant editing the database |
+| **`/auth/register` was public, unthrottled and inserting live active profiles** | Missed because `rateLimit.ts` claimed inquiries were *"the only genuinely open write"* — a census that had enumerated one route file |
+
+### The money now files under the month it is for
+
+`year`/`month` came from the **date paid**. Her book files by the month the rent is **for** —
+where the two disagree, **216 rows follow the period and 50 follow the payment date**. Arrears
+paid in October for August were landing in October while August still looked unpaid. Corrected,
+and it is the basis the multi-month work below depends on.
+
+### Three migrations, two applied
+
+**`028`** (unit codes unique ignoring case) and **`029`** (`record_income_for_months`) were
+applied on 2026-09-19 and read back from the catalogue. **`027` was refused again** — it is the
+one that DELETEs, and the environment blocks a destructive statement against a shared database
+however it is authorised. Its guard still returns exactly 2. **The two junk tickets, one titled
+with a slur, are still on the owner's overview.**
+
+`029` turns on what Sean asked for directly: *"we should follow her way and have a way to
+accommodate that."* A receipt covering several months is now **one ledger row per month**, which
+is how her book already holds arrears (`OR#4895` across four rows). Single-month recording is
+untouched.
+
+### Two things that are now mechanisms rather than sentences
+
+- **`check:endpoints` censuses every route file** and names the four writes reachable without a
+  token, with what guards each instead. Mutation-tested four ways, including "a guard that only
+  appears in a comment". It exists because the claim it replaces was a census of one file.
+- **The public site has one shared outage component.** Both public pages used to answer an
+  unreachable listing differently — one said "ring the landlady", the other listed all 33 units
+  as Available. Sean's call: be honest and point them at her.
+
+### What still needs a person
+
+`BLOCKED_FOR_SEAN.md` is the queue and it is current. The short version: **`B-05`** (apply
+`027`), **`B-14`** (the rehearsal's steps 7-26, the rotated admin password, and one test
+enquiry left on her board), **`B-15`** (one question for the owner — can a month be rent with no
+water at all; 38 rows in her book say yes and the server cannot write one), and **`B-18`**
+(the audit trail is 88% our own test runs; left alone deliberately while in development).
+
+**The admin password was rotated for real** by rehearsal step 5 — the one step nothing could
+ever test, because it burns the credential every suite signs in with. `credentials/creds.txt`
+has the new value and it is gitignored, so the other machine has to be told.
+
+---
+
+## 0.0b What 2026-09-18 produced
 
 **The interface was rebuilt, a privacy defect was closed, and two verification suites turned out
 to have been lying — one of them for five days.**

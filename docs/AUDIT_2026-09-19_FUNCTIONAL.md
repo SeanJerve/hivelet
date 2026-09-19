@@ -14,9 +14,9 @@ without touching appearance.
 
 ## 0. The headline
 
-**Eighteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
-was invisible: none produced an error, a failing suite, or a console warning. Four more findings
-need a person and are `B-15`, `B-16`, `B-17` and `B-18`.
+**Nineteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
+was invisible: none produced an error, a failing suite, or a console warning. Two findings still
+need a person — `B-15` and `B-18`. `B-16`, `B-17` and `B-19` were settled or applied the same day.
 
 **The one to read first, if you read one:** editing any row in the income ledger rewrote **who
 paid it**. The form has no contact field, and sent one anyway, recomputed from whoever occupies
@@ -419,6 +419,46 @@ which now refuses to report a unit clear when it could not check.
 members, and the values the frontend sends match their schemas — including the unit modal, whose
 own comment records this exact class being fixed once before, when 13 non-Studio units could not
 be saved at all.*
+
+### 2.19 A receipt was filed under the month the cash arrived, not the month it paid for
+
+`POST /admin/income-records` set `year`/`month` from `isoDateParts(datePaid)`. That is right
+whenever the two agree, which is most of the time, and wrong exactly when it matters: **arrears
+paid in October for August were filed as October**, so the money landed in the wrong month of her
+report and August still looked unpaid.
+
+Her book settles it. Among the rows where the two disagree — the only rows carrying any
+information about which rule is in force — **216 follow the rent period and 50 follow the date
+paid**. Counted on the live ledger.
+
+**And the shape her book keeps is one row per month.** `OR#4895` runs across four rows, `OR#4896`
+three; no row in the 937 holds several months of rent. The form's *months covered* field produced
+exactly that one wrong shape. On Sean's instruction — *"we should follow her way and have a way
+to accommodate that"* — a multi-month receipt is now **one ledger row per month**, written
+atomically by `record_income_for_months` (migration `029`, applied). The garbage fee lands on the
+first month only (BR-037), and rent and water on the form are per month, with only the total
+multiplying.
+
+*One self-inflicted regression, caught by re-reading my own commit:* building the spans from
+`periodStart` alone dropped a **supplied** `dateCoveredEnd`, which §3.1 says must still be
+honoured because 937 rows were migrated with periods from her own book. Fixed the same session —
+a typed end date now lands on the last span, which for a single month is the only span.
+
+### 2.20 Every resident was told their rent is due on the 5th
+
+`TenantOverviewView` carried `TODO(Sean, audit F9)` and hardcoded `5` in two places — the date a
+settled resident is shown, and their next one. **BR-033 anchors the cycle to each tenancy's own
+anniversary day**, and `/tenant/my-rooms` has always returned `anniversary_date`. The view never
+read it.
+
+Counted: **all 32 active tenancies are anchored on the 1st.** So the figure was wrong for every
+resident in the building rather than for an edge case — each would have been shown a date that is
+nobody's.
+
+Now derived from the tenancy and clamped to the length of the month, because `setMonth(+1)` then
+`setDate(31)` overflows into the month after — the bug `periodEnd` was already rewritten to
+avoid. Checked: 13th → Feb 13; 31st → Feb 28; 31 Dec → 31 Jan next year; 29th → Feb 29 in 2024
+and Feb 28 in 2026. With no anniversary on file it shows **no date** rather than a guessed one.
 
 ---
 
