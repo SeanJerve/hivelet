@@ -45,6 +45,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { recordAudit } from './auditService.js';
 import { computeBillAmounts, computeBillPeriod, billAlreadyRaised } from './billingService.js';
+import { isWebhookConfigured } from './adyenWebhook.js';
 import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
 
 export interface SessionDetails {
@@ -109,14 +110,34 @@ export const adyenService = {
    * Checks whether live/sandbox Adyen credentials are configured.
    * If mock strings or empty, automatically uses the academic simulation pipeline.
    */
+  /**
+   * DO NOT TAKE MONEY YOU CANNOT AFTERWARDS RECORD.
+   *
+   * This gated on `apiKey` and `merchantAccount` alone. Both being real is
+   * enough to open a session and charge a resident - and says nothing about
+   * whether the payment can ever come back.
+   *
+   * A deployment with those two set and `ADYEN_HMAC_KEY` missing would have
+   * behaved like this: sessions created, GCash charged, and then every single
+   * notification refused by the webhook with a 503 ("ADYEN_HMAC_KEY is not
+   * configured; refusing the notification"). That refusal is the RIGHT call -
+   * accepting an unverifiable notification would be far worse - but it leaves
+   * the resident's money taken and nothing in the ledger against it. Adyen
+   * retries, so it would eventually reconcile once the key was set, and until
+   * then the portal shows an unpaid bill for rent that has been paid.
+   *
+   * The gate now covers the whole round trip. `isWebhookConfigured` is the same
+   * predicate the webhook route itself uses, so the two cannot drift: if the
+   * webhook would refuse the notification, this refuses to create the session
+   * that produces it.
+   *
+   * `clientKey` is included because the Drop-in cannot mount without it, so a
+   * session created without one is a session nobody can pay.
+   */
   isLiveConfigured(): boolean {
-    const { apiKey, merchantAccount } = config.adyen;
-    return Boolean(
-      apiKey && 
-      !apiKey.startsWith('mock_') && 
-      merchantAccount && 
-      !merchantAccount.startsWith('mock_')
-    );
+    const { apiKey, merchantAccount, clientKey, hmacKey } = config.adyen;
+    const real = (v: string | undefined) => Boolean(v && !v.startsWith('mock_'));
+    return real(apiKey) && real(merchantAccount) && real(clientKey) && isWebhookConfigured(hmacKey);
   },
 
   /**
