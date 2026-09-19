@@ -137,6 +137,17 @@ No text below 12 px.
 - **Registers:** `ws-table` inside `ws-table-wrap` on a `rounded-tile bg-tile` card, on the public
   pages as well. A row then highlights to `--canvas`, which is the only reason the public table
   used to highlight to white: it had no surface of its own to be brighter than.
+- **Skip link:** `App.vue` puts `Skip to content` first in the document and `<main>` takes
+  `id="main"` and `tabindex="-1"`. WCAG 2.4.1 is Level A and there was nothing: a keyboard reader
+  met thirty focusable things before any content on the landing page, and the sidebar in front of
+  every workspace screen.
+- **Saying where a unit is:** `floorLabelFor` and `buildingNameFor`, both from `systemState`. A
+  floor is a level WITHIN a building - the Front and Back Apartments and the Linda units are
+  separate buildings, not storeys of the boarding house - and `cluster_code` holds chip labels
+  ("BH") that must not go into prose.
+- **Floor plans:** `lib/floorPlans.ts`, one picture per floor area with the unit marked by a real
+  chip, never a per-unit image. The plans are excluded from the precache in `vite.config.ts`
+  because a visitor sees at most one.
 - **Focus:** wrap a screen in `ws-focus`. Keyboard focus then shows a 3 px ring, dark on light
   surfaces and light inside `on-dark` tiles. Never remove it.
 
