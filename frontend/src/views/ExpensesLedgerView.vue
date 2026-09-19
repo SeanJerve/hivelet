@@ -48,6 +48,40 @@ const isLoading = ref(false);
 const isSubmitting = ref(false);
 const dbCategories = ref<ApiCat[]>([]);
 
+/**
+ * The categories the LEDGER actually uses, from `/admin/expense-categories`.
+ *
+ * `EXPENSE_CATEGORIES` is a hardcoded list of ten and the database holds
+ * thirteen, spelled differently: "Taxes and Licenses" against "Taxes &
+ * Licenses", "Communication, Light, and Water" against "Utilities",
+ * "Janitorial and Messengerial Services" against "Janitorial" - and `6a`
+ * PhilHealth, `6b` SSS and `6c` Allowances are not in it at all.
+ *
+ * That matters because `e.category` is built from the DATABASE name
+ * (`systemState.ts`, `${code} — ${fixed_expense_categories.name}`) and the
+ * filter compares it by strict equality. So picking "8 — Repairs &
+ * Maintenance" matched **0 of 623 rows** and the screen said "Nothing here",
+ * and the edit dialog's `required` select had no option equal to the row it was
+ * editing, so native validation refused to save until the entry was
+ * re-categorised into something else.
+ *
+ * Counted against the live ledger: **927 of 1,262 entries, ₱3,732,563**, could
+ * not be filtered or edited without being moved.
+ *
+ * `dbCategories` was already being fetched and never read. Building the options
+ * from it makes the picker's values identical to the rows' values by
+ * construction, which is the only way these two stay in step.
+ */
+const categoryOptions = computed<string[]>(() => {
+  if (dbCategories.value.length === 0) return [...EXPENSE_CATEGORIES];
+  return [...dbCategories.value]
+    .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+    .map((c) => `${c.code} — ${c.name}`);
+});
+
+/** The first option, whichever list is in force. */
+const defaultCategory = () => categoryOptions.value[0] ?? EXPENSE_CATEGORIES[0];
+
 // Filter selectors
 const filterMonth = ref('All');
 const filterYear = ref('All');
@@ -102,7 +136,7 @@ const date = ref(propertyToday());
 const formEntries = ref<FormExpenseEntry[]>([
   {
     desc: '',
-    category: EXPENSE_CATEGORIES[0],
+    category: defaultCategory(),
     allocations: [
       { area: 'Boarding House', amount: '' }
     ]
@@ -112,7 +146,7 @@ const formEntries = ref<FormExpenseEntry[]>([
 function addFormEntry() {
   formEntries.value.push({
     desc: '',
-    category: EXPENSE_CATEGORIES[0],
+    category: defaultCategory(),
     allocations: [
       { area: 'Boarding House', amount: '' }
     ]
@@ -139,11 +173,15 @@ function removeAllocation(entryIndex: number, allocIndex: number) {
   }
 }
 
+
 // Convert DB code to frontend category string
 function getFrontendCategory(code: string): string {
-  const cleanCode = code.startsWith('6') ? '6' : code;
-  const match = EXPENSE_CATEGORIES.find(c => c.startsWith(`${cleanCode} —`));
-  return match || "10 — Others";
+  // `6a`, `6b` and `6c` are their own categories - PhilHealth, SSS and
+  // Allowances, 46 entries between them. This collapsed every code beginning
+  // with 6 into plain `6`, so re-saving one of those rows moved its money into
+  // Salaries.
+  const match = categoryOptions.value.find((c) => c.startsWith(`${code} —`));
+  return match || categoryOptions.value.find((c) => c.startsWith('10 —')) || '10 — Others';
 }
 
 // Convert frontend category string to DB code
@@ -359,7 +397,7 @@ function submitAddExpense() {
         formEntries.value = [
           {
             desc: '',
-            category: EXPENSE_CATEGORIES[0],
+            category: defaultCategory(),
             allocations: [
               { area: 'Boarding House', amount: '' }
             ]
@@ -652,7 +690,7 @@ async function handleEditExpense() {
           <span class="sr-only">Kind of expense</span>
           <select v-model="selectedCategory" class="ws-select w-auto">
             <option value="All">Every kind</option>
-            <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
+            <option v-for="c in categoryOptions" :key="c" :value="c">{{ c }}</option>
           </select>
         </label>
 
@@ -848,7 +886,7 @@ async function handleEditExpense() {
                   <label class="ws-field">
                     Kind of expense
                     <select v-model="entry.category" class="ws-select w-full" required>
-                      <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
+                      <option v-for="c in categoryOptions" :key="c" :value="c">{{ c }}</option>
                     </select>
                   </label>
                 </div>
@@ -985,7 +1023,7 @@ async function handleEditExpense() {
                   class="ws-select w-full" 
                   required
                 >
-                  <option v-for="c in EXPENSE_CATEGORIES" :key="c" :value="c">{{ c }}</option>
+                  <option v-for="c in categoryOptions" :key="c" :value="c">{{ c }}</option>
                 </select>
               </label>
             </div>

@@ -143,10 +143,28 @@ function getUnitsForCluster(clusterName: string) {
   return filteredRooms.value.filter((r) => r.cluster === clusterName);
 }
 
+/**
+ * The unit's OCCUPANCY, in the words that describe it - not a claim about money.
+ *
+ * This read `'settled'` as **"Paid up"** and `'pending'` as **"Owing"**, on a
+ * column headed *Standing*. Neither word is supported by anything: `UnitStatus`
+ * comes from `mapOperationalStatus`, which is a pure rename of
+ * `operational_status` - Occupied becomes `settled`, Reserved becomes `pending` -
+ * and `fetchRooms` sets `paid: isOccupied` with `balance: 0`. **No bill is read
+ * anywhere on this screen.**
+ *
+ * So every one of the 32 occupied units announced "Paid up" about a real
+ * resident, and would go on doing so with a bill sitting overdue, because
+ * nothing here can change the word. A Reserved unit read "Owing" while owing
+ * nothing.
+ *
+ * The values are honest; only the labels were not. What a unit's payment
+ * standing actually is lives in the income ledger, which is its own screen.
+ */
 function getStatusLabel(status: UnitStatus) {
   if (status === 'vacant') return 'Vacant';
-  if (status === 'settled') return 'Paid up';
-  if (status === 'pending') return 'Owing';
+  if (status === 'settled') return 'Occupied';
+  if (status === 'pending') return 'Reserved';
   if (status === 'maintenance') return 'Being repaired';
   return status;
 }
@@ -447,7 +465,7 @@ const statusChips = computed(() => [
           <th scope="col">Where and what</th>
           <th scope="col" class="num">A month</th>
           <th scope="col">Lived in by</th>
-          <th scope="col">Standing</th>
+          <th scope="col">Status</th>
           <th scope="col"><span class="sr-only">Actions</span></th>
         </tr>
       </template>
