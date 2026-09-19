@@ -292,7 +292,25 @@ console.log(`check:columns — ${COLS.size} tables read from the live schema\n`)
 
   const csv = readFileSync(csvPath, 'utf8');
   const snapshot = new Map();
-  for (const m of csv.matchAll(/Columns,([a-z_]+)\.([a-z_]+)/g)) {
+  /**
+   * `[a-z_0-9]`, not `[a-z_]`. Identifiers may contain digits and this parser
+   * could not see them:
+   *
+   *   `Columns,rent_period_drift_backup_030.id`  did not match AT ALL, so the
+   *   whole table read as absent from the snapshot however carefully the snapshot
+   *   described it - unfixable by editing the file, which is the worst shape a
+   *   check can have. It demands a change and then rejects every version of it.
+   *
+   *   `Columns,some_table.col_2` matched as `some_table.col_`, silently truncating
+   *   at the digit. That is worse than not matching: the snapshot then holds a
+   *   column name that does not exist, and the check reports the real one missing
+   *   AND the invented one orphaned - two failures, neither describing the fault.
+   *
+   * Latent until 2026-09-19: `rent_period_drift_backup_030` from migration 030 is
+   * the first identifier in this database to contain a digit. Checked against
+   * `information_schema.columns` - no other table or column has one.
+   */
+  for (const m of csv.matchAll(/Columns,([a-z_0-9]+)\.([a-z_0-9]+)/g)) {
     if (!snapshot.has(m[1])) snapshot.set(m[1], new Set());
     snapshot.get(m[1]).add(m[2]);
   }

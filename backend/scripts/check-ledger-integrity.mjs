@@ -45,11 +45,27 @@ if (!URL_ || !KEY) {
 
 /**
  * Rows already surfaced to the owner on 2026-09-16, each with what is wrong and
- * what it looks like it should say. Nothing here has been written to.
+ * what it looks like it should say.
+ *
+ * TWO WERE CORRECTED ON 2026-09-19 by migration 030 and have been removed from
+ * this list, which is why it is shorter than the day it was written:
+ *
+ *   OR#4839      date_paid was 1900-01-17 - Excel's epoch, where a cell holding
+ *                the bare number 17 renders as 17 January 1900. The receipt book
+ *                brackets it: OR#4838 was paid 14 Dec 2024 and OR#4840 on the
+ *                18th, so the surviving day 17 can only be 17 December 2024.
+ *   INVOICE#5120 date_paid was 2027-02-26 against a period starting 2026-02-26.
+ *                A year typo; every neighbouring receipt of that tenant is paid
+ *                within a day or two of the period start.
+ *
+ * The same migration corrected 58 rent periods whose year disagreed with the
+ * row's own `year` column, which is why three of the entries below no longer
+ * mention a period mismatch either. No amount was altered: the ledger totalled
+ * PHP 8,086,250.00 before and after.
+ *
+ * Nothing else here has been written to.
  */
 const KNOWN = new Map([
-  ['OR#4839', 'date_paid is 1900-01-17 — the Excel epoch, so the source cell never parsed. Its year/month (2024-12) also disagree with its rent period (2025-12-09 to 2026-01-08). Room 2g, PHP 6,500.'],
-  ['INVOICE#5120', 'date_paid is 2027-02-26, a year in the future, against a rent period of 2026-02-26 to 2026-03-25. Reads as a mistyped year. Room 1c, PHP 8,000.'],
   ['OR#4757', 'rent period ends the day before it starts: 2024-08-03 to 2024-08-02. Migration off-by-one; the end looks like it should be 2024-09-02. Room 1h.'],
   ['OR#4775', 'rent period ends the day before it starts: 2024-08-30 to 2024-08-29. Room 2b.'],
   ['OR#4872', 'rent period ends the day before it starts: 2025-02-03 to 2025-02-02. Room 1h.'],

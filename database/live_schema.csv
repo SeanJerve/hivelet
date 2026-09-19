@@ -162,6 +162,16 @@ section,item,detail
 1. Columns,property_areas.is_rental_expense,boolean NOT NULL DEFAULT true
 1. Columns,property_areas.name,character varying(150) NOT NULL
 1. Columns,property_areas.notes,text NULL
+1. Columns,rent_period_drift_backup_030.corrected_at,timestamp with time zone NOT NULL DEFAULT now()
+1. Columns,rent_period_drift_backup_030.date_paid,date NULL
+1. Columns,rent_period_drift_backup_030.id,uuid NOT NULL
+1. Columns,rent_period_drift_backup_030.month,integer NULL
+1. Columns,rent_period_drift_backup_030.new_period_end,date NULL
+1. Columns,rent_period_drift_backup_030.new_period_start,date NULL
+1. Columns,rent_period_drift_backup_030.old_period_end,date NULL
+1. Columns,rent_period_drift_backup_030.old_period_start,date NULL
+1. Columns,rent_period_drift_backup_030.room_id,uuid NULL
+1. Columns,rent_period_drift_backup_030.year,integer NULL
 1. Columns,room_assignments.anniversary_date,date NOT NULL
 1. Columns,room_assignments.created_at,timestamp with time zone NULL DEFAULT now()
 1. Columns,room_assignments.deposit_amount,"numeric(10,2) NOT NULL DEFAULT 0.00"
