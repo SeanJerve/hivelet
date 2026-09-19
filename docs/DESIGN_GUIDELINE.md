@@ -164,7 +164,18 @@ Two things about those two classes are load-bearing, and both are commented in `
   editorial pages.
 - **Never animate from `scale(0)`.** Nothing in the world appears from nothing; start at `0.95`
   with opacity.
+- **Entry uses `@starting-style`, not `<Transition>`.** Every dialog is mounted with `v-if`, so the
+  component leaves the tree the instant it closes and a Vue transition inside it never gets to run
+  a leave. CSS needs no wrapper and reaches every screen at once. `WsModal` carries
+  `ws-modal-overlay` and `ws-modal-panel`; a native `<dialog>` carries `ws-dialog`, which animates
+  **both** directions because `overlay` and `display` with `allow-discrete` keep the closing frame
+  rendered. A disclosure carries `ws-reveal`.
+- **A disclosure eases its content, not its height.** Animating the height of a row is animating
+  layout. The row takes its size at once and the content fades and travels 4 px, so the panel
+  unfolds rather than the page jumping with the text already in place.
 - Reduced motion keeps colour and keeps the press, and drops movement. Honoured inside `ws-focus`.
+  The press, reveal and dialog rules each carry their own reduced-motion branch, because they sit
+  outside that wrapper.
 - No fade-up on load, and no skeleton shown when the data is already in memory.
 
 ---
@@ -288,6 +299,16 @@ already read past:
 | `check:components` | A component the template renders and the file never imported. **`npm run build` exits 0 on this**, and so does `vue-tsc` |
 | `check:labels` | A form control with no accessible name. It found 27 of 115 — a quarter of every field in the product |
 | `check:liveness` | A screen presenting seeded or cached state as a live figure |
+
+**Verify a transition in the built bundle, not only in the source.** `transition-[opacity,scale]`
+is valid-looking Tailwind that compiles to **nothing**, and the three elements carrying it silently
+lost their transition entirely. Grep the emitted CSS for the rule you expect. The same goes for
+`@starting-style`: it survives this pipeline, and that is a fact worth re-checking rather than
+assuming.
+
+**The preview pane is not a motion test.** It reports `prefers-reduced-motion: reduce` and runs
+hidden, so transitions do not advance and screenshots come back blank. Computed style still tells
+you which properties transition and for how long; watching it play needs a real window.
 
 **A green build is not verification.** It has twice passed on a component that did not exist. When
 you claim something renders, open it; when you claim a figure is right, measure it.
