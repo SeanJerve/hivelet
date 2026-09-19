@@ -2743,13 +2743,48 @@ router.patch(
     // Auto-sync Room Operational Status if all tickets for this room are resolved!
     const targetRoomId = after.room_id || before.room_id;
     if (targetRoomId && (patch.status === 'Resolved' || patch.status === 'Closed')) {
-      const { data: remainingUnresolved } = await db
+      /**
+       * `'Open'` is NOT a value of `ticket_status_type`, and asking the database
+       * for it does not return nothing - it throws.
+       *
+       *   select ... where status in ('Submitted','In Progress','Open')
+       *   ERROR: 22P02: invalid input value for enum ticket_status_type: "Open"
+       *
+       * Run against the live database rather than reasoned about. `'Open'` is
+       * the FRONTEND's word for `'Submitted'` - `systemState.ts` maps it on the
+       * way in and this handler maps it back twenty lines above - so it should
+       * never have reached a query. The enum has four values and this list named
+       * a fifth.
+       *
+       * The failure was silent and it failed OPEN, which is the dangerous
+       * direction. `error` was not destructured, so a throw left
+       * `remainingUnresolved` as `null`, `!remainingUnresolved` was **true**,
+       * and the branch below concluded "nothing is still open" and returned the
+       * unit to Occupied. **The check for outstanding repairs could never find
+       * any.** Resolve one ticket on a unit with three open and the unit comes
+       * out of Under Maintenance regardless.
+       *
+       * Worse than an error a person would see: rehearsal step 21 asserts that
+       * the unit returns to Occupied, so the rehearsal would have PASSED on a
+       * query that never worked.
+       *
+       * `check:writes` does not cover it - this is a read, and that suite guards
+       * writes that discard their result.
+       */
+      const { data: remainingUnresolved, error: remainingError } = await db
         .from('maintenance_tickets')
         .select('id')
         .eq('room_id', targetRoomId)
-        .in('status', ['Submitted', 'In Progress', 'Open']);
+        .in('status', ['Submitted', 'In Progress']);
 
-      if (!remainingUnresolved || remainingUnresolved.length === 0) {
+      if (remainingError) {
+        throw ApiError.internal(
+          `The ticket was updated, but this unit's other repair requests could not be read, ` +
+            `so it has been left as it was rather than reported clear: ${remainingError.message}`
+        );
+      }
+
+      if (remainingUnresolved.length === 0) {
         const { data: activeAssign } = await db
           .from('room_assignments')
           .select('id')
