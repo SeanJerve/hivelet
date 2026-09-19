@@ -381,11 +381,19 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           would strip the page's only navigation.
         -->
         <header class="flex items-start justify-between gap-6 sm:gap-10">
+          <!--
+            The product mark, set as the workspace header sets it. This was the
+            property's own name over three lines, directly above a display line
+            that said the same thing - the reader was told who this is twice
+            before being told anything. `AppHeader` carries "HIVELET" at
+            `font-semibold text-xl tracking-tight`; this is that mark, in white
+            because it sits on a photograph.
+          -->
           <RouterLink
             to="/public"
-            class="press shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] hover:text-white/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors drop-shadow-sm"
+            class="press shrink-0 text-xl font-semibold tracking-tight hover:text-white/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors drop-shadow-sm"
           >
-            Fe Galang<br />Da Silva<br />Boarding House
+            Hivelet
           </RouterLink>
 
           <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light drop-shadow-sm">
@@ -401,8 +409,24 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           </nav>
         </header>
 
-        <h1 class="mt-auto pt-24 font-editorial font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)] drop-shadow-sm">
-          Fe Galang Da Silva<br class="hidden sm:inline" /> Boarding House
+        <!--
+          "Boarding House" comes off the display line and sits under it at the
+          navigation's own size. The whole name at clamp(2.5rem, 8vw, 7rem) was
+          four words of equal weight; the two that identify the place are the
+          landlady's name, and the kind of building is a qualifier. Both stay
+          inside the <h1>, so the accessible name is still the full
+          "Fe Galang Da Silva Boarding House".
+
+          The `<br>` that split the line after "Silva" is gone with it - the
+          name is short enough now to set itself.
+        -->
+        <h1 class="mt-auto pt-24 font-editorial drop-shadow-sm">
+          <span class="block font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)]">
+            Fe Galang Da Silva
+          </span>
+          <span class="mt-4 block text-[0.8rem] font-light">
+            Boarding House
+          </span>
         </h1>
 
       </div>

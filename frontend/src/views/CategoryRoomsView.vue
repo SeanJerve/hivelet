@@ -372,9 +372,9 @@ async function submitInquiry() {
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 pt-7 pb-6 flex items-start justify-between gap-6 sm:gap-10">
         <RouterLink
           to="/public"
-          class="press shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-ink hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+          class="press shrink-0 text-xl font-semibold tracking-tight text-ink hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
         >
-          Fe Galang<br />Da Silva<br />Boarding House
+          Hivelet
         </RouterLink>
 
         <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-ink">

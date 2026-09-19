@@ -23,12 +23,18 @@ import { LANDLADY } from '@/lib/systemState';
       <div class="grid gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
 
         <div class="lg:col-span-2 max-w-sm">
-          <p class="text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em]">
-            Fe Galang<br />Da Silva<br />Boarding House
-          </p>
+          <!--
+            The product mark, matching the header on every other page. It was
+            the property's own name over three lines, above a sentence opening
+            "Managed with Hivelet" - the mark and the sentence each naming a
+            different party, in the wrong order. The property is named in the
+            sentence now, where it belongs, and the copyright line below
+            already carries both.
+          -->
+          <p class="text-xl font-semibold tracking-tight">Hivelet</p>
           <p class="mt-6 text-xs leading-relaxed text-on-night-soft">
-            Managed with Hivelet. Centralised operational, financial and enquiry workflows for 33
-            rentable units in Legazpi City, Albay.
+            Fe Galang Da Silva Boarding House. Centralised operational, financial and enquiry
+            workflows for 33 rentable units in Legazpi City, Albay.
           </p>
         </div>
 

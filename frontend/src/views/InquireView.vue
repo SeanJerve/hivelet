@@ -122,9 +122,9 @@ async function submitInquiry() {
         <div class="flex items-start justify-between gap-6">
           <RouterLink
             to="/public"
-            class="press text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-ink hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
+            class="press text-xl font-semibold tracking-tight text-ink hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
           >
-            Fe Galang<br />Da Silva<br />Boarding House
+            Hivelet
           </RouterLink>
 
           <div class="text-right shrink-0">
