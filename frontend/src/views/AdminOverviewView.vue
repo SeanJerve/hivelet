@@ -33,6 +33,7 @@ import {
   maintenanceTicketsFetchFailed,
 } from '@/lib/systemState';
 import { CLUSTERS, peso } from '@/lib/canonicalUnits';
+import { propertyToday } from '@/lib/propertyDate';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -62,11 +63,22 @@ const pendingPaymentsFailed = ref(false);
 const isRefreshing = ref(false);
 const isInitialLoading = ref(true);
 
-// Read from the clock, not pinned to a literal. Every "live" figure filters on
-// `r.year === CURRENT_YEAR`, so a literal would read zero from 1 January. The
-// labels read it too: they used to say 2026 in six places regardless.
-const CURRENT_YEAR = new Date().getFullYear();
-const CURRENT_MONTH = new Date().getMonth() + 1;
+/**
+ * Read from the clock, not pinned to a literal. Every "live" figure filters on
+ * `r.year === CURRENT_YEAR`, so a literal would read zero from 1 January. The
+ * labels read it too: they used to say 2026 in six places regardless.
+ *
+ * And read from the PROPERTY'S clock, not the viewer's. These were
+ * `new Date().getFullYear()` and `.getMonth()`, which is whatever the browser
+ * believes - so a machine set to a timezone behind UTC+8 reads the wrong year
+ * for its first eight hours of January, and the dashboard's whole
+ * year-to-date, month chart and archive list follow it. `lib/propertyDate.ts`
+ * exists for exactly this and says so in its header: both halves "anchor to the
+ * property, not to whoever happens to be looking". The form defaults already
+ * used it; these two did not.
+ */
+const CURRENT_YEAR = Number(propertyToday().slice(0, 4));
+const CURRENT_MONTH = Number(propertyToday().slice(5, 7));
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 const MONTH_LONG = [
