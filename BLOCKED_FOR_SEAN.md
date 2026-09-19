@@ -33,6 +33,84 @@ thing did not work" is not.
 
 ## Open
 
+### B-16 — during an outage, two public pages tell a prospect opposite things
+
+- **Blocked on:** your call, and it is `frontend/src/` — the design account's lane, and
+  `PublicGuestView.vue` had uncommitted work in it when this session started. Not something to
+  reach across for mid-redesign, which is the same reason B-01 was written down rather than
+  patched
+- **How it was found:** `/public/rooms` was made to return 500 **in the browser only** (a
+  `window.fetch` override on the page, backend untouched, restored afterwards), which is a way
+  to exercise these paths without stopping a server two other sessions are using
+- **B-01's fix is real and works.** The four category plates print *"Availability could not be
+  loaded"* and no number. The standfirst drops its *"Rents start at ₱4,500"* sentence rather
+  than quoting the seed. Both confirmed against a genuine failure
+- **What disagrees:** with the same call failing,
+  - **`/category/studio`** shows nothing and says *"The units could not be loaded. This is not
+    the same as having nothing free. Reload the page, and if it keeps happening, ring the
+    landlady … and she will tell you what is available."* — which is as good as this gets
+  - **`/public`**, further down the same page whose plates just refused to state availability,
+    lists the **seed**: all 33 units, every one **"Available"**, at seeded rates, under a notice
+    saying the figures may be out of date
+- **So a prospect during one outage is told both that availability cannot be determined and
+  that 33 units are free**, on the same page. The judgement log's own line applies: two records
+  disagreeing about one fact costs the standing of both
+- **Worth knowing before deciding:** the seeded fallback *was* a deliberate decision (judgement
+  log, fifth sweep: *"blanking the page on a hiccup would be worse for a public listing … what
+  changed is an amber notice"*). But `CategoryRoomsView` no longer behaves that way — it blanks
+  honestly now. **The recorded reasoning describes a state that has since been superseded**, so
+  this is not simply overturning a live decision
+- **The narrow version, if you want one:** the status cell is the only field that is *knowably*
+  wrong rather than merely stale — the seed says vacant for all 33, which is never true. Rate,
+  floor and type being out of date is what the notice already covers
+- **How to know it worked:** with `/public/rooms` failing, no public page states a unit is
+  available
+- **Raised:** 2026-09-19 by Claude, functional-audit session
+
+---
+
+### B-15 — the on-site form can ask for water the ledger will never record
+
+- **Blocked on:** Mrs. Da Silva. Two of the three parts are hers to settle, and the judgement
+  log's standing rule is not to invent her accounting policy
+- **The root cause, and it is one thing:** the on-site payment form presents **water as an
+  input**, and the server treats it as **derived**. `POST /admin/income-records` writes
+  `water_payment: calcWater`, from `computeWaterFee(roomNumber, occupants)` — and there is no
+  water field in the payload the modal sends, nor in `incomeRecordSchema` at all. Whatever is
+  typed in that box is discarded. The schema's own comment says so in passing, about the
+  garbage fee: *"Unlike water it is NOT derived"*
+- **Three ways that surfaced, all latent — no collection has ever been recorded through the
+  interface, so none has ever fired:**
+  1. **Multi-month receipts.** The form multiplied the water baseline by `monthsCovered` and
+     put it in *"Total handed over"*. `computeWaterFee` takes no month count, so a three-month
+     receipt asked the resident for three months of water and recorded one. **Fixed in code** —
+     the form now shows one month, because that is what the books keep
+  2. **Any figure above the baseline** passed the check silently and was then replaced. BR-036
+     asks the system to *"warn before saving rather than silently accepting"*, and it was
+     silently accepting in the one direction nobody tested. **Fixed in code** — it now warns
+     and names the figure the ledger will keep
+  3. **Zero water cannot be recorded at all** for a non-Linda unit. The form explicitly allows
+     ₱0 (*"unless it is ₱0"*), `occupants` is `min(1)`, and `computeWaterFee` always returns
+     `heads x rate`. **Not fixed — this one needs her**
+- **Checked against the live ledger, not reasoned about:**
+  - **All 837** non-Linda rows with water record exactly `occupants x rate`. **None** records a
+    multiple of it. So the server and her book already agree, and the form was the odd one out
+  - **100 rows carry zero water** — 62 Linda (theirs sits in `linda_water_charge`, FR-036), and
+    **38 non-Linda**, across 2024-2026. So zero-water rows are a real shape in her book that
+    this form cannot produce
+- **What Sean needs to ask her:**
+  1. *When somebody pays three months at once, do you write one receipt line or three?* Every
+     multi-month settlement in the book so far is **one row per month** (`OR#4895` across four).
+     If that is the rule, `monthsCovered` on this form is the wrong model and should raise N
+     rows, not one row with N months of rent on it
+  2. *Are there months where a unit pays rent and no water at all?* There are 38 such rows. If
+     that is deliberate, the server has to be able to write a zero
+- **How to know it worked:** she answers, and a multi-month collection entered through the form
+  produces rows whose shape matches the 937 already there
+- **Raised:** 2026-09-19 by Claude, functional-audit session
+
+---
+
 ### B-14 — admin password rotated for real; rehearsal steps 7-26 still need a human
 
 - **Blocked on:** nothing technical for the password — it is done. Steps 7-26 are blocked on a

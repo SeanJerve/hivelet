@@ -191,12 +191,29 @@ watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([n
 
   const mCovered = Math.max(1, Number(newMonths) || 1);
 
-  // `waterBaselineFor` decides the Linda case itself, from the unit code. This
-  // read `waterBaselineFor(isLinda ? newUnit : newUnit, ...)` - both arms of the
-  // ternary identical, so the `isLinda` computed beside it decided nothing. Left
-  // as it was, the next reader reasonably concludes Linda is handled here and
-  // that changing this line is how you change it.
-  waterAmount.value = waterBaselineFor(newUnit, occCount) * mCovered;
+  /**
+   * ONE month of water, whatever the rent covers - because that is the only
+   * thing the ledger can record.
+   *
+   * This read `waterBaselineFor(...) * mCovered`, so a receipt covering three
+   * months showed three months of water and added it to "Total handed over".
+   * The server does not multiply: `POST /admin/income-records` writes
+   * `water_payment: calcWater`, and `calcWater` is
+   * `computeWaterFee(roomNumber, occupants)`, which takes no month count at
+   * all. So the figure she asked the resident for and the figure the books
+   * kept differed by (months - 1) x occupants x rate, with nothing to notice.
+   *
+   * Her own book agrees with the server, in every row: all 837 non-Linda
+   * income rows record water as exactly `occupants x rate`, none as a multiple
+   * of it - checked against the live ledger rather than reasoned about. Arrears
+   * are carried as one row per month (OR#4895 across four), which is how a
+   * multi-month collection has always been recorded.
+   *
+   * `waterBaselineFor` also decides the Linda case itself, from the unit code.
+   * The ternary that used to be here (`isLinda ? newUnit : newUnit`) had two
+   * identical arms.
+   */
+  waterAmount.value = waterBaselineFor(newUnit, occCount);
 
   /**
    * Cleared when the unit has no price, rather than left holding the PREVIOUS
@@ -304,20 +321,45 @@ function triggerRecord() {
   const mCovered = Math.max(1, Number(monthsCovered.value) || 1);
 
   const monthlyWaterBaseline = waterBaselineFor(unitUpper, occCount);
-  const totalWaterBaseline = monthlyWaterBaseline * mCovered;
   const perOccupantRate = waterRatePerOccupant.value ?? 200;
 
   const waterVal = Number(waterAmount.value) || 0;
-  
-  if (waterVal !== 0) {
-    if (waterVal < totalWaterBaseline) {
-      showToast('error', 'Water Payment Error', `Water payment for ${unitUpper} cannot be lower than ₱${totalWaterBaseline} for ${occCount} occupant(s) across ${mCovered} month(s) unless it is ₱0.`);
-      return;
-    }
-    if (waterVal % perOccupantRate !== 0) {
-      showToast('error', 'Water Payment Error', `Water payment must be a whole multiple of ₱${perOccupantRate}.`);
-      return;
-    }
+
+  /**
+   * BR-036, and the reason this compares against ONE month.
+   *
+   * The rule is *"Water Payment must equal Occupants × ₱200 … If the
+   * administrator enters a mismatched value, the system must warn before saving
+   * rather than silently accepting the discrepancy."*
+   *
+   * Silently accepting is exactly what happened, in the one direction nobody
+   * checks. The floor was `monthlyWaterBaseline * mCovered`, so anything at or
+   * above it passed - and **this figure is never sent.** The payload below has
+   * no water field, `incomeRecordSchema` has no water field, and the server
+   * derives `water_payment` from occupants alone. So a typed ₱1,200 sailed
+   * through the check, went into "Total handed over", was asked for at the
+   * counter, and the ledger recorded ₱400.
+   *
+   * Warning on any divergence rather than only on a low one, and saying which
+   * figure the books will keep, is what the rule asks for. It does not block:
+   * BR-036 says warn, and the recorded value is correct either way.
+   */
+  if (waterVal !== monthlyWaterBaseline) {
+    showToast(
+      'warning',
+      'Water will be recorded as ' + peso(monthlyWaterBaseline),
+      `The ledger derives water from the registered occupants (BR-014), so it will record ` +
+        `${peso(monthlyWaterBaseline)} for ${unitUpper}, not ${peso(waterVal)}. ` +
+        (mCovered > 1
+          ? `Water is one month per entry - a receipt covering ${mCovered} months is recorded as one row per month in her book. `
+          : '') +
+        `Change the figure if that is wrong.`
+    );
+  }
+
+  if (waterVal !== 0 && waterVal % perOccupantRate !== 0) {
+    showToast('error', 'Water Payment Error', `Water payment must be a whole multiple of ₱${perOccupantRate}.`);
+    return;
   }
 
   const formattedStart = new Date(dateCoveredStart.value).toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
