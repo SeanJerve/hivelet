@@ -60,7 +60,7 @@ Whether the very bottom figures on a report page represent a single month's tota
 | 6 | 50% Share | Currency | Exactly half of Column 5. Calculated automatically, never entered. |
 | 7 | Occupants | Integer | Number of people in the unit. Carried forward from the previous month for the same tenant (editable), so the landlady only touches it when occupancy changes. Column total appears in subtotal rows. |
 | 8 | Water Payment | Currency | Must equal Occupants (Col 7) × **the configured rate** — `system_settings.water_rate_per_occupant`, seeded at ₱200 and **currently ₱200**, but the landlady's to change (BR-014). Never hardcode the figure; read the setting. The system validates this and warns rather than silently accepting a mismatch (BR-036). A unit with 0 registered occupants shows `-`. Column total appears in subtotal rows. |
-| 9 | GBG (Garbage) | Currency | Charged once per year per unit, not monthly (BR-037). Most months this is blank/`-`. |
+| 9 | GBG (Garbage) | Currency | PHP 20 per unit per month, entered by hand (BR-037). Blank where none was collected — which is every month from July 2025 onward. |
 | 10 | Remitted Amount | Currency | = Column 5 (Rent Amount) + Column 8 (Water Payment) (BR-038). Calculated automatically. Column total appears in subtotal rows. |
 | 11 | Anniv Date | `MMM D/YY` | The tenant's original move-in / billing-anchor date for this unit. Entered once, at onboarding, and reused every month to derive Column 4. Not re-entered on each payment. |
 | 12 | Deposit | Currency | Equal to the Rent Amount at the time the tenant moved in (BR-039). Entered once, at onboarding. |

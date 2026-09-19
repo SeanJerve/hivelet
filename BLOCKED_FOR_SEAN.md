@@ -56,37 +56,28 @@ thing did not work" is not.
   that is not in question here — only what happens the day someone means to leave it.
 - **Raised:** 2026-09-19
 
-### B-23 — the garbage fee stopped in July 2025 and has not been charged since
+### B-23 — no garbage fee has been recorded since July 2025 · **partly answered 2026-09-19**
 
-- **Blocked on:** the owner. Two questions, both about money, neither answerable from the data.
-- **The measurement**, taken 2026-09-19 against `monthly_income_records`:
+- **Answered by Sean:** the rule follows her, not the other way round. BR-037 has been
+  corrected to say **PHP 20 per unit per month**, which is what her ledger has always shown.
+  The old wording — *"once per year per unit"* — was an assumption nobody checked, and it had
+  spread into `09_MONTHLY_INCOME_REPORT.md` and `11_FORM_FIELD_AUDIT.md` as well. All three
+  now match the data.
+- **Still open, and stated flatly because that is all the data supports:** the last recorded
+  garbage fee is in **June 2025**. Every month since reads ₱0.00.
 
   | | |
   | :--- | :--- |
-  | months where any garbage fee was collected | **18** (Jan 2024 – Jun 2025) |
-  | average collected in a month where it was charged | **₱590** |
-  | months since, with ₱0.00 | **14** (Jul 2025 – Aug 2026) |
+  | months with a garbage fee recorded | 18 (Jan 2024 – Jun 2025) |
+  | average in a month where one was recorded | ₱590 |
+  | months since with nothing recorded | 14 (Jul 2025 – Aug 2026) |
 
-  It does not taper. It is ₱580–600 every month, then exactly ₱0.00 from July 2025
-  onward, across every unit at once. Either she decided to stop, or she stopped being
-  asked for it — and at roughly ₱590 a month, fourteen months is on the order of
-  **₱8,000** not collected.
-
-- **The second question: BR-037 does not describe her book.** The rule as recorded says the
-  garbage fee is *"charged once per year per unit, not on every monthly entry."* In 2025 every
-  unit was charged **₱20 in six separate months** — B3B, 1c, B2F, 3c, F2B, 1d and the rest all
-  show six charges totalling ₱120. Monthly, not annual.
-
-  Nothing is broken by the mismatch today: the code is more permissive than the rule. The
-  on-site form applies the fee once per *receipt* rather than once per month covered, and
-  nothing stops her entering it again next month. But the rule register asserts a practice her
-  own records contradict, and `check:rules` keeps the register honest with itself — it cannot
-  know the data.
-
-- **What to ask her:** did you stop charging the garbage fee in July 2025 on purpose? And is it
-  ₱20 a month per unit, as the ledger shows, or once a year, as the rule says?
-- **Do not "fix" the history.** 531 rows carry a garbage fee. Whichever answer comes back, it
-  changes the rule and what happens next, not what was already collected.
+- **This is not a finding about money.** Nothing here shows a fee was due and not collected.
+  The ledger records what she entered; a blank means nothing was entered, and she may simply
+  have stopped charging it. **Do not present it to her as uncollected income** — Sean's call,
+  2026-09-19, and the right one: the system has no way to know what should have been charged.
+- **What to ask, as a question and not a finding:** is the garbage fee still being charged?
+- **Nothing to fix in the data.** 531 rows carry a fee and they are all hers.
 - **Raised:** 2026-09-19
 
 ### B-22 — the landlady cannot log a repair she is told about in person
@@ -141,23 +132,62 @@ thing did not work" is not.
   `Rent For` column on the exported report, and the rent-cycle arithmetic under BR-033 — reads
   those. The ledger's own month grouping is unaffected, because it groups on the `month` column.
 
-- **Why I did not fix it:** subtracting a year from Group A makes all 48 rows agree with **both**
-  their `year` and `month` columns, which is strong evidence it is the right correction — but
-  **14 (room, period) pairs already hold more than one receipt**, and the shift lands three more
-  on top of existing rows (3a 2025-12-04, 2c and 2e 2025-12-28). Those pre-existing duplicates
-  are their own question: a genuine second payment, or the same receipt entered twice. Correcting
-  one defect into another, across ₱396,000 of real records, is not a call I should make alone.
+- **CORRECTION, 2026-09-19.** I first reported that the fix would create a new duplicate. That
+  was wrong, and it came from a sloppier definition of the affected set — one that mixed in the
+  ten non-December rows and missed some December ones. Measured properly, against the two groups
+  as they actually are:
+
+  | | before | after |
+  | :--- | ---: | ---: |
+  | rows whose period year disagrees with `year` | 58 | **0** |
+  | duplicate (unit, period) pairs | 14 | **2** |
+  | duplicates newly created | — | **0** |
+
+  The correction resolves twelve of the fourteen duplicates and creates none. The two that
+  remain are a different defect: unit **3e** (month=3, paid 2024-04-05) and unit **PH**
+  (month=10, paid 2024-11-10) each have a period that was never advanced to the next month.
+  Their `month` column says which month they belong to; the exact day depends on the tenancy
+  anniversary and should be confirmed before anything is written.
+
+- **Every receipt in all fourteen pairs is exactly one month's rent** for that unit at the rate
+  then in force. Nothing was ever paid twice — only the period label was wrong. Eleven of the
+  fourteen are this same year-drift; three are the period failing to advance.
+
+- **Sean confirmed the reading, 2026-09-19:** a December receipt paid in early January is the
+  December that has just finished. The data agrees and rules out the alternative — all 48
+  December rows cover exactly one month (29–32 days, ₱5,000–₱12,000), so none is a prepayment
+  of the year ahead, and **43 of the 48 are their unit's only December row for that year**.
+
+- **`database/migrations/030_correct_rent_period_year_drift.sql` is written and NOT applied.**
+  It is transactional, records every old value in `rent_period_drift_backup_030` so it can be
+  undone from the database itself, and refuses to commit unless it lands on exactly 0 mismatched
+  rows and exactly 2 remaining duplicates. Run `npm run backup` first. It rewrites 58 rows of
+  the live ledger, so it is yours to run, not mine.
 
 - **What I did instead:** `database/migrations/DIAGNOSTIC_rent_period_year_drift.sql` — read-only,
   writes nothing. Five queries: the scope, the two groups, every affected row listed for reading
   against her book, the duplicates that already exist, and the handful of out-of-range payment
   dates. Run it and the answer is on one screen.
 
-- **The two payment dates that are plainly typed wrong** (§5 of the diagnostic): unit **2g**,
-  Sheena Mae Guianan, `date_paid = 1900-01-17`; and unit **1c**, Daryl Rivero,
-  `date_paid = 2027-02-26` against a rent period starting 2026-02-26 — same day and month, one
-  year out. The other four out-of-range dates are genuine late-December payments for a January
-  period and are correct as they stand.
+- **The two odd payment dates, looked into properly on 2026-09-19:**
+
+  **Unit 1c, Daryl Rivero — `2027-02-26`.** A year typo, and the surrounding rows prove it. He
+  pays within a day or two of each period start: 2026-01-25 for a period starting 2026-01-26,
+  2026-03-28 for 2026-03-26, 2026-04-26 for 2026-04-26. The stored day and month already match
+  his period start exactly. **It is 2026-02-26.** Migration 030 corrects it.
+
+  **Unit 2g, Sheena Mae Guianan — `1900-01-17`.** Not a typo: that is **Excel's epoch showing
+  through**. A cell holding the bare number `17` renders as 17 January 1900, so the DAY is 17
+  and the month and year were lost on import. Her tenancy runs on the 9th (Oct 2024 – Mar 2025)
+  and her ledger has a gap exactly at **December 2024**, which is where this row lands once its
+  period is corrected. Her five other receipts arrive between one day before and eighteen days
+  after a period start, which makes **17 December 2024** the only date that fits — 17 January
+  2025 would be thirty-nine days late and collides with her January receipt, paid on the 27th.
+  Confident, but still an inference about a date nobody wrote down, so migration 030 leaves it
+  alone and it waits for her.
+
+  The other four out-of-range dates are genuine late-December payments for a January period and
+  are correct as they stand.
 
 - **What to ask her:** for a December receipt paid in early January, which does she mean — the
   December just gone, or the one coming? That single answer settles all 48 of Group A.

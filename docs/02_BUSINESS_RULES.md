@@ -237,7 +237,22 @@ Water Payment must equal Occupants × ₱200 (BR-014). If the administrator ente
 
 ## BR-037 — Garbage Fee Frequency
 
-The garbage (GBG) fee is charged once per year per unit, not on every monthly entry.
+The garbage (GBG) fee is **PHP 20 per unit per month**, entered by hand at the counter. It
+is not derived from anything and the system never adds it on its own.
+
+This rule used to read *"charged once per year per unit, not on every monthly entry"*. The
+owner's own ledger disagrees, and the ledger is the authority: in 2025 every unit was
+charged PHP 20 in **six separate months** — B3B, 1c, B2F, 3c, F2B and 1d each show six
+charges totalling PHP 120. 531 rows across 18 months carry a garbage fee, averaging
+PHP 590 collected in a month where it was charged. Nothing in the data has ever looked
+annual. Corrected 2026-09-19 on Sean's instruction, against the live table.
+
+**A receipt covering several months carries the fee once**, not once per month covered —
+that is a property of the receipt, not of the year, and is what `record_income_for_months`
+already does.
+
+No figure is collected between July 2025 and the present. See `BLOCKED_FOR_SEAN.md` B-23;
+nothing is inferred from it here.
 
 ## BR-038 — Remitted Amount Formula
 

@@ -2092,7 +2092,8 @@ router.post(
         // Per month. The form sends one month's rent; the months are the spans.
         p_rent_amount: rentAmount,
         p_water_payment: calcWater,
-        // BR-037 - once per unit. The function puts it on the first month only.
+        // BR-037 - once per RECEIPT, not once per month covered. The function
+        // puts it on the first month only.
         p_gbg_fee: gbgFee,
         p_occupants: occupants,
         p_payment_method: normalizedMethod,

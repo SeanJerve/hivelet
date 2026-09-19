@@ -132,7 +132,7 @@ with status communicated).
 | `calcRemitted` | `remitted_amount` | DERIVE (BR-038) |
 | — | `year`, `month` | DERIVE from `date_paid` |
 | — | `rent_period_start/end` | DERIVE from anniversary date (BR-033) |
-| — | `gbg_fee` | **missing from UI** (BR-037, annual charge) |
+| — | `gbg_fee` | on the on-site form (BR-037, PHP 20 per unit per month, typed) |
 | — | `is_linda_billing`, `linda_electricity_charge`, `linda_water_charge` | **missing from UI** (BR-040) |
 | — | `verification_status` | **missing from UI** |
 
