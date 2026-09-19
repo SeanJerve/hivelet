@@ -33,6 +33,7 @@ import {
 import {
   unreadCount,
   hasEmergencyUnread,
+  urgentUnreadCount,
   isPopoverOpen,
   startNotificationsHeartbeat,
   stopNotificationsHeartbeat
@@ -98,12 +99,27 @@ function toggleNotifications() {
  * The bell says how many are waiting and whether any is an emergency, so that
  * reading does not depend on seeing the red dot.
  */
+/**
+ * The urgent figure is COUNTED, and it is not called an emergency.
+ *
+ * This read `hasEmergencyUnread ? '…, one of them an emergency' : …` - a count
+ * asserted from a boolean, and the wrong word for it. The flag is true for
+ * Emergency **or High**, so four High notifications were announced as an
+ * emergency; and "one" was hardcoded, so the administrator with 2 Emergency and
+ * 4 High unread (read live, 2026-09-19) was told there was one of them.
+ *
+ * This label is the whole information for anyone not looking at the red dot -
+ * the comment above says so - which makes a wrong number in it a wrong fact,
+ * not a wording preference.
+ */
 const notificationsLabel = computed(() => {
   if (unreadCount.value === 0) return 'Notifications, none unread';
   const count = `${unreadCount.value} unread`;
-  return hasEmergencyUnread.value
-    ? `Notifications, ${count}, one of them an emergency`
-    : `Notifications, ${count}`;
+  const urgent = urgentUnreadCount.value;
+  if (urgent === 0) return `Notifications, ${count}`;
+  return urgent === 1
+    ? `Notifications, ${count}, one needing urgent attention`
+    : `Notifications, ${count}, ${urgent} needing urgent attention`;
 });
 
 function scrollToSection(sectionId: string) {

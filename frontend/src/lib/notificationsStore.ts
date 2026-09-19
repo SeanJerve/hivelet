@@ -52,13 +52,32 @@ export const filteredNotifications = computed(() => {
 });
 
 /**
- * Checks if there is any unread Emergency or High priority notification.
+ * How many unread notifications are Emergency or High priority.
+ *
+ * Exists because the bell's accessible name was asserting a COUNT from a
+ * boolean: `hasEmergencyUnread` answers "is there at least one", and the label
+ * rendered that as *"one of them an emergency"* however many there were. Read
+ * live on 2026-09-19, the administrator had **2 Emergency and 4 High** unread
+ * and was told there was one.
+ *
+ * Counted from the loaded list rather than from the server, which is the same
+ * basis the boolean always used. `unreadCount` comes from `meta.totalUnread`
+ * and can therefore exceed what is loaded; this figure cannot exceed the page.
+ * With 21 rows against a default limit of 50 that difference is theoretical
+ * today, and it is the honest basis to count on rather than a second source.
  */
-export const hasEmergencyUnread = computed(() => {
-  return notifications.value.some(
-    (n) => !n.is_read && (n.priority === 'Emergency' || n.priority === 'High')
-  );
-});
+export const urgentUnreadCount = computed(
+  () =>
+    notifications.value.filter(
+      (n) => !n.is_read && (n.priority === 'Emergency' || n.priority === 'High')
+    ).length
+);
+
+/**
+ * Whether any unread notification is Emergency or High priority. Drives the
+ * bell's colour. Derived from the count above so the two cannot disagree.
+ */
+export const hasEmergencyUnread = computed(() => urgentUnreadCount.value > 0);
 
 /**
  * Plays a subtle, non-intrusive notification chime via Web Audio API.
