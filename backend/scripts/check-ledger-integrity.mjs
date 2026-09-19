@@ -948,12 +948,12 @@ if (live.length) {
    * check passed throughout, because they test the system against itself and
    * the wrong value was uniform.
    *
-   * A RATCHET, not a pass/fail. Thirteen of the 29 can be settled from the
-   * ledger alone and migration 035 does that; the other sixteen changed day
-   * mid-history or track month-end, and only Mrs Fe can say which (B-32). So
-   * this cannot be green today without lying. It fails when the number GROWS,
-   * which is what a regression looks like, and the baseline comes down as the
-   * queue is worked - 29 now, 16 once 035 is applied.
+   * A RATCHET, not a pass/fail. **Migration 035 was applied on 2026-09-19 and
+   * brought this from 29 to 16**, which is the number below. The remaining 16
+   * changed day mid-history or track month-end, and only Mrs Fe can say which
+   * (B-32) - so this still cannot be green without lying. It fails when the
+   * number GROWS, which is what a regression looks like. Lower it again as she
+   * answers; every step down is a step that can never be silently undone.
    */
   const anniv = await rows(
     'room_assignments?is_active=eq.true&select=room_id,anniversary_date,occupant_count'
@@ -972,7 +972,7 @@ if (live.length) {
     }
   }
 
-  const ANNIVERSARY_DRIFT_BASELINE = 29;
+  const ANNIVERSARY_DRIFT_BASELINE = 16;
   const drifted = [];
   for (const a of anniv) {
     const led = newestPeriod.get(a.room_id);
@@ -996,8 +996,8 @@ if (live.length) {
   } else {
     pass(
       `BR-033 anniversary vs ledger — ${drifted.length} known unsettled of ${anniv.length} ` +
-      `(baseline ${ANNIVERSARY_DRIFT_BASELINE}); 13 are settled by migration 035, the rest need ` +
-      'the owner (B-32). Lower the baseline as they are answered.'
+      `(baseline ${ANNIVERSARY_DRIFT_BASELINE}); migration 035 settled 13 on 2026-09-19, the ` +
+      'rest need the owner (B-32). Lower the baseline as they are answered.'
     );
   }
 
@@ -1014,16 +1014,17 @@ if (live.length) {
    * `computeBillAmounts()`. So a resident's own portal, and the amount charged
    * when they pay by GCash, is computed for one occupant whatever the truth.
    *
-   * A ratchet, for the same reason as above: 13 are settled by migration 037
-   * and seven need the owner, since each changed within the last four months
-   * and a change that recent is as likely to be real as to be a slip.
+   * A ratchet, for the same reason as above. **Migration 037 was applied on
+   * 2026-09-19 and brought this from 16 to 3.** The three that remain changed
+   * within the last four months, and a change that recent is as likely to be
+   * real as to be a slip, so they need the owner (B-33).
    *
    * WHY A LEDGER COMPARISON AND NOT A RULE. Occupancy legitimately changes
    * month to month and she maintains it by hand. This does not assert what the
    * count SHOULD be - only that the system and her book disagree, which is a
    * question worth putting to her rather than an error to correct in code.
    */
-  const OCCUPANT_DRIFT_BASELINE = 16;
+  const OCCUPANT_DRIFT_BASELINE = 3;
   const occDrift = [];
   for (const a of anniv) {
     const led = newestPeriod.get(a.room_id);
@@ -1047,7 +1048,8 @@ if (live.length) {
   } else {
     pass(
       `BR-014 headcount vs ledger — ${occDrift.length} known unsettled of ${anniv.length} ` +
-      `(baseline ${OCCUPANT_DRIFT_BASELINE}); 13 are settled by migration 037, 7 need the owner (B-33).`
+      `(baseline ${OCCUPANT_DRIFT_BASELINE}); migration 037 settled 13 on 2026-09-19, these ` +
+      'need the owner (B-33).'
     );
   }
 

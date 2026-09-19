@@ -104,7 +104,7 @@ thing did not work" is not.
   is for.
 - **Raised:** 2026-09-19
 
-### B-33 — every tenancy says one occupant; the tenant portal bills water on it
+### B-33 — every tenancy said one occupant · **037 APPLIED 2026-09-19 — 3 still need her**
 
 - **What is wrong.** `room_assignments.occupant_count` reads **1** on all 32 active tenancies —
   one distinct value across the property. The **third** column found this way, after
@@ -117,7 +117,7 @@ thing did not work" is not.
   the bill a **tenant** raises: `GET /tenant/bills` and the Adyen path both read this column and
   hand it to `computeBillAmounts()`. **₱2,200 a month** of water, across 15 units — small only
   next to the rate card in the same bill (B-29).
-- **☑ Done:** **migration 037 is written and not run.** It corrects the **13** units whose last
+- **☑ APPLIED 2026-09-19.** Migration **037** corrected the **13** units whose last
   twelve recorded months agree unanimously, or whose current figure has held unbroken for 8+
   months. Twelve more are already right at 1.
 - **☐ SEVEN NEED HER**, because each changed within the last four months and a change that
@@ -134,11 +134,12 @@ thing did not work" is not.
 - **Worth her knowing separately:** **1b and 1f each hold 3 people in a 2-person unit**, and
   have for eleven straight months. That is a fact about the property rather than an error, and
   the receipt path already writes an audit row when a payment is recorded over capacity.
-- **A check now guards it.** `check:ledger` compares every stored headcount against that unit's
-  most recent billed one. Ratchet at 16; it fails if the number grows. Mutation-tested.
+- **A check guards it.** `check:ledger` compares every stored headcount against that unit's most
+  recent billed one. **The ratchet came down 16 → 3 when 037 was applied**, and is mutation-tested
+  at the new level: tightening it by one fails.
 - **Raised:** 2026-09-19
 
-### B-34 — two taps on "Pay" can raise the same bill twice · **fixed in code, migration waiting**
+### B-34 — two taps on "Pay" could raise the same bill twice · **CLOSED 2026-09-19 — 038 applied**
 
 - **The defect.** A bill is raised **on demand**, by two paths — `POST /tenant/payments/checkout`
   and the Adyen notification handler. Each reads the tenant's bills, finds nothing unpaid, and
@@ -156,10 +157,11 @@ thing did not work" is not.
   period and there is one. `billAlreadyRaised()` matches on the **index name**, not on 23505
   alone, so a different unique violation is still a real error — unit-tested against eight
   shapes including the receipt index and a right-name-wrong-code case.
-- **☐ You run:** migration **038**, in the paste-ready file. One index, no rows.
+- **☑ APPLIED 2026-09-19.** `idx_one_bill_per_tenant_per_period` confirmed present in
+  `pg_indexes`. Nothing further.
 - **Raised and fixed:** 2026-09-19
 
-### B-35 — I left 37 test rows in her live database, and here is the migration that removes them
+### B-35 — I left 37 test rows in her live database · **CLOSED 2026-09-19 — 039 applied, 0 remain**
 
 - **Mine, not hers.** Testing the write paths meant using them, and there is no staging copy. All
   37 were created on **2026-09-19** by this audit.
@@ -172,7 +174,9 @@ thing did not work" is not.
 - **The one that actually shows is the enquiry.** `inquiries` has no voided state, so *"REHEARSAL
   Test / QA audit test enquiry, safe to ignore/delete"* is sitting in her Inquiries screen as
   **Pending**, looking like somebody who wants a unit.
-- **☐ You run:** migration **039**, from its own file rather than the combined one — it names 37
+- **☑ APPLIED 2026-09-19.** Verified afterwards: 0 voided income, 0 voided expenses, 0 test
+  enquiries, and the ledger unchanged at **937 rows / ₱8,086,250.00 remitted**. Ran from its own
+  file rather than the combined one — it names 37
   UUIDs and they should not be retyped. Every row is named by **id and nothing else**: no pattern
   on the invoice number, no date range. A pattern can widen; a list of UUIDs cannot. Each DELETE
   also carries `AND voided_at IS NOT NULL` as belt and braces.
@@ -188,7 +192,7 @@ thing did not work" is not.
   before assuming the database is clean.**
 - **Raised:** 2026-09-19
 
-### B-36 — an overpayment cannot be recorded: a gateway index forbids her receipt numbering
+### B-36 — an overpayment could not be recorded · **CLOSED 2026-09-19 — 040 applied**
 
 - **The shortest version:** a resident owing ₱5,000 who hands over ₱6,000 **cannot be recorded**.
   The request fails halfway — her ledger shows ₱6,000 arrived, the tenant's account shows ₱5,000.
@@ -214,7 +218,9 @@ thing did not work" is not.
   forbid the exact shape the ledger is built on.
 - **Why nothing caught it:** `transaction_reference` is NULL on all 937 imported rows, and no
   receipt has ever been recorded through the application by a person.
-- **☐ You run:** migration **040**, in the paste-ready file. It re-creates both indexes scoped to
+- **☑ APPLIED 2026-09-19.** Confirmed in `pg_indexes`: both new indexes carry
+  `payment_method = 'Adyen Online'` in their predicate and the two unscoped ones are gone. An
+  overpayment can now be recorded. It re-created both indexes scoped to
   `payment_method = 'Adyen Online'`. **Adyen idempotency is untouched** — a retried pspReference
   still cannot create a second row.
 - **The predicate is exact, not approximate.** `payment_method_type` is (Cash | GCash | Bank
@@ -1163,7 +1169,7 @@ thing did not work" is not.
     `room_assignments.deposit_amount` reading *"ADVANCE RENT, not a refundable security deposit
     … No separate damage or security deposit is collected by this business … Do not build a
     refund or forfeiture workflow against this column."* Your answer contradicts every clause of
-    that. **Migration 036 is written and not run** — it replaces the comment. The catalogue is
+    that. **Migration 036 was APPLIED 2026-09-19** — the comment is replaced. The catalogue is
     the thing CLAUDE.md tells people to trust over the docs, so a wrong comment there is worse
     than a wrong document.
   - `backend/src/routes/admin.ts` asserted the same thing in three code comments dated
@@ -1195,7 +1201,7 @@ thing did not work" is not.
   missing move-out dates.
 - **Raised:** 2026-09-19. **Corrected twice the same day.**
 
-### B-32 — every tenancy bills on the 1st; 29 of 32 residents pay on some other day
+### B-32 — every tenancy billed on the 1st · **035 APPLIED 2026-09-19 — 16 still need her**
 
 - **What is wrong.** `room_assignments.anniversary_date` is `2026-07-01` for **all 32** active
   tenancies — one distinct value across the whole property. It is the bulk import's placeholder,
@@ -1210,7 +1216,7 @@ thing did not work" is not.
   receipt for 1a gets stamped 1 Oct–31 Oct when that resident's month runs 7 Oct–6 Nov. And the
   divergence warning is inverted: type the *correct* dates and the system files an audit note
   against you.
-- **☑ Done:** **migration 035 is written and not run.** It settles the **16** units whose own
+- **☑ APPLIED 2026-09-19.** Migration **035** settled the **16** units whose own
   ledger is unambiguous — most recent period start is also the usual one, unbroken 8+ months,
   not a month-end cycle. 13 of those change; 2a, 3e and F1 really are on the 1st. Only the DAY
   moves; the year and month stay at the 2026-07 placeholder, because the day is the only part
@@ -1223,9 +1229,9 @@ thing did not work" is not.
   - **1b, 1g, 1h, 2c, 2e, 2f, 3b, 3f, 3g, B3F, F2F** — the cycle moved in the last year. Either
     the resident changed or the day was renegotiated; her book cannot say which.
   - The per-unit history for all sixteen is in `database/migrations/035_...sql`.
-- **A check now guards it.** `check:ledger` compares every anniversary day against that unit's
-  most recent period. It is a **ratchet at 29**, because it cannot be green today without lying;
-  it fails if the number grows. Drop it to 16 once 035 is applied. Mutation-tested.
+- **A check guards it.** `check:ledger` compares every anniversary day against that unit's most
+  recent period. **The ratchet came down 29 → 16 when 035 was applied**, and is mutation-tested
+  at the new level: tightening it by one fails. Drop it further as she answers.
 - **Why no check caught this for months:** they test the system against itself, and the wrong
   value was uniform. It took comparing against her book.
 - **Raised:** 2026-09-19
