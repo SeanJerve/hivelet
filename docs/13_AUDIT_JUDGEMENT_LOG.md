@@ -1362,6 +1362,102 @@ Recorded because a sweep that only lists failures misrepresents the system:
 
 ---
 
+### A thirteenth sweep, 2026-09-19: hostile input, replayed money, and three tests that were wrong before the system was
+
+This sweep attacked the system rather than exercising it: forged tokens,
+replayed settlements, payload shapes chosen to break something. Two real defects,
+several clean negatives worth recording, and three of my own tests that reported
+a failure the system did not have.
+
+#### 1. Authentication held against everything
+
+Ten attempts, all refused:
+
+  - signed with the wrong secret
+  - `alg: none`, unsigned
+  - expired an hour ago
+  - a valid signature for a profile that does not exist
+  - no token, an empty bearer, a string that is not a JWT
+  - a payload genuinely altered under the original signature
+  - one character changed in the signature
+  - **a tenant's profile id with `role: "admin"` inside a correctly signed token**
+
+That last one is the one that matters. The API reads the role from the database
+and not from the claim, so signing a token with the real secret and a lie inside
+it buys nothing.
+
+#### 2. Two hostile payloads reached the database and came back as 500s
+
+    10,000 allocations on one expense  ->  500 "Internal server error."
+    a NUL character inside a payer's name  ->  500 "Internal server error."
+
+Neither is dangerous; both are illegible. The array had `.min(1)` and no ceiling,
+so ten thousand allocations were carried into
+`create_expense_entry_with_allocations` before anything objected. And a `text`
+column cannot hold a NUL, so the driver failed on encoding — a Postgres error in
+the log that reads like a fault in the system rather than in the request.
+
+Capped at 50 (there are six property areas; fifty allows an itemised bill and
+still bounds the work) and NUL rejected in `shortText`, which covers every text
+field at once. Both now 422 naming the field. Other C0 controls are left alone: a
+stray tab in a supplier name is untidy but storable, and this validator's job is
+to stop *unstorable* input, not to tidy her typing.
+
+#### 3. Replaying a settlement does nothing, and that was already true
+
+`PATCH /admin/payments/:id/verify` on a payment already Verified is refused, and
+five of them fired simultaneously wrote no second income row and moved no money —
+the ledger read 937 rows and 8,086,250.00 before and after. `settle_verified_payment`
+takes `FOR UPDATE` and re-reads the status, which is the shape the income path
+did *not* have and needed migration 033 to get.
+
+#### 4. Prototype pollution is structurally impossible here, which is worth knowing
+
+`"__proto__"` and `"constructor.prototype"` sent as real JSON keys all returned
+201 and changed nothing: the rows created were ordinary, and the server answered
+correctly afterwards. Zod's `.object()` strips unknown keys, every handler reads
+`parsed.data`, and **nothing anywhere spreads or merges the raw `req.body`** —
+grepped for `...req.body`, `Object.assign(…req.body)` and `merge(req.body)`, and
+the single textual hit is a comment describing a defect that was already fixed.
+
+Recorded as a negative result because the next person should not have to re-derive
+it, and because the property that makes it safe — never touching the raw body — is
+one a future handler could quietly break.
+
+#### 5. Three tests were wrong before the system was
+
+Worth recording as its own finding, because each nearly became a false report.
+
+  - **"a JWT with the payload swapped after signing" returned 200.** The
+    re-encoded payload was byte-identical to the original — the admin already had
+    `role: admin`, so "tampering" changed nothing and the signature still matched.
+    Genuinely altering the email gives 401.
+  - **"`__proto__` pollution" returned 201.** The payload was built as a JS object
+    literal, where `__proto__:` sets the prototype rather than creating a key, so
+    `JSON.stringify` dropped it. The attack was never sent.
+  - **The multi-month and month-end probes all failed with "the rent period could
+    not be determined."** They supplied only `dateCoveredStart` against PH, which
+    has no tenancy to derive an end from. Correct refusal; wrong test.
+
+**A test that fails proves something is wrong with the test OR the system, and
+which one is not obvious.** Each of these looked like a finding. Two would have
+been reported as security defects. The discipline that caught them is the same
+one this document keeps recording: before believing a result, check that the
+thing you meant to do actually happened.
+
+#### 6. My own writing tool corrupted a source file
+
+Editing `validators.ts` through a shell heredoc to add a NUL check wrote **three
+real NUL bytes into the TypeScript source** — the escape was interpreted one
+layer earlier than intended, and `grep` reported the file as binary. Restored
+from git and re-edited with a direct file edit instead.
+
+The irony is the lesson: the change was about characters a database cannot store,
+and the tooling used to make it could not store them either. **When a change is
+about escaping, do not make it through a pipeline that escapes.**
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.

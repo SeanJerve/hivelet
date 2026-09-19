@@ -937,7 +937,11 @@ thing did not work" is not.
   "2nd Floor / 1st Floor" — the count is right, one label is not.
 - **Raised:** 2026-09-19. **Answered:** 2026-09-19.
 
-### B-12 — the public FAQ quoted an electricity rate the system does not hold · **mostly answered**
+### B-12 — the public FAQ quoted an electricity rate the system does not hold · **CLOSED 2026-09-19**
+
+> Sean confirmed the page is correct as it stands: every unit has its own meter, the tenant pays
+> their own electricity, and the boarding house bills nothing for it. No rate and no reading day
+> belong on the site. Nothing further to do.
 
 > **She had already answered this, and the answer was stronger than the question.**
 > `CLIENT_ANSWERS_2026-09-17.md` Q5: *"No, the electricity is not a feature or a part of the scope
@@ -977,7 +981,33 @@ thing did not work" is not.
 
 ---
 
-### B-13 — the FAQ asked new tenants for two months' money; OD-04 says nobody knows
+### B-31 — OD-04 is settled, and the move-in logic collects half of what it should
+
+- **The answer, from Sean on 2026-09-19:** *"yes two months total, one month for rent and the
+  other is the deposit"*, and on what the deposit is for: *"when the tenant leaves, that deposit
+  money will be used to cover expenses in fixing/maintaining the apartment that the tenant used."*
+- **So OD-04 is closed and the 13 Sep reading of it was wrong.** There IS a separate deposit. The
+  17 Sep answer was the right one.
+- **☑ Done already:** the public FAQ states two months with a worked example, because
+  understating it is the harmful direction — a prospect budgeting one month's rent turns up
+  needing two.
+- **☐ WHAT IS LEFT, AND IT IS MONEY, SO IT IS YOURS.** `backend/src/routes/admin.ts` has the old
+  reading built in, in three places:
+  - **line ~674** — `rentAtMoveIn` is one month's rent, commented *"OD-04: this sum is ADVANCE
+    RENT, not a refundable security deposit. This business collects no separate damage sum."*
+  - **line ~925** — the re-assignment path, commented *"collects no separate damage or security
+    sum (OD-04, confirmed 2026-09-13)"*. Its own comment records that the default USED to be
+    `current_price * 2`, *"the familiar one-month-advance-plus-one-month-deposit arrangement"*,
+    and that it was removed as an invented figure. It was not invented. It was right.
+  - **line ~516** — the finite check, labelled "Advance rent (OD-04)".
+- **What that means in practice:** onboarding a tenant records ONE month where the business
+  collects TWO. `deposit_amount` on every tenancy created since is understated by a month's rent.
+- **Why I did not change it:** it writes money into a financial record, existing rows would need
+  deciding on separately, and B-11's missing move-out dates are entangled with settling a deposit
+  at all. Not a call to make from a chat message.
+- **Raised:** 2026-09-19
+
+### B-13 — the FAQ asked new tenants for two months' money · **ANSWERED 2026-09-19: two months was right.** See B-31
 
 > **On `CLIENT_CONFIRMATION.md` § 2**, written out with both of her answers, the question that separates them, and the evidence that does not decide it.
 

@@ -56,15 +56,22 @@ function toggleFaq(index: number) {
  *                 billing arrangement that exists nowhere, to people deciding
  *                 what living here would cost them.
  *
- *   move-in       said "1 month advance rent AND 1 month security deposit",
- *                 which is two months of somebody's money. OD-04 is CONTESTED:
- *                 on 2026-09-13 the owner described the move-in sum as advance
- *                 rent and NOT a refundable deposit; on 2026-09-17 she
- *                 described the same money as held, spent on repairs at
- *                 move-out and partly refunded. The decisions register says in
- *                 terms: "Do not build from either." Two months matches NEITHER
- *                 answer - both describe one month. The answer no longer states
- *                 a total, and points them at the person who can.
+ *   move-in       SETTLED 2026-09-19, and the original text was right after
+ *                 all. It said "1 month advance rent AND 1 month security
+ *                 deposit"; OD-04 was then read as advance rent only, so the
+ *                 answer was cut back to one month and eventually to no total
+ *                 at all. Sean put it to the owner and relayed it plainly:
+ *                 two months, one of rent and one of deposit, and the deposit
+ *                 is spent at move-out on fixing and maintaining the unit the
+ *                 tenant used.
+ *
+ *                 Understating this is the harmful direction: a prospect
+ *                 budgeting one month's rent arrives needing two. So the
+ *                 answer states the total and works a ₱4,500 unit through,
+ *                 because "two months" is not a number anyone can act on.
+ *
+ *                 What it does NOT say is whether anything is returned. Nobody
+ *                 has confirmed that, and money is not a thing to imply.
  */
 const FAQS = computed(() => [
   {
@@ -88,7 +95,8 @@ const FAQS = computed(() => [
   },
   {
     q: 'What do I need to move in?',
-    a: 'A valid government or student ID, the resident registration form, and one month of rent up front. Ask Mrs. Da Silva to confirm the total before you come - what is held and how it is settled when you leave is something she will explain herself.',
+    a:
+      'A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. The deposit is held while you live here and put towards repairs and upkeep of the unit when you leave. For a unit at ₱4,500 that is ₱9,000 to bring on the day.',
   },
   {
     q: 'Are visitors and guests allowed inside the rooms?',
