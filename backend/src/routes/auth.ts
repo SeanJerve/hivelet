@@ -14,7 +14,7 @@ import {
   changeOwnPassword,
 } from '../services/authService.js';
 import { requireAuth } from '../middleware/auth.js';
-import { rateLimit } from '../middleware/rateLimit.js';
+import { rateLimit, failureLimit } from '../middleware/rateLimit.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { permissionsForRole } from '../config/rbac.js';
@@ -45,8 +45,26 @@ const loginSchema = z
  * POST /api/auth/login
  * Public. Exchanges credentials for a JWT.
  */
+/**
+ * Failed sign-ins from one address, per quarter-hour.
+ *
+ * Per-account lockout already stops someone guessing at ONE account. This stops
+ * the opposite shape - one password tried once against each of forty-five
+ * accounts, which never gives any single account five failures and so never
+ * locks anything. See the header of `middleware/rateLimit.ts`.
+ *
+ * Thirty, because thirty-two units share one connection on the house wifi, so
+ * every resident's mistyped password lands on the same counter.
+ */
+const loginFailures = failureLimit({
+  max: 30,
+  windowMs: 15 * 60 * 1000,
+  what: 'failed sign-in attempts',
+});
+
 router.post(
   '/auth/login',
+  loginFailures,
   asyncHandler(async (req, res) => {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -54,7 +72,16 @@ router.post(
     }
 
     const identifier = parsed.data.identifier ?? parsed.data.email ?? '';
-    const result = await login(identifier, parsed.data.password, clientIp(req) ?? undefined);
+
+    // Only a genuine failure is charged to the address, so a resident who signs
+    // in correctly never moves the counter and neither do the suites.
+    let result;
+    try {
+      result = await login(identifier, parsed.data.password, clientIp(req) ?? undefined);
+    } catch (err) {
+      loginFailures.record(req);
+      throw err;
+    }
 
     res.status(200).json({
       success: true,
