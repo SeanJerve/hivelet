@@ -5,6 +5,7 @@ import { ref, computed, onMounted } from 'vue';
 import { 
   maintenanceTickets, 
   fetchMaintenanceTickets, 
+  maintenanceTicketsFetchFailed,
   rooms, 
   fetchRooms, 
   TECHNICIANS,
@@ -31,6 +32,7 @@ import {
   AlertCircle
 } from 'lucide-vue-next';
 import Skeleton from '@/components/ui/Skeleton.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
 const q = ref('');
@@ -374,6 +376,23 @@ function handleDeleteTicketPrompt() {
         <Skeleton class-name="h-16 w-full rounded-2xl" />
       </div>
     </div>
+
+    <!--
+      A failed load must not read as an empty board.
+
+      `maintenanceTicketsFetchFailed` already existed and was already set by
+      `fetchMaintenanceTickets`; AdminOverviewView reads it. This screen - the
+      one the landlady actually opens to see outstanding repairs - never did, so
+      a refused or broken request left the array untouched and rendered three
+      columns of "Nothing here." with 0 counts. "No outstanding repairs",
+      asserted from a failure. The same false affirmative the fifth sweep fixed
+      for the dashboard's KPI cards.
+    -->
+    <UnavailableNote
+      v-else-if="maintenanceTicketsFetchFailed"
+      message="The repair requests could not be loaded. That is not the same as there being none — nothing is shown rather than an empty board."
+      @retry="fetchTickets"
+    />
 
     <div v-else class="grid gap-4 lg:grid-cols-3">
       <section

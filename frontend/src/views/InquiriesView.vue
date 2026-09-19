@@ -2,7 +2,7 @@
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { inquiries, fetchInquiries as fetchInquiriesState, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
+import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Inbox, Phone, Mail, Send, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
@@ -305,7 +305,22 @@ async function handleSendReply() {
         </div>
 
         <div class="max-h-[540px] flex-1 overflow-y-auto">
-          <p v-if="filteredInquiries.length === 0" class="p-8 text-center text-sm text-ink-soft">
+          <!--
+            A failed load is not an empty inbox. Without this, a refused request
+            left `inquiries` untouched and the list said "Nothing matches what
+            you have typed" - which is a statement about the SEARCH, on a screen
+            that had not managed to read anything at all.
+          -->
+          <p
+            v-if="inquiriesFetchFailed"
+            role="status"
+            class="p-8 text-center text-sm text-overdue"
+          >
+            The enquiries could not be loaded. That is not the same as there being none — reload
+            the page, and if it keeps happening the enquiries are still safely on file.
+          </p>
+
+          <p v-else-if="filteredInquiries.length === 0" class="p-8 text-center text-sm text-ink-soft">
             Nothing matches what you have typed.
           </p>
 

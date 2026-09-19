@@ -401,6 +401,15 @@ export const maintenanceTicketsFetchFailed = ref(false);
  * of 2024 and ₱628,951.64 of 2026 so far.
  */
 export const expenseRecordsFetchFailed = ref(false);
+/**
+ * Set when the enquiry list could not be read.
+ *
+ * Every other list on the administrator's side had one of these and enquiries
+ * did not, so a failed load left the array untouched and the screen said
+ * "0 enquiries" - a failure rendered as a fact, which is the pattern the fifth
+ * sweep fixed for the dashboard's KPI cards.
+ */
+export const inquiriesFetchFailed = ref(false);
 
 export const EXPENSE_CATEGORIES = [
   "1 — Supplies",
@@ -1012,6 +1021,7 @@ export async function fetchInquiries(): Promise<Inquiry[]> {
   // Administrator-only endpoint: a refused call here is audited as
   // AUTH_ACCESS_DENIED, so it is not attempted at all.
   if (!isAuthenticated.value || !isAdmin.value) return [];
+  inquiriesFetchFailed.value = false;
 
   try {
     const res = await api.get<any[]>('/admin/inquiries');
@@ -1045,6 +1055,7 @@ export async function fetchInquiries(): Promise<Inquiry[]> {
   } catch (err) {
     console.warn('fetchInquiries error:', err);
   }
+  inquiriesFetchFailed.value = true;
   return inquiries;
 }
 
