@@ -133,10 +133,24 @@ thing did not work" is not.
   not in this diff — the new value lives only there, never in a tracked file). **Anyone running
   `check:api`, `check:billing`, or signing in as admin on another machine needs it**, same
   out-of-band channel as always. The password this replaced is burned, same as the 13 Sep one.
+- **One row I left behind, and it is on her board.** Step 3 files a real enquiry, and step 20 is
+  the Undo for it — so stopping at step 6 leaves it open. It is
+  **`1e21ef75-4dc6-49c0-8505-3068e36e833e`**, prospect **"REHEARSAL Test"**, unit **PH**, status
+  **Pending**, raised 2026-09-19 00:03 UTC, with its one thread message and one notification.
+  Close it through **Prospect Inquiries** (which is step 20 doing its job), or delete the row.
+  **Not deleted from here:** that is a live-data change, and on this project those are a
+  numbered migration and yours, not an ad-hoc `DELETE`.
+- **Nothing else moved.** Counted against the session's own backup
+  (`backups/2026-09-19T00-01-15/`): income **937**, expense entries **1,262**, allocations
+  **1,327**, payments **15**, bills **2**, rooms **33**, profiles **45**, assignments **48** —
+  all unchanged. **No money was written.** The deltas are the enquiry (+1), its message (+1),
+  its notification (+1), and `audit_logs` +218 from five `check:all` runs and the sign-ins,
+  which is append-only and expected.
 - **What Sean needs to do:**
   1. Send the new admin password to whoever else has `creds.txt` (Loyd's machine, teammates).
   2. Run — or assign — `TESTING_REHEARSAL.md` steps 7-26 in a real browser, signed in with the
      new password. Nothing about the doc changed; it is exactly as ready as it was.
+  3. Close or delete the REHEARSAL Test enquiry above.
 - **Also re-confirmed live, unrelated to the block:** the two junk maintenance tickets from
   **B-05** (`asd`, and one titled with a slur) are still sitting on `1A`, still `Submitted`,
   still visible on the administrator's own overview under "Open repair requests" — migration
