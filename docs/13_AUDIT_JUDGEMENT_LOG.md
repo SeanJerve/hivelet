@@ -1458,6 +1458,100 @@ about escaping, do not make it through a pipeline that escapes.**
 
 ---
 
+### A fourteenth sweep, 2026-09-19: the ledger as the witness, and two wrong turns of my own
+
+The thirteenth sweep attacked the system. This one asked a different question:
+**where does the system disagree with her book?** Everything below came out of
+that comparison, and none of it was visible to a suite, because the suites test
+the system against itself.
+
+#### 1. Every tenancy bills on the 1st. Twenty-nine of thirty-two residents do not pay on the 1st
+
+`room_assignments.anniversary_date` holds `2026-07-01` for **all 32** active
+tenancies — one distinct value across the whole property, and the same invented
+import date migration 032 caught in `date_paid`.
+
+BR-033 runs the rent cycle from that column, and `computeBillPeriod()` reads
+**only its day-of-month**. So the system believes every resident's month opens
+on the 1st. The ledger says the period starts on the 1st in 122 of 937 rows and
+on **23 other days** in the other 815:
+
+    1a   the 7th,  31 months unbroken        B2F  the 21st, 31 for 31
+    1c   the 26th, 31 months unbroken        LB   the 25th, 31 for 31
+    1d   the 9th,  31 months unbroken        LF   the 13th, 31 for 31
+
+Nothing has been damaged, and that is luck rather than design: all 937 rows came
+from the import, and **no receipt has ever been recorded through the application
+by a person.** The first one will be wrong. A receipt for 1a gets stamped
+1–31 Oct when that resident's month runs 7 Oct – 6 Nov.
+
+The sharper edge is the warning. The handler files an audit note when the typed
+period differs from the derived one. With the derived one wrong for 29 units,
+**an administrator who types the correct dates is the one who gets flagged.** A
+guard pointed at the wrong party is worse than no guard: it trains her to
+distrust her own book.
+
+Migration 035 settles the 16 units whose ledger is unambiguous. Sixteen more are
+listed for her with their histories, because they either track month-end or
+changed day mid-year, and the book cannot say whether the resident changed or
+the arrangement did. **`check:ledger` now compares the two**, as a ratchet at 29,
+since it cannot be green today without lying.
+
+#### 2. I nearly doubled every deposit
+
+I raised a queue item in the morning saying the onboarding logic collected half
+what it should, and that `deposit_amount` was a month short on every tenancy.
+It was wrong.
+
+The mistake was the comparison. Measured against `rooms.current_price` the
+deposits look like 1.3x–1.9x of a month — consistent with a two-month sum
+recorded badly. Measured against **the rent each unit actually charges**, all 32
+hold exactly one month: 20 to the peso, 9 more within 8%, **none at two**. The
+rate card understates the real rent by about 1.6x, and that 1.6 was the whole
+illusion.
+
+**A ratio computed against the wrong denominator is not a weak finding, it is a
+confident wrong one.** Had I acted on it, the next 32 tenancies would have
+disagreed with all 32 that exist.
+
+#### 3. And then I asserted something the register had already answered
+
+Correcting that, I wrote in the public FAQ and the queue that *"whether anything
+is returned has not been confirmed."*
+
+She confirmed it on **2026-09-17**, in her own words:
+
+> *"whatever is left of that entire expenses will be refunded to the tenant. If
+> it's 6500 and the expenses is 6400, the 100 pesos will still be given back."*
+
+`docs/02_BUSINESS_RULES.md` BR-039 has carried that since the 18th, states the
+rest of what I spent the sweep deriving from live rows, and **explicitly marks
+the opposite reading retired.** Vince had the whole answer a day before I looked.
+
+I had read the code comments instead of the rule register — and the comments I
+was reading were **the very ones BR-039 had retired.** This document's recurring
+lesson is that a comment is a claim with a date on it. I walked into that trap
+while fixing an instance of it, which is worth more as a recorded failure than
+the fix is:
+
+> **Checking a stale comment against the database proves the database. It does
+> not prove the comment.** The authority for a business rule is the rule
+> register, and the live catalogue is downstream of it, not a substitute. When
+> the two disagree, the code comment is the least reliable of the three and is
+> the one most likely to be read first.
+
+Migration 036 corrects the live column comment, which still instructs the reader
+not to build the workflow she has just described.
+
+#### 4. What was NOT changed, deliberately
+
+Her screen still says "Advance rent" in four places. BR-039 records that
+*"advance"* is the owner's own word and that the word is a label rather than a
+definition. Renaming what she reads is her call and the design lane's, so it is
+raised in B-31 and not taken.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
