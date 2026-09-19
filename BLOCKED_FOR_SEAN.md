@@ -33,6 +33,29 @@ thing did not work" is not.
 
 ## Open
 
+### B-24 — going live on Adyen needs a merchant prefix nobody has yet
+
+- **Blocked on:** nothing today. This is a note for whenever real money is meant to move, so
+  the switch is not thrown by someone who thinks one line in `.env` does it.
+- **What was wrong:** `config.adyen.environment` reads `ADYEN_ENVIRONMENT` and defaults to
+  `TEST` — and **nothing in the codebase read it.** Checked by grep across backend and
+  frontend: no reference anywhere. The host and the value reported to the browser were both
+  written out as literals, in four places in `adyenService.ts`.
+- **Why that mattered:** setting `ADYEN_ENVIRONMENT=LIVE`, restarting, and seeing no error is
+  exactly what going live looks like. Every checkout would still have gone to the test host and
+  reported success — money never taken, recorded as taken.
+- **Fixed as far as it honestly can be.** The host is one constant now, the reported value comes
+  from the setting, and anything other than `TEST` refuses to reach Adyen at all with a message
+  saying what is missing. Verified: `TEST`, `test`, ` Test `, and empty are allowed; `LIVE`,
+  `live` and `PRODUCTION` are refused with nothing charged.
+- **What is actually needed to go live:** a live Adyen account posts to its own
+  merchant-specific endpoint, `https://{prefix}-checkout-live.adyenpayments.com`, where the
+  prefix is issued per account. That prefix is not configured here and cannot be guessed. Adyen
+  issues it in the Customer Area alongside the live API key and client key.
+- **The gateway is configured and working** against Adyen's test environment with GCash, and
+  that is not in question here — only what happens the day someone means to leave it.
+- **Raised:** 2026-09-19
+
 ### B-23 — the garbage fee stopped in July 2025 and has not been charged since
 
 - **Blocked on:** the owner. Two questions, both about money, neither answerable from the data.

@@ -57,6 +57,53 @@ export interface SessionDetails {
 // In-memory mapping of active checkout session IDs to transaction metadata.
 const checkoutSessions = new Map<string, SessionDetails>();
 
+/**
+ * Adyen's test host, and the only one this build talks to.
+ *
+ * It was written out as a string literal in two places, beside `environment:
+ * 'test'` in two more. Meanwhile `config.adyen.environment` exists, reads
+ * `ADYEN_ENVIRONMENT` and defaults to 'TEST' - and **nothing in the codebase
+ * read it**. Checked by grep across backend and frontend: no reference.
+ *
+ * A setting that does nothing is worse than no setting. Going live means
+ * putting `ADYEN_ENVIRONMENT=LIVE` in `.env`, restarting, seeing no error, and
+ * believing the switch was thrown - while every checkout still goes to the test
+ * host and reports success. Money that was never taken, recorded as taken.
+ *
+ * Switching hosts is not a one-line change either: a live account posts to its
+ * own merchant-specific endpoint, `https://{prefix}-checkout-live.adyenpayments
+ * .com`, and that prefix is issued per account and is not configured here. So
+ * the honest thing is not to pretend the switch works, but to refuse to run
+ * misconfigured and say exactly what is missing.
+ *
+ * Nothing changes today. The default is TEST, the value is TEST, and the
+ * gateway goes on working against Adyen's test environment with GCash exactly
+ * as it does now.
+ */
+const ADYEN_CHECKOUT_HOST = 'https://checkout-test.adyen.com/v71';
+
+/** What `ADYEN_ENVIRONMENT` actually says, normalised. */
+function configuredAdyenEnvironment(): string {
+  return (config.adyen.environment || 'TEST').trim().toUpperCase();
+}
+
+/**
+ * Refuses to reach Adyen at all when the configured environment is not the one
+ * that is wired. Called at both places that talk to the API.
+ */
+function assertAdyenEnvironmentWired(): void {
+  const env = configuredAdyenEnvironment();
+  if (env !== 'TEST') {
+    throw ApiError.internal(
+      `ADYEN_ENVIRONMENT is "${config.adyen.environment}", but only the test host is ` +
+      'wired in this build. A live account posts to its own merchant-specific endpoint ' +
+      '(https://{prefix}-checkout-live.adyenpayments.com), and that prefix is not ' +
+      'configured here. Nothing was charged. Set ADYEN_ENVIRONMENT=TEST, or wire the ' +
+      'live host before switching.'
+    );
+  }
+}
+
 export const adyenService = {
   /**
    * Checks whether live/sandbox Adyen credentials are configured.
@@ -84,8 +131,9 @@ export const adyenService = {
     const fallbackReturnUrl = safeReturnUrl(returnUrl, defaultReturnUrl());
 
     if (this.isLiveConfigured()) {
+      assertAdyenEnvironmentWired();
       try {
-        const response = await fetch('https://checkout-test.adyen.com/v71/sessions', {
+        const response = await fetch(`${ADYEN_CHECKOUT_HOST}/sessions`, {
           method: 'POST',
           headers: {
             'x-api-key': config.adyen.apiKey,
@@ -116,7 +164,7 @@ export const adyenService = {
             sessionId: data.id,
             sessionData: data.sessionData,
             clientKey: config.adyen.clientKey,
-            environment: 'test',
+            environment: configuredAdyenEnvironment().toLowerCase() as 'test' | 'live',
             isLive: true
           };
         }
@@ -171,7 +219,7 @@ export const adyenService = {
       sessionId,
       sessionData: null,
       clientKey: config.adyen.clientKey,
-      environment: 'test',
+      environment: configuredAdyenEnvironment().toLowerCase() as 'test' | 'live',
       redirectUrl,
       isLive: false
     };
@@ -394,8 +442,10 @@ export const adyenService = {
       throw ApiError.internal('Adyen is not configured in this environment.');
     }
 
+    assertAdyenEnvironmentWired();
+
     const url =
-      `https://checkout-test.adyen.com/v71/sessions/${encodeURIComponent(sessionId)}` +
+      `${ADYEN_CHECKOUT_HOST}/sessions/${encodeURIComponent(sessionId)}` +
       `?sessionResult=${encodeURIComponent(sessionResult)}`;
 
     let status = 'unknown';
