@@ -27,6 +27,11 @@
 --        water from it. Sets the 13 her ledger settles. 7 need her - see B-33.
 --        -> 13 rows, one column. No money already recorded.
 --
+--   038  Two taps on "Pay" can raise the same bill twice - both paths that
+--        raise a bill read-then-insert with no transaction behind them. Adds
+--        the unique index that makes the second one lose.
+--        -> one index. No rows at all.
+--
 -- The full reasoning for each is in its own numbered file. This one exists so
 -- nothing is missed, not to replace them.
 --
@@ -129,6 +134,33 @@ SELECT r.room_number, ra.occupant_count, r.capacity
 FROM   room_assignments ra JOIN rooms r ON r.id = ra.room_id
 WHERE  ra.is_active AND ra.occupant_count > r.capacity
 ORDER  BY r.room_number;
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 038 — one bill per tenant per period
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- EXPECT 0 ROWS. If any come back, STOP - the index below will fail, and
+-- deciding which of two bills is real needs her, not this file.
+SELECT tenant_profile_id, billing_period_start, bill_type, count(*)
+FROM   bills GROUP BY 1,2,3 HAVING count(*) > 1;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_one_bill_per_tenant_per_period
+  ON public.bills (tenant_profile_id, billing_period_start, bill_type);
+
+COMMENT ON INDEX public.idx_one_bill_per_tenant_per_period IS
+  'Stops a double-tap on Pay raising the same bill twice. Both bill-raising '
+  'paths read-then-insert with no transaction, because supabase-js cannot open '
+  'one, so this index is the only guard that holds. Keyed on bill_type as well, '
+  'because the enum allows a separate Rent and Water bill for one period; the '
+  'race always produces two Combined rows with an identical period. If a '
+  'cancelled or voided bill status is ever added, make this index partial on '
+  'it, or a corrected bill can never be re-raised. See migration 038.';
+
+-- EXPECT 1 ROW, the index above.
+SELECT indexname, indexdef FROM pg_indexes
+WHERE  schemaname='public' AND tablename='bills'
+  AND  indexname='idx_one_bill_per_tenant_per_period';
 
 
 -- ─────────────────────────────────────────────────────────────────────────────

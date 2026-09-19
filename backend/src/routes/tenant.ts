@@ -24,7 +24,8 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
-import { computeBillAmounts, computeBillPeriod, isOverdue, toCentavos } from '../services/billingService.js';
+import { computeBillAmounts, computeBillPeriod, isOverdue, toCentavos, billAlreadyRaised }
+  from '../services/billingService.js';
 import { adyenService } from '../services/adyenService.js';
 import { notificationService } from '../services/notificationService.js';
 import { config } from '../config/env.js';
@@ -701,12 +702,41 @@ router.post(
           .select('id, total_amount')
           .single();
 
-        // The error was previously discarded, so a rejected insert left the request to carry
-        // on with a fabricated total.
-        if (billError) throw ApiError.internal(billError.message);
+        /**
+         * A double-tap on Pay sends two of these at once. Both read "no unpaid
+         * bills" above and both insert, because supabase-js cannot put the
+         * check and the write in one transaction. Migration 038's unique index
+         * refuses the second - and the right answer to that refusal is not an
+         * error. The tenant wanted a bill for this period and there is one, so
+         * read the one the other request just made and continue with it.
+         *
+         * Anything else is still fatal. The error was previously discarded
+         * outright, which left the request carrying on with a fabricated total.
+         */
+        if (billAlreadyRaised(billError)) {
+          const { data: raced, error: racedError } = await db
+            .from('bills')
+            .select('id, total_amount')
+            .eq('tenant_profile_id', req.user!.profileId)
+            .eq('billing_period_start', period.billingPeriodStart)
+            .eq('bill_type', 'Combined')
+            .maybeSingle();
 
-        targetBillId = newBill.id;
-        billTotalAmount = Number(newBill.total_amount);
+          if (racedError || !raced) {
+            throw ApiError.internal(
+              'A bill for this period was raised by another request, but could not be read ' +
+              'back. Try again.'
+            );
+          }
+
+          targetBillId = raced.id;
+          billTotalAmount = await outstandingOnBill(raced.id, Number(raced.total_amount));
+        } else if (billError) {
+          throw ApiError.internal(billError.message);
+        } else {
+          targetBillId = newBill.id;
+          billTotalAmount = Number(newBill.total_amount);
+        }
       }
     }
 

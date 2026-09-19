@@ -44,7 +44,7 @@ import { config } from '../config/env.js';
 import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { recordAudit } from './auditService.js';
-import { computeBillAmounts, computeBillPeriod } from './billingService.js';
+import { computeBillAmounts, computeBillPeriod, billAlreadyRaised } from './billingService.js';
 import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
 
 export interface SessionDetails {
@@ -331,7 +331,24 @@ export const adyenService = {
         .select('id')
         .single();
 
-      if (billError) {
+      if (billAlreadyRaised(billError)) {
+        // The checkout request, or a second notification, raised this period's bill while we
+        // were building ours. Migration 038's index refused the duplicate; attach the payment
+        // to the bill that won rather than leaving it floating.
+        const { data: raced } = await db
+          .from('bills')
+          .select('id')
+          .eq('tenant_profile_id', session.tenantProfileId)
+          .eq('billing_period_start', period.billingPeriodStart)
+          .eq('bill_type', 'Combined')
+          .maybeSingle();
+
+        if (raced) {
+          resolvedBillId = raced.id;
+        } else {
+          console.error('[adyenService] a bill for this period exists but could not be read back');
+        }
+      } else if (billError) {
         // Not fatal: the payment itself is the financial fact and must still be recorded for
         // the administrator to verify. But it must not fail silently the way it used to.
         console.error('[adyenService] could not raise a bill for this payment:', billError.message);

@@ -138,6 +138,27 @@ thing did not work" is not.
   most recent billed one. Ratchet at 16; it fails if the number grows. Mutation-tested.
 - **Raised:** 2026-09-19
 
+### B-34 — two taps on "Pay" can raise the same bill twice · **fixed in code, migration waiting**
+
+- **The defect.** A bill is raised **on demand**, by two paths — `POST /tenant/payments/checkout`
+  and the Adyen notification handler. Each reads the tenant's bills, finds nothing unpaid, and
+  inserts. There is no transaction around the pair, because **supabase-js cannot open one**, so
+  two requests that interleave both see "no unpaid bills" and both insert. A resident who
+  double-taps Pay gets two bills for the same month.
+- **The same defect, in the same shape, as the double-click that recorded one receipt five
+  times** — fixed by migration 033 with a unique index, because an index is the only guard that
+  holds when the check and the write cannot be atomic.
+- **It has not happened.** `bills` holds **two** rows, both Paid, no duplicates — checked before
+  writing the migration. No tenant has ever paid through the portal. This goes in **before** the
+  rehearsal rather than after it.
+- **☑ Code half is done.** Both insert sites now recognise the collision and re-read the bill
+  the other request just created, which is the honest outcome: the tenant wanted a bill for this
+  period and there is one. `billAlreadyRaised()` matches on the **index name**, not on 23505
+  alone, so a different unique violation is still a real error — unit-tested against eight
+  shapes including the receipt index and a right-name-wrong-code case.
+- **☐ You run:** migration **038**, in the paste-ready file. One index, no rows.
+- **Raised and fixed:** 2026-09-19
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet

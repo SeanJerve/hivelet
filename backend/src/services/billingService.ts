@@ -392,3 +392,31 @@ export function allocateReceipt(
 
   return { steps, corrections, advance };
 }
+
+/**
+ * Did this bill insert lose a race to an identical one?
+ *
+ * A bill is raised ON DEMAND by two paths - `POST /tenant/payments/checkout`
+ * and the Adyen notification handler - and each reads the tenant's bills, finds
+ * nothing unpaid, and inserts. `supabase-js` cannot open a transaction, so the
+ * check and the write are not atomic and two requests that interleave both
+ * insert. A resident who double-taps Pay would get two bills for one month.
+ *
+ * Migration 038 puts a unique index on
+ * `(tenant_profile_id, billing_period_start, bill_type)` behind that, which is
+ * the only guard that holds when the check cannot be. An index on its own turns
+ * the race into a 500, so both call sites use this to recognise the collision
+ * and re-read the bill the other request just created - which is the honest
+ * outcome: the tenant wanted a bill for this period, and there is one.
+ *
+ * Matched on the index NAME, not on 23505 alone. Any other unique violation on
+ * `bills` is a different bug and must not be swallowed as "someone beat us to
+ * it". Same reasoning, and same shape, as `receiptAlreadyRecorded()` in
+ * `routes/admin.ts` for migration 033.
+ */
+export function billAlreadyRaised(err: { code?: string; message?: string } | null): boolean {
+  return (
+    err?.code === '23505' &&
+    String(err?.message ?? '').includes('idx_one_bill_per_tenant_per_period')
+  );
+}
