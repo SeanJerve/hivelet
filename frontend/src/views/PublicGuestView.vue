@@ -609,7 +609,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                   </td>
                 </tr>
 
-                <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="bg-canvas">
+                <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="bg-tile">
                   <!--
                     Two columns: what the unit is on the left, where it is on
                     the right.
@@ -647,7 +647,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
                         <div
                           v-if="planFor(u.unitCode)"
-                          class="relative mt-3 overflow-hidden rounded-tile border border-line bg-tile"
+                          class="relative mt-3 overflow-hidden rounded-tile"
                         >
                           <img
                             :src="`/floorplans/${planFor(u.unitCode)!.plan}.png`"
@@ -735,7 +735,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
                 <div
                   v-if="planFor(u.unitCode)"
-                  class="relative mt-3 overflow-hidden rounded-tile border border-line bg-tile"
+                  class="relative mt-3 overflow-hidden rounded-tile"
                 >
                   <img
                     :src="`/floorplans/${planFor(u.unitCode)!.plan}.png`"
