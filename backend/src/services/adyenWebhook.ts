@@ -45,6 +45,12 @@ export interface AdyenNotificationItem {
   amount?: { value?: number; currency?: string };
   eventCode?: string;
   success?: string | boolean;
+  /**
+   * When Adyen says the event happened. NOT one of the eight HMAC-signed
+   * fields - see `buildSignedPayload` below - so it is corroborating evidence
+   * rather than proof, and the handler treats it that way.
+   */
+  eventDate?: string;
   additionalData?: Record<string, string> & { hmacSignature?: string };
 }
 
@@ -122,6 +128,46 @@ export function verifyNotificationItem(
  * and no input exists that would make it matter. Kept anyway, because it states
  * the intent plainly and costs nothing if the pattern is ever loosened.
  */
+/**
+ * WHEN THE MONEY MOVED, given what Adyen told us and what our clock says.
+ *
+ * `paid_at` used to be `new Date()` - the moment WE handled the notification -
+ * and that timestamp dates the owner's ledger row. Delivery here is not prompt
+ * and is not meant to be: there is one shared Adyen webhook, Adyen cannot reach
+ * a laptop, and the tunnel URL changes on every restart (B-03), so retries are
+ * the normal case. A resident paying at 22:00 on 30 September whose
+ * notification lands on 2 October had their rent filed into OCTOBER.
+ *
+ * `eventDate` is Adyen's own timestamp. It is NOT one of the eight HMAC-signed
+ * fields, so it is corroborating evidence rather than proof, and it is bounded
+ * before it is believed:
+ *
+ *   - in the future beyond a little clock skew -> not a delay, a wrong clock
+ *   - older than 90 days                       -> not a delay, a wrong field
+ *
+ * In either case the server's own time is the safer answer. Everything in
+ * between is a delivery delay, which is exactly the thing this is for.
+ *
+ * Pure, and exported, so `check:adyen` can hold the boundaries still.
+ */
+export function resolveEventTime(
+  eventDate: string | undefined,
+  nowMs: number
+): { paidAt: string; fromGateway: boolean; lateByHours: number } {
+  const MAX_SKEW_MS = 5 * 60 * 1000;
+  const MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
+
+  const claimed = eventDate ? Date.parse(eventDate) : NaN;
+  const usable =
+    Number.isFinite(claimed) && claimed <= nowMs + MAX_SKEW_MS && claimed >= nowMs - MAX_AGE_MS;
+
+  return {
+    paidAt: new Date(usable ? claimed : nowMs).toISOString(),
+    fromGateway: usable,
+    lateByHours: usable ? Math.round((nowMs - claimed) / 3_600_000) : 0,
+  };
+}
+
 export function isWebhookConfigured(hexKey: string | undefined): boolean {
   return Boolean(
     hexKey &&

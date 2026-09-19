@@ -17,7 +17,8 @@ import {
   buildSignedPayload,
   computeSignature,
   verifyNotificationItem,
-  isWebhookConfigured
+  isWebhookConfigured,
+  resolveEventTime
 } from '../dist/services/adyenWebhook.js';
 
 let pass = 0, fail = 0;
@@ -150,6 +151,40 @@ check('the verifier still uses timingSafeEqual',
 // must never appear is a RETURN whose value is a direct comparison.
 check('the verifier never returns a direct === comparison',
   /return\s+[^;\n]*[!=]==/.test(verifierSource), false);
+
+/**
+ * WHEN A PAYMENT IS DATED, AND WHEN THE GATEWAY'S WORD IS NOT TAKEN.
+ *
+ * `paid_at` dates the owner's ledger row. It used to be the moment we HANDLED
+ * the notification, and delivery here is deliberately unreliable - one shared
+ * webhook, a tunnel whose URL changes on every restart (B-03) - so a payment
+ * made on 30 September could be filed into October.
+ *
+ * `eventDate` is Adyen's own timestamp and is NOT among the eight signed fields
+ * above, so it is bounded before it is believed. These hold the boundaries
+ * still: a plausible delay is honoured, an impossible one is not.
+ */
+const NOW = Date.parse('2026-09-20T12:00:00Z');
+const HOUR = 3600000;
+const et = (eventDate) => resolveEventTime(eventDate, NOW);
+
+check('a two-day-late notification is dated when the money moved',
+  et('2026-09-18T12:00:00Z').paidAt, '2026-09-18T12:00:00.000Z');
+check('and the lateness is reported in hours', et('2026-09-18T12:00:00Z').lateByHours, 48);
+check('a prompt notification is dated then too',
+  et('2026-09-20T11:59:00Z').paidAt, '2026-09-20T11:59:00.000Z');
+check('a missing eventDate falls back to our own clock',
+  et(undefined).paidAt, new Date(NOW).toISOString());
+check('an unparseable eventDate falls back', et('not a date').paidAt, new Date(NOW).toISOString());
+check('an eventDate in the far future is NOT trusted',
+  et('2027-01-01T00:00:00Z').fromGateway, false);
+check('a small forward clock skew IS tolerated',
+  et(new Date(NOW + 2 * 60 * 1000).toISOString()).fromGateway, true);
+check('an eventDate older than 90 days is NOT trusted',
+  et(new Date(NOW - 91 * 24 * HOUR).toISOString()).fromGateway, false);
+check('89 days late is still a delivery delay, and trusted',
+  et(new Date(NOW - 89 * 24 * HOUR).toISOString()).fromGateway, true);
+check('a fallback never claims to come from the gateway', et(undefined).fromGateway, false);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

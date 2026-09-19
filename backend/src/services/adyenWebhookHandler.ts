@@ -19,6 +19,8 @@ import { db } from '../config/db.js';
 import { recordAudit } from './auditService.js';
 import { notificationService } from './notificationService.js';
 import type { AdyenNotificationItem } from './adyenWebhook.js';
+import { resolveEventTime } from './adyenWebhook.js';
+import { propertyParts } from '../utils/propertyClock.js';
 
 export interface WebhookResult {
   pspReference: string;
@@ -260,6 +262,38 @@ export async function applyNotificationItem(
     return { pspReference, eventCode, outcome: 'unmatched' };
   }
 
+  /**
+   * WHEN THE MONEY MOVED, NOT WHEN WE HEARD ABOUT IT.
+   *
+   * `paid_at` was `new Date()` - the server's clock at handling time - and that
+   * timestamp dates the owner's ledger row: `admin.ts` derives the income row's
+   * year, month and date_paid from it.
+   *
+   * Delivery here is not prompt and is not meant to be. There is ONE shared
+   * Adyen webhook and Adyen cannot reach a laptop, so whoever is testing points
+   * it at their own tunnel and the URL changes on every restart (B-03). Retries
+   * are the normal case, not the exception. A resident paying at 22:00 on
+   * 30 September whose notification lands on 2 October had their rent filed into
+   * OCTOBER, in the ledger she actually runs her business on.
+   *
+   * `eventDate` is Adyen's own timestamp for the event. It is NOT among the
+   * eight HMAC-signed fields, so it is corroborating evidence rather than proof -
+   * which is exactly the situation BR-036 already has a posture for: prefer the
+   * better figure, and RECORD the divergence rather than swallowing it.
+   *
+   * Bounded before it is trusted. A value in the future beyond a little clock
+   * skew, or older than 90 days, is not a delivery delay - it is a wrong or
+   * tampered field, and the server's own clock is the safer answer.
+   */
+  const now = Date.now();
+  const { paidAt, fromGateway, lateByHours } = resolveEventTime(item.eventDate, now);
+
+  // The property's calendar, not the server's - a delay that looks small in UTC
+  // can still cross a month boundary in Manila, and vice versa.
+  const eventMonth = fromGateway ? propertyParts(paidAt).date.slice(0, 7) : null;
+  const deliveredMonth = propertyParts(new Date(now)).date.slice(0, 7);
+  const crossedMonth = fromGateway && eventMonth !== deliveredMonth;
+
   // --- record it, unsettled ------------------------------------------------
   const { data: payment, error: payError } = await db
     .from('payments')
@@ -273,7 +307,7 @@ export async function applyNotificationItem(
       // BR-017. The gateway does not get to decide that a debt is settled.
       verification_status: 'Pending Verification',
       transaction_reference: pspReference,
-      paid_at: new Date().toISOString()
+      paid_at: paidAt
     })
     .select('id')
     .single();
@@ -316,7 +350,27 @@ export async function applyNotificationItem(
       merchantReference,
       amount,
       bill_id: billId,
-      verification_status: 'Pending Verification'
+      verification_status: 'Pending Verification',
+      paid_at: paidAt,
+      /**
+       * Recorded whenever the notification was late enough to land in a
+       * different MONTH from the payment, in the property's own calendar.
+       *
+       * That is the delay that matters. An hour late changes nothing she will
+       * ever notice; a delay that carries a 30 September payment into October
+       * moves it between two monthly reports, and the first person to spot it
+       * would otherwise have no way to tell a late delivery from a wrong date.
+       */
+      ...(crossedMonth
+        ? {
+            late_delivery_note:
+              `Adyen delivered this ${lateByHours} hour(s) after the event, which falls in a ` +
+              'DIFFERENT MONTH. paid_at is the event time, so the ledger dates it when the ' +
+              'money moved rather than when we heard about it.',
+            delivered_month: deliveredMonth,
+            event_month: eventMonth,
+          }
+        : {}),
     },
     ipAddress
   });
