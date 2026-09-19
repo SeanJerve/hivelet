@@ -32,6 +32,12 @@
 --        the unique index that makes the second one lose.
 --        -> one index. No rows at all.
 --
+--   040  A gateway index forbids the shape her book is built on - one receipt
+--        number across several rows. An OVERPAYMENT alone trips it, and it
+--        fails PARTWAY: income row saved, only part of the money applied.
+--        Rescopes two indexes to Adyen rows only.
+--        -> two indexes. No rows at all.
+--
 --   039  Removes the 37 rows THIS AUDIT put in her database while testing
 --        write paths - 35 voided income rows, 1 voided expense, and one test
 --        enquiry that shows in her Inquiries screen as Pending. None of them
@@ -168,6 +174,53 @@ COMMENT ON INDEX public.idx_one_bill_per_tenant_per_period IS
 SELECT indexname, indexdef FROM pg_indexes
 WHERE  schemaname='public' AND tablename='bills'
   AND  indexname='idx_one_bill_per_tenant_per_period';
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 040 — the gateway index must not apply to her own receipts
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- EXPECT 0 ROWS from each. If either returns anything, STOP.
+SELECT transaction_reference, count(*) FROM payments
+WHERE  transaction_reference IS NOT NULL AND payment_method = 'Adyen Online'
+GROUP  BY 1 HAVING count(*) > 1;
+
+SELECT transaction_reference, count(*) FROM monthly_income_records
+WHERE  transaction_reference IS NOT NULL AND payment_method = 'Adyen Online'
+GROUP  BY 1 HAVING count(*) > 1;
+
+BEGIN;
+
+DROP INDEX IF EXISTS public.uq_payments_transaction_reference;
+DROP INDEX IF EXISTS public.uq_income_transaction_reference;
+
+CREATE UNIQUE INDEX uq_payments_gateway_reference
+  ON public.payments (transaction_reference)
+  WHERE transaction_reference IS NOT NULL AND payment_method = 'Adyen Online';
+
+CREATE UNIQUE INDEX uq_income_gateway_reference
+  ON public.monthly_income_records (transaction_reference)
+  WHERE transaction_reference IS NOT NULL AND payment_method = 'Adyen Online';
+
+COMMENT ON INDEX public.uq_payments_gateway_reference IS
+  'One Adyen pspReference, one payment row. Scoped to gateway rows because the '
+  'on-site path writes ONE reference across SEVERAL payment rows on purpose - '
+  'BR-013 splits a receipt into one row per bill plus an advance - and the '
+  'unscoped version of this index (migration 024) refused the second row and '
+  'failed the request partway. See migration 040.';
+
+COMMENT ON INDEX public.uq_income_gateway_reference IS
+  'One Adyen pspReference, one income row. Scoped to gateway rows because a '
+  'receipt covering several months is recorded as several rows carrying the same '
+  'reference - OR#4895 across four - which is how the owner keeps her book. See '
+  'migration 040.';
+
+COMMIT;
+
+-- EXPECT 2 ROWS, both carrying `payment_method = 'Adyen Online'` in the predicate.
+SELECT indexname, indexdef FROM pg_indexes
+WHERE  schemaname='public'
+  AND  indexname IN ('uq_payments_gateway_reference','uq_income_gateway_reference');
 
 
 -- ─────────────────────────────────────────────────────────────────────────────

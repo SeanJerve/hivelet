@@ -1050,6 +1050,26 @@ if (live.length) {
       `(baseline ${OCCUPANT_DRIFT_BASELINE}); 13 are settled by migration 037, 7 need the owner (B-33).`
     );
   }
+
+  /**
+   * NOT CHECKED HERE, DELIBERATELY - and this is worth a note rather than a
+   * silent omission.
+   *
+   * Migration 040 rescopes two unique indexes on `transaction_reference` so
+   * they apply to Adyen rows only. Unscoped, they forbid the shape her book is
+   * built on: one receipt number across several rows (OR#4895 across four), and
+   * one payment split into a bill row plus an advance row. The unscoped version
+   * fails an overpayment PARTWAY, with the income row saved and only part of the
+   * money applied.
+   *
+   * I wrote a check for it and then took it out. These scripts read through
+   * PostgREST, which does not expose `pg_indexes`, so the rule could never do
+   * anything except print "not checked" - and a permanently dead check is worse
+   * than no check, because it looks like coverage in the summary table.
+   *
+   * The assertion lives where it can actually run: the verification SELECTs at
+   * the end of migration 040, and B-36.
+   */
 }
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);

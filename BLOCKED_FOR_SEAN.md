@@ -188,6 +188,49 @@ thing did not work" is not.
   before assuming the database is clean.**
 - **Raised:** 2026-09-19
 
+### B-36 — an overpayment cannot be recorded: a gateway index forbids her receipt numbering
+
+- **The shortest version:** a resident owing ₱5,000 who hands over ₱6,000 **cannot be recorded**.
+  The request fails halfway — her ledger shows ₱6,000 arrived, the tenant's account shows ₱5,000.
+- **Why.** Migration 024 made `transaction_reference` UNIQUE on `payments` and on
+  `monthly_income_records`, titled *"One gateway reference, one payment"*. It was right about
+  Adyen: retries read-then-insert, and only an index can refuse the second write. It did not look
+  at the two paths that write that column for **her** money, and both write one reference across
+  **several rows on purpose**:
+  - `POST /admin/income-records` sets `reference = transactionReference || invoiceNumber` — never
+    null — then inserts **one payment row per allocation step**. BR-013 makes more than one step
+    whenever a receipt does not exactly match a bill, and **an overpayment alone is enough**:
+    the plan is [against the bill] + [the remainder as an advance].
+  - `record_income_for_months` inserts one income row per month, all carrying the same reference.
+    A three-month receipt with a typed reference is refused on the second row.
+- **The two failure modes are not equally bad.** The income path is a Postgres function, so it
+  rolls back whole and she simply cannot enter the receipt. **The payment loop is JavaScript, so
+  it fails partway** — the income row is already saved and part of the money is already applied.
+  The handler's own message admits it: *"The income record was saved, but 1,000.00 of it could
+  not be applied to this tenant's account."*
+- **This is a contradiction, not a bug.** One receipt number across several rows is not an edge
+  case — it is how her book is kept, and `admin.ts` states it as settled fact from the 937
+  imported rows: *"`OR#4895` across four rows, `OR#4896` across three."* The database was told to
+  forbid the exact shape the ledger is built on.
+- **Why nothing caught it:** `transaction_reference` is NULL on all 937 imported rows, and no
+  receipt has ever been recorded through the application by a person.
+- **☐ You run:** migration **040**, in the paste-ready file. It re-creates both indexes scoped to
+  `payment_method = 'Adyen Online'`. **Adyen idempotency is untouched** — a retried pspReference
+  still cannot create a second row.
+- **The predicate is exact, not approximate.** `payment_method_type` is (Cash | GCash | Bank
+  Transfer | Adyen Online); the admin path maps everything to the first three and cannot produce
+  the fourth. Both Adyen insert sites write `'Adyen Online'` literally, and
+  `settle_verified_payment` carries the payment's own method onto the income row — read out of
+  migration 018's **source**, not out of a comment about it.
+- **What is given up, plainly:** two different hand-entered receipts may now share a typed
+  reference. That was never what 024 guarded, and it is legitimate — one GCash transfer can pay
+  two months. Her receipt **numbering** is still guarded by `idx_one_receipt_per_unit_per_month`.
+- **No check guards this, and that is deliberate.** I wrote one and removed it: these scripts read
+  through PostgREST, which does not expose `pg_indexes`, so the rule could only ever print "not
+  checked" — and a permanently dead check is worse than none, because it looks like coverage in
+  the summary table. The assertion lives in 040's own verification SELECTs instead.
+- **Raised:** 2026-09-19
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
