@@ -76,13 +76,24 @@ function walk(dir, exts) {
   return out;
 }
 
+/** Comments out, so a path or a guard NAMED in prose is never counted as one. */
+const stripComments = (s) =>
+  s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/[^\n]*/gm, '');
+
 const routes = [];
 for (const f of walk(ROUTES, ['.ts'])) {
-  const src = readFileSync(f, 'utf8');
-  const re = /router\.(get|post|patch|put|delete)\(\s*['"]([^'"]+)['"]/g;
+  const src = stripComments(readFileSync(f, 'utf8'));
+  const re = /router\.(get|post|patch|put|delete)\(\s*['"]([^'"]+)['"]([\s\S]*?)asyncHandler/g;
   let m;
   while ((m = re.exec(src))) {
-    routes.push({ key: `${m[1].toUpperCase()} ${m[2]}`, method: m[1].toUpperCase(), route: m[2] });
+    routes.push({
+      key: `${m[1].toUpperCase()} ${m[2]}`,
+      method: m[1].toUpperCase(),
+      route: m[2],
+      file: path.basename(f),
+      // Everything registered between the path and the handler: the guards.
+      middleware: m[3],
+    });
   }
 }
 
@@ -198,6 +209,77 @@ for (const kind of ['UNPLUGGED', 'SUPERSEDED']) {
     console.log(`    ${r.key}`);
     console.log(`      ${e.row ? e.row + ': ' : ''}${e.why}`);
   }
+}
+
+/* ========================================================================== *
+ * THE GUARD CENSUS — which writes a stranger can reach
+ *
+ * Added 2026-09-19, after `POST /auth/register` was found public, unthrottled,
+ * and inserting a live `profiles` row with `account_status: 'active'`.
+ *
+ * It had been missed for a reason worth designing against. `rateLimit.ts` said
+ * in its header that `POST /public/inquiries` was *"the only genuinely open
+ * write in the system"*, and listed the other public writes to prove it - but
+ * the list was of `routes/public.ts`, and register is in `routes/auth.ts`. The
+ * census could not have produced its own counterexample, and it closed anyway.
+ * That is the same failure as the DFD closure proof that enumerated
+ * `FULL_DATABASE_SCHEMA.sql` and therefore could not find `property_areas`.
+ *
+ * So this one enumerates EVERY route file, and it is a check rather than a
+ * sentence, because a sentence is what went stale.
+ *
+ * A write route (anything but GET) must carry `requireAuth` or
+ * `requirePermission`, or be named below with why it cannot.
+ * ========================================================================== */
+
+/**
+ * Write routes that are deliberately reachable without a token. Each says what
+ * guards it INSTEAD, because "public" and "unguarded" are not the same thing.
+ */
+const OPEN_WRITES = new Map([
+  ['POST /auth/login', 'public by necessity. Guarded per ACCOUNT rather than per address - profiles.failed_login_count and locked_until - which is the direction that protects a resident, since an attacker changes address more easily than they change whose account they guess at. Deliberately not rate limited: rateLimit.ts explains why, and the suites sign in on every run'],
+  ['POST /auth/register', 'public by necessity. Rate limited, 5 per 15 minutes per address. It inserts a live profiles row and runs bcrypt before deciding anything, so unthrottled it is both inbox spam and a CPU sink'],
+  ['POST /public/payments/local-cashier/complete', 'refuseWhenGatewayConfigured returns 404 whenever Adyen is configured, which it is - verified live, not assumed. It exists only for an environment with no gateway at all'],
+  ['POST /public/payments/adyen/webhook', 'Adyen calls it. Basic Auth plus an HMAC signature verified inside the handler, so the guard cannot appear in the middleware chain. 29 signature checks in check:adyen, and an unsigned POST answers 401 - verified live'],
+]);
+
+const GUARDED = /requireAuth|requirePermission/;
+const writeRoutes = routes.filter((r) => r.method !== 'GET');
+const openWrites = writeRoutes.filter((r) => !GUARDED.test(r.middleware));
+
+console.log(
+  `\ncheck:endpoints — guard census: ${routes.length} routes, ${writeRoutes.length} of them writes\n`
+);
+
+const unexplained = openWrites.filter((r) => !OPEN_WRITES.has(r.key));
+if (unexplained.length === 0) {
+  pass(`every write route requires a token, or is one of the ${OPEN_WRITES.size} explained below`);
+} else {
+  for (const r of unexplained) {
+    fail(
+      `${r.key} (${r.file}) is a write with no requireAuth and no requirePermission, and no entry here`
+    );
+  }
+  console.log('\n  Either guard it, or add an entry saying what guards it instead.');
+}
+
+/** The allowlist decays in the other direction too: a route that got a guard. */
+const nowGuarded = [...OPEN_WRITES.keys()].filter(
+  (k) => !openWrites.some((r) => r.key === k) && routes.some((r) => r.key === k)
+);
+if (nowGuarded.length === 0) pass('no stale entries - every route listed as open really is open');
+else for (const k of nowGuarded) fail(`${k} is listed as an open write but now carries a guard - remove the entry`);
+
+const openGone = [...OPEN_WRITES.keys()].filter((k) => !routes.some((r) => r.key === k));
+if (openGone.length === 0) pass('every route listed as an open write still exists');
+else for (const k of openGone) fail(`${k} is listed as an open write but is no longer registered - remove the entry`);
+
+console.log(
+  `\n  OPEN WRITES — ${openWrites.length}, printed every run so the list is never assumed:`
+);
+for (const r of openWrites) {
+  console.log(`    ${r.key}`);
+  console.log(`      ${OPEN_WRITES.get(r.key) ?? '(no reason recorded)'}`);
 }
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
