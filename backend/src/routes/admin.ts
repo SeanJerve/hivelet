@@ -2737,19 +2737,43 @@ router.post(
       throw ApiError.validation('Invalid ticket payload.', parsed.error.flatten().fieldErrors);
     }
 
+    /**
+     * Which unit the repair is for. It has to be the right one, and there is no
+     * safe guess available.
+     *
+     * The fallback here used to be `.from('rooms').select('id').limit(1).single()`
+     * - an arbitrary room, with no ORDER BY, so whichever one Postgres happened to
+     * return. A ticket raised with a mistyped unit code, or with none, was filed
+     * against that unit. Everything downstream then followed the wrong unit: the
+     * active resident of that flat was attached as the person who reported it, and
+     * an Emergency or `setRoomMaintenance` marked *their* unit Under Maintenance.
+     * A typo could take an occupied flat out of service and put a stranger's name
+     * on a complaint they never made.
+     *
+     * A repair with no identifiable unit is a bad request, not a repair filed
+     * somewhere plausible.
+     */
     let roomId = parsed.data.roomId;
+
     if (!roomId && parsed.data.roomNumber) {
-      const { data: room } = await db
+      const { data: room, error: roomError } = await db
         .from('rooms')
         .select('id')
         .ilike('room_number', parsed.data.roomNumber)
         .maybeSingle();
-      if (room) roomId = room.id;
+      if (roomError) throw ApiError.internal(roomError.message);
+      if (!room) {
+        throw ApiError.validation('No unit has that number.', {
+          roomNumber: [`There is no unit numbered "${parsed.data.roomNumber}".`],
+        });
+      }
+      roomId = room.id;
     }
 
     if (!roomId) {
-      const { data: firstRoom } = await db.from('rooms').select('id').limit(1).single();
-      roomId = firstRoom?.id;
+      throw ApiError.validation('A repair has to say which unit it is for.', {
+        roomNumber: ['Give the unit number, or the unit id as roomId.'],
+      });
     }
 
     let tenantProfileId: string | null = null;
@@ -2856,12 +2880,22 @@ router.patch(
     if (parsed.data.roomId) {
       patch.room_id = parsed.data.roomId;
     } else if (parsed.data.roomNumber) {
-      const { data: matchedRoom } = await db
+      const { data: matchedRoom, error: matchError } = await db
         .from('rooms')
         .select('id')
         .ilike('room_number', parsed.data.roomNumber)
         .maybeSingle();
-      if (matchedRoom) patch.room_id = matchedRoom.id;
+      if (matchError) throw ApiError.internal(matchError.message);
+      // A miss used to be dropped in silence: `if (matchedRoom)` with no else, so
+      // the rest of the patch went through and the caller was told the ticket had
+      // been updated. Moving a repair to the wrong unit is the whole point of the
+      // request - if the unit cannot be found, nothing about it should be saved.
+      if (!matchedRoom) {
+        throw ApiError.validation('No unit has that number.', {
+          roomNumber: [`There is no unit numbered "${parsed.data.roomNumber}", so the ticket was not moved.`],
+        });
+      }
+      patch.room_id = matchedRoom.id;
     }
 
     const { data: after, error } = await db
