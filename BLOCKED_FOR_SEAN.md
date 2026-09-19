@@ -153,6 +153,36 @@ thing did not work" is not.
 
 ---
 
+### B-19 — apply `database/migrations/029` to turn on multi-month receipts
+
+- **Blocked on:** applying it. A live schema change, so yours, same as `023` and `027`
+- **Why it exists:** Sean, 2026-09-19 — *"we should follow her way and have a way to accommodate
+  that."* Her way is **one ledger row per month**: `OR#4895` runs across four rows, `OR#4896`
+  three, each with one month of rent and one month of water. There is no row in the 937 holding
+  several months. The form's "months covered" field used to produce exactly that one wrong shape
+- **What is already in and working without the migration:** single-month recording, unchanged —
+  which is every collection this interface has ever made. The form now treats rent and water as
+  **per month**, multiplies only the *total handed over*, and says on screen how many entries it
+  will create
+- **What the migration adds:** `record_income_for_months(...)`, which writes the N rows in one
+  transaction. It is a database function for the reason `010`, `018` and `019` are: supabase-js
+  cannot open a transaction, and a loop that writes three months and fails on the second leaves
+  her having collected three months with one in the books
+- **Until it is applied,** a receipt covering more than one month is refused with a **501**
+  naming this migration and saying plainly that nothing was written. It cannot half-record
+- **Also corrected alongside it, and this one is live now:** `year`/`month` were taken from the
+  **date paid**. Her book files by the month the rent is **for** — where the two disagree, **216
+  rows follow the period and 50 follow the payment date**. So arrears paid in October for August
+  were being filed as October, landing the money in the wrong month of her report while August
+  still looked unpaid
+- **What Sean needs to do:** apply the file, the same way as `023` and `027`
+- **How to know it worked:** it raises `029: record_income_for_months is installed`; a two-month
+  receipt then produces **two** ledger rows sharing one receipt number, each with one month of
+  rent and water, and the garbage fee on the first only (BR-037)
+- **Raised:** 2026-09-19 by Claude, functional-audit session
+
+---
+
 ### B-15 — the on-site form can ask for water the ledger will never record
 
 - **Blocked on:** Mrs. Da Silva. Two of the three parts are hers to settle, and the judgement
@@ -182,13 +212,14 @@ thing did not work" is not.
   - **100 rows carry zero water** — 62 Linda (theirs sits in `linda_water_charge`, FR-036), and
     **38 non-Linda**, across 2024-2026. So zero-water rows are a real shape in her book that
     this form cannot produce
-- **What Sean needs to ask her:**
-  1. *When somebody pays three months at once, do you write one receipt line or three?* Every
-     multi-month settlement in the book so far is **one row per month** (`OR#4895` across four).
-     If that is the rule, `monthsCovered` on this form is the wrong model and should raise N
-     rows, not one row with N months of rent on it
-  2. *Are there months where a unit pays rent and no water at all?* There are 38 such rows. If
-     that is deliberate, the server has to be able to write a zero
+- **Question 1 is ANSWERED and built.** Sean, 2026-09-19: *"we should follow her way and have a
+  way to accommodate that."* A multi-month receipt now becomes one ledger row per month, which
+  is what her book already does. See **`B-19`** — the code is in and the migration that switches
+  it on is waiting to be applied
+- **What is still open, and still needs her:**
+  - *Are there months where a unit pays rent and no water at all?* There are **38** such rows in
+    her book, and the form offers ₱0 — but `occupants` is `min(1)` and the fee is `heads × rate`,
+    so the server cannot write a zero. Until she answers, the form warns rather than pretending
 - **How to know it worked:** she answers, and a multi-month collection entered through the form
   produces rows whose shape matches the 937 already there
 - **Raised:** 2026-09-19 by Claude, functional-audit session

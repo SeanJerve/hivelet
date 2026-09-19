@@ -184,12 +184,10 @@ function waterBaselineFor(unitCode: string, occupants: number): number {
  * dependency list has to name everything the body reads, not everything the
  * author was thinking about.**
  */
-watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([newUnit, newMonths]) => {
+watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([newUnit]) => {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
   const summary = formatUnitOccupantsSummary(newUnit);
   const occCount = occupantsFor(summary, room);
-
-  const mCovered = Math.max(1, Number(newMonths) || 1);
 
   /**
    * ONE month of water, whatever the rent covers - because that is the only
@@ -236,8 +234,16 @@ watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([n
    * administrator types the figure from the receipt in her hand, which is the
    * authority anyway.
    */
-  rentAmount.value =
-    !roomsFetchFailed.value && room && room.price ? room.price * mCovered : 0;
+  /**
+   * ONE month's rent, whatever the receipt covers.
+   *
+   * This read `room.price * mCovered`. The ledger keeps a multi-month receipt as
+   * one row PER MONTH - `OR#4895` across four - each carrying one month of rent
+   * and one month of water, and there is no row in the 937 holding several
+   * months. So this field is a month's rent and the months are the entries it
+   * will create; the total handed over is computed from both below.
+   */
+  rentAmount.value = !roomsFetchFailed.value && room && room.price ? room.price : 0;
 }, { immediate: true });
 
 
@@ -281,9 +287,20 @@ watch(isOnsitePaymentModalOpen, (isOpen) => {
   }
 });
 
-// Total amount received calculation
+/**
+ * What she is actually handed, which is a month's rent and water MULTIPLIED by
+ * the months the receipt covers - plus the garbage fee once.
+ *
+ * The rent and water fields are per month now, because the ledger keeps one row
+ * per month. The garbage fee is not multiplied: BR-037 charges it once per unit,
+ * so a three-month receipt collects it once, and the ledger puts it on the first
+ * month's row.
+ */
+const monthsOnThisReceipt = computed(() => Math.max(1, Number(monthsCovered.value) || 1));
+
 const totalAmountReceived = computed(() => {
-  return (Number(rentAmount.value) || 0) + (Number(waterAmount.value) || 0) + (Number(gbgFee.value) || 0);
+  const perMonth = (Number(rentAmount.value) || 0) + (Number(waterAmount.value) || 0);
+  return perMonth * monthsOnThisReceipt.value + (Number(gbgFee.value) || 0);
 });
 
 /**
@@ -584,7 +601,16 @@ function triggerRecord() {
         <div class="grid gap-4 sm:grid-cols-3">
           <label class="ws-field">
             Months covered
-            <input v-model.number="monthsCovered" type="number" min="1" class="ws-input w-full" required />
+            <input v-model.number="monthsCovered" type="number" min="1" max="24" class="ws-input w-full" required />
+            <!--
+              Says what it will actually do. A receipt covering several months is
+              kept as one ledger row per month, which is how her book already
+              holds them - OR#4895 runs across four rows.
+            -->
+            <span v-if="monthsOnThisReceipt > 1" class="ws-hint">
+              Recorded as {{ monthsOnThisReceipt }} separate ledger entries, one for each month,
+              all under receipt {{ orNum.trim() || 'this number' }}.
+            </span>
           </label>
           <label class="ws-field">
             Covering from
@@ -605,6 +631,10 @@ function triggerRecord() {
             <p class="text-xs text-ink-faint">Total handed over</p>
             <p class="tabular mt-0.5 text-2xl font-semibold leading-none text-brand">
               {{ peso(totalAmountReceived) }}
+            </p>
+            <p v-if="monthsOnThisReceipt > 1" class="mt-1 text-xs text-ink-faint">
+              {{ peso((Number(rentAmount) || 0) + (Number(waterAmount) || 0)) }} a month
+              × {{ monthsOnThisReceipt }}<template v-if="Number(gbgFee) > 0">, plus the garbage fee once</template>
             </p>
           </div>
         </div>
@@ -633,12 +663,21 @@ function triggerRecord() {
           <dd class="font-semibold">{{ selectedUnit.toUpperCase() }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3">
-          <dt class="text-ink-soft">Rent</dt>
+          <!--
+            Labelled "a month" when the receipt covers several, because the total
+            below is multiplied and these two are not. Without it the dialog reads
+            ₱4,500 rent above a ₱15,000 total and looks wrong.
+          -->
+          <dt class="text-ink-soft">Rent<template v-if="monthsOnThisReceipt > 1"> a month</template></dt>
           <dd class="tabular font-semibold">{{ peso(rentAmount) }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3">
-          <dt class="text-ink-soft">Water</dt>
+          <dt class="text-ink-soft">Water<template v-if="monthsOnThisReceipt > 1"> a month</template></dt>
           <dd class="tabular font-semibold">{{ peso(waterAmount) }}</dd>
+        </div>
+        <div v-if="monthsOnThisReceipt > 1" class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Ledger entries</dt>
+          <dd class="font-semibold">{{ monthsOnThisReceipt }}, one per month</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Garbage fee</dt>

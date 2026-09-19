@@ -18,6 +18,7 @@ export type ApiErrorCode =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'RATE_LIMITED'
+  | 'NOT_IMPLEMENTED'
   | 'INTERNAL';
 
 export class ApiError extends Error {
@@ -97,6 +98,18 @@ export class ApiError extends Error {
    */
   static tooManyRequests(message: string) {
     return new ApiError(429, 'RATE_LIMITED', message);
+  }
+
+  /**
+   * The route is real and the request was fine; the database half of the feature
+   * is not installed yet.
+   *
+   * Used where a migration has been written but has to be applied by a person -
+   * 029, the several-months ledger write. A 500 would say the system broke and a
+   * 400 would say the caller did something wrong, and neither is true.
+   */
+  static notImplemented(message: string) {
+    return new ApiError(501, 'NOT_IMPLEMENTED', message);
   }
 
   static internal(message = 'Internal server error.') {

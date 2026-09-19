@@ -217,6 +217,72 @@ export async function computeRentPeriod(
     end: toIsoDate(new Date(nextAnniversary.getTime() - 86_400_000)),
   };
 }
+/**
+ * One span per month, because that is how the owner's book records a receipt
+ * that covers several.
+ *
+ * `computeRentPeriod` above returns a SINGLE span covering all the months, which
+ * is what a bill wants. The ledger wants something different, and her 937 rows
+ * say so: a receipt settling arrears appears as **one row per month** - `OR#4895`
+ * across four rows, `OR#4896` across three - each carrying one month of rent and
+ * one month of water. There is no row anywhere in that book holding several
+ * months of rent.
+ *
+ * The day of the month is taken from the first span's start, which is the
+ * tenancy's anniversary day (BR-033), and clamped to the length of each month
+ * the same way `computeRentPeriod` clamps: a tenancy anchored on the 31st runs
+ * 31 Jan - 27 Feb, then 28 Feb - 30 Mar. Without the clamp, "31 February"
+ * normalises forward into March and every later span slides with it.
+ *
+ * Pure, so it can be exercised without a database - `check:billing` reaches it.
+ */
+export function monthlySpansFrom(
+  startIso: string,
+  monthsCovered = 1
+): { start: string; end: string; year: number; month: number }[] {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startIso)) {
+    throw new Error(`monthlySpansFrom needs a YYYY-MM-DD start, received "${startIso}"`);
+  }
+
+  const [baseYear, baseMonthOneBased, anchorDay] = startIso.split('-').map(Number);
+  const baseMonth = baseMonthOneBased - 1;
+  const clampToMonth = (y: number, m: number, d: number) =>
+    Math.min(d, new Date(Date.UTC(y, m + 1, 0)).getUTCDate());
+
+  const count = Math.max(1, Math.floor(Number(monthsCovered) || 1));
+  const spans: { start: string; end: string; year: number; month: number }[] = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const startMonth = baseMonth + i;
+    const start = new Date(
+      Date.UTC(baseYear, startMonth, clampToMonth(baseYear, startMonth, anchorDay))
+    );
+    const nextMonth = baseMonth + i + 1;
+    const next = new Date(
+      Date.UTC(baseYear, nextMonth, clampToMonth(baseYear, nextMonth, anchorDay))
+    );
+
+    spans.push({
+      start: toIsoDate(start),
+      end: toIsoDate(new Date(next.getTime() - 86_400_000)),
+      /**
+       * The month the rent is FOR, not the month it arrived.
+       *
+       * Asked of the live ledger rather than assumed. Where `year`/`month`
+       * disagrees with the payment date - the only rows that carry any
+       * information about which rule is in force - **216 follow the rent period
+       * and 50 follow the date paid.** So her book files a receipt under the
+       * month it covers, which is what makes arrears land in the month they
+       * belong to instead of the month the cash came in.
+       */
+      year: start.getUTCFullYear(),
+      month: start.getUTCMonth() + 1,
+    });
+  }
+
+  return spans;
+}
+
 /* ========================================================================== *
  * BR-013 — allocating a receipt against what a tenant actually owes
  * ========================================================================== */

@@ -28,7 +28,7 @@ import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClo
 import { assertWritten, warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
-import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod } from '../services/billingService.js';
+import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
 import { buildAuditTrailWorkbook, type AuditCategory } from '../services/auditTrailExport.js';
@@ -1812,6 +1812,24 @@ router.post(
       (periodStart !== derivedPeriod.start || periodEnd !== derivedPeriod.end);
 
     /**
+     * One span per month, because that is the shape her book keeps.
+     *
+     * A receipt covering several months is recorded as SEVERAL ROWS, one per
+     * month, each with one month of rent and one month of water - `OR#4895`
+     * across four rows, `OR#4896` across three. There is no row in the 937
+     * holding several months of rent, and the form used to produce exactly that.
+     *
+     * The spans run from whichever start won above: the supplied one when the
+     * administrator typed it, otherwise the one derived from the tenancy's
+     * anniversary (BR-033).
+     */
+    const spans = monthlySpansFrom(periodStart, monthsCovered);
+
+    // `periodStart`/`periodEnd` describe the whole stretch the receipt covers and
+    // are used only for the divergence audit above. Each ROW carries its own
+    // month's start and end, from `spans`.
+
+    /**
      * BR-034 - occupant count carries forward from the tenancy and is editable.
      *
      * The form derives it from the live tenancy, which is the carry-forward. A
@@ -1824,12 +1842,24 @@ router.post(
     const occupantsDiverge = carriedOccupants !== null && occupants !== carriedOccupants;
 
     /**
-     * `datePaid` is a `YYYY-MM-DD` string and has no timezone. Reading it through
-     * `new Date()` gave it one - UTC midnight - and then `getDate()` read that
-     * back in the server's zone, which returns the previous day anywhere west of
-     * UTC. Parsed from the string instead, so no timezone is ever introduced.
+     * `year` and `month` are the month the rent is FOR, taken from each span -
+     * not the month the cash arrived.
+     *
+     * This read `isoDateParts(datePaid)`. That is right whenever the two agree,
+     * which is most of the time, and wrong exactly when it matters: arrears paid
+     * in October for August were filed as October, so the money landed in the
+     * wrong month of her report and August still looked unpaid.
+     *
+     * Her book settles it. Among the rows where the two disagree - the only rows
+     * carrying any information about which rule is in force - **216 follow the
+     * rent period and 50 follow the date paid**. Counted on the live ledger, not
+     * inferred.
+     *
+     * (`isoDateParts` is still the right tool for a timezone-free read of a
+     * `YYYY-MM-DD` string; it is simply being asked about the wrong date. The
+     * spans are built from `periodStart`, which is itself such a string.)
      */
-    const { year, month } = isoDateParts(datePaid);
+    const { year, month } = { year: spans[0].year, month: spans[0].month };
 
     /**
      * The same receipt must not be recorded twice.
@@ -1864,56 +1894,127 @@ router.post(
      * any reading, and names the record it collided with rather than failing
      * vaguely.
      */
-    const { data: duplicates } = await db
-      .from('monthly_income_records')
-      .select('id')
-      .eq('room_id', room.id)
-      .eq('invoice_number', invoiceNumber)
-      .eq('date_paid', datePaid)
-      .eq('rent_amount', rentAmount)
-      .eq('year', year)
-      .eq('month', month)
-      .is('voided_at', null)
-      .limit(1);
+    /**
+     * Every month this receipt covers is checked, not just the first. A receipt
+     * spanning three months collides if ANY of the three is already recorded.
+     */
+    for (const span of spans) {
+      const { data: duplicates, error: duplicateError } = await db
+        .from('monthly_income_records')
+        .select('id')
+        .eq('room_id', room.id)
+        .eq('invoice_number', invoiceNumber)
+        .eq('date_paid', datePaid)
+        .eq('rent_amount', rentAmount)
+        .eq('year', span.year)
+        .eq('month', span.month)
+        .is('voided_at', null)
+        .limit(1);
 
-    const duplicate = duplicates?.[0];
+      if (duplicateError) throw ApiError.internal(duplicateError.message);
 
-    if (duplicate) {
-      throw ApiError.conflict(
-        `Receipt ${invoiceNumber} is already recorded for unit ${roomNumber} on ` +
-          `${datePaid} (record ${duplicate.id}). If this is a second payment, ` +
-          `give it its own receipt number.`
-      );
+      const duplicate = duplicates?.[0];
+      if (duplicate) {
+        throw ApiError.conflict(
+          `Receipt ${invoiceNumber} is already recorded for unit ${roomNumber} on ` +
+            `${datePaid}, covering ${span.year}-${String(span.month).padStart(2, '0')} ` +
+            `(record ${duplicate.id}). If this is a second payment, give it its own ` +
+            `receipt number.`
+        );
+      }
     }
 
-    const { data: newRecord, error: insertError } = await db
-      .from('monthly_income_records')
-      .insert({
-        room_id: room.id,
-        tenant_profile_id: assign?.tenant_profile_id || null,
-        assignment_id: assign?.id || null,
-        year,
-        month,
-        date_paid: datePaid,
-        contact_name: contactName,
-        // Required by the schema above, so there is nothing to substitute.
-        invoice_number: invoiceNumber,
-        rent_amount: rentAmount,
-        occupants,
-        water_payment: calcWater,
-        // Taken from the request, not derived: BR-037 gives no rule to derive it
-        // from. Omitting it let the column default to 0.00 silently.
-        gbg_fee: gbgFee,
-        payment_method: normalizedMethod,
-        transaction_reference: transactionReference || null,
-        rent_period_start: periodStart,
-        rent_period_end: periodEnd,
-        verification_status: 'Verified'
-      })
-      .select('*')
-      .single();
+    /**
+     * One row per month, and all of them or none.
+     *
+     * A single month keeps the plain insert it has always used - that is every
+     * collection this interface has ever recorded, so there is nothing to
+     * regress. Several months go through `record_income_for_months` (migration
+     * 029), because a loop that inserts three and fails on the second leaves
+     * the owner having collected three months of rent with one in her books.
+     * supabase-js cannot open a transaction; migrations 010, 018 and 019 exist
+     * for exactly this and this follows them.
+     */
+    let newRecord: Record<string, unknown>;
 
-    if (insertError) throw ApiError.internal(insertError.message);
+    if (spans.length === 1) {
+      const { data, error: insertError } = await db
+        .from('monthly_income_records')
+        .insert({
+          room_id: room.id,
+          tenant_profile_id: assign?.tenant_profile_id || null,
+          assignment_id: assign?.id || null,
+          year: spans[0].year,
+          month: spans[0].month,
+          date_paid: datePaid,
+          contact_name: contactName,
+          // Required by the schema above, so there is nothing to substitute.
+          invoice_number: invoiceNumber,
+          rent_amount: rentAmount,
+          occupants,
+          water_payment: calcWater,
+          // Taken from the request, not derived: BR-037 gives no rule to derive it
+          // from. Omitting it let the column default to 0.00 silently.
+          gbg_fee: gbgFee,
+          payment_method: normalizedMethod,
+          transaction_reference: transactionReference || null,
+          rent_period_start: spans[0].start,
+          rent_period_end: spans[0].end,
+          verification_status: 'Verified'
+        })
+        .select('*')
+        .single();
+
+      if (insertError) throw ApiError.internal(insertError.message);
+      newRecord = data as Record<string, unknown>;
+    } else {
+      const { data, error: rpcError } = await db.rpc('record_income_for_months', {
+        p_room_id: room.id,
+        p_tenant_profile_id: assign?.tenant_profile_id || null,
+        p_assignment_id: assign?.id || null,
+        p_date_paid: datePaid,
+        p_contact_name: contactName,
+        p_invoice_number: invoiceNumber,
+        // Per month. The form sends one month's rent; the months are the spans.
+        p_rent_amount: rentAmount,
+        p_water_payment: calcWater,
+        // BR-037 - once per unit. The function puts it on the first month only.
+        p_gbg_fee: gbgFee,
+        p_occupants: occupants,
+        p_payment_method: normalizedMethod,
+        p_transaction_reference: transactionReference || null,
+        p_periods: spans,
+      });
+
+      if (rpcError) {
+        /**
+         * `42883` is "function does not exist". Migration 029 has been written
+         * but has to be applied by a person, so say which one rather than
+         * reporting a generic failure - and say plainly that nothing was
+         * written, because the administrator is standing at a counter holding
+         * several months of somebody's rent.
+         */
+        if (rpcError.code === '42883') {
+          throw ApiError.notImplemented(
+            'Recording several months at once needs database migration 029, which has not ' +
+              'been applied yet. Nothing was written. Record each month as its own receipt ' +
+              'line in the meantime, which is how the ledger already holds them.'
+          );
+        }
+        throw ApiError.internal(rpcError.message);
+      }
+
+      const rows = (data ?? []) as Record<string, unknown>[];
+      if (rows.length !== spans.length) {
+        throw ApiError.internal(
+          `Expected ${spans.length} ledger rows for the months this receipt covers and the ` +
+            `database returned ${rows.length}. Check the ledger before recording it again.`
+        );
+      }
+      // The first month's row stands for the receipt in the audit entry and the
+      // response; all of them carry the same receipt number.
+      newRecord = rows[0];
+    }
 
     // Sync: if this is recorded for an active tenant assignment, check and update their bills
     // Audited here rather than after settlement, so that a settlement failure
@@ -1922,7 +2023,7 @@ router.post(
     await auditFromRequest(req, {
       action: 'PAYMENT_RECORD',
       entityType: 'PAYMENT',
-      entityId: newRecord.id,
+      entityId: String(newRecord.id),
       newValues:
         periodDiverges || occupantsDiverge
           ? {
@@ -2000,7 +2101,20 @@ router.post(
       }
 
       const plan = allocateReceipt(
-        Number(rentAmount || 0) + Number(calcWater || 0),
+        /**
+         * Everything this receipt actually settles, which is one month's rent
+         * and water MULTIPLIED BY the months it covers.
+         *
+         * This read `rentAmount + calcWater` for the whole receipt. Correct
+         * while a receipt was one row; wrong the moment one covers three
+         * months, because the tenant would have handed over three months and
+         * only one month's worth would have been applied to what they owe -
+         * leaving bills open that the money in the drawer had already paid.
+         *
+         * The garbage fee stays out, as it always has: BR-037 charges it per
+         * unit and no bill is raised for it, so it settles nothing.
+         */
+        (Number(rentAmount || 0) + Number(calcWater || 0)) * spans.length,
         (openBills ?? []).map((b) => ({
           id: String(b.id),
           total_amount: b.total_amount,
