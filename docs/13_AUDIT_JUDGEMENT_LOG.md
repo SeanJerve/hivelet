@@ -1080,6 +1080,194 @@ went from 68 assertions to 192.
 
 ---
 
+### An eleventh sweep, 2026-09-19: a system can be perfectly consistent with a mistake it made at the door
+
+Twenty suites passed. 937 income rows agreed with their own totals, their own
+periods, their own generated columns. `check:ledger` read every row and found
+nothing. And **not one payment date in the ledger was the date the owner wrote.**
+
+Every one was a day early. All of them, across 2024, 2025 and 2026 alike.
+
+#### 1. Why nothing could see it
+
+Every check in this project compares the system against itself: the frontend
+against the API, the API against the catalogue, the register against the code,
+the totals against their parts. All of that was true. The import had shifted
+`date_paid` by a day on the way in, and a uniform shift leaves every internal
+relationship intact. The ledger was **self-consistent and wrong**.
+
+It became visible the moment it was compared against something outside itself —
+the owner's original spreadsheet, which was sitting in the repository the whole
+time at `INCOME AND EXPENSES PAST RECORDS/`. Matching on (unit, rent amount)
+rather than receipt number, because the receipt column has four spellings and
+311 rows carry no number at all:
+
+    spreadsheet rows read                931
+    matched to a ledger row              929
+    ledger date EXACTLY one day early    929
+    ledger date matching the sheet         0
+
+Zero. Not a single row.
+
+The cause is ordinary: the Excel cells hold exact UTC midnight — checked,
+`2024-01-27T00:00:00.000Z`, no offset applied — so the importer read each as
+local midnight and formatted it in a zone behind UTC. It is the same defect
+`propertyDate.ts` and `propertyClock.ts` were written to prevent, one layer
+earlier than either of them guards. **The guards were built for the doors that
+had already been broken through.**
+
+**The lesson to carry:** a check that compares a system to itself can only find
+inconsistency. It cannot find a wrong number that was wrong before it arrived.
+At least once, compare against the source the data came from — and notice when
+that source is sitting in the repository unopened.
+
+`rent_period_start` was untouched, because it was parsed from text
+("Jun.29-Jul.28/24") rather than a date cell. The two halves of the same row came
+in through different doors and only one of them was broken.
+
+#### 2. Six rows failed differently, and said so
+
+Exactly six money rows had a Date Paid cell Excel never stored as a date, so the
+import defaulted them to the 1st of the month:
+
+    B2F  "31-Maay-24"    2024-05-01 -> 2024-05-31
+    B2B  "21-Maay-24"    2024-05-01 -> 2024-05-21
+    F2F  "4-Maay-24"     2024-05-01 -> 2024-05-04
+    3e   "13--Mar-26"    2026-03-01 -> 2026-03-13
+    F2B  "30--Apr-26"    2026-04-01 -> 2026-04-30
+    F1   (blank)         2026-07-01 -> nothing
+
+"Maay" for May, and a doubled hyphen twice. Five were recoverable because the
+typo is still legible. The sixth she never filled in, so it was **left at the
+invented date rather than moved to a second invented one** — replacing a guess
+with a better guess is still a guess, and it is pinned for her instead.
+
+A seventh, `1900-01-17`, was not a typo at all: Excel counts days from 1 January
+1900, so a cell holding the bare number `17` renders as 17 January 1900. The DAY
+survived; the month and year were never in the cell. Her receipt book supplied
+the rest — OR#4838 was paid on the 14th and OR#4840 on the 18th, and the one
+between them is OR#4839.
+
+#### 3. Removing the button is not closing the door
+
+The sign-in screen dropped "No account yet? Create one" earlier the same day,
+with a comment saying exactly why: *"let anyone on the internet make an account
+against a live boarding house."* Right, and the button went.
+
+`POST /auth/register` stayed open. A `profiles` row inserted there carries role
+`tenant` and `account_status` `active`, and `/admin/tenants` returns
+`.in('role', ['tenant', 'prospect'])` — so a stranger registering appeared in the
+owner's Active Tenants list. The endpoint census in `check-endpoint-reach.mjs`
+still described it as *"public by necessity"*, which had quietly stopped being
+true.
+
+**A decision recorded in one layer is not enforced in another.** When an
+interface removes a way in, check whether anything still answers on that path.
+
+#### 4. A check that demands a change and then rejects every version of it
+
+`check:columns` refused a new table with *"Regenerate `live_schema.csv` ... Do
+NOT hand-edit it to pass."* Adding the table to the snapshot did not help. The
+parser was
+
+    /Columns,([a-z_]+)\.([a-z_]+)/
+
+and identifiers may contain digits. `rent_period_drift_backup_030.id` did not
+match **at all**, so the table read as absent however carefully the snapshot
+described it. Worse, `some_table.col_2` matched as `some_table.col_`, silently
+truncating at the digit and reporting both a missing column and an invented
+orphan.
+
+It had never fired because no identifier in this database had a digit until that
+migration. **The worst failure shape for a check is not a false negative — it is
+demanding an action and then refusing every form of it**, because the only way
+past is the hand-edit it warns against.
+
+Relatedly: the message tells you to regenerate a file **nothing can regenerate**.
+No such script exists, and it cannot be written with what this repo has —
+scripts reach the database through PostgREST, which cannot see triggers, RLS,
+CHECK constraints or function signatures, and there is no `DATABASE_URL` or `pg`
+client. A generator refreshing one section of ten under a name promising a full
+refresh would be its own lie, so it was deleted rather than shipped. B-25.
+
+#### 5. Testing found what reading did not
+
+`POST /admin/tickets` had been read closely that morning and hardened — an
+arbitrary-room fallback removed, two silent misses turned into 400s. It was
+still broken, and only exercising it showed how:
+
+    POST /admin/tickets for PH  (vacant)    500 "Internal server error."
+    the same request for 1a     (occupied)  201
+
+`maintenance_tickets.tenant_profile_id` is NOT NULL. The table was designed
+around the tenant portal, where a repair always has the resident who raised it.
+The admin path has no such guarantee, and for a unit with nobody in it the insert
+carried `null`.
+
+Reading the handler shows the value being assigned. It does not show the
+constraint at the other end. **Read the schema the write lands in, or run the
+write.**
+
+#### 6. The same trap as the tenth sweep, walked into again
+
+The tenth sweep recorded, in this document: *"grepping the route bodies for
+`auditFromRequest` reported nine unaudited write endpoints... they call
+`recordAudit` inside their service, one layer down from where I was looking."*
+
+This sweep ran the same scan and got the same nine, for the same reason, and
+additionally missed that `authService` writes to `audit_logs` **directly**
+without any helper. The correction found one real gap — `register()` recorded
+only `AUTH_LOGIN`, so a brand-new profile appeared in the trail as somebody
+signing in, with nothing saying an account had come into existence.
+
+Recording a trap does not disarm it. The note was read and the mistake was made
+anyway. If there is a defence it is the habit, not the document: **when a
+completeness scan reports a suspiciously round number of gaps, assume the scan
+is wrong before the system is.**
+
+#### 7. A check that had never seen the ordinary case
+
+Exercising the expense path end to end - create, edit, void - made `check:ledger`
+fail on the spot:
+
+    FAIL  no allocation without its entry - 1 violation(s)
+
+The database was fine. `expense_property_allocations` had **zero** rows pointing
+at a missing entry, confirmed in SQL. The check fetched live entries
+(`voided_at=is.null`) and **all** allocations, then called any allocation whose
+entry was not in that list an orphan - so every allocation belonging to a voided
+expense looked dangling.
+
+It had never fired because this ledger had never had a voided expense. Voiding a
+receipt entered wrongly is an ordinary thing to do; it would have gone off the
+first time the owner did it, on data that was correct.
+
+**A check that has only ever seen the happy path has not been verified against
+the unhappy one.** Mutation-testing proves a check fails when the thing it names
+is broken. It does not prove the check is still right when a normal, untested
+state of the system appears - and this project has now met that twice in a day,
+counting the identifier regex above.
+
+#### 8. The finding that is not a bug at all
+
+The public site advertises the penthouse at **₱12,000**. It last let for
+**₱30,000**.
+
+Every figure is doing what it was told. `rooms.current_price` was never updated
+after the units were seeded: `room_price_history` held **zero rows**, and all 33
+units still had `current_price = base_price`. **31 of 33 disagree with what the
+resident last actually paid; residents pay 162% of the rate card on average.**
+
+Three things read that figure — the public site, BR-039's advance rent at
+move-in, and any bill raised for a unit. Nothing is broken and nothing can be
+fixed here: the owner sets rates by hand, and inferring them from the ledger
+would be guessing at her business. B-29.
+
+**A system faithfully reporting a stale number is harder to catch than a system
+computing a wrong one**, because every internal check agrees with it.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.

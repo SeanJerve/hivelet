@@ -447,6 +447,27 @@ if (live.length) {
   const entries = await rows('monthly_expense_entries?select=id,total_expenses&voided_at=is.null');
   const allocs = await rows('expense_property_allocations?select=expense_entry_id,amount');
 
+  /**
+   * Every entry id, INCLUDING voided ones, for the orphan test below.
+   *
+   * `entries` is deliberately live-only - a voided expense is not money spent
+   * and must not reach a total. But "no allocation without its entry" is a
+   * question about referential integrity, and **a voided entry still exists**.
+   * Testing orphans against the live set counted every allocation belonging to a
+   * voided expense as dangling.
+   *
+   * It had never fired because this ledger had never had a voided expense. The
+   * first one appeared on 2026-09-19 and the check failed immediately, reporting
+   * `1 violation` against a database where `expense_property_allocations` had
+   * **zero** rows pointing at a missing entry - confirmed in SQL.
+   *
+   * Voiding a receipt entered wrongly is an ordinary thing to do, so this would
+   * have gone off the first time the owner did it, on data that was fine.
+   */
+  const everyEntryId = new Set(
+    (await rows('monthly_expense_entries?select=id')).map((e) => e.id)
+  );
+
   const allocSum = new Map();
   for (const a of allocs) {
     allocSum.set(a.expense_entry_id, (allocSum.get(a.expense_entry_id) ?? 0) + Number(a.amount));
@@ -456,7 +477,7 @@ if (live.length) {
     (e) => Math.abs(Number(e.total_expenses) - (allocSum.get(e.id) ?? 0)) > MONEY_DUST
   );
   const unallocated = entries.filter((e) => !allocSum.has(e.id));
-  const orphans = allocs.filter((a) => !entries.some((e) => e.id === a.expense_entry_id)).length;
+  const orphans = allocs.filter((a) => !everyEntryId.has(a.expense_entry_id)).length;
 
   for (const e of mismatched.slice(0, 5)) {
     console.log(
