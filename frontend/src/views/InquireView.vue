@@ -113,7 +113,7 @@ async function submitInquiry() {
 </script>
 
 <template>
-  <div class="flex-1 w-full font-editorial bg-background">
+  <div class="flex-1 w-full font-editorial bg-canvas">
     <div class="grid min-h-screen lg:grid-cols-2">
 
       <!-- Left: the form -->
@@ -122,24 +122,24 @@ async function submitInquiry() {
         <div class="flex items-start justify-between gap-6">
           <RouterLink
             to="/public"
-            class="press text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-foreground hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-ink hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
           >
             Fe Galang<br />Da Silva<br />Boarding House
           </RouterLink>
 
           <div class="text-right shrink-0">
-            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-muted-foreground">Landlady</p>
-            <p class="mt-1 text-sm font-medium text-foreground">{{ LANDLADY.name }}</p>
+            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Landlady</p>
+            <p class="mt-1 text-sm font-medium text-ink">{{ LANDLADY.name }}</p>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press mt-0.5 inline-block py-1 text-sm text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+              class="press mt-0.5 inline-block py-1 text-sm text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
           </div>
         </div>
 
-        <h1 class="mt-12 sm:mt-16 font-medium text-foreground tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3.6vw,2.75rem)] max-w-lg">
+        <h1 class="mt-12 sm:mt-16 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3.6vw,2.75rem)] max-w-lg">
           Viewings by appointment, register your interest
         </h1>
 
@@ -158,7 +158,7 @@ async function submitInquiry() {
             <div>
               <label
                 for="iq-name"
-                class="block text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground"
+                class="block text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft"
                 >Your name</label
               >
               <input
@@ -166,13 +166,13 @@ async function submitInquiry() {
                 v-model="inquiryName"
                 type="text"
                 required
-                class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+                class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink focus:border-ink focus:outline-none focus:ring-0 transition-colors"
               />
             </div>
             <div>
               <label
                 for="iq-email"
-                class="block text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground"
+                class="block text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft"
                 >Email</label
               >
               <input
@@ -180,13 +180,13 @@ async function submitInquiry() {
                 v-model="inquiryEmail"
                 type="email"
                 required
-                class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+                class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink focus:border-ink focus:outline-none focus:ring-0 transition-colors"
               />
             </div>
             <div>
               <label
                 for="iq-phone"
-                class="block text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground"
+                class="block text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft"
                 >Phone</label
               >
               <input
@@ -194,20 +194,20 @@ async function submitInquiry() {
                 v-model="inquiryPhone"
                 type="tel"
                 required
-                class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+                class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink focus:border-ink focus:outline-none focus:ring-0 transition-colors"
               />
             </div>
             <div>
               <label
                 for="iq-msg"
-                class="block text-[0.7rem] tracking-[0.14em] uppercase text-muted-foreground"
+                class="block text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft"
                 >What would you like to ask</label
               >
               <input
                 id="iq-msg"
                 v-model="inquiryMsg"
                 type="text"
-                class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+                class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink focus:border-ink focus:outline-none focus:ring-0 transition-colors"
               />
             </div>
           </div>
@@ -217,7 +217,7 @@ async function submitInquiry() {
             writes the enquiry to the landlady's portal and sends no email or
             SMS, so this must not imply a reply will arrive by either.
           -->
-          <p class="mt-10 max-w-xl text-xs leading-relaxed text-muted-foreground">
+          <p class="mt-10 max-w-xl text-xs leading-relaxed text-ink-soft">
             What you send is saved to Mrs. {{ LANDLADY.name }}'s portal for her to read and reply to
             directly. The system does not send an automatic email or SMS confirmation, so please
             include a number or address she can reach you on. Your details are used to answer this
@@ -227,17 +227,17 @@ async function submitInquiry() {
           <button
             type="submit"
             :disabled="isSubmitting"
-            class="press mt-10 inline-flex items-center gap-2.5 min-h-11 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="pill-btn-brand mt-10 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
             <span>{{ isSubmitting ? 'Sending…' : 'Register your interest' }}</span>
           </button>
         </form>
 
-        <p class="mt-12 text-xs text-muted-foreground">
+        <p class="mt-12 text-xs text-ink-soft">
           <RouterLink
             to="/public"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
           >
             Back to the property
           </RouterLink>
@@ -245,7 +245,7 @@ async function submitInquiry() {
       </div>
 
       <!-- Right: Real building exterior showcase with clear background image -->
-      <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 py-10 sm:py-14 overflow-hidden bg-neutral-dark">
+      <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 py-10 sm:py-14 overflow-hidden bg-night">
         <!-- Crisp building background photograph (unblurred) -->
         <!--
           `loading="lazy"` is doing real work here, not box-ticking. This panel

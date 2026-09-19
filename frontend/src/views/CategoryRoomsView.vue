@@ -360,7 +360,7 @@ async function submitInquiry() {
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col w-full bg-background font-editorial">
+  <div class="flex-1 flex flex-col w-full bg-canvas font-editorial">
 
     <!--
       This page draws its own masthead, in the three-line lockup the landing
@@ -368,33 +368,33 @@ async function submitInquiry() {
       - see `hidesGlobalHeader` in App.vue. Two mastheads on one screen was the
       first thing that gave the seam away.
     -->
-    <header class="w-full border-b border-border">
+    <header class="w-full border-b border-line">
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 pt-7 pb-6 flex items-start justify-between gap-6 sm:gap-10">
         <RouterLink
           to="/public"
-          class="press shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-foreground hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+          class="press shrink-0 text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em] text-ink hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
         >
           Fe Galang<br />Da Silva<br />Boarding House
         </RouterLink>
 
-        <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-foreground">
+        <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-ink">
           <RouterLink
             to="/public"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
           >
             Property
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/inquire"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
           >
             Inquire Now
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/login"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
           >
             Sign In
           </RouterLink>
@@ -412,15 +412,15 @@ async function submitInquiry() {
     <section aria-label="Category overview" class="w-full">
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 pt-16 pb-12 sm:pt-24 sm:pb-16">
 
-        <p class="text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
+        <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
           Kind of unit
         </p>
 
-        <h1 class="mt-5 font-medium text-foreground tracking-[-0.03em] leading-[0.98] text-[clamp(2rem,6vw,4.5rem)]">
+        <h1 class="mt-5 font-medium text-ink tracking-[-0.03em] leading-[0.98] text-[clamp(2rem,6vw,4.5rem)]">
           {{ currentCat.title }}
         </h1>
 
-        <div class="mt-10 sm:mt-14 grid gap-8 sm:grid-cols-2 max-w-3xl text-xs sm:text-[0.82rem] leading-relaxed text-muted-foreground">
+        <div class="mt-10 sm:mt-14 grid gap-8 sm:grid-cols-2 max-w-3xl text-xs sm:text-[0.82rem] leading-relaxed text-ink-soft">
           <p>{{ currentCat.blurb }}</p>
           <p v-if="!isLoading && !loadFailed && categoryUnits.length">
             {{ categoryUnits.length }} {{ categoryUnits.length === 1 ? 'unit' : 'units' }} of this
@@ -435,7 +435,7 @@ async function submitInquiry() {
           </p>
         </div>
 
-        <p class="mt-12 text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
+        <p class="mt-12 text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
           32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
         </p>
 
@@ -458,7 +458,7 @@ async function submitInquiry() {
     <nav
       v-if="!isLoading && !loadFailed"
       aria-label="Kind of unit"
-      class="w-full border-t border-border"
+      class="w-full border-t border-line"
     >
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10">
         <ul class="flex flex-wrap items-baseline gap-x-8 gap-y-3 py-5 sm:gap-x-12">
@@ -467,14 +467,14 @@ async function submitInquiry() {
               :to="`/category/${c.slug}`"
               :aria-current="c.key === selectedCategoryKey ? 'page' : undefined"
               :class="[
-                'press inline-flex items-baseline gap-2 py-1 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
+                'press inline-flex items-baseline gap-2 py-1 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink',
                 c.key === selectedCategoryKey
-                  ? 'text-foreground underline underline-offset-4 decoration-1 decoration-foreground'
-                  : 'text-muted-foreground hover:text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground',
+                  ? 'text-ink underline underline-offset-4 decoration-1 decoration-ink'
+                  : 'text-ink-soft hover:text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink',
               ]"
             >
               <span>{{ c.title }}</span>
-              <span class="text-xs tabular-nums text-muted-foreground-soft">{{ countFor(c.key) }}</span>
+              <span class="text-xs tabular-nums text-ink-faint">{{ countFor(c.key) }}</span>
             </RouterLink>
           </li>
         </ul>
@@ -499,16 +499,16 @@ async function submitInquiry() {
       :subject="`which ${currentCat.title.toLowerCase()} units are free`"
     />
 
-    <section v-else-if="categoryUnits.length === 0" class="w-full border-t border-border">
+    <section v-else-if="categoryUnits.length === 0" class="w-full border-t border-line">
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
-        <h2 class="text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
+        <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
           Nothing of this kind is listed
         </h2>
-        <p class="mt-5 max-w-xl text-xs sm:text-sm text-muted-foreground leading-relaxed">
+        <p class="mt-5 max-w-xl text-xs sm:text-sm text-ink-soft leading-relaxed">
           Try another kind above, or
           <RouterLink
             to="/inquire"
-            class="press inline-block text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+            class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors"
           >ask the landlady</RouterLink>
           what is coming free.
         </p>
@@ -522,10 +522,10 @@ async function submitInquiry() {
         two tiles on a canvas: the frame is the page, and that rule is the only
         separator the rest of the public site uses.
       -->
-      <section aria-label="The unit being looked at" class="w-full border-t border-border">
+      <section aria-label="The unit being looked at" class="w-full border-t border-line">
         <div class="max-w-[1400px] mx-auto w-full grid lg:grid-cols-[1fr_26rem]">
 
-          <div class="relative aspect-[4/3] lg:aspect-auto lg:min-h-[30rem] border-b border-border lg:border-b-0 lg:border-r bg-muted overflow-hidden">
+          <div class="relative aspect-[4/3] lg:aspect-auto lg:min-h-[30rem] border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden">
             <img
               v-if="photoOf(activeUnit)"
               :src="photoOf(activeUnit)!"
@@ -558,7 +558,7 @@ async function submitInquiry() {
               stack in the same box without the section being rebuilt.
             -->
             <div v-else class="absolute inset-0 flex flex-col justify-between px-6 py-8 sm:px-10 sm:py-10">
-              <p class="text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
+              <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
                 No photograph yet
               </p>
 
@@ -575,18 +575,18 @@ async function submitInquiry() {
                     <span
                       :class="[
                         'w-16 sm:w-20 shrink-0 text-[0.7rem] tracking-[0.14em] uppercase',
-                        f === activeUnit.floor ? 'text-foreground' : 'text-muted-foreground-soft',
+                        f === activeUnit.floor ? 'text-ink' : 'text-ink-faint',
                       ]"
                     >Floor {{ f }}</span>
                     <span
                       aria-hidden="true"
                       :class="[
                         'flex-1 transition-colors',
-                        f === activeUnit.floor ? 'h-0.5 bg-foreground' : 'h-px bg-border-strong',
+                        f === activeUnit.floor ? 'h-0.5 bg-brand' : 'h-px bg-border-strong',
                       ]"
                     />
                     <span
-                      class="w-14 sm:w-24 shrink-0 text-right text-[0.7rem] tracking-[0.14em] uppercase text-foreground"
+                      class="w-14 sm:w-24 shrink-0 text-right text-[0.7rem] tracking-[0.14em] uppercase text-ink"
                     >{{ f === activeUnit.floor ? 'This unit' : '' }}</span>
                   </li>
                 </ul>
@@ -596,7 +596,7 @@ async function submitInquiry() {
                 </p>
               </div>
 
-              <p class="max-w-xs text-xs sm:text-sm text-muted-foreground-soft leading-relaxed">
+              <p class="max-w-xs text-xs sm:text-sm text-ink-faint leading-relaxed">
                 Ask for a viewing and you can see it for yourself.
               </p>
             </div>
@@ -607,45 +607,45 @@ async function submitInquiry() {
               four operational states into the only distinction that matters to
               someone looking for a room.
             -->
-            <p class="absolute left-0 top-0 border-r border-b border-border bg-background px-4 py-2 text-[0.7rem] tracking-[0.18em] uppercase text-foreground">
+            <p class="absolute left-0 top-0 border-r border-b border-line bg-canvas px-4 py-2 text-[0.7rem] tracking-[0.18em] uppercase text-ink">
               {{ isAvailable(activeUnit) ? 'Free to rent' : 'Someone lives here' }}
             </p>
           </div>
 
           <div class="flex flex-col justify-between px-6 sm:px-8 lg:px-10 py-10 sm:py-12">
             <div>
-              <p class="text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
+              <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
                 {{ activeUnit.cluster_code }} — Floor {{ activeUnit.floor }}
               </p>
 
-              <h2 class="mt-4 font-medium text-foreground tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,5vw,3.25rem)]">
+              <h2 class="mt-4 font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,5vw,3.25rem)]">
                 Unit {{ activeUnit.room_number.toUpperCase() }}
               </h2>
 
-              <p class="mt-3 text-xs sm:text-sm text-muted-foreground">{{ activeUnit.room_type }}</p>
+              <p class="mt-3 text-xs sm:text-sm text-ink-soft">{{ activeUnit.room_type }}</p>
 
-              <p class="mt-8 font-medium text-foreground tracking-[-0.02em] text-[clamp(1.5rem,3.4vw,2.25rem)] tabular-nums">
-                {{ peso(activeUnit.current_price) }}<span class="ml-2 text-xs sm:text-sm font-normal tracking-normal text-muted-foreground">a month</span>
+              <p class="mt-8 font-medium text-ink tracking-[-0.02em] text-[clamp(1.5rem,3.4vw,2.25rem)] tabular-nums">
+                {{ peso(activeUnit.current_price) }}<span class="ml-2 text-xs sm:text-sm font-normal tracking-normal text-ink-soft">a month</span>
               </p>
 
-              <dl class="mt-10 border-t border-foreground text-xs sm:text-sm">
+              <dl class="mt-10 border-t border-ink text-xs sm:text-sm">
                 <!-- Phrased as the limit it is. "4 people" on its own, beside a
                      status, reads as the number living there. -->
-                <div class="flex items-baseline justify-between gap-6 border-b border-border py-4">
-                  <dt class="text-muted-foreground">Room for</dt>
-                  <dd class="text-right text-foreground">
+                <div class="flex items-baseline justify-between gap-6 border-b border-line py-4">
+                  <dt class="text-ink-soft">Room for</dt>
+                  <dd class="text-right text-ink">
                     up to {{ activeUnit.capacity }}
                     {{ activeUnit.capacity === 1 ? 'person' : 'people' }}
                   </dd>
                 </div>
-                <div class="flex items-baseline justify-between gap-6 border-b border-border py-4">
-                  <dt class="text-muted-foreground">Water</dt>
-                  <dd class="text-right text-foreground">{{ waterLabel(activeUnit) }}</dd>
+                <div class="flex items-baseline justify-between gap-6 border-b border-line py-4">
+                  <dt class="text-ink-soft">Water</dt>
+                  <dd class="text-right text-ink">{{ waterLabel(activeUnit) }}</dd>
                 </div>
               </dl>
 
               <!-- The unit's own description, as the landlady recorded it. -->
-              <p v-if="activeUnit.description" class="mt-7 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              <p v-if="activeUnit.description" class="mt-7 text-xs sm:text-sm text-ink-soft leading-relaxed">
                 {{ activeUnit.description }}
               </p>
 
@@ -664,13 +664,13 @@ async function submitInquiry() {
             <div class="mt-12">
               <button
                 type="button"
-                class="press inline-flex min-h-11 w-full items-center justify-center gap-2.5 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
+                class="pill-btn-brand w-full px-8"
                 @click="openInquiry(activeUnit.room_number)"
               >
                 <span>Ask about unit {{ activeUnit.room_number.toUpperCase() }}</span>
                 <ArrowRight class="size-4 shrink-0" />
               </button>
-              <p class="mt-4 text-xs text-muted-foreground leading-relaxed">
+              <p class="mt-4 text-xs text-ink-soft leading-relaxed">
                 Mrs. {{ LANDLADY.name }} reads these herself, in her own portal.
               </p>
             </div>
@@ -690,18 +690,18 @@ async function submitInquiry() {
         The plate under the cursor is the only one at full strength - the rest
         step back to 40% - which is the same treatment as the category plates on
         the landing page. On the selected plate the rule is drawn in
-        `border-foreground` and the label says so in words, because a border
+        `border-ink` and the label says so in words, because a border
         alone is not a state a screen reader can hear; `aria-pressed` carries it.
       -->
-      <section aria-label="The units of this kind" class="w-full border-t border-border">
+      <section aria-label="The units of this kind" class="w-full border-t border-line">
         <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-16 sm:py-24">
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
-            <h2 class="text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
+            <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
               The {{ categoryUnits.length }}
               {{ categoryUnits.length === 1 ? 'unit' : 'units' }} of this kind
             </h2>
-            <p class="max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            <p class="max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">
               Pick one to see it above. {{ availableHere }} of them
               {{ availableHere === 1 ? 'is' : 'are' }} free to rent.
             </p>
@@ -717,7 +717,7 @@ async function submitInquiry() {
               type="button"
               :aria-pressed="u.room_number === activeUnit.room_number"
               :class="[
-                'press-plate group block w-full text-left cursor-pointer transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground',
+                'press-plate group block w-full text-left cursor-pointer transition-opacity duration-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink',
                 isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
               ]"
               @click="selectUnit(u.room_number)"
@@ -729,26 +729,26 @@ async function submitInquiry() {
                 :class="[
                   'relative overflow-hidden border-t pt-5 pb-6 px-4 transition-colors duration-500',
                   u.room_number === activeUnit.room_number
-                    ? 'border-foreground bg-muted'
-                    : 'border-border group-hover:border-foreground/60',
+                    ? 'border-brand bg-brand-soft'
+                    : 'border-line group-hover:border-ink/60',
                 ]"
               >
                 <!-- A hairline frame that draws itself in under the cursor. -->
                 <span
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-2 border border-foreground/15 opacity-0 transition duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
+                  class="pointer-events-none absolute inset-2 border border-ink/15 opacity-0 transition duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
                 />
 
                 <span class="relative flex items-baseline justify-between gap-3">
-                  <span class="text-lg font-medium uppercase leading-none tracking-[-0.02em] text-foreground">
+                  <span class="text-lg font-medium uppercase leading-none tracking-[-0.02em] text-ink">
                     {{ u.room_number }}
                   </span>
-                  <span class="text-[0.65rem] tracking-[0.14em] uppercase text-muted-foreground-soft">
+                  <span class="text-[0.65rem] tracking-[0.14em] uppercase text-ink-faint">
                     Floor {{ u.floor }}
                   </span>
                 </span>
 
-                <span class="relative mt-4 block text-sm tabular-nums text-foreground">
+                <span class="relative mt-4 block text-sm tabular-nums text-ink">
                   {{ peso(u.current_price) }}
                 </span>
 
@@ -759,20 +759,20 @@ async function submitInquiry() {
                   living there, which is a fact about residents and none of a
                   visitor's business. BR-024.
                 -->
-                <span class="relative mt-1.5 block text-xs text-muted-foreground">
+                <span class="relative mt-1.5 block text-xs text-ink-soft">
                   {{ isAvailable(u) ? 'Free to rent' : 'Occupied' }}
                 </span>
 
                 <span
                   v-if="u.room_number === activeUnit.room_number"
-                  class="relative mt-3 block text-[0.65rem] tracking-[0.16em] uppercase text-foreground"
+                  class="relative mt-3 block text-[0.65rem] tracking-[0.16em] uppercase text-ink"
                 >
                   Shown above
                 </span>
                 <span
                   v-else
                   aria-hidden="true"
-                  class="relative mt-3 flex items-center gap-1.5 text-[0.65rem] tracking-[0.16em] uppercase text-muted-foreground opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100"
+                  class="relative mt-3 flex items-center gap-1.5 text-[0.65rem] tracking-[0.16em] uppercase text-ink-soft opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100"
                 >
                   <span>See it</span>
                   <ArrowRight class="size-3 shrink-0 transition-transform duration-500 motion-safe:group-hover:translate-x-0.5" />
@@ -795,20 +795,20 @@ async function submitInquiry() {
     <dialog
       ref="inquiryDialog"
       aria-labelledby="inquiry-dialog-title"
-      class="m-auto max-h-[calc(100dvh-2rem)] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto border border-border bg-background p-0 font-editorial text-foreground backdrop:bg-neutral-dark/70"
+      class="m-auto max-h-[calc(100dvh-2rem)] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-night/70"
       @keydown.esc="closeInquiry"
     >
       <form class="relative px-6 py-10 sm:px-12 sm:py-14" @submit.prevent="submitInquiry">
         <button
           type="button"
-          class="press absolute right-3 top-3 grid size-9 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors cursor-pointer"
+          class="icon-btn absolute right-3 top-3"
           @click="closeInquiry"
         >
           <span class="sr-only">Close</span>
           <X class="size-4" />
         </button>
 
-        <p class="text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
+        <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
           Fe Galang Da Silva Boarding House
         </p>
 
@@ -819,14 +819,14 @@ async function submitInquiry() {
           Ask about unit {{ inquiryUnit.toUpperCase() }}
         </h2>
 
-        <p class="mt-4 max-w-md text-xs text-muted-foreground leading-relaxed">
+        <p class="mt-4 max-w-md text-xs text-ink-soft leading-relaxed">
           Mrs. {{ LANDLADY.name }} reads these herself. Nothing is emailed or texted
           automatically, so leave a number or an address she can reach you on.
         </p>
 
         <div class="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2">
           <div class="sm:col-span-2">
-            <label for="cq-name" class="block text-[0.7rem] tracking-[0.16em] uppercase text-muted-foreground">
+            <label for="cq-name" class="block text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">
               Your name
             </label>
             <!--
@@ -844,12 +844,12 @@ async function submitInquiry() {
               type="text"
               autofocus
               required
-              class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+              class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none focus:ring-0 transition-colors"
             />
           </div>
 
           <div>
-            <label for="cq-phone" class="block text-[0.7rem] tracking-[0.16em] uppercase text-muted-foreground">
+            <label for="cq-phone" class="block text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">
               Your phone number
             </label>
             <input
@@ -858,12 +858,12 @@ async function submitInquiry() {
               type="tel"
               required
               placeholder="0917-000-0000"
-              class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+              class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none focus:ring-0 transition-colors"
             />
           </div>
 
           <div>
-            <label for="cq-email" class="block text-[0.7rem] tracking-[0.16em] uppercase text-muted-foreground">
+            <label for="cq-email" class="block text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">
               Your email
             </label>
             <input
@@ -872,19 +872,19 @@ async function submitInquiry() {
               type="email"
               required
               placeholder="you@email.com"
-              class="mt-2 w-full min-h-11 border-0 border-b border-border-strong bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-0 transition-colors"
+              class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none focus:ring-0 transition-colors"
             />
           </div>
 
           <div class="sm:col-span-2">
-            <label for="cq-msg" class="block text-[0.7rem] tracking-[0.16em] uppercase text-muted-foreground">
+            <label for="cq-msg" class="block text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">
               What you would like to ask
             </label>
             <textarea
               id="cq-msg"
               v-model="inquiryMsg"
               rows="4"
-              class="mt-2 w-full resize-none border border-border-strong bg-transparent px-3.5 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none transition-colors"
+              class="mt-2 w-full resize-none border border-line bg-transparent px-3.5 py-3 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none transition-colors"
             ></textarea>
           </div>
         </div>
@@ -893,7 +893,7 @@ async function submitInquiry() {
           <button
             type="submit"
             :disabled="isSubmitting"
-            class="press inline-flex min-h-11 items-center gap-2.5 bg-foreground px-8 py-3.5 text-sm font-medium text-background hover:bg-neutral-dark disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
+            class="pill-btn-brand px-8 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
             <Send v-else class="size-4" />
@@ -902,7 +902,7 @@ async function submitInquiry() {
 
           <button
             type="button"
-            class="press inline-block py-1 text-xs text-muted-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:text-foreground hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors cursor-pointer"
+            class="press inline-block py-1 text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink transition-colors cursor-pointer"
             @click="closeInquiry"
           >
             Cancel

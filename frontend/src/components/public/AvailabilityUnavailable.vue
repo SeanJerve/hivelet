@@ -54,14 +54,14 @@ function reload() {
   <section
     role="alert"
     aria-live="polite"
-    class="w-full border-t border-border"
+    class="w-full border-t border-line"
   >
     <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
-      <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      <p class="text-xs uppercase tracking-[0.18em] text-ink-soft">
         Live availability
       </p>
 
-      <h2 class="mt-4 text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
+      <h2 class="mt-4 text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
         We cannot show you {{ subject }} right now
       </h2>
 
@@ -70,7 +70,7 @@ function reload() {
         category page has always carried: an outage is not a full house, and a
         visitor who assumes otherwise simply leaves.
       -->
-      <p class="mt-5 max-w-xl text-xs sm:text-sm text-muted-foreground leading-relaxed">
+      <p class="mt-5 max-w-xl text-xs sm:text-sm text-ink-soft leading-relaxed">
         This is not the same as having nothing free — the listing is temporarily
         unreachable, so rather than show you figures we cannot stand behind, we would
         rather you asked her directly.
@@ -96,7 +96,7 @@ function reload() {
         </button>
       </div>
 
-      <p class="mt-6 text-xs text-muted-foreground">
+      <p class="mt-6 text-xs text-ink-soft">
         {{ LANDLADY.name }} · {{ LANDLADY.address }}
       </p>
     </div>

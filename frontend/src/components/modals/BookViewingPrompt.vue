@@ -88,21 +88,21 @@ onBeforeUnmount(() => {
   <dialog
     ref="dialogRef"
     aria-labelledby="viewing-prompt-title"
-    class="m-auto w-[min(34rem,calc(100vw-2rem))] border border-border bg-background p-0 font-editorial text-foreground backdrop:bg-neutral-dark/70"
+    class="m-auto w-[min(34rem,calc(100vw-2rem))] overflow-hidden rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-night/70"
     @click="onDialogClick"
     @cancel="onCancel"
   >
     <div class="relative px-8 py-12 sm:px-14 sm:py-16 text-center">
       <button
         type="button"
-        class="press absolute right-3 top-3 grid size-9 place-items-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground transition-colors"
+        class="icon-btn absolute right-3 top-3"
         @click="close"
       >
         <span class="sr-only">Close</span>
         <X class="size-4" />
       </button>
 
-      <p class="text-[0.7rem] tracking-[0.18em] uppercase text-muted-foreground">
+      <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
         Fe Galang Da Silva Boarding House
       </p>
 
@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="press mt-10 inline-flex min-h-11 items-center justify-center border border-foreground px-10 py-3.5 text-sm font-medium text-foreground hover:bg-foreground hover:text-background focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
+        class="pill-btn-brand mt-10 px-10"
         @click="bookNow"
       >
         Book now

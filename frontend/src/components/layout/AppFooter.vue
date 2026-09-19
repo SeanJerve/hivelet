@@ -17,7 +17,7 @@ import { LANDLADY } from '@/lib/systemState';
 </script>
 
 <template>
-  <footer class="w-full bg-neutral-dark text-white font-editorial mt-auto">
+  <footer class="w-full bg-night text-on-night font-editorial mt-auto">
     <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-24">
 
       <div class="grid gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
@@ -26,17 +26,17 @@ import { LANDLADY } from '@/lib/systemState';
           <p class="text-[0.8rem] leading-[1.25] font-light tracking-[-0.01em]">
             Fe Galang<br />Da Silva<br />Boarding House
           </p>
-          <p class="mt-6 text-xs leading-relaxed text-white/60">
+          <p class="mt-6 text-xs leading-relaxed text-on-night-soft">
             Managed with Hivelet. Centralised operational, financial and enquiry workflows for 33
             rentable units in Legazpi City, Albay.
           </p>
         </div>
 
         <div>
-          <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-white/50">Property</h2>
+          <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Property</h2>
           <ul class="mt-5 space-y-2.5 text-sm">
             <li>
-              <RouterLink to="/public" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <RouterLink to="/public" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
                 Overview
               </RouterLink>
             </li>
@@ -50,18 +50,18 @@ import { LANDLADY } from '@/lib/systemState';
               also what `resolveSlug` falls back to.
             -->
             <li>
-              <RouterLink to="/category/studio" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <RouterLink to="/category/studio" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
                 Rentable units
               </RouterLink>
             </li>
             <li>
               <!-- Was a second link to /public, which went nowhere in particular. -->
-              <RouterLink to="/inquire" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <RouterLink to="/inquire" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
                 Register your interest
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/login" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <RouterLink to="/login" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
                 Sign in
               </RouterLink>
             </li>
@@ -69,10 +69,10 @@ import { LANDLADY } from '@/lib/systemState';
         </div>
 
         <div>
-          <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-white/50">Contact</h2>
+          <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Contact</h2>
           <ul class="mt-5 space-y-2.5 text-sm">
             <li>
-              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors">
+              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors">
                 {{ LANDLADY.phone }}
               </a>
             </li>
@@ -81,22 +81,22 @@ import { LANDLADY } from '@/lib/systemState';
                 href="https://www.facebook.com/michelle.millete.16"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="press inline-block py-1 text-white/80 underline underline-offset-4 decoration-1 decoration-white/25 hover:text-white hover:decoration-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white transition-colors"
+                class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-on-night transition-colors"
               >
                 Facebook<span class="sr-only"> (opens in a new tab)</span>
               </a>
             </li>
           </ul>
 
-          <h2 class="mt-9 text-[0.7rem] tracking-[0.16em] uppercase text-white/50">Address</h2>
-          <p class="mt-5 max-w-xs text-sm leading-relaxed text-white/70">
+          <h2 class="mt-9 text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Address</h2>
+          <p class="mt-5 max-w-xs text-sm leading-relaxed text-on-night-soft">
             {{ LANDLADY.address }}
           </p>
         </div>
 
       </div>
 
-      <div class="mt-20 flex flex-col gap-3 border-t border-white/15 pt-7 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+      <div class="mt-20 flex flex-col gap-3 border-t border-on-night/15 pt-7 text-xs text-on-night-soft sm:flex-row sm:items-center sm:justify-between">
         <p>© 2026 Hivelet. Fe Galang Da Silva Boarding House.</p>
         <p>Legazpi City, Albay</p>
       </div>
