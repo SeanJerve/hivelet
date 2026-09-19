@@ -2848,13 +2848,30 @@ router.delete(
     });
 
     if (before.room_id) {
-      const { data: remainingUnresolved } = await db
+      /**
+       * The same defect as the PATCH handler above, in the same words - found by
+       * grepping for siblings after fixing that one, which is the habit that
+       * finds most of them on this project.
+       *
+       * `'Open'` is not a value of `ticket_status_type`; the database answers
+       * `22P02` rather than an empty list. `error` was not destructured, so the
+       * throw left the result null, `!remainingUnresolved` was TRUE, and
+       * deleting one ticket cleared the unit however many were still open.
+       */
+      const { data: remainingUnresolved, error: remainingError } = await db
         .from('maintenance_tickets')
         .select('id')
         .eq('room_id', before.room_id)
-        .in('status', ['Submitted', 'In Progress', 'Open']);
+        .in('status', ['Submitted', 'In Progress']);
 
-      if (!remainingUnresolved || remainingUnresolved.length === 0) {
+      if (remainingError) {
+        throw ApiError.internal(
+          `The ticket was deleted, but this unit's other repair requests could not be read, ` +
+            `so it has been left as it was rather than reported clear: ${remainingError.message}`
+        );
+      }
+
+      if (remainingUnresolved.length === 0) {
         const { data: activeAssign } = await db
           .from('room_assignments')
           .select('id')
@@ -2865,7 +2882,7 @@ router.delete(
         const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
         assertWritten(
           await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id),
-          `The ticket was updated, but the unit could not be returned to ${newRoomStatus}`
+          `The ticket was deleted, but the unit could not be returned to ${newRoomStatus}`
         );
       }
     }
