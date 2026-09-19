@@ -1552,6 +1552,99 @@ raised in B-31 and not taken.
 
 ---
 
+### A fifteenth sweep, 2026-09-19: one defect wearing four hats, and my own footprint
+
+This sweep chased a single question through the codebase - **what happens when
+the same button is pressed twice?** - and then cleaned up after itself.
+
+#### 1. The double-click is this project's defining defect class
+
+It has now appeared four times, in four unrelated places, and every instance has
+the same shape: a read that checks whether something exists, a write that
+assumes the answer is still true, and **no transaction between them, because
+supabase-js cannot open one.**
+
+    receipts       one receipt recorded five times      migration 033
+    bills          two taps on Pay raise two bills      migration 038
+    tenants        Add Tenant twice -> raw constraint   fixed in code
+    voids          void twice -> attribution erased     fixed in code
+
+Three of the four were already guarded by a unique index; what was missing was
+the code half. An index alone turns a race into a 500, and a 500 at the moment
+an administrator is asking "did that save?" is worse than the duplicate it
+prevented - she cannot tell, so she tries again, and trying again is how one
+mistake becomes two records.
+
+**The rule this project has arrived at, stated once:** where the check and the
+write cannot be atomic, the index is the guard and the handler's job is to
+RECOGNISE the index having done its job. Match on the index NAME, never on
+`23505` alone - a different unique violation on the same table is a different
+bug, and swallowing it as "someone beat us to it" hides it.
+
+#### 2. The void defect, which is the one that destroyed something
+
+`DELETE` on an income record or an expense entry filtered on `id` and nothing
+else - not on the read, not on the update. A second void succeeded silently and
+rewrote `voided_at`, `voided_by` and `void_reason`.
+
+**That is the one piece of information a soft delete exists to keep.** A hard
+delete loses the row; a soft delete that overwrites its own attribution loses
+the row's history while looking like it kept it, which is worse, because nothing
+on screen distinguishes it. Both calls answered "voided".
+
+Thirty-five income rows and one expense entry were in that state and re-voidable.
+
+The rest of the file already knew the idiom - the create path filters
+`.is('voided_at', null)` in three places, and the departure path filters
+`.eq('is_active', true)` for precisely this reason. This was an omission.
+
+Verified against the live API as a **no-op**: the subject row's three void
+columns were captured before and compared after, the call returned 409 naming
+the date it was first voided, and the row came back byte-identical. A missing id
+still returns 404, so not-found was not turned into conflict.
+
+#### 3. What the tenant portal charges, and the three wrong numbers behind it
+
+Pulled forward from the fourteenth sweep because it is the same lesson: the bill
+a resident sees and pays is built from three stored values, and **all three were
+uniform import placeholders** - the rate card, the anniversary, the headcount.
+
+A tenant-raised bill under-charges 29 of the 30 non-Linda units and gets none of
+them right: 91,850 a month, 3,062 a unit on average. It has harmed nobody only
+because no tenant has ever paid through the portal.
+
+**The pattern worth naming: a wrong value that is UNIFORM is invisible to every
+internal check.** All twenty suites passed throughout, because they test the
+system against itself and the system agreed with itself perfectly. It took
+comparing against her book.
+
+#### 4. My own footprint, and the rule it does not get an exemption from
+
+Testing write paths that had never been used by a person meant using them, on a
+live database with no staging copy. That left **37 rows**: 35 voided income rows,
+one voided expense entry, and one test enquiry.
+
+They are all named after the probe that made them - TEST, EDGE, CAP, RACE, MM,
+HARD, PP, PROTO - and the proof they are all mine is clean: **her ledger has
+never had a voided row.** Every voided row in both tables is dated today.
+
+None of it is in any total. The one that actually shows is the enquiry, because
+`inquiries` has no voided state, so it sits in her Inquiries screen as Pending
+looking like a prospect.
+
+Migration 039 removes them, and it gets the same discipline as everything else:
+every row named by **id and nothing else**, no pattern on the invoice number, no
+date range. A pattern can widen; a list of UUIDs cannot. The inbound foreign keys
+were checked in `pg_constraint` first - `monthly_income_records` has none at all,
+and the expense allocations cascade.
+
+> **An audit of write paths against a live database leaves a footprint, and the
+> footprint is not exempt from the rules the audit was enforcing.** It comes out
+> through a numbered migration with exact ids, not a quick DELETE. Check the
+> queue for a cleanup entry before assuming the database is clean.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
