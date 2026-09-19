@@ -53,6 +53,29 @@ export interface SessionDetails {
   tenantProfileId: string;
   amount: number;
   returnUrl?: string;
+  /** When this checkout began. Epoch ms. See SESSION_TTL_MS and `recorded`. */
+  createdAt: number;
+}
+
+/**
+ * How long a checkout session stays redeemable.
+ *
+ * These live in a process-local Map that was only ever deleted from on
+ * completion, so every ABANDONED checkout left an entry for the lifetime of the
+ * process - an unbounded leak, and a `sessionId` that stayed redeemable forever
+ * if it ever leaked.
+ *
+ * An hour is generous for "open GCash, authorise, come back" and short enough
+ * that a stale capability does not outlive its usefulness. Expiry is checked on
+ * read and swept on write, so there is no timer to leak in tests.
+ */
+const SESSION_TTL_MS = 60 * 60 * 1000;
+
+/** Drops sessions older than the TTL. Cheap: this map holds tens of entries. */
+function sweepExpiredSessions(nowMs: number): void {
+  for (const [id, s] of checkoutSessions) {
+    if (nowMs - s.createdAt > SESSION_TTL_MS) checkoutSessions.delete(id);
+  }
 }
 
 // In-memory mapping of active checkout session IDs to transaction metadata.
@@ -203,7 +226,10 @@ export const adyenService = {
 
         const data = (await response.json()) as any;
         if (response.ok && data.id) {
-          checkoutSessions.set(data.id, { billId, tenantProfileId, amount, returnUrl: fallbackReturnUrl });
+          sweepExpiredSessions(Date.now());
+          checkoutSessions.set(data.id, {
+            billId, tenantProfileId, amount, returnUrl: fallbackReturnUrl, createdAt: Date.now(),
+          });
           return {
             sessionId: data.id,
             sessionData: data.sessionData,
@@ -257,7 +283,10 @@ export const adyenService = {
     // plus a `Date.now()` suffix that is outright predictable. 128 bits from the CSPRNG
     // instead, which is what a bearer capability needs to be.
     const sessionId = `adyen_sess_${randomBytes(16).toString('hex')}`;
-    checkoutSessions.set(sessionId, { billId, tenantProfileId, amount, returnUrl });
+    sweepExpiredSessions(Date.now());
+    checkoutSessions.set(sessionId, {
+      billId, tenantProfileId, amount, returnUrl, createdAt: Date.now(),
+    });
     const redirectUrl = `/api/public/payments/local-cashier?sessionId=${sessionId}`;
     return {
       sessionId,
@@ -488,6 +517,7 @@ export const adyenService = {
    * is on its way" from "Adyen has not confirmed anything".
    */
   async confirmCheckout(sessionId: string, sessionResult: string, tenantProfileId: string) {
+    sweepExpiredSessions(Date.now());
     const session = checkoutSessions.get(sessionId);
     if (!session) {
       throw ApiError.notFound(SESSION_UNAVAILABLE);
@@ -539,8 +569,25 @@ export const adyenService = {
     // optimistically read as success.
     const confirmed = status === 'completed';
 
-    // Has the webhook's row arrived? Matched by bill rather than by pspReference,
-    // because the browser never learns the pspReference.
+    /**
+     * Has the webhook's row arrived FOR THIS CHECKOUT?
+     *
+     * Matched by bill rather than by pspReference, because the browser never
+     * learns it and Adyen's session-result endpoint does not return it either -
+     * that response is `{ status, message }` and nothing more. So the best
+     * available identity is the bill plus the window this checkout has been open.
+     *
+     * It used to match ANY `Adyen Online` row on the bill at ANY status. A
+     * resident whose earlier attempt left a row - including one the landlady had
+     * since REJECTED - was told their new payment was recorded and waiting for
+     * her, before its notification had arrived and possibly before it ever would.
+     * The screen said the safe thing about the wrong payment.
+     *
+     * Now: created since this checkout began, and not refused. If nothing has
+     * arrived yet `recorded` is false, which is exactly right - it means "not
+     * yet", and the interface says Adyen has confirmed it and the record is on
+     * its way.
+     */
     let recorded = false;
     if (session.billId) {
       const { data: existing } = await db
@@ -548,6 +595,8 @@ export const adyenService = {
         .select('id')
         .eq('bill_id', session.billId)
         .eq('payment_method', 'Adyen Online')
+        .neq('verification_status', 'Rejected')
+        .gte('created_at', new Date(session.createdAt).toISOString())
         .limit(1);
       recorded = Boolean(existing && existing.length > 0);
     }

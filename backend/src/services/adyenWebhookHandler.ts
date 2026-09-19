@@ -16,6 +16,7 @@
  * landlady's decision, and the ledger records her decision.
  */
 import { db } from '../config/db.js';
+import { config } from '../config/env.js';
 import { recordAudit } from './auditService.js';
 import { notificationService } from './notificationService.js';
 import type { AdyenNotificationItem } from './adyenWebhook.js';
@@ -209,6 +210,61 @@ export async function applyNotificationItem(
       roomId = bill.room_id;
       tenantProfileId = bill.tenant_profile_id;
     }
+  }
+
+  /**
+   * THE CURRENCY AND THE MERCHANT ACCOUNT ARE SIGNED, AND WERE NEVER READ.
+   *
+   * `/100` is right for PHP and wrong for anything else. A zero-decimal currency
+   * like JPY sends `value: 5000` for 5,000 yen, which this would bank as 50.00
+   * pesos - a hundredfold understatement; a three-decimal currency errs the
+   * other way. The conversion silently assumed a currency nobody had checked.
+   *
+   * Both fields ARE among the eight HMAC-signed values, so neither is forgeable -
+   * this is not an attack surface, it is the difference between a gateway that
+   * knows what it is banking and one that assumes. The session is pinned to PHP
+   * and one merchant account, so anything else means the webhook is receiving
+   * traffic it was not built for, and inventing a peso figure from it is the
+   * worst available response.
+   *
+   * Acknowledged rather than failed, for the reason above: retrying cannot make
+   * a JPY notification into a PHP one. Audited, because a payment arriving on
+   * the wrong account is exactly the thing somebody needs to be told about.
+   */
+  const currency = String(item.amount?.currency ?? '').toUpperCase();
+  const account = String(item.merchantAccountCode ?? '');
+  const expectedAccount = config.adyen.merchantAccount;
+
+  if (currency !== 'PHP' || (expectedAccount && account && account !== expectedAccount)) {
+    await recordAudit({
+      actorProfileId: null,
+      action: 'PAYMENT_RECORD',
+      entityType: 'PAYMENT',
+      entityId: '00000000-0000-0000-0000-000000000000',
+      newValues: {
+        pspReference,
+        eventCode,
+        currency: currency || '(none)',
+        merchantAccountCode: account || '(none)',
+        note:
+          'Adyen notification did not match this property: expected PHP on the configured ' +
+          'merchant account. NOTHING WAS RECORDED - converting an unknown currency at 1/100 ' +
+          'would have invented a peso figure. Acknowledged so Adyen stops retrying; the ' +
+          'payment is on the Adyen dashboard and needs reconciling by hand.',
+      },
+      ipAddress,
+    });
+    await notificationService.notify({
+      title: 'Online payment on an unexpected account or currency',
+      message:
+        `A payment (ref ${pspReference}) arrived as ${currency || 'an unknown currency'} on ` +
+        `account "${account || 'unknown'}". It has NOT been recorded. Check the Adyen ` +
+        'dashboard and reconcile it by hand.',
+      type: 'Payment',
+      priority: 'High',
+      relatedEntityType: 'PAYMENT',
+    }).catch(() => {});
+    return { pspReference, eventCode, outcome: 'ignored', detail: `unexpected ${currency}/${account}` };
   }
 
   const minorUnits = Number(item.amount?.value ?? 0);
