@@ -33,6 +33,58 @@ thing did not work" is not.
 
 ## Open
 
+### B-29 — the public site advertises the penthouse at ₱12,000. It last let for ₱30,000
+
+- **Blocked on:** the owner, and nobody else. She sets rates by hand; nothing here may guess one.
+- **This is the highest-value thing in this file.** It is not a bug. Every figure is doing
+  exactly what it was told. The rate card was never updated after the units were seeded, and
+  the public website reads it out.
+
+- **What a prospect sees right now**, from `/public/rooms`, checked live:
+
+  | | |
+  | :--- | :--- |
+  | unit | **PH** — the only one showing as free |
+  | advertised at | **₱12,000** |
+  | it last let for | **₱30,000** (Oct 2024) |
+
+- **It is the whole property, not one unit.** Comparing each unit's `current_price` against
+  what its resident last actually paid:
+
+  | type | units | rate card | actually paid | average gap |
+  | :--- | ---: | :--- | :--- | ---: |
+  | Three-bedroom | 1 | 12,000 | 30,000 | **+18,000** |
+  | One-bedroom | 8 | 5,000–6,500 | 5,000–12,600 | +3,238 |
+  | Studio | 20 | 4,500–4,900 | 6,000–8,500 | +2,913 |
+  | Two-bedroom | 4 | 7,500–8,000 | 8,000–12,000 | +2,750 |
+
+  **31 of 33 units disagree. Residents pay 162% of the rate card on average** — ₱113,150 a
+  month more than the system says the property costs to rent.
+
+- **Why it happened, and the evidence it was never anyone's decision:** `room_price_history`
+  held **zero rows** before 2026-09-19, and all 33 units still have `current_price = base_price`
+  — the seeded value. No rate has ever been changed through the system. Migration 020's trigger
+  works (verified today: a change and its revert both wrote history rows), it has simply never
+  had a rate change to record.
+
+- **Three things read this figure, so it is not cosmetic:**
+  1. **The public site.** PH is the one unit available, so it is the one anyone enquires about,
+     at less than half what it last let for.
+  2. **BR-039.** Advance rent at move-in *is* `current_price`. The next resident's advance would
+     be set from the wrong number.
+  3. **Any bill raised for a unit** takes its rent from there.
+
+- **What to ask her:** what is each unit's rate today? The ledger already implies it — the last
+  rent actually paid for each — so the quickest version of the question is to show her that list
+  and ask "are these right?".
+- **Do not infer the rates from the ledger and write them in.** A rent paid may include something
+  agreed for that month. She sets rates; the system records them. That is the standing rule in
+  CLAUDE.md and it is the right one here.
+- **Once she answers**, changing each rate through the edit-unit dialog writes the BR-003 history
+  row automatically — so the change is dated and attributable, which is exactly what that trigger
+  is for.
+- **Raised:** 2026-09-19
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
