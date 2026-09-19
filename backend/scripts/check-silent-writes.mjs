@@ -273,7 +273,78 @@ if (readsOverBudget) {
   );
 }
 
-if (findings.length > 0 || readsOverBudget) process.exit(1);
+/**
+ * EVERY WRITE ROUTE MUST LEAVE A TRAIL, or be on the list below saying why not.
+ *
+ * Added 2026-09-19. A previous version of this audit answered the question by
+ * grepping for the helper name and got it WRONG: `authService` writes to
+ * `audit_logs` directly and never calls the helper, so sign-in looked unaudited
+ * when it is not. This walks each `router.<verb>(` body by brace depth, and
+ * where the body only delegates, the allow-list below names the service that
+ * carries the audit and that claim was checked function by function.
+ *
+ * The four notification routes are on the list because marking a message read
+ * records no financial or security fact. Everything else that writes, audits.
+ *
+ * WHAT THIS ACTUALLY GUARDS: a NEW write route appearing without an audit. It
+ * is not a statement that the current nine are fine - it is a statement that
+ * somebody looked at each of these nine once, wrote down why, and that the
+ * tenth will not slip past.
+ */
+const AUDIT_RE = /auditFromRequest|recordAudit|from\(['"]audit_logs['"]\)|auditService\./;
+
+const AUDITED_ELSEWHERE = new Map([
+  ['/auth/login',                            'authService writes audit_logs directly (recordLoginAudit)'],
+  ['/auth/register',                         'authService writes a TENANT_CREATE row before the login audit'],
+  ['/public/payments/adyen/webhook',         'adyenWebhookHandler audits every branch, matched and unmatched'],
+  ['/public/payments/local-cashier/complete','adyenService.recordLocalCheckoutPayment -> PAYMENT_RECORD'],
+  ['/tenant/payments/adyen/verify-session',  'adyenService.confirmCheckout -> PAYMENT_RECORD'],
+  ['/admin/notifications/:id/read',          'marking a message read is not a financial or security fact'],
+  ['/admin/notifications/mark-all-read',     'as above'],
+  ['/tenant/my-notifications/:id/read',      'as above'],
+  ['/tenant/my-notifications/mark-all-read', 'as above'],
+]);
+
+const routeDir = path.join(SRC, 'routes');
+let writeRoutes = 0;
+const unaudited = [];
+
+for (const f of fs.readdirSync(routeDir).filter((x) => x.endsWith('.ts'))) {
+  const src = fs.readFileSync(path.join(routeDir, f), 'utf8');
+  const re = /router\.(post|patch|put|delete)\(/g;
+  let m;
+  while ((m = re.exec(src)) !== null) {
+    let i = re.lastIndex - 1, depth = 0, end = i;
+    for (; i < src.length; i++) {
+      if (src[i] === '(') depth++;
+      else if (src[i] === ')') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    const body = src.slice(re.lastIndex, end);
+    const routePath = (body.match(/['"](\/[a-z0-9/:_-]+)['"]/i) ?? [])[1] ?? '(unknown)';
+    writeRoutes++;
+    if (AUDIT_RE.test(body)) continue;
+    if (AUDITED_ELSEWHERE.has(routePath)) continue;
+    unaudited.push(`${m[1].toUpperCase()} ${routePath}  (${f})`);
+  }
+}
+
+if (unaudited.length > 0) {
+  console.log(`\n  FAIL  ${unaudited.length} write route(s) record nothing in audit_logs:`);
+  for (const u of unaudited) console.log(`          ${u}`);
+  console.log(
+    '\n  A route that changes data and leaves no trail cannot be answered for\n' +
+    '  later. Add an audit call, or - if it genuinely records no financial or\n' +
+    '  security fact - add it to AUDITED_ELSEWHERE with the reason.'
+  );
+} else {
+  console.log(
+    `\n  OK    audit trail - ${writeRoutes} write route(s), ` +
+    `${writeRoutes - AUDITED_ELSEWHERE.size} audit inline and ` +
+    `${AUDITED_ELSEWHERE.size} are accounted for by name`
+  );
+}
+
+if (findings.length > 0 || readsOverBudget || unaudited.length > 0) process.exit(1);
 
 console.log('\nALL CHECKS PASSED');
 process.exit(0);
