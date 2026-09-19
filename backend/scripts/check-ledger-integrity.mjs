@@ -108,7 +108,7 @@ async function rows(path) {
 const income = await rows(
   'monthly_income_records?voided_at=is.null&select=id,invoice_number,contact_name,year,month,' +
   'date_paid,rent_period_start,rent_period_end,rent_amount,water_payment,occupants,' +
-  'fifty_percent_share,remitted_amount,room_id'
+  'fifty_percent_share,remitted_amount,room_id,linda_water_charge,is_linda_billing'
 );
 
 console.log(`check:ledger — ${income.length} live income rows\n`);
@@ -231,7 +231,7 @@ if (live.length) {
  * covered by `check:api`.
  */
 {
-  const rooms = await rows('rooms?select=id,room_number,operational_status,cluster_code,floor,current_price');
+  const rooms = await rows('rooms?select=id,room_number,operational_status,cluster_code,floor,current_price,is_linda_unit');
   const clusters = await rows('clusters?select=code');
   const assigns = await rows('room_assignments?is_active=eq.true&select=room_id,tenant_profile_id,is_primary_contact');
   const people = await rows('profiles?select=id,role,email,phone_number');
@@ -1052,6 +1052,46 @@ if (live.length) {
       'need the owner (B-33).'
     );
   }
+
+  /**
+   * BR-040 — LINDA'S WATER MUST BE IN LINDA'S COLUMN.
+   *
+   * LF and LB are on a fixed monthly water charge, and the ledger keeps it in
+   * `linda_water_charge` with `water_payment` at 0. All 26 historical Linda rows
+   * read that way.
+   *
+   * Nothing in `backend/src` had ever written those columns. `computeWaterFee()`
+   * returns the fixed amount with `basis: 'linda-fixed'` and all three callers
+   * discarded the basis, so a Linda receipt recorded through the application
+   * would have put the charge in `water_payment` - which feeds
+   * `remitted_amount`, a GENERATED column nobody can correct by hand, and which
+   * the Monthly Income Report deliberately keeps Linda out of. Her own line in
+   * the report would have read zero while the money sat in the ordinary totals.
+   *
+   * Migration 041 routes it with a trigger, because there are four write paths
+   * and two of them are Postgres functions with fixed column lists that ignore
+   * any extra key handed to them.
+   *
+   * This is the check that would have caught it, and it can actually run - the
+   * rule is about ROWS, which PostgREST serves, unlike the index shape a few
+   * lines below.
+   */
+  const lindaRooms = new Set(rooms.filter((r) => r.is_linda_unit).map((r) => r.id));
+  const misfiled = [];
+  for (const r of income) {
+    const isLinda = lindaRooms.has(r.room_id);
+    const water = Number(r.water_payment ?? 0);
+    const lindaWater = Number(r.linda_water_charge ?? 0);
+    const unit = rooms.find((x) => x.id === r.room_id)?.room_number ?? r.room_id;
+    if (isLinda && water !== 0) {
+      misfiled.push(`${r.invoice_number} (${unit}): ${water} in water_payment, but ${unit} is a Linda unit`);
+    } else if (!isLinda && lindaWater !== 0) {
+      misfiled.push(`${r.invoice_number} (${unit}): ${lindaWater} in linda_water_charge, but ${unit} is not a Linda unit`);
+    }
+  }
+  for (const m of misfiled.slice(0, 10)) console.log(`        ${m}`);
+  check('BR-040 Linda water sits in the Linda column', misfiled.length,
+    `${income.length} income rows, ${lindaRooms.size} Linda unit(s) - none misfiled`);
 
   /**
    * NOT CHECKED HERE, DELIBERATELY - and this is worth a note rather than a

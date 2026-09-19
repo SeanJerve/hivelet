@@ -299,6 +299,48 @@ the same as *was refused*.
 **☐ For the rehearsal:** once a bill, a payment and a ticket exist, re-run this. Those three are
 the untested half of BR-024, and they only become testable after a person has used the system.
 
+### B-38 — Linda's water would land in the wrong column the first time anyone records it
+
+- **What is wrong.** BR-040 puts LF and LB on a fixed monthly water charge, and her ledger keeps
+  it in its own column — all **26 historical Linda rows** read `water_payment = 0`,
+  `linda_water_charge = 200 or 400`, `is_linda_billing = true`.
+- **Nothing in `backend/src` has ever written those last two columns.** Grep returns them only in
+  `incomeReportExport.ts`, which *reads* them. `computeWaterFee()` correctly returns the fixed
+  amount with `basis: 'linda-fixed'` — and **all three callers discard the basis** and write the
+  figure into `water_payment` like anyone else's.
+- **Why it does not stay a tidiness problem:**
+  - `remitted_amount` is **GENERATED** as `rent_amount + water_payment` (read from
+    `pg_attribute`), so Linda's water would be folded into a figure **nobody can correct by
+    hand**.
+  - The Monthly Income Report builds Linda's separate line from `linda_water_charge`. That line
+    would read **zero** while the money sat in the ordinary totals — and the entire point of the
+    Linda section is that she is kept **out** of those.
+  - A row recorded through the form would not resemble any of the 26 rows already in her book.
+- **The comment that should have protected it was the thing that hid it.**
+  `incomeReportExport.ts` says in terms: *"remitted_amount is a GENERATED column … and for these
+  units water_payment is 0."* True of the imported data, false of anything the application would
+  have written. That is the exact failure CLAUDE.md names — a comment asserting a precondition
+  the surrounding code stopped maintaining.
+- **☐ You run:** migration **041**. One trigger, no rows changed.
+- **Why a trigger, and not fixing the callers.** I wrote the caller-by-caller version first and
+  threw it away. There are **four** write paths — the single-month insert,
+  `record_income_for_months`, `settle_verified_payment`, and the ledger edit — and two of them
+  are Postgres functions with fixed column lists. **`settle_verified_payment` made the point: its
+  INSERT names its columns explicitly and silently ignores any extra key, so the obvious code fix
+  there does nothing at all.** Checked in its source, not assumed. Five places that must all
+  remember one rule, and a sixth the next time someone adds a write path. The trigger makes it
+  true by construction, which is already how this database treats derived money —
+  `remitted_amount` is generated, and `trg_update_expense_total` keeps an expense equal to its
+  allocations.
+- **It moves money between columns and never creates or destroys it**, and it handles the reverse
+  case too: a receipt edited *off* a Linda unit cannot keep a stale charge.
+- **Nothing changes today.** All 972 rows already satisfy it — verified before writing the
+  trigger — so it guards future writes rather than correcting past ones.
+- **A check now guards it, and this one can actually run**, unlike the index-shape check I
+  deleted: the rule is about rows, which PostgREST serves. Mutation-tested by treating unit 1a as
+  a Linda unit, which correctly flags all 31 of its rows.
+- **Raised:** 2026-09-19
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
