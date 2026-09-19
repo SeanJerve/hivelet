@@ -415,9 +415,14 @@ onUnmounted(() => {
           </div>
         </template>
 
-        <!-- Unauthenticated Guest Sign In Button -->
+        <!--
+          Sign In, for a visitor who is not signed in - and not while they are
+          already standing on the sign-in page, where it is a button that goes
+          nowhere, competing with the real one in the form below it.
+        -->
         <template v-else>
           <router-link
+            v-if="route.path !== '/login'"
             to="/login"
             class="pill-btn-brand"
           >

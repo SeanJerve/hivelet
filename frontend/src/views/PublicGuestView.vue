@@ -421,12 +421,9 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           name is short enough now to set itself.
         -->
         <h1 class="mt-auto pt-24 font-editorial drop-shadow-sm">
-          <span class="block font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)]">
-            Fe Galang Da Silva
-          </span>
-          <span class="mt-4 block text-[0.8rem] font-light">
-            Boarding House
-          </span>
+          <span class="font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)]"
+            >Fe Galang Da Silva</span>
+          <span class="ml-2 whitespace-nowrap text-[0.8rem] font-light">&#32;Boarding House</span>
         </h1>
 
       </div>
