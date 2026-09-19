@@ -68,6 +68,15 @@ const { showToast } = useToast();
 const adyenContainerRef = ref<HTMLDivElement | null>(null);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
+/**
+ * True once the Drop-in is on screen, i.e. once the resident could have paid.
+ *
+ * The error panel headed EVERY failure "The payment page could not be opened",
+ * including the ones that happen after it opened - a declined card, a lost
+ * session on the way back. And it offered "Try again", which after a payment
+ * has actually been authorised is the single worst thing to suggest.
+ */
+const hasAttemptedPayment = ref(false);
 const isCompleted = ref(false);
 /** True once the webhook's payment row is visible; false while it is in flight. */
 const isRecorded = ref(false);
@@ -124,7 +133,8 @@ async function initializeAdyen() {
         const code = data && 'resultCode' in data ? data.resultCode : undefined;
         errorMessage.value =
           `The payment did not go through${code ? ` (${code})` : ''}. ` +
-          'Nothing has been charged and no payment was recorded.';
+          'Adyen reports it as not completed, so you should not have been charged - but if ' +
+          'money did leave your GCash, tell the landlady rather than paying again.';
       },
       onError: (error: { message?: string }) => {
         errorMessage.value = error?.message || 'An error occurred during checkout.';
@@ -162,6 +172,7 @@ async function initializeAdyen() {
     }
 
     new Dropin(checkout, { showPayButton: true }).mount(adyenContainerRef.value);
+    hasAttemptedPayment.value = true;
   } catch (err: unknown) {
     errorMessage.value =
       err instanceof Error ? err.message : 'Unable to reach the payment gateway.';
@@ -275,10 +286,21 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     <div v-else-if="errorMessage" class="flex flex-col items-start gap-3 rounded-2xl bg-overdue-soft p-4 text-sm text-overdue">
       <p class="flex items-center gap-2 font-semibold">
         <AlertCircle class="size-4" aria-hidden="true" />
-        The payment page could not be opened
+        {{ hasAttemptedPayment ? 'This payment did not complete' : 'The payment page could not be opened' }}
       </p>
       <p>{{ errorMessage }}</p>
-      <button type="button" class="pill-btn" @click="initializeAdyen">Try again</button>
+      <!--
+        No retry once the form has been on screen. Past that point the resident
+        may already have authorised in GCash, and "Try again" would open a second
+        session for the same bill. Checkout now refuses that while a payment is
+        awaiting verification, but the button should not be asking for it.
+      -->
+      <button v-if="!hasAttemptedPayment" type="button" class="pill-btn" @click="initializeAdyen">
+        Try again
+      </button>
+      <p v-else class="text-xs text-ink-soft">
+        Close this and check your payments page. Do not pay again unless the landlady asks you to.
+      </p>
     </div>
 
     <!-- Adyen's own fields -->

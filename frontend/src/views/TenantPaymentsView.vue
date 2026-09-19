@@ -98,10 +98,80 @@ const filteredPayments = computed(() => {
 
 const isVerified = (status: string) => status === 'VERIFIED & SETTLED' || status === 'VERIFIED';
 
+/**
+ * THE RETURN LEG FROM GCASH, WHICH NOTHING HANDLED.
+ *
+ * GCash is a redirect method: the browser LEAVES this page, the resident
+ * authorises in the GCash app, and Adyen sends them back to `returnUrl` carrying
+ * `sessionId` and `redirectResult`. The modal that would have called
+ * `verify-session` was unmounted by that navigation, and nothing here read
+ * either parameter - `grep redirectResult frontend/src` returned nothing at all.
+ *
+ * So a resident authorised the payment, came back to a plain payments page, and
+ * was told NOTHING. No confirmation, no reference, and - until the landlady
+ * verified it - a bill still showing the full amount with a live Pay button.
+ * The money was fine, because the webhook records it independently. They simply
+ * had no way to know.
+ *
+ * The `status=` / `ref=` branch below is the LOCAL CASHIER's shape, built by
+ * `public.ts`, and that route is 404-ed whenever a gateway is configured. Adyen
+ * never sends `status=`. It is kept for the no-gateway development path and is
+ * no longer the only thing handled.
+ */
+async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
+  const sessionId = params.get('sessionId');
+  const redirectResult = params.get('redirectResult');
+  if (!sessionId || !redirectResult) return false;
+
+  // Clear the parameters first. They are single-use, and leaving them in the
+  // URL means a refresh re-submits a result that has already been consumed.
+  window.history.replaceState({}, document.title, window.location.pathname);
+
+  try {
+    const res = await api.post<{ confirmed: boolean; recorded: boolean; gatewayStatus: string }>(
+      '/tenant/payments/adyen/verify-session',
+      { sessionId, sessionResult: redirectResult }
+    );
+
+    if (res?.confirmed) {
+      showToast(
+        'success',
+        'Payment received',
+        "Adyen has confirmed it. It now shows as waiting for the landlady to check it, and " +
+        'you will not be asked to pay this bill again.'
+      );
+    } else {
+      showToast(
+        'warning',
+        'Payment not completed',
+        `Adyen reports this checkout as "${res?.gatewayStatus ?? 'unknown'}". Nothing was ` +
+        'recorded. If money did leave your GCash, tell the landlady and do not pay again.'
+      );
+    }
+  } catch (err: any) {
+    /**
+     * The payment itself is NOT in doubt here - the webhook records it
+     * independently of this call. What failed is our confirmation of it, and
+     * the message has to say so, because the wrong reading is "it did not work,
+     * pay again".
+     */
+    showToast(
+      'warning',
+      'Could not confirm your payment here',
+      (err?.message ? err.message + ' ' : '') +
+      'If money left your GCash the payment is safe - it is recorded with Adyen and reaches ' +
+      'the landlady separately. Do not pay again; check this page shortly.'
+    );
+  }
+  return true;
+}
+
 onMounted(async () => {
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get('status');
   const refParam = params.get('ref');
+
+  await handleGatewayReturn(params);
 
   if (statusParam === 'success') {
     showToast(
@@ -116,6 +186,25 @@ onMounted(async () => {
   }
 
   await Promise.all([fetchOutstandingBills(), fetchPaymentHistory()]);
+
+  /**
+   * `?pay=<billId>` opens that bill's checkout straight away.
+   *
+   * The overview screen's Pay button routes here with it - it used to open a
+   * checkout session of its own and then silently discard it, so it now hands
+   * the job to the one screen that can actually mount the Drop-in. That link
+   * was doing nothing on arrival until this read it.
+   *
+   * Resolved against the bills we just loaded rather than trusted: a bill id
+   * that is not outstanding for this resident simply opens nothing, and they
+   * see their normal payments page.
+   */
+  const payBillId = params.get('pay');
+  if (payBillId) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    const target = outstandingBills.value.find((b: any) => b.id === payBillId);
+    if (target) openAdyenModal(target);
+  }
 });
 
 /**

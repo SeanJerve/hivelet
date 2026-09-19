@@ -56,6 +56,29 @@ export interface SessionDetails {
 }
 
 // In-memory mapping of active checkout session IDs to transaction metadata.
+/**
+ * The one thing said when a checkout session cannot be produced, whatever the
+ * reason - and it is deliberately ONE string.
+ *
+ * It read "Payment session has expired or is invalid." Two problems with that.
+ *
+ * The sessions live in a process-local Map, so a backend restart mid-payment
+ * loses them. A resident who has ALREADY PAID in GCash came back, hit this 404,
+ * and saw it under a heading reading "The payment page could not be opened",
+ * with a Try again button beneath it. The one thing they must not do is pay
+ * again, and the screen was inviting exactly that.
+ *
+ * And it must stay IDENTICAL across both branches below - the missing session
+ * and the session that belongs to somebody else. Two different strings would
+ * let one tenant discover whether another's session id exists. So the wording
+ * has to be honest to a real payer and empty to a prober, which is what this is:
+ * it never says whether the session existed.
+ */
+const SESSION_UNAVAILABLE =
+  'This payment session is no longer available. If you completed a payment in GCash it is ' +
+  'safe - Adyen has it, and it reaches the landlady separately from this page. Do not pay ' +
+  'again; check your payments page shortly, and tell her if it has not appeared.';
+
 const checkoutSessions = new Map<string, SessionDetails>();
 
 /**
@@ -467,13 +490,14 @@ export const adyenService = {
   async confirmCheckout(sessionId: string, sessionResult: string, tenantProfileId: string) {
     const session = checkoutSessions.get(sessionId);
     if (!session) {
-      throw ApiError.notFound('Payment session has expired or is invalid.');
+      throw ApiError.notFound(SESSION_UNAVAILABLE);
     }
 
     // The session is a bearer capability. Confirm it belongs to the caller, so one
     // tenant cannot read the outcome of another tenant's checkout by holding its id.
+    // Same string as above, deliberately - see SESSION_UNAVAILABLE.
     if (session.tenantProfileId !== tenantProfileId) {
-      throw ApiError.notFound('Payment session has expired or is invalid.');
+      throw ApiError.notFound(SESSION_UNAVAILABLE);
     }
 
     if (!this.isLiveConfigured()) {
