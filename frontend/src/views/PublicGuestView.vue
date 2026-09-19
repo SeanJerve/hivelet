@@ -460,8 +460,17 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           >
             <span>Kind</span>
             <span>What it is</span>
-            <span class="text-right">Units</span>
-            <span class="text-right">Free to rent</span>
+            <!--
+              With the listing unreachable the rows carry one "could not be
+              loaded" line across both right-hand columns, so heading them
+              "Units" and "Free to rent" labels two columns that have no
+              values under them. The header follows the rows.
+            -->
+            <template v-if="!roomsFetchFailed">
+              <span class="text-right">Units</span>
+              <span class="text-right">Free to rent</span>
+            </template>
+            <span v-else class="text-right sm:col-span-2">Availability</span>
           </div>
 
           <RouterLink

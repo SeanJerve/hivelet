@@ -62,7 +62,8 @@ import { useRoute } from 'vue-router';
 import { peso } from '@/lib/canonicalUnits';
 import { CATEGORIES, resolveSlug, type CategoryKey } from '@/lib/unitCategories';
 import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
-import { showToast, LANDLADY, floorLabelFor } from '@/lib/systemState';
+import { showToast, LANDLADY, floorLabelFor, buildingNameFor } from '@/lib/systemState';
+import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
 import { ArrowRight, Loader2, Send, X } from 'lucide-vue-next';
@@ -156,39 +157,6 @@ const rateCeiling = computed(() =>
   categoryUnits.value.length ? Math.max(...categoryUnits.value.map((u) => u.current_price)) : 0
 );
 
-/**
- * The floors of THE BUILDING THIS UNIT IS IN, newest-first down the page.
- *
- * It used to take every floor on the property, which was wrong in a way the
- * data alone would not have revealed. Sean explained on 2026-09-19 that the
- * Front Apartment is its OWN building: F1 on the lower level, with F2F and
- * F2B above it. The Back Apartment and the Linda units are likewise not
- * storeys of the main boarding house.
- *
- * (Phrased without a count beside the word "units" on purpose - check:ledger
- * reads that shape as a claim about the property, whose answer is 33, and it
- * is right to.)
- *
- * So `floor` is the floor WITHIN a building, and a stack drawn from the whole
- * property told somebody looking at F2F that they were on the second of four
- * levels of a building that has two. Grouping by `cluster_code` is what makes
- * the drawing true.
- *
- * Read off the live list rather than written down: the property's shape is
- * already stated in several documents here and two of them have been wrong
- * about it. With the list unreachable this is empty and the stack does not
- * render at all, which is the honest state - the page will not draw a building
- * it could not read.
- */
-const floorsDescending = computed(() => {
-  const cluster = activeUnit.value?.cluster_code;
-  if (!cluster) return [];
-  const seen = new Set<number>();
-  for (const r of publicRooms.value) {
-    if (r.cluster_code === cluster && typeof r.floor === 'number') seen.add(r.floor);
-  }
-  return [...seen].sort((a, b) => b - a);
-});
 
 const activeUnit = computed(
   () =>
@@ -575,48 +543,50 @@ async function submitInquiry() {
             -->
             <div v-else class="absolute inset-0 flex flex-col justify-between px-6 py-8 sm:px-10 sm:py-10">
               <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-                No photograph yet
+                Where this unit is
               </p>
 
               <!--
-                Measured at 375px: the panel is 281 tall and this stack filled
-                280 of it, which is a fit with nothing left. A fifth floor, or
-                one label wrapping, would have pushed it out. The gaps and both
-                fixed columns step down below `sm` so the rule itself keeps the
-                width instead.
+                The floor plan, now that there is one for every unit.
+
+                This panel used to draw an abstract stack - one rule per floor
+                of the building with the unit's own floor picked out - because
+                no drawing existed. One does now, so it shows the actual plan
+                with the unit marked on it, which is the thing the stack was
+                standing in for. Same pictures and same chip as the unit rows
+                on the landing page, from the one `floorPlans` module.
+
+                The stack is gone rather than kept alongside: two drawings of
+                the same fact, one of them abstract, is worse than one.
               -->
-              <div v-if="floorsDescending.length > 0" class="mx-auto w-full max-w-md">
-                <ul class="flex flex-col gap-2 sm:gap-3">
-                  <li v-for="f in floorsDescending" :key="f" class="flex items-center gap-4">
-                    <span
-                      :class="[
-                        'w-16 sm:w-20 shrink-0 text-[0.7rem] tracking-[0.14em] uppercase',
-                        f === activeUnit.floor ? 'text-ink' : 'text-ink-faint',
-                      ]"
-                    >{{ floorLabelFor(f) }}</span>
-                    <span
-                      aria-hidden="true"
-                      :class="[
-                        'flex-1 transition-colors',
-                        f === activeUnit.floor ? 'h-0.5 bg-brand' : 'h-px bg-border-strong',
-                      ]"
-                    />
-                    <span
-                      class="w-14 sm:w-24 shrink-0 text-right text-[0.7rem] tracking-[0.14em] uppercase text-ink"
-                    >{{ f === activeUnit.floor ? 'This unit' : '' }}</span>
-                  </li>
-                </ul>
+              <div v-if="planFor(activeUnit.room_number)" class="relative mx-auto w-full max-w-md">
+                <img
+                  :src="`/floorplans/${planFor(activeUnit.room_number)!.plan}.png`"
+                  :alt="'Floor plan of the ' + floorLabelFor(activeUnit.floor) + ' of the ' + buildingNameFor(activeUnit.cluster_code)"
+                  :width="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.w"
+                  :height="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.h"
+                  class="block w-full"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span
+                  v-if="planFor(activeUnit.room_number)!.x !== null"
+                  class="absolute rounded-full bg-brand px-2 py-0.5 text-[0.65rem] font-semibold text-on-brand shadow-lift"
+                  :style="{
+                    left: planFor(activeUnit.room_number)!.x + '%',
+                    top: planFor(activeUnit.room_number)!.y + '%',
+                    transform: 'translate(-30%, -100%)',
+                  }"
+                >{{ activeUnit.room_number.toUpperCase() }}</span>
                 <p class="sr-only">
                   Unit {{ activeUnit.room_number.toUpperCase() }} is on the
                   {{ floorLabelFor(activeUnit.floor) }} of the
-                  {{ activeUnit.cluster_code }}, which has
-                  {{ floorsDescending.length }}
-                  {{ floorsDescending.length === 1 ? 'level' : 'levels' }}.
+                  {{ buildingNameFor(activeUnit.cluster_code) }}.
                 </p>
               </div>
 
               <p class="max-w-xs text-xs sm:text-sm text-ink-faint leading-relaxed">
-                Ask for a viewing and you can see it for yourself.
+                A plan, not a photograph. Ask for a viewing and you can see it for yourself.
               </p>
             </div>
 

@@ -377,6 +377,28 @@ export function floorLabelFor(floor: number): string {
 }
 
 /**
+ * A building's name as a sentence would say it.
+ *
+ * `cluster_code` holds short labels - "BH", "Back Apartment", "Linda" - which
+ * are right on a chip in a table and wrong in prose. The category page's
+ * floor-plan caption read "Floor plan of the 1st Floor of the BH", and its
+ * screen-reader line "Unit 1A is on the 1st Floor of the BH".
+ *
+ * Lives here beside `floorLabelFor` because both answer the same question -
+ * how to say where a unit is - and a second copy of either is how two screens
+ * start disagreeing.
+ */
+export function buildingNameFor(clusterCode: string): string {
+  const c = (clusterCode || '').toLowerCase().trim();
+  if (c === 'bh' || c.includes('main')) return 'main boarding house';
+  if (c.includes('back')) return 'back apartment';
+  if (c.includes('front')) return 'front apartment';
+  if (c.includes('linda')) return 'Linda units';
+  if (c.includes('penthouse') || c === 'ph') return 'penthouse';
+  return clusterCode;
+}
+
+/**
  * The monthly water charge for one unit, at the configured rates. BR-014 / BR-040.
  *
  * Exported because the dashboard's run-rate needs the same figures and was
