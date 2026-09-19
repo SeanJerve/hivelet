@@ -321,6 +321,23 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
   }
 
   // --- year totals ----------------------------------------------------------
+  //
+  // A year with nothing in it says so, and says nothing else. This used to print
+  // a bold `YEAR TOTAL 2024` row of zeros across every property area, then the
+  // OD-07 note about how the Cumulative column accumulates, and only then - at
+  // the very bottom - "No expenses were recorded for 2024."
+  //
+  // A total of zero is a claim that the year came to nothing. "We hold no rows
+  // for this year" is a different statement and the true one. Once a zero is
+  // printed in a totals row, in bold, above the sentence that would correct it,
+  // the two are indistinguishable. Same defect as the income sheet.
+  if (byMonth.size === 0) {
+    const empty = ws.addRow([`No expenses were recorded for ${year}.`]);
+    empty.font = { size: 10, italic: true };
+    ws.mergeCells(empty.number, 1, empty.number, totalCol);
+    return wb;
+  }
+
   const yearCells: (string | number | null)[] = [`YEAR TOTAL ${year}`, null];
   for (const a of areas) yearCells.push(c2(yearAreaTotals.get(a.code) ?? 0));
   yearCells.push(null, c2(yearGrandTotal));
@@ -342,12 +359,6 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
   note.font = { size: 9, italic: true, color: { argb: INK } };
   ws.mergeCells(note.number, 1, note.number, sumCumCol);
   note.alignment = { wrapText: true, vertical: 'top' };
-
-  if (byMonth.size === 0) {
-    const empty = ws.addRow([`No expenses were recorded for ${year}.`]);
-    empty.font = { size: 10, italic: true };
-    ws.mergeCells(empty.number, 1, empty.number, totalCol);
-  }
 
   return wb;
 }

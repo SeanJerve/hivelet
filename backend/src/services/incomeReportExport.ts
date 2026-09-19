@@ -465,6 +465,30 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   // Labelled explicitly, because a figure called "year to date" that quietly
   // omits a section is the kind of total someone reconciles against and cannot
   // make balance.
+  /**
+   * A year with nothing in it says so, and says nothing else.
+   *
+   * The order here used to be: the bold YEAR TO DATE row, then the OD-01 note,
+   * then - at the very bottom - "No income was recorded for 2024." So a year with
+   * no rows opened with a confident bold total reading zero across every column,
+   * followed by a paragraph explaining that "each month carries its own grand
+   * subtotal" when the sheet had no months on it.
+   *
+   * A total of zero is a claim that the year came to nothing. "We hold no rows
+   * for this year" is a different statement, and it is the true one - the ledger
+   * starts in 2024 and the year picker offers years either side of the data. The
+   * two are indistinguishable once a zero is printed in a totals row, and this
+   * one was printed in bold, above the sentence that would have corrected it.
+   *
+   * Nothing is totalled when there is nothing to total.
+   */
+  if (monthsPresent.length === 0) {
+    const empty = ws.addRow([`No income was recorded for ${year}.`]);
+    empty.font = { size: 10, italic: true };
+    ws.mergeCells(empty.number, 1, empty.number, 12);
+    return wb;
+  }
+
   const ytd = emitTotalRow(`YEAR TO DATE ${year} — excludes Linda`, yearToDate, { strong: true });
   ytd.font = { bold: true, size: 11, color: { argb: INK } };
 
@@ -481,12 +505,6 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   note.font = { size: 9, italic: true, color: { argb: INK } };
   ws.mergeCells(note.number, 1, note.number, 12);
   note.alignment = { wrapText: true, vertical: 'top' };
-
-  if (monthsPresent.length === 0) {
-    const empty = ws.addRow([`No income was recorded for ${year}.`]);
-    empty.font = { size: 10, italic: true };
-    ws.mergeCells(empty.number, 1, empty.number, 12);
-  }
 
   return wb;
 }
