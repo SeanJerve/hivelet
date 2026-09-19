@@ -2707,16 +2707,52 @@ router.delete(
     if (checkError) throw ApiError.internal(checkError.message);
     if (!before) throw ApiError.notFound('Income record not found.');
 
-    const { error } = await db
+    /**
+     * VOIDING A ROW THAT IS ALREADY VOID OVERWROTE WHO VOIDED IT.
+     *
+     * Neither the read above nor the update below filtered on `voided_at`, so a
+     * second DELETE on the same id succeeded silently and rewrote `voided_at`,
+     * `voided_by` and `void_reason` - destroying the original attribution on a
+     * financial record, which is the one thing a soft delete exists to keep.
+     * Both calls answered "voided", so nothing on screen distinguished the
+     * first from the second. Thirty-five income rows in the live ledger are in that state
+     * today and were re-voidable.
+     *
+     * The rest of this file already knows the idiom - the create path filters
+     * `.is('voided_at', null)` in three places - so this was an omission rather
+     * than a decision.
+     *
+     * The guard is on the UPDATE and not only on the read, because a read
+     * followed by a write is not atomic here. `.select()` makes the update
+     * report what it actually touched: no rows means somebody else voided it
+     * first, which is a 409 and not a failure.
+     */
+    if (before.voided_at) {
+      throw ApiError.conflict(
+        'That income record was already voided on ' +
+        `${String(before.voided_at).slice(0, 10)}. It has not been changed again - voiding it ` +
+        'a second time would erase who voided it the first time.'
+      );
+    }
+
+    const { data: voided, error } = await db
       .from('monthly_income_records')
       .update({
         voided_at: new Date().toISOString(),
         voided_by: req.user!.profileId,
         void_reason: 'Administrator manual deletion'
       })
-      .eq('id', req.params.id);
+      .eq('id', req.params.id)
+      .is('voided_at', null)
+      .select('id');
 
     if (error) throw ApiError.internal(error.message);
+    if (!voided || voided.length === 0) {
+      throw ApiError.conflict(
+        'That income record was voided by someone else a moment ago. Nothing was changed. ' +
+        'Reload the ledger.'
+      );
+    }
 
     await auditFromRequest(req, {
       action: 'PAYMENT_CORRECT',
@@ -3003,16 +3039,34 @@ router.delete(
     if (checkError) throw ApiError.internal(checkError.message);
     if (!before) throw ApiError.notFound('Expense entry not found.');
 
-    const { error } = await db
+    // The same defect, in the same shape, as the income void above - see the
+    // block there for why the guard is on the update and not only on the read.
+    if (before.voided_at) {
+      throw ApiError.conflict(
+        'That expense entry was already voided on ' +
+        `${String(before.voided_at).slice(0, 10)}. It has not been changed again - voiding it ` +
+        'a second time would erase who voided it the first time.'
+      );
+    }
+
+    const { data: voided, error } = await db
       .from('monthly_expense_entries')
       .update({
         voided_at: new Date().toISOString(),
         voided_by: req.user!.profileId,
         void_reason: 'Administrator manual deletion'
       })
-      .eq('id', req.params.id);
+      .eq('id', req.params.id)
+      .is('voided_at', null)
+      .select('id');
 
     if (error) throw ApiError.internal(error.message);
+    if (!voided || voided.length === 0) {
+      throw ApiError.conflict(
+        'That expense entry was voided by someone else a moment ago. Nothing was changed. ' +
+        'Reload the ledger.'
+      );
+    }
 
     await auditFromRequest(req, {
       action: 'EXPENSE_VOID',
