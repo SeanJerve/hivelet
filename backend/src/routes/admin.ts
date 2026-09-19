@@ -444,7 +444,27 @@ const tenantOnboardSchema = z.object({
   occupation: z.string().max(100).optional(),
   facebookUrl: z.string().optional(),   // facebook_url is TEXT, unbounded
   roomNumber: z.string().max(20).optional(),
-  moveInDate: z.string().optional(),
+  /**
+   * `isoDate`, not a bare string, and this one carries further than it looks.
+   *
+   * It is written to BOTH `start_date` and `anniversary_date` below, and
+   * `anniversary_date` is what BR-033 derives every future rent period from
+   * (`computeRentPeriod`). A `date` column accepts more spellings than a form
+   * does: `03/04/2026` is a real date to PostgreSQL and means March in one
+   * reading and April in another, so a value that is merely *parseable* can set
+   * a tenancy's cycle to the wrong day and every "Rent For" on every later
+   * receipt follows it. Silently - nothing errors, because nothing is wrong
+   * with the row.
+   *
+   * And an unparseable one fails at the assignment insert, which happens AFTER
+   * the profile has been created - the orphan-profile case §3.7 of the
+   * judgement log lists. Rejecting here is before any write, which is the
+   * reason the expense allocation schema gives for validating where it does.
+   *
+   * Costs nothing: the form is an `<input type="date">`, so it already sends
+   * exactly this.
+   */
+  moveInDate: isoDate.optional(),
   // Advance rent (OD-04), so it is money and takes the finite check with it.
   depositAmount: money.optional(),
   occupantCount: occupantCount.refine((n) => n >= 1, 'must be at least one occupant').optional(),
@@ -2265,7 +2285,14 @@ const expenseAllocationSchema = z.object({
 });
 
 const expenseEntrySchema = z.object({
-  expenseDate: z.string(),
+  // `isoDate`, matching the PATCH schema eighty lines below, which already used
+  // it. This one took a bare string, so a malformed date reached the database
+  // function as a cast error - a 500 where the sibling returns a clean 422 - and
+  // an ambiguous one (`03/04/2026`) was accepted and filed under whichever month
+  // PostgreSQL's DateStyle preferred. This ledger already carries two dates that
+  // cannot be right (`check:ledger` pins them, one is the Excel epoch), and a
+  // route that accepts ambiguous spellings is how a third arrives.
+  expenseDate: isoDate,
   orSupplier: z.string().min(1),
   categoryCode: z.string().min(1).max(20),
   allocations: z.array(expenseAllocationSchema).min(1),
