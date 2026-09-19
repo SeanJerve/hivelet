@@ -173,6 +173,35 @@ confirm it belongs there.**
 
 ---
 
+## 2g. Unit 2f has three months with nothing recorded, for a resident who never left · **added 2026-09-19**
+
+**This is a question about her receipt book, not a claim that money is missing.** Say that first.
+
+- **What her ledger shows for 2f.** France Sacueza, ₱6,500 rent and ₱200 water, paid every single
+  month on a 9th-to-8th cycle — **except three**: 9 Nov – 8 Dec 2025, 9 Dec – 8 Jan, and
+  9 Jan – 8 Feb 2026. Unbroken before, unbroken after, same person, same rent.
+- **Why we think it is a transcription gap rather than unpaid rent.** Receipt numbers run
+  continuously through that period — **5030 to 5135, and only three of those 106 numbers are
+  unused: 5063, 5090 and 5106.** Each falls exactly where a 2f payment would sit:
+
+  | missing period | unused receipt | the receipts either side of it are dated |
+  | :--- | :--- | :--- |
+  | 9 Nov – 8 Dec 2025 | **5063** | 1 and 3 December 2025 |
+  | 9 Dec – 8 Jan 2026 | **5090** | 14 and 15 January 2026 |
+  | 9 Jan – 8 Feb 2026 | **5106** | 30 January and 2 February 2026 |
+
+  Three missing months, three unused numbers, each on the right date. Every other unit has a
+  receipt in each of those months, so the book was being kept normally throughout.
+- **What to ask her:** *"Can we look at receipts 5063, 5090 and 5106 in the book? They are the
+  only three numbers not written down in that stretch, and unit 2f has no entry for those months."*
+- **Every other gap in the ledger is explained.** There are 61 months across 16 units with no
+  receipt, and **58 of them have a different resident before and after** — a move-out and a
+  move-in, which is exactly what a gap should look like. Only these three have the same person on
+  both sides.
+- **A check now watches for this.** If a fourth ever appears, `check:ledger` fails and names it.
+
+---
+
 ## 2f. Three things the system had to guess, because her book does not spell them out · **added 2026-09-19**
 
 > **Say this first, and mean it: nothing is broken and no money is missing.** Nobody has used the

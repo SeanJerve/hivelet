@@ -1094,6 +1094,74 @@ if (live.length) {
     `${income.length} income rows, ${lindaRooms.size} Linda unit(s) - none misfiled`);
 
   /**
+   * A MONTH WITH NO RECEIPT, FOR A RESIDENT WHO WAS THERE EITHER SIDE.
+   *
+   * Most gaps in her book are vacancies and mean nothing is wrong. Across the
+   * 937 rows there are 61 months with no receipt, spread over 16 units - and 58
+   * of them have a DIFFERENT name before and after, which is a tenant change.
+   *
+   * The three that do not are the interesting ones: same resident, same unit,
+   * same rent, unbroken either side, and nothing in between. That is not a
+   * vacancy, and it is worth her looking at.
+   *
+   * IT IS NOT A CLAIM THAT MONEY WAS NOT COLLECTED. The ledger records what she
+   * entered; a blank means nothing was entered. What makes it answerable is the
+   * receipt-number sequence: across the 106 consecutive numbers 5030-5135,
+   * exactly THREE are unused, and each falls on the date unit 2f would have
+   * paid. Three missing months, three unused numbers, right dates. That points
+   * at three receipts written and never transcribed, not at three months of
+   * unpaid rent - but only her book can settle it.
+   */
+  const gapKey = (unit, ym) => unit + ' ' + ym;
+  const KNOWN_GAPS = new Map([
+    [gapKey('2f', '2025-11'), 'unused receipt 5063 sits between receipts dated 1 and 3 Dec 2025'],
+    [gapKey('2f', '2025-12'), 'unused receipt 5090 sits between receipts dated 14 and 15 Jan 2026'],
+    [gapKey('2f', '2026-01'), 'unused receipt 5106 sits between receipts dated 30 Jan and 2 Feb 2026'],
+  ]);
+
+  const byRoomMonth = new Map();
+  for (const r of income) {
+    if (!r.room_id) continue;
+    const list = byRoomMonth.get(r.room_id) ?? [];
+    list.push({ ym: r.year + '-' + String(r.month).padStart(2, '0'), name: r.contact_name });
+    byRoomMonth.set(r.room_id, list);
+  }
+
+  const unexplainedGaps = [];
+  for (const [roomId, list] of byRoomMonth) {
+    list.sort((a, b) => a.ym.localeCompare(b.ym));
+    const present = new Set(list.map((x) => x.ym));
+    const first = list[0].ym;
+    const last = list[list.length - 1].ym;
+    const unit = rooms.find((x) => x.id === roomId)?.room_number ?? roomId;
+
+    let y = Number(first.slice(0, 4));
+    let mo = Number(first.slice(5, 7));
+    for (;;) {
+      const ym = y + '-' + String(mo).padStart(2, '0');
+      if (ym > last) break;
+      if (!present.has(ym)) {
+        const before = list.filter((x) => x.ym < ym).pop();
+        const after = list.find((x) => x.ym > ym);
+        if (before && after && before.name === after.name) {
+          const k = gapKey(unit, ym);
+          if (KNOWN_GAPS.has(k)) {
+            console.log('        ' + k + ' - no receipt, same resident either side. ' + KNOWN_GAPS.get(k));
+          } else {
+            unexplainedGaps.push(k + ' - no receipt, and ' + before.name + ' is on both sides of it');
+          }
+        }
+      }
+      mo += 1;
+      if (mo > 12) { mo = 1; y += 1; }
+    }
+  }
+
+  for (const g of unexplainedGaps) console.log('        ' + g);
+  check('a month missing for a continuing resident', unexplainedGaps.length,
+    KNOWN_GAPS.size + ' known gap(s), listed above and awaiting her book; no others');
+
+  /**
    * NOT CHECKED HERE, DELIBERATELY - and this is worth a note rather than a
    * silent omission.
    *

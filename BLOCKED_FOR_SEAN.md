@@ -376,6 +376,28 @@ the untested half of BR-024, and they only become testable after a person has us
   root of B-29.
 - **Raised and fixed:** 2026-09-19
 
+### B-40 — unit 2f has three months with no receipt, and three unused receipt numbers to match
+
+- **For the client meeting, not for you** — added to `CLIENT_MEETING_QUESTIONS.md` § 2g in her
+  words. Recorded here because it is a ledger finding and belongs with the other six.
+- **What it is.** 2f, France Sacueza, ₱6,500 + ₱200 water, paid every month on a 9th-to-8th cycle
+  — **except 9 Nov – 8 Dec 2025, 9 Dec – 8 Jan, and 9 Jan – 8 Feb 2026.** Unbroken either side,
+  same person, same rent, same cycle.
+- **The evidence that makes it answerable.** Receipt numbers run continuously through that window:
+  of the **106 consecutive numbers 5030–5135, exactly three are unused — 5063, 5090, 5106** — and
+  each sits on the date a 2f payment would fall. Same technique as the pinned receipts in
+  `check:ledger`, and the fit is tighter here: three gaps, three numbers, three matching dates.
+- **Framed as a question, deliberately.** Your 2026-09-19 ruling on the garbage fee applies
+  unchanged: the ledger records what she entered, a blank means nothing was entered, and **this
+  must not be put to her as uncollected income.** The evidence points at three receipts written
+  and never transcribed.
+- **Every other gap is explained, which is what makes these three stand out.** 61 months across
+  16 units have no receipt; **58 have a different resident before and after** — a move-out and a
+  move-in. Only these three have the same name on both sides.
+- **☑ A check guards it.** `check:ledger` prints the three on every run and fails if a fourth
+  appears. Mutation-tested: removing one from the known list fails and names the resident.
+- **Raised:** 2026-09-19
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
