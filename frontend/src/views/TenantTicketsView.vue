@@ -60,6 +60,13 @@ const ticketPriority = ref('Medium');
 const ticketDescription = ref('');
 const ticketPhotoUrl = ref<string | null>(null);
 const ticketPhotoName = ref('');
+/**
+ * The file's real type. `fileType` was hardcoded `'image/png'` on the way out,
+ * so a JPEG from a phone - which is most of them - was recorded in
+ * `ticket_attachments.file_type` as a PNG. An invented value, and the column
+ * exists precisely to say what the thing is.
+ */
+const ticketPhotoType = ref('');
 const ticketNotice = ref('');
 const ticketError = ref('');
 const submitting = ref(false);
@@ -310,8 +317,24 @@ async function fetchActiveRoom() {
     const data = await api.get<any[]>('/tenant/my-rooms');
     const activeRoom = data?.find((r) => r.is_active) || data?.[0];
     if (activeRoom) {
-      activeRoomId.value = activeRoom.rooms?.id || activeRoom.id || 'room-1a';
-      activeRoomNumber.value = activeRoom.rooms?.room_number || activeRoom.room_number || '1A';
+      /**
+       * Only the room's own id and number, and nothing invented.
+       *
+       * These read `activeRoom.rooms?.id || activeRoom.id || 'room-1a'` and
+       * `… || activeRoom.room_number || '1A'`. Each row here is a
+       * ROOM_ASSIGNMENT with the unit nested under `rooms`, so the middle
+       * fallback is the assignment's own id - a real uuid of the wrong entity,
+       * which the server then refuses as "Room not found" - and
+       * `activeRoom.room_number` does not exist on an assignment row at all.
+       *
+       * The last fallback is the one that mattered: a resident whose unit could
+       * not be resolved was shown **1A**, somebody else's unit, as their own.
+       * And because the invented id was truthy, the *"You have no active unit"*
+       * guard in `handleTicketSubmit` could never fire - the case it exists for
+       * was the case it could not see.
+       */
+      activeRoomId.value = activeRoom.rooms?.id ?? '';
+      activeRoomNumber.value = activeRoom.rooms?.room_number ?? '';
     }
   } catch (err: any) {
     console.error('Failed to resolve active room:', err?.message || err);
@@ -329,11 +352,43 @@ async function fetchTickets() {
   }
 }
 
+/**
+ * The photo travels as a base64 data URI inside the JSON body, and the server
+ * takes 1 MB of body in total (`express.json({ limit: '1mb' })`). Base64 costs
+ * about a third on top, so anything over roughly **740 KB of image** cannot be
+ * sent at all - which is most photographs a phone takes.
+ *
+ * Measured against the running server rather than worked out on paper: a body
+ * of 0.91 MB reached the route, and 1.04 MB did not.
+ *
+ * Nothing checked. The file was read, encoded, posted, and refused by the body
+ * parser - and until the fix that went in beside this one, refused as **500
+ * Internal server error**, so a resident whose photo was too big was told the
+ * system had broken. Checking here means they are told the truth before
+ * anything is sent, and keeps the ticket itself - which is the part that
+ * matters - from being held up by its attachment.
+ */
+const MAX_PHOTO_BYTES = 700 * 1024;
+
 const handlePhotoSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (!file) return;
+
+  if (file.size > MAX_PHOTO_BYTES) {
+    ticketPhotoUrl.value = null;
+    ticketPhotoName.value = '';
+    target.value = '';
+    ticketError.value =
+      `That photo is ${(file.size / 1024 / 1024).toFixed(1)} MB, and the largest this can send ` +
+      `is about ${Math.round(MAX_PHOTO_BYTES / 1024)} KB. File the request without it and reply ` +
+      `to it with the photo, or send a smaller one.`;
+    return;
+  }
+
+  ticketError.value = '';
   ticketPhotoName.value = file.name;
+  ticketPhotoType.value = file.type || 'application/octet-stream';
   const reader = new FileReader();
   reader.onload = (e) => {
     ticketPhotoUrl.value = e.target?.result as string;
@@ -344,6 +399,7 @@ const handlePhotoSelect = (event: Event) => {
 const removePhoto = () => {
   ticketPhotoUrl.value = null;
   ticketPhotoName.value = '';
+  ticketPhotoType.value = '';
 };
 
 async function handleTicketSubmit() {
@@ -366,7 +422,7 @@ async function handleTicketSubmit() {
     }
 
     const attachments = ticketPhotoUrl.value
-      ? [{ fileUrl: ticketPhotoUrl.value, fileType: 'image/png' }]
+      ? [{ fileUrl: ticketPhotoUrl.value, fileType: ticketPhotoType.value || 'application/octet-stream' }]
       : undefined;
 
     // Failure propagates to the catch below, which shows it. This used to be
