@@ -15,6 +15,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { peso, publicStatusLabel } from '@/lib/canonicalUnits';
 import { CATEGORIES } from '@/lib/unitCategories';
+import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
 import { fetchRooms, rooms, roomsFetchFailed } from '@/lib/systemState';
 import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
 import { api } from '@/lib/api';
@@ -226,22 +227,6 @@ const hiddenUnitCount = computed(() =>
 );
 
 
-/**
- * The floor plans, by floor.
- *
- * EMPTY ON PURPOSE, AND THE PANEL BELOW READS IT RATHER THAN GUESSING A PATH.
- * Sean is exporting one drawing per floor as SVG (HANDOFF_TO_DESIGN section
- * 7b). Until a file actually exists, an image element pointed at where it
- * will live renders a broken-image box on the public site, which is worse
- * than saying plainly that the drawing is not ready.
- *
- * (Written without the literal tag name: the design detector scans for it and
- * reported this comment as a broken image.)
- *
- * When they arrive this becomes { 1: '/floorplans/1.svg', ... } and the panel
- * draws them. Nothing else has to change.
- */
-const FLOOR_PLANS: Record<number, string> = {};
 
 /**
  * Keyless Google Maps embed, pinned to the PLACE rather than to a coordinate.
@@ -634,24 +619,47 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                         </p>
                       </div>
 
-                      <figure class="m-0">
+<figure class="m-0">
                         <figcaption class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
                           Unit {{ u.unitCode }} on {{ u.floorLabel }}
                         </figcaption>
-                        <img
-                          v-if="FLOOR_PLANS[u.floor]"
-                          :src="FLOOR_PLANS[u.floor]"
-                          :alt="'Floor plan of ' + u.floorLabel + ', with unit ' + u.unitCode + ' marked'"
-                          class="mt-3 w-full rounded-tile border border-line bg-tile"
-                          loading="lazy"
-                        />
+
+                        <!--
+                          The plan is drawn INVERTED. These bitmaps are white lines on a black
+                          ground - which is why the supplied SVG needed a filter chain to be
+                          readable - so `invert` is doing that job here. Take it off and the
+                          panel goes black.
+                        -->
+                        <div
+                          v-if="planFor(u.unitCode)"
+                          class="relative mt-3 overflow-hidden rounded-tile border border-line bg-tile"
+                        >
+                          <img
+                            :src="`/floorplans/${planFor(u.unitCode)!.plan}.png`"
+                            :alt="`Floor plan of ${u.floorLabel}`"
+                            :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
+                            :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
+                            class="block w-full invert"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                          <span
+                            v-if="planFor(u.unitCode)!.x !== null"
+                            class="absolute rounded-full bg-brand px-2 py-0.5 text-[0.65rem] font-semibold text-on-brand shadow-lift"
+                            :style="{
+                              left: planFor(u.unitCode)!.x + '%',
+                              top: planFor(u.unitCode)!.y + '%',
+                              transform: 'translate(-30%, -100%)',
+                            }"
+                          >{{ u.unitCode }}</span>
+                        </div>
+
                         <div
                           v-else
                           class="mt-3 grid aspect-[4/3] place-items-center rounded-tile border border-dashed border-hatch bg-canvas px-6 text-center"
                         >
                           <p class="text-xs leading-5 text-ink-faint">
-                            The floor plan is not drawn yet. It will show where this unit sits on
-                            {{ u.floorLabel }}.
+                            There is no floor plan on file for this unit yet.
                           </p>
                         </div>
                       </figure>
@@ -704,24 +712,47 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 {{ u.desc }}
               </p>
 
-              <figure class="m-0 mt-5">
+<figure class="m-0 mt-5">
                 <figcaption class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
                   Unit {{ u.unitCode }} on {{ u.floorLabel }}
                 </figcaption>
-                <img
-                  v-if="FLOOR_PLANS[u.floor]"
-                  :src="FLOOR_PLANS[u.floor]"
-                  :alt="'Floor plan of ' + u.floorLabel + ', with unit ' + u.unitCode + ' marked'"
-                  class="mt-3 w-full rounded-tile border border-line bg-tile"
-                  loading="lazy"
-                />
+
+                <!--
+                  The plan is drawn INVERTED. These bitmaps are white lines on a black
+                  ground - which is why the supplied SVG needed a filter chain to be
+                  readable - so `invert` is doing that job here. Take it off and the
+                  panel goes black.
+                -->
+                <div
+                  v-if="planFor(u.unitCode)"
+                  class="relative mt-3 overflow-hidden rounded-tile border border-line bg-tile"
+                >
+                  <img
+                    :src="`/floorplans/${planFor(u.unitCode)!.plan}.png`"
+                    :alt="`Floor plan of ${u.floorLabel}`"
+                    :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
+                    :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
+                    class="block w-full invert"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span
+                    v-if="planFor(u.unitCode)!.x !== null"
+                    class="absolute rounded-full bg-brand px-2 py-0.5 text-[0.65rem] font-semibold text-on-brand shadow-lift"
+                    :style="{
+                      left: planFor(u.unitCode)!.x + '%',
+                      top: planFor(u.unitCode)!.y + '%',
+                      transform: 'translate(-30%, -100%)',
+                    }"
+                  >{{ u.unitCode }}</span>
+                </div>
+
                 <div
                   v-else
                   class="mt-3 grid aspect-[4/3] place-items-center rounded-tile border border-dashed border-hatch bg-canvas px-6 text-center"
                 >
                   <p class="text-xs leading-5 text-ink-faint">
-                    The floor plan is not drawn yet. It will show where this unit sits on
-                    {{ u.floorLabel }}.
+                    There is no floor plan on file for this unit yet.
                   </p>
                 </div>
               </figure>

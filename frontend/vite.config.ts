@@ -112,6 +112,13 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // The floor plans are 1.27 MB across ten files and a visitor sees at
+        // most one of them, after choosing a unit and opening its row. Swept
+        // into the precache by `**/*.png` they would be downloaded by everyone
+        // who ever loads the site, which is the same mistake `property-map.png`
+        // was making four days ago. They are lazy `<img>` instead, and the
+        // browser caches one per floor across every unit on it.
+        globIgnores: ['floorplans/**'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
