@@ -46,6 +46,18 @@ import { ApiError } from '../utils/ApiError.js';
  * each floor — and an alphabetical sort produces `B1F, B2B, B2F`. The order is a
  * property of the owner's sheet, so it is written down here and checked against
  * the database rather than derived from it.
+ *
+ * That last clause was a claim with no check behind it. Nothing compared this
+ * list to `rooms`, anywhere, and the month loop below only ever pulls the units
+ * it names - so a unit present in the ledger but absent from this array had its
+ * income **silently dropped**: no row, no subtotal, not in the grand subtotal,
+ * not in the year to date, and nothing on the sheet to say a unit was missing.
+ * The report would simply have understated her income by that unit's rent.
+ *
+ * All 33 units are accounted for today (22 BH + 5 Back + 1 PH + 3 Front here,
+ * plus LF and LB in LINDA_UNITS), verified against `rooms`. The risk is the
+ * next one she adds. `unplacedRows` below now catches that rather than trusting
+ * this comment to stay true.
  */
 const CLUSTER_ORDER: { code: string; label: string; units: string[]; subtotal: boolean }[] = [
   {
@@ -410,6 +422,39 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
 
       // The sheet gives Penthouse no subtotal - a single unit's row is its own total.
       if (cluster.subtotal) emitTotalRow(`${cluster.label} subtotal`, clusterTotal);
+    }
+
+    /**
+     * Any unit the documented order does not name, other than Linda's two.
+     *
+     * Money that reaches neither a cluster nor the Linda section used to vanish
+     * from the sheet entirely. Understating her income in silence is the worst
+     * of the available failures, so these are printed, labelled, and counted
+     * into the grand subtotal - they are pooled income like any other unit, and
+     * only their position on the page is unknown.
+     */
+    const placed = new Set(
+      [...CLUSTER_ORDER.flatMap((c) => c.units), ...LINDA_UNITS].map((u) => u.toUpperCase())
+    );
+    const unplacedRows = rows.filter((r) => !placed.has(r.room_number.toUpperCase()));
+
+    if (unplacedRows.length > 0) {
+      const units = [...new Set(unplacedRows.map((r) => r.room_number.toUpperCase()))].sort();
+      const warn = ws.addRow([
+        `NOT IN THE DOCUMENTED UNIT ORDER — ${units.join(', ')}. ` +
+          'Counted in the grand subtotal below, but placed here because ' +
+          'docs/09_MONTHLY_INCOME_REPORT.md §2 does not say where they belong.',
+      ]);
+      warn.font = { bold: true, size: 9, italic: true, color: { argb: RED } };
+      ws.mergeCells(warn.number, 1, warn.number, 12);
+
+      const unplacedTotal = zero();
+      for (const r of unplacedRows) {
+        emitUnitRow(r);
+        add(unplacedTotal, r);
+      }
+      emitTotalRow('Not in the documented order — subtotal', unplacedTotal);
+      merge(grand, unplacedTotal);
     }
 
     emitTotalRow('GRAND SUBTOTAL (excludes Linda)', grand, { strong: true });
