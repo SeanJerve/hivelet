@@ -2009,6 +2009,52 @@ router.post(
      * vaguely.
      */
     /**
+     * A receipt number may cover several months of ONE tenancy, written on ONE
+     * day. It may not appear against a different unit, and it may not appear
+     * against a different payment date.
+     *
+     * `check:ledger` enforces exactly these two rules over the whole ledger, and
+     * the write path did not, so the interface could create rows the check would
+     * then report forever. The historical ledger holds five of them - OR#4726,
+     * OR#4772, OR#4774, OR#4813 and INV#5165 - each a number mistyped as one
+     * already in use, and each with its own number left unused in the book
+     * (B-26). Every one would have passed the guard below, which only ever
+     * refused an EXACT repeat of unit, receipt, date, amount, year and month.
+     *
+     * Both are warnings about the piece of paper, not about the money, so they
+     * are 409s naming the row they collide with rather than silent corrections.
+     */
+    if (invoiceNumber) {
+      const { data: sameNumber, error: sameNumberError } = await db
+        .from('monthly_income_records')
+        .select('id, date_paid, room_id, rooms:room_id (room_number)')
+        .eq('invoice_number', invoiceNumber)
+        .is('voided_at', null)
+        .limit(50);
+
+      if (sameNumberError) throw ApiError.internal(sameNumberError.message);
+
+      const otherRoom = (sameNumber ?? []).find((r: any) => r.room_id !== room.id);
+      if (otherRoom) {
+        throw ApiError.conflict(
+          `Receipt ${invoiceNumber} is already recorded against unit ` +
+            `${(otherRoom as any).rooms?.room_number ?? 'another unit'} (record ${otherRoom.id}). ` +
+            'One receipt covers one unit. If this is a separate payment, give it its own receipt number.'
+        );
+      }
+
+      const otherDate = (sameNumber ?? []).find((r: any) => r.date_paid !== datePaid);
+      if (otherDate) {
+        throw ApiError.conflict(
+          `Receipt ${invoiceNumber} is already recorded as paid on ${(otherDate as any).date_paid} ` +
+            `(record ${otherDate.id}), and this one says ${datePaid}. One receipt is written on one ` +
+            'day. A receipt may cover several months, but they are all paid at once - if this is a ' +
+            'later payment, give it its own receipt number.'
+        );
+      }
+    }
+
+    /**
      * Every month this receipt covers is checked, not just the first. A receipt
      * spanning three months collides if ANY of the three is already recorded.
      */

@@ -33,6 +33,54 @@ thing did not work" is not.
 
 ## Open
 
+### B-27 — every imported payment date is a day early · **migration 032 written, NOT applied**
+
+- **Blocked on:** the same permission refusal that stopped 031. The SQL is in
+  `database/migrations/032_correct_imported_date_paid.sql`; running it is a copy-paste.
+- **The finding.** Her original spreadsheet is in the repository, and every row of
+  `monthly_income_records` was created in one import on **2026-08-28** — nothing has ever
+  been entered through the application — so the sheet is the source for all 937 rows.
+
+  | | |
+  | :--- | ---: |
+  | spreadsheet rows read | 931 |
+  | matched to a ledger row | 929 |
+  | ledger date **exactly one day early** | **929** |
+  | ledger date matching the sheet | **0** |
+  | any other offset | 0 |
+
+  **Not one row in the ledger carries the date she wrote.** Every one is a day early, across
+  2024, 2025 and 2026 alike.
+
+- **It is our bug, not hers.** The Excel cells hold exact UTC midnight — checked,
+  `2024-01-27T00:00:00.000Z`, no offset applied — so the importer read each as local midnight
+  and formatted it in a zone behind UTC, losing a day. The same defect `propertyDate.ts` and
+  `propertyClock.ts` exist to prevent, one layer earlier than either of them guards.
+- **The rent periods are fine** and are not touched. Those were parsed from text
+  ("Jun.29-Jul.28/24") and are correct — which is why nothing about rent cycles, overdue or
+  the month a row is filed under changes.
+- **Six rows are a different problem.** Their Date Paid cell was never stored as a date at all,
+  because of a typo, and the import defaulted them to the 1st:
+
+  | unit | her cell | imported as | she wrote |
+  | :--- | :--- | :--- | :--- |
+  | B2F | `31-Maay-24` | 2024-05-01 | 2024-05-31 |
+  | B2B | `21-Maay-24` | 2024-05-01 | 2024-05-21 |
+  | F2F | `4-Maay-24` | 2024-05-01 | 2024-05-04 |
+  | 3e | `13--Mar-26` | 2026-03-01 | 2026-03-13 |
+  | F2B | `30--Apr-26` | 2026-04-01 | 2026-04-30 |
+  | F1 | *(blank)* | 2026-07-01 | **nothing** |
+
+  "Maay" for May, and a doubled hyphen twice. **The last one she never filled in**, so 032
+  leaves it at the invented 2026-07-01 rather than replacing one invented date with another.
+  It is pinned in `check:ledger` for her to answer.
+
+- **Why it is worth doing now rather than later.** Every payment recorded through the app from
+  here on will be dated correctly. Today the wrong rows are all of them, and identifiable in
+  one statement. Once she starts using the system the ledger becomes a mix, and separating
+  them gets harder every week.
+- **Raised:** 2026-09-19
+
 ### B-26 — five receipt numbers were mistyped, and the book says what each should be
 
 - **Blocked on:** her receipt book, for two of the five. The other three are as good as proven
