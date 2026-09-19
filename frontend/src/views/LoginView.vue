@@ -208,12 +208,12 @@ async function handleQuickLogin(account: DemoAccount) {
       -->
       <aside class="relative hidden overflow-hidden bg-night lg:flex lg:flex-col lg:justify-between">
         <img
-          src="/galang-building.jpg"
+          src="/fe-galang-building.webp"
           alt=""
           aria-hidden="true"
           class="absolute inset-0 size-full object-cover object-center"
-          width="768"
-          height="1024"
+          width="1790"
+          height="879"
           loading="lazy"
         />
         <div class="absolute inset-0 bg-gradient-to-t from-night via-night/55 to-night/75" />

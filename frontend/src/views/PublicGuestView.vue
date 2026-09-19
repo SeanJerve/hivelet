@@ -313,18 +313,22 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           bytes land rather than after.
         -->
         <img
-          src="/galang-compound.jpg"
-          alt="The gate of the Galang compound, seen from the street"
+          src="/fe-galang-building.webp"
+          alt="The boarding house seen from the courtyard"
           class="w-full h-full object-cover object-center"
-          width="1024"
-          height="767"
+          width="1790"
+          height="879"
           fetchpriority="high"
           decoding="async"
         />
-        <!-- Subtle contrast overlay: unblurred to keep image details crystal clear and vibrant -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/40" />
-        <!-- Bottom black gradient for smooth anchoring of the hero frame -->
-        <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none" />
+        <!--
+          The scrim is the brand's own dark, not plain black. `--night` is
+          #0f1b15 - a green-black - so the photograph sits under the same
+          colour every dark surface in the application uses, and the hero stops
+          reading as a neutral stock header bolted onto a green product.
+        -->
+        <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/25 to-night/50" />
+        <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
       </div>
 
       <div class="relative z-10 max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 flex flex-col min-h-[clamp(34rem,94vh,58rem)] pt-7 pb-10 sm:pb-14">
@@ -624,12 +628,6 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                           Unit {{ u.unitCode }} on {{ u.floorLabel }}
                         </figcaption>
 
-                        <!--
-                          The plan is drawn INVERTED. These bitmaps are white lines on a black
-                          ground - which is why the supplied SVG needed a filter chain to be
-                          readable - so `invert` is doing that job here. Take it off and the
-                          panel goes black.
-                        -->
                         <div
                           v-if="planFor(u.unitCode)"
                           class="relative mt-3 overflow-hidden rounded-tile border border-line bg-tile"
@@ -639,7 +637,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                             :alt="`Floor plan of ${u.floorLabel}`"
                             :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
                             :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
-                            class="block w-full invert"
+                            class="block w-full"
                             loading="lazy"
                             decoding="async"
                           />
@@ -717,12 +715,6 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                   Unit {{ u.unitCode }} on {{ u.floorLabel }}
                 </figcaption>
 
-                <!--
-                  The plan is drawn INVERTED. These bitmaps are white lines on a black
-                  ground - which is why the supplied SVG needed a filter chain to be
-                  readable - so `invert` is doing that job here. Take it off and the
-                  panel goes black.
-                -->
                 <div
                   v-if="planFor(u.unitCode)"
                   class="relative mt-3 overflow-hidden rounded-tile border border-line bg-tile"
@@ -732,7 +724,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                     :alt="`Floor plan of ${u.floorLabel}`"
                     :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
                     :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
-                    class="block w-full invert"
+                    class="block w-full"
                     loading="lazy"
                     decoding="async"
                   />
@@ -889,6 +881,28 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             </p>
           </div>
         </div>
+
+        <!--
+          The gate, because it is the thing somebody is actually looking for
+          when they arrive. A map pin puts you on the street; this is what
+          tells you that you are at the right one. It sits between the address
+          and the map for that reason, and it is lazy because it is well below
+          the fold.
+        -->
+        <figure class="m-0 mt-12">
+          <img
+            src="/fe-galang-gate.webp"
+            alt="The blue gate of Galang's Compound, lettered GALANG COMPOUND"
+            class="block w-full rounded-tile border border-line object-cover"
+            width="1790"
+            height="879"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption class="mt-3 text-xs text-ink-soft">
+            Look for this gate on Sapaguita Street.
+          </figcaption>
+        </figure>
       </div>
 
       <div class="w-full border-t border-line">

@@ -251,21 +251,21 @@ async function submitInquiry() {
           `loading="lazy"` is doing real work here, not box-ticking. This panel
           is `hidden lg:flex`, and display:none does NOT stop a browser
           fetching an <img> inside it - checked in the network log at 375px,
-          where `galang-building.jpg` came back 200 OK on a screen that never
+          where the building photograph came back 200 OK on a screen that never
           shows it. That is 284 KB of someone's mobile data for a picture they
           cannot see. Lazy defers it until it scrolls into view, which on a
           phone is never.
         -->
         <img
-          src="/galang-building.jpg"
+          src="/fe-galang-building.webp"
           alt="The boarding house seen from the street"
           class="absolute inset-0 w-full h-full object-cover object-center"
-          width="768"
-          height="1024"
+          width="1790"
+          height="879"
           loading="lazy"
         />
         <!-- Contrast gradient overlay: unblurred to keep building details clear and vibrant -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/50" />
+        <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/25 to-night/50" />
 
         <div class="relative z-10">
           <p class="text-[0.7rem] tracking-[0.18em] uppercase text-white/80 drop-shadow-sm">

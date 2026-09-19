@@ -20,9 +20,15 @@
  * can be read aloud, and is drawn in the brand colour rather than baked into a
  * bitmap.
  *
- * THE BITMAPS ARE INVERTED ON PURPOSE. They are RGB with a BLACK ground and
- * WHITE lines, which is why the SVG needed a filter chain to be legible at all.
- * `invert(1)` in CSS does the same job. Remove it and every plan goes black.
+ * POLARITY IS NORMALISED ON DISK, NOT IN CSS, AND THAT IS A REPAIR.
+ * Two of the ten plans - ground and 2ndfloor - arrived as white lines on a
+ * BLACK ground, which is why the supplied SVG carried a mask and two
+ * feColorMatrix filters. The other eight were already dark lines on white.
+ *
+ * The first attempt applied `invert(1)` to all ten, generalising from the one
+ * file I had opened, and turned those eight black on the live site. The two
+ * odd ones are inverted in the file instead, so every plan on disk is now dark
+ * on light and nothing needs a filter. Do not add one back.
  *
  * `x` and `y` are percentages of the original 375x375 viewBox; `y` is the text
  * BASELINE, so the label is anchored bottom-left there. `null` means the area

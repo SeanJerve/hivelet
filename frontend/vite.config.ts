@@ -88,10 +88,17 @@ export default defineConfig({
       // 471 KB into the offline shell on every first visit, 24% of the 1,965 KB
       // it precaches, for a picture no route draws.
       //
-      // `galang-building.jpg` stays: /inquire renders it above the fold on a
-      // wide screen. It is `loading="lazy"` there so a phone, where its panel
-      // is display:none, no longer fetches it.
-      includeAssets: ['favicon.svg', 'galang-compound.jpg', 'galang-building.jpg'],
+      // Two photographs, both WebP, converted from the 2.8 MB PNGs Sean
+      // supplied on 19 Sep. The BUILDING is the landing hero and fills the
+      // tall panel on the enquiry and sign-in pages, so it is precached: it is
+      // the landing page's LCP. The GATE sits in the Location section, well
+      // below the fold and lazy, so precaching it would make every visitor pay
+      // for something most of them never scroll to.
+      //
+      // `galang-compound.jpg` and `galang-building.jpg` were deleted the same
+      // day: nothing referenced either once the new pair landed, and leaving
+      // them precached is the 471 KB `property-map.png` mistake again.
+      includeAssets: ['favicon.svg', 'fe-galang-building.webp'],
       manifest: {
         name: 'Hivelet — Apartment Management & Financial Operations',
         short_name: 'Hivelet',
