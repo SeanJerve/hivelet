@@ -956,7 +956,7 @@ if (live.length) {
    * queue is worked - 29 now, 16 once 035 is applied.
    */
   const anniv = await rows(
-    'room_assignments?is_active=eq.true&select=room_id,anniversary_date'
+    'room_assignments?is_active=eq.true&select=room_id,anniversary_date,occupant_count'
   );
   const newestPeriod = new Map();
   for (const r of income) {
@@ -964,7 +964,11 @@ if (live.length) {
     const key = `${r.year}-${String(r.month).padStart(2, '0')}`;
     const seen = newestPeriod.get(r.room_id);
     if (!seen || key > seen.key) {
-      newestPeriod.set(r.room_id, { key, day: Number(String(r.rent_period_start).slice(8, 10)) });
+      newestPeriod.set(r.room_id, {
+        key,
+        day: Number(String(r.rent_period_start).slice(8, 10)),
+        occupants: Number(r.occupants),
+      });
     }
   }
 
@@ -994,6 +998,56 @@ if (live.length) {
       `BR-033 anniversary vs ledger — ${drifted.length} known unsettled of ${anniv.length} ` +
       `(baseline ${ANNIVERSARY_DRIFT_BASELINE}); 13 are settled by migration 035, the rest need ` +
       'the owner (B-32). Lower the baseline as they are answered.'
+    );
+  }
+
+  /**
+   * BR-014 — THE HEADCOUNT THE SYSTEM BILLS WATER ON, AGAINST THE ONE SHE BILLED.
+   *
+   * Same defect class as the block above, found by the same question, and the
+   * third column caught this way: `occupant_count` reads 1 on all 32 active
+   * tenancies. A uniform import default that nothing has corrected since.
+   *
+   * It does not touch the receipts she writes on site - that path takes
+   * `occupants` as a typed field. It decides the bill a TENANT raises, because
+   * `GET /tenant/bills` and the Adyen path both read this column and hand it to
+   * `computeBillAmounts()`. So a resident's own portal, and the amount charged
+   * when they pay by GCash, is computed for one occupant whatever the truth.
+   *
+   * A ratchet, for the same reason as above: 13 are settled by migration 037
+   * and seven need the owner, since each changed within the last four months
+   * and a change that recent is as likely to be real as to be a slip.
+   *
+   * WHY A LEDGER COMPARISON AND NOT A RULE. Occupancy legitimately changes
+   * month to month and she maintains it by hand. This does not assert what the
+   * count SHOULD be - only that the system and her book disagree, which is a
+   * question worth putting to her rather than an error to correct in code.
+   */
+  const OCCUPANT_DRIFT_BASELINE = 16;
+  const occDrift = [];
+  for (const a of anniv) {
+    const led = newestPeriod.get(a.room_id);
+    if (!led || !Number.isFinite(led.occupants) || a.occupant_count == null) continue;
+    if (Number(a.occupant_count) !== led.occupants) {
+      const unit = rooms.find((r) => r.id === a.room_id)?.room_number ?? a.room_id;
+      occDrift.push(
+        `${unit}: system bills water for ${a.occupant_count}, she last billed ${led.occupants}`
+      );
+    }
+  }
+
+  if (occDrift.length > OCCUPANT_DRIFT_BASELINE) {
+    for (const d of occDrift) console.log(`        ${d}`);
+    fail(
+      `BR-014 headcount vs ledger — ${occDrift.length} tenancy(ies) bill water for a number ` +
+      `their own ledger contradicts, up from ${OCCUPANT_DRIFT_BASELINE}; see migration 037 and B-33.`
+    );
+  } else if (occDrift.length === 0) {
+    pass('BR-014 headcount vs ledger — every active tenancy bills water for the headcount her book shows');
+  } else {
+    pass(
+      `BR-014 headcount vs ledger — ${occDrift.length} known unsettled of ${anniv.length} ` +
+      `(baseline ${OCCUPANT_DRIFT_BASELINE}); 13 are settled by migration 037, 7 need the owner (B-33).`
     );
   }
 }

@@ -74,6 +74,25 @@ thing did not work" is not.
      be set from the wrong number.
   3. **Any bill raised for a unit** takes its rent from there.
 
+- **☝ ADDED 2026-09-19, and it is the sharpest edge on this item: point 3 is the GCash
+  amount.** `GET /tenant/bills` and the Adyen path build the bill from `current_price` plus
+  water, so the rate card is not only what a prospect is *shown* — it is what a resident is
+  *charged* when they pay through the portal. Measured against what each unit actually pays:
+
+  | | |
+  | :--- | :--- |
+  | non-Linda units under-charged by a tenant-raised bill | **29 of 30** |
+  | charged correctly | **0** |
+  | total per month | **₱91,850** |
+  | average per unit | **₱3,062** |
+  | worst | **F1** — system ₱6,700, her figure ₱13,000 |
+
+  Of that shortfall **₱89,650 is the rate card** and ₱2,200 is a second, separate defect in the
+  headcount the water is billed on (**B-33**). Nobody has been under-charged yet, because no
+  tenant has paid through the portal — the whole ledger is imported. **The first one to pay
+  online pays about half.** That moves this from "the advert is wrong" to "the till is wrong",
+  and it is why her answer on rates is the thing the rehearsal waits on.
+
 - **What to ask her:** what is each unit's rate today? The ledger already implies it — the last
   rent actually paid for each — so the quickest version of the question is to show her that list
   and ask "are these right?".
@@ -83,6 +102,40 @@ thing did not work" is not.
 - **Once she answers**, changing each rate through the edit-unit dialog writes the BR-003 history
   row automatically — so the change is dated and attributable, which is exactly what that trigger
   is for.
+- **Raised:** 2026-09-19
+
+### B-33 — every tenancy says one occupant; the tenant portal bills water on it
+
+- **What is wrong.** `room_assignments.occupant_count` reads **1** on all 32 active tenancies —
+  one distinct value across the property. The **third** column found this way, after
+  `anniversary_date` (B-32) and `start_date` (B-11). All three are uniform defaults the bulk
+  import wrote and nothing since has corrected.
+- **Her ledger disagrees for 16 of the 32**, measured against the most recent month she recorded:
+  fourteen units last billed water for **two** occupants and two for **three**.
+- **Where it costs money, and where it does not.** It does **not** touch the receipts she writes
+  on site — that form takes `occupants` as a typed field, so her ledger stays right. It decides
+  the bill a **tenant** raises: `GET /tenant/bills` and the Adyen path both read this column and
+  hand it to `computeBillAmounts()`. **₱2,200 a month** of water, across 15 units — small only
+  next to the rate card in the same bill (B-29).
+- **☑ Done:** **migration 037 is written and not run.** It corrects the **13** units whose last
+  twelve recorded months agree unanimously, or whose current figure has held unbroken for 8+
+  months. Twelve more are already right at 1.
+- **☐ SEVEN NEED HER**, because each changed within the last four months and a change that
+  recent is as likely to be real as a slip: **1h, B3B, B3F** (rose or fell to 2 in the last 2–4
+  months) and **2e, 3b, 3d, 3g** (dropped to 1 very recently). Four of the seven already hold
+  the value her newest row shows, so leaving them costs nothing today. Histories are in the
+  migration.
+- **Read before running 037.** Occupancy is the one fact in all of this that legitimately
+  changes month to month, and it is the one she maintains by hand — her own answer, 2026-09-17
+  Q6: *"also to edit the number of occupants in each apartment. We already have that."* The
+  newest ledger row is **July 2026** and today is September, so these are two-month-old records,
+  not a live count. Better than 1-for-everyone, which is wrong for 16 units — but **confirm them
+  with her.** It is 32 numbers and one sitting.
+- **Worth her knowing separately:** **1b and 1f each hold 3 people in a 2-person unit**, and
+  have for eleven straight months. That is a fact about the property rather than an error, and
+  the receipt path already writes an audit row when a payment is recorded over capacity.
+- **A check now guards it.** `check:ledger` compares every stored headcount against that unit's
+  most recent billed one. Ratchet at 16; it fails if the number grows. Mutation-tested.
 - **Raised:** 2026-09-19
 
 ### B-28 — a repair cannot be recorded for an empty unit
