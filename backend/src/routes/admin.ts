@@ -161,6 +161,18 @@ router.post(
       .select('*')
       .single();
 
+    // The `ilike` pre-check above cannot see a unit created between itself and
+    // this insert - a double-click on Add Unit is enough. `rooms` carries TWO
+    // unique indexes on the code, exact and case-folded, so either can fire.
+    if (
+      uniqueViolationOn(error, 'idx_rooms_room_number_lower') ||
+      uniqueViolationOn(error, 'rooms_room_number_key')
+    ) {
+      throw ApiError.conflict(
+        `Unit ${roomFields.room_number} already exists - it was created a moment ago, most ` +
+        'likely by this form being submitted twice. Nothing was added a second time.'
+      );
+    }
     if (error) throw ApiError.internal(error.message);
 
     if (photo && photo.trim().length > 0) {
@@ -2676,6 +2688,23 @@ router.patch(
       .select('*, rooms:room_id (id, room_number, cluster_code)')
       .single();
 
+    /**
+     * An EDIT can collide too, and this is the likeliest way anyone meets
+     * migration 033's index: correcting a mistyped receipt number onto one that
+     * already exists for that unit and month. `receiptAlreadyRecorded` is the
+     * same helper the create path uses; only the sentence differs, because here
+     * nothing was recorded twice - the correction was simply refused.
+     */
+    if (receiptAlreadyRecorded(updateError)) {
+      // `after` is null on a failed update, so it cannot name the unit - and a
+      // room UUID on screen is worse than not naming it. The receipt number and
+      // the month are what she needs to find the other row.
+      throw ApiError.conflict(
+        `A receipt numbered ${updatePatch.invoice_number ?? before.invoice_number} is already ` +
+        `recorded against that unit for ${String(before.month).padStart(2, '0')}/${before.year}. ` +
+        'Nothing was changed. Check the ledger for the receipt that already carries this number.'
+      );
+    }
     if (updateError) throw ApiError.internal(updateError.message);
 
     await auditFromRequest(req, {
