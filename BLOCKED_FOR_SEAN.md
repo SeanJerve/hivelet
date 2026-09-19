@@ -33,6 +33,46 @@ thing did not work" is not.
 
 ## Open
 
+### B-17 — apply `database/migrations/028`: unit codes are unique only by case
+
+- **Blocked on:** it is a live schema change, so it is yours — the same way `023` and `027` are.
+  **The code half is already in and pushed**; this is the database backstop
+- **What is wrong:** `rooms_room_number_key` is `UNIQUE (room_number)` on the raw text — read
+  out of `pg_index`, not from a document — so it is **case sensitive**. The live table is mixed
+  case and always has been: **22 lowercase** (`1a`..`3g`) and **11 uppercase** (`B1F`, `F1`,
+  `LB`, `LF`, `PH`, …). So `'1A'` can be inserted while `'1a'` exists, and the property has two
+  rows for one unit
+- **Why it is not tidiness:** **six** lookups in `backend/src` find a unit with
+  `.ilike('room_number', …)`, so both rows match — and the one on the money path,
+  `POST /admin/income-records`, uses `maybeSingle()`, which **errors on more than one row**. A
+  duplicate breaks the only route that records cash for that unit, as a **500** with nothing on
+  screen to explain it. Same shape the judgement log records for the receipt guard
+- **And it is reachable by doing the obvious thing.** Every screen displays unit codes
+  uppercased (`fetchRooms` uppercases them), so an administrator adding a unit types the case
+  she has been shown
+- **What I already did:**
+  - `POST /admin/rooms` now refuses a case-insensitive collision with a clean **409** naming
+    the unit that already exists. Verified the mechanism read-only: `ilike '1A'` returns the
+    existing `1a`, `ilike 'PH'` returns `PH`, an exact `= '1A'` returns **0 rows** (which is
+    why the current index does not stop it), and a genuinely new code is unaffected
+  - Wrote **`028_unique_room_number_ignoring_case.sql`**. It aborts with a named count if any
+    case-collision already exists, then creates `UNIQUE (lower(room_number))`
+  - **Checked before writing it: 0 collisions today**, so it builds cleanly
+  - It does **not** rewrite the 22 lowercase codes. Their case is how they were migrated and
+    documents quote them that way; normalising them is a decision about her data, not a
+    constraint
+- **What Sean needs to do:** re-run the collision query in the migration's header, then apply
+  the file the same way as `023` and `027`
+- **How to know it worked:** the migration raises
+  `028: unit codes are now unique ignoring case (33 rooms)`, and
+  `select indexdef from pg_indexes where indexname = 'idx_rooms_room_number_lower'` returns it
+- **One thing to know if the code guard is ever removed:** a `23505` from this index would
+  surface as a 500 from `ApiError.internal`. It would then need a 23505 branch, the way the
+  Adyen webhook got one in `024` — judgement log entry 20
+- **Raised:** 2026-09-19 by Claude, functional-audit session
+
+---
+
 ### B-16 — during an outage, two public pages tell a prospect opposite things
 
 - **Blocked on:** your call, and it is `frontend/src/` — the design account's lane, and

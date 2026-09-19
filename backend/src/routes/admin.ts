@@ -116,6 +116,42 @@ router.post(
 
     const { photo, ...roomFields } = parsed.data;
 
+    /**
+     * A unit code must not collide with an existing one IN ANY CASE.
+     *
+     * `rooms_room_number_key` is `UNIQUE (room_number)` on the raw text - read
+     * out of `pg_index`, not assumed - so it is case SENSITIVE, and the live
+     * table is mixed case: 22 lowercase (`1a`..`3g`) and 11 upper (`B1F`, `LF`,
+     * `PH`...). So `'1A'` inserts happily alongside `'1a'` and the property
+     * quietly has two rows for one unit.
+     *
+     * That is not a tidiness problem. **Six lookups in this file find a unit
+     * with `.ilike('room_number', …)`**, which matches both - and the one on
+     * the money path, `POST /admin/income-records`, uses `maybeSingle()`, which
+     * ERRORS on more than one row. The result is a 500 on the only route that
+     * records cash for that unit, for a reason nothing on screen would explain.
+     * The same shape the judgement log records for the receipt guard.
+     *
+     * And it is reachable by doing the obvious thing: every screen DISPLAYS
+     * unit codes uppercased (`fetchRooms` uppercases them), so an administrator
+     * adding a unit types the case she has been shown.
+     *
+     * Checked before writing: 0 case-insensitive collisions exist today.
+     */
+    const { data: existing, error: existingError } = await db
+      .from('rooms')
+      .select('room_number')
+      .ilike('room_number', roomFields.room_number)
+      .limit(1);
+
+    if (existingError) throw ApiError.internal(existingError.message);
+    if (existing && existing.length > 0) {
+      throw ApiError.conflict(
+        `Unit ${existing[0].room_number} already exists. Unit codes are matched without regard ` +
+          `to case, so "${roomFields.room_number}" would be a second row for the same unit.`
+      );
+    }
+
     const { data, error } = await db
       .from('rooms')
       .insert({
