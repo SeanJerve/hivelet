@@ -176,15 +176,29 @@ thing did not work" is not.
   2026-03-28 for 2026-03-26, 2026-04-26 for 2026-04-26. The stored day and month already match
   his period start exactly. **It is 2026-02-26.** Migration 030 corrects it.
 
-  **Unit 2g, Sheena Mae Guianan — `1900-01-17`.** Not a typo: that is **Excel's epoch showing
-  through**. A cell holding the bare number `17` renders as 17 January 1900, so the DAY is 17
-  and the month and year were lost on import. Her tenancy runs on the 9th (Oct 2024 – Mar 2025)
-  and her ledger has a gap exactly at **December 2024**, which is where this row lands once its
-  period is corrected. Her five other receipts arrive between one day before and eighteen days
-  after a period start, which makes **17 December 2024** the only date that fits — 17 January
-  2025 would be thirty-nine days late and collides with her January receipt, paid on the 27th.
-  Confident, but still an inference about a date nobody wrote down, so migration 030 leaves it
-  alone and it waits for her.
+  **Unit 2g, Sheena Mae Guianan, OR#4839 — `1900-01-17`.** Not a typo: that is **Excel's epoch
+  showing through**. Excel counts days from 1 January 1900, so a cell holding the bare number
+  `17` renders as 17 January 1900. The DAY survived as 17; the month and year were lost on
+  import.
+
+  **The receipt book pins the rest.** Receipts are written in order — 425 of the 434
+  consecutive pairs in this ledger run in date order — and OR#4839 sits between two receipts
+  four days apart:
+
+  | receipt | unit | who | paid |
+  | :--- | :--- | :--- | :--- |
+  | OR#4838 | 2d | Joan Rejuso | **14 December 2024** |
+  | OR#4839 | 2g | Sheena Mae Guianan | ??? |
+  | OR#4840 | 2f | France Sacueza | **18 December 2024** |
+
+  The 17th is the only date in that window. Six things agree and none disagree: the surviving
+  day, the receipt before, the receipt after, her corrected rent period (9 Dec 2024 – 8 Jan
+  2025, which contains it), her payment habit (her five other receipts land one day early to
+  eighteen days late; the 17th is eight days in), and the gap in her ledger, which is exactly
+  December 2024.
+
+  Migration 030 now sets it to **17 December 2024**, as its own statement that can be dropped
+  on its own if she says otherwise. It is still a date nobody wrote down.
 
   The other four out-of-range dates are genuine late-December payments for a January period and
   are correct as they stand.

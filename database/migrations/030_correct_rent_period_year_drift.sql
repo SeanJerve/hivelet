@@ -105,13 +105,33 @@ SET date_paid = DATE '2026-02-26', updated_at = now()
 WHERE date_paid = DATE '2027-02-26'
   AND rent_period_start = DATE '2026-02-26';
 
--- NOT corrected here, deliberately: unit 2g, Sheena Mae Guianan, `date_paid` reads
--- 1900-01-17. That is Excel's epoch showing through - a cell holding the bare number
--- 17 renders as 17 January 1900 - so the DAY is 17 and the month and year were lost.
--- Her period (once corrected above) is 9 Dec 2024 - 8 Jan 2025, and her five other
--- receipts land between 1 day before and 18 days after a period start, which makes
--- 17 December 2024 the only candidate that fits her behaviour. It is still an
--- inference about a date nobody recorded, so it waits for the owner.
+-- Unit 2g, Sheena Mae Guianan, OR#4839. `date_paid` reads 1900-01-17.
+--
+-- That is not a typo. It is Excel's epoch showing through: a cell holding the bare
+-- number 17 renders as 17 January 1900, because Excel counts days from 1 Jan 1900.
+-- So the DAY survived as 17 and the month and year were lost on import.
+--
+-- The receipt book pins the rest of it. Receipts are numbered in the order they are
+-- written, and 425 of the 434 consecutive pairs in this ledger run in date order.
+-- OR#4839 sits between:
+--
+--     OR#4838   unit 2d, Joan Rejuso        paid 14 December 2024
+--     OR#4839   unit 2g, Sheena Mae Guianan paid ????
+--     OR#4840   unit 2f, France Sacueza     paid 18 December 2024
+--
+-- So it was written between the 14th and the 18th, and the day that survived is the
+-- 17th. That is the only date in the window it can be. Six things agree and none
+-- disagree: the surviving day, the receipt before, the receipt after, her corrected
+-- rent period (9 Dec 2024 - 8 Jan 2025, which contains it), her payment habit (her
+-- five other receipts land 1 day early to 18 days late; the 17th is 8 days in), and
+-- the gap in her ledger, which is exactly December 2024.
+--
+-- It is still a date nobody wrote down. Drop this one statement if the owner says
+-- otherwise - nothing else in this migration depends on it.
+UPDATE monthly_income_records
+SET date_paid = DATE '2024-12-17', updated_at = now()
+WHERE date_paid = DATE '1900-01-17'
+  AND invoice_number = 'OR#4839';
 
 -- Refuse to commit unless the correction did exactly what it claims.
 DO $$
@@ -132,6 +152,11 @@ BEGIN
     FROM monthly_income_records
     GROUP BY 1, 2 HAVING count(*) > 1
   ) t;
+
+  PERFORM 1 FROM monthly_income_records WHERE date_paid < DATE '2020-01-01';
+  IF FOUND THEN
+    RAISE EXCEPTION 'A payment date before 2020 is still present. Rolled back.';
+  END IF;
 
   IF dup_pairs <> 2 THEN
     RAISE EXCEPTION
