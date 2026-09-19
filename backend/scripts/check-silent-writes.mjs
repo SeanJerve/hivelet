@@ -87,6 +87,39 @@ const BS = String.fromCharCode(92);
 const findings = [];
 
 /**
+ * THE SAME SHAPE, ON THE READ SIDE.
+ *
+ * `const { data: room } = await db.from('rooms')...` with `error` left behind is
+ * the write defect's twin: on a failed query `room` is `undefined`, which is
+ * exactly what "no such row" looks like. The call site cannot tell a broken
+ * request from an empty result, and every one of these sits in front of a
+ * decision.
+ *
+ * A sweep on 2026-09-19 found 21 of them and eight were acting on the answer:
+ * the duplicate-income guard wrote the same receipt into the ledger twice, the
+ * unpaid-bill lookup raised a second bill for a period already billed, the unit
+ * code behind the water model fell to '' and billed a Linda fixed-charge unit
+ * per occupant, the occupant count fell to 1, vacate never freed the unit, and
+ * the webhook attached a payment to nobody. Those eight are fixed.
+ *
+ * The remaining 13 are counted, not failed. Unlike a write, a read that
+ * discards its error is often harmless or actively safe - `tenant.ts` checks
+ * ticket ownership this way and a failed read yields 404, which is the correct
+ * answer to give. Failing all of them would force `error` to be taken thirteen
+ * times where it changes nothing, and a check that demands meaningless edits
+ * gets silenced.
+ *
+ * So this is a ratchet. The census may fall freely; it may not rise. A new one
+ * is a new decision made against an answer nobody checked, and it has to be
+ * argued for by lowering the number here on purpose.
+ */
+const BARE_READ_BASELINE = 13;
+
+let readsExamined = 0;
+let readsTakingError = 0;
+const bareReads = [];
+
+/**
  * WHAT THIS CHECK ACTUALLY EXAMINED, AND A REFUSAL TO PASS ON NOTHING.
  *
  * Proved on 2026-09-17 by copying this script somewhere `../src` was an empty
@@ -136,7 +169,27 @@ for (const file of scanned) {
       if (lines[j].trimEnd().endsWith(';')) break;
     }
     const stmt = chunk.join('\n');
-    if (!WRITE.test(stmt)) return;
+
+    // Not a write. It is still a database call whose failure is invisible, so
+    // it goes to the read census below rather than being ignored.
+    if (!WRITE.test(stmt)) {
+      if (/\.rpc\s*\(/.test(stmt)) return;
+      readsExamined++;
+      const rTarget = bind[1];
+      if (!rTarget || !rTarget.startsWith('{')) return;
+      if (/\berror\b/.test(rTarget)) {
+        readsTakingError++;
+        return;
+      }
+      const rTable = /\.from\(\s*['"]([^'"]+)/.exec(stmt);
+      bareReads.push({
+        file: path.relative(root, file).replace(/\\/g, '/'),
+        line: i + 1,
+        table: rTable ? rTable[1] : '?',
+        shape: rTarget.replace(/\s+/g, ' '),
+      });
+      return;
+    }
 
     const target = bind[1];
     let why;
@@ -176,16 +229,47 @@ if (findings.length === 0) {
   console.log(`  OK    every write declares what failure means (${scanned.length} source files read)`);
   console.log('        (discarded, destructured without `error`, and captured-but-');
   console.log('         never-examined results all fail this check)');
-  console.log('\nALL CHECKS PASSED');
-  process.exit(0);
+} else {
+  for (const f of findings) {
+    console.log(`  FAIL  ${f.file}:${f.line}  ${f.op} on ${f.table} - ${f.why}`);
+  }
+  console.log(
+    `\n${findings.length} write(s) do not say what failure means.\n` +
+      'Destructure `error`, or pass the call through assertWritten / warnIfWriteFailed\n' +
+      '(src/utils/checkedWrite.ts) so the intent on failure is explicit.'
+  );
 }
 
-for (const f of findings) {
-  console.log(`  FAIL  ${f.file}:${f.line}  ${f.op} on ${f.table} - ${f.why}`);
-}
+console.log('\nREAD CENSUS - a failed query must not read as an empty result\n');
 console.log(
-  `\n${findings.length} write(s) do not say what failure means.\n` +
-    'Destructure `error`, or pass the call through assertWritten / warnIfWriteFailed\n' +
-    '(src/utils/checkedWrite.ts) so the intent on failure is explicit.'
+  `  ${readsExamined} read(s) examined, ${readsTakingError} take \`error\`, ` +
+    `${bareReads.length} do not (ratchet: ${BARE_READ_BASELINE})`
 );
-process.exit(1);
+
+const readsOverBudget = bareReads.length > BARE_READ_BASELINE;
+
+if (bareReads.length > 0) {
+  for (const r of bareReads) {
+    console.log(`  ${readsOverBudget ? 'FAIL' : 'note'}  ${r.file}:${r.line}  ${r.table} - ${r.shape}`);
+  }
+}
+
+if (readsOverBudget) {
+  console.log(
+    `\nThe census rose from ${BARE_READ_BASELINE} to ${bareReads.length}.\n` +
+      'A read that discards `error` cannot tell a broken query from an empty\n' +
+      'result, so whatever it decides next is decided on an answer nobody\n' +
+      'checked. Destructure `error` and say what failure means - or, if this one\n' +
+      'genuinely fails closed, lower BARE_READ_BASELINE deliberately and say why.'
+  );
+} else if (bareReads.length < BARE_READ_BASELINE) {
+  console.log(
+    `\n  note: down from ${BARE_READ_BASELINE}. Lower BARE_READ_BASELINE to ` +
+      `${bareReads.length} to keep the ratchet tight.`
+  );
+}
+
+if (findings.length > 0 || readsOverBudget) process.exit(1);
+
+console.log('\nALL CHECKS PASSED');
+process.exit(0);
