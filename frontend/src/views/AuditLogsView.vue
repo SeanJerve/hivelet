@@ -75,8 +75,23 @@ const searchQuery = ref('');
  * So the default view shows what the landlady actually did. The authentication
  * events are one click away and nothing is hidden - but a log that opens on 77%
  * noise is a log nobody reads.
+ *
+ * **The same thing happened again, from a different source, and was fixed on
+ * 2026-09-19.** `LEDGER_EXPORT` does not begin with `AUTH_`, so every workbook
+ * download counted as an event "done to the records" - and the verification
+ * suites export one on every run. Measured that day: **1,581 of the 1,715
+ * business rows, 92%**, leaving 134 real events under a newest-first limit of
+ * 100. So this tab had quietly gone back to being the thing the paragraph above
+ * describes. Downloads have their own chip now; they are still recorded, they
+ * are simply not a change.
  */
 const categoryFilter = ref<string>('business');
+
+/**
+ * The categories the DATABASE applies, before the row limit. The rest only
+ * narrow what has already come back.
+ */
+const SERVER_SIDE_CATEGORIES = ['business', 'auth', 'export'];
 const expandedRowId = ref<string | null>(null);
 const rowLimit = ref<number>(100);
 
@@ -98,17 +113,18 @@ async function fetchAuditLogs() {
     // be: 2,103 of the 2,223 rows are authentication events, so the newest 100
     // are all AUTH_*, and a filter applied here would return nothing at all.
     const params = new URLSearchParams({ limit: String(rowLimit.value) });
-    if (categoryFilter.value === 'business' || categoryFilter.value === 'auth') {
+    if (SERVER_SIDE_CATEGORIES.includes(categoryFilter.value)) {
       params.set('category', categoryFilter.value);
     }
     const { data, meta } = await api.getWithMeta<
       AuditRecord[],
-      { authTotal: number; businessTotal: number; grandTotal: number }
+      { authTotal: number; exportTotal: number; businessTotal: number; grandTotal: number }
     >(`/admin/audit-logs?${params}`);
 
     auditLogs.value = Array.isArray(data) ? data : [];
     if (meta) {
       authTotal.value = meta.authTotal ?? 0;
+      exportTotal.value = meta.exportTotal ?? 0;
       businessTotal.value = meta.businessTotal ?? 0;
       grandTotal.value = meta.grandTotal ?? 0;
     }
@@ -122,7 +138,7 @@ async function fetchAuditLogs() {
 }
 
 watch(categoryFilter, (next, prev) => {
-  const serverSide = (v: string) => v === 'business' || v === 'auth';
+  const serverSide = (v: string) => SERVER_SIDE_CATEGORIES.includes(v);
   if (serverSide(next) || serverSide(prev)) fetchAuditLogs();
 });
 
@@ -132,9 +148,11 @@ onMounted(() => {
 
 /** Totals for the WHOLE table, from the API, not just the window on screen. */
 const authTotal = ref(0);
+const exportTotal = ref(0);
 const businessTotal = ref(0);
 const grandTotal = ref(0);
 const authEventCount = computed(() => authTotal.value);
+const exportEventCount = computed(() => exportTotal.value);
 const businessEventCount = computed(() => businessTotal.value);
 
 const filteredLogs = computed(() => {
@@ -189,7 +207,16 @@ const filterChips = computed<{ key: string; label: string; count: number | null;
       hint: 'Payments, expenses, tenants, units and repairs',
     },
     { key: 'auth', label: 'Sign-ins', count: authEventCount.value, hint: 'Sign-ins, sign-outs and refused requests' },
-    { key: 'all', label: 'Everything', count: grandTotal.value, hint: 'Both of the above' },
+    /**
+     * Downloads are their own chip because they are not a change.
+     *
+     * They used to be counted under "Done to the records", and they swamped it:
+     * 1,581 of 1,715 on 2026-09-19, because the verification suites export a
+     * workbook on every run. At a limit of 100 newest-first, the first page was
+     * entirely exports.
+     */
+    { key: 'export', label: 'Downloads', count: exportEventCount.value, hint: 'Ledger workbooks that were downloaded. A read, not a change' },
+    { key: 'all', label: 'Everything', count: grandTotal.value, hint: 'All three of the above' },
     { key: 'financial', label: 'Money in', count: null, hint: 'Within what is listed' },
     { key: 'expense', label: 'Money out', count: null, hint: 'Within what is listed' },
     { key: 'tenant', label: 'Tenants', count: null, hint: 'Within what is listed' },

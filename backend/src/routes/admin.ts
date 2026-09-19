@@ -2864,7 +2864,24 @@ router.get(
      *
      *   business - what was actually done to the records
      *   auth     - sign-ins, sign-outs and refused requests
+     *   export   - downloads of a ledger. A read; it changes nothing
      *   (absent) - everything, newest first
+     *
+     * **`export` was split out of `business` on 2026-09-19, and it is the same
+     * defect as the paragraph above, one category over.** `LEDGER_EXPORT` does
+     * not begin with `AUTH_`, so every one of them landed in the business
+     * bucket - and the verification suites export workbooks on every run.
+     * Counted on the day: **1,581 of the 1,715 business rows were
+     * `LEDGER_EXPORT`, 92%**, leaving 134 real events. The default limit is 100,
+     * newest first, so the administrator's first page was entirely exports and
+     * the rows describing what was actually done to her records were off the
+     * end of it. Exactly what the AUTH filter exists to prevent.
+     *
+     * The tab is labelled *"Done to the records"*. An export does nothing to
+     * them, so this is what that label already promised rather than a new
+     * definition. The rows are still written and still readable - auditing who
+     * downloaded the ledger is a real access record - they are simply not
+     * counted as a change.
      */
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
 
@@ -2872,8 +2889,10 @@ router.get(
       .from('audit_logs')
       .select('*, profiles:actor_profile_id (id, full_name, role)');
 
-    if (category === 'business') query = query.not('action', 'like', 'AUTH\_%');
-    else if (category === 'auth') query = query.like('action', 'AUTH\_%');
+    if (category === 'business') {
+      query = query.not('action', 'like', 'AUTH\_%').neq('action', 'LEDGER_EXPORT');
+    } else if (category === 'auth') query = query.like('action', 'AUTH\_%');
+    else if (category === 'export') query = query.eq('action', 'LEDGER_EXPORT');
 
     const { data, error } = await query
       .order('created_at', { ascending: false })
@@ -2886,17 +2905,29 @@ router.get(
       .from('audit_logs')
       .select('id', { head: true, count: 'exact' })
       .like('action', 'AUTH\_%');
+    const exported = await db
+      .from('audit_logs')
+      .select('id', { head: true, count: 'exact' })
+      .eq('action', 'LEDGER_EXPORT');
     const total = await db
       .from('audit_logs')
       .select('id', { head: true, count: 'exact' });
 
     const authTotal = counted.count ?? 0;
+    const exportTotal = exported.count ?? 0;
     const grandTotal = total.count ?? 0;
 
     res.status(200).json({
       success: true,
       data: data ?? [],
-      meta: { authTotal, businessTotal: grandTotal - authTotal, grandTotal },
+      meta: {
+        authTotal,
+        exportTotal,
+        // What is left once sign-ins and downloads are taken out: the events
+        // the tab actually claims to list.
+        businessTotal: grandTotal - authTotal - exportTotal,
+        grandTotal,
+      },
     });
   })
 );

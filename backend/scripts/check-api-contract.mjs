@@ -309,9 +309,11 @@ if (adminToken) {
   };
 
   const isAuth = (row) => typeof row?.action === 'string' && row.action.startsWith('AUTH_');
+  const isExport = (row) => row?.action === 'LEDGER_EXPORT';
 
   const business = await fetchAudit('limit=100&category=business');
   const authOnly = await fetchAudit('limit=100&category=auth');
+  const exportsOnly = await fetchAudit('limit=100&category=export');
   const everything = await fetchAudit('limit=100');
 
   for (const [label, got, ok] of [
@@ -324,6 +326,24 @@ if (adminToken) {
       'category=auth returns ONLY authentication events',
       authOnly,
       authOnly.status === 200 && authOnly.rows.length > 0 && authOnly.rows.every(isAuth),
+    ],
+    /**
+     * Added 2026-09-19. LEDGER_EXPORT does not start with AUTH_, so every
+     * workbook download counted as an event "done to the records" - and the
+     * suites export one on every run. 1,581 of the 1,715 business rows were
+     * exports, 92%, so at a limit of 100 newest-first the administrator's whole
+     * first page was downloads. Exactly what the auth filter exists to prevent,
+     * one category over.
+     */
+    [
+      'category=business returns NO ledger exports',
+      business,
+      business.status === 200 && business.rows.length > 0 && !business.rows.some(isExport),
+    ],
+    [
+      'category=export returns ONLY ledger exports',
+      exportsOnly,
+      exportsOnly.status === 200 && exportsOnly.rows.length > 0 && exportsOnly.rows.every(isExport),
     ],
     [
       'no category returns the newest rows unfiltered',
@@ -342,13 +362,16 @@ if (adminToken) {
   const m = everything.meta ?? {};
   const totalsAgree =
     typeof m.authTotal === 'number' &&
+    typeof m.exportTotal === 'number' &&
     typeof m.businessTotal === 'number' &&
     typeof m.grandTotal === 'number' &&
-    m.authTotal + m.businessTotal === m.grandTotal;
+    m.authTotal + m.exportTotal + m.businessTotal === m.grandTotal;
   totalsAgree ? pass++ : (fail++, failures.push('audit-logs: meta totals do not add up'));
   console.log(
     `  ${totalsAgree ? 'OK  ' : 'FAIL'} ---  meta totals add up` +
-    (totalsAgree ? ` (${m.businessTotal} business + ${m.authTotal} auth = ${m.grandTotal})` : '')
+    (totalsAgree
+      ? ` (${m.businessTotal} business + ${m.authTotal} auth + ${m.exportTotal} export = ${m.grandTotal})`
+      : '')
   );
 }
 
