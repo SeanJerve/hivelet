@@ -45,6 +45,14 @@ const savedSnapshot = ref<EditableProfile>({ ...form.value });
 
 const loading = ref(false);
 const saving = ref(false);
+/**
+ * Set when the profile could not be read.
+ *
+ * Saving is refused while it is true. `handleSave` sends all five editable
+ * columns unconditionally, so a Save on top of a failed read writes empty
+ * strings over whatever was really on file.
+ */
+const loadFailed = ref(false);
 const successNotice = ref('');
 const errorNotice = ref('');
 
@@ -61,9 +69,28 @@ onMounted(fetchProfile);
 
 async function fetchProfile() {
   loading.value = true;
+  loadFailed.value = false;
   errorNotice.value = '';
   try {
-    const data = await api.get<any>('/tenant/my-profile').catch(() => null);
+    /**
+     * Not `.catch(() => null)`.
+     *
+     * That swallowed the failure before the catch below could report it, so a
+     * refused or broken read produced `data = null` and no error notice at all.
+     * The form then filled from the session: the resident's **name**, correctly,
+     * and blanks for phone, emergency contact, emergency contact number,
+     * occupation and Facebook.
+     *
+     * Which reads exactly like "you have not filled these in yet". And
+     * `handleSave` sends all five of those columns unconditionally - so typing
+     * one field and pressing Save wrote empty strings over the other four,
+     * including the emergency contact. A transient network failure on load could
+     * erase the number someone would be rung on in an emergency, and the
+     * resident would be shown "saved successfully".
+     *
+     * The failure now reaches the catch, which sets the notice and blocks Save.
+     */
+    const data = await api.get<any>('/tenant/my-profile');
     
     identity.value = {
       // No invented address. This used to fall back to 'tenant@hivelet.com', which
@@ -94,7 +121,11 @@ async function fetchProfile() {
     };
     savedSnapshot.value = { ...form.value };
   } catch (err: any) {
-    errorNotice.value = `Could not load your profile: ${err?.message || err}`;
+    loadFailed.value = true;
+    errorNotice.value =
+      `Could not load your profile: ${err?.message || err}. ` +
+      'Nothing is shown rather than a blank form, and saving is off until it loads — ' +
+      'a save now would overwrite what is on file with empty fields.';
   } finally {
     loading.value = false;
   }
@@ -102,6 +133,15 @@ async function fetchProfile() {
 
 async function handleSave() {
   successNotice.value = '';
+
+  // The form is not a picture of what is stored, so it must not be written back.
+  if (loadFailed.value) {
+    errorNotice.value =
+      'Your profile could not be loaded, so these fields are empty rather than yours. ' +
+      'Saving them would erase what is on file. Reload and try again.';
+    return;
+  }
+
   errorNotice.value = '';
 
   if (!form.value.full_name.trim()) {
@@ -350,11 +390,11 @@ function handleReset() {
             {{ isDirty ? 'You have changes that are not saved yet.' : 'Everything here is saved.' }}
           </p>
           <div class="flex items-center gap-2">
-            <button type="button" :disabled="!isDirty || saving" class="pill-btn" @click="handleReset">
+            <button type="button" :disabled="!isDirty || saving || loadFailed" class="pill-btn" @click="handleReset">
               <RotateCcw class="size-3.5" aria-hidden="true" />
               <span>Put it back</span>
             </button>
-            <button type="submit" :disabled="!isDirty || saving" class="pill-btn-brand">
+            <button type="submit" :disabled="!isDirty || saving || loadFailed" class="pill-btn-brand">
               <Save class="size-4" aria-hidden="true" />
               <span>{{ saving ? 'Saving…' : 'Save' }}</span>
             </button>
