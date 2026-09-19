@@ -598,6 +598,38 @@ router.post(
       passwordHash = await bcrypt.hash(tempPassword, 12);
     }
 
+    /**
+     * The unit is resolved BEFORE the person is created.
+     *
+     * supabase-js cannot open a transaction, so these are separate writes that
+     * commit independently. The order used to be: insert the profile, then look
+     * the unit up, then `throw ApiError.notFound('Room/Unit 2C not found.')` if
+     * it was not there - by which point the profile row was already committed.
+     *
+     * So onboarding with a mistyped unit code left a tenant profile behind with
+     * no assignment and returned a 404 that said nothing about it. The natural
+     * response is to correct the code and submit again, which creates a **second
+     * profile** for the same person. Two records, one of them orphaned, and the
+     * duplicate-identifier check would then refuse the retry outright if an email
+     * or phone was given - so the second attempt fails too, for a reason that
+     * looks unrelated.
+     *
+     * Reading first costs one query and makes the common failure - a typo - leave
+     * nothing behind at all.
+     */
+    let resolvedRoom: { id: string; current_price: number } | null = null;
+    if (roomNumber) {
+      const { data: room, error: roomError } = await db
+        .from('rooms')
+        .select('id, current_price')
+        .ilike('room_number', roomNumber)
+        .maybeSingle();
+
+      if (roomError) throw ApiError.internal(roomError.message);
+      if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
+      resolvedRoom = room as { id: string; current_price: number };
+    }
+
     // Insert new profile
     const { data: profile, error: insertError } = await db
       .from('profiles')
@@ -618,16 +650,9 @@ router.post(
 
     if (insertError) throw ApiError.internal(insertError.message);
 
-    // If roomNumber is provided, assign room
-    if (roomNumber) {
-      const { data: room, error: roomError } = await db
-        .from('rooms')
-        .select('id, current_price')
-        .ilike('room_number', roomNumber)
-        .maybeSingle();
-
-      if (roomError) throw ApiError.internal(roomError.message);
-      if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
+    // Already resolved above, before the profile was written.
+    if (resolvedRoom) {
+      const room = resolvedRoom;
 
       const finalOccupants = occupantCount ?? (roommateQty !== undefined ? 1 + roommateQty : 1);
 
@@ -672,7 +697,19 @@ router.post(
           is_active: true
         });
 
-      if (assignError) throw ApiError.internal(assignError.message);
+      /**
+       * The profile is already committed at this point and there is no
+       * transaction to roll back, so the message has to say so. Without it the
+       * administrator sees a failure, assumes nothing was saved, and onboards the
+       * same person a second time - which is how one mistake becomes two records.
+       */
+      if (assignError) {
+        throw ApiError.internal(
+          `${fullName} was created, but could not be assigned to ${roomNumber}: ` +
+          `${assignError.message}. The person is on file - assign the unit from their ` +
+          'record rather than adding them again.'
+        );
+      }
 
       if (divergesFromRent) {
         await auditFromRequest(req, {
