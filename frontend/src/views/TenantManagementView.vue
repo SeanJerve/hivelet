@@ -3,7 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, showToast, type TenantRecord } from '@/lib/systemState';
+import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, showToast, asListedUnitCode, type TenantRecord } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Search, UserPlus, Pencil, LogOut, Loader2, Check } from 'lucide-vue-next';
@@ -75,7 +75,12 @@ function checkInquiryConversion() {
     newPhone.value = String(route.query.phone || '');
     newEmail.value = String(route.query.email || '');
     if (route.query.unit) {
-      newUnit.value = String(route.query.unit).toLowerCase();
+      // Was `.toLowerCase()`, which guaranteed a mismatch: the options below are
+      // `u.unitCode` and the live list is uppercase, so converting an enquiry for
+      // PH selected nothing at all - while `syncDepositToUnit()` on the next line
+      // still found the unit case-insensitively and filled in its advance rent.
+      // An advance rent for a unit the dropdown was not showing.
+      newUnit.value = asListedUnitCode(String(route.query.unit));
     }
     syncDepositToUnit();
     isOnboardModalOpen.value = true;
@@ -101,6 +106,18 @@ onMounted(() => {
 });
 
 watch(newUnit, syncDepositToUnit);
+
+/**
+ * Re-case the onboarding form's unit whenever the room list is replaced.
+ *
+ * `newUnit` opens on a literal, and `fetchRooms()` swaps the seed's lowercase
+ * codes for uppercase ones underneath it, so the literal is wrong in whichever
+ * case it is written. Reconciled against the list instead of corrected in
+ * place - see `asListedUnitCode`.
+ */
+watch(rooms, () => {
+  newUnit.value = asListedUnitCode(newUnit.value);
+}, { immediate: true });
 
 watch(() => route.query.convertInquiryId, () => {
   checkInquiryConversion();

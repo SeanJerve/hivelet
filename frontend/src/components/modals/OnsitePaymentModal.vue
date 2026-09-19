@@ -9,7 +9,8 @@ import {
   fetchTenants, 
   formatUnitOccupantsSummary, 
   showToast,
-  roomsFetchFailed
+  roomsFetchFailed,
+  asListedUnitCode
 } from '@/lib/systemState';
 import WsModal from '@/components/ui/WsModal.vue';
 import { peso } from '@/lib/canonicalUnits';
@@ -244,17 +245,13 @@ watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([n
  *
  * Reconciled against the list rather than by correcting the literal, because a
  * literal is exactly what cannot survive the seed being one case and the API
- * the other.
+ * the other. `asListedUnitCode` fixes the case and nothing else - it will not
+ * substitute a different unit onto a form that writes to the ledger.
  */
 watch(
   rooms,
   () => {
-    if (rooms.length === 0) return;
-    if (rooms.some((r) => r.unitCode === selectedUnit.value)) return;
-    const sameUnit = rooms.find(
-      (r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase()
-    );
-    selectedUnit.value = (sameUnit ?? rooms[0]).unitCode;
+    selectedUnit.value = asListedUnitCode(selectedUnit.value);
   },
   { immediate: true }
 );

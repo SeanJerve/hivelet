@@ -693,6 +693,31 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
 }
 
 /**
+ * A unit code in the exact case `rooms` is carrying it in right now.
+ *
+ * `rooms` holds unit codes in TWO cases over its life: the `canonicalUnits.ts`
+ * seed is lowercase (`"1a"`), and `fetchRooms()` replaces the whole array with
+ * uppercase ones (`(r.room_number || '').toUpperCase()`). Every comparison in
+ * this codebase is `.toLowerCase()`-guarded, so the difference is invisible
+ * everywhere except the one place that compares by strict equality and cannot
+ * be told to stop: a `<select>` matching `v-model` against its `<option>`
+ * values. There, a code in the wrong case selects nothing, the field renders
+ * BLANK, and the ref still holds the value the submit path will uppercase and
+ * post. A form that shows no unit and records against one.
+ *
+ * Case only. If no unit of that name exists at all the value comes back
+ * unchanged, so the dropdown shows nothing and the administrator has to choose
+ * - which is the honest outcome, and better than quietly substituting some
+ * other unit onto a form that creates a tenancy or writes to the ledger.
+ */
+export function asListedUnitCode(value: string): string {
+  if (!value) return value;
+  if (rooms.some((r) => r.unitCode === value)) return value;
+  const sameUnit = rooms.find((r) => r.unitCode.toLowerCase() === value.toLowerCase());
+  return sameUnit ? sameUnit.unitCode : value;
+}
+
+/**
  * Returns dynamic summary of residing occupants for a unit code,
  * e.g. "Mark Cruz + 2 roommates" or "Mark Cruz (Solo)"
  */
