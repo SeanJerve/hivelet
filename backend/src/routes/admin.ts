@@ -239,10 +239,22 @@ router.patch(
     if (error) throw ApiError.internal(error.message);
 
     if (photo && photo.trim().length > 0) {
-      const { data: existingPhotos } = await db
+      const { data: existingPhotos, error: existingPhotosError } = await db
         .from('room_photos')
         .select('id')
         .eq('room_id', req.params.roomId);
+
+      // This read decides replace-or-insert. Undefined on a failed query means
+      // the else branch runs and a SECOND primary photo is inserted for a unit
+      // that already has one.
+      //
+      // `idx_room_photos_one_primary` - UNIQUE on (room_id) WHERE is_primary,
+      // confirmed in pg_indexes - stops the duplicate reaching the table, so
+      // this fails closed. But it fails as "The photo could not be saved" from
+      // the assertWritten on the insert, which blames the photo for a failure
+      // in a query about a different row. Saying what actually went wrong costs
+      // one line.
+      if (existingPhotosError) throw ApiError.internal(existingPhotosError.message);
 
       if (existingPhotos && existingPhotos.length > 0) {
         assertWritten(
@@ -2356,7 +2368,21 @@ router.patch(
         .ilike('room_number', roomNumber)
         .maybeSingle();
       if (roomError) throw ApiError.internal(roomError.message);
-      if (room) roomId = room.id;
+
+      // `if (room)` with no else. A unit number that matched nothing left
+      // `roomId` at the row's EXISTING room, and the handler carried on and
+      // wrote that same room back - so moving a receipt to a unit whose code was
+      // mistyped returned success and moved nothing. The ledger then disagreed
+      // with what the administrator believed she had just corrected.
+      //
+      // Same shape as the ticket PATCH and the edit-unit dialog. Moving the row
+      // is the point of supplying the number, so a miss refuses the whole edit.
+      if (!room) {
+        throw ApiError.validation('No unit has that number.', {
+          roomNumber: [`There is no unit numbered "${roomNumber}", so nothing was changed.`],
+        });
+      }
+      roomId = room.id;
     }
 
     const rent = rentAmount !== undefined ? Number(rentAmount) : Number(before.rent_amount);
@@ -2364,11 +2390,23 @@ router.patch(
 
     // Resolve the unit's code so the Linda fixed charge is honoured on edits too. When the
     // caller did not change the room, fall back to the row's existing one.
-    const { data: editRoom } = await db
+    const { data: editRoom, error: editRoomError } = await db
       .from('rooms')
       .select('room_number')
       .eq('id', roomId)
       .maybeSingle();
+
+    // The unit code decides which water model applies, and the figure it
+    // produces is written straight to `water_payment` - which feeds
+    // `remitted_amount`, a GENERATED column. A failed read yields '' below,
+    // matching neither LF nor LB, so one of Linda's two fixed-charge units
+    // would be re-billed at occupants x rate (BR-014 instead of BR-040) and the
+    // owner's remitted total would carry that figure with nothing to notice.
+    //
+    // The same defect as the verify-payment path, which was fixed in 9e730eb.
+    // This one is worse: there it only reached a payment raised without a bill,
+    // because the bill's own water_amount won. Here it is written every time.
+    if (editRoomError) throw ApiError.internal(editRoomError.message);
 
     const { amount: water } = await computeWaterFee(editRoom?.room_number ?? '', occ);
 

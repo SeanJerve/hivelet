@@ -95,25 +95,29 @@ const findings = [];
  * request from an empty result, and every one of these sits in front of a
  * decision.
  *
- * A sweep on 2026-09-19 found 21 of them and eight were acting on the answer:
- * the duplicate-income guard wrote the same receipt into the ledger twice, the
+ * A sweep on 2026-09-19 found 23 of them, and 13 were acting on the answer: the
+ * duplicate-income guard wrote the same receipt into the ledger twice, the
  * unpaid-bill lookup raised a second bill for a period already billed, the unit
  * code behind the water model fell to '' and billed a Linda fixed-charge unit
- * per occupant, the occupant count fell to 1, vacate never freed the unit, and
- * the webhook attached a payment to nobody. Those eight are fixed.
+ * per occupant (on BOTH the payment and the ledger-edit paths), the occupant
+ * count fell to 1, vacate never freed the unit, an income row could be "moved"
+ * to a unit that does not exist and silently stay put, a room photo was
+ * inserted a second time instead of replaced, the unread badge cleared itself,
+ * and the webhook attached a payment to nobody. Those 13 are fixed.
  *
- * The remaining 13 are counted, not failed. Unlike a write, a read that
- * discards its error is often harmless or actively safe - `tenant.ts` checks
- * ticket ownership this way and a failed read yields 404, which is the correct
- * answer to give. Failing all of them would force `error` to be taken thirteen
- * times where it changes nothing, and a check that demands meaningless edits
- * gets silenced.
+ * The remaining 10 are counted, not failed. Unlike a write, a read that
+ * discards its error is often harmless or actively safe - `tenant.ts:419`
+ * checks ticket ownership this way and a failed read yields 404, which is the
+ * correct answer to give, and the count at `admin.ts` line ~860 can only ever
+ * be 0 because `idx_single_active_assignment_per_room` allows one active
+ * assignment per room. Failing all ten would force `error` to be taken where it
+ * changes nothing, and a check that demands meaningless edits gets silenced.
  *
  * So this is a ratchet. The census may fall freely; it may not rise. A new one
  * is a new decision made against an answer nobody checked, and it has to be
  * argued for by lowering the number here on purpose.
  */
-const BARE_READ_BASELINE = 13;
+const BARE_READ_BASELINE = 10;
 
 let readsExamined = 0;
 let readsTakingError = 0;

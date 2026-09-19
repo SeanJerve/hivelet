@@ -135,11 +135,24 @@ export const notificationService = {
     }
 
     // Get unread count
-    const { count: unreadCount } = await db
+    const { count: unreadCount, error: unreadError } = await db
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('recipient_profile_id', profileId)
       .eq('is_read', false);
+
+    // `unreadCount ?? 0` below. A failed count is not "nothing unread" - it
+    // clears the badge, which is the one thing that tells her there is
+    // something to look at. The list itself is already returned on its own
+    // error above, so this only decides the number beside it; it is logged and
+    // the badge is left off rather than being asserted as zero.
+    if (unreadError) {
+      console.error(
+        `[NotificationService] the unread count could not be read for ${profileId}: ` +
+        `${unreadError.message}. The badge will not be shown, which is not the same ` +
+        'as there being nothing unread.'
+      );
+    }
 
     return {
       notifications: (data as NotificationRecord[]) ?? [],
