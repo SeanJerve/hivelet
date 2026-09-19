@@ -873,7 +873,7 @@ async function submitInquiry() {
               id="cq-msg"
               v-model="inquiryMsg"
               rows="4"
-              class="mt-2 w-full resize-none border border-line bg-transparent px-3.5 py-3 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none transition-colors"
+              class="ws-textarea mt-2"
             ></textarea>
           </div>
         </div>
