@@ -100,6 +100,18 @@ type BillWithBalance<T> = T & {
   effective_status: string;
   amount_paid: number;
   amount_outstanding: number;
+  /**
+   * Money sent for this bill that the landlady has not confirmed yet.
+   *
+   * Deliberately NOT subtracted from `amount_outstanding`: BR-017 says the
+   * gateway does not decide a debt is settled, so what is OWED is unchanged
+   * until she verifies it. But the resident has to be able to see that their
+   * payment arrived, or the screen shows a full balance with a live Pay button
+   * five minutes after they paid - which is how somebody pays twice.
+   *
+   * Owed and sent are two different facts. The interface should show both.
+   */
+  amount_pending: number;
 };
 
 async function withEffectiveStatus<T extends BillRow>(
@@ -122,21 +134,24 @@ async function withEffectiveStatus<T extends BillRow>(
     .filter((id): id is string => typeof id === 'string' && id.length > 0);
 
   const paidByBill = new Map<string, number>();
+  const pendingByBill = new Map<string, number>();
 
   if (ids.length > 0) {
     const { data: paid, error: paidError } = await db
       .from('payments')
-      .select('bill_id, amount')
+      .select('bill_id, amount, verification_status')
       .in('bill_id', ids)
-      .eq('verification_status', 'Verified');
+      .in('verification_status', ['Verified', 'Pending Verification']);
 
     // Not swallowed. Falling back to zero would report every bill as fully
     // outstanding, which reads as a demand for money the tenant has already paid.
     if (paidError) throw ApiError.internal(paidError.message);
 
     for (const pmt of paid ?? []) {
-      const key = String((pmt as { bill_id: string | null }).bill_id);
-      paidByBill.set(key, (paidByBill.get(key) ?? 0) + Number((pmt as { amount: number }).amount));
+      const row = pmt as { bill_id: string | null; amount: number; verification_status: string };
+      const key = String(row.bill_id);
+      const bucket = row.verification_status === 'Verified' ? paidByBill : pendingByBill;
+      bucket.set(key, (bucket.get(key) ?? 0) + Number(row.amount));
     }
   }
 
@@ -150,8 +165,44 @@ async function withEffectiveStatus<T extends BillRow>(
         amount_paid: amountPaid,
         // Clamped at zero: an overpayment is an advance, not a negative debt.
         amount_outstanding: toCentavos(Math.max(0, total - amountPaid)),
+        amount_pending: toCentavos(pendingByBill.get(String(b.id)) ?? 0),
       };
     })
+  );
+}
+
+/**
+ * Money already sent for this bill that the administrator has not yet verified.
+ *
+ * `outstandingOnBill` counts VERIFIED payments only, which is right for what is
+ * owed - the gateway does not get to decide a debt is settled (BR-017). But it
+ * means a bill paid five minutes ago still reports its full balance, and the
+ * checkout route was refusing only `status === 'Paid'`.
+ *
+ * So: resident pays 6,900 in GCash. The webhook writes the row `Pending
+ * Verification`. The bill still reads 6,900 outstanding with a live Pay button.
+ * They tap it again - having seen a confirmation toast and an unchanged bill,
+ * on a phone - and a SECOND session for 6,900 is created and accepted. Two
+ * pspReferences, so neither the idempotency lookup nor migration 040's index
+ * sees a duplicate. 13,800 has left their GCash against a 6,900 debt, and if
+ * both are verified the ledger books both.
+ *
+ * Rejected payments are excluded deliberately: a refused attempt must not block
+ * a real one.
+ */
+async function pendingOnBill(billId: string): Promise<number> {
+  const { data: pending, error } = await db
+    .from('payments')
+    .select('amount')
+    .eq('bill_id', billId)
+    .eq('verification_status', 'Pending Verification');
+
+  // Not swallowed. Reading zero here would reopen the double-charge this exists
+  // to close, which is the one outcome worth failing the request over.
+  if (error) throw ApiError.internal(error.message);
+
+  return toCentavos(
+    (pending ?? []).reduce((sum, p) => sum + Number((p as { amount: number }).amount), 0)
   );
 }
 
@@ -609,6 +660,17 @@ router.post(
 
       if (bill.status === 'Paid') {
         throw ApiError.conflict('This bill is already paid.');
+      }
+
+      // The guard that stops a resident paying twice. See `pendingOnBill`.
+      const alreadySent = await pendingOnBill(bill.id);
+      if (alreadySent > 0) {
+        throw ApiError.conflict(
+          `A payment of ₱${alreadySent.toLocaleString('en-PH', { minimumFractionDigits: 2 })} ` +
+          'for this bill has already been received and is waiting for the landlady to confirm ' +
+          'it. Nothing further is owed right now, and you have not been charged again. It will ' +
+          'show as paid once she has checked it.'
+        );
       }
 
       // The BALANCE, not the debt as issued - a partially paid bill would

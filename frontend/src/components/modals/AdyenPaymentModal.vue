@@ -131,13 +131,42 @@ async function initializeAdyen() {
       }
     });
 
-    if (adyenContainerRef.value) {
-      new Dropin(checkout, { showPayButton: true }).mount(adyenContainerRef.value);
+    /**
+     * THE CONTAINER HAS TO EXIST BEFORE THE DROP-IN CAN MOUNT INTO IT.
+     *
+     * This read `if (adyenContainerRef.value) { ... mount(...) }` while
+     * `isLoading` was still true - and the container only renders in the `v-else`
+     * arm that `isLoading` suppresses. So the ref was ALWAYS null, the guard was
+     * ALWAYS false, and the Drop-in was never mounted. The `finally` then set
+     * `isLoading = false`, the arm appeared, and the resident was left looking at
+     * an empty 220-pixel box: no pay button, no GCash logo, no error, nothing to
+     * retry.
+     *
+     * The gateway is fully configured and was completely unusable. Every attempt
+     * created a real Adyen session and wrote a PAYMENT_RECORD audit row on the
+     * way to doing nothing.
+     *
+     * So: reveal the container, let Vue paint it, THEN mount. And if the ref is
+     * somehow still missing, SAY SO. The silent `if` is what let this sit here -
+     * a guard that skips the only thing the function exists to do should never
+     * be quiet about it.
+     */
+    isLoading.value = false;
+    await nextTick();
+
+    if (!adyenContainerRef.value) {
+      throw new Error(
+        'The payment form could not be placed on the page. Nothing has been charged. ' +
+        'Close this and try again, and tell the landlady if it keeps happening.'
+      );
     }
+
+    new Dropin(checkout, { showPayButton: true }).mount(adyenContainerRef.value);
   } catch (err: unknown) {
     errorMessage.value =
       err instanceof Error ? err.message : 'Unable to reach the payment gateway.';
   } finally {
+    // Already false on the happy path above; this covers every throw before it.
     isLoading.value = false;
   }
 }

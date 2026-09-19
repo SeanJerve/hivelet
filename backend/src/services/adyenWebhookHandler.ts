@@ -53,8 +53,40 @@ export async function applyNotificationItem(
   const eventCode = String(item.eventCode ?? '');
   const success = String(item.success ?? '') === 'true';
 
+  /**
+   * A NOTIFICATION THAT CAN NEVER SUCCEED MUST BE ACKNOWLEDGED, NOT RETRIED.
+   *
+   * Both this and the amount check below returned `failed`, and the route turns
+   * `failed` into HTTP 500 - which is exactly the signal that tells Adyen to
+   * send it again. Neither condition can change on a retry, so Adyen would
+   * resend on its full schedule and eventually DISABLE THE WEBHOOK for excessive
+   * failures, taking the real notification path down with it.
+   *
+   * This file already argues that case correctly for the unique-violation
+   * branch further down: "Reporting that as `failed` would be worse than the
+   * duplicate it prevents ... a notification that can never be acknowledged and
+   * never stops coming." These two sat above it and fell into the same trap.
+   *
+   * `ignored` answers 200 so Adyen stops. The audit row is what keeps it from
+   * being silent - a malformed notification is not routine, and a console line
+   * is not a record.
+   */
   if (!pspReference) {
-    return { pspReference: '', eventCode, outcome: 'failed', detail: 'no pspReference' };
+    await recordAudit({
+      actorProfileId: null,          // nobody signed in; this is Adyen calling
+      action: 'PAYMENT_RECORD',
+      entityType: 'PAYMENT',
+      entityId: '00000000-0000-0000-0000-000000000000',
+      newValues: {
+        eventCode,
+        note: 'Adyen notification arrived with NO pspReference and was acknowledged without ' +
+              'being recorded. It cannot be matched to anything; nothing was written. ' +
+              'Acknowledged deliberately so Adyen stops retrying a notification that can ' +
+              'never succeed.',
+      },
+      ipAddress,
+    });
+    return { pspReference: '', eventCode, outcome: 'ignored', detail: 'no pspReference' };
   }
 
   // Only authorisations create money in this system. Everything else - captures,
@@ -88,11 +120,36 @@ export async function applyNotificationItem(
     return { pspReference, eventCode, outcome: 'ignored', detail: 'authorisation refused' };
   }
 
-  // --- idempotency --------------------------------------------------------
+  /**
+   * IDEMPOTENCY, SCOPED TO MATCH THE INDEX THAT BACKS IT.
+   *
+   * This matched `transaction_reference` across EVERY payment, whatever its
+   * method. Migration 040 deliberately narrowed the unique index to
+   * `payment_method = 'Adyen Online'`, because the on-site path writes ONE
+   * reference across SEVERAL rows on purpose - BR-013 splits a receipt into a
+   * row per bill plus an advance - so a repeat is legitimate there.
+   *
+   * A lookup wider than its index has two failure modes, and both are bad:
+   *
+   *   - ONE non-gateway row whose reference happens to equal an incoming
+   *     pspReference makes `existing` truthy. Outcome `duplicate`, HTTP 200,
+   *     Adyen stops retrying, and a REAL PAYMENT IS NEVER RECORDED - silently,
+   *     with no warning anywhere.
+   *   - TWO OR MORE of them make `maybeSingle()` error. Outcome `failed`, HTTP
+   *     500, and Adyen retries that notification forever against a read that
+   *     cannot succeed.
+   *
+   * The reference the administrator types is `transactionReference ||
+   * invoiceNumber`, so the natural way to hit this is her reconciling an online
+   * payment by writing its reference on the receipt.
+   *
+   * Scoped to the same predicate as the index, so the two cannot disagree.
+   */
   const { data: existing, error: lookupError } = await db
     .from('payments')
     .select('id')
     .eq('transaction_reference', pspReference)
+    .eq('payment_method', 'Adyen Online')
     .maybeSingle();
 
   if (lookupError) {
@@ -156,7 +213,25 @@ export async function applyNotificationItem(
   const amount = Math.round(minorUnits) / 100;
 
   if (!(amount > 0)) {
-    return { pspReference, eventCode, outcome: 'failed', detail: 'non-positive amount' };
+    // Permanent for this notification - see the note on the pspReference check
+    // above. Adyen sends a zero-value AUTHORISATION to verify a payment method;
+    // there is no money in it, and retrying it forever helps nobody.
+    await recordAudit({
+      actorProfileId: null,          // nobody signed in; this is Adyen calling
+      action: 'PAYMENT_RECORD',
+      entityType: 'PAYMENT',
+      entityId: '00000000-0000-0000-0000-000000000000',
+      newValues: {
+        pspReference,
+        eventCode,
+        minorUnits,
+        note: 'Adyen notification carried a non-positive amount and was acknowledged without ' +
+              'being recorded. No money is involved. Acknowledged deliberately so Adyen stops ' +
+              'retrying a notification that can never succeed.',
+      },
+      ipAddress,
+    });
+    return { pspReference, eventCode, outcome: 'ignored', detail: 'non-positive amount' };
   }
 
   if (!roomId || !tenantProfileId) {
@@ -211,7 +286,7 @@ export async function applyNotificationItem(
      * The lookup above catches the ordinary retry. It cannot catch two retries
      * running at the same moment - both read "not found", both insert - and
      * that is precisely when Adyen retries: when the first attempt has not
-     * answered yet. Migration `024` added a unique index on
+     * answered yet. Migration `024`, narrowed by `040`, put a unique index on
      * `transaction_reference` so the database refuses the second insert, because
      * no amount of checking-before-inserting closes a race between two
      * connections.
