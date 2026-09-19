@@ -61,6 +61,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { peso } from '@/lib/canonicalUnits';
 import { CATEGORIES, resolveSlug, type CategoryKey } from '@/lib/unitCategories';
+import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
 import { showToast, LANDLADY } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
@@ -471,31 +472,14 @@ async function submitInquiry() {
       The listing could not be read. Nothing is shown rather than the seeded
       list, whose unit types are wrong - see the note at the top of this file.
 
-      The number is `LANDLADY.phone`. It was written into the template as
-      "0917-123-4567", which is not the landlady's number: this is the one
-      sentence on the page that tells a prospect how to reach a human when the
-      site cannot help them, and it pointed at a placeholder.
+      This used to be written out here, and the landing page answered the same
+      outage by listing all 33 units as Available. One component now, so the two
+      pages cannot tell a visitor opposite things again.
     -->
-    <section
+    <AvailabilityUnavailable
       v-else-if="loadFailed"
-      role="alert"
-      class="w-full border-t border-border"
-    >
-      <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
-        <h2 class="text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
-          The units could not be loaded
-        </h2>
-        <p class="mt-5 max-w-xl text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          This is not the same as having nothing free. Reload the page, and if it keeps happening,
-          ring the landlady on
-          <a
-            :href="`tel:${LANDLADY.phone}`"
-            class="text-foreground underline underline-offset-4 decoration-1 decoration-border-strong hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground transition-colors"
-          >{{ LANDLADY.phone }}</a>
-          and she will tell you what is available.
-        </p>
-      </div>
-    </section>
+      :subject="`which ${currentCat.title.toLowerCase()} units are free`"
+    />
 
     <section v-else-if="categoryUnits.length === 0" class="w-full border-t border-border">
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">

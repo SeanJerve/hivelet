@@ -123,7 +123,21 @@ thing did not work" is not.
 
 ---
 
-### B-16 — during an outage, two public pages tell a prospect opposite things
+### ~~B-16 — during an outage, two public pages tell a prospect opposite things~~ — **SETTLED 2026-09-19**
+
+> **Sean's call, asked directly:** *"we should be honest and tell them we cant show right now and
+> have a page or a component telling them ... and telling to contact directly."*
+>
+> Built as one shared component, `components/public/AvailabilityUnavailable.vue`, used by **both**
+> pages so they cannot drift apart again. It shows no unit list, no rates and no counts - the
+> seed is 33 always-vacant units at rates where 30 of 33 no longer match - and instead says we
+> cannot show it right now, that this is **not** the same as having nothing free, and gives her
+> number, a link to leave a message, and a retry.
+>
+> **Verified against a simulated outage in the browser, backend untouched:** the landing page no
+> longer lists a single unit as Available, the category page reads *"which studio units are
+> free"*, and with the fetch restored both return to normal.
+
 
 - **Blocked on:** your call, and it is `frontend/src/` — the design account's lane, and
   `PublicGuestView.vue` had uncommitted work in it when this session started. Not something to

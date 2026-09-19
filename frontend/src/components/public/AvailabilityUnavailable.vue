@@ -1,0 +1,104 @@
+<script setup lang="ts">
+/**
+ * What a visitor is shown when the site cannot find out which units are free.
+ *
+ * WHY THIS IS A COMPONENT
+ * -----------------------
+ * The two public pages answered the same outage differently. `/category/studio`
+ * said the units could not be loaded and gave the landlady's number;
+ * `/public` listed the built-in fallback - **all 33 units, every one marked
+ * Available**, on a property where 32 are occupied - under a notice saying the
+ * figures might be out of date. So one page said "we cannot tell you" while the
+ * other told a prospective boarder there were 33 rooms free, during the same
+ * outage, on the same site.
+ *
+ * Sean settled it on 2026-09-19: be honest, show that we cannot display it right
+ * now, and tell them to make contact directly. This is that, in one place, so
+ * the two pages cannot drift apart again.
+ *
+ * WHAT IT DELIBERATELY DOES NOT DO
+ * --------------------------------
+ * It shows **no unit list, no rates and no counts**. The fallback data is
+ * `canonicalUnits.ts`, whose prices are a snapshot - 30 of the 33 no longer match
+ * the database - and whose status is `vacant` for every unit. Printing any of it
+ * during an outage is how a stranger gets quoted a rent that is wrong by up to
+ * ₱2,000, or told a room is free when somebody lives in it.
+ *
+ * It also does not say "error", "failed" or a status code. A visitor is not
+ * debugging the site; they want to know whether there is a room, and the honest
+ * answer is that we cannot tell them right now and here is who can.
+ */
+import { RouterLink } from 'vue-router';
+import { Phone, MessageSquare, RotateCw } from 'lucide-vue-next';
+import { LANDLADY } from '@/lib/systemState';
+
+withDefaults(
+  defineProps<{
+    /** What could not be shown, in the visitor's terms. */
+    subject?: string;
+    /** Hidden when the surrounding page already offers one. */
+    showRetry?: boolean;
+  }>(),
+  {
+    subject: 'which units are free',
+    showRetry: true,
+  }
+);
+
+function reload() {
+  window.location.reload();
+}
+</script>
+
+<template>
+  <section
+    role="alert"
+    aria-live="polite"
+    class="w-full border-t border-border"
+  >
+    <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-20 sm:py-28">
+      <p class="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        Live availability
+      </p>
+
+      <h2 class="mt-4 text-xl sm:text-2xl font-medium text-foreground tracking-[-0.02em]">
+        We cannot show you {{ subject }} right now
+      </h2>
+
+      <!--
+        The second sentence is the important one, and it is the same sentence the
+        category page has always carried: an outage is not a full house, and a
+        visitor who assumes otherwise simply leaves.
+      -->
+      <p class="mt-5 max-w-xl text-xs sm:text-sm text-muted-foreground leading-relaxed">
+        This is not the same as having nothing free — the listing is temporarily
+        unreachable, so rather than show you figures we cannot stand behind, we would
+        rather you asked her directly.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a
+          :href="`tel:${LANDLADY.phone}`"
+          class="pill-btn-brand"
+        >
+          <Phone class="size-4" aria-hidden="true" />
+          Ring {{ LANDLADY.phone }}
+        </a>
+
+        <RouterLink to="/inquire" class="pill-btn">
+          <MessageSquare class="size-4" aria-hidden="true" />
+          Leave a message instead
+        </RouterLink>
+
+        <button v-if="showRetry" type="button" class="pill-btn" @click="reload">
+          <RotateCw class="size-4" aria-hidden="true" />
+          Try again
+        </button>
+      </div>
+
+      <p class="mt-6 text-xs text-muted-foreground">
+        {{ LANDLADY.name }} · {{ LANDLADY.address }}
+      </p>
+    </div>
+  </section>
+</template>

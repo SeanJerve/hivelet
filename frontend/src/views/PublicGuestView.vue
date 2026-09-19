@@ -16,6 +16,7 @@ import { ref, computed, onMounted } from 'vue';
 import { peso, publicStatusLabel } from '@/lib/canonicalUnits';
 import { CATEGORIES } from '@/lib/unitCategories';
 import { fetchRooms, rooms, roomsFetchFailed } from '@/lib/systemState';
+import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
 import { api } from '@/lib/api';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import BookViewingPrompt from '@/components/modals/BookViewingPrompt.vue';
@@ -597,21 +598,18 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         </div>
 
         <!--
-          B-01: `rooms` keeps the always-vacant `CANONICAL_UNITS` seed when the
-          fetch fails, so without this the table would assert 33 free units on a
-          property that is 32 occupied. Disclosing the staleness is presentation;
-          what the counts should then say is Sean's call, logged in BLOCKED_FOR_SEAN.md.
+          B-01, settled by Sean on 2026-09-19: when the listing cannot be read, be
+          honest and point them at her, rather than printing the seed.
+
+          `rooms` keeps the always-vacant `CANONICAL_UNITS` seed when the fetch
+          fails. This used to disclose that in a notice and then print the table
+          anyway - 33 units, every one marked Available, on a property that is 32
+          occupied, at rates where 30 of the 33 no longer match. A caveat above a
+          wrong number is still a wrong number, and the category page was already
+          refusing to show anything in the same situation. Same component both
+          places now.
         -->
-        <p
-          v-if="roomsFetchFailed"
-          role="status"
-          class="mt-8 border border-border-strong bg-muted px-4 py-3 text-xs sm:text-sm text-foreground-soft leading-relaxed"
-        >
-          Live details could not be reached, so what follows is the property's standard listing.
-          The status, the rate and the kind of unit may all be out of date &mdash; 30 of the 33
-          built-in rates no longer match, the worst by &#8369;2,000. Please confirm with the
-          landlady before relying on any of it.
-        </p>
+        <AvailabilityUnavailable v-if="roomsFetchFailed" subject="the units on the property" />
 
         <!--
           Seven columns need 44rem, so on a phone this table was 704px inside a
@@ -623,7 +621,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           importing the workspace surfaces, which belong to the admin and tenant
           side and would read as a different site.
         -->
-        <div class="mt-10 hidden sm:block">
+        <div v-if="!roomsFetchFailed" class="mt-10 hidden sm:block">
           <table class="w-full border-collapse text-sm">
             <caption class="sr-only">
               Every published unit on the property, with its cluster, type, floor, monthly rate and current status.
@@ -695,7 +693,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         </div>
 
         <!-- The same units, stacked, for a phone. -->
-        <ul id="all-units-list" class="mt-10 sm:hidden">
+        <ul v-if="!roomsFetchFailed" id="all-units-list" class="mt-10 sm:hidden">
           <li v-for="u in visibleUnits" :key="u.id" class="border-b border-border">
             <button
               type="button"
@@ -757,7 +755,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           button is not rendered at all when there is nothing behind it, which
           is the case if the property is ever listed with five units or fewer.
         -->
-        <div v-if="hiddenUnitCount > 0" class="border-t border-foreground">
+        <div v-if="!roomsFetchFailed && hiddenUnitCount > 0" class="border-t border-foreground">
           <button
             type="button"
             :aria-expanded="allUnitsShown"
