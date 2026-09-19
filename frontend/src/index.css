@@ -954,12 +954,29 @@ body {
   }
 
   @media (prefers-reduced-motion: reduce) {
+    /*
+     * Reduced motion means gentler, not none.
+     *
+     * This was a blanket `transition-duration: 0.01ms !important` on
+     * `.ws-focus *`, with the comment below it saying colour still
+     * transitions. It did not. The blanket killed EVERY transition on every
+     * descendant, colour among them, and the comment had been asserting the
+     * opposite ever since it was written - a claim that was true about the
+     * intention and never about the code.
+     *
+     * What a reader who asks for reduced motion wants gone is MOVEMENT. So
+     * the transitionable set is pinned to the properties that do not move
+     * anything: colour, and opacity, which fades rather than travels.
+     * Transform, scale and translate simply stop being transitioned, which is
+     * the same end state the blanket produced for them.
+     */
     .ws-focus * {
       animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-property: color, background-color, border-color, outline-color,
+        text-decoration-color, fill, stroke, opacity !important;
     }
-    /* Reduced motion means gentler, not none: colour still transitions, and
-       the press still answers - it just stops moving. */
+    /* The press still answers - it just stops moving. */
     .pill-btn:active:not(:disabled),
     .pill-btn-brand:active:not(:disabled),
     .pill-btn-night:active:not(:disabled),

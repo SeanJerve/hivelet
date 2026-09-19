@@ -82,7 +82,16 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'property-map.png', 'galang-compound.jpg', 'galang-building.jpg'],
+      // `property-map.png` was here and nothing rendered it. The Location
+      // section became a live Google Maps embed, and the still image it
+      // replaced stayed in this list - so the service worker kept downloading
+      // 471 KB into the offline shell on every first visit, 24% of the 1,965 KB
+      // it precaches, for a picture no route draws.
+      //
+      // `galang-building.jpg` stays: /inquire renders it above the fold on a
+      // wide screen. It is `loading="lazy"` there so a phone, where its panel
+      // is display:none, no longer fetches it.
+      includeAssets: ['favicon.svg', 'galang-compound.jpg', 'galang-building.jpg'],
       manifest: {
         name: 'Hivelet — Apartment Management & Financial Operations',
         short_name: 'Hivelet',

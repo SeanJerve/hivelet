@@ -342,10 +342,21 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
     <section class="relative w-full bg-neutral-dark text-white font-editorial overflow-hidden">
       <!-- Crisp entrance photograph background (unblurred, leveled) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
+        <!--
+          The opposite treatment to the enquiry page's photograph, and for the
+          opposite reason: this one is the largest thing in the first viewport,
+          so it is the page's LCP. It is fetched eagerly and at high priority,
+          and it carries its intrinsic size so the box is reserved before the
+          bytes land rather than after.
+        -->
         <img
           src="/galang-compound.jpg"
-          alt="Fe Galang Da Silva Boarding House - Galang Compound Gate"
+          alt="The gate of the Galang compound, seen from the street"
           class="w-full h-full object-cover object-center"
+          width="1024"
+          height="767"
+          fetchpriority="high"
+          decoding="async"
         />
         <!-- Subtle contrast overlay: unblurred to keep image details crystal clear and vibrant -->
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/40" />
@@ -520,13 +531,13 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               <!-- The inner frame, drawing itself in. -->
               <span
                 aria-hidden="true"
-                class="pointer-events-none absolute inset-5 border border-foreground/15 opacity-0 transition-all duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100 motion-safe:group-focus-visible:scale-100"
+                class="pointer-events-none absolute inset-5 border border-foreground/15 opacity-0 transition duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100 motion-safe:group-focus-visible:scale-100"
               />
 
               <span class="absolute inset-0 grid place-items-center">
                 <component
                   :is="c.icon"
-                  class="size-9 text-muted-foreground-soft transition-all duration-500 ease-out group-hover:text-foreground motion-safe:group-hover:-translate-y-1.5 motion-safe:group-hover:scale-110 group-focus-visible:text-foreground"
+                  class="size-9 text-muted-foreground-soft transition duration-500 ease-out group-hover:text-foreground motion-safe:group-hover:-translate-y-1.5 motion-safe:group-hover:scale-110 group-focus-visible:text-foreground"
                 />
               </span>
 

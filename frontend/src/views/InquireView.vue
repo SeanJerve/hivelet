@@ -247,10 +247,22 @@ async function submitInquiry() {
       <!-- Right: Real building exterior showcase with clear background image -->
       <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 py-10 sm:py-14 overflow-hidden bg-neutral-dark">
         <!-- Crisp building background photograph (unblurred) -->
+        <!--
+          `loading="lazy"` is doing real work here, not box-ticking. This panel
+          is `hidden lg:flex`, and display:none does NOT stop a browser
+          fetching an <img> inside it - checked in the network log at 375px,
+          where `galang-building.jpg` came back 200 OK on a screen that never
+          shows it. That is 284 KB of someone's mobile data for a picture they
+          cannot see. Lazy defers it until it scrolls into view, which on a
+          phone is never.
+        -->
         <img
           src="/galang-building.jpg"
-          alt="Fe Galang Da Silva Boarding House Building"
+          alt="The boarding house seen from the street"
           class="absolute inset-0 w-full h-full object-cover object-center"
+          width="768"
+          height="1024"
+          loading="lazy"
         />
         <!-- Contrast gradient overlay: unblurred to keep building details clear and vibrant -->
         <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/50" />

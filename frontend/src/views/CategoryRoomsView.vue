@@ -664,7 +664,7 @@ async function submitInquiry() {
                 <!-- A hairline frame that draws itself in under the cursor. -->
                 <span
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-2 border border-foreground/15 opacity-0 transition-all duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
+                  class="pointer-events-none absolute inset-2 border border-foreground/15 opacity-0 transition duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
                 />
 
                 <span class="relative flex items-baseline justify-between gap-3">
