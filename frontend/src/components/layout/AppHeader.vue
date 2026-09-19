@@ -218,7 +218,12 @@ onUnmounted(() => {
 
 <template>
   <header class="sticky top-0 z-40 w-full bg-tile border-b border-line">
-    <div class="max-w-[1600px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 relative">
+    <!--
+      `ws-page` rather than the measure spelled out again: the header's edges
+      have to line up with the page content under it, and they only stay lined
+      up if both read the same class.
+    -->
+    <div class="ws-page flex h-16 items-center justify-between relative">
       
       <!-- Left: Mobile Menu Toggle & Brand Logo -->
       <div class="flex items-center gap-3">

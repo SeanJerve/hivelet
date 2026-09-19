@@ -115,7 +115,13 @@ const hidesGlobalHeader = computed(() =>
 
     <AppHeader v-if="!hidesGlobalHeader" />
     
-    <div :class="['flex-1 flex w-full', isWorkspaceSection ? 'max-w-[1600px] mx-auto px-4 sm:px-6' : '']">
+    <!--
+      The workspace takes the same `ws-page` the public pages take. It used to
+      repeat the measure inline - `max-w-[1600px] mx-auto px-4 sm:px-6` - which
+      is the same numbers and a second copy of them, so the two could drift
+      apart again exactly as they had before.
+    -->
+    <div :class="['flex-1 flex w-full', isWorkspaceSection ? 'ws-page' : '']">
       <AppSidebar v-if="isWorkspaceSection" />
       <main
         id="main"
