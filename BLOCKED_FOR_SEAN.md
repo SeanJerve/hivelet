@@ -272,6 +272,33 @@ thing did not work" is not.
     voided. This one I did fire against live, as a no-op, on a row of my own.
 - **Raised:** 2026-09-19
 
+#### What I could and could not prove about tenant privacy (BR-024), 2026-09-19
+
+Signed in as six residents using the shared demo password and tried to make each one see
+another's records. **Read-only — this wrote nothing.**
+
+| | |
+| :--- | :--- |
+| **income records** | **PROVEN.** 31, 26 and 31 rows for three residents, and **every single row carries the caller's own profile id.** Real data, real test. |
+| admin routes | **PROVEN.** All six refused a tenant token with **403**, and the administrator reads the same route with 200 — so it is scope, not a dead route. |
+| bills | **NOT PROVEN — zero rows exist for any resident.** |
+| payments | **NOT PROVEN — zero rows.** |
+| ticket conversations | **NOT PROVEN — no resident has a ticket.** |
+
+**The cross-tenant ticket read is the one I most wanted and could not run.** It is the
+classic leak in a portal like this, and `tenant.ts` looks right — it returns 404 rather than 403
+so a resident cannot even probe whether someone else's ticket exists — but *looks right* is not
+the same as *was refused*.
+
+> **A methodological note worth keeping.** My first version of this probe compared two residents'
+> responses and called them scoped if they **differed** — and counted "both empty" as a pass. Six
+> routes reported green while proving nothing at all. The second version asserts that every row
+> returned carries the caller's profile id, and reports NOT TESTED where there are no rows. Four
+> honest results beat fifteen hollow ones. **A test that cannot fail is not evidence.**
+
+**☐ For the rehearsal:** once a bill, a payment and a ticket exist, re-run this. Those three are
+the untested half of BR-024, and they only become testable after a person has used the system.
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
