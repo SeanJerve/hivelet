@@ -936,9 +936,18 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
           ? `${exp.category_code} — ${exp.fixed_expense_categories.name}`
           : EXPENSE_CATEGORIES.find(c => c.startsWith(`${exp.category_code} —`)) || `${exp.category_code} — Expense`;
         
-        const dObj = exp.expense_date ? new Date(exp.expense_date) : null;
-        const dateFormatted = dObj && !isNaN(dObj.getTime())
-          ? dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        // Rendered from the stored `YYYY-MM-DD` with no `Date` in between, for the
+        // same reason the year and month below are: parsing a bare date gives UTC
+        // midnight, and formatting that shows the day before to any viewer west of
+        // UTC. The property is UTC+8 so it reads correctly there and nowhere else.
+        const dateFormatted = /^\d{4}-\d{2}-\d{2}/.test(exp.expense_date || '')
+          ? new Date(Date.UTC(
+              Number(exp.expense_date.slice(0, 4)),
+              Number(exp.expense_date.slice(5, 7)) - 1,
+              Number(exp.expense_date.slice(8, 10))
+            )).toLocaleDateString('en-US', {
+              month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC',
+            })
           : '—';
 
         const splits: ExpenseSplit[] = (exp.expense_property_allocations || []).map((a: any) => ({
@@ -964,8 +973,30 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
           id: exp.id,
           date: dateFormatted,
           rawDate: exp.expense_date || '',
-          year: dObj && !isNaN(dObj.getTime()) ? dObj.getFullYear() : undefined,
-          month: dObj && !isNaN(dObj.getTime()) ? dObj.getMonth() + 1 : undefined,
+          /**
+           * Filed from the stored date itself, not from a `Date` read in the
+           * viewer's zone.
+           *
+           * `expense_date` is a bare `date` column, so the API sends
+           * `"2026-09-19"` and `new Date(...)` of that is **UTC midnight**.
+           * `getFullYear()` and `getMonth()` then answer in whatever zone the
+           * browser is in - west of UTC that is the day before, which at a
+           * month or year boundary files the entry under the wrong month and
+           * drops it out of the year filter. The same class of defect the
+           * income ledger had, where 216 rows were filed by payment date
+           * instead of rent period.
+           *
+           * Nobody at the property sees it: Legazpi is UTC+8, so the shift is
+           * forward and lands on the right day. It breaks for anyone reviewing
+           * the books from further west, which now includes this project's own
+           * markers. Slicing the string has no zone in it at all.
+           */
+          year: /^\d{4}-\d{2}-\d{2}/.test(exp.expense_date || '')
+            ? Number(exp.expense_date.slice(0, 4))
+            : undefined,
+          month: /^\d{4}-\d{2}-\d{2}/.test(exp.expense_date || '')
+            ? Number(exp.expense_date.slice(5, 7))
+            : undefined,
           description: exp.or_supplier || 'Expense',
           category: categoryName,
           categoryCode: exp.category_code,

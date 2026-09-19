@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import { propertyToday, propertyDate } from '@/lib/propertyDate';
+import { propertyToday } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
@@ -447,11 +447,27 @@ function getAreaAmount(e: ExpenseRecord, areaName: 'Boarding House' | 'Main Hous
   return match ? match.amount : 0;
 }
 
-// Helper to get sum of splits for Apts & Other
+/**
+ * Everything the other two columns do not show.
+ *
+ * This used to name its three areas - Front Apartment, Back Apartment, Other
+ * Expenses / Personal - and `property_area_type` has six. **Penthouse** was in
+ * neither this filter nor the Boarding House and Main House columns, so a
+ * penthouse allocation appeared in no column at all and the row stopped adding
+ * up to its own total. Silently: nothing warns, the figures just disagree.
+ *
+ * There are no penthouse allocations today (1,327 rows, none of them PH -
+ * checked against `expense_property_allocations`), because PH is the one unit
+ * still vacant. The first expense allocated to it after it is let would have
+ * gone missing from this table.
+ *
+ * Written as the complement rather than a list, so a seventh area cannot fall
+ * out of the row the same way. The three columns now partition the splits by
+ * construction.
+ */
 function getAptsOtherAmount(e: ExpenseRecord): number {
   return e.splits
-    .filter(s => s.area === 'Front Apartment' || s.area === 'Back Apartment'
-             || s.area === 'Other Expenses / Personal')
+    .filter(s => s.area !== 'Boarding House' && s.area !== 'Main House')
     .reduce((sum, s) => sum + s.amount, 0);
 }
 
@@ -502,12 +518,28 @@ function removeEditAllocation(allocIndex: number) {
 
 function startEditExpense(e: ExpenseRecord) {
   editingExpense.value = e;
-  const d = new Date(e.date);
-  if (!isNaN(d.getTime())) {
-    editDate.value = propertyDate(d);
-  } else {
-    editDate.value = propertyToday();
-  }
+
+  /**
+   * The stored date, not the one on screen.
+   *
+   * This did `new Date(e.date)`, and `e.date` is the *display* string - "Sep 19,
+   * 2026", built for the table by `toLocaleDateString`. Reconstructing a date by
+   * re-parsing its own presentation is lossy in both directions: the format is
+   * locale-dependent, and the parse lands on midnight in the **viewer's** zone
+   * rather than the property's, so opening an entry and saving it could move its
+   * date by a day for anyone not in the Philippines.
+   *
+   * `rawDate` is the `expense_date` column verbatim - a bare `date`, already
+   * `YYYY-MM-DD`, which is exactly what the input wants. No parsing needed.
+   *
+   * The old fallback was worse than the parse. An entry with no date rendered as
+   * '—', `new Date('—')` is NaN, and the else branch filled the field with
+   * `propertyToday()` - so opening such an entry and pressing Save stamped it
+   * with today's date. An unknown date became a confident wrong one. It is now
+   * left empty, and the form can ask for it.
+   */
+  const stored = e.rawDate ?? '';
+  editDate.value = /^\d{4}-\d{2}-\d{2}$/.test(stored) ? stored : '';
   editDesc.value = e.description;
   editCategory.value = e.category;
   editAllocations.value = e.splits.map(s => ({
