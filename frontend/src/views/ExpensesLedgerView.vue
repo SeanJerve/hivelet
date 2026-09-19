@@ -369,12 +369,33 @@ function submitAddExpense() {
           return;
         }
 
-        // Only what the ledger accepted. The refetch below replaces these rows
-        // with the server's own, ids included.
+        /**
+         * The id the LEDGER gave this row, not one made up here.
+         *
+         * This wrote `EXP-NEW-<timestamp>-<n>` and the comment beneath it said
+         * "the refetch below replaces these rows with the server's own, ids
+         * included". **There was no refetch below** - a precondition asserted
+         * in a comment and never true, which is the shape the judgement log
+         * keeps recording.
+         *
+         * The consequence was a second entry in the owner's book. The edit
+         * dialog routes anything whose id starts `EXP-` to POST rather than
+         * PATCH, so: add an expense, notice a typo, edit it, save - and the
+         * ledger holds it twice, under a toast reading "Expense updated".
+         *
+         * Both halves fixed: the real id is taken from the response, and the
+         * refetch the comment promised now happens.
+         */
+        const serverId = (r: PromiseSettledResult<any>, fallbackIdx: number): string => {
+          const v = r.status === 'fulfilled' ? (r.value as any) : null;
+          return v?.data?.id ?? v?.id ?? `EXP-NEW-${Date.now()}-${fallbackIdx}`;
+        };
+
+        // Only what the ledger accepted.
         formEntries.value.forEach((entry, idx) => {
           if (results[idx].status !== 'fulfilled') return;
           const newEntry: ExpenseRecord = {
-            id: `EXP-NEW-${Date.now()}-${idx}`,
+            id: serverId(results[idx], idx),
             date: formatDateForDisplay(date.value),
             description: entry.desc.trim(),
             category: entry.category,
@@ -403,6 +424,12 @@ function submitAddExpense() {
             ]
           }
         ];
+
+        // The refetch the comment above always claimed. It replaces the rows
+        // just pushed with the server's own, so what is on screen is what the
+        // ledger holds - and an edit straight afterwards PATCHes rather than
+        // writing a second entry.
+        await fetchExpenseRecords();
 
         showToast('success', 'Expenses recorded', `${count} ${count === 1 ? 'entry' : 'entries'} saved to the ledger.`);
       } catch (err: any) {
