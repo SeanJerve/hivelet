@@ -14,7 +14,7 @@ without touching appearance.
 
 ## 0. The headline
 
-**Eleven defects found and fixed, six of them on the paths the owner's money takes.** Every one
+**Thirteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
 was invisible: none produced an error, a failing suite, or a console warning. Two more findings
 need a person and are `B-15` and `B-16`.
 
@@ -236,6 +236,53 @@ Ran the compiled primitive against the inputs rather than trusting it: refuses `
 `2026-8-1`, month 13, `2026-02-30` and a full ISO timestamp; accepts `2024-02-29` and refuses
 `2026-02-29`, so it knows leap years. It accepts `1900-01-17`, correctly — `isoDate` is about
 format and reality, not plausibility, and plausibility is `check:ledger`'s job.
+
+### 2.12 The second open write had no rate limit, and a comment said there wasn't one
+
+`middleware/rateLimit.ts` states in its own header that `POST /public/inquiries` is *"the only
+genuinely open write in the system"*, and enumerates the other public writes to prove it. **The
+census was of `routes/public.ts`.** `POST /auth/register` is in `routes/auth.ts`, so it was never
+in the set being counted — the same failure as the DFD closure proof that enumerated
+`FULL_DATABASE_SCHEMA.sql` and therefore could not find `property_areas`. **A completeness claim
+is only as good as its idea of where the thing being counted may live**, and this one could not
+produce its own counterexample.
+
+The route is public, takes no token, and inserts a live `profiles` row with `role: 'tenant'`,
+`account_status: 'active'`. Unthrottled that is the owner's Active Tenants screen filling with
+accounts nobody created on purpose — and `profiles` is live data, so clearing them is a
+migration. The sharper cost is CPU: every call runs **bcrypt** before anything else is decided,
+on the machine that also serves the ledger.
+
+The header's reasoning for declining to wrap `/auth/login` is sound and does **not** transfer:
+login is guarded per *account* by `failed_login_count` and `locked_until`, and the suites sign in
+constantly. Registration has no per-account anything — every request is a new account — and no
+suite registers, because `check:api` tests that route statically on purpose.
+
+Limited to five per quarter-hour, and verified it engages: five `422`s then a `429` naming
+sign-up attempts, with `profiles` still at 45.
+
+### 2.13 And a check now enumerates every route file, because a sentence went stale
+
+`check:endpoints` gained a **guard census**: 66 routes, 36 writes, **4 reachable without a
+token**. Each of the four is named with what guards it *instead* — per-account lockout, a rate
+limit, a 404 while a gateway is configured, an HMAC verified inside the handler — and all four
+print on every run, because an allowlist that goes quiet is where this project has repeatedly
+watched defects go to be forgotten. It decays in both directions: a new unguarded write, an entry
+since guarded, an entry whose route is gone.
+
+**Mutation tested**, asserting on the message rather than the exit code:
+
+```
+CAUGHT  a write route with its requirePermission removed
+CAUGHT  a guard that is only mentioned in a comment
+CAUGHT  an allowlisted open write that now carries a guard
+CAUGHT  an allowlisted open write that was renamed away
+OK      green after revert, and git confirms routes/ unmodified
+```
+
+The comment case is not hypothetical: the register schema's own note *about* the escalation fix
+uses the words `requireAuth` and `requirePermission`, so a scan counting prose would have read
+the explanation of a hole as the guard for it.
 
 ---
 
