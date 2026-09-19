@@ -12,8 +12,9 @@ import {
   roomsFetchFailed,
   showToast, 
   fetchTenants, 
-  formatUnitOccupantsSummary, 
-  type IncomeRecord 
+  formatUnitOccupantsSummary,
+  incomeRecordsFetchFailed,
+  type IncomeRecord
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
@@ -783,24 +784,52 @@ async function exportExcel() {
       </div>
     </div>
 
-    <!-- The four figures -->
+    <!--
+      The four figures.
+
+      EVERY ONE OF THEM READS `incomeRecordsFetchFailed` FIRST, and that is not
+      decoration. They are sums over `rows`, which derives from
+      `incomeRecords`, which stays EMPTY when the fetch fails - so without this
+      a refused or broken request rendered "₱0" four times over, on the screen
+      the owner opens to see money coming in, against a table holding 937 real
+      income rows. A failure presented as a financial fact.
+
+      The flag already existed and was already set by `fetchIncomeRecords`.
+      AdminOverviewView reads it in six places. This screen - the one that owns
+      the data - read it in none, which is the same shape as the dispatch board
+      that claimed zero repairs.
+    -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <OverviewTile title="Collected altogether" tone="night">
-        <p class="tabular text-4xl font-semibold leading-none">{{ peso(totalRemitted) }}</p>
-        <p class="mt-2 text-sm leading-6 text-on-night-soft">
-          Rent plus water, across {{ rows.length }}
-          {{ rows.length === 1 ? 'entry' : 'entries' }} (BR-038)
-        </p>
+        <UnavailableNote
+          v-if="incomeRecordsFetchFailed"
+          dark
+          message="The collections could not be loaded, so no total is shown. That is not the same as nothing having been collected."
+          @retry="fetchIncome"
+        />
+        <template v-else>
+          <p class="tabular text-4xl font-semibold leading-none">{{ peso(totalRemitted) }}</p>
+          <p class="mt-2 text-sm leading-6 text-on-night-soft">
+            Rent plus water, across {{ rows.length }}
+            {{ rows.length === 1 ? 'entry' : 'entries' }} (BR-038)
+          </p>
+        </template>
       </OverviewTile>
 
       <OverviewTile title="Rent">
-        <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalRent) }}</p>
-        <p class="mt-2 text-sm leading-6 text-ink-soft">Before the 50% column is derived</p>
+        <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
+        <template v-else>
+          <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalRent) }}</p>
+          <p class="mt-2 text-sm leading-6 text-ink-soft">Before the 50% column is derived</p>
+        </template>
       </OverviewTile>
 
       <OverviewTile title="Water">
-        <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalWater) }}</p>
-        <p class="mt-2 text-sm leading-6 text-ink-soft">{{ perOccupantWaterText() }}</p>
+        <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
+        <template v-else>
+          <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalWater) }}</p>
+          <p class="mt-2 text-sm leading-6 text-ink-soft">{{ perOccupantWaterText() }}</p>
+        </template>
       </OverviewTile>
 
       <!-- BR-035 wording is fixed: this is a system-computed figure equal to half
@@ -813,10 +842,13 @@ async function exportExcel() {
            the repository, which is what the rule is for. See BR-035 in
            docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md. -->
       <OverviewTile title="50% Share, on BH rows">
-        <p class="tabular text-3xl font-semibold leading-none text-verify">{{ peso(totalShare) }}</p>
-        <p class="mt-2 text-sm leading-6 text-ink-soft">
-          Half of each row's Rent Amount, computed by the system
-        </p>
+        <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
+        <template v-else>
+          <p class="tabular text-3xl font-semibold leading-none text-verify">{{ peso(totalShare) }}</p>
+          <p class="mt-2 text-sm leading-6 text-ink-soft">
+            Half of each row's Rent Amount, computed by the system
+          </p>
+        </template>
       </OverviewTile>
     </div>
 

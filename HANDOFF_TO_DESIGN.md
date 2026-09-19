@@ -201,9 +201,23 @@ lost.** It is the public landing page, which is your lane, not the workspace sid
 
 **What is not yet decided, and needs Sean before you build it:**
 
-- **Where the floor plan images come from.** There are none in `frontend/public/` today — it holds
-  `galang-compound.jpg`, `galang-building.jpg` and `property-map.png`. Three floor plans have to be
-  drawn or photographed and handed over.
+- **Where the floor plan images come from.** Sean answered this on 19 Sep: he is finalising the
+  content and **will export them as SVG**. `frontend/public/` holds `galang-compound.jpg` and
+  `galang-building.jpg`; `property-map.png` was deleted on 19 Sep because nothing rendered it and
+  the service worker was still precaching 471 KB of it.
+
+  **SVG changes how this section should be built**, so do not plan it as three `<img>` slots and
+  swap the format later. A floor plan is a diagram with rooms in it, and as SVG the unit shapes can
+  carry `id`s matching `rooms.room_number` — which makes the plan itself the selector, tied to the
+  same live `/public/rooms` the rest of the page reads, rather than a picture with a separate list
+  of links beside it. It also scales to a phone without going soft, which a raster plan of a
+  33-unit property will not.
+
+  What to ask for when the files arrive: one SVG per floor, **with the unit codes as element ids
+  or `data-unit` attributes**, text kept as text rather than converted to outlines, and no
+  hardcoded fills on the unit shapes so occupancy can be coloured from the live data. If they come
+  out flattened, they are still usable as plain images — but ask before accepting that, because
+  redrawing later costs more than re-exporting now.
 - **The fourth floor.** The property has four — 1 to 3 residential and the rooftop penthouse
   (`PublicGuestView` says so, and `RoomDirectoryView` repeats it). Sean named 1st to 3rd. Ask
   whether the penthouse gets a fourth plan, is folded into the third, or is deliberately left out.

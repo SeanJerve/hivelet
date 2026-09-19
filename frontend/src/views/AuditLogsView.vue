@@ -130,6 +130,18 @@ async function fetchAuditLogs() {
     }
   } catch (err: unknown) {
     auditLogs.value = [];
+    // The whole-table totals go with the rows.
+    //
+    // On a FIRST failure they are already 0 and `count()` prints an em-dash, so
+    // nothing was claimed. On a REFRESH failure they held the figures from the
+    // last good load and the three tiles went on presenting them as current,
+    // directly above a banner saying the trail could not be read. Stale is a
+    // quieter lie than invented, and this is the one screen whose entire claim
+    // is that what it shows is what actually happened.
+    authTotal.value = 0;
+    exportTotal.value = 0;
+    businessTotal.value = 0;
+    grandTotal.value = 0;
     loadError.value =
       err instanceof Error ? err.message : 'The audit trail could not be loaded.';
   } finally {
