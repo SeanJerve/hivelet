@@ -219,6 +219,30 @@ async function loadWaterRates() {
   }
 }
 
+/**
+ * The two water rates as text, for the places this screen states them.
+ *
+ * It already fetches both, to validate what the owner types. It then printed
+ * them again as literals - "₱200 a head, each month" on the Water tile and
+ * "₱400.00 / month" and "₱200.00 / month" on the Linda card - so the
+ * screen could tell her one rate while the field beside it enforced another.
+ * The moment she changes a rate in settings, the copy she reads and the rule
+ * she is held to disagree, on the same page.
+ *
+ * Neither names a figure it does not have. A rate is the kind of thing that is
+ * either known or worth saying is not.
+ */
+function perOccupantWaterText(): string {
+  return waterRatePerOccupant.value !== null
+    ? `${peso(waterRatePerOccupant.value)} a head, each month`
+    : 'Per registered occupant, each month';
+}
+
+function lindaWaterText(code: 'LF' | 'LB'): string {
+  const fixed = lindaFixedWaterCharges.value?.[code];
+  return typeof fixed === 'number' ? `${peso(fixed, 2)} / month` : 'the rate set in settings';
+}
+
 onMounted(() => {
   if (route.query.tab === 'verify') {
     activeTab.value = 'verify';
@@ -739,7 +763,7 @@ async function exportExcel() {
 
       <OverviewTile title="Water">
         <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalWater) }}</p>
-        <p class="mt-2 text-sm leading-6 text-ink-soft">₱200 a head, each month</p>
+        <p class="mt-2 text-sm leading-6 text-ink-soft">{{ perOccupantWaterText() }}</p>
       </OverviewTile>
 
       <!-- BR-035 wording is fixed: this is a system-computed figure equal to half
@@ -1332,7 +1356,7 @@ async function exportExcel() {
             <span class="font-semibold text-sm text-ink">Linda (LF)</span>
             <StatusPill tone="neutral">A fixed charge</StatusPill>
           </div>
-          <p class="text-xs text-ink-soft">Water: <strong>₱400.00 / month</strong></p>
+          <p class="text-xs text-ink-soft">Water: <strong>{{ lindaWaterText('LF') }}</strong></p>
         </div>
 
         <div class="space-y-1 rounded-2xl bg-canvas p-4">
@@ -1340,7 +1364,7 @@ async function exportExcel() {
             <span class="font-semibold text-sm text-ink">Linda (LB)</span>
             <StatusPill tone="neutral">A fixed charge</StatusPill>
           </div>
-          <p class="text-xs text-ink-soft">Water: <strong>₱200.00 / month</strong></p>
+          <p class="text-xs text-ink-soft">Water: <strong>{{ lindaWaterText('LB') }}</strong></p>
         </div>
       </div>
     </div>

@@ -243,6 +243,35 @@ const hiddenUnitCount = computed(() =>
 );
 
 /**
+ * The cheapest rate a visitor could actually take, read off the live listing.
+ *
+ * The standfirst under the headline said "₱200/head monthly water rule"
+ * and "Starting base rate ₱4,500/mo" as typed literals. Both were true on
+ * the day they were typed and both stop being true with nobody touching this
+ * file. The water figure is `system_settings.water_rate_per_occupant`, which
+ * the landlady sets. The starting rate is the lowest `current_price` among the
+ * published units, which moves whenever she reprices one - and she reprices by
+ * hand, which is why a rate-change history table exists at all.
+ *
+ * This is the same defect the FAQ above this was repaired for, on the same
+ * page, put back by a section written later to carry the facts a deleted metric
+ * strip had been carrying. The FAQ's rule applies here as well: when the figure
+ * is not known, the sentence drops it rather than guessing at it.
+ *
+ * Null while the fetch is in flight, and null when it failed - `rooms` then
+ * holds the seed, whose rates the banner further down this page reports as 30
+ * of 33 no longer matching, the worst by ₱2,000. Quoting a prospective
+ * boarder a starting rent off that seed is the precise harm this guards.
+ */
+const startingRate = computed<number | null>(() => {
+  if (roomsFetchFailed.value) return null;
+  const prices = listedUnits.value
+    .map((u) => u.price)
+    .filter((n): n is number => typeof n === 'number' && n > 0);
+  return prices.length > 0 ? Math.min(...prices) : null;
+});
+
+/**
  * Keyless Google Maps embed, pinned by coordinate.
  *
  * `output=embed` returns a real, interactive map with no API key, billing
@@ -364,13 +393,16 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       Centred statement, in place of the metric strip that stood here.
 
       The strip was deleted on request, but three of its facts appear nowhere
-      else on this page - the street address, the ₱4,500 starting rate and the
-      floor count - so they are carried in this section's headline and standfirst
+      else on this page - the street address, the starting rate and the floor
+      count - so they are carried in this section's headline and standfirst
       rather than dropped. A prospective boarder cannot decide anything without
       the rate.
 
-      The two standfirst columns are the existing hero sentence split at its
-      full stop, not new copy. The headline is the only authored line here.
+      THE TWO MONEY FIGURES ARE READ, NOT TYPED. See `startingRate` above for
+      why: a rate written into this paragraph is a second copy of something the
+      landlady changes, and it goes stale silently. Each sentence that carries
+      one has a form that does not name a figure, used when the figure is not
+      known - the same rule the FAQ answers follow.
     -->
     <section aria-label="Property at a glance" class="w-full bg-background font-editorial">
       <div class="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-10 py-24 sm:py-32 lg:py-40">
@@ -381,10 +413,20 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
         <div class="mt-12 sm:mt-16 mx-auto max-w-3xl grid gap-8 sm:grid-cols-2 text-xs sm:text-[0.82rem] leading-relaxed text-muted-foreground">
           <p>
-            Canonical 33-unit residential boarding house across three residential floors plus a rooftop penthouse level, in 5 property clusters.
+            Thirty-three units on one gated compound, across three residential floors and a
+            rooftop penthouse level, in five clusters.
           </p>
           <p>
-            Verified individual electric submeters, ₱200/head monthly water rule, and secure gated perimeter. Starting base rate ₱4,500/mo.
+            Every unit has its own electric meter, so you pay for your own electricity.
+            <template v-if="waterRatePerOccupant !== null">
+              Water is {{ peso(waterRatePerOccupant) }} a head each month.
+            </template>
+            <template v-else>
+              Water is charged for each registered occupant.
+            </template>
+            <template v-if="startingRate !== null">
+              Rents start at {{ peso(startingRate) }} a month.
+            </template>
           </p>
         </div>
 
