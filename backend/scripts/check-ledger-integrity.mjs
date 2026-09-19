@@ -932,6 +932,70 @@ if (live.length) {
   ).length;
   check('BR-017 Payment Verification', selfVerified,
     `${pays.length} payments, none Verified without a verifier`);
+
+  /**
+   * BR-033 — THE RENT CYCLE THE SYSTEM BELIEVES, AGAINST THE ONE SHE KEEPS.
+   *
+   * `computeBillPeriod()` reads only the day-of-month out of
+   * `room_assignments.anniversary_date`, so that single number decides what
+   * period every bill covers and what period a receipt is stamped with when
+   * the administrator does not type the dates herself.
+   *
+   * Nothing checked it against the ledger. All 32 active tenancies carried
+   * 2026-07-01 - the bulk import's placeholder - so the system billed the
+   * whole property on the 1st while 29 of the 32 pay on some other day, unit
+   * 1a having paid from the 7th for 31 consecutive months. Every internal
+   * check passed throughout, because they test the system against itself and
+   * the wrong value was uniform.
+   *
+   * A RATCHET, not a pass/fail. Thirteen of the 29 can be settled from the
+   * ledger alone and migration 035 does that; the other sixteen changed day
+   * mid-history or track month-end, and only Mrs Fe can say which (B-32). So
+   * this cannot be green today without lying. It fails when the number GROWS,
+   * which is what a regression looks like, and the baseline comes down as the
+   * queue is worked - 29 now, 16 once 035 is applied.
+   */
+  const anniv = await rows(
+    'room_assignments?is_active=eq.true&select=room_id,anniversary_date'
+  );
+  const newestPeriod = new Map();
+  for (const r of income) {
+    if (!r.room_id || !r.rent_period_start) continue;
+    const key = `${r.year}-${String(r.month).padStart(2, '0')}`;
+    const seen = newestPeriod.get(r.room_id);
+    if (!seen || key > seen.key) {
+      newestPeriod.set(r.room_id, { key, day: Number(String(r.rent_period_start).slice(8, 10)) });
+    }
+  }
+
+  const ANNIVERSARY_DRIFT_BASELINE = 29;
+  const drifted = [];
+  for (const a of anniv) {
+    const led = newestPeriod.get(a.room_id);
+    if (!led || !a.anniversary_date) continue;
+    const systemDay = Number(String(a.anniversary_date).slice(8, 10));
+    if (systemDay !== led.day) {
+      const unit = rooms.find((r) => r.id === a.room_id)?.room_number ?? a.room_id;
+      drifted.push(`${unit}: system bills day ${systemDay}, her ledger last ran from day ${led.day}`);
+    }
+  }
+
+  if (drifted.length > ANNIVERSARY_DRIFT_BASELINE) {
+    for (const d of drifted) console.log(`        ${d}`);
+    fail(
+      `BR-033 anniversary vs ledger — ${drifted.length} tenancy(ies) bill on a day their own ` +
+      `ledger contradicts, up from ${ANNIVERSARY_DRIFT_BASELINE}. A tenancy has drifted since ` +
+      'this baseline was set; see migration 035 and B-32.'
+    );
+  } else if (drifted.length === 0) {
+    pass('BR-033 anniversary vs ledger — every active tenancy bills on the day its own ledger shows');
+  } else {
+    pass(
+      `BR-033 anniversary vs ledger — ${drifted.length} known unsettled of ${anniv.length} ` +
+      `(baseline ${ANNIVERSARY_DRIFT_BASELINE}); 13 are settled by migration 035, the rest need ` +
+      'the owner (B-32). Lower the baseline as they are answered.'
+    );
+  }
 }
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
