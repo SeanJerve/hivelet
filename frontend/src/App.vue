@@ -106,11 +106,22 @@ const hidesGlobalHeader = computed(() =>
       </span>
     </div>
 
+    <!--
+      The first thing in the document, so it is the first thing in the tab
+      order. See `.ws-skip`: a keyboard reader had to walk the whole navigation
+      before reaching anything on every page.
+    -->
+    <a href="#main" class="ws-skip pill-btn-brand">Skip to content</a>
+
     <AppHeader v-if="!hidesGlobalHeader" />
     
     <div :class="['flex-1 flex w-full', isWorkspaceSection ? 'max-w-[1600px] mx-auto px-4 sm:px-6' : '']">
       <AppSidebar v-if="isWorkspaceSection" />
-      <main :class="['flex-1 max-w-full min-w-0 flex flex-col', isWorkspaceSection ? 'py-6 lg:pl-6' : '']">
+      <main
+        id="main"
+        tabindex="-1"
+        :class="['flex-1 max-w-full min-w-0 flex flex-col outline-none', isWorkspaceSection ? 'py-6 lg:pl-6' : '']"
+      >
         <RouterView />
       </main>
     </div>

@@ -1003,6 +1003,35 @@ body {
 }
 
 
+/* -------------------------------------------------------------- skip link --
+ * WCAG 2.4.1 Bypass Blocks, Level A, and the application had nothing.
+ *
+ * A keyboard reader arriving at the landing page met THIRTY focusable things
+ * before the content - a wordmark, five navigation links, four category rows,
+ * five unit disclosures - and had to walk all of them again on every page.
+ * The workspace is no better: its sidebar is a list of links in front of every
+ * screen.
+ *
+ * Hidden until focused, then it lands as a real pill in the top left. It is
+ * the first thing in the tab order because it is first in the document.
+ */
+.ws-skip {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  transform: translateY(-300%);
+  transition: transform 0.15s var(--ease-out);
+}
+.ws-skip:focus {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-skip {
+    transition: none;
+  }
+}
+
 /* ------------------------------------------------------------------- page --
  * The one page gutter, shared by the public pages and the workspace.
  *

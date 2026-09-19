@@ -117,7 +117,7 @@ async function submitInquiry() {
     <div class="grid min-h-screen lg:grid-cols-2">
 
       <!-- Left: the form -->
-      <div class="flex flex-col px-6 sm:px-10 lg:px-14 py-10 sm:py-14">
+      <div class="flex flex-col px-4 sm:px-6 lg:px-14 py-10 sm:py-14">
 
         <div class="flex items-start justify-between gap-6">
           <RouterLink
@@ -258,7 +258,8 @@ async function submitInquiry() {
         -->
         <img
           src="/fe-galang-building.webp"
-          alt="The boarding house seen from the street"
+          alt=""
+          aria-hidden="true"
           class="absolute inset-0 w-full h-full object-cover object-center"
           width="1790"
           height="879"

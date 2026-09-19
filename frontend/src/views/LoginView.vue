@@ -107,7 +107,7 @@ async function handleQuickLogin(account: DemoAccount) {
     <div class="grid min-h-[calc(100vh-8rem)] lg:grid-cols-2">
 
       <!-- The task. -->
-      <div class="flex flex-col justify-center px-6 py-14 sm:px-10 lg:px-16">
+      <div class="flex flex-col justify-center px-4 py-14 sm:px-6 lg:px-16">
         <div class="mx-auto w-full max-w-sm">
           <h1 class="text-3xl leading-tight font-medium tracking-tight">Sign in</h1>
           <p class="mt-1 text-sm text-ink-soft">Fe Galang Da Silva Boarding House</p>
