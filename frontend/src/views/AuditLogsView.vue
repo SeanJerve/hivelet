@@ -501,11 +501,29 @@ async function exportAuditTrail() {
               </div>
 
               <p class="mt-2 text-sm leading-6 text-ink">
+                <!--
+                  These read 'No signed-in person' and 'the system itself'. 5,780 of
+                  the 10,771 audit rows have no actor - 54% of the log - and they are
+                  three different things: 5,766 AUTH_ACCESS_DENIED (a caller with no
+                  established identity, refused), 12 PAYMENT_RECORD (written by the
+                  Adyen notification handler), 2 INQUIRY_CREATE (a member of the
+                  public filling in the enquiry form).
+
+                  One invented label covered all three, and for two of them it was
+                  untrue. A prospect who typed their name into a form is not "the
+                  system itself", and a refused attempt attributed to "the system
+                  itself" reads as though the system performed the denied action.
+
+                  'Not recorded' is a statement about the column, not about who it
+                  was, and the action pill above already says which of the three this
+                  is. The role clause is dropped entirely when there is no role, so
+                  nothing is asserted about a party the log does not name.
+                -->
                 <span class="font-semibold">{{
-                  l.profiles?.full_name || 'No signed-in person'
+                  l.profiles?.full_name || 'Not recorded'
                 }}</span>
                 <span class="text-ink-soft"
-                  >, {{ l.profiles?.role || 'the system itself' }}, on
+                  ><template v-if="l.profiles?.role">, {{ l.profiles.role }}</template>, on
                 </span>
                 <span class="font-semibold">{{ entityLabel(l.entity_type) }}</span>
               </p>

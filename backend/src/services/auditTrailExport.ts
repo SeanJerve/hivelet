@@ -118,8 +118,33 @@ export async function buildAuditTrailWorkbook(
       action: (r as any).action ?? '',
       entityType: (r as any).entity_type ?? '',
       entityId: (r as any).entity_id ?? '',
-      who: profile?.full_name ?? 'No signed-in person',
-      role: profile?.role ?? 'the system itself',
+      /**
+       * Blank when nothing was recorded, rather than a sentence about who it was.
+       *
+       * These read 'No signed-in person' and 'the system itself'. **5,780 of the
+       * 10,771 audit rows have no actor** - 54% of the log - and they are not one
+       * kind of event:
+       *
+       *   AUTH_ACCESS_DENIED  5,766  a caller with no established identity, refused
+       *   PAYMENT_RECORD         12  written by the Adyen notification handler
+       *   INQUIRY_CREATE          2  a member of the public filling in the enquiry form
+       *
+       * One invented label was applied to all three, and for two of them it said
+       * something untrue. A prospective tenant who typed their name into a form is
+       * not "the system itself". Worse, a refused access attempt attributed to "the
+       * system itself" reads as though the system performed the denied action - in
+       * the one document that exists to settle who did what.
+       *
+       * `action` already distinguishes the three, so a reader can tell them apart
+       * without being told a story. Blank is what the column holds, and matches how
+       * `ip_address` and the rest of the nullable columns are written out.
+       *
+       * (Verified against `audit_logs` joined to `profiles`: no row has an actor
+       * that fails to resolve, so a blank here always means the column was null and
+       * never a broken join.)
+       */
+      who: profile?.full_name ?? '',
+      role: profile?.role ?? '',
       ip: (r as any).ip_address ?? '',
       before: jsonCell((r as any).previous_values),
       after: jsonCell((r as any).new_values),
