@@ -14,9 +14,9 @@ without touching appearance.
 
 ## 0. The headline
 
-**Fifteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
-was invisible: none produced an error, a failing suite, or a console warning. Two more findings
-need a person and are `B-15` and `B-16`.
+**Sixteen defects found and fixed, six of them on the paths the owner's money takes.** Every one
+was invisible: none produced an error, a failing suite, or a console warning. Three more findings
+need a person and are `B-15`, `B-16` and `B-17`.
 
 **The one to read first, if you read one:** editing any row in the income ledger rewrote **who
 paid it**. The form has no contact field, and sent one anyway, recomputed from whoever occupies
@@ -325,6 +325,32 @@ the flag has always actually meant.
 a query. The count of 16 was right, and that is exactly what made the word beside it worth
 checking.*
 
+### 2.16 `1A` could be created beside `1a`, and that breaks the cash path
+
+`rooms_room_number_key` is `UNIQUE (room_number)` on the raw text — read out of `pg_index` — so
+it is **case sensitive**. The live table is mixed case and always has been: **22 lowercase**
+(`1a`..`3g`) and **11 uppercase** (`B1F`, `F1`, `LB`, `LF`, `PH`, …). So `'1A'` inserts happily
+beside `'1a'`, and the property has two rows for one unit.
+
+Not tidiness. **Six** lookups in `backend/src` find a unit with `.ilike('room_number', …)`, so
+both rows match — and the one on the money path, `POST /admin/income-records`, uses
+`maybeSingle()`, which **errors on more than one row**. A duplicate breaks the only route that
+records cash for that unit, as a **500** with nothing on screen to explain it.
+
+**Reachable by doing the obvious thing**: every screen displays unit codes uppercased, so an
+administrator adding a unit types the case she has been shown.
+
+`POST /admin/rooms` now refuses a case-insensitive collision with a clean **409** naming the
+unit that already exists. Verified read-only against the live table: `ilike '1A'` returns the
+existing `1a`, an exact `= '1A'` returns **0 rows** — which is precisely why the current index
+does not stop it — and a genuinely new code is unaffected.
+
+**Migration `028` is written and deliberately not applied** (`B-17`): a live schema change
+belongs to whoever owns the database. It aborts with a named count if any collision exists, and
+**0 exist today**. It does not rewrite the 22 lowercase codes — their case is how they were
+migrated and documents quote them that way, so normalising them is a decision about her data
+rather than a constraint.
+
 ---
 
 ## 2b. The public surface, probed rather than read
@@ -381,6 +407,7 @@ start at ₱4,500"* sentence rather than quoting the seed.
 | **`B-14`** | Admin password **rotated for real** by rehearsal step 5 — `creds.txt` updated, other machines need it out of band. Steps 7-26 still need a human. One test enquiry left on the owner's board (`REHEARSAL Test`, unit PH) |
 | **`B-15`** | Zero-water receipts cannot be recorded, and every multi-month settlement in her book is one row per month — which is not the shape `monthsCovered` produces. Both hers |
 | **`B-16`** | During one outage `/category/studio` says availability cannot be determined while `/public` lists 33 units as Available. Design account's lane and file |
+| **`B-17`** | Apply migration `028` — unit codes are unique only by case, so `1A` can be created beside `1a` and the cash path 500s on it. Code guard already in; this is the database backstop. Written, checked against the live table, **not applied** |
 | **`B-05`** | Still open, re-confirmed live today: two junk tickets on `1A`, one titled with a slur, still `Submitted` and still on the owner's overview. Migration `027` written, not applied |
 
 ---
