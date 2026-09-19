@@ -1268,6 +1268,100 @@ computing a wrong one**, because every internal check agrees with it.
 
 ---
 
+### A twelfth sweep, 2026-09-19: the rare shapes, and a guard that could never have worked
+
+The happy paths were exercised and passed, so this sweep went looking for the
+shapes that only turn up occasionally — arrears settled in one lump, a period
+starting on a day the next month does not have, a headcount above what the unit
+holds, and a double-click.
+
+#### 1. The arithmetic that broke once was checked properly this time
+
+`periodEnd` was fixed months ago after `setMonth(getMonth() + n)` overflowed —
+**31 January plus one month became 2 March**. Its server-side twin,
+`monthlySpansFrom`, had never been tested at the boundaries, so it was, as a pure
+function with no database in the way:
+
+    31 Jan 2026, 1 month   -> 31 Jan .. 27 Feb     (Feb has 28)
+    31 Jan 2024, 1 month   -> 31 Jan .. 28 Feb     (Feb has 29)
+    31 Dec 2025, 1 month   -> 31 Dec .. 30 Jan     (crosses the year)
+    29 Feb 2024, 1 month   -> 29 Feb .. 28 Mar     (from a leap day)
+    12 months from a 31st  -> 12 spans, contiguous, no gap or overlap
+
+All correct. Worth recording as a negative result: **the thing most likely to be
+wrong was right**, and an hour spent proving that is not wasted, because the next
+person does not have to wonder.
+
+#### 2. A guard that reads and then writes cannot win a race
+
+`POST /admin/income-records` refuses a duplicate receipt by SELECTing for one and
+then INSERTing. Two requests that arrive together both pass the SELECT before
+either INSERTs.
+
+Fired at the live API simultaneously:
+
+    2 identical receipts at once  ->  {"201": 2},  2 rows written
+    5 identical receipts at once  ->  {"201": 5},  5 rows written
+
+That is a double-click on "Record payment", or a retry after a timeout where the
+first request actually succeeded. One rent payment recorded five times, inflating
+her income by a figure nothing would reconcile against.
+
+**No amount of application code fixes this.** A read followed by a write is racy
+by construction unless it holds a lock, and supabase-js cannot open a
+transaction. The guarantee has to live where the rows do. Migration 033 adds
+
+    UNIQUE (room_id, invoice_number, year, month) WHERE voided_at IS NULL
+
+which permits what the ledger genuinely contains — OR#4895 settling Sep to Dec
+2024 on four rows, differing by month — and refuses the same month twice under
+the same number, which is only ever the same payment recorded again. Re-run
+afterwards: `{"201": 1, "409": 4}`, one row.
+
+Note the shape of the fix as much as the fix. **The guard I had added that
+morning was the same racy shape as the one it strengthened** — the reasoning was
+about which duplicates to catch, and never about whether the check could be
+outrun. Ask of any check-then-act: *what happens if two of these arrive at the
+same millisecond?*
+
+#### 3. A field that is stored, displayed, and checked against nothing
+
+`rooms.capacity` is validated on create and edit, and shown to the public —
+*"Room for up to 5 people"* is on the category page. Nothing ever compared it to
+anything. A receipt recording **nine** occupants of PH, which holds five, was
+accepted in silence and charged 9 × 200 = 1,800 of water.
+
+Both readings are real: nine people may genuinely be in there, and the ledger
+records what happened rather than what the room card says. But a 9 typed where 2
+was meant overcharges a resident 1,400 with nothing anywhere to notice.
+
+Resolved the way this codebase already resolves that tension — BR-036 on a
+mismatched water figure, BR-039 on an advance rent that differs from the rent:
+**accept, and attribute.** The audit row carries the capacity, the headcount and
+the water charged, so the divergence is answerable later instead of invisible.
+
+**When a field is displayed but never compared, it is decoration.** Worth
+grepping for others.
+
+#### 4. What held up
+
+Recorded because a sweep that only lists failures misrepresents the system:
+
+  - **Arrears in one visit.** Three months on one receipt writes three rows, one
+    month of rent each, filed under three distinct months, periods contiguous —
+    and the garbage fee charged **once**, not three times, which is BR-037
+    working.
+  - **Money at the edges.** Negative, `1e999`, larger than the system records,
+    and three decimal places are all refused with the field named. One centavo
+    and zero are accepted, which is right: a concession month is a real thing.
+  - **Text at the edges.** Whitespace-only and 300 characters refused; an
+    apostrophe, Baybayin script and an emoji all stored and read back exactly.
+  - **Isolation.** A resident gets 403 on the ledger, the register and the audit
+    trail, 404 on another resident's repair, and **cannot promote themselves to
+    admin** — the role field is stripped and they stay a tenant.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.

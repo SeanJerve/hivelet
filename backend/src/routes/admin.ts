@@ -1759,6 +1759,24 @@ router.get(
  * carry a real OR number (`OR#4627` and so on), and the column is NOT NULL, so
  * the number is asked for rather than invented.
  */
+/**
+ * Turns Postgres's unique-violation on `idx_one_receipt_per_unit_per_month`
+ * into the refusal a person can act on.
+ *
+ * Migration 033 made "one unit, one receipt number, one month, one row" a rule
+ * the database keeps, because the application check could not: it SELECTs and
+ * then INSERTs, and two requests that arrive together both pass the SELECT.
+ * Fired simultaneously against the live API, five identical receipts produced
+ * five rows.
+ *
+ * The index closes that. Without this, the requests that lose the race get a
+ * bare 500 carrying `duplicate key value violates unique constraint ...`, which
+ * tells the person at the counter nothing. `23505` is the code for it.
+ */
+function receiptAlreadyRecorded(err: { code?: string; message?: string } | null): boolean {
+  return err?.code === '23505' && String(err?.message ?? '').includes('idx_one_receipt_per_unit_per_month');
+}
+
 const incomeRecordSchema = z.object({
   roomNumber: unitCode(20),
   datePaid: isoDate,
@@ -1844,15 +1862,38 @@ router.post(
      */
     const paymentSource = `On-Site ${normalizedMethod}`;
 
-    // Find room
+    // Find room. `capacity` comes along for the headcount check below.
     const { data: room, error: roomError } = await db
       .from('rooms')
-      .select('id')
+      .select('id, capacity')
       .ilike('room_number', roomNumber)
       .maybeSingle();
 
     if (roomError) throw ApiError.internal(roomError.message);
     if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
+
+    /**
+     * More people than the unit is recorded as holding.
+     *
+     * `rooms.capacity` is stored, validated on create and edit, and shown to the
+     * public - "Room for up to 5 people" is on the category page. It was checked
+     * against nothing. A receipt for **nine** occupants of PH, which holds five,
+     * was accepted in silence and charged 9 x 200 = 1,800 of water. Verified by
+     * sending exactly that.
+     *
+     * Both readings are real. Nine people may genuinely be in there, and the
+     * ledger records what happened, not what the room card says. But a 9 typed
+     * where 2 was meant overcharges a resident 1,400 for water with nothing
+     * anywhere to notice it.
+     *
+     * So: accepted, and recorded. That is the posture BR-036 takes on a
+     * mismatched water figure and BR-039 takes on an advance rent that differs
+     * from the rent - warn and attribute, never silently overwrite the human.
+     * The audit row carries both numbers, so the divergence is answerable later
+     * rather than invisible.
+     */
+    const unitCapacity = Number(room.capacity);
+    const overCapacity = Number.isFinite(unitCapacity) && unitCapacity > 0 && occupants > unitCapacity;
 
     // Find active assignment
     const { data: assign, error: assignError } = await db
@@ -2125,6 +2166,12 @@ router.post(
         .select('*')
         .single();
 
+      if (receiptAlreadyRecorded(insertError)) {
+        throw ApiError.conflict(
+          `Receipt ${invoiceNumber} is already recorded for unit ${roomNumber} covering that ` +
+            'month. If this is a second payment, give it its own receipt number.'
+        );
+      }
       if (insertError) throw ApiError.internal(insertError.message);
       newRecord = data as Record<string, unknown>;
     } else {
@@ -2160,6 +2207,12 @@ router.post(
             'Recording several months at once needs database migration 029, which has not ' +
               'been applied yet. Nothing was written. Record each month as its own receipt ' +
               'line in the meantime, which is how the ledger already holds them.'
+          );
+        }
+        if (receiptAlreadyRecorded(rpcError)) {
+          throw ApiError.conflict(
+            `Receipt ${invoiceNumber} is already recorded for unit ${roomNumber} covering one ` +
+              'of those months. If this is a second payment, give it its own receipt number.'
           );
         }
         throw ApiError.internal(rpcError.message);
@@ -2348,6 +2401,33 @@ router.post(
           );
         }
       }
+    }
+
+    /**
+     * A headcount above the unit's recorded capacity, attributed rather than
+     * refused. See the note where `overCapacity` is computed.
+     *
+     * `.catch(() => {})` for the same reason BR-039's divergence note has one:
+     * the money is already recorded and committed, and an audit outage must not
+     * turn a receipt she has taken into an error on her screen.
+     */
+    if (overCapacity) {
+      await auditFromRequest(req, {
+        // `PAYMENT_RECORD`, because this IS the receipt being recorded and the
+        // note is about that receipt. `RECORD_INCOME_PAYMENT` appears once in
+        // the live log from the original import but is not in `AuditAction`,
+        // and adding it would be inventing vocabulary for one note.
+        action: 'PAYMENT_RECORD',
+        entityType: 'INCOME_RECORD',
+        entityId: String(newRecord.id),
+        newValues: {
+          note: 'Occupants recorded exceed the unit capacity on file. Accepted as entered; water was charged for the occupants given.',
+          room_number: roomNumber,
+          unit_capacity: unitCapacity,
+          occupants_recorded: occupants,
+          water_charged: calcWater,
+        },
+      }).catch(() => {});
     }
 
     res.status(201).json({ success: true, data: newRecord });

@@ -350,6 +350,7 @@ section,item,detail
 5. Indexes,idx_maintenance_tickets_room,CREATE INDEX idx_maintenance_tickets_room ON public.maintenance_tickets USING btree (room_id)
 5. Indexes,idx_maintenance_tickets_tenant,CREATE INDEX idx_maintenance_tickets_tenant ON public.maintenance_tickets USING btree (tenant_profile_id)
 5. Indexes,idx_notifications_recipient,"CREATE INDEX idx_notifications_recipient ON public.notifications USING btree (recipient_profile_id, is_read)"
+5. Indexes,idx_one_receipt_per_unit_per_month,"CREATE UNIQUE INDEX idx_one_receipt_per_unit_per_month ON public.monthly_income_records USING btree (room_id, invoice_number, year, month) WHERE (voided_at IS NULL)"
 5. Indexes,idx_payments_bill,CREATE INDEX idx_payments_bill ON public.payments USING btree (bill_id)
 5. Indexes,idx_payments_room,CREATE INDEX idx_payments_room ON public.payments USING btree (room_id)
 5. Indexes,idx_payments_tenant,CREATE INDEX idx_payments_tenant ON public.payments USING btree (tenant_profile_id)
