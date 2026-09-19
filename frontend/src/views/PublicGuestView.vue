@@ -615,7 +615,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                     nothing about the one they just opened.
                   -->
                   <td colspan="7" class="px-4 py-6">
-                    <div class="grid gap-8 lg:grid-cols-[1fr_22rem] lg:gap-12">
+                    <div class="ws-reveal grid gap-8 lg:grid-cols-[1fr_22rem] lg:gap-12">
                       <div>
                         <dl class="grid gap-x-10 gap-y-5 sm:grid-cols-2 text-xs sm:text-sm">
                           <div>
@@ -687,7 +687,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               </span>
             </button>
 
-            <div v-if="openUnitId === u.id" :id="`unit-card-${u.id}`" class="pb-6">
+            <div v-if="openUnitId === u.id" :id="`unit-card-${u.id}`" class="ws-reveal pb-6">
               <dl class="grid grid-cols-2 gap-x-6 gap-y-4 text-xs">
                 <div>
                   <dt class="text-ink-soft">Floor</dt>
@@ -798,7 +798,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               </button>
             </dt>
 
-            <dd v-if="openFaqIndex === idx" :id="`faq-panel-${idx}`" class="pb-7 pr-10 max-w-3xl text-xs sm:text-sm text-ink-soft leading-relaxed">
+            <dd v-if="openFaqIndex === idx" :id="`faq-panel-${idx}`" class="ws-reveal pb-7 pr-10 max-w-3xl text-xs sm:text-sm text-ink-soft leading-relaxed">
               {{ faq.a }}
             </dd>
           </div>

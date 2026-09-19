@@ -1003,6 +1003,148 @@ body {
 }
 
 
+/* ----------------------------------------------------------------- reveal --
+ * Content that appears when a disclosure opens: a unit row, an FAQ answer.
+ *
+ * The row itself still takes its height instantly, and that is deliberate -
+ * animating the height of a table row means animating layout, which is the one
+ * thing worth not animating. What eases is the CONTENT, so the panel reads as
+ * unfolding rather than as the page jumping and new text already being there.
+ *
+ * `@starting-style` again, for the same reason as the dialog: these are
+ * `v-if` blocks with no wrapper to hang a <Transition> on.
+ *
+ * 180ms, and it travels 4px. Anything further turns a disclosure into an
+ * event, and a reader opens several of these in a row.
+ */
+.ws-reveal {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.18s var(--ease-out),
+    translate 0.18s var(--ease-out);
+}
+@starting-style {
+  .ws-reveal {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-reveal {
+    translate: none;
+  }
+  @starting-style {
+    .ws-reveal {
+      translate: none;
+    }
+  }
+}
+
+/* ----------------------------------------------------------------- dialog --
+ * Dialogs used to appear instantly, at full size, over a backdrop that was
+ * also instant. Nothing in the real world arrives like that, and on a screen
+ * it reads as a jump rather than as something opening - the reader loses where
+ * it came from and has to re-find the page behind it.
+ *
+ * ENTRY ONLY FOR `WsModal`, AND THAT IS A CONSTRAINT RATHER THAN A CHOICE.
+ * Every screen mounts it with `v-if`, so the component is gone from the tree
+ * the moment it closes; a Vue <Transition> inside it would never get to run a
+ * leave. `@starting-style` needs no wrapper and no change to the twelve
+ * screens that open one. The native <dialog> prompts below DO get both
+ * directions, because `allow-discrete` keeps them rendered while they leave.
+ *
+ * 200ms in, and it starts from 0.97 and 8px rather than from nothing: an
+ * element that grows from scale(0) looks like it came out of a point, and
+ * nothing does.
+ */
+.ws-modal-overlay {
+  opacity: 1;
+  transition: opacity 0.2s var(--ease-out);
+}
+@starting-style {
+  .ws-modal-overlay {
+    opacity: 0;
+  }
+}
+
+.ws-modal-panel {
+  opacity: 1;
+  scale: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.2s var(--ease-out),
+    scale 0.2s var(--ease-out),
+    translate 0.2s var(--ease-out);
+}
+@starting-style {
+  .ws-modal-panel {
+    opacity: 0;
+    scale: 0.97;
+    translate: 0 8px;
+  }
+}
+
+/*
+ * The two native <dialog> prompts on the public pages. `allow-discrete` on
+ * `display` and `overlay` is what lets the closing frame render at all -
+ * without it the element is removed before any of this can play.
+ */
+dialog.ws-dialog {
+  opacity: 0;
+  scale: 0.97;
+  transition:
+    opacity 0.15s var(--ease-out),
+    scale 0.15s var(--ease-out),
+    overlay 0.15s allow-discrete,
+    display 0.15s allow-discrete;
+}
+dialog.ws-dialog[open] {
+  opacity: 1;
+  scale: 1;
+}
+@starting-style {
+  dialog.ws-dialog[open] {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+dialog.ws-dialog::backdrop {
+  opacity: 0;
+  transition:
+    opacity 0.15s var(--ease-out),
+    overlay 0.15s allow-discrete,
+    display 0.15s allow-discrete;
+}
+dialog.ws-dialog[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  dialog.ws-dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion keeps the fade and drops the travel, the same bargain the
+   press makes. A fade is not vestibular motion; a slide is. */
+@media (prefers-reduced-motion: reduce) {
+  .ws-modal-panel,
+  dialog.ws-dialog,
+  dialog.ws-dialog[open] {
+    scale: none;
+    translate: none;
+  }
+  @starting-style {
+    .ws-modal-panel {
+      scale: none;
+      translate: none;
+    }
+    dialog.ws-dialog[open] {
+      scale: none;
+    }
+  }
+}
+
 /* ------------------------------------------------------------------ press --
  * Deliberately unlayered. See the comment below for why that is load-bearing.
  */

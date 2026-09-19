@@ -2712,7 +2712,23 @@ const expenseEntrySchema = z.object({
   expenseDate: isoDate,
   orSupplier: z.string().min(1),
   categoryCode: z.string().min(1).max(20),
-  allocations: z.array(expenseAllocationSchema).min(1),
+  /**
+   * At least one, and a bounded number.
+   *
+   * There are **six** property areas, so a genuine split cannot need many lines.
+   * The array had no ceiling: 10,000 allocations were accepted by the schema,
+   * carried into `create_expense_entry_with_allocations`, and came back as a
+   * bare **500 "Internal server error."** - verified by sending exactly that.
+   * One request, ten thousand rows attempted, and an opaque failure.
+   *
+   * Fifty is far above any real receipt - it allows the same area several times
+   * over, which she may want for an itemised bill - and far below a number that
+   * costs the database anything.
+   */
+  allocations: z
+    .array(expenseAllocationSchema)
+    .min(1, 'an expense needs at least one allocation')
+    .max(50, 'an expense cannot be split more than 50 ways - there are only six property areas'),
 });
 
 /**

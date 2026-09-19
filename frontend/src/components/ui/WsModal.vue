@@ -84,7 +84,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="ws-focus fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto bg-ink/40 p-4 sm:p-6"
+    class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto bg-ink/40 p-4 sm:p-6"
     @click.self="dismissible && emit('close')"
     @keydown="onKeydown"
   >
@@ -94,7 +94,10 @@ onBeforeUnmount(() => {
       aria-modal="true"
       :aria-labelledby="titleId"
       tabindex="-1"
-      :class="['my-auto w-full rounded-tile bg-tile text-ink shadow-lift outline-none', widths[props.size]]"
+      :class="[
+        'ws-modal-panel my-auto w-full rounded-tile bg-tile text-ink shadow-lift outline-none',
+        widths[props.size],
+      ]"
     >
       <header class="flex items-start justify-between gap-4 border-b border-line p-5 sm:p-6">
         <div class="min-w-0">

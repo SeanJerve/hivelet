@@ -61,7 +61,23 @@ export const uuid = z.string().uuid('must be a UUID');
 
 /** Free text with a sane ceiling, trimmed. Rejects an all-whitespace value. */
 export const shortText = (max = 255) =>
-  z.string().trim().min(1, 'cannot be empty').max(max, `cannot exceed ${max} characters`);
+  z
+    .string()
+    .trim()
+    .min(1, 'cannot be empty')
+    .max(max, `cannot exceed ${max} characters`)
+    /**
+     * A `text` column cannot hold a NUL. Sending one reached the database and
+     * came back as a bare 500 "Internal server error." - verified by putting a
+     * NUL inside a payer's name. The caller was told nothing, and the log
+     * carried a Postgres encoding error that reads like a fault in the system
+     * rather than in the request.
+     *
+     * Other C0 controls are left alone. A stray tab or newline in a supplier
+     * name is untidy but storable, and this validator's job is to stop
+     * unstorable input reaching the database, not to tidy her typing.
+     */
+    .refine((v) => !v.includes(String.fromCharCode(0)), 'cannot contain a null character');
 
 /**
  * A unit code, as the property actually numbers its units.

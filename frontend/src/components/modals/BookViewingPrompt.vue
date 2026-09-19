@@ -88,7 +88,7 @@ onBeforeUnmount(() => {
   <dialog
     ref="dialogRef"
     aria-labelledby="viewing-prompt-title"
-    class="m-auto w-[min(34rem,calc(100vw-2rem))] overflow-hidden rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-night/70"
+    class="ws-dialog m-auto w-[min(34rem,calc(100vw-2rem))] overflow-hidden rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-night/70"
     @click="onDialogClick"
     @cancel="onCancel"
   >
