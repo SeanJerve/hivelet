@@ -170,20 +170,38 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
     throw ApiError.validation('A four-digit year is required.', { year: ['must be between 2000 and 2100'] });
   }
 
-  const { data, error } = await db
-    .from('monthly_income_records')
-    .select(
-      'month, date_paid, contact_name, invoice_number, rent_period_start, rent_period_end, ' +
-        'rent_amount, fifty_percent_share, occupants, water_payment, gbg_fee, remitted_amount, ' +
-        'linda_electricity_charge, linda_water_charge, room_id, tenant_profile_id, ' +
-        'rooms:room_id (room_number)'
-    )
-    .eq('year', year)
-    .is('voided_at', null)
-    .order('month', { ascending: true })
-    .order('date_paid', { ascending: true });
+  /**
+   * Read in batches. A single `select` is capped by PostgREST's default of 1000
+   * rows and says nothing when it truncates - the workbook would simply be
+   * short, with a total to match, and nothing on the sheet to show rows were
+   * missing.
+   *
+   * Not hypothetical: 2025 already holds **837 expense entries**. `admin.ts`
+   * pages the same table in 1000-row batches for the list endpoint; the exports
+   * did not, and they are the artefact the owner actually keeps.
+   */
+  const BATCH = 1000;
+  const data: any[] = [];
+  for (let from = 0; ; from += BATCH) {
+    const { data: page, error } = await db
+      .from('monthly_income_records')
+      .select(
+        'month, date_paid, contact_name, invoice_number, rent_period_start, rent_period_end, ' +
+          'rent_amount, fifty_percent_share, occupants, water_payment, gbg_fee, remitted_amount, ' +
+          'linda_electricity_charge, linda_water_charge, room_id, tenant_profile_id, ' +
+          'rooms:room_id (room_number)'
+      )
+      .eq('year', year)
+      .is('voided_at', null)
+      .order('month', { ascending: true })
+      .order('date_paid', { ascending: true })
+      .order('invoice_number', { ascending: true })
+      .range(from, from + BATCH - 1);
 
-  if (error) throw ApiError.internal(`The income ledger could not be read: ${error.message}`);
+    if (error) throw ApiError.internal(`The income ledger could not be read: ${error.message}`);
+    data.push(...(page ?? []));
+    if (!page || page.length < BATCH) break;
+  }
 
   /**
    * Anniv Date and Deposit (columns 11 and 12) live on the tenancy, not on the

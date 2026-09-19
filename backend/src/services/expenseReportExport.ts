@@ -113,18 +113,39 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
     parent: (c as any).parent_code ? String((c as any).parent_code) : null,
   }));
 
-  const { data: entryRows, error: entryError } = await db
-    .from('monthly_expense_entries')
-    .select(
-      'id, expense_date, or_supplier, category_code, total_expenses, ' +
-        'expense_property_allocations (property_area, amount)'
-    )
-    .gte('expense_date', `${year}-01-01`)
-    .lte('expense_date', `${year}-12-31`)
-    .is('voided_at', null)
-    .order('expense_date', { ascending: true });
+  /**
+   * Read in batches. A single `select` is capped by PostgREST's default of 1000
+   * rows and says nothing when it truncates - the workbook would simply be
+   * short, with a total to match, and nothing on the sheet to show rows were
+   * missing.
+   *
+   * Not hypothetical: 2025 already holds **837 expense entries**. `admin.ts`
+   * pages the same table in 1000-row batches for the list endpoint; the exports
+   * did not, and they are the artefact the owner actually keeps.
+   */
+  const BATCH = 1000;
+  const entryRows: any[] = [];
+  for (let from = 0; ; from += BATCH) {
+    const { data: page, error: entryError } = await db
+      .from('monthly_expense_entries')
+      .select(
+        'id, expense_date, or_supplier, category_code, total_expenses, ' +
+          'expense_property_allocations (property_area, amount)'
+      )
+      .gte('expense_date', `${year}-01-01`)
+      .lte('expense_date', `${year}-12-31`)
+      .is('voided_at', null)
+      .order('expense_date', { ascending: true })
+      // A second, unique key. Ordering by date alone leaves rows that share a
+      // date in an order PostgreSQL may choose differently per page, which can
+      // repeat one row across a page boundary and drop another.
+      .order('id', { ascending: true })
+      .range(from, from + BATCH - 1);
 
-  if (entryError) throw ApiError.internal(`The expense ledger could not be read: ${entryError.message}`);
+    if (entryError) throw ApiError.internal(`The expense ledger could not be read: ${entryError.message}`);
+    entryRows.push(...(page ?? []));
+    if (!page || page.length < BATCH) break;
+  }
 
   const byMonth = new Map<number, Entry[]>();
   for (const raw of (entryRows ?? []) as unknown as Record<string, any>[]) {
