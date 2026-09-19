@@ -32,7 +32,7 @@ import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthly
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
 import { buildAuditTrailWorkbook, type AuditCategory } from '../services/auditTrailExport.js';
-import { money, occupantCount, isoDate, shortText, uuid } from '../utils/validators.js';
+import { money, occupantCount, isoDate, shortText, unitCode, uuid } from '../utils/validators.js';
 
 const router = Router();
 
@@ -81,7 +81,7 @@ router.get(
 
 const roomInsertSchema = z.object({
   cluster_code: z.string().min(1).max(50),
-  room_number: z.string().min(1).max(20),
+  room_number: unitCode(20),
   floor: z.number().int().min(1).optional(),
   // `room_type` is the enum `room_type_enum`, not free text. It was `z.string()` while
   // `operational_status` and `visibility_status` in this same file were properly
@@ -491,7 +491,7 @@ const tenantOnboardSchema = z.object({
   emergencyContactPhone: z.string().max(50).optional(),
   occupation: z.string().max(100).optional(),
   facebookUrl: z.string().optional(),   // facebook_url is TEXT, unbounded
-  roomNumber: z.string().max(20).optional(),
+  roomNumber: unitCode(20).optional(),
   /**
    * `isoDate`, not a bare string, and this one carries further than it looks.
    *
@@ -765,7 +765,7 @@ const tenantUpdateSchema = z.object({
   emergencyContactPhone: z.string().max(50).optional(),
   occupation: z.string().max(100).optional(),
   facebookUrl: z.string().optional(),   // facebook_url is TEXT, unbounded
-  roomNumber: z.string().max(20).optional(),
+  roomNumber: unitCode(20).optional(),
   accountStatus: z.enum(['active', 'inactive']).optional(),
   occupantCount: occupantCount.refine((n) => n >= 1, 'must be at least one occupant').optional(),
   roommateQty: occupantCount.optional(),
@@ -1760,7 +1760,7 @@ router.get(
  * the number is asked for rather than invented.
  */
 const incomeRecordSchema = z.object({
-  roomNumber: shortText(20),
+  roomNumber: unitCode(20),
   datePaid: isoDate,
   contactName: shortText(255),
   invoiceNumber: shortText(100),
@@ -2368,7 +2368,7 @@ router.post(
  * become NaN from that row onward. See `utils/validators.ts`.
  */
 const incomeRecordPatchSchema = z.object({
-  roomNumber: shortText(20).optional(),
+  roomNumber: unitCode(20).optional(),
   datePaid: isoDate.optional(),
   contactName: shortText(255).optional(),
   invoiceNumber: shortText(100).optional(),
@@ -2882,7 +2882,7 @@ router.get(
 );
 
 const ticketCreateSchema = z.object({
-  roomNumber: z.string().max(20).optional(),
+  roomNumber: unitCode(20).optional(),
   roomId: z.string().optional(),
   title: z.string().min(1).max(255),
   description: z.string().min(1),
@@ -3001,7 +3001,7 @@ const ticketUpdateSchema = z.object({
   status: z.enum(['Open', 'Submitted', 'In Progress', 'Resolved', 'Closed']).optional(),
   assigned_technician: z.string().max(160).optional(),
   assignedTechnician: z.string().max(160).optional(),
-  roomNumber: z.string().max(20).optional(),
+  roomNumber: unitCode(20).optional(),
   roomId: z.string().optional(),
 });
 

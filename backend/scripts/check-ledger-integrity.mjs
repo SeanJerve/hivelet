@@ -63,10 +63,17 @@ if (!URL_ || !KEY) {
  * mention a period mismatch either. No amount was altered: the ledger totalled
  * PHP 8,086,250.00 before and after.
  *
+ * NOT PINNED, deliberately: `N/A-F1-7-2026` reads 2026-07-01, a date nobody
+ * wrote - her spreadsheet leaves that cell blank (row 1424, unit F1, Jul.1-31/26,
+ * PHP 12,600) and the import defaulted it to the 1st. This file can only pin a
+ * row that FAILS one of its rules, and "plausible but invented" is not a rule it
+ * can test: nothing in the database distinguishes that date from a real one. It
+ * lives in BLOCKED_FOR_SEAN.md B-27 instead, where the evidence is the
+ * spreadsheet rather than the ledger.
+ *
  * Nothing else here has been written to.
  */
 const KNOWN = new Map([
-  ['N/A-F1-7-2026', 'date_paid reads 2026-07-01, which nobody wrote. Her spreadsheet leaves this cell BLANK (row 1424, unit F1, Jul.1-31/26, PHP 12,600) and the import defaulted it to the 1st of the month. Migration 032 deliberately leaves it rather than replacing one invented date with another. The only fix is her telling us when it was paid.'],
   ['OR#4726', 'One receipt number against two payment dates - 2024-06-28 and 2024-07-26. Unit 1b, Jade Marmol, two genuine consecutive months (29 Jun-28 Jul, 29 Jul-28 Aug); only the number on the second is wrong. Unused OR#4743 sits between receipts dated 2024-07-26 and 2024-07-28, which is exactly where a receipt paid 2024-07-26 belongs.'],
   ['OR#4772', 'One receipt number against two payment dates - 2024-09-02 and 2024-09-25. Unit 2f, Sancueza France, two genuine consecutive months (10 Aug-9 Sep, 10 Sep-9 Oct); only the number on the second is wrong. Unused OR#4779 sits between receipts dated 2024-09-11 and 2024-09-26.'],
   ['INV#5165', 'One receipt number against two payment dates - 2026-04-27 and 2026-06-02. Unit 1a, Lobby Toor, two genuine consecutive months (7 Apr-6 May, 7 May-6 Jun); only the number on the second is wrong. Unused INV#5189 sits between receipts dated 2026-06-01 and 2026-06-02, which is exactly where a receipt paid 2026-06-02 belongs.'],

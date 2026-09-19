@@ -63,5 +63,31 @@ export const uuid = z.string().uuid('must be a UUID');
 export const shortText = (max = 255) =>
   z.string().trim().min(1, 'cannot be empty').max(max, `cannot exceed ${max} characters`);
 
+/**
+ * A unit code, as the property actually numbers its units.
+ *
+ * Letters and digits only. Every one of the 33 live units matches - 1a, 2G, B2F,
+ * F2B, PH, LF - checked against `rooms`, so this rejects nothing real.
+ *
+ * It exists because a unit code is not free text to this system: it is fed
+ * straight into `.ilike('room_number', code)` in seven places, and `ILIKE` reads
+ * `%` and `_` as WILDCARDS. A code of `%` matches every unit at once. Six of the
+ * seven end in `.maybeSingle()`, so PostgREST returns "more than one row" and the
+ * handler throws - a 500 where the honest answer is "that is not a unit code" -
+ * and the seventh takes `.limit(1)`, which silently picks one.
+ *
+ * Nobody is likely to type `%` on purpose. The point is that the failure is
+ * illegible when they do, and a wildcard reaching a lookup that resolves WHICH
+ * UNIT a payment or a repair belongs to is the wrong thing to leave to chance.
+ * Constraining the input is cheaper than making seven call sites defensive.
+ */
+export const unitCode = (max = 20) =>
+  z
+    .string()
+    .trim()
+    .min(1, 'cannot be empty')
+    .max(max, `cannot exceed ${max} characters`)
+    .regex(/^[A-Za-z0-9]+$/, 'may contain only letters and digits');
+
 /** Optional free text: absent, or non-empty after trimming. */
 export const optionalText = (max = 255) => shortText(max).optional();
