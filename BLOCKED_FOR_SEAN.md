@@ -33,6 +33,68 @@ thing did not work" is not.
 
 ## Open
 
+### B-26 — five receipt numbers were mistyped, and the book says what each should be
+
+- **Blocked on:** her receipt book, for two of the five. The other three are as good as proven
+  but still touch her records, so they wait with the rest.
+- **Sean asked the right question first:** could one receipt legitimately cover two payments?
+  **Yes, and four of them do.** Those are correct and must never be "fixed":
+
+  | receipt | unit | rows | all paid | covers |
+  | :--- | :--- | ---: | :--- | :--- |
+  | OR#4895 | 1f | 4 | 2025-03-23 | Sep–Dec 2024, ₱26,000 |
+  | OR#4896 | 1f | 3 | 2025-03-23 | Jan–Mar 2025, ₱19,500 |
+  | OR#4920 | 1d | 2 | 2025-04-28 | Apr–May 2025 |
+  | OR#4952 | 1f | 2 | 2025-06-08 | Apr–May 2025 |
+
+  Unit 1f cleared **seven months of arrears in one visit** on 23 March 2025; the book simply
+  rolled to the next number partway through. `record_income_for_months` writes exactly this
+  shape, so it is the system's own output as well as hers.
+
+- **What separates those from a slip:** a real multi-month receipt is written once, so every
+  row carries the **same** `date_paid`. A number appearing against two different payment dates
+  was written on two different days, and one receipt cannot be.
+- **`check:ledger` now tests that.** It already allowed one receipt across several months and
+  refused it across several rooms; it could not see a receipt spanning two days. The new rule
+  found **INV#5165**, which nothing had ever flagged.
+- **And the book itself says where each belongs.** There are only **ten unused numbers in the
+  entire book** (4621–5047, about 427 receipts), and one sits at the right date for every
+  single anomaly:
+
+  | the row | paid | unused number sitting at that date |
+  | :--- | :--- | :--- |
+  | OR#4726, 2nd row — 1b, Jade Marmol | 2024-07-26 | **OR#4743**, between receipts dated 07-26 and 07-28 |
+  | OR#4772, 2nd row — 2f, Sancueza France | 2024-09-25 | **OR#4779**, between 09-11 and 09-26 |
+  | OR#4774, the 3f row | 2024-08-22 | **OR#4762**, between 08-21 and 08-28 |
+  | OR#4813, one of its two rows | 2024-11-01 | **OR#4812**, between two receipts *both* dated 11-01 |
+  | INV#5165, 2nd row — 1a, Lobby Toor | 2026-06-02 | **INV#5189**, between 06-01 and 06-02 |
+
+  Five anomalies, five gaps, each at the right date. That is the signature of a number
+  mistyped as one already used, leaving its own unused.
+
+- **Three can be assigned on this evidence alone** — OR#4726, OR#4772 and INV#5165. In each,
+  both rows are genuine consecutive months of one tenancy in one room; only the number on the
+  second is wrong, and exactly one unused number sits at its payment date.
+
+- **Two need her book:**
+
+  **OR#4813** — Ron Juliene Dominguino (2a, ₱8,200) and M. Juselle Escuro (3a, ₱9,800), both
+  paid 1 November 2024. One of them is OR#4812. Which one cannot be read from the data: they
+  were paid the same day, so nothing in the ledger breaks the tie.
+
+  **OR#4774** — worse than a number. Its **3g** row is right: Jayson Anonuevo, 31st
+  anniversary, ₱6,500, unbroken either side. Its **3f** row is that row over again — same
+  tenant, same ₱6,500, same period — and 3f is **Pallavi Ravichandran at ₱6,000 on the 18th**.
+  It matches neither the room nor the rate it is filed under. **And 3f really is missing a
+  month:** Pallavi has no receipt at all for 18 Aug – 17 Sep 2024. So either that row is a
+  duplicate that should not exist, or it is Pallavi's missing month entered with the wrong
+  tenant, rate and period. Those are very different corrections and only her book decides.
+
+- **Nothing here is money missing.** Every amount is a plausible month's rent at the rate then
+  in force, and the ledger totals ₱8,086,250.00 either way. What is wrong is which piece of
+  paper each row claims to be.
+- **Raised:** 2026-09-19
+
 ### B-25 — `check:columns` tells you to regenerate a file nothing can regenerate
 
 - **Blocked on:** a way for a script to run SQL. Not urgent; recorded so the next person does

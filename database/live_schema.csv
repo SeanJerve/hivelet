@@ -39,6 +39,13 @@ section,item,detail
 1. Columns,clusters.display_order,integer NOT NULL
 1. Columns,clusters.expense_area,property_area_type NOT NULL
 1. Columns,clusters.name,character varying(100) NOT NULL
+1. Columns,copied_period_backup_031.corrected_at,timestamp with time zone NOT NULL DEFAULT now()
+1. Columns,copied_period_backup_031.id,uuid NOT NULL
+1. Columns,copied_period_backup_031.invoice_number,text NULL
+1. Columns,copied_period_backup_031.new_period_end,date NULL
+1. Columns,copied_period_backup_031.new_period_start,date NULL
+1. Columns,copied_period_backup_031.old_period_end,date NULL
+1. Columns,copied_period_backup_031.old_period_start,date NULL
 1. Columns,expense_property_allocations.amount,"numeric(10,2) NOT NULL"
 1. Columns,expense_property_allocations.created_at,timestamp with time zone NULL DEFAULT now()
 1. Columns,expense_property_allocations.expense_entry_id,uuid NOT NULL

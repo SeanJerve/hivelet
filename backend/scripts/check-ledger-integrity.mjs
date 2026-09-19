@@ -66,11 +66,11 @@ if (!URL_ || !KEY) {
  * Nothing else here has been written to.
  */
 const KNOWN = new Map([
-  ['OR#4757', 'rent period ends the day before it starts: 2024-08-03 to 2024-08-02. Migration off-by-one; the end looks like it should be 2024-09-02. Room 1h.'],
-  ['OR#4775', 'rent period ends the day before it starts: 2024-08-30 to 2024-08-29. Room 2b.'],
-  ['OR#4872', 'rent period ends the day before it starts: 2025-02-03 to 2025-02-02. Room 1h.'],
-  ['OR#4774', 'one receipt number against two rooms (3f and 3g) for the same tenant, but paid twelve days apart — 2024-08-22 and 2024-09-03. One of the two numbers is likely a transcription error.'],
-  ['OR#4813', 'one receipt number against TWO DIFFERENT TENANTS on the same day — Ron Juliene Dominguino (2a, PHP 8,000) and M. Juselle Escuro (3a, PHP 9,000). Two people cannot share one official receipt.'],
+  ['OR#4726', 'One receipt number against two payment dates - 2024-06-28 and 2024-07-26. Unit 1b, Jade Marmol, two genuine consecutive months (29 Jun-28 Jul, 29 Jul-28 Aug); only the number on the second is wrong. Unused OR#4743 sits between receipts dated 2024-07-26 and 2024-07-28, which is exactly where a receipt paid 2024-07-26 belongs.'],
+  ['OR#4772', 'One receipt number against two payment dates - 2024-09-02 and 2024-09-25. Unit 2f, Sancueza France, two genuine consecutive months (10 Aug-9 Sep, 10 Sep-9 Oct); only the number on the second is wrong. Unused OR#4779 sits between receipts dated 2024-09-11 and 2024-09-26.'],
+  ['INV#5165', 'One receipt number against two payment dates - 2026-04-27 and 2026-06-02. Unit 1a, Lobby Toor, two genuine consecutive months (7 Apr-6 May, 7 May-6 Jun); only the number on the second is wrong. Unused INV#5189 sits between receipts dated 2026-06-01 and 2026-06-02, which is exactly where a receipt paid 2026-06-02 belongs.'],
+  ['OR#4774', 'Investigated 2026-09-19. Its 3g row is correct - Jayson Anonuevo, 31st anniversary, PHP 6,500, unbroken either side. Its 3f row is that row over again: same tenant, same PHP 6,500, same period, and 3f is Pallavi Ravichandran at PHP 6,000 on the 18th. It belongs to neither the room nor the rate it is filed under. Separately, 3f IS missing a month - Pallavi has no receipt for 18 Aug to 17 Sep 2024. Unused OR#4762 sits between receipts dated 2024-08-21 and 2024-08-28, which is where a receipt paid 2024-08-22 belongs. Needs her book: is the 3f row a duplicate, or Pallavi\'s missing month entered wrongly?'],
+  ['OR#4813', 'One receipt number against TWO DIFFERENT TENANTS on the same day - Ron Juliene Dominguino (2a, PHP 8,000) and M. Juselle Escuro (3a, PHP 9,000). Two people cannot share one official receipt. Investigated 2026-09-19: OR#4812 is UNUSED and sits immediately before it, between two receipts both dated 2024-11-01 - so one of these two rows is almost certainly 4812. Which one cannot be read from the data; both were paid the same day. Needs her book.'],
 ]);
 
 let failures = 0;
@@ -122,14 +122,63 @@ for (const r of income) {
   if (r.date_paid < '2020-01-01') add(r, 'date_paid is before 2020');
 }
 
-/** One receipt number may cover several months; it may not cover several rooms. */
+/**
+ * One receipt number may cover several months of one tenancy. It may not cover
+ * several rooms, and it may not carry two different payment dates.
+ *
+ * THE MULTI-MONTH CASE IS REAL AND MUST NOT BE FLAGGED. Four receipts in this
+ * ledger legitimately carry more than one row, and every one of them is a tenant
+ * settling arrears in a single visit:
+ *
+ *   OR#4895  unit 1f, four rows, all paid 2025-03-23  Sep-Dec 2024, PHP 26,000
+ *   OR#4896  unit 1f, three rows, all paid 2025-03-23 Jan-Mar 2025, PHP 19,500
+ *   OR#4920  unit 1d, two rows,  all paid 2025-04-28  Apr-May 2025
+ *   OR#4952  unit 1f, two rows,  all paid 2025-06-08  Apr-May 2025
+ *
+ * 1f cleared seven months in one visit; the book simply rolled to the next number
+ * partway through. `record_income_for_months` (migration 029) writes exactly this
+ * shape, so it is the system's own output as well as hers.
+ *
+ * THE DATE RULE, ADDED 2026-09-19. What separates those from a transcription slip
+ * is that a real multi-month receipt is written once, so every row carries the SAME
+ * `date_paid`. A number appearing against two different payment dates was written
+ * on two different days, which one receipt cannot be. That caught two the room rule
+ * could not see - both single-room, so previously invisible:
+ *
+ *   OR#4726  unit 1b, Jade Marmol, paid 2024-06-28 AND 2024-07-26
+ *   OR#4772  unit 2f, Sancueza France, paid 2024-09-02 AND 2024-09-25
+ *
+ * Both are genuine consecutive payments; only the number on the second is wrong.
+ * And the receipt book says which number it should have been - there are just ten
+ * unused numbers in the whole book, and one sits at the right date in each case:
+ *
+ *   OR#4743  unused, between receipts dated 2024-07-26 and 2024-07-28
+ *   OR#4779  unused, between receipts dated 2024-09-11 and 2024-09-26
+ *   OR#4762  unused, between receipts dated 2024-08-21 and 2024-08-28
+ *   OR#4812  unused, between two receipts BOTH dated 2024-11-01
+ *
+ * Verified against the live ledger: these three rules flag 4 receipts and none of
+ * the 4 legitimate multi-month ones. See BLOCKED_FOR_SEAN.md B-26.
+ */
 const byInvoice = new Map();
 for (const r of income) {
-  if (!byInvoice.has(r.invoice_number)) byInvoice.set(r.invoice_number, new Set());
-  byInvoice.get(r.invoice_number).add(r.room_id);
+  if (!byInvoice.has(r.invoice_number)) {
+    byInvoice.set(r.invoice_number, { rooms: new Set(), dates: new Set() });
+  }
+  const e = byInvoice.get(r.invoice_number);
+  e.rooms.add(r.room_id);
+  e.dates.add(r.date_paid);
 }
-for (const [inv, roomIds] of byInvoice) {
-  if (roomIds.size > 1) findings.push({ ref: inv, what: `one receipt number against ${roomIds.size} different rooms` });
+for (const [inv, e] of byInvoice) {
+  if (e.rooms.size > 1) {
+    findings.push({ ref: inv, what: `one receipt number against ${e.rooms.size} different rooms` });
+  }
+  if (e.dates.size > 1) {
+    findings.push({
+      ref: inv,
+      what: `one receipt number against ${e.dates.size} different payment dates (${[...e.dates].sort().join(', ')}) - one receipt cannot be written on two days`,
+    });
+  }
 }
 
 const unknown = findings.filter((f) => !KNOWN.has(f.ref));
