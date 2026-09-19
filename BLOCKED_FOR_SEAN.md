@@ -981,30 +981,107 @@ thing did not work" is not.
 
 ---
 
-### B-31 — OD-04 is settled, and the move-in logic collects half of what it should
+### B-31 — OD-04 is settled. I was wrong about what that means for the code · **corrected 2026-09-19**
+
+> **I raised this earlier today saying the onboarding logic collects half of what it should and
+> that `deposit_amount` is understated by a month's rent on every tenancy. I checked the live
+> rows afterwards and that was wrong. Do not double anything.**
 
 - **The answer, from Sean on 2026-09-19:** *"yes two months total, one month for rent and the
-  other is the deposit"*, and on what the deposit is for: *"when the tenant leaves, that deposit
-  money will be used to cover expenses in fixing/maintaining the apartment that the tenant used."*
-- **So OD-04 is closed and the 13 Sep reading of it was wrong.** There IS a separate deposit. The
-  17 Sep answer was the right one.
-- **☑ Done already:** the public FAQ states two months with a worked example, because
-  understating it is the harmful direction — a prospect budgeting one month's rent turns up
-  needing two.
-- **☐ WHAT IS LEFT, AND IT IS MONEY, SO IT IS YOURS.** `backend/src/routes/admin.ts` has the old
-  reading built in, in three places:
-  - **line ~674** — `rentAtMoveIn` is one month's rent, commented *"OD-04: this sum is ADVANCE
-    RENT, not a refundable security deposit. This business collects no separate damage sum."*
-  - **line ~925** — the re-assignment path, commented *"collects no separate damage or security
-    sum (OD-04, confirmed 2026-09-13)"*. Its own comment records that the default USED to be
-    `current_price * 2`, *"the familiar one-month-advance-plus-one-month-deposit arrangement"*,
-    and that it was removed as an invented figure. It was not invented. It was right.
-  - **line ~516** — the finite check, labelled "Advance rent (OD-04)".
-- **What that means in practice:** onboarding a tenant records ONE month where the business
-  collects TWO. `deposit_amount` on every tenancy created since is understated by a month's rent.
-- **Why I did not change it:** it writes money into a financial record, existing rows would need
-  deciding on separately, and B-11's missing move-out dates are entangled with settling a deposit
-  at all. Not a call to make from a chat message.
+  other is the deposit"*, and *"when the tenant leaves, that deposit money will be used to cover
+  expenses in fixing/maintaining the apartment that the tenant used."*
+- **What the live data says.** Measured `deposit_amount` against the rent each unit ACTUALLY
+  charges — its most common `rent_amount` across the ledger, not the rate card, which understates
+  by about 1.6x and was what made my first reading look plausible:
+
+  | | |
+  | :--- | :--- |
+  | exactly one month | **20** of 32 |
+  | within 8% of one month | a further **9** |
+  | two months | **0** |
+  | zero | 0 |
+
+  Every one of the 32 tenancies holds **one month**. The column has never held two. Had I
+  "fixed" the code to write `rent * 2`, the next 32 tenancies would have disagreed with all 32
+  existing ones.
+- **So the code is right and needs no change.** `rentAtMoveIn` writes one month; that matches
+  every historical row.
+- **☐ WHAT IS ACTUALLY LEFT, and it is naming, not arithmetic.** Two months are collected. One
+  of them sits in `deposit_amount`. The other is the first month's rent, which shows up as an
+  ordinary income receipt. Both are recorded — but the system calls the stored one **advance
+  rent**, and your answer says the money held against repairs is the **deposit**. Those are
+  different obligations and the label is on the wrong one:
+  - `frontend/src/views/TenantManagementView.vue` prints "Advance rent" in four places she sees:
+    the table header, two detail panels and the onboarding form label.
+  - `database/migrations/009_...sql` put a **live column comment** on
+    `room_assignments.deposit_amount` reading *"ADVANCE RENT, not a refundable security deposit
+    … No separate damage or security deposit is collected by this business … Do not build a
+    refund or forfeiture workflow against this column."* Your answer contradicts every clause of
+    that. **Migration 036 is written and not run** — it replaces the comment. The catalogue is
+    the thing CLAUDE.md tells people to trust over the docs, so a wrong comment there is worse
+    than a wrong document.
+  - `backend/src/routes/admin.ts` asserted the same thing in three code comments dated
+    2026-09-13. Those I have corrected, because a comment is not money.
+- **A second correction, and the more embarrassing one.** I first wrote here and in the public
+  FAQ that *"whether anything is returned has not been confirmed"*. **It has.** She answered it
+  on 2026-09-17 — `CLIENT_ANSWERS_2026-09-17.md` Q7: *"whatever is left of that entire expenses
+  will be refunded to the tenant. If it's 6500 and the expenses is 6400, the 100 pesos will
+  still be given back."* `docs/02_BUSINESS_RULES.md` **BR-039 has carried that since the 18th**,
+  marks the opposite reading retired, and states the rest of what I spent this session deriving
+  from the live rows — that the labelled advance IS the deposit, and that the first month's rent
+  is a separate income row. Vince had it right a day before I looked.
+  - **Why I missed it:** I worked from Sean's chat message and the code comments, and reached
+    for the database instead of the rule register. CLAUDE.md names that register as the
+    authority and names the stale-comment trap in the same breath. **The comments I was reading
+    were the very ones BR-039 had already retired.**
+  - Corrected in the FAQ, migration 036 and the `admin.ts` comments. The FAQ states the refund
+    **with the condition attached** — repairs come out of it first — because "refundable" on its
+    own makes a prospect expect the whole sum back.
+- **What is genuinely still open, and it is small:** does the money get called *deposit* on her
+  screen from now on? `TenantManagementView.vue` says "Advance rent" in four places. BR-039 says
+  the owner's own word is "advance" and that the word is a label, not a definition — so she may
+  well want it left. I have renamed nothing she looks at; it is her word for her money, and
+  Kiel's lane besides.
+- **Not open, but worth knowing:** there is still no disposition column — nothing records what
+  was refunded or when. BR-039 says settlement is manual **by choice** (repairs go in as
+  category 8 expenses, the refund is her own entry), so this is not a gap to close without
+  asking. It is what BR-025's *Partial* status rests on, and it is entangled with B-11's
+  missing move-out dates.
+- **Raised:** 2026-09-19. **Corrected twice the same day.**
+
+### B-32 — every tenancy bills on the 1st; 29 of 32 residents pay on some other day
+
+- **What is wrong.** `room_assignments.anniversary_date` is `2026-07-01` for **all 32** active
+  tenancies — one distinct value across the whole property. It is the bulk import's placeholder,
+  the same invented `2026-07-01` migration 032 already caught in `date_paid`.
+- **Why that matters.** BR-033 runs the rent cycle from that column, and `computeBillPeriod()`
+  reads **only its day-of-month**. So the system believes every resident's month starts on the
+  1st. Her ledger disagrees: across 937 rows the period starts on the 1st in 122 and on **23
+  other days** in the remaining 815. Unit 1a has run from the **7th for 31 consecutive months**;
+  B2F the 21st, LB the 25th, LF the 13th, B2B the 3rd — each unbroken across its whole history.
+- **Nothing is damaged yet, and that is luck.** All 937 rows came from the import; no receipt
+  has ever been recorded through the app by a person. **The first one will be wrong** — a
+  receipt for 1a gets stamped 1 Oct–31 Oct when that resident's month runs 7 Oct–6 Nov. And the
+  divergence warning is inverted: type the *correct* dates and the system files an audit note
+  against you.
+- **☑ Done:** **migration 035 is written and not run.** It settles the **16** units whose own
+  ledger is unambiguous — most recent period start is also the usual one, unbroken 8+ months,
+  not a month-end cycle. 13 of those change; 2a, 3e and F1 really are on the 1st. Only the DAY
+  moves; the year and month stay at the 2026-07 placeholder, because the day is the only part
+  the system reads and the only part her book can evidence. `start_date` is untouched (B-11).
+- **☐ SIXTEEN NEED HER, and the ledger cannot settle them:**
+  - **3c, B3B** — tracked the **last day of each month** (31st, 30th, 28th in February) and then
+    stuck on 28 from March 2026. Probably month-end, which BR-033 would store as day 31.
+    "Probably" is not enough to write into her records.
+  - **2g, 3d, 1e** — the same month-end drift, less cleanly.
+  - **1b, 1g, 1h, 2c, 2e, 2f, 3b, 3f, 3g, B3F, F2F** — the cycle moved in the last year. Either
+    the resident changed or the day was renegotiated; her book cannot say which.
+  - The per-unit history for all sixteen is in `database/migrations/035_...sql`.
+- **A check now guards it.** `check:ledger` compares every anniversary day against that unit's
+  most recent period. It is a **ratchet at 29**, because it cannot be green today without lying;
+  it fails if the number grows. Drop it to 16 once 035 is applied. Mutation-tested.
+- **Why no check caught this for months:** they test the system against itself, and the wrong
+  value was uniform. It took comparing against her book.
 - **Raised:** 2026-09-19
 
 ### B-13 — the FAQ asked new tenants for two months' money · **ANSWERED 2026-09-19: two months was right.** See B-31

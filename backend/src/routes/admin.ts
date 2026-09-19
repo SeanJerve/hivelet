@@ -513,7 +513,8 @@ const tenantOnboardSchema = z.object({
    * exactly this.
    */
   moveInDate: isoDate.optional(),
-  // Advance rent (OD-04), so it is money and takes the finite check with it.
+  // The one month held at move-in (OD-04), so it is money and takes the finite
+  // check with it. See the BR-039 block below for what that month is.
   depositAmount: money.optional(),
   occupantCount: occupantCount.refine((n) => n >= 1, 'must be at least one occupant').optional(),
   roommateQty: occupantCount.optional(),
@@ -671,9 +672,28 @@ router.post(
       /**
        * BR-039 — the advance rent equals the rent in effect at move-in.
        *
-       * OD-04: this sum is ADVANCE RENT, not a refundable security deposit. This
-       * business collects no separate damage sum, so by definition it is one
-       * month's rent for the unit being moved into.
+       * OD-04, and BR-039 in `docs/02_BUSINESS_RULES.md` is the authority on it
+       * - read that before this. TWO months are collected at move-in: one of
+       * rent and one held as a deposit. This column holds ONE of them; the rent
+       * month is recorded as an ordinary income receipt, so both are on file
+       * and neither is counted twice.
+       *
+       * At move-out the deposit is spent on repairing the unit and WHAT IS LEFT
+       * IS REFUNDED - her own example is 6,500 held against 6,400 of work,
+       * 100 returned. The system does not settle any of that: the repairs are
+       * category 8 expense entries and the refund is an entry she writes
+       * herself, which BR-039 records as a deliberate choice rather than a
+       * missing feature. Nothing here is a disposition record.
+       *
+       * Either way it is one month's rent for the unit being moved into, which
+       * is why the figure below does not change. Checked against the live rows
+       * before trusting that: measured against the rent each unit ACTUALLY
+       * charges - not the rate card, which understates by about 1.6x - all 32
+       * active tenancies hold one month, 20 of them exactly. None holds two.
+       * Do not double it (B-31).
+       *
+       * The text this replaces said no separate deposit was collected at all,
+       * on a 2026-09-13 reading she has since contradicted.
        *
        * This route used to write `depositAmount || 0.00`, so an onboarding that
        * omitted the figure recorded a tenancy with NO advance rent - which is not
@@ -918,12 +938,17 @@ router.patch(
           }
         }
 
-        // `deposit_amount` is ADVANCE RENT, not a refundable security deposit - this business
-        // collects no separate damage or security sum (OD-04, confirmed 2026-09-13). The previous
-        // default here was `current_price * 2`, the familiar one-month-advance-plus-one-month-
-        // deposit arrangement, which invented a figure that was never collected and wrote it into
-        // a financial record. Carry forward what the tenant actually had; otherwise leave it at
-        // zero for the administrator to enter. Never fabricate money.
+        // `deposit_amount` holds ONE MONTH, held at move-in (OD-04, answered by the owner
+        // 2026-09-19). Two months are collected - one of rent, recorded as an ordinary income
+        // receipt, and one held here. The previous default was `current_price * 2`, which wrote
+        // BOTH months into this one column and so counted the rent month twice.
+        //
+        // The comment this replaces said no separate deposit existed at all, on a 2026-09-13
+        // reading that the owner has since contradicted. What did NOT change is the behaviour:
+        // carry forward what the tenant actually had, otherwise leave it at zero for the
+        // administrator to enter. Measured against the rent each unit really charges, all 32
+        // live tenancies hold one month - none holds two - so this figure is not to be doubled
+        // (B-31). Never fabricate money.
         const prevDeposit = Number(oldActive?.[0]?.deposit_amount ?? 0);
         const finalOccupants = explicitOccupants ?? oldActive?.[0]?.occupant_count ?? 1;
 

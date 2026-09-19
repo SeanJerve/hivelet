@@ -819,9 +819,16 @@ async function handleOnboard() {
             <p class="ws-hint">The date their year is counted from.</p>
           </div>
           <div class="ws-field">
-            <!-- OD-04: this sum is ADVANCE RENT. This business collects no separate
-                 refundable security deposit, and calling it one described a financial
-                 instrument the property does not use. -->
+            <!-- OD-04, answered by the owner 2026-09-19: two months are collected at
+                 move-in, one of rent and one held as a deposit that is spent at move-out
+                 on fixing the unit. This field is ONE of those months - the rent month
+                 is recorded as an ordinary income receipt - so the figure is one month's
+                 rent and is not to be doubled (B-31).
+
+                 THE LABEL IS THE OPEN QUESTION, not the number. "Advance rent" was the
+                 2026-09-13 reading, which she has since contradicted; the money held
+                 against repairs is the deposit. Changing what she reads is hers and
+                 Kiel's call, so it is left alone here and raised in B-31. -->
             <label for="new-advance">Advance rent</label>
             <input
               id="new-advance"

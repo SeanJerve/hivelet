@@ -70,8 +70,20 @@ function toggleFaq(index: number) {
  *                 answer states the total and works a ₱4,500 unit through,
  *                 because "two months" is not a number anyone can act on.
  *
- *                 What it does NOT say is whether anything is returned. Nobody
- *                 has confirmed that, and money is not a thing to imply.
+ *                 CORRECTED LATER THE SAME DAY. This block said the refund
+ *                 was unconfirmed. It is not - she answered it on 2026-09-17
+ *                 and `docs/02_BUSINESS_RULES.md` BR-039 has carried it since
+ *                 the 18th. Her words, from CLIENT_ANSWERS_2026-09-17 Q7:
+ *
+ *                     "whatever is left of that entire expenses will be
+ *                      refunded to the tenant. If it's 6500 and the expenses
+ *                      is 6400, the 100 pesos will still be given back"
+ *
+ *                 I had read the stale code comments instead of the rule
+ *                 register, which is the authority. The answer now says the
+ *                 remainder comes back, WITH the condition attached - repairs
+ *                 come out of it first - because a prospect who hears only
+ *                 "refundable" expects the whole sum.
  */
 const FAQS = computed(() => [
   {
@@ -96,7 +108,7 @@ const FAQS = computed(() => [
   {
     q: 'What do I need to move in?',
     a:
-      'A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. The deposit is held while you live here and put towards repairs and upkeep of the unit when you leave. For a unit at ₱4,500 that is ₱9,000 to bring on the day.',
+      'A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. For a unit at ₱4,500 that is ₱9,000 to bring on the day. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
   },
   {
     q: 'Are visitors and guests allowed inside the rooms?',

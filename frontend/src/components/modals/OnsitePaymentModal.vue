@@ -462,9 +462,9 @@ function triggerRecord() {
           water: Number(waterAmount.value) || 0,
           garbage: Number(gbgFee.value) || 0,
           anniversary: new Date(date.value).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-          // Advance rent (OD-04), not a computed guess. The ledger row the API
-          // just returned is the record; this local copy only mirrors the screen
-          // until the refetch below replaces it.
+          // The move-in month (OD-04), not a computed guess. The ledger row the
+          // API just returned is the record; this local copy only mirrors the
+          // screen until the refetch below replaces it.
           deposit: 0,
         });
 
