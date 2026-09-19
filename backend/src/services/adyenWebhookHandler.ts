@@ -126,11 +126,24 @@ export async function applyNotificationItem(
   let tenantProfileId: string | null = null;
 
   if (uuidMatch) {
-    const { data: bill } = await db
+    const { data: bill, error: billError } = await db
       .from('bills')
       .select('id, room_id, tenant_profile_id')
       .eq('id', uuidMatch[1])
       .maybeSingle();
+
+    // Not fatal, and deliberately so: Adyen has taken the resident's money and
+    // this notification must still be recorded. But a failed read is not "no
+    // such bill" - it leaves billId, roomId and tenantProfileId null and the
+    // payment is stored attached to nobody, so it never pays the debt down. It
+    // is logged loudly rather than vanishing into an `if (bill)`.
+    if (billError) {
+      console.error(
+        `[adyen] the bill for this notification could not be read (${uuidMatch[1]}): ` +
+        `${billError.message}. The payment will be recorded unlinked and will not ` +
+        'reduce any outstanding balance until it is matched by hand.'
+      );
+    }
 
     if (bill) {
       billId = bill.id;

@@ -815,11 +815,17 @@ router.patch(
     // If roomNumber changed, update room assignment!
     if (roomNumber !== undefined) {
       // Find old active assignments
-      const { data: oldActive } = await db
+      const { data: oldActive, error: oldActiveError } = await db
         .from('room_assignments')
         .select('id, room_id, deposit_amount, occupant_count')
         .eq('tenant_profile_id', req.params.profileId)
         .eq('is_active', true);
+
+      // A failed read here is not "this tenant has no current unit". It decides
+      // which unit gets freed and what advance rent and occupant count carry
+      // forward, so reading a broken query as an empty list moves the tenant
+      // while leaving the old unit recorded as occupied.
+      if (oldActiveError) throw ApiError.internal(oldActiveError.message);
 
       // Deactivate old assignments.
       //
@@ -865,11 +871,20 @@ router.patch(
         if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
 
         // Check if there are other active assignments on this target room
-        const { data: targetRoomActive } = await db
+        const { data: targetRoomActive, error: targetRoomError } = await db
           .from('room_assignments')
           .select('id, tenant_profile_id, profiles (full_name, account_status)')
           .eq('room_id', room.id)
           .eq('is_active', true);
+
+        // This is the check for "is someone already living there". Read as an
+        // empty list, the move goes ahead and lands on
+        // `idx_single_active_assignment_per_room` - a partial UNIQUE index on
+        // (room_id) WHERE is_active, confirmed in pg_indexes - so it surfaces as
+        // a raw Postgres unique violation inside a 500 rather than as the clear
+        // conflict message below. The database stops two tenants sharing a unit;
+        // it cannot make the failure legible.
+        if (targetRoomError) throw ApiError.internal(targetRoomError.message);
 
         if (targetRoomActive && targetRoomActive.length > 0) {
           for (const a of targetRoomActive) {
@@ -995,11 +1010,18 @@ router.post(
     }
 
     // Find active assignment
-    const { data: activeAssignments } = await db
+    const { data: activeAssignments, error: activeAssignmentsError } = await db
       .from('room_assignments')
       .select('id, room_id')
       .eq('tenant_profile_id', req.params.profileId)
       .eq('is_active', true);
+
+    // The list of units to free. Read as empty, the tenancies below are still
+    // closed and the profile still deactivated - but no unit is ever marked
+    // Available, so the flat someone has moved out of goes on counting as
+    // occupied and never appears as free to let. This read happens before any
+    // write, so throwing here leaves nothing half-done.
+    if (activeAssignmentsError) throw ApiError.internal(activeAssignmentsError.message);
 
     // Deactivate assignments.
     //
@@ -1353,7 +1375,7 @@ router.patch(
         .single();
 
       // Query active room assignment for occupant count
-      const { data: assignment } = await db
+      const { data: assignment, error: assignmentError } = await db
         .from('room_assignments')
         .select('id, occupant_count')
         .eq('room_id', before.room_id)
@@ -1361,13 +1383,30 @@ router.patch(
         .eq('is_active', true)
         .maybeSingle();
 
+      // Feeds `assignment?.occupant_count || 1` below, which is the occupant
+      // count the water charge is computed from (BR-014, PHP 200 a head). A
+      // failed read is indistinguishable from "no active tenancy" and both fall
+      // to 1, so a household of four could be billed one person's water and the
+      // figure written into the ledger as fact. The `?.` still covers the
+      // genuine case - a payment settled after the tenancy ended - which is why
+      // only the error is promoted here.
+      if (assignmentError) throw ApiError.internal(assignmentError.message);
+
       // The unit's code decides whether water is per-occupant or a Linda fixed charge
       // (BR-014 / BR-040), so it has to be known before the water figure can be derived.
-      const { data: paidRoom } = await db
+      const { data: paidRoom, error: paidRoomError } = await db
         .from('rooms')
         .select('room_number')
         .eq('id', before.room_id)
         .maybeSingle();
+
+      // `computeWaterFee(paidRoom?.room_number ?? '', ...)` below. An empty code
+      // matches neither LF nor LB, so a failed read silently bills one of
+      // Linda's two fixed-charge units on the per-occupant model instead
+      // (BR-040 against BR-014) and writes that figure into the ledger. The
+      // bill's own water_amount wins where there is a bill, so this only reaches
+      // a payment raised without one - which is the Adyen path.
+      if (paidRoomError) throw ApiError.internal(paidRoomError.message);
 
       const occupants = assignment?.occupant_count || 1;
 
@@ -1407,11 +1446,18 @@ router.patch(
       }
 
       // Check if income record already exists for this transaction reference
-      const { data: existingIncome } = await db
+      const { data: existingIncome, error: existingIncomeError } = await db
         .from('monthly_income_records')
         .select('id')
         .eq('transaction_reference', before.transaction_reference)
         .maybeSingle();
+
+      // The guard against writing the same receipt into the ledger twice. On a
+      // failed read `existingIncome` is undefined, `!existingIncome` is true,
+      // and a second income row is written for a transaction reference that
+      // already has one - the same money counted twice in her book, with
+      // nothing on either row to say which is the duplicate.
+      if (existingIncomeError) throw ApiError.internal(existingIncomeError.message);
 
       // `payment_method` is NOT hardcoded. It used to read 'GCash', so an
       // `Adyen Online` settlement was written into the ledger as GCash. The

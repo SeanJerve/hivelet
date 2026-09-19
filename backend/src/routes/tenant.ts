@@ -621,11 +621,17 @@ router.post(
       }
     } else {
       // Auto-resolve latest unpaid bill or create one for the occupied unit
-      const { data: existingBills } = await db
+      const { data: existingBills, error: existingBillsError } = await db
         .from('bills')
         .select('id, total_amount, status')
         .eq('tenant_profile_id', req.user!.profileId)
         .order('due_date', { ascending: false });
+
+      // Read as "this resident has no bills", the else branch below raises a
+      // fresh one - so a failed query bills someone who already owed for the
+      // period a second time, and their payment lands against the new bill while
+      // the original stays outstanding.
+      if (existingBillsError) throw ApiError.internal(existingBillsError.message);
 
       const unpaid = existingBills?.find((b: any) => b.status !== 'Paid');
       if (unpaid) {
