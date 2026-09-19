@@ -131,8 +131,23 @@ check('every unit code is unique', unitCodes.size === rooms.length,
 const clusters = new Set(rooms.map((r) => r.cluster_code));
 check('5 clusters', clusters.size === 5, [...clusters].join(', '));
 const byFloor = rooms.reduce((a, r) => (a[r.floor] = (a[r.floor] ?? 0) + 1, a), {});
-check('floors read 11 / 11 / 10 / 1',
-  [1, 2, 3, 4].map((f) => byFloor[f]).join('/') === '11/11/10/1', JSON.stringify(byFloor));
+/**
+ * `floor` is the level WITHIN a building, not a property-wide level.
+ *
+ * This census read 11/11/10/1 until migration 034 on 2026-09-19 moved F1 from
+ * floor 3 to floor 1 - the Front Apartment is its own two-storey building, F1
+ * below and F2F/F2B above, settled by Sean in B-20: "it's a separate building
+ * that consists of 3 units. F1 is 1st floor of that building". One row, one
+ * column, and the only unit of the 33 whose description disagreed with its
+ * floor.
+ *
+ * The count stays written down rather than derived, because a census that
+ * agrees with whatever it reads cannot catch a unit silently changing level.
+ * If it fails, check `rooms.floor` against the audit log before changing the
+ * number here.
+ */
+check('floors read 12 / 11 / 9 / 1',
+  [1, 2, 3, 4].map((f) => byFloor[f]).join('/') === '12/11/9/1', JSON.stringify(byFloor));
 
 // ---- 2. occupancy -------------------------------------------------------
 const occupied = rooms.filter((r) => r.operational_status === 'Occupied');

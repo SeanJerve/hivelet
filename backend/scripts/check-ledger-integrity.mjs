@@ -533,7 +533,20 @@ if (live.length) {
     ['floor', new Set(rooms.map((r) => r.floor)).size],
   ]);
 
-  const CLAIM = /(\d+)[ -]+(units?|clusters?|floors?)\b/gi;
+  /**
+   * A COUNT, NOT A PRICE.
+   *
+   * The number must START a word - preceded by the start of the line, or by
+   * whitespace, a bracket or a quote. Without that guard, prose about a rent of
+   * P4,500 per unit read as a claim of "500 unit" and this check failed on a
+   * sentence that was entirely correct. The same trap catches a peso sign
+   * written as a ₱ escape, where the hex digits sit hard against the
+   * amount and "14500 unit" falls out of it.
+   *
+   * A real claim about the property is always a bare number in prose, so the
+   * guard loses nothing true.
+   */
+  const CLAIM = /(?<=^|[\s(\[>"'`])(\d+)[ -]+(units?|clusters?|floors?)\b/gi;
   const wrongClaims = [];
 
   for (const f of feFiles) {
