@@ -84,7 +84,13 @@ export interface IncomeRecord {
   id?: string;
   unit: string;
   roomId?: string;
-  cluster: Cluster;
+  /**
+   * `''` when the row's unit could not be read, which is a state the ledger has
+   * to be able to represent. The alternative is what was here before - naming a
+   * real cluster, `'BH'`, for a row nobody could place - and a row filed into a
+   * subtotal it may not belong in is worse than one that visibly has no home.
+   */
+  cluster: Cluster | '';
   datePaid: string;
   year?: number;
   month?: number;
@@ -790,8 +796,24 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
     const records = Array.isArray(res) ? res : res?.data || [];
     if (Array.isArray(records)) {
       const mapped: IncomeRecord[] = records.map((inc: any) => {
-        const unit = (inc.rooms?.room_number || '1A').toUpperCase();
-        const cluster = mapClusterName(inc.rooms?.cluster_code || 'BH');
+        /**
+         * No invented unit, and no invented cluster.
+         *
+         * These read `|| '1A'` and `|| 'BH'`. Neither can fire today -
+         * `monthly_income_records.room_id` is NOT NULL and 0 of 937 rows are
+         * null, so the join always resolves - and that is exactly why they are
+         * worth removing rather than leaving. They fire on a SHAPE change, not
+         * a data one: narrow the select, rename the join, and every row whose
+         * unit could not be read is attributed to **1A**, a real occupied unit,
+         * and grouped into BH's subtotal on the owner's ledger. Money on the
+         * wrong line, with nothing failing.
+         *
+         * That is `r.tenant_name` again - the read that was undefined on every
+         * row while `|| 'Active Resident'` beside it did its job perfectly, on
+         * nothing.
+         */
+        const unit = (inc.rooms?.room_number || '').toUpperCase();
+        const cluster = inc.rooms?.cluster_code ? mapClusterName(inc.rooms.cluster_code) : '';
         const datePaidFormatted = inc.date_paid 
           ? new Date(inc.date_paid).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : '—';
@@ -808,7 +830,20 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
           month: inc.month ? Number(inc.month) : (inc.date_paid ? new Date(inc.date_paid).getMonth() + 1 : 1),
           datePaid: datePaidFormatted,
           contact: inc.contact_name || 'Resident',
-          invoice: inc.invoice_number || `INV-${inc.year || 2026}-${String(inc.month || 1).padStart(2, '0')}`,
+          /**
+           * An OR number is a physical receipt in the landlady's book, so it is
+           * never composed here.
+           *
+           * This built `INV-2026-09` out of the row's own year and month when
+           * the column was empty - a receipt number that matches nothing she
+           * holds, printed on the screen she reconciles against. The write
+           * paths were already corrected for exactly this (they used to invent
+           * one from `Math.random()`); the READ path went on doing it.
+           *
+           * `invoice_number` is NOT NULL and 0 of 937 rows are empty, so this
+           * branch has never run. It stays unbuilt anyway.
+           */
+          invoice: inc.invoice_number || '',
           rentFor,
           rent: Number(inc.rent_amount || 0),
           occupants: Number(inc.occupants || 1),
@@ -818,7 +853,18 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
           deposit: 0,
           paymentMethod: inc.payment_method || 'Cash',
           transactionReference: inc.transaction_reference || '',
-          verificationStatus: inc.verification_status || 'Verified',
+          /**
+           * Unknown is not Verified, and defaulting the other way is how this
+           * project already shipped "a payment with no status displayed as
+           * VERIFIED" once - one of the ~20 fabrications removed from the
+           * interface. The same default was still here, on the income ledger.
+           *
+           * The column is NOT NULL with a database default of 'Verified', and 0
+           * of 937 rows are null, so nothing reaches this branch today. The
+           * direction is the point: if a response ever stops carrying the
+           * field, money should not start reading as checked.
+           */
+          verificationStatus: inc.verification_status || '',
           fiftyPercentShare: Number(inc.fifty_percent_share || (inc.rent_amount ? inc.rent_amount / 2 : 0)),
           totalRemitted: Number(inc.remitted_amount || 0),
           linda: inc.is_linda_billing ? {
