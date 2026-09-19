@@ -74,8 +74,23 @@ const unitOccupantsSummary = computed(() => {
   return formatUnitOccupantsSummary(selectedUnit.value);
 });
 
+/**
+ * The headcount this form is actually billing for - the same number the water
+ * calculation and the payload use, not a second opinion about it.
+ *
+ * This was `count > 0 ? count : 1`. That is the `|| 1` guess `occupantsFor()`
+ * twenty lines below was deliberately written to stop making, still being made
+ * for the label. On a unit the system knows nobody in - `PH`, which is the
+ * vacant one the rehearsal runs on - the water baseline is 0 and the field
+ * holds 0, while the label beside it read "₱200 × 1 occupant". The same shape
+ * as the watch-dependency defect recorded further down this file: a stated rule
+ * and a stated headcount next to a figure that contradicts both.
+ */
 const currentOccupantsCount = computed(() => {
-  return unitOccupantsSummary.value.count > 0 ? unitOccupantsSummary.value.count : 1;
+  const room = rooms.find(
+    (r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase()
+  );
+  return occupantsFor(unitOccupantsSummary.value, room);
 });
 
 // Auto-calculate water and rent based on dynamic room occupants and rates
@@ -172,11 +187,15 @@ watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([n
   const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
   const summary = formatUnitOccupantsSummary(newUnit);
   const occCount = occupantsFor(summary, room);
-  const isLinda = room?.cluster === 'Linda Units' || newUnit.toLowerCase() === 'lf' || newUnit.toLowerCase() === 'lb';
-  
+
   const mCovered = Math.max(1, Number(newMonths) || 1);
 
-  waterAmount.value = waterBaselineFor(isLinda ? newUnit : newUnit, occCount) * mCovered;
+  // `waterBaselineFor` decides the Linda case itself, from the unit code. This
+  // read `waterBaselineFor(isLinda ? newUnit : newUnit, ...)` - both arms of the
+  // ternary identical, so the `isLinda` computed beside it decided nothing. Left
+  // as it was, the next reader reasonably concludes Linda is handled here and
+  // that changing this line is how you change it.
+  waterAmount.value = waterBaselineFor(newUnit, occCount) * mCovered;
 
   /**
    * Cleared when the unit has no price, rather than left holding the PREVIOUS
@@ -203,6 +222,42 @@ watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([n
     !roomsFetchFailed.value && room && room.price ? room.price * mCovered : 0;
 }, { immediate: true });
 
+
+/**
+ * Keep the unit the dropdown SHOWS equal to the unit this form will POST.
+ *
+ * `rooms` is seeded from `canonicalUnits.ts`, whose unit codes are lowercase
+ * (`"1a"`), and is then replaced wholesale by `fetchRooms()`, which uppercases
+ * every one of them (`systemState.ts` - `(r.room_number || '').toUpperCase()`).
+ * The `<option>` values below come from that same field. So the literal this
+ * ref opened on could not be right in both phases whichever case it was
+ * written in, and it was written lowercase:
+ *
+ *   options are ["1A","1B",...]  ·  select.value = "1a"
+ *   -> selectedIndex -1, the field renders BLANK
+ *
+ * Checked in a browser rather than assumed. `selectedUnit` meanwhile still held
+ * `"1a"`, and `triggerRecord()` uppercases it before building the payload - so
+ * an administrator who filled in the figures without opening the dropdown saw
+ * no unit at all and posted the collection against **1A**, an occupied unit
+ * with a real resident in it.
+ *
+ * Reconciled against the list rather than by correcting the literal, because a
+ * literal is exactly what cannot survive the seed being one case and the API
+ * the other.
+ */
+watch(
+  rooms,
+  () => {
+    if (rooms.length === 0) return;
+    if (rooms.some((r) => r.unitCode === selectedUnit.value)) return;
+    const sameUnit = rooms.find(
+      (r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase()
+    );
+    selectedUnit.value = (sameUnit ?? rooms[0]).unitCode;
+  },
+  { immediate: true }
+);
 
 watch(isOnsitePaymentModalOpen, (isOpen) => {
   if (isOpen) {
@@ -432,11 +487,23 @@ function triggerRecord() {
             </span>
             <input v-model.number="waterAmount" type="number" min="0" step="200" class="ws-input w-full" required />
             <span class="ws-hint">
+              <!--
+                The figure comes from `waterBaselineFor`, which is the function
+                the submit path validates against - not from a literal beside
+                it. It read `=== 'lf' ? 400 : 200`, so the moment the landlady
+                changed a Linda charge in settings this sentence quoted the old
+                one while the field below refused anything under the new one.
+                One source, so they cannot disagree.
+              -->
               <template v-if="selectedUnit.toLowerCase() === 'lf' || selectedUnit.toLowerCase() === 'lb'">
-                Linda's units are a fixed ₱{{ selectedUnit.toLowerCase() === 'lf' ? 400 : 200 }} a month.
+                Linda's units are a fixed {{ peso(waterBaselineFor(selectedUnit, 0)) }} a month.
+              </template>
+              <template v-else-if="currentOccupantsCount > 0">
+                {{ currentOccupantsCount }} in the unit ({{ unitOccupantsSummary.text }}).
               </template>
               <template v-else>
-                {{ currentOccupantsCount }} in the unit ({{ unitOccupantsSummary.text }}).
+                Nobody is registered in this unit, so no water is charged by default. Type the
+                figure from the receipt if you collected any.
               </template>
             </span>
           </label>
