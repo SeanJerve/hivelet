@@ -826,7 +826,7 @@ async function submitInquiry() {
 
         <div class="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2">
           <div class="sm:col-span-2">
-            <label for="cq-name" class="block text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">
+            <label for="cq-name" class="block text-xs text-ink-faint">
               Your name
             </label>
             <!--
@@ -844,12 +844,12 @@ async function submitInquiry() {
               type="text"
               autofocus
               required
-              class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none focus:ring-0 transition-colors"
+              class="ws-input mt-2"
             />
           </div>
 
           <div>
-            <label for="cq-phone" class="block text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">
+            <label for="cq-phone" class="block text-xs text-ink-faint">
               Your phone number
             </label>
             <input
@@ -858,12 +858,12 @@ async function submitInquiry() {
               type="tel"
               required
               placeholder="0917-000-0000"
-              class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none focus:ring-0 transition-colors"
+              class="ws-input mt-2"
             />
           </div>
 
           <div>
-            <label for="cq-email" class="block text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">
+            <label for="cq-email" class="block text-xs text-ink-faint">
               Your email
             </label>
             <input
@@ -872,12 +872,12 @@ async function submitInquiry() {
               type="email"
               required
               placeholder="you@email.com"
-              class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none focus:ring-0 transition-colors"
+              class="ws-input mt-2"
             />
           </div>
 
           <div class="sm:col-span-2">
-            <label for="cq-msg" class="block text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">
+            <label for="cq-msg" class="block text-xs text-ink-faint">
               What you would like to ask
             </label>
             <textarea

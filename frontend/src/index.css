@@ -10,13 +10,24 @@
 
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: 'Sora', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  /* Neo-grotesque, for the public landing's editorial surfaces only. The
-     reference this was drawn from sets its display line in Helvetica Now or
-     Suisse Int'l; both are commercially licensed, so Inter stands in - same
-     lineage, and already served from the Google Fonts link in index.html.
-     Deliberately NOT --font-display: that token sets every admin and tenant
-     heading, and this is one page's direction, not a system-wide change. */
-  --font-editorial: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* The public pages' type.
+     
+     This was Inter, chosen as a neo-grotesque stand-in for the commercially
+     licensed face the landing was drawn from, and the comment here said it was
+     "deliberately NOT --font-display" because that token sets every admin and
+     tenant heading and this was "one page's direction, not a system-wide
+     change".
+     
+     That reasoning was sound and its precondition has since gone. Sean asked
+     on 19 Sep for one identity across the whole site, public and workspace
+     alike, so a second typeface on the public pages is now exactly the split
+     being closed rather than a deliberate exception to keep. It resolves to
+     the same stack as --font-display.
+     
+     The token stays rather than being deleted so the public pages keep their
+     own editorial SCALE - the fluid clamp() display sizes are what makes that
+     layout work and they are unaffected by which face fills them. */
+  --font-editorial: 'Sora', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --color-background: var(--background);

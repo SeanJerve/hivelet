@@ -10,7 +10,19 @@
     <title>Hivelet — Apartment Management & Resident Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!--
+      Sora carries 300 and 500 because the pages actually ask for them: the
+      public pages use `font-light` and `font-medium` throughout, and the
+      workspace sets every heading in `font-medium`. The request was
+      `400;600;700;800`, so both collapsed to 400 and a deliberate light/medium
+      distinction rendered as one weight.
+
+      Inter was dropped on 19 Sep. It was requested for `--font-editorial`, the
+      public pages' typeface; that token now resolves to the same stack as
+      `--font-display`, so nothing referenced Inter any more and every visitor
+      was still downloading it.
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body class="bg-[#fafaf9] text-[#1c1917] antialiased selection:bg-[#f59e0b]/20 selection:text-[#1c1917]">
     <div id="app"></div>

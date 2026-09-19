@@ -158,7 +158,7 @@ async function submitInquiry() {
             <div>
               <label
                 for="iq-name"
-                class="block text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft"
+                class="block text-xs text-ink-faint"
                 >Your name</label
               >
               <input
@@ -166,13 +166,13 @@ async function submitInquiry() {
                 v-model="inquiryName"
                 type="text"
                 required
-                class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink focus:border-ink focus:outline-none focus:ring-0 transition-colors"
+                class="ws-input mt-2"
               />
             </div>
             <div>
               <label
                 for="iq-email"
-                class="block text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft"
+                class="block text-xs text-ink-faint"
                 >Email</label
               >
               <input
@@ -180,13 +180,13 @@ async function submitInquiry() {
                 v-model="inquiryEmail"
                 type="email"
                 required
-                class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink focus:border-ink focus:outline-none focus:ring-0 transition-colors"
+                class="ws-input mt-2"
               />
             </div>
             <div>
               <label
                 for="iq-phone"
-                class="block text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft"
+                class="block text-xs text-ink-faint"
                 >Phone</label
               >
               <input
@@ -194,20 +194,20 @@ async function submitInquiry() {
                 v-model="inquiryPhone"
                 type="tel"
                 required
-                class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink focus:border-ink focus:outline-none focus:ring-0 transition-colors"
+                class="ws-input mt-2"
               />
             </div>
             <div>
               <label
                 for="iq-msg"
-                class="block text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft"
+                class="block text-xs text-ink-faint"
                 >What would you like to ask</label
               >
               <input
                 id="iq-msg"
                 v-model="inquiryMsg"
                 type="text"
-                class="mt-2 w-full min-h-11 border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink focus:border-ink focus:outline-none focus:ring-0 transition-colors"
+                class="ws-input mt-2"
               />
             </div>
           </div>
