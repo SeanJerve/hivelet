@@ -14,6 +14,7 @@ import {
   changeOwnPassword,
 } from '../services/authService.js';
 import { requireAuth } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { permissionsForRole } from '../config/rbac.js';
@@ -102,9 +103,40 @@ const registerSchema = z.object({
 /**
  * POST /api/auth/register
  * Public. Creates a new user profile and returns a JWT.
+ *
+ * **This is the system's second genuinely open write, and it was unthrottled.**
+ *
+ * `middleware/rateLimit.ts` says in its own header that `POST /public/inquiries`
+ * is *"the only genuinely open write in the system"*, and enumerates the other
+ * public writes to prove it. The census was of `routes/public.ts`. This route
+ * lives in `routes/auth.ts`, so it was never in the set being counted - the
+ * same shape as the closure proof that could not find `property_areas` because
+ * it enumerated the wrong file. A completeness claim is only as good as its
+ * idea of where the thing being counted is allowed to live.
+ *
+ * What it writes is a real `profiles` row, `role: 'tenant'`,
+ * `account_status: 'active'`. Unlimited, that is the owner's Active Tenants
+ * screen filled with accounts nobody created on purpose - and `profiles` is
+ * live data, so clearing them is a migration rather than a delete.
+ *
+ * The sharper cost is CPU. Every call runs bcrypt at the configured rounds
+ * before anything else can be decided, on the machine that also serves the
+ * ledger. An unauthenticated endpoint that hashes on demand is the classic way
+ * to exhaust one.
+ *
+ * The header's reasoning for NOT wrapping `/auth/login` is sound and does not
+ * transfer: login is guarded per ACCOUNT by `failed_login_count` and
+ * `locked_until`, and the suites sign in constantly. Neither is true here -
+ * every registration is a NEW account, so there is nothing per-account to
+ * count, and no suite registers. `check:api` checks this route statically,
+ * on purpose, because proving an account cannot be created by creating one is
+ * not a test worth having against a live database.
+ *
+ * Five in a quarter of an hour: a person signs up once, a script does not.
  */
 router.post(
   '/auth/register',
+  rateLimit({ max: 5, windowMs: 15 * 60 * 1000, what: 'sign-up attempts' }),
   asyncHandler(async (req, res) => {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {

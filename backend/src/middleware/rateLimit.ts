@@ -4,10 +4,24 @@
  *
  * WHY THIS EXISTS
  * ---------------
- * `POST /api/public/inquiries` is the only genuinely open write in the system.
- * The other two public writes are not: the local cashier completion answers 404
+ * `POST /api/public/inquiries` was the first endpoint to need it. The other
+ * writes in `routes/public.ts` do not: the local cashier completion answers 404
  * whenever a gateway is configured, and the Adyen webhook requires Basic Auth
  * and a valid HMAC signature.
+ *
+ * **This header used to say inquiries was "the only genuinely open write in the
+ * system", and that was wrong** - corrected 2026-09-19. The sentence was true of
+ * the file it had counted, `routes/public.ts`, and `POST /api/auth/register` is
+ * in `routes/auth.ts`. It is public, it takes no token, it inserts a live
+ * `profiles` row with `role: 'tenant'` and `account_status: 'active'`, and it
+ * ran bcrypt for every caller who asked. It is wrapped in this now too.
+ *
+ * The lesson is the one the judgement log keeps recording: a completeness claim
+ * is only as good as its idea of where the thing being counted may live, and
+ * this one could not have found its own counterexample. **Two endpoints use
+ * this now, which is the condition the note below set for revisiting
+ * `express-rate-limit`** - still declined, for the same reason, but it is no
+ * longer a one-endpoint guard.
  *
  * The inquiry endpoint is well guarded in every other respect - the payload is
  * length-capped, the room must exist and be Published, and a Reserved room is
