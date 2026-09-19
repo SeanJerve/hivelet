@@ -66,3 +66,11 @@ VIDEO PRESENTATION DOCS/*
 
 # vite writes these beside the config during a build; they are not source
 vite.config.ts.timestamp-*
+
+# Throwaway probe scripts. An audit writes these to attack one endpoint and
+# then stops caring about them. Two of them were swept into a commit on
+# 2026-09-19 by someone running `git add -A` on the other machine; they read
+# `credentials/creds.txt` at runtime and carried no literal secret, so nothing
+# leaked, but they should never have been offered to a commit at all.
+backend/scripts/tmp-*
+scripts/tmp-*
