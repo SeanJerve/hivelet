@@ -33,6 +33,39 @@ thing did not work" is not.
 
 ## Open
 
+### B-23 — the garbage fee stopped in July 2025 and has not been charged since
+
+- **Blocked on:** the owner. Two questions, both about money, neither answerable from the data.
+- **The measurement**, taken 2026-09-19 against `monthly_income_records`:
+
+  | | |
+  | :--- | :--- |
+  | months where any garbage fee was collected | **18** (Jan 2024 – Jun 2025) |
+  | average collected in a month where it was charged | **₱590** |
+  | months since, with ₱0.00 | **14** (Jul 2025 – Aug 2026) |
+
+  It does not taper. It is ₱580–600 every month, then exactly ₱0.00 from July 2025
+  onward, across every unit at once. Either she decided to stop, or she stopped being
+  asked for it — and at roughly ₱590 a month, fourteen months is on the order of
+  **₱8,000** not collected.
+
+- **The second question: BR-037 does not describe her book.** The rule as recorded says the
+  garbage fee is *"charged once per year per unit, not on every monthly entry."* In 2025 every
+  unit was charged **₱20 in six separate months** — B3B, 1c, B2F, 3c, F2B, 1d and the rest all
+  show six charges totalling ₱120. Monthly, not annual.
+
+  Nothing is broken by the mismatch today: the code is more permissive than the rule. The
+  on-site form applies the fee once per *receipt* rather than once per month covered, and
+  nothing stops her entering it again next month. But the rule register asserts a practice her
+  own records contradict, and `check:rules` keeps the register honest with itself — it cannot
+  know the data.
+
+- **What to ask her:** did you stop charging the garbage fee in July 2025 on purpose? And is it
+  ₱20 a month per unit, as the ledger shows, or once a year, as the rule says?
+- **Do not "fix" the history.** 531 rows carry a garbage fee. Whichever answer comes back, it
+  changes the rule and what happens next, not what was already collected.
+- **Raised:** 2026-09-19
+
 ### B-22 — the landlady cannot log a repair she is told about in person
 
 - **Blocked on:** Kiel, or your say-so. The endpoint exists and works; what is missing is a form,
