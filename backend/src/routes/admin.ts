@@ -3007,17 +3007,33 @@ router.patch(
       });
     }
 
-    const totalExpenses = normalizedAllocations
-      ? normalizedAllocations.reduce((acc, curr) => acc + curr.amount, 0)
-      : before.total_expenses;
-
+    /**
+     * `total_expenses` IS NOT WRITTEN HERE, and that is the fix rather than an
+     * omission.
+     *
+     * It used to be: this handler computed the sum, put it in the patch, and the
+     * UPDATE below committed it - and THEN called `replace_expense_allocations`
+     * as a separate round trip. Two writes, no transaction between them. A
+     * failure in the second left the entry carrying the NEW total against the
+     * OLD allocations, which is BR-047 broken, while the caller saw an error and
+     * reasonably assumed nothing had happened.
+     *
+     * Nothing needs to write it from here. `replace_expense_allocations`
+     * re-derives the total from the rows it actually inserted, and
+     * `trg_update_expense_total` on `expense_property_allocations` does the same
+     * on every change - both read from the catalogue, not from a comment. The
+     * total follows the allocations by construction, so the only honest thing
+     * for this handler to touch is the date, the supplier and the category.
+     *
+     * The window closes because the remaining UPDATE no longer moves money: if
+     * the rpc below fails now, nothing financial has changed.
+     */
     const updatePatch: Record<string, unknown> = {
       updated_at: new Date().toISOString()
     };
     if (expenseDate) updatePatch.expense_date = expenseDate;
     if (orSupplier) updatePatch.or_supplier = orSupplier;
     if (categoryCode) updatePatch.category_code = categoryCode;
-    if (normalizedAllocations) updatePatch.total_expenses = totalExpenses;
 
     const { data: after, error: updateError } = await db
       .from('monthly_expense_entries')
@@ -3037,6 +3053,17 @@ router.patch(
         p_allocations: normalizedAllocations
       });
       if (replaceError) throw ApiError.internal(replaceError.message);
+
+      // The row read back above predates the replacement, so its
+      // `total_expenses` is the OLD sum. Returning that would show the
+      // administrator a figure that was already stale before it reached her.
+      const { data: fresh, error: freshError } = await db
+        .from('monthly_expense_entries')
+        .select('*')
+        .eq('id', req.params.id)
+        .single();
+
+      if (!freshError && fresh) Object.assign(after as object, fresh);
     }
 
     await auditFromRequest(req, {

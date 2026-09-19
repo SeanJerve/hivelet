@@ -237,6 +237,41 @@ thing did not work" is not.
   the summary table. The assertion lives in 040's own verification SELECTs instead.
 - **Raised:** 2026-09-19
 
+### B-37 — eleven write routes have no automated exercise, and the rehearsal IS their test plan
+
+- **Not a defect, a measured fact** — recorded because it changes what the rehearsal is FOR, and
+  because two of the eleven are money paths I changed on 2026-09-19.
+- **The measurement.** Of the write routes in `admin.ts` and `tenant.ts`, `check:api` touches none
+  of these eleven:
+
+  | | |
+  | :--- | :--- |
+  | **money** | `PATCH`/`DELETE /admin/income-records/:id`, `PATCH`/`DELETE /admin/expense-entries/:id` |
+  | payment | `/tenant/payments/checkout`, `/tenant/payments/adyen/verify-session` |
+  | messaging | `/admin/inquiries/:id/messages`, `/admin/tickets/:id/messages`, `/tenant/tickets` |
+  | notifications | the four mark-as-read routes |
+
+- **Why, and it is a good reason.** `check:api`'s writes are **poison probes designed to be
+  refused** — an Infinity into a money column, a string where a number belongs. It asserts a 400
+  and says so in terms: *"failure is visible as a created row and is reported here rather than
+  silently leaving one behind."* It never creates a row on success. **There is no staging
+  database**, so genuinely exercising an edit or a void means writing to her records and cleaning
+  up afterwards — which is exactly the thing that left 37 rows behind (B-35).
+- **So the gap is structural, not an oversight**, and closing it with more automated writes would
+  make the litter problem worse, not better.
+- **What actually covers them: `TESTING_REHEARSAL.md`.** Those 26 steps are not a formality — for
+  these eleven routes they are **the only test that will ever run**. Worth saying to Eljohn in
+  those words.
+- **☐ Two steps deserve adding**, because both paths changed on 2026-09-19 and neither has been
+  fired by anything:
+  - **edit an expense entry's allocations** and confirm the total on screen matches their sum.
+    The handler no longer writes `total_expenses` at all — the database derives it, via
+    `replace_expense_allocations` and `trg_update_expense_total`. Verified those two own it by
+    reading `pg_proc` and `pg_trigger`; **not** verified by firing the route.
+  - **void a record, then try to void it again.** Expect a refusal naming the date it was first
+    voided. This one I did fire against live, as a no-op, on a row of my own.
+- **Raised:** 2026-09-19
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
