@@ -328,6 +328,67 @@ for (const f of fs.readdirSync(routeDir).filter((x) => x.endsWith('.ts'))) {
   }
 }
 
+/**
+ * EVERY ROUTE DECLARES WHAT IT NEEDS.
+ *
+ * `admin.ts` gates the whole router with `router.use('/admin', requireAuth,
+ * requireAdmin)`, so a route added without its own `requirePermission` is still
+ * behind authentication and still admin-only - which is exactly why the omission
+ * would be easy to miss. It is not a hole today; it is the belt that stops one.
+ *
+ * `tenant.ts` has `requireAuth` at the router level but NO role gate, so there a
+ * missing `requirePermission` is the difference between "any signed-in tenant,
+ * scoped to their own rows" and "any signed-in account at all". That one matters
+ * immediately.
+ *
+ * Probed the live server before writing this: all 17 admin GET routes refuse a
+ * tenant token, 403 or 401, every one. This is the static guard that keeps it
+ * true for the eighteenth.
+ *
+ * A NOTE ON THE FIRST VERSION OF THAT PROBE, because it is the lesson. It
+ * extracted routes with a single regex, found 14 of the 17, and reported "no
+ * admin route answers a tenant" - a clean result on a sample missing three of
+ * the routes worth checking. A count is the cheapest way to find out whether a
+ * scanner is looking at everything, and it is worth spending.
+ */
+const GUARDED_ELSEWHERE = new Map([
+  // Nothing yet. Add a route here only with the reason it needs no permission.
+]);
+
+const routeFiles = ['admin.ts', 'tenant.ts'];
+let guarded = 0;
+const unguarded = [];
+
+for (const f of routeFiles) {
+  const src = fs.readFileSync(path.join(routeDir, f), 'utf8');
+  const re = /router\.(get|post|patch|put|delete)\(/g;
+  let m;
+  while ((m = re.exec(src)) !== null) {
+    let i = re.lastIndex - 1, depth = 0, end = i;
+    for (; i < src.length; i++) {
+      if (src[i] === '(') depth++;
+      else if (src[i] === ')') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    const body = src.slice(re.lastIndex, end);
+    const routePath = (body.match(/['"](\/[a-z0-9/:_-]+)['"]/i) ?? [])[1] ?? '(unknown)';
+    if (/requirePermission\s*\(/.test(body)) { guarded++; continue; }
+    if (GUARDED_ELSEWHERE.has(routePath)) { guarded++; continue; }
+    unguarded.push(`${m[1].toUpperCase()} ${routePath}  (${f})`);
+  }
+}
+
+if (unguarded.length > 0) {
+  console.log(`\n  FAIL  ${unguarded.length} route(s) declare no permission:`);
+  for (const u of unguarded) console.log(`          ${u}`);
+  console.log(
+    '\n  On the tenant router that is the difference between "this caller, their\n' +
+    '  own rows" and "anyone signed in". On the admin router the router-level\n' +
+    '  requireAdmin still holds, but the route should say what it needs.'
+  );
+} else {
+  console.log(`\n  OK    permissions - all ${guarded} admin and tenant route(s) declare one`);
+}
+
 if (unaudited.length > 0) {
   console.log(`\n  FAIL  ${unaudited.length} write route(s) record nothing in audit_logs:`);
   for (const u of unaudited) console.log(`          ${u}`);
@@ -344,7 +405,7 @@ if (unaudited.length > 0) {
   );
 }
 
-if (findings.length > 0 || readsOverBudget || unaudited.length > 0) process.exit(1);
+if (findings.length > 0 || readsOverBudget || unaudited.length > 0 || unguarded.length > 0) process.exit(1);
 
 console.log('\nALL CHECKS PASSED');
 process.exit(0);
