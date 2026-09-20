@@ -3554,6 +3554,21 @@ router.post(
         await db.from('rooms').update({ operational_status: 'Under Maintenance' }).eq('id', roomId),
         'The ticket was raised, but the unit could not be marked Under Maintenance'
       );
+      // The ticket's own audit row embeds `rooms:room_id (id, room_number)` and
+      // nothing about the status, so raising a repair took a unit off the public
+      // listing with no record of it anywhere. See the PATCH path's note.
+      await auditFromRequest(req, {
+        action: 'ROOM_STATUS_CHANGE',
+        entityType: 'ROOM',
+        entityId: roomId,
+        newValues: {
+          operational_status: 'Under Maintenance',
+          note: `Marked Under Maintenance when ticket ${newTicket.id} was raised` +
+                (parsed.data.priority === 'Emergency' && !parsed.data.setRoomMaintenance
+                  ? ' - automatically, because the repair is an Emergency.'
+                  : ' at the administrator’s request.'),
+        },
+      });
     }
 
     await auditFromRequest(req, {
@@ -3813,6 +3828,27 @@ router.patch(
             await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', targetRoomId),
             `The ticket was updated, but the unit could not be returned to ${newRoomStatus}`
           );
+          /**
+           * `ROOM_STATUS_CHANGE` was declared in `auditService` and emitted by
+           * NOTHING - one declaration, zero call sites across the whole repo.
+           *
+           * `PATCH /admin/rooms` audits its own status changes as ROOM_UPDATE
+           * with full before and after rows, so the path SHE drives was covered.
+           * These three are the paths a ticket drives, and they change what the
+           * public listing says about a unit without her touching it. That is
+           * exactly the kind of change somebody later asks about.
+           */
+          await auditFromRequest(req, {
+            action: 'ROOM_STATUS_CHANGE',
+            entityType: 'ROOM',
+            entityId: targetRoomId,
+            previousValues: { operational_status: 'Under Maintenance' },
+            newValues: {
+              operational_status: newRoomStatus,
+              note: `Returned from Under Maintenance because ticket ${req.params.ticketId} was ` +
+                    'resolved or closed and no open repair remains on this unit.',
+            },
+          });
         }
       }
     }
@@ -3928,6 +3964,19 @@ router.delete(
             await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id),
             `The ticket was deleted, but the unit could not be returned to ${newRoomStatus}`
           );
+          // See the note on the PATCH path. The deleted ticket's own audit row
+          // records the deletion; this records what the deletion did to a unit.
+          await auditFromRequest(req, {
+            action: 'ROOM_STATUS_CHANGE',
+            entityType: 'ROOM',
+            entityId: before.room_id,
+            previousValues: { operational_status: 'Under Maintenance' },
+            newValues: {
+              operational_status: newRoomStatus,
+              note: `Returned from Under Maintenance because ticket ${req.params.ticketId} was ` +
+                    'deleted and no open repair remains on this unit.',
+            },
+          });
         }
       }
     }
