@@ -480,6 +480,7 @@ function handleDeleteTicketPrompt() {
             <button
               v-if="editStatus !== 'In Progress' && editStatus !== 'Resolved' && editStatus !== 'Closed'"
               type="button"
+              :disabled="isSubmitting"
               @click="handleQuickDispatch"
               class="pill-btn px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
             >
@@ -495,6 +496,7 @@ function handleDeleteTicketPrompt() {
             <button
               v-if="editStatus !== 'Resolved' && editStatus !== 'Closed'"
               type="button"
+              :disabled="isSubmitting"
               @click="handleQuickResolve"
               class="pill-btn-brand px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
             >

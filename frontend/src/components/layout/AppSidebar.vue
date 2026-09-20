@@ -22,7 +22,23 @@ const route = useRoute();
 const isTenantSection = computed(() => route.path.startsWith('/tenant'));
 
 // Unread/Actionable counts for sidebar badges
-const inquiriesCount = computed(() => inquiries.length);
+/**
+ * OPEN leads, not all of them. This counted `inquiries.length` under a comment
+ * saying "Actionable", one line above a ticket badge that correctly excludes
+ * Resolved and Closed - so a lead she had already converted or closed went on
+ * asking for attention, and the badge became a number that could only ever go
+ * up.
+ *
+ * Latent rather than visibly wrong today: there is one enquiry live and it is
+ * Contacted, so the count is currently right by coincidence.
+ *
+ * The predicate is `isLeadOpen` in `InquiriesView.vue`, which owns this
+ * question. Duplicated rather than shared because that file is not exported
+ * from - if it ever grows a shared module, this should follow it there.
+ */
+const inquiriesCount = computed(
+  () => inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').length
+);
 const urgentTicketsCount = computed(() => 
   maintenanceTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed' && (t.priority === 'Emergency' || t.priority === 'High')).length
 );

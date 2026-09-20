@@ -58,12 +58,58 @@ async function submitInquiry() {
   // an address rather than inventing one. It previously sent
   // 'prospect@hivelet.ph' whenever the field was blank, which put an address the
   // landlady cannot reply to on an inquiry she is expected to answer.
-  if (!inquiryName.value.trim() || !inquiryPhone.value.trim() || !inquiryEmail.value.trim()) {
+  /**
+   * EVERY RULE THE ENDPOINT HAS, ASKED HERE FIRST.
+   *
+   * This checked three fields for emptiness and the email for an `@`. The
+   * endpoint's schema is stricter on all five, and the message field was not
+   * checked at all - it carries no `required` on the input and nothing here
+   * looked at it, while `public.ts` requires `message: z.string().min(5)`.
+   *
+   * So a prospect who left the question blank, or typed "hi", got the toast
+   * "Inquiry Submission Failed: Invalid inquiry payload." - which names no
+   * field, suggests nothing to do, and reads like the site is broken. This is
+   * the PUBLIC page. It is the first thing a prospective resident touches, and
+   * the one screen where a dead end costs the owner a tenancy.
+   *
+   * Mirrored from `inquirySchema` in backend/src/routes/public.ts:
+   *   prospectName   min 2,  max 120
+   *   prospectEmail  a valid address
+   *   prospectPhone  min 7,  max 30
+   *   message        min 5,  max 2000
+   * The server still enforces them - this only means she never has to.
+   */
+  const name = inquiryName.value.trim();
+  const phone = inquiryPhone.value.trim();
+  const email = inquiryEmail.value.trim();
+  const message = inquiryMsg.value.trim();
+
+  if (!name || !phone || !email) {
     showToast('error', 'Required Fields', 'Please provide your full name, contact number and email address.');
     return;
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inquiryEmail.value.trim())) {
+  if (name.length < 2 || name.length > 120) {
+    showToast('error', 'Check your name',
+      'Please give your full name, between 2 and 120 characters.');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     showToast('error', 'Check your email', 'That does not look like an email address.');
+    return;
+  }
+  if (phone.length < 7 || phone.length > 30) {
+    showToast('error', 'Check your contact number',
+      'Please give a contact number she can reach you on - at least 7 characters.');
+    return;
+  }
+  if (message.length < 5) {
+    showToast('error', 'Tell her what you would like to ask',
+      'Please write your question - a few words is enough. It is what she reads first.');
+    return;
+  }
+  if (message.length > 2000) {
+    showToast('error', 'That message is too long',
+      'Please keep your question under 2000 characters.');
     return;
   }
 
@@ -79,10 +125,26 @@ async function submitInquiry() {
     const available = (publicRooms ?? []).filter(
       (r) => String(r.operational_status || '').toLowerCase() === 'available'
     );
-    const defaultRoom = available[0] ?? (publicRooms ?? [])[0] ?? null;
+    /**
+     * NEVER FALL BACK ONTO A RESERVED UNIT.
+     *
+     * The fallback was `available[0] ?? publicRooms[0]`, and BR-006 makes the
+     * endpoint refuse a Reserved unit outright. So on a day with no vacancy the
+     * general enquiry form filed against whatever unit happened to be first -
+     * and if that one was Reserved, answered "Room 1a is currently reserved and
+     * is not accepting new inquiries" to somebody who had never mentioned a
+     * room. A refusal about a unit they did not ask about is worse than no
+     * vacancy, which is at least true.
+     */
+    const anyNotReserved = (publicRooms ?? []).find(
+      (r) => String(r.operational_status || '').toLowerCase() !== 'reserved'
+    );
+    const defaultRoom = available[0] ?? anyNotReserved ?? null;
 
     if (!defaultRoom) {
-      showToast('error', 'Inquiry Error', 'No active room available for inquiry submission.');
+      showToast('error', 'Nothing is open for enquiries right now',
+        'Every unit is either taken or reserved at the moment. Please try again in a few days, ' +
+        'or message Mrs Fe directly.');
       return;
     }
 

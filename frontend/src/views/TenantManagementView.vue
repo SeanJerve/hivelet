@@ -2,9 +2,10 @@
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, tenantsFetchFailed, showToast, asListedUnitCode, type TenantRecord } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
+import { propertyToday } from '@/lib/propertyDate';
 import { api } from '@/lib/api';
 import { Search, UserPlus, Pencil, LogOut, Loader2, Check } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
@@ -13,6 +14,7 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
 const route = useRoute();
+const router = useRouter();
 const q = ref('');
 const isLoading = ref(false);
 const isSubmitting = ref(false);
@@ -21,21 +23,75 @@ const vacateModalTenant = ref<TenantRecord | null>(null);
 const isOnboardModalOpen = ref(false);
 
 // Onboard Form
-const newName = ref('');
-const newEmail = ref('');
-const newPhone = ref('');
-const newUnit = ref('1a');
-const newMoveIn = ref('2026-08-21');
-const newAnniv = ref('2026-08-21');
-// BR-039: the advance rent equals the rent in effect at move-in. It is pre-filled
-// from the unit's LIVE price the moment a unit is chosen (see the watcher below),
-// so the administrator sees and confirms the figure rather than the API
-// substituting one. It started at a flat 9,000, which belonged to no unit.
-const newDeposit = ref(0);
-const newHasRoommates = ref<'no' | 'yes'>('no');
-const newRoommateQty = ref<number>(1);
-const newEmergName = ref('');
-const newEmergPhone = ref('');
+/**
+ * ONE PLACE THAT SAYS WHAT AN EMPTY FORM IS.
+ *
+ * The reset after a successful onboarding cleared five of the eleven fields
+ * below. The other six kept the last resident's values, and two of them are
+ * `newEmergName` and `newEmergPhone` - both optional inputs, so nothing made
+ * her retype them. Onboard two residents back to back and the second had the
+ * FIRST one's next-of-kin name and phone number written onto their profile,
+ * along with the first unit's advance rent and move-in date. One resident's
+ * emergency contact filed against another is BR-024, not untidiness.
+ *
+ * Six more lines in the reset would have fixed today's version and left the
+ * next field to be forgotten the same way, so the list lives here instead and
+ * `resetOnboardForm()` spreads it. A field added above cannot be left out of
+ * the reset below, because there is no list down there to leave it out of.
+ *
+ * The dates were hardcoded to `2026-08-21`, which was a month in the past by
+ * the time this was read. BR-033 derives every future rent period from
+ * `anniversary_date`, so an onboarding where she does not touch the date - and
+ * nothing makes her - sets a tenancy's whole billing cycle to a day picked
+ * when the form was written. `propertyToday()` is Manila's today, which is the
+ * only calendar this property has.
+ */
+const onboardDefaults = () => ({
+  name: '',
+  email: '',
+  phone: '',
+  unit: '1a',
+  moveIn: propertyToday(),
+  anniv: propertyToday(),
+  // BR-039: the advance rent equals the rent in effect at move-in. It is pre-filled
+  // from the unit's LIVE price the moment a unit is chosen (see the watcher below),
+  // so the administrator sees and confirms the figure rather than the API
+  // substituting one. It started at a flat 9,000, which belonged to no unit.
+  deposit: 0,
+  hasRoommates: 'no' as 'no' | 'yes',
+  roommateQty: 1,
+  emergName: '',
+  emergPhone: '',
+});
+
+const d0 = onboardDefaults();
+const newName = ref(d0.name);
+const newEmail = ref(d0.email);
+const newPhone = ref(d0.phone);
+const newUnit = ref(d0.unit);
+const newMoveIn = ref(d0.moveIn);
+const newAnniv = ref(d0.anniv);
+const newDeposit = ref(d0.deposit);
+const newHasRoommates = ref<'no' | 'yes'>(d0.hasRoommates);
+const newRoommateQty = ref<number>(d0.roommateQty);
+const newEmergName = ref(d0.emergName);
+const newEmergPhone = ref(d0.emergPhone);
+
+/** Every field the onboarding form owns, back to an empty form. */
+function resetOnboardForm() {
+  const d = onboardDefaults();
+  newName.value = d.name;
+  newEmail.value = d.email;
+  newPhone.value = d.phone;
+  newUnit.value = d.unit;
+  newMoveIn.value = d.moveIn;
+  newAnniv.value = d.anniv;
+  newDeposit.value = d.deposit;
+  newHasRoommates.value = d.hasRoommates;
+  newRoommateQty.value = d.roommateQty;
+  newEmergName.value = d.emergName;
+  newEmergPhone.value = d.emergPhone;
+}
 
 // Edit Tenant Assignment Form
 const editUnitCode = ref('');
@@ -336,6 +392,20 @@ async function handleOnboard() {
      * Not fatal if it fails. The tenant exists either way, and re-running the
      * onboarding to fix a lead's status would create a duplicate person.
      */
+    /**
+     * READ ONCE, THEN PUT IT DOWN.
+     *
+     * This read `route.query.convertInquiryId` at submit time and nothing ever
+     * cleared it - the file imported `useRoute` and never `useRouter`, so it had
+     * no way to. After a conversion the URL still said `?convertInquiryId=X`, so
+     * onboarding an unrelated walk-in without leaving the page PATCHed that same
+     * enquiry a second time, pointing it at a tenancy it never produced.
+     *
+     * The backend now refuses that outright (409, PATCH /admin/inquiries/:id,
+     * an enquiry can only become one tenancy) so the record is safe either way.
+     * This is the half that stops her ever meeting the refusal: the parameter is
+     * dropped from the URL as soon as it has been used.
+     */
     const inquiryId = route.query.convertInquiryId;
     if (inquiryId && created?.id) {
       try {
@@ -351,17 +421,20 @@ async function handleOnboard() {
             'Set it from the Inquiries page.'
         );
       }
+
+      // Used, and now put down - whether the PATCH above succeeded or not. If it
+      // failed, the toast has just told her to set the status by hand; leaving
+      // the parameter in the URL so the NEXT onboarding retries it against a
+      // different resident is not a recovery.
+      const { convertInquiryId, name, phone, email, unit, ...keep } = route.query;
+      await router.replace({ query: keep });
     }
 
     await fetchTenants();
     await fetchRooms();
 
     isOnboardModalOpen.value = false;
-    newName.value = '';
-    newEmail.value = '';
-    newPhone.value = '';
-    newHasRoommates.value = 'no';
-    newRoommateQty.value = 1;
+    resetOnboardForm();
     showToast('success', 'Tenant onboarded', 'Resident portal access and room assignment registered.');
   } catch (err: any) {
     showToast('error', 'Onboarding Failed', err?.message || 'Could not onboard tenant.');
