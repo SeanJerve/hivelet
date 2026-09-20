@@ -196,15 +196,31 @@ export const notificationService = {
 
   /**
    * Gets unread count for quick header badge updates.
+   *
+   * `null` means THE COUNT COULD NOT BE READ, which is not the same as nothing
+   * being unread. This returned 0 on error, and the badge is polled every twelve
+   * seconds - so one failed read cleared the one thing on screen that tells her
+   * there is something waiting, and the next poll cleared it again.
+   *
+   * The sibling twenty lines above states this rule in so many words - "a failed
+   * count is not 'nothing unread'" - and then returns `unreadCount ?? 0` anyway.
+   * A comment is a claim with a date on it; both now do what that one says.
    */
-  async getUnreadCount(profileId: string): Promise<number> {
+  async getUnreadCount(profileId: string): Promise<number | null> {
     const { count, error } = await db
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('recipient_profile_id', profileId)
       .eq('is_read', false);
 
-    if (error) return 0;
+    if (error) {
+      console.error(
+        `[NotificationService] the unread count could not be read for ${profileId}: ` +
+        `${error.message}. Answering with a failure rather than a zero, so the badge keeps ` +
+        'whatever it last knew instead of going quiet.'
+      );
+      return null;
+    }
     return count ?? 0;
   }
 };

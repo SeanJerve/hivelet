@@ -600,19 +600,84 @@ router.post(
     // An empty string from a cleared form field means "no email", not "".
     const normalizedEmail = email && email.trim() ? email.toLowerCase().trim() : null;
 
-    // Only meaningful when an email was supplied. `profiles.email` is UNIQUE but nullable,
-    // and Postgres does not treat NULLs as duplicates of each other, so several tenants
-    // without an email coexist happily.
+    /**
+     * WHO ALREADY HOLDS THIS ADDRESS - AND WHAT THEY ARE.
+     *
+     * This asked `profiles` for an id and refused on any hit, with no role
+     * filter. A PROSPECT IS A PROFILE, and that made BR-009 impossible to
+     * perform: the one enquiry in the live database (Rhea Mendoza) carries the
+     * same email as the prospect profile standing behind it, so pressing "Move
+     * them in" pushed those details into the onboarding form, which posted them,
+     * which answered 400 "A profile with this email address already exists."
+     * There was no other way in - grep finds `role: 'tenant'` on inserts only,
+     * never on an update, so nothing anywhere could promote a prospect.
+     *
+     * Her workaround is to blank the email, which produces a resident with no
+     * portal login and leaves the prospect profile stranded holding the address
+     * that resident can now never be given.
+     *
+     * FOUR ANSWERS, BECAUSE THE FOUR CASES ARE NOT THE SAME QUESTION.
+     *
+     *   prospect  - promote the row in place. This is what BR-009 describes:
+     *               reuse the details already captured. A prospect has no
+     *               payments, bills or assignments, so there is no history to
+     *               mis-attach and nothing to weigh up.
+     *   former    - REFUSED, on purpose, and this is the important one. Reusing
+     *     resident   the row is what BR-027 wants for a returning tenant, and
+     *               doing it automatically off an email match is how a TYPO
+     *               hands a new resident somebody else's payment history. That
+     *               is not a decision a form submission should make silently
+     *               (BR-036). She is told who is on file and sent to their
+     *               record, where setting account_status back to active keeps
+     *               the history attached to the person it belongs to.
+     *   current   - a genuine duplicate. Named, so she can tell which.
+     *     resident
+     *   admin     - her own sign-in address. Its own message; the generic one
+     *               would read as though she were already a tenant.
+     *
+     * Only meaningful when an email was supplied. `profiles.email` is UNIQUE but
+     * nullable, and Postgres does not treat NULLs as duplicates of each other,
+     * so several tenants without an email coexist happily - and an onboarding
+     * with no email cannot be matched to a prospect at all. That is honest
+     * rather than clever: `inquiries.prospect_email` is NOT NULL, so every
+     * enquiry-driven conversion has the address this needs.
+     */
+    let promoteProfileId: string | null = null;
+    let promotedFrom: { role: string; account_status: string } | null = null;
+
     if (normalizedEmail) {
       const { data: existing, error: checkError } = await db
         .from('profiles')
-        .select('id')
+        .select('id, full_name, role, account_status')
         .ilike('email', normalizedEmail)
         .maybeSingle();
 
       if (checkError) throw ApiError.internal(checkError.message);
       if (existing) {
-        throw ApiError.badRequest('A profile with this email address already exists.');
+        const who = existing.full_name || 'Someone';
+        if (existing.role === 'prospect') {
+          promoteProfileId = existing.id;
+          promotedFrom = { role: existing.role, account_status: existing.account_status };
+        } else if (existing.role === 'admin') {
+          throw ApiError.badRequest(
+            `${normalizedEmail} is your own administrator sign-in address, so it cannot also ` +
+            'be a resident. Use the resident’s own email, or leave it blank if they do not ' +
+            'need a portal login.'
+          );
+        } else if (existing.account_status === 'inactive') {
+          throw ApiError.conflict(
+            `${who} is already on file as a former resident using ${normalizedEmail}. Do not ` +
+            'add them again - open their record in Residents and set them back to active, then ' +
+            'assign the unit. That keeps their old payments and receipts attached to them. ' +
+            'If this is a different person who happens to share the address, give the new ' +
+            'resident their own email, or leave it blank.'
+          );
+        } else {
+          throw ApiError.conflict(
+            `${who} is already on file as a current resident using ${normalizedEmail}. Open ` +
+            'their record to assign a unit rather than adding them a second time.'
+          );
+        }
       }
     }
 
@@ -707,23 +772,55 @@ router.post(
       resolvedRoom = room as { id: string; current_price: number; room_number: string };
     }
 
-    // Insert new profile
-    const { data: profile, error: insertError } = await db
-      .from('profiles')
-      .insert({
-        email: normalizedEmail,
-        password_hash: passwordHash,
-        full_name: fullName,
-        phone_number: normalizedPhone,
-        emergency_contact_name: emergencyContactName || null,
-        emergency_contact_phone: emergencyContactPhone || null,
-        occupation: occupation || null,
-        facebook_url: facebookUrl || null,
-        role: 'tenant',
-        account_status: 'active'
-      })
-      .select('*')
-      .single();
+    /**
+     * The same columns either way. A promotion is not a different kind of
+     * tenant, and writing two different shapes here is how the two drift.
+     */
+    const profileValues = {
+      email: normalizedEmail,
+      password_hash: passwordHash,
+      full_name: fullName,
+      phone_number: normalizedPhone,
+      emergency_contact_name: emergencyContactName || null,
+      emergency_contact_phone: emergencyContactPhone || null,
+      occupation: occupation || null,
+      facebook_url: facebookUrl || null,
+      role: 'tenant',
+      account_status: 'active'
+    };
+
+    /**
+     * PROMOTE THE PROSPECT, OR INSERT A NEW PERSON.
+     *
+     * The update is guarded with `.eq('role', 'prospect')` as well as the id.
+     * The read that set `promoteProfileId` and this write are separate
+     * statements - supabase-js cannot open a transaction - so between them the
+     * row could have been promoted by a second submission of this same form.
+     * Without the guard the second write would quietly overwrite the first
+     * tenant's details with the second's; with it the second write matches no
+     * row, and `.maybeSingle()` returns null rather than a wrong success. That
+     * is the double-click again, which this file has now met four times.
+     */
+    const { data: profile, error: insertError } = promoteProfileId
+      ? await db
+          .from('profiles')
+          .update({ ...profileValues, updated_at: new Date().toISOString() })
+          .eq('id', promoteProfileId)
+          .eq('role', 'prospect')
+          .select('*')
+          .maybeSingle()
+      : await db
+          .from('profiles')
+          .insert(profileValues)
+          .select('*')
+          .single();
+
+    if (promoteProfileId && !insertError && !profile) {
+      throw ApiError.conflict(
+        'That enquiry was just turned into a resident by another submission of this form - ' +
+        'most likely this one, sent twice. Check the resident list before adding them again.'
+      );
+    }
 
     /**
      * The two pre-checks above answer the ordinary case. They cannot answer a
@@ -878,7 +975,19 @@ router.post(
       action: 'TENANT_CREATE',
       entityType: 'PROFILE',
       entityId: profile.id,
-      newValues: { email, fullName, roomNumber }
+      // A promotion and an insert both create a tenancy, and from her side they
+      // are the same action - but one of them reused a row that already existed,
+      // and an audit trail that cannot tell them apart cannot answer where a
+      // resident's record came from. `previousValues` is what says so.
+      previousValues: promotedFrom ?? undefined,
+      newValues: {
+        email, fullName, roomNumber,
+        ...(promotedFrom
+          ? { note: 'Existing prospect profile promoted to tenant in place (BR-009) - the ' +
+                    'enquiry details captured at first contact were reused rather than ' +
+                    'a second profile being created for the same person.' }
+          : {})
+      }
     });
 
     res.status(201).json({ success: true, data: profile });
@@ -1293,11 +1402,20 @@ router.patch(
       throw ApiError.validation('Invalid inquiry payload.', parsed.error.flatten().fieldErrors);
     }
 
+    /**
+     * `converted_tenant_id` is read here because it can be WRITTEN here, and a
+     * before-image that does not carry a column cannot record that column
+     * changing. This selected `id, status` only, so the audit row below compared
+     * status with status - and on a re-link both sides read "Converted", which
+     * is an audit row showing no change at all for a write that moved a lead
+     * from one tenancy to another.
+     */
     const { data: before, error: beforeError } = await db
       .from('inquiries')
-      .select('id, status')
+      .select('id, status, converted_tenant_id, prospect_name')
       .eq('id', req.params.inquiryId)
-      .maybeSingle<{ id: string; status: string }>();
+      .maybeSingle<{ id: string; status: string; converted_tenant_id: string | null;
+                     prospect_name: string | null }>();
 
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Inquiry not found.');
@@ -1321,6 +1439,39 @@ router.patch(
       if (!profile) {
         throw ApiError.notFound('The tenant this inquiry should be linked to does not exist.');
       }
+
+      /**
+       * AN ENQUIRY BECAME ONE TENANCY, AND IT CANNOT LATER HAVE BECOME ANOTHER.
+       *
+       * Re-pointing was accepted silently, and the way to do it by accident is
+       * ordinary: `TenantManagementView` reads `convertInquiryId` from the query
+       * string at SUBMIT time, and nothing ever clears it - the file imports
+       * `useRoute` and never `useRouter`, so it has no way to strip it. After a
+       * conversion the URL still says `?convertInquiryId=X`. Onboard an
+       * unrelated walk-in without leaving the page and that enquiry is PATCHed a
+       * second time, now naming a tenancy it never produced. The real link is
+       * gone, and BR-009's record of which lead became which resident with it.
+       *
+       * There is no unique index on `converted_tenant_id` to catch it from
+       * below - checked in `pg_indexes`: `inquiries` carries its primary key and
+       * two plain btrees, nothing more - so this is the only place it can be
+       * caught.
+       *
+       * The same id twice is not a re-link. That is the double-click, and it
+       * must stay harmless.
+       */
+      if (
+        before.converted_tenant_id &&
+        before.converted_tenant_id !== parsed.data.convertedTenantId
+      ) {
+        throw ApiError.conflict(
+          `${before.prospect_name || 'This enquiry'} has already been moved in, and an enquiry ` +
+          'can only become one tenancy. Linking it to a different resident would erase the ' +
+          'record of which enquiry that first resident came from. If you are moving somebody ' +
+          'else in, go to Residents and add them there instead of starting from this enquiry.'
+        );
+      }
+
       patch.converted_tenant_id = parsed.data.convertedTenantId;
     }
 
@@ -1337,8 +1488,19 @@ router.patch(
       action: 'INQUIRY_STATUS_CHANGE',
       entityType: 'INQUIRY',
       entityId: req.params.inquiryId,
-      previousValues: { status: before.status },
-      newValues: { status: parsed.data.status },
+      previousValues: {
+        status: before.status,
+        converted_tenant_id: before.converted_tenant_id,
+      },
+      newValues: {
+        status: parsed.data.status,
+        // Only when this request set it. Writing the before-image into
+        // `newValues` on a status-only change would record a link being made
+        // that this request did not make.
+        ...(patch.converted_tenant_id !== undefined
+          ? { converted_tenant_id: patch.converted_tenant_id }
+          : {}),
+      },
     });
 
     res.status(200).json({ success: true, data: after });
@@ -3477,9 +3639,22 @@ router.patch(
       const wasResolvedOrClosed = before.status === 'Resolved' || wasClosed;
 
       if (dbStatus === 'Resolved') {
-        // Entering Resolved from an open state stamps it; Closed -> Resolved is
-        // a reopen of sorts and keeps the original resolution time.
-        if (!wasResolvedOrClosed) patch.resolved_at = new Date().toISOString();
+        /**
+         * Entering Resolved stamps it unless a resolution time is ALREADY ON
+         * FILE. This tested `!wasResolvedOrClosed` and the comment beside it
+         * read "Closed -> Resolved ... keeps the original resolution time",
+         * which assumes a Closed ticket always has one. It does not: the Closed
+         * branch below stamps `closed_at`/`closed_by` only, and the status
+         * dropdown offers Closed directly from Open. Submitted -> Closed ->
+         * Resolved is one selection each, and it produced a ticket reading
+         * Resolved with `resolved_at` null and `closed_at` nulled by the line
+         * below it - no timestamp anywhere, on a row whose whole purpose is to
+         * say when the repair was done.
+         *
+         * Asking the column instead of inferring it from the status is both
+         * shorter and true of every path in, including ones added later.
+         */
+        if (!before.resolved_at) patch.resolved_at = new Date().toISOString();
         if (wasClosed) { patch.closed_at = null; patch.closed_by = null; }
       } else if (dbStatus === 'Closed') {
         // Only the FIRST close is recorded. A second one changes nothing.
@@ -3599,11 +3774,46 @@ router.patch(
           );
         }
 
-        const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
-        assertWritten(
-          await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', targetRoomId),
-          `The ticket was updated, but the unit could not be returned to ${newRoomStatus}`
-        );
+        /**
+         * RESTORE ONLY WHAT THE REPAIR TOOK AWAY.
+         *
+         * This wrote `activeAssign ? 'Occupied' : 'Available'` without ever
+         * asking what the unit's status currently was, so resolving a repair
+         * asserted a status rather than restoring one - and the administrator
+         * can set **Reserved** and **Under Maintenance** by hand from the unit
+         * editor (the schema above accepts all four).
+         *
+         * So: she marks a unit Reserved because a prospect has committed to it;
+         * an unrelated repair on that unit is resolved; the unit is forced back
+         * to Available, it is Published, and it starts taking public enquiries
+         * again. BR-006 blocks new enquiries on a Reserved unit, and the
+         * reservation it depends on has just been erased by a plumber.
+         *
+         * A ticket put the unit into 'Under Maintenance' and that is the only
+         * status a ticket has any business taking it out of. Anything else was
+         * put there by a person, and a person is the only thing that should
+         * move it.
+         */
+        const { data: roomNow, error: roomNowError } = await db
+          .from('rooms')
+          .select('operational_status')
+          .eq('id', targetRoomId)
+          .maybeSingle();
+
+        if (roomNowError) {
+          throw ApiError.internal(
+            `The ticket was updated, but this unit's current status could not be read, so it ` +
+              `has been left as it was rather than overwritten: ${roomNowError.message}`
+          );
+        }
+
+        if (roomNow?.operational_status === 'Under Maintenance') {
+          const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
+          assertWritten(
+            await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', targetRoomId),
+            `The ticket was updated, but the unit could not be returned to ${newRoomStatus}`
+          );
+        }
       }
     }
 
@@ -3696,11 +3906,29 @@ router.delete(
           );
         }
 
-        const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
-        assertWritten(
-          await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id),
-          `The ticket was deleted, but the unit could not be returned to ${newRoomStatus}`
-        );
+        // Restore only what the repair took away - see the long note on the
+        // PATCH path. Deleting a ticket forced a Reserved unit back to Available
+        // exactly as resolving one did.
+        const { data: roomNow, error: roomNowError } = await db
+          .from('rooms')
+          .select('operational_status')
+          .eq('id', before.room_id)
+          .maybeSingle();
+
+        if (roomNowError) {
+          throw ApiError.internal(
+            `The ticket was deleted, but this unit's current status could not be read, so it ` +
+              `has been left as it was rather than overwritten: ${roomNowError.message}`
+          );
+        }
+
+        if (roomNow?.operational_status === 'Under Maintenance') {
+          const newRoomStatus = activeAssign ? 'Occupied' : 'Available';
+          assertWritten(
+            await db.from('rooms').update({ operational_status: newRoomStatus }).eq('id', before.room_id),
+            `The ticket was deleted, but the unit could not be returned to ${newRoomStatus}`
+          );
+        }
       }
     }
 
@@ -3845,6 +4073,14 @@ router.get(
   requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
   asyncHandler(async (req, res) => {
     const count = await notificationService.getUnreadCount(req.user!.profileId);
+    /**
+     * A 200 carrying zero would tell the badge there is nothing to look at. The
+     * poller's catch leaves the count exactly as it was, so a failure here is
+     * the quiet answer and a zero is the loud, wrong one.
+     */
+    if (count === null) {
+      throw ApiError.internal('The unread count could not be read.');
+    }
     res.status(200).json({ success: true, data: { unreadCount: count } });
   })
 );
