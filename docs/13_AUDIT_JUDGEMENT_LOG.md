@@ -1645,6 +1645,126 @@ and the expense allocations cascade.
 
 ---
 
+### A sixteenth sweep, 2026-09-19/20: four agents, a payment gateway, and the day the owner answered
+
+The longest stretch of the audit, and the one where the method changed twice.
+
+#### 1. Four agents found what one reader could not — including my own worst mistake
+
+Sean asked for parallel audits. Four ran: frontend, public routes, services,
+business rules. Two died on a session rate limit; two returned.
+
+The services agent found **a defect I had introduced myself the day before**. A
+`TENANT_CREATE` audit block meant for `register()` had been placed in `login()`,
+so **every successful sign-in wrote a row saying the account had just
+self-registered** — 276 of them, into a table that revokes DELETE.
+
+Twenty suites passed throughout. `check:writes` had just been taught to assert
+that every write route leaves a trail, and it does. **It cannot assert that the
+trail says something true.**
+
+> **A comment can be entirely true about the code it describes and silent about
+> where that code is.** Every sentence of that block described `register()`. All
+> of it read perfectly well sitting in `login()`, which is exactly why nothing
+> noticed — including me, writing it.
+
+Migration 043 does what a ledger does with an error: **posts a correction and
+leaves the entries standing.** `service_role` holds no DELETE on `audit_logs`, so
+removing them would have meant reaching past the guarantee as `postgres`. It
+should not be done even though it could be. An audit log you edit when its
+contents are inconvenient is not an audit log, and those rows were *embarrassing*
+rather than dangerous — which is the case where that principle matters most.
+
+#### 2. The payment gateway did not work at all
+
+Fully configured, correctly keyed, HMAC-verified over all eight signed fields,
+and **completely unusable.** `AdyenPaymentModal` mounted the Drop-in inside
+`if (adyenContainerRef.value)` while `isLoading` was still true — and the
+container only renders in the `v-else` arm that `isLoading` suppresses. The ref
+was always null, the guard always false, the mount never happened. Residents saw
+an empty box: no button, no error, nothing to retry. Every attempt created a real
+Adyen session and an audit row on the way to doing nothing.
+
+Nine more followed it, and the shape they share is worth more than the list: a
+gateway that would take money it could never record, a bill that kept inviting
+payment after being paid, a return leg nobody read, a lost session telling a paid
+resident to try again, a payment dated when we *heard* rather than when it was
+*made*. **Every one of them is the system being confident about something it had
+not checked.**
+
+`npm run simulate:adyen` now drives the real webhook with real signatures
+through fourteen refusal paths, and asserts its own footprint: no payment row,
+no bill, no income row. The first run taught its own lesson — two of those paths
+correctly raise a high-priority alert, and it put five in the owner's inbox. It
+cleans up after itself now.
+
+#### 3. The leak was in the data, not the query
+
+`GET /public/rooms` published **the names of two current residents**. LB read
+*"Linda Back Unit (Jaye Casia)"* and LF *"Linda Front Unit (Gayon)"*, on the
+unauthenticated endpoint, rendered on the public site.
+
+**The route is correct.** Its column allowlist says so in terms — *"Columns a
+public visitor may see. Note the absence of any tenant linkage"* — and there is
+no join to a tenant anywhere in it. Both subagents read that file. Neither
+flagged it. Every code review passes it.
+
+It was found by pulling all 131 names, emails and phone numbers out of `profiles`
+and searching **the bytes the endpoint actually returns**.
+
+> **Reviewing a query proves what the query does. It proves nothing about what is
+> in the columns.** A name typed into a public field is invisible to every
+> reading of the code and obvious in one pass over the response.
+
+#### 4. Twenty-six months of evidence, consistent with two different rules
+
+BR-040 said Linda's two units are billed a **fixed** monthly water charge, LF 400
+and LB 200, instead of the per-occupant rate. The ledger agreed on all 62 rows.
+
+It agreed by coincidence. **Across every one of those rows the occupancy has
+never changed once** — LB has always held 1 person, LF 2. So 1 × 200 = 200 and
+2 × 200 = 400. No row in her book could tell a fixed charge apart from a per-head
+one, because her book had never contained the case that separates them.
+
+The owner settled it in one sentence: a third person in LF pays 600.
+
+> **The data was not insufficient. It was perfectly consistent — with both
+> answers.** No amount of further analysis would have distinguished them, and
+> confidence built on that consistency would have been confidence in a
+> coincidence. The rule would have been wrong the first time anybody moved in or
+> out of those units, and wrong *silently*, because it would still have looked
+> right.
+
+#### 5. An executable stale comment
+
+`APPLY_PHASE2.sql` promises *"Re-running this whole file is safe."* It embedded
+migration 009's column comment — the retired OD-04 text that migration 036 had
+replaced the day before. **Running it again would have reinstated the retired
+claim over the correction, with nobody editing anything.**
+
+A stale comment misleads a reader. An executable one overwrites a fix.
+
+#### 6. What the day was actually worth
+
+She answered, and the largest finding of the audit closed in an afternoon.
+
+    rent shortfall on a tenant-raised bill    89,650/month  ->  0
+    units charging their latest receipt            1 of 30  ->  30 of 30
+    the Penthouse, the one unit available           12,000  ->  30,000
+
+Her 33 rates were checked against her own receipts before anything was written:
+24 match the rent that unit most commonly shows, 9 match its most recent, none
+contradicts her book. The total uplift came to **113,150 a month — the figure this
+audit derived from her ledger before she was asked.** Her answer reproduced the
+audit's own number, independently.
+
+`room_price_history` now holds its first 31 real rows. `created_by` is NULL on
+every one, deliberately: nobody clicked this in the application, and putting a
+name against a keystroke that never happened would be a small lie in the one
+table whose entire job is attribution.
+
+---
+
 ## 3. Judgement calls a fresh reader might reverse
 
 These are deliberate. Changing them is allowed — but do it knowingly.
