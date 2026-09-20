@@ -741,13 +741,34 @@ COMMIT;
 
 BEGIN;
 
+-- ---------------------------------------------------------------------------
+-- SUPERSEDED 2026-09-20, and REPLACED IN PLACE rather than left to re-apply.
+--
+-- This block carried migration 009's original text: "ADVANCE RENT, not a
+-- refundable security deposit ... no separate damage or security deposit is
+-- collected by this business ... do not build a refund or forfeiture workflow
+-- against this column."
+--
+-- The owner contradicted every clause of that on 2026-09-19, and MIGRATION 036
+-- replaced the comment in the live database.
+--
+-- The danger was this file's own promise at the top: "Re-running this whole
+-- file is safe." It was not. Re-running it would have silently reinstated the
+-- retired text over 036's correction - an executable claim with a date on it,
+-- which is worse than a stale comment because it can overwrite a fix without
+-- anybody editing anything.
+--
+-- So it now carries 036's text. Re-running this file is safe again, which is
+-- the only way that promise can be kept.
+-- ---------------------------------------------------------------------------
 COMMENT ON COLUMN public.room_assignments.deposit_amount IS
-  'ADVANCE RENT, not a refundable security deposit. Rent paid ahead of the '
-  'period it covers. No separate damage or security deposit is collected by '
-  'this business. Non-refundable: an unconsumed balance is not returned when '
-  'the tenant leaves. Confirmed 2026-09-13 (OD-04). Do not build a refund or '
-  'forfeiture workflow against this column. Historical note: the name is kept '
-  'because backend and frontend both read it; only the meaning is corrected.';
+  'ONE MONTH, held at move-in. Two months are collected when a tenant moves '
+  'in: one month of rent, which is recorded as an ordinary income receipt, and '
+  'one month held here. Confirmed by the owner 2026-09-19, superseding the '
+  '2026-09-13 reading of OD-04. At move-out this money is put towards fixing '
+  'and maintaining the unit the tenant used, and WHATEVER IS LEFT IS REFUNDED '
+  'to the tenant. The system stores this figure and does NOT settle it. See '
+  'migration 036.';
 
 COMMENT ON COLUMN public.bills.rent_amount IS
   'The WHOLE month rent. Never prorated. A tenant who vacates mid-period still '

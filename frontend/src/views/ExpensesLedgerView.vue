@@ -312,8 +312,13 @@ const utilitiesTotal = computed(() =>
 
 /**
  * Where the filtered money actually went. Every entry is allocated across the
- * five property areas (BR-044), and those allocations add up to the entry's
+ * SIX property areas (BR-044), and those allocations add up to the entry's
  * face value, so this is a true part-to-whole and can be drawn as one bar.
+ *
+ * Five until migration 012 added the Penthouse - OD-15, because it is a single
+ * large unit whose costs were previously folded in elsewhere or lost. Six in
+ * `property_area_type` and six in `backend/src/config/propertyAreas.ts`, checked
+ * against the live enum rather than the schema file.
  */
 const areaSplit = computed(() => {
   const totals = new Map<string, number>();
