@@ -32,6 +32,10 @@ import {
 } from 'lucide-vue-next';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
+import { useToast } from '@/lib/useToast';
+
+const { showToast } = useToast();
 
 interface TicketRow {
   id: string;
@@ -74,6 +78,18 @@ const submitting = ref(false);
 // ---- Ticket list state ----------------------------------------------------
 const tickets = ref<TicketRow[]>([]);
 const loadingTickets = ref(false);
+/**
+ * Set when `/tenant/my-tickets` could not be read.
+ *
+ * Without it the catch in `fetchTickets` left `tickets` at `[]`, and an empty
+ * array renders the same as a loaded-and-empty one: **"No tickets to show -
+ * submit a ticket using the form and it will appear here"**, above a header
+ * reading **"0 open · 0 resolved"**. A resident on a dropped connection who has
+ * just filed an emergency plumbing ticket is told they have none, and files it
+ * again. Same defect the bills and payments panels already carry a flag for;
+ * this was the one tenant view of four the fix was never carried to.
+ */
+const ticketsLoadFailed = ref(false);
 const searchQuery = ref('');
 const expandedTicketIds = ref<Set<string>>(new Set());
 
@@ -208,6 +224,20 @@ function getStageIndex(status: string): number {
   return 0; // Submitted - and anything unrecognised, which is honest about it
 }
 
+/**
+ * Which thread the dialog is currently showing.
+ *
+ * `timelineNotes` was written by whichever `/tenant/tickets/:id/messages` call
+ * returned LAST, not by the one belonging to the ticket on screen. Open ticket
+ * A, let it hang, close it, open ticket B: A's response arrives second and
+ * replaces B's thread while B's title is on the dialog. `closeTimeline` did not
+ * cancel anything either, so a reply could land in a dialog that had been shut.
+ *
+ * A monotonic token rather than an id comparison, so reopening the SAME ticket
+ * also discards the earlier flight.
+ */
+let timelineRequestToken = 0;
+
 async function openTimeline(ticket: TicketRow) {
   activeTimelineTicket.value = ticket;
   timelineNotes.value = seedNotesForTicket(ticket);
@@ -216,8 +246,11 @@ async function openTimeline(ticket: TicketRow) {
 
   timelineError.value = null;
 
+  const token = ++timelineRequestToken;
+
   try {
     const msgs = await api.get<any[]>(`/tenant/tickets/${ticket.id}/messages`);
+    if (token !== timelineRequestToken) return;
     if (msgs && Array.isArray(msgs) && msgs.length > 0) {
       timelineNotes.value = msgs.map((m) => ({
         id: m.id,
@@ -227,6 +260,7 @@ async function openTimeline(ticket: TicketRow) {
       }));
     }
   } catch (err: any) {
+    if (token !== timelineRequestToken) return;
     // The status notes above still stand - they come from the ticket row. What is
     // unknown is whether there are replies, and the panel says so rather than
     // showing an empty thread that reads as "nobody has answered you".
@@ -235,6 +269,8 @@ async function openTimeline(ticket: TicketRow) {
 }
 
 function closeTimeline() {
+  // Nothing in flight belongs to the dialog any more.
+  timelineRequestToken++;
   isTimelineOpen.value = false;
   activeTimelineTicket.value = null;
   newNoteText.value = '';
@@ -303,6 +339,17 @@ async function postNote() {
     newNoteText.value = '';
   } catch (err: any) {
     console.error('Failed to post ticket comment:', err);
+    // The only visible change used to be the button label flicking from "…" back
+    // to "Post". The note was not appended, nothing was rendered, and the input
+    // kept its text - so "the leak is worse today" looked unsent AND looked
+    // unsaved in exactly the same way a successful post that failed to render
+    // would. Residents press again: the successes duplicate and the failures
+    // stay silent. The text is deliberately still in the box to send again.
+    showToast(
+      'error',
+      'Your note was not sent',
+      `It is still in the box, so you can send it again. ${err?.message || err}`
+    );
   } finally {
     savingNote.value = false;
   }
@@ -343,10 +390,12 @@ async function fetchActiveRoom() {
 
 async function fetchTickets() {
   loadingTickets.value = true;
+  ticketsLoadFailed.value = false;
   try {
     tickets.value = (await api.get<TicketRow[]>('/tenant/my-tickets')) ?? [];
   } catch (err: any) {
     console.error('Failed to load tickets:', err?.message || err);
+    ticketsLoadFailed.value = true;
   } finally {
     loadingTickets.value = false;
   }
@@ -369,6 +418,18 @@ async function fetchTickets() {
  * matters - from being held up by its attachment.
  */
 const MAX_PHOTO_BYTES = 700 * 1024;
+
+/**
+ * The same figure, for the control that leads them to the file picker.
+ *
+ * The upload panel advertised **"PNG, JPG or WEBP up to 10MB"** while the
+ * handler refused anything over 700 KB - and most phone photographs fall
+ * between the two, so the label named a size the form could not accept and the
+ * rejection arrived only after they had chosen the file. Derived from the
+ * constant rather than retyped, because the last two copies of this number
+ * disagreed.
+ */
+const MAX_PHOTO_LABEL = `${Math.round(MAX_PHOTO_BYTES / 1024)}KB`;
 
 const handlePhotoSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -635,7 +696,7 @@ function statusClass(status: string) {
                 >
                   <ImageIcon class="size-6 text-brand" />
                   <span class="text-xs font-semibold text-ink">Click to upload a photo</span>
-                  <span class="text-xs text-ink-soft">PNG, JPG or WEBP up to 10MB</span>
+                  <span class="text-xs text-ink-soft">PNG, JPG or WEBP up to {{ MAX_PHOTO_LABEL }}</span>
                 </label>
               </div>
 
@@ -687,13 +748,19 @@ function statusClass(status: string) {
               <FileText class="size-4 text-brand" />
               My Ticket Tracker
             </h2>
+            <!-- A count computed from a list that failed to load is a claim, not
+                 an absence. Both of these read 0 out of a dropped request. -->
             <span class="text-xs text-ink-soft">
-              ({{ filteredTickets.length }} ticket{{ filteredTickets.length === 1 ? '' : 's' }})
+              <template v-if="ticketsLoadFailed">(not loaded)</template>
+              <template v-else>({{ filteredTickets.length }} ticket{{ filteredTickets.length === 1 ? '' : 's' }})</template>
             </span>
           </div>
           <span class="text-xs text-ink-soft">
-            <strong class="text-ink">{{ openCount }}</strong> open ·
-            <strong class="text-ink">{{ resolvedCount }}</strong> resolved
+            <template v-if="ticketsLoadFailed">Open and resolved counts are not available</template>
+            <template v-else>
+              <strong class="text-ink">{{ openCount }}</strong> open ·
+              <strong class="text-ink">{{ resolvedCount }}</strong> resolved
+            </template>
           </span>
         </div>
 
@@ -727,6 +794,20 @@ function statusClass(status: string) {
           <div v-if="loadingTickets" class="space-y-4">
             <SkeletonCard variant="list" :count="2" />
           </div>
+
+          <!--
+            A failed load must not read as "you have no requests".
+
+            This branch comes first so the empty state below can only be reached
+            by a list that actually loaded. The resident who has just filed an
+            emergency plumbing ticket on a dropped connection was being told they
+            had none, and the obvious thing to do about that is file it again.
+          -->
+          <UnavailableNote
+            v-else-if="ticketsLoadFailed"
+            message="Your requests could not be loaded. That is not the same as having none — anything you have already sent is still with the landlady."
+            @retry="fetchTickets"
+          />
 
           <div
             v-else-if="filteredTickets.length === 0"

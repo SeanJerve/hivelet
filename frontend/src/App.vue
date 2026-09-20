@@ -10,7 +10,6 @@ import ToastContainer from '@/components/ui/ToastContainer.vue';
 import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
 import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
-import TicketHoverModal from '@/components/modals/TicketHoverModal.vue';
 
 const route = useRoute();
 const { showToast } = useToast();
@@ -140,6 +139,17 @@ const hidesGlobalHeader = computed(() =>
     <AdminEditUnitModal />
     <RoomDetailModal />
     <OnsitePaymentModal />
-    <TicketHoverModal />
+    <!--
+      `TicketHoverModal` is gone. It was mounted here on every page load and could
+      never open: nothing in the codebase set `isTicketHoverModalOpen` or
+      `activeHoverTicket` to anything but false/null, so `check:reachable` passed
+      it - an import makes a file reachable, not renderable.
+
+      Had it ever been wired up it would have lied. Its "Mark resolved" button
+      called `resolveTicket()`, which mutated the in-memory array and made NO API
+      call: the pill flipped, the modal closed, the ticket left the open list, and
+      the next fetch brought it back unresolved. Same shape as the
+      LiveChatheadModal deletion - see the note at RoomDetailModal.vue:11.
+    -->
   </div>
 </template>

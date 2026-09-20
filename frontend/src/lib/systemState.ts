@@ -560,8 +560,11 @@ export const isOnsitePaymentModalOpen = ref(false);
 // controlled. Nothing ever set either to true, so neither could be opened; they were left
 // over from before real authentication existed, and carried a hardcoded demo password and an
 // invented resident's name in their markup.
-export const isTicketHoverModalOpen = ref(false);
-export const activeHoverTicket = ref<MaintenanceTicket | null>(null);
+// `isTicketHoverModalOpen` and `activeHoverTicket` are gone with `TicketHoverModal`. Nothing
+// ever set either to anything but false/null, so the modal could not open - and `App.vue`
+// mounted it on every page load, which is enough to keep `check:reachable` quiet. Its
+// "Mark resolved" action called `resolveTicket()`, which wrote to the in-memory array and to
+// nothing else; it is gone too.
 
 export function showToast(type: 'success' | 'warning' | 'error' | 'info', title: string, message: string) {
   triggerToast(type, title, message);
@@ -580,12 +583,14 @@ export function updateRoomRate(unitCode: string, newRate: number, maxOccupants: 
   }
 }
 
-export function resolveTicket(ticketId: string) {
-  const ticket = maintenanceTickets.find((t) => t.id === ticketId);
-  if (ticket) {
-    ticket.status = 'Resolved';
-  }
-}
+/**
+ * `resolveTicket` is gone. It set `ticket.status = 'Resolved'` on the in-memory array and made
+ * no API call at all, so the pill flipped, the ticket left the open list, and the next
+ * `fetchMaintenanceTickets()` brought it back unresolved. Its only caller was
+ * `TicketHoverModal`, which could not open. The path that works is
+ * `MaintenanceDispatchView.handleSaveEditTicket`, which PATCHes `/admin/tickets/:id` and then
+ * refetches - on success and on failure both.
+ */
 
 /* ========================================================================== *
  * DYNAMIC ASYNC SUPABASE DATA SYNC LOADERS
