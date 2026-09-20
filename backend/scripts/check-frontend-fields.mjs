@@ -165,6 +165,13 @@ const API_COMPUTED = new Map([
   ['effective_status', 'admin.ts + tenant.ts — isOverdue() overlay on a bill'],
   ['amount_paid', 'tenant.ts — summed from payments against the bill'],
   ['amount_outstanding', 'tenant.ts — bill total less amount_paid'],
+  // Verified rather than assumed: declared on `BillWithBalance` at tenant.ts:114
+  // and written at tenant.ts:168, from the same rows `pendingOnBill()` sums.
+  // It counts money the resident has SENT and she has not yet checked, which
+  // `amount_outstanding` deliberately does not - that one counts verified
+  // payments only, because a bill is not settled by the gateway saying so
+  // (BR-017). The screen needs both: what is still owed, and what is in flight.
+  ['amount_pending', 'tenant.ts — payments against the bill awaiting verification'],
 ]);
 
 /**

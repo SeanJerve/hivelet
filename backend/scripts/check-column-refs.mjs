@@ -170,8 +170,72 @@ function walk(dir) {
   return out;
 }
 
+/**
+ * PROSE IS NOT CODE, AND THIS SCANNER COULD NOT TELL THE DIFFERENCE.
+ *
+ * The chunk a table owns runs from its `.from(` to the next one, over the raw
+ * text - comments included. So a comment that QUOTES a query, which the comments
+ * in this codebase do constantly because they explain queries, was read as that
+ * query and charged to whichever table was last mentioned.
+ *
+ * It fired for real on 2026-09-20: a note reading "the update is guarded with
+ * `.eq('role', 'prospect')`" sat between a `.from('rooms')` lookup and the
+ * `.from('profiles')` write it described, and the suite reported
+ * `rooms.role [.eq()]` - a column that does not exist, on a table that never
+ * appears in the code it was pointing at.
+ *
+ * That is the worst failure a check can have. It is not wrong about the code; it
+ * is wrong about what the code IS, so the only ways to clear it are to reword
+ * English prose until a regex stops recognising it, or to stop trusting the
+ * check. Both are worse than the bug it was built to catch.
+ *
+ * Blanked rather than removed, so every line number this suite reports still
+ * points where it did. Quoted strings are walked through intact - `'http://x'`
+ * carries a `//` that is not a comment, and eating the rest of that line would
+ * hide real queries beneath it.
+ */
+function blankComments(src) {
+  let out = '';
+  let i = 0;
+  const n = src.length;
+  while (i < n) {
+    const c = src[i];
+    const d = src[i + 1];
+    if (c === '/' && d === '/') {
+      while (i < n && src[i] !== '\n') { out += ' '; i++; }
+      continue;
+    }
+    if (c === '/' && d === '*') {
+      while (i < n && !(src[i] === '*' && src[i + 1] === '/')) {
+        out += src[i] === '\n' ? '\n' : ' ';
+        i++;
+      }
+      // Unterminated is a syntax error the compiler will catch; do not run off
+      // the end pretending otherwise.
+      if (i < n) { out += '  '; i += 2; }
+      continue;
+    }
+    if (c === "'" || c === '"' || c === '`') {
+      const quote = c;
+      out += c;
+      i++;
+      while (i < n) {
+        if (src[i] === '\\') { out += src[i] + (src[i + 1] ?? ''); i += 2; continue; }
+        out += src[i];
+        const done = src[i] === quote;
+        i++;
+        if (done) break;
+      }
+      continue;
+    }
+    out += c;
+    i++;
+  }
+  return out;
+}
+
 for (const file of walk(join(backend, 'src'))) {
-  const text = readFileSync(file, 'utf8');
+  const text = blankComments(readFileSync(file, 'utf8'));
   const rel = relative(repo, file);
 
   for (const m of text.matchAll(/\.from\(\s*'([a-z_]+)'\s*\)/g)) {
