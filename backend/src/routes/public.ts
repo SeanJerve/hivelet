@@ -1000,7 +1000,33 @@ router.post(
     // measuring how long the rejection takes.
     const wantUser = config.adyen.webhookUser;
     const wantPass = config.adyen.webhookPassword;
-    if (wantUser || wantPass) {
+
+    /**
+     * BOTH OR NEITHER. Half a credential pair is a misconfiguration, not a
+     * policy, and it used to fail in the most confusing way available.
+     *
+     * The condition was `if (wantUser || wantPass)`, so setting only one turned
+     * Basic Auth ON and compared the other against the empty string. Adyen sends
+     * both, so EVERY notification was refused with 401 - indefinitely, and
+     * looking exactly like Adyen sending the wrong credentials. Someone would
+     * have spent a long time on the Adyen dashboard before suspecting the `.env`
+     * on this side, which is precisely the file CLAUDE.md says must be sent to
+     * the second machine separately.
+     *
+     * 503 and a message naming the missing half, rather than 401. Both fail
+     * closed; only one of them can be diagnosed.
+     */
+    if (Boolean(wantUser) !== Boolean(wantPass)) {
+      console.error(
+        '[adyen-webhook] Basic Auth is half-configured: ' +
+        `${wantUser ? 'ADYEN_WEBHOOK_PASSWORD' : 'ADYEN_WEBHOOK_USER'} is missing. ` +
+        'Set both or neither. Refusing the notification rather than rejecting it as unauthorised.'
+      );
+      res.status(503).json({ success: false, error: 'Webhook not configured.' });
+      return;
+    }
+
+    if (wantUser && wantPass) {
       const header = req.headers.authorization ?? '';
       const [scheme, encoded] = header.split(' ');
       let ok = false;
@@ -1010,9 +1036,22 @@ router.post(
         const user = idx >= 0 ? decoded.slice(0, idx) : '';
         const pass = idx >= 0 ? decoded.slice(idx + 1) : '';
         const digest = (v: string) => createHmac('sha256', 'basic').update(v).digest();
-        ok =
-          timingSafeEqual(digest(user), digest(wantUser)) &&
-          timingSafeEqual(digest(pass), digest(wantPass));
+        /**
+         * `&`, not `&&` - deliberately, and this is the whole point of the line.
+         *
+         * Each comparison is constant-time, but `&&` SHORT-CIRCUITS: a wrong
+         * username meant the password was never compared, so the request came
+         * back measurably sooner. That leaks one bit - whether the username is
+         * right - which is the first thing an attacker wants when guessing the
+         * second half.
+         *
+         * Both digests are computed and both comparisons run whatever happens.
+         * The operands are booleans, so `&` is a plain non-short-circuiting AND
+         * here, not bitwise arithmetic on anything meaningful.
+         */
+        const userOk = timingSafeEqual(digest(user), digest(wantUser));
+        const passOk = timingSafeEqual(digest(pass), digest(wantPass));
+        ok = Boolean(Number(userOk) & Number(passOk));
       }
       if (!ok) {
         console.error('[adyen-webhook] Basic Auth failed');
