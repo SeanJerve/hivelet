@@ -164,7 +164,19 @@ watch(
       unitType.value = normalizeUnitType(newVal.type);
       editStatus.value = mapUnitStatusToOperational(newVal.status);
       editVisibility.value = newVal.visibility === 'Hidden' ? 'Hidden' : 'Published';
-      amenitiesText.value = newVal.desc || newVal.amenities.join(', ');
+      /**
+       * The RAW description, never the display fallback.
+       *
+       * This read `newVal.desc || newVal.amenities.join(', ')`. Both are
+       * invented when the column is empty: `desc` falls back to
+       * "<type> unit in <cluster>." and `amenities` is a four-item literal
+       * identical for all 33 units. Whichever won was then PATCHed back by the
+       * save below, so editing the rate on a unit with no description wrote one
+       * that nobody had written.
+       *
+       * Empty stays empty. The field shows a placeholder instead.
+       */
+      amenitiesText.value = newVal.rawDesc ?? '';
       editPhotoUrl.value = newVal.photo || '';
       uploadedFileName.value = '';
       uploadedFileSize.value = '';
@@ -267,7 +279,9 @@ async function handleSave() {
 
     await api.patch(`/admin/rooms/${matched.id}`, {
       current_price: Number(monthlyRate.value),
-      description: amenitiesText.value,
+      // Empty means empty, not the empty string: leaving it blank must clear
+      // the column rather than replace a null with ''. The schema takes nullish.
+      description: amenitiesText.value.trim() === '' ? null : amenitiesText.value,
       room_type: unitType.value,
       operational_status: editStatus.value,
       visibility_status: editVisibility.value,

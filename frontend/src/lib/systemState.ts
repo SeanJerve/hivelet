@@ -48,7 +48,10 @@ export interface RoomItem {
   billingRule: string;
   amenities: string[];
   photo: string;
+  /** For display. Falls back when the column is empty - never write this back. */
   desc: string;
+  /** What the column actually holds. Any form that EDITS the description uses this. */
+  rawDesc: string;
 }
 
 export interface TenantRecord {
@@ -315,7 +318,11 @@ export const rooms = reactive<RoomItem[]>(
     // Until it does, say only what is structurally true. This used to assert a
     // private bathroom, submetered electricity and Wi-Fi for all 33 units - three
     // facts the system does not hold for any of them, shown to prospects.
-    desc: `${u.type} in ${u.cluster}.`
+    desc: `${u.type} in ${u.cluster}.`,
+    // Empty on purpose. This is the pre-API placeholder, so there is no real
+    // description yet - and an edit form seeded from it must show nothing
+    // rather than offer invented text for saving.
+    rawDesc: ''
   }))
 );
 
@@ -702,7 +709,22 @@ export async function fetchRooms(): Promise<RoomItem[]> {
           // (CategoryRoomsView, RoomDirectoryView) already renders "No photo
           // yet" for a falsy `photo`.
           photo: r.room_photos?.find((p: any) => p.is_primary)?.file_url || r.room_photos?.[0]?.file_url || '',
-          desc: r.description || `${r.room_type || 'Studio'} unit in ${cluster}.`
+          /**
+           * `desc` is for DISPLAY and falls back, which is right on a listing
+           * page: an empty description should not render as a blank card.
+           *
+           * `rawDesc` is what the database actually holds, and exists because
+           * the edit dialog used to seed its field from `desc` and PATCH the
+           * result straight back. Open a unit with no description, change only
+           * the rate, press Save - and "Studio unit in Boarding House." was
+           * written into `rooms.description` as though somebody had typed it,
+           * then shown on the public site.
+           *
+           * A fallback for reading must never become a value for writing. Any
+           * form that edits this field reads `rawDesc`.
+           */
+          desc: r.description || `${r.room_type || 'Studio'} unit in ${cluster}.`,
+          rawDesc: r.description ?? ''
         };
       });
 

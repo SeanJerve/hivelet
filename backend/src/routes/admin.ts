@@ -2624,6 +2624,21 @@ const incomeRecordPatchSchema = z.object({
   invoiceNumber: shortText(100).optional(),
   rentAmount: money.optional(),
   occupants: occupantCount.optional(),
+  /**
+   * BR-037. The create path takes this from the request because there is no
+   * rule to derive it from; the correction path could not take it at all.
+   *
+   * The ledger's edit dialog shows a REQUIRED "GBG Fee" input, pre-fills it from
+   * the row, counts it in the total it displays, and validates it - then never
+   * sent it, and this schema is `.strict()`, so it could not have been added
+   * from the form alone. She typed a corrected fee, was told the record was
+   * updated, and the refetch quietly put the old figure back.
+   *
+   * That is the same shape as the create-path defect recorded above: collected,
+   * shown in the total she asked the resident for, and dropped. It was fixed
+   * there and not here.
+   */
+  gbgFee: money.optional(),
   paymentMethod: z.enum(['Cash', 'GCash', 'Bank Transfer', 'Adyen Online']).optional(),
   transactionReference: shortText(120).optional(),
   monthsCovered: z.number().int().min(1).max(60).optional(),
@@ -2653,7 +2668,7 @@ router.patch(
     }
     const {
       roomNumber, datePaid, contactName, invoiceNumber, rentAmount,
-      occupants, paymentMethod, transactionReference, monthsCovered,
+      occupants, gbgFee, paymentMethod, transactionReference, monthsCovered,
       dateCoveredStart, dateCoveredEnd
     } = parsedBody.data;
 
@@ -2751,6 +2766,7 @@ router.patch(
       // moment the body was given a real schema.
       updatePatch.payment_method = paymentMethod;
     }
+    if (gbgFee !== undefined) updatePatch.gbg_fee = gbgFee;
     if (transactionReference !== undefined) updatePatch.transaction_reference = transactionReference;
     if (dateCoveredStart) updatePatch.rent_period_start = dateCoveredStart;
     if (dateCoveredEnd) updatePatch.rent_period_end = dateCoveredEnd;

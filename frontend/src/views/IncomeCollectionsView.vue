@@ -688,6 +688,16 @@ async function handleEditIncome() {
       roomNumber: editUnit.value.toUpperCase(),
       datePaid: editDate.value,
       /**
+       * BR-037. This dialog has always SHOWN a required GBG Fee, pre-filled it
+       * from the row and counted it in the total on screen - and never sent it.
+       * The correction was accepted, the toast said "Record Updated", and the
+       * refetch put the old figure straight back.
+       *
+       * The backend schema is `.strict()`, so adding it here alone would have
+       * been a 422; `gbgFee` was added there in the same change.
+       */
+      gbgFee: Number(editGarbage.value) || 0,
+      /**
        * `contactName` is deliberately NOT sent.
        *
        * It used to be, recomputed from the unit's CURRENT occupancy:
