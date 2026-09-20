@@ -33,6 +33,30 @@ thing did not work" is not.
 
 ## Open
 
+### B-48 — three residents in her list who never lived here · **migration 046 written, NOT applied**
+
+- **Blocked on:** you saying go. It deletes live rows, so I have not run it.
+- **What it is:** the import of 2026-08-27 ran twice, about thirty seconds apart. The first pass
+  read her name column with the receipt number still attached and created three profiles called
+  **Ron Juliene DominguinoINV.#5227**, **Nikki ProllamanteINV#5212** and
+  **Mireel Fatima ParcareyINV.#5223**. The second pass created the clean records, which are the
+  ones holding everything — 31, 10 and 26 receipts, and an active tenancy each.
+- **They are completely inert.** `profiles` is referenced by **18 foreign-key columns across 15
+  tables**, read from `pg_constraint` rather than any schema file. All 18 counted **zero** against
+  these three ids. No money, no tenancy, no correspondence, no audit history.
+- **What it costs to leave them:** three confusing names in her resident list, under the vacated
+  filter, for people who never rented anything. Nothing more. There is no urgency here.
+- **What Sean needs to do:** read `database/migrations/046_three_residents_who_never_lived_here.sql`
+  and apply it if you agree. It refuses to run if anything has come to reference them since it was
+  written — a migration that deletes what it expected to be inert should check that it still is, on
+  the day it runs rather than the day it was written.
+- **How to know it worked:** `profiles` goes 45 → 42, tenants 43 → 40, **active tenants stays 39**,
+  income rows stay **937** and the remitted total stays **₱8,086,250**. The queries are at the foot
+  of the migration.
+- **If you would rather keep them,** say so and I will close this. They are harmless; it is a
+  tidiness call about what her screen shows, not a correctness one.
+- **Raised:** 2026-09-20 by Claude
+
 ### B-45 — can a resident pay the rest of a bill while the first part is still unchecked?
 
 - **Blocked on:** her decision, then a small backend change. It is a question about how she wants
