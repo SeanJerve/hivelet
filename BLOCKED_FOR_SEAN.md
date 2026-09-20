@@ -784,6 +784,28 @@ the untested half of BR-024, and they only become testable after a person has us
   have stopped charging it. **Do not present it to her as uncollected income** — Sean's call,
   2026-09-19, and the right one: the system has no way to know what should have been charged.
 - **What to ask, as a question and not a finding:** is the garbage fee still being charged?
+
+#### A second question for the same sitting · **added 2026-09-20**
+
+**If she has resumed it, one more thing needs settling: on a receipt covering several months, is
+the ₱20 charged once, or once per month?**
+
+- **BR-037 says per unit per MONTH**, which reads as ₱60 on a three-month receipt.
+- **The system says once.** `record_income_for_months` writes
+  `CASE WHEN is_first THEN p_gbg_fee ELSE 0 END`, and the on-site form tells her so in as many
+  words: *"× 3, plus the garbage fee once"*. Code and interface agree with each other and
+  disagree with the rule.
+- **Her book has exactly ONE case**, and it charged per month: `OR#4920`, unit 1d, one payment on
+  2025-04-29 covering April and May, **₱20 on each row**.
+- **It looked like three.** Two other multi-row receipts carry ₱40 — `OR#4726` and `OR#4772` —
+  and both are already pinned in `check:ledger` as **receipt-numbering errors**: their two rows
+  have *different payment dates*, so they are two separate monthly payments that happen to share
+  a number, not one receipt covering two months. Counting them would have turned n=1 into a
+  confident n=3.
+- **Nothing has been changed.** One row is not enough to overrule a deliberate-looking interface
+  statement, the sum in dispute is ₱20 a month, and she is not charging it at all today. But if
+  she resumes, the system will under-charge a multi-month receipt and nothing will say so.
+- **Ask it plainly:** *"if someone pays three months at once, is the garbage ₱20 or ₱60?"*
 - **Nothing to fix in the data.** 531 rows carry a fee and they are all hers.
 - **Raised:** 2026-09-19
 
