@@ -215,7 +215,16 @@ export async function markAsRead(notificationId: string) {
       : `/tenant/my-notifications/${notificationId}/read`;
     await api.patch(endpoint, {});
   } catch (err) {
+    /**
+     * Put the badge back. The optimistic update above already greyed the item
+     * out and decremented the count; leaving that standing after a failed write
+     * means the notification silently disappears from view and returns on the
+     * next poll, which looks like the app losing things.
+     *
+     * `markAllAsRead` below has always refetched here. This one did not.
+     */
     console.error('[NotificationsStore] Failed to mark read:', err);
+    await fetchNotifications();
   }
 }
 

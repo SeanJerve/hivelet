@@ -236,11 +236,21 @@ async function handleSaveEditTicket() {
       t.description = editDesc.value;
     }
 
-    // No inner catch. The failure was swallowed here with a console warning while
-    // the local ticket object had ALREADY been mutated above, so the board showed
-    // the new status and technician and announced "updated successfully" with
-    // nothing changed in the database - until the refetch below quietly put the
-    // old values back. The outer catch reports it instead.
+    /**
+     * No inner catch. The failure was swallowed here with a console warning
+     * while the local ticket object had ALREADY been mutated above, so the board
+     * showed the new status and technician and announced "updated successfully"
+     * with nothing changed in the database. The outer catch reports it instead.
+     *
+     * That comment used to end "- until the refetch below quietly put the old
+     * values back". IT DOES NOT, on the path that matters. The refetch is on the
+     * line after this call, so a throw jumps straight past it to the catch and
+     * the board keeps showing the values that were never saved. The sentence was
+     * true of the happy path and silent about the failing one.
+     *
+     * The catch now refetches, so a failed save leaves the board showing what is
+     * actually in the database.
+     */
     await api.patch(`/admin/tickets/${ticketId}`, {
       title: editTitle.value,
       roomNumber: editUnit.value.toUpperCase(),
@@ -256,6 +266,10 @@ async function handleSaveEditTicket() {
     isEditModalOpen.value = false;
     editingTicket.value = null;
   } catch (err: any) {
+    // Put the board back to the truth before saying anything. A dispatch board
+    // showing "Resolved" and a named technician for a ticket that is still Open
+    // is worse than a slow one.
+    await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
     showToast('error', 'Update failed', err?.message || 'Could not update ticket.');
   } finally {
     isSubmitting.value = false;

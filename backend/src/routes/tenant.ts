@@ -595,8 +595,19 @@ router.patch(
   '/tenant/my-notifications/:id/read',
   requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
   asyncHandler(async (req, res) => {
+    /**
+     * A 200 that says `success: false` is a contradiction, and nothing could
+     * act on it: `api.patch` unwraps the envelope to `data`, so the browser
+     * never saw the flag at all. It greyed the item out, decremented the badge,
+     * and the row stayed unread until the next poll brought it back.
+     *
+     * `markAsRead` returns false only on a database error - a row that is not
+     * the caller's simply matches nothing, which is a no-op and correctly a
+     * success. So false here means the write failed, and that is a 500.
+     */
     const ok = await notificationService.markAsRead(req.params.id, req.user!.profileId);
-    res.status(200).json({ success: ok, data: { is_read: true } });
+    if (!ok) throw ApiError.internal('The notification could not be marked as read.');
+    res.status(200).json({ success: true, data: { is_read: true } });
   })
 );
 
@@ -605,7 +616,8 @@ router.post(
   requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
   asyncHandler(async (req, res) => {
     const ok = await notificationService.markAllAsRead(req.user!.profileId);
-    res.status(200).json({ success: ok, data: { markedAllRead: true } });
+    if (!ok) throw ApiError.internal('The notifications could not be marked as read.');
+    res.status(200).json({ success: true, data: { markedAllRead: true } });
   })
 );
 
