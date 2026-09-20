@@ -290,7 +290,21 @@ router.get(
   asyncHandler(async (req, res) => {
     const { data, error } = await db
       .from('monthly_income_records')
-      .select('id, rent_period_start, rent_period_end, date_paid, remitted_amount, payment_method, verification_status')
+      /**
+       * `gbg_fee` is selected because the screen is showing the resident what
+       * they handed over, and `remitted_amount` is not that number.
+       *
+       * It is `GENERATED ALWAYS AS (rent_amount + water_payment)` - garbage is a
+       * SEPARATE column (BR-037, PHP 20 per unit per month), so a receipt that
+       * carried one read on the portal as less than the paper in their hand, by
+       * exactly the garbage fee, with nothing on the page to explain the gap.
+       *
+       * The income export keeps extra charges on their own lines for the same
+       * reason and says so twice. The column is right; reading it as the total
+       * was the mistake.
+       */
+      .select('id, rent_period_start, rent_period_end, date_paid, remitted_amount, gbg_fee, ' +
+              'payment_method, verification_status')
       .eq('tenant_profile_id', req.user!.profileId)
       .order('date_paid', { ascending: false });
 

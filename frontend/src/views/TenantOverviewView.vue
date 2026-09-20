@@ -119,6 +119,17 @@ interface ReceiptRow extends PaymentRow {
 }
 
 const pendingOnlinePayments = ref<PaymentRow[]>([]);
+/**
+ * A REJECTED PAYMENT USED TO DISAPPEAR OFF THIS SCREEN ENTIRELY.
+ *
+ * `pendingOnlinePayments` keeps only `'Pending Verification'` and
+ * `recordedReceipts` is drawn from the income ledger, so a payment the
+ * administrator refused matched neither list and simply was not here. The
+ * resident saw the money vanish rather than be declined - and rejecting a
+ * payment reopens its bill to 'Due' (`admin.ts`), so the debt came back with
+ * nothing on the page to explain why.
+ */
+const rejectedPayments = ref<PaymentRow[]>([]);
 const recordedReceipts = ref<ReceiptRow[]>([]);
 
 const firstName = computed(() => {
@@ -262,9 +273,23 @@ async function fetchTenantData() {
         method: p.payment_method || 'Online payment',
       }));
 
+    rejectedPayments.value = (paymentsData ?? [])
+      .filter((p: any) => p.verification_status === 'Rejected')
+      .map((p: any) => ({
+        id: String(p.id),
+        amount: Number(p.amount) || 0,
+        date: shortDate(p.paid_at || p.created_at, true),
+        method: p.payment_method || 'Online payment',
+      }));
+
     recordedReceipts.value = (incomeData ?? []).slice(0, 4).map((inc: any) => ({
       id: String(inc.id),
-      amount: Number(inc.remitted_amount) || 0,
+      // `remitted_amount` is GENERATED as `rent_amount + water_payment`. Garbage
+      // (BR-037) is its own column and is not inside it, so this read short of
+      // the paper receipt by exactly the garbage fee. `tenant.ts` now selects
+      // `gbg_fee`, so the figure can be the whole sum rather than apologising
+      // for not being it.
+      amount: (Number(inc.remitted_amount) || 0) + (Number(inc.gbg_fee) || 0),
       date: shortDate(inc.date_paid, true),
       method: inc.payment_method || '',
       period:
@@ -624,12 +649,31 @@ const statusTone = computed(() => {
           @retry="fetchTenantData"
         />
         <p
-          v-else-if="pendingOnlinePayments.length === 0 && recordedReceipts.length === 0"
+          v-else-if="pendingOnlinePayments.length === 0 && rejectedPayments.length === 0 && recordedReceipts.length === 0"
           class="text-sm text-ink-soft"
         >
           No payments are on file yet.
         </p>
         <template v-else>
+          <!-- First, because it is the only one that needs the resident to do
+               something. Rejecting a payment reopens its bill to 'Due'. -->
+          <section v-if="rejectedPayments.length" aria-labelledby="rejected-payments-heading">
+            <h3 id="rejected-payments-heading" class="text-xs font-medium text-ink-faint">Not accepted</h3>
+            <ul class="divide-y divide-line">
+              <li v-for="p in rejectedPayments" :key="p.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
+                <span class="min-w-0">
+                  <span class="block text-sm font-medium">{{ p.method }}</span>
+                  <span class="block text-xs text-ink-faint">
+                    Sent {{ p.date }}. This money was not accepted and the bill it was for is still owed.
+                  </span>
+                </span>
+                <span class="flex items-center gap-3">
+                  <StatusPill tone="overdue">Not accepted</StatusPill>
+                  <span class="text-sm font-semibold tabular">{{ peso(p.amount) }}</span>
+                </span>
+              </li>
+            </ul>
+          </section>
           <section v-if="pendingOnlinePayments.length" aria-labelledby="pending-payments-heading">
             <h3 id="pending-payments-heading" class="text-xs font-medium text-ink-faint">Waiting for verification</h3>
             <ul class="divide-y divide-line">
@@ -663,6 +707,15 @@ const statusTone = computed(() => {
                 </span>
               </li>
             </ul>
+            <!-- The figure is rent, water and garbage - the whole receipt. It
+                 used to be `remitted_amount` alone, which is GENERATED as
+                 `rent_amount + water_payment` and leaves garbage (BR-037) out,
+                 so the portal read short of the paper in the resident's hand and
+                 a note here had to apologise for it. `tenant.ts` selects
+                 `gbg_fee` now and the sum is taken above. -->
+            <p class="text-xs leading-5 text-ink-faint">
+              Each figure is the whole receipt — rent, water and the garbage fee together.
+            </p>
           </section>
         </template>
       </OverviewTile>

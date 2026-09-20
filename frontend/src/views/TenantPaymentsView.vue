@@ -35,7 +35,17 @@ const outstandingBills = ref<any[]>([]);
  * the person who owes the money. A resident could read it and not pay.
  */
 const billsLoadFailed = ref(false);
-const loadingBills = ref(false);
+/**
+ * Starts true, because the page renders before the fetch is even started.
+ *
+ * `onMounted` awaits `handleGatewayReturn` - a round trip to the server - before
+ * it asks for the bills at all, so with this false the tile fell straight through
+ * to "Nothing is due / You have no outstanding bills" for the whole of that call.
+ * That is the return leg from GCash: the one moment a resident is certain to be
+ * looking, told in green that they owe nothing, out of a list that had not been
+ * requested yet. Same defect as `billsLoadFailed` above, from a different cause.
+ */
+const loadingBills = ref(true);
 const searchQuery = ref('');
 
 // Payment history records
@@ -65,6 +75,17 @@ const sortOrder = ref<'latest' | 'oldest'>('latest');
  * this". Same defect as the bills panel above it.
  */
 const historyLoadFailed = ref(false);
+/**
+ * In flight is not the same as empty.
+ *
+ * `RecordTable` renders its empty state the moment `rows.length === 0`, and it
+ * takes no loading prop, so before the fetch returned the table stated "No
+ * payments are on record for 2026" - an affirmative claim about the resident's
+ * own money, made out of a request that had not answered yet. On a slow phone
+ * that sentence is on screen for seconds. Starts true for the same reason
+ * `loadingBills` does: nothing is requested until `onMounted` gets that far.
+ */
+const loadingHistory = ref(true);
 
 const availableYears = computed(() => {
   const years = new Set<number>();
@@ -97,6 +118,31 @@ const filteredPayments = computed(() => {
 });
 
 const isVerified = (status: string) => status === 'VERIFIED & SETTLED' || status === 'VERIFIED';
+
+/**
+ * A REFUSED PAYMENT WAS SHOWN AS ONE STILL BEING CHECKED.
+ *
+ * `isVerified()` answers one question, and every status that was not VERIFIED
+ * fell through to the amber "Waiting for verification" pill - including
+ * REJECTED, which is a real value an administrator can set (`admin.ts` accepts
+ * 'Verified' | 'Pending Verification' | 'Rejected') and which `/tenant/my-payments`
+ * returns unfiltered.
+ *
+ * So a resident whose GCash transfer was refused read it as still being looked
+ * at, indefinitely, and did not pay again. The debt is real: rejecting a payment
+ * reopens its bill to 'Due' in `admin.ts`, so the money genuinely is still owed
+ * and the words on the screen have to say so rather than imply a wait.
+ */
+const isRejected = (status: string) => status === 'REJECTED';
+
+const statusTone = (status: string): 'paid' | 'overdue' | 'verify' =>
+  isVerified(status) ? 'paid' : isRejected(status) ? 'overdue' : 'verify';
+
+const statusLabel = (status: string): string =>
+  isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting for verification';
+
+const statusLabelShort = (status: string): string =>
+  isVerified(status) ? 'Verified' : isRejected(status) ? 'Not accepted' : 'Waiting';
 
 /**
  * THE RETURN LEG FROM GCASH, WHICH NOTHING HANDLED.
@@ -219,6 +265,50 @@ function billBalance(bill: any): number {
   return Number.isFinite(outstanding) ? outstanding : Number(bill?.total_amount) || 0;
 }
 
+/**
+ * Money already sent for this bill that the landlady has not confirmed yet.
+ *
+ * `withEffectiveStatus` has returned `amount_pending` on every bill all along and
+ * nothing in this frontend ever read it - `grep amount_pending frontend/src`
+ * returned nothing. It is deliberately NOT subtracted from `amount_outstanding`
+ * server-side, because BR-017 says the gateway does not get to decide a debt is
+ * settled, so what is OWED is unchanged until she verifies it.
+ *
+ * Owed and sent are two different facts and the screen has to show both. Showing
+ * only the first is what repainted a bill at its full amount with a live Pay
+ * button directly under a toast saying the payment had been received.
+ */
+function billPending(bill: any): number {
+  const pending = Number(bill?.amount_pending);
+  return Number.isFinite(pending) && pending > 0 ? pending : 0;
+}
+
+/**
+ * What can actually be paid here right now, which is not the same as what is owed.
+ *
+ * BR-013 allows part of a bill to be paid, so the remainder of a partly-sent bill
+ * is genuinely still owed - but it cannot be paid on this screen. The checkout
+ * route refuses the WHOLE bill while ANY payment on it is awaiting verification:
+ * `pendingOnBill()` sums exactly the same rows `amount_pending` is built from, and
+ * `if (alreadySent > 0)` throws a 409. Rendering the button anyway guarantees the
+ * "The payment page could not be opened" modal, which is the contradiction this
+ * is here to remove, so the remainder is stated in words instead and the button
+ * comes back the moment she confirms the payment that is already in.
+ */
+function billPayableNow(bill: any): number {
+  return billPending(bill) > 0 ? 0 : billBalance(bill);
+}
+
+/** The pending portion is sent, not settled: it stays on the balance until she confirms it. */
+function billRemainderAfterPending(bill: any): number {
+  return Math.max(0, billBalance(bill) - billPending(bill));
+}
+
+function billTileTitle(bill: any): string {
+  if (billPending(bill) > 0) return 'Payment sent';
+  return billBalance(bill) < Number(bill.total_amount) ? 'Partly paid bill' : 'Bill to pay';
+}
+
 async function fetchOutstandingBills() {
   loadingBills.value = true;
   billsLoadFailed.value = false;
@@ -236,6 +326,7 @@ async function fetchOutstandingBills() {
 }
 
 async function fetchPaymentHistory() {
+  loadingHistory.value = true;
   historyLoadFailed.value = false;
   try {
     const data = await api.get<any[]>('/tenant/my-payments');
@@ -258,6 +349,8 @@ async function fetchPaymentHistory() {
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
     historyLoadFailed.value = true;
+  } finally {
+    loadingHistory.value = false;
   }
 }
 
@@ -322,7 +415,7 @@ function refreshAll() {
         v-for="bill in outstandingBills"
         :key="bill.id"
         tone="brand"
-        :title="billBalance(bill) < Number(bill.total_amount) ? 'Partly paid bill' : 'Bill to pay'"
+        :title="billTileTitle(bill)"
       >
         <div>
           <!-- The balance, not the debt as issued. BR-013. -->
@@ -347,12 +440,35 @@ function refreshAll() {
               {{ peso(Number(bill.amount_paid), 2) }} of {{ peso(Number(bill.total_amount), 2) }}
             </dd>
           </div>
+          <!-- Sent, not settled. It stays on the balance above until she confirms
+               it (BR-017), and it is stated here so the balance is not read as a
+               bill that never arrived. -->
+          <div v-if="billPending(bill) > 0" class="flex items-baseline justify-between gap-3">
+            <dt>Sent, waiting for her to check it</dt>
+            <dd class="tabular text-on-brand">{{ peso(billPending(bill), 2) }}</dd>
+          </div>
         </dl>
 
-        <button type="button" class="pill-btn-light mt-auto self-start" @click="openAdyenModal(bill)">
+        <button
+          v-if="billPayableNow(bill) > 0"
+          type="button"
+          class="pill-btn-light mt-auto self-start"
+          @click="openAdyenModal(bill)"
+        >
           <CreditCard class="size-4" aria-hidden="true" />
           Pay with GCash
         </button>
+        <p v-else class="mt-auto text-sm text-on-brand-soft">
+          {{ peso(billPending(bill), 2) }} has already been sent for this bill and is waiting for
+          the landlady to check it. You have not been charged twice.
+          <template v-if="billRemainderAfterPending(bill) > 0">
+            The remaining {{ peso(billRemainderAfterPending(bill), 2) }} is still owed, and can be
+            paid here once she has confirmed the payment that is already in.
+          </template>
+          <template v-else>
+            There is nothing more to pay here while she is checking it.
+          </template>
+        </p>
       </OverviewTile>
     </div>
 
@@ -393,8 +509,12 @@ function refreshAll() {
         :caption="`Your payments in ${selectedYear}`"
         noun="payment"
         :page-size="8"
-        empty-title="Nothing recorded"
-        :empty-note="`No payments are on record for ${selectedYear}.`"
+        :empty-title="loadingHistory ? 'Loading your payments' : 'Nothing recorded'"
+        :empty-note="
+          loadingHistory
+            ? 'Your payment record is still being read. This is not the same as having none.'
+            : `No payments are on record for ${selectedYear}.`
+        "
       >
         <template #head>
           <tr>
@@ -413,9 +533,13 @@ function refreshAll() {
             <td class="num font-semibold">{{ peso(record.amountPaid, 2) }}</td>
             <td class="text-ink-soft">{{ record.paymentMethod }}</td>
             <td>
-              <StatusPill :tone="isVerified(record.status) ? 'paid' : 'verify'">
-                {{ isVerified(record.status) ? 'Verified' : 'Waiting for verification' }}
+              <StatusPill :tone="statusTone(record.status)">
+                {{ statusLabel(record.status) }}
               </StatusPill>
+              <p v-if="isRejected(record.status)" class="mt-1.5 text-sm text-ink-soft">
+                This money was not accepted, and the bill it was for is still owed. Pay it again or
+                speak to the landlady.
+              </p>
             </td>
           </tr>
         </template>
@@ -428,10 +552,14 @@ function refreshAll() {
               </p>
               <p class="mt-1.5 text-sm text-ink-soft">{{ record.datePaid }}</p>
             </div>
-            <StatusPill :tone="isVerified(record.status) ? 'paid' : 'verify'">
-              {{ isVerified(record.status) ? 'Verified' : 'Waiting' }}
+            <StatusPill :tone="statusTone(record.status)">
+              {{ statusLabelShort(record.status) }}
             </StatusPill>
           </div>
+          <p v-if="isRejected(record.status)" class="mt-1.5 text-sm text-ink-soft">
+            This money was not accepted, and the bill it was for is still owed. Pay it again or
+            speak to the landlady.
+          </p>
 
           <dl class="mt-4 space-y-3 text-sm">
             <div>
