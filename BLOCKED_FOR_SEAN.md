@@ -33,6 +33,53 @@ thing did not work" is not.
 
 ## Open
 
+### B-45 — can a resident pay the rest of a bill while the first part is still unchecked?
+
+- **Blocked on:** her decision, then a small backend change. It is a question about how she wants
+  to work, not a bug.
+- **What it is:** BR-013 lets a resident pay a bill in parts. The online checkout does not. The
+  guard in `tenant.ts` refuses the **whole** bill the moment anything on it is awaiting her
+  verification — `pendingOnBill()` sums those rows and throws on anything above zero.
+- **So:** a resident who pays ₱2,000 of a ₱6,900 bill through GCash cannot pay the remaining
+  ₱4,900 until she has checked the first payment. The screen now says so in words rather than
+  offering a button that would fail, so nothing is broken — it is just a rule nobody chose.
+- **What Sean needs to do:** ask her. *"If somebody sends part of their rent through GCash and
+  you have not checked it yet, should they be able to send the rest straight away, or wait until
+  you have confirmed the first one?"*
+- **If she says yes:** the guard compares `alreadySent` against zero and should compare it against
+  the amount outstanding instead. One condition, in `tenant.ts`, plus a button on the bill.
+- **If she says wait:** nothing to do. The screen already explains it.
+- **Raised:** 2026-09-20 by Claude
+
+### B-46 — reopening a repair does not take the unit off the listing again
+
+- **Blocked on:** a decision about how she wants this to behave. Deliberately **not** changed.
+- **What it is:** raising an Emergency repair marks a unit Under Maintenance, and resolving it
+  puts the unit back. Reopening a resolved ticket does neither — the unit stays Available and
+  keeps taking public enquiries while the repair is open again.
+- **Why I left it:** the symmetric fix would move a unit off the public listing without her
+  pressing anything, and she can already do it by hand from the unit editor. Changing what the
+  public site shows, unprompted, is her call rather than mine.
+- **What Sean needs to do:** ask her. *"If a repair gets reopened, should the unit come off the
+  website again by itself, or would you rather do that yourself?"*
+- **How to know it worked:** reopen a ticket on a vacant unit and check `/public/rooms`.
+- **Raised:** 2026-09-20 by Claude
+
+### B-47 — a resident is never told their repair was attended to
+
+- **Blocked on:** her decision. It is a missing feature, not a defect, and it may be deliberate.
+- **What it is:** there are exactly three maintenance notifications in the system — she is told
+  when a ticket is raised and when a resident comments, and a resident is told when **she**
+  comments. Nothing tells a resident that their ticket was dispatched, resolved or closed. They
+  find out by opening the portal.
+- **Why it might be fine:** it is a 33-unit boarding house and she sees these people. A message
+  saying "your leak is fixed" may be less useful than her saying so.
+- **What Sean needs to do:** ask her. *"When you mark a repair as done, should the resident get a
+  notice about it in the app, or do you just tell them?"*
+- **If she wants it:** one `notificationService.notify` in the ticket PATCH handler in `admin.ts`,
+  fired on the transitions into Resolved and Closed.
+- **Raised:** 2026-09-20 by Claude
+
 ### B-29 — the rate card · **ANSWERED AND APPLIED 2026-09-20 — migration 045**
 
 > **She gave all 33 rates. They are in.** The Penthouse now advertises at ₱30,000, and a

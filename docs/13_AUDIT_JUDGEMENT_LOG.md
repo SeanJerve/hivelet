@@ -1645,6 +1645,121 @@ and the expense allocations cascade.
 
 ---
 
+### A seventeenth sweep, 2026-09-20: money going the other way, and a lead she could not move in
+
+Two agents on the reading, the rest done inline after a session rate limit took a
+third — which is itself worth recording, because the fallback is not "stop", it is
+"do it yourself, slower".
+
+#### 1. A chargeback and a capture were handled identically
+
+Only an AUTHORISATION creates money here, and everything else was acknowledged
+with one audit row and the note *"no ledger effect"*. That sentence is true of a
+CAPTURE and dangerously incomplete for a CHARGEBACK.
+
+The case it missed is ordinary: a resident pays by GCash, the payment is recorded
+and verified, and days later the money goes back — a dispute, or **Mrs Fe herself
+refunding from the Adyen Customer Area** because somebody paid the wrong bill.
+Adyen tells us. We wrote an audit row and answered 200. Her ledger still said the
+rent was in, and the first she would have learned of it is a bank balance that
+does not reconcile.
+
+Ten event codes now reach her inbox, graded. **It still does not touch the
+ledger**, deliberately — BR-048 puts ledger authorship with her, and BR-017
+already refuses to let the gateway decide a debt is settled. Letting it decide
+unilaterally that one is *unsettled* is the same mistake facing the other way, and
+there is a question behind every reversal that no webhook can answer: does the
+resident still owe this, or was the refund the correction?
+
+> **The discriminating case is the one that makes the rule mean anything.** The
+> simulation's most important assertion is that a routine CAPTURE raises
+> *nothing*. A rule that notifies on every event is not a rule, and an inbox that
+> cries wolf is an inbox nobody reads — which would take the chargeback alert down
+> with it.
+
+#### 2. BR-009 was impossible to perform, and had been all along
+
+`POST /admin/tenants` refused any email matching any profile, with no role filter.
+**A prospect is a profile.** The one enquiry in the live database carries the same
+address as the prospect profile behind it, so pressing "Move them in" pre-filled
+the form, which posted it, which answered *"A profile with this email address
+already exists."*
+
+There was no other way in — `role: 'tenant'` appears on inserts only, never on an
+update, so nothing anywhere could promote a prospect. Her workaround is to blank
+the email, which produces a resident with no portal login and strands the prospect
+row holding the address that resident can now never be given.
+
+The fix is four answers, not one, and **the interesting branch is the refusal**. A
+prospect is promoted in place: no payments, no bills, nothing to mis-attach. A
+former resident is **refused**, because reusing their row is what BR-027 wants and
+doing it automatically off an email match is how a typo hands a new resident
+somebody else's payment history. She is sent to their record instead, where
+reactivating keeps the history attached to the person it belongs to.
+
+> **Two cases that take the same input are not the same question.** The original
+> code treated every match identically because every match looks identical at the
+> point of matching. What differs is what is standing behind the row.
+
+#### 3. A check that read prose as code, and a check that overclaimed
+
+`check:columns` scans the text between one `.from(` and the next — comments
+included. So a comment that *quotes* a query, which the comments here do
+constantly because they exist to explain queries, was read as that query. A note
+reading ``the update is guarded with `.eq('role', 'prospect')` `` sat between a
+rooms lookup and the profiles write it described, and the suite reported
+`rooms.role` — a column that does not exist, on a table absent from the code it
+was pointing at.
+
+> **That is the worst shape a check can have.** It is not wrong about the code, it
+> is wrong about what the code *is*, so the only ways to clear it are to reword
+> English until a regex stops recognising it, or to stop trusting the check.
+
+Then the opposite failure, in a rule written the same hour. A new `check:writes`
+rule refuses a tenant-held permission on an admin route unless it is scoped
+`_OWN`. Mutation-testing it found that it read only the *literal* entries of
+`TENANT_PERMISSIONS` and missed the three arriving through
+`...GUEST_PERMISSIONS` — one of which is `INQUIRY_CREATE`, tenant-held and
+carrying no scope at all. **It would have sat on an admin route unnoticed by the
+rule written to stop it.** Nine became twelve.
+
+And its comment claimed more than it delivered, which is now said in the comment
+itself: the rule reads *names*, not behaviour. `_OWN` is taken as a promise that
+the handler filters by profile, and nothing checks that it does.
+
+#### 4. What the sweep actually found, in one line each
+
+- A **rejected** payment read to the resident as "Waiting for verification", for
+  ever, and vanished entirely from the overview. They conclude the money is in and
+  do not pay again.
+- `amount_pending` was returned by the API and read by **nothing** — so a paid
+  bill repainted at full price with a live Pay button, directly under a toast
+  saying it would not ask again.
+- The portal was **₱20 short of the paper receipt** on every receipt carrying a
+  garbage fee, which is **531 of the 937 income rows**. `remitted_amount` is
+  generated as rent plus water; garbage is its own column, and the endpoint did
+  not even select it.
+- The onboarding form's reset cleared five of eleven fields, so **one resident's
+  emergency contact was written onto the next one's profile** — BR-024, not
+  untidiness.
+- Resolving or deleting a repair forced the unit to Available **without reading
+  what it was**, erasing a Reserved status she had set by hand and putting the
+  unit back on the public listing.
+- `TenantTicketsView` had **zero** load-failure refs where its three siblings have
+  seven, eight and six — so a dropped connection told a resident they had no
+  repairs.
+- `ROOM_STATUS_CHANGE` was declared in the audit enum and emitted by **nothing**,
+  while three ticket paths changed what the public site says about a unit.
+
+#### 5. The method note
+
+> **Counting is the cheapest verification there is, and it keeps finding things.**
+> Five separate results this sweep came from a count rather than a reading: 9
+> permissions where there were 12, five reset fields where there were eleven, zero
+> failure refs against seven, one emitter where there were none, 531 rows where
+> the fix looked hypothetical. None of them needed cleverness. They needed
+> `grep -c`.
+
 ### A sixteenth sweep, 2026-09-19/20: four agents, a payment gateway, and the day the owner answered
 
 The longest stretch of the audit, and the one where the method changed twice.
