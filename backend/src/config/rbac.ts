@@ -79,7 +79,31 @@ export const PERMISSIONS = {
   TICKET_CREATE_OWN: 'ticket:create:own',
   TICKET_READ_ALL: 'ticket:read:all',
   TICKET_READ_OWN: 'ticket:read:own',
-  TICKET_COMMENT: 'ticket:comment',
+  /**
+   * TWO PERMISSIONS, BECAUSE THEY ARE TWO DIFFERENT POWERS.
+   *
+   * There was one, `TICKET_COMMENT`, held by tenants - and it was declared on
+   * `POST /admin/tickets/:id/messages`, which posts into ANY thread and has no
+   * ownership check, by design, because the administrator is meant to see every
+   * ticket. The only thing standing between a resident and writing into another
+   * resident's thread was the `requireAuth, requireAdmin` at the top of the
+   * admin router.
+   *
+   * That gate holds today, and this was never exploitable. It is a trap rather
+   * than a hole: the per-route permission declared the opposite of what the
+   * route means, so the line that should have been the second lock was reading
+   * as though it deliberately let tenants in. Move that handler, or relax the
+   * router gate for one endpoint, and the declaration beside it would have
+   * agreed.
+   *
+   * `TICKET_COMMENT_OWN` is the tenant's - the route holding it checks
+   * `tenant_profile_id` and answers 404. `TICKET_COMMENT_ANY` is the
+   * administrator's. The names now say which is which, and `check:writes`
+   * enforces that a tenant-held permission on an admin route must be scoped
+   * `_OWN`, which is what makes this hard to reintroduce.
+   */
+  TICKET_COMMENT_OWN: 'ticket:comment:own',
+  TICKET_COMMENT_ANY: 'ticket:comment:any',
   TICKET_MANAGE: 'ticket:manage',
   TICKET_CLOSE: 'ticket:close',
 
@@ -129,7 +153,7 @@ const TENANT_PERMISSIONS: readonly Permission[] = [
   P.PAYMENT_READ_OWN,
   P.TICKET_CREATE_OWN,
   P.TICKET_READ_OWN,
-  P.TICKET_COMMENT,
+  P.TICKET_COMMENT_OWN,
   P.NOTIFICATION_READ_OWN,
 ];
 

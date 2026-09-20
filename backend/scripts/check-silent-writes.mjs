@@ -355,9 +355,62 @@ const GUARDED_ELSEWHERE = new Map([
   // Nothing yet. Add a route here only with the reason it needs no permission.
 ]);
 
+/**
+ * AND IT DECLARES ONE THAT MEANS WHAT THE ROUTE DOES.
+ *
+ * Declaring *a* permission is not the same as declaring the right one, and the
+ * wrong one is worse than none: it reads as a deliberate decision.
+ *
+ * `POST /admin/tickets/:id/messages` declared `TICKET_COMMENT`, which TENANTS
+ * held. That route posts into any thread and has no ownership check, by design -
+ * the administrator is meant to see every ticket - so the only thing between a
+ * resident and another resident's thread was the `requireAdmin` on the router.
+ * It held, and this was never exploitable. But the second lock was reading as
+ * though it let tenants in on purpose, and the day that handler moves, or the
+ * router gate is relaxed for one endpoint, the declaration beside it would have
+ * agreed.
+ *
+ * The rule: a permission the TENANT role holds may appear on an admin route only
+ * if it is scoped `_OWN`. Four do - the notification routes, where the
+ * administrator really is reading her own and every one filters by
+ * `req.user.profileId`. `TICKET_COMMENT` was the one tenant permission whose
+ * name carried no scope at all, which is exactly how it ended up somewhere
+ * unscoped. It is now `TICKET_COMMENT_OWN` and `TICKET_COMMENT_ANY`.
+ *
+ * WHAT THIS DOES NOT PROVE, stated because the first version of this comment
+ * overclaimed. It reads names, not behaviour. `_OWN` on an admin route is taken
+ * as a promise that the handler filters by `req.user.profileId`, and nothing
+ * here checks that it does. The rule catches the shape that actually occurred -
+ * a tenant permission with no scope in its name landing on an unscoped route -
+ * and a deliberately mis-named `_OWN` would walk past it.
+ *
+ * Read from `rbac.ts` rather than listed here, so adding a permission to the
+ * tenant role brings it under this rule automatically. The spread is followed:
+ * `TENANT_PERMISSIONS` opens with `...GUEST_PERMISSIONS`, and reading only the
+ * literal entries missed three - including `INQUIRY_CREATE`, which tenants hold
+ * and which carries no scope at all. Found by mutation-testing this rule, which
+ * is the entire reason for mutation-testing a rule.
+ */
+const rbacSrc = fs.readFileSync(path.join(routeDir, '..', 'config', 'rbac.ts'), 'utf8');
+const permBlock = (name) =>
+  (rbacSrc.match(new RegExp(`const ${name}[^=]*=\\s*\\[([\\s\\S]*?)\\];`)) ?? [])[1] ?? '';
+const namesIn = (block) => [...block.matchAll(/P\.([A-Z_]+)/g)].map((x) => x[1]);
+
+const tenantBlock = permBlock('TENANT_PERMISSIONS');
+const TENANT_HELD = new Set(namesIn(tenantBlock));
+// `...GUEST_PERMISSIONS` and any other spread, followed by name.
+for (const sp of tenantBlock.matchAll(/\.\.\.([A-Z_]+)/g)) {
+  for (const n of namesIn(permBlock(sp[1]))) TENANT_HELD.add(n);
+}
+if (TENANT_HELD.size === 0) {
+  console.log('\n  FAIL  could not read TENANT_PERMISSIONS from rbac.ts - the scope rule cannot run');
+  process.exitCode = 1;
+}
+
 const routeFiles = ['admin.ts', 'tenant.ts'];
 let guarded = 0;
 const unguarded = [];
+const misScoped = [];
 
 for (const f of routeFiles) {
   const src = fs.readFileSync(path.join(routeDir, f), 'utf8');
@@ -371,10 +424,36 @@ for (const f of routeFiles) {
     }
     const body = src.slice(re.lastIndex, end);
     const routePath = (body.match(/['"](\/[a-z0-9/:_-]+)['"]/i) ?? [])[1] ?? '(unknown)';
+
+    if (f === 'admin.ts' && routePath.startsWith('/admin')) {
+      for (const pm of body.matchAll(/requirePermission\s*\(\s*PERMISSIONS\.([A-Z_]+)\s*\)/g)) {
+        const name = pm[1];
+        if (TENANT_HELD.has(name) && !name.endsWith('_OWN')) {
+          misScoped.push(`${m[1].toUpperCase()} ${routePath}  declares ${name}, which tenants hold`);
+        }
+      }
+    }
+
     if (/requirePermission\s*\(/.test(body)) { guarded++; continue; }
     if (GUARDED_ELSEWHERE.has(routePath)) { guarded++; continue; }
     unguarded.push(`${m[1].toUpperCase()} ${routePath}  (${f})`);
   }
+}
+
+if (misScoped.length > 0) {
+  console.log(`\n  FAIL  ${misScoped.length} admin route(s) declare a tenant permission that is not _OWN:`);
+  for (const s of misScoped) console.log(`          ${s}`);
+  console.log(
+    '\n  requireAdmin on the router still holds, so this is not a hole. It is a\n' +
+    '  declaration that says the opposite of what the route means, sitting where\n' +
+    '  the second lock should be. Give the administrator\'s version its own name.'
+  );
+  process.exitCode = 1;
+} else {
+  console.log(
+    `\n  OK    permission scope - no admin route declares an unscoped tenant permission ` +
+    `(${TENANT_HELD.size} held by tenants)`
+  );
 }
 
 if (unguarded.length > 0) {

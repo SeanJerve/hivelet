@@ -4304,7 +4304,7 @@ const postTicketMessageSchema = z.object({
 
 router.post(
   '/admin/tickets/:id/messages',
-  requirePermission(PERMISSIONS.TICKET_COMMENT),
+  requirePermission(PERMISSIONS.TICKET_COMMENT_ANY),
   asyncHandler(async (req, res) => {
     const parsed = postTicketMessageSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -4337,7 +4337,7 @@ router.post(
      * This said "Landlady commented" for whoever posted it. There is exactly one
      * `admin` profile today - Mrs. Fe Galang Da Silva - so it is accurate right
      * now, and it stops being accurate the moment a second account holds
-     * `TICKET_COMMENT`: a caretaker, or an account added for a demonstration.
+     * `TICKET_COMMENT_ANY`: a caretaker, or an account added for a demonstration.
      * The resident would then be told the owner said something she did not say.
      *
      * The sender's name is already in hand: the insert above selects

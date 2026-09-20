@@ -509,7 +509,7 @@ router.get(
  */
 router.post(
   '/tenant/tickets/:ticketId/messages',
-  requirePermission(PERMISSIONS.TICKET_COMMENT),
+  requirePermission(PERMISSIONS.TICKET_COMMENT_OWN),
   asyncHandler(async (req, res) => {
     const parsed = messageSchema.safeParse(req.body);
     if (!parsed.success) {
