@@ -28,6 +28,11 @@ export interface BillAmounts {
   waterAmount: number;
   totalAmount: number;
   /** How the water figure was arrived at, for the audit log and for support questions. */
+  /**
+   * Which unit this is, not which formula was used - every unit is now 200 a
+   * head. `linda-fixed` is kept as the name because it is what marks a charge as
+   * LINDA'S money, which is still recorded and remitted separately (BR-040).
+   */
   waterBasis: 'per-occupant' | 'linda-fixed';
 }
 
@@ -66,14 +71,37 @@ export async function computeWaterFee(
   roomNumber: string,
   occupants: number
 ): Promise<{ amount: number; basis: BillAmounts['waterBasis'] }> {
-  const fixed = await getLindaFixedWaterCharge(roomNumber);
-  if (fixed !== null) {
-    return { amount: toCentavos(fixed), basis: 'linda-fixed' };
-  }
-
+  /**
+   * BR-040's FIXED WATER CHARGE IS RETIRED. It never existed.
+   *
+   * The rule said LF and LB are billed a fixed monthly amount - LF 400, LB 200 -
+   * instead of the per-occupant rate, and the ledger agreed for 26 months.
+   *
+   * It agreed because of a COINCIDENCE. Across all 62 Linda rows the occupancy
+   * never changed once: LB has always held 1 person and LF 2. So 1 x 200 = 200
+   * and 2 x 200 = 400 - the "fixed" charges were the per-head figures for their
+   * standing occupancy, and no row in her book could tell the two readings apart.
+   *
+   * The owner settled it on 2026-09-20, asked directly what happens if a third
+   * person moves into LF:
+   *
+   *     "yes, water will be 600 since its 200 per head 200x3 is 600. LB will
+   *      remain 200 since there is only 1 person in the unit and if ever another
+   *      one moves in LB, it will still be charged 200 per head"
+   *
+   * So every unit on the property is 200 a head. There is no exception, and the
+   * fixed charge would have been wrong the first time anybody moved in or out of
+   * those two units - silently, because it would still have looked right.
+   *
+   * WHAT IS NOT RETIRED: Linda's money is still kept separate. That is a
+   * question about WHERE the charge is recorded and who it is remitted to, not
+   * about how much it is, and she did not change it. `linda_water_charge` and
+   * migration 041's routing trigger stand.
+   */
   const rate = await getWaterRatePerOccupant();
   const heads = Number.isFinite(occupants) && occupants >= 1 ? Math.floor(occupants) : 1;
-  return { amount: toCentavos(heads * rate), basis: 'per-occupant' };
+  const isLinda = (await getLindaFixedWaterCharge(roomNumber)) !== null;
+  return { amount: toCentavos(heads * rate), basis: isLinda ? 'linda-fixed' : 'per-occupant' };
 }
 
 /**

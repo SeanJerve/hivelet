@@ -282,11 +282,43 @@ A tenant's deposit is set once, at onboarding, equal to the Rent Amount in effec
 > status in the crosswalk rests on the vacate path having no settlement step, and is worth
 > re-arguing now that settlement is known to be manual by choice.
 
-## BR-040 — Linda's Fixed Billing Exception
+## BR-040 — Linda's Separate Billing
 
-Linda's units (LF, LB) are billed a **fixed monthly water charge** rather than the per-occupant water model (BR-014): **LF ₱400/month, LB ₱200/month**. This is remitted directly to Linda and kept separate from the standard rent/water subtotal.
+Linda's units (LF, LB) are billed water at the **same ₱200 per registered occupant as every other
+unit** (BR-014). What is separate is the **money**, not the rate: their water is recorded in
+`monthly_income_records.linda_water_charge`, remitted directly to Linda, and kept out of the
+standard rent/water subtotal and out of `remitted_amount`.
 
-> **ERRATA (2026-09-13, OD-18).** This rule previously read "a flat electricity charge **plus** a fixed water charge per unit". **The flat electricity charge is retired.** It was a workaround for units without their own electricity meter, not a rate belonging to a unit, and the client has confirmed that unmetered electricity will not be recorded in this system. `system_settings.linda_lb_electricity_charge` was deleted by migration `017`. Historical figures remain in `monthly_income_records.linda_electricity_charge` — 31 rows against LF totalling ₱12,035.76 — and are preserved read-only under BR-003. Only the fixed **water** half of this rule survives.
+> **ERRATA (2026-09-20). THE FIXED WATER CHARGE IS RETIRED. It never existed.**
+>
+> This rule read *"billed a **fixed monthly water charge** rather than the per-occupant water
+> model: LF ₱400/month, LB ₱200/month"*, and the ledger agreed with it for 26 months.
+>
+> **It agreed by coincidence.** Across all 62 Linda rows the occupancy has never changed once —
+> LB has always held **1** person and LF **2**. So 1 × ₱200 = ₱200 and 2 × ₱200 = ₱400, and
+> **no row in her book could tell a fixed charge apart from a per-head one.**
+>
+> Asked directly on 2026-09-20 what happens if a third person moves into LF:
+>
+> > *"yes, water will be 600 since its 200 per head 200x3 is 600. LB will remain 200 since there
+> > is only 1 person in the unit and if ever another one moves in LB, it will still be charged
+> > 200 per head"*
+>
+> And on why LB looked fixed, in Bicol: the resident **lives alone and has rented there since
+> before the pandemic**, so it was simply marked as a flat ₱200 because it never went up —
+> *"dae man naga dagdag"*. A shorthand for stable occupancy, recorded as though it were a rate.
+>
+> **The old rule would have been wrong the first time anyone moved in or out of those two units,
+> and wrong silently**, because it would still have looked right.
+>
+> `system_settings.linda_lf_water_charge` and `linda_lb_water_charge` are kept as the historical
+> record of what was charged, and are no longer used to compute a bill.
+>
+> **What is NOT retired:** Linda's money stays separate. That is a question about where the
+> charge is recorded and who it is remitted to, and she did not change it — migration 041's
+> routing trigger and the report's Linda line both stand.
+
+> **ERRATA (2026-09-13, OD-18).** This rule previously read "a flat electricity charge **plus** a fixed water charge per unit". **The flat electricity charge is retired.** It was a workaround for units without their own electricity meter, not a rate belonging to a unit, and the client has confirmed that unmetered electricity will not be recorded in this system. `system_settings.linda_lb_electricity_charge` was deleted by migration `017`. Historical figures remain in `monthly_income_records.linda_electricity_charge` — 31 rows against LF totalling ₱12,035.76 — and are preserved read-only under BR-003. At the time, only the fixed **water** half of this rule survived. The 2026-09-20 errata above retires that half too.
 
 See `09_MONTHLY_INCOME_REPORT.md` Section 6 for exact figures.
 

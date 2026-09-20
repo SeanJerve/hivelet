@@ -90,16 +90,43 @@ check('grace equals due date', p1.gracePeriodEndDate === p1.dueDate, true);
 // --- water fee (BR-014 / BR-040) ---
 check('standard unit, 3 occupants -> 600 per-occupant', await computeWaterFee('2c', 3),
   { amount: 600, basis: 'per-occupant' });
-check('LF -> 400 fixed', await computeWaterFee('LF', 5), { amount: 400, basis: 'linda-fixed' });
-check('LB -> 200 fixed', await computeWaterFee('LB', 1), { amount: 200, basis: 'linda-fixed' });
-check('lowercase lf still matches', await computeWaterFee('lf', 2), { amount: 400, basis: 'linda-fixed' });
+/**
+ * BR-040's FIXED WATER CHARGE IS RETIRED - and these assertions used to encode it.
+ *
+ * They read `computeWaterFee('LF', 5) -> 400`: five people, still 400, because
+ * the rule said a fixed charge. The ledger agreed for 26 months, and it agreed
+ * by coincidence - across all 62 Linda rows the occupancy never changed once, so
+ * LB's 1 x 200 and LF's 2 x 200 were indistinguishable from a fixed amount.
+ *
+ * The owner settled it on 2026-09-20, asked what happens if a third person moves
+ * into LF: "yes, water will be 600 since its 200 per head 200x3 is 600."
+ *
+ * The two cases that matter are the ones her old occupancy could never produce.
+ */
+check('LF with 3 people -> 600, the case she settled',
+  await computeWaterFee('LF', 3), { amount: 600, basis: 'linda-fixed' });
+check('LB with 2 people -> 400, not the old fixed 200',
+  await computeWaterFee('LB', 2), { amount: 400, basis: 'linda-fixed' });
+check('LF at its standing 2 people is still 400',
+  await computeWaterFee('LF', 2), { amount: 400, basis: 'linda-fixed' });
+check('LB at its standing 1 person is still 200',
+  await computeWaterFee('LB', 1), { amount: 200, basis: 'linda-fixed' });
+// The basis still says linda-fixed: it marks WHOSE money this is, which is
+// unchanged, not which formula produced it.
+check('a Linda unit is still flagged as Linda money',
+  (await computeWaterFee('lf', 2)).basis, 'linda-fixed');
+check('and a standard unit is not',
+  (await computeWaterFee('2c', 2)).basis, 'per-occupant');
+check('a Linda unit and a standard unit now cost the same per head',
+  (await computeWaterFee('LF', 3)).amount, (await computeWaterFee('2c', 3)).amount);
 check('zero occupants floors to 1', await computeWaterFee('3a', 0), { amount: 200, basis: 'per-occupant' });
 
 // --- totals ---
 check('rent 8000 + 2 occupants', await computeBillAmounts({ roomNumber: '1a', currentPrice: 8000, occupants: 2 }),
   { rentAmount: 8000, waterAmount: 400, totalAmount: 8400, waterBasis: 'per-occupant' });
-check('LF rent 5000 + fixed water', await computeBillAmounts({ roomNumber: 'LF', currentPrice: 5000, occupants: 4 }),
-  { rentAmount: 5000, waterAmount: 400, totalAmount: 5400, waterBasis: 'linda-fixed' });
+check('LF rent 5000 + 4 people of water',
+  await computeBillAmounts({ roomNumber: 'LF', currentPrice: 5000, occupants: 4 }),
+  { rentAmount: 5000, waterAmount: 800, totalAmount: 5800, waterBasis: 'linda-fixed' });
 
 // --- overdue (BR-011) ---
 check('paid is never overdue',
