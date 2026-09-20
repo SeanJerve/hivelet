@@ -114,7 +114,7 @@ back in, and the only thing that would notice is this command.
 | # | Do | Should see | ✍ |
 | :-- | :--- | :--- | :-- |
 | 1 | Open the public site signed out. Browse the unit catalogue. | 33 units. Every one **without a photo** — `room_photos` is empty, which is expected and is worth deciding about before filming. | |
-| 2 | Open a unit's detail. | Rate, floor, cluster, occupancy. No resident name anywhere — the public payload carries nothing tenant-shaped. | |
+| 2 | Open a unit's detail. Look at **LB** and **LF** in particular. | Rate, floor, cluster, occupancy. **No resident name anywhere.** ⚠ This was FALSE until 2026-09-20: LB read *"Linda Back Unit (Jaye Casia)"* and LF *"Linda Front Unit (Gayon)"*, both current residents, on the unauthenticated public endpoint. Migration 044 rewrote them and `check:ledger` now fails if any published description names anyone on file. | |
 | 3 | Send an enquiry from a unit page. | "Thank you" confirmation. **If you get *"Too many enquiries from this connection"*, that is the new per-IP limit doing its job** — ten per fifteen minutes from one address. Wait it out or use another connection. | ✍ |
 
 **Undo 3:** the enquiry appears in **Inquiries**; close it in step 20, or delete the `inquiries` row.
@@ -130,7 +130,7 @@ Sign in as the administrator.
 | 4 | **Change Password** from the account menu. Type the wrong current password first, deliberately. | *"That is not your current password."* against the field — **and you stay signed in.** If you get bounced to the login screen, stop and say so: that is the failure this was built to avoid. | |
 | 5 | Now change it for real, to something you will remember. | Toast: *"Password changed."* You stay signed in. | ✍ |
 | 6 | Sign out, sign back in with the **new** password. | Works. | |
-| 7 | Open **Room & Rate Directory**, edit `PH`. Change the rate from ₱12,000 to ₱12,500 and save. | Saved. This also writes a `room_price_history` row — by database trigger, so the history cannot drift from the rate. | ✍ |
+| 7 | Open **Room & Rate Directory**, edit `PH`. **PH is now ₱30,000** — the owner's confirmed rate, applied 2026-09-20 by migration 045. Change it to **₱30,500** and save. | Saved. This also writes a `room_price_history` row — by database trigger, so the history cannot drift from the rate. That table now holds 31 real rows from 045, so yours will be the 32nd rather than the first. | ✍ |
 | 8 | Onboard a tenant into `PH`. Use an obviously fake name — *"REHEARSAL Test"* — a phone number you control, move-in date today. | Created, and `PH` flips to **Occupied**. | ✍ |
 | 9 | Try to onboard a **second** tenant with the same phone number. | Refused: *"That phone number already signs someone in to the portal."* | |
 | 10 | Edit the rehearsal tenant — change the occupant count to 2. | Saved. | ✍ |
@@ -151,7 +151,7 @@ Sign in as the rehearsal tenant from step 8.
 | 12 | File a maintenance ticket **with a photo attached**. | *"...has been submitted to Landlady Fe Galang Da Silva for review."* If the photo fails, you get the **same message plus** *"the photo could not be attached — reply to it with the photo instead."* **You must not see "Submission failed" for a ticket that exists** — that was the bug fixed on 17 Sep. | ✍ |
 | 13 | Post a message on that ticket. | Appears in the thread. | ✍ |
 | 14 | Open **My Profile**, change the emergency contact. | Saved. | ✍ |
-| 15 | Start a **GCash payment** for a bill. | Adyen's hosted checkout. **Do not complete a real payment.** Reaching the page proves the session was created against `checkout-test.adyen.com`. | ✍ |
+| 15 | Start a **GCash payment** for a bill. | **The Adyen Drop-in appears inside the modal, with a GCash button** — not a hosted page; this flow mounts Adyen's component on our own screen. **Do not complete a real payment.** ⚠ **Until 2026-09-20 this rendered an empty box**: the Drop-in mounted into a container that had not been drawn yet, so the ref was always null and the mount was silently skipped. Seeing the button at all is the thing this step now proves. Run `npm run simulate:adyen` first — it exercises every refusal path against the real webhook, so if this step fails the cause is the browser half. | ✍ |
 | 16 | Mark a notification read. | The unread badge drops by one. | ✍ |
 | 17 | **Try to reach another resident's data.** In the address bar, change a ticket id to one belonging to someone else. | **404 — not 403.** 403 would confirm the record exists to someone who should not know. Asserted by `check:api`; confirm by hand once. | |
 
@@ -177,9 +177,11 @@ Back to the administrator.
 | :-- | :--- | :--- | :-- |
 | 18 | **Record an on-site collection** for `PH`. Receipt number **`REHEARSAL-001`** so it is findable. | Written to the ledger, bills settled against it. **This is the path no real collection has ever taken.** | ✍ |
 | 19 | Record **the exact same receipt again** — same unit, number, date and amount. | Refused: *"Receipt REHEARSAL-001 is already recorded for unit PH on …"* If it accepts it, the duplicate guard is broken and the ledger can double-count. | |
+| 19b | **Void the `REHEARSAL-001` record, then try to void it a second time.** | The first void succeeds. The second is **refused**: *"That income record was already voided on …"* ⚠ Until 2026-09-20 the second void **succeeded silently and overwrote who voided it first** — the one thing a soft delete exists to record. 35 rows were in that state. Verified against the live API as a no-op; this confirms it on the path a person actually uses. | ✍ |
 | 20 | Open **Prospect Inquiries**. Reply to the enquiry from step 3, then close it. | Message posts; status moves to **Closed**. | ✍ |
 | 21 | Open **Maintenance Dispatch**. Move the rehearsal ticket to In Progress, then Resolved, then delete it. | Each transition saves. `PH` returns from **Under Maintenance** to **Occupied**. | ✍ |
 | 22 | Add an expense entry against **Penthouse**, ₱100, description *"REHEARSAL"*. Then edit the amount, then delete it. | Each step saves; allocations recompute. | ✍ |
+| 22b | **Edit that expense's ALLOCATIONS** — split the ₱100 across two property areas, say ₱60 Penthouse and ₱40 Boarding House. | Saves, and the entry's total still reads **₱100**. BR-047: allocations must total the entry. ⚠ The handler no longer writes that total itself — `replace_expense_allocations` and `trg_update_expense_total` derive it, so the figure follows the allocations by construction. This route has **no automated coverage at all** (B-37); this step is its only test. | ✍ |
 | 23 | Download **income.xlsx** and **expenses.xlsx**. | Real workbooks that open in Excel. Check `REHEARSAL-001` appears in the income sheet, and that the **LINDA** line is present — ₱18,600 across 2024–2026. | |
 
 | 23b | **The one that proves a wrong number cannot hide.** With the dashboard open, **stop the backend** (Ctrl-C in its terminal), then reload the page. | Every money tile shows **—** and *"Figures unavailable — refresh to retry"*. **It must not show ₱0.00, and Net Operating Income must not equal Gross Inflow.** Before 17 Sep a failed expense fetch showed the whole year's takings as profit. Restart the backend and reload; the real figures return. | ✍ |
@@ -196,7 +198,7 @@ Back to the administrator.
 | 24 | Vacate the rehearsal tenant from `PH`. | Tenancy ends, `PH` returns to **Available**, the account goes inactive. | ✍ |
 | 24b | **Immediately after step 24, run `npm run check:relations`.** | Its pinned line must still read **16** ended tenancies with no end date — **not 17**. This is the one step that proves the vacate path records *when* a tenancy ended. The code has written `end_date` since 2026-09-16, and **no human has used that path since**, so this is the first correctly-dated row the system will ever have produced. If the count rises to 17, the date was not written and **B-11 is a code defect rather than a data gap**. | |
 | 25 | Delete the `REHEARSAL-001` income record if you have not. | Gone from the ledger. | ✍ |
-| 26 | Set `PH` back to ₱12,000. | Saved. | ✍ |
+| 26 | Set `PH` back to **₱30,000**. ⚠ **NOT ₱12,000** — this step said 12,000 until 2026-09-20, which was the stale seeded rate. Putting that back would undo the owner's confirmed rate card and re-advertise the Penthouse at less than half what it lets for. | Saved, and `PH` reads ₱30,000 again. | ✍ |
 
 Then:
 
