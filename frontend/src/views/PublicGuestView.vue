@@ -16,7 +16,7 @@ import { ref, computed, onMounted } from 'vue';
 import { peso, publicStatusLabel } from '@/lib/canonicalUnits';
 import { CATEGORIES } from '@/lib/unitCategories';
 import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
-import { fetchRooms, rooms, roomsFetchFailed } from '@/lib/systemState';
+import { fetchRooms, rooms, roomsFetchFailed, roomsLoaded } from '@/lib/systemState';
 import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
 import { api } from '@/lib/api';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -153,6 +153,24 @@ function availableInCategory(key: string) {
  * free. The database knows: 32 Occupied, 1 Available at the time of writing.
  */
 const liveUnits = rooms;
+
+/**
+ * THREE STATES, NOT TWO.
+ *
+ * Every gate on this page asked `roomsFetchFailed`, which has exactly two
+ * answers: the listing failed, or it is fine. There is a third - it has not
+ * answered yet - and until it does, `rooms` holds the `CANONICAL_UNITS` seed:
+ * 33 units, every one vacant, at rates written before migration 045.
+ *
+ * So a visitor arriving on a slow connection was shown, as plain fact, that the
+ * whole property is free at prices thousands of pesos under what she charges.
+ * Not a caveat, not a zero - a complete, confident, wrong table. This page's own
+ * comments already argue the principle twice: "a caveat above a wrong number is
+ * still a wrong number", and "a zero is a claim". A seed rendered as a listing
+ * is the same mistake with better typography.
+ */
+const unitsReady = computed(() => roomsLoaded.value && !roomsFetchFailed.value);
+const unitsPending = computed(() => !roomsLoaded.value && !roomsFetchFailed.value);
 
 /**
  * The water rate, from `/public/rates`.
@@ -509,7 +527,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               "Units" and "Free to rent" labels two columns that have no
               values under them. The header follows the rows.
             -->
-            <template v-if="!roomsFetchFailed">
+            <template v-if="unitsReady">
               <span class="text-right">Units</span>
               <span class="text-right">Free to rent</span>
             </template>
@@ -547,6 +565,11 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             <template v-if="roomsFetchFailed">
               <span class="mt-2 block text-xs text-ink-faint sm:col-span-2 sm:mt-0 sm:text-right">
                 Availability could not be loaded
+              </span>
+            </template>
+            <template v-else-if="unitsPending">
+              <span class="mt-2 block text-xs text-ink-faint sm:col-span-2 sm:mt-0 sm:text-right">
+                Checking what is free&hellip;
               </span>
             </template>
             <template v-else>
@@ -595,6 +618,14 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         <AvailabilityUnavailable v-if="roomsFetchFailed" subject="the units on the property" />
 
         <!--
+          The listing has not answered yet. Says so, rather than printing the
+          seed - see the note on `unitsReady`.
+        -->
+        <p v-else-if="unitsPending" class="mt-8 text-sm text-ink-soft">
+          Reading the current listing&hellip;
+        </p>
+
+        <!--
           Seven columns need 44rem, so on a phone this table was 704px inside a
           375px screen: a sideways swipe to reach the rate and the status, which
           are the two things a person came to read.
@@ -620,7 +651,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           `--canvas`, the pale green used on the active-tenants register, and
           `ws-table` brings it with no extra rule here.
         -->
-        <div v-if="!roomsFetchFailed" class="mt-8 hidden overflow-hidden rounded-tile bg-tile sm:block">
+        <div v-if="unitsReady" class="mt-8 hidden overflow-hidden rounded-tile bg-tile sm:block">
           <div class="ws-table-wrap">
           <table class="ws-table">
             <caption class="sr-only">
@@ -740,7 +771,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         </div>
 
         <!-- The same units, stacked, for a phone. -->
-        <ul v-if="!roomsFetchFailed" id="all-units-list" class="mt-10 sm:hidden">
+        <ul v-if="unitsReady" id="all-units-list" class="mt-10 sm:hidden">
           <li v-for="u in visibleUnits" :key="u.id" class="border-b border-line">
             <button
               type="button"
@@ -831,7 +862,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           button is not rendered at all when there is nothing behind it, which
           is the case if the property is ever listed with five units or fewer.
         -->
-        <div v-if="!roomsFetchFailed && hiddenUnitCount > 0" class="border-t border-ink">
+        <div v-if="unitsReady && hiddenUnitCount > 0" class="border-t border-ink">
           <button
             type="button"
             :aria-expanded="allUnitsShown"

@@ -262,7 +262,8 @@ const pendingPreview = computed(() =>
     .map((p) => ({
       id: String(p.id),
       name: p.profiles?.full_name ?? 'Name not on file',
-      unit: p.rooms?.room_number ? String(p.rooms.room_number).toUpperCase() : '',
+      // The code on the door, not an upper-cased version of it.
+      unit: p.rooms?.room_number ? String(p.rooms.room_number) : '',
       amount: Number(p.amount) || 0,
       date: p.paid_at
         ? new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })

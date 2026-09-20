@@ -252,7 +252,9 @@ watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([n
  *
  * `rooms` is seeded from `canonicalUnits.ts`, whose unit codes are lowercase
  * (`"1a"`), and is then replaced wholesale by `fetchRooms()`, which uppercases
- * every one of them (`systemState.ts` - `(r.room_number || '').toUpperCase()`).
+ * every one of them. That upper-casing was removed on 2026-09-20 - the
+ * database holds her own spelling, 22 lowercase and 11 upper, and printing
+ * "1A" named a door that does not exist.
  * The `<option>` values below come from that same field. So the literal this
  * ref opened on could not be right in both phases whichever case it was
  * written in, and it was written lowercase:

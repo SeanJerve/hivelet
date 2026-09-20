@@ -445,6 +445,29 @@ export const inquiries = reactive<Inquiry[]>([]);
  * count as fact rather than as the last thing that loaded successfully.
  */
 export const roomsFetchFailed = ref(false);
+
+/**
+ * FALSE UNTIL THE UNIT LIST HAS COME BACK ONCE.
+ *
+ * `rooms` is seeded from `CANONICAL_UNITS` at module load - deliberately, so the
+ * shape of the property exists before any request - and the seed is 33 units,
+ * every one vacant, at rates written before migration 045. Nothing distinguished
+ * that from a loaded list, so between mount and the fetch resolving, the public
+ * page rendered **fabricated data as fact**: a stranger saw all 33 units free at
+ * prices thousands of pesos below what she actually charges.
+ *
+ * Caught by reading the page a moment after navigating to it, which is the
+ * proof that the window is observable rather than theoretical. On a phone on
+ * mobile data in Legazpi it is not milliseconds.
+ *
+ * `roomsFetchFailed` already covers the fetch that fails. This covers the one
+ * that has not answered yet, and the two are different sentences: "we could not
+ * read the listing" and "we are reading it". Neither is "everything is free".
+ *
+ * Set once a fetch SETTLES, success or failure, so a later refetch leaves the
+ * table on screen instead of blanking it under the reader.
+ */
+export const roomsLoaded = ref(false);
 export const incomeRecordsFetchFailed = ref(false);
 export const maintenanceTicketsFetchFailed = ref(false);
 /**
@@ -638,7 +661,32 @@ export async function fetchRooms(): Promise<RoomItem[]> {
       const mapped: RoomItem[] = data.map((r) => {
         const clusterCode = r.cluster_code || r.clusters?.code || 'BH';
         const cluster = mapClusterName(clusterCode);
-        const unitCode = (r.room_number || '').toUpperCase();
+        /**
+         * THE CODE THAT IS ACTUALLY ON THE DOOR.
+         *
+         * This uppercased `room_number`, and the database stores her spelling
+         * exactly: 22 lowercase (1a..3g) and 11 uppercase (B1F, B2F, F2B, LB,
+         * LF, PH and the rest). Checked against the catalogue, all 33. So 22 of
+         * 33 units were DISPLAYED as a code that exists nowhere on the property
+         * - "1A" for a door labelled 1a - on the public listing, in her
+         * registers, and beside every figure a resident reads.
+         *
+         * `admin.ts` states the rule and refuses to do this, in as many words:
+         * "echoing the administrator's own typing back at her, or upper-casing
+         * it, prints a code that does not exist on any door. Her units are 1a,
+         * B2F, PH." The backend kept the rule; the frontend broke it on the way
+         * in, which is why nobody noticed the two disagreeing.
+         *
+         * Safe to remove, and checked rather than assumed. The note on
+         * `asListedUnitCode` below records that EVERY comparison in this
+         * codebase is `.toLowerCase()`-guarded, and the one place that compares
+         * by strict equality - a `<select>` matching `v-model` to its options -
+         * is what that helper exists to reconcile; it matches case-insensitively
+         * and returns the listed spelling. `waterChargeFor` and
+         * `buildBillingRule` uppercase their own argument, so they do not care
+         * what arrives.
+         */
+        const unitCode = r.room_number || '';
         const isLinda = r.is_linda_unit || cluster === 'Linda Units';
         const floor = (r.floor || 1) as 1 | 2 | 3 | 4;
         const floorLabel = floorLabelFor(floor);
@@ -738,6 +786,11 @@ export async function fetchRooms(): Promise<RoomItem[]> {
     }
   } catch (err) {
     console.warn('fetchRooms fallback warning:', err);
+  } finally {
+    // Settled either way. A `finally` rather than a line before each return,
+    // because there are two returns above and a third would be added without
+    // this one being noticed.
+    roomsLoaded.value = true;
   }
   roomsFetchFailed.value = true;
   return rooms;
@@ -758,7 +811,8 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
       const mapped: TenantRecord[] = data.map((t) => {
         const activeAssignment = t.room_assignments?.find((a: any) => a.is_active) || t.room_assignments?.[0];
         const assignedRoom = activeAssignment?.rooms;
-        const unitCode = assignedRoom ? assignedRoom.room_number.toUpperCase() : '—';
+        // Her spelling, not ours - see the note in `fetchRooms` above.
+        const unitCode = assignedRoom ? assignedRoom.room_number : '—';
         const moveInDate = activeAssignment?.start_date 
           ? new Date(activeAssignment.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : '—';
@@ -805,7 +859,8 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
  *
  * `rooms` holds unit codes in TWO cases over its life: the `canonicalUnits.ts`
  * seed is lowercase (`"1a"`), and `fetchRooms()` replaces the whole array with
- * uppercase ones (`(r.room_number || '').toUpperCase()`). Every comparison in
+ * uppercase ones - until 2026-09-20, when that was removed as the defect it
+ * was. It carries the database's own spelling now. Every comparison in
  * this codebase is `.toLowerCase()`-guarded, so the difference is invisible
  * everywhere except the one place that compares by strict equality and cannot
  * be told to stop: a `<select>` matching `v-model` against its `<option>`
@@ -914,7 +969,8 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
          * row while `|| 'Active Resident'` beside it did its job perfectly, on
          * nothing.
          */
-        const unit = (inc.rooms?.room_number || '').toUpperCase();
+        // Her spelling, not ours - see the note in `fetchRooms` above.
+        const unit = inc.rooms?.room_number || '';
         const cluster = inc.rooms?.cluster_code ? mapClusterName(inc.rooms.cluster_code) : '';
         const datePaidFormatted = inc.date_paid 
           ? new Date(inc.date_paid).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -1101,7 +1157,8 @@ export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
     const res = await api.get<any[]>('/admin/tickets');
     if (Array.isArray(res)) {
       const mapped: MaintenanceTicket[] = res.map((t: any) => {
-        const unit = (t.rooms?.room_number || '—').toUpperCase();
+        // Her spelling, not ours - see the note in `fetchRooms` above.
+      const unit = t.rooms?.room_number || '—';
         const reportedFormatted = t.created_at 
           ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : '—';
@@ -1151,7 +1208,8 @@ export async function fetchInquiries(): Promise<Inquiry[]> {
     const res = await api.get<any[]>('/admin/inquiries');
     if (Array.isArray(res)) {
       const mapped: Inquiry[] = res.map((i: any) => {
-        const unit = (i.rooms?.room_number || '—').toUpperCase();
+        // Her spelling, not ours - see the note in `fetchRooms` above.
+        const unit = i.rooms?.room_number || '—';
         const dateFormatted = i.created_at 
           ? new Date(i.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
           : '—';

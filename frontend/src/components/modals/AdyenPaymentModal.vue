@@ -239,7 +239,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       <div class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">This bill</dt>
         <dd class="font-medium">
-          {{ props.bill.room_number ? 'Unit ' + String(props.bill.room_number).toUpperCase() : 'Monthly dues' }}
+          {{ props.bill.room_number ? 'Unit ' + String(props.bill.room_number) : 'Monthly dues' }}
         </dd>
       </div>
       <div class="flex items-baseline justify-between gap-3">

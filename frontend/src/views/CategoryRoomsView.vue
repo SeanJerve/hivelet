@@ -513,7 +513,7 @@ async function submitInquiry() {
             <img
               v-if="photoOf(activeUnit)"
               :src="photoOf(activeUnit)!"
-              :alt="`Inside unit ${activeUnit.room_number.toUpperCase()}`"
+              :alt="`Inside unit ${activeUnit.room_number}`"
               class="absolute inset-0 size-full object-cover"
               loading="eager"
             />
@@ -577,9 +577,9 @@ async function submitInquiry() {
                     top: planFor(activeUnit.room_number)!.y + '%',
                     transform: 'translate(-30%, -100%)',
                   }"
-                >{{ activeUnit.room_number.toUpperCase() }}</span>
+                >{{ activeUnit.room_number }}</span>
                 <p class="sr-only">
-                  Unit {{ activeUnit.room_number.toUpperCase() }} is on the
+                  Unit {{ activeUnit.room_number }} is on the
                   {{ floorLabelFor(activeUnit.floor) }} of the
                   {{ buildingNameFor(activeUnit.cluster_code) }}.
                 </p>
@@ -608,7 +608,7 @@ async function submitInquiry() {
               </p>
 
               <h2 class="mt-4 font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,5vw,3.25rem)]">
-                Unit {{ activeUnit.room_number.toUpperCase() }}
+                Unit {{ activeUnit.room_number }}
               </h2>
 
               <p class="mt-3 text-xs sm:text-sm text-ink-soft">{{ activeUnit.room_type }}</p>
@@ -656,7 +656,7 @@ async function submitInquiry() {
                 class="pill-btn-brand w-full px-8"
                 @click="openInquiry(activeUnit.room_number)"
               >
-                <span>Ask about unit {{ activeUnit.room_number.toUpperCase() }}</span>
+                <span>Ask about unit {{ activeUnit.room_number }}</span>
                 <ArrowRight class="size-4 shrink-0" />
               </button>
               <p class="mt-4 text-xs text-ink-soft leading-relaxed">

@@ -1036,7 +1036,7 @@ async function exportExcel() {
               <div class="min-w-0">
                 <p class="text-sm font-medium">{{ p.profiles?.full_name || 'Name not on file' }}</p>
                 <p class="mt-0.5 text-xs text-ink-faint">
-                  Unit {{ (p.rooms?.room_number || '').toString().toUpperCase() || 'not on file' }}<template v-if="p.profiles?.phone_number">, {{ p.profiles.phone_number }}</template>
+                  Unit {{ (p.rooms?.room_number || '').toString() || 'not on file' }}<template v-if="p.profiles?.phone_number">, {{ p.profiles.phone_number }}</template>
                 </p>
               </div>
               <StatusPill tone="verify">Waiting for you</StatusPill>
