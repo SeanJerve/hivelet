@@ -224,15 +224,6 @@ onMounted(async () => {
 
 
 
-/**
- * The landing hero draws its own navigation, so `AppHeader` is not mounted on
- * this route and its section links are not available to fall back on. Three
- * in-page targets remain - categories, faqs, location. Enquiries are a route
- * now, not an anchor, so that link is a RouterLink rather than a scroll.
- */
-function scrollToSection(sectionId: string) {
-  document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-}
 
 /**
  * One row of the availability table is open at a time. All 33 units expanded
@@ -392,61 +383,17 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
       </div>
 
-      <div class="relative z-10 ws-page flex flex-col min-h-[clamp(34rem,94vh,58rem)] pt-7 pb-10 sm:pb-14">
-
-        <!--
-          Navigation is drawn over the hero rather than in a bar above it, so
-          `AppHeader` is not mounted on this route - see `isLandingPage` in
-          App.vue. These five destinations are the ones it carried, with the
-          same four section ids and the same labels; losing any of them here
-          would strip the page's only navigation.
-        -->
-        <header class="flex items-start justify-between gap-6 sm:gap-10">
-          <!--
-            The product mark, set as the workspace header sets it. This was the
-            property's own name over three lines, directly above a display line
-            that said the same thing - the reader was told who this is twice
-            before being told anything. `AppHeader` carries "HIVELET" at
-            `font-semibold text-xl tracking-tight`; this is that mark, in white
-            because it sits on a photograph.
-          -->
-          <RouterLink
-            to="/public"
-            class="press shrink-0 text-xl font-semibold tracking-tight hover:text-white/65 transition-colors drop-shadow-sm"
-          >
-            Hivelet
-          </RouterLink>
-
-          <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light drop-shadow-sm">
-            <button @click="scrollToSection('categories')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">Category Section</button>
-            <span aria-hidden="true" class="pr-2">,</span>
-            <button @click="scrollToSection('faqs')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">FAQs</button>
-            <span aria-hidden="true" class="pr-2">,</span>
-            <RouterLink to="/inquire" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">Inquire Now</RouterLink>
-            <span aria-hidden="true" class="pr-2">,</span>
-            <button @click="scrollToSection('location')" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">Location</button>
-            <span aria-hidden="true" class="pr-2">,</span>
-            <RouterLink to="/login" class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors">Sign In</RouterLink>
-          </nav>
-        </header>
-
+      <div class="relative z-10 ws-page flex flex-col justify-end min-h-[clamp(24rem,65vh,44rem)] pt-20 pb-10 sm:pb-14">
         <!--
           "Boarding House" comes off the display line and sits under it at the
-          navigation's own size. The whole name at clamp(2.5rem, 8vw, 7rem) was
-          four words of equal weight; the two that identify the place are the
-          landlady's name, and the kind of building is a qualifier. Both stay
-          inside the <h1>, so the accessible name is still the full
-          "Fe Galang Da Silva Boarding House".
-
-          The `<br>` that split the line after "Silva" is gone with it - the
-          name is short enough now to set itself.
+          navigation's own size. Both stay inside the <h1>, so the accessible name
+          is still the full "Fe Galang Da Silva Boarding House".
         -->
-        <h1 class="mt-auto pt-24 font-editorial drop-shadow-sm">
+        <h1 class="font-editorial drop-shadow-sm">
           <span class="font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)]"
             >Fe Galang Da Silva</span>
           <span class="ml-2 whitespace-nowrap text-[0.8rem] font-light">&#32;Boarding House</span>
         </h1>
-
       </div>
     </section>
 

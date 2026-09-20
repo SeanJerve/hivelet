@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * @file views/LoginView.vue
+ * @description Authentication entrance screen for administrators and residents.
+ * @systemBibleRef Section 1 - Product Identity & Section 3 - User Roles & Authorization
+ * @rationale Aligns the sign-in task flush to the global header logo brand mark (ws-page alignment)
+ *            with seamless canvas surface styling and full responsive edge handling.
+ */
 import type { DemoAccount } from '@/lib/demoAccounts.dev';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -106,9 +113,9 @@ async function handleQuickLogin(account: DemoAccount) {
   <div class="ws-focus bg-canvas text-ink">
     <div class="grid min-h-[calc(100vh-8rem)] lg:grid-cols-2">
 
-      <!-- The task. -->
-      <div class="flex flex-col justify-center px-4 py-14 sm:px-6 lg:px-16">
-        <div class="mx-auto w-full max-w-sm">
+      <!-- The task (aligned flush to global header Hivelet logo). -->
+      <div class="flex flex-col justify-center py-10 sm:py-14 pl-[max(1rem,calc((100vw-1600px)/2+1rem))] sm:pl-[max(1.5rem,calc((100vw-1600px)/2+1.5rem))] pr-4 sm:pr-6 lg:pr-16">
+        <div class="w-full max-w-sm">
           <h1 class="text-3xl leading-tight font-medium tracking-tight">Sign in</h1>
           <p class="mt-1 text-sm text-ink-soft">Fe Galang Da Silva Boarding House</p>
 

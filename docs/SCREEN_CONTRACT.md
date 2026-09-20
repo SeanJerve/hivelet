@@ -114,7 +114,7 @@ before the redesign started.
 
 ### `views/TenantOverviewView.vue`
 
-6 call(s), **1 of them write**.
+5 call(s), **0 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
@@ -123,16 +123,16 @@ before the redesign started.
 | reads | `GET /tenant/my-income-records` | my receipts |
 | reads | `GET /tenant/my-payments` | my payments |
 | reads | `GET /tenant/my-rooms` | my unit |
-| **writes** | `POST /tenant/payments/checkout` | pay by GCash through Adyen |
 
 ### `views/TenantPaymentsView.vue`
 
-2 call(s), **0 of them write**.
+3 call(s), **1 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | reads | `GET /tenant/my-bills` | my bills |
 | reads | `GET /tenant/my-payments` | my payments |
+| **writes** | `POST /tenant/payments/adyen/verify-session` | confirm the gateway session on return |
 
 ### `views/TenantProfileView.vue`
 
@@ -225,4 +225,4 @@ before the redesign started.
 
 ---
 
-**20 files make 60 distinct calls, 30 of which write.** Generated 2026-09-19.
+**20 files make 60 distinct calls, 30 of which write.** Generated 2026-09-20.

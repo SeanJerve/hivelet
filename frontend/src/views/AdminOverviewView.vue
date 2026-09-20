@@ -855,9 +855,6 @@ const isExportingArchive = ref(false);
               {{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'collection' : 'collections' }} entered this month
             </p>
           </div>
-          <div v-if="ledgerNote" class="flex flex-wrap items-center gap-2">
-            <StatusPill tone="unentered">Not entered yet</StatusPill>
-          </div>
           <div class="mt-auto flex items-baseline justify-between gap-3 border-t border-line pt-4 text-sm">
             <span class="text-ink-soft">{{ CURRENT_YEAR }} so far</span>
             <span class="font-semibold tabular">{{ peso(monthlyRevenue) }}</span>

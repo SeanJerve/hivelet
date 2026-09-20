@@ -1,8 +1,13 @@
 <script setup lang="ts">
 /**
  * @file components/layout/AppHeader.vue
- * @description Solid white navbar with public section navigation & authenticated notification center.
+ * @description Borderless transparent navigation header with editorial section navigation,
+ *              authenticated notification center, and role actions.
  * @systemBibleRef Section 1 - Product Identity, Section 4 - Public Visitor Role & Section 16 - Notifications
+ * @rationale Renders transparently across public landing and role workspaces to harmonize with
+ *            the canvas background and hero imagery. Features a light green divider (border-line)
+ *            matching the exact content width of the navbar elements to anchor the header cleanly
+ *            above workspace content.
  */
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -79,6 +84,10 @@ const isPublicRoute = computed(() =>
   route.path.startsWith('/public') || 
   route.path.startsWith('/category') || 
   route.path === '/'
+);
+
+const isLandingPage = computed(() =>
+  route.path === '/' || route.path === '/public'
 );
 
 const brandRoute = computed(() => {
@@ -217,7 +226,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 w-full bg-tile border-b border-line">
+  <header
+    :class="[
+      'w-full transition-colors duration-150',
+      isLandingPage
+        ? 'absolute top-0 inset-x-0 z-40 bg-transparent border-none'
+        : 'sticky top-0 z-40 bg-canvas/90 backdrop-blur-sm border-none'
+    ]"
+  >
     <!--
       `ws-page` rather than the measure spelled out again: the header's edges
       have to line up with the page content under it, and they only stay lined
@@ -231,7 +247,7 @@ onUnmounted(() => {
         <button
           v-if="!isPublicRoute"
           @click="toggleSidebar"
-          class="flex lg:hidden p-2 rounded-xl text-ink-soft hover:bg-canvas hover:text-ink transition-colors cursor-pointer"
+          class="flex lg:hidden p-2 rounded-xl text-ink-soft hover:bg-tile hover:text-ink transition-colors cursor-pointer"
           aria-label="Toggle navigation"
         >
           <Menu class="size-5" />
@@ -241,48 +257,95 @@ onUnmounted(() => {
         <button
           v-if="isPublicRoute"
           @click="isMobilePublicNavOpen = !isMobilePublicNavOpen"
-          class="flex md:hidden p-2 rounded-xl text-ink-soft hover:bg-canvas hover:text-ink transition-colors cursor-pointer"
+          class="flex md:hidden p-2 rounded-xl transition-colors cursor-pointer"
+          :class="isLandingPage ? 'text-white hover:bg-white/10' : 'text-ink-soft hover:bg-tile hover:text-ink'"
           aria-label="Toggle navigation menu"
         >
           <Menu class="size-5" />
         </button>
 
         <router-link :to="brandRoute" class="flex items-center gap-2 group">
-          <span class="font-semibold text-xl tracking-tight text-ink">HIVELET</span>
+          <span
+            class="font-display font-semibold text-xl tracking-tight transition-colors"
+            :class="isLandingPage ? 'text-white drop-shadow-sm group-hover:text-white/80' : 'text-ink group-hover:text-brand'"
+          >
+            Hivelet
+          </span>
         </router-link>
       </div>
 
       <!-- Center: Public Quick Navigation (Desktop) -->
-      <nav v-if="isPublicRoute" class="hidden md:flex items-center gap-1 sm:gap-2">
-        <button
-          @click="scrollToSection('categories')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-colors cursor-pointer"
-        >
-          Category Section
-        </button>
-        <button
-          @click="scrollToSection('faqs')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-colors cursor-pointer"
-        >
-          FAQs
-        </button>
-        <!--
-          Enquiries are their own screen now (`/inquire`), not an anchor on the
-          landing page. This was `scrollToSection('inquire-now')`, and that id
-          left with the form.
-        -->
-        <RouterLink
-          to="/inquire"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-colors cursor-pointer"
-        >
-          Inquire Now
-        </RouterLink>
-        <button
-          @click="scrollToSection('location')"
-          class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-canvas transition-colors cursor-pointer"
-        >
-          Location
-        </button>
+      <nav v-if="isPublicRoute" class="hidden md:flex items-center">
+        <!-- Landing page: Editorial underlined links matching reference photo -->
+        <template v-if="isLandingPage">
+          <div class="flex flex-wrap items-baseline text-[0.8rem] font-light drop-shadow-sm text-white">
+            <button
+              @click="scrollToSection('categories')"
+              class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors cursor-pointer text-white"
+            >
+              Category Section
+            </button>
+            <span aria-hidden="true" class="pr-2 text-white">,</span>
+            <button
+              @click="scrollToSection('faqs')"
+              class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors cursor-pointer text-white"
+            >
+              FAQs
+            </button>
+            <span aria-hidden="true" class="pr-2 text-white">,</span>
+            <RouterLink
+              to="/inquire"
+              class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+            >
+              Inquire Now
+            </RouterLink>
+            <span aria-hidden="true" class="pr-2 text-white">,</span>
+            <button
+              @click="scrollToSection('location')"
+              class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors cursor-pointer text-white"
+            >
+              Location
+            </button>
+            <template v-if="!isAuthenticated">
+              <span aria-hidden="true" class="pr-2 text-white">,</span>
+              <RouterLink
+                to="/login"
+                class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+              >
+                Sign In
+              </RouterLink>
+            </template>
+          </div>
+        </template>
+        <!-- Other public routes (fallback) -->
+        <template v-else>
+          <div class="flex items-center gap-1 sm:gap-2">
+            <button
+              @click="scrollToSection('categories')"
+              class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-tile transition-colors cursor-pointer"
+            >
+              Category Section
+            </button>
+            <button
+              @click="scrollToSection('faqs')"
+              class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-tile transition-colors cursor-pointer"
+            >
+              FAQs
+            </button>
+            <RouterLink
+              to="/inquire"
+              class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-tile transition-colors cursor-pointer"
+            >
+              Inquire Now
+            </RouterLink>
+            <button
+              @click="scrollToSection('location')"
+              class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-tile transition-colors cursor-pointer"
+            >
+              Location
+            </button>
+          </div>
+        </template>
       </nav>
 
       <!-- Right: User Profile & Sign In / Out -->
@@ -295,8 +358,13 @@ onUnmounted(() => {
             <button
               data-notifications-trigger
               @click="toggleNotifications"
-              class="icon-btn relative size-10"
-              :class="{ 'bg-canvas text-ink': isPopoverOpen }"
+              class="icon-btn relative size-10 transition-colors"
+              :class="[
+                isLandingPage
+                  ? 'border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30'
+                  : 'bg-tile text-ink hover:bg-white',
+                isPopoverOpen && (isLandingPage ? 'bg-white/25 text-white' : 'bg-tile text-ink')
+              ]"
               :aria-label="notificationsLabel"
               :aria-expanded="isPopoverOpen"
             >
@@ -324,7 +392,8 @@ onUnmounted(() => {
             <button
               data-account-trigger
               @click="isProfilePopoverOpen = !isProfilePopoverOpen"
-              class="group flex cursor-pointer items-center gap-1.5 rounded-full p-1 transition-colors hover:bg-canvas"
+              class="group flex cursor-pointer items-center gap-1.5 rounded-full p-1 transition-colors"
+              :class="isLandingPage ? 'hover:bg-white/10' : 'hover:bg-tile/80'"
               :aria-label="`Account menu for ${isTenant ? currentUser.fullName : 'the administrator'}`"
               :aria-expanded="isProfilePopoverOpen"
               aria-haspopup="true"
@@ -336,7 +405,11 @@ onUnmounted(() => {
                 {{ userInitials }}
               </span>
               <ChevronDown
-                :class="['size-3.5 text-ink-soft transition-transform duration-150', isProfilePopoverOpen && 'rotate-180']"
+                :class="[
+                  'size-3.5 transition-transform duration-150',
+                  isLandingPage ? 'text-white/70' : 'text-ink-soft',
+                  isProfilePopoverOpen && 'rotate-180'
+                ]"
                 aria-hidden="true"
               />
             </button>
@@ -358,7 +431,7 @@ onUnmounted(() => {
             >
               <div
                 v-if="isProfilePopoverOpen"
-                class="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
+                class="absolute right-0 top-14 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
               >
                 <!-- Who is signed in, read left to right like everything else. -->
                 <div class="flex items-center gap-3 border-b border-line p-5">
@@ -427,7 +500,7 @@ onUnmounted(() => {
         -->
         <template v-else>
           <router-link
-            v-if="route.path !== '/login'"
+            v-if="route.path !== '/login' && !isLandingPage"
             to="/login"
             class="pill-btn-brand"
           >
@@ -437,6 +510,13 @@ onUnmounted(() => {
         </template>
 
       </div>
+
+      <!-- Light green divider at bottom of header, same width as navbar elements -->
+      <div
+        v-if="!isLandingPage"
+        class="absolute bottom-0 inset-x-4 sm:inset-x-6 border-b border-line pointer-events-none"
+        aria-hidden="true"
+      />
     </div>
 
     <!-- Mobile Public Navigation Dropdown Drawer -->
@@ -469,6 +549,14 @@ onUnmounted(() => {
       >
         Location
       </button>
+      <RouterLink
+        v-if="!isAuthenticated"
+        to="/login"
+        @click="isMobilePublicNavOpen = false"
+        class="block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
+      >
+        Sign In
+      </RouterLink>
     </div>
   </header>
 

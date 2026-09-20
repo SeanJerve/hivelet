@@ -1,4 +1,11 @@
 <script setup lang="ts">
+/**
+ * @file components/layout/AppSidebar.vue
+ * @description Borderless canvas workspace sidebar for Admin and Tenant navigation.
+ * @systemBibleRef Section 1 - Corporate Aesthetic & Section 2 - System Architecture
+ * @rationale Renders directly onto the canvas surface without an artificial white card container,
+ *            preserving active brand-soft pills, legible typography, and smooth hover feedback.
+ */
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { isMobileSidebarOpen, inquiries, maintenanceTickets, incomeRecords } from '@/lib/systemState';
@@ -62,7 +69,6 @@ const TENANT_NAV = computed(() => [
 ]);
 
 const activeNav = computed(() => isTenantSection.value ? TENANT_NAV.value : ADMIN_NAV.value);
-const spaceCategory = computed(() => isTenantSection.value ? 'Tenant Self-Service' : 'Management Operations');
 
 function isItemActive(to: string, aliases: readonly string[]) {
   if (route.path === to) return true;
@@ -78,12 +84,8 @@ function closeMobileNav() {
 
 <template>
   <div>
-    <!-- Desktop Sidebar -->
-    <aside class="sticky top-20 hidden h-[calc(100dvh-6rem)] w-64 shrink-0 rounded-tile bg-tile p-3 lg:block my-6">
-      <p class="px-3 pt-2 pb-3 text-xs font-medium text-ink-faint">
-        {{ spaceCategory }}
-      </p>
-
+    <!-- Desktop Sidebar (Borderless Canvas Navigation) -->
+    <aside class="sticky top-16 hidden h-[calc(100dvh-5rem)] w-60 shrink-0 lg:block py-6 pr-2">
       <nav class="grid gap-1">
         <router-link
           v-for="item in activeNav"
@@ -93,7 +95,7 @@ function closeMobileNav() {
             'flex min-h-11 items-center justify-between rounded-full px-4 text-sm transition-colors duration-150',
             isItemActive(item.to, item.aliases)
               ? 'bg-brand-soft text-brand font-semibold'
-              : 'text-ink-soft font-medium hover:bg-canvas hover:text-ink'
+              : 'text-ink-soft font-medium hover:bg-tile hover:text-ink'
           ]"
         >
           <div class="flex items-center gap-3">
@@ -146,7 +148,7 @@ function closeMobileNav() {
             <div class="space-y-6">
               <div class="flex items-center justify-between pb-4 border-b border-line">
                 <div>
-                  <span class="text-base font-semibold tracking-tight text-ink">Hivelet</span>
+                  <span class="font-display text-base font-semibold tracking-tight text-ink">Hivelet</span>
                 </div>
                 <button 
                   @click="closeMobileNav" 
@@ -159,9 +161,6 @@ function closeMobileNav() {
 
               <!-- Section Specific Navigation -->
               <div>
-                <p class="px-2 pb-3 text-xs font-medium text-ink-faint">
-                  {{ spaceCategory }}
-                </p>
                 <nav class="grid gap-1">
                   <router-link
                     v-for="item in activeNav"

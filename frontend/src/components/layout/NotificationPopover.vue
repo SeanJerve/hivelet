@@ -1,6 +1,10 @@
 <script setup lang="ts">
 /**
- * The notification drawer, on the workspace system.
+ * @file components/layout/NotificationPopover.vue
+ * @description The notification drawer and dropdown popover for the workspace system.
+ * @systemBibleRef Section 16 - Notification Center
+ * @rationale Anchored directly below the header bell trigger button with consistent 8px offset,
+ *            keyboard navigation focus trapping, and real-time read state persistence.
  *
  * Every row is a real button rather than a clickable div, so the list can be
  * reached and opened from the keyboard. Opening the drawer moves focus into it
@@ -167,7 +171,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="isPopoverOpen" class="ws-focus relative">
+  <div v-if="isPopoverOpen" class="ws-focus">
     <div class="fixed inset-0 z-40 bg-night/30 sm:hidden" aria-hidden="true" />
 
     <div
@@ -175,7 +179,7 @@ onUnmounted(() => {
       tabindex="-1"
       role="dialog"
       aria-label="Notifications"
-      class="fixed right-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:right-0 sm:w-[420px]"
+      class="fixed right-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:right-0 sm:top-12 sm:w-[420px]"
     >
       <!-- Header -->
       <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
