@@ -461,6 +461,39 @@ the untested half of BR-024, and they only become testable after a person has us
   it needs to match how the machine is actually exposed, which only you can say.
 - **Raised and partly fixed:** 2026-09-20
 
+### B-43 — two residents' names were on the public website · **FIXED AND APPLIED 2026-09-20**
+
+- **Tell her about this one.** It was live, it was visible to anyone, and it is the kind of thing
+  a resident would mind.
+- **What was public.** `rooms.description` is served by `GET /api/public/rooms` — no token, no
+  login — and rendered on the public site. Two of the 33 descriptions named the person living in
+  the unit:
+
+  | unit | what the website said |
+  | :--- | :--- |
+  | **LB** | `Linda Back Unit (Jaye Casia) - Fixed Rate Billing` |
+  | **LF** | `Linda Front Unit (Gayon) - Fixed Rate Billing` |
+
+  Both `Published`. **Both people are current, active residents** — checked against
+  `room_assignments`, not inferred from the text.
+- **☑ Migration 044 applied**, after `npm run backup`. Both now describe the unit rather than its
+  occupant, using the interface's own words for that structure — *"the separate two-storey
+  structure beside the red gate"* — and drop "Fixed Rate Billing", which is internal vocabulary
+  the public FAQ already explains properly. **Billing is untouched:** BR-040 and migration 041's
+  trigger read `rooms.is_linda_unit`, not this sentence.
+- **Verified end to end**, not just in the database: pulled all 131 names, emails and phone
+  numbers from `profiles` and searched the actual bytes `/public/rooms` returns. **Nothing
+  identifying any resident appears in the payload.**
+- **How it was found, because the method is the point.** Not by reviewing the route — **the route
+  is correct.** Its column allowlist says so in terms: *"Columns a public visitor may see. Note
+  the absence of any tenant linkage"*, and there is no join to a tenant anywhere in it.
+  > **The leak was not in the query. It was in the data** — a name typed into a field that
+  > happens to be public. Reading the endpoint would never have found it. Searching the response
+  > for real identifiers did, in one pass.
+- **☑ A check now guards it.** `check:ledger` compares every Published description against every
+  name on file. Mutation-tested: forcing a match reports the unit and the name it found.
+- **Raised, fixed and applied:** 2026-09-20
+
 ### B-28 — a repair cannot be recorded for an empty unit
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet

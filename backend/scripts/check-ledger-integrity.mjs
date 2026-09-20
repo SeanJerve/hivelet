@@ -231,7 +231,7 @@ if (live.length) {
  * covered by `check:api`.
  */
 {
-  const rooms = await rows('rooms?select=id,room_number,operational_status,cluster_code,floor,current_price,is_linda_unit');
+  const rooms = await rows('rooms?select=id,room_number,operational_status,cluster_code,floor,current_price,is_linda_unit,visibility_status,description');
   const clusters = await rows('clusters?select=code');
   const assigns = await rows('room_assignments?is_active=eq.true&select=room_id,tenant_profile_id,is_primary_contact');
   const people = await rows('profiles?select=id,role,email,phone_number');
@@ -1090,6 +1090,45 @@ if (live.length) {
     }
   }
   for (const m of misfiled.slice(0, 10)) console.log(`        ${m}`);
+  /**
+   * BR-024 - NOBODY'S NAME ON THE PUBLIC SITE.
+   *
+   * `rooms.description` is served by `GET /api/public/rooms`, which requires no
+   * token and is rendered on the public page. Two of the 33 descriptions named
+   * the person living in the unit:
+   *
+   *     LB   'Linda Back Unit (Jaye Casia) - Fixed Rate Billing'
+   *     LF   'Linda Front Unit (Gayon) - Fixed Rate Billing'
+   *
+   * Both were Published and both people are current residents. Migration 044
+   * rewrote them.
+   *
+   * WHY THIS CHECK EXISTS RATHER THAN A CODE REVIEW. The route is CORRECT. Its
+   * column allowlist says in terms: "Columns a public visitor may see. Note the
+   * absence of any tenant linkage", and there is no join to a tenant anywhere in
+   * it. The leak was not in the query - it was in the DATA, a name typed into a
+   * field that happens to be public. No amount of reading the endpoint would
+   * have found it, and nothing stops the next person typing another one.
+   *
+   * Names are printed on screen only, like the pinned receipts above.
+   */
+  const publicRooms = rooms.filter((r) => r.visibility_status === 'Published');
+  const peopleOnFile = await rows('profiles?select=full_name');
+  const named = [];
+  for (const room of publicRooms) {
+    const text = String(room.description ?? '').toLowerCase();
+    if (!text) continue;
+    for (const person of peopleOnFile) {
+      const name = String(person.full_name ?? '').trim();
+      if (name.length > 3 && text.includes(name.toLowerCase())) {
+        named.push(`${room.room_number}: its public description contains "${name}"`);
+      }
+    }
+  }
+  for (const n of named) console.log(`        ${n}`);
+  check('BR-024 no resident is named on the public site', named.length,
+    `${publicRooms.length} published unit(s) checked against ${peopleOnFile.length} people on file`);
+
   check('BR-040 Linda water sits in the Linda column', misfiled.length,
     `${income.length} income rows, ${lindaRooms.size} Linda unit(s) - none misfiled`);
 
