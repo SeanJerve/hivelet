@@ -175,8 +175,89 @@ console.log('\n2. WHAT IT DECLINES TO BANK — correctly signed, still not money
     r.status === 200, `HTTP ${r.status} — Adyen must stop retrying an unmatchable notification`);
 }
 
+// ------------------------------------------- when the money goes back out --
+console.log('\n3. WHEN THE MONEY GOES BACK OUT — refunds, chargebacks, cancellations');
+
+/**
+ * These events change no ledger row on purpose (BR-048: reversing a payment is
+ * the administrator's decision, not the gateway's), so the thing to prove is
+ * that she is TOLD. Until 2026-09-20 every non-AUTHORISATION event wrote an
+ * audit row and nothing else - a chargeback and a routine capture were handled
+ * identically, and the first she would have known of money leaving was a bank
+ * balance that did not reconcile.
+ *
+ * The CAPTURE case at the end is the one that makes the others mean something.
+ * A rule that notifies on everything is not a rule.
+ */
+const notifCount = async () =>
+  (await db.from('notifications').select('*', { count: 'exact', head: true })).count ?? 0;
+
+// A real recorded Adyen payment, so the "names the payment" path is exercised
+// for real rather than asserted. Read-only; nothing about this row is touched.
+const { data: realPayments } = await db
+  .from('payments')
+  .select('transaction_reference, amount, rooms(room_number)')
+  .eq('payment_method', 'Adyen Online')
+  .not('transaction_reference', 'is', null)
+  .limit(1);
+const realRef = realPayments?.[0]?.transaction_reference ?? null;
+const realRoom = realPayments?.[0]?.rooms?.room_number ?? null;
+
+{
+  const n0 = await notifCount();
+  const r = await post(signedItem({ eventCode: 'CHARGEBACK', originalReference: realRef ?? '' }));
+  const n1 = await notifCount();
+  check('a CHARGEBACK is acknowledged and RAISES a notification',
+    r.status === 200 && n1 === n0 + 1, `HTTP ${r.status}, ${n1 - n0} notification(s)`);
+
+  if (realRef) {
+    const { data: raised } = await db
+      .from('notifications')
+      .select('message, priority')
+      .like('message', `%${realRef}%`)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    const msg = raised?.[0]?.message ?? '';
+    check('the chargeback notification NAMES the unit and the amount, not just a reference',
+      msg.includes(`unit ${realRoom}`) && /PHP [\d,]+\.\d\d/.test(msg),
+      realRoom ? `looked for "unit ${realRoom}" and a peso figure` : 'no unit to look for');
+    check('a chargeback is raised at Emergency priority',
+      raised?.[0]?.priority === 'Emergency', `priority ${raised?.[0]?.priority ?? 'none'}`);
+  }
+}
+{
+  const n0 = await notifCount();
+  const r = await post(signedItem({ eventCode: 'REFUND', originalReference: realRef ?? '' }));
+  const n1 = await notifCount();
+  check('a REFUND is acknowledged and raises a notification',
+    r.status === 200 && n1 === n0 + 1, `HTTP ${r.status}, ${n1 - n0} notification(s)`);
+}
+{
+  const n0 = await notifCount();
+  const r = await post(signedItem({ eventCode: 'CANCELLATION', originalReference: realRef ?? '' }));
+  const n1 = await notifCount();
+  check('a CANCELLATION is acknowledged and raises a notification',
+    r.status === 200 && n1 === n0 + 1, `HTTP ${r.status}, ${n1 - n0} notification(s)`);
+}
+{
+  // The discriminator. A capture is routine and must NOT reach her inbox, or
+  // the inbox stops being read and the chargeback goes unnoticed with it.
+  const n0 = await notifCount();
+  const r = await post(signedItem({ eventCode: 'CAPTURE', originalReference: realRef ?? '' }));
+  const n1 = await notifCount();
+  check('a routine CAPTURE is acknowledged and raises NOTHING',
+    r.status === 200 && n1 === n0, `HTTP ${r.status}, ${n1 - n0} notification(s) — an inbox ` +
+    'that cries wolf on every event is an inbox nobody reads');
+}
+{
+  // None of the four above may touch the ledger, whatever else they do.
+  const p = await count('payments');
+  check('none of the reversal events changed a payment row', p === before.payments,
+    `${before.payments} -> ${p}`);
+}
+
 // ------------------------------------------------------------- idempotency --
-console.log('\n3. IDEMPOTENCY — the same notification twice');
+console.log('\n4. IDEMPOTENCY — the same notification twice');
 
 {
   const item = signedItem();
@@ -187,7 +268,7 @@ console.log('\n3. IDEMPOTENCY — the same notification twice');
 }
 
 // ------------------------------------------------------------- the footprint --
-console.log('\n4. THE FOOTPRINT — what an hour of refusals left behind');
+console.log('\n5. THE FOOTPRINT — what an hour of refusals left behind');
 
 const after = {
   payments: await count('payments'),

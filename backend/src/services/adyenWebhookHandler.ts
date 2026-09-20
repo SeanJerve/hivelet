@@ -19,6 +19,7 @@ import { db } from '../config/db.js';
 import { config } from '../config/env.js';
 import { recordAudit } from './auditService.js';
 import { notificationService } from './notificationService.js';
+import type { NotificationPriority } from './notificationService.js';
 import type { AdyenNotificationItem } from './adyenWebhook.js';
 import { resolveEventTime } from './adyenWebhook.js';
 import { propertyParts } from '../utils/propertyClock.js';
@@ -29,6 +30,57 @@ export interface WebhookResult {
   outcome: 'recorded' | 'duplicate' | 'ignored' | 'unmatched' | 'failed';
   detail?: string;
 }
+
+/**
+ * THE EVENTS WHERE MONEY MOVES THE OTHER WAY.
+ *
+ * Only an AUTHORISATION creates money here, and that is correct. But the branch
+ * below used to treat EVERYTHING else identically - "acknowledged, no ledger
+ * effect" - and that sentence is true of a CAPTURE and dangerously incomplete
+ * for a CHARGEBACK.
+ *
+ * The situation it misses: a resident pays through GCash, the payment is
+ * recorded and verified, and days later the money is taken back - by a dispute,
+ * or by Mrs Fe herself refunding from the Adyen Customer Area because somebody
+ * paid the wrong bill. Adyen tells us. We write an audit row and answer 200.
+ * Her ledger still says the rent is in. Nothing in the app ever says otherwise,
+ * and the first she learns of it is a bank balance that does not reconcile.
+ *
+ * WHY THIS DOES NOT REVERSE THE LEDGER ITSELF. It would be easy to void the
+ * payment row here, and it would be wrong. BR-048 puts ledger authorship with
+ * the administrator, and BR-017 already refuses to let the gateway decide that a
+ * debt is settled - letting it decide unilaterally that one is UNsettled is the
+ * same mistake facing the other way. A reversal also has a human question behind
+ * it that no webhook can answer: does the resident still owe this, or was the
+ * refund the correction? So the posture is BR-036's - warn, never silently
+ * accept. She gets told, loudly, with the tenant and the unit named, and the
+ * void goes through the attributed path she already has.
+ *
+ * `false` here means "worth recording, not worth waking anyone" - a capture or a
+ * report is routine. Anything absent from this map keeps the old behaviour.
+ */
+const REVERSAL_EVENTS: Record<string, { priority: NotificationPriority; meaning: string }> = {
+  CHARGEBACK: { priority: 'Emergency',
+    meaning: 'the money has been TAKEN BACK by the payer’s bank or wallet provider' },
+  SECOND_CHARGEBACK: { priority: 'Emergency',
+    meaning: 'the money has been taken back a SECOND time after a dispute was lost' },
+  NOTIFICATION_OF_CHARGEBACK: { priority: 'High',
+    meaning: 'a dispute has been OPENED against this payment; the money is at risk but has not moved yet' },
+  REQUEST_FOR_INFORMATION: { priority: 'High',
+    meaning: 'the payer has queried this payment and Adyen needs evidence, usually within a deadline' },
+  CHARGEBACK_REVERSED: { priority: 'Medium',
+    meaning: 'a dispute was resolved in your favour and the money has been RETURNED to you' },
+  REFUND: { priority: 'High',
+    meaning: 'this payment has been refunded to the payer' },
+  CANCEL_OR_REFUND: { priority: 'High',
+    meaning: 'this payment has been cancelled or refunded' },
+  CANCELLATION: { priority: 'High',
+    meaning: 'this authorisation was cancelled before the money settled' },
+  REFUND_FAILED: { priority: 'High',
+    meaning: 'a refund was attempted and DID NOT go through - the payer has not been paid back' },
+  REFUNDED_REVERSED: { priority: 'High',
+    meaning: 'a refund was reversed and the money has come back to you' },
+};
 
 /**
  * Applies one verified notification item.
@@ -96,16 +148,102 @@ export async function applyNotificationItem(
   // refunds, chargebacks, reports - is acknowledged so Adyen stops retrying, and
   // recorded in the audit log, but changes no ledger row.
   if (eventCode !== 'AUTHORISATION') {
+    const reversal = REVERSAL_EVENTS[eventCode];
+
+    /**
+     * NAME THE PAYMENT, NOT THE REFERENCE.
+     *
+     * "pspReference NFGS83KL was charged back" is a support ticket. "Unit 2e's
+     * PHP 4,500 rent of 3 September has been charged back" is something she can
+     * act on before the resident's next visit.
+     *
+     * `originalReference` is the pspReference of the AUTHORISATION being
+     * modified, and it IS one of the eight HMAC-signed fields, so it is proof
+     * rather than corroboration. Scoped to `payment_method = 'Adyen Online'` for
+     * the same reason the idempotency lookup below is: migration 040 narrowed
+     * the unique index to that predicate, and a lookup wider than its index can
+     * find a row the index would allow to be a legitimate duplicate.
+     *
+     * If the lookup finds nothing the notification still goes out with the
+     * reference alone - knowing less is not a reason to say nothing.
+     *
+     * But "we looked and there is no such payment" and "we could not look" are
+     * different sentences, and only one of them is a reason for her to relax.
+     * `check:writes` holds a ratchet on exactly this - a failed query must not
+     * read as an empty result - and it caught this read the first time it ran.
+     * Dropping the error would have had a chargeback on a real, recorded payment
+     * announce itself as an unmatched reference on the day the database was
+     * having trouble, which is the day she can least afford the wrong sentence.
+     */
+    let subject = '';
+    const originalReference = String(item.originalReference ?? '').trim();
+    if (reversal && originalReference) {
+      const { data: original, error: originalError } = await db
+        .from('payments')
+        .select('id, amount, paid_at, verification_status, ' +
+                'rooms(room_number), profiles!payments_tenant_profile_id_fkey(full_name)')
+        .eq('transaction_reference', originalReference)
+        .eq('payment_method', 'Adyen Online')
+        .maybeSingle();
+
+      // The embed makes supabase-js widen the row to a union it cannot narrow
+      // here; the shape is asserted by the select above, not by the client types.
+      const row = originalError ? null : (original as Record<string, any> | null);
+
+      if (originalError) {
+        subject =
+          'Hivelet could NOT look up which payment this refers to - the lookup itself failed, ' +
+          'so this may well be a payment you have already banked. Match it by reference on the ' +
+          'Adyen dashboard. ';
+      } else if (row) {
+        const room = row.rooms?.room_number ?? 'an unknown unit';
+        const who = row.profiles?.full_name ?? 'an unknown resident';
+        const when = row.paid_at ? propertyParts(row.paid_at).date : 'an unknown date';
+        subject =
+          `It was PHP ${Number(row.amount).toFixed(2)} from ${who} (unit ${room}), paid ` +
+          `${when} and currently recorded as "${row.verification_status}". `;
+      } else {
+        subject =
+          'No payment with that reference is recorded in Hivelet, so nothing here needs voiding - ' +
+          'but check the Adyen dashboard, because the money moved there. ';
+      }
+    }
+
     await recordAudit({
       actorProfileId: null,
       action: 'PAYMENT_RECORD',
       entityType: 'PAYMENT',
       entityId: pspReference,
-      newValues: { pspReference, merchantReference: item.merchantReference ?? null, eventCode, success,
-                   note: 'Adyen notification acknowledged, no ledger effect' },
+      newValues: { pspReference, originalReference: originalReference || null,
+                   merchantReference: item.merchantReference ?? null, eventCode, success,
+                   note: reversal
+                     ? `Adyen ${eventCode} acknowledged. The ledger was NOT changed - reversing a ` +
+                       'recorded payment is the administrator’s decision (BR-048), not the ' +
+                       'gateway’s. A high-priority notification was raised so she can void it ' +
+                       'through the attributed path.'
+                     : 'Adyen notification acknowledged, no ledger effect' },
       ipAddress
     });
-    return { pspReference, eventCode, outcome: 'ignored', detail: 'not an AUTHORISATION' };
+
+    if (reversal) {
+      await notificationService.notify({
+        title: `Online payment: ${eventCode.replace(/_/g, ' ').toLowerCase()}`,
+        message:
+          `Adyen reports that ${reversal.meaning}. ${subject}` +
+          'Hivelet has NOT changed the ledger, because reversing a payment is your decision and ' +
+          'is recorded against your name. Check the Adyen dashboard, then void the payment here ' +
+          'if the money really has gone back. ' +
+          `Reference ${pspReference}${originalReference ? `, original payment ${originalReference}` : ''}.`,
+        type: 'Payment',
+        priority: reversal.priority,
+        relatedEntityType: 'PAYMENT',
+      }).catch(() => {});
+    }
+
+    return {
+      pspReference, eventCode, outcome: 'ignored',
+      detail: reversal ? `${eventCode} - administrator notified` : 'not an AUTHORISATION',
+    };
   }
 
   // A failed authorisation is real information - the tenant tried and it did not
