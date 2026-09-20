@@ -108,7 +108,9 @@ const FAQS = computed(() => [
   {
     q: 'What do I need to move in?',
     a:
-      'A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. For a unit at ₱4,500 that is ₱9,000 to bring on the day. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
+            cheapestRent.value !== null
+        ? `A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. Our cheapest unit is ₱${cheapestRent.value.toLocaleString('en-PH')} a month, so that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} to bring on the day; for a dearer unit it is twice that unit's rent. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.`
+        : 'A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit, so twice the monthly rent of the unit you take. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
   },
   {
     q: 'Are visitors and guests allowed inside the rooms?',
@@ -162,6 +164,27 @@ const liveUnits = rooms;
  * Null until it answers; the answer then omits the figure rather than guessing.
  */
 const waterRatePerOccupant = ref<number | null>(null);
+
+/**
+ * The cheapest published rent, read from the live units already on this page.
+ *
+ * The move-in answer used to say "For a unit at P4,500 that is P9,000". That
+ * figure was hardcoded, and migration 045 has just made it plainly wrong - the
+ * cheapest published unit is P5,000 and the dearest is P30,000.
+ *
+ * It was also invisible to the check written to catch exactly this.
+ * `check:liveness` rule 5 looks for a headline of the form `P N /mo`, and this
+ * sentence carries no `/mo`, so the rule found nothing to compare and printed
+ * "nothing to get wrong - every rate there is read from /public/rooms". That
+ * sentence was false while this literal sat twelve lines above it.
+ *
+ * Reading it from `liveUnits` removes the literal rather than correcting it, so
+ * there is nothing left to go stale the next time she changes a rate.
+ */
+const cheapestRent = computed<number | null>(() => {
+  const published = liveUnits.filter((u) => u.visibility === 'Published' && u.price > 0);
+  return published.length === 0 ? null : Math.min(...published.map((u) => u.price));
+});
 
 onMounted(async () => {
   try {

@@ -457,7 +457,7 @@ async function handleOnboard() {
     <RecordTable
       v-else
       :rows="rows"
-      caption="Residents, with unit, household, move-in date, advance rent and standing"
+      caption="Residents, with unit, household, move-in date, deposit and standing"
       noun="resident"
       empty-title="Nobody matches"
       :empty-note="q ? `Nothing on this list answers to “${q}”.` : 'Nothing on this list answers to this filter.'"
@@ -468,7 +468,7 @@ async function handleOnboard() {
           <th scope="col">Unit</th>
           <th scope="col">Household</th>
           <th scope="col">Moved in</th>
-          <th scope="col" class="num">Advance rent</th>
+          <th scope="col" class="num">Deposit</th>
           <th scope="col">Standing</th>
           <th scope="col"><span class="sr-only">Actions</span></th>
         </tr>
@@ -519,7 +519,7 @@ async function handleOnboard() {
             <dd class="text-ink">{{ t.moveInDate }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-ink-faint">Advance rent</dt>
+            <dt class="text-xs text-ink-faint">Deposit</dt>
             <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
           </div>
         </dl>
@@ -559,7 +559,7 @@ async function handleOnboard() {
               </dd>
             </div>
             <div>
-              <dt class="text-xs text-ink-faint">Advance rent</dt>
+              <dt class="text-xs text-ink-faint">Deposit</dt>
               <dd class="tabular mt-0.5 font-semibold text-ink">
                 {{ peso(editModalTenant.depositAmount) }}
               </dd>
@@ -825,11 +825,11 @@ async function handleOnboard() {
                  is recorded as an ordinary income receipt - so the figure is one month's
                  rent and is not to be doubled (B-31).
 
-                 THE LABEL IS THE OPEN QUESTION, not the number. "Advance rent" was the
-                 2026-09-13 reading, which she has since contradicted; the money held
-                 against repairs is the deposit. Changing what she reads is hers and
-                 Kiel's call, so it is left alone here and raised in B-31. -->
-            <label for="new-advance">Advance rent</label>
+                 SETTLED 2026-09-20. Asked whether her screen should say "Deposit" or
+                 stay "Advance rent", she answered: leave it as deposit. So the four
+                 places she reads now say Deposit. The stored figure is unchanged - it
+                 was never the number that was in question. -->
+            <label for="new-advance">Deposit</label>
             <input
               id="new-advance"
               v-model.number="newDeposit"

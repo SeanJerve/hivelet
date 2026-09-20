@@ -33,7 +33,29 @@ thing did not work" is not.
 
 ## Open
 
-### B-29 — the public site advertises the penthouse at ₱12,000. It last let for ₱30,000
+### B-29 — the rate card · **ANSWERED AND APPLIED 2026-09-20 — migration 045**
+
+> **She gave all 33 rates. They are in.** The Penthouse now advertises at ₱30,000, and a
+> tenant-raised bill charges the right rent for **30 of 30** non-Linda units — the rent shortfall
+> is **₱0**, down from ₱89,650 a month.
+>
+> **Every rate is corroborated by her own receipts**, checked before writing: 24 of 33 match the
+> rent that unit most commonly shows in the ledger, the other 9 match its most recent receipt
+> exactly, and **none contradicts her book**. The nine are the units where she has raised the rate
+> recently, so the common figure still reflects the older one — 1g, 1h, 2b, 2c, 2e, 3d, 3f, 3g,
+> F2F.
+>
+> The total uplift is **₱113,150 a month**, which is the figure this entry derived from the ledger
+> *before she was asked*. Her answer reproduces the audit's own number.
+>
+> **`room_price_history` now holds its first 31 real rows**, written by migration 020's trigger
+> and stamped with where the numbers came from. `created_by` is deliberately NULL: nobody clicked
+> this in the application, and putting a name against a keystroke that never happened would be a
+> small lie in the one table whose job is attribution.
+>
+> The original entry is kept below, because the reasoning is what made the question answerable.
+
+#### The original finding
 
 - **Blocked on:** the owner, and nobody else. She sets rates by hand; nothing here may guess one.
 - **This is the highest-value thing in this file.** It is not a bug. Every figure is doing
@@ -493,6 +515,41 @@ the untested half of BR-024, and they only become testable after a person has us
 - **☑ A check now guards it.** `check:ledger` compares every Published description against every
   name on file. Mutation-tested: forcing a match reports the unit and the name it found.
 - **Raised, fixed and applied:** 2026-09-20
+
+### B-44 — her three remaining answers, and the one follow-up left
+
+**Answered 2026-09-20, relayed by Sean.**
+
+- **The anniversary is the MOVE-IN DAY.** Her words: *"the day of each tenant starts is when the
+  tenant moves in — if the tenant pays on the 1st day of the month but moves in on the 3rd, his
+  due date is on every 3rd day of the month."*
+  - **This is a rule, not sixteen answers**, and it settles the principle rather than the
+    remaining units. `room_assignments.start_date` is still the import placeholder for all 32, so
+    the system does not hold anybody's move-in day.
+  - **But it validates the derivation.** If the anniversary is the move-in day, then the day her
+    receipts run from IS that day — which is exactly what migration 035 read them for. It also
+    explains the sixteen: a unit whose day CHANGED mid-history changed residents, and the new
+    day is the new tenant's move-in.
+  - **☐ Still open:** the month-end ones (3c, B3B, 2g, 3d, 1e) are not explained by this rule.
+    A tenant who moved in on the 31st has no 31st in February, and her book shows exactly that
+    drift. Worth one question: *"for these, is the rent day the last day of the month?"*
+- **Headcount — she asked which seven.** They are **1h, 2e, 3b, 3d, 3g, B3B, B3F**, listed with
+  their last twelve months in the client sheet. Her answer — *"1b and 1f are correct, as long as
+  the record is accurate"* — points at her book, and her book shows a clear recent change in all
+  seven. **☐ One confirmation needed:** are those seven real moves, or entry slips?
+- **⚠ Worth checking, and I have NOT acted on it.** She added: *"water is charged 200 per head
+  staying on one unit **regardless of the apartment type**."* Read strictly that includes LF and
+  LB, which BR-040 bills a FIXED charge. It may be no conflict at all — LF is ₱400 with 2
+  occupants and LB ₱200 with 1, which is 200 a head either way, so the "fixed" charges may simply
+  BE the per-head figure for their current occupancy. **If that is right, the fixed-charge rule is
+  a coincidence and would break the moment someone moves in or out of a Linda unit.** BR-040 is
+  confirmed separately and the ledger has billed those two a fixed amount for 26 months, so
+  nothing has been changed on one ambiguous sentence. **☐ Ask her directly: if a third person
+  moved into LF, would the water go up?**
+- **☑ The label is settled.** *"leave it as deposit."* Her screen now says **Deposit** in the four
+  places she reads it — the table heading, both detail panels and the onboarding form. The stored
+  figure is unchanged; it was never the number in question (B-31).
+- **Raised:** 2026-09-20
 
 ### B-28 — a repair cannot be recorded for an empty unit
 
