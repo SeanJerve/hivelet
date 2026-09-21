@@ -149,7 +149,7 @@ async function submit() {
             />
             <button
               type="button"
-              class="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full hover:bg-canvas cursor-pointer"
+              class="press absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full hover:bg-canvas cursor-pointer"
               :aria-label="reveal ? 'Hide password' : 'Show password'"
               @click="reveal = !reveal"
             >

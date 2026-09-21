@@ -32,7 +32,10 @@ function statusTone(status: string) {
   if (status === 'settled' || status === 'occupied') return 'paid' as const;
   if (status === 'pending') return 'verify' as const;
   if (status === 'maintenance') return 'overdue' as const;
-  return 'unentered' as const;
+  // Vacant is a known, factual state, not a gap in the record - 'unentered' is
+  // for the latter, which is why AdminEditUnitModal's own occupancy pill uses
+  // 'neutral' for the same case.
+  return 'neutral' as const;
 }
 
 function statusLabel(status: string) {

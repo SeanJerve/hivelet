@@ -59,7 +59,15 @@ const iconTone: Record<string, string> = {
 <style scoped>
 .toast-enter-active,
 .toast-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  /*
+   * `var(--ease-out)`, not the plain `ease` this used to read. Both a toast
+   * arriving and a toast leaving are answering something that just happened -
+   * a save, a dismiss - so both count as "entering or exiting" in the
+   * framework this system uses everywhere else, and that case is `ease-out`
+   * either way. Plain `ease` is the one curve the rest of the workspace
+   * deliberately does not use.
+   */
+  transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
 }
 .toast-enter-from {
   opacity: 0;

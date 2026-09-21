@@ -1,3 +1,22 @@
+<script lang="ts">
+/**
+ * How many `WsModal` instances are currently mounted, across the whole page.
+ *
+ * `OnsitePaymentModal` opens a second one of these - the "Record this payment?"
+ * check - on top of itself, and every instance used to lock and unlock
+ * `document.body.style.overflow` on its own. Closing the inner confirmation
+ * unmounted it, its `onBeforeUnmount` cleared the lock unconditionally, and the
+ * page behind the OUTER modal - the one still open - scrolled again.
+ *
+ * This has to live in a plain, non-`setup` block. A `let` declared inside
+ * `<script setup>` is scoped to that component's own `setup()` call and a
+ * fresh copy is created per instance, which is exactly the bug again - two
+ * counters that cannot see each other. A module-level binding outside `setup`
+ * is created once, when the module first loads, and every instance shares it.
+ */
+let openModalCount = 0;
+</script>
+
 <script setup lang="ts">
 /**
  * The one dialog in the workspace system.
@@ -32,6 +51,7 @@ const props = withDefaults(
 const emit = defineEmits<{ close: [] }>();
 
 const titleId = useId();
+const subtitleId = useId();
 const panel = ref<HTMLElement | null>(null);
 let previouslyFocused: HTMLElement | null = null;
 
@@ -48,7 +68,25 @@ function onKeydown(e: KeyboardEvent) {
     emit('close');
     return;
   }
-  if (e.key !== 'Tab' || !panel.value) return;
+  /**
+   * Only trap Tab while focus is actually inside THIS instance's panel.
+   *
+   * `OnsitePaymentModal` mounts its "Record this payment?" confirmation as a
+   * second `WsModal` nested inside the one it confirms, so the inner panel
+   * sits in the DOM underneath the outer one. A Tab keydown bubbles from
+   * whichever input is focused up through both overlay `div`s, and both had a
+   * `@keydown` listener - so pressing Tab inside the inner dialog also ran the
+   * OUTER modal's trap, against the outer modal's OWN first/last focusable
+   * element, and the two would fight over where focus landed.
+   *
+   * Checking `contains(document.activeElement)` scopes each instance's trap to
+   * its own focus, and stopping propagation once handled keeps the event from
+   * reaching an ancestor modal at all - the same reasoning as the Escape
+   * branch above, just deferred until we know this instance is the one that
+   * should act.
+   */
+  if (e.key !== 'Tab' || !panel.value || !panel.value.contains(document.activeElement)) return;
+  e.stopPropagation();
 
   const focusable = [...panel.value.querySelectorAll<HTMLElement>(
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -68,6 +106,7 @@ function onKeydown(e: KeyboardEvent) {
 
 onMounted(async () => {
   previouslyFocused = document.activeElement as HTMLElement | null;
+  openModalCount++;
   document.body.style.overflow = 'hidden';
   await nextTick();
   const target =
@@ -77,7 +116,11 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  document.body.style.overflow = '';
+  openModalCount = Math.max(0, openModalCount - 1);
+  // Only the last modal to close releases the page behind it.
+  if (openModalCount === 0) {
+    document.body.style.overflow = '';
+  }
   previouslyFocused?.focus?.();
 });
 </script>
@@ -93,6 +136,7 @@ onBeforeUnmount(() => {
       role="dialog"
       aria-modal="true"
       :aria-labelledby="titleId"
+      :aria-describedby="subtitle ? subtitleId : undefined"
       tabindex="-1"
       :class="[
         'ws-modal-panel my-auto w-full rounded-tile bg-tile text-ink shadow-lift outline-none',
@@ -104,7 +148,7 @@ onBeforeUnmount(() => {
           <h2 :id="titleId" :class="['text-lg font-semibold tracking-tight', tone === 'danger' && 'text-overdue']">
             {{ title }}
           </h2>
-          <p v-if="subtitle" class="mt-1 text-sm text-ink-soft">{{ subtitle }}</p>
+          <p v-if="subtitle" :id="subtitleId" class="mt-1 text-sm text-ink-soft">{{ subtitle }}</p>
         </div>
         <button type="button" class="icon-btn shrink-0" aria-label="Close this dialog" @click="emit('close')">
           <X class="size-4" aria-hidden="true" />

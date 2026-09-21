@@ -260,11 +260,22 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       </div>
     </dl>
 
-    <!-- Opening the gateway -->
+    <!--
+      This same panel covers two different waits: opening the Drop-in, and
+      afterwards confirming what Adyen just did with `confirmWithServer`. Both
+      set `isLoading`, and this used to say "Opening the payment page" for
+      both - which is wrong, and worse, wrong in the direction of suggesting
+      nothing has happened yet to someone who has already authorised a charge
+      in their GCash app and is now watching this screen for confirmation.
+    -->
     <div v-if="isLoading" class="flex flex-col items-center gap-3 py-10 text-center">
       <Loader2 class="size-7 animate-spin text-brand" aria-hidden="true" />
-      <p class="text-sm font-medium" role="status">Opening the payment page</p>
-      <p class="text-sm text-ink-soft">This takes a few seconds.</p>
+      <p class="text-sm font-medium" role="status">
+        {{ hasAttemptedPayment ? 'Confirming your payment' : 'Opening the payment page' }}
+      </p>
+      <p class="text-sm text-ink-soft">
+        {{ hasAttemptedPayment ? 'Checking the result with Adyen. This takes a few seconds.' : 'This takes a few seconds.' }}
+      </p>
     </div>
 
     <!-- Paid -->

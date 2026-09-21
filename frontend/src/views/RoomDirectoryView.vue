@@ -258,7 +258,7 @@ const statusChips = computed(() => [
             v-model="q"
             type="search"
             placeholder="Unit, resident or kind of unit"
-            class="ws-input w-full pl-11 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            class="ws-input w-full pl-11"
           />
         </div>
 
@@ -439,7 +439,7 @@ const statusChips = computed(() => [
         v-if="filteredRooms.length === 0" 
         class="rounded-tile bg-tile px-6 py-16 text-center text-ink-soft"
       >
-        <Search class="size-8 mx-auto mb-2 text-ink-faint" />
+        <Search class="size-8 mx-auto mb-2 text-ink-faint" aria-hidden="true" />
         <p class="font-semibold text-sm text-ink">No units match your filter criteria</p>
         <p class="text-xs mt-1">Try clearing your search query or selecting "All Clusters".</p>
       </div>

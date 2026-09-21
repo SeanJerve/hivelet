@@ -142,7 +142,14 @@ const current = computed(() => props.months[selected.value]);
     </div>
 
     <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-      <p class="min-w-0" aria-live="polite">
+      <!--
+        `current` is `months[selected]`, which is `undefined` if `months` is
+        ever passed empty - `defaultIndex` returns 0 for an empty list rather
+        than throwing, but `months[0]` on an empty array is still nothing.
+        Guarded here rather than upstream because the grid above renders fine
+        with zero buttons; only this summary line has anything to read.
+      -->
+      <p v-if="current" class="min-w-0" aria-live="polite">
         <span class="block text-xs leading-4 text-ink-faint">{{ current.long }}</span>
         <span class="block text-xl leading-7 font-semibold tabular text-ink">{{ describe(current) }}</span>
       </p>

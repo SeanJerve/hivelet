@@ -17,7 +17,7 @@
  */
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2, ArrowLeft } from 'lucide-vue-next';
 import { showToast, LANDLADY } from '@/lib/systemState';
 import { api } from '@/lib/api';
 
@@ -190,11 +190,10 @@ async function submitInquiry() {
           </RouterLink>
 
           <div class="text-right shrink-0">
-            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Landlady</p>
-            <p class="mt-1 text-sm font-medium text-ink">{{ LANDLADY.name }}</p>
+            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</p>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press mt-0.5 inline-block py-1 text-sm text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press mt-1 inline-block py-1 text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
@@ -275,15 +274,15 @@ async function submitInquiry() {
           </div>
 
           <!--
-            States what the system actually does with this. The submit handler
-            writes the enquiry to the landlady's portal and sends no email or
-            SMS, so this must not imply a reply will arrive by either.
+            Shortened to the one fact that changes what a reader does with this
+            form: no automatic confirmation goes out, so leave a real way to be
+            reached. The fuller account of where this is stored and who reads
+            it belongs on a privacy policy page, not repeated at the point of
+            filling in a form - there isn't one yet (B-50 in BLOCKED_FOR_SEAN.md).
           -->
           <p class="mt-10 max-w-xl text-xs leading-relaxed text-ink-soft">
-            What you send is saved to Mrs. {{ LANDLADY.name }}'s portal for her to read and reply to
-            directly. The system does not send an automatic email or SMS confirmation, so please
-            include a number or address she can reach you on. Your details are used to answer this
-            enquiry and are not passed to anyone else.
+            No automatic confirmation is sent, so please include a number or address
+            Mrs. {{ LANDLADY.name }} can reach you on.
           </p>
 
           <button
@@ -299,8 +298,9 @@ async function submitInquiry() {
         <p class="mt-12 text-xs text-ink-soft">
           <RouterLink
             to="/public"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-flex items-center gap-1.5 py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
+            <ArrowLeft class="size-3.5" aria-hidden="true" />
             Back to the property
           </RouterLink>
         </p>

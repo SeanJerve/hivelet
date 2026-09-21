@@ -43,10 +43,16 @@ const toneClass = computed(
       </h2>
       <div class="flex items-center gap-2 shrink-0 ml-auto">
         <slot name="actions" />
+        <!--
+          `title` is optional, and every current caller that sets `to` also
+          sets `toLabel` - but a future one that does not would have this
+          fall back to the literal string "Open undefined", read aloud to a
+          screen reader, on an untitled tile.
+        -->
         <router-link
           v-if="to"
           :to="to"
-          :aria-label="toLabel || `Open ${title}`"
+          :aria-label="toLabel || (title ? `Open ${title}` : 'Open')"
           :class="['icon-btn', isDark && 'icon-btn-on-dark']"
         >
           <ArrowUpRight class="size-4" aria-hidden="true" />

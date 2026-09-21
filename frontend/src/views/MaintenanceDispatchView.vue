@@ -389,7 +389,7 @@ function handleDeleteTicketPrompt() {
           id="maintenance-search"
           v-model="q"
           type="search"
-          placeholder="Search by title, unit or technician"
+          placeholder="Title, unit or technician"
           class="ws-input w-full pl-10"
         />
       </div>
@@ -579,7 +579,7 @@ function handleDeleteTicketPrompt() {
             </label>
             <div class="flex flex-col items-center rounded-2xl bg-canvas p-3">
               <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
-                <img :src="editingTicket.photo" alt="Ticket Attachment" class="max-h-52 w-auto object-contain rounded-lg transition-transform group-hover:scale-102" />
+                <img :src="editingTicket.photo" alt="Ticket Attachment" class="max-h-52 w-auto object-contain rounded-lg transition-transform group-hover:scale-[1.02]" />
                 <span class="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-0.5 rounded font-medium">Click to view original</span>
               </a>
             </div>

@@ -192,10 +192,17 @@ onUnmounted(() => {
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
+          <!--
+            `.press` on this button, the filter tabs, the notification rows
+            and "Check again" below: none of them are `.pill-btn` or `.chip`,
+            so none of them picked up the scale-on-press every other control
+            in the workspace answers with. On a touch screen there is no
+            hover, so a tap on one of these read as not having landed.
+          -->
           <button
             v-if="unreadCount > 0"
             type="button"
-            class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft"
+            class="press inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft"
             @click="markAllAsRead"
           >
             <CheckCheck class="size-3.5" aria-hidden="true" />
@@ -225,7 +232,7 @@ onUnmounted(() => {
           type="button"
           :aria-pressed="activeFilter === tab.key"
           :class="[
-            'whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold',
+            'press whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold',
             activeFilter === tab.key
               ? 'bg-ink text-canvas'
               : 'text-ink-soft hover:bg-canvas hover:text-ink',
@@ -267,7 +274,7 @@ onUnmounted(() => {
             :key="item.id"
             type="button"
             :class="[
-              'group flex w-full items-start gap-3 p-4 text-left hover:bg-canvas',
+              'press-plate group flex w-full items-start gap-3 p-4 text-left hover:bg-canvas',
               item.is_read ? 'bg-tile' : 'bg-brand-soft/50',
             ]"
             @click="handleNotificationClick(item)"
@@ -319,7 +326,7 @@ onUnmounted(() => {
         <span>Updates as they arrive</span>
         <button
           type="button"
-          class="rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft"
+          class="press rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft"
           @click="fetchNotifications"
         >
           Check again

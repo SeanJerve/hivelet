@@ -21,7 +21,22 @@ const emit = defineEmits<{ confirm: []; cancel: [] }>();
 </script>
 
 <template>
-  <WsModal :title="title" size="sm" :tone="destructive ? 'danger' : 'plain'" @close="emit('cancel')">
+  <!--
+    Not dismissible while busy. The two buttons below already disable
+    themselves during a submit, but a click on the backdrop was not guarded
+    the same way - so a stray click outside a destructive action already in
+    flight could fire `cancel` while the request was still running, with
+    nothing on screen to say it had. Escape still closes it either way; that
+    is a deliberate keypress rather than a stray click, and every other modal
+    in the workspace answers to it regardless of `dismissible` too.
+  -->
+  <WsModal
+    :title="title"
+    size="sm"
+    :dismissible="!busy"
+    :tone="destructive ? 'danger' : 'plain'"
+    @close="emit('cancel')"
+  >
     <p v-if="message" class="text-sm leading-6 text-ink-soft">{{ message }}</p>
     <slot />
 

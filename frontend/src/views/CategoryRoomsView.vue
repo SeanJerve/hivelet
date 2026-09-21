@@ -48,8 +48,9 @@
  * first group and the workspace screens on the second, and mixing them is what
  * produced the seam. Nothing about what the page CLAIMS changed: the four
  * categories, the live-only source, the failure state, the absent amenity list
- * and the "free to rent / someone lives here" wording are all still what that
- * commit decided.
+ * and reporting a unit's availability by name are all still what that commit
+ * decided. The exact wording moved on 2026-09-21 from "free to rent" to
+ * "vacant" - shorter, and not a claim about price the way "free" can misread.
  *
  * @innovations An editorial masthead with the four kinds as an index line, a
  *              focus-card unit picker where the plate under the cursor is the
@@ -104,16 +105,22 @@ const publicRooms = ref<DbRoom[]>([]);
 const waterRatePerOccupant = ref<number | null>(null);
 const lindaFixedWaterCharge = ref<number | null>(null);
 
-/** Never states a figure it has not been given. */
+/**
+ * Never states a figure it has not been given.
+ *
+ * Sits next to a `<dt>Water</dt>` label, so the word itself is dropped from
+ * the value column - "PHP 200 for water, each person" was saying the row's
+ * own name back to the reader.
+ */
 function waterLabel(room: DbRoom): string {
   if (room.is_linda_unit) {
     return lindaFixedWaterCharge.value !== null
-      ? `${peso(lindaFixedWaterCharge.value)} fixed for water`
-      : 'A fixed charge for water';
+      ? `${peso(lindaFixedWaterCharge.value)} fixed`
+      : 'A fixed charge';
   }
   return waterRatePerOccupant.value !== null
-    ? `${peso(waterRatePerOccupant.value)} for water, each person`
-    : 'Water charged for each person';
+    ? `${peso(waterRatePerOccupant.value)}, each person`
+    : 'Charged for each person';
 }
 
 const selectedCategoryKey = ref<CategoryKey>('Studio');
@@ -408,7 +415,7 @@ async function submitInquiry() {
           <p>{{ currentCat.blurb }}</p>
           <p v-if="!isLoading && !loadFailed && categoryUnits.length">
             {{ categoryUnits.length }} {{ categoryUnits.length === 1 ? 'unit' : 'units' }} of this
-            kind, {{ availableHere }} free to rent.
+            kind, <strong class="font-semibold text-ink">{{ availableHere }} vacant</strong> at the moment.
             <template v-if="rateCeiling > rateFloor">
               {{ peso(rateFloor) }} to {{ peso(rateCeiling) }} a month.
             </template>
@@ -447,18 +454,27 @@ async function submitInquiry() {
       <div class="ws-page">
         <ul class="flex flex-wrap items-baseline gap-x-8 gap-y-3 py-5 sm:gap-x-12">
           <li v-for="c in CATEGORIES" :key="c.key">
+            <!--
+              `inline` here, not `inline-flex`. A flex container draws its
+              underline per child rather than across the gap between them, so
+              "Studio" and its count each got their own short line with a bare
+              patch in between instead of one line under the whole label. Plain
+              inline text with a left margin on the count keeps the same
+              baseline alignment `items-baseline` gave the flex version, and
+              the underline runs continuously underneath both.
+            -->
             <RouterLink
               :to="`/category/${c.slug}`"
               :aria-current="c.key === selectedCategoryKey ? 'page' : undefined"
               :class="[
-                'press inline-flex items-baseline gap-2 py-1 text-sm transition-colors',
+                'press inline py-1 text-sm transition-colors',
                 c.key === selectedCategoryKey
                   ? 'text-ink underline underline-offset-4 decoration-1 decoration-ink'
                   : 'text-ink-soft hover:text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink',
               ]"
             >
               <span>{{ c.title }}</span>
-              <span class="text-xs tabular-nums text-ink-faint">{{ countFor(c.key) }}</span>
+              <span class="ml-2 text-xs tabular-nums text-ink-faint">{{ countFor(c.key) }}</span>
             </RouterLink>
           </li>
         </ul>
@@ -542,10 +558,6 @@ async function submitInquiry() {
               stack in the same box without the section being rebuilt.
             -->
             <div v-else class="absolute inset-0 flex flex-col justify-between px-6 py-8 sm:px-10 sm:py-10">
-              <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-                Where this unit is
-              </p>
-
               <!--
                 The floor plan, now that there is one for every unit.
 
@@ -586,7 +598,7 @@ async function submitInquiry() {
               </div>
 
               <p class="max-w-xs text-xs sm:text-sm text-ink-faint leading-relaxed">
-                A plan, not a photograph. Ask for a viewing and you can see it for yourself.
+                See exactly where your unit sits in the building.
               </p>
             </div>
 
@@ -659,9 +671,6 @@ async function submitInquiry() {
                 <span>Ask about unit {{ activeUnit.room_number }}</span>
                 <ArrowRight class="size-4 shrink-0" />
               </button>
-              <p class="mt-4 text-xs text-ink-soft leading-relaxed">
-                Mrs. {{ LANDLADY.name }} reads these herself, in her own portal.
-              </p>
             </div>
           </div>
 
@@ -691,8 +700,11 @@ async function submitInquiry() {
               {{ categoryUnits.length === 1 ? 'unit' : 'units' }} of this kind
             </h2>
             <p class="max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">
-              Pick one to see it above. {{ availableHere }} of them
-              {{ availableHere === 1 ? 'is' : 'are' }} free to rent.
+              Pick one to see it above.
+              <strong class="font-semibold text-ink">
+                {{ availableHere }} of them {{ availableHere === 1 ? 'is' : 'are' }} vacant
+              </strong>
+              at the moment.
             </p>
           </div>
 
@@ -886,7 +898,7 @@ async function submitInquiry() {
           >
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
             <Send v-else class="size-4" />
-            <span>{{ isSubmitting ? 'Sending' : 'Send it' }}</span>
+            <span>{{ isSubmitting ? 'Sending' : 'Send' }}</span>
           </button>
 
           <button

@@ -7,6 +7,7 @@ import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Inbox, Phone, Mail, Send, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import Skeleton from '@/components/ui/Skeleton.vue';
 
 const router = useRouter();
 
@@ -319,6 +320,25 @@ async function handleSendReply() {
         </div>
 
         <div class="max-h-[540px] flex-1 overflow-y-auto">
+          <!-- The first read. Without this the list fell straight through to its
+               empty state - "Nothing matches what you have typed" - while the
+               request that would have filled it was still in flight. Built from
+               the same row shape as the real list, not the generic tile card -
+               this panel is already on --tile, so a card-shaped placeholder
+               would have drawn no edge against it. -->
+          <div v-if="isLoading" class="divide-y divide-line" aria-busy="true">
+            <span class="sr-only" role="status">Loading enquiries</span>
+            <div v-for="i in 3" :key="i" class="space-y-2.5 p-4">
+              <div class="flex items-start justify-between gap-2">
+                <Skeleton class-name="h-4 w-32 rounded-full" />
+                <Skeleton class-name="h-3 w-12 shrink-0 rounded-full" />
+              </div>
+              <Skeleton class-name="h-3 w-20 rounded-full" />
+              <Skeleton class-name="h-3 w-full rounded-full" />
+              <Skeleton class-name="h-3 w-2/3 rounded-full" />
+            </div>
+          </div>
+
           <!--
             A failed load is not an empty inbox. Without this, a refused request
             left `inquiries` untouched and the list said "Nothing matches what
@@ -326,7 +346,7 @@ async function handleSendReply() {
             that had not managed to read anything at all.
           -->
           <p
-            v-if="inquiriesFetchFailed"
+            v-else-if="inquiriesFetchFailed"
             role="status"
             class="p-8 text-center text-sm text-overdue"
           >

@@ -1211,8 +1211,8 @@ const isExportingArchive = ref(false);
                   id="historical-roster-search"
                   v-model="historicalSearchQuery"
                   type="search"
-                  placeholder="Search by tenant or unit"
-                  class="h-11 w-full rounded-full border border-line bg-tile pl-10 pr-4 text-sm text-ink"
+                  placeholder="Tenant or unit"
+                  class="ws-input w-full pl-10"
                 />
               </div>
               <PillSelect

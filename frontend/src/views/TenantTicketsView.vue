@@ -549,24 +549,6 @@ function formatDateTime(iso: string) {
   });
 }
 
-function priorityClass(priority: string) {
-  switch (priority) {
-    case 'Emergency':
-      return 'bg-overdue-soft text-overdue border-overdue-soft';
-    case 'High':
-      return 'bg-verify-soft text-verify border-verify-soft';
-    case 'Medium':
-      return 'bg-brand-soft text-brand border-brand-soft';
-    default:
-      return 'bg-canvas text-[#5e6c84] border-line';
-  }
-}
-
-function statusClass(status: string) {
-  if (RESOLVED_STATES.includes(status)) return 'bg-brand-soft text-brand border-brand-soft';
-  if (status === 'In Progress') return 'bg-verify-soft text-verify border-verify-soft';
-  return 'bg-brand-soft text-brand border-[#b3d4ff]';
-}
 </script>
 
 <template>
@@ -705,13 +687,13 @@ function statusClass(status: string) {
 
               <div
                 v-else
-                class="p-3 bg-[#f0f7ff] border border-[#b3d4ff] rounded-xl flex items-center justify-between gap-3"
+                class="p-3 bg-brand-soft border border-brand-soft rounded-xl flex items-center justify-between gap-3"
               >
                 <div class="flex items-center gap-3 overflow-hidden">
                   <img
                     :src="ticketPhotoUrl"
                     alt="Ticket attachment preview"
-                    class="size-12 object-cover rounded-lg border border-[#b3d4ff] shrink-0"
+                    class="size-12 object-cover rounded-lg border border-brand-soft shrink-0"
                   />
                   <div class="truncate">
                     <span class="text-xs font-semibold text-ink block truncate">
@@ -724,9 +706,10 @@ function statusClass(status: string) {
                   type="button"
                   @click="removePhoto"
                   class="p-1 text-ink-soft hover:text-overdue hover:bg-tile rounded-lg transition-colors cursor-pointer shrink-0"
+                  aria-label="Remove photo"
                   title="Remove photo"
                 >
-                  <X class="size-4" />
+                  <X class="size-4" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -745,7 +728,14 @@ function statusClass(status: string) {
 
       <!-- Ticket Tracker (Matching Admin Table Style) -->
       <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-7">
-        <div class="px-6 py-4 border-b border-line bg-canvas flex items-center justify-between gap-3 flex-wrap">
+        <!--
+          `bg-canvas` used to sit here, which painted this strip a visibly
+          different grey-green from "Report it" beside it - a plain white
+          `bg-tile` card with just a `border-b` for its own header. Same
+          border-only treatment here now, so the two panels read as one pair
+          rather than one looking finished and the other looking like a draft.
+        -->
+        <div class="px-6 py-4 border-b border-line flex items-center justify-between gap-3 flex-wrap">
           <div class="flex items-center gap-2">
             <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
               <FileText class="size-4 text-brand" />
@@ -971,7 +961,7 @@ function statusClass(status: string) {
                 </div>
                 <div
                   v-if="index < TIMELINE_STAGES.length - 1"
-                  :class="[ 'w-0.5 flex-1 min-h-[28px]', index < getStageIndex(activeTimelineTicket.status) ? 'bg-brand' : 'bg-border' ]"
+                  :class="[ 'w-0.5 flex-1 min-h-[28px]', index < getStageIndex(activeTimelineTicket.status) ? 'bg-brand' : 'bg-line' ]"
                 />
               </div>
 

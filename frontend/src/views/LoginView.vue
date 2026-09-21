@@ -8,7 +8,7 @@
 import type { DemoAccount } from '@/lib/demoAccounts.dev';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
-import { LogIn, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
+import { LogIn, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next';
 import { login, authError, isAuthenticating, homeRouteForRole } from '@/lib/authStore';
 import { showToast, LANDLADY } from '@/lib/systemState';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -202,8 +202,7 @@ async function handleQuickLogin(account: DemoAccount) {
 
           <p class="mt-10 max-w-xl text-xs leading-relaxed text-ink-soft">
             Accounts are created by the landlady. If you live here and cannot get in, ask
-            Mrs. {{ LANDLADY.name }} and she will set yours up. Roles are enforced on the server,
-            and passwords are stored hashed.
+            Mrs. {{ LANDLADY.name }} and she will set yours up.
           </p>
 
           <button
@@ -220,9 +219,10 @@ async function handleQuickLogin(account: DemoAccount) {
         <p class="mt-12 text-xs text-ink-soft">
           <RouterLink
             to="/public"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-flex items-center gap-1.5 py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
-            ← Back to home
+            <ArrowLeft class="size-3.5" aria-hidden="true" />
+            Back to home
           </RouterLink>
         </p>
       </div>
