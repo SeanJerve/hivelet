@@ -640,7 +640,17 @@ if (live.length) {
     );
   }
 
-  const KNOWN_ENDLESS = 8;
+  /**
+   * Lowered from 8 to 4 on 2026-09-22, after migration 047 removed five test
+   * profiles Sean confirmed were not real residents (B-49-adjacent cleanup,
+   * unrelated to B-49 itself). Four of their `room_assignments` rows were
+   * among the original eight import-debris rows this ratchet was counting -
+   * `room_assignments.tenant_profile_id` cascades on a profile delete, so
+   * deleting the profiles removed those rows along with them. The remaining
+   * four are the same original import debris from 2026-08-25, still real and
+   * still carrying no income, per the check below.
+   */
+  const KNOWN_ENDLESS = 4;
   const endless = (await rows(
     'room_assignments?select=id&is_active=eq.false&end_date=is.null'
   )).length;
@@ -688,14 +698,17 @@ if (live.length) {
    * Printed every run instead, the way the seven receipts are, so it stays
    * visible until someone runs it.
    *
-   * KNOWN_NO_TENANCY exists because the obvious query finds a FOURTH row that
-   * must be left alone: a team member's own account, role 'tenant' so the portal
-   * can be exercised. A later sweep that deactivated "everyone with no tenancy"
-   * would lock out the database administrator.
+   * KNOWN_NO_TENANCY used to exist because the obvious query found a FOURTH
+   * row that had to be left alone: a team member's own account, role 'tenant'
+   * so the portal could be exercised. That account
+   * (luydcuario@gmail.com) was removed by migration 047 on 2026-09-22 - Sean
+   * confirmed by name, asked directly, that it was not one to keep, and the
+   * profile is gone along with the reason this map needed an entry for it.
+   * Left EMPTY rather than deleted outright: the next account that needs the
+   * same exemption (another team member exercising the tenant portal) should
+   * be added here again, not assumed away because the map is currently empty.
    */
-  const KNOWN_NO_TENANCY = new Map([
-    ['luydcuario@gmail.com', "team account - the database administrator's own, role 'tenant' so the portal can be exercised. LEAVE IT."],
-  ]);
+  const KNOWN_NO_TENANCY = new Map([]);
 
   // Filtered on `password_hash` rather than SELECTing it. The distinction that
   // matters is "can this account sign in", which is a filter; pulling 42 bcrypt
