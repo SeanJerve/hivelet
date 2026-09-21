@@ -33,7 +33,43 @@ thing did not work" is not.
 
 ## Open
 
-### B-49 — the admin password in `creds.txt` does not open the admin account · **URGENT, consultation tomorrow**
+### B-50 — no privacy policy page exists yet, and the enquiry form used to carry its whole burden
+
+- **Blocked on:** you saying what the policy should actually promise. Writing the page's content is
+  a decision about the business, not a design task
+- **What it is:** the enquiry form (`InquireView.vue`) used to state, inline, at the point of
+  filling in the form: where a submission is stored, that only the landlady reads it, and that it
+  is not passed to anyone else. That is real information a prospect deserves, but a form is the
+  wrong place to carry the whole promise - it competes with the fields for attention, and it is the
+  only place on the site that made it. You asked today (21 Sep) to cut it down to the one fact that
+  changes what someone does with the form right now (no auto-confirmation goes out, so leave a
+  reachable number or address) and said the fuller account belongs on a privacy policy page
+- **What I already did:** shortened the inline text as asked. Nothing about what the system
+  actually does with an enquiry changed - it still saves to the landlady's portal only, still
+  sends no email or SMS. The promise itself is just no longer written down anywhere on the site
+- **What Sean needs to do:** decide what the policy should say (what is collected, why, who sees
+  it, how long it is kept, whether anything is ever shared with GCash/Adyen for payment purposes)
+  and either write it or tell me to draft it from an answer to those questions. Once it exists as
+  its own page, the enquiry form's short line should link to it by name
+- **How to know it worked:** a `/privacy` route (or wherever it lands) resolves to a real page, and
+  `InquireView.vue`'s short notice links to it instead of just naming it in a comment
+- **Raised:** 2026-09-21 by Claude, design-audit session
+
+### ~~B-49 — the admin password in `creds.txt` does not open the admin account~~ — **RESOLVED 2026-09-21**
+
+> **Sean ran it himself**, from the repo root: `node scripts/rotate-demo-passwords.mjs`. That
+> script was already sitting in this repository for exactly this - it gives the administrator a
+> fresh unique password, gives every tenant/prospect account one shared password, clears
+> `failed_login_count` and `locked_until` on all 44 accounts, and rewrites `credentials/creds.txt`
+> in place. **44/44 updated.** Verified straight after: the mechanically-extracted admin
+> credential from the new `creds.txt` posts to `/api/auth/login` and returns `success: true,
+> role: "admin"`, with a token. The `HiveletAdmin-Rehearsal01` value this entry was originally
+> about is gone along with everything else it replaced; whatever caused it to stop matching the
+> live hash no longer matters, because there is a new one that is confirmed to work.
+>
+> **Send the new `credentials/creds.txt` to Loyd** the same out-of-band way as always - it never
+> syncs through git - and re-run `npm run check:all`; `check:api` and `check:relations` were the
+> only two suites failing on this and should both clear now.
 
 - **Blocked on:** a Secret-Store Write. This agent is hard-blocked from typing or generating a
   password, the same category B-14 hit trying to run the rehearsal's own password-change step.
@@ -58,10 +94,21 @@ thing did not work" is not.
   passed, 1 failed - admin login failed`, and `Could not sign in`), and — the part that actually
   matters — **nobody can sign in to the admin account on this machine either**, including for
   tomorrow's consultation
-- **What Sean needs to do — pick one:**
-  1. If anyone still remembers the password actually typed into the change-password form on
-     19 Sep, put the correct value into `credentials/creds.txt` and resend it around. Fastest,
-     if it is recoverable
+- **UPDATE, same day:** Sean confirmed Loyd's machine signs in fine, right now, with whatever is
+  in **Loyd's** local `credentials/creds.txt`. That settles which of the two remedies below is
+  right — there is nothing to recover or reset, because a working copy of the file already exists.
+  It is ONE shared live database, so a password that opens the admin account on Loyd's machine
+  opens it everywhere; the only reason it fails here is that `creds.txt` is gitignored on
+  purpose (never synced by `git pull`, by design — see "Working here" in `CLAUDE.md`) and this
+  machine's copy is simply the stale one
+- **What Sean needs to do — now just one step:** copy `credentials/creds.txt` from Loyd's machine
+  to this one (the whole file, or at minimum its `admin@hivelet.ph` / `Password:` line), the same
+  out-of-band channel B-14 already used to send it the first time. Nothing to generate, nothing to
+  run against the database
+- **The reset path stays written below only as a fallback**, for the day neither machine has a
+  working copy left:
+  1. If anyone remembers the password actually typed into the change-password form on 19 Sep, put
+     it into `credentials/creds.txt` directly
   2. Otherwise it needs a real reset. That is a live-data write (a password hash), so it is not
      mine to run ad hoc — say the word and I will stage it as a numbered migration the same way
      `034` was staged, generate the hash on a machine that is not blocked from doing so, and hand
