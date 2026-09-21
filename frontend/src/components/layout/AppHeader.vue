@@ -231,7 +231,7 @@ onUnmounted(() => {
       'w-full transition-colors duration-150',
       isLandingPage
         ? 'absolute top-0 inset-x-0 z-40 bg-transparent border-none'
-        : 'sticky top-0 z-40 bg-canvas/90 backdrop-blur-sm border-none'
+        : 'ws-glass sticky top-0 z-40 bg-canvas/90 backdrop-blur-sm border-none'
     ]"
   >
     <!--

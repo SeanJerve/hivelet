@@ -156,7 +156,8 @@ function closeMobileNav() {
     >
       <div
         v-if="isMobileSidebarOpen"
-        class="fixed inset-0 z-50 flex lg:hidden bg-black/40 backdrop-blur-xs"
+        class="ws-glass fixed inset-0 z-50 flex lg:hidden bg-black/40 backdrop-blur-xs"
+        style="--ws-glass-solid: var(--night)"
         @click.self="closeMobileNav"
       >
         <!--

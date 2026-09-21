@@ -1364,6 +1364,32 @@ dialog.ws-dialog[open]::backdrop {
   }
 }
 
+/* ----------------------------------------------------------------- glass --
+ * `prefers-reduced-transparency`, on the two places this app actually uses
+ * translucency: the sticky workspace header (`bg-canvas/90 backdrop-blur-sm`)
+ * and the mobile sidebar's drawer backdrop (`bg-black/40 backdrop-blur-xs`).
+ * Nothing in this file addressed this preference before - reduced MOTION and
+ * reduced transparency are two different accessibility signals, and a person
+ * who finds blur-through-content hard to read (low vision, a vestibular
+ * sensitivity to the parallax a moving background creates behind translucent
+ * chrome) is not necessarily the same person who asked for less motion.
+ *
+ * The fix is the one this preference calls for: go frostier, not transparent.
+ * Blur off, background near-solid. The two surfaces need DIFFERENT solid
+ * colours - the header is a light canvas-tinted strip, the drawer backdrop is
+ * a dark dimming scrim - so each sets its own `--ws-glass-solid` alongside
+ * this class, and only the property that actually differs is repeated at the
+ * call site. Everyone who has not asked for less transparency sees no
+ * change at all; this rule only exists inside the media query.
+ */
+@media (prefers-reduced-transparency: reduce) {
+  .ws-glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: var(--ws-glass-solid, var(--canvas)) !important;
+  }
+}
+
 /* ------------------------------------------------------------------ press --
  * Deliberately unlayered. See the comment below for why that is load-bearing.
  */
