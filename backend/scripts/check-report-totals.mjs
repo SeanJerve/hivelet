@@ -2,9 +2,11 @@
  * check:reports — the workbooks the owner actually reads must agree with the
  * database, month by month.
  *
- * Run with `npm run check:reports` from `backend/`. Downloads both reports over
- * the API, reads them with the same library that wrote them, and compares each
- * month's printed total against a direct query. Writes nothing.
+ * Run with `npm run check:reports` from `backend/`. Builds both reports the
+ * same way the API route does, reads them with the same library that wrote
+ * them, and compares each month's printed total against a direct query.
+ * Writes nothing - see "IT NO LONGER GOES THROUGH THE HTTP ROUTE" below for
+ * why that is true of the database as well as of the workbook.
  *
  * WHY THIS EXISTS
  * ---------------
@@ -35,18 +37,51 @@
  *
  * The export was right all along. It even prints, under each month,
  * "Reconciles (BR-047): Property Area total and category total both 129,737.90".
+ *
+ * IT NO LONGER GOES THROUGH THE HTTP ROUTE, AND THAT IS A SEPARATE FIX
+ * ----------------------------------------------------------------------
+ * This used to sign in and `fetch()` both workbooks once per year - three
+ * years, two reports, six calls a run - because the route was the only thing
+ * that assembled one. Every call also passed through
+ * `POST /admin/reports/*.xlsx`'s own `auditFromRequest`, so six `LEDGER_EXPORT`
+ * rows landed in the OWNER'S audit trail every time this suite ran, forever,
+ * on an append-only table (`DELETE` is revoked - migration 002). By
+ * 2026-09-19 that suite alone had put over 2,400 rows into `audit_logs`,
+ * next to 134 rows a person actually caused. B-18 in BLOCKED_FOR_SEAN.md.
+ *
+ * The fix is not to stop checking - the numbers still have to be proven
+ * against the database - it is to stop pretending each run is the owner
+ * generating a report. `buildIncomeReportWorkbook` and
+ * `buildExpenseReportWorkbook` are the exact functions the route calls; this
+ * imports them from the compiled build and calls them directly, in process.
+ * Same workbook, same bytes, same numbers - `npm run build` first is the only
+ * new cost, matching how `check:billing` already runs. What is gone is the
+ * HTTP round trip, the sign-in, and the audit write the route makes on the
+ * owner's behalf - a write this suite was never the one actually performing.
+ *
+ * `check:api` still calls the route over HTTP and still writes two
+ * `LEDGER_EXPORT` rows a run (once for each report, at the current year) -
+ * on purpose, because THAT suite is proving the route itself answers,
+ * gates and names its file correctly, which only a real request can show.
  */
 import dotenv from 'dotenv';
-import ExcelJS from 'exceljs';
-import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildIncomeReportWorkbook } from '../dist/services/incomeReportExport.js';
+import { buildExpenseReportWorkbook } from '../dist/services/expenseReportExport.js';
 
+/**
+ * `incomeReportExport.js` pulls in `config/db.js`, which loads the same root
+ * `.env` as a side effect of being imported. Relying on that would work - ESM
+ * resolves every import before this file's own top-level code runs - but it
+ * would make this script's own two env reads depend on an unstated fact about
+ * an unrelated module. Configuring it here too costs nothing and keeps that
+ * dependency out of the picture.
+ */
 const here = fileURLToPath(new URL('.', import.meta.url));
 const repo = join(here, '..', '..');
 dotenv.config({ path: join(repo, '.env') });
 
-const BASE = process.env.API_BASE ?? 'http://localhost:5000/api';
 const URL_ = process.env.SUPABASE_URL;
 const KEY = process.env.SUPABASE_SECRET_KEY;
 
@@ -78,24 +113,6 @@ async function sql(path_) {
   });
   if (!r.ok) throw new Error(`${path_} -> HTTP ${r.status}`);
   return r.json();
-}
-
-/** From the gitignored local file, never from source - as check:api does. */
-async function login() {
-  const credsPath = join(repo, 'credentials', 'creds.txt');
-  if (!existsSync(credsPath)) return null;
-  const creds = readFileSync(credsPath, 'utf8');
-  const email = creds.match(/Email:\s*(\S+)/)?.[1];
-  const password = creds.match(/Password:\s*(\S+)/)?.[1];
-  if (!email || !password) return null;
-
-  const r = await fetch(`${BASE}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identifier: email, password }),
-  });
-  if (!r.ok) return null;
-  return (await r.json())?.data?.token ?? null;
 }
 
 const cell = (v) =>
@@ -171,21 +188,25 @@ function categorySummary(sheet) {
   return { found, layout: true };
 }
 
-async function workbookFor(token, report, year) {
-  const r = await fetch(`${BASE}/admin/reports/${report}?year=${year}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!r.ok) return { error: `HTTP ${r.status}` };
-  const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(Buffer.from(await r.arrayBuffer()));
-  return { sheet: wb.worksheets[0] };
+/**
+ * Builds the same workbook `GET /admin/reports/{report}` would return, by
+ * calling the function the route calls - not the route - so no HTTP round
+ * trip happens and no `LEDGER_EXPORT` row gets written. See the file header.
+ */
+async function workbookFor(report, year) {
+  const build = report === 'income.xlsx' ? buildIncomeReportWorkbook : buildExpenseReportWorkbook;
+  try {
+    const workbook = await build(year);
+    return { sheet: workbook.worksheets[0] };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : String(err) };
+  }
 }
 
 console.log('check:reports — the workbooks must agree with the database, month by month\n');
 
-const token = await login();
-if (!token) {
-  console.log('  SKIP  credentials/creds.txt not found, so the reports cannot be fetched.');
+if (!URL_ || !KEY) {
+  console.log('  SKIP  SUPABASE_URL / SUPABASE_SECRET_KEY are not set, so the ledger cannot be read.');
   console.log('        A SKIP, not a pass: the workbooks were not checked.');
   process.exit(0);
 }
@@ -207,7 +228,7 @@ console.log(`  ledger years: ${years.join(', ')}\n`);
 for (const year of years) {
   // ---------------------------------------------------------------- expenses --
   {
-    const { sheet, error } = await workbookFor(token, 'expenses.xlsx', year);
+    const { sheet, error } = await workbookFor('expenses.xlsx', year);
     if (error) {
       console.log(`  FAIL  expenses.xlsx -> ${error}`);
       fail++;
@@ -334,7 +355,7 @@ for (const year of years) {
 
   // ------------------------------------------------------------------ income --
   {
-    const { sheet, error } = await workbookFor(token, 'income.xlsx', year);
+    const { sheet, error } = await workbookFor('income.xlsx', year);
     if (error) {
       console.log(`\n  FAIL  income.xlsx -> ${error}`);
       fail++;

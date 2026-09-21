@@ -16,7 +16,7 @@
     "check:fields": "node scripts/check-frontend-fields.mjs",
     "check:endpoints": "node scripts/check-endpoint-reach.mjs",
     "check:ledger": "node scripts/check-ledger-integrity.mjs",
-    "check:reports": "node scripts/check-report-totals.mjs",
+    "check:reports": "npm run build && node scripts/check-report-totals.mjs",
     "measure": "node scripts/measure-endpoints.mjs",
     "simulate:adyen": "npm run build && node scripts/simulate-adyen.mjs"
   },
