@@ -19,7 +19,7 @@ import {
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { downloadReport } from '@/lib/downloadReport';
-import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Banknote, ChevronDown } from 'lucide-vue-next';
+import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -1057,8 +1057,8 @@ async function exportExcel() {
               :aria-pressed="viewMode === 'flat'"
               @click="viewMode = 'flat'"
             >
-              <Banknote class="size-4" aria-hidden="true" />
-              <span>All together</span>
+              <TableIcon class="size-4" aria-hidden="true" />
+              <span>As a list</span>
             </button>
           </div>
 

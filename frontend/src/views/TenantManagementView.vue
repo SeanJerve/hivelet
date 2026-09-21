@@ -4,10 +4,10 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, tenantsFetchFailed, showToast, asListedUnitCode, type TenantRecord } from '@/lib/systemState';
-import { peso } from '@/lib/canonicalUnits';
+import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Pencil, LogOut, Loader2, Check } from 'lucide-vue-next';
+import { Search, UserPlus, Pencil, LogOut, Loader2, Check, LayoutGrid, Table as TableIcon } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -281,6 +281,51 @@ const rows = computed(() => {
   });
 });
 
+/** How to look at the same rows: flat and alphabetical, or split by cluster. */
+type ViewMode = 'list' | 'grouped';
+const viewMode = ref<ViewMode>('list');
+
+/**
+ * `unitCode` on a resident is the only thread to a cluster - `TenantRecord`
+ * carries no cluster of its own. `rooms` is keyed by unit and is already the
+ * live source every other screen reads a unit's cluster from, so this is a
+ * lookup, not a guess. Matched case-insensitively, the same way
+ * `asListedUnitCode` does it a few lines up: 22 of the 33 live unit codes
+ * are lowercase and residents are not typed consistently against them.
+ */
+const clusterByUnitCode = computed(() => {
+  const map = new Map<string, Cluster>();
+  for (const r of rooms) map.set(r.unitCode.toUpperCase(), r.cluster);
+  return map;
+});
+
+/**
+ * `rows`, split by cluster in the same order the rest of the property reads
+ * in (`CLUSTERS`), with a resident holding no unit yet - a prospect, always -
+ * in a group of its own rather than silently dropped. Empty clusters are
+ * left out rather than drawn as a heading over nothing.
+ */
+const groupedRows = computed(() => {
+  const byCluster = new Map<Cluster | 'unassigned', TenantRecord[]>();
+  for (const t of rows.value) {
+    const cluster = clusterByUnitCode.value.get(t.unitCode.toUpperCase()) ?? 'unassigned';
+    const bucket = byCluster.get(cluster);
+    if (bucket) bucket.push(t);
+    else byCluster.set(cluster, [t]);
+  }
+
+  const groups: { key: string; label: string; residents: TenantRecord[] }[] = [];
+  for (const cluster of CLUSTERS) {
+    const residents = byCluster.get(cluster);
+    if (residents?.length) groups.push({ key: cluster, label: cluster, residents });
+  }
+  const unassigned = byCluster.get('unassigned');
+  if (unassigned?.length) {
+    groups.push({ key: 'unassigned', label: 'No unit yet', residents: unassigned });
+  }
+  return groups;
+});
+
 /**
  * `systemState` fills a missing emergency contact with an em dash rather than
  * leaving it blank, so a falsy test never fires and the dialog printed a dash
@@ -508,24 +553,58 @@ async function handleOnboard() {
       </div>
     </div>
 
-    <!-- Search and the four ways of looking at the list -->
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <div class="relative w-full sm:w-80 shrink-0">
-        <Search
-          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-          aria-hidden="true"
-        />
-        <label for="resident-search" class="sr-only">Search residents</label>
-        <input
-          id="resident-search"
-          v-model="q"
-          type="search"
-          placeholder="Name, unit, phone or email"
-          class="ws-input w-full pl-11"
-        />
+    <!-- Search, the switcher, and the standing filter - same grouping as the Units directory -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+        <div class="relative w-full sm:w-80 shrink-0">
+          <Search
+            class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+            aria-hidden="true"
+          />
+          <label for="resident-search" class="sr-only">Search residents</label>
+          <input
+            id="resident-search"
+            v-model="q"
+            type="search"
+            placeholder="Name, unit, phone or email"
+            class="ws-input w-full pl-11"
+          />
+        </div>
+
+        <!-- By cluster / As a list switcher, same treatment as the Units directory -->
+        <div
+          class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-xs shrink-0"
+          role="group"
+          aria-label="How to show the residents"
+        >
+          <button
+            type="button"
+            :class="[
+              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+              viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
+            ]"
+            :aria-pressed="viewMode === 'grouped'"
+            @click="viewMode = 'grouped'"
+          >
+            <LayoutGrid class="size-4" aria-hidden="true" />
+            <span>By cluster</span>
+          </button>
+          <button
+            type="button"
+            :class="[
+              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+              viewMode === 'list' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
+            ]"
+            :aria-pressed="viewMode === 'list'"
+            @click="viewMode = 'list'"
+          >
+            <TableIcon class="size-4" aria-hidden="true" />
+            <span>As a list</span>
+          </button>
+        </div>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 shrink-0">
         <PillSelect
           v-model="statusFilter"
           :options="filterChips"
@@ -563,7 +642,7 @@ async function handleOnboard() {
       email.
     -->
     <RecordTable
-      v-else
+      v-else-if="viewMode === 'list'"
       :rows="rows"
       caption="Residents, with unit, household, move-in date, deposit and standing"
       noun="resident"
@@ -578,7 +657,7 @@ async function handleOnboard() {
           <th scope="col">Moved in</th>
           <th scope="col" class="num">Deposit</th>
           <th scope="col">Standing</th>
-          <th scope="col"><span class="sr-only">Actions</span></th>
+          <th scope="col" class="w-14"><span class="sr-only">Actions</span></th>
         </tr>
       </template>
 
@@ -596,9 +675,21 @@ async function handleOnboard() {
             <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
           </td>
           <td class="num">
-            <button type="button" class="pill-btn" @click="openEdit(t)">
-              <Pencil class="size-3.5" aria-hidden="true" />
-              <span>Edit</span>
+            <!--
+              A quiet icon, not a bordered chip. `.icon-btn` draws a ring
+              around itself always, which is right for an action that stands
+              alone (the notification bell) but reads as an odd floating
+              circle in a dense row of plain text. `press-plate` is the same
+              treatment the password-reveal toggle already uses: no border,
+              no fill until hovered or pressed.
+            -->
+            <button
+              type="button"
+              class="press-plate flex size-9 items-center justify-center rounded-full ml-auto hover:bg-canvas cursor-pointer"
+              :aria-label="`Edit ${t.name}`"
+              @click="openEdit(t)"
+            >
+              <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
             </button>
           </td>
         </tr>
@@ -638,6 +729,78 @@ async function handleOnboard() {
         </button>
       </template>
     </RecordTable>
+
+    <!--
+      By cluster: the same rows, split into the same five sections the
+      property itself reads in. One `.ws-table` per cluster rather than
+      routing each group through `RecordTable` - that component owns its own
+      empty state and mobile card fallback for ONE list, and five of those
+      nested in one screen would fight each other over both. This view scrolls
+      horizontally on a narrow screen instead, same as every register did
+      before RecordTable existed - an acceptable trade for what is an
+      admin-only, desktop-first way of looking at the same data "As a list"
+      already covers fully on a phone.
+    -->
+    <div v-else-if="viewMode === 'grouped'" class="space-y-6">
+      <p v-if="groupedRows.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center text-sm text-ink-soft">
+        {{ q ? `Nothing on this list answers to "${q}".` : 'Nothing on this list answers to this filter.' }}
+      </p>
+
+      <div
+        v-for="group in groupedRows"
+        :key="group.key"
+        class="overflow-hidden rounded-tile bg-tile"
+      >
+        <div class="flex items-baseline justify-between gap-3 px-5 py-4">
+          <span class="text-[0.9375rem] font-semibold text-ink">{{ group.label }}</span>
+          <span class="tabular text-xs text-ink-soft">
+            {{ group.residents.length }} {{ group.residents.length === 1 ? 'resident' : 'residents' }}
+          </span>
+        </div>
+
+        <div class="ws-table-wrap border-t border-line">
+          <table class="ws-table">
+            <caption class="sr-only">{{ group.label }} residents, with unit, household, move-in date, deposit and standing</caption>
+            <thead>
+              <tr>
+                <th scope="col">Resident</th>
+                <th scope="col">Unit</th>
+                <th scope="col">Household</th>
+                <th scope="col">Moved in</th>
+                <th scope="col" class="num">Deposit</th>
+                <th scope="col">Standing</th>
+                <th scope="col" class="w-14"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="t in group.residents" :key="t.id">
+                <th scope="row">
+                  <span class="block font-semibold text-ink">{{ t.name }}</span>
+                  <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
+                </th>
+                <td class="font-semibold uppercase text-ink">{{ t.unitCode }}</td>
+                <td>{{ householdLabel(t) }}</td>
+                <td>{{ t.moveInDate }}</td>
+                <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
+                <td>
+                  <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
+                </td>
+                <td class="num">
+                  <button
+                    type="button"
+                    class="press-plate flex size-9 items-center justify-center rounded-full ml-auto hover:bg-canvas cursor-pointer"
+                    :aria-label="`Edit ${t.name}`"
+                    @click="openEdit(t)"
+                  >
+                    <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
     <!-- The whole record, and the parts of it that can be changed here -->
     <WsModal

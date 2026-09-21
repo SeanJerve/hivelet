@@ -409,14 +409,18 @@ const statusChips = computed(() => [
                 </dl>
               </div>
 
-              <div class="mt-4 flex gap-2">
-                <button type="button" class="pill-btn flex-1" @click="openSpecs(u)">
-                  <Eye class="size-3.5" aria-hidden="true" />
-                  <span>Look</span>
+              <!--
+                Quiet icons on a card that is already `bg-canvas` - no border,
+                and the hover fill is `bg-tile` rather than the `bg-canvas`
+                everywhere else uses, because a canvas hover on a canvas card
+                would not show at all.
+              -->
+              <div class="mt-4 flex justify-between">
+                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-tile cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+                  <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
-                <button type="button" class="pill-btn flex-1" @click="editUnit(u)">
-                  <Pencil class="size-3.5" aria-hidden="true" />
-                  <span>Edit</span>
+                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-tile cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+                  <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
               </div>
             </article>
@@ -467,7 +471,7 @@ const statusChips = computed(() => [
           <th scope="col" class="num">A month</th>
           <th scope="col">Lived in by</th>
           <th scope="col">Status</th>
-          <th scope="col"><span class="sr-only">Actions</span></th>
+          <th scope="col" class="w-24"><span class="sr-only">Actions</span></th>
         </tr>
       </template>
 
@@ -489,13 +493,11 @@ const statusChips = computed(() => [
           </td>
           <td class="num">
             <div class="inline-flex items-center justify-end gap-2">
-              <button type="button" class="pill-btn" @click="openSpecs(u)">
-                <Eye class="size-3.5" aria-hidden="true" />
-                <span>Look</span>
+              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+                <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
               </button>
-              <button type="button" class="pill-btn" @click="editUnit(u)">
-                <Pencil class="size-3.5" aria-hidden="true" />
-                <span>Edit</span>
+              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+                <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
               </button>
             </div>
           </td>
@@ -528,14 +530,12 @@ const statusChips = computed(() => [
           </div>
         </dl>
 
-        <div class="mt-4 flex gap-2">
-          <button type="button" class="pill-btn flex-1 justify-center" @click="openSpecs(u)">
-            <Eye class="size-3.5" aria-hidden="true" />
-            <span>Look</span>
+        <div class="mt-4 flex justify-between">
+          <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+            <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
           </button>
-          <button type="button" class="pill-btn flex-1 justify-center" @click="editUnit(u)">
-            <Pencil class="size-3.5" aria-hidden="true" />
-            <span>Edit</span>
+          <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+            <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
           </button>
         </div>
       </template>
