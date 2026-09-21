@@ -2,7 +2,7 @@
 /**
  * @file views/LoginView.vue
  * @description Authentication entrance screen for administrators and residents.
- * @rationale Built following the exact 50/50 split layout, spacing, typography,
+ * @rationale Built following the even split-screen layout, spacing, typography,
  *            and design identity established by InquireView.vue and user reference.
  */
 import type { DemoAccount } from '@/lib/demoAccounts.dev';

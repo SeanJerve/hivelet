@@ -33,6 +33,47 @@ thing did not work" is not.
 
 ## Open
 
+### B-49 — the admin password in `creds.txt` does not open the admin account · **URGENT, consultation tomorrow**
+
+- **Blocked on:** a Secret-Store Write. This agent is hard-blocked from typing or generating a
+  password, the same category B-14 hit trying to run the rehearsal's own password-change step.
+  It cannot fix this itself under any authorization
+- **What it is:** `credentials/creds.txt` on this machine reads Password: `HiveletAdmin-Rehearsal01`
+  for `admin@hivelet.ph`, and says plainly it is the value B-14 set on 2026-09-19. It is not.
+  Signing in with exactly that value returns `401 INVALID_CREDENTIALS` — checked three ways: by
+  hand against the running backend, by the same regex `check:api` uses to read the file, and by
+  posting the parsed result straight to `/api/auth/login`. All three fail the same way
+- **Ruled out:** a lockout. A locked account gets its own `429 ACCOUNT_LOCKED` response
+  (`authService.ts` checks the lock before the password on purpose); this is the plain
+  wrong-password branch. Ruled out a typo on my end too — the mechanical extraction and the
+  hand-typed attempt failed identically
+- **Confirms this is not a later, undocumented rotation:** `audit_logs` holds exactly **one**
+  `AUTH_PASSWORD_CHANGE` row ever, at `2026-09-19 00:05:11 UTC` — the one B-14 already describes.
+  Nothing has touched the admin's password since. So the live hash has been sitting still, and the
+  value written into `creds.txt` on 2026-09-19 either was not what actually got typed into the
+  change-password form that day, or was edited afterward. Either way, the current file is wrong
+  and there is no tracked copy anywhere to recover the right one from — B-14 says outright the new
+  value "lives only there, never in a tracked file"
+- **Why it cannot wait:** `check:api` and `check:relations` both fail on this right now (`46
+  passed, 1 failed - admin login failed`, and `Could not sign in`), and — the part that actually
+  matters — **nobody can sign in to the admin account on this machine either**, including for
+  tomorrow's consultation
+- **What Sean needs to do — pick one:**
+  1. If anyone still remembers the password actually typed into the change-password form on
+     19 Sep, put the correct value into `credentials/creds.txt` and resend it around. Fastest,
+     if it is recoverable
+  2. Otherwise it needs a real reset. That is a live-data write (a password hash), so it is not
+     mine to run ad hoc — say the word and I will stage it as a numbered migration the same way
+     `034` was staged, generate the hash on a machine that is not blocked from doing so, and hand
+     you the exact `UPDATE` for the SQL editor plus the new value for `creds.txt`. I cannot
+     generate the hash myself even to prepare the file — ask me the moment you are ready and tell
+     me what you want the new password to be, or tell me to pick one
+- **How to know it worked:** `node -e` style extraction of `creds.txt` followed by a direct
+  `POST /api/auth/login` returns a token. `check:api` and `check:relations` both read the
+  admin credential from the same file, so both should clear once it is right — they were the
+  only two `check:all` suites failing on it this run
+- **Raised:** 2026-09-21 by Claude, design-audit session
+
 ### B-48 — three residents in her list who never lived here · **migration 046 written, NOT applied**
 
 - **Blocked on:** you saying go. It deletes live rows, so I have not run it.

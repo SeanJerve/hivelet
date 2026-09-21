@@ -365,7 +365,11 @@ onUnmounted(() => {
               :class="[
                 isLandingPage
                   ? 'border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30'
-                  : 'bg-tile text-ink hover:bg-white',
+                  // Both `bg-tile` and Tailwind's `white` are #ffffff, so a
+                  // `hover:bg-white` here was a no-op - the pill is already
+                  // white and stays white on hover. `.icon-btn`'s own hover
+                  // rule (border-color shift to --hatch) is the real feedback.
+                  : 'bg-tile text-ink',
                 isPopoverOpen && (isLandingPage ? 'bg-white/25 text-white' : 'bg-tile text-ink')
               ]"
               :aria-label="notificationsLabel"
