@@ -1147,6 +1147,81 @@ body {
   }
 }
 
+/* -------------------------------------------------------------- page-move --
+ * `App.vue`'s `<RouterView>` used to swap pages with no transition, so every
+ * navigation - Login to Overview, one admin section to the next - was a
+ * single-frame jump cut. This is the crossfade that replaces it: opacity
+ * only, both directions at once rather than one waiting for the other,
+ * because an Operate surface is explicitly told not to make a reader wait
+ * through page-load choreography on a navigation they do dozens of times a
+ * session. 110ms in, 80ms out - the exit is the faster of the two, same
+ * asymmetry as everything else in this file, because nobody is looking at
+ * the page they are leaving.
+ *
+ * `position: absolute` on the leaving page only, for the ~80ms it is still
+ * on screen. Vue mounts the entering page into normal flow immediately
+ * without waiting for the leave to finish, so without this the two pages'
+ * heights stack for a moment and the layout jumps. Absolute positioning
+ * takes the leaving one out of flow so only the entering page's height
+ * counts.
+ */
+.page-move-enter-active {
+  transition: opacity 0.11s var(--ease-out);
+}
+.page-move-leave-active {
+  transition: opacity 0.08s var(--ease-out);
+  position: absolute;
+  inset-inline: 0;
+}
+.page-move-enter-from,
+.page-move-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-move-enter-active,
+  .page-move-leave-active {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------- list-reveal --
+ * A short stagger for a group of same-shaped things appearing together - a
+ * page of table rows on first load, a grid of unit cards, a list of
+ * notifications. Each item eases up 6px and fades in, offset from the one
+ * before it by 30ms, capped at ten items so a long list does not turn into
+ * a slow reveal - the eleventh row onward appears with the tenth rather than
+ * queuing another 300ms behind it.
+ *
+ * A `v-for` has no `@starting-style` seam the way a `v-if` disclosure does -
+ * every item is present on the same render, not entering one at a time - so
+ * this uses a plain `@keyframes` run once on mount instead. That is the one
+ * place in this file keyframes are preferred over a transition: nothing here
+ * is interrupted or retriggered, the failure mode transitions solve for.
+ *
+ * Applied with `.list-reveal-item` plus an inline
+ * `style="animation-delay: Nms"` from the loop index - `:nth-child()` only
+ * works when the DOM order matches the data order with nothing filtered
+ * around it, which is not true of a searched or paginated register.
+ */
+@keyframes ws-list-reveal {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+.list-reveal-item {
+  animation: ws-list-reveal 0.22s var(--ease-out) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .list-reveal-item {
+    animation: none;
+  }
+}
+
 /* ----------------------------------------------------------------- reveal --
  * Content that appears when a disclosure opens: a unit row, an FAQ answer.
  *

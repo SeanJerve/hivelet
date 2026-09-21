@@ -149,12 +149,24 @@ onBeforeUnmount(() => {
       </div>
     </button>
 
-    <!-- Floating Popover Menu -->
+    <!--
+      Floating Popover Menu.
+
+      Was Tailwind's bare `ease-out`/`ease-in` keywords - the weak built-in
+      curves this file's own motion system exists to replace everywhere else.
+      `ease-in` on the leave was the sharper problem: it starts slow, which is
+      wrong on an exit nobody is watching closely, and it is the one curve
+      emil-design-eng's framework names outright as never right for UI. Both
+      directions now use the same `--ease-out` token every other popover,
+      dialog and reveal in this file already uses, so a PillSelect opening
+      feels like the same product as everything around it, not a component
+      that arrived from somewhere else.
+    -->
     <Transition
-      enter-active-class="transition duration-150 ease-out"
+      enter-active-class="transition duration-150 ease-[var(--ease-out)]"
       enter-from-class="transform scale-95 opacity-0 -translate-y-1"
       enter-to-class="transform scale-100 opacity-100 translate-y-0"
-      leave-active-class="transition duration-100 ease-in"
+      leave-active-class="transition duration-100 ease-[var(--ease-out)]"
       leave-from-class="transform scale-100 opacity-100 translate-y-0"
       leave-to-class="transform scale-95 opacity-0 -translate-y-1"
     >

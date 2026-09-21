@@ -126,7 +126,35 @@ const hidesGlobalHeader = computed(() =>
         tabindex="-1"
         :class="['flex-1 max-w-full min-w-0 flex flex-col outline-none', isWorkspaceSection ? 'py-6 lg:pl-6' : '']"
       >
-        <RouterView />
+        <!--
+          Pages used to swap with no transition at all - one screen replaced
+          by the next in a single frame, the same jump cut a broken load
+          would produce. `mode="out-in"` was deliberately NOT used: it waits
+          for the old page to finish leaving before the new one starts
+          entering, which is the "page-load choreography" Operate surfaces
+          are told to avoid - every navigation would cost the sum of both
+          durations instead of the longer of the two. This crossfades both
+          ways at once, opacity only, 110ms: enough to say "this changed
+          deliberately" rather than "this broke", fast enough that it is
+          gone before a reader who navigates ten times a minute could
+          resent it. See `.page-move` in index.css for the timing and the
+          reduced-motion path.
+        -->
+        <!--
+          No `:key` on the route path. That would force every param-only
+          navigation (a category slug changing under `/category/:slug`) to
+          remount its component, which is a heavier, separate decision this
+          motion pass is not making - some of those views watch their route
+          param instead of expecting a fresh mount. Without a key, Vue still
+          fires the transition on every actual PAGE change, because that is
+          a different component; a param change inside the same page stays
+          instant, which is correct for a filter, not a navigation.
+        -->
+        <RouterView v-slot="{ Component }">
+          <Transition name="page-move">
+            <component :is="Component" />
+          </Transition>
+        </RouterView>
       </main>
     </div>
 
