@@ -41,6 +41,7 @@ import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import MonthCapsules from '@/components/overview/MonthCapsules.vue';
 import OccupancyArc from '@/components/overview/OccupancyArc.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 import type { ArcUnit, CapsuleMonth } from '@/components/overview/types';
 import {
   Plus,
@@ -558,6 +559,11 @@ const historicalLedgerOpen = ref(true);
 const historicalLedgerTab = ref<'income' | 'expenses'>('income');
 const historicalSearchQuery = ref('');
 const historicalClusterFilter = ref('All');
+
+const historicalClusterOptions = computed(() => [
+  { value: 'All', label: 'All clusters' },
+  ...CLUSTERS.map((c) => ({ value: c, label: c })),
+]);
 
 interface HistoricalTenantSummary {
   name: string;
@@ -1197,29 +1203,24 @@ const isExportingArchive = ref(false);
         <div v-show="historicalTenantRosterOpen" id="archive-roster" class="flex flex-col gap-4">
           <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
           <template v-else>
-            <div class="flex flex-wrap items-end gap-3">
-              <label class="flex flex-col gap-1 text-xs text-ink-faint">
-                Search by tenant or unit
-                <span class="relative">
-                  <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-                  <input
-                    v-model="historicalSearchQuery"
-                    type="search"
-                    class="h-11 w-64 max-w-full rounded-full border border-line bg-tile pl-10 pr-4 text-sm text-ink"
-                  />
-                </span>
-              </label>
-              <label class="flex flex-col gap-1 text-xs text-ink-faint">
-                Cluster
-                <select
-                  v-model="historicalClusterFilter"
-                  class="h-11 rounded-full border border-line bg-tile px-4 text-sm text-ink cursor-pointer"
-                >
-                  <option value="All">All clusters</option>
-                  <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
-                </select>
-              </label>
-              <p class="pb-3 text-sm text-ink-soft" aria-live="polite">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="relative w-full sm:w-80 shrink-0">
+                <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+                <label for="historical-roster-search" class="sr-only">Search by tenant or unit</label>
+                <input
+                  id="historical-roster-search"
+                  v-model="historicalSearchQuery"
+                  type="search"
+                  placeholder="Search by tenant or unit"
+                  class="h-11 w-full rounded-full border border-line bg-tile pl-10 pr-4 text-sm text-ink"
+                />
+              </div>
+              <PillSelect
+                v-model="historicalClusterFilter"
+                :options="historicalClusterOptions"
+                aria-label="Filter by cluster"
+              />
+              <p class="text-sm text-ink-soft" aria-live="polite">
                 {{ historicalTenantRoster.length }} {{ historicalTenantRoster.length === 1 ? 'tenant' : 'tenants' }}
               </p>
             </div>

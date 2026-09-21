@@ -13,9 +13,23 @@ import {
   asListedUnitCode
 } from '@/lib/systemState';
 import WsModal from '@/components/ui/WsModal.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { X, Check, Banknote, Loader2, ReceiptText, Users } from 'lucide-vue-next';
+
+const unitOptions = computed(() =>
+  rooms.map((r) => ({
+    value: r.unitCode,
+    label: `${r.unitCode.toUpperCase()} — ${formatUnitOccupantsSummary(r.unitCode).text} (${r.cluster})`,
+  }))
+);
+
+const PAYMENT_METHOD_OPTIONS = [
+  { value: 'Cash', label: 'Cash' },
+  { value: 'GCash', label: 'GCash' },
+  { value: 'Bank Transfer', label: 'Bank transfer' },
+];
 
 const selectedUnit = ref('1a');
 /**
@@ -513,11 +527,7 @@ function triggerRecord() {
     <form id="onsite-payment-form" @submit.prevent="triggerRecord" class="flex flex-col gap-5">
         <label class="ws-field">
           Unit
-          <select v-model="selectedUnit" class="ws-select w-full">
-            <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
-              {{ r.unitCode.toUpperCase() }} — {{ formatUnitOccupantsSummary(r.unitCode).text }} ({{ r.cluster }})
-            </option>
-          </select>
+          <PillSelect v-model="selectedUnit" :options="unitOptions" widthClass="w-full" />
         </label>
 
         <div class="grid gap-4 sm:grid-cols-2">
@@ -581,11 +591,7 @@ function triggerRecord() {
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="ws-field">
             How they paid
-            <select v-model="paymentMethod" class="ws-select w-full">
-              <option value="Cash">Cash</option>
-              <option value="GCash">GCash</option>
-              <option value="Bank Transfer">Bank transfer</option>
-            </select>
+            <PillSelect v-model="paymentMethod" :options="PAYMENT_METHOD_OPTIONS" widthClass="w-full" />
           </label>
           <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
             Their reference number

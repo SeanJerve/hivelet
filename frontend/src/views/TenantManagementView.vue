@@ -12,6 +12,7 @@ import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -98,6 +99,46 @@ const editUnitCode = ref('');
 const editStatus = ref<'active' | 'vacated'>('active');
 const editHasRoommates = ref<'no' | 'yes'>('no');
 const editRoommateQty = ref<number>(0);
+
+const editUnitOptions = computed(() => {
+  const opts: { value: string; label: string }[] = [];
+  if (editUnitCode.value === '—') {
+    opts.push({ value: '—', label: 'No unit assigned' });
+  }
+  rooms.forEach((u) => {
+    const priceStr = !roomsFetchFailed.value ? ` (${peso(u.price)})` : '';
+    opts.push({
+      value: u.unitCode.toUpperCase(),
+      label: `${u.unitCode.toUpperCase()} — ${u.cluster}${priceStr}`,
+    });
+  });
+  return opts;
+});
+
+const editStatusOptions = [
+  { value: 'active', label: 'Living here' },
+  { value: 'vacated', label: 'Moved out' },
+];
+
+const sharingOptions = [
+  { value: 'no', label: 'Lives alone' },
+  { value: 'yes', label: 'With roommates' },
+];
+
+const newUnitOptions = computed(() =>
+  rooms.map((u) => {
+    const priceStr = !roomsFetchFailed.value ? ` — ${peso(u.price)}` : '';
+    return {
+      value: u.unitCode,
+      label: `${u.unitCode.toUpperCase()}${priceStr} (${u.cluster})`,
+    };
+  })
+);
+
+const newSharingOptions = [
+  { value: 'no', label: 'Living alone' },
+  { value: 'yes', label: 'With roommates' },
+];
 
 /**
  * NOTE: a `checkAnnualEscalation()` helper used to live here, recommending a 2%
@@ -469,7 +510,7 @@ async function handleOnboard() {
 
     <!-- Search and the four ways of looking at the list -->
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <div class="relative lg:max-w-sm lg:flex-1">
+      <div class="relative w-full sm:w-80 shrink-0">
         <Search
           class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
           aria-hidden="true"
@@ -484,18 +525,12 @@ async function handleOnboard() {
         />
       </div>
 
-      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Show">
-        <button
-          v-for="chip in filterChips"
-          :key="chip.key"
-          type="button"
-          :aria-pressed="statusFilter === chip.key"
-          class="chip"
-          @click="statusFilter = chip.key"
-        >
-          {{ chip.label }}
-          <span class="chip-count">{{ chip.count }}</span>
-        </button>
+      <div class="flex items-center gap-2">
+        <PillSelect
+          v-model="statusFilter"
+          :options="filterChips"
+          aria-label="Filter by standing"
+        />
       </div>
     </div>
 
@@ -678,19 +713,7 @@ async function handleOnboard() {
                 still be the selected one, and its value is non-empty, so `required` is
                 satisfied.
               -->
-              <select id="edit-unit" v-model="editUnitCode" class="ws-select w-full" required>
-                <option value="—" disabled>No unit assigned</option>
-                <!--
-                  Reads the LIVE list. This iterated CANONICAL_UNITS and printed `basePrice`
-                  - the exact second copy the comment on `syncDepositToUnit` warns about, 550
-                  lines above. 30 of the 33 seeded prices no longer match the database; the
-                  worst is out by ₱1,900, and the seeded rent roll overstates the real one
-                  by ₱28,800 a month.
-                -->
-                <option v-for="u in rooms" :key="u.unitCode" :value="u.unitCode.toUpperCase()">
-                  {{ u.unitCode.toUpperCase() }} — {{ u.cluster }}<template v-if="!roomsFetchFailed"> ({{ peso(u.price) }})</template>
-                </option>
-              </select>
+              <PillSelect id="edit-unit" v-model="editUnitCode" :options="editUnitOptions" widthClass="w-full" />
               <p v-if="editUnitCode === '—'" class="ws-hint">
                 This resident holds no unit. Pick one to assign them, or save to change the
                 other details and leave them unassigned.
@@ -699,23 +722,17 @@ async function handleOnboard() {
 
             <div class="ws-field">
               <label for="edit-status">Standing</label>
-              <select id="edit-status" v-model="editStatus" class="ws-select w-full" required>
-                <option value="active">Living here</option>
-                <option value="vacated">Moved out</option>
-              </select>
+              <PillSelect id="edit-status" v-model="editStatus" :options="editStatusOptions" widthClass="w-full" />
             </div>
 
             <div class="ws-field">
               <label for="edit-roommates">Sharing the unit</label>
-              <select
+              <PillSelect
                 id="edit-roommates"
                 v-model="editHasRoommates"
-                class="ws-select w-full"
-                required
-              >
-                <option value="no">Lives alone</option>
-                <option value="yes">With roommates</option>
-              </select>
+                :options="sharingOptions"
+                widthClass="w-full"
+              />
             </div>
 
             <div v-if="editHasRoommates === 'yes'" class="ws-field">
@@ -841,25 +858,12 @@ async function handleOnboard() {
           </div>
           <div class="ws-field">
             <label for="new-unit">Unit</label>
-            <select id="new-unit" v-model="newUnit" class="ws-select w-full" required>
-              <!--
-                This one mattered most. `syncDepositToUnit` fills the deposit field from the
-                LIVE price the moment a unit is picked, while this label showed the SEEDED
-                one - so for unit 2B the dropdown read ₱6,500 and the deposit box ₱4,600,
-                at the same time, with nothing failing.
-              -->
-              <option v-for="u in rooms" :key="u.unitCode" :value="u.unitCode">
-                {{ u.unitCode.toUpperCase() }}<template v-if="!roomsFetchFailed"> — {{ peso(u.price) }}</template> ({{ u.cluster }})
-              </option>
-            </select>
+            <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" widthClass="w-full" />
           </div>
 
           <div class="ws-field">
             <label for="new-sharing">Sharing the unit</label>
-            <select id="new-sharing" v-model="newHasRoommates" class="ws-select w-full" required>
-              <option value="no">Living alone</option>
-              <option value="yes">With roommates</option>
-            </select>
+            <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" widthClass="w-full" />
           </div>
 
           <div v-if="newHasRoommates === 'yes'" class="ws-field">

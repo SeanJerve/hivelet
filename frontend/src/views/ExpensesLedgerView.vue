@@ -14,6 +14,7 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 
 interface ApiExpense {
   id: string;
@@ -162,6 +163,18 @@ const monthsList = [
 ];
 
 const yearsList = ['All', '2026', '2025', '2024'];
+
+const expenseCategoryOptions = computed(() => [
+  { value: 'All', label: 'Every kind' },
+  ...categoryOptions.value.map((c) => ({ value: c, label: c })),
+]);
+
+const yearOptions = computed(() =>
+  yearsList.map((y) => ({
+    value: y,
+    label: y === 'All' ? 'Every year' : y,
+  }))
+);
 
 // New Expense Form Entries (At least one default entry)
 // The property's today, not UTC's - see lib/propertyDate.
@@ -767,7 +780,7 @@ async function handleEditExpense() {
 
     <!-- Narrowing the ledger -->
     <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div class="relative xl:max-w-sm xl:flex-1">
+      <div class="relative w-full sm:w-80 shrink-0">
         <Search
           class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
           aria-hidden="true"
@@ -783,29 +796,24 @@ async function handleEditExpense() {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <label class="ws-field">
-          <span class="sr-only">Kind of expense</span>
-          <select v-model="selectedCategory" class="ws-select w-auto">
-            <option value="All">Every kind</option>
-            <option v-for="c in categoryOptions" :key="c" :value="c">{{ c }}</option>
-          </select>
-        </label>
+        <PillSelect
+          v-model="selectedCategory"
+          :options="expenseCategoryOptions"
+          aria-label="Kind of expense"
+        />
 
-        <label class="ws-field">
-          <span class="sr-only">Month</span>
-          <select v-model="filterMonth" class="ws-select w-auto">
-            <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
-          </select>
-        </label>
+        <PillSelect
+          v-model="filterMonth"
+          :options="monthsList"
+          aria-label="Month"
+        />
 
-        <label class="ws-field">
-          <span class="sr-only">Year</span>
-          <select v-model="filterYear" class="ws-select w-auto">
-            <option v-for="y in yearsList" :key="y" :value="y">
-              {{ y === 'All' ? 'Every year' : y }}
-            </option>
-          </select>
-        </label>
+        <PillSelect
+          v-model="filterYear"
+          :options="yearOptions"
+          aria-label="Year"
+          align="right"
+        />
       </div>
     </div>
 
@@ -982,9 +990,7 @@ async function handleEditExpense() {
 
                   <label class="ws-field">
                     Kind of expense
-                    <select v-model="entry.category" class="ws-select w-full" required>
-                      <option v-for="c in categoryOptions" :key="c" :value="c">{{ c }}</option>
-                    </select>
+                    <PillSelect v-model="entry.category" :options="categoryOptions" widthClass="w-full" />
                   </label>
                 </div>
 
@@ -1003,13 +1009,7 @@ async function handleEditExpense() {
                     >
                       <label class="ws-field flex-1">
                         Which part of the property
-                        <select v-model="alloc.area" class="ws-select w-full" required>
-                          <option
-                            v-for="areaOption in PROPERTY_AREA_OPTIONS"
-                            :key="areaOption.value"
-                            :value="areaOption.value"
-                          >{{ areaOption.label }}</option>
-                        </select>
+                        <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" widthClass="w-full" />
                       </label>
 
                       <label class="ws-field w-36 sm:w-44">
@@ -1114,14 +1114,8 @@ async function handleEditExpense() {
               </label>
 
               <label class="ws-field">
-              Expense Category
-                <select 
-                  v-model="editCategory" 
-                  class="ws-select w-full" 
-                  required
-                >
-                  <option v-for="c in categoryOptions" :key="c" :value="c">{{ c }}</option>
-                </select>
+                Expense Category
+                <PillSelect v-model="editCategory" :options="categoryOptions" widthClass="w-full" />
               </label>
             </div>
 
@@ -1142,13 +1136,7 @@ async function handleEditExpense() {
                 >
                   <label class="ws-field flex-1">
                     Which part of the property
-                    <select v-model="alloc.area" class="ws-select w-full" required>
-                      <option
-                        v-for="areaOption in PROPERTY_AREA_OPTIONS"
-                        :key="areaOption.value"
-                        :value="areaOption.value"
-                      >{{ areaOption.label }}</option>
-                    </select>
+                    <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" widthClass="w-full" />
                   </label>
 
                   <label class="ws-field w-36 sm:w-44">

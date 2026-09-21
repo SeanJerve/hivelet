@@ -810,28 +810,79 @@ body {
   }
 
   .ws-input,
-  .ws-select,
-  .ws-textarea {
+  input.ws-input,
+  input[type='search'],
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='tel'],
+  input[type='number'] {
+    box-sizing: border-box;
     width: 100%;
     min-height: 2.75rem;
     border: 1px solid var(--line);
-    border-radius: 0.875rem;
+    border-radius: 9999px !important;
     background-color: var(--tile);
     color: var(--ink);
-    padding: 0.625rem 0.875rem;
+    padding: 0.625rem 1.125rem;
     font-size: 0.875rem;
     line-height: 1.25rem;
     transition: border-color 0.15s ease;
   }
-  .ws-textarea {
-    min-height: 6rem;
-    resize: vertical;
+  .ws-embedded-input,
+  input.ws-embedded-input {
+    border: none !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    min-height: 0 !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+    box-shadow: none !important;
+    outline: none !important;
   }
-  .ws-select {
+  .ws-textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 6rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background-color: var(--tile);
+    color: var(--ink);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    resize: vertical;
+    transition: border-color 0.15s ease;
+  }
+  .ws-select,
+  select.ws-select,
+  select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 2.75rem;
+    border: 1px solid var(--line);
+    border-radius: 9999px !important;
+    background-color: var(--tile);
+    color: var(--ink);
+    padding: 0.625rem 2.75rem 0.625rem 1.125rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
     cursor: pointer;
+    transition: border-color 0.15s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2345524a' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1.125rem center;
+    background-size: 1rem 1rem;
+  }
+  select::-ms-expand {
+    display: none;
   }
   .ws-input:focus,
   .ws-select:focus,
+  select:focus,
   .ws-textarea:focus {
     outline: none;
     border-color: var(--brand);
@@ -842,6 +893,7 @@ body {
   }
   .ws-input:disabled,
   .ws-select:disabled,
+  select:disabled,
   .ws-textarea:disabled {
     background-color: var(--canvas);
     cursor: not-allowed;
@@ -870,6 +922,20 @@ body {
     border-bottom: 1px solid var(--line);
     white-space: nowrap;
   }
+  .font-editorial .ws-table thead th {
+    font-family: var(--font-editorial);
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 0.75rem 1.25rem;
+  }
+  .font-editorial .ws-table tbody td,
+  .font-editorial .ws-table tbody th {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
   .ws-table tbody td,
   .ws-table tbody th {
     padding: 0.75rem 1rem;
@@ -884,6 +950,12 @@ body {
   .ws-table tbody tr:hover td,
   .ws-table tbody tr:hover th {
     background-color: var(--canvas);
+  }
+  .ws-table tbody tr.is-active:hover td,
+  .ws-table tbody tr.is-active:hover th,
+  .ws-table tbody tr.unit-detail-row td,
+  .ws-table tbody tr.unit-detail-row:hover td {
+    background-color: var(--tile);
   }
   .ws-table .num {
     text-align: right;

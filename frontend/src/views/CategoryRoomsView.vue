@@ -565,7 +565,7 @@ async function submitInquiry() {
                   :alt="'Floor plan of the ' + floorLabelFor(activeUnit.floor) + ' of the ' + buildingNameFor(activeUnit.cluster_code)"
                   :width="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.w"
                   :height="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.h"
-                  class="block w-full"
+                  class="block w-full mix-blend-multiply"
                   loading="lazy"
                   decoding="async"
                 />

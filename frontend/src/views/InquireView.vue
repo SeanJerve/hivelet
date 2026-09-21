@@ -340,13 +340,6 @@ async function submitInquiry() {
           <p class="font-medium tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,4.4vw,3.75rem)] drop-shadow-sm">
             Fe Galang Da Silva<br />Boarding House
           </p>
-          <p class="mt-6 max-w-sm text-sm text-white/80 leading-relaxed drop-shadow-sm">
-            33 units across four levels, in 5 property clusters. Individual electric submeters,
-            <template v-if="waterRatePerOccupant !== null"
-              >water at &#8369;{{ waterRatePerOccupant }} for each person each month,</template
-            ><template v-else>water charged for each person each month,</template>
-            and a secure gated perimeter.
-          </p>
         </div>
       </aside>
 

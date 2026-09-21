@@ -25,6 +25,7 @@ import RecordTable from '@/components/ui/RecordTable.vue';
 import ShowMore from '@/components/ui/ShowMore.vue';
 import { Search, Pencil, LayoutGrid, Table as TableIcon, Eye, ChevronDown } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 
 type ViewMode = 'matrix' | 'table';
 
@@ -32,6 +33,11 @@ const q = ref('');
 const cluster = ref('All');
 const selectedStatus = ref<string>('All');
 const viewMode = ref<ViewMode>('matrix');
+
+const clusterOptions = computed(() => [
+  { value: 'All', label: 'Every cluster' },
+  ...CLUSTERS.map((c) => ({ value: c, label: c })),
+]);
 
 /**
  * Which clusters are open.
@@ -227,86 +233,81 @@ const statusChips = computed(() => [
     </div>
 
     <!-- Page header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
-        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-          Rooms and rates
-        </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          All 33 units across 5 clusters, what each one lets for, and who is in it.
-        </p>
-      </div>
-
-      <!-- Two ways of reading the same 33 units -->
-      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="How to show the units">
-        <button
-          type="button"
-          class="chip"
-          :aria-pressed="viewMode === 'matrix'"
-          @click="viewMode = 'matrix'"
-        >
-          <LayoutGrid class="size-4" aria-hidden="true" />
-          <span>By cluster</span>
-        </button>
-
-        <button
-          type="button"
-          class="chip"
-          :aria-pressed="viewMode === 'table'"
-          @click="viewMode = 'table'"
-        >
-          <TableIcon class="size-4" aria-hidden="true" />
-          <span>As a list</span>
-        </button>
-      </div>
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
+      <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+        Rooms and rates
+      </h1>
+      <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
+        All 33 units across 5 clusters, what each one lets for, and who is in it.
+      </p>
     </div>
 
-    <!--
-      The counts and the filter are the same control. Four stat tiles used to
-      sit above a status dropdown holding the same four numbers, and each tile
-      was a clickable div wearing `ring-2 ring-emerald-600`, `ring-sky-600` and
-      `ring-purple-600` - three colours from outside the system, on a screen
-      whose own status colours mean something.
-    -->
-    <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div class="relative xl:max-w-sm xl:flex-1">
-        <Search
-          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-          aria-hidden="true"
-        />
-        <label for="unit-search" class="sr-only">Search units</label>
-        <input
-          id="unit-search"
-          v-model="q"
-          type="search"
-          placeholder="Unit, resident or kind of unit"
-          class="ws-input w-full pl-11"
-        />
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Show">
-          <button
-            v-for="chip in statusChips"
-            :key="chip.key"
-            type="button"
-            class="chip"
-            :aria-pressed="selectedStatus === chip.key"
-            @click="selectedStatus = chip.key"
-          >
-            {{ chip.label }}
-            <span class="chip-count">{{ chip.count }}</span>
-          </button>
+    <!-- Controls toolbar -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+        <!-- Search units -->
+        <div class="relative w-full sm:w-80 shrink-0">
+          <Search
+            class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+            aria-hidden="true"
+          />
+          <label for="unit-search" class="sr-only">Search units</label>
+          <input
+            id="unit-search"
+            v-model="q"
+            type="search"
+            placeholder="Unit, resident or kind of unit"
+            class="ws-input w-full pl-11 focus:border-brand focus:ring-2 focus:ring-brand/20"
+          />
         </div>
 
-        <label class="ws-field">
-          <span class="sr-only">Cluster</span>
-          <select v-model="cluster" class="ws-select w-auto">
-            <option value="All">Every cluster</option>
-            <option v-for="c in CLUSTERS" :key="c" :value="c">{{ c }}</option>
-          </select>
-        </label>
+        <!-- Two ways of reading the same 33 units -->
+        <div
+          class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-sm shrink-0"
+          role="group"
+          aria-label="How to show the units"
+        >
+          <button
+            type="button"
+            :class="[
+              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+              viewMode === 'matrix' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
+            ]"
+            :aria-pressed="viewMode === 'matrix'"
+            @click="viewMode = 'matrix'"
+          >
+            <LayoutGrid class="size-4" aria-hidden="true" />
+            <span>By cluster</span>
+          </button>
+
+          <button
+            type="button"
+            :class="[
+              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+              viewMode === 'table' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
+            ]"
+            :aria-pressed="viewMode === 'table'"
+            @click="viewMode = 'table'"
+          >
+            <TableIcon class="size-4" aria-hidden="true" />
+            <span>As a list</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <PillSelect
+          v-model="selectedStatus"
+          :options="statusChips"
+          aria-label="Filter by status"
+        />
+        <PillSelect
+          v-model="cluster"
+          :options="clusterOptions"
+          aria-label="Cluster"
+          align="right"
+        />
       </div>
     </div>
 

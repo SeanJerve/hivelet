@@ -18,8 +18,14 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 
 const { showToast } = useToast();
+
+const sortOrderOptions = [
+  { value: 'latest', label: 'Newest first' },
+  { value: 'oldest', label: 'Oldest first' },
+];
 
 // Selected bill for the Adyen web component checkout modal
 const selectedBillForAdyen = ref<any | null>(null);
@@ -96,6 +102,10 @@ const availableYears = computed(() => {
   years.add(currentYear);
   return Array.from(years).sort((a, b) => b - a);
 });
+
+const yearOptions = computed(() =>
+  availableYears.value.map((y) => ({ value: y, label: String(y) }))
+);
 
 const filteredPayments = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
@@ -474,27 +484,31 @@ function refreshAll() {
 
     <!-- Payment record -->
     <OverviewTile title="Payment record">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <label class="ws-field flex-1">
-          Search by reference, method or status
-          <span class="relative">
-            <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-            <input v-model="searchQuery" type="search" class="ws-input pl-10" />
-          </span>
-        </label>
-        <label class="ws-field sm:w-40">
-          Year
-          <select v-model="selectedYear" class="ws-select">
-            <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
-          </select>
-        </label>
-        <label class="ws-field sm:w-40">
-          Order
-          <select v-model="sortOrder" class="ws-select">
-            <option value="latest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
-        </label>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="relative w-full sm:w-80 shrink-0">
+          <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+          <label for="tenant-payment-search" class="sr-only">Search by reference, method or status</label>
+          <input
+            id="tenant-payment-search"
+            v-model="searchQuery"
+            type="search"
+            placeholder="Search by reference, method or status"
+            class="ws-input w-full pl-10"
+          />
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <PillSelect
+            v-model="selectedYear"
+            :options="yearOptions"
+            aria-label="Filter by year"
+          />
+          <PillSelect
+            v-model="sortOrder"
+            :options="sortOrderOptions"
+            aria-label="Sort order"
+            align="right"
+          />
+        </div>
       </div>
 
       <UnavailableNote

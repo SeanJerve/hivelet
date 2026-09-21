@@ -33,9 +33,16 @@ import {
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 import { useToast } from '@/lib/useToast';
 
 const { showToast } = useToast();
+
+const ticketFilterOptions = [
+  { value: 'All', label: 'All Tickets' },
+  { value: 'Open', label: 'Open Only' },
+  { value: 'Resolved', label: 'Resolved Only' },
+];
 
 interface TicketRow {
   id: string;
@@ -61,6 +68,7 @@ interface TicketNote {
 const ticketTitle = ref('');
 const ticketCategory = ref('Plumbing');
 const ticketPriority = ref('Medium');
+const PRIORITY_OPTIONS = ['Low', 'Medium', 'High', 'Emergency'];
 const ticketDescription = ref('');
 const ticketPhotoUrl = ref<string | null>(null);
 const ticketPhotoName = ref('');
@@ -634,29 +642,24 @@ function statusClass(status: string) {
                 <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-category">
                   Category
                 </label>
-                <select
+                <PillSelect
                   id="ticket-category"
                   v-model="ticketCategory"
-                  class="ws-select"
-                >
-                  <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
-                </select>
+                  :options="[...TICKET_CATEGORIES]"
+                  widthClass="w-full"
+                />
               </div>
 
               <div>
                 <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-priority">
                   Priority
                 </label>
-                <select
+                <PillSelect
                   id="ticket-priority"
                   v-model="ticketPriority"
-                  class="ws-select"
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                  <option value="Emergency">Emergency</option>
-                </select>
+                  :options="PRIORITY_OPTIONS"
+                  widthClass="w-full"
+                />
               </div>
             </div>
 
@@ -765,8 +768,8 @@ function statusClass(status: string) {
         </div>
 
         <!-- Filter Bar (Identical to Admin Dispatch / Maintenance Tickets) -->
-        <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row">
-          <div class="relative flex-1">
+        <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="relative w-full sm:w-80 shrink-0">
             <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
             <label for="ticket-search" class="sr-only">Search your requests</label>
             <input
@@ -778,16 +781,11 @@ function statusClass(status: string) {
             />
           </div>
 
-          <label for="ticket-filter" class="sr-only">Show which requests</label>
-          <select
-            id="ticket-filter"
+          <PillSelect
             v-model="statusFilter"
-            class="ws-select sm:text-sm sm:w-44"
-          >
-            <option value="All">All Tickets</option>
-            <option value="Open">Open Only</option>
-            <option value="Resolved">Resolved Only</option>
-          </select>
+            :options="ticketFilterOptions"
+            aria-label="Show which requests"
+          />
         </div>
 
         <div class="p-6 flex-1 overflow-y-auto max-h-[580px]">

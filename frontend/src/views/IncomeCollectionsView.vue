@@ -30,6 +30,7 @@ import type { CapsuleMonth } from '@/components/overview/types';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 
 const route = useRoute();
 const activeTab = ref<'ledger' | 'verify'>('ledger');
@@ -122,6 +123,13 @@ const yearsList = computed(() => {
   years.add(propertyToday().slice(0, 4));
   return ['All', ...Array.from(years).sort((a, b) => Number(b) - Number(a))];
 });
+
+const yearOptions = computed(() =>
+  yearsList.value.map((y) => ({
+    value: y,
+    label: y === 'All' ? 'Every year' : y,
+  }))
+);
 
 function formatDateForDisplay(dStr: string): string {
   const d = new Date(dStr);
@@ -522,6 +530,25 @@ const editDate = ref('');
  * quietly restating how the money arrived.
  */
 const editMethod = ref<'Cash' | 'GCash' | 'Bank Transfer' | 'Adyen Online'>('Cash');
+
+const editUnitOptions = computed(() =>
+  rooms.map((r) => ({
+    value: r.unitCode,
+    label: `${r.unitCode.toUpperCase()} — ${r.tenant || 'Vacant'} (${r.cluster})`,
+  }))
+);
+
+const editMethodOptions = computed(() => {
+  const base = [
+    { value: 'Cash', label: 'Cash' },
+    { value: 'GCash', label: 'GCash' },
+    { value: 'Bank Transfer', label: 'Bank Transfer' },
+  ];
+  if (editMethod.value === 'Adyen Online') {
+    base.push({ value: 'Adyen Online', label: 'Adyen Online (gateway)' });
+  }
+  return base;
+});
 
 /** Cash has no reference to record; every other method does. */
 const methodHasReference = computed(() => editMethod.value !== 'Cash');
@@ -957,49 +984,123 @@ async function exportExcel() {
       </OverviewTile>
     </div>
 
-    <!-- Ledger or the verification queue -->
-    <div role="tablist" aria-label="Income view" class="inline-flex self-start rounded-full bg-canvas p-1">
-      <button
-        id="income-tab-ledger"
-        type="button"
-        role="tab"
-        :aria-selected="activeTab === 'ledger'"
-        aria-controls="income-panel"
-        :tabindex="activeTab === 'ledger' ? 0 : -1"
-        :class="[
-          'rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
-          activeTab === 'ledger' ? 'bg-night text-on-night' : 'text-ink-soft',
-        ]"
-        @click="activeTab = 'ledger'"
-        @keydown.right.prevent="activeTab = 'verify'"
-      >
-        Ledger
-      </button>
-      <button
-        id="income-tab-verify"
-        type="button"
-        role="tab"
-        :aria-selected="activeTab === 'verify'"
-        aria-controls="income-panel"
-        :tabindex="activeTab === 'verify' ? 0 : -1"
-        :class="[
-          'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
-          activeTab === 'verify' ? 'bg-night text-on-night' : 'text-ink-soft',
-        ]"
-        @click="activeTab = 'verify'"
-        @keydown.left.prevent="activeTab = 'ledger'"
-      >
-        To verify
-        <span
-          v-if="pendingPayments.length > 0"
-          :class="[
-            'min-w-6 rounded-full px-2 py-0.5 text-xs tabular',
-            activeTab === 'verify' ? 'bg-white/15' : 'bg-verify-soft text-verify',
-          ]"
-        >
-          {{ pendingPayments.length }}
-        </span>
-      </button>
+    <!-- Unified Toolbar: Tabs (Ledger / To verify) + Integrated Search with Switcher Inside + Filters -->
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-4 flex-1 min-w-0">
+        <!-- Tabs: Ledger or To verify -->
+        <div role="tablist" aria-label="Income view" class="flex items-center gap-5 shrink-0">
+          <button
+            id="income-tab-ledger"
+            type="button"
+            role="tab"
+            :aria-selected="activeTab === 'ledger'"
+            aria-controls="income-panel"
+            :tabindex="activeTab === 'ledger' ? 0 : -1"
+            :class="[
+              'text-sm transition-colors cursor-pointer py-1 whitespace-nowrap',
+              activeTab === 'ledger' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
+            ]"
+            @click="activeTab = 'ledger'"
+            @keydown.right.prevent="activeTab = 'verify'"
+          >
+            Ledger
+          </button>
+          <button
+            id="income-tab-verify"
+            type="button"
+            role="tab"
+            :aria-selected="activeTab === 'verify'"
+            aria-controls="income-panel"
+            :tabindex="activeTab === 'verify' ? 0 : -1"
+            :class="[
+              'flex items-center gap-2 text-sm transition-colors cursor-pointer py-1 whitespace-nowrap',
+              activeTab === 'verify' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
+            ]"
+            @click="activeTab = 'verify'"
+            @keydown.left.prevent="activeTab = 'ledger'"
+          >
+            <span>To verify</span>
+            <span
+              v-if="pendingPayments.length > 0"
+              class="rounded-full bg-brand-soft text-brand px-2 py-0.5 text-xs tabular font-semibold"
+            >
+              {{ pendingPayments.length }}
+            </span>
+          </button>
+        </div>
+
+        <template v-if="activeTab === 'ledger'">
+          <!-- By cluster / All together switcher -->
+          <div
+            class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-xs shrink-0"
+            role="group"
+            aria-label="How to show the ledger"
+          >
+            <button
+              type="button"
+              :class="[
+                'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+                viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
+              ]"
+              :aria-pressed="viewMode === 'grouped'"
+              @click="viewMode = 'grouped'"
+            >
+              <FileSpreadsheet class="size-4" aria-hidden="true" />
+              <span>By cluster</span>
+            </button>
+            <button
+              type="button"
+              :class="[
+                'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+                viewMode === 'flat' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
+              ]"
+              :aria-pressed="viewMode === 'flat'"
+              @click="viewMode = 'flat'"
+            >
+              <Banknote class="size-4" aria-hidden="true" />
+              <span>All together</span>
+            </button>
+          </div>
+
+          <!-- Standalone Pill Search Bar -->
+          <div class="relative w-full sm:w-80 shrink-0">
+            <Search
+              class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+              aria-hidden="true"
+            />
+            <label for="income-search" class="sr-only">Search the ledger</label>
+            <input
+              id="income-search"
+              v-model="q"
+              type="search"
+              placeholder="Unit, resident or receipt number"
+              class="ws-input w-full pl-11"
+            />
+          </div>
+        </template>
+      </div>
+
+      <!-- Filters: Cluster, Month, Year -->
+      <div v-if="activeTab === 'ledger'" class="flex flex-wrap items-center gap-2 shrink-0">
+        <PillSelect
+          v-model="selectedCluster"
+          :options="clusterChips"
+          aria-label="Cluster"
+        />
+
+        <PillSelect
+          v-model="filterMonth"
+          :options="monthsList"
+          aria-label="Month"
+        />
+
+        <PillSelect
+          v-model="filterYear"
+          :options="yearOptions"
+          aria-label="Year"
+          align="right"
+        />
+      </div>
     </div>
 
     <!-- Verification queue. Each payment is a decision, so it reads as one. -->
@@ -1077,82 +1178,7 @@ async function exportExcel() {
     <!-- Ledger -->
     <div v-else id="income-panel" role="tabpanel" aria-labelledby="income-tab-ledger" class="space-y-6">
 
-    <!-- Narrowing the ledger -->
-    <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div class="relative xl:max-w-xs xl:flex-1">
-        <Search
-          class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-          aria-hidden="true"
-        />
-        <label for="income-search" class="sr-only">Search the ledger</label>
-        <input
-          id="income-search"
-          v-model="q"
-          type="search"
-          placeholder="Unit, resident or receipt number"
-          class="ws-input w-full pl-11"
-        />
-      </div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Cluster">
-          <button
-            v-for="chip in clusterChips"
-            :key="chip.key"
-            type="button"
-            class="chip"
-            :aria-pressed="selectedCluster === chip.key"
-            @click="selectedCluster = chip.key"
-          >
-            {{ chip.label }}
-            <span class="chip-count">{{ chip.count }}</span>
-          </button>
-        </div>
-
-        <label class="ws-field">
-          <span class="sr-only">Month</span>
-          <select v-model="filterMonth" class="ws-select w-auto">
-            <option v-for="m in monthsList" :key="m.val" :value="m.val">{{ m.label }}</option>
-          </select>
-        </label>
-
-        <label class="ws-field">
-          <span class="sr-only">Year</span>
-          <select v-model="filterYear" class="ws-select w-auto">
-            <!--
-              `yearsList` already begins with `All`, so a hardcoded "Every year"
-              option here produced two entries with the same value — the select
-              listed "Every year" twice, above 2026.
-            -->
-            <option v-for="y in yearsList" :key="y" :value="y">
-              {{ y === 'All' ? 'Every year' : y }}
-            </option>
-          </select>
-        </label>
-
-        <!-- Two ways of reading the same ledger, on the one chip style -->
-        <div class="flex items-center gap-2" role="group" aria-label="How to show the ledger">
-          <button
-            type="button"
-            class="chip"
-            :aria-pressed="viewMode === 'grouped'"
-            @click="viewMode = 'grouped'"
-          >
-            <FileSpreadsheet class="size-4" aria-hidden="true" />
-            <span>By cluster</span>
-          </button>
-          <button
-            type="button"
-            class="chip"
-            :aria-pressed="viewMode === 'flat'"
-            @click="viewMode = 'flat'"
-          >
-            <Banknote class="size-4" aria-hidden="true" />
-            <span>All together</span>
-          </button>
-        </div>
-      </div>
-    </div>
 
     <SkeletonTable v-if="isLoading" :columns="7" :rows="8" />
 
@@ -1531,11 +1557,7 @@ async function exportExcel() {
                  select rather than sitting beside it unassociated. -->
             <label class="ws-field">
               Unit
-              <select v-model="editUnit" class="ws-select w-full">
-                <option v-for="r in rooms" :key="r.id" :value="r.unitCode">
-                  {{ r.unitCode.toUpperCase() }} — {{ r.tenant || 'Vacant' }} ({{ r.cluster }})
-                </option>
-              </select>
+              <PillSelect v-model="editUnit" :options="editUnitOptions" widthClass="w-full" />
             </label>
           </div>
 
@@ -1567,13 +1589,7 @@ async function exportExcel() {
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
               Payment Method
-              <select v-model="editMethod" class="ws-select w-full">
-                <option value="Cash">Cash</option>
-                <option value="GCash">GCash</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <!-- Shown only when the row already carries it, and never selectable by hand. -->
-                <option v-if="editMethod === 'Adyen Online'" value="Adyen Online" disabled>Adyen Online (gateway)</option>
-              </select>
+              <PillSelect v-model="editMethod" :options="editMethodOptions" widthClass="w-full" />
             </label>
             <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
               Their reference number

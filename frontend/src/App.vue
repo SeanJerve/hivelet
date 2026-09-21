@@ -68,6 +68,7 @@ const isPublicPage = computed(() =>
  */
 const hidesGlobalHeader = computed(() =>
   route.path === '/inquire' ||
+  route.path === '/login' ||
   route.path.startsWith('/category')
 );
 </script>

@@ -274,11 +274,11 @@ onUnmounted(() => {
         </router-link>
       </div>
 
-      <!-- Center: Public Quick Navigation (Desktop) -->
-      <nav v-if="isPublicRoute" class="hidden md:flex items-center">
+      <!-- Right: Public Quick Navigation (Desktop) -->
+      <nav v-if="isPublicRoute" class="hidden md:flex items-center ml-auto">
         <!-- Landing page: Editorial underlined links matching reference photo -->
         <template v-if="isLandingPage">
-          <div class="flex flex-wrap items-baseline text-[0.8rem] font-light drop-shadow-sm text-white">
+          <div class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light drop-shadow-sm text-white">
             <button
               @click="scrollToSection('categories')"
               class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors cursor-pointer text-white"
@@ -349,7 +349,10 @@ onUnmounted(() => {
       </nav>
 
       <!-- Right: User Profile & Sign In / Out -->
-      <div class="flex items-center gap-2 sm:gap-3">
+      <div
+        v-if="(isAuthenticated && currentUser) || (route.path !== '/login' && !isLandingPage)"
+        class="flex items-center gap-2 sm:gap-3 ml-4 sm:ml-6"
+      >
 
         <!-- Authenticated User Profile & Dropdown Avatar -->
         <template v-if="isAuthenticated && currentUser">

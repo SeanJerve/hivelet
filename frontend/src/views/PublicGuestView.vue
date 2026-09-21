@@ -306,20 +306,9 @@ const hiddenUnitCount = computed(() =>
  * 123.73023905008277 and 13.141856739297554, and `1d` is the zoom span. The
  * trailing `4v...` is the timestamp Google stamps on a generated embed; it is
  * inert.
- *
- * A `pb` string cannot be edited by hand safely. If the compound is ever
- * remapped, do not patch it: open Google Maps, find the place, Share, Embed a
- * map, and replace this whole constant with what it gives you.
  */
-const MAP_EMBED_PB =
-  "!1m18!1m12!1m3!1d242.83284358103325!2d123.73023905008277!3d13.141856739297554" +
-  "!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2" +
-  "!1s0x33a103648fe297e5%3A0x54153ecf77cd6a!2sGalang's%20Compound" +
-  "!5e0!3m2!1sen!2sph!4v1789792852887!5m2!1sen!2sph";
-const mapEmbedUrl = `https://www.google.com/maps/embed?pb=${MAP_EMBED_PB}`;
-
 /**
- * The same place, for the reader who wants it in their own maps app.
+ * The compound location, for the reader who wants it in their own maps app.
  *
  * A plus code rather than a coordinate: `4PRJ+P4J` with its locality resolves
  * to roughly a fourteen-metre square, it is the form Sean gave for the
@@ -354,7 +343,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       Type uses fluid typography: `clamp(2.5rem, 8vw, 7rem)` to keep the display line
       proportional to the full-bleed field at every viewport width.
     -->
-    <section class="on-dark relative w-full bg-night text-white font-editorial overflow-hidden">
+    <section class="on-dark relative w-full min-h-screen min-h-[100dvh] bg-night text-white font-editorial overflow-hidden flex flex-col justify-end">
       <!-- Crisp entrance photograph background (unblurred, leveled) -->
       <div class="absolute inset-0 z-0 overflow-hidden">
         <!--
@@ -383,16 +372,17 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
       </div>
 
-      <div class="relative z-10 ws-page flex flex-col justify-end min-h-[clamp(24rem,65vh,44rem)] pt-20 pb-10 sm:pb-14">
+      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-12 sm:pb-16 lg:pb-20">
         <!--
-          "Boarding House" comes off the display line and sits under it at the
-          navigation's own size. Both stay inside the <h1>, so the accessible name
-          is still the full "Fe Galang Da Silva Boarding House".
+          "Boarding House" comes off the display line and sits on the right
+          aligned with the header navigation. Both stay inside the <h1>, so the
+          accessible name is still the full "Fe Galang Da Silva Boarding House".
         -->
-        <h1 class="font-editorial drop-shadow-sm">
-          <span class="font-medium tracking-[-0.03em] leading-[0.93] text-[clamp(2.5rem,8vw,7rem)]"
+        <h1 class="font-editorial drop-shadow-sm flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 w-full">
+          <span class="font-medium tracking-[-0.03em] leading-[0.9] text-[clamp(3.25rem,10.5vw,9.75rem)]"
             >Fe Galang Da Silva</span>
-          <span class="ml-2 whitespace-nowrap text-[0.8rem] font-light">&#32;Boarding House</span>
+          <span class="ml-auto text-right whitespace-nowrap text-sm sm:text-base md:text-lg font-light tracking-wide text-white/90"
+            >Boarding House</span>
         </h1>
       </div>
     </section>
@@ -429,7 +419,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
     <!-- 1. Category Explorer (Centered) -->
     <div id="categories" class="ws-page ws-band scroll-mt-20 font-editorial">
-      <section class="space-y-14">
+      <section>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
             Explore by unit category
@@ -440,7 +430,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           </p>
         </div>
 
-        <div v-if="isLoading" class="border-t border-ink">
+        <div v-if="isLoading" class="mt-8 sm:mt-10 border-t border-line">
           <div v-for="i in 4" :key="i" class="flex items-center gap-4 border-b border-line py-5">
             <Skeleton class-name="h-4 w-40 rounded-full" />
             <Skeleton class-name="h-3 w-24 rounded-full" />
@@ -460,7 +450,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           Each row is a real RouterLink, so middle-click, open-in-new-tab and
           the native Enter handling all work. The whole row is the target.
         -->
-        <div v-else class="overflow-hidden rounded-tile bg-tile">
+        <div v-else class="mt-8 sm:mt-10 overflow-hidden rounded-tile bg-tile border border-line">
           <p class="sr-only">Four kinds of unit. Each row opens that kind.</p>
 
           <div
@@ -598,26 +588,37 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           `--canvas`, the pale green used on the active-tenants register, and
           `ws-table` brings it with no extra rule here.
         -->
-        <div v-if="unitsReady" class="mt-8 hidden overflow-hidden rounded-tile bg-tile sm:block">
+        <div v-if="unitsReady" class="mt-8 sm:mt-10 hidden overflow-hidden rounded-tile bg-tile sm:block">
           <div class="ws-table-wrap">
           <table class="ws-table">
             <caption class="sr-only">
               Every published unit on the property, with its cluster, type, floor, monthly rate and current status.
             </caption>
             <thead>
-              <tr>
-                <th scope="col">Unit</th>
-                <th scope="col">Cluster</th>
-                <th scope="col">Type</th>
-                <th scope="col">Floor</th>
-                <th scope="col" class="num">Price</th>
-                <th scope="col">Status</th>
-                <th scope="col" class="w-12"><span class="sr-only">Details</span></th>
+              <tr class="border-b border-line text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft font-normal">
+                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Unit</th>
+                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Cluster</th>
+                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Type</th>
+                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Floor</th>
+                <th scope="col" class="num !px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Price</th>
+                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Status</th>
+                <th scope="col" class="w-12 !px-5 !py-3"><span class="sr-only">Details</span></th>
               </tr>
             </thead>
             <tbody id="all-units-body">
               <template v-for="u in visibleUnits" :key="u.id">
-                <tr>
+                <tr
+                  :class="[
+                    'cursor-pointer select-none transition-colors group',
+                    openUnitId === u.id ? 'is-active' : ''
+                  ]"
+                  @click="toggleUnit(u.id)"
+                  :aria-expanded="openUnitId === u.id"
+                  :aria-controls="`unit-panel-${u.id}`"
+                  tabindex="0"
+                  @keydown.enter.prevent="toggleUnit(u.id)"
+                  @keydown.space.prevent="toggleUnit(u.id)"
+                >
                   <td class="font-medium text-ink">{{ u.unitCode }}</td>
                   <td class="text-ink-soft">{{ u.cluster }}</td>
                   <td class="text-ink-soft">{{ u.type }}</td>
@@ -625,21 +626,23 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                   <td class="num text-ink-soft">{{ peso(u.price) }}</td>
                   <td class="text-ink-soft">{{ publicStatusLabel(u.status) }}</td>
                   <td>
-                    <button
-                      @click="toggleUnit(u.id)"
-                      :aria-expanded="openUnitId === u.id"
-                      :aria-controls="`unit-panel-${u.id}`"
-                      class="press grid size-8 place-items-center text-ink-soft hover:text-ink transition-colors"
+                    <div
+                      class="press grid size-8 place-items-center text-ink-soft group-hover:text-ink transition-colors"
                     >
                       <span class="sr-only">
                         {{ openUnitId === u.id ? 'Hide' : 'Show' }} details for unit {{ u.unitCode }}
                       </span>
-                      <ChevronDown :class="['size-4 transition-transform', openUnitId === u.id ? 'rotate-180' : '']" />
-                    </button>
+                      <ChevronDown
+                        :class="[
+                          'size-4 transition-transform duration-200',
+                          openUnitId === u.id ? 'rotate-180' : ''
+                        ]"
+                      />
+                    </div>
                   </td>
                 </tr>
 
-                <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="bg-tile">
+                <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="bg-tile unit-detail-row">
                   <!--
                     Two columns: what the unit is on the left, where it is on
                     the right.
@@ -684,7 +687,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                             :alt="`Floor plan of ${u.floorLabel}`"
                             :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
                             :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
-                            class="block w-full"
+                            class="block w-full mix-blend-multiply"
                             loading="lazy"
                             decoding="async"
                           />
@@ -724,7 +727,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               type="button"
               :aria-expanded="openUnitId === u.id"
               :aria-controls="`unit-card-${u.id}`"
-              class="press-plate flex w-full items-start justify-between gap-4 py-4 text-left"
+              class="press-plate flex w-full items-center justify-between gap-4 py-4 text-left group"
               @click="toggleUnit(u.id)"
             >
               <span class="min-w-0">
@@ -733,11 +736,19 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                   {{ u.type }} &middot; {{ u.cluster }} &middot; {{ u.floorLabel }}
                 </span>
               </span>
-              <span class="shrink-0 text-right">
-                <span class="block tabular-nums text-ink">{{ peso(u.price) }}</span>
-                <span class="mt-0.5 block text-xs text-ink-soft">
-                  {{ publicStatusLabel(u.status) }}
+              <span class="flex items-center gap-3 shrink-0 text-right">
+                <span>
+                  <span class="block tabular-nums text-ink">{{ peso(u.price) }}</span>
+                  <span class="mt-0.5 block text-xs text-ink-soft">
+                    {{ publicStatusLabel(u.status) }}
+                  </span>
                 </span>
+                <ChevronDown
+                  :class="[
+                    'size-4 text-ink-soft group-hover:text-ink transition-transform duration-200',
+                    openUnitId === u.id ? 'rotate-180' : ''
+                  ]"
+                />
               </span>
             </button>
 
@@ -772,7 +783,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                     :alt="`Floor plan of ${u.floorLabel}`"
                     :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
                     :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
-                    class="block w-full"
+                    class="block w-full mix-blend-multiply"
                     loading="lazy"
                     decoding="async"
                   />
@@ -809,23 +820,25 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           button is not rendered at all when there is nothing behind it, which
           is the case if the property is ever listed with five units or fewer.
         -->
-        <div v-if="unitsReady && hiddenUnitCount > 0" class="border-t border-ink">
+        <div v-if="unitsReady && hiddenUnitCount > 0" class="mt-4 sm:mt-6">
           <button
             type="button"
             :aria-expanded="allUnitsShown"
             aria-controls="all-units-body all-units-list"
-            class="press-plate group flex w-full items-baseline justify-between gap-6 pt-5 pb-1 text-left"
+            class="press-plate group flex w-full items-center justify-between gap-6 py-2 text-left sm:pr-[17px]"
             @click="toggleAllUnits"
           >
-            <span class="text-sm text-ink group-hover:text-ink-soft transition-colors">
+            <span class="text-sm font-semibold text-brand underline underline-offset-4 decoration-brand/60 group-hover:decoration-brand group-hover:text-brand-strong transition-colors">
               {{ allUnitsShown ? `Show only the first ${UNITS_PREVIEW_COUNT} units` : `Show the remaining ${hiddenUnitCount} units` }}
             </span>
-            <ChevronDown
-              :class="[
-                'size-4 shrink-0 text-ink-soft transition-transform duration-300',
-                allUnitsShown ? 'rotate-180' : ''
-              ]"
-            />
+            <span class="grid size-8 place-items-center shrink-0">
+              <ChevronDown
+                :class="[
+                  'size-4 text-brand group-hover:text-brand-strong transition-all duration-200',
+                  allUnitsShown ? 'rotate-180' : ''
+                ]"
+              />
+            </span>
           </button>
         </div>
 
@@ -850,22 +863,27 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           rule per item, the chevron as the only affordance, and one answer open
           at a time. `openFaqIndex` already enforced the last of those.
         -->
-        <dl class="mt-12 border-t border-ink">
+        <dl class="mt-12 border-t border-line">
           <div v-for="(faq, idx) in FAQS" :key="idx" class="border-b border-line">
             <dt>
               <button
                 type="button"
                 :aria-expanded="openFaqIndex === idx"
                 :aria-controls="`faq-panel-${idx}`"
-                class="press-plate w-full flex items-baseline justify-between gap-6 py-5 text-left group"
+                class="w-full flex items-center justify-between gap-6 py-5 text-left group cursor-pointer"
                 @click="toggleFaq(idx)"
               >
-                <span class="text-sm sm:text-base text-ink group-hover:text-ink-soft transition-colors">
+                <span class="press-plate inline-block text-sm sm:text-base text-ink group-hover:text-ink-soft transition-colors">
                   {{ faq.q }}
                 </span>
-                <ChevronDown
-                  :class="['size-4 shrink-0 text-ink-soft transition-transform', openFaqIndex === idx ? 'rotate-180' : '']"
-                />
+                <span class="grid size-8 place-items-center shrink-0">
+                  <ChevronDown
+                    :class="[
+                      'size-4 text-ink-soft group-hover:text-ink transition-transform duration-200',
+                      openFaqIndex === idx ? 'rotate-180' : ''
+                    ]"
+                  />
+                </span>
               </button>
             </dt>
 
@@ -900,33 +918,18 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Albay.
             </p>
 
-            <!--
-              What the marker on the map below is, in words, because a marker
-              on its own does not say how precise it is.
-
-              This said "the red pin", and a red pin is exactly what was wrong
-              with it: the embed was pinned by a COORDINATE we maintained, and
-              that coordinate sat on the carriageway about twenty metres south
-              of the gate, below Google's own marker for the compound. Two
-              markers disagreeing, on the section whose one job is to say where
-              to turn up. The map now resolves the PLACE, so the only marker on
-              it is Google's, positioned from Google's own record and carrying
-              the name. See MAP_EMBED_PB above.
-            -->
-            <p class="mt-5 flex items-start gap-2.5 text-xs text-ink-soft leading-relaxed">
-              <MapPin class="mt-0.5 size-4 shrink-0 text-ink-faint" aria-hidden="true" />
-              <span>
-                The marker below is Google's own record of Galang's Compound, on Sapaguita Street
-                in Brgy. 4 Sagpon. Its plus code is {{ MAP_PLUS_CODE }}.
-                <a
-                  :href="mapLinkUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
-                >Open in Google Maps<span class="sr-only"> (opens in a new tab)</span></a>
-                for directions, or call the landlady for the gate.
-              </span>
-            </p>
+            <div class="mt-3">
+              <a
+                :href="mapLinkUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="press inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-brand hover:text-brand-strong underline underline-offset-4 decoration-brand/50 hover:decoration-brand transition-colors"
+              >
+                <MapPin class="size-3.5 shrink-0 text-brand" aria-hidden="true" />
+                <span>Open in Google Maps</span>
+                <span class="sr-only"> (opens in a new tab)</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -951,17 +954,6 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             Look for this gate on Sapaguita Street.
           </figcaption>
         </figure>
-      </div>
-
-      <div class="w-full border-t border-line">
-        <iframe
-          :src="mapEmbedUrl"
-          title="Map showing Galang's Compound, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City"
-          class="block w-full aspect-[16/11] sm:aspect-[24/9] border-0"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          allowfullscreen
-        ></iframe>
       </div>
     </section>
 

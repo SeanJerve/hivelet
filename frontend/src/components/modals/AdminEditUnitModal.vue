@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
 import type { UnitStatus } from '@/lib/canonicalUnits';
@@ -7,6 +8,11 @@ import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { Check, Loader2, Upload, ImageOff } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
+
+const VISIBILITY_OPTIONS = [
+  { value: 'Published', label: 'Listed, and open to enquiries' },
+  { value: 'Hidden', label: 'Not listed, and closed to enquiries' },
+];
 
 const unit = ref<RoomItem | null>(null);
 
@@ -412,28 +418,19 @@ async function handleSave() {
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label class="ws-field">
             Kind of unit
-            <select v-model="unitType" class="ws-select w-full" required>
-              <option v-for="opt in UNIT_TYPE_CHOICES" :key="opt" :value="opt">{{ opt }}</option>
-            </select>
+            <PillSelect v-model="unitType" :options="[...UNIT_TYPE_CHOICES]" widthClass="w-full" />
           </label>
 
           <label class="ws-field">
             Standing
-            <select v-model="editStatus" class="ws-select w-full" required>
-              <option v-for="opt in OPERATIONAL_STATUS_OPTIONS" :key="opt" :value="opt">
-                {{ opt }}
-              </option>
-            </select>
+            <PillSelect v-model="editStatus" :options="[...OPERATIONAL_STATUS_OPTIONS]" widthClass="w-full" />
           </label>
         </div>
 
         <!-- Public visibility - the column existed and the API accepted it; nothing sent it. -->
         <label class="ws-field">
           On the public site
-          <select v-model="editVisibility" class="ws-select w-full" required>
-            <option value="Published">Listed, and open to enquiries</option>
-            <option value="Hidden">Not listed, and closed to enquiries</option>
-          </select>
+          <PillSelect v-model="editVisibility" :options="VISIBILITY_OPTIONS" widthClass="w-full" />
           <span class="ws-hint">
             Hiding a unit takes it off the public room pages and stops the enquiry form accepting
             messages about it. Anyone already living there is unaffected.

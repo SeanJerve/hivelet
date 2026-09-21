@@ -25,8 +25,16 @@ import { ShieldCheck, Search, FileSpreadsheet, ChevronDown } from 'lucide-vue-ne
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 
 const { showToast } = useToast();
+
+const rowLimitOptions = [
+  { value: 50, label: 'Newest 50' },
+  { value: 100, label: 'Newest 100' },
+  { value: 250, label: 'Newest 250' },
+  { value: 500, label: 'Newest 500' },
+];
 
 interface AuditRecord {
   id: string;
@@ -406,7 +414,7 @@ async function exportAuditTrail() {
 
     <!-- Search, the kinds of event, and how far back to read -->
     <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div class="relative xl:max-w-xs xl:flex-1">
+      <div class="relative w-full sm:w-80 shrink-0">
         <Search
           class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
           aria-hidden="true"
@@ -439,20 +447,13 @@ async function exportAuditTrail() {
           </button>
         </div>
 
-        <div class="ws-field">
-          <label for="audit-limit" class="sr-only">How many to read</label>
-          <select
-            id="audit-limit"
-            v-model.number="rowLimit"
-            class="ws-select w-auto"
-            @change="fetchAuditLogs"
-          >
-            <option :value="50">Newest 50</option>
-            <option :value="100">Newest 100</option>
-            <option :value="250">Newest 250</option>
-            <option :value="500">Newest 500</option>
-          </select>
-        </div>
+        <PillSelect
+          v-model="rowLimit"
+          :options="rowLimitOptions"
+          aria-label="How many to read"
+          align="right"
+          @change="fetchAuditLogs"
+        />
       </div>
     </div>
 

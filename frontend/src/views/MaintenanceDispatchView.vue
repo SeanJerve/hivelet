@@ -34,11 +34,20 @@ import {
 import Skeleton from '@/components/ui/Skeleton.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import PillSelect from '@/components/ui/PillSelect.vue';
 
 const q = ref('');
 const statusFilter = ref('All');
 const isLoading = ref(false);
 const isSubmitting = ref(false);
+
+const statusFilterOptions = [
+  { value: 'All', label: 'Every status' },
+  { value: 'Open', label: 'To dispatch' },
+  { value: 'In Progress', label: 'In progress' },
+  { value: 'Resolved', label: 'Resolved' },
+  { value: 'Closed', label: 'Closed' },
+];
 
 // Edit / Manage Ticket Modal State
 const isEditModalOpen = ref(false);
@@ -48,6 +57,16 @@ const editUnit = ref('1a');
 const editCategory = ref('Plumbing');
 const editPriority = ref<'Low' | 'Medium' | 'High' | 'Emergency'>('Medium');
 const editStatus = ref<'Open' | 'In Progress' | 'Resolved' | 'Closed'>('Open');
+
+const PRIORITY_OPTIONS = ['Low', 'Medium', 'High', 'Emergency'];
+const STATUS_OPTIONS = ['Open', 'In Progress', 'Resolved', 'Closed'];
+
+const editUnitOptions = computed(() =>
+  rooms.map((r) => ({
+    value: r.unitCode.toLowerCase(),
+    label: `${r.unitCode.toUpperCase()} (${r.cluster})`,
+  }))
+);
 
 /**
  * Resolved and Closed are both "no longer on the board", and several counts here mean that
@@ -362,24 +381,25 @@ function handleDeleteTicketPrompt() {
       </div>
     </header>
 
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-      <label class="ws-field flex-1">
-        Search by title, unit or technician
-        <span class="relative">
-          <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-          <input v-model="q" type="search" class="ws-input pl-10" />
-        </span>
-      </label>
-      <label class="ws-field sm:w-56">
-        Status
-        <select v-model="statusFilter" class="ws-select">
-          <option value="All">Every status</option>
-          <option value="Open">To dispatch</option>
-          <option value="In Progress">In progress</option>
-          <option value="Resolved">Resolved</option>
-          <option value="Closed">Closed</option>
-        </select>
-      </label>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="relative w-full sm:w-80 shrink-0">
+        <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+        <label for="maintenance-search" class="sr-only">Search by title, unit or technician</label>
+        <input
+          id="maintenance-search"
+          v-model="q"
+          type="search"
+          placeholder="Search by title, unit or technician"
+          class="ws-input w-full pl-10"
+        />
+      </div>
+      <div class="shrink-0">
+        <PillSelect
+          v-model="statusFilter"
+          :options="statusFilterOptions"
+          aria-label="Filter by status"
+        />
+      </div>
     </div>
 
     <div v-if="isLoading" class="grid gap-4 lg:grid-cols-3" aria-busy="true">
@@ -520,17 +540,11 @@ function handleDeleteTicketPrompt() {
           <div class="grid grid-cols-2 gap-3">
             <label class="ws-field">
               Unit
-              <select v-model="editUnit" class="ws-select w-full" required>
-                <option v-for="r in rooms" :key="r.id" :value="r.unitCode.toLowerCase()">
-                  {{ r.unitCode.toUpperCase() }} ({{ r.cluster }})
-                </option>
-              </select>
+              <PillSelect v-model="editUnit" :options="editUnitOptions" widthClass="w-full" />
             </label>
             <label class="ws-field">
               Category
-              <select v-model="editCategory" class="ws-select w-full" required>
-                <option v-for="cat in TICKET_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
-              </select>
+              <PillSelect v-model="editCategory" :options="[...TICKET_CATEGORIES]" widthClass="w-full" />
             </label>
           </div>
 
@@ -538,30 +552,18 @@ function handleDeleteTicketPrompt() {
           <div class="grid grid-cols-2 gap-3">
             <label class="ws-field">
               Priority
-              <select v-model="editPriority" class="ws-select w-full" required>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Emergency">Emergency</option>
-              </select>
+              <PillSelect v-model="editPriority" :options="PRIORITY_OPTIONS" widthClass="w-full" />
             </label>
             <label class="ws-field">
               Status
-              <select v-model="editStatus" class="ws-select w-full" required>
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-                <option value="Closed">Closed</option>
-              </select>
+              <PillSelect v-model="editStatus" :options="STATUS_OPTIONS" widthClass="w-full" />
             </label>
           </div>
 
           <!-- Assigned Technician -->
           <label class="ws-field">
               Who is going
-            <select v-model="editTech" class="ws-select w-full">
-              <option v-for="tech in TECHNICIANS" :key="tech" :value="tech">{{ tech }}</option>
-            </select>
+            <PillSelect v-model="editTech" :options="[...TECHNICIANS]" widthClass="w-full" />
           </label>
 
           <!-- Description -->

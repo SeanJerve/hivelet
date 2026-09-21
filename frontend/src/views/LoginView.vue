@@ -2,16 +2,15 @@
 /**
  * @file views/LoginView.vue
  * @description Authentication entrance screen for administrators and residents.
- * @systemBibleRef Section 1 - Product Identity & Section 3 - User Roles & Authorization
- * @rationale Aligns the sign-in task flush to the global header logo brand mark (ws-page alignment)
- *            with seamless canvas surface styling and full responsive edge handling.
+ * @rationale Built following the exact 50/50 split layout, spacing, typography,
+ *            and design identity established by InquireView.vue and user reference.
  */
 import type { DemoAccount } from '@/lib/demoAccounts.dev';
 import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { LogIn, ShieldCheck, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
+import { LogIn, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import { login, authError, isAuthenticating, homeRouteForRole } from '@/lib/authStore';
-import { showToast } from '@/lib/systemState';
+import { showToast, LANDLADY } from '@/lib/systemState';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
 const router = useRouter();
@@ -100,56 +99,80 @@ async function handleQuickLogin(account: DemoAccount) {
 </script>
 
 <template>
-  <!--
-    A split, like the enquiry page: the task on one side, the property on the
-    other. This was two equal white cards side by side on a pale green field -
-    the sign-in form and a development-only account list given the same weight -
-    with the rest of the page's height left over as empty space underneath.
-    Signing in is a single-task screen and now reads as one.
+  <div class="ws-focus flex-1 w-full font-editorial bg-canvas">
+    <div class="grid min-h-screen lg:grid-cols-2">
 
-    The demonstration list moves below the fold. It exists only on a
-    development machine, so it should not shape what everybody else sees.
-  -->
-  <div class="ws-focus bg-canvas text-ink">
-    <div class="grid min-h-[calc(100vh-8rem)] lg:grid-cols-2">
+      <!-- Left: the form -->
+      <div class="flex flex-col px-4 sm:px-6 lg:px-14 py-10 sm:py-14">
 
-      <!-- The task (aligned flush to global header Hivelet logo). -->
-      <div class="flex flex-col justify-center py-10 sm:py-14 pl-[max(1rem,calc((100vw-1600px)/2+1rem))] sm:pl-[max(1.5rem,calc((100vw-1600px)/2+1.5rem))] pr-4 sm:pr-6 lg:pr-16">
-        <div class="w-full max-w-sm">
-          <h1 class="text-3xl leading-tight font-medium tracking-tight">Sign in</h1>
-          <p class="mt-1 text-sm text-ink-soft">Fe Galang Da Silva Boarding House</p>
-
-          <p
-            v-if="deniedReason"
-            role="status"
-            class="mt-6 flex items-start gap-2.5 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify"
+        <div class="flex items-start justify-between gap-6">
+          <RouterLink
+            to="/public"
+            class="press text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
           >
-            <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {{ deniedReason }}
-          </p>
+            Hivelet
+          </RouterLink>
 
-          <form class="mt-8 flex flex-col gap-4" @submit.prevent="handleSubmit">
-            <label class="ws-field">
-              Email or phone number
+          <div class="text-right shrink-0">
+            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Landlady</p>
+            <p class="mt-1 text-sm font-medium text-ink">{{ LANDLADY.name }}</p>
+            <a
+              :href="`tel:${LANDLADY.phone}`"
+              class="press mt-0.5 inline-block py-1 text-sm text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            >
+              {{ LANDLADY.phone }}
+            </a>
+          </div>
+        </div>
+
+        <h1 class="mt-12 sm:mt-16 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3.6vw,2.75rem)] max-w-lg">
+          Sign in to your account
+        </h1>
+
+        <div
+          v-if="deniedReason"
+          role="status"
+          class="mt-6 flex items-start gap-2.5 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify max-w-2xl"
+        >
+          <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {{ deniedReason }}
+        </div>
+
+        <form class="mt-10 sm:mt-12 max-w-2xl" @submit.prevent="handleSubmit">
+          <div class="grid gap-x-8 gap-y-7 sm:grid-cols-2">
+            <div>
+              <label
+                for="login-email"
+                class="block text-xs text-ink-faint"
+              >
+                Email or phone number
+              </label>
               <!--
                 Either identifier is accepted (OD-09: a tenant may have no
                 email), so this is type="text". type="email" would make the
                 browser reject a phone number before it was ever sent.
               -->
               <input
+                id="login-email"
                 v-model="email"
                 type="text"
                 autocomplete="username"
                 required
                 placeholder="you@email.com or 0917-000-0000"
-                class="ws-input"
+                class="ws-input mt-2"
               />
-            </label>
+            </div>
 
-            <label class="ws-field">
-              Password
-              <span class="relative">
+            <div>
+              <label
+                for="login-password"
+                class="block text-xs text-ink-faint"
+              >
+                Password
+              </label>
+              <div class="relative mt-2">
                 <input
+                  id="login-password"
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
                   autocomplete="current-password"
@@ -164,81 +187,73 @@ async function handleQuickLogin(account: DemoAccount) {
                 >
                   <component :is="showPassword ? EyeOff : Eye" class="size-4 text-ink-soft" aria-hidden="true" />
                 </button>
-              </span>
-            </label>
+              </div>
+            </div>
+          </div>
 
-            <p
-              v-if="authError"
-              role="alert"
-              class="flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
-            >
-              <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              {{ authError }}
-            </p>
-
-            <button type="submit" :disabled="!canSubmit" class="pill-btn-brand mt-2 w-full">
-              <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />
-              <LogIn v-else class="size-4" aria-hidden="true" />
-              {{ isAuthenticating ? 'Signing in' : 'Sign in' }}
-            </button>
-          </form>
-
-          <!--
-            What replaced "No account yet? Create one". Somebody who cannot get
-            in still needs telling what to do, and the answer is a person rather
-            than a form.
-          -->
-          <p class="mt-8 border-t border-line pt-6 text-sm leading-6 text-ink-soft">
-            Accounts are made by the landlady. If you live here and cannot get in, ask
-            Mrs. Fe Galang Da Silva and she will set yours up.
-          </p>
-
-          <p class="mt-4 flex items-start gap-2.5 text-xs leading-5 text-ink-faint">
-            <ShieldCheck class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-            Roles are enforced on the server, and passwords are stored hashed.
-          </p>
-
-          <router-link
-            to="/public"
-            class="press mt-8 inline-block py-1 text-sm font-semibold text-brand hover:underline"
+          <div
+            v-if="authError"
+            role="alert"
+            class="mt-6 flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
           >
-            Back to the public pages
-          </router-link>
-        </div>
+            <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            {{ authError }}
+          </div>
+
+          <p class="mt-10 max-w-xl text-xs leading-relaxed text-ink-soft">
+            Accounts are created by the landlady. If you live here and cannot get in, ask
+            Mrs. {{ LANDLADY.name }} and she will set yours up. Roles are enforced on the server,
+            and passwords are stored hashed.
+          </p>
+
+          <button
+            type="submit"
+            :disabled="!canSubmit"
+            class="pill-btn-brand mt-10 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />
+            <LogIn v-else class="size-4" aria-hidden="true" />
+            <span>{{ isAuthenticating ? 'Signing in…' : 'Sign in' }}</span>
+          </button>
+        </form>
+
+        <p class="mt-12 text-xs text-ink-soft">
+          <RouterLink
+            to="/public"
+            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+          >
+            ← Back to home
+          </RouterLink>
+        </p>
       </div>
 
-      <!--
-        The property, on the half of the screen the form does not need. The
-        same treatment as the enquiry page: photograph, a scrim dark enough to
-        read over, and the name. Lazy, because below `lg` this panel is
-        display:none and a phone must not fetch 284 KB it will never show.
-      -->
-      <aside class="relative hidden overflow-hidden bg-night lg:flex lg:flex-col lg:justify-between">
+      <!-- Right: Real building exterior showcase with clear background image -->
+      <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 py-10 sm:py-14 overflow-hidden bg-night">
         <img
           src="/fe-galang-building.webp"
           alt=""
           aria-hidden="true"
-          class="absolute inset-0 size-full object-cover object-center"
+          class="absolute inset-0 w-full h-full object-cover object-center"
           width="1790"
           height="879"
           loading="lazy"
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-night via-night/55 to-night/75" />
+        <!-- Contrast gradient overlay: unblurred to keep building details clear and vibrant -->
+        <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/25 to-night/50" />
 
-        <p class="relative px-12 pt-12 text-[0.7rem] tracking-[0.18em] uppercase text-on-night-soft">
-          32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City
-        </p>
-
-        <div class="relative px-12 pb-12">
-          <p class="font-display text-on-night">
-            <span class="text-3xl font-medium leading-tight tracking-tight">Fe Galang Da Silva</span>
-            <span class="ml-2 whitespace-nowrap text-[0.8rem] font-light">&#32;Boarding House</span>
+        <div class="relative z-10">
+          <p class="text-[0.7rem] tracking-[0.18em] uppercase text-white/80 drop-shadow-sm">
+            {{ LANDLADY.address }}
           </p>
-          <p class="mt-3 max-w-sm text-sm leading-6 text-on-night-soft">
-            33 units across four levels, in 5 property clusters.
+        </div>
+
+        <div class="relative z-10">
+          <p class="font-medium tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,4.4vw,3.75rem)] drop-shadow-sm">
+            Fe Galang Da Silva<br />Boarding House
           </p>
         </div>
       </aside>
+
     </div>
 
     <!--
