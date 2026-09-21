@@ -8,22 +8,35 @@ import {
 } from '@/lib/authStore';
 import { getStoredToken } from '@/lib/api';
 
-import PublicGuestView from '@/views/PublicGuestView.vue';
-import InquireView from '@/views/InquireView.vue';
-import CategoryRoomsView from '@/views/CategoryRoomsView.vue';
-import LoginView from '@/views/LoginView.vue';
-import AdminOverviewView from '@/views/AdminOverviewView.vue';
-import RoomDirectoryView from '@/views/RoomDirectoryView.vue';
-import TenantManagementView from '@/views/TenantManagementView.vue';
-import IncomeCollectionsView from '@/views/IncomeCollectionsView.vue';
-import ExpensesLedgerView from '@/views/ExpensesLedgerView.vue';
-import MaintenanceDispatchView from '@/views/MaintenanceDispatchView.vue';
-import InquiriesView from '@/views/InquiriesView.vue';
-import AuditLogsView from '@/views/AuditLogsView.vue';
-import TenantOverviewView from '@/views/TenantOverviewView.vue';
-import TenantPaymentsView from '@/views/TenantPaymentsView.vue';
-import TenantTicketsView from '@/views/TenantTicketsView.vue';
-import TenantProfileView from '@/views/TenantProfileView.vue';
+/**
+ * Every view below used to be a static import, so a first-time visitor to
+ * `/public` - the one page that matters most for a first impression - paid
+ * for the admin workspace, the tenant portal and everything else in the same
+ * 724KB chunk before a single pixel of the page they asked for could render.
+ * This app is role-gated (`meta.roles` below): a prospect never runs the
+ * admin code, a tenant never runs the admin code, an admin never runs the
+ * tenant code. Lazy-loading by route is Vue Router's own documented pattern
+ * for exactly this shape - each `() => import(...)` becomes its own chunk,
+ * fetched the first time that route is visited rather than on every visit to
+ * any route. Nothing about what a view does changes; only when its JavaScript
+ * arrives.
+ */
+const PublicGuestView = () => import('@/views/PublicGuestView.vue');
+const InquireView = () => import('@/views/InquireView.vue');
+const CategoryRoomsView = () => import('@/views/CategoryRoomsView.vue');
+const LoginView = () => import('@/views/LoginView.vue');
+const AdminOverviewView = () => import('@/views/AdminOverviewView.vue');
+const RoomDirectoryView = () => import('@/views/RoomDirectoryView.vue');
+const TenantManagementView = () => import('@/views/TenantManagementView.vue');
+const IncomeCollectionsView = () => import('@/views/IncomeCollectionsView.vue');
+const ExpensesLedgerView = () => import('@/views/ExpensesLedgerView.vue');
+const MaintenanceDispatchView = () => import('@/views/MaintenanceDispatchView.vue');
+const InquiriesView = () => import('@/views/InquiriesView.vue');
+const AuditLogsView = () => import('@/views/AuditLogsView.vue');
+const TenantOverviewView = () => import('@/views/TenantOverviewView.vue');
+const TenantPaymentsView = () => import('@/views/TenantPaymentsView.vue');
+const TenantTicketsView = () => import('@/views/TenantTicketsView.vue');
+const TenantProfileView = () => import('@/views/TenantProfileView.vue');
 
 declare module 'vue-router' {
   interface RouteMeta {

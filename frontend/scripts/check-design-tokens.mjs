@@ -96,8 +96,28 @@ if (!fs.existsSync(assetDir)) {
   console.error('dist/assets not found - run `npx vite build` first.');
   process.exit(1);
 }
-const cssFile = fs.readdirSync(assetDir).find((f) => f.endsWith('.css'));
-const css = fs.readFileSync(path.join(assetDir, cssFile), 'utf8');
+
+/**
+ * ALL the CSS files, not the first one found.
+ *
+ * This used to read a single `.find((f) => f.endsWith('.css'))` - safe while
+ * the build emitted exactly one CSS bundle, which stopped being true the
+ * router's routes moved to lazy `() => import(...)` (2026-09-22, to fix a
+ * 724KB first-load chunk). Vite now splits CSS per route the same way it
+ * splits JS, so a class used only inside one view's component tree can land
+ * in that view's own small chunk rather than the shared `index-*.css` -
+ * `readdirSync` picked whichever file sorted first, which was frequently a
+ * 300-byte per-route chunk holding none of the fifteen tokens this check
+ * looks for. Concatenating every chunk matches what the check actually
+ * asks: does this utility class resolve to the right hex ANYWHERE it is
+ * emitted, not specifically in the file that happens to load first.
+ */
+const cssFiles = fs.readdirSync(assetDir).filter((f) => f.endsWith('.css'));
+if (cssFiles.length === 0) {
+  console.error('no .css file found in dist/assets - run `npx vite build` first.');
+  process.exit(1);
+}
+const css = cssFiles.map((f) => fs.readFileSync(path.join(assetDir, f), 'utf8')).join('\n');
 
 // `:root` values, so `var(--x)` can be followed to a hex.
 const vars = Object.fromEntries([...css.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
@@ -117,7 +137,7 @@ const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
   body: m[2],
 }));
 
-console.log(`bundle: ${cssFile}  (${rules.length} rules)
+console.log(`bundle: ${cssFiles.length} CSS file(s), ${css.length.toLocaleString()} bytes combined  (${rules.length} rules)
 `);
 
 for (const [cls, [prop, want]] of Object.entries(EXPECTED)) {
