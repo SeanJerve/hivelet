@@ -380,10 +380,16 @@ onUnmounted(() => {
               <!--
                 The count is a second reading of what the label already says, so
                 nobody depends on seeing the colour to know something is urgent.
+
+                `-right-1 -top-1`, not `right-1 top-1`. A positive inset tucks
+                the badge INSIDE the button's own circle, where it overlaps the
+                bell rather than marking its corner - a badge worth noticing
+                sits astride the edge of what it is attached to, half in and
+                half out, the way an unread count does everywhere else.
               -->
               <span
                 v-if="unreadCount > 0"
-                class="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-xs font-semibold"
+                class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-xs font-semibold ring-2 ring-canvas"
                 :class="hasEmergencyUnread ? 'bg-overdue text-white' : 'bg-brand text-on-brand'"
                 aria-hidden="true"
               >

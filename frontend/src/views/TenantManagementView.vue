@@ -283,7 +283,7 @@ const rows = computed(() => {
 
 /** How to look at the same rows: flat and alphabetical, or split by cluster. */
 type ViewMode = 'list' | 'grouped';
-const viewMode = ref<ViewMode>('list');
+const viewMode = ref<ViewMode>('grouped');
 
 /**
  * `unitCode` on a resident is the only thread to a cluster - `TenantRecord`
