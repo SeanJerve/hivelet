@@ -111,36 +111,68 @@ function closeMobileNav() {
             <span>{{ item.label }}</span>
           </div>
 
-          <span 
-            v-if="item.badge" 
-            :class="['min-w-6 px-2 py-0.5 text-center text-xs font-semibold tabular rounded-full', item.badgeColor]"
+          <!--
+            The nav badge answers the count of something waiting - a ticket, an
+            inquiry - and a count that snaps from nothing to a number is the
+            one thing in a sidebar seen dozens of times a session worth
+            noticing arrive. Kept short: this is not the flagship moment, it
+            is a rank-and-file corner of a screen a reader passes often.
+          -->
+          <Transition
+            enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-[120ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+            enter-from-class="opacity-0 scale-75"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-[90ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-75"
           >
-            {{ item.badge }}
-          </span>
+            <span
+              v-if="item.badge"
+              :class="['min-w-6 px-2 py-0.5 text-center text-xs font-semibold tabular rounded-full', item.badgeColor]"
+            >
+              {{ item.badge }}
+            </span>
+          </Transition>
         </router-link>
       </nav>
     </aside>
 
-    <!-- Mobile Drawer Sheet with Smooth Slide Transition -->
+    <!--
+      Mobile Drawer Sheet with Smooth Slide Transition
+
+      The backdrop used Tailwind's bare `ease-out` keyword, the one curve this
+      workspace deliberately does not use - it is weaker than the tokened
+      curve every other transition in the app accelerates with, so this drawer
+      alone would have answered a fraction softer than the one it sits beside
+      in AppHeader.
+    -->
     <Transition
-      enter-active-class="transition-opacity duration-300 ease-out"
+      enter-active-class="transition-opacity duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
       enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-active-class="transition-opacity duration-200 ease-out"
+      leave-active-class="transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div 
-        v-if="isMobileSidebarOpen" 
+      <div
+        v-if="isMobileSidebarOpen"
         class="fixed inset-0 z-50 flex lg:hidden bg-black/40 backdrop-blur-xs"
         @click.self="closeMobileNav"
       >
+        <!--
+          The slide itself is gated with `motion-safe:` rather than the global
+          `.ws-focus` reduced-motion rule - this drawer is not nested under a
+          `.ws-focus` root, so nothing was catching its `translate-x` for a
+          reader who has asked for less motion. The backdrop's opacity fade
+          above is left unconditional: a fade is not vestibular motion, only
+          the drawer sliding across the screen is.
+        -->
         <Transition
           appear
-          enter-active-class="transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+          enter-active-class="motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
           enter-from-class="-translate-x-full"
           enter-to-class="translate-x-0"
-          leave-active-class="transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]"
+          leave-active-class="motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[cubic-bezier(0.32,0.72,0,1)]"
           leave-from-class="translate-x-0"
           leave-to-class="-translate-x-full"
         >
@@ -187,12 +219,21 @@ function closeMobileNav() {
                       <span>{{ item.label }}</span>
                     </div>
 
-                    <span 
-                      v-if="item.badge" 
-                      :class="['min-w-6 px-2 py-0.5 text-center text-xs font-semibold tabular rounded-full', item.badgeColor]"
+                    <Transition
+                      enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-[120ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+                      enter-from-class="opacity-0 scale-75"
+                      enter-to-class="opacity-100 scale-100"
+                      leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-[90ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+                      leave-from-class="opacity-100 scale-100"
+                      leave-to-class="opacity-0 scale-75"
                     >
-                      {{ item.badge }}
-                    </span>
+                      <span
+                        v-if="item.badge"
+                        :class="['min-w-6 px-2 py-0.5 text-center text-xs font-semibold tabular rounded-full', item.badgeColor]"
+                      >
+                        {{ item.badge }}
+                      </span>
+                    </Transition>
                   </router-link>
                 </nav>
               </div>

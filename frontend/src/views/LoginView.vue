@@ -132,7 +132,7 @@ async function handleQuickLogin(account: DemoAccount) {
         <div
           v-if="deniedReason"
           role="status"
-          class="mt-6 flex items-start gap-2.5 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify max-w-2xl"
+          class="ws-reveal mt-6 flex items-start gap-2.5 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify max-w-2xl"
         >
           <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {{ deniedReason }}
@@ -185,7 +185,30 @@ async function handleQuickLogin(account: DemoAccount) {
                   :aria-label="showPassword ? 'Hide password' : 'Show password'"
                   @click="showPassword = !showPassword"
                 >
-                  <component :is="showPassword ? EyeOff : Eye" class="size-4 text-ink-soft" aria-hidden="true" />
+                  <!-- A quick crossfade rather than a hard swap between the two
+                       icon states, so toggling reads as a change of state
+                       rather than a flicker. `mode="out-in"` keeps only one
+                       icon in the flow at a time, since the button has no
+                       spare width for two to sit side by side mid-transition.
+                       Transitioning `scale`, not `transform` - Tailwind 4
+                       compiles `scale-*` to the individual `scale` property
+                       (see the `.press`/`.press-plate` note in index.css), so
+                       a `transform` entry in this list would transition
+                       nothing. -->
+                  <Transition
+                    mode="out-in"
+                    enter-active-class="transition-[opacity,scale] duration-100 ease-[var(--ease-out)]"
+                    leave-active-class="transition-[opacity,scale] duration-75 ease-[var(--ease-out)]"
+                    enter-from-class="opacity-0 motion-safe:scale-90"
+                    leave-to-class="opacity-0 motion-safe:scale-90"
+                  >
+                    <component
+                      :is="showPassword ? EyeOff : Eye"
+                      :key="showPassword ? 'eye-off' : 'eye-on'"
+                      class="size-4 text-ink-soft"
+                      aria-hidden="true"
+                    />
+                  </Transition>
                 </button>
               </div>
             </div>
@@ -194,7 +217,7 @@ async function handleQuickLogin(account: DemoAccount) {
           <div
             v-if="authError"
             role="alert"
-            class="mt-6 flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
+            class="ws-reveal mt-6 flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
           >
             <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {{ authError }}
@@ -270,9 +293,10 @@ async function handleQuickLogin(account: DemoAccount) {
 
         <ul class="mt-6 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
           <li
-            v-for="acc in demoAccounts"
+            v-for="(acc, i) in demoAccounts"
             :key="acc.email"
-            class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-line bg-tile p-3"
+            class="list-reveal-item flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-line bg-tile p-3"
+            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
           >
             <span class="min-w-0 flex-1 basis-40">
               <span class="block truncate text-sm font-medium">{{ acc.name }}</span>

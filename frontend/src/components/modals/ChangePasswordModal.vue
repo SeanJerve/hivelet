@@ -132,7 +132,7 @@ async function submit() {
           aria-describedby="cp-current-error"
           @input="currentPasswordError = ''"
         />
-        <span v-if="currentPasswordError" id="cp-current-error" class="text-sm text-overdue">
+        <span v-if="currentPasswordError" id="cp-current-error" class="ws-reveal text-sm text-overdue">
           {{ currentPasswordError }}
         </span>
       </label>
@@ -165,13 +165,34 @@ async function submit() {
             :key="rule.label"
             :class="['flex items-center gap-2 text-sm', rule.met ? 'text-ink' : 'text-ink-soft']"
           >
-            <Check v-if="rule.met" class="size-4 shrink-0 text-brand" aria-hidden="true" />
-            <span v-else aria-hidden="true" class="size-4 shrink-0 rounded-full border border-line" />
+            <!--
+              Typed into on every keystroke, so this stays fast and small - a
+              rule newly met is feedback confirming what was just typed, not a
+              moment worth lingering on. Transition rather than a plain
+              `v-if`/`v-else` swap so the check mark pops in instead of
+              replacing the empty circle in the same frame.
+            -->
+            <!-- Both faces are absolutely positioned inside this fixed-size box
+                 so the brief moment both are on screen during the crossfade
+                 does not shove the label beside it sideways. -->
+            <span class="relative inline-block size-4 shrink-0">
+              <Transition
+                enter-active-class="transition-[opacity,transform] duration-100 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                enter-from-class="opacity-0 scale-50"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition-opacity duration-75 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+              >
+                <Check v-if="rule.met" class="absolute inset-0 size-4 text-brand" aria-hidden="true" />
+                <span v-else aria-hidden="true" class="absolute inset-0 size-4 rounded-full border border-line" />
+              </Transition>
+            </span>
             {{ rule.label }}<span class="sr-only">{{ rule.met ? ', met' : ', not met yet' }}</span>
           </li>
         </ul>
 
-        <p v-if="sameAsCurrent" class="text-sm text-overdue">
+        <p v-if="sameAsCurrent" class="ws-reveal text-sm text-overdue">
           The new password must be different from the current one.
         </p>
       </div>
@@ -184,12 +205,12 @@ async function submit() {
           autocomplete="new-password"
           class="ws-input"
         />
-        <span v-if="confirmPassword.length > 0 && !matches" class="text-sm text-overdue">
+        <span v-if="confirmPassword.length > 0 && !matches" class="ws-reveal text-sm text-overdue">
           The two passwords do not match.
         </span>
       </label>
 
-      <p v-if="formError" role="alert" class="text-sm text-overdue">{{ formError }}</p>
+      <p v-if="formError" role="alert" class="ws-reveal text-sm text-overdue">{{ formError }}</p>
     </form>
 
     <template #actions>

@@ -186,6 +186,15 @@ const ticketMessages = ref<any[]>([]);
 const loadingMessages = ref(false);
 const newAdminMessage = ref('');
 const sendingAdminMessage = ref(false);
+/**
+ * Whether the resident's attached photo has finished loading, so it can fade
+ * in rather than popping into the modal the instant the network delivers it -
+ * the same jarring pop `.ws-skeleton` exists to avoid for text and figures.
+ * Reset on every ticket opened, so re-opening a different ticket's photo (or
+ * the same one, since the element remounts either way) fades in again rather
+ * than staying at whatever opacity the last photo left it.
+ */
+const photoLoaded = ref(false);
 
 async function loadTicketMessages(ticketId: string) {
   loadingMessages.value = true;
@@ -233,6 +242,7 @@ function openEditModal(t: MaintenanceTicket) {
   editTech.value = t.technician || 'Unassigned';
   editDesc.value = t.description;
   newAdminMessage.value = '';
+  photoLoaded.value = false;
   isEditModalOpen.value = true;
   loadTicketMessages(t.id);
 }
@@ -579,7 +589,24 @@ function handleDeleteTicketPrompt() {
             </label>
             <div class="flex flex-col items-center rounded-2xl bg-canvas p-3">
               <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
-                <img :src="editingTicket.photo" alt="Ticket Attachment" class="max-h-52 w-auto object-contain rounded-lg transition-transform group-hover:scale-[1.02]" />
+                <!--
+                  A resident's photo arrives over the network like anything
+                  else on this modal, but unlike the fields around it, it used
+                  to just pop into place the instant it finished loading -
+                  the one element on this screen with no loading state.
+                  `motion-safe:` stands in for a `prefers-reduced-motion`
+                  block, since the only motion here is an opacity fade Tailwind
+                  already gates correctly.
+                -->
+                <img
+                  :src="editingTicket.photo"
+                  alt="Ticket Attachment"
+                  :class="[
+                    'max-h-52 w-auto object-contain rounded-lg transition-[opacity,transform] duration-300 ease-[var(--ease-out)] motion-safe:group-hover:scale-[1.02]',
+                    photoLoaded ? 'opacity-100' : 'opacity-0',
+                  ]"
+                  @load="photoLoaded = true"
+                />
                 <span class="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-0.5 rounded font-medium">Click to view original</span>
               </a>
             </div>
@@ -600,8 +627,10 @@ function handleDeleteTicketPrompt() {
                 No comments on this ticket yet.
               </div>
               <div
-                v-for="msg in ticketMessages"
+                v-for="(msg, i) in ticketMessages"
                 :key="msg.id"
+                class="list-reveal-item"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                 :class="['flex flex-col', msg.profiles?.role === 'admin' ? 'items-end' : 'items-start']"
               >
                 <div

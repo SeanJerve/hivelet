@@ -158,6 +158,21 @@ const unitPhoto = computed(() => {
   return editPhotoUrl.value || '';
 });
 
+/**
+ * Whether the current photograph has actually finished loading.
+ *
+ * Both sources this can show - a URL already on the record, or the data URL
+ * `compressImage` just produced - take a moment to decode, and without this
+ * the frame popped straight from empty to fully painted the instant the
+ * bytes arrived. Reset whenever the source itself changes, so switching units
+ * or attaching a new photo fades the new one in rather than carrying over
+ * "loaded" from whatever was there before.
+ */
+const isPhotoLoaded = ref(false);
+watch(unitPhoto, () => {
+  isPhotoLoaded.value = false;
+});
+
 watch(
   () => activeAdminEditUnit.value,
   (newVal) => {
@@ -344,11 +359,22 @@ async function handleSave() {
 
           <div class="overflow-hidden rounded-2xl bg-canvas">
             <div class="relative h-44 w-full bg-night">
+              <!--
+                Faded in on `@load` rather than shown the instant the `src`
+                is set, so a slow connection sees the dark frame it is already
+                sitting in rather than a hard pop once the bytes land.
+                `@error` also counts as "loaded" - a broken photograph should
+                show its broken state immediately, not stay invisible forever
+                waiting for an event that will never fire.
+              -->
               <img
                 v-if="unitPhoto"
                 :src="unitPhoto"
                 :alt="`Unit ${unit.unitCode}`"
-                class="size-full object-cover"
+                class="size-full object-cover transition-opacity duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                :class="isPhotoLoaded ? 'opacity-100' : 'opacity-0'"
+                @load="isPhotoLoaded = true"
+                @error="isPhotoLoaded = true"
               />
               <div
                 v-else
@@ -360,7 +386,7 @@ async function handleSave() {
 
               <span
                 v-if="editPhotoUrl.startsWith('data:')"
-                class="absolute bottom-3 left-3 rounded-full bg-tile px-3 py-1 text-xs font-semibold text-brand"
+                class="ws-reveal absolute bottom-3 left-3 rounded-full bg-tile px-3 py-1 text-xs font-semibold text-brand"
               >
                 Chosen, not saved yet
               </span>

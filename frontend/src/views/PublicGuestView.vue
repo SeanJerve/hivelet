@@ -231,8 +231,15 @@ onMounted(async () => {
  * reader with no sense of where they were.
  */
 const openUnitId = ref<string | null>(null);
+/**
+ * Whether the open row's floor plan has actually painted, so it fades in
+ * rather than popping in once the (lazy, per-unit) image lands. Reset on every
+ * toggle: opening a different unit means a different plan to wait for.
+ */
+const planImageLoaded = ref(false);
 function toggleUnit(id: string) {
   openUnitId.value = openUnitId.value === id ? null : id;
+  planImageLoaded.value = false;
 }
 
 /**
@@ -472,15 +479,16 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           </div>
 
           <RouterLink
-            v-for="c in CATEGORIES"
+            v-for="(c, i) in CATEGORIES"
             :key="c.key"
             :to="'/category/' + c.slug"
-            class="press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-canvas sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:items-baseline sm:gap-6"
+            class="list-reveal-item press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-canvas sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:items-baseline sm:gap-6"
+            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
           >
             <span class="flex items-baseline gap-2 text-base font-medium text-ink">
               {{ c.title }}
               <ArrowRight
-                class="size-4 shrink-0 text-ink-faint transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-1 group-hover:text-brand"
+                class="size-4 shrink-0 text-ink-faint transition-transform duration-300 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-1 group-hover:text-brand"
                 aria-hidden="true"
               />
             </span>
@@ -606,12 +614,13 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
               </tr>
             </thead>
             <tbody id="all-units-body">
-              <template v-for="u in visibleUnits" :key="u.id">
+              <template v-for="(u, i) in visibleUnits" :key="u.id">
                 <tr
                   :class="[
-                    'cursor-pointer select-none transition-colors group',
+                    'list-reveal-item cursor-pointer select-none transition-colors group',
                     openUnitId === u.id ? 'is-active' : ''
                   ]"
+                  :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
                   @click="toggleUnit(u.id)"
                   :aria-expanded="openUnitId === u.id"
                   :aria-controls="`unit-panel-${u.id}`"
@@ -687,9 +696,13 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                             :alt="`Floor plan of ${u.floorLabel}`"
                             :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
                             :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
-                            class="block w-full mix-blend-multiply"
+                            :class="[
+                              'block w-full mix-blend-multiply transition-opacity duration-300 ease-[var(--ease-out)]',
+                              planImageLoaded ? 'opacity-100' : 'opacity-0',
+                            ]"
                             loading="lazy"
                             decoding="async"
+                            @load="planImageLoaded = true"
                           />
                           <span
                             v-if="planFor(u.unitCode)!.x !== null"
@@ -722,7 +735,12 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
         <!-- The same units, stacked, for a phone. -->
         <ul v-if="unitsReady" id="all-units-list" class="mt-10 sm:hidden">
-          <li v-for="u in visibleUnits" :key="u.id" class="border-b border-line">
+          <li
+            v-for="(u, i) in visibleUnits"
+            :key="u.id"
+            class="list-reveal-item border-b border-line"
+            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+          >
             <button
               type="button"
               :aria-expanded="openUnitId === u.id"
@@ -783,9 +801,13 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                     :alt="`Floor plan of ${u.floorLabel}`"
                     :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
                     :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
-                    class="block w-full mix-blend-multiply"
+                    :class="[
+                      'block w-full mix-blend-multiply transition-opacity duration-300 ease-[var(--ease-out)]',
+                      planImageLoaded ? 'opacity-100' : 'opacity-0',
+                    ]"
                     loading="lazy"
                     decoding="async"
+                    @load="planImageLoaded = true"
                   />
                   <span
                     v-if="planFor(u.unitCode)!.x !== null"

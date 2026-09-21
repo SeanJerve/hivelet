@@ -35,6 +35,12 @@ const pillClass = computed(
   <span
     :class="[
       'inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold leading-4',
+      // A ticket moving Open to Resolved, a unit going Vacant to Occupied - this
+      // pill stays mounted and only its tone prop changes, so without a
+      // transition the colour swap was an instant snap rather than a state
+      // change the reader could follow. Named properties, same ease token as
+      // every other colour transition in the workspace.
+      'transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
       pillClass,
     ]"
   >

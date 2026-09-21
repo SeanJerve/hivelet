@@ -422,10 +422,12 @@ function refreshAll() {
 
     <div v-else class="grid gap-4 md:grid-cols-2">
       <OverviewTile
-        v-for="bill in outstandingBills"
+        v-for="(bill, i) in outstandingBills"
         :key="bill.id"
         tone="brand"
         :title="billTileTitle(bill)"
+        class="list-reveal-item"
+        :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
       >
         <div>
           <!-- The balance, not the debt as issued. BR-013. -->
@@ -540,8 +542,8 @@ function refreshAll() {
           </tr>
         </template>
 
-        <template #row="{ row: record }">
-          <tr>
+        <template #row="{ row: record, index }">
+          <tr class="list-reveal-item" :style="{ animationDelay: `${Math.min(index, 9) * 30}ms` }">
             <th scope="row" class="font-medium">{{ record.invoiceRef }}</th>
             <td class="whitespace-nowrap text-ink-soft">{{ record.datePaid }}</td>
             <td class="num font-semibold">{{ peso(record.amountPaid, 2) }}</td>
@@ -558,8 +560,11 @@ function refreshAll() {
           </tr>
         </template>
 
-        <template #card="{ row: record }">
-          <div class="flex items-start justify-between gap-3">
+        <template #card="{ row: record, index }">
+          <div
+            class="list-reveal-item flex items-start justify-between gap-3"
+            :style="{ animationDelay: `${Math.min(index, 9) * 30}ms` }"
+          >
             <div class="min-w-0">
               <p class="tabular text-lg font-semibold leading-none text-ink">
                 {{ peso(record.amountPaid, 2) }}

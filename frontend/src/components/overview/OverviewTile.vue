@@ -53,9 +53,19 @@ const toneClass = computed(
           v-if="to"
           :to="to"
           :aria-label="toLabel || (title ? `Open ${title}` : 'Open')"
-          :class="['icon-btn', isDark && 'icon-btn-on-dark']"
+          :class="['icon-btn group/goto', isDark && 'icon-btn-on-dark']"
         >
-          <ArrowUpRight class="size-4" aria-hidden="true" />
+          <!--
+            A one-pixel nudge toward where the link leads, on hover only - the
+            `.icon-btn` press and border feedback already answer a click, this
+            answers the pointer arriving. `motion-safe:` rather than the global
+            reduced-motion rule, because this tile has no guarantee of sitting
+            under the `.ws-focus` root that rule is scoped to.
+          -->
+          <ArrowUpRight
+            class="size-4 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:group-hover/goto:translate-x-0.5 motion-safe:group-hover/goto:-translate-y-0.5"
+            aria-hidden="true"
+          />
         </router-link>
       </div>
     </header>

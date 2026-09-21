@@ -222,7 +222,7 @@ function handleReset() {
       <!-- What just happened, when something did -->
       <div
         v-if="successNotice"
-        class="flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
+        class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
         role="status"
       >
         <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
@@ -241,7 +241,7 @@ function handleReset() {
 
       <div
         v-if="errorNotice"
-        class="flex items-start gap-2.5 rounded-tile bg-overdue-soft p-4 sm:p-5"
+        class="ws-reveal flex items-start gap-2.5 rounded-tile bg-overdue-soft p-4 sm:p-5"
         role="alert"
       >
         <AlertTriangle class="mt-0.5 size-5 shrink-0 text-overdue" aria-hidden="true" />

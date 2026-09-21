@@ -61,16 +61,20 @@ const description = computed(
         </pattern>
       </defs>
       <path
-        v-for="s in segments"
+        v-for="(s, i) in segments"
         :key="s.code"
         :d="s.d"
         fill="none"
         stroke-width="24"
+        stroke-dasharray="100"
+        pathLength="100"
+        class="arc-segment"
+        :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
         :class="s.occupied ? 'stroke-brand' : undefined"
         :stroke="s.occupied ? undefined : `url(#${patternId})`"
       />
     </svg>
-    <div aria-hidden="true" class="absolute inset-x-0 bottom-0 text-center">
+    <div aria-hidden="true" class="absolute inset-x-0 bottom-0 text-center arc-count">
       <span class="block text-4xl leading-10 font-semibold tabular tracking-tight">
         {{ occupied }}<span class="text-ink-faint text-2xl">/{{ units.length }}</span>
       </span>
@@ -78,3 +82,53 @@ const description = computed(
     </div>
   </div>
 </template>
+
+<style scoped>
+/*
+ * The ring draws itself in rather than appearing complete, the same way a
+ * measurement being taken reads as more trustworthy than a number that was
+ * simply always there. `path-length="100"` normalises every segment's dash
+ * units to a 0-100 scale regardless of its true arc length, so one keyframe
+ * covers a two-degree sliver and a forty-degree one alike.
+ *
+ * The stagger reuses the same cadence as `.list-reveal-item` in index.css -
+ * 30ms a step, capped at the tenth segment - so every staggered reveal in the
+ * product shares one rhythm rather than each chart inventing its own. Capped
+ * because a 33-unit ring at an uncapped 30ms a segment would still be drawing
+ * itself a full second after the page appeared.
+ */
+.arc-segment {
+  animation: arc-draw 0.26s var(--ease-out) backwards;
+}
+@keyframes arc-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The count reads as the ring's conclusion, not a separate label beside it -
+   it settles in just after the segments have finished drawing. */
+.arc-count {
+  animation: arc-count-in 0.22s var(--ease-out) 0.3s backwards;
+}
+@keyframes arc-count-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc-segment,
+  .arc-count {
+    animation: none;
+  }
+}
+</style>

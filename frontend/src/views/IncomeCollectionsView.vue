@@ -997,7 +997,7 @@ async function exportExcel() {
             aria-controls="income-panel"
             :tabindex="activeTab === 'ledger' ? 0 : -1"
             :class="[
-              'text-sm transition-colors cursor-pointer py-1 whitespace-nowrap',
+              'text-sm transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer py-1 whitespace-nowrap',
               activeTab === 'ledger' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
             ]"
             @click="activeTab = 'ledger'"
@@ -1013,7 +1013,7 @@ async function exportExcel() {
             aria-controls="income-panel"
             :tabindex="activeTab === 'verify' ? 0 : -1"
             :class="[
-              'flex items-center gap-2 text-sm transition-colors cursor-pointer py-1 whitespace-nowrap',
+              'flex items-center gap-2 text-sm transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer py-1 whitespace-nowrap',
               activeTab === 'verify' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
             ]"
             @click="activeTab = 'verify'"
@@ -1039,7 +1039,7 @@ async function exportExcel() {
             <button
               type="button"
               :class="[
-                'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+                'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
                 viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
               ]"
               :aria-pressed="viewMode === 'grouped'"
@@ -1051,7 +1051,7 @@ async function exportExcel() {
             <button
               type="button"
               :class="[
-                'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+                'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
                 viewMode === 'flat' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
               ]"
               :aria-pressed="viewMode === 'flat'"
@@ -1103,8 +1103,16 @@ async function exportExcel() {
       </div>
     </div>
 
-    <!-- Verification queue. Each payment is a decision, so it reads as one. -->
-    <div v-if="activeTab === 'verify'" id="income-panel" role="tabpanel" aria-labelledby="income-tab-verify" class="flex flex-col gap-4">
+    <!--
+      Verification queue. Each payment is a decision, so it reads as one.
+
+      Switching between "Ledger" and "To verify" used to be a plain DOM swap -
+      an entirely different panel replacing the last one on the same frame as
+      the click. `ws-reveal` gives the newly-shown panel a fade-in, which is
+      a deliberate click a person makes a handful of times, not a keystroke
+      that would make the motion feel like it is in the way.
+    -->
+    <div v-if="activeTab === 'verify'" id="income-panel" role="tabpanel" aria-labelledby="income-tab-verify" class="ws-reveal flex flex-col gap-4">
       <div v-if="isLoading" class="rounded-tile bg-tile p-6 flex flex-col gap-3" aria-busy="true">
         <span class="sr-only" role="status">Loading the verification queue</span>
         <Skeleton class-name="h-4 w-40 rounded-full" />
@@ -1132,7 +1140,12 @@ async function exportExcel() {
           resident's bill as paid and writes the entry into the ledger, including the 50% Share.
         </p>
         <ul class="grid gap-4 md:grid-cols-2">
-          <li v-for="p in pendingPayments" :key="p.id" class="rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4">
+          <li
+            v-for="(p, i) in pendingPayments"
+            :key="p.id"
+            class="list-reveal-item rounded-tile bg-tile p-5 sm:p-6 flex flex-col gap-4"
+            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+          >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
                 <p class="text-sm font-medium">{{ p.profiles?.full_name || 'Name not on file' }}</p>
@@ -1176,14 +1189,21 @@ async function exportExcel() {
     </div>
 
     <!-- Ledger -->
-    <div v-else id="income-panel" role="tabpanel" aria-labelledby="income-tab-ledger" class="space-y-6">
+    <div v-else id="income-panel" role="tabpanel" aria-labelledby="income-tab-ledger" class="ws-reveal space-y-6">
 
 
 
     <SkeletonTable v-if="isLoading" :columns="7" :rows="8" />
 
-    <!-- By cluster: her spreadsheet's own five sections, each with its subtotal -->
-    <div v-else-if="viewMode === 'grouped'" class="space-y-6">
+    <!--
+      By cluster: her spreadsheet's own five sections, each with its subtotal.
+
+      "By cluster" and "As a list" are the same rows in two different shapes,
+      switched by the pill group above - a deliberate click, so the branch
+      that appears gets a fade-in rather than snapping into place the way it
+      did before.
+    -->
+    <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
       <p
         v-if="clusterGroups.length === 0"
         class="rounded-tile bg-tile px-6 py-16 text-center text-sm text-ink-soft"
@@ -1243,7 +1263,7 @@ async function exportExcel() {
         <div
           v-if="isClusterOpen(group.key, groupIndex)"
           :id="`cluster-${group.key}`"
-          class="border-t border-line p-5 sm:p-6"
+          class="ws-reveal border-t border-line p-5 sm:p-6"
         >
           <RecordTable
             flat
@@ -1377,6 +1397,7 @@ async function exportExcel() {
     <!-- All together: every cluster in one register -->
     <RecordTable
       v-else
+      class="ws-reveal"
       :rows="rows"
       caption="Every collection on screen, with unit, date, who paid, rent, water, garbage and what was remitted"
       noun="entry"

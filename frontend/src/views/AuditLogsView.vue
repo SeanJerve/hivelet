@@ -458,7 +458,7 @@ async function exportAuditTrail() {
     </div>
 
     <!-- The trail could not be loaded. Shown instead of sample rows, on purpose. -->
-    <div v-if="loadError" class="rounded-tile bg-overdue-soft p-5 sm:p-6">
+    <div v-if="loadError" class="ws-reveal rounded-tile bg-overdue-soft p-5 sm:p-6">
       <p class="text-base font-semibold text-overdue">The trail could not be loaded.</p>
       <p class="mt-1 text-sm leading-6 text-overdue">{{ loadError }}</p>
       <p class="mt-2 text-sm leading-6 text-overdue">
@@ -553,7 +553,7 @@ async function exportAuditTrail() {
           <div
             v-if="expandedRowId === l.id"
             :id="`audit-change-${l.id}`"
-            class="mt-4 grid gap-3 md:grid-cols-2"
+            class="ws-reveal mt-4 grid gap-3 md:grid-cols-2"
           >
             <div class="rounded-2xl bg-canvas p-4">
               <p class="text-sm font-semibold text-ink">Before</p>

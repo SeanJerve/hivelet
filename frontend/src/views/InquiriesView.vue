@@ -402,7 +402,7 @@ async function handleSendReply() {
       <!-- The one being read -->
       <div
         v-if="activeInquiry"
-        class="flex min-h-[550px] flex-col overflow-hidden rounded-tile bg-tile lg:col-span-8"
+        class="ws-reveal flex min-h-[550px] flex-col overflow-hidden rounded-tile bg-tile lg:col-span-8"
       >
         <div class="border-b border-line p-5 sm:p-6">
           <div class="flex flex-wrap items-start justify-between gap-4">
@@ -487,7 +487,7 @@ async function handleSendReply() {
 
         <!-- What was said -->
         <div class="max-h-[380px] flex-1 space-y-5 overflow-y-auto bg-canvas p-5 sm:p-6">
-          <p v-if="threadError" class="rounded-2xl bg-overdue-soft p-4 text-sm leading-6 text-overdue">
+          <p v-if="threadError" class="ws-reveal rounded-2xl bg-overdue-soft p-4 text-sm leading-6 text-overdue">
             The replies already on record could not be loaded, so only their original message is
             shown. {{ threadError }}
           </p>

@@ -42,6 +42,32 @@ import {
 const router = useRouter();
 const panel = ref<HTMLElement | null>(null);
 
+/**
+ * Whether the stream should still stagger its rows in.
+ *
+ * The panel mounts fresh every time it opens - it is a bare `v-if` with
+ * nothing above it - so this starts `true` on every open and is exactly the
+ * "first load" the rows should animate for. It is tied to `isLoading` rather
+ * than to mount time, because the fetch this panel waits on can still be in
+ * flight when it opens: gating on a timer from mount would have the reveal
+ * fire against an empty list and never play against the real one. Once the
+ * rows have had time to finish, this flips off for good, so clicking a filter
+ * tab restyles the same list rather than restarting the stagger on it.
+ */
+const revealRows = ref(true);
+let revealTimer: ReturnType<typeof setTimeout> | null = null;
+watch(
+  isLoading,
+  (loading) => {
+    if (!loading && revealRows.value && revealTimer === null) {
+      revealTimer = setTimeout(() => {
+        revealRows.value = false;
+      }, 500);
+    }
+  },
+  { immediate: true }
+);
+
 const FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'unread', label: 'Unread' },
@@ -167,19 +193,29 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown);
   document.removeEventListener('pointerdown', onDocumentPointerDown);
+  if (revealTimer !== null) clearTimeout(revealTimer);
 });
 </script>
 
 <template>
   <div v-if="isPopoverOpen" class="ws-focus">
-    <div class="fixed inset-0 z-40 bg-night/30 sm:hidden" aria-hidden="true" />
+    <div class="notif-backdrop fixed inset-0 z-40 bg-night/30 sm:hidden" aria-hidden="true" />
 
+    <!--
+      This panel opened and closed as a hard `v-if` cut, the one surface the
+      owner named directly as "notifications" and asked to see move. Entry
+      only, via `@starting-style` in the style block below - the same
+      constraint WsModal's own panel answers to: this is a bare `v-if` with no
+      wrapper to hang a Vue `<Transition>` leave on. It scales from its top
+      right corner rather than from centre, because unlike a modal this is
+      anchored to the bell that opened it.
+    -->
     <div
       ref="panel"
       tabindex="-1"
       role="dialog"
       aria-label="Notifications"
-      class="fixed right-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:right-0 sm:top-12 sm:w-[420px]"
+      class="notif-panel fixed right-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] w-[calc(100vw-1rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:right-0 sm:top-12 sm:w-[420px]"
     >
       <!-- Header -->
       <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
@@ -270,13 +306,15 @@ onUnmounted(() => {
 
         <div v-else class="divide-y divide-line">
           <button
-            v-for="item in filteredNotifications"
+            v-for="(item, i) in filteredNotifications"
             :key="item.id"
             type="button"
             :class="[
               'press-plate group flex w-full items-start gap-3 p-4 text-left hover:bg-canvas',
               item.is_read ? 'bg-tile' : 'bg-brand-soft/50',
+              revealRows ? 'list-reveal-item' : '',
             ]"
+            :style="revealRows ? { animationDelay: `${Math.min(i, 9) * 30}ms` } : undefined"
             @click="handleNotificationClick(item)"
           >
             <span
@@ -335,3 +373,52 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/*
+ * Entry only, both of these - see the template comment above the panel for
+ * why. Sitting inside `.ws-focus`, so the reduced-motion rule in index.css
+ * already strips `scale`/`translate` from what transitions here and leaves
+ * opacity in place, the same bargain every other dialog in the workspace
+ * makes.
+ */
+.notif-backdrop {
+  opacity: 1;
+  transition: opacity 0.15s var(--ease-out);
+}
+@starting-style {
+  .notif-backdrop {
+    opacity: 0;
+  }
+}
+
+.notif-panel {
+  opacity: 1;
+  scale: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.18s var(--ease-out),
+    scale 0.18s var(--ease-out),
+    translate 0.18s var(--ease-out);
+}
+@starting-style {
+  .notif-panel {
+    opacity: 0;
+    scale: 0.96;
+    translate: 4px -4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notif-panel {
+    scale: none;
+    translate: none;
+  }
+  @starting-style {
+    .notif-panel {
+      scale: none;
+      translate: none;
+    }
+  }
+}
+</style>

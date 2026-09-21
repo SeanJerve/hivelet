@@ -222,7 +222,7 @@ const statusChips = computed(() => [
       and RATE Directory, and its whole job is to be believed, so a failed load
       has to say so rather than quietly show the old figures.
     -->
-    <div v-if="roomsFetchFailed" class="rounded-tile bg-verify-soft p-5 sm:p-6" role="alert">
+    <div v-if="roomsFetchFailed" class="ws-reveal rounded-tile bg-verify-soft p-5 sm:p-6" role="alert">
       <p class="text-base font-semibold text-verify">
         These rates could not be loaded, and may be out of date.
       </p>
@@ -271,7 +271,7 @@ const statusChips = computed(() => [
           <button
             type="button"
             :class="[
-              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
               viewMode === 'matrix' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'matrix'"
@@ -284,7 +284,7 @@ const statusChips = computed(() => [
           <button
             type="button"
             :class="[
-              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
               viewMode === 'table' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'table'"
@@ -319,8 +319,14 @@ const statusChips = computed(() => [
       <SkeletonTable v-else :columns="7" :rows="8" />
     </div>
 
-    <!-- VIEW MODE 1: VISUAL MATRIX VIEW (Live Unit Matrix moved from Overview) -->
-    <div v-else-if="viewMode === 'matrix'" class="space-y-6">
+    <!--
+      VIEW MODE 1: VISUAL MATRIX VIEW (Live Unit Matrix moved from Overview)
+
+      "By cluster" and "As a list" are a deliberate switch a person clicks, not
+      a routine re-render, so the branch that appears fades in rather than
+      snapping into place the way both used to.
+    -->
+    <div v-else-if="viewMode === 'matrix'" class="ws-reveal space-y-6">
       <div
         v-for="(clusterName, clusterIndex) in activeClusters"
         :key="clusterName"
@@ -372,7 +378,7 @@ const statusChips = computed(() => [
         <div
           v-if="isClusterOpen(clusterName, clusterIndex)"
           :id="`cluster-units-${clusterName}`"
-          class="border-t border-line p-5"
+          class="ws-reveal border-t border-line p-5"
         >
           <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <article
@@ -457,6 +463,7 @@ const statusChips = computed(() => [
     -->
     <RecordTable
       v-else
+      class="ws-reveal"
       :rows="filteredRooms"
       caption="Every unit, with where it is, what it costs, who lives in it and its standing"
       noun="unit"

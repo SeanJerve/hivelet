@@ -106,6 +106,12 @@ const tenantDataLoadFailed = ref(false);
  */
 const anniversaryDay = ref<number | null>(null);
 const loading = ref(true);
+/**
+ * Whether the unit photo has actually painted, so it can fade in rather than
+ * pop in whenever it lands after the network. `false` on every fresh load and
+ * reset alongside it, since a retry can hand back a different photo.
+ */
+const unitPhotoLoaded = ref(false);
 
 interface PaymentRow {
   id: string;
@@ -220,6 +226,7 @@ onMounted(async () => {
 
 async function fetchTenantData() {
   loading.value = true;
+  unitPhotoLoaded.value = false;
   try {
     const data = await api.get<any[]>('/tenant/my-rooms');
     if (data && data.length > 0) {
@@ -491,7 +498,7 @@ const statusTone = computed(() => {
     <div
       v-if="submissionNotice"
       role="status"
-      class="flex items-start justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm"
+      class="ws-reveal flex items-start justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm"
     >
       <span class="flex items-start gap-2.5">
         <CheckCircle2 class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
@@ -516,8 +523,12 @@ const statusTone = computed(() => {
     </div>
 
     <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
-      <!-- What the resident owes, and the way to pay it. The only brand tile. -->
-      <OverviewTile tone="brand" title="Amount due" class="md:col-span-2 xl:col-span-5">
+      <!-- What the resident owes, and the way to pay it. The only brand tile.
+           The five tiles below arrive together once per visit, so a short
+           cascade - 30ms apart, same rhythm as any other first-load list in
+           this file - reads as one dashboard settling in rather than a jump
+           cut from skeleton to content. -->
+      <OverviewTile tone="brand" title="Amount due" class="list-reveal-item md:col-span-2 xl:col-span-5" style="animation-delay: 0ms">
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           dark
@@ -563,7 +574,7 @@ const statusTone = computed(() => {
             Other ways to pay
             <ChevronDown :class="['size-4 transition-transform', showOtherWaysToPay && 'rotate-180']" aria-hidden="true" />
           </button>
-          <div v-show="showOtherWaysToPay" id="other-ways-to-pay" class="pt-2 text-sm leading-6 text-on-brand-soft">
+          <div v-show="showOtherWaysToPay" id="other-ways-to-pay" class="ws-reveal pt-2 text-sm leading-6 text-on-brand-soft">
             <p>
               Send a GCash transfer to <span class="font-semibold text-on-brand tabular">{{ tenantData.landladyGCash }}</span>,
               account name {{ tenantData.landladyName }}, or pay the landlady in person.
@@ -576,7 +587,8 @@ const statusTone = computed(() => {
         :title="isSettled ? 'Latest bill' : 'Current bill'"
         to="/tenant/payments"
         to-label="Open payments and billing"
-        class="xl:col-span-4"
+        class="list-reveal-item xl:col-span-4"
+        style="animation-delay: 30ms"
       >
         <UnavailableNote
           v-if="tenantDataLoadFailed"
@@ -632,7 +644,7 @@ const statusTone = computed(() => {
         </template>
       </OverviewTile>
 
-      <OverviewTile tone="night" title="Repairs" class="xl:col-span-3">
+      <OverviewTile tone="night" title="Repairs" class="list-reveal-item xl:col-span-3" style="animation-delay: 60ms">
         <p class="text-sm leading-6 text-on-night-soft">
           Tell the landlady what needs fixing in your unit, then follow the request until it is done.
         </p>
@@ -642,7 +654,13 @@ const statusTone = computed(() => {
         </router-link>
       </OverviewTile>
 
-      <OverviewTile title="Payments" to="/tenant/payments" to-label="Open payments and billing" class="md:col-span-2 xl:col-span-8">
+      <OverviewTile
+        title="Payments"
+        to="/tenant/payments"
+        to-label="Open payments and billing"
+        class="list-reveal-item md:col-span-2 xl:col-span-8"
+        style="animation-delay: 90ms"
+      >
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           message="Your payments could not be loaded. That does not mean none are recorded."
@@ -660,7 +678,12 @@ const statusTone = computed(() => {
           <section v-if="rejectedPayments.length" aria-labelledby="rejected-payments-heading">
             <h3 id="rejected-payments-heading" class="text-xs font-medium text-ink-faint">Not accepted</h3>
             <ul class="divide-y divide-line">
-              <li v-for="p in rejectedPayments" :key="p.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
+              <li
+                v-for="(p, i) in rejectedPayments"
+                :key="p.id"
+                class="list-reveal-item flex flex-wrap items-center justify-between gap-3 py-3"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              >
                 <span class="min-w-0">
                   <span class="block text-sm font-medium">{{ p.method }}</span>
                   <span class="block text-xs text-ink-faint">
@@ -677,7 +700,12 @@ const statusTone = computed(() => {
           <section v-if="pendingOnlinePayments.length" aria-labelledby="pending-payments-heading">
             <h3 id="pending-payments-heading" class="text-xs font-medium text-ink-faint">Waiting for verification</h3>
             <ul class="divide-y divide-line">
-              <li v-for="p in pendingOnlinePayments" :key="p.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
+              <li
+                v-for="(p, i) in pendingOnlinePayments"
+                :key="p.id"
+                class="list-reveal-item flex flex-wrap items-center justify-between gap-3 py-3"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              >
                 <span class="min-w-0">
                   <span class="block text-sm font-medium">{{ p.method }}</span>
                   <span class="block text-xs text-ink-faint">Sent {{ p.date }}</span>
@@ -692,7 +720,12 @@ const statusTone = computed(() => {
           <section v-if="recordedReceipts.length" aria-labelledby="recorded-receipts-heading">
             <h3 id="recorded-receipts-heading" class="text-xs font-medium text-ink-faint">Recorded by the landlady</h3>
             <ul class="divide-y divide-line">
-              <li v-for="r in recordedReceipts" :key="r.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
+              <li
+                v-for="(r, i) in recordedReceipts"
+                :key="r.id"
+                class="list-reveal-item flex flex-wrap items-center justify-between gap-3 py-3"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              >
                 <span class="min-w-0">
                   <span class="block text-sm font-medium">
                     {{ r.period ? `Rent for ${r.period}` : 'Rent payment' }}
@@ -720,7 +753,11 @@ const statusTone = computed(() => {
         </template>
       </OverviewTile>
 
-      <OverviewTile :title="tenantData.room || 'Your unit'" class="md:col-span-2 xl:col-span-4">
+      <OverviewTile
+        :title="tenantData.room || 'Your unit'"
+        class="list-reveal-item md:col-span-2 xl:col-span-4"
+        style="animation-delay: 120ms"
+      >
         <UnavailableNote
           v-if="tenantDataLoadFailed && !tenantData.room"
           message="Your unit details could not be loaded."
@@ -728,11 +765,19 @@ const statusTone = computed(() => {
         />
         <template v-else>
           <div class="relative h-40 overflow-hidden rounded-2xl">
+            <!-- Fades in on load rather than popping in once the network answers.
+                 The box already holds its full height, so nothing shifts while
+                 the image is still transparent - it just sits on the tile's own
+                 background until the photo is ready. -->
             <img
               v-if="tenantData.photoUrl"
               :src="tenantData.photoUrl"
               :alt="`Photo of ${tenantData.room}`"
-              class="size-full object-cover"
+              :class="[
+                'size-full object-cover transition-opacity duration-300 ease-[var(--ease-out)]',
+                unitPhotoLoaded ? 'opacity-100' : 'opacity-0',
+              ]"
+              @load="unitPhotoLoaded = true"
             />
             <div v-else class="flex size-full items-end justify-between bg-brand-soft p-4">
               <span class="text-5xl font-semibold tracking-tight text-brand">

@@ -38,7 +38,7 @@ function plural(n: number) {
 </script>
 
 <template>
-  <div v-if="remaining > 0" class="mt-3 flex flex-wrap items-center justify-center gap-3">
+  <div v-if="remaining > 0" class="ws-reveal mt-3 flex flex-wrap items-center justify-center gap-3">
     <button type="button" class="pill-btn" @click="emit('more')">
       <ChevronDown class="size-4" aria-hidden="true" />
       <span>Show {{ nextStep }} more</span>
@@ -51,7 +51,12 @@ function plural(n: number) {
     </p>
   </div>
 
-  <p v-else-if="total > nextStep" class="mt-3 text-center text-sm text-ink-soft">
+  <!--
+    Replaces the buttons above the instant "Show all" is pressed - a settle-in
+    here is what tells the reader their click landed and finished the job,
+    rather than the row of buttons just vanishing.
+  -->
+  <p v-else-if="total > nextStep" class="ws-reveal mt-3 text-center text-sm text-ink-soft">
     All {{ total }} {{ plural(total) }}
   </p>
 </template>

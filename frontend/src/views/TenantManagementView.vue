@@ -580,7 +580,7 @@ async function handleOnboard() {
           <button
             type="button"
             :class="[
-              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
               viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'grouped'"
@@ -592,7 +592,7 @@ async function handleOnboard() {
           <button
             type="button"
             :class="[
-              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors cursor-pointer whitespace-nowrap',
+              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
               viewMode === 'list' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'list'"
@@ -643,6 +643,7 @@ async function handleOnboard() {
     -->
     <RecordTable
       v-else-if="viewMode === 'list'"
+      class="ws-reveal"
       :rows="rows"
       caption="Residents, with unit, household, move-in date, deposit and standing"
       noun="resident"
@@ -741,7 +742,7 @@ async function handleOnboard() {
       admin-only, desktop-first way of looking at the same data "As a list"
       already covers fully on a phone.
     -->
-    <div v-else-if="viewMode === 'grouped'" class="space-y-6">
+    <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
       <p v-if="groupedRows.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center text-sm text-ink-soft">
         {{ q ? `Nothing on this list answers to "${q}".` : 'Nothing on this list answers to this filter.' }}
       </p>
@@ -898,7 +899,7 @@ async function handleOnboard() {
               />
             </div>
 
-            <div v-if="editHasRoommates === 'yes'" class="ws-field">
+            <div v-if="editHasRoommates === 'yes'" class="ws-reveal ws-field">
               <label for="edit-roommate-qty">How many roommates</label>
               <input
                 id="edit-roommate-qty"
@@ -1029,7 +1030,7 @@ async function handleOnboard() {
             <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" widthClass="w-full" />
           </div>
 
-          <div v-if="newHasRoommates === 'yes'" class="ws-field">
+          <div v-if="newHasRoommates === 'yes'" class="ws-reveal ws-field">
             <label for="new-roommate-qty">How many roommates</label>
             <input
               id="new-roommate-qty"

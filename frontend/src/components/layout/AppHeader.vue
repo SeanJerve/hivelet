@@ -387,14 +387,31 @@ onUnmounted(() => {
                 sits astride the edge of what it is attached to, half in and
                 half out, the way an unread count does everywhere else.
               -->
-              <span
-                v-if="unreadCount > 0"
-                class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-xs font-semibold ring-2 ring-canvas"
-                :class="hasEmergencyUnread ? 'bg-overdue text-white' : 'bg-brand text-on-brand'"
-                aria-hidden="true"
+              <!--
+                A count appearing or clearing used to be an instant `v-if`
+                snap - the one badge in the header a reader is meant to notice
+                arriving, with no arrival at all. Named properties, ease-out
+                both ways, exit quicker than entry: closing "Mark all read"
+                and watching the badge vanish is the reader confirming their
+                own action, not something worth lingering on.
+              -->
+              <Transition
+                enter-active-class="transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                enter-from-class="opacity-0 scale-50"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition-[opacity,transform] duration-100 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-50"
               >
-                {{ unreadCount > 99 ? '99+' : unreadCount }}
-              </span>
+                <span
+                  v-if="unreadCount > 0"
+                  class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-xs font-semibold ring-2 ring-canvas"
+                  :class="hasEmergencyUnread ? 'bg-overdue text-white' : 'bg-brand text-on-brand'"
+                  aria-hidden="true"
+                >
+                  {{ unreadCount > 99 ? '99+' : unreadCount }}
+                </span>
+              </Transition>
             </button>
 
             <NotificationPopover />
@@ -532,45 +549,63 @@ onUnmounted(() => {
       />
     </div>
 
-    <!-- Mobile Public Navigation Dropdown Drawer -->
-    <div
-      v-if="isPublicRoute && isMobilePublicNavOpen"
-      class="md:hidden border-t border-line bg-tile px-4 py-3 space-y-1 shadow-md animate-in slide-in-from-top duration-150"
+    <!--
+      Mobile Public Navigation Dropdown Drawer
+
+      This carried `animate-in slide-in-from-top duration-150` - utilities
+      from the `tailwindcss-animate` plugin, which is not in package.json.
+      Tailwind 4 has no built-in `animate-in`, so the class did nothing: the
+      menu was a `v-if` popping open with no transition of any kind, the exact
+      gap this pass was asked to close. Real `<Transition>` now, matching the
+      curve and asymmetric timing every other menu in this file uses.
+    -->
+    <Transition
+      enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-200 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+      enter-from-class="opacity-0 -translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-2"
     >
-      <button
-        @click="scrollToSection('categories'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
+      <div
+        v-if="isPublicRoute && isMobilePublicNavOpen"
+        class="md:hidden border-t border-line bg-tile px-4 py-3 space-y-1 shadow-md"
       >
-        Category Section
-      </button>
-      <button
-        @click="scrollToSection('faqs'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
-      >
-        FAQs
-      </button>
-      <RouterLink
-        to="/inquire"
-        @click="isMobilePublicNavOpen = false"
-        class="block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
-      >
-        Inquire Now
-      </RouterLink>
-      <button
-        @click="scrollToSection('location'); isMobilePublicNavOpen = false"
-        class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
-      >
-        Location
-      </button>
-      <RouterLink
-        v-if="!isAuthenticated"
-        to="/login"
-        @click="isMobilePublicNavOpen = false"
-        class="block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
-      >
-        Sign In
-      </RouterLink>
-    </div>
+        <button
+          @click="scrollToSection('categories'); isMobilePublicNavOpen = false"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
+        >
+          Category Section
+        </button>
+        <button
+          @click="scrollToSection('faqs'); isMobilePublicNavOpen = false"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
+        >
+          FAQs
+        </button>
+        <RouterLink
+          to="/inquire"
+          @click="isMobilePublicNavOpen = false"
+          class="block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
+        >
+          Inquire Now
+        </RouterLink>
+        <button
+          @click="scrollToSection('location'); isMobilePublicNavOpen = false"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
+        >
+          Location
+        </button>
+        <RouterLink
+          v-if="!isAuthenticated"
+          to="/login"
+          @click="isMobilePublicNavOpen = false"
+          class="block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand transition-colors cursor-pointer"
+        >
+          Sign In
+        </RouterLink>
+      </div>
+    </Transition>
   </header>
 
   <ChangePasswordModal :open="isChangePasswordOpen" @close="isChangePasswordOpen = false" />

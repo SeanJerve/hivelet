@@ -539,7 +539,7 @@ function triggerRecord() {
               as a broken form; a blank rent with this note reads as a deliberate
               refusal to guess, which is what it is.
             -->
-            <span v-if="roomsFetchFailed" class="text-sm font-semibold leading-6 text-verify">
+            <span v-if="roomsFetchFailed" class="ws-reveal text-sm font-semibold leading-6 text-verify">
               Live unit rates could not be loaded, so the rent has not been filled in.
               Type the amount from the receipt, not a remembered figure.
             </span>
@@ -615,7 +615,7 @@ function triggerRecord() {
               kept as one ledger row per month, which is how her book already
               holds them - OR#4895 runs across four rows.
             -->
-            <span v-if="monthsOnThisReceipt > 1" class="ws-hint">
+            <span v-if="monthsOnThisReceipt > 1" class="ws-reveal ws-hint">
               Recorded as {{ monthsOnThisReceipt }} separate ledger entries, one for each month,
               all under receipt {{ orNum.trim() || 'this number' }}.
             </span>

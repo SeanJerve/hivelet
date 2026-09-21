@@ -172,6 +172,20 @@ const activeUnit = computed(
     ) ?? categoryUnits.value[0]
 );
 
+/**
+ * Whether the unit currently on view - its photo, or its floor plan when there
+ * is no photo - has actually painted. Reset whenever the unit being looked at
+ * changes, so the picture fades in rather than popping in over whatever the
+ * previous unit left behind.
+ */
+const unitVisualLoaded = ref(false);
+watch(
+  () => activeUnit.value?.id,
+  () => {
+    unitVisualLoaded.value = false;
+  }
+);
+
 /** `room_photos` carries the pictures; `is_primary` picks the one to lead with. */
 function photoOf(room: DbRoom): string | null {
   const photos = room.room_photos ?? [];
@@ -499,7 +513,11 @@ async function submitInquiry() {
       :subject="`which ${currentCat.title.toLowerCase()} units are free`"
     />
 
-    <section v-else-if="categoryUnits.length === 0" class="w-full border-t border-line">
+    <section
+      v-else-if="categoryUnits.length === 0"
+      :key="selectedCategoryKey"
+      class="list-reveal-item w-full border-t border-line"
+    >
       <div class="ws-page ws-band">
         <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
           Nothing of this kind is listed
@@ -522,7 +540,19 @@ async function submitInquiry() {
         two tiles on a canvas: the frame is the page, and that rule is the only
         separator the rest of the public site uses.
       -->
-      <section aria-label="The unit being looked at" class="w-full border-t border-line">
+      <!--
+        Keyed on the category, not the unit: switching category is a real
+        mode change - a different kind of room, a different set of plates
+        below - and gets a fast fade so the swap reads as a new view rather
+        than a jump cut. Picking a different unit WITHIN the category is the
+        frequent interaction and stays instant; only the photo and floor plan
+        (below) mark that change, by fading themselves in.
+      -->
+      <section
+        :key="selectedCategoryKey"
+        aria-label="The unit being looked at"
+        class="list-reveal-item w-full border-t border-line"
+      >
         <div class="ws-page grid lg:grid-cols-[1fr_26rem]">
 
           <div class="relative aspect-[4/3] lg:aspect-auto lg:min-h-[30rem] border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden">
@@ -530,8 +560,12 @@ async function submitInquiry() {
               v-if="photoOf(activeUnit)"
               :src="photoOf(activeUnit)!"
               :alt="`Inside unit ${activeUnit.room_number}`"
-              class="absolute inset-0 size-full object-cover"
+              :class="[
+                'absolute inset-0 size-full object-cover transition-opacity duration-300 ease-[var(--ease-out)]',
+                unitVisualLoaded ? 'opacity-100' : 'opacity-0',
+              ]"
               loading="eager"
+              @load="unitVisualLoaded = true"
             />
             <!--
               Only one of the thirty-three units has a photograph on file, so
@@ -577,9 +611,13 @@ async function submitInquiry() {
                   :alt="'Floor plan of the ' + floorLabelFor(activeUnit.floor) + ' of the ' + buildingNameFor(activeUnit.cluster_code)"
                   :width="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.w"
                   :height="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.h"
-                  class="block w-full mix-blend-multiply"
+                  :class="[
+                    'block w-full mix-blend-multiply transition-opacity duration-300 ease-[var(--ease-out)]',
+                    unitVisualLoaded ? 'opacity-100' : 'opacity-0',
+                  ]"
                   loading="lazy"
                   decoding="async"
+                  @load="unitVisualLoaded = true"
                 />
                 <span
                   v-if="planFor(activeUnit.room_number)!.x !== null"
@@ -713,14 +751,15 @@ async function submitInquiry() {
             @mouseleave="hoveredUnit = null"
           >
             <button
-              v-for="u in categoryUnits"
+              v-for="(u, i) in categoryUnits"
               :key="u.id"
               type="button"
               :aria-pressed="u.room_number === activeUnit.room_number"
               :class="[
-                'press-plate group block w-full text-left cursor-pointer transition-opacity duration-500',
+                'list-reveal-item press-plate group block w-full text-left cursor-pointer transition-opacity duration-500',
                 isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
               ]"
+              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               @click="selectUnit(u.room_number)"
               @mouseenter="hoveredUnit = u.room_number"
               @focusin="hoveredUnit = u.room_number"
@@ -737,7 +776,7 @@ async function submitInquiry() {
                 <!-- A hairline frame that draws itself in under the cursor. -->
                 <span
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-2 border border-ink/15 opacity-0 transition duration-500 ease-out motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
+                  class="pointer-events-none absolute inset-2 border border-ink/15 opacity-0 transition duration-500 ease-[var(--ease-out)] motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
                 />
 
                 <span class="relative flex items-baseline justify-between gap-3">

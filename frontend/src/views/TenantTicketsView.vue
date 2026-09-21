@@ -567,7 +567,7 @@ function formatDateTime(iso: string) {
 
     <div
       v-if="ticketNotice"
-      class="flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
+      class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
       role="status"
     >
       <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
@@ -598,7 +598,7 @@ function formatDateTime(iso: string) {
           <div class="space-y-4">
             <div
               v-if="ticketError"
-              class="flex items-start gap-2.5 rounded-2xl bg-overdue-soft p-4"
+              class="ws-reveal flex items-start gap-2.5 rounded-2xl bg-overdue-soft p-4"
               role="alert"
             >
               <AlertTriangle class="mt-0.5 size-4 shrink-0 text-overdue" aria-hidden="true" />
@@ -687,7 +687,7 @@ function formatDateTime(iso: string) {
 
               <div
                 v-else
-                class="p-3 bg-brand-soft border border-brand-soft rounded-xl flex items-center justify-between gap-3"
+                class="ws-reveal p-3 bg-brand-soft border border-brand-soft rounded-xl flex items-center justify-between gap-3"
               >
                 <div class="flex items-center gap-3 overflow-hidden">
                   <img
@@ -814,9 +814,10 @@ function formatDateTime(iso: string) {
 
           <div v-else class="space-y-3">
             <article
-              v-for="ticket in filteredTickets"
+              v-for="(ticket, i) in filteredTickets"
               :key="ticket.id"
-              class="border border-line rounded-tile overflow-hidden hover:border-brand/40 transition-colors bg-tile"
+              class="list-reveal-item border border-line rounded-tile overflow-hidden hover:border-brand/40 transition-colors bg-tile"
+              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
             >
               <!-- Clickable Header Row: Toggles Collapsible State -->
               <div
@@ -870,7 +871,7 @@ function formatDateTime(iso: string) {
               </div>
 
               <!-- Collapsible Body & Footer -->
-              <div v-show="isTicketExpanded(ticket.id)">
+              <div v-show="isTicketExpanded(ticket.id)" class="ws-reveal">
                 <!-- Body: description -->
                 <div class="px-5 py-3.5 bg-canvas">
                   <p class="text-xs text-ink-soft leading-relaxed">{{ ticket.description }}</p>
@@ -1005,9 +1006,10 @@ function formatDateTime(iso: string) {
 
           <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
             <div
-              v-for="note in timelineNotes"
+              v-for="(note, i) in timelineNotes"
               :key="note.id"
-              class="flex gap-3"
+              class="list-reveal-item flex gap-3"
+              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
             >
               <div class="size-7 rounded-full bg-night text-white text-xs font-semibold flex items-center justify-center shrink-0">
                 {{ note.author[0] }}

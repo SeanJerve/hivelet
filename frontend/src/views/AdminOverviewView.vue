@@ -704,23 +704,42 @@ const isExportingArchive = ref(false);
               aria-hidden="true"
             />
           </button>
-          <div
-            v-show="isYearMenuOpen"
-            id="overview-year-menu"
-            class="absolute left-0 top-full z-30 mt-2 min-w-40 rounded-2xl bg-tile p-1.5 shadow-lift border border-line"
+          <!--
+            This was `v-show`, which is instant: the menu was there or it was
+            not, on the same frame as the click. PillSelect's popover already
+            solved this exact shape (a menu anchored to its own trigger), so
+            the year menu now opens the same way instead of reading as a
+            different control that happens to sit beside it. `motion-safe:` on
+            the scale and translate utilities is what stands in for a
+            hand-written `prefers-reduced-motion` block here, since Tailwind
+            already generates that correctly; opacity still fades either way.
+          -->
+          <Transition
+            enter-active-class="transition duration-150 ease-[var(--ease-out)]"
+            enter-from-class="motion-safe:scale-95 opacity-0 motion-safe:-translate-y-1"
+            enter-to-class="motion-safe:scale-100 opacity-100 motion-safe:translate-y-0"
+            leave-active-class="transition duration-100 ease-[var(--ease-out)]"
+            leave-from-class="motion-safe:scale-100 opacity-100 motion-safe:translate-y-0"
+            leave-to-class="motion-safe:scale-95 opacity-0 motion-safe:-translate-y-1"
           >
-            <button
-              v-for="y in yearOptions"
-              :key="y"
-              type="button"
-              :aria-current="y === shownYear ? 'true' : undefined"
-              class="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular hover:bg-canvas cursor-pointer"
-              @click="chooseYear(y)"
+            <div
+              v-if="isYearMenuOpen"
+              id="overview-year-menu"
+              class="absolute left-0 top-full z-30 mt-2 min-w-40 origin-top-left rounded-2xl bg-tile p-1.5 shadow-lift border border-line"
             >
-              <span>{{ y === String(CURRENT_YEAR) ? `${y}, this year` : y }}</span>
-              <Check v-if="y === shownYear" class="size-4 text-brand" aria-hidden="true" />
-            </button>
-          </div>
+              <button
+                v-for="y in yearOptions"
+                :key="y"
+                type="button"
+                :aria-current="y === shownYear ? 'true' : undefined"
+                class="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular hover:bg-canvas cursor-pointer"
+                @click="chooseYear(y)"
+              >
+                <span>{{ y === String(CURRENT_YEAR) ? `${y}, this year` : y }}</span>
+                <Check v-if="y === shownYear" class="size-4 text-brand" aria-hidden="true" />
+              </button>
+            </div>
+          </Transition>
         </div>
 
         <template v-if="!isHistoricalMode">
@@ -763,7 +782,7 @@ const isExportingArchive = ref(false);
     <div
       v-if="!isInitialLoading && anyLoadFailed"
       role="status"
-      class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify"
+      class="ws-reveal flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify"
     >
       <span>Some figures could not be loaded. Each section that is affected says so.</span>
       <button type="button" class="pill-btn" :disabled="isRefreshing" @click="refreshAllData">Try again</button>
@@ -789,7 +808,15 @@ const isExportingArchive = ref(false);
     <!-- ================================================================== *
      * Live year
      * ================================================================== -->
-    <div v-else-if="!isHistoricalMode" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+    <!--
+      Switching between the live year and an archive year replaces this whole
+      grid with a differently-shaped one - the tiles, the tables and the
+      cluster lists are not the same DOM before and after. That is a
+      deliberate click (the year menu, or "Back to <year>"), not a routine
+      re-render, so the branch gets a fade-in rather than a jump cut. `ws-reveal`
+      already handles the `prefers-reduced-motion` fallback.
+    -->
+    <div v-else-if="!isHistoricalMode" class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
       <!-- What needs her action. The only dark tile on the screen. -->
       <OverviewTile tone="night" title="Needs your attention" class="md:col-span-2 xl:col-span-5">
         <UnavailableNote
@@ -806,7 +833,12 @@ const isExportingArchive = ref(false);
             </span>
           </p>
           <ul v-if="pendingPreview.length" class="mt-4 divide-y divide-white/10">
-            <li v-for="p in pendingPreview" :key="p.id" class="flex items-center justify-between gap-3 py-2.5">
+            <li
+              v-for="(p, i) in pendingPreview"
+              :key="p.id"
+              class="list-reveal-item flex items-center justify-between gap-3 py-2.5"
+              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+            >
               <span class="min-w-0">
                 <span class="block text-sm font-medium">{{ p.name }}</span>
                 <span class="block text-xs text-on-night-soft">
@@ -928,7 +960,12 @@ const isExportingArchive = ref(false);
           @retry="refreshAllData"
         />
         <ul v-else class="flex flex-col gap-4">
-          <li v-for="c in liveClusterPerformance" :key="c.name">
+          <li
+            v-for="(c, i) in liveClusterPerformance"
+            :key="c.name"
+            class="list-reveal-item"
+            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+          >
             <div class="flex items-baseline justify-between gap-3 text-sm">
               <span class="font-medium">{{ c.name }}</span>
               <span class="tabular text-ink-soft">{{ c.occupied }} of {{ c.total }} occupied</span>
@@ -1012,7 +1049,12 @@ const isExportingArchive = ref(false);
               </tr>
             </thead>
             <tbody>
-              <tr v-for="d in liveRecordedMonths" :key="d.month">
+              <tr
+                v-for="(d, i) in liveRecordedMonths"
+                :key="d.month"
+                class="list-reveal-item"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              >
                 <th scope="row">{{ d.month }}</th>
                 <td class="num">{{ peso(d.grossIncome) }}</td>
                 <td class="num text-ink-soft">{{ peso(d.expenses) }}</td>
@@ -1042,7 +1084,12 @@ const isExportingArchive = ref(false);
         <p v-else-if="openTickets.length === 0" class="text-sm text-ink-soft">No repair requests are open.</p>
         <template v-else>
           <ul class="divide-y divide-line">
-            <li v-for="t in openTicketsPreview" :key="t.id" class="flex items-center justify-between gap-3 py-3">
+            <li
+              v-for="(t, i) in openTicketsPreview"
+              :key="t.id"
+              class="list-reveal-item flex items-center justify-between gap-3 py-3"
+              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+            >
               <span class="min-w-0">
                 <span class="block text-sm font-medium">{{ t.title }}</span>
                 <span class="block text-xs text-ink-faint">
@@ -1064,7 +1111,7 @@ const isExportingArchive = ref(false);
     <!-- ================================================================== *
      * Archive year
      * ================================================================== -->
-    <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+    <div v-else class="ws-reveal grid gap-4 md:grid-cols-2 xl:grid-cols-12">
       <OverviewTile tone="brand" title="Collected" class="xl:col-span-3">
         <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
         <div v-else>
@@ -1135,7 +1182,12 @@ const isExportingArchive = ref(false);
       <OverviewTile title="Collected by cluster" class="xl:col-span-4">
         <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
         <ul v-else class="flex flex-col gap-4">
-          <li v-for="c in historicalClusterPerformance" :key="c.name">
+          <li
+            v-for="(c, i) in historicalClusterPerformance"
+            :key="c.name"
+            class="list-reveal-item"
+            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+          >
             <div class="flex items-baseline justify-between gap-3 text-sm">
               <span class="font-medium">{{ c.name }}</span>
               <span class="tabular font-semibold">{{ peso(c.revenue) }}</span>
@@ -1170,7 +1222,12 @@ const isExportingArchive = ref(false);
               </tr>
             </thead>
             <tbody>
-              <tr v-for="d in historical12MonthsData" :key="d.month">
+              <tr
+                v-for="(d, i) in historical12MonthsData"
+                :key="d.month"
+                class="list-reveal-item"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              >
                 <th scope="row">{{ MONTH_LONG[d.monthNum - 1] }}</th>
                 <td class="num">
                   <StatusPill v-if="!d.hasIncome" tone="unentered">Not entered</StatusPill>
@@ -1200,7 +1257,12 @@ const isExportingArchive = ref(false);
             {{ historicalTenantRosterOpen ? 'Hide' : 'Show' }}
           </button>
         </template>
-        <div v-show="historicalTenantRosterOpen" id="archive-roster" class="flex flex-col gap-4">
+        <!-- `v-if`, not `v-show`, so this disclosure actually unfolds each time
+             it opens: `.ws-reveal`'s `@starting-style` only plays on insertion,
+             and a `v-show` element is inserted once and toggled with
+             `display`, so it would only ever have played on the very first
+             archive-year visit rather than on every "Show" click. -->
+        <div v-if="historicalTenantRosterOpen" id="archive-roster" class="ws-reveal flex flex-col gap-4">
           <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
           <template v-else>
             <div class="flex flex-wrap items-center gap-3">
@@ -1272,7 +1334,7 @@ const isExportingArchive = ref(false);
             {{ historicalUnitTableOpen ? 'Hide' : 'Show' }}
           </button>
         </template>
-        <div v-show="historicalUnitTableOpen" id="archive-units">
+        <div v-if="historicalUnitTableOpen" id="archive-units" class="ws-reveal">
           <UnavailableNote v-if="incomeRecordsFetchFailed || roomsFetchFailed" @retry="refreshAllData" />
           <div v-else class="ws-table-wrap max-h-[28rem]">
             <table class="ws-table">
@@ -1288,7 +1350,12 @@ const isExportingArchive = ref(false);
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="u in historicalRoomUtilization" :key="u.unitCode">
+                <tr
+                  v-for="(u, i) in historicalRoomUtilization"
+                  :key="u.unitCode"
+                  class="list-reveal-item"
+                  :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+                >
                   <th scope="row" class="px-4 py-3 text-left font-semibold">{{ u.unitCode.toUpperCase() }}</th>
                   <td class="px-4 py-3 text-ink-soft">{{ u.cluster }}</td>
                   <td class="px-4 py-3 text-ink-soft">{{ u.floorLabel }}</td>
@@ -1314,7 +1381,7 @@ const isExportingArchive = ref(false);
             {{ historicalLedgerOpen ? 'Hide' : 'Show' }}
           </button>
         </template>
-        <div v-show="historicalLedgerOpen" id="archive-ledger" class="flex flex-col gap-4">
+        <div v-if="historicalLedgerOpen" id="archive-ledger" class="ws-reveal flex flex-col gap-4">
           <div role="tablist" aria-label="Ledger" class="inline-flex self-start rounded-full bg-canvas p-1">
             <button
               id="ledger-tab-income"
@@ -1324,7 +1391,7 @@ const isExportingArchive = ref(false);
               aria-controls="ledger-panel"
               :tabindex="historicalLedgerTab === 'income' ? 0 : -1"
               :class="[
-                'rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
+                'rounded-full px-4 py-2 text-sm font-semibold cursor-pointer transition-colors duration-150 ease-[var(--ease-out)]',
                 historicalLedgerTab === 'income' ? 'bg-night text-on-night' : 'text-ink-soft',
               ]"
               @click="historicalLedgerTab = 'income'"
@@ -1340,7 +1407,7 @@ const isExportingArchive = ref(false);
               aria-controls="ledger-panel"
               :tabindex="historicalLedgerTab === 'expenses' ? 0 : -1"
               :class="[
-                'rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
+                'rounded-full px-4 py-2 text-sm font-semibold cursor-pointer transition-colors duration-150 ease-[var(--ease-out)]',
                 historicalLedgerTab === 'expenses' ? 'bg-night text-on-night' : 'text-ink-soft',
               ]"
               @click="historicalLedgerTab = 'expenses'"
@@ -1357,7 +1424,7 @@ const isExportingArchive = ref(false);
           >
             <template v-if="historicalLedgerTab === 'income'">
               <UnavailableNote v-if="incomeRecordsFetchFailed" @retry="refreshAllData" />
-              <div v-else class="ws-table-wrap max-h-[32rem]">
+              <div v-else class="ws-reveal ws-table-wrap max-h-[32rem]">
                 <table class="ws-table">
                   <caption class="sr-only">Income entries, {{ selectedArchiveYear }}</caption>
                   <thead>
@@ -1374,7 +1441,12 @@ const isExportingArchive = ref(false);
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="r in historicalIncomeRecords" :key="r.id">
+                    <tr
+                      v-for="(r, i) in historicalIncomeRecords"
+                      :key="r.id"
+                      class="list-reveal-item"
+                      :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+                    >
                       <td class="whitespace-nowrap text-ink-soft">{{ r.datePaid }}</td>
                       <td class="font-semibold">{{ r.unit }}</td>
                       <td>{{ r.contact }}</td>
@@ -1391,7 +1463,7 @@ const isExportingArchive = ref(false);
             </template>
             <template v-else>
               <UnavailableNote v-if="expenseRecordsFetchFailed" @retry="refreshAllData" />
-              <div v-else class="ws-table-wrap max-h-[32rem]">
+              <div v-else class="ws-reveal ws-table-wrap max-h-[32rem]">
                 <table class="ws-table">
                   <caption class="sr-only">Expense entries, {{ selectedArchiveYear }}</caption>
                   <thead>
@@ -1404,7 +1476,12 @@ const isExportingArchive = ref(false);
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="e in historicalExpenseRecords" :key="e.id">
+                    <tr
+                      v-for="(e, i) in historicalExpenseRecords"
+                      :key="e.id"
+                      class="list-reveal-item"
+                      :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+                    >
                       <td class="tabular whitespace-nowrap text-ink-soft">{{ e.date }}</td>
                       <td>{{ e.description }}</td>
                       <td class="text-ink-soft">{{ e.category }}</td>

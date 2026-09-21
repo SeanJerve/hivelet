@@ -101,23 +101,28 @@ const current = computed(() => props.months[selected.value]);
             <span class="relative flex w-full max-w-11 flex-1 items-end">
               <span
                 v-if="m.kind === 'unentered'"
-                class="absolute inset-0 rounded-full hatch border border-line"
+                class="capsule-mark absolute inset-0 rounded-full hatch border border-line"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               />
               <span
                 v-else-if="m.kind === 'future'"
-                class="absolute inset-0 rounded-full border border-dashed border-hatch"
+                class="capsule-mark absolute inset-0 rounded-full border border-dashed border-hatch"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               />
               <span
                 v-else
                 :class="[
-                  'w-full rounded-full transition-colors',
+                  'capsule-fill w-full origin-bottom rounded-full transition-colors',
                   m.kind === 'expected'
                     ? 'border-2 border-dashed border-ink-faint bg-tile'
                     : i === selected
                       ? 'bg-brand'
                       : 'bg-brand-bright group-hover:bg-brand-strong/80',
                 ]"
-                :style="{ height: `max(1.75rem, ${((m.value ?? 0) / scaleMax) * 100}%)` }"
+                :style="{
+                  height: `max(1.75rem, ${((m.value ?? 0) / scaleMax) * 100}%)`,
+                  animationDelay: `${Math.min(i, 9) * 30}ms`,
+                }"
               />
             </span>
             <span
@@ -161,3 +166,56 @@ const current = computed(() => props.months[selected.value]);
     </div>
   </div>
 </template>
+
+<style scoped>
+/*
+ * The twelve columns fill in together on first paint, the same treatment
+ * OccupancyArc's ring and SegmentBar's segments use, and the same reason: a
+ * height that is simply there on arrival reads as a static illustration, one
+ * that grows to its measured value reads as a real figure. `transform: scaleY`
+ * with a bottom origin changes only what is PAINTED - the inline `height`
+ * above still sets the real box instantly, so the tick marks and the flex
+ * layout around this grid never move while it plays.
+ *
+ * The two placeholder marks - a month with nothing entered yet, a month too
+ * far out to estimate - have no value to grow from, so they fade and settle
+ * rather than rise, which is enough to say "this arrived with the rest" without
+ * pretending they carry a height that means something.
+ *
+ * Same 30ms-a-step, capped-at-ten stagger as everywhere else this pass added
+ * one, so a page that shows this chart next to OccupancyArc or a RecordTable
+ * reads as one system rather than three different timings.
+ */
+.capsule-fill {
+  animation: capsule-fill 0.26s var(--ease-out) backwards;
+}
+@keyframes capsule-fill {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.capsule-mark {
+  animation: capsule-mark-in 0.22s var(--ease-out) backwards;
+}
+@keyframes capsule-mark-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .capsule-fill,
+  .capsule-mark {
+    animation: none;
+  }
+}
+</style>

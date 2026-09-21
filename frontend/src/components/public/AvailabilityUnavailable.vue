@@ -54,7 +54,7 @@ function reload() {
   <section
     role="alert"
     aria-live="polite"
-    class="w-full border-t border-line"
+    class="availability-unavailable w-full border-t border-line"
   >
     <div class="ws-page ws-band">
       <p class="text-xs uppercase tracking-[0.18em] text-ink-soft">
@@ -102,3 +102,26 @@ function reload() {
     </div>
   </section>
 </template>
+
+<style scoped>
+/* Same reasoning as UnavailableNote: this section only exists on the page
+   because a fetch just failed, so its mount is the moment a visitor sees it. */
+.availability-unavailable {
+  animation: availability-unavailable-in 0.22s var(--ease-out) backwards;
+}
+@keyframes availability-unavailable-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .availability-unavailable {
+    animation: none;
+  }
+}
+</style>

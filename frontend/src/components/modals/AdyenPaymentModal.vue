@@ -267,8 +267,26 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       both - which is wrong, and worse, wrong in the direction of suggesting
       nothing has happened yet to someone who has already authorised a charge
       in their GCash app and is now watching this screen for confirmation.
+
+      Each of the three states below that swap on a v-if now settles in with
+      `.ws-reveal` rather than snapping straight to full opacity - the same
+      technique WsModal's own panel uses, so it needs no wrapper and cannot
+      touch the branch it is attached to.
+
+      The fourth branch, the Drop-in container, deliberately carries NONE of
+      this. `initializeAdyen` sets `isLoading = false`, awaits one `nextTick`,
+      and then requires `adyenContainerRef.value` to already exist - a
+      sequence the surrounding comment there says used to fail silently for
+      exactly this reason. A Vue `<Transition>` wrapping all four branches
+      would have been the obvious way to crossfade between them, and it is
+      exactly what would have broken that: `mode="out-in"` defers mounting the
+      entering branch until the leaving one's transition finishes, which is
+      longer than one `nextTick` and would have made the container null again
+      at the moment `.mount()` is called. So no shared Transition here, and no
+      entrance animation on the Drop-in branch itself - Adyen's own SDK owns
+      what renders inside it.
     -->
-    <div v-if="isLoading" class="flex flex-col items-center gap-3 py-10 text-center">
+    <div v-if="isLoading" class="ws-reveal flex flex-col items-center gap-3 py-10 text-center">
       <Loader2 class="size-7 animate-spin text-brand" aria-hidden="true" />
       <p class="text-sm font-medium" role="status">
         {{ hasAttemptedPayment ? 'Confirming your payment' : 'Opening the payment page' }}
@@ -279,7 +297,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     </div>
 
     <!-- Paid -->
-    <div v-else-if="isCompleted" class="flex flex-col items-center gap-3 py-8 text-center">
+    <div v-else-if="isCompleted" class="ws-reveal flex flex-col items-center gap-3 py-8 text-center">
       <CheckCircle2 class="size-10 text-brand" aria-hidden="true" />
       <h3 class="text-lg font-semibold tracking-tight">Payment sent</h3>
       <p v-if="isRecorded" class="max-w-sm text-sm leading-6 text-ink-soft">
@@ -294,7 +312,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     </div>
 
     <!-- Could not open -->
-    <div v-else-if="errorMessage" class="flex flex-col items-start gap-3 rounded-2xl bg-overdue-soft p-4 text-sm text-overdue">
+    <div v-else-if="errorMessage" class="ws-reveal flex flex-col items-start gap-3 rounded-2xl bg-overdue-soft p-4 text-sm text-overdue">
       <p class="flex items-center gap-2 font-semibold">
         <AlertCircle class="size-4" aria-hidden="true" />
         {{ hasAttemptedPayment ? 'This payment did not complete' : 'The payment page could not be opened' }}
@@ -314,7 +332,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       </p>
     </div>
 
-    <!-- Adyen's own fields -->
+    <!-- Adyen's own fields - no entrance animation, see the comment above. -->
     <div v-else>
       <div ref="adyenContainerRef" id="adyen-dropin-container" class="min-h-[220px]"></div>
     </div>

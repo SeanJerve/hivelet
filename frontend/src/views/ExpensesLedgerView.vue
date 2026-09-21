@@ -953,11 +953,25 @@ async function handleEditExpense() {
               <input v-model="date" type="date" class="ws-input w-full" required />
             </label>
 
-            <!-- Dynamic Entries List -->
-            <div class="space-y-4">
-              <div 
-                v-for="(entry, index) in formEntries" 
-                :key="index" 
+            <!--
+              Dynamic Entries List. A new item used to appear on the same frame
+              as the click that added it, indistinguishable from the ones that
+              were already there. `TransitionGroup` gives the newly-pushed item
+              an entrance without touching the ones already on screen; leaving
+              is unanimated on purpose, since animating an item's removal here
+              would mean animating the height its neighbours reflow into, which
+              is the one thing this file does not animate.
+            -->
+            <TransitionGroup
+              tag="div"
+              class="space-y-4"
+              enter-active-class="transition duration-150 ease-[var(--ease-out)]"
+              enter-from-class="opacity-0 motion-safe:scale-[0.97]"
+              enter-to-class="opacity-100 motion-safe:scale-100"
+            >
+              <div
+                v-for="(entry, index) in formEntries"
+                :key="index"
                 class="relative p-4 bg-canvas border border-line rounded-tile space-y-3"
               >
                 <!-- Header with Item Index and Remove Item Button -->
@@ -1001,10 +1015,16 @@ async function handleEditExpense() {
                     <span class="text-xs text-ink-soft">Cost distribution</span>
                   </div>
                   
-                  <div class="space-y-2">
-                    <div 
-                      v-for="(alloc, aIdx) in entry.allocations" 
-                      :key="aIdx" 
+                  <TransitionGroup
+                    tag="div"
+                    class="space-y-2"
+                    enter-active-class="transition duration-150 ease-[var(--ease-out)]"
+                    enter-from-class="opacity-0 motion-safe:scale-[0.97]"
+                    enter-to-class="opacity-100 motion-safe:scale-100"
+                  >
+                    <div
+                      v-for="(alloc, aIdx) in entry.allocations"
+                      :key="aIdx"
                       class="flex items-center gap-3 bg-tile p-3 border border-line rounded-xl"
                     >
                       <label class="ws-field flex-1">
@@ -1037,13 +1057,13 @@ async function handleEditExpense() {
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </TransitionGroup>
 
                   <!-- Add Split Area button -->
                   <div class="pt-1">
-                    <button 
-                      type="button" 
-                      @click="addAllocation(index)" 
+                    <button
+                      type="button"
+                      @click="addAllocation(index)"
                       class="pill-btn text-xs min-h-9 px-3 py-1.5 gap-1.5 inline-flex items-center cursor-pointer"
                     >
                       <Plus class="size-3.5 text-brand" />
@@ -1052,7 +1072,7 @@ async function handleEditExpense() {
                   </div>
                 </div>
               </div>
-            </div>
+            </TransitionGroup>
 
             <!-- Add Another Item Button -->
             <div>
@@ -1128,10 +1148,16 @@ async function handleEditExpense() {
                 <span class="text-xs text-ink-soft">Distribute cost across boarding house &amp; main house</span>
               </div>
 
-              <div class="space-y-2">
-                <div 
-                  v-for="(alloc, aIdx) in editAllocations" 
-                  :key="aIdx" 
+              <TransitionGroup
+                tag="div"
+                class="space-y-2"
+                enter-active-class="transition duration-150 ease-[var(--ease-out)]"
+                enter-from-class="opacity-0 motion-safe:scale-[0.97]"
+                enter-to-class="opacity-100 motion-safe:scale-100"
+              >
+                <div
+                  v-for="(alloc, aIdx) in editAllocations"
+                  :key="aIdx"
                   class="flex items-center gap-3 bg-canvas p-3 border border-line rounded-xl"
                 >
                   <label class="ws-field flex-1">
@@ -1164,7 +1190,7 @@ async function handleEditExpense() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </TransitionGroup>
 
               <!-- Add Split Area button -->
               <div class="pt-1">

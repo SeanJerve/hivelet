@@ -23,7 +23,7 @@ defineEmits<{ retry: [] }>();
   <div
     role="status"
     :class="[
-      'flex flex-col items-start gap-3 rounded-2xl border border-dashed p-4',
+      'unavailable-note flex flex-col items-start gap-3 rounded-2xl border border-dashed p-4',
       dark ? 'border-white/30' : 'border-hatch',
     ]"
   >
@@ -38,3 +38,30 @@ defineEmits<{ retry: [] }>();
     </button>
   </div>
 </template>
+
+<style scoped>
+/*
+ * This replaces whichever tile or chart could not load, on a `v-if` the
+ * screen that owns it flips the moment a fetch fails - so from here, mounting
+ * IS the moment it appears. A settle-in rather than a snap keeps a failed
+ * load from reading as a layout glitch.
+ */
+.unavailable-note {
+  animation: unavailable-note-in 0.2s var(--ease-out) backwards;
+}
+@keyframes unavailable-note-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .unavailable-note {
+    animation: none;
+  }
+}
+</style>

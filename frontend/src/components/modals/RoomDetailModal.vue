@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue';
 import { isRoomDetailModalOpen, activeRoomDetail, roomsFetchFailed } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import WsModal from '@/components/ui/WsModal.vue';
@@ -7,6 +8,17 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 function closeModal() {
   isRoomDetailModalOpen.value = false;
 }
+
+/** Same reasoning as AdminEditUnitModal's photo: fade in on `@load` rather
+ *  than pop in the instant the `src` is set, reset whenever the unit shown
+ *  changes so a different room's photo does not inherit "already loaded". */
+const isPhotoLoaded = ref(false);
+watch(
+  () => activeRoomDetail.value?.photo,
+  () => {
+    isPhotoLoaded.value = false;
+  }
+);
 
 /**
  * The "Inquire Directly" button and its handler are gone, and none of it could ever run.
@@ -54,11 +66,14 @@ function statusLabel(status: string) {
     size="lg"
     @close="closeModal"
   >
-    <div v-if="activeRoomDetail.photo" class="h-52 overflow-hidden rounded-2xl">
+    <div v-if="activeRoomDetail.photo" class="h-52 overflow-hidden rounded-2xl bg-canvas">
       <img
         :src="activeRoomDetail.photo"
         :alt="`Photo of unit ${activeRoomDetail.unitCode.toUpperCase()}`"
-        class="size-full object-cover"
+        class="size-full object-cover transition-opacity duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+        :class="isPhotoLoaded ? 'opacity-100' : 'opacity-0'"
+        @load="isPhotoLoaded = true"
+        @error="isPhotoLoaded = true"
       />
     </div>
 
