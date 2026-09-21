@@ -848,13 +848,9 @@ async function submitInquiry() {
           <X class="size-4" />
         </button>
 
-        <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-          Fe Galang Da Silva Boarding House
-        </p>
-
         <h2
           id="inquiry-dialog-title"
-          class="mt-5 font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
+          class="font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
         >
           Ask about unit {{ inquiryUnit.toUpperCase() }}
         </h2>

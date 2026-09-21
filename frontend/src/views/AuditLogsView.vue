@@ -370,14 +370,14 @@ async function exportAuditTrail() {
     -->
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <OverviewTile title="Everything on record" tone="night">
-        <p class="tabular text-4xl font-semibold leading-none">{{ count(grandTotal) }}</p>
+        <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ count(grandTotal) }}</p>
         <p class="mt-2 text-sm leading-6 text-on-night-soft">
           entries in the whole trail, not only the ones listed below
         </p>
       </OverviewTile>
 
       <OverviewTile title="Done to the records">
-        <p class="tabular text-4xl font-semibold leading-none text-ink">
+        <p class="tabular text-4xl font-semibold leading-none tracking-tight text-ink">
           {{ count(businessEventCount) }}
         </p>
         <p class="mt-2 text-sm leading-6 text-ink-soft">
@@ -386,7 +386,7 @@ async function exportAuditTrail() {
       </OverviewTile>
 
       <OverviewTile title="Sign-ins and refusals">
-        <p class="tabular text-4xl font-semibold leading-none text-ink">
+        <p class="tabular text-4xl font-semibold leading-none tracking-tight text-ink">
           {{ count(authEventCount) }}
         </p>
         <p class="mt-2 text-sm leading-6 text-ink-soft">

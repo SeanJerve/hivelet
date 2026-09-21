@@ -883,7 +883,7 @@ async function exportExcel() {
           @retry="fetchIncome"
         />
         <template v-else>
-          <p class="tabular text-4xl font-semibold leading-none">{{ peso(totalRemitted) }}</p>
+          <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(totalRemitted) }}</p>
           <p class="mt-2 text-sm leading-6 text-on-night-soft">
             Rent plus water, across {{ rows.length }}
             {{ rows.length === 1 ? 'entry' : 'entries' }} (BR-038)

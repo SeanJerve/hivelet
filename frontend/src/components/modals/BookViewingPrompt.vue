@@ -102,13 +102,9 @@ onBeforeUnmount(() => {
         <X class="size-4" />
       </button>
 
-      <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-        Fe Galang Da Silva Boarding House
-      </p>
-
       <h2
         id="viewing-prompt-title"
-        class="mt-5 font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
+        class="font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
       >
         Viewings by appointment<br />Register your interest
       </h2>

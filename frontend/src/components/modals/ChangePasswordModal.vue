@@ -177,12 +177,12 @@ async function submit() {
                  does not shove the label beside it sideways. -->
             <span class="relative inline-block size-4 shrink-0">
               <Transition
-                enter-active-class="transition-[opacity,transform] duration-100 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                enter-active-class="transition-[opacity,scale] duration-100 ease-[cubic-bezier(0.23,1,0.32,1)]"
                 enter-from-class="opacity-0 scale-50"
                 enter-to-class="opacity-100 scale-100"
-                leave-active-class="transition-opacity duration-75 ease-[cubic-bezier(0.23,1,0.32,1)]"
-                leave-from-class="opacity-100"
-                leave-to-class="opacity-0"
+                leave-active-class="transition-[opacity,scale] duration-75 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-50"
               >
                 <Check v-if="rule.met" class="absolute inset-0 size-4 text-brand" aria-hidden="true" />
                 <span v-else aria-hidden="true" class="absolute inset-0 size-4 rounded-full border border-line" />
