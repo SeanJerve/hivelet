@@ -9,7 +9,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { api } from '@/lib/api';
 import { peso } from '@/lib/canonicalUnits';
-import { propertyToday } from '@/lib/propertyDate';
+import { propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
 import { CreditCard, Search } from 'lucide-vue-next';
 import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
@@ -345,7 +345,7 @@ async function fetchPaymentHistory() {
       // A cash payment recorded by hand genuinely has no gateway reference, so
       // this label describes the absence rather than inventing a number.
       invoiceRef: p.transaction_reference || 'No reference, recorded by hand',
-      datePaid: new Date(p.paid_at || p.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }),
+      datePaid: new Date(p.paid_at || p.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric', timeZone: PROPERTY_TIMEZONE }),
       datePaidRaw: p.paid_at || p.created_at,
       billingPeriod: 'Monthly Statement',
       amountPaid: Number(p.amount) || 0,
@@ -433,7 +433,7 @@ function refreshAll() {
           <!-- The balance, not the debt as issued. BR-013. -->
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(billBalance(bill), 2) }}</p>
           <p class="mt-2 text-sm text-on-brand-soft">
-            Due {{ new Date(bill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) }}
+            Due {{ new Date(bill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE }) }}
           </p>
         </div>
 
@@ -529,7 +529,9 @@ function refreshAll() {
         :empty-note="
           loadingHistory
             ? 'Your payment record is still being read. This is not the same as having none.'
-            : `No payments are on record for ${selectedYear}.`
+            : searchQuery.trim()
+              ? `Nothing matches '${searchQuery.trim()}' in ${selectedYear}.`
+              : `No payments are on record for ${selectedYear}.`
         "
       >
         <template #head>

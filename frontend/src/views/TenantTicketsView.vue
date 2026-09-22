@@ -552,7 +552,7 @@ function formatDateTime(iso: string) {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="ws-focus space-y-6">
     <!-- Page header -->
     <div>
       <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
@@ -666,7 +666,7 @@ function formatDateTime(iso: string) {
 
               <div
                 v-if="!ticketPhotoUrl"
-                class="border-2 border-dashed border-line rounded-xl p-5 text-center bg-canvas hover:bg-brand-soft/40 hover:border-brand/40 transition-colors"
+                class="press-plate border-2 border-dashed border-line rounded-xl p-5 text-center bg-canvas hover:bg-brand-soft/40 hover:border-brand/40"
               >
                 <input
                   id="ticket-photo-input"
@@ -705,7 +705,7 @@ function formatDateTime(iso: string) {
                 <button
                   type="button"
                   @click="removePhoto"
-                  class="p-1 text-ink-soft hover:text-overdue hover:bg-tile rounded-lg transition-colors cursor-pointer shrink-0"
+                  class="press p-1 text-ink-soft hover:text-overdue hover:bg-tile rounded-lg cursor-pointer shrink-0"
                   aria-label="Remove photo"
                   title="Remove photo"
                 >
@@ -720,7 +720,7 @@ function formatDateTime(iso: string) {
             :disabled="submitting"
             class="pill-btn-brand w-full min-h-11 mt-4"
           >
-            <Send class="size-3.5 text-white" />
+            <Send class="size-3.5" />
             <span>{{ submitting ? 'Submitting…' : 'Submit Maintenance Ticket' }}</span>
           </button>
         </form>
@@ -760,7 +760,7 @@ function formatDateTime(iso: string) {
         <!-- Filter Bar (Identical to Admin Dispatch / Maintenance Tickets) -->
         <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="relative w-full sm:w-80 shrink-0">
-            <Search class="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-soft" />
+            <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
             <label for="ticket-search" class="sr-only">Search your requests</label>
             <input
               id="ticket-search"
@@ -805,9 +805,11 @@ function formatDateTime(iso: string) {
             <p class="text-sm font-semibold text-ink">No tickets to show</p>
             <p class="text-xs text-ink-soft">
               {{
-                statusFilter === 'All'
+                tickets.length === 0
                   ? 'Submit a ticket using the form and it will appear here.'
-                  : `You have no ${statusFilter.toLowerCase()} tickets.`
+                  : searchQuery.trim()
+                    ? `Nothing matches "${searchQuery.trim()}".`
+                    : `You have no ${statusFilter.toLowerCase()} tickets.`
               }}
             </p>
           </div>
@@ -816,13 +818,27 @@ function formatDateTime(iso: string) {
             <article
               v-for="(ticket, i) in filteredTickets"
               :key="ticket.id"
-              class="list-reveal-item border border-line rounded-tile overflow-hidden hover:border-brand/40 transition-colors bg-tile"
+              class="list-reveal-item border border-line rounded-tile overflow-hidden hover:border-brand/40 hover:shadow-xs transition-[border-color,box-shadow] duration-150 ease-[var(--ease-out)] bg-tile"
               :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
             >
-              <!-- Clickable Header Row: Toggles Collapsible State -->
+              <!--
+                Clickable Header Row: Toggles Collapsible State.
+
+                A plain `div` with a `@click`, unlike every other disclosure in
+                this workspace (see "Other ways to pay" on the overview screen,
+                or PillSelect's trigger) - reachable by a pointer only. Nothing
+                here let a keyboard or screen-reader user open a ticket's own
+                details at all.
+              -->
               <div
+                role="button"
+                tabindex="0"
+                :aria-expanded="isTicketExpanded(ticket.id)"
+                :aria-controls="`ticket-body-${ticket.id}`"
                 @click="toggleTicketExpanded(ticket.id)"
-                class="px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-canvas transition-colors select-none group"
+                @keydown.enter.prevent="toggleTicketExpanded(ticket.id)"
+                @keydown.space.prevent="toggleTicketExpanded(ticket.id)"
+                class="press-plate px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-canvas select-none group"
               >
                 <div class="min-w-0">
                   <h3 class="font-semibold text-sm text-ink group-hover:text-brand transition-colors leading-snug">
@@ -864,14 +880,14 @@ function formatDateTime(iso: string) {
                   <span class="sm:hidden text-xs font-semibold text-ink">{{ ticketStepLabel(ticket.status) }}</span>
                   <div class="p-1 rounded-lg text-ink-soft group-hover:text-ink transition-colors">
                     <ChevronDown
-                      :class="[ 'size-4 transition-transform duration-200', isTicketExpanded(ticket.id) ? 'rotate-180 text-brand' : '' ]"
+                      :class="[ 'size-4 transition-transform duration-200 ease-[var(--ease-out)]', isTicketExpanded(ticket.id) ? 'rotate-180 text-brand' : '' ]"
                     />
                   </div>
                 </div>
               </div>
 
               <!-- Collapsible Body & Footer -->
-              <div v-show="isTicketExpanded(ticket.id)" class="ws-reveal">
+              <div :id="`ticket-body-${ticket.id}`" v-show="isTicketExpanded(ticket.id)" class="ws-reveal">
                 <!-- Body: description -->
                 <div class="px-5 py-3.5 bg-canvas">
                   <p class="text-xs text-ink-soft leading-relaxed">{{ ticket.description }}</p>
@@ -894,7 +910,7 @@ function formatDateTime(iso: string) {
                         :href="att.file_url"
                         target="_blank"
                         rel="noopener"
-                        class="block size-20 rounded-xl overflow-hidden border border-line bg-tile"
+                        class="press block size-20 rounded-xl overflow-hidden border border-line bg-tile"
                         title="Open the full-size photo"
                       >
                         <img :src="att.file_url" alt="Photo attached to this request" class="w-full h-full object-cover" />
@@ -955,7 +971,7 @@ function formatDateTime(iso: string) {
               <!-- Connector column -->
               <div class="flex flex-col items-center">
                 <div
-                  :class="[ 'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors', index <= getStageIndex(activeTimelineTicket.status) ? 'bg-brand border-brand text-white' : 'bg-tile border-line text-ink-soft' ]"
+                  :class="[ 'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors', index <= getStageIndex(activeTimelineTicket.status) ? 'bg-brand border-brand text-on-brand' : 'bg-tile border-line text-ink-soft' ]"
                 >
                   <CheckCircle2 v-if="index <= getStageIndex(activeTimelineTicket.status)" class="size-4" />
                   <span v-else class="text-xs font-semibold">{{ index + 1 }}</span>
@@ -1011,7 +1027,7 @@ function formatDateTime(iso: string) {
               class="list-reveal-item flex gap-3"
               :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
             >
-              <div class="size-7 rounded-full bg-night text-white text-xs font-semibold flex items-center justify-center shrink-0">
+              <div class="size-7 rounded-full bg-night text-on-night text-xs font-semibold flex items-center justify-center shrink-0">
                 {{ note.author[0] }}
               </div>
               <div class="flex-1 bg-canvas border border-line rounded-xl px-3.5 py-2.5">

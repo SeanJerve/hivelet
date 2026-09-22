@@ -12,7 +12,7 @@ import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
-import { propertyDate } from '@/lib/propertyDate';
+import { propertyDate, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -148,11 +148,16 @@ const partOfDay = (() => {
   return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
 })();
 
+// Anchored to the property (Asia/Manila), not the viewer's own device - the
+// same reasoning `lib/propertyDate.ts` gives for `propertyToday()`. Without
+// it, a resident whose phone clock is set to another timezone would be told
+// the wrong calendar day at the top of their own overview.
 const todayLabel = new Date().toLocaleDateString('en-PH', {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
   year: 'numeric',
+  timeZone: PROPERTY_TIMEZONE,
 });
 
 function shortDate(value: string | null | undefined, withYear = false) {
@@ -160,6 +165,7 @@ function shortDate(value: string | null | undefined, withYear = false) {
   return new Date(value).toLocaleDateString('en-PH', {
     month: 'short',
     day: 'numeric',
+    timeZone: PROPERTY_TIMEZONE,
     ...(withYear ? { year: 'numeric' } : {}),
   });
 }
@@ -362,7 +368,7 @@ async function fetchTenantData() {
       // The balance, not the debt as issued: they differ once a bill is partly
       // paid. `amount_outstanding` is derived by the API (BR-013).
       tenantData.value.totalAmountDue = unpaidBill.amount_outstanding ?? unpaidBill.total_amount;
-      tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+      tenantData.value.dueDate = new Date(unpaidBill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
       tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
       tenantData.value.dueDaysRemaining = 'Awaiting payment';
       tenantData.value.dueDateRaw = unpaidBill.due_date;
@@ -420,7 +426,7 @@ async function fetchTenantData() {
 
         const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
         tenantData.value.verifiedAt = linkedPayment?.verified_at
-          ? new Date(linkedPayment.verified_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })
+          ? new Date(linkedPayment.verified_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE })
           : '';
       } else {
         tenantData.value.dueBadgeText = 'PAID';
@@ -537,7 +543,7 @@ const statusTone = computed(() => {
         />
         <template v-else-if="!isSettled">
           <div>
-            <p class="text-5xl leading-none font-semibold tabular tracking-tight">{{ peso(tenantData.totalAmountDue) }}</p>
+            <p class="text-5xl leading-none font-semibold tabular tracking-tight">{{ peso(tenantData.totalAmountDue, 2) }}</p>
             <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-on-brand-soft">
               <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
               <span v-if="tenantData.dueDate">Due {{ tenantData.dueDate }}</span>
@@ -566,13 +572,16 @@ const statusTone = computed(() => {
         <div class="mt-auto border-t border-white/20 pt-3">
           <button
             type="button"
-            class="flex w-full items-center justify-between gap-3 rounded-xl py-1 text-sm font-semibold cursor-pointer"
+            class="press flex w-full items-center justify-between gap-3 rounded-xl py-1 text-sm font-semibold cursor-pointer"
             :aria-expanded="showOtherWaysToPay"
             aria-controls="other-ways-to-pay"
             @click="showOtherWaysToPay = !showOtherWaysToPay"
           >
             Other ways to pay
-            <ChevronDown :class="['size-4 transition-transform', showOtherWaysToPay && 'rotate-180']" aria-hidden="true" />
+            <ChevronDown
+              :class="['size-4 transition-transform duration-200 ease-[var(--ease-out)]', showOtherWaysToPay && 'rotate-180']"
+              aria-hidden="true"
+            />
           </button>
           <div v-show="showOtherWaysToPay" id="other-ways-to-pay" class="ws-reveal pt-2 text-sm leading-6 text-on-brand-soft">
             <p>
@@ -635,7 +644,7 @@ const statusTone = computed(() => {
             </div>
             <div v-if="!isSettled" class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="font-semibold">Still to pay</dt>
-              <dd class="text-lg font-semibold tabular">{{ peso(tenantData.totalAmountDue) }}</dd>
+              <dd class="text-lg font-semibold tabular">{{ peso(tenantData.totalAmountDue, 2) }}</dd>
             </div>
           </dl>
           <p v-if="waterRatePerOccupant !== null" class="text-xs leading-5 text-ink-faint">
@@ -692,7 +701,7 @@ const statusTone = computed(() => {
                 </span>
                 <span class="flex items-center gap-3">
                   <StatusPill tone="overdue">Not accepted</StatusPill>
-                  <span class="text-sm font-semibold tabular">{{ peso(p.amount) }}</span>
+                  <span class="text-sm font-semibold tabular">{{ peso(p.amount, 2) }}</span>
                 </span>
               </li>
             </ul>
@@ -712,7 +721,7 @@ const statusTone = computed(() => {
                 </span>
                 <span class="flex items-center gap-3">
                   <StatusPill tone="verify">Waiting for verification</StatusPill>
-                  <span class="text-sm font-semibold tabular">{{ peso(p.amount) }}</span>
+                  <span class="text-sm font-semibold tabular">{{ peso(p.amount, 2) }}</span>
                 </span>
               </li>
             </ul>
@@ -736,7 +745,7 @@ const statusTone = computed(() => {
                 </span>
                 <span class="flex items-center gap-3">
                   <StatusPill :tone="r.verified ? 'paid' : 'neutral'">{{ r.verified ? 'Verified' : 'Not yet verified' }}</StatusPill>
-                  <span class="text-sm font-semibold tabular">{{ peso(r.amount) }}</span>
+                  <span class="text-sm font-semibold tabular">{{ peso(r.amount, 2) }}</span>
                 </span>
               </li>
             </ul>

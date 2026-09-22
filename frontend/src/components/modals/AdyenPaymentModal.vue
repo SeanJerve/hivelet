@@ -36,7 +36,14 @@ const props = defineProps<{
     amount_paid?: number;
     amount_outstanding?: number;
     due_date: string;
-    room_number?: string;
+    /**
+     * `/tenant/my-bills` nests the unit under `rooms:room_id (id, room_number)` -
+     * there is no flat `room_number` on the bill row. This prop used to read
+     * `bill.room_number` directly, which is always `undefined` on the real
+     * response, so the tile silently fell back to "Monthly dues" on every
+     * checkout regardless of which unit the bill was for.
+     */
+    rooms?: { room_number?: string | null } | null;
   };
 }>();
 
@@ -239,7 +246,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       <div class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">This bill</dt>
         <dd class="font-medium">
-          {{ props.bill.room_number ? 'Unit ' + String(props.bill.room_number) : 'Monthly dues' }}
+          {{ props.bill.rooms?.room_number ? 'Unit ' + String(props.bill.rooms.room_number) : 'Monthly dues' }}
         </dd>
       </div>
       <div class="flex items-baseline justify-between gap-3">
@@ -256,7 +263,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       </div>
       <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
         <dt class="font-semibold">{{ partiallySettled ? 'Left to pay' : 'To pay now' }}</dt>
-        <dd class="text-xl font-semibold tabular">{{ peso(amountDue, 2) }}</dd>
+        <dd class="text-xl font-semibold tabular tracking-tight">{{ peso(amountDue, 2) }}</dd>
       </div>
     </dl>
 
