@@ -393,14 +393,17 @@ function handleDeleteTicketPrompt() {
 
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div class="relative w-full sm:w-80 shrink-0">
-        <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+        <!-- left-4/pl-11, the inset the other six admin registers use for the
+             same search box. This one sat 2px further left with 4px less room
+             for its text. -->
+        <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
         <label for="maintenance-search" class="sr-only">Search by title, unit or technician</label>
         <input
           id="maintenance-search"
           v-model="q"
           type="search"
           placeholder="Title, unit or technician"
-          class="ws-input w-full pl-10"
+          class="ws-input w-full pl-11"
         />
       </div>
       <div class="shrink-0">

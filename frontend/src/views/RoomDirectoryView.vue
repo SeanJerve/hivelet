@@ -218,7 +218,9 @@ const statusChips = computed(() => [
 </script>
 
 <template>
-  <div class="space-y-6">
+  <!-- `ws-focus` carries the workspace focus ring; see ExpensesLedgerView for
+       why a view has to supply it. -->
+  <div class="ws-focus space-y-6">
     <!--
       `rooms` is SEEDED. If the fetch fails it keeps the built-in list, and the
       rates below are then whatever was hardcoded at build time - 30 of the 33
@@ -268,7 +270,7 @@ const statusChips = computed(() => [
 
         <!-- Two ways of reading the same 33 units -->
         <div
-          class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-sm shrink-0"
+          class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-xs shrink-0"
           role="group"
           aria-label="How to show the units"
         >
@@ -300,7 +302,22 @@ const statusChips = computed(() => [
         </div>
       </div>
 
-      <div class="flex items-center gap-2 shrink-0">
+      <!--
+        `flex-wrap`, and no `shrink-0`, which is how the expenses ledger and
+        the audit trail already lay their filter rows out.
+
+        Two PillSelects are 2 x 13rem plus the gap = 424px, and `shrink-0`
+        held that width against a 343px content column on a phone. Measured in
+        the running app at a 375px viewport: the row ran to x=448, so the last
+        97px of the cluster filter sat past the right edge - and `body` carries
+        `overflow-x: hidden`, so it was CLIPPED rather than reachable by
+        scrolling. The cluster filter could not be used on a phone at all.
+
+        Re-measured after the change at 375, 768 and 1280: they stack only at
+        375 and sit on one row at both larger widths, ending on exactly the
+        same right edge as before.
+      -->
+      <div class="flex flex-wrap items-center gap-2">
         <PillSelect
           v-model="selectedStatus"
           :options="statusChips"
@@ -449,14 +466,26 @@ const statusChips = computed(() => [
         </div>
       </div>
 
-      <!-- Empty Filter State -->
-      <div 
-        v-if="filteredRooms.length === 0" 
-        class="rounded-tile bg-tile px-6 py-16 text-center text-ink-soft"
+      <!--
+        Nothing left after the filters.
+
+        Written in the shape RecordTable's own empty state uses - which is what
+        the "As a list" half of this very screen renders a few lines below -
+        rather than its own smaller type and its own voice. It also named a
+        control that does not exist: it told the reader to select "All
+        Clusters", and the option in the cluster menu is labelled "Every
+        cluster".
+      -->
+      <div
+        v-if="filteredRooms.length === 0"
+        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
       >
-        <Search class="size-8 mx-auto mb-2 text-ink-faint" aria-hidden="true" />
-        <p class="font-semibold text-sm text-ink">No units match your filter criteria</p>
-        <p class="text-xs mt-1">Try clearing your search query or selecting "All Clusters".</p>
+        <Search class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
+        <p class="mt-3 text-base font-semibold text-ink">No unit matches</p>
+        <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+          Nothing in the directory answers to what you have asked for. Clear the search, or pick
+          “Every cluster”.
+        </p>
       </div>
     </div>
 

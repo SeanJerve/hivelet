@@ -524,17 +524,32 @@ function refreshAll() {
     <OverviewTile title="Payment record">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="relative w-full sm:w-80 shrink-0">
-          <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+          <!-- left-4/pl-11: the one inset every search box in the workspace
+               uses. -->
+          <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
           <label for="tenant-payment-search" class="sr-only">Search by reference, method or status</label>
           <input
             id="tenant-payment-search"
             v-model="searchQuery"
             type="search"
             placeholder="Reference, method or status"
-            class="ws-input w-full pl-10"
+            class="ws-input w-full pl-11"
           />
         </div>
-        <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <!--
+          No `shrink-0`: it was cancelling the `flex-wrap` beside it. An item
+          that cannot shrink is sized at max-content, which for a wrapping row
+          is every child on one line - 2 x 13rem plus the gap = 424px - so the
+          row never became narrow enough to wrap.
+
+          Measured in the running app at 375px, inside this tile's own padding:
+          the row ran to x=472 against a tile ending at 327, so the sort control
+          was entirely off screen, and `body`'s `overflow-x: hidden` meant it
+          was clipped rather than reachable. A resident on a phone could not
+          change the order of their own payment history. Re-measured after: two
+          rows at 375, one row on the same right edge at 1280.
+        -->
+        <div class="flex flex-wrap items-center gap-2">
           <PillSelect
             v-model="selectedYear"
             :options="yearOptions"

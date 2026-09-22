@@ -280,7 +280,11 @@ async function handleSendReply() {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <!-- `ws-focus` carries the workspace focus ring; see ExpensesLedgerView for
+       why a view has to supply it. It matters more here than most: the enquiry
+       inbox is a list of buttons, and walking it from the keyboard was the way
+       it was meant to be worked. -->
+  <div class="ws-focus space-y-6">
     <!-- Page header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>

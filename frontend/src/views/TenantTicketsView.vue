@@ -760,14 +760,17 @@ function formatDateTime(iso: string) {
         <!-- Filter Bar (Identical to Admin Dispatch / Maintenance Tickets) -->
         <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="relative w-full sm:w-80 shrink-0">
-            <Search class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+            <!-- left-4/pl-11, which is what the comment above claims: the
+                 dispatch board's search box uses that inset, and this one was
+                 2px off it. -->
+            <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
             <label for="ticket-search" class="sr-only">Search your requests</label>
             <input
               id="ticket-search"
               v-model="searchQuery"
               type="search"
               placeholder="What it was about"
-              class="ws-input w-full pl-10 pr-4 sm:text-sm"
+              class="ws-input w-full pl-11 pr-4 sm:text-sm"
             />
           </div>
 

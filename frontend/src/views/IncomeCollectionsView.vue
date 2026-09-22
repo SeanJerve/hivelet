@@ -819,7 +819,11 @@ async function exportExcel() {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <!-- `ws-focus` carries the workspace focus ring. See the note on the same
+       class in ExpensesLedgerView: the rule is scoped to an ancestor, nothing
+       above a view provides one, and without it this screen's controls had
+       only the browser's default ring and its search box had none. -->
+  <div class="ws-focus space-y-6">
     <!-- Page header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
@@ -1080,8 +1084,27 @@ async function exportExcel() {
         </template>
       </div>
 
-      <!-- Filters: Cluster, Month, Year -->
-      <div v-if="activeTab === 'ledger'" class="flex flex-wrap items-center gap-2 shrink-0">
+      <!--
+        Filters: Cluster, Month, Year.
+
+        `shrink-0` is gone, and it was defeating the `flex-wrap` beside it.
+        A flex item that cannot shrink is sized at its max-content width, and
+        for a wrapping row that is every child on ONE line: 3 x 13rem plus the
+        gaps = 640px. So the wrapper never got narrow enough to wrap, and it
+        did not shrink either.
+
+        Measured in the running app at a 375px viewport: this row ran to
+        x=664 against a content column ending at 351, putting the Month and
+        Year filters completely off screen - and `body` carries
+        `overflow-x: hidden`, so they were clipped rather than reachable by
+        scrolling. Two of the three ways of narrowing this ledger could not be
+        used on a phone.
+
+        Re-measured after: three rows at 375, one row ending on the same right
+        edge as before at 1280. This is the same shape the expenses ledger
+        already had right.
+      -->
+      <div v-if="activeTab === 'ledger'" class="flex flex-wrap items-center gap-2">
         <PillSelect
           v-model="selectedCluster"
           :options="clusterChips"
@@ -1204,12 +1227,21 @@ async function exportExcel() {
       did before.
     -->
     <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
-      <p
+      <!--
+        The same empty state the "As a list" half of this screen renders, in
+        the same shape - a title and a sentence under it, not one grey line.
+        Two ways of reading the same ledger should not disagree about what
+        "nothing found" looks like.
+      -->
+      <div
         v-if="clusterGroups.length === 0"
-        class="rounded-tile bg-tile px-6 py-16 text-center text-sm text-ink-soft"
+        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
       >
-        No collection matches what you have asked for.
-      </p>
+        <p class="text-base font-semibold text-ink">Nothing matches</p>
+        <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+          No collection answers to what you have asked for.
+        </p>
+      </div>
 
       <section
         v-for="(group, groupIndex) in clusterGroups"
@@ -1233,7 +1265,12 @@ async function exportExcel() {
                   ]"
                   aria-hidden="true"
                 />
-                <span class="text-base font-semibold text-ink">{{ group.label }}</span>
+                <!-- 0.9375rem, the size every other collapsible section title in
+                     the workspace uses - the cluster headers on the room
+                     directory and the residents register, and OverviewTile's own
+                     heading. This one was a step larger for no reason the screen
+                     could give. -->
+                <span class="text-[0.9375rem] font-semibold text-ink">{{ group.label }}</span>
               </span>
               <span class="mt-1 block text-sm leading-6 text-ink-soft">{{ group.desc }}</span>
             </span>

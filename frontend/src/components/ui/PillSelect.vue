@@ -117,11 +117,30 @@ onBeforeUnmount(() => {
     :class="[widthClass || 'w-52', widthClass === 'w-full' ? 'block' : 'inline-block']"
     @keydown="onKeyDown"
   >
-    <!-- Trigger Button -->
+    <!--
+      Trigger Button.
+
+      IT NO LONGER CARRIES `focus:outline-none focus:ring-2 focus:ring-brand/20`,
+      and that is the fix rather than a tidy-up. `focus:outline-none` compiles
+      into Tailwind's `utilities` layer, which is ordered AFTER the `components`
+      layer that holds `.ws-focus :focus-visible` - so on every screen in the
+      application this control cancelled the workspace's own 3px focus ring and
+      replaced it with a 2px ring at 20% brand over a white tile. That blend is
+      about rgb(209,223,217): roughly 1.3:1 against the tile it sits on, where
+      WCAG 2.4.11 asks for 3:1. In practice the most-reused filter control in
+      the workspace showed a keyboard reader almost nothing.
+
+      Read out of the running app's compiled stylesheet rather than reasoned
+      about - the layer each rule landed in is what settles this, and it is not
+      visible in the source.
+
+      The `isOpen` ring below is a different signal (this menu is open, for a
+      pointer user too) and stays.
+    -->
     <button
       :id="id"
       type="button"
-      class="press inline-flex w-full min-h-[2.75rem] h-11 items-center justify-between gap-2 rounded-full border border-line bg-tile px-3.5 py-2 text-sm font-medium text-ink shadow-xs hover:border-brand/40 focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-canvas disabled:text-ink-faint cursor-pointer select-none"
+      class="press inline-flex w-full min-h-[2.75rem] h-11 items-center justify-between gap-2 rounded-full border border-line bg-tile px-3.5 py-2 text-sm font-medium text-ink shadow-xs hover:border-brand/40 disabled:cursor-not-allowed disabled:bg-canvas disabled:text-ink-faint cursor-pointer select-none"
       :class="{
         'border-brand ring-2 ring-brand/10': isOpen,
       }"

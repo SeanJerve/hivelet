@@ -458,7 +458,11 @@ async function exportAuditTrail() {
     </div>
 
     <!-- The trail could not be loaded. Shown instead of sample rows, on purpose. -->
-    <div v-if="loadError" class="ws-reveal rounded-tile bg-overdue-soft p-5 sm:p-6">
+    <!-- `role="status"`, the same as UnavailableNote, which is what every other
+         screen shows in this situation. Without it this block replaced the
+         trail silently: a screen reader was given a table, then nothing, and no
+         announcement that the load had failed. -->
+    <div v-if="loadError" role="status" class="ws-reveal rounded-tile bg-overdue-soft p-5 sm:p-6">
       <p class="text-base font-semibold text-overdue">The trail could not be loaded.</p>
       <p class="mt-1 text-sm leading-6 text-overdue">{{ loadError }}</p>
       <p class="mt-2 text-sm leading-6 text-overdue">

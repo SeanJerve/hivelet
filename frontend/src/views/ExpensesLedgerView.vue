@@ -672,7 +672,17 @@ async function handleEditExpense() {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <!--
+    `ws-focus` is what puts the workspace's 3px focus ring on this screen.
+    Verified in the running app's compiled stylesheet rather than assumed:
+    `.ws-focus :focus-visible { outline: 3px solid var(--ink) }` is scoped to
+    a `.ws-focus` ANCESTOR, and nothing above a view supplies one - App.vue's
+    wrapper does not. Without it every control here fell back to the browser's
+    own ring, and the search box fell back to nothing at all, because
+    `.ws-input:focus` sets `outline: none` and this was the rule that was
+    meant to replace it. Four of the seven admin registers were missing it.
+  -->
+  <div class="ws-focus space-y-6">
     <!-- Page header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>

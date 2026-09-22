@@ -819,9 +819,22 @@ async function handleOnboard() {
       already covers fully on a phone.
     -->
     <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
-      <p v-if="groupedRows.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center text-sm text-ink-soft">
-        {{ q ? `Nothing on this list answers to "${q}".` : 'Nothing on this list answers to this filter.' }}
-      </p>
+      <!--
+        The same empty state "As a list" renders through RecordTable, in the
+        same shape and with the same words. It was a single grey line with
+        straight quotes, against a title-and-sentence with curly ones a few
+        lines below - two views of one register disagreeing about what
+        "nobody found" looks like.
+      -->
+      <div
+        v-if="groupedRows.length === 0"
+        class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
+      >
+        <p class="text-base font-semibold text-ink">Nobody matches</p>
+        <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+          {{ q ? `Nothing on this list answers to “${q}”.` : 'Nothing on this list answers to this filter.' }}
+        </p>
+      </div>
 
       <div
         v-for="group in groupedRows"
