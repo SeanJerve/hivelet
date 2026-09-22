@@ -153,12 +153,48 @@ if (tenantToken && adminToken) {
 
   const meRes = await fetch(`${BASE}/auth/me`, { headers: { Authorization: `Bearer ${tenantToken}` } });
   const me = await meRes.json().catch(() => null);
-  const myProfileId = me?.data?.id ?? me?.data?.profileId ?? null;
+
+  /**
+   * THIS READ `me?.data?.id ?? me?.data?.profileId`, AND NEITHER KEY EXISTS.
+   *
+   * `GET /auth/me` answers `{ data: { user, profile, permissions } }`, so both
+   * lookups missed and `myProfileId` was **always null**. The filter below then
+   * asked `x.tenant_profile_id !== null`, which is true of every ticket that has
+   * an owner - so "someone else's ticket" was simply the FIRST ticket on the
+   * board, frequently the probing tenant's own.
+   *
+   * It fails in both directions. On 2026-09-22 it reported `FAIL 200 a ticket
+   * belonging to another tenant` while the route was behaving perfectly: the
+   * tenant was reading their OWN ticket, and 200 is the right answer to that.
+   * The quieter direction is worse - when the first ticket happens to belong to
+   * somebody else it prints OK, having never established that the ticket it
+   * probed was foreign. A green line proved nothing.
+   *
+   * That is the sibling of the defect this file's own history records: an
+   * earlier isolation probe counted "both empty" as a pass and reported six
+   * routes green while proving nothing. **A test that cannot fail is not
+   * evidence, and neither is one that fails for the wrong reason.**
+   *
+   * Resolving it is now asserted rather than assumed. If the shape of
+   * `/auth/me` changes again this fails loudly here, instead of silently
+   * degrading into a probe that cannot tell the two tenants apart.
+   */
+  const myProfileId = me?.data?.user?.profileId ?? me?.data?.profile?.id ?? null;
+  const resolvedMe = Boolean(myProfileId);
+  resolvedMe ? pass++ : (fail++, failures.push('could not resolve the probing tenant\'s own profile id from /auth/me'));
+  console.log(
+    `  ${resolvedMe ? 'OK  ' : 'FAIL'}      the probing tenant's own profile id resolves` +
+      `${resolvedMe ? '' : ' - every isolation probe below is meaningless without it'}`
+  );
 
   const tRes = await fetch(`${BASE}/admin/tickets`, { headers: { Authorization: `Bearer ${adminToken}` } });
   const tJson = await tRes.json().catch(() => null);
   const allTickets = Array.isArray(tJson?.data) ? tJson.data : [];
-  const someoneElses = allTickets.find((x) => x.tenant_profile_id && x.tenant_profile_id !== myProfileId);
+  // Only a ticket we can PROVE belongs to somebody else is worth probing, so an
+  // unresolved `myProfileId` yields nothing rather than yielding anything.
+  const someoneElses = resolvedMe
+    ? allTickets.find((x) => x.tenant_profile_id && x.tenant_profile_id !== myProfileId)
+    : undefined;
 
   const probes = [
     ['a ticket belonging to another tenant', someoneElses?.id],
