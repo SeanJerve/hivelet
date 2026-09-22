@@ -33,11 +33,27 @@ thing did not work" is not.
 
 ## Open
 
-### B-56 — a receipt recorded during today's testing is in her live ledger, and it moved her total
+### ~~B-56 — a receipt recorded during today's testing is in her live ledger, and it moved her total~~ — **RESOLVED 2026-09-22, voided**
 
-**⚠ `check:ledger` is RED because of this row, and I have deliberately not made it green.** Bumping
-the two ratchets would hide a real change in her financial data behind a passing build, which is
-the exact failure CLAUDE.md warns about.
+> **Closed the right way, and quickly.** The row was **voided at 10:01:07 UTC**, four minutes and
+> nineteen seconds after it was created — someone ran the create-then-void cycle, which is exactly
+> what `voided_at` is for and what TESTING_REHEARSAL asks for.
+>
+> **Verified afterwards:** the ledger reads **937 live rows / ₱8,086,250.00** again, the standing
+> figures, and `check:ledger` is **green** with both ratchets back at their baselines — BR-033 at
+> 16 and BR-014 at 3, the values they held before the row appeared. Nothing needs doing.
+>
+> **Worth keeping for two reasons.** First, it is the first time the void path has been exercised
+> by a person against live data, which is evidence for Chapter 4 alongside B-54. Second, it is the
+> clearest demonstration yet of why the ratchets exist: nobody told this session the data had
+> changed, and a suite that had passed four times running went red for exactly the right reason,
+> then green again when the row was voided. The original entry is kept below.
+
+#### The original finding
+
+**⚠ `check:ledger` was RED because of this row, and I deliberately did not make it green.** Bumping
+the two ratchets would have hidden a real change in her financial data behind a passing build,
+which is the exact failure CLAUDE.md warns about.
 
 - **What appeared.** One new `monthly_income_records` row, written **2026-09-22 09:56:48 UTC**
   (≈17:56 Manila), while styles were being edited on the other machine. Nothing in this session

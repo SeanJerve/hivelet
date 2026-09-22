@@ -31,10 +31,13 @@ A Vue 3 single-page application served to the browser, with a service worker pro
 | Routing | `vue-router`, with navigation guards enforcing role-gated route transitions |
 | Client state | Pinia, registered at `frontend/src/main.ts:8` via `createPinia()` |
 | Build | Vite |
+| Code splitting | Every route is a dynamic import — **18** of them in `frontend/src/router/index.ts`, so a view's code is fetched when it is first navigated to rather than at startup |
 | Offline | `vite-plugin-pwa` (Workbox), configured at `frontend/vite.config.ts:11-80` |
 | Styling | Tailwind CSS via the `@tailwindcss/vite` plugin |
 
 The presentation tier is Vue, not React. No React dependency exists in `frontend/package.json`.
+
+**On code splitting, because the figure is worth stating.** Every view used to be imported eagerly, so the entry chunk carried the whole application — every admin register, the Adyen Drop-in, both public pages — before anyone had signed in. Route-level dynamic imports brought that entry chunk from roughly **724 KB to 221 KB** (measured from the build output; the current `dist/assets/index-*.js` is 220,554 bytes). It matters most for the two surfaces where a first-time visitor is waiting: the public listing and the sign-in screen, neither of which needs any admin or tenant code to render. The heaviest view is now `TenantPaymentsView` at ~204 KB, and it is fetched only by a resident who opens it, because it is what carries the payment gateway's client library.
 
 ### Tier 2 — API and Security Perimeter
 
