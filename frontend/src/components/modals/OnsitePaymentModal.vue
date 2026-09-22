@@ -492,7 +492,7 @@ function triggerRecord() {
 
         await Promise.allSettled([fetchIncomeRecords(), fetchRooms(), fetchTenants()]);
 
-        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()} · ₱${totalAmountReceived.value} posted to the ledger.`);
+        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()} · ${peso(totalAmountReceived.value)} posted to the ledger.`);
         closeModal();
       } catch (err: unknown) {
         showToast(

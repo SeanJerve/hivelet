@@ -40,10 +40,20 @@ watch(
  * well be worth building; it would not start from that code.
  */
 
+// Matches RoomDirectoryView's `statusTone`/`getStatusLabel` exactly - this
+// modal opens FROM that screen's own "Look at" button, for the same unit, so
+// a status reading one colour and one word on the card and a different
+// colour and word one click later is the same fact disagreeing with itself.
+//
+// This used to tone maintenance 'overdue' (red) where the directory uses
+// 'verify' (amber) - RoomDirectoryView's own comment gives the reason: a unit
+// out of action is a waiting state, like a reservation, not a debt. And it
+// labelled 'pending' as "Payment pending", which is the exact payment framing
+// RoomDirectoryView's comment documents removing ("'pending' comes from
+// Reserved, not Owing - no bill is read anywhere on this screen").
 function statusTone(status: string) {
   if (status === 'settled' || status === 'occupied') return 'paid' as const;
-  if (status === 'pending') return 'verify' as const;
-  if (status === 'maintenance') return 'overdue' as const;
+  if (status === 'pending' || status === 'maintenance') return 'verify' as const;
   // Vacant is a known, factual state, not a gap in the record - 'unentered' is
   // for the latter, which is why AdminEditUnitModal's own occupancy pill uses
   // 'neutral' for the same case.
@@ -52,8 +62,8 @@ function statusTone(status: string) {
 
 function statusLabel(status: string) {
   if (status === 'settled' || status === 'occupied') return 'Occupied';
-  if (status === 'pending') return 'Payment pending';
-  if (status === 'maintenance') return 'Under maintenance';
+  if (status === 'pending') return 'Reserved';
+  if (status === 'maintenance') return 'Being repaired';
   return 'Vacant';
 }
 </script>

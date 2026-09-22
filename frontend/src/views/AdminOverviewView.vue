@@ -700,7 +700,10 @@ const isExportingArchive = ref(false);
             <span class="tabular">{{ shownYear }}</span>
             <span class="sr-only">, change year</span>
             <ChevronDown
-              :class="['size-4 text-ink-soft transition-transform', isYearMenuOpen && 'rotate-180']"
+              :class="[
+                'size-4 text-ink-soft transition-transform duration-200 ease-[var(--ease-out)]',
+                isYearMenuOpen && 'rotate-180',
+              ]"
               aria-hidden="true"
             />
           </button>
@@ -732,7 +735,7 @@ const isExportingArchive = ref(false);
                 :key="y"
                 type="button"
                 :aria-current="y === shownYear ? 'true' : undefined"
-                class="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular hover:bg-canvas cursor-pointer"
+                class="press flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm tabular hover:bg-canvas cursor-pointer"
                 @click="chooseYear(y)"
               >
                 <span>{{ y === String(CURRENT_YEAR) ? `${y}, this year` : y }}</span>
@@ -1391,7 +1394,7 @@ const isExportingArchive = ref(false);
               aria-controls="ledger-panel"
               :tabindex="historicalLedgerTab === 'income' ? 0 : -1"
               :class="[
-                'rounded-full px-4 py-2 text-sm font-semibold cursor-pointer transition-colors duration-150 ease-[var(--ease-out)]',
+                'press rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
                 historicalLedgerTab === 'income' ? 'bg-night text-on-night' : 'text-ink-soft',
               ]"
               @click="historicalLedgerTab = 'income'"
@@ -1407,7 +1410,7 @@ const isExportingArchive = ref(false);
               aria-controls="ledger-panel"
               :tabindex="historicalLedgerTab === 'expenses' ? 0 : -1"
               :class="[
-                'rounded-full px-4 py-2 text-sm font-semibold cursor-pointer transition-colors duration-150 ease-[var(--ease-out)]',
+                'press rounded-full px-4 py-2 text-sm font-semibold cursor-pointer',
                 historicalLedgerTab === 'expenses' ? 'bg-night text-on-night' : 'text-ink-soft',
               ]"
               @click="historicalLedgerTab = 'expenses'"

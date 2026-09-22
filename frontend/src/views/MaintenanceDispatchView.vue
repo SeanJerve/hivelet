@@ -530,7 +530,7 @@ function handleDeleteTicketPrompt() {
               @click="handleQuickResolve"
               class="pill-btn-brand px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
             >
-              <CheckCircle2 class="size-3.5 text-white" />
+              <CheckCircle2 class="size-3.5" />
               <span>Mark Resolved</span>
             </button>
             <span v-else class="text-xs font-semibold text-brand inline-flex items-center gap-1">
@@ -634,7 +634,7 @@ function handleDeleteTicketPrompt() {
                 :class="['flex flex-col', msg.profiles?.role === 'admin' ? 'items-end' : 'items-start']"
               >
                 <div
-                  :class="[ 'max-w-[85%] rounded-xl px-3 py-1.5 text-xs', msg.profiles?.role === 'admin' ? 'bg-night text-white' : 'bg-tile border border-line text-ink' ]"
+                  :class="[ 'max-w-[85%] rounded-xl px-3 py-1.5 text-xs', msg.profiles?.role === 'admin' ? 'bg-night text-on-night' : 'bg-tile border border-line text-ink' ]"
                 >
                   <p class="font-semibold text-xs opacity-75 mb-0.5">
                     {{ msg.profiles?.role === 'admin' ? 'You (Landlady)' : (msg.profiles?.full_name || 'Resident') }}

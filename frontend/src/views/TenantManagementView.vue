@@ -3,7 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, tenantsFetchFailed, showToast, asListedUnitCode, type TenantRecord } from '@/lib/systemState';
+import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, tenantsFetchFailed, showToast, asListedUnitCode, waterChargeFor, type TenantRecord } from '@/lib/systemState';
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api } from '@/lib/api';
@@ -166,6 +166,34 @@ function syncDepositToUnit() {
     newDeposit.value = Number(live.price);
   }
 }
+
+/**
+ * The occupant count implied by the sharing toggle, and the water it bills at
+ * the CONFIGURED rate. BR-014 / BR-040.
+ *
+ * Both forms stated this as a hardcoded `* 200`, the same defect
+ * IncomeCollectionsView and AdminOverviewView were each fixed for on this
+ * screen's own neighbours: the figure quoted here would go stale the moment
+ * the owner changes the rate in settings, and it was never right for the two
+ * Linda units, which are not billed per occupant at all. `waterChargeFor` is
+ * the one place that computation lives, and `fetchRooms()` - already called
+ * by this screen on mount - loads the live rate before it is needed here.
+ */
+const editOccupantsPreview = computed(() =>
+  editHasRoommates.value === 'yes' ? 1 + (Number(editRoommateQty.value) || 1) : 1
+);
+const editWaterPreview = computed(() => {
+  const room = rooms.find((r) => r.unitCode.toUpperCase() === editUnitCode.value.toUpperCase());
+  return waterChargeFor(editUnitCode.value, editOccupantsPreview.value, room?.waterRateType === 'linda_fixed');
+});
+
+const newOccupantsPreview = computed(() =>
+  newHasRoommates.value === 'yes' ? 1 + (Number(newRoommateQty.value) || 1) : 1
+);
+const newWaterPreview = computed(() => {
+  const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.value.toLowerCase());
+  return waterChargeFor(newUnit.value, newOccupantsPreview.value, room?.waterRateType === 'linda_fixed');
+});
 
 function checkInquiryConversion() {
   if (route.query.convertInquiryId) {
@@ -580,7 +608,7 @@ async function handleOnboard() {
           <button
             type="button"
             :class="[
-              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
+              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
               viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'grouped'"
@@ -592,7 +620,7 @@ async function handleOnboard() {
           <button
             type="button"
             :class="[
-              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
+              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
               viewMode === 'list' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'list'"
@@ -915,13 +943,9 @@ async function handleOnboard() {
 
           <!-- What the headcount means for the water bill, stated as a sentence. -->
           <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft">
-            <strong class="font-semibold text-ink">{{
-              editHasRoommates === 'yes' ? 1 + (Number(editRoommateQty) || 1) : 1
-            }}</strong>
+            <strong class="font-semibold text-ink">{{ editOccupantsPreview }}</strong>
             in the unit, so water is
-            <strong class="tabular font-semibold text-ink"
-              >₱{{ (editHasRoommates === 'yes' ? 1 + (Number(editRoommateQty) || 1) : 1) * 200 }}</strong
-            >
+            <strong class="tabular font-semibold text-ink">{{ peso(editWaterPreview) }}</strong>
             a month.
           </p>
 
@@ -1100,13 +1124,9 @@ async function handleOnboard() {
           </div>
 
           <p class="rounded-2xl bg-canvas px-4 py-3 text-sm leading-6 text-ink-soft sm:col-span-2">
-            <strong class="font-semibold text-ink">{{
-              newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1
-            }}</strong>
+            <strong class="font-semibold text-ink">{{ newOccupantsPreview }}</strong>
             in the unit, so water is
-            <strong class="tabular font-semibold text-ink"
-              >₱{{ (newHasRoommates === 'yes' ? 1 + (Number(newRoommateQty) || 1) : 1) * 200 }}</strong
-            >
+            <strong class="tabular font-semibold text-ink">{{ peso(newWaterPreview) }}</strong>
             a month.
           </p>
 

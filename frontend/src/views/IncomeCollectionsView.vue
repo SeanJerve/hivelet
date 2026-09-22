@@ -997,7 +997,7 @@ async function exportExcel() {
             aria-controls="income-panel"
             :tabindex="activeTab === 'ledger' ? 0 : -1"
             :class="[
-              'text-sm transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer py-1 whitespace-nowrap',
+              'press text-sm cursor-pointer py-1 whitespace-nowrap',
               activeTab === 'ledger' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
             ]"
             @click="activeTab = 'ledger'"
@@ -1013,7 +1013,7 @@ async function exportExcel() {
             aria-controls="income-panel"
             :tabindex="activeTab === 'verify' ? 0 : -1"
             :class="[
-              'flex items-center gap-2 text-sm transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer py-1 whitespace-nowrap',
+              'press flex items-center gap-2 text-sm cursor-pointer py-1 whitespace-nowrap',
               activeTab === 'verify' ? 'font-bold text-brand' : 'font-normal text-ink-soft hover:text-brand',
             ]"
             @click="activeTab = 'verify'"
@@ -1039,7 +1039,7 @@ async function exportExcel() {
             <button
               type="button"
               :class="[
-                'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
+                'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
                 viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
               ]"
               :aria-pressed="viewMode === 'grouped'"
@@ -1051,7 +1051,7 @@ async function exportExcel() {
             <button
               type="button"
               :class="[
-                'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
+                'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
                 viewMode === 'flat' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
               ]"
               :aria-pressed="viewMode === 'flat'"
@@ -1219,7 +1219,7 @@ async function exportExcel() {
         <h2>
           <button
             type="button"
-            class="flex w-full flex-wrap items-start justify-between gap-3 p-5 text-left transition-colors hover:bg-canvas sm:p-6"
+            class="press-plate flex w-full flex-wrap items-start justify-between gap-3 p-5 text-left hover:bg-canvas sm:p-6"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`cluster-${group.key}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -1228,7 +1228,7 @@ async function exportExcel() {
               <span class="flex items-center gap-2">
                 <ChevronDown
                   :class="[
-                    'size-4 shrink-0 text-ink-soft transition-transform',
+                    'size-4 shrink-0 text-ink-soft transition-transform duration-200 ease-[var(--ease-out)]',
                     isClusterOpen(group.key, groupIndex) ? '' : '-rotate-90',
                   ]"
                   aria-hidden="true"

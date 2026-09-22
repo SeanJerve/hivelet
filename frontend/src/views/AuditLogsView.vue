@@ -544,7 +544,10 @@ async function exportAuditTrail() {
             >
               <span>{{ expandedRowId === l.id ? 'Hide what changed' : 'What changed' }}</span>
               <ChevronDown
-                :class="['size-3.5 transition-transform', expandedRowId === l.id && 'rotate-180']"
+                :class="[
+                  'size-3.5 transition-transform duration-200 ease-[var(--ease-out)]',
+                  expandedRowId === l.id && 'rotate-180',
+                ]"
                 aria-hidden="true"
               />
             </button>

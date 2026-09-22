@@ -373,7 +373,7 @@ async function handleSendReply() {
                 type="button"
                 :aria-current="activeInquiry?.id === inq.id ? 'true' : undefined"
                 :class="[
-                  'w-full p-4 text-left transition-colors',
+                  'press-plate w-full p-4 text-left',
                   activeInquiry?.id === inq.id
                     ? 'bg-brand-soft'
                     : 'hover:bg-canvas',

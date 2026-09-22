@@ -202,8 +202,12 @@ function openSpecs(u: RoomItem) {
  */
 const statusChips = computed(() => [
   { key: 'All', label: 'Every unit', count: rooms.length },
-  { key: 'settled', label: 'Paid up', count: rooms.filter((r) => r.status === 'settled').length },
-  { key: 'pending', label: 'Owing', count: rooms.filter((r) => r.status === 'pending').length },
+  // Matches `getStatusLabel` below exactly. This read 'Paid up' and 'Owing' -
+  // the same payment framing that comment documents removing from the result
+  // badges - so the filter menu offered words the results themselves no
+  // longer used: picking "Paid up" here returned units badged "Occupied".
+  { key: 'settled', label: 'Occupied', count: rooms.filter((r) => r.status === 'settled').length },
+  { key: 'pending', label: 'Reserved', count: rooms.filter((r) => r.status === 'pending').length },
   { key: 'vacant', label: 'Vacant', count: rooms.filter((r) => r.status === 'vacant').length },
   {
     key: 'maintenance',
@@ -271,7 +275,7 @@ const statusChips = computed(() => [
           <button
             type="button"
             :class="[
-              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
+              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
               viewMode === 'matrix' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'matrix'"
@@ -284,7 +288,7 @@ const statusChips = computed(() => [
           <button
             type="button"
             :class="[
-              'h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-150 ease-[var(--ease-out)] cursor-pointer whitespace-nowrap',
+              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
               viewMode === 'table' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'table'"
@@ -339,7 +343,7 @@ const statusChips = computed(() => [
         <h2>
           <button
             type="button"
-            class="flex w-full flex-col gap-2.5 px-5 py-4 text-left transition-colors hover:bg-canvas"
+            class="press-plate flex w-full flex-col gap-2.5 px-5 py-4 text-left hover:bg-canvas"
             :aria-expanded="isClusterOpen(clusterName, clusterIndex)"
             :aria-controls="`cluster-units-${clusterName}`"
             @click="toggleCluster(clusterName, clusterIndex)"
@@ -348,7 +352,7 @@ const statusChips = computed(() => [
               <span class="flex items-center gap-2">
                 <ChevronDown
                   :class="[
-                    'size-4 shrink-0 text-ink-soft transition-transform',
+                    'size-4 shrink-0 text-ink-soft transition-transform duration-200 ease-[var(--ease-out)]',
                     isClusterOpen(clusterName, clusterIndex) ? '' : '-rotate-90',
                   ]"
                   aria-hidden="true"
