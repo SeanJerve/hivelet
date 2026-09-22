@@ -146,6 +146,7 @@ async function submit() {
     "
     size="sm"
     :dismissible="false"
+    :mandatory="mandatory"
     @close="close"
   >
     <form id="change-password-form" class="flex flex-col gap-5" @submit.prevent="submit">

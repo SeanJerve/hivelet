@@ -447,7 +447,7 @@ const statusChips = computed(() => [
                 <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-tile cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                   <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
-                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-tile cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-tile cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
                   <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
               </div>
@@ -537,7 +537,7 @@ const statusChips = computed(() => [
               <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                 <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
               </button>
-              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
                 <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
               </button>
             </div>

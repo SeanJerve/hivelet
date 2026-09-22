@@ -921,7 +921,7 @@ async function handleEditExpense() {
           <td class="num">
             <button
               type="button"
-              class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
+              class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
               :aria-label="`Edit ${e.description}`"
               @click="startEditExpense(e)"
             >
@@ -970,7 +970,7 @@ async function handleEditExpense() {
               @click="startEditExpense(e)"
             >
               <Pencil class="size-3.5" aria-hidden="true" />
-              <span>Edit this expense</span>
+              <span>Edit</span>
             </button>
           </li>
         </ul>

@@ -813,7 +813,7 @@ async function handleOnboard() {
             -->
             <button
               type="button"
-              class="press-plate flex size-9 items-center justify-center rounded-full ml-auto opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
+              class="press-plate flex size-9 items-center justify-center rounded-full ml-auto row-action hover:bg-canvas cursor-pointer"
               :aria-label="`Edit ${t.name}`"
               @click="openEdit(t)"
             >
@@ -853,7 +853,7 @@ async function handleOnboard() {
 
         <button type="button" class="pill-btn mt-4 w-full justify-center" @click="openEdit(t)">
           <Pencil class="size-3.5" aria-hidden="true" />
-          <span>Edit this record</span>
+          <span>Edit</span>
         </button>
       </template>
     </RecordTable>
@@ -972,7 +972,7 @@ async function handleOnboard() {
                 <td class="num">
                   <button
                     type="button"
-                    class="press-plate flex size-9 items-center justify-center rounded-full ml-auto opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
+                    class="press-plate flex size-9 items-center justify-center rounded-full ml-auto row-action hover:bg-canvas cursor-pointer"
                     :aria-label="`Edit ${t.name}`"
                     @click="openEdit(t)"
                   >

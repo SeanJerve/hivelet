@@ -52,9 +52,23 @@ const props = withDefaults(
      * mid-payment, despite asking for exactly the opposite.
      */
     dismissible?: boolean;
+    /**
+     * No way out at all - no X, no Escape, no backdrop. For a step that must
+     * complete before the dialog goes away, which today is exactly one thing:
+     * a resident replacing the starting password they were issued (B-53).
+     *
+     * Deliberately separate from `dismissible`. That prop guards against an
+     * ACCIDENT - a stray click on the backdrop, a reflexive Escape - and every
+     * form holding typed input sets it. It was never meant to trap anybody,
+     * but it also hid the header X, which left a long form on a phone with no
+     * way out except scrolling to the bottom for Cancel. Pressing an X is a
+     * deliberate act; it belongs in the "not an accident" category, so it is
+     * back for every modal except a genuinely mandatory one.
+     */
+    mandatory?: boolean;
     tone?: 'plain' | 'danger';
   }>(),
-  { size: 'md', dismissible: true, tone: 'plain' }
+  { size: 'md', dismissible: true, mandatory: false, tone: 'plain' }
 );
 
 const emit = defineEmits<{ close: [] }>();
@@ -73,7 +87,7 @@ const widths = {
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
-    if (!props.dismissible) return;
+    if (!props.dismissible || props.mandatory) return;
     e.stopPropagation();
     emit('close');
     return;
@@ -138,7 +152,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto bg-ink/40 p-4 sm:p-6"
-    @click.self="dismissible && emit('close')"
+    @click.self="dismissible && !mandatory && emit('close')"
     @keydown="onKeydown"
   >
     <div
@@ -160,8 +174,15 @@ onBeforeUnmount(() => {
           </h2>
           <p v-if="subtitle" :id="subtitleId" class="mt-1 text-sm text-ink-soft">{{ subtitle }}</p>
         </div>
+        <!--
+          Shown unless the dialog is genuinely mandatory. It used to be gated
+          on `dismissible`, which meant every form holding typed input - the
+          payment modals, the expense and income editors, the unit editor -
+          had no X at all. On a phone that is a long scroll to reach Cancel,
+          and nothing at the top to say the dialog can be left.
+        -->
         <button
-          v-if="dismissible"
+          v-if="!mandatory"
           type="button"
           class="icon-btn shrink-0"
           aria-label="Close this dialog"

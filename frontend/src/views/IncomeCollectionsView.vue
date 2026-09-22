@@ -1355,7 +1355,7 @@ async function exportExcel() {
                 <td class="num">
                   <button
                     type="button"
-                    class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
+                    class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
                     :aria-label="`Edit ${r.contact}'s record`"
                     @click="startEditIncome(r)"
                   >
@@ -1479,7 +1479,7 @@ async function exportExcel() {
                 @click="startEditIncome(r)"
               >
                 <Pencil class="size-3.5" aria-hidden="true" />
-                <span>Edit this entry</span>
+                <span>Edit</span>
               </button>
             </template>
           </RecordTable>
@@ -1543,7 +1543,7 @@ async function exportExcel() {
           <td class="num">
             <button
               type="button"
-              class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
+              class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
               :aria-label="`Edit ${r.contact}'s record`"
               @click="startEditIncome(r)"
             >
@@ -1688,7 +1688,7 @@ async function exportExcel() {
           @click="startEditIncome(r)"
         >
           <Pencil class="size-3.5" aria-hidden="true" />
-          <span>Edit this entry</span>
+          <span>Edit</span>
         </button>
       </template>
     </RecordTable>
