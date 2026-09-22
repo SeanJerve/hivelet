@@ -389,7 +389,7 @@ const statusChips = computed(() => [
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="flex flex-col justify-between rounded-2xl bg-canvas p-4"
+              class="group flex flex-col justify-between rounded-2xl bg-canvas p-4"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
@@ -430,7 +430,7 @@ const statusChips = computed(() => [
                 <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-tile cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                   <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
-                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-tile cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-tile cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
                   <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
               </div>
@@ -488,7 +488,7 @@ const statusChips = computed(() => [
       </template>
 
       <template #row="{ row: u }">
-        <tr>
+        <tr class="group">
           <th scope="row" class="font-semibold uppercase text-ink">
             {{ u.unitCode.toUpperCase() }}
           </th>
@@ -508,7 +508,7 @@ const statusChips = computed(() => [
               <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                 <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
               </button>
-              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
                 <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
               </button>
             </div>

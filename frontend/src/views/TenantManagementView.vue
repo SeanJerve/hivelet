@@ -691,7 +691,7 @@ async function handleOnboard() {
       </template>
 
       <template #row="{ row: t }">
-        <tr>
+        <tr class="group">
           <th scope="row">
             <span class="block font-semibold text-ink">{{ t.name }}</span>
             <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
@@ -710,11 +710,13 @@ async function handleOnboard() {
               alone (the notification bell) but reads as an odd floating
               circle in a dense row of plain text. `press-plate` is the same
               treatment the password-reveal toggle already uses: no border,
-              no fill until hovered or pressed.
+              no fill until hovered or pressed. It also stays fully
+              transparent until that row is hovered or focused, so a page of
+              residents does not read as a column of pencils.
             -->
             <button
               type="button"
-              class="press-plate flex size-9 items-center justify-center rounded-full ml-auto hover:bg-canvas cursor-pointer"
+              class="press-plate flex size-9 items-center justify-center rounded-full ml-auto opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
               :aria-label="`Edit ${t.name}`"
               @click="openEdit(t)"
             >
@@ -802,7 +804,7 @@ async function handleOnboard() {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="t in group.residents" :key="t.id">
+              <tr v-for="t in group.residents" :key="t.id" class="group">
                 <th scope="row">
                   <span class="block font-semibold text-ink">{{ t.name }}</span>
                   <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
@@ -817,7 +819,7 @@ async function handleOnboard() {
                 <td class="num">
                   <button
                     type="button"
-                    class="press-plate flex size-9 items-center justify-center rounded-full ml-auto hover:bg-canvas cursor-pointer"
+                    class="press-plate flex size-9 items-center justify-center rounded-full ml-auto opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
                     :aria-label="`Edit ${t.name}`"
                     @click="openEdit(t)"
                   >
