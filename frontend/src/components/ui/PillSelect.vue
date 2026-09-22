@@ -167,6 +167,13 @@ onBeforeUnmount(() => {
       rather than the fast end, so this and every other dropdown in the app
       (every PillSelect instance) reads as a deliberate motion rather than a
       snap.
+
+      `origin-top-left`/`origin-top-right` (matching `align`, the same edge
+      the `left-0`/`right-0` below already pins to the trigger) - every other
+      trigger-anchored menu in this file's neighbourhood (the year picker
+      here, NotificationPopover, AppHeader's profile menu) already scales
+      from that corner rather than its own centre; this was the one dropdown
+      left on the default centre origin despite being the most-reused one.
     -->
     <Transition
       enter-active-class="transition duration-[220ms] ease-[var(--ease-out)]"
@@ -181,7 +188,7 @@ onBeforeUnmount(() => {
         role="listbox"
         :aria-label="ariaLabel"
         class="absolute top-full z-50 mt-1.5 w-full rounded-2xl border border-line bg-tile p-1.5 shadow-lift overflow-hidden"
-        :class="align === 'right' ? 'right-0' : 'left-0'"
+        :class="align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'"
       >
         <div class="max-h-64 overflow-y-auto space-y-0.5">
           <button
