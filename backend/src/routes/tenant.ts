@@ -761,7 +761,19 @@ router.post(
           occupants: Number(assignment.occupant_count) || 1
         });
 
-        if (amounts.totalAmount <= 0) {
+        /**
+         * Checked against `amounts.totalAmount`, not `rentAmount`, until a
+         * functionality sweep on 2026-09-22 traced it by hand: water is
+         * computed independently (BR-014, floors to 1 occupant) and is
+         * essentially always positive, so a unit with NO rent set - the
+         * exact case this message describes - still passed with a nonzero
+         * total and would have raised a real bill charging real water
+         * against zero rent. Latent rather than live: no occupied unit
+         * currently has `current_price` 0 (checked against the live table),
+         * but `current_price` only has `CHECK (>= 0)`, so 0 is legal and
+         * reachable the moment one ever is.
+         */
+        if (amounts.rentAmount <= 0) {
           throw ApiError.conflict(
             'This unit has no rate set, so a bill cannot be raised. Contact the administrator.'
           );
