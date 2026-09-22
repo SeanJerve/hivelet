@@ -1035,19 +1035,42 @@ async function handleOnboard() {
     </WsModal>
 
     <!-- Vacate Confirm Dialog -->
+    <!--
+      Type-to-confirm, deliberately, and the only dialog in the app that asks
+      for it.
+
+      Moving someone out is not just a status change: the account is set
+      inactive, and `resolveAuthUser` re-reads `account_status` on EVERY
+      authenticated request - so the resident loses the portal on their very
+      next tap, not at their next sign-in. A token already in their phone stops
+      working. That is the right behaviour and it is what Sean asked for, but it
+      is far more than a red button conveys, and it was one click away from any
+      row in the list.
+
+      The unit code is the phrase rather than the name: it is short enough to
+      type without inviting copy-paste, and typing it is what makes her look at
+      WHICH row she is on, which is the mistake actually worth preventing.
+    -->
     <ConfirmDialog
       v-if="vacateModalTenant"
-      title="Settle and move out"
-      confirm-label="Settle the vacancy"
+      title="Move this resident out"
+      confirm-label="Move them out"
       destructive
       :busy="isSubmitting"
+      :confirm-phrase="vacateModalTenant.unitCode"
+      confirm-phrase-label="the unit"
       @cancel="vacateModalTenant = null"
       @confirm="confirmVacate"
     >
       <p class="text-sm leading-6 text-ink-soft">
-        This closes the account of <strong class="text-ink">{{ vacateModalTenant.name }}</strong> and marks unit
-        <strong class="text-ink">{{ vacateModalTenant.unitCode }}</strong> vacant. The deposit settlement is written
-        to the record.
+        <strong class="text-ink">{{ vacateModalTenant.name }}</strong> loses access to the resident portal
+        straight away — the next thing they tap will sign them out, even if they are already signed in.
+        Unit <strong class="text-ink">{{ vacateModalTenant.unitCode }}</strong> is freed and can be let again.
+      </p>
+      <p class="text-sm leading-6 text-ink-soft">
+        <strong class="text-ink">Their records stay.</strong> Every receipt, payment and repair they are on
+        remains in the ledger exactly as it is — this ends their tenancy and their access, it does not erase
+        anything. Giving access back means onboarding them again.
       </p>
     </ConfirmDialog>
 

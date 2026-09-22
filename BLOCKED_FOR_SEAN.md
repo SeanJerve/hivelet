@@ -97,6 +97,45 @@ which is the exact failure CLAUDE.md warns about.
   reason. That is the argument for them, made better than any principle.
 - **Raised:** 2026-09-22 by Claude, caught by `check:ledger` during post-consultation consolidation.
 
+### B-57 — two residents who moved out can still sign in · **migration 049 written, NOT applied**
+
+- **Your rule, 2026-09-22:** moving a tenant out should take their account and site access away
+  automatically, while their records stay.
+- **The application already does exactly that**, and it is stronger than it looks:
+  `POST /admin/tenants/:profileId/vacate` writes `account_status = 'inactive'`, and
+  `resolveAuthUser()` re-reads that column on **every authenticated request** — so a resident moved
+  out through the interface loses the portal on their **next tap**, not at their next sign-in. A
+  token already in their phone stops working. Verified by reading both, not assumed.
+- **These two predate that path.** Their tenancies were closed by the bulk import of 2026-08-25
+  rather than by the Vacate button, and that import closed the assignment without touching the
+  profile. Read from the live tables on 2026-09-22 — every `role = 'tenant'`, `account_status =
+  'active'` profile with **no** active assignment:
+
+  | | | | |
+  | :--- | :--- | :--- | :--- |
+  | **Jaz** | jaz@gmail.com | formerly **1d** | assignment carries no end date |
+  | **Mark Cruz** | mark.cruz@gmail.com | formerly **1a** | ended 2026-08-25 |
+
+  Both units are lived in by somebody else now — 1d by Sandrine Jammeka Mariano, 1a by Lobby Toor —
+  so these are not residents between tenancies.
+- **It also closes a second thing.** A moved-out resident with an active account can file a
+  maintenance ticket against the unit they left, and it lands on the dispatch board attributed to
+  that unit — reading as a complaint from whoever lives there now. Deactivating stops it, because
+  the request never gets past `resolveAuthUser`.
+- **What Sean needs to do:** read and apply
+  `database/migrations/049_two_moved_out_residents_can_still_sign_in.sql`. It touches
+  `account_status` and **nothing else** — no row is deleted, no record detached, both names stay on
+  every receipt and ticket they appear on, and the ledger totals do not move. Fully reversible. It
+  names the two ids explicitly rather than matching a pattern, and refuses to touch either one if a
+  tenancy has been given back since it was written.
+- **How to know it worked:** the migration's own first verification SELECT returns **0 rows**, and
+  the second still reads **937 live income rows / ₱8,086,250.00**.
+- **One thing deliberately not done:** Jaz's assignment has no `end_date` and this does not invent
+  one. It is one of the four rows `check:ledger` already pins as import debris. Nobody knows which
+  day it was, and writing a guess into her records to tidy a column is the thing this project keeps
+  refusing to do.
+- **Raised:** 2026-09-22 by Claude, acting on Sean's move-out rule.
+
 ### B-55 — four things a services-layer audit found · **Sean answered 2026-09-22; two now fixed, one deferred by his decision**
 
 > **Asked directly, in plain terms, and answered:**

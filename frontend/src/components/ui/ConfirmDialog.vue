@@ -3,9 +3,10 @@
  * "Are you sure?" on the workspace dialog. The confirm button says what will
  * happen rather than "Confirm", and a destructive one is styled as destructive.
  */
+import { ref, computed, useId } from 'vue';
 import WsModal from '@/components/ui/WsModal.vue';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     title: string;
     message?: string;
@@ -13,11 +14,39 @@ withDefaults(
     cancelLabel?: string;
     destructive?: boolean;
     busy?: boolean;
+    /**
+     * Set this and the confirm button stays disabled until the exact phrase has
+     * been typed. For an action whose cost is not obvious from the button.
+     *
+     * Optional on purpose: every existing caller is a one-click confirm and
+     * keeps working untouched. Reach for it only where a mis-click is expensive
+     * and a dialog alone would not stop one - moving a resident out takes their
+     * access away on their next request, which no amount of red on a button
+     * conveys.
+     */
+    confirmPhrase?: string;
+    /** What the phrase IS, for the label: "the unit code", "their name". */
+    confirmPhraseLabel?: string;
   }>(),
   { confirmLabel: 'Yes, do it', cancelLabel: 'Cancel', destructive: false, busy: false }
 );
 
 const emit = defineEmits<{ confirm: []; cancel: [] }>();
+
+const typed = ref('');
+const phraseFieldId = useId();
+
+/**
+ * Trimmed and case-insensitive. The guard is against a mis-click, not against
+ * someone who cannot hold shift - making her retype a capital letter twice
+ * would train her to copy and paste it, which defeats the whole point.
+ */
+const phraseSatisfied = computed(() => {
+  if (!props.confirmPhrase) return true;
+  return typed.value.trim().toLowerCase() === props.confirmPhrase.trim().toLowerCase();
+});
+
+const confirmDisabled = computed(() => props.busy || !phraseSatisfied.value);
 </script>
 
 <template>
@@ -40,12 +69,29 @@ const emit = defineEmits<{ confirm: []; cancel: [] }>();
     <p v-if="message" class="text-sm leading-6 text-ink-soft">{{ message }}</p>
     <slot />
 
+    <div v-if="confirmPhrase" class="ws-field">
+      <label :for="phraseFieldId">
+        Type <strong class="text-ink">{{ confirmPhrase }}</strong>
+        <template v-if="confirmPhraseLabel"> ({{ confirmPhraseLabel }})</template>
+        to confirm
+      </label>
+      <input
+        :id="phraseFieldId"
+        v-model="typed"
+        type="text"
+        class="ws-input w-full"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+    </div>
+
     <template #actions>
       <button type="button" class="pill-btn" :disabled="busy" @click="emit('cancel')">{{ cancelLabel }}</button>
       <button
         type="button"
         :class="destructive ? 'pill-btn-danger' : 'pill-btn-brand'"
-        :disabled="busy"
+        :disabled="confirmDisabled"
         @click="emit('confirm')"
       >
         {{ confirmLabel }}
