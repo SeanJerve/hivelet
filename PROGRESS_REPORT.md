@@ -16,7 +16,7 @@ a half-ticked board is evidence of progress, an untouched one is not.
 | :--- | :--- |
 | **The system** | Built and verified. **All 19 suites pass** (a relationship suite was added 18 Sep), and `verify:rbac` exits 0 after being dead since 13 Sep |
 | **The manuscript** | Chapters 1–3 exist. **Chapter 4 is drafted but cannot be finished without test data** |
-| **The blocker** | **No write path has ever been used by a person.** That one fact blocks Chapter 4, the evaluation, and the defense |
+| **The blocker** | **Every write path but one is still unexercised by a person.** The exception, as of 2026-09-22: the tenant checkout raised a real, arithmetically correct bill against live data (B-54). It is one of many, so this still blocks Chapter 4, the evaluation and the defense — but the rehearsal is no longer starting from zero evidence |
 | **Your next single action** | Run `TESTING_REHEARSAL.md`. Forty minutes. Everything else queues behind it |
 
 ---

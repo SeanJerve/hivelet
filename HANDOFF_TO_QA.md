@@ -64,9 +64,14 @@ a red check has been committed past that way twice.
 | `check:canon` `check:rules` `check:matrix` `check:copies` | Wording and register consistency |
 | `check:tokens` `check:reachable` `check:liveness` | The interface. Kiel's lane, but they are yours to run |
 
-**Twelve run on a bare clone. Fifteen with `.env`. All eighteen with the backend up and
-`credentials/creds.txt`.** Neither file comes down with a pull; ask Sean for both. `creds.txt`
-also powers the one-click demo sign-in buttons on the local login page.
+**How many run depends on what you have, and `CLAUDE.md` holds those figures** — read them there
+rather than from this paragraph, which said "twelve / fifteen / all eighteen" while three other
+documents gave three further answers and the runner itself said nineteen. The authority is the
+`SUITES` array in `scripts/check-all.mjs`; everything else is a copy, and the copies drifted.
+
+`.env` and `credentials/creds.txt` are what unlock the fuller tiers. Neither comes down with a
+pull; ask Sean for both. `creds.txt` also powers the one-click demo sign-in buttons on the local
+login page.
 
 > `check:liveness` runs **4 of its 7 rules without a backend and still exits 0**, printing `note:`
 > lines about what it skipped. Read the notes, not the exit code.

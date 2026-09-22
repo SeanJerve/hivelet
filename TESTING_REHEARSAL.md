@@ -76,9 +76,12 @@ what it means if you do not.
 npm run check:all
 ```
 
-Eighteen green. If `check:api`, `check:billing` or `check:adyen` fail to connect, the backend is not
-running — `npm run dev:backend` first. Run it again at the end: a suite that was green before and
-red after tells you exactly what the rehearsal broke.
+Every row in the summary table green — read the table, not the tail, and not a number written here
+(this line said "eighteen green" while the runner held twenty; `CLAUDE.md` carries the counts and
+`scripts/check-all.mjs`'s `SUITES` array is the authority). If `check:api`, `check:billing` or
+`check:adyen` fail to connect, the backend is not running — `npm run dev:backend` first. Run it
+again at the end: a suite that was green before and red after tells you exactly what the rehearsal
+broke.
 
 **Screen names below are the ones in the sidebar**, read from `AppSidebar.vue` rather than
 remembered: *Executive Overview, Room & Rate Directory, Active Tenants, Income & Collections,

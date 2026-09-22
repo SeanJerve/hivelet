@@ -329,18 +329,27 @@ It is the right choice for this section because it is the change that *answers t
 
 ## Before you answer the security question — read this
 
-**Do not say "we rotated everything" unless the account passwords have actually been changed.**
+**Do not say "we rotated everything" unless you can say what "everything" covers.** It is three
+separate things, they were done on three different days, and one of them is still open.
 
-The Supabase keys and the JWT secret were rotated on 2026-09-13. **The shared account passwords
-were not.** `Hivelet@Admin2026` and `Hivelet@Tenant2026` are still live, and they have been in
-this repository's git history since **2026-08-25** — the same window as the key exposure.
-Removing them from the current code, which was done on 2026-09-16, does not remove them from
-history.
+- **The Supabase keys and the JWT secret** — rotated **2026-09-13**.
+- **Every account password** — rotated **2026-09-21**, all 44 accounts, by
+  `scripts/rotate-demo-passwords.mjs`. `Hivelet@Admin2026` and `Hivelet@Tenant2026` **no longer
+  open anything.** Until that day they did, which is why earlier drafts of this page warned you
+  off the claim. The warning is now out of date; the rotation is the reason.
+- **Newly onboarded tenants no longer share a password at all** — since **2026-09-22** onboarding
+  issues a random per-tenant one (`crypto.randomInt`, `backend/src/utils/generateTemporaryPassword.ts`),
+  shown to the administrator once and never stored in plaintext anywhere.
 
-So a panelist who checks can contradict that sentence in front of you. Either rotate the two
-passwords before the defense — see **A-18** in the traceability matrix — or answer precisely:
-*"we rotated the keys and the signing secret; the shared demo passwords are still outstanding
-and are the next thing on the list."* **The precise answer is the stronger one either way.**
+**What a panelist can still contradict you on, so do not overclaim it:** those two strings have
+been in this repository's git history since **2026-08-25**, and taking them out of the current
+code on 2026-09-16 did not take them out of history. That is a repository-visibility question,
+tracked as **B-10**, not a live-credential one.
+
+Precise answer if asked: *"The keys, the signing secret and every account password have all been
+rotated, and newly onboarded tenants now get an individual password rather than a shared one. The
+old strings are dead. They are still in git history, which is a repository-visibility item we
+have open."* **The precise answer is the stronger one, and it is now a good one.**
 
 ---
 

@@ -74,7 +74,21 @@ pointing each suite at a dead port, not guessed:
 | :--- | ---: | :--- |
 | a bare clone, `npm install` | **11** | `canon` `rules` `matrix` `copies` `secrets` `adyen` `billing` `writes` `tokens` `reachable` `endpoints` |
 | **+ Sean's `.env`** | **14** | adds `columns` `fields` `ledger` |
-| **+ backend running, + `creds.txt`** | **17** | adds `api` `reports` |
+| **+ backend running, + `creds.txt`** | 17 → **names only 16** | adds `api` `reports` |
+
+> [!WARNING]
+> **This table is out of date and is kept only because the suites it does name are right.**
+> Two things are provably wrong with it, both found 2026-09-22:
+>
+> 1. **It is missing four suites entirely** — `relations`, `components`, `labels` and `liveness`.
+>    They were added after it was written and never added to it. Count the names: the rows total
+>    **16**, and `scripts/check-all.mjs`'s `SUITES` array holds **20**.
+> 2. **The bottom row disagrees with itself** — it says 17 but names 16.
+>
+> The tier totals here have **not** been re-measured, so they are not corrected rather than being
+> replaced with fresh guesses. `CLAUDE.md` carries the figures to trust; the `SUITES` array is the
+> authority behind them. If you want this table right, measure it the way its own opening line
+> says it was measured — point each suite at a dead port and see which still run.
 
 Run the backend yourself with `npm run dev:backend` once you have `.env`. **`check:ledger` is the
 one you will care about most** — see § 2.

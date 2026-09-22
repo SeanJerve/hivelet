@@ -3,11 +3,15 @@
  *
  * WHY THIS EXISTS
  * ---------------
- * There are nineteen suites spread across three package.json files. Running
- * them by hand means three `cd`s and nineteen commands, in the right order,
- * remembering which live where. Before a defense, or after any change, that is
- * exactly the kind of chore that gets half-done - and a suite nobody runs is a
- * suite nobody wrote.
+ * The suites are spread across three package.json files. Running them by hand
+ * means three `cd`s and one command each, in the right order, remembering which
+ * live where. Before a defense, or after any change, that is exactly the kind of
+ * chore that gets half-done - and a suite nobody runs is a suite nobody wrote.
+ *
+ * This paragraph used to open "There are nineteen suites" and was still saying
+ * it at twenty. Four documents carried four different counts at the same time,
+ * so the number is deliberately not repeated here: SUITES below is the only
+ * place it lives, and the summary table prints every row it contains.
  *
  * WHAT IT DOES NOT DO
  * -------------------

@@ -33,6 +33,44 @@ thing did not work" is not.
 
 ## Open
 
+### B-54 — the first bill this system ever raised for real · nothing to fix, but you should know it is there
+
+- **Not a defect.** This is a footprint entry, the same discipline B-35 used, plus the first real
+  evidence that a money path works end to end.
+- **What happened.** During the live GCash attempt on 2026-09-22, `POST /tenant/payments/checkout`
+  raised a bill on demand, which is the designed behaviour (see `docs/13_AUDIT_JUDGEMENT_LOG.md`
+  § 3.6 — bills are raised on demand, deliberately, not by a scheduler). It is the first time any
+  write path in this system has been driven by a person rather than by the import.
+- **The row**, read from the live table rather than inferred:
+
+  | | |
+  | :--- | :--- |
+  | id | `880799ef-0162-49ec-9a51-c3506669b49a` |
+  | unit | **1a** |
+  | period | 2026-09-07 → 2026-10-06 |
+  | total | **₱8,200.00** |
+  | status | **Due** — the payment came back Refused, so nothing was ever recorded against it |
+  | created | 2026-09-22 04:57 UTC |
+
+- **It is arithmetically right.** ₱8,000 is 1a's live `current_price`, and ₱200 is BR-014 water for
+  its one occupant. The figure was not typed anywhere; `computeBillAmounts()` produced it.
+- **It is not a duplicate, and it does not invent an obligation.** Checked before writing this:
+  unit 1a has **zero** September income rows, and the newest period she has recorded for it is
+  **2026-07-07**. So the tenant genuinely does owe that period, and her ledger does not already say
+  otherwise. B-34's `idx_one_bill_per_tenant_per_period` also makes a second bill for the same
+  period impossible, so her own workflow cannot collide with it.
+- **My recommendation: leave it.** Unlike B-35's 37 rows, this is not litter — it is a correct bill
+  for a real tenancy, produced by the real code path. Deleting a true obligation to tidy up would be
+  the wrong instinct, and `bills` has no voided state to soften it with.
+- **What you might want to do anyway:** nothing technical. Just be ready to say what it is if she
+  asks why unit 1a shows an outstanding September bill when she has not written one — the honest
+  answer is that the portal raised it when the tenant opened the payment screen, which is what it
+  is supposed to do.
+- **Why it is worth keeping in view:** it is citable evidence for Chapter 4. A money path ran
+  against live data, on demand, and produced the right number to the centavo.
+- **Raised:** 2026-09-22 by Claude, verified against the live `bills`, `rooms` and
+  `monthly_income_records` tables.
+
 ### B-53 — every tenant the admin panel onboards gets a publicly-known password · half closed, half staged
 
 - **Half 1 — CLOSED, shipped 2026-09-22.** `POST /admin/tenants` no longer hashes the literal

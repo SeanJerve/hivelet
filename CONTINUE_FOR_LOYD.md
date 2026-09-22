@@ -41,8 +41,10 @@ Read that table, not the tail.
 ## Next, in order
 
 ### 1. Run the rehearsal — this blocks the most
-`TESTING_REHEARSAL.md`, 26 steps, ~40 minutes. **0 ticked.** No write path in this system has ever
-been used by a person.
+`TESTING_REHEARSAL.md`, 26 steps, ~40 minutes. **0 ticked.** Every write path but one is still
+unexercised by a person — on 2026-09-22 the tenant checkout raised a real bill against live data,
+correct to the centavo (B-54 in `BLOCKED_FOR_SEAN.md`). That is one path out of many, so the
+rehearsal still matters just as much.
 
 Three steps matter most: **18** (type a non-zero garbage fee), **19** (same receipt twice must be
 refused), **23b** (stop the backend, reload — money tiles must show em dashes, never ₱0.00).
