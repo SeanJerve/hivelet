@@ -643,7 +643,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                       </span>
                       <ChevronDown
                         :class="[
-                          'size-4 transition-transform duration-200',
+                          'size-4 transition-transform duration-200 ease-[var(--ease-out)]',
                           openUnitId === u.id ? 'rotate-180' : ''
                         ]"
                       />
@@ -763,7 +763,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 </span>
                 <ChevronDown
                   :class="[
-                    'size-4 text-ink-soft group-hover:text-ink transition-transform duration-200',
+                    'size-4 text-ink-soft group-hover:text-ink transition-transform duration-200 ease-[var(--ease-out)]',
                     openUnitId === u.id ? 'rotate-180' : ''
                   ]"
                 />
@@ -856,7 +856,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             <span class="grid size-8 place-items-center shrink-0">
               <ChevronDown
                 :class="[
-                  'size-4 text-brand group-hover:text-brand-strong transition-all duration-200',
+                  'size-4 text-brand group-hover:text-brand-strong transition-all duration-200 ease-[var(--ease-out)]',
                   allUnitsShown ? 'rotate-180' : ''
                 ]"
               />

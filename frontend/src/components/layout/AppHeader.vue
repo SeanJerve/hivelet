@@ -380,7 +380,7 @@ onUnmounted(() => {
               </span>
               <ChevronDown
                 :class="[
-                  'size-3.5 transition-transform duration-150',
+                  'size-3.5 transition-transform duration-200 ease-[var(--ease-out)]',
                   isLandingPage ? 'text-white/70' : 'text-ink-soft',
                   isProfilePopoverOpen && 'rotate-180'
                 ]"
