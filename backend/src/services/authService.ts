@@ -33,6 +33,7 @@ interface CredentialRow {
   password_hash: string | null;
   failed_login_count: number;
   locked_until: string | null;
+  must_change_password: boolean;
 }
 
 export interface LoginResult {
@@ -153,6 +154,12 @@ export async function login(
     fullName: data.full_name,
     role: data.role,
     accountStatus: data.account_status,
+    // `?? false`, not a bare read: until migration 048 runs,
+    // resolve_login_identifier() is still its pre-048 shape and simply does
+    // not return this column, so `data.must_change_password` is `undefined`
+    // at runtime despite the type saying `boolean`. Explicit here rather
+    // than relying on that falling through correctly by accident.
+    mustChangePassword: data.must_change_password ?? false,
   };
 
   void recordLoginAudit(user, ipAddress);
@@ -230,7 +237,7 @@ export async function resolveAuthUser(profileId: string): Promise<AuthUser> {
     .from('profiles')
     .select('id, email, full_name, role, account_status')
     .eq('id', profileId)
-    .maybeSingle<Omit<CredentialRow, 'password_hash' | 'failed_login_count' | 'locked_until'>>();
+    .maybeSingle<Omit<CredentialRow, 'password_hash' | 'failed_login_count' | 'locked_until' | 'must_change_password'>>();
 
   if (error) {
     throw ApiError.internal(`Profile lookup failed: ${error.message}`);
@@ -248,6 +255,12 @@ export async function resolveAuthUser(profileId: string): Promise<AuthUser> {
     fullName: data.full_name,
     role: data.role,
     accountStatus: data.account_status,
+    // TEMPORARY, pending migration 048: this route does not yet select
+    // must_change_password - see the note at the top of the file. Every
+    // authenticated request runs this function, so a live column mismatch
+    // here breaks the entire site, not just the feature it was for. Restore
+    // the real read once 048 has been applied.
+    mustChangePassword: false,
   };
 }
 
@@ -334,6 +347,14 @@ export async function changeOwnPassword(
 
   const hash = await bcrypt.hash(newPassword, config.auth.bcryptRounds);
 
+  /**
+   * NOT clearing `must_change_password` here yet - migration 048 (the column
+   * itself) is staged, not applied. See the matching note in
+   * routes/admin.ts: writing an unknown column name fails the whole update,
+   * which would break every password change in the app, not just B-53's
+   * gate. Restore `must_change_password: false,` below the moment 048 has
+   * actually run.
+   */
   const { error: updateError } = await db
     .from('profiles')
     .update({
@@ -444,6 +465,9 @@ export async function register(data: RegisterData, ipAddress?: string): Promise<
     fullName: newProfile.full_name,
     role: newProfile.role as StoredRole,
     accountStatus: newProfile.account_status as 'active' | 'inactive',
+    // Self-registration sets the password the caller chose, straight away -
+    // there is no issued starting password here to be forced off of.
+    mustChangePassword: false,
   };
 
   /**

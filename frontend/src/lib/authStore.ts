@@ -13,6 +13,13 @@ export interface SessionUser {
   fullName: string;
   role: Exclude<Role, 'guest'>;
   accountStatus: 'active' | 'inactive';
+  /**
+   * True from onboarding until this account's own password replaces the
+   * random one-time one it was issued (B-53, migration 048). Re-read on
+   * every `restoreSession()`/`/auth/me` call, so it clears the moment a
+   * change succeeds without needing a fresh sign-in.
+   */
+  mustChangePassword: boolean;
 }
 
 interface LoginResponse {
@@ -46,6 +53,18 @@ export const isAuthenticated = computed(() => state.user !== null);
 export const currentRole = computed<Role>(() => state.user?.role ?? 'guest');
 export const isAdmin = computed(() => state.user?.role === 'admin');
 export const isTenant = computed(() => state.user?.role === 'tenant');
+export const mustChangePassword = computed(() => state.user?.mustChangePassword ?? false);
+
+/**
+ * Called the moment ChangePasswordModal's mandatory mode succeeds.
+ *
+ * The server already cleared `must_change_password` in the same request; this
+ * mirrors that locally so the gate lifts immediately rather than waiting on
+ * the next `/auth/me` (a page reload, or the next natural request).
+ */
+export function clearMustChangePassword(): void {
+  if (state.user) state.user.mustChangePassword = false;
+}
 
 export function can(permission: string): boolean {
   return state.permissions.includes(permission);

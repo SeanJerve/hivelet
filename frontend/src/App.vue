@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, RouterView } from 'vue-router';
 import { WifiOff } from 'lucide-vue-next';
 import { useToast } from '@/lib/useToast';
+import { isAuthenticated, mustChangePassword } from '@/lib/authStore';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
@@ -10,6 +11,7 @@ import ToastContainer from '@/components/ui/ToastContainer.vue';
 import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
 import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
+import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 
 const route = useRoute();
 const { showToast } = useToast();
@@ -166,6 +168,20 @@ const hidesGlobalHeader = computed(() =>
     <AdminEditUnitModal />
     <RoomDetailModal />
     <OnsitePaymentModal />
+    <!--
+      B-53: a resident (or the administrator) signed in on a one-time password
+      cannot reach anything else on the site until they replace it. Mounted
+      here rather than inside AppHeader's own ChangePasswordModal instance
+      (the voluntary one, from the account menu) because AppHeader itself is
+      hidden on several public routes (`hidesGlobalHeader` above) - this gate
+      has to hold regardless of which page a freshly-signed-in account lands
+      on, not just the ones that happen to render a header.
+    -->
+    <ChangePasswordModal
+      :open="isAuthenticated && mustChangePassword"
+      mandatory
+      @close="() => {}"
+    />
     <!--
       `TicketHoverModal` is gone. It was mounted here on every page load and could
       never open: nothing in the codebase set `isTicketHoverModalOpen` or

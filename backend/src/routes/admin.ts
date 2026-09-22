@@ -26,6 +26,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
 import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
+import { generateTemporaryPassword } from '../utils/generateTemporaryPassword.js';
 import { auditFromRequest } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom } from '../services/billingService.js';
@@ -727,11 +728,19 @@ router.post(
       }
     }
 
+    /**
+     * A fresh random password per tenant (B-53), not the literal every
+     * onboarded tenant used to share — see generateTemporaryPassword.ts for
+     * why. Handed back once in this route's own response, below, for the
+     * administrator to relay in person; `must_change_password` (migration
+     * 048) is what makes that handoff safe to be one-time.
+     */
     let passwordHash: string | null = null;
+    let temporaryPassword: string | null = null;
     if (normalizedEmail || normalizedPhone) {
-      const tempPassword = 'Hivelet@Tenant2026';
+      temporaryPassword = generateTemporaryPassword();
       const bcrypt = (await import('bcryptjs')).default;
-      passwordHash = await bcrypt.hash(tempPassword, 12);
+      passwordHash = await bcrypt.hash(temporaryPassword, 12);
     }
 
     /**
@@ -775,6 +784,20 @@ router.post(
     /**
      * The same columns either way. A promotion is not a different kind of
      * tenant, and writing two different shapes here is how the two drift.
+     */
+    /**
+     * NOT writing `must_change_password` here yet, deliberately.
+     *
+     * `profiles.must_change_password` is migration 048 - staged
+     * (database/migrations/048_must_change_password.sql) but not applied to
+     * the live database. Writing an unknown column name to a live table
+     * fails the whole insert, which would break onboarding entirely until
+     * someone noticed - a worse outcome than shipping half of B-53's fix.
+     * Restore this line (`must_change_password: passwordHash !== null,`)
+     * the moment 048 has actually been run. Until then the random password
+     * below still closes the more urgent half of B-53 on its own: nobody
+     * onboarded from now on gets the old public literal, they just are not
+     * yet forced to replace it on first login.
      */
     const profileValues = {
       email: normalizedEmail,
@@ -990,7 +1013,34 @@ router.post(
       }
     });
 
-    res.status(201).json({ success: true, data: profile });
+    /**
+     * `profile` is `.select('*')`, which includes `password_hash` - the
+     * bcrypt hash, never the plaintext, but still a value with no reason to
+     * leave this server. `05_DATABASE_DESIGN.md` Rule 8 says password_hash is
+     * never included in any response payload; this route was the one place
+     * that still did, because `*` was convenient and nobody re-checked it
+     * against that rule once a real value started living in the column.
+     */
+    const { password_hash: _passwordHash, ...safeProfile } = profile as Record<string, unknown>;
+
+    /**
+     * `temporaryPassword` rides inside `data`, not as a sibling of it.
+     * `frontend/src/lib/api.ts`'s client unwraps every response to just its
+     * `data` field (`requestEnvelope` -> `request` -> `.data`) - a field
+     * placed beside `data` in this object, the way `meta` is for a handful
+     * of other routes, would be silently dropped before TenantManagementView
+     * ever saw it. There is no `postWithMeta` counterpart to `getWithMeta`;
+     * nesting here was the smaller change.
+     */
+    res.status(201).json({
+      success: true,
+      data: {
+        ...safeProfile,
+        // The only place this plaintext value ever exists outside memory.
+        // Not logged, not audited, not stored - see generateTemporaryPassword.ts.
+        temporaryPassword
+      }
+    });
   })
 );
 

@@ -476,7 +476,7 @@ async function handleOnboard() {
     const finalRoommateQty = newHasRoommates.value === 'yes' ? Number(newRoommateQty.value) || 1 : 0;
     const finalOccupants = 1 + finalRoommateQty;
 
-    const created = await api.post<{ id: string }>('/admin/tenants', {
+    const created = await api.post<{ id: string; temporaryPassword: string | null }>('/admin/tenants', {
       fullName: newName.value.trim(),
       email: newEmail.value.trim(),
       phone: newPhone.value.trim(),

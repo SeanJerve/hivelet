@@ -24,10 +24,24 @@
 import { ref, computed, watch } from 'vue';
 import { api, ApiRequestError } from '@/lib/api';
 import { showToast } from '@/lib/systemState';
+import { clearMustChangePassword } from '@/lib/authStore';
 import { Check, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import WsModal from '@/components/ui/WsModal.vue';
 
-const props = defineProps<{ open: boolean }>();
+const props = withDefaults(
+  defineProps<{
+    open: boolean;
+    /**
+     * B-53: a tenant issued a random starting password (migration 048)
+     * cannot get past this until they replace it. No Cancel button, and
+     * WsModal's own `:dismissible="false"` now genuinely blocks Escape and
+     * its header X too, not just a backdrop click - see the note on that
+     * prop for why that fix mattered here specifically.
+     */
+    mandatory?: boolean;
+  }>(),
+  { mandatory: false }
+);
 const emit = defineEmits<{ (e: 'close'): void }>();
 
 const currentPassword = ref('');
@@ -73,7 +87,7 @@ function reset() {
 watch(() => props.open, (isOpen) => { if (!isOpen) reset(); });
 
 function close() {
-  if (isSubmitting.value) return;
+  if (isSubmitting.value || props.mandatory) return;
   emit('close');
 }
 
@@ -89,7 +103,17 @@ async function submit() {
       newPassword: newPassword.value,
     });
 
-    showToast('success', 'Password changed', 'Your new password is active. Use it next time you sign in.');
+    showToast(
+      'success',
+      'Password changed',
+      props.mandatory
+        ? 'Your new password is active.'
+        : 'Your new password is active. Use it next time you sign in.'
+    );
+    // The server already cleared must_change_password in the same request;
+    // this mirrors that locally so the gate in App.vue lifts immediately
+    // rather than waiting on the next /auth/me.
+    if (props.mandatory) clearMustChangePassword();
     emit('close');
   } catch (err: unknown) {
     /**
@@ -114,8 +138,12 @@ async function submit() {
 <template>
   <WsModal
     v-if="open"
-    title="Change password"
-    subtitle="You will stay signed in on this device."
+    :title="mandatory ? 'Set your password' : 'Change password'"
+    :subtitle="
+      mandatory
+        ? 'Your account was created with a one-time password. Set your own before continuing.'
+        : 'You will stay signed in on this device.'
+    "
     size="sm"
     :dismissible="false"
     @close="close"
@@ -214,10 +242,17 @@ async function submit() {
     </form>
 
     <template #actions>
-      <button type="button" class="pill-btn" :disabled="isSubmitting" @click="close">Cancel</button>
-      <button type="submit" form="change-password-form" class="pill-btn-brand" :disabled="!canSubmit">
+      <button v-if="!mandatory" type="button" class="pill-btn" :disabled="isSubmitting" @click="close">
+        Cancel
+      </button>
+      <button
+        type="submit"
+        form="change-password-form"
+        :class="['pill-btn-brand', mandatory && 'ml-auto']"
+        :disabled="!canSubmit"
+      >
         <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
-        {{ isSubmitting ? 'Changing' : 'Change password' }}
+        {{ isSubmitting ? 'Changing' : mandatory ? 'Set password' : 'Change password' }}
       </button>
     </template>
   </WsModal>

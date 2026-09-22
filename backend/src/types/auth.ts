@@ -13,6 +13,13 @@ export interface AuthUser {
   fullName: string;
   role: StoredRole;
   accountStatus: 'active' | 'inactive';
+  /**
+   * True from onboarding until this account's own password replaces the
+   * random one-time password it was issued (migration 048, B-53). Re-read on
+   * every request via `resolveAuthUser`, so it clears the moment
+   * `changeOwnPassword` runs - no re-login required.
+   */
+  mustChangePassword: boolean;
 }
 
 /**

@@ -41,7 +41,16 @@ const props = withDefaults(
     subtitle?: string;
     /** sm 28rem, md 36rem, lg 48rem, xl 64rem */
     size?: 'sm' | 'md' | 'lg' | 'xl';
-    /** Clicking the backdrop closes it. Off for forms holding typed input. */
+    /**
+     * Off for forms holding typed input, or a step that must complete before
+     * the dialog goes away (ChangePasswordModal's mandatory mode).
+     *
+     * Gates all three exits - backdrop click, Escape, and the header's X -
+     * not just the backdrop. It did not used to: `false` only stopped a
+     * backdrop click, so `AdyenPaymentModal` and every `:dismissible="false"`
+     * form in the app could still be Escaped or X'd past, mid-typing or
+     * mid-payment, despite asking for exactly the opposite.
+     */
     dismissible?: boolean;
     tone?: 'plain' | 'danger';
   }>(),
@@ -64,6 +73,7 @@ const widths = {
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
+    if (!props.dismissible) return;
     e.stopPropagation();
     emit('close');
     return;
@@ -150,7 +160,13 @@ onBeforeUnmount(() => {
           </h2>
           <p v-if="subtitle" :id="subtitleId" class="mt-1 text-sm text-ink-soft">{{ subtitle }}</p>
         </div>
-        <button type="button" class="icon-btn shrink-0" aria-label="Close this dialog" @click="emit('close')">
+        <button
+          v-if="dismissible"
+          type="button"
+          class="icon-btn shrink-0"
+          aria-label="Close this dialog"
+          @click="emit('close')"
+        >
           <X class="size-4" aria-hidden="true" />
         </button>
       </header>
