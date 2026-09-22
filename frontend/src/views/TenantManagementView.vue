@@ -678,10 +678,31 @@ async function handleOnboard() {
       </div>
     </div>
 
-    <!-- Search, the switcher, and the standing filter - same grouping as the Units directory -->
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
-        <div class="relative w-full sm:w-80 shrink-0">
+    <!--
+      Search, the switcher, and the standing filter - same grouping as the Units directory.
+
+      A COLUMN ON A PHONE, A ROW FROM `sm` UP, and the two `shrink-0`s that used
+      to sit inside the wrapping row are gone.
+
+      What they did, measured in the running app at a 375px viewport: the filter
+      wrapper was `shrink-0` while this left-hand group was `flex-1 min-w-0`, so
+      the row never wrapped - the left group simply absorbed the whole shortfall
+      and closed to 123px of the 343px content column. The search box says
+      `w-full`, and `w-full` of 123px is 123px, so the one control the client
+      likes was a third of the width he saw it at. The switcher inside it could
+      not shrink (`shrink-0`, min-content 236px), so it ran to x=238 inside that
+      123px box and straight under the filter pill, which starts at x=135: two
+      controls overlapping by 103px.
+
+      Stacking on the small side rather than wrapping means nothing has to be
+      squeezed: search, then the switcher, then the filter, each the full width
+      of the column. From `sm` the group is a row again and lays out as it did.
+      Re-measured at 375, 768 and 1280 - see the note on the room directory's
+      filters, which is the same shape and the same trap.
+    -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div class="relative w-full sm:w-80">
           <Search
             class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
             aria-hidden="true"
@@ -698,14 +719,14 @@ async function handleOnboard() {
 
         <!-- By cluster / As a list switcher, same treatment as the Units directory -->
         <div
-          class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-xs shrink-0"
+          class="min-h-[2.75rem] h-11 inline-flex w-full items-center rounded-full bg-tile border border-line p-1 shadow-xs sm:w-auto sm:shrink-0"
           role="group"
           aria-label="How to show the residents"
         >
           <button
             type="button"
             :class="[
-              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
+              'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
               viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'grouped'"
@@ -717,7 +738,7 @@ async function handleOnboard() {
           <button
             type="button"
             :class="[
-              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
+              'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
               viewMode === 'list' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'list'"
@@ -729,11 +750,15 @@ async function handleOnboard() {
         </div>
       </div>
 
-      <div class="flex items-center gap-2 shrink-0">
+      <!-- `sm:ml-auto` keeps the filter on the right edge even on the line it
+           wraps onto, which is what `justify-between` did for it while it was
+           the only thing over there. -->
+      <div class="flex items-center gap-2 sm:ml-auto">
         <PillSelect
           v-model="statusFilter"
           :options="filterChips"
           aria-label="Filter by standing"
+          widthClass="w-full sm:w-52"
         />
       </div>
     </div>
@@ -863,11 +888,15 @@ async function handleOnboard() {
       property itself reads in. One `.ws-table` per cluster rather than
       routing each group through `RecordTable` - that component owns its own
       empty state and mobile card fallback for ONE list, and five of those
-      nested in one screen would fight each other over both. This view scrolls
-      horizontally on a narrow screen instead, same as every register did
-      before RecordTable existed - an acceptable trade for what is an
-      admin-only, desktop-first way of looking at the same data "As a list"
-      already covers fully on a phone.
+      nested in one screen would fight each other over both.
+
+      It used to scroll horizontally on a narrow screen instead, and the
+      comment here called that an acceptable trade because "As a list" covers
+      the same data on a phone. `viewMode` opens on 'grouped', so that trade
+      was being made on the FIRST thing a phone showed - the client opened it
+      on a handset on 2026-09-23 and the columns were cut off mid-word with the
+      edit control off screen. Each cluster now carries the same `lg:hidden`
+      card stack RecordTable renders, written out below rather than shared.
     -->
     <div v-else-if="viewMode === 'grouped'" class="ws-reveal space-y-6">
       <!--
@@ -938,6 +967,27 @@ async function handleOnboard() {
           :id="`residents-cluster-${group.key}`"
           class="ws-reveal border-t border-line p-5 sm:p-6"
         >
+        <!--
+          THE TABLE IS FOR A SCREEN WIDE ENOUGH TO READ ONE, and below `lg`
+          this cluster renders the same residents as tiles instead - the shape
+          RecordTable gives "As a list", and the one the client asked to see
+          everywhere after opening this screen on a handset.
+
+          The comment that used to sit above this section called the sideways
+          scroll "an acceptable trade" because "As a list" covers the same rows
+          on a phone. It does, but `viewMode` opens on 'grouped', so the first
+          thing a phone showed was the register that scrolls: measured at a
+          375px viewport, a 518px table inside a 301px wrapper - 217px of
+          sideways scroll, with the Standing pill starting at x=390 and the edit
+          pencil at x=463, both past a right edge at 301. The one control that
+          opens a resident's record was off screen on the default view.
+
+          Five of these do not go through RecordTable for the reason given
+          below - it owns one empty state and one ShowMore per list, and five
+          nested would fight over both - so the card markup is repeated from the
+          `#card` template above rather than shared. Same fields, same order.
+        -->
+        <div class="hidden lg:block">
         <div class="ws-table-wrap">
           <table class="ws-table">
             <caption class="sr-only">{{ group.label }} residents, with unit, household, move-in date, deposit and standing</caption>
@@ -983,6 +1033,48 @@ async function handleOnboard() {
             </tbody>
           </table>
         </div>
+        </div>
+
+        <!-- The same residents, one tile each, on anything narrower. -->
+        <div class="space-y-3 lg:hidden">
+          <div
+            v-for="t in visibleResidents(group.key, group.residents)"
+            :key="t.id"
+            class="rounded-2xl bg-canvas p-5"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-base font-semibold leading-snug text-ink">{{ t.name }}</p>
+                <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
+              </div>
+              <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
+            </div>
+
+            <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              <div>
+                <dt class="text-xs text-ink-faint">Unit</dt>
+                <dd class="font-semibold uppercase text-ink">{{ t.unitCode }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-ink-faint">Household</dt>
+                <dd class="text-ink">{{ householdLabel(t) }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-ink-faint">Moved in</dt>
+                <dd class="text-ink">{{ t.moveInDate }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs text-ink-faint">Deposit</dt>
+                <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
+              </div>
+            </dl>
+
+            <button type="button" class="pill-btn mt-4 w-full justify-center" @click="openEdit(t)">
+              <Pencil class="size-3.5" aria-hidden="true" />
+              <span>Edit</span>
+            </button>
+          </div>
+        </div>
 
           <ShowMore
             :shown="visibleResidents(group.key, group.residents).length"
@@ -1018,7 +1110,15 @@ async function handleOnboard() {
               <dt class="text-xs text-ink-faint">Phone</dt>
               <dd class="tabular mt-0.5 text-ink">{{ editModalTenant.phone }}</dd>
             </div>
-            <div class="min-w-0">
+            <!--
+              The two fields that hold something long get the whole row on a
+              phone. A column of this grid is 141px at a 375px viewport, and
+              `truncate` turned an address into "mariaconcepci…" with no hover
+              to read the `title` from. Across the row it has 303px, which most
+              addresses fit in, and the truncation is still there for the ones
+              that do not.
+            -->
+            <div class="col-span-2 min-w-0 sm:col-span-1">
               <dt class="text-xs text-ink-faint">Email</dt>
               <dd class="mt-0.5 truncate text-ink" :title="editModalTenant.email">
                 {{ editModalTenant.email || 'None on file' }}
@@ -1038,7 +1138,7 @@ async function handleOnboard() {
               <dt class="text-xs text-ink-faint">Anniversary</dt>
               <dd class="mt-0.5 text-ink">{{ editModalTenant.anniversary }}</dd>
             </div>
-            <div class="min-w-0">
+            <div class="col-span-2 min-w-0 sm:col-span-1">
               <dt class="text-xs text-ink-faint">In an emergency</dt>
               <dd class="mt-0.5 truncate text-ink">
                 {{ onFile(editModalTenant.emergencyContact.name) ?? 'Nobody on file' }}

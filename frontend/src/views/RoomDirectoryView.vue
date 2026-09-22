@@ -249,11 +249,20 @@ const statusChips = computed(() => [
       </p>
     </div>
 
-    <!-- Controls toolbar -->
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+    <!--
+      Controls toolbar. A column on a phone, a row from `sm` up.
+
+      `flex-1 min-w-0` on the left-hand group is gone with it. It is the other
+      half of the trap the filters below document: an item that can absorb the
+      whole shortfall means the row never wraps, so at 375 the search box and
+      the switcher were being squeezed rather than stacked. Here the group is
+      sized by its content, so the outer row wraps the filters underneath
+      instead, which is what it did at every width worth having.
+    -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <!-- Search units -->
-        <div class="relative w-full sm:w-80 shrink-0">
+        <div class="relative w-full sm:w-80">
           <Search
             class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
             aria-hidden="true"
@@ -270,14 +279,14 @@ const statusChips = computed(() => [
 
         <!-- Two ways of reading the same 33 units -->
         <div
-          class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-xs shrink-0"
+          class="min-h-[2.75rem] h-11 inline-flex w-full items-center rounded-full bg-tile border border-line p-1 shadow-xs sm:w-auto sm:shrink-0"
           role="group"
           aria-label="How to show the units"
         >
           <button
             type="button"
             :class="[
-              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
+              'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
               viewMode === 'matrix' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'matrix'"
@@ -290,7 +299,7 @@ const statusChips = computed(() => [
           <button
             type="button"
             :class="[
-              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
+              'press h-full flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap sm:flex-none',
               viewMode === 'table' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
             ]"
             :aria-pressed="viewMode === 'table'"
@@ -316,18 +325,27 @@ const statusChips = computed(() => [
         Re-measured after the change at 375, 768 and 1280: they stack only at
         375 and sit on one row at both larger widths, ending on exactly the
         same right edge as before.
+
+        2026-09-23: that stack was two 208px pills on two rows, left-aligned
+        under a 236px switcher, and the client called the result messy. They
+        share ONE row at phone width now - `flex-1` off a 343px column is
+        167.5px each - and `sm:w-52 sm:flex-none` hands them back their exact
+        previous width from `sm` up, so everything the paragraph above measured
+        still holds.
       -->
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2 sm:ml-auto">
         <PillSelect
           v-model="selectedStatus"
           :options="statusChips"
           aria-label="Filter by status"
+          widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
         />
         <PillSelect
           v-model="cluster"
           :options="clusterOptions"
           aria-label="Cluster"
           align="right"
+          widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
         />
       </div>
     </div>

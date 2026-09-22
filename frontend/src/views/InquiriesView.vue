@@ -421,17 +421,25 @@ async function handleSendReply() {
                 </StatusPill>
               </div>
 
-              <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-soft">
+              <!--
+                `min-h-[2.75rem]`, the height every other control in the
+                workspace is (`.pill-btn`, `.icon-btn`, PillSelect's trigger).
+                These two are how the office actually reaches a prospect - the
+                first one dials the phone - and they were 28px tall measured at
+                a 375px viewport, well under the ~44px a finger needs. The text
+                does not move; the box around it grows.
+              -->
+              <div class="mt-2 flex flex-wrap items-center gap-x-4 text-sm text-ink-soft">
                 <a
                   :href="`tel:${activeInquiry.phone}`"
-                  class="press tabular inline-flex items-center gap-1.5 py-1 font-semibold text-ink hover:text-brand"
+                  class="press tabular inline-flex min-h-[2.75rem] items-center gap-1.5 py-1 font-semibold text-ink hover:text-brand"
                 >
                   <Phone class="size-3.5" aria-hidden="true" />{{ activeInquiry.phone }}
                 </a>
                 <a
                   v-if="activeInquiry.email"
                   :href="`mailto:${activeInquiry.email}`"
-                  class="press inline-flex min-w-0 items-center gap-1.5 py-1 hover:text-brand"
+                  class="press inline-flex min-h-[2.75rem] min-w-0 items-center gap-1.5 py-1 hover:text-brand"
                 >
                   <Mail class="size-3.5 shrink-0" aria-hidden="true" />
                   <span class="truncate">{{ activeInquiry.email }}</span>

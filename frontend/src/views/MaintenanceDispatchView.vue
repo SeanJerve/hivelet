@@ -391,8 +391,16 @@ function handleDeleteTicketPrompt() {
       </div>
     </header>
 
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="relative w-full sm:w-80 shrink-0">
+    <!--
+      A column on a phone, a row from `sm` up - the same shape as the residents
+      register and the room directory, so the three toolbars behave alike. The
+      filter took the search box's full width rather than sitting alone at
+      208px under a 343px bar; neither `shrink-0` is doing anything a wrapping
+      row wants (see the residents register for what the pair of them cost
+      there).
+    -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div class="relative w-full sm:w-80">
         <!-- left-4/pl-11, the inset the other six admin registers use for the
              same search box. This one sat 2px further left with 4px less room
              for its text. -->
@@ -406,11 +414,12 @@ function handleDeleteTicketPrompt() {
           class="ws-input w-full pl-11"
         />
       </div>
-      <div class="shrink-0">
+      <div class="flex items-center gap-2 sm:ml-auto">
         <PillSelect
           v-model="statusFilter"
           :options="statusFilterOptions"
           aria-label="Filter by status"
+          widthClass="w-full sm:w-52"
         />
       </div>
     </div>
@@ -506,10 +515,17 @@ function handleDeleteTicketPrompt() {
       @close="isEditModalOpen = false"
     >
 
-        <!-- Quick Action Shortcuts Bar -->
-        <div class="p-3 bg-canvas border border-line rounded-xl flex items-center justify-between gap-3 text-xs">
+        <!--
+          Quick Action Shortcuts Bar.
+
+          The label and the buttons are a column until `sm`. On one line they
+          did not fit: measured inside this dialog at a 375px viewport, where
+          the body column is 303px, the pair ran to x=339 - "Mark Resolved" 36px
+          past the edge of the panel.
+        -->
+        <div class="p-3 bg-canvas border border-line rounded-xl flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <span class="font-semibold text-ink-soft text-xs">Quick Actions:</span>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <button
               v-if="editStatus !== 'In Progress' && editStatus !== 'Resolved' && editStatus !== 'Closed'"
               type="button"
@@ -549,8 +565,13 @@ function handleDeleteTicketPrompt() {
             <input v-model="editTitle" class="ws-input w-full" required />
           </label>
 
-          <!-- Unit Code & Category -->
-          <div class="grid grid-cols-2 gap-3">
+          <!--
+            Unit Code & Category. One to a row on a phone: at 303px of dialog
+            body, two columns leave 145px each, and the unit trigger's own label
+            ("1A (Boarding House)") needs 134px of text in 92px of room - it was
+            truncating to "1A (Boarding" with the cluster cut off mid-word.
+          -->
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="ws-field">
               Unit
               <PillSelect v-model="editUnit" :options="editUnitOptions" widthClass="w-full" />
@@ -561,8 +582,8 @@ function handleDeleteTicketPrompt() {
             </label>
           </div>
 
-          <!-- Priority & Status -->
-          <div class="grid grid-cols-2 gap-3">
+          <!-- Priority & Status, stacked on a phone for the same reason. -->
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="ws-field">
               Priority
               <PillSelect v-model="editPriority" :options="PRIORITY_OPTIONS" widthClass="w-full" />
@@ -671,18 +692,28 @@ function handleDeleteTicketPrompt() {
             </div>
           </div>
 
-          <!-- Modal Action Footer -->
-          <div class="pt-4 border-t border-line flex items-center justify-between gap-3">
-            <button 
-              type="button" 
-              @click="handleDeleteTicketPrompt" 
+          <!--
+            Modal Action Footer. `flex-col-reverse` until `sm`, the shape the
+            residents dialog already uses for a destructive action facing a
+            Save: Save sits at the top of the stack where the thumb is, Delete
+            at the bottom where it is not reached by accident.
+
+            On one line the three did not fit. Measured at a 375px viewport
+            inside this dialog's 303px body: the row ran to x=410, so "Save
+            Changes" - the button the form exists to press - was 107px past the
+            right edge of the panel.
+          -->
+          <div class="pt-4 border-t border-line flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <button
+              type="button"
+              @click="handleDeleteTicketPrompt"
               class="pill-btn-danger-quiet"
             >
               <Trash2 class="size-3.5" />
               <span>Delete Ticket</span>
             </button>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center justify-end gap-2">
               <button type="button" @click="isEditModalOpen = false" class="pill-btn">Cancel</button>
               <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
