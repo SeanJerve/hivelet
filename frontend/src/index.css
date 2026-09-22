@@ -1376,15 +1376,20 @@ body {
  * The two native <dialog> prompts on the public pages. `allow-discrete` on
  * `display` and `overlay` is what lets the closing frame render at all -
  * without it the element is removed before any of this can play.
+ *
+ * 0.2s, matching `.ws-modal-panel`/`.ws-modal-overlay` just above - same job
+ * (a modal arriving over a backdrop), so it gets the same weight rather than
+ * the 0.15s it shipped with, which sat below emil-design-eng's 200-500ms
+ * modal range entirely rather than just at the fast end of it.
  */
 dialog.ws-dialog {
   opacity: 0;
   scale: 0.97;
   transition:
-    opacity 0.15s var(--ease-out),
-    scale 0.15s var(--ease-out),
-    overlay 0.15s allow-discrete,
-    display 0.15s allow-discrete;
+    opacity 0.2s var(--ease-out),
+    scale 0.2s var(--ease-out),
+    overlay 0.2s allow-discrete,
+    display 0.2s allow-discrete;
 }
 dialog.ws-dialog[open] {
   opacity: 1;
@@ -1399,9 +1404,9 @@ dialog.ws-dialog[open] {
 dialog.ws-dialog::backdrop {
   opacity: 0;
   transition:
-    opacity 0.15s var(--ease-out),
-    overlay 0.15s allow-discrete,
-    display 0.15s allow-discrete;
+    opacity 0.2s var(--ease-out),
+    overlay 0.2s allow-discrete,
+    display 0.2s allow-discrete;
 }
 dialog.ws-dialog[open]::backdrop {
   opacity: 1;
