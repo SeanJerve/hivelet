@@ -17,6 +17,20 @@
 
 ## 0.0 What 2026-09-22 produced
 
+> [!IMPORTANT]
+> **The consultation happened that afternoon and went well.** The adviser's direction afterwards
+> was: **document what was built, and do not push the payment gateway further — what was reached
+> is already good.**
+>
+> That ruling settles the one item this day could not close on its own. The integration is built,
+> configured and correct; a live GCash checkout in Adyen's TEST environment came back Refused, and
+> the cause traces to an account-side gap on Adyen's end rather than to anything in this
+> repository. **Do not spend more time on it.** `BLOCKED_FOR_SEAN.md`'s **B-52** carries the full
+> evidence and the one operational fact that outlives the ruling: a quick tunnel takes a new
+> hostname every restart, so a later demonstration still needs `RESTART_THE_TUNNEL.md` followed.
+>
+> The work from here is consolidation and documentation, not new building.
+
 **A pre-consultation audit, a real security fix, a payment-reachability bug that meant nobody
 could actually test GCash, and a full motion pass across every screen — 25 commits, `check:all`
 20/20 both before the session and now.**

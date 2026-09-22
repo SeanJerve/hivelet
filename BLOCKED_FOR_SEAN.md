@@ -82,7 +82,37 @@ thing did not work" is not.
 - **Raised:** 2026-09-22 by Claude, security sweep ahead of the consultation. Half 1 shipped the
   same day once you picked the option.
 
-### B-52 — no cloudflared tunnel is running; a real GCash payment would currently vanish
+### ~~B-52 — no cloudflared tunnel is running; a real GCash payment would currently vanish~~ — **SETTLED 2026-09-22**
+
+> **The consultation happened, and the adviser ruled this sufficient.** His direction afterwards
+> was to document what was built rather than push the gateway any further. So this is no longer
+> gating anything. Two operational facts from it survive the ruling, because they describe how the
+> thing behaves rather than whether to pursue it.
+>
+> **A tunnel is running now.** Started during the 2026-09-22 session and verified end to end:
+> the `trycloudflare.com` hostname answered **200** on `/api/health` from the public internet, with
+> `localhost:5000` answering 200 locally. The original entry's premise — that no `cloudflared`
+> process was running — stopped being true that day.
+>
+> **It will not survive a restart.** A quick tunnel takes a new hostname every time it starts and
+> Adyen can point at only one. If anyone demonstrates a payment later, the tunnel has to be started
+> again and the webhook repointed, per `RESTART_THE_TUNNEL.md`. Nothing warns you when this is
+> wrong — the notification simply never arrives, which is the whole reason this entry existed.
+>
+> **The live click-through was attempted, and what happened is worth recording**, because nobody
+> had ever done it. A real GCash checkout against Adyen's TEST environment came back **Refused**,
+> and the attempt does not appear in Adyen's own Payment list or API logs at all. Ruled out one at
+> a time: a CORS failure (real, and fixed — `ADYEN_CLIENT_KEY` pointed at a credential that never
+> had `localhost` allow-listed, while a different credential on the same account already did);
+> missing shopper identity (added; not the cause); stale browser state (retried in a fresh private
+> window); and velocity or fraud blocking (same retry rules it out). What remains points at GCash
+> not being among the payment methods Adyen documents for TEST credentials — an account-side gap
+> on Adyen's end, outside this repository. The integration itself is built, configured and correct;
+> the remaining step belongs to Adyen. That is where the adviser's ruling landed.
+>
+> **The original entry is kept below, because the verification work in it is the evidence.**
+
+#### The original finding
 
 - **Blocked on:** you (or whoever demonstrates a payment) starting the tunnel and repointing the
   Adyen webhook, per `RESTART_THE_TUNNEL.md`, before showing a live GCash checkout.
