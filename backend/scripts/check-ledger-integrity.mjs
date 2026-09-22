@@ -649,8 +649,21 @@ if (live.length) {
    * deleting the profiles removed those rows along with them. The remaining
    * four are the same original import debris from 2026-08-25, still real and
    * still carrying no income, per the check below.
+   *
+   * Lowered again, 4 to 2, on 2026-09-23, when migrations 046 and 050 were
+   * applied together. Same mechanism as before - a profile delete cascades its
+   * `room_assignments` rows - and two of the four were carried off with it.
+   * One was Jaz's, which migration 049 had already noted as carrying no
+   * `end_date`; that migration deliberately declined to invent one, and this
+   * is how it was resolved instead: the row went with the dummy profile it
+   * belonged to.
+   *
+   * The remaining two are still the original 2026-08-25 import debris, still
+   * carrying no income. Verified after: profiles 40 -> 34, while active
+   * tenancies held at 32, units at 33, income at 937 rows and the remitted
+   * total at ₱8,086,250.00.
    */
-  const KNOWN_ENDLESS = 4;
+  const KNOWN_ENDLESS = 2;
   const endless = (await rows(
     'room_assignments?select=id&is_active=eq.false&end_date=is.null'
   )).length;
