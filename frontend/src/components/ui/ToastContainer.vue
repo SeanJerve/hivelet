@@ -57,6 +57,19 @@ const iconTone: Record<string, string> = {
 </template>
 
 <style scoped>
+/*
+ * `<TransitionGroup name="toast">` looks for a `.toast-move` class to animate
+ * the SURVIVING toasts sliding into the gap a dismissed or expired one leaves
+ * behind - Vue does not add this transition automatically, only enter/leave.
+ * Without it, a stack of three toasts loses its middle one and the bottom
+ * toast jumps to its new position in a single frame; with it, the jump is a
+ * short, interruptible slide, the same `--ease-out` every other move in this
+ * file already answers to.
+ */
+.toast-move {
+  transition: transform 0.2s var(--ease-out);
+}
+
 .toast-enter-active,
 .toast-leave-active {
   /*

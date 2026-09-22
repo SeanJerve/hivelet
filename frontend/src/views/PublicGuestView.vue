@@ -892,16 +892,16 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 type="button"
                 :aria-expanded="openFaqIndex === idx"
                 :aria-controls="`faq-panel-${idx}`"
-                class="w-full flex items-center justify-between gap-6 py-5 text-left group cursor-pointer"
+                class="press-plate w-full flex items-center justify-between gap-6 py-5 text-left group cursor-pointer"
                 @click="toggleFaq(idx)"
               >
-                <span class="press-plate inline-block text-sm sm:text-base text-ink group-hover:text-ink-soft transition-colors">
+                <span class="inline-block text-sm sm:text-base text-ink group-hover:text-ink-soft transition-colors">
                   {{ faq.q }}
                 </span>
                 <span class="grid size-8 place-items-center shrink-0">
                   <ChevronDown
                     :class="[
-                      'size-4 text-ink-soft group-hover:text-ink transition-transform duration-200',
+                      'size-4 text-ink-soft group-hover:text-ink transition-transform duration-200 ease-[var(--ease-out)]',
                       openFaqIndex === idx ? 'rotate-180' : ''
                     ]"
                   />

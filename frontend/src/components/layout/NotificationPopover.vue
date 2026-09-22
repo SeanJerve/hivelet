@@ -164,10 +164,47 @@ watch(isPopoverOpen, async (open) => {
   }
 });
 
+/**
+ * Escape closes it; Tab stays inside it while it is open.
+ *
+ * The @rationale block above has claimed "keyboard navigation focus trapping"
+ * since this file was written, but nothing here ever implemented one - Tab
+ * walked straight through the panel and out into the page behind it, same as
+ * any other floating layer. WsModal solved this exact problem already (see
+ * its own onKeydown); this mirrors that solution rather than inventing a
+ * second one; the `contains(document.activeElement)` guard is copied for the
+ * same reason WsModal added it - so this trap only acts while focus is
+ * actually inside THIS panel, not some ancestor dialog that happens to share
+ * the page.
+ */
 function onKeyDown(e: KeyboardEvent) {
   if (e.key === 'Escape' && isPopoverOpen.value) {
     e.stopPropagation();
     isPopoverOpen.value = false;
+    return;
+  }
+  if (
+    e.key !== 'Tab' ||
+    !isPopoverOpen.value ||
+    !panel.value ||
+    !panel.value.contains(document.activeElement)
+  ) {
+    return;
+  }
+
+  const focusable = [...panel.value.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )].filter((el) => el.offsetParent !== null);
+  if (focusable.length === 0) return;
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
   }
 }
 

@@ -121,7 +121,7 @@ onBeforeUnmount(() => {
     <button
       :id="id"
       type="button"
-      class="inline-flex w-full min-h-[2.75rem] h-11 items-center justify-between gap-2 rounded-full border border-line bg-tile px-3.5 py-2 text-sm font-medium text-ink shadow-xs transition-colors hover:border-brand/40 focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-canvas disabled:text-ink-faint cursor-pointer select-none"
+      class="press inline-flex w-full min-h-[2.75rem] h-11 items-center justify-between gap-2 rounded-full border border-line bg-tile px-3.5 py-2 text-sm font-medium text-ink shadow-xs hover:border-brand/40 focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-canvas disabled:text-ink-faint cursor-pointer select-none"
       :class="{
         'border-brand ring-2 ring-brand/10': isOpen,
       }"
@@ -141,7 +141,7 @@ onBeforeUnmount(() => {
         </span>
         <ChevronDown
           :class="[
-            'size-4 text-ink-soft transition-transform duration-200 shrink-0',
+            'size-4 text-ink-soft transition-transform duration-200 ease-[var(--ease-out)] shrink-0',
             isOpen && 'rotate-180 text-brand',
           ]"
           aria-hidden="true"
@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
             type="button"
             role="option"
             :aria-selected="String(opt.value) === String(modelValue)"
-            class="flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors cursor-pointer select-none"
+            class="press flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm cursor-pointer select-none"
             :class="[
               String(opt.value) === String(modelValue)
                 ? 'bg-brand-soft text-brand font-semibold'

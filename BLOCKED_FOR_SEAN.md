@@ -33,6 +33,31 @@ thing did not work" is not.
 
 ## Open
 
+### B-52 — no cloudflared tunnel is running; a real GCash payment would currently vanish
+
+- **Blocked on:** you (or whoever demonstrates a payment) starting the tunnel and repointing the
+  Adyen webhook, per `RESTART_THE_TUNNEL.md`, before showing a live GCash checkout.
+- **What it is:** a pre-consultation audit checked the whole payment path end to end. The code is
+  right — traced line by line: the checkout amount is the bill's outstanding balance, not its
+  total; the webhook is the sole writer of an online payment; the browser return path only asks
+  Adyen server-to-server and trusts nothing the client sends; all 39 HMAC checks in `check:adyen`
+  pass. But as of this audit (2026-09-22), **no `cloudflared` process is running on this machine**.
+  If the Adyen dashboard's webhook still points at an old tunnel address, a resident could complete
+  a real GCash payment in Adyen's TEST environment and it would never reach this backend — no
+  error anywhere, exactly as `RESTART_THE_TUNNEL.md` warns.
+- **What Sean needs to do:** run `cloudflared tunnel --url http://localhost:5000`, copy the new
+  URL into the Adyen dashboard's webhook config, press Test, confirm a 401 (not 200 — a 401 there
+  means the endpoint is alive and correctly refusing an unsigned call). Do this before demonstrating
+  a payment at the consultation.
+- **The one thing this audit could not verify at all**, because it requires signing in as a tenant
+  (blocked in this environment): that the Adyen Drop-in SDK actually mounts in a real browser, that
+  the GCash redirect completes, and that a fired webhook produces a correct `payments` row. The code
+  path for all of that is verified; the live click-through is not, and per `HANDOFF_TO_QA.md` it
+  never has been by anyone.
+- **How to know it worked:** `curl` the tunnel's `/api/health` returns 200 from the public internet,
+  and a test notification from the Adyen dashboard returns 401 rather than timing out.
+- **Raised:** 2026-09-22 by Claude, pre-consultation audit session
+
 ### B-50 — no privacy policy page exists yet, and the enquiry form used to carry its whole burden
 
 - **Blocked on:** you saying what the policy should actually promise. Writing the page's content is

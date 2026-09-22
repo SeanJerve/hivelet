@@ -92,7 +92,7 @@ function closeMobileNav() {
           :key="item.to"
           :to="item.to"
           :class="[
-            'flex min-h-11 items-center justify-between rounded-full px-4 text-sm transition-colors duration-150',
+            'press flex min-h-11 items-center justify-between rounded-full px-4 text-sm',
             isItemActive(item.to, item.aliases)
               ? 'bg-brand-soft text-brand font-semibold'
               : 'text-ink-soft font-medium hover:bg-tile hover:text-ink'
@@ -201,7 +201,7 @@ function closeMobileNav() {
                     :to="item.to"
                     @click="closeMobileNav"
                     :class="[
-                      'flex min-h-11 items-center justify-between rounded-full px-4 text-sm transition-colors',
+                      'press flex min-h-11 items-center justify-between rounded-full px-4 text-sm',
                       isItemActive(item.to, item.aliases)
                         ? 'bg-brand-soft text-brand font-semibold'
                         : 'text-ink-soft font-medium hover:bg-canvas hover:text-ink'

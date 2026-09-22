@@ -91,7 +91,7 @@ const current = computed(() => props.months[selected.value]);
             :tabindex="i === selected ? 0 : -1"
             :aria-pressed="i === selected"
             :aria-label="`${m.long}, ${describe(m)}`"
-            class="group flex flex-col items-center gap-2 h-full rounded-xl cursor-pointer"
+            class="group press flex flex-col items-center gap-2 h-full rounded-xl cursor-pointer"
             @click="selected = i"
             @keydown.right.prevent="move(1)"
             @keydown.left.prevent="move(-1)"
@@ -156,7 +156,7 @@ const current = computed(() => props.months[selected.value]);
       -->
       <p v-if="current" class="min-w-0" aria-live="polite">
         <span class="block text-xs leading-4 text-ink-faint">{{ current.long }}</span>
-        <span class="block text-xl leading-7 font-semibold tabular text-ink">{{ describe(current) }}</span>
+        <span class="block text-xl leading-7 font-semibold tabular tracking-tight text-ink">{{ describe(current) }}</span>
       </p>
       <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft">
         <li class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />Recorded</li>
