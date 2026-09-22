@@ -29,6 +29,31 @@ const sortOrderOptions = [
 
 // Selected bill for the Adyen web component checkout modal
 const selectedBillForAdyen = ref<any | null>(null);
+/**
+ * Pay the current cycle before anything has raised a bill for it.
+ *
+ * `POST /tenant/payments/checkout` has always accepted a request with no
+ * `billId` and raised or resolved one itself - nothing on this screen ever
+ * sent that request, because the only way to open the modal was to already
+ * have a bill row to click on. A resident with nothing outstanding had no
+ * path to GCash at all, which is a real gap: collection happens in person by
+ * design (no scheduler - see the empty-state copy below), but online payment
+ * should not be limited to a bill someone else already raised.
+ */
+const payingCurrentPeriod = ref(false);
+
+function openAdyenModalForCurrentPeriod() {
+  payingCurrentPeriod.value = true;
+}
+
+async function closeAdyenModal() {
+  selectedBillForAdyen.value = null;
+  payingCurrentPeriod.value = false;
+  // A bill may have just been raised as a side effect of opening the modal,
+  // even if nothing was paid - refresh so "Nothing is due" cannot go on
+  // being shown once that is no longer true.
+  await fetchOutstandingBills();
+}
 
 // Outstanding bills from the database
 const outstandingBills = ref<any[]>([]);
@@ -418,6 +443,17 @@ function refreshAll() {
       <p class="text-sm leading-6 text-ink-soft">
         You have no outstanding bills. The landlady issues bills as they fall due, not on a fixed date.
       </p>
+      <p class="mt-3 text-sm leading-6 text-ink-soft">
+        Would rather not wait? You can pay this rental period with GCash now instead.
+      </p>
+      <button
+        type="button"
+        class="pill-btn mt-3 self-start"
+        @click="openAdyenModalForCurrentPeriod"
+      >
+        <CreditCard class="size-4" aria-hidden="true" />
+        Pay this period with GCash
+      </button>
     </OverviewTile>
 
     <div v-else class="grid gap-4 md:grid-cols-2">
@@ -597,9 +633,9 @@ function refreshAll() {
     </OverviewTile>
 
     <AdyenPaymentModal
-      v-if="selectedBillForAdyen"
+      v-if="selectedBillForAdyen || payingCurrentPeriod"
       :bill="selectedBillForAdyen"
-      @close="selectedBillForAdyen = null"
+      @close="closeAdyenModal"
       @success="handleAdyenSuccess"
     />
   </div>

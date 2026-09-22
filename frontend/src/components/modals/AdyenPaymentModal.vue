@@ -26,26 +26,48 @@ import {
   Lock
 } from 'lucide-vue-next';
 
+interface BillInfo {
+  id: string;
+  rent_amount: number;
+  water_amount: number;
+  total_amount: number;
+  /** Derived by the API from the payments linked to this bill. BR-013. */
+  amount_paid?: number;
+  amount_outstanding?: number;
+  due_date: string;
+  /**
+   * `/tenant/my-bills` nests the unit under `rooms:room_id (id, room_number)` -
+   * there is no flat `room_number` on the bill row. This prop used to read
+   * `bill.room_number` directly, which is always `undefined` on the real
+   * response, so the tile silently fell back to "Monthly dues" on every
+   * checkout regardless of which unit the bill was for.
+   */
+  rooms?: { room_number?: string | null } | null;
+}
+
 const props = defineProps<{
-  bill: {
-    id: string;
-    rent_amount: number;
-    water_amount: number;
-    total_amount: number;
-    /** Derived by the API from the payments linked to this bill. BR-013. */
-    amount_paid?: number;
-    amount_outstanding?: number;
-    due_date: string;
-    /**
-     * `/tenant/my-bills` nests the unit under `rooms:room_id (id, room_number)` -
-     * there is no flat `room_number` on the bill row. This prop used to read
-     * `bill.room_number` directly, which is always `undefined` on the real
-     * response, so the tile silently fell back to "Monthly dues" on every
-     * checkout regardless of which unit the bill was for.
-     */
-    rooms?: { room_number?: string | null } | null;
-  };
+  /**
+   * Omitted when there is nothing to hand over yet - a resident with no
+   * outstanding row can still pay for the current cycle, and until 2026-09-22
+   * nothing in the portal ever let them try: this component always required a
+   * bill it did not have. `billId` is undefined on that first checkout call,
+   * which `POST /tenant/payments/checkout` already raises or resolves one
+   * from (it always has; nothing on the frontend ever sent that request).
+   * The real figures - what the tenant is actually being charged - come back
+   * on the checkout response itself and fill `billInfo` from there instead.
+   */
+  bill?: BillInfo | null;
 }>();
+
+/**
+ * What this modal shows and pays against. Starts from the prop when the
+ * caller already has a bill (the normal "pay this outstanding balance" case)
+ * and is filled in from the checkout response otherwise - see the note on
+ * `bill` above. Never invented client-side: until one of those two sources
+ * answers, the summary panel below stays hidden rather than showing a zero
+ * that could be read as "nothing is owed".
+ */
+const billInfo = ref<BillInfo | null>(props.bill ?? null);
 
 /**
  * The figure Adyen will actually charge.
@@ -57,12 +79,16 @@ const props = defineProps<{
  * against.
  */
 const amountDue = computed(() => {
-  const outstanding = Number(props.bill.amount_outstanding);
-  return Number.isFinite(outstanding) ? outstanding : Number(props.bill.total_amount) || 0;
+  if (!billInfo.value) return 0;
+  const outstanding = Number(billInfo.value.amount_outstanding);
+  return Number.isFinite(outstanding) ? outstanding : Number(billInfo.value.total_amount) || 0;
 });
 
 const partiallySettled = computed(
-  () => Number(props.bill.amount_paid) > 0 && amountDue.value < Number(props.bill.total_amount)
+  () =>
+    billInfo.value !== null &&
+    Number(billInfo.value.amount_paid) > 0 &&
+    amountDue.value < Number(billInfo.value.total_amount)
 );
 
 const emit = defineEmits<{
@@ -103,14 +129,21 @@ async function initializeAdyen() {
       clientKey: string;
       environment: string;
       isLive: boolean;
+      bill: BillInfo | null;
     }>('/tenant/payments/checkout', {
-      billId: props.bill.id,
+      billId: props.bill?.id,
       returnUrl: window.location.origin + '/tenant/payments'
     });
 
     if (!res?.sessionId || !res.sessionData || !res.clientKey) {
       throw new Error('The payment gateway did not return a usable checkout session.');
     }
+
+    // Authoritative either way: even a caller that already passed a `bill`
+    // prop gets refreshed from what the server actually resolved and is
+    // about to charge, rather than trusting a value that may be a request
+    // old by now.
+    if (res.bill) billInfo.value = res.bill;
 
     await nextTick();
 
@@ -241,24 +274,29 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     :dismissible="false"
     @close="emit('close')"
   >
-    <!-- What is being paid -->
-    <dl class="rounded-2xl bg-canvas p-4 flex flex-col gap-2 text-sm">
+    <!--
+      What is being paid. Hidden rather than zeroed until `billInfo` answers -
+      when nothing was passed in, that is exactly the span from mount until
+      the checkout call resolves, and a "₱0.00 to pay now" flash in that gap
+      reads as a claim that nothing is owed.
+    -->
+    <dl v-if="billInfo" class="rounded-2xl bg-canvas p-4 flex flex-col gap-2 text-sm">
       <div class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">This bill</dt>
         <dd class="font-medium">
-          {{ props.bill.rooms?.room_number ? 'Unit ' + String(props.bill.rooms.room_number) : 'Monthly dues' }}
+          {{ billInfo.rooms?.room_number ? 'Unit ' + String(billInfo.rooms.room_number) : 'Monthly dues' }}
         </dd>
       </div>
       <div class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">Rent and water</dt>
         <dd class="tabular">
-          {{ peso(props.bill.rent_amount) }} and {{ peso(props.bill.water_amount) }}
+          {{ peso(billInfo.rent_amount) }} and {{ peso(billInfo.water_amount) }}
         </dd>
       </div>
       <div v-if="partiallySettled" class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">Already paid</dt>
         <dd class="tabular">
-          {{ peso(Number(props.bill.amount_paid), 2) }} of {{ peso(Number(props.bill.total_amount), 2) }}
+          {{ peso(Number(billInfo.amount_paid), 2) }} of {{ peso(Number(billInfo.total_amount), 2) }}
         </dd>
       </div>
       <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">

@@ -840,6 +840,32 @@ router.post(
       );
     }
 
+    /**
+     * The caller does not always already have this bill's details.
+     *
+     * A request with no `billId` may have just been CREATED above - the tenant
+     * portal previously never sent one, because nothing in the UI could show a
+     * bill it did not already have. Now that "pay this period" can be raised
+     * from nothing, the response has to carry what was actually charged, or the
+     * modal has nothing to display while the Drop-in loads. One read, same
+     * shape `/tenant/my-bills` already returns.
+     *
+     * Deliberately not fatal. `targetBillId` is already a real, resolved bill
+     * by this point - this read only enriches the response for the modal's
+     * display, and a failure here must not cost the resident a checkout
+     * session they are entitled to over a query that only feeds a summary
+     * panel. `warnIfWriteFailed` is a write helper by name, but its shape is
+     * exactly this case: secondary to something that already succeeded, and
+     * worth a signal rather than a silent drop.
+     */
+    const billSummaryResult = await db
+      .from('bills')
+      .select('id, rent_amount, water_amount, total_amount, due_date, rooms:room_id (room_number)')
+      .eq('id', targetBillId)
+      .maybeSingle();
+    warnIfWriteFailed(billSummaryResult, `checkout bill summary for ${targetBillId}`);
+    const billSummary = billSummaryResult.data;
+
     // Initialize Adyen checkout session (Hybrid: live or mock sandbox)
     const sessionRes = await adyenService.createCheckoutSession(
       targetBillId,
@@ -870,7 +896,8 @@ router.post(
           'redirectUrl' in sessionRes && sessionRes.redirectUrl
             ? `http://localhost:${config.port}${sessionRes.redirectUrl}`
             : null,
-        isLive: sessionRes.isLive
+        isLive: sessionRes.isLive,
+        bill: billSummary ?? null
       }
     });
   })
