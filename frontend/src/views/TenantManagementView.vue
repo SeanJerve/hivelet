@@ -7,7 +7,7 @@ import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFet
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Pencil, LogOut, Loader2, Check, LayoutGrid, Table as TableIcon } from 'lucide-vue-next';
+import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, LayoutGrid, Table as TableIcon } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -22,6 +22,38 @@ const isSubmitting = ref(false);
 const editModalTenant = ref<TenantRecord | null>(null);
 const vacateModalTenant = ref<TenantRecord | null>(null);
 const isOnboardModalOpen = ref(false);
+
+/**
+ * The one place the plaintext temporary password from B-53's onboarding
+ * fix is ever shown - see generateTemporaryPassword.ts and admin.ts's own
+ * comment on the response. It rides through here only in memory, never
+ * written to a ref that survives navigation, and the modal that reads it
+ * is not dismissible by accident (Escape/backdrop) so an admin cannot lose
+ * it to a stray keypress before it is copied or written down.
+ */
+const onboardedCredentials = ref<{ name: string; password: string } | null>(null);
+const justCopiedPassword = ref(false);
+
+async function copyTemporaryPassword() {
+  if (!onboardedCredentials.value) return;
+  try {
+    await navigator.clipboard.writeText(onboardedCredentials.value.password);
+    justCopiedPassword.value = true;
+    setTimeout(() => {
+      justCopiedPassword.value = false;
+    }, 2000);
+  } catch {
+    // Clipboard access can be refused (permissions, insecure context). The
+    // password is still on screen in full either way, so nothing is lost -
+    // just tell her to copy it by hand instead of failing silently.
+    showToast('info', 'Could not copy automatically', 'Select the password above and copy it by hand.');
+  }
+}
+
+function closeCredentialsReveal() {
+  onboardedCredentials.value = null;
+  justCopiedPassword.value = false;
+}
 
 // Onboard Form
 /**
@@ -547,9 +579,23 @@ async function handleOnboard() {
     await fetchTenants();
     await fetchRooms();
 
+    // Read before resetOnboardForm() clears it below.
+    const onboardedName = newName.value.trim();
+
     isOnboardModalOpen.value = false;
     resetOnboardForm();
-    showToast('success', 'Tenant onboarded', 'Resident portal access and room assignment registered.');
+
+    if (created?.temporaryPassword) {
+      // The credential reveal modal below is the confirmation - a toast
+      // would say the same thing and then take the one thing she needs
+      // with it when it auto-dismisses.
+      onboardedCredentials.value = { name: onboardedName, password: created.temporaryPassword };
+    } else {
+      // Only reachable if onboarding somehow ran with neither an email nor
+      // a phone number - the form requires phone, so nothing generates
+      // this today, but the API's own type is honest that it can happen.
+      showToast('success', 'Tenant onboarded', 'Resident portal access and room assignment registered.');
+    }
   } catch (err: any) {
     showToast('error', 'Onboarding Failed', err?.message || 'Could not onboard tenant.');
   } finally {
@@ -1140,6 +1186,46 @@ async function handleOnboard() {
             </button>
           </div>
         </form>
+    </WsModal>
+
+    <!--
+      The credential reveal. Not dismissible by Escape or the backdrop -
+      the one thing this modal holds only ever exists here, so an accidental
+      dismissal before it is copied or written down cannot be undone by
+      reopening it.
+    -->
+    <WsModal
+      v-if="onboardedCredentials"
+      title="Tenant onboarded"
+      :subtitle="`A one-time password was generated for ${onboardedCredentials.name}.`"
+      size="sm"
+      :dismissible="false"
+      @close="closeCredentialsReveal"
+    >
+      <p class="text-sm leading-6 text-ink-soft">
+        This is the only time it will be shown. Copy it or write it down now, then relay it to
+        {{ onboardedCredentials.name }} in person. Signing in with it does not yet prompt them to
+        change it, so treat it as their password until you tell them otherwise.
+      </p>
+
+      <div class="flex items-center gap-2 rounded-2xl border border-line bg-canvas px-4 py-3">
+        <code class="flex-1 select-all break-all font-mono text-base font-semibold tracking-wide text-ink">{{ onboardedCredentials.password }}</code>
+        <button
+          type="button"
+          class="icon-btn shrink-0"
+          :aria-label="justCopiedPassword ? 'Copied' : 'Copy password'"
+          @click="copyTemporaryPassword"
+        >
+          <Check v-if="justCopiedPassword" class="size-4 text-brand" aria-hidden="true" />
+          <Copy v-else class="size-4" aria-hidden="true" />
+        </button>
+      </div>
+
+      <template #actions>
+        <button type="button" class="pill-btn-brand" @click="closeCredentialsReveal">
+          Done, I've saved this
+        </button>
+      </template>
     </WsModal>
   </div>
 </template>

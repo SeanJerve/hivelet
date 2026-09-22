@@ -42,8 +42,12 @@ thing did not work" is not.
   0/O/1/l/I, since this gets read aloud and typed once), the response carries it back once as
   `temporaryPassword` for the admin to relay in person, and the bcrypt hash itself is no longer
   echoed in that same response either (`password_hash` was leaking via `.select('*')` — found while
-  fixing this, closed at the same time). **Not yet surfaced in the UI** — `TenantManagementView.vue`
-  receives the field now but nothing displays it to the admin yet. Small follow-up: add that.
+  fixing this, closed at the same time). **Now surfaced in the UI, shipped 2026-09-22 same day.**
+  `TenantManagementView.vue` shows it once, right after onboarding, in a non-dismissible modal (no
+  Escape, no backdrop click — the password only ever exists on that screen, so an accidental close
+  before it is copied cannot be undone) with a copy-to-clipboard button. Its copy is deliberately
+  honest about half 2 below being inactive — it says signing in does not yet prompt a password
+  change, rather than promising the option 2 behavior before it exists.
 - **Half 2 — STAGED, not active.** Forcing a change on first login (your option 2) needs a new
   column, so it can't ship instantly the way half 1 could. Everything for it is written and ready:
   - `database/migrations/048_must_change_password.sql` — adds `profiles.must_change_password` and
@@ -63,7 +67,12 @@ thing did not work" is not.
      `must_change_password: passwordHash !== null,` in the comment right above `profileValues`)
      and `backend/src/services/authService.ts`'s `changeOwnPassword` (search
      `must_change_password: false,` in the comment right above the `.update()` call).
-  3. Run `npm run check:all` — `check:columns` will now pass with the restored writes; it was
+  3. Update the credential-reveal modal's copy to match — `frontend/src/views/TenantManagementView.vue`,
+     search `does not yet prompt them to change it` — once the two lines above are restored, that
+     sentence is wrong in the other direction and should say the opposite: signing in with it DOES
+     prompt a change. Same class of stale-precondition comment CLAUDE.md warns about, just in
+     UI copy instead of code.
+  4. Run `npm run check:all` — `check:columns` will now pass with the restored writes; it was
      exactly what caught this needing to be staged in the first place when I tried it live.
 - **Not the same as the closed B-01/B-49 items** (specific seeded demo credentials, already
   rotated). Also not the same as the shared demo password every current account carries from
