@@ -114,11 +114,10 @@ async function handleQuickLogin(account: DemoAccount) {
           </RouterLink>
 
           <div class="text-right shrink-0">
-            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Landlady</p>
-            <p class="mt-1 text-sm font-medium text-ink">{{ LANDLADY.name }}</p>
+            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</p>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press mt-0.5 inline-block py-1 text-sm text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press mt-1 inline-block py-1 text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
