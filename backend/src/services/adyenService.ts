@@ -190,7 +190,13 @@ export const adyenService = {
    * Initializes a real Adyen Checkout Session via official Adyen v71 REST API.
    * Automatically falls back to local simulation if Adyen API is unreachable.
    */
-  async createCheckoutSession(billId: string, tenantProfileId: string, amount: number, returnUrl?: string) {
+  async createCheckoutSession(
+    billId: string,
+    tenantProfileId: string,
+    amount: number,
+    returnUrl?: string,
+    shopperEmail?: string | null
+  ) {
     // SECURITY: `returnUrl` arrives from the client. Validated against the CORS
     // allow-list here, at the single point where it enters the system, so the
     // stored session can never carry an off-origin destination - not into Adyen's
@@ -221,6 +227,21 @@ export const adyenService = {
             returnUrl: fallbackReturnUrl,
             shopperLocale: 'en-US',
             channel: 'Web',
+            /**
+             * Every session this project ever created omitted shopper identity
+             * entirely - no reference, no email. Adyen's risk engine runs in
+             * TEST the same as it does live, and a payment with zero shopper
+             * context is exactly what a default risk rule is written to catch:
+             * this is the leading suspect for a GCash attempt that returns 200
+             * from the client-side call and "Refused" immediately, with no
+             * redirect and no record ever appearing in the Payments list at
+             * all - refused ahead of becoming a transaction, not declined as
+             * one. `shopperReference` stable per tenant (their own profile id,
+             * already in hand - no extra query), `shopperEmail` only when the
+             * account actually has one (OD-09 - a phone-only tenant may not).
+             */
+            shopperReference: tenantProfileId,
+            ...(shopperEmail ? { shopperEmail } : {}),
           }),
         });
 

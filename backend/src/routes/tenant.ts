@@ -883,7 +883,8 @@ router.post(
       targetBillId,
       req.user!.profileId,
       billTotalAmount,
-      returnUrl
+      returnUrl,
+      req.user!.email
     );
 
     // Create audit entry for checkout initiation
