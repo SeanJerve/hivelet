@@ -126,21 +126,34 @@ const hidesGlobalHeader = computed(() =>
       <main
         id="main"
         tabindex="-1"
-        :class="['flex-1 max-w-full min-w-0 flex flex-col outline-none', isWorkspaceSection ? 'py-6 lg:pl-6' : '']"
+        :class="['relative flex-1 max-w-full min-w-0 flex flex-col outline-none', isWorkspaceSection ? 'py-6 lg:pl-6' : '']"
       >
         <!--
           Pages used to swap with no transition at all - one screen replaced
           by the next in a single frame, the same jump cut a broken load
-          would produce. `mode="out-in"` was deliberately NOT used: it waits
+          would produce. `mode="out-in"` is deliberately NOT used: it waits
           for the old page to finish leaving before the new one starts
           entering, which is the "page-load choreography" Operate surfaces
           are told to avoid - every navigation would cost the sum of both
           durations instead of the longer of the two. This crossfades both
-          ways at once, opacity only, 110ms: enough to say "this changed
-          deliberately" rather than "this broke", fast enough that it is
-          gone before a reader who navigates ten times a minute could
-          resent it. See `.page-move` in index.css for the timing and the
-          reduced-motion path.
+          ways at once, opacity only. See `.page-move` in index.css for the
+          timing and the reduced-motion path.
+
+          ⚠ `relative` ON `<main>` ABOVE IS LOAD-BEARING, AND ITS ABSENCE IS
+          WHAT MADE NAVIGATION LOOK BROKEN.
+
+          Because both pages are in the DOM at once, `.page-move-leave-active`
+          takes the leaving one out of flow with `position: absolute` so the
+          two do not stack and double the page height. Absolute positioning
+          resolves against the nearest POSITIONED ancestor, and this element
+          had none - so the leaving page was positioned against the initial
+          containing block instead, jumping to the top-left of the viewport
+          and fading out across the header and sidebar. Every navigation
+          flashed a copy of the previous screen in the wrong place.
+
+          The CSS was right and had been since it was written; it was resting
+          on a precondition nothing in this file supplied. Read the two
+          together - the rule in index.css does not work without this class.
         -->
         <!--
           No `:key` on the route path. That would force every param-only

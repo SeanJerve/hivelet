@@ -1197,6 +1197,17 @@ body {
 .page-move-enter-active {
   transition: opacity 0.2s var(--ease-out);
 }
+/*
+ * The leaving page comes out of flow so the two pages crossfade in place
+ * instead of stacking and doubling the page height.
+ *
+ * THIS REQUIRES `<main>` IN App.vue TO CARRY `relative`. Absolute positioning
+ * resolves against the nearest positioned ancestor, and for most of this
+ * rule's life there was none - so the leaving page was laid out against the
+ * initial containing block, jumped to the top-left of the viewport, and faded
+ * out over the header and sidebar. The rule was correct and the precondition
+ * it rested on was not supplied, which is this project's recurring shape.
+ */
 .page-move-leave-active {
   transition: opacity 0.14s var(--ease-out);
   position: absolute;

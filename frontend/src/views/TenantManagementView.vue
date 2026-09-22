@@ -7,10 +7,11 @@ import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFet
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, LayoutGrid, Table as TableIcon } from 'lucide-vue-next';
+import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
+import ShowMore from '@/components/ui/ShowMore.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 
@@ -365,6 +366,56 @@ const clusterByUnitCode = computed(() => {
  * in a group of its own rather than silently dropped. Empty clusters are
  * left out rather than drawn as a heading over nothing.
  */
+/**
+ * Which cluster sections are open. Same shape as the room directory and the
+ * income register, so the three screens that group by cluster all behave the
+ * same way - this one rendered every group expanded with no way to fold one
+ * away, which on a register of 40 residents is a long scroll to reach the
+ * cluster you actually wanted.
+ *
+ * The first opens by default, because a screen that starts entirely closed
+ * looks broken.
+ */
+const openClusters = ref<Record<string, boolean>>({});
+
+function isClusterOpen(key: string, index: number) {
+  return openClusters.value[key] ?? index === 0;
+}
+
+function toggleCluster(key: string, index: number) {
+  openClusters.value[key] = !isClusterOpen(key, index);
+}
+
+/**
+ * How many residents are drawn in each open cluster.
+ *
+ * Same control, same step and same noun handling as the room directory and the
+ * registers, so the reader learns it once. BH holds the bulk of the property,
+ * so an open cluster here was the longest uncapped list left on the screen.
+ */
+const RESIDENTS_PER_STEP = 8;
+const shownResidents = ref<Record<string, number>>({});
+
+function residentsShown(key: string) {
+  return shownResidents.value[key] ?? RESIDENTS_PER_STEP;
+}
+
+function visibleResidents(key: string, all: TenantRecord[]) {
+  return all.slice(0, residentsShown(key));
+}
+
+function residentsRemaining(key: string, total: number) {
+  return Math.max(0, total - residentsShown(key));
+}
+
+function showMoreResidents(key: string) {
+  shownResidents.value[key] = residentsShown(key) + RESIDENTS_PER_STEP;
+}
+
+function showAllResidents(key: string, total: number) {
+  shownResidents.value[key] = total;
+}
+
 const groupedRows = computed(() => {
   const byCluster = new Map<Cluster | 'unassigned', TenantRecord[]>();
   for (const t of rows.value) {
@@ -836,19 +887,58 @@ async function handleOnboard() {
         </p>
       </div>
 
-      <div
-        v-for="group in groupedRows"
+      <section
+        v-for="(group, groupIndex) in groupedRows"
         :key="group.key"
         class="overflow-hidden rounded-tile bg-tile"
       >
-        <div class="flex items-baseline justify-between gap-3 px-5 py-4">
-          <span class="text-[0.9375rem] font-semibold text-ink">{{ group.label }}</span>
-          <span class="tabular text-xs text-ink-soft">
-            {{ group.residents.length }} {{ group.residents.length === 1 ? 'resident' : 'residents' }}
-          </span>
-        </div>
+        <!--
+          Collapsible, like the room directory and the income register. This
+          was a plain `div` - the only cluster header in the workspace that
+          could not be folded away - so every group stayed open and a register
+          of forty residents scrolled past four clusters to reach the fifth.
+          A closed section still names itself and says how many it holds.
+        -->
+        <h2>
+          <button
+            type="button"
+            class="press-plate flex w-full items-baseline justify-between gap-3 px-5 py-4 text-left hover:bg-canvas"
+            :aria-expanded="isClusterOpen(group.key, groupIndex)"
+            :aria-controls="`residents-cluster-${group.key}`"
+            @click="toggleCluster(group.key, groupIndex)"
+          >
+            <span class="flex items-center gap-2">
+              <ChevronDown
+                :class="[
+                  'size-4 shrink-0 text-ink-soft transition-transform duration-200 ease-[var(--ease-out)]',
+                  isClusterOpen(group.key, groupIndex) ? '' : '-rotate-90',
+                ]"
+                aria-hidden="true"
+              />
+              <span class="text-[0.9375rem] font-semibold text-ink">{{ group.label }}</span>
+            </span>
+            <span class="tabular text-xs text-ink-soft">
+              {{ group.residents.length }} {{ group.residents.length === 1 ? 'resident' : 'residents' }}
+            </span>
+          </button>
+        </h2>
 
-        <div class="ws-table-wrap border-t border-line">
+        <!--
+          The table sits INSIDE the padding now, which is what squares the
+          corner off under the heading.
+          `.ws-table-wrap` carries its own `border-radius: 1rem` (index.css), and
+          this was flush against the tile's edges directly beneath the header -
+          so its rounded top corners cut into the straight line under the title.
+          Every other register puts the table inside `border-t border-line` plus
+          padding, which is what makes the radius read as a deliberate inset
+          rather than a notch. Same structure here now.
+        -->
+        <div
+          v-if="isClusterOpen(group.key, groupIndex)"
+          :id="`residents-cluster-${group.key}`"
+          class="ws-reveal border-t border-line p-5 sm:p-6"
+        >
+        <div class="ws-table-wrap">
           <table class="ws-table">
             <caption class="sr-only">{{ group.label }} residents, with unit, household, move-in date, deposit and standing</caption>
             <thead>
@@ -863,7 +953,11 @@ async function handleOnboard() {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="t in group.residents" :key="t.id" class="group">
+              <tr
+                v-for="t in visibleResidents(group.key, group.residents)"
+                :key="t.id"
+                class="group"
+              >
                 <th scope="row">
                   <span class="block font-semibold text-ink">{{ t.name }}</span>
                   <span class="tabular block text-xs font-normal text-ink-soft">{{ t.phone }}</span>
@@ -889,7 +983,18 @@ async function handleOnboard() {
             </tbody>
           </table>
         </div>
-      </div>
+
+          <ShowMore
+            :shown="visibleResidents(group.key, group.residents).length"
+            :total="group.residents.length"
+            :remaining="residentsRemaining(group.key, group.residents.length)"
+            :next-step="Math.min(8, residentsRemaining(group.key, group.residents.length)) || 8"
+            noun="resident"
+            @more="showMoreResidents(group.key)"
+            @all="showAllResidents(group.key, group.residents.length)"
+          />
+        </div>
+      </section>
     </div>
 
     <!-- The whole record, and the parts of it that can be changed here -->
