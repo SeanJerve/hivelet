@@ -97,7 +97,12 @@ which is the exact failure CLAUDE.md warns about.
   reason. That is the argument for them, made better than any principle.
 - **Raised:** 2026-09-22 by Claude, caught by `check:ledger` during post-consultation consolidation.
 
-### B-58 — ⚠ two of the five profiles marked for deletion must not be deleted · **migration 050 written, NOT applied**
+### ~~B-58 — ⚠ two of the five profiles marked for deletion must not be deleted~~ — **APPLIED 2026-09-23**
+
+> **050 applied, and the two exclusions held.** Verified against the live tables afterwards:
+> profiles **40 → 34**, while active tenancies stayed **32**, units **33**, income **937 rows** and
+> the remitted total **₱8,086,250.00**. Jaye Casia is active in LB with 31 receipts and ₱170,500;
+> Mark Cruz is deactivated with all **902** audit rows intact. Sean confirmed Jaz was a dummy.
 
 **Read this before deleting anything in the Supabase dashboard.**
 
@@ -135,7 +140,11 @@ refused with a foreign key error from `audit_logs`. Checked all five against the
   ₱8,086,250.00** with `profiles` down by exactly three.
 - **Raised:** 2026-09-22 by Claude, after Sean hit the constraint in Supabase.
 
-### B-57 — two residents who moved out can still sign in · **migration 049 written, NOT applied**
+### ~~B-57 — two residents who moved out can still sign in~~ — **APPLIED 2026-09-23**
+
+> **049 applied.** No tenant who has moved out can sign in any more — the live count of active
+> tenant profiles with no active tenancy is **0**. Jaz was then deleted outright by 050, which also
+> carried off the `room_assignments` row this entry noted as having no `end_date`.
 
 - **Your rule, 2026-09-22:** moving a tenant out should take their account and site access away
   automatically, while their records stay.
@@ -287,7 +296,29 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
 - **Raised:** 2026-09-22 by Claude, verified against the live `bills`, `rooms` and
   `monthly_income_records` tables.
 
-### B-53 — every tenant the admin panel onboards gets a publicly-known password · half closed, half staged
+### ~~B-53 — every tenant the admin panel onboards gets a publicly-known password~~ — **CLOSED 2026-09-23, both halves**
+
+> **Migration 048 applied, and the code that was waiting on it is live.** The three lines that had
+> been deliberately left inert are restored:
+>
+> - `resolveAuthUser()` reads the real column instead of hardcoding `false`. **This is the one that
+>   took the site down on 2026-09-22** when it referenced the column before the migration existed —
+>   it runs on every authenticated request. Verified this time in the other order: column confirmed
+>   present in `information_schema` **first**, then the code, then the backend restarted and probed
+>   (`/api/health` 200, `/api/auth/me` 401 rather than 500), then `check:api`, which signs in as a
+>   real tenant and exercises the whole path, passed.
+> - `changeOwnPassword()` clears the flag, which is what lets a resident out of the gate.
+> - `POST /admin/tenants` sets it, gated on `passwordHash !== null` so a prospect with no login is
+>   never flagged for a password they do not have.
+>
+> `live_schema.csv` regenerated from the catalogue rather than hand-edited to pass — `check:columns`
+> caught the drift and said so in those words. 24 tables, 235 columns, matching.
+>
+> **Nothing existing was gated retroactively:** all 34 profiles read `must_change_password = false`.
+> The flag applies to tenants onboarded from here on.
+>
+> The reveal modal's copy was corrected in the same commit — it had said signing in "does not yet
+> prompt them to change it", which was true when written and is now the opposite of what happens.
 
 - **Half 1 — CLOSED, shipped 2026-09-22.** `POST /admin/tenants` no longer hashes the literal
   `'Hivelet@Tenant2026'`. You said "1 [random per-tenant password] and force password change on
@@ -479,7 +510,15 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
   only two `check:all` suites failing on it this run
 - **Raised:** 2026-09-21 by Claude, design-audit session
 
-### B-48 — three residents in her list who never lived here · **migration 046 written, NOT applied**
+### ~~B-48 — three residents in her list who never lived here~~ — **APPLIED 2026-09-23**
+
+> **046 applied.** The three INV import duplicates are gone. The three real residents kept
+> everything: Mireel Fatima Parcarey **26** receipts, Nikki Prollamante **10**, Ron Juliene
+> Dominguino **31**, all active and all still housed.
+>
+> **Its own footer figures were stale** and should not be quoted: it says "profiles 45 → 42",
+> written before migration 047 removed five test residents. The real movement was 40 → 34 once 050
+> ran in the same sitting.
 
 - **Blocked on:** you saying go. It deletes live rows, so I have not run it.
 - **What it is:** the import of 2026-08-27 ran twice, about thirty seconds apart. The first pass
@@ -882,7 +921,16 @@ the untested half of BR-024, and they only become testable after a person has us
   a Linda unit, which correctly flags all 31 of its rows.
 - **Raised:** 2026-09-19
 
-### B-39 — rate-change attribution claimed the newest row, not the row it caused · **fixed; 042 waiting**
+### ~~B-39 — rate-change attribution claimed the newest row, not the row it caused~~ — **CLOSED 2026-09-23; 042 is moot**
+
+> **Nothing left to run.** The four litter rows this entry asked 042 to delete were the
+> `PH 12,000 → 12,001` pair and its reverse, twice. Checked live on 2026-09-23: **no row anywhere
+> in `room_price_history` carries 12,001.** The table holds **31** rows and every one is a genuine
+> rate from migration 045 - including the real `PH 12,000 → 30,000`, which is the Penthouse
+> correction B-29 existed for.
+>
+> The code half was fixed at the time and is unchanged. 042 can be left unapplied: its target is
+> gone.
 
 - **Why this one matters now:** **B-29 is about to put up to 31 real rate changes through this
   path in a single sitting.** BR-003's whole value is an honest record of who changed a rate and

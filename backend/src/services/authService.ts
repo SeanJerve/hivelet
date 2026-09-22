@@ -154,11 +154,12 @@ export async function login(
     fullName: data.full_name,
     role: data.role,
     accountStatus: data.account_status,
-    // `?? false`, not a bare read: until migration 048 runs,
-    // resolve_login_identifier() is still its pre-048 shape and simply does
-    // not return this column, so `data.must_change_password` is `undefined`
-    // at runtime despite the type saying `boolean`. Explicit here rather
-    // than relying on that falling through correctly by accident.
+    // `?? false` is kept now that migration 048 has run and
+    // resolve_login_identifier() does return this column (2026-09-23). It
+    // guards the one case the column default cannot: a row read through a
+    // path that has not selected it comes back `undefined` at runtime despite
+    // the type saying `boolean`, and `undefined` is not `false` to the gate
+    // in App.vue. Cheap, and it fails closed rather than open.
     mustChangePassword: data.must_change_password ?? false,
   };
 
@@ -235,9 +236,9 @@ export function verifyToken(token: string): JwtPayload {
 export async function resolveAuthUser(profileId: string): Promise<AuthUser> {
   const { data, error } = await db
     .from('profiles')
-    .select('id, email, full_name, role, account_status')
+    .select('id, email, full_name, role, account_status, must_change_password')
     .eq('id', profileId)
-    .maybeSingle<Omit<CredentialRow, 'password_hash' | 'failed_login_count' | 'locked_until' | 'must_change_password'>>();
+    .maybeSingle<Omit<CredentialRow, 'password_hash' | 'failed_login_count' | 'locked_until'>>();
 
   if (error) {
     throw ApiError.internal(`Profile lookup failed: ${error.message}`);
@@ -255,12 +256,16 @@ export async function resolveAuthUser(profileId: string): Promise<AuthUser> {
     fullName: data.full_name,
     role: data.role,
     accountStatus: data.account_status,
-    // TEMPORARY, pending migration 048: this route does not yet select
-    // must_change_password - see the note at the top of the file. Every
-    // authenticated request runs this function, so a live column mismatch
-    // here breaks the entire site, not just the feature it was for. Restore
-    // the real read once 048 has been applied.
-    mustChangePassword: false,
+    // Real read, restored 2026-09-23 once migration 048 was applied and the
+    // column confirmed present in `information_schema`.
+    //
+    // It was hardcoded `false` before that, and the hardcoding was not caution
+    // for its own sake: this function runs on EVERY authenticated request, so
+    // selecting a column the live database did not have took the whole site
+    // down for as long as it was deployed. It did, once, on 2026-09-22.
+    // `?? false` because a row written before the column existed reads
+    // undefined rather than false through PostgREST.
+    mustChangePassword: data.must_change_password ?? false,
   };
 }
 
@@ -348,12 +353,14 @@ export async function changeOwnPassword(
   const hash = await bcrypt.hash(newPassword, config.auth.bcryptRounds);
 
   /**
-   * NOT clearing `must_change_password` here yet - migration 048 (the column
-   * itself) is staged, not applied. See the matching note in
-   * routes/admin.ts: writing an unknown column name fails the whole update,
-   * which would break every password change in the app, not just B-53's
-   * gate. Restore `must_change_password: false,` below the moment 048 has
-   * actually run.
+   * Clearing `must_change_password` is the whole point of the gate: the
+   * resident has now chosen their own password, so the one they were issued at
+   * onboarding no longer stands between them and the portal.
+   *
+   * Restored 2026-09-23, once migration 048 had actually run. It was left out
+   * deliberately until then - writing an unknown column name fails the whole
+   * update, which would have broken every password change in the app rather
+   * than just this feature.
    */
   const { error: updateError } = await db
     .from('profiles')
@@ -362,6 +369,7 @@ export async function changeOwnPassword(
       password_changed_at: new Date().toISOString(),
       failed_login_count: 0,
       locked_until: null,
+      must_change_password: false,
     })
     .eq('id', profileId);
 

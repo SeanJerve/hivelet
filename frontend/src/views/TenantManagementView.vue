@@ -1345,8 +1345,8 @@ async function handleOnboard() {
     >
       <p class="text-sm leading-6 text-ink-soft">
         This is the only time it will be shown. Copy it or write it down now, then relay it to
-        {{ onboardedCredentials.name }} in person. Signing in with it does not yet prompt them to
-        change it, so treat it as their password until you tell them otherwise.
+        {{ onboardedCredentials.name }} in person. They will be asked to set their own password
+        the first time they sign in, and this one stops working once they do.
       </p>
 
       <div class="flex items-center gap-2 rounded-2xl border border-line bg-canvas px-4 py-3">

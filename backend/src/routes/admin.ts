@@ -786,21 +786,23 @@ router.post(
      * tenant, and writing two different shapes here is how the two drift.
      */
     /**
-     * NOT writing `must_change_password` here yet, deliberately.
+     * `must_change_password` closes the second half of B-53: the resident is
+     * issued a random one-time password here and cannot reach the portal
+     * until they have replaced it with one of their own.
      *
-     * `profiles.must_change_password` is migration 048 - staged
-     * (database/migrations/048_must_change_password.sql) but not applied to
-     * the live database. Writing an unknown column name to a live table
-     * fails the whole insert, which would break onboarding entirely until
-     * someone noticed - a worse outcome than shipping half of B-53's fix.
-     * Restore this line (`must_change_password: passwordHash !== null,`)
-     * the moment 048 has actually been run. Until then the random password
-     * below still closes the more urgent half of B-53 on its own: nobody
-     * onboarded from now on gets the old public literal, they just are not
-     * yet forced to replace it on first login.
+     * Gated on `passwordHash !== null` rather than set unconditionally,
+     * because this route also creates profiles with no portal login at all -
+     * a prospect, or a tenant onboarded without one. Flagging an account that
+     * has no password to change would gate a door that does not exist.
+     *
+     * Restored 2026-09-23, once migration 048 had actually run. It was left
+     * out deliberately until then: writing an unknown column name fails the
+     * whole insert, which would have broken onboarding entirely rather than
+     * just this feature.
      */
     const profileValues = {
       email: normalizedEmail,
+      must_change_password: passwordHash !== null,
       password_hash: passwordHash,
       full_name: fullName,
       phone_number: normalizedPhone,

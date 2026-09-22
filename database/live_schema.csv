@@ -164,6 +164,7 @@ section,item,detail
 1. Columns,profiles.id,uuid NOT NULL DEFAULT gen_random_uuid()
 1. Columns,profiles.last_login_at,timestamp with time zone NULL
 1. Columns,profiles.locked_until,timestamp with time zone NULL
+1. Columns,profiles.must_change_password,boolean NOT NULL DEFAULT false
 1. Columns,profiles.occupation,character varying(100) NULL
 1. Columns,profiles.password_changed_at,timestamp with time zone NULL
 1. Columns,profiles.password_hash,character varying(255) NULL
