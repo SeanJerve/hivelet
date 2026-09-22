@@ -136,8 +136,46 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
     });
   }
 
+  /**
+   * A body that is not JSON is a transport failure, not a caller's mistake.
+   *
+   * `JSON.parse` was called bare here, so anything that is not this API's
+   * envelope threw a raw `SyntaxError` - which is NOT an `ApiRequestError` and
+   * therefore escapes every `instanceof` check downstream. The visible cost was
+   * in `authStore.login`, whose catch reads
+   *
+   *     if (error instanceof ApiRequestError) authError.value = error.message;
+   *     else authError.value = 'Sign-in failed. Please check credentials.';
+   *
+   * so a `502 Bad Gateway` HTML page told the resident their PASSWORD was
+   * wrong. That is not a hypothetical page: CLAUDE.md has whoever is testing
+   * pointing a `cloudflared` tunnel at their own laptop, and a tunnel with
+   * nothing behind it answers in HTML, as do the proxy and the dev server when
+   * the API is down.
+   *
+   * It also skipped `isAuthFailure`, so a 401 whose body was not JSON never
+   * reached `onAuthFailure` at all.
+   *
+   * The status is already in hand, so an unparseable body still produces an
+   * `ApiRequestError` carrying it. Only the envelope is unavailable, not the
+   * fact that the request failed.
+   */
   const text = await response.text();
-  const payload = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+  let payload: Record<string, unknown>;
+  try {
+    payload = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+  } catch {
+    const unreadable = new ApiRequestError(response.status, {
+      code: response.ok ? 'MALFORMED_RESPONSE' : 'UNKNOWN',
+      message: response.ok
+        ? 'The server sent a reply the application could not read.'
+        : `Request failed with status ${response.status}.`,
+    });
+    // Same handling a parseable failure gets. A 401 is a dead session whether or
+    // not whatever answered it could be read.
+    if (unreadable.isAuthFailure) onAuthFailure?.();
+    throw unreadable;
+  }
 
   if (!response.ok) {
     const error = (payload.error as ApiErrorShape | undefined) ?? {

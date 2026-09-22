@@ -4,7 +4,7 @@
  * @systemBibleRef Section 16 (Communication Centralization), Section 22 (Core Design Principles)
  * @requirements   FR-026, FR-027
  */
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { api } from './api';
 import { currentUser, isAuthenticated, isAdmin } from './authStore';
 
@@ -31,6 +31,41 @@ export const activeFilter = ref<NotificationFilter>('all');
 
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 let lastKnownUnreadCount = 0;
+
+/**
+ * THIS STORE BELONGS TO ONE ACCOUNT, AND NOTHING USED TO SAY WHICH.
+ *
+ * `stopNotificationsHeartbeat()` clears the interval and leaves the rows. So on
+ * sign-out the previous account's notifications and badge stayed in memory, and
+ * the next sign-in in the same tab rendered them: `startNotificationsHeartbeat`
+ * calls `fetchNotifications()` and then waits on the network, and the bell is
+ * drawn from module state in the meantime.
+ *
+ * What is in that state is not a count. A notification title on this system
+ * reads `Tenant submitted ticket "..."` or names a prospect who enquired, so an
+ * administrator signing out and a resident signing in on the landlady's own
+ * machine - one machine, one browser, which is how this property is actually
+ * run - shows the resident her inbox until the first response lands.
+ *
+ * Keyed on the profile id rather than on `isAuthenticated`, so it also covers
+ * the case with no signed-out moment in between: a session restored as a
+ * different account still changes identity here and still clears.
+ *
+ * `unreadCount` going to 0 is correct on this path and only on this path - it
+ * is the initial state of a session that has not read anything yet, not a
+ * failed fetch being reported as "nothing unread". The fetch that follows
+ * replaces it; see `pollUnreadCount`'s own note about not inventing a zero.
+ */
+watch(
+  () => currentUser.value?.profileId ?? null,
+  (profileId, previousProfileId) => {
+    if (profileId === previousProfileId) return;
+    notifications.value = [];
+    unreadCount.value = 0;
+    lastKnownUnreadCount = 0;
+    isPopoverOpen.value = false;
+  }
+);
 
 /**
  * Filtered list of notifications based on active user tab.

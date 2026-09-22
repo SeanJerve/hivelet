@@ -207,6 +207,38 @@ async function pendingOnBill(billId: string): Promise<number> {
 }
 
 /**
+ * The refusal itself, in ONE place, because it was in two and only one of them
+ * had it.
+ *
+ * The guard above was written for the branch that receives an explicit
+ * `billId`. On 2026-09-22 a second branch was added so a resident whose period
+ * has no bill row yet could still reach checkout - bills are raised on demand,
+ * so that was almost everyone - and it resolves an existing unpaid bill without
+ * ever asking whether money was already on its way.
+ *
+ * **That branch is the one the portal actually uses.** `AdyenPaymentModal`
+ * sends `billId: props.bill?.id`, which is `undefined` on the first checkout
+ * from the Overview tile. So the double-charge this file documents at length
+ * was closed on the path almost nobody takes and left open on the path
+ * everybody takes.
+ *
+ * Extracted rather than copied. The defect was a guard living on one of two
+ * paths that must agree; a second copy would have been the same defect waiting
+ * to happen again.
+ */
+async function refuseIfPaymentPending(billId: string): Promise<void> {
+  const alreadySent = await pendingOnBill(billId);
+  if (alreadySent > 0) {
+    throw ApiError.conflict(
+      `A payment of ₱${alreadySent.toLocaleString('en-PH', { minimumFractionDigits: 2 })} ` +
+      'for this bill has already been received and is waiting for the landlady to confirm ' +
+      'it. Nothing further is owed right now, and you have not been charged again. It will ' +
+      'show as paid once she has checked it.'
+    );
+  }
+}
+
+/**
  * What is still owed on a bill: its total, less every verified payment already
  * linked to it. BR-013.
  *
@@ -689,15 +721,7 @@ router.post(
       }
 
       // The guard that stops a resident paying twice. See `pendingOnBill`.
-      const alreadySent = await pendingOnBill(bill.id);
-      if (alreadySent > 0) {
-        throw ApiError.conflict(
-          `A payment of ₱${alreadySent.toLocaleString('en-PH', { minimumFractionDigits: 2 })} ` +
-          'for this bill has already been received and is waiting for the landlady to confirm ' +
-          'it. Nothing further is owed right now, and you have not been charged again. It will ' +
-          'show as paid once she has checked it.'
-        );
-      }
+      await refuseIfPaymentPending(bill.id);
 
       // The BALANCE, not the debt as issued - a partially paid bill would
       // otherwise be charged in full a second time. BR-013.
@@ -725,6 +749,12 @@ router.post(
       const unpaid = existingBills?.find((b: any) => b.status !== 'Paid');
       if (unpaid) {
         targetBillId = unpaid.id;
+        // The same refusal the explicit-billId branch makes, and for the same
+        // reason - this branch had none. The webhook never writes bills.status,
+        // so a bill paid minutes ago still reads 'Due' and lands here again,
+        // and `outstandingOnBill` counts Verified payments only, so it would
+        // report the FULL balance and open a second session for it.
+        await refuseIfPaymentPending(unpaid.id);
         billTotalAmount = await outstandingOnBill(unpaid.id, Number(unpaid.total_amount));
       } else {
         // Raise the current cycle's bill for the tenant's OWN active unit.
