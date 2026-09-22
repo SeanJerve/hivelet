@@ -368,12 +368,13 @@ const statusChips = computed(() => [
               <span
                 v-for="n in clusterOccupancy(clusterName).total"
                 :key="n"
-                :class="[
-                  'h-1.5 flex-1 rounded-full',
+                class="bar-fill h-1.5 flex-1 origin-left rounded-full"
+                :class="
                   n <= clusterOccupancy(clusterName).occupied
                     ? 'bg-brand'
-                    : 'hatch border border-line',
-                ]"
+                    : 'hatch border border-line'
+                "
+                :style="{ animationDelay: `${Math.min(n - 1, 9) * 30}ms` }"
               />
             </span>
           </button>

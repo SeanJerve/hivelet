@@ -977,7 +977,9 @@ const isExportingArchive = ref(false);
               <span
                 v-for="n in c.total"
                 :key="n"
-                :class="['h-2 flex-1 rounded-full', n <= c.occupied ? 'bg-brand' : 'hatch border border-line']"
+                class="bar-fill h-2 flex-1 origin-left rounded-full"
+                :class="n <= c.occupied ? 'bg-brand' : 'hatch border border-line'"
+                :style="{ animationDelay: `${Math.min(n - 1, 9) * 30}ms` }"
               />
             </div>
             <p class="mt-1.5 text-xs text-ink-faint tabular">
@@ -1196,7 +1198,10 @@ const isExportingArchive = ref(false);
               <span class="tabular font-semibold">{{ peso(c.revenue) }}</span>
             </div>
             <div class="mt-2 h-2 rounded-full bg-canvas" aria-hidden="true">
-              <div class="h-full rounded-full bg-brand" :style="{ width: `${c.share}%` }" />
+              <div
+                class="bar-fill h-full origin-left rounded-full bg-brand"
+                :style="{ width: `${c.share}%`, animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              />
             </div>
             <p class="mt-1.5 text-xs text-ink-faint tabular">
               {{ c.share.toFixed(1) }}% of the year. {{ c.recordCount }} entries across {{ c.uniqueRooms }}

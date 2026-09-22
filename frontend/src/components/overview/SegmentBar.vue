@@ -51,6 +51,14 @@ const toneClass: Record<Segment['tone'], string> = {
  * Same 30ms-a-step, capped-at-ten stagger as `.list-reveal-item` and
  * OccupancyArc's ring, so a reader who sees several of these on one screen
  * gets one consistent rhythm rather than a different one per chart.
+ *
+ * Deliberately still `--ease-out`, not the bounce MonthCapsules' bars got.
+ * These segments sit edge to edge in one packed row (`gap-1`, no space
+ * between); scaleX overshooting past 100% from `origin-left` would grow
+ * each one into its neighbour's territory for the split second before it
+ * settles, several of them at once given the stagger. A bar with clear air
+ * above it can overshoot cleanly; a segment with another segment immediately
+ * to its right cannot.
  */
 .segment-fill {
   animation: segment-fill 0.26s var(--ease-out) backwards;

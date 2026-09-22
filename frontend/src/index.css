@@ -127,6 +127,16 @@
      interface hesitating. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* The named "easeOutBack" curve (easings.dev) - overshoots the target by
+     design before settling, rather than approaching it and stopping. Reserved
+     for a chart or figure arriving on first paint (a bar growing to its
+     measured height, a tile's number appearing): a real thing arriving with
+     weight, not a control answering a click. Never on anything a person can
+     trigger repeatedly - the "no bounce in most UI" rule stays for buttons,
+     menus and toggles; this is the deliberate exception for data, not a
+     replacement for `--ease-out`. */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 :root {
@@ -1231,6 +1241,45 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .list-reveal-item {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------- bar-fill --
+ * The same growth OccupancyArc's ring and SegmentBar's segments use, for a
+ * bar or pip that is not part of either component - an occupancy strip's
+ * individual marks (AdminOverviewView "Units by cluster",
+ * RoomDirectoryView's matrix header, both a per-unit `flex-1 rounded-full`
+ * row packed edge to edge like SegmentBar's segments) and a single
+ * share-of-a-whole bar drawn in its own track (AdminOverviewView "Collected
+ * by cluster"). Global rather than scoped like SegmentBar's own
+ * `.segment-fill` because it is reused across more than one file, the same
+ * reason `.list-reveal-item` above lives here instead of in one component.
+ *
+ * Deliberately plain `--ease-out`, not `--ease-bounce`: every current use is
+ * either packed edge to edge with a neighbour (the pip rows) or a fill
+ * inside a fixed-width track that represents a real 100% (the share bar) -
+ * both are the same "no headroom to overshoot into" case SegmentBar's own
+ * comment already explains, not the isolated-bar-with-clear-air case
+ * MonthCapsules bounces.
+ *
+ * `transform: scaleX` from `origin-left`, same as `.segment-fill` - the
+ * inline `width`/flex sizing above still sets the real box instantly, this
+ * only changes what is painted inside it.
+ */
+.bar-fill {
+  animation: ws-bar-fill 0.26s var(--ease-out) backwards;
+}
+@keyframes ws-bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill {
     animation: none;
   }
 }

@@ -185,9 +185,17 @@ const current = computed(() => props.months[selected.value]);
  * Same 30ms-a-step, capped-at-ten stagger as everywhere else this pass added
  * one, so a page that shows this chart next to OccupancyArc or a RecordTable
  * reads as one system rather than three different timings.
+ *
+ * `--ease-bounce` rather than `--ease-out`: a bar reads as a measured figure
+ * arriving, not a control answering a click, which is exactly the case the
+ * token's own comment in index.css carves out as the deliberate exception to
+ * "no bounce in most UI". `scaleMax` (above) rounds the chart's scale up past
+ * the tallest real value on purpose, which is what leaves the headroom this
+ * curve's overshoot needs - a bar animating to a height that already reaches
+ * the top of its track would clip the bounce off rather than show it.
  */
 .capsule-fill {
-  animation: capsule-fill 0.26s var(--ease-out) backwards;
+  animation: capsule-fill 0.5s var(--ease-bounce) backwards;
 }
 @keyframes capsule-fill {
   from {

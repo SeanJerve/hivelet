@@ -41,6 +41,23 @@ const segments = computed(() => {
   });
 });
 
+/**
+ * Spreads every segment's draw-in across one continuous sweep rather than a
+ * quick, capped-at-ten stagger (`.list-reveal-item`'s cadence, which every
+ * OTHER staggered reveal in the app still uses on purpose - this is the one
+ * deliberate exception). A ring read as "one whole, occupied left to right"
+ * the moment it draws itself in a fraction of a second; delaying each
+ * segment across the ring's real width instead makes it read as what it is -
+ * a measurement being taken - and asked for by name ("rotate slow from left
+ * to right") rather than the popcorn effect a short cap produces on 33
+ * pieces.
+ */
+const SWEEP_DURATION_MS = 1100;
+function sweepDelay(i: number): number {
+  const count = segments.value.length || 1;
+  return Math.round((i / count) * SWEEP_DURATION_MS);
+}
+
 const occupied = computed(() => props.units.filter((u) => u.occupied).length);
 const vacantCodes = computed(() => props.units.filter((u) => !u.occupied).map((u) => u.code));
 
@@ -69,7 +86,7 @@ const description = computed(
         stroke-dasharray="100"
         pathLength="100"
         class="arc-segment"
-        :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+        :style="{ animationDelay: `${sweepDelay(i)}ms` }"
         :class="s.occupied ? 'stroke-brand' : undefined"
         :stroke="s.occupied ? undefined : `url(#${patternId})`"
       />
@@ -91,14 +108,14 @@ const description = computed(
  * units to a 0-100 scale regardless of its true arc length, so one keyframe
  * covers a two-degree sliver and a forty-degree one alike.
  *
- * The stagger reuses the same cadence as `.list-reveal-item` in index.css -
- * 30ms a step, capped at the tenth segment - so every staggered reveal in the
- * product shares one rhythm rather than each chart inventing its own. Capped
- * because a 33-unit ring at an uncapped 30ms a segment would still be drawing
- * itself a full second after the page appeared.
+ * Each segment's OWN draw is short - a quick reveal, not a slow one - and
+ * `sweepDelay()` (above) is what actually reads as slow: spreading those
+ * quick reveals across a full 1.1s turns 33 short flashes into one
+ * continuous sweep moving left to right, the same way a stadium wave is
+ * many people each standing up fast, spaced apart in time.
  */
 .arc-segment {
-  animation: arc-draw 0.26s var(--ease-out) backwards;
+  animation: arc-draw 0.18s var(--ease-out) backwards;
 }
 @keyframes arc-draw {
   from {
@@ -110,9 +127,10 @@ const description = computed(
 }
 
 /* The count reads as the ring's conclusion, not a separate label beside it -
-   it settles in just after the segments have finished drawing. */
+   it settles in once the sweep (SWEEP_DURATION_MS, above) has actually
+   reached the far end, not a fixed short delay that assumed a fast stagger. */
 .arc-count {
-  animation: arc-count-in 0.22s var(--ease-out) 0.3s backwards;
+  animation: arc-count-in 0.22s var(--ease-out) 1.15s backwards;
 }
 @keyframes arc-count-in {
   from {
