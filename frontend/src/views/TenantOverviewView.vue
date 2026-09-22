@@ -559,14 +559,34 @@ const statusTone = computed(() => {
             </p>
           </div>
         </template>
-        <div v-else>
-          <p class="text-5xl leading-none font-semibold tracking-tight">
-            {{ tenantData.dueDaysRemaining === 'Settled' ? 'Settled' : 'Nothing due' }}
-          </p>
-          <p class="mt-3 text-sm text-on-brand-soft">
-            <template v-if="tenantData.nextDueDateDisplay">Next rent is due {{ tenantData.nextDueDateDisplay }}.</template>
-            <template v-else>No bill is waiting for payment.</template>
-          </p>
+        <div v-else class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p class="text-5xl leading-none font-semibold tracking-tight">
+              {{ tenantData.dueDaysRemaining === 'Settled' ? 'Settled' : 'Nothing due' }}
+            </p>
+            <p class="mt-3 text-sm text-on-brand-soft">
+              <template v-if="tenantData.nextDueDateDisplay">Next rent is due {{ tenantData.nextDueDateDisplay }}.</template>
+              <template v-else>No bill is waiting for payment.</template>
+            </p>
+          </div>
+          <!--
+            Nothing is due YET is still true - the text above keeps saying so.
+            This does not contradict it: paying ahead of the due date has
+            always been allowed (the checkout route resolves or raises the
+            current cycle unconditionally), TenantPaymentsView has offered
+            exactly this since today's payment-reachability fix, and Overview
+            is the first screen a resident actually lands on - it should not
+            be the one screen in the app that still has no way there.
+          -->
+          <div class="flex flex-col items-start gap-2 shrink-0">
+            <button type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
+              <CreditCard class="size-4" aria-hidden="true" />
+              Pay with GCash
+            </button>
+            <p class="text-xs leading-5 text-on-brand-soft max-w-56">
+              Pay this period now instead of waiting.
+            </p>
+          </div>
         </div>
 
         <div class="mt-auto border-t border-white/20 pt-3">
