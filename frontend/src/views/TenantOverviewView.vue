@@ -429,8 +429,21 @@ async function fetchTenantData() {
           ? new Date(linkedPayment.verified_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE })
           : '';
       } else {
+        /**
+         * No bills at all - which is NOT evidence of payment.
+         *
+         * `dueBadgeText` stays 'PAID' deliberately, because it is what keeps
+         * this tile out of the amount-due branch; that branch leads with a 5xl
+         * `peso(totalAmountDue)`, and rendering a confident **₱0.00** here
+         * would be a stronger false claim than the words ever were. The honest
+         * wording lives in the template instead, which now says the bill has
+         * not been raised rather than that nothing is owed.
+         *
+         * Read the flag as "there is no outstanding bill to show", not as
+         * "this resident has paid".
+         */
         tenantData.value.dueBadgeText = 'PAID';
-        tenantData.value.dueDaysRemaining = 'No outstanding bills';
+        tenantData.value.dueDaysRemaining = 'Not billed yet';
         tenantData.value.totalAmountDue = 0;
         tenantData.value.dueDateRaw = '';
         tenantData.value.verifiedAt = '';
@@ -561,12 +574,22 @@ const statusTone = computed(() => {
         </template>
         <div v-else class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
+            <!--
+              "Settled" is claimed ONLY when a payment is actually on record.
+              The other case is a resident with no bills at all, and the two are
+              not the same thing: bills are raised on demand, so no bill means
+              nobody has worked out what this period costs yet - not that it
+              costs nothing. Saying "Nothing due" there asserted a financial
+              fact the system does not hold, and said it to every resident at
+              once whenever her records ran out, which is what August and
+              September look like while her book stops at July.
+            -->
             <p class="text-5xl leading-none font-semibold tracking-tight">
-              {{ tenantData.dueDaysRemaining === 'Settled' ? 'Settled' : 'Nothing due' }}
+              {{ tenantData.dueDaysRemaining === 'Settled' ? 'Settled' : 'Not billed yet' }}
             </p>
             <p class="mt-3 text-sm text-on-brand-soft">
               <template v-if="tenantData.nextDueDateDisplay">Next rent is due {{ tenantData.nextDueDateDisplay }}.</template>
-              <template v-else>No bill is waiting for payment.</template>
+              <template v-else>No bill has been raised for this period yet — which is not the same as owing nothing.</template>
             </p>
           </div>
           <!--
