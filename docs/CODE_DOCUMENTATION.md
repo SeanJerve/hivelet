@@ -133,7 +133,7 @@ Hivelet implements a fine-grained, permission-based authorization model rather t
 
 #### 1. Payment Gateway Adapter (`adyenService.ts`, `adyenWebhookHandler.ts`)
 Encapsulates all communication with Adyen.
-- **Session Initiation (`createCheckoutSession`)**: Formulates an Adyen Checkout Session for a specific outstanding bill, configuring currency (`PHP`), amount, and return URL.
+- **Session Initiation (`createCheckoutSession`)**: Formulates an Adyen Checkout Session, configuring currency (`PHP`), amount and return URL, and passing shopper identity (`shopperReference`, and `shopperEmail` where one is on file) as risk context. The amount is the bill's **outstanding balance**, not its total, so a part-paid bill cannot be charged twice over. The caller need not name a bill: since 2026-09-22 `POST /api/tenant/payments/checkout` resolves the current period's bill or raises one, because bills are raised on demand and a resident with no bill row yet previously had no way to reach checkout at all.
 - **HMAC Signature Verification (`verifyHmacSignature`)**: Validates the cryptographic signature of incoming Adyen webhook notifications using the configured HMAC secret.
 - **Idempotent Webhook Handler (`handleAdyenNotification`)**: Dispatches webhook events. When an `AUTHORISATION` event succeeds, it logs the gateway reference and marks the payment as `'Pending Verification'` or settled in accordance with administrative approval rules.
 
@@ -193,10 +193,10 @@ A foundational requirement of Hivelet is that **a failed network request must ne
 | :--- | :--- | :--- | :--- |
 | **AdminOverviewView** | `views/AdminOverviewView.vue` | Admin | Real-time property KPIs: Occupancy rate (out of 33 units), Monthly Gross Income, Monthly Operational Expenses, Net Operating Income, and urgent action alerts. |
 | **IncomeCollectionsView** | `views/IncomeCollectionsView.vue` | Admin | Manages rent roll, payment verification queue, on-site cash payment recording, and monthly revenue reconciliation. |
-| **ExpensesLedgerView** | `views/ExpensesLedgerView.vue` | Admin | Logs operating expenses (Meralco, Prime Water, maintenance supplies) and allocates costs across building clusters (A, B, C, D). |
+| **ExpensesLedgerView** | `views/ExpensesLedgerView.vue` | Admin | Logs operating expenses (Meralco, Prime Water, maintenance supplies) and allocates each one across **property areas** — Boarding House, Main House, Front Apartment, Back Apartment, and Other Expenses / Personal. Read from `expense_property_allocations`; these are not lettered clusters. |
 | **TenantManagementView** | `views/TenantManagementView.vue` | Admin | Resident directory, active lease tracking, contact details, emergency contacts, and tenant onboarding. |
-| **RoomDirectoryView** | `views/RoomDirectoryView.vue` | Admin | Full catalog of all 33 units across 3 floors; occupancy status, assigned residents, and rate history. |
-| **CategoryRoomsView** | `views/CategoryRoomsView.vue` | Admin | Room categorization (Air-Conditioned, Non-Aircon, Solo, Shared Bedspacer) and live pricing updates. |
+| **RoomDirectoryView** | `views/RoomDirectoryView.vue` | Admin | Full catalog of all 33 units across 4 levels (1st, 2nd, 3rd and the Penthouse); occupancy status, assigned residents, and rate history. |
+| **CategoryRoomsView** | `views/CategoryRoomsView.vue` | **Public** | Browse one kind of unit and its live availability. The four kinds are **Studio, One-bedroom, Two-bedroom and Three-bedroom**. Reached at `/category/:categorySlug`, which carries no `meta.roles` — it is a public browsing surface, not an admin pricing tool. |
 | **MaintenanceDispatchView** | `views/MaintenanceDispatchView.vue` | Admin | Kanban and list triage of maintenance issues submitted by tenants; technician assignment, priority scheduling, and resolution. |
 | **InquiriesView** | `views/InquiriesView.vue` | Admin | Inbox for public room inquiries; direct messaging thread with prospective tenants, conversion into formal tenancies. |
 | **AuditLogsView** | `views/AuditLogsView.vue` | Admin | Immutable timeline of administrative and financial activities with actor identification and payload diffs. |
@@ -205,6 +205,8 @@ A foundational requirement of Hivelet is that **a failed network request must ne
 | **TenantTicketsView** | `views/TenantTicketsView.vue` | Tenant | Issue reporting portal: file maintenance requests with category, severity, and photo attachments; live resolution tracking. |
 | **TenantProfileView** | `views/TenantProfileView.vue` | Tenant | Account credentials, contact phone update, and password modification dialog. |
 | **PublicGuestView** | `views/PublicGuestView.vue` | Public | Public-facing landing page showcasing property amenities, room types, live availability, location details, and inquiry submission. |
+| **InquireView** | `views/InquireView.vue` | Public | The enquiry form at `/inquire`. States plainly, at the point of filling it in, that no automatic confirmation is sent — so a prospect knows to leave a number or address she can actually reply to. |
+| **PrivacyPolicyView** | `views/PrivacyPolicyView.vue` | Public | The privacy policy at `/privacy`, added 2026-09-22. Covers what the enquiry form collects, what a resident account holds, and that GCash credentials go to Adyen directly and are never received or stored by this system. Linked from the enquiry form's notice and the footer. |
 | **LoginView** | `views/LoginView.vue` | Public | Role-aware portal authentication (Admin and Tenant sign-in). |
 
 ### 4.4 Load-Bearing Modals (`frontend/src/components/modals/`)
@@ -330,18 +332,18 @@ sequenceDiagram
     participant DB as PostgreSQL
     actor Admin as Administrator
 
-    Note over API,DB: Monthly Billing Cron / Trigger
-    API->>DB: Calculate rent + water (₱200/head)
-    DB->>DB: INSERT into bills (status: 'Unpaid')
-    Tenant->>TenantUI: View Statement of Account
-    TenantUI->>API: POST /api/tenant/payments/initiate-adyen
-    API->>Adyen: POST /sessions (amount, currency: PHP)
+    Note over Tenant,DB: No scheduler exists. The bill is raised on demand.
+    Tenant->>TenantUI: Open the payment screen
+    TenantUI->>API: POST /api/tenant/payments/checkout
+    API->>DB: Resolve this period's bill, or raise it now
+    DB->>DB: INSERT into bills (status: 'Due') — rent + BR-014 water
+    API->>Adyen: POST /sessions (amount = outstanding balance, currency: PHP)
     Adyen-->>API: sessionData & sessionToken
     API-->>TenantUI: Return session parameters
     TenantUI->>Adyen: Mount Drop-in component & Authorize GCash
     Adyen-->>TenantUI: Payment Authorised
-    Adyen->>API: Webhook (AUTHORISATION Notification)
-    API->>DB: INSERT payment (status: 'Pending Verification')
+    Adyen->>API: Webhook (AUTHORISATION Notification, HMAC verified)
+    API->>DB: INSERT payment (verification_status: 'Pending Verification')
     Admin->>API: Review & Verify Payment (settle_verified_payment)
     API->>DB: Mark payment 'Verified', mark bill 'Paid'
     DB-->>TenantUI: Receipt available; bill settled

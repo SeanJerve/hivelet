@@ -33,6 +33,109 @@ thing did not work" is not.
 
 ## Open
 
+### B-56 — a receipt recorded during today's testing is in her live ledger, and it moved her total
+
+**⚠ `check:ledger` is RED because of this row, and I have deliberately not made it green.** Bumping
+the two ratchets would hide a real change in her financial data behind a passing build, which is
+the exact failure CLAUDE.md warns about.
+
+- **What appeared.** One new `monthly_income_records` row, written **2026-09-22 09:56:48 UTC**
+  (≈17:56 Manila), while styles were being edited on the other machine. Nothing in this session
+  wrote it — every query I ran was a SELECT.
+
+  | | |
+  | :--- | :--- |
+  | id | `256a35d7-271d-4789-b5b0-667ea3c183ac` |
+  | unit | **1a** |
+  | receipt number | **`OR#123333333`** |
+  | period | 2026-09-22 → 2026-10-21 |
+  | occupants | **3** |
+  | rent / water | ₱8,000 + ₱600 |
+  | **remitted** | **₱8,600.00** |
+  | payer | "Lobby Toor, Mark Cruz" |
+  | method | Cash |
+
+- **It moved her reported income.** Measured both ways: the ledger now totals **₱8,094,850** across
+  **938** live rows; excluding this one row it totals **₱8,086,250** across 937 — which is exactly
+  the standing figure quoted throughout this repository. So the row accounts for the whole
+  difference, to the peso.
+- **Three things say it is a test, not a real receipt:**
+  1. `OR#123333333` is not a number from her sequence, which runs like `OR#4895` and `INV#5227`.
+  2. It bills **3 occupants** where 1a's active assignment records **1** — that is the BR-014
+     ratchet moving 3 → 4.
+  3. Its period starts **on the day it was entered** (the 22nd) rather than on 1a's cycle, which
+     the bill raised this morning shows running the 7th to the 6th — that is the BR-033 ratchet
+     moving 16 → 17.
+- **But I am not assuming.** Recording a receipt *is* a rehearsal step, so this may be exactly the
+  test it looks like and entirely intended. **What it must not be is forgotten**, because it is
+  currently indistinguishable from real money in her Monthly Income Report.
+- **What Sean needs to decide:** was this a test? If yes, it should be **voided** — `voided_at`
+  exists precisely so the ledger keeps the row and drops it from every total, which is what B-35
+  used and is better here than a delete. Say the word and I will stage it as a numbered migration
+  naming that one id. **I have not touched it**, because a live financial row is not mine to
+  change.
+- **Until then, do not quote ₱8,086,250 or "937 rows"** without checking which of the two figures
+  you mean. Both are currently true of different things.
+- **The wider point, worth keeping:** the ratchets did their job. Nobody told this session the data
+  had changed; a check that had passed four times in a row went red, and it went red for the right
+  reason. That is the argument for them, made better than any principle.
+- **Raised:** 2026-09-22 by Claude, caught by `check:ledger` during post-consultation consolidation.
+
+### B-55 — four things a services-layer audit found that I did not fix, and why
+
+Three of the audit's findings were fixed the same day (commits `94cd28e` and `7dd6727`: the
+month-end anniversary off-by-one, `year`/`month` not following an edited rent period, and an
+occupants floor). **These four are left, each for a stated reason.** Every one below was verified
+against the live catalogue or live source by me, not taken on report.
+
+**1. `settle_verified_payment` marks a bill Paid no matter how much was paid. Needs a migration.**
+
+- Read from `pg_get_functiondef`, not from any schema file. The whole of its bill handling is:
+
+  ```sql
+  IF v_payment.bill_id IS NOT NULL THEN
+    UPDATE bills SET status = 'Paid', updated_at = NOW() WHERE id = v_payment.bill_id;
+  ```
+
+  There is no comparison against `total_amount` anywhere in the function.
+- **`allocateReceipt` gets this right** and writes `'Partially Paid'`, which is a real value of
+  `bill_status_type` (`Pending | Due | Overdue | Paid | Partially Paid`, read from `pg_enum`). So
+  the two settlement paths disagree with each other about the same situation.
+- **Latent, not live.** The checkout amount is server-derived from the outstanding balance, so a
+  short payment needs a tampered amount or a race to arrive. Nothing in the live data shows it
+  having happened.
+- **Why I did not fix it:** it is a Postgres function, so the fix is a numbered migration against
+  the live database, which is yours to apply. Say the word and I will stage it.
+
+**2. A hardcoded 26th–25th cycle overrides the tenant's actual anniversary.**
+`backend/src/routes/admin.ts:1833`. When a verified payment has no bill, the rent period falls back
+to a literal `if (d >= 26)` → 26th-to-25th window. BR-033 says the cycle runs from the tenant's
+anniversary. The assignment is read two lines earlier but selects only `id, occupant_count`, so the
+anniversary is not even fetched. **Measured against the live table: 19 of 32 tenancies anchor on
+the 1st**, and the rest on the 3rd, 7th, 9th, 13th, 21st or 28th — so 26–25 is wrong for
+effectively all of them. Reached when the gateway logs a bill-creation failure and leaves
+`bill_id` null. Not fixed here because it needs the select widened and a decision about what to do
+when there is genuinely no assignment to read.
+
+**3. `monthsCovered` is accepted when editing a receipt, reported as saved, and dropped.**
+`admin.ts` destructures it on the PATCH path and never uses it, and
+`IncomeCollectionsView.vue:754` **does send it** — I checked, so this is reachable, not theoretical.
+An administrator changing "months covered" from 1 to 3 is told it saved and nothing happens. The
+same shape as the `gbgFee` defect that schema's own comment already documents. **Not fixed because
+it needs your decision, not a patch:** either honour it (re-split the row across months, the way
+`record_income_for_months` does on create) or refuse it with a message. Silently dropping it is the
+only option that is certainly wrong. Note that simply removing it from the schema would break
+editing outright, since the schema is `.strict()` and the frontend sends the field.
+
+**4. Two minor ones, recorded so they are not rediscovered.**
+- `OnsitePaymentModal.vue:398` formats the confirmation date with `toLocaleDateString` and no
+  `timeZone`, so it is correct only because the browser happens to be in Manila. Left alone because
+  the interface is the other machine's lane and styles were being edited there at the time.
+- `billingService.ts:36` computes `waterBasis` and documents it as being "for the audit log", but
+  no caller reads it. Either wire it up or drop the claim.
+
+- **Raised:** 2026-09-22 by Claude, post-consultation consolidation.
+
 ### B-54 — the first bill this system ever raised for real · nothing to fix, but you should know it is there
 
 - **Not a defect.** This is a footprint entry, the same discipline B-35 used, plus the first real
