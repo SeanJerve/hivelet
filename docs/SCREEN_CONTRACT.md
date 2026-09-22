@@ -205,11 +205,13 @@ before the redesign started.
 
 ### `lib/downloadReport.ts`
 
-1 call(s), **0 of them write**.
+3 call(s), **0 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
-| reads | `GET :id` | — |
+| reads | `GET /admin/reports/audit.xlsx` | the audit trail as a workbook |
+| reads | `GET /admin/reports/expenses.xlsx` | the expense workbook, in her own layout |
+| reads | `GET /admin/reports/income.xlsx` | the owner's income workbook, in her own layout |
 
 ### `lib/systemState.ts`
 
@@ -225,4 +227,4 @@ before the redesign started.
 
 ---
 
-**20 files make 60 distinct calls, 30 of which write.** Generated 2026-09-21.
+**20 files make 62 distinct calls, 30 of which write.** Generated 2026-09-22.

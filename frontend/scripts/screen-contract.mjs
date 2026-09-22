@@ -98,6 +98,7 @@ const PURPOSE = new Map([
   ['GET /admin/tickets/:id/messages', 'read a ticket thread'],
   ['GET /admin/reports/income.xlsx', "the owner's income workbook, in her own layout"],
   ['GET /admin/reports/expenses.xlsx', 'the expense workbook, in her own layout'],
+  ['GET /admin/reports/audit.xlsx', 'the audit trail as a workbook'],
 ]);
 
 function walk(dir, out = []) {
@@ -109,9 +110,43 @@ function walk(dir, out = []) {
   return out;
 }
 
-/** `api.get('/x')`, `api.post<T>(\`/x/${id}\`, …)`, and the two raw-fetch exports. */
+/** `api.get('/x')`, `api.post<T>(\`/x/${id}\`, …)`. */
 const CALL = /api\.(get|getWithMeta|post|patch|put|delete)(?:<[^>]*>)?\(\s*[`'"]([^`'"]+)/g;
-const RAW = /API_BASE\}([^`'"]+)/g;
+
+/**
+ * A raw `fetch(\`${API_BASE}/some/path\`)`, where the path is written out. The
+ * leading `/` is what requires that.
+ *
+ * Without it this also matched `${API_BASE}${PATH[kind]}`, and `tidy()` turned
+ * the interpolation into a phantom `GET :id`. Both raw-fetch sites in this
+ * codebase interpolate, so **every row this pattern ever produced was that
+ * phantom** — one from the api client (skipped below) and one from
+ * `downloadReport.ts`, whose three real endpoints it never saw at all. It has
+ * never matched a real call. INDIRECT_PATH below is what finds those.
+ */
+const RAW = /API_BASE\}(\/[^`'"]+)/g;
+
+/**
+ * The fallback for a raw fetch whose path is assembled rather than written out
+ * — `fetch(\`${API_BASE}${PATH[kind]}\`)` in `downloadReport.ts`.
+ *
+ * The endpoints are still in that file as literals; it keeps them that way on
+ * purpose, and says so, because `check:endpoints` proves a route has a caller
+ * by searching for its path. That reasoning was correct and it held — for
+ * `check:endpoints`. It did not hold here, because this generator never looked
+ * at literals, only at call expressions. One precondition, two readers, and
+ * only one of them was checked. The three report exports were missing from a
+ * document whose entire job is to notice a screen that quietly stopped calling
+ * something.
+ *
+ * Scoped to files that actually make such a call, because a path literal on its
+ * own is not evidence of a call: `authStore.ts` holds `/admin/overview` as a
+ * ROUTER path, and collecting that would invent an endpoint that does not
+ * exist. Verbs are assumed GET, the same assumption RAW already makes — a raw
+ * helper that writes would need this revisited, and there is no such helper.
+ */
+const INDIRECT_CALL = /fetch\(\s*`\$\{API_BASE\}\$\{/;
+const INDIRECT_PATH = /['"`](\/(?:admin|tenant|public|auth)\/[^'"`\s]+)['"`]/g;
 
 /** `${...}` → `:id`, and a trailing query string dropped. */
 const tidy = (p) =>
@@ -139,6 +174,9 @@ for (const file of walk(SRC)) {
     calls.add(`${verb} ${tidy(m[2])}`);
   }
   for (const m of src.matchAll(RAW)) calls.add(`GET ${tidy(m[1])}`);
+  if (INDIRECT_CALL.test(src)) {
+    for (const m of src.matchAll(INDIRECT_PATH)) calls.add(`GET ${tidy(m[1])}`);
+  }
 
   if (calls.size) byFile.set(rel, [...calls].sort());
 }
