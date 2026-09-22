@@ -142,11 +142,26 @@ export function getRevenueSharePercent(): Promise<number> {
 }
 
 /**
- * Fixed monthly water charge for a Linda unit, by room number. BR-040.
+ * Identifies a Linda unit by room number. BR-040.
  *
- * Both values are corroborated by the ledger: across 31 months `LF` is charged exactly
- * P400/month and `LB` exactly P200/month. Returns `null` for any other room, which means
- * "this unit is not on fixed water billing - use the per-occupant rate".
+ * ⚠ **READ THE NAME AS HISTORY, NOT AS BEHAVIOUR. The fixed water charge is RETIRED**, and
+ * the only thing this function is still used for is the `!== null` test - see
+ * `computeWaterFee` in `billingService.ts`, which discards the amount entirely and bills
+ * `heads x rate` for every unit on the property, Linda units included.
+ *
+ * This docblock used to say the two values were "corroborated by the ledger: across 31
+ * months LF is charged exactly P400/month and LB exactly P200/month", and that a `null`
+ * meant "use the per-occupant rate" - implying a non-null meant do not. Both halves are now
+ * wrong, and the second one inverts the actual behaviour. The ledger did agree, but it agreed
+ * by **coincidence**: occupancy never changed across all 62 Linda rows, LB holding 1 person
+ * and LF 2, so 1 x 200 and 2 x 200 reproduce the "fixed" figures exactly and no row in her
+ * book could tell the two readings apart. The owner settled it on 2026-09-20 - a third person
+ * in LF makes the water P600. `computeWaterFee` carries her words.
+ *
+ * Left in place rather than deleted because the *separation* of Linda's money is NOT retired:
+ * `linda_water_charge` and migration 041's routing trigger still stand, and this is what tells
+ * the caller which rows they apply to. The return value is a flag; the number it happens to
+ * carry is not the charge and must not be treated as one.
  *
  * There is deliberately **no electricity accessor, and there will not be one.** The flat
  * electricity charge was retired by migration `017` (OD-18): it existed for units without

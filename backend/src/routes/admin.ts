@@ -2835,7 +2835,15 @@ const incomeRecordPatchSchema = z.object({
   contactName: shortText(255).optional(),
   invoiceNumber: shortText(100).optional(),
   rentAmount: money.optional(),
-  occupants: occupantCount.optional(),
+  /**
+   * `.refine(n => n >= 1)` to match the create path, which has always had it.
+   *
+   * `occupantCount` alone permits 0, and `computeWaterFee` floors the headcount
+   * to 1 - so editing a receipt down to zero occupants produced a row claiming
+   * nobody lives there while still charging one head of water. The two readings
+   * of the same row disagreed, and the create path already refused exactly that.
+   */
+  occupants: occupantCount.refine((n) => n >= 1, 'must be at least one occupant').optional(),
   /**
    * BR-037. The create path takes this from the request because there is no
    * rule to derive it from; the correction path could not take it at all.
@@ -2980,8 +2988,33 @@ router.patch(
     }
     if (gbgFee !== undefined) updatePatch.gbg_fee = gbgFee;
     if (transactionReference !== undefined) updatePatch.transaction_reference = transactionReference;
-    if (dateCoveredStart) updatePatch.rent_period_start = dateCoveredStart;
     if (dateCoveredEnd) updatePatch.rent_period_end = dateCoveredEnd;
+
+    /**
+     * Moving the period moves the money with it.
+     *
+     * `year`/`month` are the month the rent is FOR, derived from the period
+     * start - the create path says so at length, and the ledger settles it: of
+     * the rows where "rent for" and "date paid" disagree, 216 follow the period
+     * and 50 the date paid.
+     *
+     * This path wrote `rent_period_start` and left `year`/`month` alone, so
+     * correcting a receipt's Rent For from October back to August moved the
+     * period and left the filing behind: the income report printed an August
+     * period inside the October block, August still read unpaid, and October
+     * was overstated by that row. The fix was made on the create path when
+     * arrears exposed it and was never carried here, which is the same shape as
+     * the `payment_method` defect the comment above describes.
+     *
+     * `isoDateParts` rather than `new Date()`: these are `YYYY-MM-DD` strings
+     * and must be read without a timezone anywhere near them (B-27).
+     */
+    if (dateCoveredStart) {
+      updatePatch.rent_period_start = dateCoveredStart;
+      const periodParts = isoDateParts(dateCoveredStart);
+      updatePatch.year = periodParts.year;
+      updatePatch.month = periodParts.month;
+    }
 
     const { data: after, error: updateError } = await db
       .from('monthly_income_records')
