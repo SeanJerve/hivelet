@@ -1771,7 +1771,9 @@ router.patch(
       // Query active room assignment for occupant count
       const { data: assignment, error: assignmentError } = await db
         .from('room_assignments')
-        .select('id, occupant_count')
+        // `anniversary_date` feeds the rent period below (BR-033). It was not
+        // selected here, which is why that period could only ever be guessed.
+        .select('id, occupant_count, anniversary_date')
         .eq('room_id', before.room_id)
         .eq('tenant_profile_id', before.tenant_profile_id)
         .eq('is_active', true)
@@ -1826,17 +1828,40 @@ router.patch(
       let rentPeriodEnd = billData?.billing_period_end;
 
       if (!rentPeriodStart || !rentPeriodEnd) {
-        const y = paidParts.year;
-        const m = paidParts.month - 1;   // Date.UTC() below wants 0-based months
-        const d = paidParts.day;
-
-        if (d >= 26) {
-          rentPeriodStart = new Date(Date.UTC(y, m, 26)).toISOString().split('T')[0];
-          rentPeriodEnd = new Date(Date.UTC(y, m + 1, 25)).toISOString().split('T')[0];
-        } else {
-          rentPeriodStart = new Date(Date.UTC(y, m - 1, 26)).toISOString().split('T')[0];
-          rentPeriodEnd = new Date(Date.UTC(y, m, 25)).toISOString().split('T')[0];
-        }
+        /**
+         * THE TENANCY'S OWN CYCLE, NOT A FIXED 26th. BR-033.
+         *
+         * This block hardcoded a 26th-to-25th window: `if (d >= 26)` opened the
+         * cycle this month, otherwise last month. That is not what any tenancy
+         * here runs on. Measured against `room_assignments` on 2026-09-22,
+         * **19 of the 32 active tenancies anchor on the 1st**, and the rest on
+         * the 3rd, 7th, 9th, 13th, 21st or 28th - so the 26th was wrong for
+         * effectively every resident, and the anniversary needed to answer it
+         * correctly was two lines up, simply not selected.
+         *
+         * It only fires when a verified payment has no bill attached, which is
+         * why it went unnoticed: the figure it writes is `rent_period_start`
+         * and `rent_period_end` on a real ledger row, so a payment landing here
+         * was filed against dates belonging to nobody.
+         *
+         * `computeRentPeriod` is the same helper the receipt path uses, and it
+         * clamps a month-end anchor properly (three months from 31 January ends
+         * 30 April, not an impossible 31 April).
+         */
+        const anniversary = assignment?.anniversary_date;
+        /**
+         * No tenancy on file - the genuine case the `?.` above exists for, a
+         * payment settled after the tenancy ended. Anchoring on the day they
+         * actually paid is still a guess, but it is a self-consistent one that
+         * can be explained to her, which a fixed 26th never could.
+         */
+        const { start, end } = await computeRentPeriod(
+          anniversary ?? before.paid_at ?? new Date(),
+          before.paid_at ?? new Date(),
+          1
+        );
+        rentPeriodStart = start;
+        rentPeriodEnd = end;
       }
 
       // Check if income record already exists for this transaction reference
@@ -2891,6 +2916,39 @@ router.patch(
       occupants, gbgFee, paymentMethod, transactionReference, monthsCovered,
       dateCoveredStart, dateCoveredEnd
     } = parsedBody.data;
+
+    /**
+     * REFUSED RATHER THAN SILENTLY DROPPED. Sean's call, 2026-09-22.
+     *
+     * `monthsCovered` was accepted by the schema, destructured here, and then
+     * never used - so changing a receipt from one month to three returned 200,
+     * the screen said it had saved, and nothing whatsoever changed. The
+     * frontend does send this field on every edit (`IncomeCollectionsView`), so
+     * it was reachable, not theoretical.
+     *
+     * Honouring it is not a patch. Migration 029 splits a multi-month receipt
+     * into ONE LEDGER ROW PER MONTH - there is no `months_covered` column,
+     * confirmed against `information_schema` - so a row always covers exactly
+     * one month, and re-splitting an existing row would mean creating and
+     * destroying sibling rows in her ledger from an edit dialog. Asked which he
+     * wanted, Sean chose the refusal: void the receipt and enter it again,
+     * which is a path that already exists and is already audited.
+     *
+     * Only a CHANGE is refused. The frontend sends the current value on every
+     * edit, so refusing its mere presence would break editing outright.
+     *
+     * Same shape as the mistyped unit number just below: the point of supplying
+     * the field is to change something, so a request that cannot change it must
+     * not report success.
+     */
+    if (monthsCovered !== undefined && monthsCovered !== 1) {
+      throw ApiError.validation('A receipt covers one month per row.', {
+        monthsCovered: [
+          'Each row in the ledger covers a single month, so the number of months cannot be ' +
+            'changed here. Void this receipt and record it again with the months you want.',
+        ],
+      });
+    }
 
     let roomId = before.room_id;
     if (roomNumber) {

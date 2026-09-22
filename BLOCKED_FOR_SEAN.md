@@ -97,7 +97,27 @@ which is the exact failure CLAUDE.md warns about.
   reason. That is the argument for them, made better than any principle.
 - **Raised:** 2026-09-22 by Claude, caught by `check:ledger` during post-consultation consolidation.
 
-### B-55 — four things a services-layer audit found that I did not fix, and why
+### B-55 — four things a services-layer audit found · **Sean answered 2026-09-22; two now fixed, one deferred by his decision**
+
+> **Asked directly, in plain terms, and answered:**
+>
+> - **Part-payments (item 1) — "leave it for now".** Deliberately deferred, not forgotten. It
+>   cannot happen today because the checkout amount is server-derived from the outstanding
+>   balance, and closing it needs a migration against the live database. The analysis below stands
+>   for whenever that is wanted.
+> - **Months covered (item 3) — "refuse and tell me".** **Done.** The edit now refuses a change
+>   with a message naming the way round it (void and re-enter), instead of returning 200 and
+>   dropping the field. Only a *change* is refused: the screen sends the current value on every
+>   edit, so refusing its presence would have broken editing outright — checked against
+>   `IncomeCollectionsView`, which resets the field to 1 when the dialog opens.
+> - **Rent period (item 2) — "yes, use their own date".** **Done.** It now derives the cycle from
+>   the tenancy's `anniversary_date` through `computeRentPeriod`, the same helper the receipt path
+>   uses. Where there is genuinely no tenancy on file — a payment settled after one ended — it
+>   anchors on the day the money was actually paid, which is still a guess but a self-consistent
+>   one that can be explained to her, which a fixed 26th never could.
+> - **Item 4 (the two minor ones) — still open**, untouched and unimportant.
+
+#### The original findings
 
 Three of the audit's findings were fixed the same day (commits `94cd28e` and `7dd6727`: the
 month-end anniversary off-by-one, `year`/`month` not following an edited rent period, and an
