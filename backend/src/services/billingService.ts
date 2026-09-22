@@ -197,14 +197,44 @@ export async function computeBillPeriod(
   const month = refParts.month - 1;   // propertyParts is 1-based; the arithmetic below is 0-based
   const day = refParts.day;
 
-  // The cycle that contains `reference`: it starts on the anchor day of this month if we
-  // have reached it, otherwise on the anchor day of last month.
-  const startMonthOffset = day >= anchorDay ? 0 : -1;
-
   // Clamp the anchor to the length of the target month so the 31st does not roll into the
   // next month on a 30-day month. Day 0 of month n+1 is the last day of month n.
   const clampToMonth = (y: number, m: number, d: number) =>
     Math.min(d, new Date(Date.UTC(y, m + 1, 0)).getUTCDate());
+
+  /**
+   * The cycle that contains `reference`: it starts on the anchor day of this month if we
+   * have reached it, otherwise on the anchor day of last month.
+   *
+   * COMPARED AGAINST THE CLAMPED ANCHOR, NOT THE RAW ONE. This read
+   * `day >= anchorDay`, and for a tenancy anchored past the 28th that is a day
+   * the short month does not have, so the test could never be true on the one
+   * day it had to be - the clamped anniversary itself:
+   *
+   *   anchor 31, reference 28 Feb 2026   was  2026-01-31 .. 2026-02-27
+   *                                      now  2026-02-28 .. 2026-03-30
+   *   anchor 31, reference 30 Apr 2026   was  2026-03-31 .. 2026-04-29
+   *                                      now  2026-04-30 .. 2026-05-30
+   *
+   * The period returned did not contain the day the bill was being raised for,
+   * and the same three consequences follow as in the timezone note above: the
+   * resident is billed for a cycle that has already closed, the bill is BORN
+   * OVERDUE because `isOverdue()` is correct about a due date a month past, and
+   * migration 038's index keys on `billing_period_start`, so the bill raised on
+   * 30 April collides with April's existing one and the payment attaches to a
+   * debt already settled - leaving May unbilled.
+   *
+   * The function already agreed 28 February opens a cycle; asked on 1 March it
+   * returned `2026-02-28 .. 2026-03-30`. It disagreed only when asked ON the
+   * 28th. This is that off-by-one and nothing more.
+   *
+   * No live tenancy can reach it today: every `anniversary_date` in
+   * `room_assignments` falls on day 1-28 (checked against the table, 2026-09-22),
+   * and for those `clampToMonth` is the identity, so this is provably the same
+   * comparison it has always been. The 16 units migration 035 left for the owner
+   * include ones the ledger shows tracking month-end, which is where it arrives.
+   */
+  const startMonthOffset = day >= clampToMonth(year, month, anchorDay) ? 0 : -1;
 
   const startY = year;
   const startM = month + startMonthOffset;
