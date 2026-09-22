@@ -1,6 +1,6 @@
 # CONTINUE HERE — handoff for the next machine
 
-**Last updated:** 2026-09-19.
+**Last updated:** 2026-09-22.
 **Branch:** `main`. Everything described here is committed and pushed.
 **Read this first, then `docs/claude_pipeline/CONTINUE_HERE.md` for pipeline detail.**
 
@@ -8,14 +8,77 @@
 > **Working on Loyd's machine, without the database or the Adyen keys?
 > Read [`HANDOFF_TO_LOYD.md`](HANDOFF_TO_LOYD.md) instead of this file first.**
 >
-> It says what you can run (twelve of the eighteen suites, and one that goes green while
-> skipping half of itself), what you must not touch, and what the actual job is — which is
+> It says what you can run (13 of the twenty suites on a bare clone, and one that goes green
+> while skipping half of itself), what you must not touch, and what the actual job is — which is
 > **`CLIENT_MEETING_QUESTIONS.md`**, answerable by asking Mrs. Da Silva directly. That is the
 > biggest blocker in the project and the one thing Sean cannot do from his side.
 
 ---
 
-## 0.0 What 2026-09-19 produced
+## 0.0 What 2026-09-22 produced
+
+**A pre-consultation audit, a real security fix, a payment-reachability bug that meant nobody
+could actually test GCash, and a full motion pass across every screen — 25 commits, `check:all`
+20/20 both before the session and now.**
+
+### The security fix: every onboarded tenant got the same public password
+
+`POST /admin/tenants` hashed the literal `'Hivelet@Tenant2026'` for every tenant it onboarded —
+a string sitting in 21 commits of this repo's own history and previously found live in a shipped
+`frontend/dist` bundle (`docs/13_AUDIT_JUDGEMENT_LOG.md` §9). Fixed same-day once Sean picked the
+remedy ("random password and force a change on login"): `generateTemporaryPassword.ts` issues a
+real one-time password per tenant (`crypto.randomInt`, unambiguous character set), and it is now
+shown to the admin exactly once, in a non-dismissible reveal modal with copy-to-clipboard, right
+after onboarding — the "not yet surfaced in the UI" gap the fix shipped with that morning is
+closed. The forced-change half needs `database/migrations/048_must_change_password.sql` applied;
+everything for it is written and wired but deliberately inert until then. Full detail, including
+the exact two lines to restore afterward, is `BLOCKED_FOR_SEAN.md`'s **B-53**.
+
+### The bug that meant a live GCash payment could not be tested at all
+
+A resident's dashboard showed the current period as "Settled" with no way to pay unless a `bills`
+row already happened to exist for them — and almost none do, because bills are raised on demand
+(deliberate, see `docs/13_AUDIT_JUDGEMENT_LOG.md` §3). Fixed in `3f50678`/`64cf0e4`: both the
+tenant payments screen and the Overview tile now offer "Pay with GCash" for the current period
+regardless, and the checkout handler resolves-or-creates the bill server-side. Found and fixed
+specifically because Sean asked to actually see a live GCash payment go through before the
+consultation.
+
+**What that live attempt found, and where it stands.** Chased a CORS failure to `.env`'s
+`ADYEN_CLIENT_KEY` pointing at a credential that never had `localhost` allow-listed (a different,
+correct credential already did — same account, confirmed by matching API key suffix); fixed by
+switching credentials and confirmed via a fresh incognito session. Added shopper identity
+(`shopperReference`, `shopperEmail`) to the checkout session (`765d2b5`) on the theory it was a
+risk-engine block — it was not the fix. **The payment itself came back "Refused," and the
+attempt never appears in Adyen's own Payment list or API logs at all.** Ruled out CORS, missing
+shopper data, stale browser state, and fraud/velocity blocking one at a time; what's left points
+at GCash not being among Adyen's documented TEST-credential payment methods — an account-side gap
+on Adyen's end, not something fixable from this codebase. Needs Adyen support, not more debugging
+here.
+
+### Everything else, briefly
+
+| | |
+| :--- | :--- |
+| **Pre-consultation audit** (`3608386`, `bfd8edc`) | Filter-label/badge mismatches, a cross-modal status disagreement (Under Maintenance read as red in one screen, amber in another), a hardcoded ×200 water preview where the live rate helper already existed elsewhere, an Adyen modal reading a bill field at the wrong nesting depth so every payment tile showed "Monthly dues" instead of the actual unit, a keyboard-unreachable ticket-expand control, "you have none" shown for a filtered-to-zero result that actually had records |
+| **Billing edge case** (`e86ada2`) | A unit with `current_price = 0` could still raise a real bill — the zero-rent guard checked the wrong total. Latent, not live; no occupied unit holds `0` today |
+| **`/privacy` page** (`1e55eb2`) | Closes **B-50**. Grounded only in verified facts; unconfirmed items (retention period, DPA registration) are flagged in source comments for Sean/the owner |
+| **Full motion pass** (`9dfe370`, `56c145f`, `e3e5e87`, and this session's own follow-up sweep `7def23d`…`7dd8e77`) | Every dropdown, graph, header entry, switch, loading state, notification, alert, page transition and table now animates with a real reveal instead of popping in — grounded in the `emil-design-eng` and `impeccable` skills' decision framework (frequency → purpose → easing → duration), not decoration for its own sake. `OccupancyArc`/`SegmentBar` had no actual motion implemented despite being cited as the reference quality. One deliberate non-fix: `AdyenPaymentModal`'s state panels were NOT given a shared crossfade after tracing a `nextTick()` timing dependency that a shared transition would break |
+| **Accessibility** (`7774418`) | `prefers-reduced-transparency` now has a real fallback on the app's two `backdrop-filter` surfaces, distinct from `prefers-reduced-motion` |
+| **Apple-design pass** (`3933271`) | Tracking on four stat figures that had none, one asymmetric modal transition (entered with a scale, left without one), two kicker-above-heading violations removed |
+| **`check:ledger` ratchet fix** (`388ee70`) | Migration 047's deletions (five confirmed-fake profiles) cascaded four `room_assignments` rows out of existence; the check's hardcoded count needed lowering to match. Also surfaced that `luydcuario@gmail.com` was one of the five removed — confirmed by name with Sean before deletion, not an oversight |
+
+### What still needs a person
+
+`BLOCKED_FOR_SEAN.md` is current as of this session. The two live ones: **B-53**'s migration 048
+(random passwords are live and visible now; the forced-change half waits on this), and **B-52**
+(the `cloudflared` tunnel — start it and repoint the Adyen webhook before demonstrating a payment;
+the one already running this session will not survive a restart). Everything from **B-29** through
+**B-49** in that file predates today and is unchanged.
+
+---
+
+## 0.0a What 2026-09-19 produced
 
 **A functional audit found nineteen defects, six of them on the paths the owner's money takes,
 and not one of them produced an error, a failing suite or a console warning.** The twenty
