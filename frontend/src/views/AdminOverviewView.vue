@@ -716,12 +716,19 @@ const isExportingArchive = ref(false);
             the scale and translate utilities is what stands in for a
             hand-written `prefers-reduced-motion` block here, since Tailwind
             already generates that correctly; opacity still fades either way.
+
+            220ms/160ms, not 150ms/100ms - PillSelect's own dropdown was
+            bumped to those numbers after the client found its old pair an
+            instant cut rather than a deliberate motion. This menu copied
+            PillSelect's timing when it was written and was left behind at
+            the old numbers when PillSelect moved; same shape, same trigger,
+            so it gets the same fix.
           -->
           <Transition
-            enter-active-class="transition duration-150 ease-[var(--ease-out)]"
+            enter-active-class="transition duration-[220ms] ease-[var(--ease-out)]"
             enter-from-class="motion-safe:scale-95 opacity-0 motion-safe:-translate-y-1"
             enter-to-class="motion-safe:scale-100 opacity-100 motion-safe:translate-y-0"
-            leave-active-class="transition duration-100 ease-[var(--ease-out)]"
+            leave-active-class="transition duration-[160ms] ease-[var(--ease-out)]"
             leave-from-class="motion-safe:scale-100 opacity-100 motion-safe:translate-y-0"
             leave-to-class="motion-safe:scale-95 opacity-0 motion-safe:-translate-y-1"
           >

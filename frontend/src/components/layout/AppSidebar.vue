@@ -117,12 +117,17 @@ function closeMobileNav() {
             one thing in a sidebar seen dozens of times a session worth
             noticing arrive. Kept short: this is not the flagship moment, it
             is a rank-and-file corner of a screen a reader passes often.
+
+            150ms/100ms, not the original 120ms/90ms - this is the same job
+            AppHeader's notification-count badge does (a count popping onto an
+            icon), and that one already ran at 150ms/100ms; the two were
+            drifting apart doing identical work.
           -->
           <Transition
-            enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-[120ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+            enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
             enter-from-class="opacity-0 scale-75"
             enter-to-class="opacity-100 scale-100"
-            leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-[90ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+            leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-100 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
             leave-from-class="opacity-100 scale-100"
             leave-to-class="opacity-0 scale-75"
           >
@@ -220,11 +225,12 @@ function closeMobileNav() {
                       <span>{{ item.label }}</span>
                     </div>
 
+                    <!-- Same badge, same fix as the desktop nav above: 150ms/100ms to match AppHeader's notification badge instead of the 120ms/90ms this drawer copy had drifted to. -->
                     <Transition
-                      enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-[120ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+                      enter-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
                       enter-from-class="opacity-0 scale-75"
                       enter-to-class="opacity-100 scale-100"
-                      leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-[90ms] motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
+                      leave-active-class="motion-safe:transition-[opacity,transform] motion-safe:duration-100 motion-safe:ease-[cubic-bezier(0.23,1,0.32,1)]"
                       leave-from-class="opacity-100 scale-100"
                       leave-to-class="opacity-0 scale-75"
                     >
