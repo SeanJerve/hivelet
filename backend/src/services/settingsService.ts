@@ -14,6 +14,12 @@
  *   - the share divisor as `rentAmount / 2` (`admin.ts:911, 1102`)
  *   - the grace period as 10 days          (`tenant.ts:453`)
  *
+ * **Those line numbers are where they WERE, and are kept only to say what was fixed.** None
+ * of them still holds. Re-checked 2026-09-22: `admin.ts` contains no half-of-rent arithmetic
+ * anywhere, and the only surviving `rent_amount / 2` in the backend is the fallback in
+ * `incomeReportExport.ts`, which is dead because the column it falls back from is
+ * `GENERATED ALWAYS` and null on zero of the live rows.
+ *
  * That last one disagreed with the seeded value of 7 AND with the business, which has no
  * grace period at all. A setting nobody reads is not configuration; it is documentation
  * that happens to live in a table. This service makes the table authoritative.
