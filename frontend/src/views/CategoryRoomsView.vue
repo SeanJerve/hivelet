@@ -385,21 +385,21 @@ async function submitInquiry() {
         <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-ink">
           <RouterLink
             to="/public"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-block py-3 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Property
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/inquire"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-block py-3 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Inquire Now
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/login"
-            class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-block py-3 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Sign In
           </RouterLink>
@@ -809,10 +809,26 @@ async function submitInquiry() {
                 >
                   Shown above
                 </span>
+                <!--
+                  `.row-action`, not a hand-rolled `opacity-0
+                  group-hover:opacity-100`.
+
+                  This is the only thing on a plate that says it can be
+                  pressed, and it was revealed on hover - which a phone does
+                  not have. Verified with `matchMedia('(hover: hover)')`
+                  reporting false on an emulated handset: every one of the
+                  twenty studio plates sat there with no affordance at all,
+                  on the screen a prospect uses to choose a room.
+
+                  The shared rule hides it only under
+                  `(hover: hover) and (pointer: fine)` and leaves it visible
+                  on touch. The hairline frame above stays hover-only on
+                  purpose - it is decoration, not the affordance.
+                -->
                 <span
                   v-else
                   aria-hidden="true"
-                  class="relative mt-3 flex items-center gap-1.5 text-[0.65rem] tracking-[0.16em] uppercase text-ink-soft opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100"
+                  class="row-action relative mt-3 flex items-center gap-1.5 text-[0.65rem] tracking-[0.16em] uppercase text-ink-soft"
                 >
                   <span>See it</span>
                   <ArrowRight class="size-3 shrink-0 transition-transform duration-500 motion-safe:group-hover:translate-x-0.5" />
@@ -936,9 +952,14 @@ async function submitInquiry() {
             <span>{{ isSubmitting ? 'Sending' : 'Send' }}</span>
           </button>
 
+          <!--
+            `min-h-11`, not `py-1`. Measured 41x23 inside the open dialog at
+            375px, sitting 24px from a 123x43 Send button - the small target
+            of the pair, and the one a mis-tap lands on.
+          -->
           <button
             type="button"
-            class="press inline-block py-1 text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
+            class="press inline-flex min-h-11 items-center text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
             @click="closeInquiry"
           >
             Cancel

@@ -229,9 +229,10 @@ function handleReset() {
           <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
           {{ successNotice }}
         </p>
+        <!-- No `size-9`: it overrode `.icon-btn`'s own 2.75rem down to 36px. -->
         <button
           type="button"
-          class="icon-btn size-9 shrink-0"
+          class="icon-btn shrink-0"
           aria-label="Dismiss this message"
           @click="successNotice = ''"
         >

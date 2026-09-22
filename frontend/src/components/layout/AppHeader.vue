@@ -80,11 +80,26 @@ const isTenantRoute = computed(() =>
   route.path.startsWith('/tenant')
 );
 
-const isPublicRoute = computed(() => 
-  route.path.startsWith('/public') || 
-  route.path.startsWith('/category') || 
+const isPublicRoute = computed(() =>
+  route.path.startsWith('/public') ||
+  route.path.startsWith('/category') ||
   route.path === '/'
 );
+
+/**
+ * Where a sidebar actually exists to be toggled.
+ *
+ * The workspace hamburger was gated on `!isPublicRoute`, which is NOT the same
+ * set of routes `App.vue` mounts `AppSidebar` on. `/privacy` is in neither set:
+ * it is not a public route by this file's definition, so the button rendered,
+ * and it is not a workspace section, so `AppSidebar` was never in the document
+ * for `isMobileSidebarOpen` to open. Measured on an emulated handset at 375px -
+ * a 36x36 hamburger at (16, 14) that does nothing at all when tapped.
+ *
+ * Mirrors `isWorkspaceSection` in App.vue. If a fifth route ever grows a
+ * sidebar, these two have to move together.
+ */
+const hasSidebar = computed(() => isAdminRoute.value || isTenantRoute.value);
 
 const isLandingPage = computed(() =>
   route.path === '/' || route.path === '/public'
@@ -226,21 +241,30 @@ onUnmounted(() => {
       
       <!-- Left: Mobile Menu Toggle & Brand Logo -->
       <div class="flex items-center gap-3">
-        <!-- Workspace Mobile Menu Toggle -->
+        <!--
+          Workspace Mobile Menu Toggle. `hasSidebar`, not `!isPublicRoute` -
+          see the note on that computed.
+
+          `p-3 -ml-1`, not `p-2`: `p-2` around a `size-5` icon is a 36x36 tap
+          target, measured on an emulated handset. `p-3` makes it 44, and the
+          negative margin puts the icon back on the page gutter it was already
+          aligned to, so nothing moves on screen but the box that answers a
+          thumb.
+        -->
         <button
-          v-if="!isPublicRoute"
+          v-if="hasSidebar"
           @click="toggleSidebar"
-          class="press flex lg:hidden p-2 rounded-xl text-ink-soft hover:bg-tile hover:text-ink cursor-pointer"
+          class="press flex lg:hidden -ml-1 p-3 rounded-xl text-ink-soft hover:bg-tile hover:text-ink cursor-pointer"
           aria-label="Toggle navigation"
         >
           <Menu class="size-5" />
         </button>
 
-        <!-- Public Mobile Menu Toggle -->
+        <!-- Public Mobile Menu Toggle. Same 36 -> 44 as above. -->
         <button
           v-if="isPublicRoute"
           @click="isMobilePublicNavOpen = !isMobilePublicNavOpen"
-          class="press flex md:hidden p-2 rounded-xl cursor-pointer"
+          class="press flex md:hidden -ml-1 p-3 rounded-xl cursor-pointer"
           :class="isLandingPage ? 'text-white hover:bg-white/10' : 'text-ink-soft hover:bg-tile hover:text-ink'"
           aria-label="Toggle navigation menu"
         >
@@ -302,10 +326,17 @@ onUnmounted(() => {
         <template v-if="isAuthenticated && currentUser">
           <!-- Notification Bell + Popover. Restored 2026-09-15; see the note on the import. -->
           <div class="ws-focus relative">
+            <!--
+              No `size-10` here. It overrode `.icon-btn`'s own 2.75rem down to
+              40px, under the 44 every other control in this system keeps, on
+              the one header control a resident taps from a phone. `relative`
+              is the load-bearing part - the unread badge is positioned
+              against this button.
+            -->
             <button
               data-notifications-trigger
               @click="toggleNotifications"
-              class="icon-btn relative size-10 transition-colors"
+              class="icon-btn relative transition-colors"
               :class="[
                 isLandingPage
                   ? 'border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30'
@@ -515,10 +546,16 @@ onUnmounted(() => {
         v-if="isPublicRoute && isMobilePublicNavOpen"
         class="md:hidden border-t border-line bg-tile px-4 py-3 space-y-1 shadow-md"
       >
+        <!--
+          `min-h-11` and centred, rather than `py-2` around a 20px line. This
+          is the only navigation a visitor has on a phone - it is what the
+          hamburger opens - and both rows measured 343x36 on an emulated
+          handset, under the 44 the sidebar drawer's own rows already keep.
+        -->
         <RouterLink
           to="/inquire"
           @click="isMobilePublicNavOpen = false"
-          class="press block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand cursor-pointer"
+          class="press flex min-h-11 w-full items-center px-3 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand cursor-pointer"
         >
           Inquire Now
         </RouterLink>
@@ -526,7 +563,7 @@ onUnmounted(() => {
           v-if="!isAuthenticated"
           to="/login"
           @click="isMobilePublicNavOpen = false"
-          class="press block w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand cursor-pointer"
+          class="press flex min-h-11 w-full items-center px-3 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand cursor-pointer"
         >
           Sign In
         </RouterLink>

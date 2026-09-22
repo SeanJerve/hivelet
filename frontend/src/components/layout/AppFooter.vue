@@ -40,9 +40,22 @@ import { LANDLADY } from '@/lib/systemState';
 
         <div>
           <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Property</h2>
-          <ul class="mt-5 space-y-2.5 text-sm">
+          <!--
+            `py-3` on each link and no `space-y` between them, rather than
+            `py-1` with a 10px gap.
+
+            Every row here measured 28px tall on an emulated handset - a
+            stacked column of five, which is the whole of the public
+            navigation once a visitor is past the fold on a phone. The
+            padding sits on an `inline-block`, so it grows the box a thumb
+            lands on to 44 without moving the text or the underline by a
+            pixel; the gap comes out to keep the column the same length it
+            was. `mt-3` rather than `mt-5` for the same reason - the first
+            link now brings 12px of its own.
+          -->
+          <ul class="mt-3 text-sm">
             <li>
-              <RouterLink to="/public" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/public" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Overview
               </RouterLink>
             </li>
@@ -56,23 +69,23 @@ import { LANDLADY } from '@/lib/systemState';
               also what `resolveSlug` falls back to.
             -->
             <li>
-              <RouterLink to="/category/studio" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/category/studio" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Rentable units
               </RouterLink>
             </li>
             <li>
               <!-- Was a second link to /public, which went nowhere in particular. -->
-              <RouterLink to="/inquire" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/inquire" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Register your interest
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/login" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/login" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Sign in
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/privacy" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink to="/privacy" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Privacy policy
               </RouterLink>
             </li>
@@ -81,9 +94,10 @@ import { LANDLADY } from '@/lib/systemState';
 
         <div>
           <h2 class="text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Contact</h2>
-          <ul class="mt-5 space-y-2.5 text-sm">
+          <!-- Same 28 -> 44 as the Property column above. -->
+          <ul class="mt-3 text-sm">
             <li>
-              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 {{ LANDLADY.phone }}
               </a>
             </li>
@@ -92,14 +106,15 @@ import { LANDLADY } from '@/lib/systemState';
                 href="https://www.facebook.com/michelle.millete.16"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
+                class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
               >
                 Facebook<span class="sr-only"> (opens in a new tab)</span>
               </a>
             </li>
           </ul>
 
-          <h2 class="mt-9 text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Address</h2>
+          <!-- `mt-7`, not `mt-9`: the link above it now carries 12px of its own. -->
+          <h2 class="mt-7 text-[0.7rem] tracking-[0.16em] uppercase text-on-night-soft">Address</h2>
           <p class="mt-5 max-w-xs text-sm leading-relaxed text-on-night-soft">
             {{ LANDLADY.address }}
           </p>

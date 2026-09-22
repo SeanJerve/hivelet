@@ -574,9 +574,10 @@ function formatDateTime(iso: string) {
         <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
         {{ ticketNotice }}
       </p>
+      <!-- No `size-9`: it overrode `.icon-btn`'s own 2.75rem down to 36px. -->
       <button
         type="button"
-        class="icon-btn size-9 shrink-0"
+        class="icon-btn shrink-0"
         aria-label="Dismiss this message"
         @click="ticketNotice = ''"
       >
@@ -594,7 +595,8 @@ function formatDateTime(iso: string) {
           </p>
         </div>
 
-        <form @submit.prevent="handleTicketSubmit" class="p-6 space-y-4 flex-1 flex flex-col justify-between">
+        <!-- `p-5 sm:p-6`, matching the header strip directly above it. -->
+        <form @submit.prevent="handleTicketSubmit" class="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
           <div class="space-y-4">
             <div
               v-if="ticketError"
@@ -702,10 +704,16 @@ function formatDateTime(iso: string) {
                     <span class="text-xs text-brand font-semibold">Photo attached</span>
                   </div>
                 </div>
+                <!--
+                  `.icon-btn`, not `p-1` around a `size-4` icon - that was a
+                  24x24 target, the smallest control on the resident's side of
+                  the application, and the one that undoes an attachment they
+                  have just taken on a phone.
+                -->
                 <button
                   type="button"
                   @click="removePhoto"
-                  class="press p-1 text-ink-soft hover:text-overdue hover:bg-tile rounded-lg cursor-pointer shrink-0"
+                  class="icon-btn shrink-0 text-ink-soft hover:text-overdue"
                   aria-label="Remove photo"
                   title="Remove photo"
                 >
@@ -781,7 +789,23 @@ function formatDateTime(iso: string) {
           />
         </div>
 
-        <div class="p-6 flex-1 overflow-y-auto max-h-[580px]">
+        <!--
+          The inner scroller is `lg:` only now.
+
+          Below `lg` this panel is stacked under the form rather than beside
+          it, so there is no second column for it to keep pace with - and a
+          580px scroll region inside a page that already scrolls is the
+          worst thing a phone can be handed: a thumb that starts inside the
+          list scrolls the list, a thumb two pixels outside it scrolls the
+          page, and neither tells you which one it is about to do. At
+          `lg` and up the two panels sit side by side and the cap is what
+          keeps them the same height, so it stays there.
+
+          `p-5 sm:p-6` rather than a flat `p-6`, matching `OverviewTile` and
+          the "Report it" header above it; a flat 24px gutter on a 375px
+          screen spends 13% of the width on padding.
+        -->
+        <div class="p-5 sm:p-6 flex-1 lg:overflow-y-auto lg:max-h-[580px]">
           <div v-if="loadingTickets" class="space-y-4">
             <SkeletonCard variant="list" :count="2" />
           </div>
@@ -935,9 +959,15 @@ function formatDateTime(iso: string) {
                   </StatusPill>
 
                   <!-- View Timeline Button -->
+                  <!--
+                    `min-h-9 h-9` forced `.pill-btn` down from 2.75rem to 36px -
+                    measured 74x36. It is the only way into a request's own
+                    history, and it sits at the end of a wrapping row of pills,
+                    which is where a thumb is least accurate.
+                  -->
                   <button
                     @click.stop="openTimeline(ticket)"
-                    class="pill-btn ml-auto text-xs py-1 px-3 min-h-9 h-9"
+                    class="pill-btn ml-auto text-xs px-3"
                   >
                     <ListChecks class="size-3.5 text-brand" />
                     <span>Timeline</span>

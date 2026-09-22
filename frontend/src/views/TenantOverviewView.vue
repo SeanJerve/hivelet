@@ -613,9 +613,15 @@ const statusTone = computed(() => {
         </div>
 
         <div class="mt-auto border-t border-white/20 pt-3">
+          <!--
+            `min-h-11`, not `py-1`. This full-width row was 28px tall, and it
+            is the disclosure that holds the landlady's GCash number - the
+            fallback a resident reaches for when the online payment will not
+            go through, which is exactly when they are on a phone.
+          -->
           <button
             type="button"
-            class="press flex w-full items-center justify-between gap-3 rounded-xl py-1 text-sm font-semibold cursor-pointer"
+            class="press flex min-h-11 w-full items-center justify-between gap-3 rounded-xl text-sm font-semibold cursor-pointer"
             :aria-expanded="showOtherWaysToPay"
             aria-controls="other-ways-to-pay"
             @click="showOtherWaysToPay = !showOtherWaysToPay"

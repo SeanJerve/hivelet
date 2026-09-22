@@ -847,7 +847,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             type="button"
             :aria-expanded="allUnitsShown"
             aria-controls="all-units-body all-units-list"
-            class="press-plate group flex w-full items-center justify-between gap-6 py-2 text-left sm:pr-[17px]"
+            class="press-plate group flex min-h-11 w-full items-center justify-between gap-6 py-2 text-left sm:pr-[17px]"
             @click="toggleAllUnits"
           >
             <span class="text-sm font-semibold text-brand underline underline-offset-4 decoration-brand/60 group-hover:decoration-brand group-hover:text-brand-strong transition-colors">
