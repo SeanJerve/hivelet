@@ -23,6 +23,7 @@ import { getStoredToken } from '@/lib/api';
  */
 const PublicGuestView = () => import('@/views/PublicGuestView.vue');
 const InquireView = () => import('@/views/InquireView.vue');
+const PrivacyPolicyView = () => import('@/views/PrivacyPolicyView.vue');
 const CategoryRoomsView = () => import('@/views/CategoryRoomsView.vue');
 const LoginView = () => import('@/views/LoginView.vue');
 const AdminOverviewView = () => import('@/views/AdminOverviewView.vue');
@@ -50,6 +51,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/', name: 'Home', redirect: '/public' },
   { path: '/public', name: 'PublicGuest', component: PublicGuestView },
   { path: '/inquire', name: 'Inquire', component: InquireView },
+  { path: '/privacy', name: 'PrivacyPolicy', component: PrivacyPolicyView },
   { path: '/category/:categorySlug', name: 'CategoryRooms', component: CategoryRoomsView },
   { path: '/category/:categorySlug/units', name: 'CategoryUnits', component: CategoryRoomsView },
   { path: '/login', name: 'Login', component: LoginView },

@@ -71,6 +71,11 @@ import { LANDLADY } from '@/lib/systemState';
                 Sign in
               </RouterLink>
             </li>
+            <li>
+              <RouterLink to="/privacy" class="press inline-block py-1 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+                Privacy policy
+              </RouterLink>
+            </li>
           </ul>
         </div>
 

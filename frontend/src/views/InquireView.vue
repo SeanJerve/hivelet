@@ -277,12 +277,14 @@ async function submitInquiry() {
             Shortened to the one fact that changes what a reader does with this
             form: no automatic confirmation goes out, so leave a real way to be
             reached. The fuller account of where this is stored and who reads
-            it belongs on a privacy policy page, not repeated at the point of
-            filling in a form - there isn't one yet (B-50 in BLOCKED_FOR_SEAN.md).
+            it now lives on its own page (B-50 in BLOCKED_FOR_SEAN.md), linked
+            by name rather than just mentioned.
           -->
           <p class="mt-10 max-w-xl text-xs leading-relaxed text-ink-soft">
             No automatic confirmation is sent, so please include a number or address
-            Mrs. {{ LANDLADY.name }} can reach you on.
+            Mrs. {{ LANDLADY.name }} can reach you on. See the
+            <RouterLink to="/privacy" class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy</RouterLink>
+            for what happens to this information.
           </p>
 
           <button
