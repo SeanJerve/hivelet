@@ -1383,6 +1383,58 @@ async function exportExcel() {
               </tr>
             </template>
 
+            <!--
+              The same subtotal as the `foot` row above it, in the card shape
+              this register already uses on a phone. Without it, below `lg`
+              every one of these figures disappeared and the cluster header's
+              "Remitted" was the only total left on the screen - so a month
+              checked on a phone had no breakdown at all.
+
+              Same arithmetic, same fields, same order as the table foot; the
+              headcount rides on the Water label the way it does on a row card
+              rather than becoming a column of its own.
+            -->
+            <template #foot-card>
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-ink">
+                    {{ group.label }}, all {{ group.records.length }}
+                  </p>
+                  <p class="mt-0.5 text-xs text-ink-faint">
+                    Every entry in this cluster, not only the ones shown
+                  </p>
+                </div>
+                <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
+                  {{ peso(group.totalRemitted) }}
+                </p>
+              </div>
+
+              <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                <div>
+                  <dt class="text-xs text-ink-faint">Rent</dt>
+                  <dd class="tabular font-semibold text-ink">{{ peso(group.totalRent) }}</dd>
+                </div>
+                <div v-if="group.hasShareColumn">
+                  <dt class="text-xs text-ink-faint">50% Share</dt>
+                  <dd class="tabular font-semibold text-verify">{{ peso(group.totalShare) }}</dd>
+                </div>
+                <div v-if="group.key === 'Linda'">
+                  <dt class="text-xs text-ink-faint">Electricity</dt>
+                  <dd class="tabular font-semibold text-brand">
+                    {{ peso(group.records.reduce((sum, r) => sum + (r.linda?.electricity || 0), 0)) }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-ink-faint">Water, {{ group.totalOccupants }} heads</dt>
+                  <dd class="tabular font-semibold text-ink">{{ peso(group.totalWater) }}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-ink-faint">Garbage</dt>
+                  <dd class="tabular text-ink">{{ peso(group.totalGarbage) }}</dd>
+                </div>
+              </dl>
+            </template>
+
             <template #card="{ row: r }">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
@@ -1511,9 +1563,85 @@ async function exportExcel() {
           <td class="num">{{ rows.reduce((sum, r) => sum + r.occupants, 0) }}</td>
           <td class="num">{{ peso(totalWater) }}</td>
           <td class="num">{{ peso(totalGarbage) }}</td>
-          <td class="num text-brand">{{ peso(totalRemitted) }}</td>
+          <!--
+            THE COLUMN ABOVE NOW ADDS UP TO THIS.
+
+            It did not. Each Remitted cell puts a BH row at half its rent, so
+            the column sums to `totalSpreadsheetLine`; this foot printed
+            `totalRemitted`, which is BR-038's rent-plus-water over every row.
+            Both figures are correct and they are not the same quantity - one
+            is the owner's own spreadsheet bottom line, the other is what the
+            generated column in the database holds - but one sat at the foot of
+            a column of the other, about ₱2.3M apart on the full ledger, with
+            nothing saying why. Anybody adding the column by eye got a different
+            answer from the total beneath it.
+
+            Shown the way the Rent cell three columns left already does it: the
+            column's own sum first, the other figure named underneath. Nothing
+            is re-derived and no stored value changes - both computeds already
+            existed.
+          -->
+          <td class="num text-brand">
+            <span class="block">{{ peso(totalSpreadsheetLine) }}</span>
+            <span class="block text-xs font-normal text-verify">
+              Rent + water: {{ peso(totalRemitted) }}
+            </span>
+          </td>
           <td></td>
         </tr>
+      </template>
+
+      <!--
+        The phone half of the `foot` row above. Every figure in it was missing
+        below `lg`, on the one screen a landlady is most likely to check away
+        from a desk.
+
+        Each figure is the same computed total the table foot prints, taken
+        from the same names - nothing is re-derived here.
+
+        The headline is `totalSpreadsheetLine`, matching what the foot now
+        leads with, so the phone and the desk agree. `totalRemitted` - BR-038's
+        rent-plus-water - is named underneath it rather than dropped, for the
+        same reason it is named in the foot: both figures are real, they are
+        about ₱2.3M apart on the full ledger, and the one thing that must not
+        happen is either appearing without saying which it is.
+      -->
+      <template #foot-card>
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-ink">All {{ rows.length }} on screen</p>
+            <p class="mt-0.5 text-xs text-ink-faint">
+              Every entry the filters allow, not only the ones shown
+            </p>
+          </div>
+          <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
+            {{ peso(totalSpreadsheetLine) }}
+            <span class="block text-xs font-normal text-verify">
+              Rent + water: {{ peso(totalRemitted) }}
+            </span>
+          </p>
+        </div>
+
+        <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <div>
+            <dt class="text-xs text-ink-faint">Rent</dt>
+            <dd class="tabular font-semibold text-ink">{{ peso(totalRent) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">50% Share, on BH rows</dt>
+            <dd class="tabular font-semibold text-verify">{{ peso(totalShare) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">
+              Water, {{ rows.reduce((sum, r) => sum + r.occupants, 0) }} heads
+            </dt>
+            <dd class="tabular font-semibold text-ink">{{ peso(totalWater) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-ink-faint">Garbage</dt>
+            <dd class="tabular text-ink">{{ peso(totalGarbage) }}</dd>
+          </div>
+        </dl>
       </template>
 
       <template #card="{ row: r }">

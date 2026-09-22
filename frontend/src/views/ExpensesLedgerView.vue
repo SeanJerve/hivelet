@@ -724,22 +724,49 @@ async function handleEditExpense() {
 
     <!-- What was spent, and where it landed -->
     <div class="grid gap-4 xl:grid-cols-12">
-      <OverviewTile title="Spent in this view" class="xl:col-span-4">
+      <!--
+        The one dark tile on this screen, and the one figure the screen exists
+        to state.
+
+        This was `text-5xl` on a plain tile sitting beside another plain tile of
+        the same weight, so the screen opened on two equal surfaces and the eye
+        had nowhere to land. OverviewTile's own note reserves `night` for what
+        "asks for action", and a total spent does not - but the two registers
+        this one is read beside already use the tone the other way and neither
+        of their dark figures asks for anything: "Collected altogether" on the
+        income ledger is a sum, "Everything on record" on the audit trail is a
+        count. Both are the headline of the screen that owns them. Read as a
+        claim with a date on it, the tile's note describes the overview, where
+        the dark tile really is a queue of work; across the three admin
+        registers the rank the tone carries is "this is the figure the screen
+        is about". "Money going out" was the only one of the four without one.
+
+        The figure steps DOWN, 5xl to 4xl, to the same line "Collected
+        altogether" uses - the tone now does the work the size was being asked
+        to do on its own, and the pair reads as one product. It also stops a
+        seven-figure peso amount from running out of a third-width tile.
+
+        The rules inside are `white/10` and the quiet text `on-night-soft`,
+        which is the dark-tile idiom already in AdminOverviewView, not a new
+        colour.
+      -->
+      <OverviewTile title="Spent in this view" tone="night" class="xl:col-span-4">
         <UnavailableNote
           v-if="expenseRecordsFetchFailed"
+          dark
           message="Expenses could not be loaded. That is not the same as nothing being spent."
           @retry="fetchExpenses"
         />
         <template v-else>
-          <p class="text-5xl leading-none font-semibold tabular tracking-tight">{{ peso(totalJuly) }}</p>
-          <p class="text-sm text-ink-soft">Across {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</p>
-          <dl class="mt-auto flex flex-col divide-y divide-line border-t border-line pt-1 text-sm">
+          <p class="tabular text-4xl leading-none font-semibold tracking-tight">{{ peso(totalJuly) }}</p>
+          <p class="text-sm leading-6 text-on-night-soft">Across {{ filtered.length }} {{ filtered.length === 1 ? 'entry' : 'entries' }}</p>
+          <dl class="mt-auto flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1 text-sm">
             <div class="flex items-baseline justify-between gap-3 py-2">
-              <dt class="text-ink-soft">Utilities</dt>
+              <dt class="text-on-night-soft">Utilities</dt>
               <dd class="tabular font-semibold">{{ peso(utilitiesTotal) }}</dd>
             </div>
             <div class="flex items-baseline justify-between gap-3 py-2">
-              <dt class="text-ink-soft">Repairs and cleaning</dt>
+              <dt class="text-on-night-soft">Repairs and cleaning</dt>
               <dd class="tabular font-semibold">{{ peso(repairsTotal) }}</dd>
             </div>
           </dl>

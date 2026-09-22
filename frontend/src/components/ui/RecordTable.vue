@@ -15,7 +15,9 @@
  *   - carries the caption, the sticky head and the empty state in one place
  *
  * The caller supplies the columns through `head` and `row`, and the phone
- * version through `card`. What a row means stays with the screen that owns it.
+ * version through `card`. A register that carries a subtotal supplies it twice
+ * for the same reason: `foot` for the table, `foot-card` for the phone. What a
+ * row means stays with the screen that owns it.
  */
 import { computed, onUnmounted, ref, toRef, watch } from 'vue';
 import { usePaged } from '@/lib/usePaged';
@@ -124,6 +126,28 @@ onUnmounted(() => {
           :style="revealFirstLoad ? { animationDelay: `${Math.min(i, 9) * 30}ms` } : undefined"
         >
           <slot name="card" :row="row" :index="i" />
+        </div>
+
+        <!--
+          The subtotal, on a phone.
+          `tfoot` lives inside the `hidden lg:block` table above, so below `lg`
+          the whole per-cluster breakdown - rent, the 50% column, water, garbage
+          and the headcount - simply was not rendered. The only figure that
+          survived was the one the cluster header carries on its own.
+          It takes the same surface as the cards it closes, with a border
+          standing in for the 2px rule `.ws-table tfoot` draws above itself, so
+          it reads as a conclusion rather than as one more entry. No stagger:
+          the desktop reveal is scoped to `tbody tr` and leaves its own footer
+          still, and this is the same line.
+        -->
+        <div
+          v-if="$slots['foot-card']"
+          :class="[
+            'rounded-2xl border border-line p-5',
+            flat ? 'bg-canvas' : 'rounded-tile bg-tile',
+          ]"
+        >
+          <slot name="foot-card" />
         </div>
       </div>
 

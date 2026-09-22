@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, useId } from 'vue';
 import { ChevronDown } from 'lucide-vue-next';
 
 export interface SelectOption {
@@ -55,8 +55,12 @@ const normalizedOptions = computed<SelectOption[]>(() => {
   });
 });
 
+const selectedIndex = computed(() =>
+  normalizedOptions.value.findIndex((opt) => String(opt.value) === String(props.modelValue))
+);
+
 const selectedOption = computed(() => {
-  return normalizedOptions.value.find((opt) => String(opt.value) === String(props.modelValue));
+  return selectedIndex.value === -1 ? undefined : normalizedOptions.value[selectedIndex.value];
 });
 
 const selectedLabel = computed(() => {
@@ -73,20 +77,107 @@ const selectedCount = computed(() => {
 
 const isOpen = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
+const triggerRef = ref<HTMLButtonElement | null>(null);
+const listRef = ref<HTMLElement | null>(null);
 
-function toggle() {
+/**
+ * Which option the keyboard is pointing at. -1 while the popover is closed.
+ *
+ * DOM focus never leaves the trigger. This control told assistive technology it
+ * was a listbox - `role="listbox"`, `role="option"`, `aria-haspopup` - and then
+ * implemented none of the interaction that promises: no arrows, no Home/End, no
+ * type-ahead, and nothing at all naming which option was current. A reader was
+ * handed a listbox and found a dead end.
+ *
+ * Of the two ways out, this is the `aria-activedescendant` one rather than
+ * roving `tabindex`, and the deciding factor is Tab. With roving focus the
+ * focused element is an option INSIDE a popover that unmounts, so Tab has to be
+ * intercepted and focus put somewhere by hand or it falls to `<body>`. Keeping
+ * focus on the trigger means Tab is just Tab: close the popover and the
+ * browser's own sequential navigation carries on from a control that is still
+ * there. The options are `tabindex="-1"` so they are never in that sequence.
+ *
+ * Both models are legitimate; mixing them is not. Nothing below moves focus
+ * into the list.
+ */
+const activeIndex = ref(-1);
+
+const uid = useId();
+const listboxId = `${uid}-listbox`;
+function optionId(index: number) {
+  return `${uid}-option-${index}`;
+}
+const activeOptionId = computed(() =>
+  isOpen.value && activeIndex.value >= 0 ? optionId(activeIndex.value) : undefined
+);
+
+/** Type-ahead buffer. Cleared after a pause, the same as a native <select>. */
+let typeahead = '';
+let typeaheadTimer: ReturnType<typeof setTimeout> | undefined;
+
+function clampIndex(index: number) {
+  const last = normalizedOptions.value.length - 1;
+  if (last < 0) return -1;
+  return Math.min(Math.max(index, 0), last);
+}
+
+function open(index: number) {
   if (props.disabled) return;
-  isOpen.value = !isOpen.value;
+  isOpen.value = true;
+  activeIndex.value = clampIndex(index);
 }
 
 function close() {
   isOpen.value = false;
+  activeIndex.value = -1;
+  typeahead = '';
+  if (typeaheadTimer) clearTimeout(typeaheadTimer);
+}
+
+function toggle() {
+  if (props.disabled) return;
+  if (isOpen.value) close();
+  else open(selectedIndex.value >= 0 ? selectedIndex.value : 0);
 }
 
 function selectOption(val: string | number) {
   emit('update:modelValue', val);
   emit('change', val);
   close();
+  /**
+   * A mouse click lands focus on the option button, and that button is about to
+   * be unmounted - focus would fall to `<body>` and a keyboard reader who had
+   * walked this far would restart from the top of the page. `:focus-visible`
+   * does not match after a pointer interaction, so the ring is not forced on a
+   * mouse user by putting focus back.
+   */
+  triggerRef.value?.focus();
+}
+
+function runTypeahead(char: string) {
+  const options = normalizedOptions.value;
+  if (options.length === 0) return;
+
+  if (typeaheadTimer) clearTimeout(typeaheadTimer);
+  typeahead += char.toLowerCase();
+  typeaheadTimer = setTimeout(() => {
+    typeahead = '';
+  }, 600);
+
+  // One letter pressed repeatedly cycles the options starting with it.
+  const repeated = typeahead.length > 1 && [...typeahead].every((c) => c === typeahead[0]);
+  const needle = repeated ? typeahead[0] : typeahead;
+  const from = activeIndex.value >= 0 ? activeIndex.value : selectedIndex.value;
+  const startAt = typeahead.length === 1 || repeated ? Math.max(from, -1) + 1 : Math.max(from, 0);
+
+  for (let step = 0; step < options.length; step++) {
+    const i = (startAt + step) % options.length;
+    if (options[i].label.toLowerCase().startsWith(needle)) {
+      if (isOpen.value) activeIndex.value = i;
+      else open(i);
+      return;
+    }
+  }
 }
 
 function onDocumentPointerDown(e: PointerEvent) {
@@ -96,10 +187,93 @@ function onDocumentPointerDown(e: PointerEvent) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
+  if (props.disabled) return;
+  const key = e.key;
+  const last = normalizedOptions.value.length - 1;
+
+  if (key === 'Escape') {
+    /**
+     * Only swallow Escape when there is a popover to close. PillSelect sits
+     * inside `WsModal` on two screens, and an unconditional `close()` that let
+     * the event carry on closed the dialog as well as the menu - one keystroke,
+     * two dismissals, and the half-filled form behind it gone. When this
+     * control has nothing open, Escape is the dialog's.
+     */
+    if (!isOpen.value) return;
+    e.preventDefault();
+    e.stopPropagation();
     close();
+    triggerRef.value?.focus();
+    return;
+  }
+
+  if (key === 'Tab') {
+    // Focus is already on the trigger; get the popover out of the way and let
+    // the browser move on from there.
+    if (isOpen.value) close();
+    return;
+  }
+
+  if (key === 'ArrowDown' || key === 'ArrowUp' || key === 'Home' || key === 'End') {
+    e.preventDefault(); // these scroll the page otherwise
+    if (!isOpen.value) {
+      if (key === 'ArrowUp') open(selectedIndex.value >= 0 ? selectedIndex.value : last);
+      else if (key === 'End') open(last);
+      else if (key === 'Home') open(0);
+      else open(selectedIndex.value >= 0 ? selectedIndex.value : 0);
+      return;
+    }
+    if (key === 'ArrowDown') activeIndex.value = clampIndex(activeIndex.value + 1);
+    else if (key === 'ArrowUp') activeIndex.value = clampIndex(activeIndex.value - 1);
+    else if (key === 'Home') activeIndex.value = clampIndex(0);
+    else activeIndex.value = clampIndex(last);
+    return;
+  }
+
+  if (key === 'Enter' || key === ' ' || key === 'Spacebar') {
+    // A space that continues a type-ahead is a space, not a choice.
+    if (key !== 'Enter' && typeahead) {
+      e.preventDefault();
+      runTypeahead(' ');
+      return;
+    }
+    // Also cancels the click the trigger would otherwise fire, which would
+    // toggle the popover a second time and undo what we just did.
+    e.preventDefault();
+    if (!isOpen.value) {
+      open(selectedIndex.value >= 0 ? selectedIndex.value : 0);
+      return;
+    }
+    const opt = normalizedOptions.value[activeIndex.value];
+    if (opt) selectOption(opt.value);
+    else close();
+    return;
+  }
+
+  if (key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    runTypeahead(key);
   }
 }
+
+/**
+ * Keep the active option on screen. The list scrolls at `max-h-64`, so on a
+ * register filter with twenty entries the arrow keys otherwise move a
+ * highlight nobody can see.
+ */
+watch(activeIndex, async (index) => {
+  if (index < 0 || !isOpen.value) return;
+  await nextTick();
+  const el = listRef.value?.querySelectorAll<HTMLElement>('[role="option"]')[index];
+  el?.scrollIntoView({ block: 'nearest' });
+});
+
+// A disabled control cannot be reached to close its own popover.
+watch(
+  () => props.disabled,
+  (disabled) => {
+    if (disabled && isOpen.value) close();
+  }
+);
 
 onMounted(() => {
   document.addEventListener('pointerdown', onDocumentPointerDown);
@@ -107,6 +281,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onDocumentPointerDown);
+  if (typeaheadTimer) clearTimeout(typeaheadTimer);
 });
 </script>
 
@@ -139,7 +314,9 @@ onBeforeUnmount(() => {
     -->
     <button
       :id="id"
+      ref="triggerRef"
       type="button"
+      role="combobox"
       class="press inline-flex w-full min-h-[2.75rem] h-11 items-center justify-between gap-2 rounded-full border border-line bg-tile px-3.5 py-2 text-sm font-medium text-ink shadow-xs hover:border-brand/40 disabled:cursor-not-allowed disabled:bg-canvas disabled:text-ink-faint cursor-pointer select-none"
       :class="{
         'border-brand ring-2 ring-brand/10': isOpen,
@@ -147,6 +324,8 @@ onBeforeUnmount(() => {
       :disabled="disabled"
       :aria-label="ariaLabel"
       :aria-expanded="isOpen"
+      :aria-controls="listboxId"
+      :aria-activedescendant="activeOptionId"
       aria-haspopup="listbox"
       @click="toggle"
     >
@@ -204,23 +383,42 @@ onBeforeUnmount(() => {
     >
       <div
         v-if="isOpen"
+        :id="listboxId"
+        ref="listRef"
         role="listbox"
         :aria-label="ariaLabel"
         class="absolute top-full z-50 mt-1.5 w-full rounded-2xl border border-line bg-tile p-1.5 shadow-lift overflow-hidden"
         :class="align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'"
       >
         <div class="max-h-64 overflow-y-auto space-y-0.5">
+          <!--
+            Three states that must not collapse into each other: SELECTED (the
+            filter currently in force), HOVERED (where the mouse happens to be),
+            and ACTIVE (where the keyboard is, the one `aria-activedescendant`
+            names). The ring is the active marker and nothing else uses it, so
+            active-on-selected and active-on-anything-else both read, and a
+            hover never counterfeits the keyboard position.
+
+            `tabindex="-1"` keeps these out of the tab sequence - focus stays on
+            the trigger, which is what makes `aria-activedescendant` the thing
+            that speaks.
+          -->
           <button
-            v-for="opt in normalizedOptions"
+            v-for="(opt, index) in normalizedOptions"
             :key="opt.value"
+            :id="optionId(index)"
             type="button"
             role="option"
+            tabindex="-1"
             :aria-selected="String(opt.value) === String(modelValue)"
             class="press flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm cursor-pointer select-none"
             :class="[
               String(opt.value) === String(modelValue)
                 ? 'bg-brand-soft text-brand font-semibold'
-                : 'text-ink hover:bg-brand-soft/40 hover:text-brand',
+                : index === activeIndex
+                  ? 'bg-brand-soft/40 text-brand'
+                  : 'text-ink hover:bg-brand-soft/40 hover:text-brand',
+              index === activeIndex && 'ring-2 ring-brand',
             ]"
             @click="selectOption(opt.value)"
           >
