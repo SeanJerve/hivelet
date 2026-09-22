@@ -33,43 +33,45 @@ thing did not work" is not.
 
 ## Open
 
-### B-53 — every tenant the admin panel onboards gets a publicly-known password
+### B-53 — every tenant the admin panel onboards gets a publicly-known password · half closed, half staged
 
-- **Blocked on:** your decision on the fix shape, and this is worth deciding before the
-  consultation, not after — it affects every resident onboarded from here on.
-- **What it is:** `backend/src/routes/admin.ts:730-735` (`POST /admin/tenants`) hashes the literal
-  `'Hivelet@Tenant2026'` as the initial password for every tenant it onboards, unconditionally:
-  ```js
-  const tempPassword = 'Hivelet@Tenant2026';
-  const bcrypt = (await import('bcryptjs')).default;
-  passwordHash = await bcrypt.hash(tempPassword, 12);
-  ```
-  That exact string is not a secret anymore — it sits in 21 commits of this repo's own history and
-  was previously found live in a shipped `frontend/dist` bundle (`docs/13_AUDIT_JUDGEMENT_LOG.md`
-  §9). There is no forced-password-change mechanism anywhere in the product (grepped both
-  `backend/src` and `frontend/src` for `must_change_password`, `force_password_change`,
-  `first_login` — nothing), so a resident who has not happened to change their password since move-in
-  is reachable by anyone who has read this repository.
-- **Not the same as the closed B-01/B-49 items.** Those were about specific seeded demo
-  credentials, already rotated and confirmed dead. This is the live onboarding code path itself,
-  still assigning the same literal today and to every tenant onboarded after the consultation.
-- **Also worth knowing:** the shared demo password every current tenant account carries right now
-  (from `scripts/rotate-demo-passwords.mjs`, which you ran yourself for testing) is a separate,
-  deliberate, presumably temporary convenience — not this bug. This entry is about what happens to
-  the NEXT real tenant onboarded through the app, after today.
-- **What Sean needs to decide, then have built:**
-  1. Generate a random per-tenant password at onboarding time instead of a constant, returned
-     once in the response for the admin to relay in person (matches how onboarding already works
-     — she's standing there when someone moves in) — this is a pure code fix, no migration.
-  2. Add a `must_change_password` flag checked at login, forcing a change screen before the portal
-     unlocks — needs a schema column, so a migration.
-  3. Both, for defense in depth.
-  I did not write this myself: generating what becomes a real, live user credential is outside
-  what I can do here even for a forward-looking code change, the same boundary this project hit
-  on B-14/B-49. Tell me which option (or say "pick one") and I'll build it the moment you do.
-- **How to know it worked:** onboard a fresh test tenant and confirm the password the admin sees
-  is not `Hivelet@Tenant2026`.
-- **Raised:** 2026-09-22 by Claude, security sweep ahead of the consultation.
+- **Half 1 — CLOSED, shipped 2026-09-22.** `POST /admin/tenants` no longer hashes the literal
+  `'Hivelet@Tenant2026'`. You said "1 [random per-tenant password] and force password change on
+  login I think is best" and this half is option 1: `backend/src/utils/generateTemporaryPassword.ts`
+  generates a real one-time password per tenant (`crypto.randomInt`, unambiguous character set — no
+  0/O/1/l/I, since this gets read aloud and typed once), the response carries it back once as
+  `temporaryPassword` for the admin to relay in person, and the bcrypt hash itself is no longer
+  echoed in that same response either (`password_hash` was leaking via `.select('*')` — found while
+  fixing this, closed at the same time). **Not yet surfaced in the UI** — `TenantManagementView.vue`
+  receives the field now but nothing displays it to the admin yet. Small follow-up: add that.
+- **Half 2 — STAGED, not active.** Forcing a change on first login (your option 2) needs a new
+  column, so it can't ship instantly the way half 1 could. Everything for it is written and ready:
+  - `database/migrations/048_must_change_password.sql` — adds `profiles.must_change_password` and
+    extends `resolve_login_identifier()` to return it. **Not applied to the live database.**
+  - The application code (`AuthUser.mustChangePassword`, a mandatory non-dismissible
+    `ChangePasswordModal` mounted in `App.vue`, `authStore`'s `clearMustChangePassword`) is fully
+    wired and currently inert — `resolveAuthUser()` and `login()` both hardcode/coalesce it to
+    `false` on purpose, and the two write sites that would set/clear the real column
+    (`admin.ts`'s onboarding insert, `authService.ts`'s `changeOwnPassword`) deliberately do
+    **not** write it yet — each has a comment marking the exact line to restore. Writing to a
+    column that doesn't exist yet would have failed the whole insert/update (onboarding, or every
+    password change in the app) the moment it ran — a worse outcome than shipping half of this
+    today, which is why it's split this way rather than held back entirely.
+- **What Sean needs to do to finish half 2:**
+  1. Apply migration 048 (Supabase SQL editor, same as every other migration in this project).
+  2. Restore the two commented-out write lines — `backend/src/routes/admin.ts` (search
+     `must_change_password: passwordHash !== null,` in the comment right above `profileValues`)
+     and `backend/src/services/authService.ts`'s `changeOwnPassword` (search
+     `must_change_password: false,` in the comment right above the `.update()` call).
+  3. Run `npm run check:all` — `check:columns` will now pass with the restored writes; it was
+     exactly what caught this needing to be staged in the first place when I tried it live.
+- **Not the same as the closed B-01/B-49 items** (specific seeded demo credentials, already
+  rotated). Also not the same as the shared demo password every current account carries from
+  `scripts/rotate-demo-passwords.mjs` — that's a separate, deliberate testing convenience.
+- **How to know half 1 worked:** onboard a fresh test tenant and confirm the password shown is
+  random, not `Hivelet@Tenant2026`.
+- **Raised:** 2026-09-22 by Claude, security sweep ahead of the consultation. Half 1 shipped the
+  same day once you picked the option.
 
 ### B-52 — no cloudflared tunnel is running; a real GCash payment would currently vanish
 
