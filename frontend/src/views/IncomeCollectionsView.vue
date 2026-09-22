@@ -1119,14 +1119,14 @@ async function exportExcel() {
         <Skeleton class-name="h-20 w-full rounded-2xl" />
       </div>
 
-      <OverviewTile v-else-if="pendingPaymentsError" title="Payments to verify">
+      <OverviewTile v-else-if="pendingPaymentsError" class="ws-reveal" title="Payments to verify">
         <UnavailableNote
           message="The verification queue could not be loaded. This does not mean there is nothing to verify, it means we could not ask."
           @retry="fetchPayments()"
         />
       </OverviewTile>
 
-      <OverviewTile v-else-if="pendingPayments.length === 0" tone="soft" title="Payments to verify">
+      <OverviewTile v-else-if="pendingPayments.length === 0" tone="soft" class="ws-reveal" title="Payments to verify">
         <p class="text-2xl font-semibold tracking-tight">Nothing is waiting</p>
         <p class="text-sm text-ink-soft">
           No online payment is waiting for your decision. GCash payments arrive here through Adyen and count as
@@ -1135,7 +1135,7 @@ async function exportExcel() {
       </OverviewTile>
 
       <template v-else>
-        <p class="text-sm leading-6 text-ink-soft">
+        <p class="ws-reveal text-sm leading-6 text-ink-soft">
           Each payment below was sent through Adyen with GCash and is waiting for you. Verifying one marks the
           resident's bill as paid and writes the entry into the ledger, including the 50% Share.
         </p>

@@ -348,13 +348,13 @@ async function handleSendReply() {
           <p
             v-else-if="inquiriesFetchFailed"
             role="status"
-            class="p-8 text-center text-sm text-overdue"
+            class="ws-reveal p-8 text-center text-sm text-overdue"
           >
             The enquiries could not be loaded. That is not the same as there being none — reload
             the page, and if it keeps happening the enquiries are still safely on file.
           </p>
 
-          <p v-else-if="filteredInquiries.length === 0" class="p-8 text-center text-sm text-ink-soft">
+          <p v-else-if="filteredInquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
             Nothing matches what you have typed.
           </p>
 
@@ -367,7 +367,7 @@ async function handleSendReply() {
             interface, and the fill says the same thing without the bar - the
             unit picker on the public category page already selects this way.
           -->
-          <ul v-else class="divide-y divide-line">
+          <ul v-else class="ws-reveal divide-y divide-line">
             <li v-for="inq in filteredInquiries" :key="inq.id">
               <button
                 type="button"

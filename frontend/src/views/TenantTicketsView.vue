@@ -799,7 +799,7 @@ function formatDateTime(iso: string) {
 
           <div
             v-else-if="filteredTickets.length === 0"
-            class="py-12 text-center space-y-2"
+            class="ws-reveal py-12 text-center space-y-2"
           >
             <Inbox class="size-8 text-ink-soft/50 mx-auto" />
             <p class="text-sm font-semibold text-ink">No tickets to show</p>

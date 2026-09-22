@@ -218,7 +218,7 @@ function handleReset() {
 
     <SkeletonCard v-if="loading" variant="list" :count="2" />
 
-    <div v-else class="space-y-4 sm:space-y-6">
+    <div v-else class="ws-reveal space-y-4 sm:space-y-6">
       <!-- What just happened, when something did -->
       <div
         v-if="successNotice"

@@ -426,14 +426,14 @@ function refreshAll() {
 
     <!-- A failed read is NOT "nothing is owed". This branch comes first so the
          all-clear below can only be reached by a list that actually loaded. -->
-    <OverviewTile v-else-if="billsLoadFailed" title="Bills">
+    <OverviewTile v-else-if="billsLoadFailed" class="ws-reveal" title="Bills">
       <UnavailableNote
         message="Your bills could not be loaded. This is not the same as having none. Try again, and tell the landlady if it keeps failing."
         @retry="refreshAll"
       />
     </OverviewTile>
 
-    <OverviewTile v-else-if="outstandingBills.length === 0" tone="soft" title="Bills">
+    <OverviewTile v-else-if="outstandingBills.length === 0" tone="soft" class="ws-reveal" title="Bills">
       <p class="text-2xl font-semibold tracking-tight">Nothing is due</p>
       <!-- This used to promise "your next monthly statement will be issued on the
            5th". There is no scheduled bill generator and there is deliberately not

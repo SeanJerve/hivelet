@@ -819,7 +819,7 @@ async function handleEditExpense() {
 
     <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
 
-    <div v-else-if="groupedExpenses.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center">
+    <div v-else-if="groupedExpenses.length === 0" class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center">
       <p class="text-base font-semibold text-ink">
         <template v-if="expenseRecordsFetchFailed">The ledger could not be loaded</template>
         <template v-else>Nothing here</template>
@@ -844,6 +844,7 @@ async function handleEditExpense() {
     -->
     <RecordTable
       v-else
+      class="ws-reveal"
       :rows="groupedExpenses"
       caption="Expenses by day, each split across the boarding house, the main house and the apartments"
       noun="day"

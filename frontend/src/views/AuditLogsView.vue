@@ -470,7 +470,7 @@ async function exportAuditTrail() {
 
     <SkeletonTable v-else-if="isLoading" :columns="4" :rows="8" />
 
-    <div v-else-if="filteredLogs.length === 0" class="rounded-tile bg-tile px-6 py-16 text-center">
+    <div v-else-if="filteredLogs.length === 0" class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center">
       <ShieldCheck class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
       <p class="mt-3 text-base font-semibold text-ink">Nothing matches</p>
       <p class="mt-1 text-sm leading-6 text-ink-soft">
@@ -485,7 +485,7 @@ async function exportAuditTrail() {
       scrolled sideways. Each entry is now a record: when, what, to which row,
       by whom, and a control that opens what actually changed.
     -->
-    <div v-else class="overflow-hidden rounded-tile bg-tile">
+    <div v-else class="ws-reveal overflow-hidden rounded-tile bg-tile">
       <p class="border-b border-line px-5 py-3 text-sm text-ink-soft sm:px-6">
         Newest first
       </p>

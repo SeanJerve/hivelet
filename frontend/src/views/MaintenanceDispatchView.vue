@@ -438,7 +438,7 @@ function handleDeleteTicketPrompt() {
       @retry="fetchTickets"
     />
 
-    <div v-else class="grid gap-4 lg:grid-cols-3">
+    <div v-else class="ws-reveal grid gap-4 lg:grid-cols-3">
       <section
         v-for="col in columns"
         :key="col.key"
