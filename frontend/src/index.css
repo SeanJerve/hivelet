@@ -1188,11 +1188,17 @@ body {
  * takes the leaving one out of flow so only the entering page's height
  * counts.
  */
+/*
+ * 200ms/140ms, not the original 110ms/80ms - asked for directly, after
+ * confirming live that the faster pair read as an instant cut rather than a
+ * crossfade at normal viewing distance. Same enter-slower-than-leave ratio,
+ * still both under emil-design-eng's 300ms UI ceiling.
+ */
 .page-move-enter-active {
-  transition: opacity 0.11s var(--ease-out);
+  transition: opacity 0.2s var(--ease-out);
 }
 .page-move-leave-active {
-  transition: opacity 0.08s var(--ease-out);
+  transition: opacity 0.14s var(--ease-out);
   position: absolute;
   inset-inline: 0;
 }

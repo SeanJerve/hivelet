@@ -1290,7 +1290,7 @@ async function exportExcel() {
             </template>
 
             <template #row="{ row: r }">
-              <tr>
+              <tr class="group">
                 <th scope="row" class="font-semibold uppercase text-ink">{{ r.unit }}</th>
                 <td>
                   <span class="block">{{ r.datePaid }}</span>
@@ -1316,9 +1316,13 @@ async function exportExcel() {
                   {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water) }}
                 </td>
                 <td class="num">
-                  <button type="button" class="pill-btn" @click="startEditIncome(r)">
-                    <Pencil class="size-3.5" aria-hidden="true" />
-                    <span>Edit</span>
+                  <button
+                    type="button"
+                    class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
+                    :aria-label="`Edit ${r.contact}'s record`"
+                    @click="startEditIncome(r)"
+                  >
+                    <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
                   </button>
                 </td>
               </tr>
@@ -1420,7 +1424,7 @@ async function exportExcel() {
       </template>
 
       <template #row="{ row: r }">
-        <tr>
+        <tr class="group">
           <th scope="row">
             <span class="block font-semibold uppercase text-ink">{{ r.unit }}</span>
             <span class="block text-xs font-normal text-ink-faint">{{ r.cluster }}</span>
@@ -1448,9 +1452,13 @@ async function exportExcel() {
             {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water) }}
           </td>
           <td class="num">
-            <button type="button" class="pill-btn" @click="startEditIncome(r)">
-              <Pencil class="size-3.5" aria-hidden="true" />
-              <span>Edit</span>
+            <button
+              type="button"
+              class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
+              :aria-label="`Edit ${r.contact}'s record`"
+              @click="startEditIncome(r)"
+            >
+              <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
             </button>
           </td>
         </tr>

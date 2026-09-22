@@ -869,7 +869,7 @@ async function handleEditExpense() {
           <td class="num bg-canvas text-sm font-semibold text-ink">{{ peso(group.dayTotal) }}</td>
           <td class="bg-canvas"><span class="sr-only">that day</span></td>
         </tr>
-        <tr v-for="e in group.records" :key="e.id">
+        <tr v-for="e in group.records" :key="e.id" class="group">
           <th scope="row" class="font-medium text-ink">{{ e.description }}</th>
           <td>{{ e.category }}</td>
           <td class="num">
@@ -881,9 +881,13 @@ async function handleEditExpense() {
           <td class="num">{{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e)) : '—' }}</td>
           <td class="num font-semibold text-ink">{{ peso(getExpenseTotal(e)) }}</td>
           <td class="num">
-            <button type="button" class="pill-btn" @click="startEditExpense(e)">
-              <Pencil class="size-3.5" aria-hidden="true" />
-              <span>Edit</span>
+            <button
+              type="button"
+              class="press-plate flex size-9 items-center justify-center rounded-full opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-canvas cursor-pointer"
+              :aria-label="`Edit ${e.description}`"
+              @click="startEditExpense(e)"
+            >
+              <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
             </button>
           </td>
         </tr>

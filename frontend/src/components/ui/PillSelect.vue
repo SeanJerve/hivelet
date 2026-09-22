@@ -161,12 +161,18 @@ onBeforeUnmount(() => {
       dialog and reveal in this file already uses, so a PillSelect opening
       feels like the same product as everything around it, not a component
       that arrived from somewhere else.
+
+      220ms/160ms rather than 150ms/100ms - asked for directly, still inside
+      emil-design-eng's 150-250ms dropdown range, just at the slow end of it
+      rather than the fast end, so this and every other dropdown in the app
+      (every PillSelect instance) reads as a deliberate motion rather than a
+      snap.
     -->
     <Transition
-      enter-active-class="transition duration-150 ease-[var(--ease-out)]"
+      enter-active-class="transition duration-[220ms] ease-[var(--ease-out)]"
       enter-from-class="transform scale-95 opacity-0 -translate-y-1"
       enter-to-class="transform scale-100 opacity-100 translate-y-0"
-      leave-active-class="transition duration-100 ease-[var(--ease-out)]"
+      leave-active-class="transition duration-[160ms] ease-[var(--ease-out)]"
       leave-from-class="transform scale-100 opacity-100 translate-y-0"
       leave-to-class="transform scale-95 opacity-0 -translate-y-1"
     >
