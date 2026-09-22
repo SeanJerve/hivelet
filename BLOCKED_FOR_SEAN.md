@@ -97,6 +97,44 @@ which is the exact failure CLAUDE.md warns about.
   reason. That is the argument for them, made better than any principle.
 - **Raised:** 2026-09-22 by Claude, caught by `check:ledger` during post-consultation consolidation.
 
+### B-58 — ⚠ two of the five profiles marked for deletion must not be deleted · **migration 050 written, NOT applied**
+
+**Read this before deleting anything in the Supabase dashboard.**
+
+You asked to delete five — Mark Cruz, Jaz, Jaye Casia, Miguel Ramos, Rhea Mendoza — after Supabase
+refused with a foreign key error from `audit_logs`. Checked all five against the live tables.
+**Three are inert. Two are not.**
+
+- **❌ JAYE CASIA IS A CURRENT, PAYING RESIDENT.** `55555555-…`. One **active** tenancy, living in
+  **LB** right now; **31 live income rows** carrying **₱170,500.00**; billed ₱5,500 a month, most
+  recently July 2026 (`N/A-LB-7-2026`). Deleting her removes someone who currently occupies a unit
+  and destroys ₱170,500 of the owner's financial record. **B-43 reached the same conclusion
+  independently on 2026-09-20** — hers was one of the two names found on the public website, and
+  that entry records her as a current, active resident.
+- **❌ MARK CRUZ HOLDS THE AUDIT TRAIL.** `22222222-…`, the id in your error. No money (0 income
+  rows), but **13 payments** and **902 `audit_logs` rows as actor** — which is exactly what the
+  refusal was about. **That refusal is the database working correctly.** `audit_logs` is
+  append-only by grant: `service_role` has INSERT, SELECT, REFERENCES, TRIGGER, TRUNCATE and **not
+  DELETE**, established in B-41.
+  - **Do not accept Supabase's offer to "set an on delete behavior" on that constraint.** CASCADE
+    destroys the 902 rows *and* makes every future profile delete quietly destroy audit history;
+    SET NULL keeps the rows and erases who did it, which is the column that made them worth
+    keeping. B-41 settled this when 276 false audit rows were found and deliberately left standing:
+    an audit log you edit when its contents are inconvenient is not an audit log.
+  - **Migration 049 already deactivates him**, which takes his access away and removes him from the
+    resident list without touching one audit row. That is almost certainly what was wanted.
+- **✅ The three that are genuinely safe** — Jaz, Miguel Ramos, Rhea Mendoza. Every foreign key
+  counted live: 0 income, 0 payments, 0 bills, 0 tickets, 0 messages, 0 notifications, 0 audit
+  rows. Only 3 `room_assignments` rows between them, which the migration deletes alongside.
+- **What Sean needs to do:** apply `database/migrations/050_three_dummy_profiles.sql` instead of
+  deleting from the dashboard. It refuses to delete any of the three if something has come to
+  reference them since it was written, and it verifies afterwards that Jaye Casia is untouched and
+  still housed.
+- **How to know it worked:** the migration's first SELECT returns 0 rows, the second still shows
+  Jaye Casia active in LB with 31 rows and ₱170,500.00, and the ledger still reads **937 rows /
+  ₱8,086,250.00** with `profiles` down by exactly three.
+- **Raised:** 2026-09-22 by Claude, after Sean hit the constraint in Supabase.
+
 ### B-57 — two residents who moved out can still sign in · **migration 049 written, NOT applied**
 
 - **Your rule, 2026-09-22:** moving a tenant out should take their account and site access away
