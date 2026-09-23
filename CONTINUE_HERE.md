@@ -1,6 +1,6 @@
 # CONTINUE HERE — handoff for the next machine
 
-**Last updated:** 2026-09-22.
+**Last updated:** 2026-09-23.
 **Branch:** `main`. Everything described here is committed and pushed.
 **Read this first, then `docs/claude_pipeline/CONTINUE_HERE.md` for pipeline detail.**
 
@@ -15,7 +15,69 @@
 
 ---
 
-## 0.0 What 2026-09-22 produced
+## 0.0 What 2026-09-23 produced
+
+**Two database migrations applied live, and the mobile experience the client actually opened on
+his phone got a real audit rather than a guess.** As of this section, ten commits; the PWA/offline
+installability audit (below) was still running when this was written and is not yet reflected here
+— check `git log` for anything past `17c4140` before treating this section as the full day.
+
+### Two migrations, applied by Sean directly
+
+- **048 (`must_change_password`) is live.** The three lines of application code that had been
+  sitting inert since 2026-09-22 — `resolveAuthUser()`, `changeOwnPassword()`, and the onboarding
+  insert — are all restored and working. **This closes B-53 completely.** Verified in the safer
+  order this time: column confirmed present in `information_schema` first, then the code, then the
+  backend restarted and probed (`/api/health` 200, `/api/auth/me` 401 rather than 500) before
+  `check:api` — which signs in as a real tenant — was trusted.
+- **Three more migrations (046, 049, 050) applied in one sitting**, closing three residents who
+  were never real (import duplicates with receipt numbers stuck to their names), two accounts that
+  could sign in after moving out, and three genuinely inert dummy profiles. **Caught and prevented a
+  real mistake first:** the person asked to delete five profiles, and two of them were not
+  dummies — one was a current, paying resident (₱170,500 on record, still housed) whose name had
+  been mistaken for a duplicate, and one held 902 audit-log rows the database correctly refuses to
+  delete. Both were excluded; only the genuinely inert three went. `profiles` moved 40 → 34; the
+  four figures that had to hold all held — active tenancies, units, income rows, remitted total.
+- **A receipt was recorded live during testing and then correctly voided** four minutes later —
+  the ledger returned to its standing 937 rows / ₱8,086,250.00 exactly. Recorded as B-56, now
+  closed, and kept as evidence the void path works.
+
+### Mobile: the client opened this on a real phone and called it "messy"
+
+Not cosmetic feedback — real, measured defects, several severe:
+
+| | |
+| :--- | :--- |
+| **A regression from the same day** | Per-row edit pencils had just been converted to a hover-reveal pattern, which is correct on desktop and **removes the control entirely on a touch screen** — there was no way to edit a row on a phone at all. Fixed once, centrally (`.row-action` in `index.css`, gated on `(hover: hover) and (pointer: fine)`), not patched in each of the nine places it had spread to |
+| **Tables genuinely off-screen** | The residents register rendered a table **518px wide inside a 301px box** — the edit pencil sat at x=463 against a right edge of 301. Converted to cards below `lg`, matching a pattern already in use elsewhere |
+| **Toolbars overlapping, not just cramped** | A recurring `shrink-0` + `flex-wrap` combination sized rows at max-content and defeated wrapping — the "full-width" search bar was actually rendering at 123px, with a **103px overlap** onto the filter beside it. Found and fixed on four separate screens; it has now broken layouts three times in this codebase and is worth remembering as a pattern to grep for |
+| **Payment form buttons 415px below the fold** | Eleven full-width fields in one column, with the action buttons in `WsModal`'s footer slot reachable only by scrolling the whole dialog. Capped at `60dvh` on mobile (`dvh`, not `vh` — deliberately, since `vh` is the *large* viewport on a phone with the address bar showing) |
+| **Modals missing a way out** | The header X was gated on the same flag that guards against *accidental* dismissal, so every form holding typed input had no X at all. Split into two separate concerns — `dismissible` for accidents, a new `mandatory` for the one dialog that genuinely must not be escaped (B-53's forced password change) |
+| **The mobile nav drawer didn't hold the page still** | The page behind it scrolled under a drag on the backdrop. Fixed with one shared, reference-counted lock (`lib/scrollLock.ts`) rather than a second private counter — a second counter would have reproduced a bug `WsModal` already had with stacked modals, verified explicitly not to recur |
+| **A skeleton in the wrong shape** | The loading placeholder for every list stayed table-shaped below `lg`, where the real content becomes cards — so the page would visibly jump shape once data arrived, not just resize |
+
+Three background agents ran this in parallel on disjoint file sets so they could not collide, plus
+direct work on the cross-cutting fixes (the pencil, the scroll lock, the modal X). One agent hit a
+session rate limit mid-run with six files edited and unverified; those were checked (`vue-tsc`,
+build, `check:all`) before being trusted and committed.
+
+**Honest limits, stated plainly rather than glossed over:** admin and tenant screens cannot be
+signed into in this environment, so every fix to those screens rests on measuring real geometry by
+injecting class-identical replicas into the running app — not on having watched the actual screen
+render. The public pages, which need no login, were genuinely driven and clicked. **The one thing
+this session could not verify at all is whether these fixes look right on Sean's own phone** — the
+device that found the problem in the first place. That check is his to make.
+
+### What still needs a person
+
+`BLOCKED_FOR_SEAN.md` is current as of this session. Nothing in it is now blocked on a missing
+migration — 048 was the last one. What remains is decisions (B-55's `settle_verified_payment`
+partial-payment guard, deferred by Sean's own choice) and the client's own outstanding answers in
+`CLIENT_MEETING_QUESTIONS.md`, unchanged from before today.
+
+---
+
+## 0.0a What 2026-09-22 produced
 
 > [!IMPORTANT]
 > **The consultation happened that afternoon and went well.** The adviser's direction afterwards
@@ -92,7 +154,7 @@ the one already running this session will not survive a restart). Everything fro
 
 ---
 
-## 0.0a What 2026-09-19 produced
+## 0.0b What 2026-09-19 produced
 
 **A functional audit found nineteen defects, six of them on the paths the owner's money takes,
 and not one of them produced an error, a failing suite or a console warning.** The twenty
@@ -153,7 +215,7 @@ has the new value and it is gitignored, so the other machine has to be told.
 
 ---
 
-## 0.0b What 2026-09-18 produced
+## 0.0c What 2026-09-18 produced
 
 **The interface was rebuilt, a privacy defect was closed, and two verification suites turned out
 to have been lying — one of them for five days.**
