@@ -109,9 +109,32 @@ onBeforeUnmount(() => {
         Viewings by appointment<br />Register your interest
       </h2>
 
+      <!--
+        `px-6`, not `px-10`. `.pill-btn-brand` already sets `padding: 0
+        1.125rem` (index.css); this button doubled it again on top for visual
+        weight, which is fine at a normal text size and genuinely broken at a
+        larger one.
+
+        At 200% browser text zoom - a real accessibility setting, not an edge
+        case, and the one WCAG 1.4.4 requires content to survive - the dialog
+        itself stays correctly sized (`w-[min(34rem,calc(100vw-2rem))]` is
+        anchored to `100vw`, which does not scale with text). This button's
+        `rem`-based padding does scale, and unbounded by the dialog's own
+        width, `px-10` alone ate more width than the dialog had left for it -
+        measured on an emulated handset at `html { font-size: 200% }`: the
+        button's own rect ran to x=404 against a 375px viewport, past even
+        `overflow-hidden` on the dialog, which is what actually swallowed the
+        overflow rather than showing it - the label was there and unreadable,
+        not visibly broken. `px-5` keeps some of the emphasis (6px more per
+        side than the base pill, not 22px) and measured with a genuine margin
+        at the same 200% zoom - about 15px between the button's right edge and
+        the dialog's own padded content area, not flush against it. Re-check
+        that measurement if this value changes again; it was right at the
+        edge, under 2px, at `px-6`.
+      -->
       <button
         type="button"
-        class="pill-btn-brand mt-10 px-10"
+        class="pill-btn-brand mt-10 px-5"
         @click="bookNow"
       >
         Book now
