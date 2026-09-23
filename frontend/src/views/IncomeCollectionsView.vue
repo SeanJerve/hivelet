@@ -1100,29 +1100,40 @@ async function exportExcel() {
         scrolling. Two of the three ways of narrowing this ledger could not be
         used on a phone.
 
-        Re-measured after: three rows at 375, one row ending on the same right
-        edge as before at 1280. This is the same shape the expenses ledger
-        already had right.
+        Fixed once already by stacking all three - functionally correct, and
+        the client called three full-width pills in a column messy. Three
+        filters do not divide evenly the way the room directory's two do, so
+        this keeps the same even pairing that already worked there rather
+        than inventing a new ratio: Month and Year are both narrowing WHEN,
+        which makes them one decision in two parts, and they share a row.
+        Cluster changes WHAT the reader is looking at, a different kind of
+        question, and sits alone above them at full width rather than being
+        paired with either.
       -->
-      <div v-if="activeTab === 'ledger'" class="flex flex-wrap items-center gap-2">
+      <div v-if="activeTab === 'ledger'" class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <PillSelect
           v-model="selectedCluster"
           :options="clusterChips"
           aria-label="Cluster"
+          widthClass="w-full sm:w-52"
         />
 
-        <PillSelect
-          v-model="filterMonth"
-          :options="monthsList"
-          aria-label="Month"
-        />
+        <div class="flex items-center gap-2">
+          <PillSelect
+            v-model="filterMonth"
+            :options="monthsList"
+            aria-label="Month"
+            widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+          />
 
-        <PillSelect
-          v-model="filterYear"
-          :options="yearOptions"
-          aria-label="Year"
-          align="right"
-        />
+          <PillSelect
+            v-model="filterYear"
+            :options="yearOptions"
+            aria-label="Year"
+            align="right"
+            widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+          />
+        </div>
       </div>
     </div>
 

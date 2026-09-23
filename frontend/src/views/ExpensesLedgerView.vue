@@ -832,25 +832,39 @@ async function handleEditExpense() {
         />
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
+      <!--
+        Three filters, not two, so the room directory's own even split of two
+        does not carry over unchanged. Kind is the one that changes what the
+        reader is even looking at; Month and Year both narrow WHEN, so they
+        read as one decision in two parts and pair together the way the room
+        directory already pairs its two. Kind sits alone above them, full
+        width - not because it needs the room, but because grouping it with
+        either of the other two would claim a relationship that is not there.
+      -->
+      <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <PillSelect
           v-model="selectedCategory"
           :options="expenseCategoryOptions"
           aria-label="Kind of expense"
+          widthClass="w-full sm:w-52"
         />
 
-        <PillSelect
-          v-model="filterMonth"
-          :options="monthsList"
-          aria-label="Month"
-        />
+        <div class="flex items-center gap-2">
+          <PillSelect
+            v-model="filterMonth"
+            :options="monthsList"
+            aria-label="Month"
+            widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+          />
 
-        <PillSelect
-          v-model="filterYear"
-          :options="yearOptions"
-          aria-label="Year"
-          align="right"
-        />
+          <PillSelect
+            v-model="filterYear"
+            :options="yearOptions"
+            aria-label="Year"
+            align="right"
+            widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+          />
+        </div>
       </div>
     </div>
 
