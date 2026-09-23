@@ -215,11 +215,27 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
     );
 
     if (res?.confirmed) {
+      /**
+       * `recorded` is not decoration on the response type - it is the one field
+       * that says whether the webhook's payment row has landed yet
+       * (backend/src/routes/tenant.ts's comment on this same endpoint). This used
+       * to say "now shows as waiting for the landlady" unconditionally, and the
+       * very next line below refetches the outstanding bills - which, on the
+       * ordinary few-seconds webhook lag the backend comment describes as normal,
+       * would still show the bill as payable at that instant, directly
+       * contradicting what the toast had just claimed. AdyenPaymentModal already
+       * makes this same distinction for its in-page confirmation panel; this is
+       * the matching redirect-return leg for GCash.
+       */
       showToast(
         'success',
         'Payment received',
-        "Adyen has confirmed it. It now shows as waiting for the landlady to check it, and " +
-        'you will not be asked to pay this bill again.'
+        res.recorded
+          ? "Adyen has confirmed it. It now shows as waiting for the landlady to check it, and " +
+            'you will not be asked to pay this bill again.'
+          : "Adyen has confirmed it, and we're recording it now - it usually appears within a " +
+            'few seconds. If this bill still looks unpaid for a moment, do not pay again; check ' +
+            'back shortly.'
       );
     } else {
       showToast(
