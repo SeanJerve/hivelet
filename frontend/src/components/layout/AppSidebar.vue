@@ -6,9 +6,10 @@
  * @rationale Renders directly onto the canvas surface without an artificial white card container,
  *            preserving active brand-soft pills, legible typography, and smooth hover feedback.
  */
-import { computed } from 'vue';
+import { computed, watch, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { isMobileSidebarOpen, inquiries, maintenanceTickets, incomeRecords } from '@/lib/systemState';
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
 import { 
   LayoutDashboard, 
   Building2, 
@@ -80,6 +81,36 @@ function isItemActive(to: string, aliases: readonly string[]) {
 function closeMobileNav() {
   isMobileSidebarOpen.value = false;
 }
+
+/**
+ * Hold the page still while the drawer is open.
+ *
+ * It had no lock at all: the drawer covered the screen and the page behind it
+ * still scrolled under a drag on the backdrop, so closing it could leave the
+ * reader somewhere else entirely. Found on an emulated handset, 2026-09-23.
+ *
+ * The same reference-counted lock `WsModal` uses (`lib/scrollLock.ts`) rather
+ * than a second private counter, because a modal can be open over the drawer -
+ * two independent counters would each clear the other's lock, which is the
+ * exact bug WsModal's own history records between nested modals.
+ *
+ * `flush: 'post'` so the lock is taken after the drawer has actually been put
+ * in the document, and released on unmount so navigating away with it open
+ * cannot strand the page unscrollable.
+ */
+watch(
+  isMobileSidebarOpen,
+  (open, wasOpen) => {
+    if (open === wasOpen) return;
+    if (open) lockBodyScroll();
+    else unlockBodyScroll();
+  },
+  { flush: 'post' }
+);
+
+onBeforeUnmount(() => {
+  if (isMobileSidebarOpen.value) unlockBodyScroll();
+});
 </script>
 
 <template>

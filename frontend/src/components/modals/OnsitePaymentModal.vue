@@ -524,13 +524,51 @@ function triggerRecord() {
       id, so none of these fields had an accessible name and clicking a label
       focused nothing.
     -->
-    <form id="onsite-payment-form" @submit.prevent="triggerRecord" class="flex flex-col gap-5">
+    <!--
+      ON A PHONE THE FIELDS SCROLL AND THE BUTTONS DO NOT, and that is the fix
+      for what the client saw.
+
+      Measured in the running app at 375x812 before this change: the panel was
+      1296px tall, and the footer holding Cancel and "Record payment" began at
+      y=1227 in an 812px viewport - 415px below the fold, reached only by
+      scrolling the whole dialog. The actions live in `WsModal`'s own footer
+      slot, which sits after the body, so the only way to bring them on screen
+      is to stop the body being taller than the screen.
+
+      `dvh`, not `vh`: on a phone `vh` is the LARGE viewport, the one measured
+      with the browser's own bars hidden, so `60vh` is more than 60% of what is
+      actually visible while the address bar is showing - which is exactly the
+      state the modal opens in. `dvh` tracks the visible box, so the footer
+      stays on screen either way.
+
+      Everything is restored at `sm`: no cap, no scroller, no negative margin,
+      so the desktop dialog is the one that was there before.
+
+      `px-1.5 -mx-1.5` is not decoration. A scroll container clips on BOTH
+      axes - `overflow-y: auto` computes `overflow-x: auto` - and the workspace
+      focus ring is a 3px outline at 2px offset, so without 6px of room a
+      keyboard reader's ring would be sliced down the sides of every field in
+      this form. The negative margin cancels the padding so nothing moves.
+    -->
+    <form
+      id="onsite-payment-form"
+      @submit.prevent="triggerRecord"
+      class="flex flex-col gap-5 max-h-[60dvh] overflow-y-auto px-1.5 -mx-1.5 sm:mx-0 sm:max-h-none sm:overflow-visible sm:px-0"
+    >
         <label class="ws-field">
           Unit
           <PillSelect v-model="selectedUnit" :options="unitOptions" widthClass="w-full" />
         </label>
 
-        <div class="grid gap-4 sm:grid-cols-2">
+        <!--
+          Two up on a phone as well, not only from `sm`.
+
+          Eleven full-width controls in one column is what made this form 1296px
+          tall. Rent and water are short numbers and read as a pair anyway;
+          measured at 375 the pair is 140px against 202px stacked, with the
+          columns at 146px each and no overflow in either.
+        -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <label class="ws-field">
             Rent
             <input v-model.number="rentAmount" type="number" min="0" class="ws-input w-full" required />
@@ -577,7 +615,7 @@ function triggerRecord() {
           </label>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <label class="ws-field">
             Garbage fee
             <input v-model.number="gbgFee" type="number" min="0" class="ws-input w-full" required />
@@ -588,6 +626,12 @@ function triggerRecord() {
           </label>
         </div>
 
+        <!--
+          This pair stays full width on a phone, deliberately, where the two
+          above did not. A reference number is a long string somebody TYPES off
+          a GCash receipt, and a 146px box shows about nine characters of it.
+          The rule is the width the content needs, not two columns everywhere.
+        -->
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="ws-field">
             How they paid
@@ -606,7 +650,13 @@ function triggerRecord() {
           </label>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-3">
+        <!--
+          Two columns on a phone, three from `sm`. The three date-ish controls
+          were 238px stacked and are 144px paired; `input[type=date]` was
+          measured at 146px wide in the running app with scrollWidth 144, so
+          the native control is not being squeezed.
+        -->
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
           <label class="ws-field">
             Months covered
             <input v-model.number="monthsCovered" type="number" min="1" max="24" class="ws-input w-full" required />

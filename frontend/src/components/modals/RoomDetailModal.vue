@@ -101,7 +101,34 @@ function statusLabel(status: string) {
         </p>
       </div>
 
-      <dl class="rounded-2xl border border-line p-5 flex flex-col gap-3 text-sm">
+      <!--
+        `min-w-0` ON THIS LIST IS THE FIX FOR A REAL OVERFLOW, NOT A TIDY-UP.
+
+        This `<dl>` is an item of the grid above it, and a grid item defaults to
+        `min-width: auto` - it will not shrink below the MIN-CONTENT width of
+        what is inside it. The resident's name carries `truncate`, which
+        includes `white-space: nowrap`, so its min-content contribution is the
+        whole name however long it is. The list therefore grew to fit a name it
+        was supposed to be clipping, and the `truncate` had nothing to truncate
+        into.
+
+        Measured in the running app at 375 with a real-length name ("Maria
+        Concepcion Villanueva-Santos", 246px): this list rendered 359px wide
+        inside a 303px column and pushed 36px of horizontal overflow onto the
+        dialog. `body` carries `overflow-x: hidden`, so the right-hand edge of
+        the dialog was cut off rather than scrollable to.
+
+        THE NAME ITSELF NEEDS NOTHING. A `min-w-0` was tried there first and
+        changed the measurement by zero: an element with `overflow` other than
+        `visible` already has an automatic minimum size of 0 as a flex item, and
+        `truncate` sets `overflow: hidden`. The constraint had to come from the
+        grid item, and only from there - checked by measuring all four
+        combinations rather than by adding both and declaring it fixed.
+
+        With it, the column holds at 303px and the name ellipses at 190px. The
+        full name stays in the DOM, so it is still read out and still copyable.
+      -->
+      <dl class="min-w-0 rounded-2xl border border-line p-5 flex flex-col gap-3 text-sm">
         <div class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Status</dt>
           <dd><StatusPill :tone="statusTone(activeRoomDetail.status)">{{ statusLabel(activeRoomDetail.status) }}</StatusPill></dd>

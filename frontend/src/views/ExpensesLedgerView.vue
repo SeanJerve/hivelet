@@ -988,7 +988,25 @@ async function handleEditExpense() {
     >
 
         <form @submit.prevent="submitAddExpense">
-          <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
+          <!--
+            THE `p-6` WAS A SECOND GUTTER INSIDE `WsModal`'S OWN.
+
+            The dialog body already carries `p-5 sm:p-6`, so on a phone this
+            form was inset twice - 20px from the panel and another 24px from
+            here - leaving 255px of a 375px screen for controls that then had
+            to be shared three ways (see the allocation row below, which was
+            crushed to nothing). Six pixels is kept rather than none because
+            this is a scroll container and a scroll container clips on both
+            axes: the workspace focus ring is a 3px outline at 2px offset, and
+            with no padding at all it would be sliced off every field in here.
+
+            `dvh` rather than `vh` on the phone cap: `vh` is measured against
+            the LARGE viewport, the one with the browser's bars hidden, so 70vh
+            of an 812px phone is 568px of a screen that is really showing about
+            700 - and the footer below went off the bottom. `dvh` tracks what is
+            actually visible. The desktop keeps the 70vh it had.
+          -->
+          <div class="p-1.5 space-y-4 text-xs text-ink max-h-[55dvh] overflow-y-auto sm:max-h-[70vh] sm:p-6">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
               Date it was spent
@@ -1064,17 +1082,38 @@ async function handleEditExpense() {
                     enter-from-class="opacity-0 motion-safe:scale-[0.97]"
                     enter-to-class="opacity-100 motion-safe:scale-100"
                   >
+                    <!--
+                      THE PROPERTY-AREA SELECT WAS RENDERING 0px WIDE ON A PHONE.
+
+                      Three items on one unwrapped flex line: this select at
+                      `flex-1`, a fixed `w-36` amount box and a 44px delete
+                      button. Measured at 375 before this change, the row had
+                      221px to give, the amount and the button and the gaps took
+                      all of it, and `.ws-field` carries `min-width: 0` - so the
+                      select was squeezed to a computed width of 0 with 50px
+                      overflowing. Which part of the property an expense belongs
+                      to is the whole point of this row, and on a phone it was
+                      not visible and could not be pressed.
+
+                      Wrapping is the fix rather than a narrower amount box: the
+                      select takes the line to itself below `sm`, and the amount
+                      and the delete button share the next one. `items-end`
+                      lines the controls up on their bottom edge, which is what
+                      the delete button's own `self-end` was already asking for;
+                      with equal-height fields at `sm` it renders exactly as
+                      `items-center` did.
+                    -->
                     <div
                       v-for="(alloc, aIdx) in entry.allocations"
                       :key="aIdx"
-                      class="flex items-center gap-3 bg-tile p-3 border border-line rounded-xl"
+                      class="flex flex-wrap items-end gap-3 bg-tile p-3 border border-line rounded-xl"
                     >
-                      <label class="ws-field flex-1">
+                      <label class="ws-field w-full sm:w-auto sm:flex-1">
                         Which part of the property
                         <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" widthClass="w-full" />
                       </label>
 
-                      <label class="ws-field w-36 sm:w-44">
+                      <label class="ws-field flex-1 sm:flex-none sm:w-44">
                         How much
                         <input
                           v-model="alloc.amount"
@@ -1129,8 +1168,10 @@ async function handleEditExpense() {
             </div>
           </div>
 
-          <!-- Modal Actions Footer -->
-          <div class="p-4 px-6 border-t border-line flex items-center justify-end gap-2 bg-canvas">
+          <!-- Modal Actions Footer. `flex-wrap` so a longer label can never do
+               here what it did on the edit dialog's footer below, where the
+               row ran 111px past its box at 375. -->
+          <div class="p-4 border-t border-line flex flex-wrap items-center justify-end gap-2 bg-canvas sm:px-6">
             <button type="button" @click="isAddOpen = false" class="pill-btn cursor-pointer">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand cursor-pointer disabled:opacity-50 min-w-[110px]">
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
@@ -1151,7 +1192,9 @@ async function handleEditExpense() {
     >
 
         <form @submit.prevent="handleEditExpense">
-          <div class="p-6 space-y-4 text-xs text-ink max-h-[70vh] overflow-y-auto">
+          <!-- Same double gutter and same `vh` cap as the add dialog above;
+               the reasoning is written out there. -->
+          <div class="p-1.5 space-y-4 text-xs text-ink max-h-[55dvh] overflow-y-auto sm:max-h-[70vh] sm:p-6">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
               Expense Date
@@ -1197,17 +1240,19 @@ async function handleEditExpense() {
                 enter-from-class="opacity-0 motion-safe:scale-[0.97]"
                 enter-to-class="opacity-100 motion-safe:scale-100"
               >
+                <!-- The same crushed row as the add dialog's - it was written
+                     twice. The reasoning is written out there. -->
                 <div
                   v-for="(alloc, aIdx) in editAllocations"
                   :key="aIdx"
-                  class="flex items-center gap-3 bg-canvas p-3 border border-line rounded-xl"
+                  class="flex flex-wrap items-end gap-3 bg-canvas p-3 border border-line rounded-xl"
                 >
-                  <label class="ws-field flex-1">
+                  <label class="ws-field w-full sm:w-auto sm:flex-1">
                     Which part of the property
                     <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" widthClass="w-full" />
                   </label>
 
-                  <label class="ws-field w-36 sm:w-44">
+                  <label class="ws-field flex-1 sm:flex-none sm:w-44">
                     How much
                     <input
                       v-model="alloc.amount"
@@ -1248,8 +1293,21 @@ async function handleEditExpense() {
             </div>
           </div>
 
-          <!-- Modal Actions Footer: Delete on the left, Cancel/Save on the right -->
-          <div class="p-4 px-6 border-t border-line flex items-center justify-between gap-3 bg-canvas">
+          <!--
+            Modal Actions Footer: Delete on the left, Cancel/Save on the right.
+
+            The same unwrapped three-button row that was clipping "Update
+            Collection" on the income ledger. Measured here at 375 before this
+            change: 414px of content in a 303px box, 111px of overflow, with
+            "Update Entry"'s right edge at x=450 against a column ending at 339
+            and `overflow-x: hidden` on `body` cutting it off.
+
+            `flex-wrap-reverse` puts the wrapped line above rather than below,
+            so Cancel and Update stay together on top and "Delete Expense"
+            drops underneath - the destructive one furthest from the thumb. At
+            `sm` this is a single flex line again and renders exactly as before.
+          -->
+          <div class="p-4 border-t border-line flex flex-wrap-reverse items-center justify-end gap-2 bg-canvas sm:justify-between sm:gap-3 sm:px-6">
             <button
               v-if="editingExpense"
               type="button"

@@ -1,22 +1,3 @@
-<script lang="ts">
-/**
- * How many `WsModal` instances are currently mounted, across the whole page.
- *
- * `OnsitePaymentModal` opens a second one of these - the "Record this payment?"
- * check - on top of itself, and every instance used to lock and unlock
- * `document.body.style.overflow` on its own. Closing the inner confirmation
- * unmounted it, its `onBeforeUnmount` cleared the lock unconditionally, and the
- * page behind the OUTER modal - the one still open - scrolled again.
- *
- * This has to live in a plain, non-`setup` block. A `let` declared inside
- * `<script setup>` is scoped to that component's own `setup()` call and a
- * fresh copy is created per instance, which is exactly the bug again - two
- * counters that cannot see each other. A module-level binding outside `setup`
- * is created once, when the module first loads, and every instance shares it.
- */
-let openModalCount = 0;
-</script>
-
 <script setup lang="ts">
 /**
  * The one dialog in the workspace system.
@@ -34,6 +15,7 @@ let openModalCount = 0;
  */
 import { ref, onMounted, onBeforeUnmount, nextTick, useId } from 'vue';
 import { X } from 'lucide-vue-next';
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
 
 const props = withDefaults(
   defineProps<{
@@ -130,8 +112,18 @@ function onKeydown(e: KeyboardEvent) {
 
 onMounted(async () => {
   previouslyFocused = document.activeElement as HTMLElement | null;
-  openModalCount++;
-  document.body.style.overflow = 'hidden';
+  /**
+   * The counter that used to live in this file's own `<script>` block moved to
+   * `lib/scrollLock.ts`, unchanged in behaviour and for the same reason it
+   * existed: `OnsitePaymentModal` opens a second modal on top of itself, and an
+   * unconditional unlock on the inner one let the page behind the outer one
+   * scroll again.
+   *
+   * It is shared now because the mobile navigation drawer needs the same lock,
+   * and a second private counter would have reproduced that bug one level up -
+   * two counters that cannot see each other, whichever closes last winning.
+   */
+  lockBodyScroll();
   await nextTick();
   const target =
     panel.value?.querySelector<HTMLElement>('input:not([type="hidden"]):not([disabled]), textarea, select') ??
@@ -140,11 +132,8 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  openModalCount = Math.max(0, openModalCount - 1);
-  // Only the last modal to close releases the page behind it.
-  if (openModalCount === 0) {
-    document.body.style.overflow = '';
-  }
+  // Only the last holder to let go releases the page behind it.
+  unlockBodyScroll();
   previouslyFocused?.focus?.();
 });
 </script>

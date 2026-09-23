@@ -898,7 +898,24 @@ const isExportingArchive = ref(false);
         />
         <template v-else>
           <div>
-            <p class="text-5xl leading-none font-semibold tabular tracking-tight">{{ peso(currentMonthRevenue) }}</p>
+            <!--
+              `text-5xl` DID NOT FIT ON A PHONE, and this is the one figure on
+              the screen that is a peso amount at that size.
+
+              Measured in the running app at 375: an `OverviewTile` is
+              `p-5 sm:p-6`, so at a 343px content column the tile gives its
+              children 303px. Rendered at `text-5xl` in Plus Jakarta Sans,
+              "₱1,284,750.00" measures 327.7px - 24.7px past the edge, and the
+              tile reported 9px of its own scrollWidth overflow. A seven-figure
+              month is not hypothetical here; the ledger's own year total is
+              ₱8,086,250.
+
+              `text-4xl` brings the same string to 245.8px, which fits with
+              room to spare, and `sm:text-5xl` leaves every wider screen exactly
+              as it was. The count on the dark tile above keeps its `text-5xl`:
+              it is a small integer, not a peso figure.
+            -->
+            <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl">{{ peso(currentMonthRevenue) }}</p>
             <p class="mt-2 text-sm text-ink-soft">
               {{ currentMonthRecordCount }} {{ currentMonthRecordCount === 1 ? 'collection' : 'collections' }} entered this month
             </p>

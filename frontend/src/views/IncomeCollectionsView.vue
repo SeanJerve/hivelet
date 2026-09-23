@@ -1737,7 +1737,24 @@ async function exportExcel() {
       @close="isEditOpen = false"
     >
 
-        <form @submit.prevent="handleEditIncome" class="space-y-4 text-xs">
+        <!--
+          The fields scroll; the buttons underneath them do not.
+
+          This dialog builds its own footer inside the form rather than using
+          `WsModal`'s actions slot, which is what makes that possible here -
+          capping the FIELDS leaves the footer pinned to the bottom of the
+          panel where it can always be reached. Measured at 375x812 before
+          this change, the form ran past the fold and "Update Collection" was
+          both below it and clipped sideways (see the footer's own note).
+
+          `dvh` rather than `vh` for the reason the payment modal states: `vh`
+          is the large viewport, measured with the phone's browser bars hidden,
+          and this dialog opens while they are showing. `px-1.5 -mx-1.5` keeps
+          the 3px focus ring from being clipped by the scroll container, which
+          clips on both axes. All of it is off again at `sm`.
+        -->
+        <form @submit.prevent="handleEditIncome" class="text-xs">
+          <div class="space-y-4 max-h-[55dvh] overflow-y-auto px-1.5 -mx-1.5 sm:mx-0 sm:max-h-none sm:overflow-visible sm:px-0">
           <!-- Room/Unit selector -->
           <div>
             <p
@@ -1756,7 +1773,9 @@ async function exportExcel() {
           </div>
 
           <!-- Rent Amount & Water Payment Row -->
-          <div class="grid gap-4 sm:grid-cols-2">
+          <!-- Two up on a phone as well: short money fields that read as a
+               pair, 146px each at 375 with no overflow. -->
+          <div class="grid grid-cols-2 gap-3 sm:gap-4">
             <label class="ws-field">
               Rent
               <input v-model.number="editRent" type="number" min="0" class="ws-input w-full" required />
@@ -1768,7 +1787,7 @@ async function exportExcel() {
           </div>
 
           <!-- GBG Fee & OR Receipt Number Row -->
-          <div class="grid gap-4 sm:grid-cols-2">
+          <div class="grid grid-cols-2 gap-3 sm:gap-4">
             <label class="ws-field">
               GBG Fee (₱)
               <input v-model.number="editGarbage" type="number" min="0" class="ws-input w-full" required />
@@ -1780,6 +1799,8 @@ async function exportExcel() {
           </div>
 
           <!-- Payment Method & Online Reference Number Row -->
+          <!-- Full width on a phone on purpose, unlike the money pairs above:
+               a reference is a long string typed off a receipt. -->
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
               Payment Method
@@ -1792,7 +1813,10 @@ async function exportExcel() {
           </div>
 
           <!-- Rent Validity / Duration Details Row -->
-          <div class="grid gap-4 sm:grid-cols-3">
+          <!-- FOUR labels in a three-column grid, so on a phone they were four
+               full-width controls one under the other. Two up costs nothing:
+               `input[type=date]` measures 144px of content in a 146px box. -->
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
             <label class="ws-field">
               Months covered
               <input v-model.number="editMonthsCovered" type="number" min="1" class="ws-input w-full" required />
@@ -1814,7 +1838,7 @@ async function exportExcel() {
           </div>
 
           <!-- Date Received & Read-Only Total Amount calculation -->
-          <div class="grid gap-4 sm:grid-cols-2 pt-2">
+          <div class="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
             <label class="ws-field">
               Date Received
               <input v-model="editDate" type="date" class="ws-input w-full" required />
@@ -1825,10 +1849,36 @@ async function exportExcel() {
             </div>
           </div>
 
-          <div class="pt-4 border-t border-line flex items-center justify-between gap-3">
-            <button 
-              type="button" 
-              @click="handleDeleteFromModal" 
+          </div>
+
+          <!--
+            THIS IS THE FOOTER THE CLIENT PHOTOGRAPHED WITH "Update Collection"
+            CUT OFF AT THE RIGHT EDGE.
+
+            It was `flex items-center justify-between` with no wrapping, so the
+            three buttons were laid out on one line whatever the room. Measured
+            in the running app at a 375px viewport: the row's content came to
+            446px inside a 303px box - 143px of overflow - and the submit
+            button's right edge landed at x=482 against a content column that
+            ends at 339. `body` carries `overflow-x: hidden`, so it was clipped
+            rather than reachable by scrolling sideways: the button that saves
+            a correction to the ledger could not be fully seen and its right
+            half could not be pressed.
+
+            `flex-wrap-reverse` rather than plain `flex-wrap`, so that when the
+            row does break, the line that wraps is drawn ABOVE the other one.
+            Cancel and "Update Collection" stay together on top and "Delete
+            Record" drops beneath them - the destructive control ends up
+            furthest from the thumb rather than first under it.
+
+            At `sm` it is one line again with `justify-between`, which is a
+            single flex line, and a single line renders identically under
+            `wrap-reverse` - so the desktop footer is untouched.
+          -->
+          <div class="pt-4 border-t border-line flex flex-wrap-reverse items-center justify-end gap-2 sm:justify-between sm:gap-3">
+            <button
+              type="button"
+              @click="handleDeleteFromModal"
               class="pill-btn-danger-quiet"
             >
               <Trash2 class="size-3.5" />

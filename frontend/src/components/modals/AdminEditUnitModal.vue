@@ -343,7 +343,23 @@ async function handleSave() {
     :dismissible="false"
     @close="closeModal"
   >
-      <form id="edit-unit-form" @submit.prevent="handleSave" class="flex flex-col gap-5">
+      <!--
+        Capped and scrollable on a phone, for the reason `OnsitePaymentModal`
+        sets out at length: this form's Cancel and "Save changes" live in
+        `WsModal`'s footer slot, which is drawn after the body, so the only way
+        to keep them on screen is to stop the body being taller than the screen.
+        A photograph, seven controls and three helper paragraphs is a long way
+        past 812px.
+
+        `dvh` rather than `vh` (the phone's bars are showing when this opens),
+        and `px-1.5 -mx-1.5` so the 3px focus ring is not clipped by the scroll
+        container, which clips on both axes. All of it is off again at `sm`.
+      -->
+      <form
+        id="edit-unit-form"
+        @submit.prevent="handleSave"
+        class="flex flex-col gap-5 max-h-[60dvh] overflow-y-auto px-1.5 -mx-1.5 sm:mx-0 sm:max-h-none sm:overflow-visible sm:px-0"
+      >
         <!-- The photograph -->
         <div class="ws-field">
           <span>Photograph</span>
