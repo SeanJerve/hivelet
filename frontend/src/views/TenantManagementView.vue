@@ -1384,10 +1384,20 @@ async function handleOnboard() {
                  places she reads now say Deposit. The stored figure is unchanged - it
                  was never the number that was in question. -->
             <label for="new-advance">Deposit</label>
+            <!--
+              `min="0" step="any"`: every other money field in this app carries
+              both - this one had neither. `depositAmount` is validated server-side
+              by `money` (backend/src/routes/admin.ts), which allows two decimal
+              places and rejects negatives, so without `step="any"` a centavo figure
+              was silently unsubmittable, and without `min="0"` a typo'd negative
+              round-tripped to a 400 instead of being caught inline.
+            -->
             <input
               id="new-advance"
               v-model.number="newDeposit"
               type="number"
+              min="0"
+              step="any"
               class="ws-input w-full"
               required
             />
