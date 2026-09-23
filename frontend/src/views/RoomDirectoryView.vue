@@ -418,7 +418,7 @@ const statusChips = computed(() => [
         <div
           v-if="isClusterOpen(clusterName, clusterIndex)"
           :id="`cluster-units-${clusterName}`"
-          class="ws-reveal border-t border-line p-5"
+          class="ws-reveal border-t border-line p-5 sm:p-6"
         >
           <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <article
@@ -566,7 +566,7 @@ const statusChips = computed(() => [
       <template #card="{ row: u }">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p class="text-lg font-semibold uppercase leading-none text-ink">
+            <p class="text-xl font-semibold uppercase leading-none text-ink">
               {{ u.unitCode.toUpperCase() }}
             </p>
             <p class="mt-1.5 text-sm text-ink-soft">{{ u.cluster }}, {{ u.type }}</p>

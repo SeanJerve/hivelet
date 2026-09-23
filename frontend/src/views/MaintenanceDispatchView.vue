@@ -497,7 +497,7 @@ function handleDeleteTicketPrompt() {
             </dl>
 
             <button type="button" class="pill-btn self-start" @click="openEditModal(t)">
-              <Pencil class="size-4 text-ink-soft" aria-hidden="true" />
+              <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
               Manage
             </button>
           </li>

@@ -664,7 +664,7 @@ async function handleOnboard() {
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Residents
         </h1>
-        <p class="mt-1 text-sm leading-6 text-ink-soft">
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
           {{ residentCount }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.
         </p>
       </div>
