@@ -15,7 +15,7 @@
  * than not asking. The fields below are exactly the four the endpoint accepts.
  * Adding the others is a schema change, not a design change.
  */
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Loader2, ArrowLeft } from 'lucide-vue-next';
 import { showToast, LANDLADY } from '@/lib/systemState';
@@ -28,30 +28,6 @@ const inquiryEmail = ref('');
 const inquiryPhone = ref('');
 const inquiryMsg = ref('');
 const isSubmitting = ref(false);
-
-/**
- * The water rate, from `/public/rates`.
- *
- * The panel beside this form quoted "P200/head monthly water rule" as a
- * literal. That number lives in `system_settings` and is applied by the
- * backend's billingService, so a copy written into the page quotes a
- * prospective tenant a price that stops being true the moment the landlady
- * changes the setting - the same defect this project has already fixed on the
- * category page, the on-site payment form and the tenant portal.
- *
- * Null until it answers, and the sentence then omits the figure rather than
- * guessing one.
- */
-const waterRatePerOccupant = ref<number | null>(null);
-
-onMounted(async () => {
-  try {
-    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
-    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
-  } catch {
-    // Leave it null. The sentence below drops the figure rather than inventing one.
-  }
-});
 
 async function submitInquiry() {
   // Submit disables on `isSubmitting`, but Enter inside any field here submits
