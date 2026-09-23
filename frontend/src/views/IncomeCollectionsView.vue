@@ -1239,6 +1239,12 @@ async function exportExcel() {
 
 
 
+    <!-- `SkeletonTable` is `aria-hidden="true"` throughout, so without an
+         announced region a screen reader had nothing to say while the ledger
+         table loaded. The "To verify" tab beside this one already pairs its
+         own skeleton with a `role="status"` announcement; this tab's table
+         skeleton had none. -->
+    <span v-if="isLoading" class="sr-only" role="status">Loading the income ledger</span>
     <SkeletonTable v-if="isLoading" :columns="7" :rows="8" />
 
     <!--
@@ -1791,7 +1797,7 @@ async function exportExcel() {
                  select rather than sitting beside it unassociated. -->
             <label class="ws-field">
               Unit
-              <PillSelect v-model="editUnit" :options="editUnitOptions" widthClass="w-full" />
+              <PillSelect v-model="editUnit" :options="editUnitOptions" aria-label="Unit" widthClass="w-full" />
             </label>
           </div>
 
@@ -1837,7 +1843,7 @@ async function exportExcel() {
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
               Payment Method
-              <PillSelect v-model="editMethod" :options="editMethodOptions" widthClass="w-full" />
+              <PillSelect v-model="editMethod" :options="editMethodOptions" aria-label="Payment method" widthClass="w-full" />
             </label>
             <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
               Their reference number

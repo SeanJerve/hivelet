@@ -868,6 +868,12 @@ async function handleEditExpense() {
       </div>
     </div>
 
+    <!-- `SkeletonTable` is `aria-hidden="true"` throughout (it is a purely visual
+         placeholder), so without this a screen reader was told nothing while the
+         ledger loaded - not even that a load was in progress. The overview and
+         income ledger already pair their loading state with an announced
+         `role="status"`; this register's table skeleton had none. -->
+    <span v-if="isLoading" class="sr-only" role="status">Loading the expense ledger</span>
     <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
 
     <div v-else-if="groupedExpenses.length === 0" class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center">
@@ -1078,7 +1084,7 @@ async function handleEditExpense() {
 
                   <label class="ws-field">
                     Kind of expense
-                    <PillSelect v-model="entry.category" :options="categoryOptions" widthClass="w-full" />
+                    <PillSelect v-model="entry.category" :options="categoryOptions" aria-label="Kind of expense" widthClass="w-full" />
                   </label>
                 </div>
 
@@ -1124,7 +1130,7 @@ async function handleEditExpense() {
                     >
                       <label class="ws-field w-full sm:w-auto sm:flex-1">
                         Which part of the property
-                        <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" widthClass="w-full" />
+                        <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Which part of the property" widthClass="w-full" />
                       </label>
 
                       <label class="ws-field flex-1 sm:flex-none sm:w-44">
@@ -1234,7 +1240,7 @@ async function handleEditExpense() {
 
               <label class="ws-field">
                 Expense Category
-                <PillSelect v-model="editCategory" :options="categoryOptions" widthClass="w-full" />
+                <PillSelect v-model="editCategory" :options="categoryOptions" aria-label="Expense category" widthClass="w-full" />
               </label>
             </div>
 
@@ -1263,7 +1269,7 @@ async function handleEditExpense() {
                 >
                   <label class="ws-field w-full sm:w-auto sm:flex-1">
                     Which part of the property
-                    <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" widthClass="w-full" />
+                    <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Which part of the property" widthClass="w-full" />
                   </label>
 
                   <label class="ws-field flex-1 sm:flex-none sm:w-44">

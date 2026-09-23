@@ -472,7 +472,19 @@ async function exportAuditTrail() {
       <button type="button" class="pill-btn-night mt-4" @click="fetchAuditLogs">Try again</button>
     </div>
 
-    <SkeletonTable v-else-if="isLoading" :columns="4" :rows="8" />
+    <!-- `SkeletonTable` is `aria-hidden="true"` throughout, so without an
+         announced region a screen reader had nothing to say while the trail
+         loaded - on the one screen whose whole claim is that what it shows is
+         what actually happened, silence during a load reads as nothing having
+         happened yet, not as "still loading". The span and the skeleton are
+         wrapped in one `template` so they share a single branch of the
+         `v-if`/`v-else-if` chain below - two consecutive `v-else-if` siblings
+         would have let only the first (this span) render, silently dropping
+         the visual skeleton the moment the announcement was added. -->
+    <template v-else-if="isLoading">
+      <span class="sr-only" role="status">Loading the audit trail</span>
+      <SkeletonTable :columns="4" :rows="8" />
+    </template>
 
     <div v-else-if="filteredLogs.length === 0" class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center">
       <ShieldCheck class="mx-auto size-8 text-ink-faint" aria-hidden="true" />

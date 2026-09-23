@@ -1279,11 +1279,20 @@ const isExportingArchive = ref(false);
       <!-- Tenants who paid in the year -->
       <OverviewTile :title="`Tenants in ${selectedArchiveYear}`" class="md:col-span-2 xl:col-span-12">
         <template #actions>
+          <!--
+            This screen has three of these disclosures (tenants, units, ledger
+            entries), each rendering identically as "Show" or "Hide" - visually
+            fine beside its own OverviewTile heading, but a screen reader user
+            navigating by "buttons" list hears three unlabelled "Show" controls
+            with nothing distinguishing them. `aria-label` restates which
+            section each one opens, matching the tile's own title.
+          -->
           <button
             type="button"
             class="pill-btn"
             :aria-expanded="historicalTenantRosterOpen"
             aria-controls="archive-roster"
+            :aria-label="`${historicalTenantRosterOpen ? 'Hide' : 'Show'} tenants in ${selectedArchiveYear}`"
             @click="historicalTenantRosterOpen = !historicalTenantRosterOpen"
           >
             {{ historicalTenantRosterOpen ? 'Hide' : 'Show' }}
@@ -1363,6 +1372,7 @@ const isExportingArchive = ref(false);
             class="pill-btn"
             :aria-expanded="historicalUnitTableOpen"
             aria-controls="archive-units"
+            :aria-label="`${historicalUnitTableOpen ? 'Hide' : 'Show'} units in ${selectedArchiveYear}`"
             @click="historicalUnitTableOpen = !historicalUnitTableOpen"
           >
             {{ historicalUnitTableOpen ? 'Hide' : 'Show' }}
@@ -1410,6 +1420,7 @@ const isExportingArchive = ref(false);
             class="pill-btn"
             :aria-expanded="historicalLedgerOpen"
             aria-controls="archive-ledger"
+            :aria-label="`${historicalLedgerOpen ? 'Hide' : 'Show'} ledger entries in ${selectedArchiveYear}`"
             @click="historicalLedgerOpen = !historicalLedgerOpen"
           >
             {{ historicalLedgerOpen ? 'Hide' : 'Show' }}
