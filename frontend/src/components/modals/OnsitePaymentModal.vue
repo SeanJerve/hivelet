@@ -46,7 +46,7 @@ const gbgFee = ref(0);
 const orNum = ref('');
 // The property's today, not UTC's. Before 08:00 Manila the old expression
 // offered YESTERDAY as the default date on a payment form.
-import { propertyToday, periodEnd } from '@/lib/propertyDate';
+import { propertyToday, periodEnd, formatDateOnly } from '@/lib/propertyDate';
 const date = ref(propertyToday());
 const isSubmitting = ref(false);
 
@@ -78,11 +78,20 @@ const dateCoveredEnd = computed(() => {
   return periodEnd(dateCoveredStart.value, monthsCovered.value);
 });
 
-// Format Helper
+/**
+ * `formatDateOnly`, not `new Date(dStr).toLocaleDateString(...)`.
+ *
+ * `date`, `dateCoveredStart` and `dateCoveredEnd` are all bare `YYYY-MM-DD`
+ * (native `<input type="date">` and `propertyToday()`/`periodEnd()`).
+ * Parsing that as `Date` gives UTC midnight, and formatting with no
+ * `timeZone` reads it back in the browser's own zone - a day early for an
+ * admin west of the property (Legazpi is UTC+8). Same defect `2adf017`
+ * fixed in `systemState.ts` for income and tenant dates; this form's own
+ * live period preview, confirm dialog and optimistic ledger row all had it
+ * too, missed on that commit because they live in a different file.
+ */
 function formatDateForDisplay(dStr: string): string {
-  const d = new Date(dStr);
-  if (isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+  return formatDateOnly(dStr, { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
 const unitOccupantsSummary = computed(() => {
@@ -395,8 +404,11 @@ function triggerRecord() {
     return;
   }
 
-  const formattedStart = new Date(dateCoveredStart.value).toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
-  const formattedEnd = new Date(dateCoveredEnd.value).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+  // Same UTC-safe parsing as `formatDateForDisplay` above - this pair never
+  // went through it, so it kept the timezone-dependent shift on the text
+  // shown in the confirmation dialog right before real cash is recorded.
+  const formattedStart = formatDateOnly(dateCoveredStart.value, { month: 'short', day: '2-digit' });
+  const formattedEnd = formatDateOnly(dateCoveredEnd.value, { month: 'short', day: '2-digit', year: 'numeric' });
 
   // Every one of the 937 ledger rows carries an OR number from the landlady's
   // receipt book, and the column is NOT NULL. The API no longer invents one, so
@@ -477,7 +489,7 @@ function triggerRecord() {
           occupants: occCount,
           water: Number(waterAmount.value) || 0,
           garbage: Number(gbgFee.value) || 0,
-          anniversary: new Date(date.value).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
+          anniversary: formatDateOnly(date.value, { day: 'numeric', month: 'short' }),
           // The move-in month (OD-04), not a computed guess. The ledger row the
           // API just returned is the record; this local copy only mirrors the
           // screen until the refetch below replaces it.
