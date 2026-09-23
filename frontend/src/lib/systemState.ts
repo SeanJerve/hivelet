@@ -18,6 +18,7 @@ import {
 import { api } from './api';
 import { isAdmin, isAuthenticated } from './authStore';
 import { useToast } from './useToast';
+import { formatDateOnly } from './propertyDate';
 
 const { showToast: triggerToast } = useToast();
 
@@ -95,6 +96,8 @@ export interface IncomeRecord {
    */
   cluster: Cluster | '';
   datePaid: string;
+  /** The stored `YYYY-MM-DD` itself, for re-editing without re-parsing `datePaid`'s formatted string. */
+  rawDate?: string;
   year?: number;
   month?: number;
   contact: string;
@@ -813,12 +816,11 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
         const assignedRoom = activeAssignment?.rooms;
         // Her spelling, not ours - see the note in `fetchRooms` above.
         const unitCode = assignedRoom ? assignedRoom.room_number : '—';
-        const moveInDate = activeAssignment?.start_date 
-          ? new Date(activeAssignment.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-          : '—';
-        const anniversary = activeAssignment?.anniversary_date
-          ? new Date(activeAssignment.anniversary_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          : '—';
+        // `formatDateOnly`, not `new Date(...).toLocaleDateString(...)` - see the
+        // matching fix and its comment on `fetchIncomeRecords` above. Both were
+        // the same unfixed defect `fetchExpenseRecords` already found once.
+        const moveInDate = formatDateOnly(activeAssignment?.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) || '—';
+        const anniversary = formatDateOnly(activeAssignment?.anniversary_date, { month: 'short', day: 'numeric' }) || '—';
 
         return {
           id: t.id,
@@ -972,11 +974,18 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
         // Her spelling, not ours - see the note in `fetchRooms` above.
         const unit = inc.rooms?.room_number || '';
         const cluster = inc.rooms?.cluster_code ? mapClusterName(inc.rooms.cluster_code) : '';
-        const datePaidFormatted = inc.date_paid 
-          ? new Date(inc.date_paid).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-          : '—';
-        const rentStart = inc.rent_period_start ? new Date(inc.rent_period_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
-        const rentEnd = inc.rent_period_end ? new Date(inc.rent_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        /**
+         * `formatDateOnly`, not `new Date(inc.date_paid).toLocaleDateString(...)`.
+         *
+         * A bare `date` column parses as UTC midnight; formatting that with no
+         * `timeZone` reads it back in the browser's own zone, one day early for
+         * anyone west of the property. `fetchExpenseRecords` below found and
+         * fixed this for expense dates - this is the same defect in income's
+         * three date fields, which stayed unfixed here.
+         */
+        const datePaidFormatted = formatDateOnly(inc.date_paid, { month: 'short', day: 'numeric', year: 'numeric' }) || '—';
+        const rentStart = formatDateOnly(inc.rent_period_start, { month: 'short', day: 'numeric' });
+        const rentEnd = formatDateOnly(inc.rent_period_end, { month: 'short', day: 'numeric' });
         const rentFor = rentStart && rentEnd ? `${rentStart} – ${rentEnd}` : 'Current Month';
 
         return {
@@ -984,9 +993,13 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
           unit,
           roomId: inc.room_id,
           cluster,
-          year: inc.year ? Number(inc.year) : (inc.date_paid ? new Date(inc.date_paid).getFullYear() : 2026),
-          month: inc.month ? Number(inc.month) : (inc.date_paid ? new Date(inc.date_paid).getMonth() + 1 : 1),
+          // Sliced from the string directly, not read off a parsed `Date` - the
+          // same UTC-vs-local shift `datePaidFormatted` above was just fixed for
+          // would otherwise file a day-1 payment under the wrong month.
+          year: inc.year ? Number(inc.year) : (inc.date_paid ? Number(inc.date_paid.slice(0, 4)) : 2026),
+          month: inc.month ? Number(inc.month) : (inc.date_paid ? Number(inc.date_paid.slice(5, 7)) : 1),
           datePaid: datePaidFormatted,
+          rawDate: inc.date_paid || '',
           contact: inc.contact_name || 'Resident',
           /**
            * An OR number is a physical receipt in the landlady's book, so it is

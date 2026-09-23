@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import { periodEnd, propertyToday, propertyDate } from '@/lib/propertyDate';
+import { periodEnd, propertyToday } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { 
@@ -587,9 +587,21 @@ function startEditIncome(r: IncomeRecord) {
   editGarbage.value = r.garbage;
   editInvoice.value = r.invoice;
   
-  const d = new Date(r.datePaid);
-  if (!isNaN(d.getTime())) {
-    editDate.value = propertyDate(d);
+  /**
+   * `r.rawDate`, not a re-parse of `r.datePaid`.
+   *
+   * `datePaid` is already a formatted display string ("Jan 31, 2026"), built by
+   * `formatDateOnly` for a viewer in any timezone. `new Date(r.datePaid)` parses
+   * that human-readable string as LOCAL midnight (it is not ISO 8601), and
+   * `propertyDate(d)` then reads that instant back at the property's zone - two
+   * more zone conversions stacked on a value that was already timezone-safe.
+   * For an admin working from a browser west of the property, this silently
+   * wrote a day earlier than the record actually held on every edit, whatever
+   * field was being corrected. `rawDate` is the untouched `YYYY-MM-DD` the
+   * column holds; slicing it needs no `Date` and no zone at all.
+   */
+  if (r.rawDate) {
+    editDate.value = r.rawDate;
   } else {
     editDate.value = propertyToday();
   }

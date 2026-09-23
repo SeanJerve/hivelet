@@ -51,6 +51,34 @@ export function propertyDate(d: Date): string {
  *
  * Clamping to the length of the target month is what the server already does.
  */
+/**
+ * A bare `YYYY-MM-DD` date column, formatted for display without ever
+ * passing through the viewer's own timezone.
+ *
+ * `new Date('2026-02-01')` parses a date-only string as **UTC midnight**.
+ * Formatting that with no `timeZone` option reads it back in the browser's
+ * local zone, which is one calendar day EARLIER for anyone west of the
+ * property (Legazpi is UTC+8). `fetchExpenseRecords` in `systemState.ts`
+ * found and fixed this for expense dates; this is the same fix, shared,
+ * for the other bare-date columns that format the same way - income's
+ * `date_paid`/`rent_period_start`/`rent_period_end` and a tenancy's
+ * `start_date`/`anniversary_date`. Slicing the string and rebuilding with
+ * `Date.UTC` keeps the value the column actually holds, whoever is looking.
+ */
+export function formatDateOnly(
+  dateStr: string | null | undefined,
+  opts: Intl.DateTimeFormatOptions
+): string {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return '';
+  return new Date(
+    Date.UTC(
+      Number(dateStr.slice(0, 4)),
+      Number(dateStr.slice(5, 7)) - 1,
+      Number(dateStr.slice(8, 10))
+    )
+  ).toLocaleDateString('en-US', { ...opts, timeZone: 'UTC' });
+}
+
 export function periodEnd(startIso: string, monthsCovered: number): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(startIso)) return '';
   const [y, m, d] = startIso.split('-').map(Number);
