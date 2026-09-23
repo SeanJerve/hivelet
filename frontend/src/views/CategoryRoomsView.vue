@@ -942,10 +942,23 @@ async function submitInquiry() {
         </div>
 
         <div class="mt-10 flex flex-wrap items-center gap-6">
+          <!--
+            `px-5`, not `px-8`. `.pill-btn-brand` already sets `padding: 0
+            1.125rem` (index.css); stacking `px-8` on top of it is the same
+            defect `BookViewingPrompt.vue`'s "Book now" button had (see its
+            comment on this exact pairing). This dialog's own width is
+            `w-[min(38rem,calc(100vw-2rem))]` - anchored to `100vw`, which does
+            not scale with text - while this button's `rem`-based padding does,
+            so at 200% text zoom the button grew past the dialog's own shrunk
+            width: measured with `html { font-size: 32px }` inside a 375px
+            frame, the button ran to x=331 against a dialog right edge at
+            x=325, with `dialog.scrollWidth > clientWidth` confirming the
+            overflow. `px-5` matches the value that same fix landed on.
+          -->
           <button
             type="submit"
             :disabled="isSubmitting"
-            class="pill-btn-brand px-8 disabled:opacity-60 disabled:cursor-not-allowed"
+            class="pill-btn-brand px-5 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
             <Send v-else class="size-4" />
