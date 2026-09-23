@@ -574,11 +574,11 @@ function handleDeleteTicketPrompt() {
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="ws-field">
               Unit
-              <PillSelect v-model="editUnit" :options="editUnitOptions" widthClass="w-full" />
+              <PillSelect v-model="editUnit" :options="editUnitOptions" aria-label="Unit" widthClass="w-full" />
             </label>
             <label class="ws-field">
               Category
-              <PillSelect v-model="editCategory" :options="[...TICKET_CATEGORIES]" widthClass="w-full" />
+              <PillSelect v-model="editCategory" :options="[...TICKET_CATEGORIES]" aria-label="Category" widthClass="w-full" />
             </label>
           </div>
 
@@ -586,18 +586,18 @@ function handleDeleteTicketPrompt() {
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="ws-field">
               Priority
-              <PillSelect v-model="editPriority" :options="PRIORITY_OPTIONS" widthClass="w-full" />
+              <PillSelect v-model="editPriority" :options="PRIORITY_OPTIONS" aria-label="Priority" widthClass="w-full" />
             </label>
             <label class="ws-field">
               Status
-              <PillSelect v-model="editStatus" :options="STATUS_OPTIONS" widthClass="w-full" />
+              <PillSelect v-model="editStatus" :options="STATUS_OPTIONS" aria-label="Status" widthClass="w-full" />
             </label>
           </div>
 
           <!-- Assigned Technician -->
           <label class="ws-field">
               Who is going
-            <PillSelect v-model="editTech" :options="[...TECHNICIANS]" widthClass="w-full" />
+            <PillSelect v-model="editTech" :options="[...TECHNICIANS]" aria-label="Who is going" widthClass="w-full" />
           </label>
 
           <!-- Description -->

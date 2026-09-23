@@ -763,7 +763,20 @@ async function handleOnboard() {
       </div>
     </div>
 
-    <SkeletonTable v-if="isLoading" :columns="6" :rows="6" />
+    <!--
+      Shaped like whichever view mode is about to render, not always the flat
+      list. `viewMode` opens on 'grouped' - several collapsible cluster
+      sections, each its own tile - and a single 6-row table here promised one
+      flat list on every first load, the opposite of what appeared once
+      `groupedRows` arrived. Two shorter tiles reads as "a few sections," the
+      shape "grouped" actually is; RoomDirectoryView does the same swap
+      between its own two view modes.
+    -->
+    <div v-if="isLoading && viewMode === 'grouped'" class="space-y-6">
+      <SkeletonTable :columns="6" :rows="3" />
+      <SkeletonTable :columns="6" :rows="3" />
+    </div>
+    <SkeletonTable v-else-if="isLoading" :columns="6" :rows="6" />
 
     <!--
       A failed load must not be reported as a search result.
@@ -1171,7 +1184,7 @@ async function handleOnboard() {
                 still be the selected one, and its value is non-empty, so `required` is
                 satisfied.
               -->
-              <PillSelect id="edit-unit" v-model="editUnitCode" :options="editUnitOptions" widthClass="w-full" />
+              <PillSelect id="edit-unit" v-model="editUnitCode" :options="editUnitOptions" aria-label="Unit" widthClass="w-full" />
               <p v-if="editUnitCode === '—'" class="ws-hint">
                 This resident holds no unit. Pick one to assign them, or save to change the
                 other details and leave them unassigned.
@@ -1180,7 +1193,7 @@ async function handleOnboard() {
 
             <div class="ws-field">
               <label for="edit-status">Standing</label>
-              <PillSelect id="edit-status" v-model="editStatus" :options="editStatusOptions" widthClass="w-full" />
+              <PillSelect id="edit-status" v-model="editStatus" :options="editStatusOptions" aria-label="Standing" widthClass="w-full" />
             </div>
 
             <div class="ws-field">
@@ -1189,6 +1202,7 @@ async function handleOnboard() {
                 id="edit-roommates"
                 v-model="editHasRoommates"
                 :options="sharingOptions"
+                aria-label="Sharing the unit"
                 widthClass="w-full"
               />
             </div>
@@ -1335,12 +1349,12 @@ async function handleOnboard() {
           </div>
           <div class="ws-field">
             <label for="new-unit">Unit</label>
-            <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" widthClass="w-full" />
+            <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" aria-label="Unit" widthClass="w-full" />
           </div>
 
           <div class="ws-field">
             <label for="new-sharing">Sharing the unit</label>
-            <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" widthClass="w-full" />
+            <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" aria-label="Sharing the unit" widthClass="w-full" />
           </div>
 
           <div v-if="newHasRoommates === 'yes'" class="ws-reveal ws-field">

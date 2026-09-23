@@ -569,7 +569,7 @@ function triggerRecord() {
     >
         <label class="ws-field">
           Unit
-          <PillSelect v-model="selectedUnit" :options="unitOptions" widthClass="w-full" />
+          <PillSelect v-model="selectedUnit" :options="unitOptions" aria-label="Unit" widthClass="w-full" />
         </label>
 
         <!--
@@ -647,7 +647,7 @@ function triggerRecord() {
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="ws-field">
             How they paid
-            <PillSelect v-model="paymentMethod" :options="PAYMENT_METHOD_OPTIONS" widthClass="w-full" />
+            <PillSelect v-model="paymentMethod" :options="PAYMENT_METHOD_OPTIONS" aria-label="How they paid" widthClass="w-full" />
           </label>
           <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
             Their reference number

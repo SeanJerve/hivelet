@@ -638,6 +638,7 @@ function formatDateTime(iso: string) {
                   id="ticket-category"
                   v-model="ticketCategory"
                   :options="[...TICKET_CATEGORIES]"
+                  aria-label="Category"
                   widthClass="w-full"
                 />
               </div>
@@ -650,6 +651,7 @@ function formatDateTime(iso: string) {
                   id="ticket-priority"
                   v-model="ticketPriority"
                   :options="PRIORITY_OPTIONS"
+                  aria-label="Priority"
                   widthClass="w-full"
                 />
               </div>

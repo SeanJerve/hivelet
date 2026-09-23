@@ -460,19 +460,19 @@ async function handleSave() {
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label class="ws-field">
             Kind of unit
-            <PillSelect v-model="unitType" :options="[...UNIT_TYPE_CHOICES]" widthClass="w-full" />
+            <PillSelect v-model="unitType" :options="[...UNIT_TYPE_CHOICES]" aria-label="Kind of unit" widthClass="w-full" />
           </label>
 
           <label class="ws-field">
             Standing
-            <PillSelect v-model="editStatus" :options="[...OPERATIONAL_STATUS_OPTIONS]" widthClass="w-full" />
+            <PillSelect v-model="editStatus" :options="[...OPERATIONAL_STATUS_OPTIONS]" aria-label="Standing" widthClass="w-full" />
           </label>
         </div>
 
         <!-- Public visibility - the column existed and the API accepted it; nothing sent it. -->
         <label class="ws-field">
           On the public site
-          <PillSelect v-model="editVisibility" :options="VISIBILITY_OPTIONS" widthClass="w-full" />
+          <PillSelect v-model="editVisibility" :options="VISIBILITY_OPTIONS" aria-label="On the public site" widthClass="w-full" />
           <span class="ws-hint">
             Hiding a unit takes it off the public room pages and stops the enquiry form accepting
             messages about it. Anyone already living there is unaffected.
