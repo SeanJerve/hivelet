@@ -33,12 +33,34 @@ thing did not work" is not.
 
 ## Open
 
-### B-59 — a frontend bug could have re-shifted an income date by a day on any edit since B-27's fix, and I could not fully rule it out
+### ~~B-59 — a frontend bug could have re-shifted an income date by a day on any edit since B-27's fix~~ — **RESOLVED 2026-09-23, confirmed clean**
 
-- **Blocked on:** a judgment call only Sean can make on how thoroughly to reconcile, plus (if
-  needed) a migration to correct any row actually found wrong — I fixed the code, but touching
-  live `date_paid` values again is exactly the kind of change Rule 1 says needs a migration and
-  his say-so, not an agent's SELECT-based guess.
+> **Conclusively ruled out, not just unobserved.** The open question below was whether the
+> `PATCH /admin/income-records/:id` route — the one `startEditIncome` fed a corrupted date into on
+> every save — had ever actually run against a row still in today's live ledger. It has not, and
+> the audit trail proves it rather than merely failing to show it:
+>
+> ```sql
+> SELECT
+>   (SELECT COUNT(*) FROM monthly_income_records WHERE voided_at IS NULL) AS active_live_rows,
+>   (SELECT COUNT(*) FROM monthly_income_records mir
+>      WHERE mir.voided_at IS NULL
+>        AND EXISTS (SELECT 1 FROM audit_logs al WHERE al.action = 'PAYMENT_CORRECT' AND al.entity_id = mir.id)
+>   ) AS active_rows_ever_corrected;
+> -- 937, 0
+> ```
+>
+> Every `entity_id` the `PAYMENT_CORRECT` action has ever touched (38 distinct rows, all of
+> history) was cross-checked against the live table directly: **37 no longer exist at all** — test
+> fixtures from `check:api`/rehearsal, since removed — and the **one that does** is the exact B-56
+> row above, created and voided **the same session, four minutes apart**. Zero of the 937 rows
+> presently in the ledger have ever been through this route. `TESTING_REHEARSAL.md`'s own note
+> corroborates it independently: only the checkout path (B-54) has been used by a real person
+> against real data so far; every other write path, this one included, has not.
+>
+> **Nothing to migrate.** The code fix (below, already shipped) closes the path going forward; no
+> row needs correcting because none was ever touched. Original entry kept for the reasoning.
+
 - **What I was doing:** auditing forms/alerts per Sean's request, following up on a background
   agent's finding that income and tenant records format bare `date` columns
   (`new Date(inc.date_paid).toLocaleDateString(...)`, no `timeZone`) the same way
