@@ -203,23 +203,22 @@ export async function pollUnreadCount() {
   if (!isAuthenticated.value || !currentUser.value) return;
 
   try {
-    const endpoint = isAdmin.value ? '/admin/notifications/unread-count' : '/tenant/my-notifications';
+    /**
+     * Both roles now have a real unread-count route. Until today the tenant
+     * side had none, so this polled the full LIST endpoint every 12 seconds
+     * instead - for as long as anyone was signed in, and the whole notification
+     * history on every call, to answer what is one `COUNT(*)` server-side.
+     * `/tenant/my-notifications/unread-count` mirrors the admin route exactly.
+     */
+    const endpoint = isAdmin.value ? '/admin/notifications/unread-count' : '/tenant/my-notifications/unread-count';
     const res = await api.get<any>(endpoint);
 
     /**
-     * One level, not two. `api.get` already unwrapped the envelope, so the admin
-     * endpoint's `{ success, data: { unreadCount } }` arrives here as
-     * `{ unreadCount }`. This read `res.data.unreadCount`, found `undefined`,
-     * fell through to the array branch, found no array, and assigned 0 - every
-     * twelve seconds, for as long as the feature has existed.
-     *
-     * The tenant branch polls the LIST endpoint, which unwraps to an array, so
-     * both shapes are handled explicitly rather than by a fallback that cannot
-     * tell "none" from "could not read".
+     * One level, not two. `api.get` already unwrapped the envelope, so
+     * `{ success, data: { unreadCount } }` arrives here as `{ unreadCount }`
+     * on both roles now that both answer the same shape.
      */
-    const count = typeof res?.unreadCount === 'number' 
-      ? res.unreadCount 
-      : (Array.isArray(res) ? res.filter((n: any) => !n.is_read).length : 0);
+    const count = typeof res?.unreadCount === 'number' ? res.unreadCount : 0;
 
     if (count > unreadCount.value) {
       // New notification detected! Fetch full list and chime

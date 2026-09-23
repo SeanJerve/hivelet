@@ -637,6 +637,35 @@ router.get(
   })
 );
 
+/**
+ * GET /api/tenant/my-notifications/unread-count
+ *
+ * `/admin/notifications/unread-count` has always existed; this one never did.
+ * `notificationsStore.ts`'s `pollUnreadCount()` — named and documented as
+ * "Lightweight check for unread count", run every 12 seconds for as long as
+ * anyone is signed in — has no tenant equivalent to call, so it falls back to
+ * the full list endpoint above instead. For a resident with months of ticket
+ * and payment history, that is the entire notification list, refetched every
+ * twelve seconds, indefinitely, to answer a question that is one `COUNT(*)`.
+ *
+ * `notificationService.getUnreadCount` was already generic — it takes a
+ * profileId and nothing role-specific — so this mirrors the admin route
+ * exactly, including the same honest failure: a `null` count is answered as a
+ * throw, not a `0`, so the badge keeps its last known figure on a read error
+ * instead of going quiet and reporting nothing unread as fact.
+ */
+router.get(
+  '/tenant/my-notifications/unread-count',
+  requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const count = await notificationService.getUnreadCount(req.user!.profileId);
+    if (count === null) {
+      throw ApiError.internal('The unread count could not be read.');
+    }
+    res.status(200).json({ success: true, data: { unreadCount: count } });
+  })
+);
+
 router.patch(
   '/tenant/my-notifications/:id/read',
   requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
