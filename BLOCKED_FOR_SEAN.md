@@ -422,7 +422,20 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
   and a test notification from the Adyen dashboard returns 401 rather than timing out.
 - **Raised:** 2026-09-22 by Claude, pre-consultation audit session
 
-### B-50 — no privacy policy page exists yet, and the enquiry form used to carry its whole burden
+### ~~B-50 — no privacy policy page exists yet, and the enquiry form used to carry its whole burden~~ — **CLOSED 2026-09-22, stale entry corrected 2026-09-23**
+
+> **This was actually done the same day it was raised** (`1e55eb2`, "add /privacy, closing B-50")
+> and this entry simply never got marked. Caught while sweeping the queue for stale items.
+> `frontend/src/views/PrivacyPolicyView.vue` exists, the router serves it at `/privacy`
+> (`router/index.ts:54`), and `InquireView.vue:286` links to it by name from the enquiry form's
+> short notice — the exact two conditions the original entry's own "how to know it worked" named.
+> Grounded in verified facts only: no auto-confirmation goes out, GCash credentials never reach
+> this system, an enquiry is stored for the landlady only. Nothing further needed unless the owner
+> wants its wording changed.
+>
+> The original entry is kept below for the reasoning, same as every other closed item in this file.
+
+#### The original finding
 
 - **Blocked on:** you saying what the policy should actually promise. Writing the page's content is
   a decision about the business, not a design task
