@@ -33,6 +33,60 @@ thing did not work" is not.
 
 ## Open
 
+### B-59 — a frontend bug could have re-shifted an income date by a day on any edit since B-27's fix, and I could not fully rule it out
+
+- **Blocked on:** a judgment call only Sean can make on how thoroughly to reconcile, plus (if
+  needed) a migration to correct any row actually found wrong — I fixed the code, but touching
+  live `date_paid` values again is exactly the kind of change Rule 1 says needs a migration and
+  his say-so, not an agent's SELECT-based guess.
+- **What I was doing:** auditing forms/alerts per Sean's request, following up on a background
+  agent's finding that income and tenant records format bare `date` columns
+  (`new Date(inc.date_paid).toLocaleDateString(...)`, no `timeZone`) the same way
+  `fetchExpenseRecords` already found and fixed for expenses — UTC midnight parsed, then
+  displayed in the *viewer's* local zone, one day early for anyone west of Manila.
+- **What I already did.** Fixed the display bug (added `formatDateOnly` to
+  `frontend/src/lib/propertyDate.ts`, used it in `fetchIncomeRecords`/`fetchTenants` in
+  `frontend/src/lib/systemState.ts`) and a second, worse bug it uncovered:
+  `IncomeCollectionsView.vue`'s `startEditIncome` re-parsed the *already-shifted display string*
+  (`new Date(r.datePaid)`) rather than a raw ISO value, and wrote that back through `propertyDate()`
+  on **every edit** — correcting a typo in Rent Amount, on a browser set west of UTC+8, would have
+  silently shifted that row's `date_paid` back a day, whatever field the admin thought she was
+  changing. Added `IncomeRecord.rawDate` (the untouched `YYYY-MM-DD`) and pointed the edit dialog
+  at that instead. Verified live: a US-Eastern browser previously read a Feb 1 payment as "Jan 31,
+  2026"; with the fix, every viewer reads it as "Feb 1, 2026" regardless of zone. `vue-tsc
+  --noEmit`, `npm run build`, and `check:all` all pass.
+- **Why this needs Sean and isn't just closed.** This is the *exact* symptom `database/migrations/
+  032_correct_imported_date_paid.sql` (B-27) fixed once already — "every imported payment date was
+  a day early" — except B-27's cause was the *import script*; this one is the *edit dialog*, still
+  live in `main` from whenever `startEditIncome` was written until this fix lands. Every date it
+  corrected on 2026-09-19 was a candidate for silent re-corruption by any edit since, from any
+  admin browser not set to `Asia/Manila`.
+- **What I checked, read-only, before writing this.** Queried `audit_logs` for `action =
+  'PAYMENT_CORRECT'` where `previous_values->>'date_paid' IS DISTINCT FROM
+  new_values->>'date_paid'`. Almost every hit clusters into tight bursts of several rows a few
+  seconds apart on 2026-09-19 and 2026-09-22 (one burst's last row lands at **10:01:07.777675 UTC
+  on 2026-09-22**, the exact timestamp B-56 already documented as the rehearsal void) — the
+  signature of `check:api`/rehearsal exercising this route against scratch rows, not a person
+  editing the real ledger. Two older rows, both on **2026-08-25** (`old_date → new_date` genuinely
+  one day earlier: `2026-08-25→2026-08-24`, `2026-06-15→2026-06-14`), do show the real shift — but
+  that predates the live import itself (**2026-08-28**, per B-27), so it reads as dev-phase testing
+  on pre-production data, not the 937-row ledger. **I found no audit row I can point to as a real
+  admin edit re-shifting a live date since 2026-09-19** — but a SELECT against `audit_logs` proves
+  absence of evidence, not absence of the bug: an edit that happened to leave `date_paid`
+  unchanged (touching only rent/water/invoice, with `datePaid` sent back unchanged in the payload)
+  would show identical `old_date`/`new_date` in this same query and be invisible to it.
+- **What Sean needs to do.** The same reconciliation B-27 already ran once: compare every live
+  `monthly_income_records.date_paid` against her original spreadsheet (still in the repo, same
+  source B-27 used), for rows whose `updated_at` is later than their `created_at` — those are the
+  ones an edit could have touched. If any disagree by exactly one day, that is this bug, and the
+  fix is the same shape as `032_correct_imported_date_paid.sql`: a new numbered migration, backed
+  up first, correcting only the mismatched rows.
+- **How to know it worked:** every edited row's `date_paid` matches her sheet, the same table B-27
+  printed (`matching her sheet` / `still one day early`) comes back all-937/all-zero again.
+- **Raised:** 2026-09-23 by Claude (frontend audit session)
+
+---
+
 ### ~~B-56 — a receipt recorded during today's testing is in her live ledger, and it moved her total~~ — **RESOLVED 2026-09-22, voided**
 
 > **Closed the right way, and quickly.** The row was **voided at 10:01:07 UTC**, four minutes and
