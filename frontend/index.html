@@ -3,8 +3,20 @@
   <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="apple-touch-icon" href="/favicon.svg">
-    <meta name="theme-color" content="#0c66e4">
+    <!--
+      iOS Safari's "Add to Home Screen" reads this tag directly - it does not
+      consult the Web App Manifest's icons array the way Android/Chrome does
+      - and it does not accept SVG here. An SVG `apple-touch-icon` is silently
+      ignored, which is why this pointed at `favicon.svg` with no visible
+      symptom until someone actually tried adding the app to an iPhone home
+      screen. 180x180 is Apple's own recommended size (the largest current
+      iPhone home-screen icon); `apple-touch-icon.png` is rasterized from
+      `favicon.svg`, same artwork as the manifest's own `icon-*.png` entries
+      (see vite.config.ts).
+    -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <!-- Kept in sync with `theme_color` in vite.config.ts's VitePWA manifest - see the comment there for why this is `--brand` (#17603f), not the `--primary` blue it used to be. -->
+    <meta name="theme-color" content="#17603f">
     <meta name="description" content="Centralized apartment operations, billing, tenant portal, and financial analytics for Fe Galang Da Silva Boarding House.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hivelet — Apartment Management & Resident Portal</title>

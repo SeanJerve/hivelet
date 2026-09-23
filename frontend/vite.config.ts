@@ -103,17 +103,76 @@ export default defineConfig({
         name: 'Hivelet — Apartment Management & Financial Operations',
         short_name: 'Hivelet',
         description: 'Centralized apartment management, tenant portal, billing, maintenance dispatch, and financial analytics for Fe Galang Da Silva Boarding House.',
-        theme_color: '#0c66e4',
+        // Was `#0c66e4` (`--primary` in `src/index.css`), a blue that appears
+        // in exactly one file across the whole frontend (`App.vue`) and not
+        // at all in the persistent chrome. `--brand` (`#17603f`) is what
+        // `AppHeader.vue` and `AppSidebar.vue` are actually painted, what the
+        // landing hero and every primary call-to-action button render as -
+        // confirmed on the built site: the "Book now" button computes to
+        // `rgb(23, 96, 63)`, exactly `#17603f`. `theme_color` is supposed to
+        // describe that chrome to the OS (the installed window's title bar,
+        // Android's status bar and task-switcher card); a blue no visible
+        // surface uses was describing a green app.
+        theme_color: '#17603f',
         background_color: '#fafaf9',
         display: 'standalone',
         orientation: 'portrait-primary',
         start_url: '/',
+        id: '/',
+        scope: '/',
+        // `any` and `maskable` are declared as SEPARATE icon entries, each its
+        // own file - not one icon carrying both purposes. A maskable icon
+        // needs a full-bleed background (the OS applies its own shape on top
+        // and clips everything outside a centred safe zone), while an `any`
+        // icon is drawn as-is with no cropping. `favicon.svg`'s background is
+        // a rounded square (rx 128) with transparent corners: correct for
+        // `any`, but a shape an OS mask could reveal as a transparent gap if
+        // declared `maskable` too - the anti-pattern the previous single
+        // "any maskable" SVG entry was. The house glyph itself already sits
+        // inside the required 40%-radius safe circle (farthest vertex ~166px
+        // from centre on a 512px canvas, against a 204.8px allowance), so the
+        // maskable PNGs reuse the same glyph over a full-bleed square.
+        //
+        // PNG fallbacks exist alongside the SVG because maskable SVG icon
+        // support is inconsistent across Android launchers/WebAPK, and
+        // Lighthouse's installability audit still looks for a PNG. All four
+        // (`frontend/public/icon-*.png` and `maskable-icon-*.png`) were
+        // rasterized from `favicon.svg` ONCE and checked in as static files -
+        // there is no build step that regenerates them. If `favicon.svg`
+        // changes, these four go stale silently; regenerate them by hand (or
+        // script it) at the same time. There is no separate editable source
+        // for the maskable variant beyond the rx-128-to-rx-0 background
+        // change described above.
         icons: [
           {
             src: '/favicon.svg',
-            sizes: '192x192 512x512',
+            sizes: 'any',
             type: 'image/svg+xml',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: '/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/maskable-icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: '/maskable-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       },
@@ -126,6 +185,41 @@ export default defineConfig({
         // was making four days ago. They are lazy `<img>` instead, and the
         // browser caches one per floor across every unit on it.
         globIgnores: ['floorplans/**'],
+        // Before this, offline navigation worked for exactly one URL: "/",
+        // because that is the only address Workbox's precache route matches
+        // by name. Every other address a person can land on - a refresh on
+        // `/inquire`, a bookmark to `/admin/income`, a tenant's phone
+        // reopening `/tenant/payments` from its home-screen icon - fell
+        // through to the network, and with no network, to the browser's own
+        // disconnected-page. Confirmed on the built `dist/`: with no
+        // `navigateFallback`, `vite preview` + DevTools offline mode serves
+        // Chrome's own error for `/inquire`, not the app.
+        //
+        // `/index.html` is precached already (every route is client-rendered
+        // by Vue Router from this one document), and so is every route's own
+        // JS chunk - lazy-loaded on first navigation for someone typing on
+        // 3G, but swept into the precache regardless of which routes were
+        // actually visited, because Workbox precaches by build output, not
+        // by browsing history. So the fallback can safely be the real app,
+        // not a placeholder: any navigation request Workbox can't otherwise
+        // satisfy gets the shell, and Vue Router takes it from there with
+        // whatever it has - which for `/admin/*` and `/tenant/*` is a signed
+        // -in shell and no live data, exactly the "No connection" banner in
+        // `App.vue` already exists to say honestly.
+        //
+        // A separate static "you're offline" page was considered instead
+        // (and is the more common tutorial pattern) but was not added: a
+        // single `navigateFallback` can only point at one URL, and pointing
+        // it at a placeholder would make every one of the routes above show
+        // that placeholder instead of the real, working, offline-capable
+        // page they already have. The one case neither this nor any other
+        // service-worker config can fix is a person's *first ever* visit
+        // with no connection at all - there is no service worker yet to
+        // intercept anything, so the browser's own error is what they see.
+        // That is a property of how service workers install, not a gap in
+        // this configuration.
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

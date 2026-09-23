@@ -19,6 +19,20 @@
       ],
       "port": 5000,
       "url": "http://localhost:5000"
+    },
+    {
+      "name": "pwa-verify",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "preview",
+        "--",
+        "--port",
+        "4173"
+      ],
+      "port": 4173
     }
   ]
 }
