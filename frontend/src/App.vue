@@ -22,8 +22,23 @@ const isOffline = ref(!navigator.onLine);
 function updateOnlineStatus() {
   const wasOffline = isOffline.value;
   isOffline.value = !navigator.onLine;
+  /**
+   * "Authoritative synchronization active" was the old wording, and nothing
+   * behind it did that. `isOffline` is read nowhere else in the app - checked
+   * with a grep across every `.vue` and `.ts` file - so reconnecting triggers
+   * no refetch, no resync, nothing beyond this toast and the banner going
+   * away. Whatever was on screen when the connection dropped stays exactly
+   * that stale until the reader navigates or reloads by hand.
+   *
+   * That is a real gap worth having, not papering over: the honest fix is
+   * either build the resync this claimed, or stop claiming it. Given nothing
+   * elsewhere in the app currently listens for reconnection, claiming it here
+   * would be the exact shape of defect this project keeps finding - a screen
+   * asserting a fact the system does not hold, on the one word ("authoritative")
+   * a reader would take most literally if it mattered to them.
+   */
   if (wasOffline && !isOffline.value) {
-    showToast('success', 'Back Online', 'Network connection restored. Authoritative synchronization active.');
+    showToast('success', 'Back online', 'You are connected again. Reload the page if what you see looks out of date.');
   }
 }
 
