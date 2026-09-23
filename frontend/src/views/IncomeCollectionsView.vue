@@ -1789,11 +1789,21 @@ async function exportExcel() {
           <div class="grid grid-cols-2 gap-3 sm:gap-4">
             <label class="ws-field">
               Rent
-              <input v-model.number="editRent" type="number" min="0" class="ws-input w-full" required />
+              <!--
+                `step="any"`: without it, `type="number"` defaults to a whole-number
+                step, and the browser's native constraint validation silently blocks
+                the submit event on any centavo value - no error, no app code runs,
+                just a tooltip the user may not see. `money` (backend/src/utils/
+                validators.ts) explicitly allows two decimal places and the columns
+                are `numeric(10,2)`, so a real centavo correction on this ledger was
+                unsubmittable from this dialog. ExpensesLedgerView's equivalent
+                amount field already carries this.
+              -->
+              <input v-model.number="editRent" type="number" min="0" step="any" class="ws-input w-full" required />
             </label>
             <label class="ws-field">
               Payment for Water (₱)
-              <input v-model.number="editWater" type="number" min="0" class="ws-input w-full" required />
+              <input v-model.number="editWater" type="number" min="0" step="any" class="ws-input w-full" required />
             </label>
           </div>
 
@@ -1801,7 +1811,7 @@ async function exportExcel() {
           <div class="grid grid-cols-2 gap-3 sm:gap-4">
             <label class="ws-field">
               GBG Fee (₱)
-              <input v-model.number="editGarbage" type="number" min="0" class="ws-input w-full" required />
+              <input v-model.number="editGarbage" type="number" min="0" step="any" class="ws-input w-full" required />
             </label>
             <label class="ws-field">
               OR / Receipt Number
