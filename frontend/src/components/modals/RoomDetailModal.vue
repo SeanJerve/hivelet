@@ -76,6 +76,20 @@ function statusLabel(status: string) {
     size="lg"
     @close="closeModal"
   >
+    <!--
+      Capped and scrollable on a phone, same reasoning as AdminEditUnitModal's
+      form and `OnsitePaymentModal` before it: this dialog's "Close" lives in
+      `WsModal`'s footer slot, drawn after the body, so the only way to keep it
+      on screen is to stop the body being taller than the screen. A photo, the
+      rate, the status list, a billing note and a description routinely run
+      past 812px - measured at 375 with a photo present and both optional
+      sections filled, the panel reached 993px and "Close" sat entirely below
+      the fold with nothing to say there was more to scroll to.
+
+      `dvh` rather than `vh` for the same reason as there: the phone's bars are
+      showing when this opens.
+    -->
+    <div class="flex flex-col gap-5 max-h-[60dvh] overflow-y-auto px-1.5 -mx-1.5 sm:mx-0 sm:max-h-none sm:overflow-visible sm:px-0">
     <div v-if="activeRoomDetail.photo" class="h-52 overflow-hidden rounded-2xl bg-canvas">
       <img
         :src="activeRoomDetail.photo"
@@ -161,6 +175,7 @@ function statusLabel(status: string) {
     <!-- The amenity list that used to sit here was the same four lines for all
          33 units, seeded in systemState rather than stored per unit. Nothing in
          the database says which unit has what, so this dialog says nothing. -->
+    </div>
 
     <template #actions>
       <button type="button" class="pill-btn" @click="closeModal">Close</button>

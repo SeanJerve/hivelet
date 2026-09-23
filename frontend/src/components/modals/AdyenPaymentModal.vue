@@ -275,6 +275,26 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     @close="emit('close')"
   >
     <!--
+      Capped and scrollable on a phone, same reasoning as AdminEditUnitModal's
+      form and RoomDetailModal's body: "Cancel"/"Done" live in `WsModal`'s
+      footer slot, drawn after the body, so the only way to keep it reachable
+      is to stop the body being taller than the screen. The summary below is
+      short, but the Drop-in Adyen mounts beneath it is not under this
+      component's control - a GCash checkout with more than one method
+      offered routinely runs past `min-h-[220px]`, and measured with a
+      similarly-sized mocked Drop-in at 375 the footer's bottom 28px sat past
+      the fold with nothing to say there was more below.
+
+      This wraps ONLY the scroll container, not the Drop-in's own mount
+      sequence: `adyenContainerRef` stays the same DOM node either way, so
+      `initializeAdyen`'s `nextTick`-then-`.mount()` sequence (see the comment
+      on that function) is unaffected - an `overflow`/`max-height` ancestor
+      clips paint, it does not defer mounting the way the `Transition` that
+      comment rules out would have. `dvh` rather than `vh` for the same
+      reason as those two: the phone's bars are showing when this opens.
+    -->
+    <div class="flex flex-col gap-5 max-h-[60dvh] overflow-y-auto px-1.5 -mx-1.5 sm:mx-0 sm:max-h-none sm:overflow-visible sm:px-0">
+    <!--
       What is being paid. Hidden rather than zeroed until `billInfo` answers -
       when nothing was passed in, that is exactly the span from mount until
       the checkout call resolves, and a "₱0.00 to pay now" flash in that gap
@@ -380,6 +400,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     <!-- Adyen's own fields - no entrance animation, see the comment above. -->
     <div v-else>
       <div ref="adyenContainerRef" id="adyen-dropin-container" class="min-h-[220px]"></div>
+    </div>
     </div>
 
     <template #actions>
