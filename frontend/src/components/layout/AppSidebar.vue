@@ -8,7 +8,15 @@
  */
 import { computed, watch, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
-import { isMobileSidebarOpen, inquiries, maintenanceTickets, incomeRecords } from '@/lib/systemState';
+import {
+  isMobileSidebarOpen,
+  inquiries,
+  maintenanceTickets,
+  incomeRecords,
+  fetchInquiries,
+  fetchMaintenanceTickets,
+} from '@/lib/systemState';
+import { isAuthenticated, isAdmin } from '@/lib/authStore';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
 import { 
   LayoutDashboard, 
@@ -47,9 +55,76 @@ const isTenantSection = computed(() => route.path.startsWith('/tenant'));
 const inquiriesCount = computed(
   () => inquiries.filter((i) => i.status !== 'Converted' && i.status !== 'Closed').length
 );
-const urgentTicketsCount = computed(() => 
+const urgentTicketsCount = computed(() =>
   maintenanceTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed' && (t.priority === 'Emergency' || t.priority === 'High')).length
 );
+
+/**
+ * The two counts above are correctly REACTIVE - wrapped in `computed()`, so
+ * they update the instant `inquiries` or `maintenanceTickets` changes - but
+ * nothing kept those arrays themselves current. `fetchInquiries()` and
+ * `fetchMaintenanceTickets()` were called from exactly one place in the whole
+ * app: `AdminOverviewView`'s `onMounted`. An administrator who landed on
+ * Income, or bookmarked straight into Tickets, and stayed there had a sidebar
+ * showing whatever those arrays held at last Overview visit - zero, if this
+ * session never loaded Overview at all - while the notification bell three
+ * inches away kept polling every 12 seconds regardless of which screen was
+ * open. Two indicators answering the same question, only one of them live.
+ *
+ * Polled here rather than folded into that heartbeat: notifications and
+ * sidebar badges are different concerns that happen to share a cadence, not
+ * the same concern, and coupling them would mean a change to one poll's
+ * error handling or backoff silently changing the other's.
+ *
+ * 45 seconds, not 12: these are moderate-priority counts, not money or an
+ * unread message, and every tick here is two full-list refetches
+ * (`fetchInquiries`/`fetchMaintenanceTickets` return complete records, the
+ * same calls the Inquiries and Dispatch screens use to populate themselves,
+ * not a lightweight count) - unlike the notification badge, which now has a
+ * real COUNT(*) route behind it. A shorter interval would just be paying
+ * that cost more often for a number nobody is watching in real time the way
+ * they watch a bell.
+ *
+ * Gated on `isAdmin`, not `isTenantSection`: the badges are admin-only
+ * (`TENANT_NAV` sets `badge: null` throughout), so a tenant session should
+ * never open this connection at all, not merely fail to render its result.
+ *
+ * Same lifecycle shape as `AppHeader.vue`'s notification heartbeat -
+ * `immediate: true` because a page reload restores an authenticated session
+ * without ever transitioning false -> true, and torn down on unmount so
+ * leaving the workspace (this component is conditionally mounted, see
+ * `App.vue`'s `isWorkspaceSection`) cannot leave a timer running against a
+ * component that no longer exists.
+ */
+let badgeRefreshInterval: ReturnType<typeof setInterval> | null = null;
+
+function refreshSidebarBadgeCounts() {
+  if (!isAuthenticated.value || !isAdmin.value) return;
+  fetchInquiries();
+  fetchMaintenanceTickets();
+}
+
+watch(
+  () => isAuthenticated.value && isAdmin.value,
+  (active) => {
+    if (badgeRefreshInterval) {
+      clearInterval(badgeRefreshInterval);
+      badgeRefreshInterval = null;
+    }
+    if (active) {
+      refreshSidebarBadgeCounts();
+      badgeRefreshInterval = setInterval(refreshSidebarBadgeCounts, 45_000);
+    }
+  },
+  { immediate: true }
+);
+
+onBeforeUnmount(() => {
+  if (badgeRefreshInterval) {
+    clearInterval(badgeRefreshInterval);
+    badgeRefreshInterval = null;
+  }
+});
 
 const ADMIN_NAV = computed(() => [
   { to: '/admin/overview', aliases: ['/basis/overview'], label: 'Executive Overview', icon: LayoutDashboard, badge: null, badgeColor: '' },
