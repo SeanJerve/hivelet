@@ -70,9 +70,35 @@ export function can(permission: string): boolean {
   return state.permissions.includes(permission);
 }
 
+/**
+ * The token has been persisted since this store's beginning; nothing was
+ * ever kept alongside it. That is what made "already signed in" and
+ * "installed as an offline-capable PWA" contradict each other - see the
+ * comment on `restoreSession` below.
+ */
+const CACHED_SESSION_KEY = 'hivelet_cached_session';
+
+function cacheSessionSnapshot(payload: { user: SessionUser; permissions: string[] }): void {
+  try {
+    localStorage.setItem(CACHED_SESSION_KEY, JSON.stringify(payload));
+  } catch {
+    // Storage disabled - the token itself still works once back online.
+  }
+}
+
+function readCachedSessionSnapshot(): { user: SessionUser; permissions: string[] } | null {
+  try {
+    const raw = localStorage.getItem(CACHED_SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 function applySession(payload: { user: SessionUser; permissions: string[] }): void {
   state.user = payload.user;
   state.permissions = payload.permissions ?? [];
+  cacheSessionSnapshot(payload);
 }
 
 function clearSession(): void {
@@ -80,6 +106,11 @@ function clearSession(): void {
   state.permissions = [];
   state.profile = null;
   setStoredToken(null);
+  try {
+    localStorage.removeItem(CACHED_SESSION_KEY);
+  } catch {
+    // Same storage-disabled case applies here.
+  }
 }
 
 export async function login(email: string, password: string): Promise<SessionUser> {
@@ -145,8 +176,40 @@ export async function restoreSession(): Promise<void> {
     const me = await api.get<MeResponse>('/auth/me');
     applySession(me);
     state.profile = me.profile;
-  } catch {
-    clearSession();
+  } catch (error) {
+    /**
+     * A dead token and a dead network threw through the same bare `catch`,
+     * and both cleared the session. `ApiRequestError.isAuthFailure` is false
+     * for `NETWORK_ERROR` (status 0, `fetch` itself threw) and for a 5xx -
+     * exactly the shape a genuinely offline PWA launch produces, on a device
+     * that HAD signed in and has a real token still sitting in storage.
+     *
+     * So a resident who installed this app, signed in once, and opened it
+     * again with no signal - the offline capability `navigateFallback` and
+     * the precached shell exist for - was signed out on the spot, by the
+     * very session check meant to confirm they were still signed in. The
+     * token was then deleted from storage too, so reconnecting did not fix
+     * it; she had to sign in again, which needs the network she did not have.
+     *
+     * Only a REAL auth failure (a rejected or expired token, the server
+     * itself saying so) clears the session now. Anything else falls back to
+     * the last snapshot `applySession` cached alongside the token - the same
+     * role and permissions she had at last successful sign-in - so the app
+     * renders as hers while offline instead of locking her out of it. The
+     * next successful `/auth/me`, the moment she is back online, overwrites
+     * this with the real thing.
+     */
+    if (error instanceof ApiRequestError && error.isAuthFailure) {
+      clearSession();
+    } else {
+      const cached = readCachedSessionSnapshot();
+      if (cached) {
+        state.user = cached.user;
+        state.permissions = cached.permissions ?? [];
+      } else {
+        clearSession();
+      }
+    }
   } finally {
     isRestoring.value = false;
   }
