@@ -54,6 +54,11 @@ onMounted(async () => {
 });
 
 async function submitInquiry() {
+  // Submit disables on `isSubmitting`, but Enter inside any field here submits
+  // the form directly - a second Enter before Vue's next render still reaches
+  // here with the button not yet visibly disabled, and would file the same
+  // enquiry twice in the landlady's portal.
+  if (isSubmitting.value) return;
   // `inquiries.prospect_email` is NOT NULL in the database, so the form asks for
   // an address rather than inventing one. It previously sent
   // 'prospect@hivelet.ph' whenever the field was blank, which put an address the
@@ -258,18 +263,27 @@ async function submitInquiry() {
                 class="ws-input mt-2"
               />
             </div>
-            <div>
+            <div class="sm:col-span-2">
               <label
                 for="iq-msg"
                 class="block text-xs text-ink-faint"
                 >What would you like to ask</label
               >
-              <input
+              <!--
+                A textarea, not a single-line input squeezed into half the
+                grid row. The endpoint asks for a real question (min 5, max
+                2000 characters - see the validation above), and a one-line
+                box that scrolls its own text sideways does not invite one.
+                Full width for the same reason: this is the field that
+                decides whether Mrs. Da Silva has anything to answer.
+              -->
+              <textarea
                 id="iq-msg"
                 v-model="inquiryMsg"
-                type="text"
-                class="ws-input mt-2"
-              />
+                rows="3"
+                placeholder="Tell her what you'd like to know - move-in timing, the unit, anything else."
+                class="ws-textarea w-full mt-2"
+              ></textarea>
             </div>
           </div>
 

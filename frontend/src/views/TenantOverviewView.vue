@@ -12,7 +12,7 @@ import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
-import { propertyDate, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
+import { propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -181,11 +181,24 @@ const dueDateCountdown = computed(() => {
     return { daysLeft: 0, label: 'Payment settled', severity: 'paid' as const };
   }
   const raw = tenantData.value.dueDateRaw;
-  if (!raw) return { daysLeft: 0, label: tenantData.value.dueDaysRemaining, severity: 'safe' as const };
-  const due = new Date(raw);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  due.setHours(0, 0, 0, 0);
+  if (!raw || !/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    return { daysLeft: 0, label: tenantData.value.dueDaysRemaining, severity: 'safe' as const };
+  }
+  /**
+   * Both sides compared as the property's own calendar day, not the viewer's.
+   *
+   * `new Date(raw)` parses a bare `due_date` column as UTC midnight, and the
+   * `.setHours(0, 0, 0, 0)` this used to call reads that back in the BROWSER's
+   * own zone - a day earlier than Legazpi for anyone west of Manila - while
+   * `today` was the browser's own local "today" rather than the property's.
+   * Same defect class `2adf017`/`d78f9ee` already fixed for income, tenant and
+   * on-site-payment dates; this countdown, the headline figure on the Amount
+   * Due tile, had it too. Building both instants at Manila midnight (UTC+8,
+   * no daylight saving) makes the subtraction exact wherever the resident's
+   * phone thinks it is.
+   */
+  const due = new Date(`${raw.slice(0, 10)}T00:00:00+08:00`);
+  const today = new Date(`${propertyToday()}T00:00:00+08:00`);
   const diff = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   if (diff < 0) {
     return { daysLeft: diff, label: `Overdue by ${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'}`, severity: 'overdue' as const };
@@ -313,7 +326,20 @@ async function fetchTenantData() {
     }));
 
     // Find the latest covered date from verified payments and income records.
-    let maxCoveredDate: Date | null = null;
+    /**
+     * Kept as `{ y, m, d }` integers, not a `Date`.
+     *
+     * `rent_period_end` is a bare `date` column. Parsing it via `new Date(...)`
+     * gives UTC midnight, and the `.getFullYear()`/`.getMonth()` this block used
+     * to call on the result are LOCAL-time getters - for a viewer whose zone
+     * crosses that UTC instant onto a different calendar month (anyone roughly
+     * west of Manila, on a period ending near the 1st), the due date computed
+     * below could land in the wrong month entirely, not just a day off. Same
+     * defect class `2adf017`/`d78f9ee` already fixed for income, tenant and
+     * on-site-payment dates elsewhere in this app; slicing the string directly
+     * needs no `Date` and no zone at all.
+     */
+    let maxCoveredDate: { y: number; m: number; d: number } | null = null;
 
     /**
      * THE 25th OF THE MONTH WAS INVENTED, AND IT HID REAL DEBT.
@@ -341,9 +367,21 @@ async function fetchTenantData() {
      */
 
     incomeData?.forEach((inc: any) => {
-      if (inc.verification_status === 'Verified' && inc.rent_period_end) {
-        const end = new Date(inc.rent_period_end);
-        if (!maxCoveredDate || end > maxCoveredDate) maxCoveredDate = end;
+      if (
+        inc.verification_status === 'Verified' &&
+        inc.rent_period_end &&
+        /^\d{4}-\d{2}-\d{2}/.test(inc.rent_period_end)
+      ) {
+        const y = Number(inc.rent_period_end.slice(0, 4));
+        const m = Number(inc.rent_period_end.slice(5, 7)) - 1;
+        const d = Number(inc.rent_period_end.slice(8, 10));
+        if (
+          !maxCoveredDate ||
+          y > maxCoveredDate.y ||
+          (y === maxCoveredDate.y && (m > maxCoveredDate.m || (m === maxCoveredDate.m && d > maxCoveredDate.d)))
+        ) {
+          maxCoveredDate = { y, m, d };
+        }
       }
     });
 
@@ -377,7 +415,7 @@ async function fetchTenantData() {
     } else {
       activeBillId.value = null;
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
-      const validCoveredDate = maxCoveredDate as Date | null;
+      const validCoveredDate = maxCoveredDate;
       if (validCoveredDate) {
         // Only from the bill. There is deliberately no fallback: a resident with
         // no bill is told there is none, rather than shown a made-up one.
@@ -405,19 +443,22 @@ async function fetchTenantData() {
 
         const day = anniversaryDay.value;
         if (day) {
+          // UTC throughout: `y`/`m` are already plain integers sliced from the
+          // column, so days-in-month and the final instants are built the same
+          // way `propertyDate.ts`'s own `periodEnd()` does it - no local Date
+          // getter ever reads them back, so no browser timezone can shift them.
           const clamp = (y: number, m: number, d: number) =>
-            Math.min(d, new Date(y, m + 1, 0).getDate());
+            Math.min(d, new Date(Date.UTC(y, m + 1, 0)).getUTCDate());
 
-          const y = validCoveredDate.getFullYear();
-          const m = validCoveredDate.getMonth();
-          const lastPaidDue = new Date(y, m, clamp(y, m, day));
-          tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+          const { y, m } = validCoveredDate;
+          const lastPaidDue = new Date(Date.UTC(y, m, clamp(y, m, day)));
+          tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
           tenantData.value.dueDateRaw = propertyDate(lastPaidDue);
 
           const nextY = m + 1 > 11 ? y + 1 : y;
           const nextM = (m + 1) % 12;
-          const nextDate = new Date(nextY, nextM, clamp(nextY, nextM, day));
-          tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+          const nextDate = new Date(Date.UTC(nextY, nextM, clamp(nextY, nextM, day)));
+          tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
         } else {
           tenantData.value.dueDate = '';
           tenantData.value.dueDateRaw = '';
@@ -479,6 +520,11 @@ async function fetchTenantData() {
  * here and abandon it. No session is created until the Drop-in asks for one.
  */
 function handlePayOnline() {
+  // `payingOnline` drives both the button's `:disabled` and its "Opening the
+  // payment page" label below - neither ever fired, because nothing here set
+  // it. A resident tapping it twice on a slow connection got two navigations
+  // queued instead of one obviously-busy button.
+  payingOnline.value = true;
   router.push({ path: '/tenant/payments', query: { pay: activeBillId.value || undefined } });
 }
 
@@ -517,13 +563,13 @@ const statusTone = computed(() => {
     <div
       v-if="submissionNotice"
       role="status"
-      class="ws-reveal flex items-start justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm"
+      class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
     >
-      <span class="flex items-start gap-2.5">
-        <CheckCircle2 class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+      <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
+        <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
         {{ submissionNotice }}
-      </span>
-      <button type="button" class="icon-btn" aria-label="Dismiss this message" @click="submissionNotice = ''">
+      </p>
+      <button type="button" class="icon-btn shrink-0" aria-label="Dismiss this message" @click="submissionNotice = ''">
         <X class="size-4" aria-hidden="true" />
       </button>
     </div>

@@ -332,7 +332,11 @@ function seedNotesForTicket(ticket: TicketRow): TicketNote[] {
 
 async function postNote() {
   const text = newNoteText.value.trim();
-  if (!text || !activeTimelineTicket.value) return;
+  // The Post button's `:disabled="savingNote"` cannot stop this: the input
+  // itself stays enabled while saving, and `@keydown.enter.prevent="postNote"`
+  // fires straight off the keyboard. Two quick Enter presses called this
+  // twice before the first request even returned, each posting the same note.
+  if (!text || !activeTimelineTicket.value || savingNote.value) return;
   savingNote.value = true;
   try {
     const res = await api.post<any>(`/tenant/tickets/${activeTimelineTicket.value.id}/messages`, {
@@ -472,6 +476,10 @@ const removePhoto = () => {
 };
 
 async function handleTicketSubmit() {
+  // The submit button disables on `submitting`, but Enter inside the title or
+  // description field submits the form directly - a second Enter before Vue's
+  // next render still reaches here with the button not yet visibly disabled.
+  if (submitting.value) return;
   ticketError.value = '';
 
   if (!ticketTitle.value.trim() || ticketTitle.value.trim().length < 3) {
@@ -552,7 +560,7 @@ function formatDateTime(iso: string) {
 </script>
 
 <template>
-  <div class="ws-focus space-y-6">
+  <div class="ws-focus space-y-5">
     <!-- Page header -->
     <div>
       <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>

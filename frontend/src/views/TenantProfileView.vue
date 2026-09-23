@@ -132,6 +132,11 @@ async function fetchProfile() {
 }
 
 async function handleSave() {
+  // Save disables on `saving`, but Enter inside any text field submits the
+  // form directly - a second Enter before Vue's next render still reaches
+  // here with the button not yet visibly disabled, and would resend the
+  // whole profile while the first save is still in flight.
+  if (saving.value) return;
   successNotice.value = '';
 
   // The form is not a picture of what is stored, so it must not be written back.
@@ -203,7 +208,7 @@ function handleReset() {
 </script>
 
 <template>
-  <div class="ws-focus space-y-6">
+  <div class="ws-focus space-y-5">
     <!-- Page header -->
     <div>
       <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
