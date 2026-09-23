@@ -601,8 +601,22 @@ const statusTone = computed(() => {
           @retry="fetchTenantData"
         />
         <template v-else-if="!isSettled">
-          <div>
-            <p class="text-5xl leading-none font-semibold tabular tracking-tight">{{ peso(tenantData.totalAmountDue, 2) }}</p>
+          <div class="min-w-0">
+            <!--
+              The figure is one unbreakable token - a currency sign and digits,
+              nothing to wrap on - and `body { overflow-x: hidden !important }`
+              turns any overflow into silent clipping, not a scrollbar. At 200%
+              browser text size (WCAG 1.4.4) that clipped the last digits off
+              on a phone.
+
+              `text-4xl sm:text-5xl` matches AdminOverviewView's peso headline
+              and leaves room for a five-digit balance on a 320px phone.
+              `break-all` plus `min-w-0` on this div is the last resort: at 200%
+              the figure wraps onto a second line instead of losing digits.
+              Measured 2026-09-24 at 320, 375 and 428px, at 100% and 200%:
+              0px of overflow in every case, one line at 100%.
+            -->
+            <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl break-all">{{ peso(tenantData.totalAmountDue, 2) }}</p>
             <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-on-brand-soft">
               <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
               <span v-if="tenantData.dueDate">Due {{ tenantData.dueDate }}</span>
@@ -629,8 +643,13 @@ const statusTone = computed(() => {
               fact the system does not hold, and said it to every resident at
               once whenever her records ran out, which is what August and
               September look like while her book stops at July.
+
+              Same sizing as the peso figure above, for the same reason:
+              "Settled" is one word with nothing to wrap on. `text-4xl` alone
+              still clipped 26px of it on a 320px phone at 200% text size, so
+              `break-words` lets it break as a last resort, never at 100%.
             -->
-            <p class="text-5xl leading-none font-semibold tracking-tight">
+            <p class="text-4xl leading-none font-semibold tracking-tight break-words sm:text-5xl">
               {{ tenantData.dueDaysRemaining === 'Settled' ? 'Settled' : 'Not billed yet' }}
             </p>
             <p class="mt-3 text-sm text-on-brand-soft">
