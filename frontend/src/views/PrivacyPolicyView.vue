@@ -23,7 +23,7 @@ import { LANDLADY } from '@/lib/systemState';
 
 <template>
   <div class="ws-focus flex-1 w-full font-editorial bg-canvas">
-    <div class="ws-page py-10 sm:py-14">
+    <div class="ws-page ws-content py-10 sm:py-14">
       <RouterLink
         to="/public"
         class="press inline-flex items-center gap-1.5 py-1 text-sm text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink"

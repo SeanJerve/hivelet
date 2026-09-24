@@ -374,10 +374,17 @@ async function submitInquiry() {
       first thing that gave the seam away.
     -->
     <header class="w-full border-b border-line">
-      <div class="ws-page pt-7 pb-6 flex items-start justify-between gap-6 sm:gap-10">
+      <!--
+        The landing page's masthead bar: `min-h-16 items-center` and the same
+        `font-display` wordmark, so "Hivelet" does not jump 10px down when
+        someone moves from the landing page to a category (it sat in
+        `pt-7 pb-6` before). `min-h`, not `h`, because the three links can
+        wrap onto a second line on a 320px phone.
+      -->
+      <div class="ws-page min-h-16 flex items-center justify-between gap-6 sm:gap-10">
         <RouterLink
           to="/public"
-          class="press shrink-0 text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+          class="press shrink-0 font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
         >
           Hivelet
         </RouterLink>
@@ -415,7 +422,7 @@ async function submitInquiry() {
       field at every width, where the stepped scale jumps at breakpoints.
     -->
     <section aria-label="Category overview" class="w-full">
-      <div class="ws-page ws-band">
+      <div class="ws-page ws-content ws-band">
 
         <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
           Kind of unit
@@ -465,7 +472,7 @@ async function submitInquiry() {
       aria-label="Kind of unit"
       class="w-full border-t border-line"
     >
-      <div class="ws-page">
+      <div class="ws-page ws-content">
         <ul class="flex flex-wrap items-baseline gap-x-8 gap-y-3 py-5 sm:gap-x-12">
           <li v-for="c in CATEGORIES" :key="c.key">
             <!--
@@ -496,7 +503,7 @@ async function submitInquiry() {
     </nav>
 
     <!-- The shape that is about to arrive: a frame, its figures beside it, then the plates. -->
-    <div v-if="isLoading" class="ws-page py-16">
+    <div v-if="isLoading" class="ws-page ws-content py-16">
       <SkeletonDetail />
     </div>
 
@@ -518,7 +525,7 @@ async function submitInquiry() {
       :key="selectedCategoryKey"
       class="list-reveal-item w-full border-t border-line"
     >
-      <div class="ws-page ws-band">
+      <div class="ws-page ws-content ws-band">
         <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
           Nothing of this kind is listed
         </h2>
@@ -553,7 +560,7 @@ async function submitInquiry() {
         aria-label="The unit being looked at"
         class="list-reveal-item w-full border-t border-line"
       >
-        <div class="ws-page grid lg:grid-cols-[1fr_26rem]">
+        <div class="ws-page ws-content grid lg:grid-cols-[1fr_26rem]">
 
           <div class="relative aspect-[4/3] lg:aspect-auto lg:min-h-[30rem] border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden">
             <img
@@ -730,7 +737,7 @@ async function submitInquiry() {
         alone is not a state a screen reader can hear; `aria-pressed` carries it.
       -->
       <section aria-label="The units of this kind" class="w-full border-t border-line">
-        <div class="ws-page ws-band">
+        <div class="ws-page ws-content ws-band">
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
             <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">

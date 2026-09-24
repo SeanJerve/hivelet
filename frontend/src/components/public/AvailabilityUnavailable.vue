@@ -56,7 +56,7 @@ function reload() {
     aria-live="polite"
     class="availability-unavailable w-full border-t border-line"
   >
-    <div class="ws-page ws-band">
+    <div class="ws-page ws-content ws-band">
       <p class="text-xs uppercase tracking-[0.18em] text-ink-soft">
         Live availability
       </p>

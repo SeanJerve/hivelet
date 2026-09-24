@@ -379,16 +379,21 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
       </div>
 
-      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-12 sm:pb-16 lg:pb-20">
+      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-6">
         <!--
-          "Boarding House" comes off the display line and sits on the right
-          aligned with the header navigation. Both stay inside the <h1>, so the
+          "Boarding House" comes off the display line and sits right after
+          "Silva" on its baseline. It used to be pushed to the far right to
+          line up with the header navigation, which left it stranded a screen's
+          width from the name it finishes. Both stay inside the <h1>, so the
           accessible name is still the full "Fe Galang Da Silva Boarding House".
+
+          `pb-6` sets the name as close to the bottom edge as the masthead sits
+          to the top edge, so the photograph is framed evenly top and bottom.
         -->
-        <h1 class="font-editorial drop-shadow-sm flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 w-full">
+        <h1 class="font-editorial drop-shadow-sm flex flex-wrap items-baseline gap-x-5 gap-y-2 w-full">
           <span class="font-medium tracking-[-0.03em] leading-[0.9] text-[clamp(3.25rem,10.5vw,9.75rem)]"
             >Fe Galang Da Silva</span>
-          <span class="ml-auto text-right whitespace-nowrap text-sm sm:text-base md:text-lg font-light tracking-wide text-white/90"
+          <span class="whitespace-nowrap text-sm sm:text-base md:text-lg font-light tracking-wide text-white/90"
             >Boarding House</span>
         </h1>
       </div>
@@ -411,7 +416,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       counting.
     -->
     <section aria-label="Property at a glance" class="w-full bg-canvas font-editorial">
-      <div class="ws-page ws-band">
+      <div class="ws-page ws-content ws-band">
 
         <h2 class="text-center font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(1.9rem,6vw,5.25rem)]">
           33 Units, 4 Floors
@@ -425,7 +430,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
     </section>
 
     <!-- 1. Category Explorer (Centered) -->
-    <div id="categories" class="ws-page ws-band scroll-mt-20 font-editorial">
+    <div id="categories" class="ws-page ws-content ws-band scroll-mt-20 font-editorial">
       <section>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
@@ -536,7 +541,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       populated for occupied units and this is a public page.
     -->
     <section id="availability" class="w-full bg-canvas border-t border-line font-editorial scroll-mt-20">
-      <div class="ws-page ws-band">
+      <div class="ws-page ws-content ws-band">
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
@@ -869,7 +874,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
     <!-- 2. Frequently Asked Questions (FAQ Section) -->
     <section id="faqs" class="w-full bg-canvas border-t border-line font-editorial ws-band scroll-mt-20">
-      <div class="ws-page">
+      <div class="ws-page ws-content">
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
@@ -930,7 +935,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       address stays in text beside it rather than living only on the map.
     -->
     <section id="location" class="w-full bg-canvas border-t border-line font-editorial scroll-mt-20">
-      <div class="ws-page ws-band">
+      <div class="ws-page ws-content ws-band">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
             Location
