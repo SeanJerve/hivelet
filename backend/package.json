@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && node scripts/mark-dist-esm.mjs",
     "start": "node dist/server.js",
     "check:billing": "npm run build && node scripts/check-billing.mjs",
     "check:adyen": "npm run build && node scripts/check-adyen-hmac.mjs",
