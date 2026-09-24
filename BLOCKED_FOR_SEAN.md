@@ -2644,6 +2644,13 @@ these three indistinguishable from the real residents.*
 - **How to know it worked:** the bullet names a region that matches the dashboard
 - **Raised:** 2026-09-24 by Claude, legal documents pass
 
+> **Region found, 2026-09-24 (Loyd's machine): AWS `ap-northeast-2`, Seoul, South Korea. That
+> is outside the Philippines, so the sentence is needed.** How it was found: the database host
+> resolves to `2406:da12:1f1:…`, and AWS's published `ip-ranges.json` lists `2406:da12::/36` as
+> ap-northeast-2. This is inferred from DNS, not read off the dashboard, so glance at Project
+> Settings → General before the sentence goes public. Production hosting is still undecided
+> (`DEPLOYMENT_PLAN.md` § 1), and the API host's region belongs in the same bullet once chosen.
+
 ### B-61 — unfixed findings from the 2026-09-24 frontend hardening pass
 
 - **Blocked on:** session time. Five agents found these on 2026-09-24 in a harness that runs the
@@ -2705,3 +2712,54 @@ these three indistinguishable from the real residents.*
   is append-only.
 - **How to know it worked:** each item is re-measured in the browser, and `check:all` stays 20/20.
 - **Raised:** 2026-09-24 by Claude, frontend hardening pass
+
+### B-62 — three frontend changes the deployment needs
+
+- **Blocked on:** the frontend lane (`frontend/`), and for the last item the hosting decision in
+  `DEPLOYMENT_PLAN.md` § 1
+- **What I was doing:** planning the production deployment from the backend side (2026-09-24)
+- **What Sean needs to do:**
+  1. **Make a production build fail when `VITE_API_BASE_URL` is unset.** `frontend/src/lib/api.ts:11`
+     falls back to `http://localhost:5000/api`, so a build made without it deploys cleanly and
+     then every visitor's browser calls its own machine. That looks like "the API is down" and
+     nothing says why. A check in `vite.config.ts` when `mode === 'production'` is enough
+  2. **Add `frontend/public/_headers`** for Cloudflare Pages. The draft, including a report-only
+     CSP that allows the Adyen Drop-in, is in `DEPLOYMENT_PLAN.md` § 4. Switch the CSP from
+     report-only to enforcing once a TEST payment has run clean under it
+  3. **Absolute `og:image`** in `frontend/index.html`, once the domain is known (§ 1)
+- **How to know it worked:** `vite build` with the variable unset exits non-zero; the production
+  site's response headers show HSTS and the CSP; a shared link previews with the image
+- **Raised:** 2026-09-24 by Claude, deployment plan
+
+### B-63 — backend audit 2026-09-24: what is fixed, and three decisions that are yours
+
+- **Blocked on:** Sean's decisions below; nothing is broken while they wait
+- **Fixed and pushed today (backend, Loyd's machine):** B-61's backend half (an edit no longer
+  closes and reopens a tenancy); a refused unit move no longer ends the tenancy first; tenant
+  edits no longer copy the password hash into `audit_logs` or the response; PATCH on an
+  administrator's profile is refused; an `_` in an onboarding email no longer matches a different
+  person; refused requests are budgeted so they cannot flood `audit_logs`; change-password is
+  limited to 10 wrong guesses per 15 minutes. Each commit message carries its evidence
+- **Decisions for Sean:**
+  1. **16 old `audit_logs` rows hold bcrypt hashes** (TENANT_UPDATE, 2026-08-19..25, 7 profiles).
+     Checked read-only: 5 of the 7 profiles no longer exist, and **none of the 16 hashes is a
+     current password**, so nothing live is exposed. Redacting them means a migration that
+     UPDATEs an append-only table (`previous_values - 'password_hash'`, same for `new_values`),
+     against the B-41 principle. Leaving them is defensible; say which
+  2. **`must_change_password` is enforced only in the browser.** Anyone holding an issued
+     temporary password can use the API without changing it. A server gate (428 on everything
+     but `/auth/me`, change-password and logout) is written up but NOT applied, because the
+     screens behind the modal would then show load errors until a reload: the frontend needs to
+     reload its data after the change succeeds. Apply both halves together
+  3. **Changing a password does not end existing sessions** (7-day tokens). Rejecting tokens
+     issued before `password_changed_at` is a small backend change, but it signs the resident out
+     of their other devices, and change-password would then need to return a fresh token for
+     the current one. Frontend and backend together
+- **Still being fixed in parallel (branches, not yet merged):** money (pay-this-period charging a
+  period already paid in person; verify booking the bill's full amount instead of the payment),
+  input validation (non-UUID ids giving 500s, query numbers, attachment URL scheme) and Adyen
+  (a second checkout while the webhook is late; HMAC escaping; return-URL check; production
+  boot without keys)
+- **Correction to the brief:** "a refused request writes nothing" was not true here. Every
+  401/403 wrote a permanent audit row (10,673 of 16,422 rows). Budgeted now, not removed
+- **Raised:** 2026-09-24 by Claude, backend audit
