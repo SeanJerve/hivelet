@@ -271,14 +271,18 @@ async function claimCheckout(billId: string): Promise<void> {
   }
   if ((data?.length ?? 0) > 0) return;
 
-  const { data: held } = await db.from('bills').select('checkout_opened_at').eq('id', billId).maybeSingle();
-  const openedAt = held?.checkout_opened_at ? new Date(held.checkout_opened_at) : now;
-  const retryAt = new Date(openedAt.getTime() + CHECKOUT_HOLD_MS)
-    .toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' });
+  // Only for the time in the message. The refusal stands either way - the claim
+  // above already failed - so a failed read just words it without the time.
+  const { data: held, error: heldError } = await db
+    .from('bills').select('checkout_opened_at').eq('id', billId).maybeSingle();
+  const retryAt = !heldError && held?.checkout_opened_at
+    ? new Date(new Date(held.checkout_opened_at).getTime() + CHECKOUT_HOLD_MS)
+        .toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' })
+    : null;
   throw ApiError.conflict(
     'A GCash payment for this bill was opened a few minutes ago. If you paid, it will show ' +
     'here once GCash confirms it, usually within a few minutes, and you will not be charged ' +
-    `again. If you closed it without paying, you can try again after ${retryAt}.`
+    `again. If you closed it without paying, you can try again ${retryAt ? `after ${retryAt}` : 'in 15 minutes'}.`
   );
 }
 
