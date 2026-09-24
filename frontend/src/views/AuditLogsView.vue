@@ -282,6 +282,23 @@ function recordId(id?: string): string | null {
   return /^0+(-0+)*$/.test(id) ? null : id;
 }
 
+/**
+ * What the "Before" box says when an entry recorded no earlier values.
+ *
+ * It said "This entry created the record" for every such row, so each sign-in
+ * and refused request claimed to have created something (B-61). Only the
+ * actions that do create a row say so now.
+ */
+function beforeText(l: AuditRecord): string {
+  if (l.previous_values) return JSON.stringify(l.previous_values, null, 2);
+  const a = l.action.toUpperCase();
+  if (a === 'AUTH_PASSWORD_CHANGE') return 'Not recorded. A password is never written to the trail.';
+  if (a.startsWith('AUTH_')) return 'Nothing. A sign-in, sign-out or refused request changes no record.';
+  if (a === 'LEDGER_EXPORT') return 'Nothing. A download changes no record.';
+  if (/CREATE|RECORD|SEND/.test(a)) return 'Nothing. This entry created the record.';
+  return 'Nothing recorded.';
+}
+
 /** ADMIN_CREATE_EXPENSE reads as "Admin create expense". */
 function actionLabel(action: string): string {
   const words = action.toLowerCase().replace(/_/g, ' ').trim();
@@ -316,15 +333,33 @@ function formatDate(isoStr: string): string {
  */
 const isExporting = ref(false);
 
+/**
+ * The trail the workbook endpoint will actually build for this chip.
+ *
+ * It knows `business`, `auth` and `all`, and builds anything else as
+ * `business` (`backend/src/routes/admin.ts`, `/admin/reports/audit.xlsx`). The
+ * chip's own key was sent as the scope, so on "Downloads" the file arrived
+ * named `hivelet-audit-export.xlsx` holding changes to the records, not
+ * downloads (B-61). The name now says what is inside it.
+ */
+const workbookCategory = computed(() =>
+  categoryFilter.value === 'auth' || categoryFilter.value === 'all' ? categoryFilter.value : 'business'
+);
+
+/** The button says so when the file is not the list on screen. */
+const exportButtonLabel = computed(() =>
+  categoryFilter.value === 'export' ? 'Download changes for Excel' : 'Download for Excel'
+);
+
 async function exportAuditTrail() {
   if (isExporting.value) return;
-  if (filteredLogs.value.length === 0) {
+  if (filteredLogs.value.length === 0 && categoryFilter.value !== 'export') {
     showToast('warning', 'Nothing to export', 'No entry is listed to export.');
     return;
   }
   isExporting.value = true;
   try {
-    await downloadReport('audit', categoryFilter.value, { limit: rowLimit.value });
+    await downloadReport('audit', workbookCategory.value, { limit: rowLimit.value });
   } finally {
     isExporting.value = false;
   }
@@ -352,13 +387,14 @@ async function exportAuditTrail() {
           type="button"
           class="pill-btn-brand"
           :disabled="isExporting"
+          :title="categoryFilter === 'export' ? 'The workbook holds changes to the records. It cannot list downloads yet.' : undefined"
           @click="exportAuditTrail"
         >
           <FileSpreadsheet
             :class="['size-4', isExporting && 'animate-pulse']"
             aria-hidden="true"
           />
-          <span>{{ isExporting ? 'Building the file' : 'Download for Excel' }}</span>
+          <span>{{ isExporting ? 'Building the file' : exportButtonLabel }}</span>
         </button>
       </div>
     </div>
@@ -577,11 +613,7 @@ async function exportAuditTrail() {
               <p class="text-sm font-semibold text-ink">Before</p>
               <pre
                 class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-5 text-ink-soft"
-                >{{
-                  l.previous_values
-                    ? JSON.stringify(l.previous_values, null, 2)
-                    : 'Nothing. This entry created the record.'
-                }}</pre
+                >{{ beforeText(l) }}</pre
               >
             </div>
 
