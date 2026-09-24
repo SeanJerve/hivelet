@@ -73,7 +73,7 @@ import {
   inquiryFailureMessage,
   type InquiryErrors,
 } from '@/components/public/inquiryRules';
-import { AlertCircle, ArrowUpRight, Loader2, Send, X } from 'lucide-vue-next';
+import { AlertCircle, ArrowLeft, ArrowUpRight, Loader2, Send, X } from 'lucide-vue-next';
 import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
 
 const route = useRoute();
@@ -580,6 +580,13 @@ async function submitInquiry() {
 
         <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
           <!--
+            "Back", with the arrow - the same "Home" breadcrumb InquireView
+            and LoginView already use, word and icon both (asked to rename
+            from "Property" and make it read as a link, 2026-09-26). An
+            arrow is a recognised back affordance on its own, which is the
+            noticing this needed more than "Property" ever was as plain
+            tracked text.
+
             `min-h-11 -my-3.5`: the link measured 76x17 at 375px, the only way
             back on this page for a phone. It is now a 44px target, and the
             negative margin takes the extra height back out, so the breadcrumb
@@ -587,9 +594,10 @@ async function submitInquiry() {
           -->
           <RouterLink
             to="/public"
-            class="press -my-3.5 inline-flex min-h-11 items-center hover:text-ink transition-colors underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+            class="press -my-3.5 inline-flex min-h-11 items-center gap-1 hover:text-ink transition-colors underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
           >
-            Property
+            <ArrowLeft class="size-3" aria-hidden="true" />
+            Back
           </RouterLink>
           <span class="text-line select-none" aria-hidden="true">/</span>
           <span class="text-ink font-semibold" aria-current="page">{{ currentCat.title }}</span>
@@ -840,9 +848,25 @@ async function submitInquiry() {
               owner's business, not a prospect's - `isAvailable` collapses the
               four operational states into the only distinction that matters to
               someone looking for a room.
+
+              "Vacant" / "Occupied" - "Someone lives here" was softer wording
+              for the same fact, and asked to be plainer (2026-09-26). A
+              solid fill in each case, not the pale bordered tag this used to
+              be, so the one thing a visitor scans the plan for first is the
+              one thing here with actual contrast against the drawing behind
+              it. `bg-brand`, the same colour the "vacant now" counter badge
+              on the floor plates already uses for good news; a plain dark
+              fill for occupied, since being lived in is information, not a
+              warning - it earns weight, not the red the form's own errors
+              use.
             -->
-            <p class="absolute left-0 top-0 border-r border-b border-line bg-canvas px-4 py-2 text-[0.7rem] tracking-[0.18em] uppercase text-ink">
-              {{ isAvailable(activeUnit) ? 'Available to rent' : 'Someone lives here' }}
+            <p
+              :class="[
+                'absolute left-0 top-0 px-4 py-2 text-[0.7rem] font-semibold tracking-[0.18em] uppercase shadow-lift',
+                isAvailable(activeUnit) ? 'bg-brand text-on-brand' : 'bg-ink text-canvas',
+              ]"
+            >
+              {{ isAvailable(activeUnit) ? 'Vacant' : 'Occupied' }}
             </p>
           </div>
 
