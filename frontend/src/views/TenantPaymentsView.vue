@@ -616,14 +616,28 @@ function refreshAll() {
           <template v-if="standing.periodsDue > 1"> {{ standing.periodsDue }} periods are unpaid since then.</template>
         </p>
       </div>
+      <!--
+        `whitespace-normal max-w-full items-start text-left`, overriding
+        `.pill-btn-light`'s own `white-space: nowrap` (a Tailwind utility
+        class wins: `components` loses to `utilities` regardless of
+        selector weight). The label is a real date range, and "Pay July 13,
+        2026 to August 12, 2026 with GCash" measured 365px wide against a
+        320-375px phone - 10 to 65px past the edge, hidden rather than
+        wrapped by `body`'s `overflow-x: hidden`. Every resident with an
+        owed period sees this button, which today (2026-09-24) is all 32 of
+        them (B-65). `items-start` keeps the icon at the first line rather
+        than centred across the wrapped height.
+      -->
       <button
         type="button"
-        class="pill-btn-light mt-auto self-start"
+        class="pill-btn-light mt-auto max-w-full items-start self-start whitespace-normal text-left"
         @click="openAdyenModalForCurrentPeriod"
       >
-        <CreditCard class="size-4" aria-hidden="true" />
-        Pay {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
-        {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }} with GCash
+        <CreditCard class="size-4 shrink-0 translate-y-0.5" aria-hidden="true" />
+        <span
+          >Pay {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
+          {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }} with GCash</span
+        >
       </button>
       <p class="text-xs leading-5 text-on-brand-soft">
         {{ peso(standing.perPeriod.totalAmount, 2) }} per period. Paid in person? It shows here once the
