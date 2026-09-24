@@ -15,6 +15,7 @@ import { config } from '../config/env.js';
 import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { recordAudit } from './auditService.js';
+import { likeLiteral } from '../utils/likeLiteral.js';
 import type { AuthUser, JwtPayload } from '../types/auth.js';
 import type { StoredRole } from '../config/rbac.js';
 
@@ -418,7 +419,7 @@ export async function register(data: RegisterData, ipAddress?: string): Promise<
   const { data: existing, error: checkError } = await db
     .from('profiles')
     .select('id')
-    .ilike('email', email)
+    .ilike('email', likeLiteral(email))
     .maybeSingle();
 
   if (checkError) {

@@ -24,6 +24,7 @@ import {
 } from '../config/propertyAreas.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
+import { likeLiteral } from '../utils/likeLiteral.js';
 import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
 import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
 import { generateTemporaryPassword } from '../utils/generateTemporaryPassword.js';
@@ -650,7 +651,7 @@ router.post(
       const { data: existing, error: checkError } = await db
         .from('profiles')
         .select('id, full_name, role, account_status')
-        .ilike('email', normalizedEmail)
+        .ilike('email', likeLiteral(normalizedEmail))
         .maybeSingle();
 
       if (checkError) throw ApiError.internal(checkError.message);
