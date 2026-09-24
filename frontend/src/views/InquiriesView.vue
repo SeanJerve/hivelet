@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
@@ -90,7 +90,7 @@ function handleCloseLead() {
 
   showConfirm(
     'Close this lead',
-    `${inq.name} — Unit ${inq.unit.toUpperCase()}\n\nThe thread stays on record and can still be read. It simply stops sitting in the inbox as something waiting for an answer.`,
+    `${inq.name}, unit ${inq.unit.toUpperCase()}\n\nThe thread stays on record and can still be read. It simply stops sitting in the inbox as something waiting for an answer.`,
     async () => {
       isSubmitting.value = true;
       try {
@@ -142,6 +142,24 @@ const activeInquiry = computed(() => {
   if (!activeInquiryId.value) return inquiries[0] || null;
   return inquiries.find(i => i.id === activeInquiryId.value) || inquiries[0] || null;
 });
+
+/**
+ * Choosing an enquiry on a phone scrolls to it.
+ *
+ * Below `lg` the detail panel sits UNDER the whole list, so a tap changed a
+ * panel that was off screen and nothing appeared to happen (B-61). From `lg`
+ * the two are side by side and the page must not move. `scroll-mt-24` on the
+ * panel keeps its heading clear of the sticky workspace header.
+ */
+const detailPanel = ref<HTMLElement | null>(null);
+
+async function selectInquiry(id: string) {
+  activeInquiryId.value = id;
+  if (window.matchMedia('(min-width: 1024px)').matches) return;
+  await nextTick();
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  detailPanel.value?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+}
 
 const activeUnit = computed(() => {
   if (!activeInquiry.value) return null;
@@ -358,8 +376,14 @@ async function handleSendReply() {
             the page, and if it keeps happening the enquiries are still safely on file.
           </p>
 
+          <!-- Two different empties. This said "Nothing matches what you have
+               typed" to an inbox with nothing in it and nothing typed (B-61). -->
+          <p v-else-if="inquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
+            No enquiries yet. When someone asks about a unit, it arrives here.
+          </p>
+
           <p v-else-if="filteredInquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
-            Nothing matches what you have typed.
+            No enquiry matches “{{ searchQuery.trim() }}”.
           </p>
 
           <!--
@@ -382,7 +406,7 @@ async function handleSendReply() {
                     ? 'bg-brand-soft'
                     : 'hover:bg-canvas',
                 ]"
-                @click="activeInquiryId = inq.id"
+                @click="selectInquiry(inq.id)"
               >
                 <div class="flex items-start justify-between gap-2">
                   <p class="min-w-0 truncate text-sm font-semibold text-ink">{{ inq.name }}</p>
@@ -406,7 +430,8 @@ async function handleSendReply() {
       <!-- The one being read -->
       <div
         v-if="activeInquiry"
-        class="ws-reveal flex min-h-[550px] flex-col overflow-hidden rounded-tile bg-tile lg:col-span-8"
+        ref="detailPanel"
+        class="ws-reveal flex min-h-[550px] scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile lg:col-span-8"
       >
         <div class="border-b border-line p-5 sm:p-6">
           <div class="flex flex-wrap items-start justify-between gap-4">
