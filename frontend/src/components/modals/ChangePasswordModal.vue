@@ -227,14 +227,21 @@ async function submit() {
               :aria-describedby="newPasswordError ? 'cp-new-error' : undefined"
               @input="newPasswordError = ''"
             />
+            <!--
+              44px target around the 36px circle (measured 36x36 at 375 in the
+              mocked-API harness, 2026-09-24). Same fix and offsets as LoginView's
+              toggle; it fits the field's `pr-12`.
+            -->
             <button
               type="button"
-              class="press absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full hover:bg-canvas cursor-pointer"
+              class="group press-plate absolute right-0.5 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full cursor-pointer"
               :aria-label="reveal ? 'Hide password' : 'Show password'"
               @click="reveal = !reveal"
             >
-              <EyeOff v-if="reveal" class="size-4 text-ink-soft" aria-hidden="true" />
-              <Eye v-else class="size-4 text-ink-soft" aria-hidden="true" />
+              <span class="grid size-9 place-items-center rounded-full transition-colors group-hover:bg-canvas">
+                <EyeOff v-if="reveal" class="size-4 text-ink-soft" aria-hidden="true" />
+                <Eye v-else class="size-4 text-ink-soft" aria-hidden="true" />
+              </span>
             </button>
           </span>
           <span v-if="newPasswordError" id="cp-new-error" class="ws-reveal text-sm text-overdue">
