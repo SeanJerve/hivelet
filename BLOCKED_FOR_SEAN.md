@@ -2809,3 +2809,9 @@ these three indistinguishable from the real residents.*
     3fc5993 carry the evidence. Most were checked by typecheck and `check:all` rather than in a
     browser, so re-check them in the rehearsal.
 - **Raised:** 2026-09-24 by Claude, frontend hardening pass
+
+> **Update, 2026-09-24 (later, Sean's machine):** two B-64 frontend leftovers are done. 
+> Dialogs now fade out on close (e7a93b7), and the admin and resident screens keep their 1600px 
+> cap while the public site stays full width (af18081). The workspace mobile drawer now has 
+> `aria-controls` (252bd7a), and `/public#faqs` lands on its section (252bd7a). Both browser 
+> verification passes confirmed every B-61 frontend fix on screen, with the API mocked.
