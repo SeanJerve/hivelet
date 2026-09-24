@@ -987,7 +987,15 @@ async function handleEditExpense() {
           <li v-for="e in group.records" :key="e.id">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-sm font-medium leading-snug text-ink">{{ e.description }}</p>
+                <!--
+                  break-words: this is the phone card layout below lg, where
+                  the desktop `<th>` above has ws-table-wrap's own contained
+                  horizontal scroll to fall back on and this card does not.
+                  The description is typed freely (a receipt or supplier
+                  name), so an unbroken run - a run-together vendor name, a
+                  reference number - would otherwise run past the card.
+                -->
+                <p class="text-sm font-medium leading-snug break-words text-ink">{{ e.description }}</p>
                 <p class="mt-0.5 text-xs text-ink-faint">{{ e.category }}</p>
               </div>
               <p class="tabular shrink-0 text-sm font-semibold text-ink">
