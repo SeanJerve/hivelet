@@ -579,9 +579,15 @@ async function submitInquiry() {
       <div class="ws-page ws-content ws-band">
 
         <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
+          <!--
+            `min-h-11 -my-3.5`: the link measured 76x17 at 375px, the only way
+            back on this page for a phone. It is now a 44px target, and the
+            negative margin takes the extra height back out, so the breadcrumb
+            and the heading under it stay where they were.
+          -->
           <RouterLink
             to="/public"
-            class="press hover:text-ink transition-colors underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+            class="press -my-3.5 inline-flex min-h-11 items-center hover:text-ink transition-colors underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
           >
             Property
           </RouterLink>
