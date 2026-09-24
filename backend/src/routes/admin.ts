@@ -1112,12 +1112,12 @@ router.patch(
 
     const explicitOccupants = occupantCount ?? (roommateQty !== undefined ? 1 + roommateQty : undefined);
 
-    // If roomNumber changed, update room assignment!
+    // The current tenancy, read before deciding whether the unit changed at all.
+    let oldActive: Array<{ id: string; room_id: string; deposit_amount: unknown; occupant_count: number | null; rooms: unknown }> | null = null;
     if (roomNumber !== undefined) {
-      // Find old active assignments
-      const { data: oldActive, error: oldActiveError } = await db
+      const { data, error: oldActiveError } = await db
         .from('room_assignments')
-        .select('id, room_id, deposit_amount, occupant_count')
+        .select('id, room_id, deposit_amount, occupant_count, rooms:room_id (room_number)')
         .eq('tenant_profile_id', req.params.profileId)
         .eq('is_active', true);
 
@@ -1126,7 +1126,21 @@ router.patch(
       // forward, so reading a broken query as an empty list moves the tenant
       // while leaving the old unit recorded as occupied.
       if (oldActiveError) throw ApiError.internal(oldActiveError.message);
+      oldActive = data;
+    }
 
+    // B-61. The edit form sends roomNumber on every save, changed or not, and this
+    // branch used to treat any roomNumber as a move: it closed the tenancy and
+    // opened a new one dated today. That rewrote the resident's move-in and
+    // anniversary dates, and every rent period derived from them, on an edit to
+    // their phone number. Resubmitting the unit they already hold is not a move.
+    const currentRoom: any = oldActive?.length === 1 ? oldActive[0].rooms : null;
+    const currentUnit: string | undefined = (Array.isArray(currentRoom) ? currentRoom[0] : currentRoom)?.room_number;
+    const unitChanged =
+      roomNumber !== undefined &&
+      !(currentUnit && roomNumber.toLowerCase() === String(currentUnit).trim().toLowerCase());
+
+    if (unitChanged) {
       // Deactivate old assignments.
       //
       // Silently skipping this used to leave the previous tenancy active. The
@@ -1253,7 +1267,8 @@ router.patch(
         );
       }
     } else if (explicitOccupants !== undefined) {
-      // Room number did not change, but occupant count was updated directly.
+      // No move (roomNumber absent, or the unit already held), but the occupant
+      // count was updated directly.
       // The water charge is occupants x rate (BR-014), so a silently dropped
       // change here bills the tenant on the old headcount indefinitely.
       assertWritten(
