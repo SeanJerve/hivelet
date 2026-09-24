@@ -21,7 +21,7 @@ import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable
 import { api } from '@/lib/api';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import BookViewingPrompt from '@/components/modals/BookViewingPrompt.vue';
-import { ArrowRight, ChevronDown, MapPin } from 'lucide-vue-next';
+import { ArrowUpRight, ChevronDown, MapPin } from 'lucide-vue-next';
 
 const isLoading = ref(true);
 const openFaqIndex = ref<number | null>(0);
@@ -487,8 +487,8 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           >
             <span class="flex items-baseline gap-2 text-base font-medium text-ink">
               {{ c.title }}
-              <ArrowRight
-                class="size-4 shrink-0 text-ink-faint transition-transform duration-300 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-1 group-hover:text-brand"
+              <ArrowUpRight
+                class="size-4 shrink-0 text-ink-faint transition-transform duration-300 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 group-hover:text-brand"
                 aria-hidden="true"
               />
             </span>

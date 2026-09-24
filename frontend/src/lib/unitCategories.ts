@@ -74,7 +74,7 @@ export const CATEGORIES: UnitCategory[] = [
     slug: 'studio',
     title: 'Studio',
     blurb:
-      'One room with its own bathroom, in the main boarding house. Electricity is submetered, so you pay for what you use.',
+      '1st Floor Studio with private bathroom & cabinets.',
     icon: BedSingle,
   },
   {
