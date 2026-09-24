@@ -2833,3 +2833,30 @@ these three indistinguishable from the real residents.*
   do not show standing yet; `readStanding()` is ready if a per-resident "owes / settled" column
   is wanted
 - **Raised:** 2026-09-24 by Claude, Loyd's machine
+
+### B-66 — the site is live on Vercel; what that changes for frontend work (2026-09-24)
+
+- **Blocked on:** nothing. Read before the frontend polish pass
+- **Live:** **https://hivelet.vercel.app**, one Vercel project in Services mode: site at `/`, API
+  at `/api`, API region Seoul (`icn1`, beside the database). Verified 2026-09-24: health online,
+  database connected, RLS enforced, 33 units, every page route 200, Loyd's sign-in loaded the
+  dashboard. `DEPLOYMENT_PLAN.md` has the record
+- **Every push to `main` deploys to production within ~2 minutes.** Run `check:all` before
+  pushing, as always; there is no staging step between `main` and the live site now
+- **Frontend facts:**
+  1. `VITE_API_BASE_URL` is `/api` in Vercel (same origin). Local dev is unchanged
+  2. In Services mode the **root** `vercel.json` owns routing and headers. The history-mode
+     fallback, security headers and cache rules from `frontend/vercel.json` were copied into
+     the root file's `frontend` service; edit them **there**. `frontend/vercel.json` is not read
+  3. B-62 item 3 can be done now: the absolute `og:image` host is `https://hivelet.vercel.app`
+- **Do not touch without reading the commits:** the backend service is
+  `"framework": "express"` with **no** `entrypoint`, and `backend/dist/server.js` is replaced by
+  a self-contained bundle during `npm run build`. Both were measured with `vercel build`, and
+  each is the fix for a failed deployment (`50c1915`, `572b039`)
+- **Still open, not frontend:** the Adyen webhook URL and allowed origin (Loyd, 2026-09-25); the
+  Supabase region for B-60; the August and September receipts (until then all 32 residents show
+  overdue, B-65); and the audit items the agents were cut off before fixing: non-UUID path ids
+  answering 500, query-string numbers, the attachment URL scheme, the HMAC escaping that
+  refuses a colon in a reference, the return-URL check, the Adyen placeholder defaults in
+  production, and repeated chargeback alerts (B-63)
+- **Raised:** 2026-09-24 by Claude, Loyd's machine
