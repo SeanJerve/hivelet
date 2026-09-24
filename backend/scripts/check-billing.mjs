@@ -13,7 +13,7 @@
  *   - a partial payment attaches to the bill it pays down and is recorded
  *     as 'Partially Paid' rather than left floating (BR-013)
  */
-import { computeBillPeriod, computeWaterFee, computeBillAmounts, isOverdue, allocateReceipt, computeRentPeriod }
+import { computeBillPeriod, computeWaterFee, computeBillAmounts, isOverdue, allocateReceipt, computeRentPeriod, computeStanding }
   from '../dist/services/billingService.js';
 
 let failures = 0;
@@ -292,6 +292,46 @@ check('anniversary 31st, 3 months from 31 Jan -> clamps to April, never rolls ov
 check('monthsCovered 0 or negative is treated as a single cycle',
   await computeRentPeriod('2022-05-13', '2026-09-20', 0),
   { start: '2026-09-13', end: '2026-10-12' });
+
+// ---------------------------------------------------------------------------
+// computeStanding - settled only while her records cover today (2026-09-24).
+// The live shape that day: records ending in August, nothing for September.
+// ---------------------------------------------------------------------------
+const st = (paidThrough, today, tenancyStart = '2024-01-01') =>
+  computeStanding({ paidThrough, tenancyStart, today });
+const brief = (s) => ({ status: s.status, next: s.nextPeriodStart, owed: s.owedPeriods.map((p) => `${p.start}..${p.end}`) });
+
+check('paid through 14 Aug, today 24 Sep: Aug 15 and Sep 15 periods owed, overdue',
+  brief(st('2026-08-14', '2026-09-24')),
+  { status: 'overdue', next: '2026-08-15', owed: ['2026-08-15..2026-09-14', '2026-09-15..2026-10-14'] });
+
+check('paid through 14 Oct, today 24 Sep: settled - nothing owed, no pay button',
+  brief(st('2026-10-14', '2026-09-24')),
+  { status: 'settled', next: '2026-10-15', owed: [] });
+
+check('the next period opens within the payable week: due-soon, payable ahead (OD-03)',
+  brief(st('2026-09-30', '2026-09-24')),
+  { status: 'due-soon', next: '2026-10-01', owed: ['2026-10-01..2026-10-31'] });
+
+check('the next period opens today: due, not overdue',
+  brief(st('2026-09-23', '2026-09-24')),
+  { status: 'due', next: '2026-09-24', owed: ['2026-09-24..2026-10-23'] });
+
+check('periods keep her rhythm past a short month (paid through 30 Jan -> 31st anchor, clamped)',
+  brief(st('2026-01-30', '2026-03-05')).owed,
+  ['2026-01-31..2026-02-27', '2026-02-28..2026-03-30']);
+
+check('no receipt at all: owed from the tenancy start',
+  brief(st(null, '2026-09-24', '2026-08-10')),
+  { status: 'overdue', next: '2026-08-10', owed: ['2026-08-10..2026-09-09', '2026-09-10..2026-10-09'] });
+
+check('receipts from before this tenancy do not reach back past its start',
+  brief(st('2026-03-31', '2026-09-24', '2026-09-01')).next,
+  '2026-09-01');
+
+check('a tenancy with nothing on record for years is capped, not unbounded',
+  st(null, '2026-09-24', '2010-01-01').owedPeriods.length,
+  24);
 
 console.log(failures === 0 ? '\nALL CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 /**

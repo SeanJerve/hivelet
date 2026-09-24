@@ -24,8 +24,9 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
-import { computeBillAmounts, computeBillPeriod, isOverdue, toCentavos, billAlreadyRaised }
+import { computeBillAmounts, billPeriodFor, isOverdue, toCentavos, billAlreadyRaised }
   from '../services/billingService.js';
+import { readStanding } from '../services/standingService.js';
 import { adyenService } from '../services/adyenService.js';
 import { notificationService } from '../services/notificationService.js';
 import { config } from '../config/env.js';
@@ -316,6 +317,24 @@ router.get(
  * GET /api/tenant/my-income-records
  * Allow tenants to retrieve their verified income records ledger to determine rent coverage.
  */
+/**
+ * GET /api/tenant/my-standing
+ *
+ * Whether the resident is settled, and if not, which periods are owed. Read
+ * from her recorded receipts, not from bills - bills are raised on demand, so
+ * "no open bill" never meant "paid" (see computeStanding). `perPeriod` is one
+ * period at today's rate and headcount, which is exactly what the checkout
+ * would charge for it.
+ */
+router.get(
+  '/tenant/my-standing',
+  requirePermission(PERMISSIONS.PAYMENT_READ_OWN),
+  asyncHandler(async (req, res) => {
+    const standing = await readStanding(req.user!.profileId);
+    res.status(200).json({ success: true, data: standing });
+  })
+);
+
 router.get(
   '/tenant/my-income-records',
   requirePermission(PERMISSIONS.PAYMENT_READ_OWN),
@@ -838,8 +857,20 @@ router.post(
           );
         }
 
-        // BR-033 - the cycle runs on the tenancy anniversary day, not the calendar month.
-        const period = await computeBillPeriod(assignment.anniversary_date ?? new Date());
+        // The OLDEST period her records do not cover - not the cycle containing
+        // today, which skipped an unpaid month and could charge one already paid
+        // in person (2026-09-24; see computeStanding). Settled means nothing to pay.
+        const standing = await readStanding(req.user!.profileId);
+        const owed = standing?.owedPeriods[0];
+        if (!standing || !owed) {
+          throw ApiError.conflict(
+            standing?.paidThrough
+              ? `Your rent is paid up to ${standing.paidThrough}, so nothing is due yet. ` +
+                `The next period starts ${standing.nextPeriodStart}.`
+              : 'Nothing is due on your account right now.'
+          );
+        }
+        const period = await billPeriodFor(owed);
 
         const { data: newBill, error: billError } = await db
           .from('bills')

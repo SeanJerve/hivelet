@@ -44,7 +44,8 @@ import { config } from '../config/env.js';
 import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { recordAudit } from './auditService.js';
-import { computeBillAmounts, computeBillPeriod, billAlreadyRaised } from './billingService.js';
+import { computeBillAmounts, computeBillPeriod, billPeriodFor, billAlreadyRaised } from './billingService.js';
+import { readStanding } from './standingService.js';
 import { isWebhookConfigured } from './adyenWebhook.js';
 import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
 
@@ -405,7 +406,13 @@ export const adyenService = {
         currentPrice: resolvedPrice,
         occupants: resolvedOccupants
       });
-      const period = await computeBillPeriod(resolvedAnniversary ?? new Date());
+      // The oldest period her records do not cover, as the checkout route uses
+      // (computeStanding). A payment already taken still needs a bill, so with
+      // nothing owed it falls back to the current cycle rather than refusing.
+      const standing = await readStanding(session.tenantProfileId);
+      const period = standing?.owedPeriods[0]
+        ? await billPeriodFor(standing.owedPeriods[0])
+        : await computeBillPeriod(resolvedAnniversary ?? new Date());
 
       const { data: newBill, error: billError } = await db
         .from('bills')

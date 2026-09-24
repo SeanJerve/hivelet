@@ -526,3 +526,106 @@ export function billAlreadyRaised(err: { code?: string; message?: string } | nul
     String(err?.message ?? '').includes('idx_one_bill_per_tenant_per_period')
   );
 }
+
+/* ========================================================================== *
+ * STANDING - what a resident owes, read from what the owner has recorded
+ * ========================================================================== */
+
+/** One rent period nothing on record covers. Due the day it opens (OD-03). */
+export interface OwedPeriod {
+  start: string;   // YYYY-MM-DD
+  end: string;     // YYYY-MM-DD
+  dueDate: string; // YYYY-MM-DD
+}
+
+export interface Standing {
+  /** The latest `rent_period_end` on a verified, unvoided receipt. Null when there is none. */
+  paidThrough: string | null;
+  /** The first day nothing on record covers. */
+  nextPeriodStart: string;
+  /** Every period that has opened, or opens within the payable window, and is not covered. */
+  owedPeriods: OwedPeriod[];
+  status: 'settled' | 'due-soon' | 'due' | 'overdue';
+}
+
+/**
+ * She collects in the closing days of a month for the month ahead (OD-03), so a
+ * period can be paid a week before it opens. Before that the resident is settled.
+ */
+export const PAYABLE_AHEAD_DAYS = 7;
+/** A tenancy with no receipt at all would otherwise count back to its start without limit. */
+export const MAX_OWED_PERIODS = 24;
+
+function addDaysIso(iso: string, days: number): string {
+  const { year, month, day } = isoDateParts(iso);
+  return toIsoDate(new Date(Date.UTC(year, month - 1, day + days)));
+}
+
+/**
+ * Settled means her records cover today. Nothing else does.
+ *
+ * Until 2026-09-24 nothing in the system answered this. A resident with no open
+ * bill read as settled or "not billed yet", because bills are raised on demand
+ * (judgement log 3.6) - and the GCash checkout, asked to "pay this period",
+ * raised the cycle containing TODAY. Measured that day, read-only: all 32 active
+ * tenancies had records ending in July (3) or August (29), none covering
+ * September, so every resident owed at least one period while none was shown
+ * owing. And the checkout skipped the unpaid August straight to September.
+ *
+ * Periods run from the day after the last recorded one, in her own rhythm: a
+ * receipt ending 14 August means the next period is 15 August to 14 September,
+ * whatever `anniversary_date` holds - 16 of those are still placeholders waiting
+ * on the owner (B-32). Pure: the caller reads the records, this does the dates.
+ *
+ * @param paidThrough  latest verified, unvoided `rent_period_end`, or null
+ * @param tenancyStart the active tenancy's `start_date`
+ * @param today        the property's calendar day (`propertyToday()`)
+ */
+export function computeStanding(params: {
+  paidThrough: string | null;
+  tenancyStart: string;
+  today: string;
+  payableAheadDays?: number;
+}): Standing {
+  const { paidThrough, tenancyStart, today } = params;
+  const ahead = params.payableAheadDays ?? PAYABLE_AHEAD_DAYS;
+
+  // Receipts from before this tenancy (an earlier unit) do not reach back past its start.
+  const afterRecords = paidThrough ? addDaysIso(paidThrough, 1) : tenancyStart;
+  const first = afterRecords > tenancyStart ? afterRecords : tenancyStart;
+
+  const { year, month, day: anchor } = isoDateParts(first);
+  const clampToMonth = (y: number, m: number, d: number) =>
+    Math.min(d, new Date(Date.UTC(y, m + 1, 0)).getUTCDate());
+  const startOf = (i: number) => {
+    const m = month - 1 + i;
+    return toIsoDate(new Date(Date.UTC(year, m, clampToMonth(year, m, anchor))));
+  };
+
+  const horizon = addDaysIso(today, ahead);
+  const owedPeriods: OwedPeriod[] = [];
+  for (let i = 0; i < MAX_OWED_PERIODS; i += 1) {
+    const start = startOf(i);
+    if (start > horizon) break;
+    owedPeriods.push({ start, end: addDaysIso(startOf(i + 1), -1), dueDate: start });
+  }
+
+  const status: Standing['status'] =
+    owedPeriods.length === 0 ? 'settled'
+      : owedPeriods[0]!.dueDate < today ? 'overdue'
+        : owedPeriods[0]!.dueDate === today ? 'due'
+          : 'due-soon';
+
+  return { paidThrough, nextPeriodStart: first, owedPeriods, status };
+}
+
+/** An owed period in the shape a bill row takes, with the grace window from settings. */
+export async function billPeriodFor(period: OwedPeriod): Promise<BillPeriod> {
+  const graceDays = await getGracePeriodDays();
+  return {
+    billingPeriodStart: period.start,
+    billingPeriodEnd: period.end,
+    dueDate: period.dueDate,
+    gracePeriodEndDate: graceDays > 0 ? addDaysIso(period.dueDate, graceDays) : period.dueDate,
+  };
+}
