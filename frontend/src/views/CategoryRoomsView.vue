@@ -740,7 +740,15 @@ async function submitInquiry() {
         aria-label="The unit being looked at"
         class="list-reveal-item w-full border-t border-line scroll-mt-6"
       >
-        <div class="ws-page ws-content grid lg:grid-cols-[1fr_26rem]">
+                <!--
+          `grid-cols-1` below `lg`, not an implicit column. An implicit track is
+          `auto`, which grows to its widest item's min-content, and at 200% text on
+          a 375px phone that measured 517px: the unit's name, rate and occupancy
+          ran to x=501 and `body`'s overflow-x: hidden cut them off.
+          `grid-cols-1` is `minmax(0, 1fr)`, so the column stays the page's width
+          and the text wraps.
+        -->
+        <div class="ws-page ws-content grid grid-cols-1 lg:grid-cols-[1fr_26rem]">
 
           <div class="relative aspect-[4/3] lg:aspect-auto lg:min-h-[30rem] border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden">
             <img

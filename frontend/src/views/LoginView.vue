@@ -184,7 +184,7 @@ async function handleQuickLogin(account: DemoAccount) {
       fields, the notes and the on-screen keyboard do not fit on one phone
       screen.
     -->
-    <div class="grid min-h-dvh lg:h-dvh lg:grid-cols-2">
+    <div class="grid min-h-dvh grid-cols-1 lg:h-dvh lg:grid-cols-2">
 
       <!-- Left: the form -->
       <div class="ws-page flex flex-col pb-8 sm:pb-10 lg:pb-8 lg:overflow-y-auto">
@@ -199,7 +199,7 @@ async function handleQuickLogin(account: DemoAccount) {
           a 320px phone, which the bar's height still holds.
         -->
         <!-- 44px targets, text unmoved: see the same bar in InquireView.vue. -->
-        <div class="flex h-16 items-center justify-between gap-6">
+        <div class="flex min-h-16 flex-wrap items-center justify-between gap-x-6">
           <RouterLink
             to="/public"
             class="press inline-flex min-h-11 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"

@@ -188,7 +188,7 @@ async function submitInquiry() {
       Measured 2026-09-24: that is what lets the whole form fit a 1536x864
       laptop (Windows at 125% scaling) without scrolling.
     -->
-    <div class="grid min-h-dvh lg:h-dvh lg:grid-cols-2">
+    <div class="grid min-h-dvh grid-cols-1 lg:h-dvh lg:grid-cols-2">
 
       <!-- Left: the form -->
       <div class="ws-page flex flex-col pb-8 sm:pb-10 lg:pb-8 lg:overflow-y-auto">
@@ -208,7 +208,7 @@ async function submitInquiry() {
           same line of text leaves the text exactly where it was (x=56,
           y=18-46 at 1366) and only the part that answers a thumb grows.
         -->
-        <div class="flex h-16 items-center justify-between gap-6">
+        <div class="flex min-h-16 flex-wrap items-center justify-between gap-x-6">
           <RouterLink
             to="/public"
             class="press inline-flex min-h-11 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
@@ -435,10 +435,17 @@ async function submitInquiry() {
             {{ formError }}
           </div>
 
+                    <!--
+            At 200% text on a 375px phone this button ran to x=473 and was cut off:
+            `.pill-btn-brand` is `white-space: nowrap`, and `px-8` sat on top of its own
+            padding (the pairing BookViewingPrompt and CategoryRoomsView already fixed).
+            `px-5`, and it may wrap within the column (`max-w-full whitespace-normal`).
+            At normal size the label is one line, and `min-height` keeps it 44px.
+          -->
           <button
             type="submit"
             :disabled="isSubmitting"
-            class="pill-btn-brand mt-6 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
+            class="pill-btn-brand mt-6 max-w-full whitespace-normal px-5 py-2.5 text-center disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
             <span>{{ isSubmitting ? 'Sending…' : 'Register your interest' }}</span>
