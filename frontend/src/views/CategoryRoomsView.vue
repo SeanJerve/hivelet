@@ -1038,8 +1038,23 @@ async function submitInquiry() {
                       status - but nobody reads it that way. It reads as four people
                       living there, which is a fact about residents and none of a
                       visitor's business. BR-024.
+
+                      Both states read identically here - plain text-ink-soft -
+                      which means scanning twenty tiles for the one usually-rare
+                      vacant unit meant reading every label. text-brand and
+                      font-semibold on "Available to rent" only, matching the
+                      colour this same page already uses for good news
+                      elsewhere (the corner flag on the panel above, the
+                      floor plates' own vacancy counter), so it is the one
+                      thing that pulls the eye while scrolling rather than
+                      one more line of grey.
                     -->
-                    <span class="relative mt-1.5 block text-xs text-ink-soft">
+                    <span
+                      :class="[
+                        'relative mt-1.5 block text-xs',
+                        isAvailable(u) ? 'font-semibold text-brand' : 'text-ink-soft',
+                      ]"
+                    >
                       {{ isAvailable(u) ? 'Available to rent' : 'Occupied' }}
                     </span>
 
