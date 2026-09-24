@@ -23,16 +23,23 @@
       ("centralized apartment operations ... financial analytics") described
       the admin side, which nobody arriving from a search can open. The
       Open Graph tags give a link pasted into Messenger or Facebook a real
-      title and summary instead of the bare URL. `og:image` is left out on
-      purpose: it must be an absolute URL, and the production domain is not
-      decided yet (deployment is still open). Add it with the domain.
+      title, summary and photograph instead of the bare URL. `og:image` needs
+      an absolute URL, which needed the production domain (B-62 item 3);
+      the site went live on Vercel at hivelet.vercel.app on 2026-09-24
+      (B-66), so it is filled in now. Same photograph as the landing hero,
+      same intrinsic size (vite.config.ts's PWA precache comment).
     -->
     <meta name="description" content="Rooms for rent at Fe Galang Da Silva Boarding House, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City. See the units and their rates, and register your interest for a viewing.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Hivelet">
     <meta property="og:title" content="Fe Galang Da Silva Boarding House, Legazpi City">
     <meta property="og:description" content="See the units and their rates, and register your interest for a viewing.">
+    <meta property="og:url" content="https://hivelet.vercel.app/public">
+    <meta property="og:image" content="https://hivelet.vercel.app/fe-galang-building.webp">
+    <meta property="og:image:width" content="1790">
+    <meta property="og:image:height" content="879">
     <meta property="og:locale" content="en_PH">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="apple-mobile-web-app-title" content="Hivelet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hivelet — Apartment Management & Resident Portal</title>
