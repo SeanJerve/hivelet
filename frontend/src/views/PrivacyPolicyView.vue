@@ -38,12 +38,14 @@
  *
  * WHAT IT DELIBERATELY DOES NOT SAY
  * ---------------------------------
- * No retention period, no named data protection officer, no NPC registration, and no email
- * address for requests. None is on record anywhere in this project, and each is Mrs. Da Silva's
- * (or Sean's) to supply: CLIENT_MEETING_QUESTIONS.md section 3c. Where a reader would look for
- * one, the page says plainly that it is not set and sends them to her, rather than implying a
- * policy exists. The database's location was in this list until 2026-09-24 (B-60); it is now
- * stated, confirmed on the Supabase dashboard, with a note at the Supabase bullet.
+ * No named data protection officer, no NPC registration, and no email address for requests.
+ * Asked on 2026-09-24: the first two are unknown, and requests go to Mrs. Da Silva by phone or
+ * in person, which is what the page says. It names nobody as a developer, and gives no date for
+ * the developers' access ending, because that is undecided.
+ *
+ * Two items left this list on 2026-09-24: the database's location (B-60, confirmed on the
+ * Supabase dashboard, noted at the Supabase bullet) and the retention periods (Sean's answers,
+ * noted at that section, which also says what is not yet built to carry them out).
  *
  * The lawful-basis section cites RA 10173 Section 12. That is a reading of the Act against what
  * the system does, for her to confirm with the rest of the page, not a fact the code proves.
@@ -268,23 +270,41 @@ const sections = Object.values(S);
       </p>
     </section>
 
+    <!--
+      RETENTION: the rules Sean gave on 2026-09-24. They are stated as the rules
+      that apply, and deliberately NOT as something the system does by itself:
+      nothing in Hivelet deletes on a schedule today.
+
+      ⚠ The first two need a deletion step before the site goes public - an
+      enquiry six months after its last message, and a former resident's phone,
+      emergency contact and Facebook one month after move-out. Tracked for the
+      backend. Whoever builds it: the INQUIRY_CREATE row in `audit_logs` holds
+      the enquirer's name and IP address, the log is append-only (migration
+      002), and "the activity record is permanent" below is still true of it.
+      Decide that together with the deletion, or this page contradicts itself.
+    -->
     <section :aria-labelledby="S.retention.id">
       <h2 :id="S.retention.id" tabindex="-1">{{ S.retention.title }}</h2>
-      <p>
-        No fixed retention period has been set yet, and Hivelet does not delete records on a
-        schedule. As things stand:
-      </p>
       <ul>
         <li>
-          When a resident moves out, the account is made inactive and can no longer sign in. The
-          tenancy and payment history stays, because the property's financial records depend on it.
+          <strong>An enquiry</strong> that does not lead to a tenancy is kept for up to six
+          months after the last message about it, and then deleted.
         </li>
-        <li>Enquiries stay on file.</li>
-        <li>The activity record is permanent.</li>
+        <li>
+          <strong>When a resident moves out</strong>, the account is made inactive and can no
+          longer sign in. Their phone number, emergency contact and Facebook page are kept for one
+          month after move-out, and then removed.
+        </li>
+        <li>
+          <strong>Tenancy and payment history</strong> is kept for as long as Mrs. Da Silva keeps
+          the property's books, because her financial records depend on it, until she chooses to
+          delete it.
+        </li>
+        <li><strong>The activity record</strong> is permanent.</li>
       </ul>
       <p>
-        To ask how long something of yours will be kept, or to ask for it to be removed, contact
-        Mrs. Da Silva.
+        To ask for something of yours to be removed sooner, or to ask how long a particular record
+        will be kept, contact Mrs. Da Silva.
       </p>
     </section>
 

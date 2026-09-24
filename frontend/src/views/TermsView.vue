@@ -33,9 +33,10 @@
  * boilerplate: CLIENT_MEETING_QUESTIONS.md 2f-i found 31 of 33 stored rates disagreeing with
  * what tenants actually pay, and the public site advertises from the stored figure.
  *
- * Two lines are the owner's to approve rather than facts the code proves: that her tenancy
- * arrangement takes precedence over these terms, and that she may suspend a misused account
- * (she can: TENANT_DEACTIVATE). Both are in CLIENT_MEETING_QUESTIONS.md section 3c.
+ * Two lines are policy rather than facts the code proves: that her tenancy arrangement comes
+ * first where it differs from these terms, and that she may suspend a misused account (she
+ * can: TENANT_DEACTIVATE). Both were open in CLIENT_MEETING_QUESTIONS.md section 3c and were
+ * approved on 2026-09-24, so the page states them without qualification.
  */
 import { RouterLink } from 'vue-router';
 import LegalPage from '@/components/layout/LegalPage.vue';
