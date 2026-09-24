@@ -447,8 +447,15 @@ async function submitInquiry() {
             :disabled="isSubmitting"
             class="pill-btn-brand mt-6 max-w-full whitespace-normal px-5 py-2.5 text-center disabled:opacity-60 disabled:cursor-not-allowed"
           >
+            <!--
+              "Register your interest" names the PAGE (the title, the
+              breadcrumb, the nav link) - kept there. On the button itself
+              it read as a formal, roundabout way to say what pressing it
+              does: sends the form. "Send inquiry" says the action plainly
+              (asked to simplify, 2026-09-24).
+            -->
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
-            <span>{{ isSubmitting ? 'Sending…' : 'Register your interest' }}</span>
+            <span>{{ isSubmitting ? 'Sending…' : 'Send inquiry' }}</span>
           </button>
         </form>
       </div>

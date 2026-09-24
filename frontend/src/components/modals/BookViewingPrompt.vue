@@ -132,12 +132,20 @@ onBeforeUnmount(() => {
         that measurement if this value changes again; it was right at the
         edge, under 2px, at `px-6`.
       -->
+      <!--
+        "Book now" over-promised: clicking it does not book anything, it opens
+        the enquiry form (bookNow() below just routes to /inquire), which this
+        file's own top comment says the wording must not do. "Inquire now"
+        matches AppHeader's existing label for the same destination, so a
+        first-time visitor meets the same words twice rather than two
+        different ones for one link (asked to simplify, 2026-09-24).
+      -->
       <button
         type="button"
         class="pill-btn-brand mt-10 px-5"
         @click="bookNow"
       >
-        Book now
+        Inquire now
       </button>
     </div>
   </dialog>
