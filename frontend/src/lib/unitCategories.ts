@@ -88,7 +88,7 @@ export const CATEGORIES: UnitCategory[] = [
     slug: 'one-bedroom',
     title: 'One-bedroom',
     blurb:
-      'A separate bedroom, in the boarding house and in the apartments beside it. The two Linda units are here too, and they are billed a fixed charge for water.',
+      'A separate bedroom, in the boarding house and in the apartments beside it.',
     icon: BedDouble,
   },
   {
