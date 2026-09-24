@@ -40,9 +40,21 @@ const portalRoute = computed(() => {
             already carries both.
           -->
           <p class="text-xl font-semibold tracking-tight">Hivelet</p>
+          <!--
+            "Centralised operational, financial and enquiry workflows for 33
+            rentable units" described the ADMIN software to the person
+            reading it here - a prospective tenant, at the bottom of the
+            PUBLIC site, who has never seen the workspace this sentence is
+            actually about. Replaced with what this page is for her: the
+            property (asked to trim the AI-sounding copy, 2026-09-26).
+
+            Just the city here, not the full street address - the "Address"
+            column two along in this same footer already carries that in
+            full, and a first pass at this fix put the whole thing in both
+            places at once.
+          -->
           <p class="mt-6 text-xs leading-relaxed text-on-night-soft">
-            Fe Galang Da Silva Boarding House. Centralised operational, financial and enquiry
-            workflows for 33 rentable units in Legazpi City, Albay.
+            The website for Fe Galang Da Silva Boarding House, Legazpi City.
           </p>
         </div>
 
