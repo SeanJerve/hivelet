@@ -6,7 +6,7 @@
  * @rationale Renders directly onto the canvas surface without an artificial white card container,
  *            preserving active brand-soft pills, legible typography, and smooth hover feedback.
  */
-import { computed, watch, onBeforeUnmount } from 'vue';
+import { computed, ref, watch, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import {
   isMobileSidebarOpen,
@@ -173,17 +173,70 @@ function closeMobileNav() {
  * in the document, and released on unmount so navigating away with it open
  * cannot strand the page unscrollable.
  */
+/**
+ * Focus goes into the drawer on open, stays there, and comes back on close.
+ *
+ * The drawer covers the page, but Tab walked straight out of it into the links
+ * behind the backdrop, Escape did nothing, and closing it dropped focus on the
+ * page body (B-61). It now behaves like `WsModal`: focus moves to the close
+ * button, Tab wraps inside the panel, Escape closes, and focus returns to
+ * whatever opened it - the header's menu button, captured here rather than
+ * reached into `AppHeader.vue` for.
+ */
+const drawerPanel = ref<HTMLElement | null>(null);
+let returnFocusTo: HTMLElement | null = null;
+
+function onDrawerKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    e.stopPropagation();
+    closeMobileNav();
+    return;
+  }
+  if (e.key !== 'Tab' || !drawerPanel.value) return;
+  // Same selector and filter as WsModal's trap.
+  const focusable = [...drawerPanel.value.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
+  )].filter((el) => el.offsetParent !== null && el.getAttribute('tabindex') !== '-1');
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  const active = document.activeElement;
+  if (!drawerPanel.value.contains(active)) {
+    e.preventDefault();
+    (e.shiftKey ? last : first).focus();
+  } else if (e.shiftKey && active === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && active === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 watch(
   isMobileSidebarOpen,
   (open, wasOpen) => {
     if (open === wasOpen) return;
-    if (open) lockBodyScroll();
-    else unlockBodyScroll();
+    if (open) {
+      lockBodyScroll();
+      // On the document, not the overlay, so Escape still closes the drawer
+      // when focus has fallen to the body.
+      document.addEventListener('keydown', onDrawerKeydown);
+      returnFocusTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      drawerPanel.value?.querySelector<HTMLElement>('button, a[href]')?.focus();
+    } else {
+      unlockBodyScroll();
+      document.removeEventListener('keydown', onDrawerKeydown);
+      // Only if it is still on the page.
+      if (returnFocusTo?.isConnected) returnFocusTo.focus();
+      returnFocusTo = null;
+    }
   },
   { flush: 'post' }
 );
 
 onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onDrawerKeydown);
   if (isMobileSidebarOpen.value) unlockBodyScroll();
 });
 </script>
@@ -288,7 +341,13 @@ onBeforeUnmount(() => {
           leave-from-class="translate-x-0"
           leave-to-class="-translate-x-full"
         >
-          <div class="w-72 bg-tile h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto">
+          <div
+            ref="drawerPanel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            class="w-72 bg-tile h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto"
+          >
             <div class="space-y-6">
               <div class="flex items-center justify-between pb-4 border-b border-line">
                 <div>
