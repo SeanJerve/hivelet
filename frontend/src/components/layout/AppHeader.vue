@@ -224,9 +224,18 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!--
+    `ws-focus` on the whole header, not only the bell and the account menu, so
+    the wordmark, the nav links and the menu buttons get the same 3px ring as
+    every other control instead of the browser's default. On the landing hero
+    the brand group and the nav are `on-dark`, which turns that ring light: an
+    ink ring on the photograph could not be seen. Only those two, not the whole
+    row, because the account menu and the notification popover open as white
+    tiles inside it, where a light ring would vanish instead.
+  -->
   <header
     :class="[
-      'w-full transition-colors duration-150',
+      'ws-focus w-full transition-colors duration-150',
       isLandingPage
         ? 'absolute top-0 inset-x-0 z-40 bg-transparent border-none'
         : 'ws-glass sticky top-0 z-40 bg-canvas/90 backdrop-blur-sm border-none'
@@ -240,7 +249,7 @@ onUnmounted(() => {
     <div class="ws-page flex h-16 items-center justify-between relative">
       
       <!-- Left: Mobile Menu Toggle & Brand Logo -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3" :class="isLandingPage && 'on-dark'">
         <!--
           Workspace Mobile Menu Toggle. `hasSidebar`, not `!isPublicRoute` -
           see the note on that computed.
@@ -256,22 +265,35 @@ onUnmounted(() => {
           @click="toggleSidebar"
           class="press flex lg:hidden -ml-1 p-3 rounded-xl text-ink-soft hover:bg-tile hover:text-ink cursor-pointer"
           aria-label="Toggle navigation"
+          :aria-expanded="isMobileSidebarOpen"
         >
           <Menu class="size-5" />
         </button>
 
-        <!-- Public Mobile Menu Toggle. Same 36 -> 44 as above. -->
+        <!--
+          Public Mobile Menu Toggle. Same 36 -> 44 as above. `aria-expanded`
+          so a screen reader hears whether the drawer is open; the drawer is a
+          `v-if`, so `aria-controls` names an element only while it exists,
+          which is allowed when `aria-expanded` is false.
+        -->
         <button
           v-if="isPublicRoute"
           @click="isMobilePublicNavOpen = !isMobilePublicNavOpen"
           class="press flex md:hidden -ml-1 p-3 rounded-xl cursor-pointer"
           :class="isLandingPage ? 'text-white hover:bg-white/10' : 'text-ink-soft hover:bg-tile hover:text-ink'"
           aria-label="Toggle navigation menu"
+          :aria-expanded="isMobilePublicNavOpen"
+          aria-controls="public-mobile-nav"
         >
           <Menu class="size-5" />
         </button>
 
-        <router-link :to="brandRoute" class="press flex items-center gap-2 group">
+        <!--
+          `min-h-11`: the wordmark's box was `text-xl`'s 28px line, and it is
+          the way home from every page. It is already centred in the 64px bar, so growing
+          the box around the text moves nothing on screen.
+        -->
+        <router-link :to="brandRoute" class="press flex min-h-11 items-center gap-2 group">
           <span
             class="font-display font-semibold text-xl tracking-tight transition-colors"
             :class="isLandingPage ? 'text-white drop-shadow-sm group-hover:text-white/80' : 'text-ink group-hover:text-brand'"
@@ -282,13 +304,19 @@ onUnmounted(() => {
       </div>
 
       <!-- Right: Public Quick Navigation (Desktop) -->
-      <nav v-if="isPublicRoute" class="hidden md:flex items-center ml-auto">
+      <!--
+        The links are `inline-flex min-h-11 items-center` rather than `py-1`
+        around a 19px line: 27px targets before. Centred in the same bar, so
+        the text sits where it did, and the comma still meets them on the
+        baseline because an inline-flex box takes its first line's baseline.
+      -->
+      <nav v-if="isPublicRoute" class="hidden md:flex items-center ml-auto" :class="isLandingPage && 'on-dark'">
         <!-- Landing page: Editorial underlined links matching reference photo -->
         <template v-if="isLandingPage">
           <div class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light drop-shadow-sm text-white">
             <RouterLink
               to="/inquire"
-              class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
             >
               Inquire Now
             </RouterLink>
@@ -296,7 +324,7 @@ onUnmounted(() => {
               <span aria-hidden="true" class="pr-2 text-white">,</span>
               <RouterLink
                 to="/login"
-                class="press inline-block py-1 underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+                class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
               >
                 Sign In
               </RouterLink>
@@ -308,7 +336,7 @@ onUnmounted(() => {
           <div class="flex items-center gap-1 sm:gap-2">
             <RouterLink
               to="/inquire"
-              class="press px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-tile cursor-pointer"
+              class="press inline-flex min-h-11 items-center px-3.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-tile cursor-pointer"
             >
               Inquire Now
             </RouterLink>
@@ -544,6 +572,7 @@ onUnmounted(() => {
     >
       <div
         v-if="isPublicRoute && isMobilePublicNavOpen"
+        id="public-mobile-nav"
         class="md:hidden border-t border-line bg-tile px-4 py-3 space-y-1 shadow-md"
       >
         <!--

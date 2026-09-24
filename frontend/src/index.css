@@ -1572,8 +1572,19 @@ dialog.ws-dialog[open]::backdrop {
    * over means restating what `transition-colors` was giving those controls.
    * That is what the colour lines below are; drop them and every underlined
    * link on the public site loses its hover fade.
+   *
+   * The selector for that rule is `.press, .press-plate` further down, after
+   * `.row-action`. When `.row-action` was inserted here it landed between
+   * `.press,` and its rule, so `.press` took `.row-action`'s declarations
+   * instead: `transition: opacity` and nothing else, measured 2026-09-24. Every
+   * `.press` control snapped its colour and its press instead of easing, and
+   * its `opacity: 1` beat any opacity utility on it (B-61).
+   *
+   * `opacity` is in the list for the opposite collision. The register pencils
+   * wear `.press-plate` AND `.row-action`, and this rule, coming later, wins
+   * their `transition`, so the pencil's reveal snapped. Opacity fades rather
+   * than moves, so reduced motion keeps it, as it does in `.ws-focus *`.
    */
-.press,
 /* --------------------------------------------------------- row-action --
  * A per-row control - the edit pencils on every register - that stays out of
  * the way until you reach for it.
@@ -1614,6 +1625,7 @@ dialog.ws-dialog[open]::backdrop {
   }
 }
 
+.press,
 .press-plate {
   transition:
     scale 0.16s var(--ease-out),
@@ -1621,7 +1633,8 @@ dialog.ws-dialog[open]::backdrop {
     background-color 0.15s var(--ease-out),
     border-color 0.15s var(--ease-out),
     text-decoration-color 0.15s var(--ease-out),
-    outline-color 0.15s var(--ease-out);
+    outline-color 0.15s var(--ease-out),
+    opacity 0.18s var(--ease-out);
 }
 .press:active:not(:disabled) {
   scale: 0.97;
