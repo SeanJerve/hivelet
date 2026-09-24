@@ -51,6 +51,7 @@ const reveal = ref(false);
 const isSubmitting = ref(false);
 const formError = ref('');
 const currentPasswordError = ref('');
+const newPasswordError = ref('');
 
 /** Mirrors backend `passwordSchema`. Kept in this order so the list reads the same way. */
 const rules = computed(() => [
@@ -81,6 +82,7 @@ function reset() {
   reveal.value = false;
   formError.value = '';
   currentPasswordError.value = '';
+  newPasswordError.value = '';
 }
 
 // Never leave a typed password sitting in memory behind a closed dialog.
@@ -96,6 +98,7 @@ async function submit() {
   isSubmitting.value = true;
   formError.value = '';
   currentPasswordError.value = '';
+  newPasswordError.value = '';
 
   try {
     await api.post('/auth/change-password', {
@@ -124,10 +127,35 @@ async function submit() {
      */
     if (err instanceof ApiRequestError && err.code === 'INVALID_CREDENTIALS') {
       currentPasswordError.value = 'That is not your current password.';
-    } else if (err instanceof ApiRequestError) {
+    } else if (err instanceof ApiRequestError && err.status === 422) {
+      /**
+       * A 422 said "Invalid password payload." and nothing else, so the person
+       * could not tell which field to fix (B-61). `passwordSchema` in
+       * `backend/src/routes/auth.ts` sends its per-field messages in
+       * `details`, already written in plain words; each is shown under its
+       * own field.
+       */
+      currentPasswordError.value = err.details?.currentPassword?.[0] ?? '';
+      newPasswordError.value = err.details?.newPassword?.[0] ?? '';
+      if (!currentPasswordError.value && !newPasswordError.value) {
+        formError.value = 'One of these passwords was not accepted. Check both and try again.';
+      }
+    } else if (err instanceof ApiRequestError && err.isAuthFailure) {
+      formError.value = 'Your session has ended. Sign in again, then change your password.';
+    } else if (err instanceof ApiRequestError && err.status >= 400 && err.status < 500) {
+      // 429 and the like: the server's text is written for people and says
+      // how long to wait.
       formError.value = err.message;
     } else {
-      formError.value = 'The password could not be changed. Try again.';
+      /**
+       * A 5xx or no answer at all. The server's text here is internal (a
+       * database message, or "Check that the API is running") and was shown
+       * as it came (B-61). It cannot say whether the change landed, since the
+       * audit write comes after it, so this does not claim either way.
+       */
+      formError.value =
+        'Something went wrong on our side while changing it. Try again in a moment. If your ' +
+        'current password stops working, sign in with the new one.';
     }
   } finally {
     isSubmitting.value = false;
@@ -174,7 +202,10 @@ async function submit() {
               v-model="newPassword"
               :type="reveal ? 'text' : 'password'"
               autocomplete="new-password"
-              class="ws-input pr-12"
+              :class="['ws-input pr-12', newPasswordError && 'border-overdue']"
+              :aria-invalid="newPasswordError ? 'true' : undefined"
+              :aria-describedby="newPasswordError ? 'cp-new-error' : undefined"
+              @input="newPasswordError = ''"
             />
             <button
               type="button"
@@ -185,6 +216,9 @@ async function submit() {
               <EyeOff v-if="reveal" class="size-4 text-ink-soft" aria-hidden="true" />
               <Eye v-else class="size-4 text-ink-soft" aria-hidden="true" />
             </button>
+          </span>
+          <span v-if="newPasswordError" id="cp-new-error" class="ws-reveal text-sm text-overdue">
+            {{ newPasswordError }}
           </span>
         </label>
 
