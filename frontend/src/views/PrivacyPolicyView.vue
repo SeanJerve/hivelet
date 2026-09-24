@@ -1,131 +1,344 @@
 <script setup lang="ts">
 /**
  * @file PrivacyPolicyView.vue
- * @description What the system actually does with a visitor's, prospect's or resident's
- *   information. Written to close B-50 in BLOCKED_FOR_SEAN.md.
+ * @description What Hivelet collects about a visitor, an enquirer or a resident, why, who
+ *   else receives it, and how to use the rights the Data Privacy Act of 2012 (RA 10173) gives
+ *   them. First written to close B-50 in BLOCKED_FOR_SEAN.md; rebuilt 2026-09-24 against the
+ *   notice elements the Act and the National Privacy Commission expect.
  *
- * A DRAFT IN SUBSTANCE, NOT IN LABEL.
- * -----------------------------------
- * Every factual claim below is checked against what this codebase actually does, not what a
- * template privacy policy usually says - the enquiry form's own notice, the account-creation
- * rule (no public sign-up), the Adyen/GCash integration, and the per-tenant data scoping this
- * project's own audits have verified. It does not invent a retention period, a data-protection
- * contact beyond the landlady, or a National Privacy Commission registration this project has
- * no record of - those are flagged in the source comments below and belong to Mrs. Da Silva's
- * review before this is treated as final, exactly as B-50 asked for. The page itself carries no
- * "draft" watermark because nothing on it is invented; what's unconfirmed is marked honestly in
- * its own sentence instead of hidden behind a banner.
+ * EVERY SENTENCE IS A CLAIM ABOUT THE CODE, CHECKED ON 2026-09-24
+ * ----------------------------------------------------------------
+ * Read these as claims with a date on them. If the code named here changes, the sentence it
+ * supports may stop being true, and the page will not notice.
+ *
+ *   enquiry fields           backend/src/routes/public.ts `inquirySchema`: four fields
+ *   enquiry audit row        same route, `auditFromRequest` INQUIRY_CREATE: name + IP address
+ *   resident record          backend/src/routes/admin.ts `tenantOnboardSchema`
+ *   what a resident edits    TenantProfileView.vue (phone, emergency contact, occupation, Facebook)
+ *   tickets                  backend/src/routes/tenant.ts `ticketSchema` (photo as attachment)
+ *   activity record          backend/src/services/auditService.ts; UPDATE and DELETE revoked
+ *                            by migration 002, and no route edits or deletes an entry
+ *   no email or SMS          no mail or SMS package in backend/package.json, no outbound call
+ *                            but Supabase and Adyen (grep of `fetch(` across backend/src)
+ *   sent to Adyen            adyenService.createCheckoutSession: amount, bill reference,
+ *                            `shopperReference` (profile id), `shopperEmail` when on file
+ *   back from Adyen          adyenWebhookHandler.ts payment insert: amount, method, reference
+ *   Google Fonts             frontend/index.html stylesheet link
+ *   browser storage          lib/api.ts (token), lib/authStore.ts (session snapshot, cleared on
+ *                            sign-out), BookViewingPrompt.vue (dismissal flag); no
+ *                            `document.cookie` in frontend/src, no `res.cookie` in backend/src,
+ *                            no analytics script anywhere
+ *   offline cache            frontend/vite.config.ts workbox: static files, fonts, and
+ *                            /api/(public|health) for one hour; never /api/tenant or /api/admin
+ *   developers' copies       scripts/backup-database.mjs writes every table to backups/
+ *   lockout                  backend/src/config/env.ts: 5 failures, 15 minutes; bcrypt hashes
+ *   one-time password        admin.ts onboarding + migration 048 `must_change_password`
+ *   move-out                 BR-025: account made inactive, history kept; authService refuses
+ *                            an inactive account at sign-in
+ *
+ * WHAT IT DELIBERATELY DOES NOT SAY
+ * ---------------------------------
+ * No retention period, no named data protection officer, no NPC registration, no email address
+ * for requests, and no location for the database. None is on record anywhere in this project,
+ * and each is Mrs. Da Silva's (or Sean's) to supply: CLIENT_MEETING_QUESTIONS.md section 3c and
+ * BLOCKED_FOR_SEAN.md B-60. Where a reader would look for one, the page says plainly that it is
+ * not set and sends them to her, rather than implying a policy exists.
+ *
+ * The lawful-basis section cites RA 10173 Section 12. That is a reading of the Act against what
+ * the system does, for her to confirm with the rest of the page, not a fact the code proves.
  */
 import { RouterLink } from 'vue-router';
-import { ArrowLeft } from 'lucide-vue-next';
+import LegalPage from '@/components/layout/LegalPage.vue';
 import { LANDLADY } from '@/lib/systemState';
+
+const S = {
+  who: { id: 'who', title: 'Who is responsible for your information' },
+  collected: { id: 'collected', title: 'What is collected' },
+  purposes: { id: 'purposes', title: 'What it is used for' },
+  basis: { id: 'basis', title: 'The legal basis' },
+  recipients: { id: 'recipients', title: 'Who else receives it' },
+  browser: { id: 'browser', title: 'What your browser keeps' },
+  retention: { id: 'retention', title: 'How long it is kept' },
+  security: { id: 'security', title: 'How it is protected' },
+  rights: { id: 'rights', title: 'Your rights, and how to use them' },
+  complaints: { id: 'complaints', title: 'Complaints' },
+  changes: { id: 'changes', title: 'Changes to this policy' },
+} as const;
+
+const sections = Object.values(S);
 </script>
 
 <template>
-  <div class="ws-focus flex-1 w-full font-editorial bg-canvas">
-    <div class="ws-page ws-content py-10 sm:py-14">
-      <RouterLink
-        to="/public"
-        class="press inline-flex items-center gap-1.5 py-1 text-sm text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink"
-      >
-        <ArrowLeft class="size-3.5" aria-hidden="true" />
-        Back to the property
-      </RouterLink>
+  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-24" :sections="sections">
+    <template #lead>
+      <p>
+        This policy explains what Hivelet, the system Mrs. {{ LANDLADY.name }} uses to run her
+        boarding house, collects about the people who visit this site, register their interest
+        in a unit, or live here; what it is used for; who else receives it; and what you can ask
+        her to do about it. The Data Privacy Act of 2012 (Republic Act No. 10173) gives you
+        rights over this information, and this page says how to use them.
+      </p>
+      <p>
+        How the site and the resident portal may be used is set out separately in the
+        <RouterLink to="/terms">terms of use</RouterLink>.
+      </p>
+    </template>
 
-      <div class="mt-8 max-w-2xl">
-        <p class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Fe Galang Da Silva Boarding House</p>
-        <h1 class="mt-2 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3.6vw,2.75rem)]">
-          Privacy policy
-        </h1>
-        <p class="mt-4 text-sm text-ink-faint">Last updated 22 September 2026.</p>
+    <section :aria-labelledby="S.who.id">
+      <h2 :id="S.who.id" tabindex="-1">{{ S.who.title }}</h2>
+      <p>
+        Mrs. {{ LANDLADY.name }}, who owns and runs the {{ LANDLADY.property }}, decides what
+        Hivelet collects and what it is used for. Under the Data Privacy Act she is the personal
+        information controller. For anything about your information, contact her directly:
+      </p>
+      <address class="mt-4 border-l-2 border-line pl-4">
+        <strong>Mrs. {{ LANDLADY.name }}</strong><br />
+        {{ LANDLADY.property }}<br />
+        {{ LANDLADY.address }}<br />
+        <a :href="`tel:${LANDLADY.phone}`" class="press inline-flex min-h-11 items-center">{{ LANDLADY.phone }}</a>
+      </address>
+    </section>
 
-        <div class="mt-10 flex flex-col gap-9 text-sm leading-relaxed text-ink-soft">
-          <section>
-            <p>
-              This page explains what Hivelet, the system Mrs. {{ LANDLADY.name }} uses to run
-              this boarding house, collects about a visitor, a prospective tenant or a resident,
-              and what happens to it. It covers the enquiry form, the resident portal, and paying
-              rent online with GCash.
-            </p>
-          </section>
+    <section :aria-labelledby="S.collected.id">
+      <h2 :id="S.collected.id" tabindex="-1">{{ S.collected.title }}</h2>
+      <p>Only what running the boarding house needs. What that is depends on how you use the site.</p>
 
-          <section>
-            <h2 class="text-lg font-semibold tracking-tight text-ink">What the enquiry form collects</h2>
-            <p class="mt-3">
-              Registering interest in a unit asks for a name, an email address, a phone number and
-              a question or message. Nothing else on that form is stored — there is no field for a
-              postal address, a brochure preference or marketing consent, because the system has
-              nowhere to put one.
-            </p>
-            <p class="mt-3">
-              <strong class="text-ink">No automatic confirmation is sent.</strong> The enquiry goes
-              straight to the landlady's own account. She is the only person who reads it, and she
-              replies to the number or email you leave, by phone or message, in her own words.
-            </p>
-          </section>
+      <h3>If you register your interest</h3>
+      <p>
+        The enquiry form asks for your name, email address, phone number and your question. It
+        has no field for anything else. The system also notes when the enquiry arrived, and the
+        network (IP) address it came from, in the activity record described below.
+      </p>
 
-          <section>
-            <h2 class="text-lg font-semibold tracking-tight text-ink">Resident accounts</h2>
-            <p class="mt-3">
-              There is no public sign-up. Every resident account is created by the landlady when
-              someone moves in, using the name, contact details and tenancy terms she already has
-              on file. Once an account exists, it holds what running a tenancy requires: contact
-              information, the unit and rate, and the record of what has been billed and paid.
-            </p>
-            <p class="mt-3">
-              A resident can see their own account, their own bills, and their own payment
-              history — nothing belonging to another resident. The landlady can see what every
-              account holds, because running the property requires it.
-            </p>
-          </section>
+      <h3>If you live here</h3>
+      <p>
+        Mrs. Da Silva creates your account when you move in. It holds your name, the email
+        address or phone number you sign in with, your unit, your move-in date, the amount paid
+        on moving in, and how many people live in the unit, because water is charged per person.
+        On the My details screen you can add or change your phone number, an emergency contact's
+        name and number, your occupation and your Facebook page.
+      </p>
+      <p>
+        An emergency contact is someone else's name and number. Please let them know you have
+        given it.
+      </p>
 
-          <section>
-            <h2 class="text-lg font-semibold tracking-tight text-ink">Paying rent with GCash</h2>
-            <p class="mt-3">
-              Online rent payment is handled by Adyen, a payment processor, through GCash. When a
-              resident pays this way, the GCash details they enter go to Adyen directly — this
-              system never receives or stores a GCash number, password or one-time code. What comes
-              back to Hivelet is the outcome: whether the payment went through, its amount, and a
-              reference number Adyen assigns, which is what shows on the resident's payment record.
-            </p>
-            <p class="mt-3">
-              A resident can also pay in person, in which case the landlady records the cash or
-              bank transfer herself, in the same account.
-            </p>
-          </section>
+      <h3>Bills and payments</h3>
+      <p>
+        Each bill, what it is for, and what has been paid against it: amounts, dates, how it was
+        paid, receipt or reference numbers, and whether Mrs. Da Silva has verified it. Cash and
+        bank transfers are recorded by her.
+      </p>
 
-          <section>
-            <h2 class="text-lg font-semibold tracking-tight text-ink">How long information is kept</h2>
-            <p class="mt-3">
-              <!--
-                Deliberately general. This project has no stated retention schedule to quote, and
-                inventing a specific number of years here would be exactly the kind of unconfirmed
-                fact CLAUDE.md's rules exist to prevent. What follows is standard practice for a
-                landlord's tenancy and financial records, not a system-enforced policy - flag it to
-                Mrs. Da Silva to confirm or replace with an actual figure.
-              -->
-              Tenancy and payment records are kept for as long as they are needed to run the
-              property and to keep an honest financial record of it — the same reason a landlady
-              keeps a paper receipt book. An enquiry that does not lead to a tenancy is kept only as
-              long as it is useful for following up.
-            </p>
-          </section>
+      <h3>Maintenance tickets</h3>
+      <p>
+        What you report: a title, a description, a category, how urgent it is, a photo if you
+        attach one, and the messages you and Mrs. Da Silva exchange about it.
+      </p>
 
-          <section>
-            <h2 class="text-lg font-semibold tracking-tight text-ink">Questions, corrections, or asking what is on file</h2>
-            <p class="mt-3">
-              For anything about your own information — seeing what is on file, correcting it, or
-              asking a question about this policy — contact Mrs. {{ LANDLADY.name }} directly.
-            </p>
-            <a
-              :href="`tel:${LANDLADY.phone}`"
-              class="press mt-3 inline-block py-1 text-base font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
-            >
-              {{ LANDLADY.phone }}
-            </a>
-          </section>
-        </div>
-      </div>
-    </div>
-  </div>
+      <h3>The activity record</h3>
+      <p>
+        Hivelet records important actions, such as signing in, changes to an account, payments,
+        tickets and enquiries: who did it, when, what changed, and the network address the
+        request came from. Entries cannot be edited or deleted through Hivelet. The server also
+        keeps a routine technical log of the requests it receives.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.purposes.id">
+      <h2 :id="S.purposes.id" tabindex="-1">{{ S.purposes.title }}</h2>
+      <ul>
+        <li>To answer your enquiry and arrange a viewing.</li>
+        <li>To set up and run your tenancy: your account, your bills, and the record of what you have paid.</li>
+        <li>To take online payments and match each one to the right bill.</li>
+        <li>To deal with the maintenance problems you report.</li>
+        <li>To reach you, or the person you named, if something happens to you.</li>
+        <li>
+          To keep the boarding house's income and expense records accurate. Mrs. Da Silva can
+          export them as a spreadsheet for her own bookkeeping.
+        </li>
+        <li>To keep the system secure: limiting sign-in attempts, and being able to tell who changed what.</li>
+      </ul>
+      <p>
+        Hivelet has no mailing list and shows no advertising. It sends no emails or text messages
+        of any kind, so nothing is sent to you automatically, including a confirmation of an
+        enquiry.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.basis.id">
+      <h2 :id="S.basis.id" tabindex="-1">{{ S.basis.title }}</h2>
+      <p>
+        Section 12 of the Data Privacy Act lists the grounds on which personal information may be
+        processed. Hivelet relies on two of them:
+      </p>
+      <ul>
+        <li>
+          <strong>Your enquiry and your tenancy.</strong> Processing needed to act on your request
+          before a tenancy begins, and to carry out the tenancy once it does (Section 12(b)).
+        </li>
+        <li>
+          <strong>The activity record, sign-in limits and the property's financial records.</strong>
+          The legitimate interest in running the property securely and keeping an accurate account
+          of it (Section 12(f)).
+        </li>
+      </ul>
+      <p>
+        No form in Hivelet asks for sensitive personal information, such as a government ID
+        number or health details. Please leave it out of messages and tickets unless it is needed.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.recipients.id">
+      <h2 :id="S.recipients.id" tabindex="-1">{{ S.recipients.title }}</h2>
+      <p>
+        Inside Hivelet, a resident sees only their own account, bills, payments and tickets, and
+        only Mrs. Da Silva's account can open an enquiry. She sees every account, because running
+        the property requires it. Outside Hivelet, these receive some of your information, and
+        only for the purpose given:
+      </p>
+      <ul>
+        <li>
+          <strong>Adyen</strong>, the payment processor, when you pay online with GCash. Hivelet
+          sends Adyen the amount, a reference for the bill, a reference for your account, and your
+          email address if one is on file. The GCash details you enter go to Adyen directly:
+          Hivelet never receives or stores your GCash number, MPIN or any one-time code. Adyen
+          sends back whether the payment went through, the amount, and its own reference number.
+          Adyen and GCash handle the payment itself under their own terms.
+        </li>
+        <li>
+          <strong>Supabase</strong>, which hosts Hivelet's database. Everything described on this
+          page is stored there.
+        </li>
+        <li>
+          <strong>Google Fonts.</strong> The site's typefaces are loaded from Google's servers, so
+          your browser contacts Google on each visit and Google receives its network address.
+          Nothing you type is sent.
+        </li>
+        <li>
+          <strong>The developers who built Hivelet and maintain it.</strong> They can reach the
+          database to keep the system working, and keep backup copies of it so records can be
+          restored if something goes wrong.
+        </li>
+      </ul>
+      <p>
+        Hivelet connects to no other service. The Facebook and map links on this site open those
+        services, and what you do there is covered by their own policies.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.browser.id">
+      <h2 :id="S.browser.id" tabindex="-1">{{ S.browser.title }}</h2>
+      <p>
+        Hivelet sets no cookies and runs no analytics, advertising or tracking. This is all it
+        keeps in your browser:
+      </p>
+      <ul>
+        <li>
+          <strong>When you sign in:</strong> a sign-in token, so you stay signed in between visits,
+          and a copy of your name, email address and role, so the portal can still open on a
+          phone with no signal. Signing out removes both. On a phone or computer other people
+          use, sign out when you finish.
+        </li>
+        <li>
+          <strong>If you close the viewing invitation</strong> on the home page: a note that you
+          did, so it is not shown again.
+        </li>
+        <li>
+          <strong>An offline copy of the site.</strong> Hivelet installs a small helper in your
+          browser (a service worker) that keeps the site's own files, its typefaces, and the public
+          information about the units, so pages still open on a weak connection. The unit
+          information is kept for up to an hour. It never keeps your bills, payments, tickets or
+          account details.
+        </li>
+      </ul>
+      <p>
+        While you pay, Adyen's payment form runs inside the page, under Adyen's own privacy terms.
+        You can clear everything above at any time from your browser's settings for this site.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.retention.id">
+      <h2 :id="S.retention.id" tabindex="-1">{{ S.retention.title }}</h2>
+      <p>
+        No fixed retention period has been set yet, and Hivelet does not delete records on a
+        schedule. As things stand:
+      </p>
+      <ul>
+        <li>
+          When a resident moves out, the account is made inactive and can no longer sign in. The
+          tenancy and payment history stays, because the property's financial records depend on it.
+        </li>
+        <li>Enquiries stay on file.</li>
+        <li>The activity record is permanent.</li>
+      </ul>
+      <p>
+        To ask how long something of yours will be kept, or to ask for it to be removed, contact
+        Mrs. Da Silva.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.security.id">
+      <h2 :id="S.security.id" tabindex="-1">{{ S.security.title }}</h2>
+      <ul>
+        <li>Passwords are stored only in scrambled (hashed) form, so nobody, Mrs. Da Silva included, can read yours.</li>
+        <li>Every new resident account starts with a one-time password, which has to be replaced the first time it is used.</li>
+        <li>Five wrong passwords in a row lock an account for 15 minutes.</li>
+        <li>
+          Your browser never reads the database directly. Every request goes through Hivelet's
+          server, which checks who is asking and lets a resident reach only their own records.
+        </li>
+        <li>Payment details stay with Adyen.</li>
+        <li>The activity record shows who changed what, and cannot be edited.</li>
+      </ul>
+      <p>
+        If you think someone else has used your account, tell Mrs. Da Silva straight away.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.rights.id">
+      <h2 :id="S.rights.id" tabindex="-1">{{ S.rights.title }}</h2>
+      <p>Under the Data Privacy Act you have the right to:</p>
+      <ul>
+        <li>be told how your information is used, which is what this page is for;</li>
+        <li>see the information held about you;</li>
+        <li>have it corrected if it is wrong;</li>
+        <li>object to its use, or ask for it to be removed or blocked;</li>
+        <li>receive a copy of it in a form you can use elsewhere;</li>
+        <li>be compensated for damage caused by inaccurate or unlawfully used information; and</li>
+        <li>complain to the National Privacy Commission.</li>
+      </ul>
+      <p>
+        To use any of them, contact Mrs. Da Silva by phone on
+        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a> or in person at the address
+        above. Residents can already see their bills, payments and tickets in the portal, and
+        correct their own phone number, emergency contact, occupation and Facebook page on the My
+        details screen. For anything else, including your name, ask her.
+      </p>
+      <p>
+        Records that are part of the property's financial history, and the activity record, are
+        kept after an account is closed, as described under
+        <a :href="`#${S.retention.id}`">how long it is kept</a>.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.complaints.id">
+      <h2 :id="S.complaints.id" tabindex="-1">{{ S.complaints.title }}</h2>
+      <p>
+        If something about your information worries you, raise it with Mrs. Da Silva first. If that
+        does not settle it, you can complain to the National Privacy Commission, the government
+        body that enforces the Data Privacy Act. Its website,
+        <a href="https://privacy.gov.ph" target="_blank" rel="noopener noreferrer">privacy.gov.ph<span class="sr-only"> (opens in a new tab)</span></a>,
+        explains how.
+      </p>
+    </section>
+
+    <section :aria-labelledby="S.changes.id">
+      <h2 :id="S.changes.id" tabindex="-1">{{ S.changes.title }}</h2>
+      <p>
+        When this policy changes, the date at the top of the page changes with it. If you want to
+        know what changed, ask Mrs. Da Silva.
+      </p>
+    </section>
+  </LegalPage>
 </template>

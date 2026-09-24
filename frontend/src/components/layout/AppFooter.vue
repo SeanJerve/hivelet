@@ -45,7 +45,8 @@ import { LANDLADY } from '@/lib/systemState';
             `py-1` with a 10px gap.
 
             Every row here measured 28px tall on an emulated handset - a
-            stacked column of five, which is the whole of the public
+            stacked column (five then; four since the privacy policy moved
+            to the strip at the bottom), which is the whole of the public
             navigation once a visitor is past the fold on a phone. The
             padding sits on an `inline-block`, so it grows the box a thumb
             lands on to 44 without moving the text or the underline by a
@@ -84,11 +85,6 @@ import { LANDLADY } from '@/lib/systemState';
                 Sign in
               </RouterLink>
             </li>
-            <li>
-              <RouterLink to="/privacy" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
-                Privacy policy
-              </RouterLink>
-            </li>
           </ul>
         </div>
 
@@ -122,9 +118,32 @@ import { LANDLADY } from '@/lib/systemState';
 
       </div>
 
-      <div class="mt-20 flex flex-col gap-3 border-t border-on-night/15 pt-7 text-xs text-on-night-soft sm:flex-row sm:items-center sm:justify-between">
+      <!--
+        The two documents, in the strip where a visitor looks for them, as a
+        pair. "Privacy policy" used to be the last of the Property links, and
+        the terms had nowhere to go. They replace "Legazpi City, Albay", which
+        repeated the last line of the full address directly above it.
+
+        `min-h-11` gives each link the 44px tap height the columns above get
+        from `py-3`; `pt-4` rather than `pt-7`, because the links now bring
+        14px of their own above the text.
+      -->
+      <div class="mt-20 flex flex-col gap-3 border-t border-on-night/15 pt-4 text-xs text-on-night-soft sm:flex-row sm:items-center sm:justify-between">
         <p>© 2026 Hivelet. Fe Galang Da Silva Boarding House.</p>
-        <p>Legazpi City, Albay</p>
+        <nav aria-label="Policies">
+          <ul class="flex flex-wrap gap-x-6">
+            <li>
+              <RouterLink to="/privacy" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+                Privacy policy
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/terms" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+                Terms of use
+              </RouterLink>
+            </li>
+          </ul>
+        </nav>
       </div>
 
     </div>

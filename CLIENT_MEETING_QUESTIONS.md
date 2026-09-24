@@ -404,3 +404,30 @@ Recorded so no one re-opens them in the meeting. Each was listed as an open ques
 
 *Prepared from the live database on 2026-09-17. Every figure in this document was read from her
 records, and nothing in them was modified.*
+
+---
+
+## 3c. Her privacy policy and terms of use · **added 2026-09-24**
+
+> Added at the end so nothing above moves; take it after 3b. The site now has `/privacy` and
+> `/terms`. Every sentence on them is checked against the system, and where a fact is hers to
+> decide, the page says it is not set and sends the reader to her. These are those facts.
+
+**How long should things be kept?** Nothing is deleted today, on any schedule.
+
+- An enquiry that never became a tenancy: ☐ ____ months  ☐ Keep until I remove it
+- A former resident's contact details (phone, emergency contact, Facebook): ☐ ____ after move-out
+- Tenancy and payment history: ☐ ____ years  ☐ As long as I keep my books
+
+**Who handles privacy requests?** ☐ Me, by phone or in person (what the page says now)
+☐ Someone else, or an email address: ____________________
+
+**Is the boarding house registered with the National Privacy Commission, or has she named a data
+protection officer?** ☐ Yes: ____________  ☐ No  ☐ Not sure. *Nothing is printed until she answers.*
+
+**The developers can reach her database and keep backup copies of it** (the page says so). After
+the course ends: ☐ They keep access to maintain it  ☐ Hand over and delete copies by ________
+Should the page name them? ☐ Yes  ☐ "The developers" is enough
+
+**Two lines on the terms are hers to approve:** that her tenancy arrangement comes first where it
+differs from the terms, and that she may suspend a misused account. ☐ Approved  ☐ Change: ______

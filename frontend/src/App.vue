@@ -56,9 +56,17 @@ const isWorkspaceSection = computed(() =>
   route.path.startsWith('/admin') || route.path.startsWith('/basis') || route.path.startsWith('/tenant')
 );
 
+/**
+ * Where AppFooter renders. `/privacy` and `/terms` joined on 2026-09-24: the footer is where a
+ * reader finds the other document, and the privacy page was the one public page that ended in
+ * nothing. `/inquire` and `/login` stay out on purpose - both are drawn one screen tall - so
+ * they link the documents from their own text: InquireView beside the form's submit button.
+ */
 const isPublicPage = computed(() =>
   route.path.startsWith('/public') ||
   route.path.startsWith('/category') ||
+  route.path === '/privacy' ||
+  route.path === '/terms' ||
   route.path === '/'
 );
 

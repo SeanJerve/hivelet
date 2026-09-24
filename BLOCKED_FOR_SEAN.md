@@ -2631,3 +2631,77 @@ these three indistinguishable from the real residents.*
 - **How to know it worked:** the sheet is filled in, and step 23b in particular shows em dashes
   rather than ₱0.00 with the backend stopped
 - **Raised:** 2026-09-17
+
+### B-60 — the privacy policy cannot say where the database is stored
+
+- **Blocked on:** the Supabase project's region, and where the production site will be hosted
+- **What I was doing:** rebuilding `/privacy` against the RA 10173 notice elements (2026-09-24)
+- **What I already did:** `PrivacyPolicyView.vue` names Supabase as the database host and says
+  nothing about its location, because nothing in the repository records it
+- **What Sean needs to do:** read the region in Supabase (Project Settings, General). If it is
+  outside the Philippines, add one sentence to the Supabase bullet under "Who else receives it"
+  saying the records are stored in that region, outside the Philippines
+- **How to know it worked:** the bullet names a region that matches the dashboard
+- **Raised:** 2026-09-24 by Claude, legal documents pass
+
+### B-61 — unfixed findings from the 2026-09-24 frontend hardening pass
+
+- **Blocked on:** session time. Five agents found these on 2026-09-24 in a harness that runs the
+  real app against mocked API replies. They were stopped before fixing them. Every item below was
+  reproduced in that harness. None of them has been fixed yet.
+- **Fix first (live data):** `TenantManagementView.saveEdit` always sends `roomNumber`, even when
+  the unit did not change. The PATCH in `backend/src/routes/admin.ts` then closes the tenancy and
+  opens a new one dated today, which shifts that resident's move-in and anniversary dates and every
+  rent period after them. Send `roomNumber` only when it changed, and check the live tenancies for
+  any row that was reopened by an edit. That second part is a read-only SQL query, and any repair
+  is a migration.
+- **Admin:**
+  - `AdminEditUnitModal` has rent `step="100"`, so unit 1D (₱7,250) cannot be saved. Use `step="any"`.
+  - Expenses: the confirm dialog uses a red "Delete entry" button to record entries, and says
+    "these 1 expense entries".
+  - Expenses: after a partial save failure the saved entries stay in the form, and Save records
+    them twice.
+  - Income: Reject runs with no confirmation, and the panel says "Loading the verification queue"
+    while a verify is saving. The edit form's Unit field shows "3D" instead of the listed option.
+  - `peso()` rounds centavos away: ₱4,955.50 shows as ₱4,956.
+  - Overview "Try again" shows ₱0 tiles while it reloads.
+  - The move-in form defaults to 1A, which is occupied, with a ₱0 deposit. Converting an enquiry
+    fills the deposit from stale built-in rates.
+  - Maintenance: a failed save still says "Ticket Resolved". Enter in the reply box can double-send.
+  - Enquiries: the empty state says "Nothing matches what you have typed" when nothing was typed.
+  - The audit "Downloads" chip is named "export", but its workbook holds business events.
+  - At 1904px the residents table is 1,468px wide, with a 509px name column. The workspace may want
+    a max-width again (App.vue).
+- **Resident portal:**
+  - "Settled" says the next rent is due one cycle late, and can show a date in the past.
+  - The Pay button still shows while a payment waits for verification, and opening it gets a 409.
+  - Closing the payment modal drops focus to the page body.
+  - The GCash return notice is a 4-second toast, and raw Adyen errors reach residents.
+  - Tickets show "0 open · 0 resolved" while loading. There is no confirmation at 375px after
+    sending. Closed tickets still offer a reply box.
+  - Profile: a failed load shows a blank form that says "Everything here is saved", with no retry.
+  - ChangePasswordModal shows raw 5xx text, and a 422 does not say which field is wrong.
+  - `lib/api.ts`: the network-error message tells residents to "Check that the API is running".
+- **Shared:**
+  - The mobile sidebar has no focus trap and does not close on Escape.
+  - Notifications: a failed load reads "Nothing here" (`notificationsStore.ts` needs a failure
+    flag), and its buttons are 28px.
+  - WsModal focuses the first input on open, which pulls up the phone keyboard. It still vanishes
+    on close; it needs a leaving copy, because a `<Transition>` cannot run there.
+  - PillSelect options are 34px tall and cut off at 320px.
+  - Toasts: each item is its own live region, and under reduced motion they lose their fade.
+  - `index.css`: a stray `.press,` on the `.row-action` rule makes `.press` animate opacity only.
+    Move `.press` to the `.press-plate` selector.
+  - `AppHeader.vue`: the wordmark and nav links need `min-h-11`, and the menu button needs
+    `aria-expanded`.
+  - `PublicGuestView`: `cheapestRent` should return null until the live listing loads. While
+    loading, the FAQ quotes the fallback ₱4,500.
+- **Legal pages, still to add:** privacy and terms links on LoginView (under the "Accounts are
+  created" note), a privacy link on TenantProfileView, and `/terms#payments` on
+  TenantPaymentsView. The router's `scrollBehavior` should honour `to.hash`.
+- **Side effect to know about:** harness pages that Vite reloaded into the real app sent about
+  ten `GET /api/auth/me` calls with a fake token. Each was refused with 401 TOKEN_INVALID and
+  logged as an `audit_logs` row on 2026-09-24. Nothing else was written. Leave the rows; the log
+  is append-only.
+- **How to know it worked:** each item is re-measured in the browser, and `check:all` stays 20/20.
+- **Raised:** 2026-09-24 by Claude, frontend hardening pass

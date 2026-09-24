@@ -16,6 +16,7 @@ const PAGE_TITLES: Record<string, string> = {
   PublicGuest: 'Fe Galang Da Silva Boarding House, Legazpi City',
   Inquire: 'Register interest',
   PrivacyPolicy: 'Privacy policy',
+  Terms: 'Terms of use',
   Login: 'Sign in',
   TenantOverview: 'Unit overview',
   TenantPayments: 'Payment and billing',
