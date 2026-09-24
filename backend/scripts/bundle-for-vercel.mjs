@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 /**
- * Bundles the API and every package it imports into ONE file, dist/vercel/server.bundle.mjs.
+ * Replaces tsc's dist/server.js with the API and every package it imports, in ONE file.
  *
- * WHY. Vercel's Express builder compiled src/server.ts and shipped it without
- * node_modules: every request on the 2026-09-24 deployment failed with
- * "Cannot find package 'express' imported from /var/task/server.js", although
- * express is a dependency and the build log shows it installed. A file with no
- * bare imports cannot hit that, however the host packages it. `backend/server.mjs`
- * is the entry Vercel picks (its builder checks the service root before src/),
- * and all it does is re-export this bundle.
+ * WHY. Measured with `vercel build` (CLI 59.23.2, the version Vercel's builder
+ * runs) on 2026-09-24: the Express builder ships dist/ FLATTENED to the function
+ * root - server.js is backend/dist/server.js, package.json is dist/package.json -
+ * but maps node_modules under backend/node_modules/. From /var/task/server.js,
+ * Node never looks there, so every request failed with "Cannot find package
+ * 'express' imported from /var/task/server.js". A server.js with no bare imports
+ * cannot hit that, wherever the host puts node_modules.
  *
- * `npm run dev` and `npm start` do not use this; they run src/ and dist/ as before.
+ * The other dist/ files tsc emits stay: the check scripts import dist/services/.
+ * `npm run dev` runs src/ and is unaffected; `npm start` runs this bundle, which
+ * is the same app. Its env loading finds the repository-root .env
+ * (dist/../../.env), which is the file this project uses.
  *
- * `.mjs` so Node reads it as an ES module whatever package.json sits near it.
+ * ESM (dist/package.json says "type": "module"; see mark-dist-esm.mjs).
  * The banner gives CommonJS packages inside the bundle a working `require` for
  * Node's built-ins (esbuild otherwise throws "Dynamic require of 'fs' is not
  * supported" from ESM output).
@@ -21,7 +24,7 @@ import { build } from 'esbuild';
 
 await build({
   entryPoints: [new URL('../src/server.ts', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')],
-  outfile: new URL('../dist/vercel/server.bundle.mjs', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'),
+  outfile: new URL('../dist/server.js', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'),
   bundle: true,
   platform: 'node',
   format: 'esm',
@@ -34,4 +37,4 @@ await build({
   },
 });
 
-console.log('bundled dist/vercel/server.bundle.mjs');
+console.log('bundled dist/server.js (self-contained)');
