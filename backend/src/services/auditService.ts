@@ -163,8 +163,52 @@ export async function auditFromRequest(
   });
 }
 
+/*
+ * THE REFUSAL BUDGET - decided 2026-09-24
+ * ---------------------------------------
+ * Every 401 and 403 used to write a permanent row, and `audit_logs` cannot be
+ * pruned (migration 002 revokes DELETE). Measured that day, read-only: 10,673
+ * of the table's 16,422 rows were AUTH_ACCESS_DENIED, 8,719 of them with no
+ * actor, and that was before the site was public - nearly all from the check
+ * suites and dev machines. Once deployed, anyone can send `GET /api/admin/x` in
+ * a loop, and each request buried the owner's business history one row deeper
+ * with nothing to clean it up.
+ *
+ * What was kept: the SIGNAL. The first refusals from any caller are recorded
+ * exactly as before, so "this address probed the admin routes" or "this
+ * resident tried an admin screen" is still in the trail.
+ * What was bounded: the VOLUME.
+ *
+ *   - 20 rows per caller per 15 minutes. The caller is the signed-in profile,
+ *     else the address `clientIp` reports.
+ *   - 120 rows per hour from all anonymous callers together, so a thousand
+ *     addresses cannot each spend their own 20.
+ *   - Beyond either, the refusal is counted in memory, not written. The row
+ *     that reaches the limit says so, and the caller's next recorded row after
+ *     the window carries `suppressedInPreviousWindow: N`.
+ *   - Failed sign-ins are exempt. `failureLimit` on /auth/login and the
+ *     per-account lockout already bound them, and they are the rows a spraying
+ *     attempt shows up in.
+ *
+ * The request is still refused either way. Only whether it is written down
+ * changes. Per process and in memory, like `rateLimit.ts`: a restart forgets the
+ * counts, which at worst records a few more rows.
+ */
+const DENIAL_WINDOW_MS = 15 * 60 * 1000;
+const DENIALS_PER_CALLER = 20;
+const ANON_WINDOW_MS = 60 * 60 * 1000;
+const ANON_DENIALS_PER_WINDOW = 120;
+const MAX_TRACKED_CALLERS = 5000;
+const EXEMPT_REASONS = /^(INVALID_CREDENTIALS|ACCOUNT_LOCKED):/;
+
+interface DenialWindow { since: number; recorded: number; suppressed: number }
+const denialWindows = new Map<string, DenialWindow>();
+let anonWindow: DenialWindow = { since: 0, recorded: 0, suppressed: 0 };
+
+const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n)}…` : s);
+
 /**
- * Records a rejected authorization attempt.
+ * Records a rejected authorization attempt, within the budget above.
  *
  * Section 20 makes authorization a backend concern; a denied attempt is
  * exactly the kind of event the administrator should be able to review later.
@@ -173,17 +217,55 @@ export async function auditAccessDenied(
   req: Request,
   reason: string
 ): Promise<void> {
+  const now = Date.now();
+  const actor = req.user?.profileId ?? null;
+  const ip = clientIp(req);
+  const extra: Record<string, unknown> = {};
+
+  if (!EXEMPT_REASONS.test(reason)) {
+    const key = actor ? `actor:${actor}` : `ip:${ip ?? 'unknown'}`;
+    let w = denialWindows.get(key);
+    if (!w || now - w.since >= DENIAL_WINDOW_MS) {
+      if (w?.suppressed) extra.suppressedInPreviousWindow = w.suppressed;
+      if (!w && denialWindows.size >= MAX_TRACKED_CALLERS) {
+        for (const [k, v] of denialWindows) if (now - v.since >= DENIAL_WINDOW_MS) denialWindows.delete(k);
+      }
+      w = { since: now, recorded: 0, suppressed: 0 };
+      if (denialWindows.size < MAX_TRACKED_CALLERS) denialWindows.set(key, w);
+    }
+    if (!actor && now - anonWindow.since >= ANON_WINDOW_MS) {
+      if (anonWindow.suppressed) {
+        console.warn(`[audit] ${anonWindow.suppressed} anonymous refusals counted but not recorded in the last hour`);
+      }
+      anonWindow = { since: now, recorded: 0, suppressed: 0 };
+    }
+
+    if (w.recorded >= DENIALS_PER_CALLER || (!actor && anonWindow.recorded >= ANON_DENIALS_PER_WINDOW)) {
+      w.suppressed += 1;
+      if (!actor) anonWindow.suppressed += 1;
+      return;
+    }
+    w.recorded += 1;
+    if (!actor) anonWindow.recorded += 1;
+    if (w.recorded === DENIALS_PER_CALLER) {
+      extra.note =
+        `Refusal budget reached for this caller. Further refusals are counted, not recorded, ` +
+        `until ${new Date(w.since + DENIAL_WINDOW_MS).toISOString()}.`;
+    }
+  }
+
   await recordAudit({
-    actorProfileId: req.user?.profileId ?? null,
+    actorProfileId: actor,
     action: 'AUTH_ACCESS_DENIED',
     entityType: 'PROFILE',
-    entityId: req.user?.profileId ?? '00000000-0000-0000-0000-000000000000',
+    entityId: actor ?? '00000000-0000-0000-0000-000000000000',
     newValues: {
       method: req.method,
-      path: req.originalUrl,
+      path: clip(req.originalUrl, 300),
       role: req.role ?? 'guest',
-      reason,
+      reason: clip(reason, 300),
+      ...extra,
     },
-    ipAddress: clientIp(req),
+    ipAddress: ip,
   });
 }
