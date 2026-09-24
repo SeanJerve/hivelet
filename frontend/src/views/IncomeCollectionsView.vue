@@ -1241,7 +1241,7 @@ async function exportExcel() {
               <StatusPill tone="verify">Waiting for you</StatusPill>
             </div>
 
-            <p class="text-3xl leading-none font-semibold tabular tracking-tight">{{ peso(p.amount) }}</p>
+            <p class="text-3xl leading-none font-semibold tabular tracking-tight">{{ peso(p.amount, 2) }}</p>
 
             <dl class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-soft">
               <div class="flex gap-1.5">
@@ -1362,7 +1362,7 @@ async function exportExcel() {
               <span class="text-right">
                 <span class="block text-xs text-ink-faint">Remitted</span>
                 <span class="tabular block font-semibold text-brand">{{
-                  peso(group.totalRemitted)
+                  peso(group.totalRemitted, 2)
                 }}</span>
               </span>
               <StatusPill tone="neutral">
@@ -1421,18 +1421,18 @@ async function exportExcel() {
                     r.invoice
                   }}</span>
                 </td>
-                <td class="num font-semibold text-ink">{{ peso(r.rent) }}</td>
+                <td class="num font-semibold text-ink">{{ peso(r.rent, 2) }}</td>
                 <td v-if="group.hasShareColumn" class="num font-semibold text-verify">
-                  {{ peso(r.rent / 2) }}
+                  {{ peso(r.rent / 2, 2) }}
                 </td>
                 <td v-if="group.key === 'Linda'" class="num font-semibold text-brand">
-                  {{ peso(r.linda?.electricity || 0) }}
+                  {{ peso(r.linda?.electricity || 0, 2) }}
                 </td>
                 <td class="num">{{ r.occupants }}</td>
-                <td class="num font-semibold text-ink">{{ peso(r.water) }}</td>
-                <td class="num">{{ peso(r.garbage) }}</td>
+                <td class="num font-semibold text-ink">{{ peso(r.water, 2) }}</td>
+                <td class="num">{{ peso(r.garbage, 2) }}</td>
                 <td class="num font-semibold text-brand">
-                  {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water) }}
+                  {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water, 2) }}
                 </td>
                 <td class="num">
                   <button
@@ -1450,17 +1450,17 @@ async function exportExcel() {
             <template #foot>
               <tr>
                 <th scope="row" colspan="3">{{ group.label }}, all {{ group.records.length }}</th>
-                <td class="num">{{ peso(group.totalRent) }}</td>
+                <td class="num">{{ peso(group.totalRent, 2) }}</td>
                 <td v-if="group.hasShareColumn" class="num text-verify">
-                  {{ peso(group.totalShare) }}
+                  {{ peso(group.totalShare, 2) }}
                 </td>
                 <td v-if="group.key === 'Linda'" class="num text-brand">
-                  {{ peso(group.records.reduce((sum, r) => sum + (r.linda?.electricity || 0), 0)) }}
+                  {{ peso(group.records.reduce((sum, r) => sum + (r.linda?.electricity || 0), 0), 2) }}
                 </td>
                 <td class="num">{{ group.totalOccupants }}</td>
-                <td class="num">{{ peso(group.totalWater) }}</td>
-                <td class="num">{{ peso(group.totalGarbage) }}</td>
-                <td class="num text-brand">{{ peso(group.totalRemitted) }}</td>
+                <td class="num">{{ peso(group.totalWater, 2) }}</td>
+                <td class="num">{{ peso(group.totalGarbage, 2) }}</td>
+                <td class="num text-brand">{{ peso(group.totalRemitted, 2) }}</td>
                 <td></td>
               </tr>
             </template>
@@ -1487,32 +1487,32 @@ async function exportExcel() {
                   </p>
                 </div>
                 <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
-                  {{ peso(group.totalRemitted) }}
+                  {{ peso(group.totalRemitted, 2) }}
                 </p>
               </div>
 
               <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 <div>
                   <dt class="text-xs text-ink-faint">Rent</dt>
-                  <dd class="tabular font-semibold text-ink">{{ peso(group.totalRent) }}</dd>
+                  <dd class="tabular font-semibold text-ink">{{ peso(group.totalRent, 2) }}</dd>
                 </div>
                 <div v-if="group.hasShareColumn">
                   <dt class="text-xs text-ink-faint">50% Share</dt>
-                  <dd class="tabular font-semibold text-verify">{{ peso(group.totalShare) }}</dd>
+                  <dd class="tabular font-semibold text-verify">{{ peso(group.totalShare, 2) }}</dd>
                 </div>
                 <div v-if="group.key === 'Linda'">
                   <dt class="text-xs text-ink-faint">Electricity</dt>
                   <dd class="tabular font-semibold text-brand">
-                    {{ peso(group.records.reduce((sum, r) => sum + (r.linda?.electricity || 0), 0)) }}
+                    {{ peso(group.records.reduce((sum, r) => sum + (r.linda?.electricity || 0), 0), 2) }}
                   </dd>
                 </div>
                 <div>
                   <dt class="text-xs text-ink-faint">Water, {{ group.totalOccupants }} heads</dt>
-                  <dd class="tabular font-semibold text-ink">{{ peso(group.totalWater) }}</dd>
+                  <dd class="tabular font-semibold text-ink">{{ peso(group.totalWater, 2) }}</dd>
                 </div>
                 <div>
                   <dt class="text-xs text-ink-faint">Garbage</dt>
-                  <dd class="tabular text-ink">{{ peso(group.totalGarbage) }}</dd>
+                  <dd class="tabular text-ink">{{ peso(group.totalGarbage, 2) }}</dd>
                 </div>
               </dl>
             </template>
@@ -1524,7 +1524,7 @@ async function exportExcel() {
                   <p class="mt-1.5 truncate text-sm text-ink-soft">{{ r.contact }}</p>
                 </div>
                 <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
-                  {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water) }}
+                  {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water, 2) }}
                 </p>
               </div>
 
@@ -1539,19 +1539,19 @@ async function exportExcel() {
                 </div>
                 <div>
                   <dt class="text-xs text-ink-faint">Rent</dt>
-                  <dd class="tabular font-semibold text-ink">{{ peso(r.rent) }}</dd>
+                  <dd class="tabular font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
                 </div>
                 <div v-if="group.hasShareColumn">
                   <dt class="text-xs text-ink-faint">50% Share</dt>
-                  <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2) }}</dd>
+                  <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2, 2) }}</dd>
                 </div>
                 <div>
                   <dt class="text-xs text-ink-faint">Water, {{ r.occupants }} heads</dt>
-                  <dd class="tabular font-semibold text-ink">{{ peso(r.water) }}</dd>
+                  <dd class="tabular font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
                 </div>
                 <div>
                   <dt class="text-xs text-ink-faint">Garbage</dt>
-                  <dd class="tabular text-ink">{{ peso(r.garbage) }}</dd>
+                  <dd class="tabular text-ink">{{ peso(r.garbage, 2) }}</dd>
                 </div>
               </dl>
 
@@ -1611,16 +1611,16 @@ async function exportExcel() {
             }}</span>
           </td>
           <td class="num">
-            <span class="block font-semibold text-ink">{{ peso(r.rent) }}</span>
+            <span class="block font-semibold text-ink">{{ peso(r.rent, 2) }}</span>
             <span v-if="r.cluster === 'BH'" class="block text-xs font-semibold text-verify">
-              50%: {{ peso(r.rent / 2) }}
+              50%: {{ peso(r.rent / 2, 2) }}
             </span>
           </td>
           <td class="num">{{ r.occupants }}</td>
-          <td class="num font-semibold text-ink">{{ peso(r.water) }}</td>
-          <td class="num">{{ peso(r.garbage) }}</td>
+          <td class="num font-semibold text-ink">{{ peso(r.water, 2) }}</td>
+          <td class="num">{{ peso(r.garbage, 2) }}</td>
           <td class="num font-semibold text-brand">
-            {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water) }}
+            {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water, 2) }}
           </td>
           <td class="num">
             <button
@@ -1639,12 +1639,12 @@ async function exportExcel() {
         <tr>
           <th scope="row" colspan="3">All {{ rows.length }} on screen</th>
           <td class="num">
-            <span class="block">{{ peso(totalRent) }}</span>
-            <span class="block text-xs text-verify">50% on BH: {{ peso(totalShare) }}</span>
+            <span class="block">{{ peso(totalRent, 2) }}</span>
+            <span class="block text-xs text-verify">50% on BH: {{ peso(totalShare, 2) }}</span>
           </td>
           <td class="num">{{ rows.reduce((sum, r) => sum + r.occupants, 0) }}</td>
-          <td class="num">{{ peso(totalWater) }}</td>
-          <td class="num">{{ peso(totalGarbage) }}</td>
+          <td class="num">{{ peso(totalWater, 2) }}</td>
+          <td class="num">{{ peso(totalGarbage, 2) }}</td>
           <!--
             THE COLUMN ABOVE NOW ADDS UP TO THIS.
 
@@ -1664,9 +1664,9 @@ async function exportExcel() {
             existed.
           -->
           <td class="num text-brand">
-            <span class="block">{{ peso(totalSpreadsheetLine) }}</span>
+            <span class="block">{{ peso(totalSpreadsheetLine, 2) }}</span>
             <span class="block text-xs font-normal text-verify">
-              Rent + water: {{ peso(totalRemitted) }}
+              Rent + water: {{ peso(totalRemitted, 2) }}
             </span>
           </td>
           <td></td>
@@ -1697,9 +1697,9 @@ async function exportExcel() {
             </p>
           </div>
           <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
-            {{ peso(totalSpreadsheetLine) }}
+            {{ peso(totalSpreadsheetLine, 2) }}
             <span class="block text-xs font-normal text-verify">
-              Rent + water: {{ peso(totalRemitted) }}
+              Rent + water: {{ peso(totalRemitted, 2) }}
             </span>
           </p>
         </div>
@@ -1707,21 +1707,21 @@ async function exportExcel() {
         <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
           <div>
             <dt class="text-xs text-ink-faint">Rent</dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(totalRent) }}</dd>
+            <dd class="tabular font-semibold text-ink">{{ peso(totalRent, 2) }}</dd>
           </div>
           <div>
             <dt class="text-xs text-ink-faint">50% Share, on BH rows</dt>
-            <dd class="tabular font-semibold text-verify">{{ peso(totalShare) }}</dd>
+            <dd class="tabular font-semibold text-verify">{{ peso(totalShare, 2) }}</dd>
           </div>
           <div>
             <dt class="text-xs text-ink-faint">
               Water, {{ rows.reduce((sum, r) => sum + r.occupants, 0) }} heads
             </dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(totalWater) }}</dd>
+            <dd class="tabular font-semibold text-ink">{{ peso(totalWater, 2) }}</dd>
           </div>
           <div>
             <dt class="text-xs text-ink-faint">Garbage</dt>
-            <dd class="tabular text-ink">{{ peso(totalGarbage) }}</dd>
+            <dd class="tabular text-ink">{{ peso(totalGarbage, 2) }}</dd>
           </div>
         </dl>
       </template>
@@ -1733,7 +1733,7 @@ async function exportExcel() {
             <p class="mt-1.5 truncate text-sm text-ink-soft">{{ r.cluster }}, {{ r.contact }}</p>
           </div>
           <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
-            {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water) }}
+            {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water, 2) }}
           </p>
         </div>
 
@@ -1748,19 +1748,19 @@ async function exportExcel() {
           </div>
           <div>
             <dt class="text-xs text-ink-faint">Rent</dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(r.rent) }}</dd>
+            <dd class="tabular font-semibold text-ink">{{ peso(r.rent, 2) }}</dd>
           </div>
           <div v-if="r.cluster === 'BH'">
             <dt class="text-xs text-ink-faint">50% Share</dt>
-            <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2) }}</dd>
+            <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2, 2) }}</dd>
           </div>
           <div>
             <dt class="text-xs text-ink-faint">Water, {{ r.occupants }} heads</dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(r.water) }}</dd>
+            <dd class="tabular font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
           </div>
           <div>
             <dt class="text-xs text-ink-faint">Garbage</dt>
-            <dd class="tabular text-ink">{{ peso(r.garbage) }}</dd>
+            <dd class="tabular text-ink">{{ peso(r.garbage, 2) }}</dd>
           </div>
         </dl>
 
@@ -1937,7 +1937,7 @@ async function exportExcel() {
             </label>
             <div class="bg-canvas border border-line rounded-tile p-3.5 flex flex-col justify-center">
               <span class="text-xs font-semibold text-ink-soft">Total Amount (₱)</span>
-              <span class="font-semibold text-lg text-brand pt-0.5">{{ peso(editTotal) }}</span>
+              <span class="font-semibold text-lg text-brand pt-0.5">{{ peso(editTotal, 2) }}</span>
             </div>
           </div>
 

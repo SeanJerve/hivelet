@@ -166,6 +166,13 @@ export const CLUSTERS: Cluster[] = [
  * authentication precisely so the public pages can use it.
  */
 
+/**
+ * Whole pesos by default, which suits a summary tile and nothing else. The
+ * money columns are `numeric(10,2)`, so a record's OWN amount (a ledger row, a
+ * payment, an expense entry) passes `decimals = 2`, or ₱4,955.50 reads as
+ * ₱4,956 (B-61). The default stays 0 because changing it would put centavos
+ * on every rounded overview figure at once.
+ */
 export function peso(value: number, decimals = 0) {
   return `₱${value.toLocaleString("en-PH", {
     minimumFractionDigits: decimals,

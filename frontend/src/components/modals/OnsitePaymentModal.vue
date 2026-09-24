@@ -389,9 +389,9 @@ function triggerRecord() {
   if (waterVal !== monthlyWaterBaseline) {
     showToast(
       'warning',
-      'Water will be recorded as ' + peso(monthlyWaterBaseline),
+      'Water will be recorded as ' + peso(monthlyWaterBaseline, 2),
       `The ledger derives water from the registered occupants, so it will record ` +
-        `${peso(monthlyWaterBaseline)} for ${unitUpper}, not ${peso(waterVal)}. ` +
+        `${peso(monthlyWaterBaseline, 2)} for ${unitUpper}, not ${peso(waterVal, 2)}. ` +
         (mCovered > 1
           ? `Water is one month per entry - a receipt covering ${mCovered} months is recorded as one row per month in her book. `
           : '') +
@@ -504,7 +504,7 @@ function triggerRecord() {
 
         await Promise.allSettled([fetchIncomeRecords(), fetchRooms(), fetchTenants()]);
 
-        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()} · ${peso(totalAmountReceived.value)} posted to the ledger.`);
+        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()} · ${peso(totalAmountReceived.value, 2)} posted to the ledger.`);
         closeModal();
       } catch (err: unknown) {
         showToast(
@@ -614,7 +614,7 @@ function triggerRecord() {
                 One source, so they cannot disagree.
               -->
               <template v-if="selectedUnit.toLowerCase() === 'lf' || selectedUnit.toLowerCase() === 'lb'">
-                Linda's units are a fixed {{ peso(waterBaselineFor(selectedUnit, 0)) }} a month.
+                Linda's units are a fixed {{ peso(waterBaselineFor(selectedUnit, 0), 2) }} a month.
               </template>
               <template v-else-if="currentOccupantsCount > 0">
                 {{ currentOccupantsCount }} in the unit ({{ unitOccupantsSummary.text }}).
@@ -700,10 +700,10 @@ function triggerRecord() {
           <div class="rounded-2xl bg-canvas px-4 py-3">
             <p class="text-xs text-ink-faint">Total handed over</p>
             <p class="tabular mt-0.5 text-2xl font-semibold leading-none text-brand">
-              {{ peso(totalAmountReceived) }}
+              {{ peso(totalAmountReceived, 2) }}
             </p>
             <p v-if="monthsOnThisReceipt > 1" class="mt-1 text-xs text-ink-faint">
-              {{ peso((Number(rentAmount) || 0) + (Number(waterAmount) || 0)) }} a month
+              {{ peso((Number(rentAmount) || 0) + (Number(waterAmount) || 0), 2) }} a month
               × {{ monthsOnThisReceipt }}<template v-if="Number(gbgFee) > 0">, plus the garbage fee once</template>
             </p>
           </div>
@@ -739,11 +739,11 @@ function triggerRecord() {
             ₱4,500 rent above a ₱15,000 total and looks wrong.
           -->
           <dt class="text-ink-soft">Rent<template v-if="monthsOnThisReceipt > 1"> a month</template></dt>
-          <dd class="tabular font-semibold">{{ peso(rentAmount) }}</dd>
+          <dd class="tabular font-semibold">{{ peso(rentAmount, 2) }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Water<template v-if="monthsOnThisReceipt > 1"> a month</template></dt>
-          <dd class="tabular font-semibold">{{ peso(waterAmount) }}</dd>
+          <dd class="tabular font-semibold">{{ peso(waterAmount, 2) }}</dd>
         </div>
         <div v-if="monthsOnThisReceipt > 1" class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Ledger entries</dt>
@@ -751,11 +751,11 @@ function triggerRecord() {
         </div>
         <div class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Garbage fee</dt>
-          <dd class="tabular font-semibold">{{ peso(gbgFee) }}</dd>
+          <dd class="tabular font-semibold">{{ peso(gbgFee, 2) }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
           <dt class="font-semibold">Total received</dt>
-          <dd class="tabular text-lg font-semibold">{{ peso(totalAmountReceived) }}</dd>
+          <dd class="tabular text-lg font-semibold">{{ peso(totalAmountReceived, 2) }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
           <dt class="text-ink-soft">Covers</dt>

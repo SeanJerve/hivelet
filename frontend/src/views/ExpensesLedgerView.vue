@@ -950,20 +950,20 @@ async function handleEditExpense() {
           <th scope="colgroup" colspan="5" class="bg-canvas text-sm text-ink-soft">
             {{ group.dateStr }}
           </th>
-          <td class="num bg-canvas text-sm font-semibold text-ink">{{ peso(group.dayTotal) }}</td>
+          <td class="num bg-canvas text-sm font-semibold text-ink">{{ peso(group.dayTotal, 2) }}</td>
           <td class="bg-canvas"><span class="sr-only">that day</span></td>
         </tr>
         <tr v-for="e in group.records" :key="e.id" class="group">
           <th scope="row" class="font-medium text-ink">{{ e.description }}</th>
           <td>{{ e.category }}</td>
           <td class="num">
-            {{ getAreaAmount(e, 'Boarding House') ? peso(getAreaAmount(e, 'Boarding House')) : '—' }}
+            {{ getAreaAmount(e, 'Boarding House') ? peso(getAreaAmount(e, 'Boarding House'), 2) : '—' }}
           </td>
           <td class="num">
-            {{ getAreaAmount(e, 'Main House') ? peso(getAreaAmount(e, 'Main House')) : '—' }}
+            {{ getAreaAmount(e, 'Main House') ? peso(getAreaAmount(e, 'Main House'), 2) : '—' }}
           </td>
-          <td class="num">{{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e)) : '—' }}</td>
-          <td class="num font-semibold text-ink">{{ peso(getExpenseTotal(e)) }}</td>
+          <td class="num">{{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e), 2) : '—' }}</td>
+          <td class="num font-semibold text-ink">{{ peso(getExpenseTotal(e), 2) }}</td>
           <td class="num">
             <button
               type="button"
@@ -980,7 +980,7 @@ async function handleEditExpense() {
       <template #card="{ row: group }">
         <div class="flex items-baseline justify-between gap-3 border-b border-line pb-3">
           <p class="text-sm font-semibold text-ink">{{ group.dateStr }}</p>
-          <p class="tabular text-sm font-semibold text-ink">{{ peso(group.dayTotal) }}</p>
+          <p class="tabular text-sm font-semibold text-ink">{{ peso(group.dayTotal, 2) }}</p>
         </div>
 
         <ul class="mt-3 space-y-4">
@@ -991,22 +991,22 @@ async function handleEditExpense() {
                 <p class="mt-0.5 text-xs text-ink-faint">{{ e.category }}</p>
               </div>
               <p class="tabular shrink-0 text-sm font-semibold text-ink">
-                {{ peso(getExpenseTotal(e)) }}
+                {{ peso(getExpenseTotal(e), 2) }}
               </p>
             </div>
 
             <dl class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
               <div v-if="getAreaAmount(e, 'Boarding House')" class="flex gap-1.5">
                 <dt class="text-ink-faint">Boarding house</dt>
-                <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Boarding House')) }}</dd>
+                <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Boarding House'), 2) }}</dd>
               </div>
               <div v-if="getAreaAmount(e, 'Main House')" class="flex gap-1.5">
                 <dt class="text-ink-faint">Main house</dt>
-                <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Main House')) }}</dd>
+                <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Main House'), 2) }}</dd>
               </div>
               <div v-if="getAptsOtherAmount(e)" class="flex gap-1.5">
                 <dt class="text-ink-faint">Apartments and other</dt>
-                <dd class="tabular text-ink">{{ peso(getAptsOtherAmount(e)) }}</dd>
+                <dd class="tabular text-ink">{{ peso(getAptsOtherAmount(e), 2) }}</dd>
               </div>
             </dl>
 

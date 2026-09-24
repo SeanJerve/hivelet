@@ -855,7 +855,7 @@ const isExportingArchive = ref(false);
                   <template v-if="p.unit">Unit {{ p.unit }}</template><template v-if="p.unit && p.date">, </template>{{ p.date }}
                 </span>
               </span>
-              <span class="text-sm font-semibold tabular">{{ peso(p.amount) }}</span>
+              <span class="text-sm font-semibold tabular">{{ peso(p.amount, 2) }}</span>
             </li>
           </ul>
           <p v-else class="mt-2 text-sm text-on-night-soft">Nothing is waiting for verification.</p>
@@ -1496,10 +1496,10 @@ const isExportingArchive = ref(false);
                       <td class="font-semibold">{{ r.unit }}</td>
                       <td>{{ r.contact }}</td>
                       <td class="text-xs text-ink-soft">{{ r.rentFor }}</td>
-                      <td class="num text-ink-soft">{{ peso(r.rent) }}</td>
-                      <td class="num text-ink-soft">{{ peso(r.fiftyPercentShare || 0) }}</td>
-                      <td class="num text-ink-soft">{{ peso(r.water) }}</td>
-                      <td class="num font-semibold">{{ peso(r.totalRemitted || r.rent) }}</td>
+                      <td class="num text-ink-soft">{{ peso(r.rent, 2) }}</td>
+                      <td class="num text-ink-soft">{{ peso(r.fiftyPercentShare || 0, 2) }}</td>
+                      <td class="num text-ink-soft">{{ peso(r.water, 2) }}</td>
+                      <td class="num font-semibold">{{ peso(r.totalRemitted || r.rent, 2) }}</td>
                       <td class="text-xs text-ink-soft">{{ r.invoice }}</td>
                     </tr>
                   </tbody>
@@ -1532,10 +1532,10 @@ const isExportingArchive = ref(false);
                       <td class="text-ink-soft">{{ e.category }}</td>
                       <td class="tabular text-xs text-ink-soft">
                         <span v-for="(s, sIdx) in e.splits" :key="sIdx" class="mr-3 inline-block">
-                          {{ s.area }} {{ peso(s.amount) }}
+                          {{ s.area }} {{ peso(s.amount, 2) }}
                         </span>
                       </td>
-                      <td class="num font-semibold">{{ peso(e.totalAmount || 0) }}</td>
+                      <td class="num font-semibold">{{ peso(e.totalAmount || 0, 2) }}</td>
                     </tr>
                   </tbody>
                 </table>
