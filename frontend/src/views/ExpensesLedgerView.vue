@@ -367,12 +367,18 @@ function submitAddExpense() {
     return;
   }
 
-  const confirmMsg = `Are you sure you want to record these ${formEntries.value.length} expense entries for ${formatDateForDisplay(date.value)}?`;
+  const n = formEntries.value.length;
+  const confirmMsg = n === 1
+    ? `Record this expense entry for ${formatDateForDisplay(date.value)}?`
+    : `Record these ${n} expense entries for ${formatDateForDisplay(date.value)}?`;
   showConfirm(
-    'Confirm Expense Entries',
+    n === 1 ? 'Record expense entry' : 'Record expense entries',
     confirmMsg,
     async () => {
       isSubmitting.value = true;
+      // The rows as they were sent. `results[i]` pairs with `submitted[i]`,
+      // not with whatever the form holds by the time the POSTs come back.
+      const submitted = formEntries.value.slice();
       try {
 
         /**
@@ -388,7 +394,7 @@ function submitAddExpense() {
          * the next refresh silently removed them.
          */
         const results = await Promise.allSettled(
-          formEntries.value.map((entry) =>
+          submitted.map((entry) =>
             api.post('/admin/expense-entries', {
               expenseDate: date.value,
               orSupplier: entry.desc.trim(),
@@ -402,7 +408,7 @@ function submitAddExpense() {
         );
 
         const failed = results
-          .map((r, i) => (r.status === 'rejected' ? formEntries.value[i].desc.trim() || `entry ${i + 1}` : null))
+          .map((r, i) => (r.status === 'rejected' ? submitted[i].desc.trim() || `entry ${i + 1}` : null))
           .filter((x): x is string => x !== null);
 
         const count = results.length - failed.length;
@@ -412,7 +418,9 @@ function submitAddExpense() {
             'error',
             count > 0 ? 'Some expenses were not saved' : 'Expenses not saved',
             `${failed.length} of ${results.length} could not be recorded: ${failed.join(', ')}. ` +
-            'They are still in the form - please try again.'
+            (count > 0
+              ? 'Only those are left in the form. The others are saved, so Save again sends just these.'
+              : 'They are still in the form. Please try again.')
           );
         }
 
@@ -443,7 +451,7 @@ function submitAddExpense() {
         };
 
         // Only what the ledger accepted.
-        formEntries.value.forEach((entry, idx) => {
+        submitted.forEach((entry, idx) => {
           if (results[idx].status !== 'fulfilled') return;
           const newEntry: ExpenseRecord = {
             id: serverId(results[idx], idx),
@@ -458,7 +466,14 @@ function submitAddExpense() {
           expenseRecords.unshift(newEntry);
         });
 
+        /**
+         * Keep only the rows the ledger refused. Every row used to stay in the
+         * form after a partial failure, so pressing Save again re-POSTed the
+         * ones already recorded and the ledger held them twice (reproduced
+         * 2026-09-24, B-61). A retry now sends exactly what failed.
+         */
         if (failed.length > 0) {
+          formEntries.value = submitted.filter((_, i) => results[i].status === 'rejected');
           isSubmitting.value = false;
           return;
         }
@@ -488,7 +503,9 @@ function submitAddExpense() {
       } finally {
         isSubmitting.value = false;
       }
-    }
+    },
+    n === 1 ? 'Record entry' : `Record ${n} entries`,
+    false
   );
 }
 
@@ -527,11 +544,20 @@ const isConfirmOpen = ref(false);
 const confirmTitle = ref('');
 const confirmMessage = ref('');
 const confirmAction = ref<(() => void) | null>(null);
+/**
+ * One dialog serves both recording and deleting. It used to be hard-wired to a
+ * red "Delete entry" button, so confirming a NEW expense looked like deleting
+ * one (B-61). Each caller now says what its button does.
+ */
+const confirmLabel = ref('Delete entry');
+const confirmDestructive = ref(true);
 
-function showConfirm(title: string, message: string, action: () => void) {
+function showConfirm(title: string, message: string, action: () => void, label = 'Delete entry', destructive = true) {
   confirmTitle.value = title;
   confirmMessage.value = message;
   confirmAction.value = action;
+  confirmLabel.value = label;
+  confirmDestructive.value = destructive;
   isConfirmOpen.value = true;
 }
 
@@ -1355,8 +1381,8 @@ async function handleEditExpense() {
       v-if="isConfirmOpen"
       :title="confirmTitle"
       :message="confirmMessage"
-      confirm-label="Delete entry"
-      destructive
+      :confirm-label="confirmLabel"
+      :destructive="confirmDestructive"
       :busy="isSubmitting"
       @cancel="isConfirmOpen = false"
       @confirm="handleConfirmAccept"
