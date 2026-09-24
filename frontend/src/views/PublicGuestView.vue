@@ -105,7 +105,7 @@ const FAQS = computed(() => [
   {
     q: 'What do I need to move in?',
     a:
-            cheapestRent.value !== null
+      cheapestRent.value !== null
         ? `A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. Our cheapest unit is ₱${cheapestRent.value.toLocaleString('en-PH')} a month, so that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} to bring on the day; for a dearer unit it is twice that unit's rent. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.`
         : 'A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit, so twice the monthly rent of the unit you take. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
   },
@@ -195,8 +195,13 @@ const waterRatePerOccupant = ref<number | null>(null);
  *
  * Reading it from `liveUnits` removes the literal rather than correcting it, so
  * there is nothing left to go stale the next time she changes a rate.
+ *
+ * `unitsReady` first, because until `/public/rooms` answers `liveUnits` is the
+ * `CANONICAL_UNITS` seed (see THREE STATES above). Opening this answer during
+ * the load quoted the seed's ₱4,500 against a live ₱5,000 (B-61, 2026-09-24).
  */
 const cheapestRent = computed<number | null>(() => {
+  if (!unitsReady.value) return null;
   const published = liveUnits.filter((u) => u.visibility === 'Published' && u.price > 0);
   return published.length === 0 ? null : Math.min(...published.map((u) => u.price));
 });

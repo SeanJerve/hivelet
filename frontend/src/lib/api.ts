@@ -129,10 +129,24 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });
-  } catch {
+  } catch (cause) {
+    /**
+     * The message reaches residents verbatim wherever a screen shows
+     * `error.message`, so it is written for them. It said "Check that the API
+     * is running", which is advice for a developer and none a tenant with no
+     * signal can act on (B-61). The developer's half - which address failed,
+     * and the browser's own reason - goes to the console instead, without the
+     * query string, which can carry a search term or an email address.
+     *
+     * `NETWORK_ERROR` and status 0 are load-bearing: `isAuthFailure` is false
+     * for them, which is what keeps `authStore.restoreSession` from signing out
+     * a resident who opens the installed app offline. LoginView and
+     * inquiryRules.ts also map this code to their own wording.
+     */
+    console.warn(`[api] ${method} ${API_BASE}${path.split('?')[0]} did not reach the server:`, cause);
     throw new ApiRequestError(0, {
       code: 'NETWORK_ERROR',
-      message: 'Cannot reach the Hivelet server. Check that the API is running.',
+      message: 'We could not reach the server. Check your connection and try again.',
     });
   }
 
