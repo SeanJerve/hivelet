@@ -14,6 +14,7 @@ import {
   fetchTenants, 
   formatUnitOccupantsSummary,
   incomeRecordsFetchFailed,
+  asListedUnitCode,
   type IncomeRecord
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
@@ -180,8 +181,41 @@ async function fetchIncome() {
   }
 }
 
+/**
+ * The payment a verify or reject is saving for, and which of the two.
+ *
+ * This used to set `isLoading`, the flag the queue and the ledger both read
+ * for their FIRST load. So pressing Verify swapped the whole queue for a
+ * skeleton announcing "Loading the verification queue" while one row was being
+ * saved (B-61). The card being acted on now shows its own busy button, and the
+ * other cards' buttons wait for it.
+ */
+const verifying = ref<{ id: string; status: 'Verified' | 'Rejected' } | null>(null);
+
+/**
+ * Reject was a single click with nothing to take it back: the payment is marked
+ * Rejected and the bill stays due. Every other destructive action on this
+ * screen asks first, so this one does too.
+ */
+const rejectTarget = ref<ApiPendingPayment | null>(null);
+
+const rejectMessage = computed(() => {
+  const p = rejectTarget.value;
+  if (!p) return '';
+  const unit = p.rooms?.room_number ? `, unit ${String(p.rooms.room_number).toUpperCase()}` : '';
+  return `${peso(Number(p.amount) || 0, 2)} from ${p.profiles?.full_name || 'this resident'}${unit}. ` +
+    'It is marked rejected and nothing is written to the ledger. Their bill stays due.';
+});
+
+function confirmReject() {
+  const p = rejectTarget.value;
+  rejectTarget.value = null;
+  if (p) verifyPayment(p.id, 'Rejected');
+}
+
 async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected') {
-  isLoading.value = true;
+  if (verifying.value) return;
+  verifying.value = { id: paymentId, status };
   try {
     await api.patch(`/admin/payments/${paymentId}/verify`, {
       verification_status: status
@@ -195,11 +229,13 @@ async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected')
     } else {
       showToast('warning', 'Payment Rejected', 'Bill remains marked as Due.');
     }
-    await fetchIncome();
+    // Refreshed in place, not through `fetchIncome`, which would blank both
+    // panels behind their first-load skeletons for a single saved row.
+    await Promise.allSettled([fetchPayments(), fetchIncomeRecords()]);
   } catch (err: any) {
     showToast('error', 'Verification Error', err.message || 'Action failed.');
   } finally {
-    isLoading.value = false;
+    verifying.value = null;
   }
 }
 
@@ -581,7 +617,10 @@ const editTotal = computed(() => {
 
 function startEditIncome(r: IncomeRecord) {
   editingIncome.value = r;
-  editUnit.value = r.unit.toUpperCase();
+  // In the case `rooms` lists it, or the Unit dropdown matches no option and
+  // shows the raw "3D" rather than the listed "3D — name (cluster)" (B-61).
+  // The submit path uppercases it again, so what is posted is unchanged.
+  editUnit.value = asListedUnitCode(r.unit);
   editRent.value = r.rent;
   editWater.value = r.water;
   editGarbage.value = r.garbage;
@@ -1220,13 +1259,27 @@ async function exportExcel() {
             </dl>
 
             <div class="mt-auto flex flex-wrap gap-2">
-              <button type="button" class="pill-btn-brand" @click="verifyPayment(p.id, 'Verified')">
-                <Check class="size-4" aria-hidden="true" />
-                Verify payment
+              <button
+                type="button"
+                class="pill-btn-brand disabled:opacity-50"
+                :disabled="verifying !== null"
+                :aria-busy="verifying?.id === p.id && verifying.status === 'Verified'"
+                @click="verifyPayment(p.id, 'Verified')"
+              >
+                <Loader2 v-if="verifying?.id === p.id && verifying.status === 'Verified'" class="size-4 animate-spin" aria-hidden="true" />
+                <Check v-else class="size-4" aria-hidden="true" />
+                {{ verifying?.id === p.id && verifying.status === 'Verified' ? 'Verifying…' : 'Verify payment' }}
               </button>
-              <button type="button" class="pill-btn-danger-quiet" @click="verifyPayment(p.id, 'Rejected')">
-                <X class="size-4" aria-hidden="true" />
-                Reject
+              <button
+                type="button"
+                class="pill-btn-danger-quiet disabled:opacity-50"
+                :disabled="verifying !== null"
+                :aria-busy="verifying?.id === p.id && verifying.status === 'Rejected'"
+                @click="rejectTarget = p"
+              >
+                <Loader2 v-if="verifying?.id === p.id && verifying.status === 'Rejected'" class="size-4 animate-spin" aria-hidden="true" />
+                <X v-else class="size-4" aria-hidden="true" />
+                {{ verifying?.id === p.id && verifying.status === 'Rejected' ? 'Rejecting…' : 'Reject' }}
               </button>
             </div>
           </li>
@@ -1946,6 +1999,16 @@ async function exportExcel() {
       :busy="isSubmitting"
       @cancel="isConfirmOpen = false"
       @confirm="handleConfirmAccept"
+    />
+
+    <ConfirmDialog
+      v-if="rejectTarget"
+      title="Reject this payment?"
+      :message="rejectMessage"
+      confirm-label="Reject payment"
+      destructive
+      @cancel="rejectTarget = null"
+      @confirm="confirmReject"
     />
   </div>
 </template>
