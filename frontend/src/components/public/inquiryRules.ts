@@ -106,8 +106,8 @@ export function serverFieldErrors(err: unknown): InquiryErrors {
 /**
  * What a visitor is told when the message did not go.
  *
- * `api.ts` words a dead connection for a developer - "Check that the API is
- * running" - and the endpoint's own 500 says "Internal server error." Neither
+ * `api.ts` words a dead connection generically ("We could not reach the
+ * server") and the endpoint's own 500 says "Internal server error." Neither
  * tells a prospect whether her message went or what to do now, which is the
  * whole of what she needs. Every branch here says it was NOT sent, because
  * the fields are kept and she should know to press Send again rather than

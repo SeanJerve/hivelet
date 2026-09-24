@@ -12,7 +12,8 @@
  *              Real compound entrance gate image placed at hero background with unblurred crisp
  *              rendering and balanced fluid typography.
  */
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import { CATEGORIES } from '@/lib/unitCategories';
 import { fetchRooms, rooms, roomsFetchFailed, roomsLoaded } from '@/lib/systemState';
 import { api } from '@/lib/api';
@@ -206,6 +207,8 @@ const cheapestRent = computed<number | null>(() => {
   return published.length === 0 ? null : Math.min(...published.map((u) => u.price));
 });
 
+const route = useRoute();
+
 onMounted(async () => {
   try {
     await Promise.all([
@@ -221,6 +224,19 @@ onMounted(async () => {
     ]);
   } finally {
     isLoading.value = false;
+  }
+
+  /**
+   * Arriving at `/public#faqs` (or #location) from another page, the router
+   * scrolls to the section the moment the page mounts, and the category list
+   * then loads above it and pushes it down, so the reader landed short of
+   * where the link pointed. Once the content is in, land on it again, once.
+   * `scrollIntoView` honours the section's own `scroll-mt-20`.
+   */
+  if (route.hash) {
+    await nextTick();
+    const el = document.getElementById(decodeURIComponent(route.hash.slice(1)));
+    if (el) el.scrollIntoView({ block: 'start' });
   }
 });
 

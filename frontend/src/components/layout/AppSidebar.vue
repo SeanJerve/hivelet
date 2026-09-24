@@ -342,6 +342,7 @@ onBeforeUnmount(() => {
           leave-to-class="-translate-x-full"
         >
           <div
+            id="workspace-mobile-nav"
             ref="drawerPanel"
             role="dialog"
             aria-modal="true"

@@ -266,6 +266,7 @@ onUnmounted(() => {
           class="press flex lg:hidden -ml-1 p-3 rounded-xl text-ink-soft hover:bg-tile hover:text-ink cursor-pointer"
           aria-label="Toggle navigation"
           :aria-expanded="isMobileSidebarOpen"
+          aria-controls="workspace-mobile-nav"
         >
           <Menu class="size-5" />
         </button>
