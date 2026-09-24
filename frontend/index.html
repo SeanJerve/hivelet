@@ -17,7 +17,23 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <!-- Kept in sync with `theme_color` in vite.config.ts's VitePWA manifest - see the comment there for why this is `--brand` (#17603f), not the `--primary` blue it used to be. -->
     <meta name="theme-color" content="#17603f">
-    <meta name="description" content="Centralized apartment operations, billing, tenant portal, and financial analytics for Fe Galang Da Silva Boarding House.">
+    <!--
+      Written for the person who finds or is sent the public site, since that
+      is who a search result or a shared link reaches: the old description
+      ("centralized apartment operations ... financial analytics") described
+      the admin side, which nobody arriving from a search can open. The
+      Open Graph tags give a link pasted into Messenger or Facebook a real
+      title and summary instead of the bare URL. `og:image` is left out on
+      purpose: it must be an absolute URL, and the production domain is not
+      decided yet (deployment is still open). Add it with the domain.
+    -->
+    <meta name="description" content="Rooms for rent at Fe Galang Da Silva Boarding House, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City. See the units and their rates, and register your interest for a viewing.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Hivelet">
+    <meta property="og:title" content="Fe Galang Da Silva Boarding House, Legazpi City">
+    <meta property="og:description" content="See the units and their rates, and register your interest for a viewing.">
+    <meta property="og:locale" content="en_PH">
+    <meta name="apple-mobile-web-app-title" content="Hivelet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hivelet — Apartment Management & Resident Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
