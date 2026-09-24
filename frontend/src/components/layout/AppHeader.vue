@@ -246,7 +246,15 @@ onUnmounted(() => {
       have to line up with the page content under it, and they only stay lined
       up if both read the same class.
     -->
-    <div class="ws-page flex h-16 items-center justify-between relative">
+    <!--
+      `min-h-16 flex-wrap`, not `h-16`. At 200% text on a 375px phone (WCAG
+      1.4.4) the row's contents - menu button, wordmark, Sign In - measured
+      about 500px against a 343px row, and the Sign In pill ran to x=411 where
+      `body`'s overflow-x: hidden cut it off. It now wraps to a second line
+      instead. At normal size everything fits on one 64px line, so nothing
+      moves.
+    -->
+    <div class="ws-page flex min-h-16 flex-wrap items-center justify-between relative">
       
       <!-- Left: Mobile Menu Toggle & Brand Logo -->
       <div class="flex items-center gap-3" :class="isLandingPage && 'on-dark'">
