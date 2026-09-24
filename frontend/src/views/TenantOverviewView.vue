@@ -104,12 +104,20 @@ const tenantData = ref({
  * the amount due can no longer disagree about whether anything loaded.
  */
 const tenantDataLoadFailed = ref(false);
-/**
- * The day of the month this tenancy's cycle is anchored to (BR-033), from
- * `room_assignments.anniversary_date`. Null when there is no tenancy on file,
- * in which case no due date is shown rather than a guessed one.
- */
-const anniversaryDay = ref<number | null>(null);
+
+/** `GET /tenant/my-standing` - see `computeStanding` in backend/src/services/billingService.ts. */
+interface ResidentStanding {
+  paidThrough: string | null;
+  nextPeriodStart: string;
+  owedPeriods: { start: string; end: string; dueDate: string }[];
+  status: 'settled' | 'due-soon' | 'due' | 'overdue';
+  perPeriod: { rentAmount: number; waterAmount: number; totalAmount: number };
+  periodsDue: number;
+  totalDue: number;
+  totalPayable: number;
+}
+/** One sentence under the amount: how far her records reach, and what paying now covers. */
+const owedSummary = ref('');
 const loading = ref(true);
 /**
  * Whether the unit photo has actually painted, so it can fade in rather than
@@ -273,26 +281,16 @@ async function fetchTenantData() {
         if (activeRoom.rooms?.current_price) {
           tenantData.value.unitRent = Number(activeRoom.rooms.current_price);
         }
-
-        /**
-         * BR-033's anchor, read from the tenancy rather than assumed.
-         *
-         * `/tenant/my-rooms` has always returned `anniversary_date` and this view
-         * never looked at it, which is why the block below could only guess.
-         * Kept as a day-of-month because that is all the cycle needs.
-         */
-        const anniv = activeRoom.anniversary_date;
-        anniversaryDay.value =
-          typeof anniv === 'string' && /^\d{4}-\d{2}-\d{2}/.test(anniv)
-            ? Number(anniv.slice(8, 10))
-            : null;
       }
     }
 
-    const [billsData, paymentsData, incomeData] = await Promise.all([
+    // `my-standing` is in the same all-or-nothing batch on purpose: a failed read
+    // of it must land in the "could not be loaded" state, never in "Settled".
+    const [billsData, paymentsData, incomeData, standing] = await Promise.all([
       api.get<any[]>('/tenant/my-bills'),
       api.get<any[]>('/tenant/my-payments'),
       api.get<any[]>('/tenant/my-income-records'),
+      api.get<ResidentStanding | null>('/tenant/my-standing'),
     ]);
 
     pendingOnlinePayments.value = (paymentsData ?? [])
@@ -330,65 +328,24 @@ async function fetchTenantData() {
       verified: inc.verification_status === 'Verified',
     }));
 
-    // Find the latest covered date from verified payments and income records.
-    /**
-     * Kept as `{ y, m, d }` integers, not a `Date`.
-     *
-     * `rent_period_end` is a bare `date` column. Parsing it via `new Date(...)`
-     * gives UTC midnight, and the `.getFullYear()`/`.getMonth()` this block used
-     * to call on the result are LOCAL-time getters - for a viewer whose zone
-     * crosses that UTC instant onto a different calendar month (anyone roughly
-     * west of Manila, on a period ending near the 1st), the due date computed
-     * below could land in the wrong month entirely, not just a day off. Same
-     * defect class `2adf017`/`d78f9ee` already fixed for income, tenant and
-     * on-site-payment dates elsewhere in this app; slicing the string directly
-     * needs no `Date` and no zone at all.
-     */
-    let maxCoveredDate: { y: number; m: number; d: number } | null = null;
-
     /**
      * THE 25th OF THE MONTH WAS INVENTED, AND IT HID REAL DEBT.
      *
-     * This read every verified payment, guessed that it covered rent up to the
-     * 25th of the month it was paid in, and then used that guess to filter bills
-     * out of the unpaid list. A resident with any verified payment in a month
-     * had every bill due on or before the 25th suppressed - and was then shown
-     * the settled branch: total due 0, badge PAID.
+     * This once read every verified payment, guessed that it covered rent up to
+     * the 25th of the month it was paid in, and filtered bills out of the unpaid
+     * list on that guess. Nothing in this business bills on the 25th. Bills now
+     * use the API's `amount_outstanding` (BR-013), and everything else comes
+     * from `/tenant/my-standing`.
      *
-     * Nothing in this business bills on the 25th. BR-033 runs each tenancy from
-     * its own anniversary day, and per B-32 those days are spread across the
-     * month, so the guess was wrong for nearly everyone and wrong in the
-     * dangerous direction.
-     *
-     * It is also unnecessary. The API already answers this question properly:
-     * `withEffectiveStatus` derives `amount_outstanding` on every bill from the
-     * payments actually linked to it (BR-013), which is the real relationship
-     * between a payment and a bill rather than a guess from its date. The two
-     * lines above already use `effective_status`; this now uses the balance
-     * beside it.
-     *
-     * The income-record branch below is kept: `rent_period_end` is a recorded
-     * fact, not an estimate, and it is what drives the next-due-date display.
+     * SETTLED MEANS HER RECORDS COVER TODAY (2026-09-24). This screen used to
+     * work out a paid-through date itself and, with no open bill, show
+     * "Settled" or "Not billed yet" - with a Pay button either way. Bills are
+     * raised on demand, so no open bill never meant paid: that day every
+     * resident's records ended in July or August and every one of them was
+     * owed at least a period, while none was shown owing. The API now works out
+     * which periods her receipts do not cover (`computeStanding`), and the
+     * checkout charges the oldest of them.
      */
-
-    incomeData?.forEach((inc: any) => {
-      if (
-        inc.verification_status === 'Verified' &&
-        inc.rent_period_end &&
-        /^\d{4}-\d{2}-\d{2}/.test(inc.rent_period_end)
-      ) {
-        const y = Number(inc.rent_period_end.slice(0, 4));
-        const m = Number(inc.rent_period_end.slice(5, 7)) - 1;
-        const d = Number(inc.rent_period_end.slice(8, 10));
-        if (
-          !maxCoveredDate ||
-          y > maxCoveredDate.y ||
-          (y === maxCoveredDate.y && (m > maxCoveredDate.m || (m === maxCoveredDate.m && d > maxCoveredDate.d)))
-        ) {
-          maxCoveredDate = { y, m, d };
-        }
-      }
-    });
 
     // Taken from the response itself, not inferred from the amounts afterwards.
     tenantData.value.hasBill = (billsData?.length ?? 0) > 0;
@@ -404,7 +361,16 @@ async function fetchTenantData() {
       return true;
     });
 
+    const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
+    tenantData.value.paidThroughDisplay = standing?.paidThrough
+      ? formatDateOnly(standing.paidThrough, longDate)
+      : '';
+    tenantData.value.unbilledFromDisplay = '';
+    tenantData.value.verifiedAt = '';
+    owedSummary.value = '';
+
     if (unpaidBill) {
+      // A bill that has actually been raised comes first: it is the debt as issued.
       activeBillId.value = unpaidBill.id;
       tenantData.value.baseRent = unpaidBill.rent_amount;
       tenantData.value.waterFee = unpaidBill.water_amount;
@@ -415,123 +381,66 @@ async function fetchTenantData() {
       tenantData.value.dueBadgeText = (unpaidBill.effective_status ?? unpaidBill.status).toUpperCase();
       tenantData.value.dueDaysRemaining = 'Awaiting payment';
       tenantData.value.dueDateRaw = unpaidBill.due_date;
-      tenantData.value.verifiedAt = '';
       tenantData.value.nextDueDateDisplay = '';
-      tenantData.value.paidThroughDisplay = '';
-      tenantData.value.unbilledFromDisplay = '';
       tenantData.value.activeBillPending = Number(unpaidBill.amount_pending) || 0;
-    } else {
+    } else if (standing && standing.owedPeriods.length > 0) {
+      // Owed, but no bill raised yet. The checkout raises the OLDEST owed period.
+      const first = standing.owedPeriods[0]!;
+      activeBillId.value = null;
+      tenantData.value.activeBillPending = 0;
+      tenantData.value.baseRent = standing.perPeriod.rentAmount;
+      tenantData.value.waterFee = standing.perPeriod.waterAmount;
+      // What is owed today; a period opening within the week is payable, not yet owed.
+      tenantData.value.totalAmountDue =
+        standing.totalDue > 0 ? standing.totalDue : standing.perPeriod.totalAmount;
+      tenantData.value.dueDate = formatDateOnly(first.dueDate, longDate);
+      tenantData.value.dueDateRaw = first.dueDate;
+      tenantData.value.dueBadgeText = standing.status === 'overdue' ? 'OVERDUE' : 'DUE';
+      tenantData.value.dueDaysRemaining = 'Awaiting payment';
+      tenantData.value.nextDueDateDisplay = '';
+      const periods = standing.periodsDue;
+      owedSummary.value =
+        (standing.paidThrough
+          ? `Your recorded payments cover rent up to ${tenantData.value.paidThroughDisplay}. `
+          : 'No payment is on record for this tenancy yet. ') +
+        (periods > 1
+          ? `${periods} periods are unpaid since then. `
+          : '') +
+        `Paying now covers ${formatDateOnly(first.start, longDate)} to ` +
+        `${formatDateOnly(first.end, longDate)} (${peso(standing.perPeriod.totalAmount, 2)}).`;
+    } else if (standing) {
+      // Settled: her records reach past today and the next period is more than
+      // a week off. Nothing to pay, so no Pay button.
       activeBillId.value = null;
       tenantData.value.activeBillPending = 0;
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
-      // The cast undoes a narrowing: TS does not see the `forEach` callback
-      // assign `maxCoveredDate`, so it reads it as `null` here and everything
-      // destructured from it as `never`.
-      const validCoveredDate = maxCoveredDate as { y: number; m: number; d: number } | null;
-      if (validCoveredDate) {
-        // Only from the bill. There is deliberately no fallback: a resident with
-        // no bill is told there is none, rather than shown a made-up one.
-        tenantData.value.baseRent = paidBill ? paidBill.rent_amount : 0;
-        tenantData.value.waterFee = paidBill ? paidBill.water_amount : 0;
-        tenantData.value.totalAmountDue = 0;
+      tenantData.value.baseRent = paidBill ? paidBill.rent_amount : 0;
+      tenantData.value.waterFee = paidBill ? paidBill.water_amount : 0;
+      tenantData.value.totalAmountDue = 0;
+      tenantData.value.dueBadgeText = 'PAID';
+      tenantData.value.dueDaysRemaining = 'Settled';
+      tenantData.value.dueDate = '';
+      tenantData.value.dueDateRaw = '';
+      tenantData.value.nextDueDateDisplay = formatDateOnly(standing.nextPeriodStart, longDate);
 
-        /**
-         * BR-033: the cycle runs from THIS tenancy's anniversary day, not the 5th.
-         *
-         * This carried `TODO(Sean, audit F9)` and hardcoded `5` in two places, so
-         * a resident whose tenancy is anchored on the 13th was told their next
-         * payment falls on the 5th - a date that is simply not theirs. The
-         * anniversary was in the response the whole time; nothing read it.
-         *
-         * Clamped to the length of the month, the same way the server clamps:
-         * `setMonth(+1)` then `setDate(31)` overflows into the month after, which
-         * is the bug `periodEnd` was already rewritten to avoid.
-         *
-         * When there is no anniversary on file, no date is shown rather than a
-         * guessed one. A resident reading a wrong date acts on it.
-         */
-        tenantData.value.dueBadgeText = 'PAID';
-        tenantData.value.dueDaysRemaining = 'Settled';
-
-        /**
-         * THE NEXT DUE DATE WAS ONE CYCLE LATE, AND COULD BE IN THE PAST.
-         *
-         * This took the anniversary in the MONTH the paid-through date falls in
-         * and added a month. A period ends the day before an anniversary
-         * (`periodEnd()` in `propertyDate.ts`), so for rent paid through 12 July
-         * on the 13th, the next rent is due 13 July, and this said 13 August.
-         * Nothing compared the result with today either, so a resident whose
-         * last recorded period ended in July was still shown "Settled" in
-         * September (B-61, reproduced in the mocked-API harness).
-         *
-         * Now: the first anniversary strictly after the paid-through date, and
-         * "Settled" only while that date is still ahead. On the anniversary
-         * itself a new period has begun that nothing on record covers.
-         */
-        const day = anniversaryDay.value;
-        const { y, m, d } = validCoveredDate;
-        const iso = (yy: number, mm: number, dd: number) =>
-          `${yy}-${String(mm + 1).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
-        const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
-        const paidThroughIso = iso(y, m, d);
-        let nextDueIso = '';
-        if (day) {
-          // Plain integers throughout, as `periodEnd()` does it, so no browser
-          // timezone can shift the result.
-          const clamp = (yy: number, mm: number, dd: number) =>
-            Math.min(dd, new Date(Date.UTC(yy, mm + 1, 0)).getUTCDate());
-          let nextY = y;
-          let nextM = m;
-          if (clamp(y, m, day) <= d) {
-            nextY = m === 11 ? y + 1 : y;
-            nextM = (m + 1) % 12;
-          }
-          nextDueIso = iso(nextY, nextM, clamp(nextY, nextM, day));
-        }
-        const today = propertyToday();
-        const stillCovered = nextDueIso ? nextDueIso > today : paidThroughIso >= today;
-
-        tenantData.value.dueDate = '';
-        tenantData.value.dueDateRaw = '';
-        tenantData.value.paidThroughDisplay = formatDateOnly(paidThroughIso, longDate);
-        if (stillCovered) {
-          tenantData.value.nextDueDateDisplay = formatDateOnly(nextDueIso, longDate);
-          tenantData.value.unbilledFromDisplay = '';
-        } else {
-          // `dueBadgeText` stays 'PAID' for the reason the no-bills branch below
-          // gives: it keeps a confident ₱0.00 off the tile. The words change.
-          tenantData.value.dueDaysRemaining = 'Not billed yet';
-          tenantData.value.nextDueDateDisplay = '';
-          tenantData.value.unbilledFromDisplay = nextDueIso ? formatDateOnly(nextDueIso, longDate) : '';
-        }
-
-        const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
-        tenantData.value.verifiedAt = linkedPayment?.verified_at
-          ? new Date(linkedPayment.verified_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE })
-          : '';
-      } else {
-        /**
-         * No bills at all - which is NOT evidence of payment.
-         *
-         * `dueBadgeText` stays 'PAID' deliberately, because it is what keeps
-         * this tile out of the amount-due branch; that branch leads with a 5xl
-         * `peso(totalAmountDue)`, and rendering a confident **₱0.00** here
-         * would be a stronger false claim than the words ever were. The honest
-         * wording lives in the template instead, which now says the bill has
-         * not been raised rather than that nothing is owed.
-         *
-         * Read the flag as "there is no outstanding bill to show", not as
-         * "this resident has paid".
-         */
-        tenantData.value.dueBadgeText = 'PAID';
-        tenantData.value.dueDaysRemaining = 'Not billed yet';
-        tenantData.value.totalAmountDue = 0;
-        tenantData.value.dueDateRaw = '';
-        tenantData.value.verifiedAt = '';
-        tenantData.value.nextDueDateDisplay = '';
-        tenantData.value.paidThroughDisplay = '';
-        tenantData.value.unbilledFromDisplay = '';
-      }
+      const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
+      tenantData.value.verifiedAt = linkedPayment?.verified_at
+        ? new Date(linkedPayment.verified_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE })
+        : '';
+    } else {
+      /**
+       * No active tenancy, so no standing to compute. `dueBadgeText` stays
+       * 'PAID' only because it keeps a confident ₱0.00 off the tile; the words
+       * say nothing has been billed, not that nothing is owed.
+       */
+      activeBillId.value = null;
+      tenantData.value.activeBillPending = 0;
+      tenantData.value.dueBadgeText = 'PAID';
+      tenantData.value.dueDaysRemaining = 'Not billed yet';
+      tenantData.value.totalAmountDue = 0;
+      tenantData.value.dueDate = '';
+      tenantData.value.dueDateRaw = '';
+      tenantData.value.nextDueDateDisplay = '';
     }
 
     tenantDataLoadFailed.value = false;
@@ -681,6 +590,7 @@ const statusTone = computed(() => {
               <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
               <span v-if="tenantData.dueDate">Due {{ tenantData.dueDate }}</span>
             </div>
+            <p v-if="owedSummary" class="mt-3 text-sm leading-6 text-on-brand-soft">{{ owedSummary }}</p>
           </div>
           <div class="flex flex-col items-start gap-2">
             <!-- See `paymentAwaitingVerification`: the button is not offered
@@ -734,26 +644,15 @@ const statusTone = computed(() => {
             </p>
           </div>
           <!--
-            Nothing is due YET is still true - the text above keeps saying so.
-            This does not contradict it: paying ahead of the due date has
-            always been allowed (the checkout route resolves or raises the
-            current cycle unconditionally), TenantPaymentsView has offered
-            exactly this since today's payment-reachability fix, and Overview
-            is the first screen a resident actually lands on - it should not
-            be the one screen in the app that still has no way there.
+            No Pay button here (2026-09-24). This branch is reached only when her
+            records cover today and the next period is more than a week off, so
+            there is nothing to pay - and the checkout now refuses a settled
+            account. Payment opens a week before the next period starts, and
+            this tile turns into the amount-due tile by itself when it does.
           -->
           <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand sm:max-w-64">
             {{ awaitingVerificationLine }}
           </p>
-          <div v-else class="flex flex-col items-start gap-2 shrink-0">
-            <button type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
-              <CreditCard class="size-4" aria-hidden="true" />
-              Pay with GCash
-            </button>
-            <p class="text-xs leading-5 text-on-brand-soft max-w-56">
-              Pay this period now instead of waiting.
-            </p>
-          </div>
         </div>
 
         <div class="mt-auto border-t border-white/20 pt-3">

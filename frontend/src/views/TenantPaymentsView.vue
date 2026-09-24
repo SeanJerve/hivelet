@@ -9,7 +9,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { api } from '@/lib/api';
 import { peso } from '@/lib/canonicalUnits';
-import { propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
+import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
 import { CreditCard, Search, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
 import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
@@ -117,6 +117,27 @@ function gatewayStatusWords(status: string | undefined): string {
 
 // Outstanding bills from the database
 const outstandingBills = ref<any[]>([]);
+
+/**
+ * `GET /tenant/my-standing` - which periods her recorded receipts do not cover
+ * (`computeStanding`, backend/src/services/billingService.ts). "No open bill"
+ * never meant "paid": bills are raised on demand, and on 2026-09-24 every
+ * resident's records ended in July or August while this tile said
+ * "Nothing is due" to all of them.
+ */
+interface ResidentStanding {
+  paidThrough: string | null;
+  nextPeriodStart: string;
+  owedPeriods: { start: string; end: string; dueDate: string }[];
+  status: 'settled' | 'due-soon' | 'due' | 'overdue';
+  perPeriod: { rentAmount: number; waterAmount: number; totalAmount: number };
+  periodsDue: number;
+  totalDue: number;
+  totalPayable: number;
+}
+const standing = ref<ResidentStanding | null>(null);
+const standingOwes = computed(() => (standing.value?.owedPeriods.length ?? 0) > 0);
+const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
 /**
  * Set when `/tenant/my-bills` could not be read.
  *
@@ -441,8 +462,14 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
   if (!opts.quiet) loadingBills.value = true;
   billsLoadFailed.value = false;
   try {
-    const data = await api.get<any[]>('/tenant/my-bills');
+    // Read together: with no open bill, the standing is what decides between
+    // "Nothing is due" and an amount owed, so a failure of either is a failure.
+    const [data, st] = await Promise.all([
+      api.get<any[]>('/tenant/my-bills'),
+      api.get<ResidentStanding | null>('/tenant/my-standing'),
+    ]);
     outstandingBills.value = (data ?? []).filter((b) => ((b as any).effective_status ?? b.status) !== 'Paid');
+    standing.value = st ?? null;
   } catch (err: any) {
     console.error('Failed to load bills:', err?.message || err);
     // "No bills" and "we could not read your bills" are different sentences, and
@@ -569,27 +596,60 @@ function refreshAll() {
       />
     </OverviewTile>
 
+    <!-- No bill raised, but her records stop short of today: owed. The checkout
+         raises the OLDEST uncovered period, so the button pays that one. -->
+    <OverviewTile
+      v-else-if="outstandingBills.length === 0 && standing && standingOwes"
+      tone="brand"
+      class="ws-reveal"
+      :title="standing.status === 'overdue' ? 'Overdue' : 'Due'"
+    >
+      <div>
+        <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">
+          {{ peso(standing.totalDue > 0 ? standing.totalDue : standing.perPeriod.totalAmount, 2) }}
+        </p>
+        <p class="mt-2 text-sm leading-6 text-on-brand-soft">
+          <template v-if="standing.paidThrough">
+            Your recorded payments cover rent up to {{ formatDateOnly(standing.paidThrough, longDate) }}.
+          </template>
+          <template v-else>No payment is on record for this tenancy yet.</template>
+          <template v-if="standing.periodsDue > 1"> {{ standing.periodsDue }} periods are unpaid since then.</template>
+        </p>
+      </div>
+      <button
+        type="button"
+        class="pill-btn-light mt-auto self-start"
+        @click="openAdyenModalForCurrentPeriod"
+      >
+        <CreditCard class="size-4" aria-hidden="true" />
+        Pay {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
+        {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }} with GCash
+      </button>
+      <p class="text-xs leading-5 text-on-brand-soft">
+        {{ peso(standing.perPeriod.totalAmount, 2) }} per period. Paid in person? It shows here once the
+        landlady records the receipt.
+      </p>
+    </OverviewTile>
+
     <OverviewTile v-else-if="outstandingBills.length === 0" tone="soft" class="ws-reveal" title="Bills">
       <p class="text-2xl font-semibold tracking-tight">Nothing is due</p>
       <!-- This used to promise "your next monthly statement will be issued on the
            5th". There is no scheduled bill generator and there is deliberately not
            one: collection happens in person, so a nightly run would raise bills
            against residents the owner has already been paid by (judgement log
-           section 3.6). The sentence promised a thing the system does not do. -->
+           section 3.6). The sentence promised a thing the system does not do.
+
+           Reached only when her records cover today (or there is no tenancy), so
+           there is no Pay button: nothing is owed, and the checkout refuses a
+           settled account. Payment opens a week before the next period. -->
       <p class="text-sm leading-6 text-ink-soft">
-        You have no outstanding bills. The landlady issues bills as they fall due, not on a fixed date.
+        <template v-if="standing?.paidThrough">
+          Your recorded payments cover rent up to {{ formatDateOnly(standing.paidThrough, longDate) }}.
+          The next period starts {{ formatDateOnly(standing.nextPeriodStart, longDate) }}, and you can pay
+          for it here from a week before.
+        </template>
+        <template v-else>You have no outstanding bills.</template>
       </p>
-      <p class="mt-3 text-sm leading-6 text-ink-soft">
-        Would rather not wait? You can pay this rental period with GCash now instead.
-      </p>
-      <button
-        type="button"
-        class="pill-btn mt-3 self-start"
-        @click="openAdyenModalForCurrentPeriod"
-      >
-        <CreditCard class="size-4" aria-hidden="true" />
-        Pay this period with GCash
-      </button>
     </OverviewTile>
 
     <div v-else class="grid gap-4 md:grid-cols-2">

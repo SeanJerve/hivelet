@@ -86,6 +86,7 @@ const PURPOSE = new Map([
   ['GET /tenant/my-bills', 'my bills'],
   ['GET /tenant/my-payments', 'my payments'],
   ['GET /tenant/my-income-records', 'my receipts'],
+  ['GET /tenant/my-standing', 'whether my records cover today, and which periods are owed'],
   ['GET /tenant/my-tickets', 'my maintenance requests'],
   ['GET /tenant/my-profile', 'my details'],
   ['PUT /tenant/my-profile', 'edit my details'],

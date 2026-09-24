@@ -72,11 +72,10 @@ before the redesign started.
 
 ### `views/InquireView.vue`
 
-3 call(s), **1 of them write**.
+2 call(s), **1 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
-| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
 | reads | `GET /public/rooms` | the public unit catalogue |
 | **writes** | `POST /public/inquiries` | a prospect sends an enquiry |
 
@@ -114,7 +113,7 @@ before the redesign started.
 
 ### `views/TenantOverviewView.vue`
 
-5 call(s), **0 of them write**.
+6 call(s), **0 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
@@ -123,15 +122,17 @@ before the redesign started.
 | reads | `GET /tenant/my-income-records` | my receipts |
 | reads | `GET /tenant/my-payments` | my payments |
 | reads | `GET /tenant/my-rooms` | my unit |
+| reads | `GET /tenant/my-standing` | whether my records cover today, and which periods are owed |
 
 ### `views/TenantPaymentsView.vue`
 
-3 call(s), **1 of them write**.
+4 call(s), **1 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | reads | `GET /tenant/my-bills` | my bills |
 | reads | `GET /tenant/my-payments` | my payments |
+| reads | `GET /tenant/my-standing` | whether my records cover today, and which periods are owed |
 | **writes** | `POST /tenant/payments/adyen/verify-session` | confirm the gateway session on return |
 
 ### `views/TenantProfileView.vue`
@@ -227,4 +228,4 @@ before the redesign started.
 
 ---
 
-**20 files make 62 distinct calls, 30 of which write.** Generated 2026-09-22.
+**20 files make 63 distinct calls, 30 of which write.** Generated 2026-09-24.
