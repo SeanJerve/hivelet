@@ -227,6 +227,67 @@ async function pendingOnBill(billId: string): Promise<number> {
  * paths that must agree; a second copy would have been the same defect waiting
  * to happen again.
  */
+/**
+ * A checkout opened on a bill in the last 15 minutes may already be paid.
+ *
+ * `refuseIfPaymentPending` below only sees a payment once Adyen's webhook has
+ * written it. Before that there was nothing on record, so when the webhook was
+ * slow and the Drop-in reported anything but "completed", the resident was told
+ * nothing was recorded, paid again, and both payments were recorded (2026-09-24
+ * Adyen audit, reproduced). Migration 051 keeps the moment a checkout opened on
+ * the bill itself - not in memory, because the API is headed for serverless
+ * hosting where each request may be a different instance.
+ *
+ * One conditional UPDATE is the claim, so two taps at once cannot both win.
+ * Before 051 is applied the column does not exist; the guard then logs and
+ * steps aside rather than taking checkout down with it.
+ */
+const CHECKOUT_HOLD_MS = 15 * 60 * 1000;
+let warnedCheckoutColumnMissing = false;
+
+function checkoutColumnMissing(err: { code?: string; message?: string }): boolean {
+  return err.code === '42703' || err.code === 'PGRST204' || String(err.message ?? '').includes('checkout_opened_at');
+}
+
+async function claimCheckout(billId: string): Promise<void> {
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - CHECKOUT_HOLD_MS).toISOString();
+  const { data, error } = await db
+    .from('bills')
+    .update({ checkout_opened_at: now.toISOString() })
+    .eq('id', billId)
+    .or(`checkout_opened_at.is.null,checkout_opened_at.lt."${cutoff}"`)
+    .select('id');
+
+  if (error) {
+    if (checkoutColumnMissing(error)) {
+      if (!warnedCheckoutColumnMissing) {
+        console.warn('[checkout] bills.checkout_opened_at is missing - apply migration 051. Checkout proceeds without the in-flight guard.');
+        warnedCheckoutColumnMissing = true;
+      }
+      return;
+    }
+    throw ApiError.internal(error.message);
+  }
+  if ((data?.length ?? 0) > 0) return;
+
+  const { data: held } = await db.from('bills').select('checkout_opened_at').eq('id', billId).maybeSingle();
+  const openedAt = held?.checkout_opened_at ? new Date(held.checkout_opened_at) : now;
+  const retryAt = new Date(openedAt.getTime() + CHECKOUT_HOLD_MS)
+    .toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Manila' });
+  throw ApiError.conflict(
+    'A GCash payment for this bill was opened a few minutes ago. If you paid, it will show ' +
+    'here once GCash confirms it, usually within a few minutes, and you will not be charged ' +
+    `again. If you closed it without paying, you can try again after ${retryAt}.`
+  );
+}
+
+async function releaseCheckout(billId: string): Promise<void> {
+  const result = await db.from('bills').update({ checkout_opened_at: null }).eq('id', billId);
+  if (result.error && checkoutColumnMissing(result.error)) return;
+  warnIfWriteFailed(result, `release of the checkout hold on bill ${billId}`);
+}
+
 async function refuseIfPaymentPending(billId: string): Promise<void> {
   const alreadySent = await pendingOnBill(billId);
   if (alreadySent > 0) {
@@ -968,14 +1029,21 @@ router.post(
     warnIfWriteFailed(billSummaryResult, `checkout bill summary for ${targetBillId}`);
     const billSummary = billSummaryResult.data;
 
-    // Initialize Adyen checkout session (Hybrid: live or mock sandbox)
-    const sessionRes = await adyenService.createCheckoutSession(
-      targetBillId,
-      req.user!.profileId,
-      billTotalAmount,
-      returnUrl,
-      req.user!.email
-    );
+    // Claimed before the session exists, released if it never does.
+    await claimCheckout(targetBillId);
+    let sessionRes: Awaited<ReturnType<typeof adyenService.createCheckoutSession>>;
+    try {
+      sessionRes = await adyenService.createCheckoutSession(
+        targetBillId,
+        req.user!.profileId,
+        billTotalAmount,
+        returnUrl,
+        req.user!.email
+      );
+    } catch (err) {
+      await releaseCheckout(targetBillId);
+      throw err;
+    }
 
     // Create audit entry for checkout initiation
     await auditFromRequest(req, {
