@@ -38,11 +38,12 @@
  *
  * WHAT IT DELIBERATELY DOES NOT SAY
  * ---------------------------------
- * No retention period, no named data protection officer, no NPC registration, no email address
- * for requests, and no location for the database. None is on record anywhere in this project,
- * and each is Mrs. Da Silva's (or Sean's) to supply: CLIENT_MEETING_QUESTIONS.md section 3c and
- * BLOCKED_FOR_SEAN.md B-60. Where a reader would look for one, the page says plainly that it is
- * not set and sends them to her, rather than implying a policy exists.
+ * No retention period, no named data protection officer, no NPC registration, and no email
+ * address for requests. None is on record anywhere in this project, and each is Mrs. Da Silva's
+ * (or Sean's) to supply: CLIENT_MEETING_QUESTIONS.md section 3c. Where a reader would look for
+ * one, the page says plainly that it is not set and sends them to her, rather than implying a
+ * policy exists. The database's location was in this list until 2026-09-24 (B-60); it is now
+ * stated, confirmed on the Supabase dashboard, with a note at the Supabase bullet.
  *
  * The lawful-basis section cites RA 10173 Section 12. That is a reading of the Act against what
  * the system does, for her to confirm with the rest of the page, not a fact the code proves.
@@ -206,9 +207,18 @@ const sections = Object.values(S);
           sends back whether the payment went through, the amount, and its own reference number.
           Adyen and GCash handle the payment itself under their own terms.
         </li>
+        <!--
+          The region (B-60): AWS ap-northeast-2, Seoul. First inferred from DNS
+          on 2026-09-24 (the database host resolves into 2406:da12::/36, which
+          AWS's ip-ranges.json lists as ap-northeast-2), then confirmed by Sean
+          on the Supabase dashboard (Project Settings > General) the same day.
+          If the project ever moves, this sentence moves with it. The API host's
+          region belongs here too once it is chosen.
+        -->
         <li>
           <strong>Supabase</strong>, which hosts Hivelet's database. Everything described on this
-          page is stored there.
+          page is stored there. Those records are kept on servers in Seoul, South Korea, which is
+          outside the Philippines.
         </li>
         <li>
           <strong>Google Fonts.</strong> The site's typefaces are loaded from Google's servers, so

@@ -2651,6 +2651,11 @@ these three indistinguishable from the real residents.*
 > Settings → General before the sentence goes public. Production hosting is still undecided
 > (`DEPLOYMENT_PLAN.md` § 1), and the API host's region belongs in the same bullet once chosen.
 
+> **Done, 2026-09-24 (frontend).** Sean confirmed the region on the Supabase dashboard the same
+> day (ap-northeast-2, Seoul). `/privacy`, "Who else receives it", Supabase bullet now says the
+> records are kept on servers in Seoul, South Korea, outside the Philippines. **Still open:** the
+> API host's region belongs in the same bullet once it is chosen (the frontend goes on Vercel).
+
 ### B-61 — unfixed findings from the 2026-09-24 frontend hardening pass
 
 - **Blocked on:** session time. Five agents found these on 2026-09-24 in a harness that runs the
