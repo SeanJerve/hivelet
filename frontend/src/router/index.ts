@@ -198,13 +198,18 @@ router.beforeEach(async (to) => {
     }
   }
 
-  // If user is logged in as Admin, lock them strictly to Admin workspace
+  // A signed-in administrator is kept in the admin workspace, except for the
+  // website itself when she ASKS for it - "Visit the website" in the workspace
+  // (2026-09-24). It used to bounce her from /public and /category to the
+  // dashboard, so she could never see what visitors see. `redirectedFrom`
+  // separates a real visit from arriving there by redirect: `/` and the
+  // catch-all both redirect to /public, and those still land on her dashboard.
   if (isAuthenticated.value && currentRole.value === 'admin') {
+    const website = to.path.startsWith('/public') || to.path.startsWith('/category');
     if (
-      to.path === '/' || 
-      to.path.startsWith('/public') || 
-      to.path.startsWith('/category') || 
-      to.path.startsWith('/tenant')
+      to.path === '/' ||
+      to.path.startsWith('/tenant') ||
+      (website && to.redirectedFrom)
     ) {
       return '/admin/overview';
     }

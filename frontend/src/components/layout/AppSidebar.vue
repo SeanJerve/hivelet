@@ -30,7 +30,8 @@ import {
   Home,
   CreditCard,
   UserCheck,
-  ShieldCheck
+  ShieldCheck,
+  Globe
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -299,6 +300,18 @@ onBeforeUnmount(() => {
           </Transition>
         </router-link>
       </nav>
+
+      <!-- The way back to the public site from inside the workspace. Below the
+           section nav and quieter than it: it leaves the workspace. -->
+      <div class="mt-4 border-t border-line pt-4">
+        <router-link
+          to="/public"
+          class="press flex min-h-11 items-center gap-3 rounded-full px-4 text-sm font-medium text-ink-soft hover:bg-tile hover:text-ink"
+        >
+          <Globe class="size-4 shrink-0 text-ink-faint" aria-hidden="true" />
+          <span>Visit the website</span>
+        </router-link>
+      </div>
     </aside>
 
     <!--
@@ -409,6 +422,15 @@ onBeforeUnmount(() => {
                     </Transition>
                   </router-link>
                 </nav>
+
+                <router-link
+                  to="/public"
+                  @click="closeMobileNav"
+                  class="press mt-3 flex min-h-11 items-center gap-3 rounded-full border-t border-line px-4 pt-3 text-sm font-medium text-ink-soft hover:bg-canvas hover:text-ink"
+                >
+                  <Globe class="size-4 shrink-0 text-ink-faint" aria-hidden="true" />
+                  <span>Visit the website</span>
+                </router-link>
               </div>
             </div>
 

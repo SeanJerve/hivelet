@@ -45,7 +45,7 @@ import {
   stopNotificationsHeartbeat
 } from '@/lib/notificationsStore';
 import NotificationPopover from './NotificationPopover.vue';
-import { Menu, LogOut, LogIn, User, Bell, ChevronDown, Lock } from 'lucide-vue-next';
+import { Menu, LogOut, LogIn, User, Bell, ChevronDown, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 
 const route = useRoute();
@@ -516,6 +516,30 @@ onUnmounted(() => {
                   >
                     <User class="size-4 text-ink-soft" aria-hidden="true" />
                     <span>My details</span>
+                  </router-link>
+
+                  <!-- Signed in, there was no way back to the public site short of
+                       editing the address bar (asked for 2026-09-24). Same app, so a
+                       router link; the session stays signed in. -->
+                  <router-link
+                    v-if="hasSidebar"
+                    to="/public"
+                    @click="isProfilePopoverOpen = false"
+                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
+                  >
+                    <Globe class="size-4 text-ink-soft" aria-hidden="true" />
+                    <span>Visit the website</span>
+                  </router-link>
+                  <!-- And the way back in: the wordmark already goes there, but
+                       nothing said so. -->
+                  <router-link
+                    v-else
+                    :to="brandRoute"
+                    @click="isProfilePopoverOpen = false"
+                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
+                  >
+                    <LayoutDashboard class="size-4 text-ink-soft" aria-hidden="true" />
+                    <span>Back to my dashboard</span>
                   </router-link>
 
                   <!--
