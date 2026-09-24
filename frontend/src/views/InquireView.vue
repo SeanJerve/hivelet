@@ -15,13 +15,16 @@
  * than not asking. The fields below are exactly the four the endpoint accepts.
  * Adding the others is a schema change, not a design change.
  */
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { Loader2, ArrowLeft } from 'lucide-vue-next';
-import { showToast, LANDLADY } from '@/lib/systemState';
+import { ref, reactive, nextTick } from 'vue';
+import { Loader2, ArrowLeft, AlertCircle } from 'lucide-vue-next';
+import { LANDLADY } from '@/lib/systemState';
 import { api } from '@/lib/api';
-
-const router = useRouter();
+import {
+  validateInquiry,
+  serverFieldErrors,
+  inquiryFailureMessage,
+  type InquiryErrors,
+} from '@/components/public/inquiryRules';
 
 const inquiryName = ref('');
 const inquiryEmail = ref('');
@@ -29,68 +32,68 @@ const inquiryPhone = ref('');
 const inquiryMsg = ref('');
 const isSubmitting = ref(false);
 
+/**
+ * WHAT IS WRONG IS SAID UNDER THE FIELD IT IS ABOUT, AND FOCUS GOES THERE.
+ *
+ * Every rule used to answer with a toast in the corner of the screen, one rule
+ * at a time, with the cursor left wherever it was - and the three `required`
+ * fields answered first with the browser's own bubble instead, so one form
+ * spoke in two voices. On a phone the toast sat over the top of the page while
+ * the field it meant was under the keyboard. `novalidate` hands every rule to
+ * `validateInquiry`, each field carries its own note (`aria-describedby`,
+ * `aria-invalid`), and the first field with a note takes focus.
+ */
+const errors = reactive<InquiryErrors>({});
+const formError = ref<string | null>(null);
+const formRef = ref<HTMLFormElement | null>(null);
+
+function setErrors(next: InquiryErrors) {
+  for (const key of Object.keys(errors) as (keyof InquiryErrors)[]) delete errors[key];
+  Object.assign(errors, next);
+}
+
+async function focusFirstInvalid() {
+  await nextTick();
+  formRef.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+}
+
+/**
+ * What was sent, kept for the confirmation after the fields are cleared - so it
+ * can say which number and address she will reply to.
+ */
+const sentTo = ref<{ phone: string; email: string } | null>(null);
+const sentHeading = ref<HTMLElement | null>(null);
+
+async function sendAnother() {
+  sentTo.value = null;
+  await nextTick();
+  document.getElementById('iq-name')?.focus();
+}
+
 async function submitInquiry() {
   // Submit disables on `isSubmitting`, but Enter inside any field here submits
   // the form directly - a second Enter before Vue's next render still reaches
   // here with the button not yet visibly disabled, and would file the same
   // enquiry twice in the landlady's portal.
   if (isSubmitting.value) return;
+  formError.value = null;
   // `inquiries.prospect_email` is NOT NULL in the database, so the form asks for
   // an address rather than inventing one. It previously sent
   // 'prospect@hivelet.ph' whenever the field was blank, which put an address the
   // landlady cannot reply to on an inquiry she is expected to answer.
-  /**
-   * EVERY RULE THE ENDPOINT HAS, ASKED HERE FIRST.
-   *
-   * This checked three fields for emptiness and the email for an `@`. The
-   * endpoint's schema is stricter on all five, and the message field was not
-   * checked at all - it carries no `required` on the input and nothing here
-   * looked at it, while `public.ts` requires `message: z.string().min(5)`.
-   *
-   * So a prospect who left the question blank, or typed "hi", got the toast
-   * "Inquiry Submission Failed: Invalid inquiry payload." - which names no
-   * field, suggests nothing to do, and reads like the site is broken. This is
-   * the PUBLIC page. It is the first thing a prospective resident touches, and
-   * the one screen where a dead end costs the owner a tenancy.
-   *
-   * Mirrored from `inquirySchema` in backend/src/routes/public.ts:
-   *   prospectName   min 2,  max 120
-   *   prospectEmail  a valid address
-   *   prospectPhone  min 7,  max 30
-   *   message        min 5,  max 2000
-   * The server still enforces them - this only means she never has to.
-   */
-  const name = inquiryName.value.trim();
-  const phone = inquiryPhone.value.trim();
-  const email = inquiryEmail.value.trim();
-  const message = inquiryMsg.value.trim();
-
-  if (!name || !phone || !email) {
-    showToast('error', 'Required Fields', 'Please provide your full name, contact number and email address.');
-    return;
-  }
-  if (name.length < 2 || name.length > 120) {
-    showToast('error', 'Check your name',
-      'Please give your full name, between 2 and 120 characters.');
-    return;
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    showToast('error', 'Check your email', 'That does not look like an email address.');
-    return;
-  }
-  if (phone.length < 7 || phone.length > 30) {
-    showToast('error', 'Check your contact number',
-      'Please give a contact number she can reach you on - at least 7 characters.');
-    return;
-  }
-  if (message.length < 5) {
-    showToast('error', 'Tell her what you would like to ask',
-      'Please write your question - a few words is enough. It is what she reads first.');
-    return;
-  }
-  if (message.length > 2000) {
-    showToast('error', 'That message is too long',
-      'Please keep your question under 2000 characters.');
+  //
+  // The rules themselves, and why they live in one file shared with the
+  // category page's dialog, are in `components/public/inquiryRules.ts`.
+  setErrors(
+    validateInquiry({
+      name: inquiryName.value,
+      email: inquiryEmail.value,
+      phone: inquiryPhone.value,
+      message: inquiryMsg.value,
+    })
+  );
+  if (Object.keys(errors).length) {
+    await focusFirstInvalid();
     return;
   }
 
@@ -123,9 +126,10 @@ async function submitInquiry() {
     const defaultRoom = available[0] ?? anyNotReserved ?? null;
 
     if (!defaultRoom) {
-      showToast('error', 'Nothing is open for enquiries right now',
-        'Every unit is either taken or reserved at the moment. Please try again in a few days, ' +
-        'or message Mrs Fe directly.');
+      formError.value =
+        'Your message was not sent: every unit is taken or reserved at the moment, so none ' +
+        `is open for enquiries. Please try again in a few days, or ring Mrs. ${LANDLADY.name} ` +
+        `on ${LANDLADY.phone}.`;
       return;
     }
 
@@ -139,16 +143,30 @@ async function submitInquiry() {
       message: inquiryMsg.value.trim(),
     }, false);
 
-    // The system saves the inquiry for the landlady to read in her portal. It
-    // sends no email or SMS, so "sent to Mrs. Fe Galang Da Silva" claimed a
-    // delivery channel that does not exist.
-    showToast('success', 'Inquiry received', 'Your message has been saved and will reach Mrs. Fe Galang Da Silva in her portal.');
+    /**
+     * A confirmation that stays, in place of the form, rather than a toast.
+     *
+     * The toast was the only sign the message had gone, and it left in a few
+     * seconds - above a form that had just emptied itself, which reads the same
+     * as a form that lost what you typed. What it said was honest (the system
+     * saves the enquiry for her portal and sends no email or SMS, so "sent to
+     * Mrs. Fe Galang Da Silva" claimed a channel that does not exist); what it
+     * did not say is what happens next. The panel says who reads it, how she
+     * replies (the privacy page's own wording), and to which number and address.
+     */
+    sentTo.value = { phone: inquiryPhone.value.trim(), email: inquiryEmail.value.trim() };
     inquiryName.value = '';
     inquiryPhone.value = '';
     inquiryEmail.value = '';
     inquiryMsg.value = '';
-  } catch (err: any) {
-    showToast('error', 'Inquiry Submission Failed', err.message || 'Could not save inquiry to server database.');
+    await nextTick();
+    sentHeading.value?.focus();
+  } catch (err: unknown) {
+    // The fields are kept, so pressing the button again resends exactly this.
+    const fieldErrors = serverFieldErrors(err);
+    setErrors(fieldErrors);
+    formError.value = inquiryFailureMessage(err);
+    if (Object.keys(fieldErrors).length) await focusFirstInvalid();
   } finally {
     isSubmitting.value = false;
   }
@@ -184,10 +202,16 @@ async function submitInquiry() {
           same reason: two stacked lines do not fit a 64px bar. It may wrap on
           a 320px phone, which the bar's height still holds.
         -->
+        <!--
+          `inline-flex min-h-11 items-center` on both links: they measured 70x28
+          and 99x28 at 375px. The bar centres them, so a 44px box around the
+          same line of text leaves the text exactly where it was (x=56,
+          y=18-46 at 1366) and only the part that answers a thumb grows.
+        -->
         <div class="flex h-16 items-center justify-between gap-6">
           <RouterLink
             to="/public"
-            class="press font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+            class="press inline-flex min-h-11 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
           >
             Hivelet
           </RouterLink>
@@ -196,7 +220,7 @@ async function submitInquiry() {
             <span class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</span>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press inline-block py-1 text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
@@ -235,10 +259,56 @@ async function submitInquiry() {
           form became four identical rules with no way to tell which was the
           phone and which was the email - worst for the person coming back to
           check before sending, which is exactly when it matters. The asterisks
-          went with them: every field here but the last is required, and the
-          three that are carry `required`.
+          went with them: every field here is required, the question too (the
+          endpoint wants at least five characters), and each carries `required`
+          for assistive technology. `novalidate` keeps the browser's own bubble
+          out of it - see `errors` in the script.
         -->
-        <form class="mt-8 lg:mt-6 max-w-2xl" @submit.prevent="submitInquiry">
+        <!--
+          The confirmation takes the form's place once the message is saved.
+          Focus moves to its heading, so a screen reader reads the outcome and
+          a keyboard continues from here rather than from the top of the page.
+        -->
+        <div v-if="sentTo" class="ws-reveal mt-8 lg:mt-6 max-w-2xl">
+          <h2
+            ref="sentHeading"
+            tabindex="-1"
+            class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em] outline-none"
+          >
+            Your message is saved
+          </h2>
+          <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
+            Mrs. {{ LANDLADY.name }} reads every enquiry herself, and replies by phone or message
+            to <span class="text-ink break-all">{{ sentTo.phone }}</span> or
+            <span class="text-ink break-all">{{ sentTo.email }}</span>. No automatic confirmation
+            email or text is sent.
+          </p>
+          <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
+            If it is urgent, ring her on
+            <a
+              :href="`tel:${LANDLADY.phone}`"
+              class="press text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            >{{ LANDLADY.phone }}</a>.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center gap-6">
+            <RouterLink to="/public" class="pill-btn-brand px-8">Back to the property</RouterLink>
+            <button
+              type="button"
+              class="press inline-flex min-h-11 items-center text-xs text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors cursor-pointer"
+              @click="sendAnother"
+            >
+              Send another message
+            </button>
+          </div>
+        </div>
+
+        <form
+          v-else
+          ref="formRef"
+          novalidate
+          class="mt-8 lg:mt-6 max-w-2xl"
+          @submit.prevent="submitInquiry"
+        >
           <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
             <div class="lg:col-start-1">
               <label
@@ -250,9 +320,16 @@ async function submitInquiry() {
                 id="iq-name"
                 v-model="inquiryName"
                 type="text"
+                autocomplete="name"
                 required
-                class="ws-input mt-2"
+                :aria-invalid="errors.name ? 'true' : undefined"
+                :aria-describedby="errors.name ? 'iq-name-error' : undefined"
+                :class="['ws-input mt-2', errors.name && 'border-overdue']"
+                @input="delete errors.name"
               />
+              <p v-if="errors.name" id="iq-name-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+                {{ errors.name }}
+              </p>
             </div>
             <div class="lg:col-start-1">
               <label
@@ -264,9 +341,16 @@ async function submitInquiry() {
                 id="iq-email"
                 v-model="inquiryEmail"
                 type="email"
+                autocomplete="email"
                 required
-                class="ws-input mt-2"
+                :aria-invalid="errors.email ? 'true' : undefined"
+                :aria-describedby="errors.email ? 'iq-email-error' : undefined"
+                :class="['ws-input mt-2', errors.email && 'border-overdue']"
+                @input="delete errors.email"
               />
+              <p v-if="errors.email" id="iq-email-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+                {{ errors.email }}
+              </p>
             </div>
             <div class="lg:col-start-1">
               <label
@@ -278,9 +362,16 @@ async function submitInquiry() {
                 id="iq-phone"
                 v-model="inquiryPhone"
                 type="tel"
+                autocomplete="tel"
                 required
-                class="ws-input mt-2"
+                :aria-invalid="errors.phone ? 'true' : undefined"
+                :aria-describedby="errors.phone ? 'iq-phone-error' : undefined"
+                :class="['ws-input mt-2', errors.phone && 'border-overdue']"
+                @input="delete errors.phone"
               />
+              <p v-if="errors.phone" id="iq-phone-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+                {{ errors.phone }}
+              </p>
             </div>
             <div class="sm:col-span-2 lg:col-span-1 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:flex lg:flex-col">
               <label
@@ -302,9 +393,16 @@ async function submitInquiry() {
                 id="iq-msg"
                 v-model="inquiryMsg"
                 rows="3"
+                required
                 placeholder="Tell her what you'd like to know - move-in timing, the unit, anything else."
-                class="ws-textarea w-full mt-2 lg:flex-1"
+                :aria-invalid="errors.message ? 'true' : undefined"
+                :aria-describedby="errors.message ? 'iq-msg-error' : undefined"
+                :class="['ws-textarea w-full mt-2 lg:flex-1', errors.message && 'border-overdue']"
+                @input="delete errors.message"
               ></textarea>
+              <p v-if="errors.message" id="iq-msg-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+                {{ errors.message }}
+              </p>
             </div>
           </div>
 
@@ -322,12 +420,27 @@ async function submitInquiry() {
             for what happens to this information.
           </p>
 
+          <!--
+            A failed send says so here, beside the button that retries it, and
+            stays until the next attempt. It used to be a toast that left after
+            a few seconds, worded for a developer ("Check that the API is
+            running") or not at all ("Internal server error.").
+          -->
+          <div
+            v-if="formError"
+            role="alert"
+            class="ws-reveal mt-6 flex max-w-xl items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
+          >
+            <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            {{ formError }}
+          </div>
+
           <button
             type="submit"
             :disabled="isSubmitting"
             class="pill-btn-brand mt-6 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
+            <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
             <span>{{ isSubmitting ? 'Sending…' : 'Register your interest' }}</span>
           </button>
         </form>

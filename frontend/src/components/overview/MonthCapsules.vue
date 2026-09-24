@@ -186,16 +186,18 @@ const current = computed(() => props.months[selected.value]);
  * one, so a page that shows this chart next to OccupancyArc or a RecordTable
  * reads as one system rather than three different timings.
  *
- * `--ease-bounce` rather than `--ease-out`: a bar reads as a measured figure
- * arriving, not a control answering a click, which is exactly the case the
- * token's own comment in index.css carves out as the deliberate exception to
- * "no bounce in most UI". `scaleMax` (above) rounds the chart's scale up past
- * the tallest real value on purpose, which is what leaves the headroom this
- * curve's overshoot needs - a bar animating to a height that already reaches
- * the top of its track would clip the bounce off rather than show it.
+ * `--ease-out` at 0.3s. This was `--ease-bounce` at 0.5s, argued as the
+ * index.css exception for "a measured figure arriving", and overturned in the
+ * 2026-09-24 motion review for two reasons. The overshoot is real: for a moment
+ * every bar drew taller than its value, so a money chart briefly showed a wrong
+ * figure. And the admin overview is opened many times a day, where half a
+ * second is over the 300ms budget for routine UI. The bar still rises from its
+ * baseline, which is the one place a zero-scale start is correct. `scaleMax`
+ * (above) still rounds the scale up past the tallest value, which now only
+ * gives the tallest bar room below the top tick.
  */
 .capsule-fill {
-  animation: capsule-fill 0.5s var(--ease-bounce) backwards;
+  animation: capsule-fill 0.3s var(--ease-out) backwards;
 }
 @keyframes capsule-fill {
   from {

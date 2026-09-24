@@ -493,7 +493,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             <span class="flex items-baseline gap-2 text-base font-medium text-ink">
               {{ c.title }}
               <ArrowRight
-                class="size-4 shrink-0 text-ink-faint transition-transform duration-300 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-1 group-hover:text-brand"
+                class="size-4 shrink-0 text-ink-faint transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-1 group-hover:text-brand"
                 aria-hidden="true"
               />
             </span>
@@ -711,7 +711,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                           />
                           <span
                             v-if="planFor(u.unitCode)!.x !== null"
-                            class="absolute rounded-full bg-brand px-2 py-0.5 text-[0.65rem] font-semibold text-on-brand shadow-lift"
+                            class="absolute rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-on-brand shadow-lift"
                             :style="{
                               left: planFor(u.unitCode)!.x + '%',
                               top: planFor(u.unitCode)!.y + '%',
@@ -816,7 +816,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                   />
                   <span
                     v-if="planFor(u.unitCode)!.x !== null"
-                    class="absolute rounded-full bg-brand px-2 py-0.5 text-[0.65rem] font-semibold text-on-brand shadow-lift"
+                    class="absolute rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-on-brand shadow-lift"
                     :style="{
                       left: planFor(u.unitCode)!.x + '%',
                       top: planFor(u.unitCode)!.y + '%',
@@ -861,7 +861,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             <span class="grid size-8 place-items-center shrink-0">
               <ChevronDown
                 :class="[
-                  'size-4 text-brand group-hover:text-brand-strong transition-all duration-200 ease-[var(--ease-out)]',
+                  'size-4 text-brand group-hover:text-brand-strong transition-[rotate,color] duration-200 ease-[var(--ease-out)]',
                   allUnitsShown ? 'rotate-180' : ''
                 ]"
               />

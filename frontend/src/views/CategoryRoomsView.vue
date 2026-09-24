@@ -58,18 +58,25 @@
  *              enquiry - Escape, focus containment and background inertness
  *              from the platform rather than reimplemented.
  */
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { peso } from '@/lib/canonicalUnits';
 import { CATEGORIES, resolveSlug, type CategoryKey } from '@/lib/unitCategories';
 import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
-import { showToast, LANDLADY, floorLabelFor, buildingNameFor } from '@/lib/systemState';
+import { LANDLADY, floorLabelFor, buildingNameFor } from '@/lib/systemState';
 import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
 import { api } from '@/lib/api';
 import SkeletonDetail from '@/components/ui/SkeletonDetail.vue';
-import { ArrowRight, Loader2, Send, X } from 'lucide-vue-next';
+import {
+  validateInquiry,
+  serverFieldErrors,
+  inquiryFailureMessage,
+  type InquiryErrors,
+} from '@/components/public/inquiryRules';
+import { AlertCircle, ArrowRight, Loader2, Send, X } from 'lucide-vue-next';
 
 const route = useRoute();
+const router = useRouter();
 
 const isLoading = ref(true);
 /** Set when `/public/rooms` could not be read. Never replaced with seeded units. */
@@ -215,6 +222,23 @@ function syncFromRoute() {
   const param = (route.params.categorySlug as string) || (route.query.category as string);
   selectedCategoryKey.value = resolveSlug(param);
 
+  /**
+   * One address per kind. `resolveSlug` forgives `1br`, `penthouse` and a
+   * typo, and falls back to Studio for anything it does not know - but the
+   * address bar went on saying `/category/garbage`, the tab read "Garbage
+   * units", and a bookmark kept the wrong word. The address is corrected in
+   * place (`replace`, so Back does not return to it); the page shown is the
+   * same one it already was.
+   */
+  const canonical = CATEGORIES.find((c) => c.key === selectedCategoryKey.value)?.slug;
+  if (route.params.categorySlug && canonical && route.params.categorySlug !== canonical) {
+    router.replace({
+      name: route.name ?? 'CategoryRooms',
+      params: { categorySlug: canonical },
+      query: route.query,
+    });
+  }
+
   const units = categoryUnits.value;
   const stillHere = units.some(
     (u) => u.room_number.toLowerCase() === selectedUnitCode.value.toLowerCase()
@@ -235,8 +259,20 @@ async function loadRates() {
   }
 }
 
+/**
+ * The kind is read from the address before anything is fetched, and the two
+ * reads run side by side.
+ *
+ * `syncFromRoute()` used to run only after both answered, and `/public/rates`
+ * was awaited before `/public/rooms` was even asked. So on a slow connection a
+ * visitor who chose "Three-bedroom" watched a page headed "Studio", with the
+ * studio blurb, for the length of two round trips back to back - measured with
+ * each read held for 3s: still "Studio" at 3.5s. The heading needs no data.
+ */
+syncFromRoute();
+
 onMounted(async () => {
-  await loadRates();
+  const rates = loadRates();
   try {
     const data = await api.get<DbRoom[]>('/public/rooms', false);
     publicRooms.value = Array.isArray(data) ? data : [];
@@ -247,6 +283,8 @@ onMounted(async () => {
     publicRooms.value = [];
     loadFailed.value = true;
   } finally {
+    // The water line reads the rates, so the unit panel waits for both.
+    await rates;
     isLoading.value = false;
   }
   syncFromRoute();
@@ -287,8 +325,39 @@ const inquiryPhone = ref('');
 const inquiryEmail = ref('');
 const inquiryMsg = ref('Good day po! Interested ako sa unit. Pwede po bang mag-viewing?');
 
-function openInquiry(unitCode: string) {
+/**
+ * Field notes, a form-level failure, and a confirmation, as on `/inquire` -
+ * the reasoning is on `errors` in `InquireView.vue`, and the rules themselves
+ * in `components/public/inquiryRules.ts`. This dialog checked only that three
+ * fields were not blank, so a visitor who cleared the message or typed
+ * `juan@gmail` was sent to the server and handed back its own words, "Invalid
+ * inquiry payload.", in a toast.
+ */
+const inquiryForm = ref<HTMLFormElement | null>(null);
+const inquiryErrors = reactive<InquiryErrors>({});
+const inquiryFormError = ref<string | null>(null);
+const inquirySentTo = ref<{ phone: string; email: string } | null>(null);
+const inquirySentHeading = ref<HTMLElement | null>(null);
+
+function setInquiryErrors(next: InquiryErrors) {
+  for (const key of Object.keys(inquiryErrors) as (keyof InquiryErrors)[]) delete inquiryErrors[key];
+  Object.assign(inquiryErrors, next);
+}
+
+async function focusFirstInvalidInquiryField() {
+  await nextTick();
+  inquiryForm.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+}
+
+async function openInquiry(unitCode: string) {
   inquiryUnit.value = unitCode || activeUnit.value?.room_number || '';
+  inquirySentTo.value = null;
+  inquiryFormError.value = null;
+  setInquiryErrors({});
+  // The form has to be back in the dialog BEFORE it opens: `showModal()` places
+  // focus as it opens, on `autofocus` - which a confirmation still showing from
+  // the last send would not have.
+  await nextTick();
   inquiryDialog.value?.showModal();
 }
 
@@ -307,16 +376,30 @@ function closeInquiry() {
  * landlady had their message when she did not, and would never know to follow up.
  */
 async function submitInquiry() {
+  // Enter in any field submits directly, and a second Enter can land before
+  // the button's `disabled` has rendered. Same guard as `/inquire`.
+  if (isSubmitting.value) return;
+  inquiryFormError.value = null;
+
   // `inquiries.prospect_email` is NOT NULL, so ask rather than invent.
-  if (!inquiryName.value.trim() || !inquiryPhone.value.trim() || !inquiryEmail.value.trim()) {
-    showToast('error', 'Something is missing', 'Please give your name, phone number and email.');
+  setInquiryErrors(
+    validateInquiry({
+      name: inquiryName.value,
+      email: inquiryEmail.value,
+      phone: inquiryPhone.value,
+      message: inquiryMsg.value,
+    })
+  );
+  if (Object.keys(inquiryErrors).length) {
+    await focusFirstInvalidInquiryField();
     return;
   }
 
   // A unit is required: `inquiries.room_id` is NOT NULL. Checked before the lookup so an
   // empty selection says what to do, rather than reporting an unfindable blank unit.
   if (!inquiryUnit.value.trim()) {
-    showToast('error', 'Choose a unit', 'Please pick which unit you are asking about.');
+    inquiryFormError.value =
+      'Your message was not sent. Close this and choose the unit you are asking about.';
     return;
   }
 
@@ -325,11 +408,8 @@ async function submitInquiry() {
   );
 
   if (!matchedRoom) {
-    showToast(
-      'error',
-      'That unit is not listed',
-      `Unit ${inquiryUnit.value} could not be found, so nothing was sent. Reload the page and try again.`
-    );
+    inquiryFormError.value =
+      `Unit ${inquiryUnit.value} could not be found, so nothing was sent. Reload the page and try again.`;
     return;
   }
 
@@ -347,17 +427,24 @@ async function submitInquiry() {
       false
     );
 
-    showToast('success', 'Message sent', 'Mrs. Da Silva has your message.');
-    closeInquiry();
+    /**
+     * The dialog says what happened and what comes next, and stays open until
+     * the visitor closes it. It used to close itself and leave a toast reading
+     * "Mrs. Da Silva has your message" - a claim about her inbox, when what the
+     * system knows is that the enquiry is saved for her portal.
+     */
+    inquirySentTo.value = { phone: inquiryPhone.value.trim(), email: inquiryEmail.value.trim() };
     inquiryName.value = '';
     inquiryPhone.value = '';
     inquiryEmail.value = '';
+    await nextTick();
+    inquirySentHeading.value?.focus();
   } catch (err: unknown) {
-    showToast(
-      'error',
-      'Message not sent',
-      err instanceof Error ? err.message : 'Your message could not be delivered. Please try again.'
-    );
+    // Nothing is cleared, so Send again resends exactly this.
+    const fieldErrors = serverFieldErrors(err);
+    setInquiryErrors(fieldErrors);
+    inquiryFormError.value = inquiryFailureMessage(err);
+    if (Object.keys(fieldErrors).length) await focusFirstInvalidInquiryField();
   } finally {
     isSubmitting.value = false;
   }
@@ -380,11 +467,17 @@ async function submitInquiry() {
         someone moves from the landing page to a category (it sat in
         `pt-7 pb-6` before). `min-h`, not `h`, because the three links can
         wrap onto a second line on a 320px phone.
+
+        Every link here is `inline-flex min-h-11 items-center`: the wordmark
+        measured 70x28 and the three section links 43px tall at 375px. The
+        bar centres them, so the text stays where it was and only the target
+        grows. The links keep `items-baseline` on the row, which an inline-flex
+        box still honours through its text.
       -->
       <div class="ws-page min-h-16 flex items-center justify-between gap-6 sm:gap-10">
         <RouterLink
           to="/public"
-          class="press shrink-0 font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+          class="press inline-flex min-h-11 shrink-0 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
         >
           Hivelet
         </RouterLink>
@@ -392,21 +485,21 @@ async function submitInquiry() {
         <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-ink">
           <RouterLink
             to="/public"
-            class="press inline-block py-3 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Property
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/inquire"
-            class="press inline-block py-3 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Inquire Now
           </RouterLink>
           <span aria-hidden="true" class="pr-2">,</span>
           <RouterLink
             to="/login"
-            class="press inline-block py-3 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Sign In
           </RouterLink>
@@ -473,29 +566,41 @@ async function submitInquiry() {
       class="w-full border-t border-line"
     >
       <div class="ws-page ws-content">
-        <ul class="flex flex-wrap items-baseline gap-x-8 gap-y-3 py-5 sm:gap-x-12">
+        <ul class="flex flex-wrap items-baseline gap-x-8 gap-y-1 py-3 sm:gap-x-12">
           <li v-for="c in CATEGORIES" :key="c.key">
             <!--
-              `inline` here, not `inline-flex`. A flex container draws its
-              underline per child rather than across the gap between them, so
-              "Studio" and its count each got their own short line with a bare
-              patch in between instead of one line under the whole label. Plain
-              inline text with a left margin on the count keeps the same
-              baseline alignment `items-baseline` gave the flex version, and
-              the underline runs continuously underneath both.
+              The underline is on an inner `inline` span, not on the link. A
+              flex container draws its underline per child rather than across
+              the gap between them, so "Studio" and its count each got their
+              own short line with a bare patch in between. Plain inline text
+              with a left margin on the count runs one line under both.
+
+              That is why the link itself used to be `inline` too, and an
+              inline box with `py-1` measured 26px tall at 375px - these four
+              are how a visitor moves between kinds on a phone. The link is
+              now an `inline-flex min-h-11` box around that span, so the target
+              is 44px and the underline is still drawn by inline text. `gap-y-1
+              py-3` instead of `gap-y-3 py-5` keeps the band the height it was
+              now that each link carries its own vertical room.
             -->
             <RouterLink
               :to="`/category/${c.slug}`"
               :aria-current="c.key === selectedCategoryKey ? 'page' : undefined"
               :class="[
-                'press inline py-1 text-sm transition-colors',
-                c.key === selectedCategoryKey
-                  ? 'text-ink underline underline-offset-4 decoration-1 decoration-ink'
-                  : 'text-ink-soft hover:text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink',
+                'press group inline-flex min-h-11 items-center text-sm transition-colors',
+                c.key === selectedCategoryKey ? 'text-ink' : 'text-ink-soft hover:text-ink',
               ]"
             >
-              <span>{{ c.title }}</span>
-              <span class="ml-2 text-xs tabular-nums text-ink-faint">{{ countFor(c.key) }}</span>
+              <span
+                :class="[
+                  'underline underline-offset-4 decoration-1 transition-colors',
+                  c.key === selectedCategoryKey
+                    ? 'decoration-ink'
+                    : 'decoration-line group-hover:decoration-ink',
+                ]"
+              >
+                {{ c.title }}<span class="ml-2 text-xs tabular-nums text-ink-faint">{{ countFor(c.key) }}</span>
+              </span>
             </RouterLink>
           </li>
         </ul>
@@ -628,7 +733,7 @@ async function submitInquiry() {
                 />
                 <span
                   v-if="planFor(activeUnit.room_number)!.x !== null"
-                  class="absolute rounded-full bg-brand px-2 py-0.5 text-[0.65rem] font-semibold text-on-brand shadow-lift"
+                  class="absolute rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-on-brand shadow-lift"
                   :style="{
                     left: planFor(activeUnit.room_number)!.x + '%',
                     top: planFor(activeUnit.room_number)!.y + '%',
@@ -763,7 +868,7 @@ async function submitInquiry() {
               type="button"
               :aria-pressed="u.room_number === activeUnit.room_number"
               :class="[
-                'list-reveal-item press-plate group block w-full text-left cursor-pointer transition-opacity duration-500',
+                'list-reveal-item press-plate group block w-full text-left cursor-pointer transition-opacity duration-200 ease-[var(--ease-out)]',
                 isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
               ]"
               :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
@@ -790,7 +895,7 @@ async function submitInquiry() {
                   <span class="text-lg font-medium uppercase leading-none tracking-[-0.02em] text-ink">
                     {{ u.room_number }}
                   </span>
-                  <span class="text-[0.65rem] tracking-[0.14em] uppercase text-ink-faint">
+                  <span class="text-xs tracking-[0.14em] uppercase text-ink-soft">
                     Floor {{ u.floor }}
                   </span>
                 </span>
@@ -812,7 +917,7 @@ async function submitInquiry() {
 
                 <span
                   v-if="u.room_number === activeUnit.room_number"
-                  class="relative mt-3 block text-[0.65rem] tracking-[0.16em] uppercase text-ink"
+                  class="relative mt-3 block text-xs tracking-[0.16em] uppercase text-ink"
                 >
                   Shown above
                 </span>
@@ -835,10 +940,10 @@ async function submitInquiry() {
                 <span
                   v-else
                   aria-hidden="true"
-                  class="row-action relative mt-3 flex items-center gap-1.5 text-[0.65rem] tracking-[0.16em] uppercase text-ink-soft"
+                  class="row-action relative mt-3 flex items-center gap-1.5 text-xs tracking-[0.16em] uppercase text-ink-soft"
                 >
                   <span>See it</span>
-                  <ArrowRight class="size-3 shrink-0 transition-transform duration-500 motion-safe:group-hover:translate-x-0.5" />
+                  <ArrowRight class="size-3 shrink-0 transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-0.5" />
                 </span>
               </div>
             </button>
@@ -861,7 +966,31 @@ async function submitInquiry() {
       class="ws-dialog m-auto max-h-[calc(100dvh-2rem)] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-tile border border-line bg-tile shadow-lift p-0 font-editorial text-ink backdrop:bg-night/70"
       @keydown.esc="closeInquiry"
     >
-      <form class="relative px-6 py-10 sm:px-12 sm:py-14" @submit.prevent="submitInquiry">
+      <div v-if="inquirySentTo" class="relative px-6 py-10 sm:px-12 sm:py-14">
+        <h2
+          id="inquiry-dialog-title"
+          ref="inquirySentHeading"
+          tabindex="-1"
+          class="font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)] outline-none"
+        >
+          Your message about unit {{ inquiryUnit.toUpperCase() }} is saved
+        </h2>
+        <p class="mt-4 max-w-md text-sm text-ink-soft leading-relaxed">
+          Mrs. {{ LANDLADY.name }} reads every enquiry herself, and replies by phone or message
+          to <span class="text-ink break-all">{{ inquirySentTo.phone }}</span> or
+          <span class="text-ink break-all">{{ inquirySentTo.email }}</span>. No automatic
+          confirmation email or text is sent.
+        </p>
+        <button type="button" class="pill-btn-brand mt-10 px-5" @click="closeInquiry">Done</button>
+      </div>
+
+      <form
+        v-else
+        ref="inquiryForm"
+        novalidate
+        class="relative px-6 py-10 sm:px-12 sm:py-14"
+        @submit.prevent="submitInquiry"
+      >
         <button
           type="button"
           class="icon-btn absolute right-3 top-3"
@@ -899,12 +1028,18 @@ async function submitInquiry() {
             -->
             <input
               id="cq-name"
+              :aria-invalid="inquiryErrors.name ? 'true' : undefined"
+              :aria-describedby="inquiryErrors.name ? 'cq-name-error' : undefined"
+              @input="delete inquiryErrors.name"
               v-model="inquiryName"
               type="text"
               autofocus
               required
-              class="ws-input mt-2"
+              :class="['ws-input mt-2', inquiryErrors.name && 'border-overdue']"
             />
+            <p v-if="inquiryErrors.name" id="cq-name-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+              {{ inquiryErrors.name }}
+            </p>
           </div>
 
           <div>
@@ -913,12 +1048,18 @@ async function submitInquiry() {
             </label>
             <input
               id="cq-phone"
+              :aria-invalid="inquiryErrors.phone ? 'true' : undefined"
+              :aria-describedby="inquiryErrors.phone ? 'cq-phone-error' : undefined"
+              @input="delete inquiryErrors.phone"
               v-model="inquiryPhone"
               type="tel"
               required
               placeholder="0917-000-0000"
-              class="ws-input mt-2"
+              :class="['ws-input mt-2', inquiryErrors.phone && 'border-overdue']"
             />
+            <p v-if="inquiryErrors.phone" id="cq-phone-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+              {{ inquiryErrors.phone }}
+            </p>
           </div>
 
           <div>
@@ -927,12 +1068,18 @@ async function submitInquiry() {
             </label>
             <input
               id="cq-email"
+              :aria-invalid="inquiryErrors.email ? 'true' : undefined"
+              :aria-describedby="inquiryErrors.email ? 'cq-email-error' : undefined"
+              @input="delete inquiryErrors.email"
               v-model="inquiryEmail"
               type="email"
               required
               placeholder="you@email.com"
-              class="ws-input mt-2"
+              :class="['ws-input mt-2', inquiryErrors.email && 'border-overdue']"
             />
+            <p v-if="inquiryErrors.email" id="cq-email-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+              {{ inquiryErrors.email }}
+            </p>
           </div>
 
           <div class="sm:col-span-2">
@@ -941,11 +1088,27 @@ async function submitInquiry() {
             </label>
             <textarea
               id="cq-msg"
+              required
+              :aria-invalid="inquiryErrors.message ? 'true' : undefined"
+              :aria-describedby="inquiryErrors.message ? 'cq-msg-error' : undefined"
+              @input="delete inquiryErrors.message"
               v-model="inquiryMsg"
               rows="4"
-              class="ws-textarea mt-2"
+              :class="['ws-textarea mt-2', inquiryErrors.message && 'border-overdue']"
             ></textarea>
+            <p v-if="inquiryErrors.message" id="cq-msg-error" class="mt-1.5 text-xs leading-relaxed text-overdue">
+              {{ inquiryErrors.message }}
+            </p>
           </div>
+        </div>
+
+        <div
+          v-if="inquiryFormError"
+          role="alert"
+          class="ws-reveal mt-8 flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
+        >
+          <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {{ inquiryFormError }}
         </div>
 
         <div class="mt-10 flex flex-wrap items-center gap-6">

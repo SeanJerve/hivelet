@@ -11,6 +11,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router';
 import { LogIn, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next';
 import { login, authError, isAuthenticating, homeRouteForRole } from '@/lib/authStore';
 import { showToast, LANDLADY } from '@/lib/systemState';
+import { ApiRequestError } from '@/lib/api';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
 const router = useRouter();
@@ -33,12 +34,83 @@ const email = ref('');
 const password = ref('');
 const showPassword = ref(false);
 
-const redirectPath = computed(() => (route.query.redirect as string | undefined) ?? null);
-const deniedReason = computed(() => (route.query.reason as string | undefined) ?? null);
+/**
+ * Only a path inside this application. `//evil.example` starts with a slash and
+ * is still another origin, which `history.replaceState` refuses with a
+ * SecurityError - so a crafted link would sign someone in, toast "Signed In",
+ * and then leave them standing on this form.
+ */
+const redirectPath = computed(() => {
+  const raw = route.query.redirect;
+  return typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//') ? raw : null;
+});
+
+/**
+ * WHY THE SIGN-IN NOTICE IS WORDED HERE AND NOT READ FROM THE ADDRESS BAR.
+ *
+ * The router guard puts its sentence in `?reason=`, and this rendered that
+ * query string verbatim, in the notice style, above the form. So anybody could
+ * send a resident a real link to this real page reading
+ * `/login?reason=Your account is suspended. Ring 0917... to restore it.` and
+ * the site would print it as its own words, on the screen that asks for a
+ * password. Vue escapes it, so it is not a script injection - it is worse for
+ * being plausible.
+ *
+ * The notice is now built from the page being returned to: the same sentence
+ * the guard writes (`Please sign in to access ${label}.`), from the same
+ * `meta.label`, and only when that page genuinely needs a sign-in. `reason`
+ * is no longer read.
+ */
+const deniedReason = computed(() => {
+  if (!redirectPath.value) return null;
+  const target = router.resolve(redirectPath.value);
+  if (!target.meta.roles?.length) return null;
+  return `Please sign in to access ${target.meta.label ?? 'this section'}.`;
+});
 
 const canSubmit = computed(
   () => !isAuthenticating.value && email.value.trim().length > 3 && password.value.length > 0
 );
+
+/**
+ * The failure, in words for a resident, by error code.
+ *
+ * `authStore` stores the server's message as it comes, which is right for
+ * the lockout and the rate limit (both already name the wait) and wrong for
+ * the rest: "Invalid email or password." to someone who typed a phone number,
+ * "Cannot reach the Hivelet server. Check that the API is running." to a
+ * tenant with no signal, and "Internal server error." on a bad day. Mapped
+ * here from the code the thrown `ApiRequestError` carries; anything this does
+ * not recognise falls through to `authError`, so nothing is ever blank.
+ *
+ * The wrong-credentials sentence is one sentence for an unknown account and a
+ * wrong password alike, because the server deliberately answers them the same
+ * (`ApiError.invalidCredentials`), and this must not undo that.
+ */
+const loginFailure = ref<string | null>(null);
+
+function describeLoginFailure(err: unknown): string | null {
+  if (!(err instanceof ApiRequestError)) return null;
+  switch (err.code) {
+    case 'INVALID_CREDENTIALS':
+      return 'That email or phone number and password do not match an account. Check both and try again.';
+    case 'ACCOUNT_LOCKED':
+    case 'RATE_LIMITED':
+      return err.message;
+    case 'ACCOUNT_INACTIVE':
+      return `This account is no longer active. If you still live here, ask Mrs. ${LANDLADY.name} to look at it.`;
+    case 'VALIDATION_FAILED':
+      return 'Enter the email address or phone number on your account, and your password.';
+    case 'NETWORK_ERROR':
+      return 'You were not signed in because this page could not reach the server. Check your connection and try again.';
+  }
+  if (err.status >= 500 || err.code === 'MALFORMED_RESPONSE') {
+    return 'You were not signed in because of a problem on our side. Please try again in a moment.';
+  }
+  return null;
+}
+
+const shownError = computed(() => (authError.value ? loginFailure.value ?? authError.value : null));
 
 onMounted(() => {
   authError.value = null;
@@ -46,6 +118,7 @@ onMounted(() => {
 
 async function handleSubmit() {
   if (!canSubmit.value) return;
+  loginFailure.value = null;
 
   try {
     const user = await login(email.value.trim(), password.value);
@@ -59,8 +132,9 @@ async function handleSubmit() {
 
     // A tenant following an /admin redirect is sent to their own home instead.
     await router.replace(isAdminTarget && user.role !== 'admin' ? fallback : target);
-  } catch {
-    // Handled in authStore
+  } catch (err) {
+    // `authStore` has already set `authError`; this only rewords it.
+    loginFailure.value = describeLoginFailure(err);
   }
 }
 
@@ -86,6 +160,7 @@ if (import.meta.env.DEV) {
 
 async function handleQuickLogin(account: DemoAccount) {
   email.value = account.email;
+  loginFailure.value = null;
   // A wrong guess counts toward locking a real resident out, so never submit one.
   if (!account.password) {
     password.value = '';
@@ -123,10 +198,11 @@ async function handleQuickLogin(account: DemoAccount) {
           same reason: two stacked lines do not fit a 64px bar. It may wrap on
           a 320px phone, which the bar's height still holds.
         -->
+        <!-- 44px targets, text unmoved: see the same bar in InquireView.vue. -->
         <div class="flex h-16 items-center justify-between gap-6">
           <RouterLink
             to="/public"
-            class="press font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+            class="press inline-flex min-h-11 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
           >
             Hivelet
           </RouterLink>
@@ -135,7 +211,7 @@ async function handleQuickLogin(account: DemoAccount) {
             <span class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</span>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press inline-block py-1 text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
@@ -217,12 +293,20 @@ async function handleQuickLogin(account: DemoAccount) {
                   required
                   class="ws-input pr-12"
                 />
+                <!--
+                  A 44px button around the 36px circle that was the whole
+                  target (measured 36x36 at 375). The circle is now an inner
+                  span that carries the hover fill, so what a reader sees is
+                  unchanged; `right-0.5` puts it back 6px from the field's
+                  edge, where `right-1.5` had it. It fits the field's `pr-12`.
+                -->
                 <button
                   type="button"
-                  class="press-plate absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full hover:bg-canvas cursor-pointer"
+                  class="group press-plate absolute right-0.5 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full cursor-pointer"
                   :aria-label="showPassword ? 'Hide password' : 'Show password'"
                   @click="showPassword = !showPassword"
                 >
+                  <span class="grid size-9 place-items-center rounded-full transition-colors group-hover:bg-canvas">
                   <!-- A quick crossfade rather than a hard swap between the two
                        icon states, so toggling reads as a change of state
                        rather than a flicker. `mode="out-in"` keeps only one
@@ -247,18 +331,19 @@ async function handleQuickLogin(account: DemoAccount) {
                       aria-hidden="true"
                     />
                   </Transition>
+                  </span>
                 </button>
               </div>
             </div>
           </div>
 
           <div
-            v-if="authError"
+            v-if="shownError"
             role="alert"
             class="ws-reveal mt-6 flex items-start gap-2.5 rounded-2xl bg-overdue-soft px-4 py-3 text-sm text-overdue"
           >
             <AlertCircle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            {{ authError }}
+            {{ shownError }}
           </div>
 
           <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
