@@ -339,7 +339,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
         <div class="absolute inset-x-0 bottom-0 h-48 sm:h-64 bg-gradient-to-t from-night via-night/60 to-transparent pointer-events-none" />
       </div>
 
-      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-6">
+      <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-20 sm:pb-16 md:pb-12 lg:pb-6">
         <!--
           "Boarding House" comes off the display line and sits right after
           "Silva" on its baseline. It used to be pushed to the far right to
@@ -347,8 +347,26 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           width from the name it finishes. Both stay inside the <h1>, so the
           accessible name is still the full "Fe Galang Da Silva Boarding House".
 
-          `pb-6` sets the name as close to the bottom edge as the masthead sits
-          to the top edge, so the photograph is framed evenly top and bottom.
+          `pb-6` on desktop sets the name as close to the bottom edge as the
+          masthead sits to the top edge, so the photograph is framed evenly
+          top and bottom - and that is genuinely all the room a desktop
+          browser needs, since it has no bottom toolbar of its own to
+          contend with.
+
+          On a phone or tablet it is not enough: `min-h-[100dvh]` on the
+          section reports the SMALL viewport (toolbars collapsed) once the
+          page has been scrolled, but on first load, before any interaction,
+          a Safari-family browser can paint using the LARGE viewport (both
+          its own address bar and its bottom toolbar still expanded) while
+          still reporting the dvh value for the eventual small one - there is
+          no CSS query for "how tall is the browser chrome right now" to
+          correct for. Reported and reproduced 2026-09-24: the descender of
+          "Galang" sat under the browser's own bottom toolbar on first paint.
+          The fix is real clearance, not a value that depends on getting that
+          timing right - pb-20 down through md:pb-12 gives the name room to
+          clear a typical mobile toolbar with margin, and settles back to the
+          tight symmetrical pb-6 once a browser's own chrome stops being a
+          factor (lg: and up).
         -->
         <h1 class="font-editorial drop-shadow-sm flex flex-wrap items-baseline gap-x-5 gap-y-2 w-full">
           <span class="font-medium tracking-[-0.03em] leading-[0.9] text-[clamp(3.25rem,10.5vw,9.75rem)]"
