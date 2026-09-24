@@ -65,6 +65,7 @@ const emit = defineEmits<{ close: [] }>();
 const titleId = useId();
 const subtitleId = useId();
 const panel = ref<HTMLElement | null>(null);
+const overlay = ref<HTMLElement | null>(null);
 let previouslyFocused: HTMLElement | null = null;
 
 const widths = {
@@ -151,7 +152,59 @@ onMounted(async () => {
   panel.value?.focus();
 });
 
+/**
+ * A closing dialog fades instead of vanishing.
+ *
+ * Every caller removes this component with `v-if`, so it is gone before a
+ * `<Transition>` inside it could play a leave, while BookViewingPrompt's
+ * native <dialog> faded out and these 16 did not. So at the moment of
+ * removal a snapshot of the overlay is left in its place, inert and hidden
+ * from assistive technology, and faded out over 150ms before it deletes
+ * itself. It is visual only: focus, scroll lock and every handler belong to
+ * the real dialog, which is already gone.
+ *
+ * The snapshot has its transitions switched off, because the opening fade is
+ * `@starting-style` and would otherwise replay IN on the copy. It keeps typed
+ * text and the scroll position so the frame does not change as it fades, and
+ * its ids are stripped so nothing can find it by id. Under reduced motion it
+ * fades without the scale, the same bargain the opening makes.
+ */
+function leaveGhost(): void {
+  const el = overlay.value;
+  if (!el || typeof el.animate !== 'function') return;
+  try {
+    const ghost = el.cloneNode(true) as HTMLElement;
+    const liveFields = el.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea');
+    ghost.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea').forEach((f, i) => {
+      if (liveFields[i] && f.type !== 'file') f.value = liveFields[i].value;
+    });
+    ghost.removeAttribute('id');
+    ghost.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.inert = true;
+    ghost.style.pointerEvents = 'none';
+    ghost.style.transition = 'none';
+    const ghostPanel = ghost.querySelector<HTMLElement>('.ws-modal-panel');
+    if (ghostPanel) ghostPanel.style.transition = 'none';
+    document.body.appendChild(ghost);
+    ghost.scrollTop = el.scrollTop;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const timing = { duration: 150, easing: 'cubic-bezier(0.23, 1, 0.32, 1)', fill: 'forwards' as const };
+    ghost.animate([{ opacity: 1 }, { opacity: 0 }], timing);
+    if (ghostPanel && !reduce) {
+      ghostPanel.animate([{ transform: 'none' }, { transform: 'translateY(8px) scale(0.97)' }], timing);
+    }
+    // A timer, not `finished`: a hidden tab can pause the animation and the
+    // copy must never outlive it.
+    window.setTimeout(() => ghost.remove(), 200);
+  } catch {
+    // A snapshot is decoration; failing to make one changes nothing.
+  }
+}
+
 onBeforeUnmount(() => {
+  leaveGhost();
   // Only the last holder to let go releases the page behind it.
   unlockBodyScroll();
   previouslyFocused?.focus?.();
@@ -160,6 +213,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
+    ref="overlay"
     class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto bg-ink/40 p-4 sm:p-6"
     @click.self="dismissible && !mandatory && emit('close')"
     @keydown="onKeydown"
