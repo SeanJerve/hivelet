@@ -71,7 +71,7 @@ function reload() {
         visitor who assumes otherwise simply leaves.
       -->
       <p class="mt-5 max-w-xl text-xs sm:text-sm text-ink-soft leading-relaxed">
-        This is not the same as having nothing free — the listing is temporarily
+        This is not the same as having nothing free - the listing is temporarily
         unreachable, so rather than show you figures we cannot stand behind, we would
         rather you asked her directly.
       </p>
