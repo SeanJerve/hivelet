@@ -808,6 +808,19 @@ async function submitInquiry() {
                 The stack is gone rather than kept alongside: two drawings of
                 the same fact, one of them abstract, is worse than one.
               -->
+              <!--
+                `mix-blend-multiply` sat on this image with nothing for it to
+                do: `--tile` (index.css), the panel's own background, is
+                `#ffffff` - the same white the plan's own background already
+                is. There was no mismatched box to blend away, only a cost:
+                multiply darkens by the backdrop everywhere the image is not
+                pure white, and a downscaled hairline wall (1024px source to
+                a ~390px phone) is mostly anti-aliased grey at its edges, not
+                pure black, so the blend faded exactly the lines a prospect
+                is here to read. Confirmed by toggling it off on the live
+                page: the walls went from barely legible to sharp, with the
+                white background unchanged either way. Removed.
+              -->
               <div v-if="planFor(activeUnit.room_number)" class="relative mx-auto w-full max-w-md">
                 <img
                   :src="`/floorplans/${planFor(activeUnit.room_number)!.plan}.png`"
@@ -815,7 +828,7 @@ async function submitInquiry() {
                   :width="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.w"
                   :height="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.h"
                   :class="[
-                    'block w-full mix-blend-multiply transition-opacity duration-300 ease-[var(--ease-out)]',
+                    'block w-full transition-opacity duration-300 ease-[var(--ease-out)]',
                     unitVisualLoaded ? 'opacity-100' : 'opacity-0',
                   ]"
                   loading="lazy"
