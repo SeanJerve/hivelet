@@ -402,6 +402,12 @@ onBeforeUnmount(() => {
             `tabindex="-1"` keeps these out of the tab sequence - focus stays on
             the trigger, which is what makes `aria-activedescendant` the thing
             that speaks.
+
+            44px tall on a touch screen (`pointer-coarse:min-h-11`), and the
+            label wraps instead of truncating. B-61 measured the options at
+            34px, under the 44px a finger needs, and cut off at a 320px
+            viewport, where a truncated option cannot be read in full anywhere.
+            A mouse keeps the denser rows.
           -->
           <button
             v-for="(opt, index) in normalizedOptions"
@@ -411,7 +417,7 @@ onBeforeUnmount(() => {
             role="option"
             tabindex="-1"
             :aria-selected="String(opt.value) === String(modelValue)"
-            class="press flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm cursor-pointer select-none"
+            class="press flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm cursor-pointer select-none pointer-coarse:min-h-11"
             :class="[
               String(opt.value) === String(modelValue)
                 ? 'bg-brand-soft text-brand font-semibold'
@@ -422,7 +428,7 @@ onBeforeUnmount(() => {
             ]"
             @click="selectOption(opt.value)"
           >
-            <span class="truncate">{{ opt.label }}</span>
+            <span class="min-w-0 break-words">{{ opt.label }}</span>
             <span
               v-if="opt.count !== undefined"
               class="rounded-full px-2 py-0.5 text-xs tabular font-medium shrink-0"

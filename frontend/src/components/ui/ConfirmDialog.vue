@@ -55,18 +55,23 @@ const confirmDisabled = computed(() => props.busy || !phraseSatisfied.value);
     themselves during a submit, but a click on the backdrop was not guarded
     the same way - so a stray click outside a destructive action already in
     flight could fire `cancel` while the request was still running, with
-    nothing on screen to say it had. Escape still closes it either way; that
-    is a deliberate keypress rather than a stray click, and every other modal
-    in the workspace answers to it regardless of `dismissible` too.
+    nothing on screen to say it had. `dismissible` now gates Escape as well
+    (WsModal), and `close-disabled` the header X, which it does not: the X
+    still fired `cancel` mid-request until 2026-09-24 (B-61).
   -->
   <WsModal
     :title="title"
     size="sm"
     :dismissible="!busy"
+    :close-disabled="busy"
     :tone="destructive ? 'danger' : 'plain'"
     @close="emit('cancel')"
   >
-    <p v-if="message" class="text-sm leading-6 text-ink-soft">{{ message }}</p>
+    <!-- `whitespace-pre-line`: a caller may separate a heading line from the
+         explanation with a blank line (InquiriesView's close-lead), and without
+         it the two ran together as one sentence. Every other caller passes a
+         single line, which this leaves exactly as it was. -->
+    <p v-if="message" class="whitespace-pre-line text-sm leading-6 text-ink-soft">{{ message }}</p>
     <slot />
 
     <div v-if="confirmPhrase" class="ws-field">

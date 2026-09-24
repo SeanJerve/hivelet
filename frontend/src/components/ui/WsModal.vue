@@ -48,9 +48,16 @@ const props = withDefaults(
      * back for every modal except a genuinely mandatory one.
      */
     mandatory?: boolean;
+    /**
+     * Disables the header X, for a dialog whose action is already in flight.
+     * `dismissible` guards the backdrop and Escape but not the X, on purpose (see
+     * `mandatory`), so ConfirmDialog's X still fired `cancel` mid-request (B-61).
+     * Disabled rather than hidden, so the header does not jump while it waits.
+     */
+    closeDisabled?: boolean;
     tone?: 'plain' | 'danger';
   }>(),
-  { size: 'md', dismissible: true, mandatory: false, tone: 'plain' }
+  { size: 'md', dismissible: true, mandatory: false, closeDisabled: false, tone: 'plain' }
 );
 
 const emit = defineEmits<{ close: [] }>();
@@ -94,14 +101,21 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key !== 'Tab' || !panel.value || !panel.value.contains(document.activeElement)) return;
   e.stopPropagation();
 
+  // `:not([tabindex="-1"])` on every kind: a PillSelect's open options are
+  // buttons at -1, and the browser's own Tab never lands on them either.
   const focusable = [...panel.value.querySelectorAll<HTMLElement>(
-    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-  )].filter((el) => el.offsetParent !== null);
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
+  )].filter((el) => el.offsetParent !== null && el.getAttribute('tabindex') !== '-1');
   if (focusable.length === 0) return;
 
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
-  if (e.shiftKey && document.activeElement === first) {
+  // The panel itself holds focus when the dialog opens (see onMounted). Shift+Tab
+  // from there would otherwise leave the dialog for the page behind it.
+  if (document.activeElement === panel.value) {
+    e.preventDefault();
+    (e.shiftKey ? last : first).focus();
+  } else if (e.shiftKey && document.activeElement === first) {
     e.preventDefault();
     last.focus();
   } else if (!e.shiftKey && document.activeElement === last) {
@@ -125,10 +139,16 @@ onMounted(async () => {
    */
   lockBodyScroll();
   await nextTick();
-  const target =
-    panel.value?.querySelector<HTMLElement>('input:not([type="hidden"]):not([disabled]), textarea, select') ??
-    panel.value;
-  target?.focus();
+  /**
+   * Focus goes to the dialog itself, which is named by its heading, not to its
+   * first field. The first field was chosen by a selector for `input`, and that
+   * did three things wrong (B-61): on a phone it pulled the keyboard up over a
+   * dialog nobody had started typing in; in the unit editor it matched the
+   * `sr-only` file input, so focus sat on something nobody could see; and it
+   * skipped any PillSelect above the first input, which is a `<button>`. From
+   * the panel, the first Tab reaches the first control in order, whatever it is.
+   */
+  panel.value?.focus();
 });
 
 onBeforeUnmount(() => {
@@ -175,6 +195,7 @@ onBeforeUnmount(() => {
           type="button"
           class="icon-btn shrink-0"
           aria-label="Close this dialog"
+          :disabled="closeDisabled"
           @click="emit('close')"
         >
           <X class="size-4" aria-hidden="true" />

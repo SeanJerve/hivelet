@@ -3,6 +3,14 @@
  * Toasts on the workspace system. One dark surface for every kind, because the
  * words carry the meaning; the icon and its colour only repeat it. They are
  * announced politely, so a screen reader hears them without losing its place.
+ *
+ * ONE live region, the container, which is mounted with the app and so exists
+ * before any toast is added to it. Each toast used to be its own
+ * `role="status"`, created in the same instant as its text, and a live region
+ * that appears already holding its content is one screen readers commonly do
+ * not announce at all (B-61). Errors share the polite region: the design gives
+ * them no separate place, and splitting the stack in two to get an assertive
+ * one would reorder what sighted readers see.
  */
 import { useToast } from '../../lib/useToast';
 import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-vue-next';
@@ -22,13 +30,12 @@ const iconTone: Record<string, string> = {
     class="ws-focus pointer-events-none fixed inset-x-4 top-4 z-[60] flex flex-col items-end gap-2 sm:inset-x-auto sm:right-6 sm:top-6 sm:max-w-sm"
     role="region"
     aria-label="Notifications"
+    aria-live="polite"
   >
     <TransitionGroup name="toast">
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        role="status"
-        aria-live="polite"
         class="on-dark pointer-events-auto flex w-full items-start gap-3 rounded-2xl bg-night p-4 text-on-night shadow-lift"
       >
         <span class="mt-0.5 shrink-0" aria-hidden="true">
@@ -91,9 +98,22 @@ const iconTone: Record<string, string> = {
   transform: translateY(-6px);
 }
 
+/*
+ * Reduced motion removes the MOVEMENT, not the fade. This was `transition:
+ * none`, so under the setting a toast blinked in and out (B-61); the opacity
+ * change is not motion and stays, as `index.css`'s own reduced-motion rule for
+ * `.ws-focus` already keeps it.
+ */
 @media (prefers-reduced-motion: reduce) {
   .toast-enter-active,
   .toast-leave-active {
+    transition: opacity 0.2s var(--ease-out);
+  }
+  .toast-enter-from,
+  .toast-leave-to {
+    transform: none;
+  }
+  .toast-move {
     transition: none;
   }
 }
