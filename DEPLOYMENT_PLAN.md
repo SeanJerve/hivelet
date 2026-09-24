@@ -1,4 +1,22 @@
-# Deployment plan — a proposal, not yet done
+# Deployment plan
+
+> **DECIDED AND LIVE, 2026-09-24: Vercel, one project in "Services" mode, free (Hobby) plan.**
+> **https://hivelet.vercel.app** — the site at `/`, the API at `/api`, one domain, so
+> `VITE_API_BASE_URL` is `/api` and `CORS_ORIGINS` is `https://hivelet.vercel.app`.
+> Configured by root `vercel.json`. Verified that day, read-only: `/api/health` online with the
+> database connected and RLS enforced, 33 units, every page route 200, sign-in requests pass CORS.
+>
+> **Three things learned the hard way, measured with `vercel build` locally:** the Express
+> builder must be declared as `"framework": "express"` with **no** `entrypoint`; it ships
+> `backend/dist/` flattened to the function root but leaves `node_modules` under `backend/`, so
+> `dist/server.js` is now a self-contained esbuild bundle (`backend/scripts/bundle-for-vercel.mjs`);
+> and `dist/package.json` must say `"type": "module"` (`mark-dist-esm.mjs`).
+>
+> Still to do: function region to Seoul (`icn1`, it runs in `iad1` today), the Adyen webhook URL
+> and allowed origin (§ 3), and uptime monitoring (§ 5). The free plan is for non-commercial use —
+> fine for the capstone; move to a paid plan if the owner keeps using it for the business.
+>
+> Everything below is the proposal as written before the decision, kept for the record.
 
 **For Sean to approve.** Written 2026-09-24 on Loyd's machine. **No account has been created and
 nothing has been paid for.** Pick an option in § 1, and the rest follows from it.
