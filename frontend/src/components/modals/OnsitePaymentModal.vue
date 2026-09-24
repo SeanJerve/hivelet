@@ -41,7 +41,11 @@ const selectedUnit = ref('1a');
  * collected and written to the ledger as the rent.
  */
 const rentAmount = ref(0);
-const waterAmount = ref(400); 
+// Zero, not the old flat Linda figure this literal used to be. The watch
+// below overwrites it unconditionally with `immediate: true`, so this never
+// renders - but a "400" sitting beside `rentAmount`'s own zero-not-plausible
+// fix reads like a leftover of BR-040, which is exactly what it was.
+const waterAmount = ref(0);
 const gbgFee = ref(0);
 const orNum = ref('');
 // The property's today, not UTC's. Before 08:00 Manila the old expression

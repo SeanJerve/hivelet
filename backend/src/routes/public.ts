@@ -91,8 +91,11 @@ router.get(
   requirePermission(PERMISSIONS.PROPERTY_VIEW_PUBLIC),
   asyncHandler(async (_req, res) => {
     const waterRatePerOccupant = await getWaterRatePerOccupant();
-    // Both Linda units, not just LF. BR-040 gives them different fixed charges,
-    // and the on-site payment form validates against whichever applies.
+    // Both Linda units, not just LF. BR-040's fixed charge is retired (see
+    // `getLindaFixedWaterCharge`'s own docblock) - every unit bills heads x
+    // rate now, Linda's included. These two calls stay because a non-null
+    // return is still how a caller learns a room's money routes to Linda, not
+    // because the number is a charge to bill.
     const lindaFixedWaterCharge = await getLindaFixedWaterCharge('LF');
     const lindaFixedWaterCharges = {
       LF: await getLindaFixedWaterCharge('LF'),

@@ -107,8 +107,9 @@ const editStatus = ref<'Available' | 'Occupied' | 'Reserved' | 'Under Maintenanc
  * How this unit is billed, shown so the rent above can be read in context.
  *
  * It is derived, not stored. `buildBillingRule` in systemState composes it from the
- * water rates on every fetch - ₱200 a head under BR-014, or Linda's fixed monthly
- * figure under BR-040 - and there is no `billing_rule` column for it to be saved to.
+ * water rate on every fetch - ₱200 a head under BR-014, the same for every unit
+ * including Linda's since BR-040's fixed figure was retired 2026-09-20 - and
+ * there is no `billing_rule` column for it to be saved to.
  *
  * It was a `required` text input bound to a writable ref, so it invited the landlady
  * to type a different arrangement. Nothing sent it anywhere. The sentence she typed

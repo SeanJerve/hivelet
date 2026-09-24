@@ -135,9 +135,15 @@ export const CANONICAL_UNITS: RentableUnit[] = [
   { id: "apt-f2f", unitCode: "F2F", cluster: "Front Apartment", floor: 2, floorLabel: "2nd Floor", type: "2-Bedroom Apartment", basePrice: 10000, capacity: 4, occupants: 3, status: "vacant", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
   { id: "apt-f2b", unitCode: "F2B", cluster: "Front Apartment", floor: 2, floorLabel: "2nd Floor", type: "2-Bedroom Apartment", basePrice: 9000, capacity: 4, occupants: 4, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: APT_AMENITIES, photo: "", waterRateType: "standard" },
 
-  // Linda Units (LF, LB)
-  { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "1st Floor", type: "Linda Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Fixed: ₱400 water (remitted to Linda)", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
-  { id: "linda-lb", unitCode: "LB", cluster: "Linda Units", floor: 1, floorLabel: "1st Floor", type: "Linda Unit", basePrice: 5500, capacity: 2, occupants: 1, status: "pending", tenantName: "", billingRule: "Fixed: ₱200 water (remitted to Linda); no electricity on record", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
+  // Linda Units (LF, LB). `billingRule` used to read "Fixed: ₱400/200 water
+  // (remitted to Linda)" here - BR-040, retired by the owner 2026-09-20. This
+  // is the pre-API placeholder every unit falls back to (see `rooms` in
+  // systemState.ts), so it now says exactly what every other row says: the
+  // water is per occupant, same as everywhere else. `waterRateType` stays
+  // `linda_fixed` - that field only flags which units' money routes to Linda,
+  // not the rate, and nothing here reads it to compute a fee.
+  { id: "linda-lf", unitCode: "LF", cluster: "Linda Units", floor: 1, floorLabel: "1st Floor", type: "Linda Unit", basePrice: 6500, capacity: 3, occupants: 2, status: "settled", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
+  { id: "linda-lb", unitCode: "LB", cluster: "Linda Units", floor: 1, floorLabel: "1st Floor", type: "Linda Unit", basePrice: 5500, capacity: 2, occupants: 1, status: "pending", tenantName: "", billingRule: "Rent + ₱200 / occupant water", amenities: BH_AMENITIES, photo: "", waterRateType: "linda_fixed" },
 ];
 
 export const CLUSTERS: Cluster[] = [
