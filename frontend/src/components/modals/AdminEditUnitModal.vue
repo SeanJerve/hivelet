@@ -426,13 +426,16 @@ async function handleSave() {
           </div>
         </div>
 
+        <!-- `step="any"` like every other money field. It was `step="100"`, so a
+             rate off the hundred could not be saved at all: unit 1D's live ₱7,250
+             was refused by the browser before the form submitted (B-61). -->
         <label class="ws-field">
           Rent a month
           <input
             v-model.number="monthlyRate"
             type="number"
             min="0"
-            step="100"
+            step="any"
             class="ws-input w-full"
             required
           />
