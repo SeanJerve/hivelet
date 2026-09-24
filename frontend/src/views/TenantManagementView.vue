@@ -3,7 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, tenantsFetchFailed, showToast, asListedUnitCode, waterChargeFor, type TenantRecord } from '@/lib/systemState';
+import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, roomsLoaded, tenantsFetchFailed, showToast, asListedUnitCode, waterChargeFor, type TenantRecord } from '@/lib/systemState';
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api } from '@/lib/api';
@@ -84,14 +84,18 @@ const onboardDefaults = () => ({
   name: '',
   email: '',
   phone: '',
-  unit: '1a',
+  // No unit until she picks one. This opened on '1a', which is occupied, so the
+  // form's first suggestion was a unit the submit then refused (B-61).
+  unit: '',
   moveIn: propertyToday(),
   anniv: propertyToday(),
   // BR-039: the advance rent equals the rent in effect at move-in. It is pre-filled
   // from the unit's LIVE price the moment a unit is chosen (see the watcher below),
   // so the administrator sees and confirms the figure rather than the API
-  // substituting one. It started at a flat 9,000, which belonged to no unit.
-  deposit: 0,
+  // substituting one. It started at a flat 9,000, which belonged to no unit, and
+  // then at 0, which the form showed as ₱0. Empty until there is a real figure,
+  // and the input's `required` makes her enter one.
+  deposit: '' as number | '',
   hasRoommates: 'no' as 'no' | 'yes',
   roommateQty: 1,
   emergName: '',
@@ -158,12 +162,18 @@ const sharingOptions = [
   { value: 'yes', label: 'With roommates' },
 ];
 
+/** Units with an active resident say so, because `handleOnboard` will refuse them. */
+const occupiedUnitCodes = computed(
+  () => new Set(tenants.filter((t) => t.status === 'active').map((t) => t.unitCode.toUpperCase()))
+);
+
 const newUnitOptions = computed(() =>
   rooms.map((u) => {
     const priceStr = !roomsFetchFailed.value ? ` — ${peso(u.price)}` : '';
+    const taken = occupiedUnitCodes.value.has(u.unitCode.toUpperCase()) ? ' · occupied' : '';
     return {
       value: u.unitCode,
-      label: `${u.unitCode.toUpperCase()}${priceStr} (${u.cluster})`,
+      label: `${u.unitCode.toUpperCase()}${priceStr} (${u.cluster})${taken}`,
     };
   })
 );
@@ -192,12 +202,18 @@ const newSharingOptions = [
  * `basePrice` is a second copy that drifts as soon as the landlady changes a rate.
  * The administrator can still overwrite it - this fills the field, it does not
  * decide the amount.
+ *
+ * "The live room list" is only true once it has loaded. Until then `rooms` is the
+ * `CANONICAL_UNITS` seed, at rates written before migration 045 - and converting
+ * an enquiry runs on mount, before the fetch answers, so it filled the deposit
+ * from those (B-61). With no live rate the field is left empty for her to enter,
+ * and `watch(rooms)` below fills it when the list arrives.
  */
 function syncDepositToUnit() {
-  const live = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.value.toLowerCase());
-  if (live && Number(live.price) > 0) {
-    newDeposit.value = Number(live.price);
-  }
+  const live = roomsLoaded.value && !roomsFetchFailed.value
+    ? rooms.find((r) => r.unitCode.toLowerCase() === newUnit.value.toLowerCase())
+    : undefined;
+  newDeposit.value = live && Number(live.price) > 0 ? Number(live.price) : '';
 }
 
 /**
@@ -247,6 +263,16 @@ function checkInquiryConversion() {
   }
 }
 
+/**
+ * The skeleton is for a list that has never arrived, not for one being refreshed.
+ * Every save calls `fetchTenants()`, and swapping the register for a skeleton each
+ * time unmounted the rows under her: focus fell to the page and the scroll jumped
+ * back up (B-61). A refresh now leaves the rows where they are until the new ones land.
+ * Starts true if `tenants` already holds a list from an earlier visit.
+ */
+const hasLoadedOnce = ref(tenants.length > 0);
+const showSkeleton = computed(() => isLoading.value && !hasLoadedOnce.value);
+
 async function fetchTenants() {
   isLoading.value = true;
   try {
@@ -256,6 +282,9 @@ async function fetchTenants() {
     console.error('fetchTenants failed:', err);
   } finally {
     isLoading.value = false;
+    // Not after a failure: "Try again" would otherwise show the empty register's
+    // "Nobody matches" while it retried, instead of a skeleton.
+    if (!tenantsFetchFailed.value) hasLoadedOnce.value = true;
   }
 }
 
@@ -276,6 +305,10 @@ watch(newUnit, syncDepositToUnit);
  */
 watch(rooms, () => {
   newUnit.value = asListedUnitCode(newUnit.value);
+  // The live rates have arrived for a unit already chosen (an enquiry converted on
+  // mount). Only into an empty field: every save refetches the rooms, and a figure
+  // she typed must not be replaced by the list refreshing under her.
+  if (newUnit.value && newDeposit.value === '') syncDepositToUnit();
 }, { immediate: true });
 
 watch(() => route.query.convertInquiryId, () => {
@@ -479,12 +512,13 @@ async function saveEdit() {
   // Verify unit is not occupied by another active tenant
   const targetUnit = editUnitCode.value.toLowerCase();
   const currentTenantId = editModalTenant.value.id;
-  const isOccupiedByOther = tenants.some(t => 
-    t.status === 'active' && 
-    t.unitCode.toLowerCase() === targetUnit && 
+  const unitChanged = targetUnit !== editModalTenant.value.unitCode.toLowerCase();
+  const isOccupiedByOther = tenants.some(t =>
+    t.status === 'active' &&
+    t.unitCode.toLowerCase() === targetUnit &&
     t.id !== currentTenantId
   );
-  if (isOccupiedByOther && targetUnit !== '—' && targetUnit !== 'none') {
+  if (unitChanged && isOccupiedByOther && targetUnit !== '—' && targetUnit !== 'none') {
     showToast('error', 'Unit Already Occupied', `Unit ${editUnitCode.value.toUpperCase()} already has an active tenant.`);
     return;
   }
@@ -503,13 +537,19 @@ async function saveEdit() {
      * sentinel from a form whose real subject is the occupant count would therefore end a
      * tenancy as a side effect. Omitting the key skips that whole branch, so editing status
      * or roommates leaves the tenancy exactly where it was.
+     *
+     * The same held for the resident's OWN unit, which the dropdown opens on: every save
+     * sent it, and the API closed the tenancy and opened a new one dated today, moving
+     * their move-in and anniversary dates and every rent period after them (B-61). The
+     * backend now refuses to reopen a tenancy for an unchanged unit (3927acb); this is
+     * the half that never asks it to. `roomNumber` goes only when the unit changed.
      */
     const payload: Record<string, unknown> = {
       accountStatus: editStatus.value === 'active' ? 'active' : 'inactive',
       occupantCount: finalOccupants,
       roommateQty: finalRoommateQty,
     };
-    if (editUnitCode.value && editUnitCode.value !== '—') {
+    if (unitChanged && editUnitCode.value && editUnitCode.value !== '—') {
       payload.roomNumber = editUnitCode.value.toUpperCase();
     }
 
@@ -548,6 +588,10 @@ async function confirmVacate() {
 }
 
 async function handleOnboard() {
+  if (!newUnit.value) {
+    showToast('error', 'Choose a unit', 'Pick the unit they are moving into.');
+    return;
+  }
   const isOccupied = tenants.some(t => t.status === 'active' && t.unitCode.toLowerCase() === newUnit.value.toLowerCase());
   if (isOccupied) {
     showToast('error', 'Unit Already Occupied', `Unit ${newUnit.value.toUpperCase()} already has an active tenant.`);
@@ -772,11 +816,11 @@ async function handleOnboard() {
       shape "grouped" actually is; RoomDirectoryView does the same swap
       between its own two view modes.
     -->
-    <div v-if="isLoading && viewMode === 'grouped'" class="space-y-6">
+    <div v-if="showSkeleton && viewMode === 'grouped'" class="space-y-6">
       <SkeletonTable :columns="6" :rows="3" />
       <SkeletonTable :columns="6" :rows="3" />
     </div>
-    <SkeletonTable v-else-if="isLoading" :columns="6" :rows="6" />
+    <SkeletonTable v-else-if="showSkeleton" :columns="6" :rows="6" />
 
     <!--
       A failed load must not be reported as a search result.
@@ -1133,8 +1177,10 @@ async function handleOnboard() {
             -->
             <div class="col-span-2 min-w-0 sm:col-span-1">
               <dt class="text-xs text-ink-faint">Email</dt>
-              <dd class="mt-0.5 truncate text-ink" :title="editModalTenant.email">
-                {{ editModalTenant.email || 'None on file' }}
+              <!-- `onFile`, not `||`: a missing email arrives as an em dash, which is
+                   truthy, so the dialog printed "—" instead of saying so. -->
+              <dd class="mt-0.5 truncate text-ink" :title="onFile(editModalTenant.email) ?? undefined">
+                {{ onFile(editModalTenant.email) ?? 'No email on file' }}
               </dd>
             </div>
             <div>
@@ -1349,7 +1395,7 @@ async function handleOnboard() {
           </div>
           <div class="ws-field">
             <label for="new-unit">Unit</label>
-            <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" aria-label="Unit" widthClass="w-full" />
+            <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" aria-label="Unit" placeholder="Choose a unit" widthClass="w-full" />
           </div>
 
           <div class="ws-field">
@@ -1415,7 +1461,7 @@ async function handleOnboard() {
               class="ws-input w-full"
               required
             />
-            <p class="ws-hint">One month, filled in from the unit's current rate. Change it if she agreed something else.</p>
+            <p class="ws-hint">One month, filled in from the unit's current rate once you choose a unit. Change it if she agreed something else.</p>
           </div>
           <div class="ws-field">
             <label for="new-emerg-name">In an emergency, who to call</label>
