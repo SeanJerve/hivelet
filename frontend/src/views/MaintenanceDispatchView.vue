@@ -213,7 +213,10 @@ async function loadTicketMessages(ticketId: string) {
 
 async function handleSendAdminComment() {
   const text = newAdminMessage.value.trim();
-  if (!text || !editingTicket.value) return;
+  // The Send button is disabled while a message is in flight, but Enter in the box
+  // calls this directly and was not: a second Enter before the reply landed posted
+  // the same message twice, and the resident was notified twice (B-61).
+  if (!text || !editingTicket.value || sendingAdminMessage.value) return;
 
   sendingAdminMessage.value = true;
   try {
@@ -232,8 +235,17 @@ async function handleSendAdminComment() {
   }
 }
 
+/**
+ * The status the database holds for the open ticket, as distinct from `editStatus`,
+ * which is the form's and changes before anything is saved. The quick-actions bar
+ * reads this one: it said "Ticket Resolved" off `editStatus`, so a Mark Resolved
+ * whose save failed still announced the ticket as resolved (B-61).
+ */
+const savedStatus = ref<MaintenanceTicket['status']>('Open');
+
 function openEditModal(t: MaintenanceTicket) {
   editingTicket.value = t;
+  savedStatus.value = t.status;
   editTitle.value = t.title;
   editUnit.value = t.unit.toLowerCase();
   editCategory.value = t.category || 'General';
@@ -247,23 +259,12 @@ function openEditModal(t: MaintenanceTicket) {
   loadTicketMessages(t.id);
 }
 
-async function handleSaveEditTicket() {
-  if (!editingTicket.value) return;
+/** True only when the PATCH succeeded, so a quick action can undo its own change. */
+async function handleSaveEditTicket(): Promise<boolean> {
+  if (!editingTicket.value || isSubmitting.value) return false;
   isSubmitting.value = true;
   try {
     const ticketId = editingTicket.value.id;
-    
-    // Immediate reactive update to UI state
-    const t = maintenanceTickets.find(item => item.id === ticketId);
-    if (t) {
-      t.title = editTitle.value;
-      t.unit = editUnit.value.toUpperCase();
-      t.category = editCategory.value;
-      t.priority = editPriority.value;
-      t.status = editStatus.value;
-      t.technician = editTech.value;
-      t.description = editDesc.value;
-    }
 
     /**
      * No inner catch. The failure was swallowed here with a console warning
@@ -279,6 +280,11 @@ async function handleSaveEditTicket() {
      *
      * The catch now refetches, so a failed save leaves the board showing what is
      * actually in the database.
+     *
+     * And the board is no longer written BEFORE this call. It was updated first "for
+     * speed", so for the length of the request, and for good if the refetch in the
+     * catch also failed, the board showed values that had not been saved. It is
+     * written below, once the PATCH has succeeded.
      */
     await api.patch(`/admin/tickets/${ticketId}`, {
       title: editTitle.value,
@@ -290,16 +296,30 @@ async function handleSaveEditTicket() {
       description: editDesc.value,
     });
 
+    const t = maintenanceTickets.find(item => item.id === ticketId);
+    if (t) {
+      t.title = editTitle.value;
+      t.unit = editUnit.value.toUpperCase();
+      t.category = editCategory.value;
+      t.priority = editPriority.value;
+      t.status = editStatus.value;
+      t.technician = editTech.value;
+      t.description = editDesc.value;
+    }
+    savedStatus.value = editStatus.value;
+
     await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
     showToast('success', 'Ticket updated', `Ticket #${ticketId} updated successfully.`);
     isEditModalOpen.value = false;
     editingTicket.value = null;
+    return true;
   } catch (err: any) {
     // Put the board back to the truth before saying anything. A dispatch board
     // showing "Resolved" and a named technician for a ticket that is still Open
     // is worse than a slow one.
     await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
     showToast('error', 'Update failed', err?.message || 'Could not update ticket.');
+    return false;
   } finally {
     isSubmitting.value = false;
   }
@@ -327,14 +347,24 @@ async function handleQuickDispatch() {
     return;
   }
 
-  editStatus.value = 'In Progress';
-  await handleSaveEditTicket();
+  await quickSetStatus('In Progress');
 }
 
 async function handleQuickResolve() {
   if (!editingTicket.value) return;
-  editStatus.value = 'Resolved';
-  await handleSaveEditTicket();
+  await quickSetStatus('Resolved');
+}
+
+/**
+ * A quick action is one click that sets the status AND saves. If the save fails,
+ * the status it set goes back, so the form does not keep an unsaved "Resolved"
+ * that the next Save Changes would then write without her choosing it.
+ */
+async function quickSetStatus(status: 'In Progress' | 'Resolved') {
+  if (isSubmitting.value) return;
+  const before = editStatus.value;
+  editStatus.value = status;
+  if (!(await handleSaveEditTicket())) editStatus.value = before;
 }
 
 function handleDeleteTicketPrompt() {
@@ -526,8 +556,9 @@ function handleDeleteTicketPrompt() {
         <div class="p-3 bg-canvas border border-line rounded-xl flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <span class="font-semibold text-ink-soft text-xs">Quick Actions:</span>
           <div class="flex flex-wrap items-center gap-2">
+            <!-- `savedStatus`, not `editStatus`: this bar reports the ticket as saved. -->
             <button
-              v-if="editStatus !== 'In Progress' && editStatus !== 'Resolved' && editStatus !== 'Closed'"
+              v-if="savedStatus !== 'In Progress' && savedStatus !== 'Resolved' && savedStatus !== 'Closed'"
               type="button"
               :disabled="isSubmitting"
               @click="handleQuickDispatch"
@@ -543,7 +574,7 @@ function handleDeleteTicketPrompt() {
               dropdown above, so these say what they actually do.
             -->
             <button
-              v-if="editStatus !== 'Resolved' && editStatus !== 'Closed'"
+              v-if="savedStatus !== 'Resolved' && savedStatus !== 'Closed'"
               type="button"
               :disabled="isSubmitting"
               @click="handleQuickResolve"
@@ -553,7 +584,7 @@ function handleDeleteTicketPrompt() {
               <span>Mark Resolved</span>
             </button>
             <span v-else class="text-xs font-semibold text-brand inline-flex items-center gap-1">
-              <Check class="size-4" /> Ticket {{ editStatus }}
+              <Check class="size-4" /> Ticket {{ savedStatus }}
             </span>
           </div>
         </div>
