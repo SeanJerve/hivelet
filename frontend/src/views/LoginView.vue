@@ -79,7 +79,7 @@ const canSubmit = computed(
  * the lockout and the rate limit (both already name the wait) and wrong for
  * the rest: "Invalid email or password." to someone who typed a phone number,
  * "Cannot reach the Hivelet server. Check that the API is running." to a
- * tenant with no signal, and "Internal server error." on a bad day. Mapped
+ * tenant with no signal (api.ts's wording until 2026-09-24), and "Internal server error." on a bad day. Mapped
  * here from the code the thrown `ApiRequestError` carries; anything this does
  * not recognise falls through to `authError`, so nothing is ever blank.
  *
@@ -349,6 +349,25 @@ async function handleQuickLogin(account: DemoAccount) {
           <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
             Accounts are created by the landlady. If you live here and cannot get in, ask
             Mrs. {{ LANDLADY.name }} and she will set yours up.
+          </p>
+          <!--
+            Signing in is where a resident starts using the portal, so the rules
+            for it and what it keeps about them are one tap away here (B-61).
+            Same underline as the Home breadcrumb above, and the same 44px row.
+          -->
+          <p class="mt-1 flex flex-wrap gap-x-5 text-xs text-ink-soft">
+            <RouterLink
+              to="/terms"
+              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+            >
+              Terms of use
+            </RouterLink>
+            <RouterLink
+              to="/privacy"
+              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+            >
+              Privacy policy
+            </RouterLink>
           </p>
 
           <button

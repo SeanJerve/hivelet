@@ -21,6 +21,12 @@
  * `nextTick`. The `href` stays, and a modified click is left alone, so a section link can still
  * be copied or opened in a new tab.
  *
+ * Since 2026-09-24 the router honours `to.hash` itself, so a link from another page
+ * (`/terms#payments`) lands on its section too. This frame's handling stays: a contents click
+ * here replaces the URL instead of adding a history entry per section, and the arrival jump is
+ * what moves focus to the heading. Both land on the same spot, because the router reads the
+ * heading's own `scroll-margin-top`.
+ *
  * The heading a link lands on takes focus (each carries `tabindex="-1"`), so a keyboard or
  * screen-reader user continues reading from the section they chose rather than from the list.
  *

@@ -143,10 +143,49 @@ const routes: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', redirect: '/public' },
 ];
 
+/**
+ * Back and Forward return to where the reader was; a link with a `#section`
+ * lands on that section; everything else starts at the top.
+ *
+ * This returned `{ top: 0 }` for every navigation, hash or not, so
+ * `/terms#payments` opened at the top of the terms (B-61). `LegalPage.vue`
+ * worked around it for its own contents list, but a link from another page
+ * had no way in.
+ *
+ * The offset is the target's own `scroll-margin-top`, because Vue Router
+ * scrolls with `window.scrollTo` and would otherwise ignore it. Each page sets
+ * that margin to suit its own header (`.legal-prose h2` 6rem under the sticky
+ * 64px one, the landing sections `scroll-mt-20`), so there is one number per
+ * page, not a second copy here. A hash with no element falls back to the top rather than
+ * leaving the reader wherever the previous page was.
+ */
+function scrollToHash(hash: string, samePage: boolean) {
+  let id = hash.slice(1);
+  try {
+    id = decodeURIComponent(id);
+  } catch {
+    // A malformed escape is still worth trying as written.
+  }
+  const el = document.getElementById(id);
+  if (!el) return { top: 0 };
+  const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return {
+    el,
+    top: margin,
+    // A jump within the page glides; arriving from another page does not.
+    behavior: samePage && !reduce ? ('smooth' as const) : ('auto' as const),
+  };
+}
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition;
+    if (to.hash) return scrollToHash(to.hash, to.path === from.path);
+    return { top: 0 };
+  },
 });
 
 let sessionRestored = false;
