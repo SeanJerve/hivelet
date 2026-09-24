@@ -2,7 +2,44 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { setAuthFailureHandler } from './lib/api'
+import { handleAuthFailure } from './lib/authStore'
 import './index.css'
+
+/**
+ * A dead session now redirects on its own.
+ *
+ * `setAuthFailureHandler` and `handleAuthFailure` have existed since before
+ * this file's own history - api.ts's own comment on `isAuthFailure` calls
+ * this exact wiring "a trap laid for whoever wires it up" - and nothing ever
+ * called the setter. `handleAuthFailure` clears the session, but nothing
+ * navigated: sitting on a portal page (tenant or admin), the screen stayed
+ * exactly as it was, showing whatever it last held, and only a manual
+ * refresh re-ran the router guard and actually reached /login (asked for
+ * 2026-09-24).
+ *
+ * Wired here, in main.ts, rather than in App.vue's onMounted - the router's
+ * OWN first navigation calls `restoreSession()` (router/index.ts
+ * `beforeEach`), and that guard can run, and its `/auth/me` call can fail,
+ * before App.vue's root component has finished setting up. Registering the
+ * handler before `app.mount()` covers that first call too.
+ *
+ * The redirect reuses the router guard's own `?redirect=` mechanism
+ * (router/index.ts, LoginView.vue's `deniedReason`) rather than inventing a
+ * second way to say "sign in again" - the sentence a resident sees is the
+ * same "Please sign in to access <section>." either way. Guarded against
+ * already sitting on /login, so a second failed background call (the
+ * notifications heartbeat, say) does not stomp a redirect target that is
+ * already correct or reset a login the person is mid-typing.
+ */
+setAuthFailureHandler(() => {
+  handleAuthFailure()
+  if (router.currentRoute.value.path === '/login') return
+  router.push({
+    path: '/login',
+    query: { redirect: router.currentRoute.value.fullPath },
+  })
+})
 
 /*
  * One tab title per page. Every page used to share index.html's single
