@@ -907,7 +907,12 @@ function formatDateTime(iso: string) {
                   class="press-plate px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-canvas select-none group"
                 >
                   <div class="min-w-0">
-                    <h3 class="font-semibold text-sm text-ink group-hover:text-brand transition-colors leading-snug">
+                    <!-- break-words: the resident's own free text from
+                         submitting this ticket, same overflow risk found on
+                         the admin's board and overview cards for the same
+                         field. min-w-0 on the wrapper alone does not help an
+                         unbroken run of characters. -->
+                    <h3 class="font-semibold text-sm text-ink group-hover:text-brand transition-colors leading-snug break-words">
                       {{ ticket.title }}
                     </h3>
                     <p class="text-xs text-ink-soft mt-0.5">
@@ -956,7 +961,8 @@ function formatDateTime(iso: string) {
                 <div :id="`ticket-body-${ticket.id}`" v-show="isTicketExpanded(ticket.id)" class="ws-reveal">
                   <!-- Body: description -->
                   <div class="px-5 py-3.5 bg-canvas">
-                    <p class="text-xs text-ink-soft leading-relaxed">{{ ticket.description }}</p>
+                    <!-- break-words: same free-text overflow risk as the title above. -->
+                    <p class="text-xs text-ink-soft leading-relaxed break-words">{{ ticket.description }}</p>
 
                     <!--
                       The photo the resident attached, shown back to them.

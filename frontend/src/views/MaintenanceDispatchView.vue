@@ -507,7 +507,18 @@ function handleDeleteTicketPrompt() {
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-sm font-medium leading-snug">{{ t.title }}</p>
+                <!--
+                  `break-words`: the title is the resident's own words from
+                  the ticket form (TenantTicketsView), free text, unbounded.
+                  `min-w-0` on the wrapper lets the card shrink to the column,
+                  but with no break-words on the text itself an unbroken run
+                  (a typo with no spaces is common on a phone) does not care
+                  that its wrapper shrank. Measured at the ordinary 1366px
+                  desktop width the board runs at: column 176px, title
+                  671px - 495px hidden by `body`'s `overflow-x: hidden`, not
+                  an edge case at some narrow width.
+                -->
+                <p class="text-sm font-medium leading-snug break-words">{{ t.title }}</p>
                 <p class="mt-0.5 text-xs text-ink-faint">
                   Unit {{ t.unit.toUpperCase() }}, {{ t.category }}
                 </p>

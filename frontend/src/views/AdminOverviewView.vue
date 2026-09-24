@@ -1129,7 +1129,11 @@ const isExportingArchive = ref(false);
               :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
             >
               <span class="min-w-0">
-                <span class="block text-sm font-medium">{{ t.title }}</span>
+                <!-- break-words: the resident's own free text from the ticket
+                     form, same overflow risk MaintenanceDispatchView's board
+                     card had (measured 495px hidden at the ordinary desktop
+                     width, silently, by body's overflow-x: hidden). -->
+                <span class="block break-words text-sm font-medium">{{ t.title }}</span>
                 <span class="block text-xs text-ink-faint">
                   {{ t.unit }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician }}</template>
                 </span>
