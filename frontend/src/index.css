@@ -890,6 +890,26 @@ body {
   select::-ms-expand {
     display: none;
   }
+  /*
+   * 16px on phones, 14px from 640px up. iOS Safari zooms the whole page into
+   * any focused field whose text is under 16px, and leaves the page zoomed
+   * after the keyboard closes, so on an iPhone every form here (sign-in, the
+   * enquiry, a repair request, a payment) jumped sideways the moment a field
+   * was tapped. Every field took its 14px from the three rules above; the one
+   * explicit override in a view is `sm:text-sm`, which only applies from
+   * 640px. `user-scalable=no` would also stop the zoom, and would stop anyone
+   * zooming on purpose, which is why this is the fix and that is not.
+   */
+  @media (max-width: 639px) {
+    .ws-input,
+    .ws-textarea,
+    .ws-select,
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+    textarea,
+    select {
+      font-size: 1rem;
+    }
+  }
   .ws-input:focus,
   .ws-select:focus,
   select:focus,
