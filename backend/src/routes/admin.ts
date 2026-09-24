@@ -30,7 +30,7 @@ import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/ch
 import { generateTemporaryPassword } from '../utils/generateTemporaryPassword.js';
 import { auditFromRequest, withoutCredentials } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
-import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom } from '../services/billingService.js';
+import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom, toCentavos, MONEY_DUST } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
 import { buildAuditTrailWorkbook, type AuditCategory } from '../services/auditTrailExport.js';
@@ -1844,11 +1844,42 @@ router.patch(
 
       const occupants = assignment?.occupant_count || 1;
 
-      // Rate read from system_settings, never hardcoded (defect 2). Prefer the bill's own
-      // figures when there is a bill - those are the terms the tenant was invoiced under.
+      /**
+       * THE LEDGER ROW RECORDS WHAT THIS PAYMENT BROUGHT IN - NOT THE WHOLE BILL.
+       *
+       * This took rent and water straight off the bill, whatever the payment was.
+       * The checkout charges the BALANCE (BR-013), so after ₱3,000 paid in person
+       * on a ₱6,900 bill, verifying the ₱3,900 GCash balance booked ₱6,700 + ₱200
+       * and the ledger showed ₱9,900 against ₱6,900 collected (2026-09-24 audit,
+       * reproduced). With no bill, `amount - water` went negative for a payment
+       * smaller than the water charge, failed CHECK (rent_amount >= 0), and the
+       * payment could never be verified.
+       *
+       * Now water first, only as much of it as earlier verified payments on this
+       * bill have not already covered, and never more than was paid; the rest is
+       * rent. A payment of the whole bill books exactly what it always did.
+       */
       const derivedWater = await computeWaterFee(paidRoom?.room_number ?? '', occupants);
-      const waterAmount = billData?.water_amount ?? derivedWater.amount;
-      const rentAmount = billData?.rent_amount ?? (before.amount - waterAmount);
+      const paidAmount = toCentavos(Number(before.amount) || 0);
+      let paidBefore = 0;
+      if (billData) {
+        const { data: earlier, error: earlierError } = await db
+          .from('payments')
+          .select('amount')
+          .eq('bill_id', billData.id)
+          .eq('verification_status', 'Verified')
+          .neq('id', before.id);
+        // Read as "nothing paid before", this would book water a second time.
+        if (earlierError) throw ApiError.internal(earlierError.message);
+        paidBefore = toCentavos((earlier ?? []).reduce((sum, p) => sum + (Number(p.amount) || 0), 0));
+      }
+      const billWater = billData ? Number(billData.water_amount) || 0 : derivedWater.amount;
+      const waterStillDue = Math.max(0, toCentavos(billWater - Math.min(paidBefore, billWater)));
+      const waterAmount = toCentavos(Math.min(paidAmount, waterStillDue));
+      const rentAmount = toCentavos(paidAmount - waterAmount);
+      // Short of the bill: the settlement below marks it Paid, and this sets it back.
+      const leavesBalance =
+        !!billData && toCentavos(paidBefore + paidAmount) < toCentavos(Number(billData.total_amount) || 0) - MONEY_DUST;
 
       /**
       * The property's calendar, not the server's.
@@ -1859,8 +1890,6 @@ router.patch(
       * a UTC host. A ledger figure must not depend on where the process runs.
       */
       const paidParts = propertyParts(before.paid_at || Date.now());
-      const year = paidParts.year;
-      const month = paidParts.month;
 
       let rentPeriodStart = billData?.billing_period_start;
       let rentPeriodEnd = billData?.billing_period_end;
@@ -1901,6 +1930,14 @@ router.patch(
         rentPeriodStart = start;
         rentPeriodEnd = end;
       }
+
+      // Filed under the month the rent COVERS, as the in-person receipt path files
+      // it - not the month it was paid. A September period paid by GCash on 3
+      // October went into October, understating one month and overstating the
+      // next in her monthly report (2026-09-24 audit).
+      const filedUnder = rentPeriodStart ? isoDateParts(String(rentPeriodStart).slice(0, 10)) : paidParts;
+      const year = filedUnder.year;
+      const month = filedUnder.month;
 
       // Check if income record already exists for this transaction reference
       const { data: existingIncome, error: existingIncomeError } = await db
@@ -1958,6 +1995,21 @@ router.patch(
         );
       }
 
+      // `settle_verified_payment` (018) always marks the bill Paid. A payment short
+      // of the balance leaves it Partially Paid instead, so the rest is still shown
+      // as owed and can still be paid. Secondary to a committed settlement, so
+      // logged rather than thrown; a retried verify is a no-op settlement that
+      // runs this again.
+      if (leavesBalance && billData) {
+        warnIfWriteFailed(
+          await db
+            .from('bills')
+            .update({ status: 'Partially Paid', updated_at: new Date().toISOString() })
+            .eq('id', billData.id),
+          `Bill ${billData.id} was settled in part but still reads Paid`
+        );
+      }
+
       const { data: settled } = await db
         .from('payments')
         .select('*')
@@ -1980,22 +2032,13 @@ router.patch(
         'Settlement notification'
       );
     } else if (isRejected) {
-      // Revert bill status to 'Due' if it was linked.
-      //
-      // This runs when an administrator REJECTS a payment. Discarding the result
-      // meant a declined payment could leave its bill still reading Paid - the
-      // money was not collected, the debt was closed, and nobody would chase it,
-      // because as far as the system was concerned there was nothing to chase.
-      if (before.bill_id) {
-        assertWritten(
-          await db
-            .from('bills')
-            .update({ status: 'Due', updated_at: new Date().toISOString() })
-            .eq('id', before.bill_id),
-          'The payment was rejected, but its bill could not be reopened and may still read Paid'
-        );
-      }
-
+      // The bill is left alone. This used to set it back to 'Due', on the idea
+      // that a rejected payment might have closed it - but only verification marks
+      // a bill Paid, and Verified -> Rejected is refused above, so the payment
+      // being rejected never touched its bill. The reset could only undo ANOTHER
+      // payment's settlement: verify P1, reject the duplicate P2, and a bill P1
+      // had paid read Due again, with the resident chased for rent already paid
+      // (2026-09-24 Adyen audit, reproduced). It also turned Partially Paid into Due.
       warnIfWriteFailed(
         await db.from('notifications').insert({
         recipient_profile_id: before.tenant_profile_id,
