@@ -576,560 +576,570 @@ function formatDateTime(iso: string) {
 </script>
 
 <template>
-  <div class="ws-focus space-y-5">
-    <!-- Page header -->
-    <div>
-      <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
-      <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-        Something needs fixing
-      </h1>
-      <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-        Tell the landlady what is wrong<span v-if="activeRoomNumber"> in unit {{ activeRoomNumber }}</span>, and
-        follow what happens next.
-      </p>
-    </div>
-
-    <div
-      v-if="ticketNotice"
-      ref="ticketNoticeEl"
-      tabindex="-1"
-      class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5 outline-none"
-      role="status"
-    >
-      <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
-        <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
-        {{ ticketNotice }}
-      </p>
-      <!-- No `size-9`: it overrode `.icon-btn`'s own 2.75rem down to 36px. -->
-      <button
-        type="button"
-        class="icon-btn shrink-0"
-        aria-label="Dismiss this message"
-        @click="ticketNotice = ''"
-      >
-        <X class="size-4" aria-hidden="true" />
-      </button>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-      <!-- Submit Ticket Form -->
-      <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-5">
-        <div class="border-b border-line p-5 sm:p-6">
-          <h2 class="text-base font-semibold text-ink">Report it</h2>
-          <p class="mt-1 text-sm leading-6 text-ink-soft">
-            This goes straight to Mrs. Da Silva.
-          </p>
-        </div>
-
-        <!-- `p-5 sm:p-6`, matching the header strip directly above it. -->
-        <form @submit.prevent="handleTicketSubmit" class="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
-          <div class="space-y-4">
-            <div
-              v-if="ticketError"
-              class="ws-reveal flex items-start gap-2.5 rounded-2xl bg-overdue-soft p-4"
-              role="alert"
-            >
-              <AlertTriangle class="mt-0.5 size-4 shrink-0 text-overdue" aria-hidden="true" />
-              <p class="text-sm leading-6 text-overdue">{{ ticketError }}</p>
-            </div>
-
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-title">
-                Issue Title
-              </label>
-              <input
-                id="ticket-title"
-                v-model="ticketTitle"
-                type="text"
-                placeholder="e.g. Bathroom sink pipe leak"
-                class="ws-input"
-                required
-              />
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-category">
-                  Category
-                </label>
-                <PillSelect
-                  id="ticket-category"
-                  v-model="ticketCategory"
-                  :options="[...TICKET_CATEGORIES]"
-                  aria-label="Category"
-                  widthClass="w-full"
-                />
-              </div>
-
-              <div>
-                <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-priority">
-                  Priority
-                </label>
-                <PillSelect
-                  id="ticket-priority"
-                  v-model="ticketPriority"
-                  :options="PRIORITY_OPTIONS"
-                  aria-label="Priority"
-                  widthClass="w-full"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-desc">
-                Details &amp; Description
-              </label>
-              <textarea
-                id="ticket-desc"
-                v-model="ticketDescription"
-                rows="4"
-                placeholder="Describe the issue — where it is in the unit, when it started, and how severe it is."
-                class="ws-textarea w-full"
-                required
-              ></textarea>
-            </div>
-
-            <div>
-              <label class="mb-1.5 block text-xs text-ink-faint">
-                Attach Photo <span class="font-normal text-ink-soft">(optional)</span>
-              </label>
-
-              <div
-                v-if="!ticketPhotoUrl"
-                class="press-plate border-2 border-dashed border-line rounded-xl p-5 text-center bg-canvas hover:bg-brand-soft/40 hover:border-brand/40"
-              >
-                <input
-                  id="ticket-photo-input"
-                  type="file"
-                  accept="image/*"
-                  class="hidden"
-                  @change="handlePhotoSelect"
-                />
-                <label
-                  for="ticket-photo-input"
-                  class="cursor-pointer flex flex-col items-center justify-center gap-1.5"
-                >
-                  <ImageIcon class="size-6 text-brand" />
-                  <span class="text-xs font-semibold text-ink">Click to upload a photo</span>
-                  <span class="text-xs text-ink-soft">PNG, JPG or WEBP up to {{ MAX_PHOTO_LABEL }}</span>
-                </label>
-              </div>
-
-              <div
-                v-else
-                class="ws-reveal p-3 bg-brand-soft border border-brand-soft rounded-xl flex items-center justify-between gap-3"
-              >
-                <div class="flex items-center gap-3 overflow-hidden">
-                  <img
-                    :src="ticketPhotoUrl"
-                    alt="Ticket attachment preview"
-                    class="size-12 object-cover rounded-lg border border-brand-soft shrink-0"
-                  />
-                  <div class="truncate">
-                    <span class="text-xs font-semibold text-ink block truncate">
-                      {{ ticketPhotoName }}
-                    </span>
-                    <span class="text-xs text-brand font-semibold">Photo attached</span>
-                  </div>
-                </div>
-                <!--
-                  `.icon-btn`, not `p-1` around a `size-4` icon - that was a
-                  24x24 target, the smallest control on the resident's side of
-                  the application, and the one that undoes an attachment they
-                  have just taken on a phone.
-                -->
-                <button
-                  type="button"
-                  @click="removePhoto"
-                  class="icon-btn shrink-0 text-ink-soft hover:text-overdue"
-                  aria-label="Remove photo"
-                  title="Remove photo"
-                >
-                  <X class="size-4" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            :disabled="submitting"
-            class="pill-btn-brand w-full min-h-11 mt-4"
-          >
-            <Send class="size-3.5" />
-            <span>{{ submitting ? 'Submitting…' : 'Submit Maintenance Ticket' }}</span>
-          </button>
-        </form>
+  <!--
+    One root, so App.vue's `page-move` transition can run. The page and its
+    ticket dialog were two root nodes, and Vue warned that a transition
+    cannot animate a non-element root, so this route popped in while every
+    other page faded. The dialog is fixed-position and the page fade is
+    opacity only, which does not create a containing block, so wrapping it
+    does not move it.
+  -->
+  <div>
+    <div class="ws-focus space-y-5">
+      <!-- Page header -->
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
+        <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
+          Something needs fixing
+        </h1>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
+          Tell the landlady what is wrong<span v-if="activeRoomNumber"> in unit {{ activeRoomNumber }}</span>, and
+          follow what happens next.
+        </p>
       </div>
 
-      <!-- Ticket Tracker (Matching Admin Table Style) -->
-      <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-7">
-        <!--
-          `bg-canvas` used to sit here, which painted this strip a visibly
-          different grey-green from "Report it" beside it - a plain white
-          `bg-tile` card with just a `border-b` for its own header. Same
-          border-only treatment here now, so the two panels read as one pair
-          rather than one looking finished and the other looking like a draft.
-        -->
-        <div class="px-6 py-4 border-b border-line flex items-center justify-between gap-3 flex-wrap">
-          <div class="flex items-center gap-2">
-            <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
-              <FileText class="size-4 text-brand" />
-              My Ticket Tracker
-            </h2>
-            <!-- A count computed from a list that failed to load is a claim, not
-                 an absence. Both of these read 0 out of a dropped request. -->
-            <span class="text-xs text-ink-soft">
-              <template v-if="ticketsLoadFailed">(not loaded)</template>
-              <template v-else-if="loadingTickets"></template>
-              <template v-else>({{ filteredTickets.length }} ticket{{ filteredTickets.length === 1 ? '' : 's' }})</template>
-            </span>
-          </div>
-          <span class="text-xs text-ink-soft">
-            <template v-if="ticketsLoadFailed">Open and resolved counts are not available</template>
-            <template v-else-if="loadingTickets"></template>
-            <template v-else>
-              <strong class="text-ink">{{ openCount }}</strong> open ·
-              <strong class="text-ink">{{ resolvedCount }}</strong> resolved
-            </template>
-          </span>
-        </div>
+      <div
+        v-if="ticketNotice"
+        ref="ticketNoticeEl"
+        tabindex="-1"
+        class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5 outline-none"
+        role="status"
+      >
+        <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
+          <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
+          {{ ticketNotice }}
+        </p>
+        <!-- No `size-9`: it overrode `.icon-btn`'s own 2.75rem down to 36px. -->
+        <button
+          type="button"
+          class="icon-btn shrink-0"
+          aria-label="Dismiss this message"
+          @click="ticketNotice = ''"
+        >
+          <X class="size-4" aria-hidden="true" />
+        </button>
+      </div>
 
-        <!-- Filter Bar (Identical to Admin Dispatch / Maintenance Tickets) -->
-        <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div class="relative w-full sm:w-80 shrink-0">
-            <!-- left-4/pl-11, which is what the comment above claims: the
-                 dispatch board's search box uses that inset, and this one was
-                 2px off it. -->
-            <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
-            <label for="ticket-search" class="sr-only">Search your requests</label>
-            <input
-              id="ticket-search"
-              v-model="searchQuery"
-              type="search"
-              placeholder="What it was about"
-              class="ws-input w-full pl-11 pr-4 sm:text-sm"
-            />
-          </div>
-
-          <PillSelect
-            v-model="statusFilter"
-            :options="ticketFilterOptions"
-            aria-label="Show which requests"
-          />
-        </div>
-
-        <!--
-          The inner scroller is `lg:` only now.
-
-          Below `lg` this panel is stacked under the form rather than beside
-          it, so there is no second column for it to keep pace with - and a
-          580px scroll region inside a page that already scrolls is the
-          worst thing a phone can be handed: a thumb that starts inside the
-          list scrolls the list, a thumb two pixels outside it scrolls the
-          page, and neither tells you which one it is about to do. At
-          `lg` and up the two panels sit side by side and the cap is what
-          keeps them the same height, so it stays there.
-
-          `p-5 sm:p-6` rather than a flat `p-6`, matching `OverviewTile` and
-          the "Report it" header above it; a flat 24px gutter on a 375px
-          screen spends 13% of the width on padding.
-        -->
-        <div class="p-5 sm:p-6 flex-1 lg:overflow-y-auto lg:max-h-[580px]">
-          <div v-if="loadingTickets" class="space-y-4">
-            <SkeletonCard variant="list" :count="2" />
-          </div>
-
-          <!--
-            A failed load must not read as "you have no requests".
-
-            This branch comes first so the empty state below can only be reached
-            by a list that actually loaded. The resident who has just filed an
-            emergency plumbing ticket on a dropped connection was being told they
-            had none, and the obvious thing to do about that is file it again.
-          -->
-          <UnavailableNote
-            v-else-if="ticketsLoadFailed"
-            message="Your requests could not be loaded. That is not the same as having none — anything you have already sent is still with the landlady."
-            @retry="fetchTickets"
-          />
-
-          <div
-            v-else-if="filteredTickets.length === 0"
-            class="ws-reveal py-12 text-center space-y-2"
-          >
-            <Inbox class="size-8 text-ink-soft/50 mx-auto" />
-            <p class="text-sm font-semibold text-ink">No tickets to show</p>
-            <p class="text-xs text-ink-soft">
-              {{
-                tickets.length === 0
-                  ? 'Submit a ticket using the form and it will appear here.'
-                  : searchQuery.trim()
-                    ? `Nothing matches "${searchQuery.trim()}".`
-                    : `You have no ${statusFilter.toLowerCase()} tickets.`
-              }}
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <!-- Submit Ticket Form -->
+        <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-5">
+          <div class="border-b border-line p-5 sm:p-6">
+            <h2 class="text-base font-semibold text-ink">Report it</h2>
+            <p class="mt-1 text-sm leading-6 text-ink-soft">
+              This goes straight to Mrs. Da Silva.
             </p>
           </div>
 
-          <div v-else class="space-y-3">
-            <article
-              v-for="(ticket, i) in filteredTickets"
-              :key="ticket.id"
-              class="list-reveal-item border border-line rounded-tile overflow-hidden hover:border-brand/40 hover:shadow-xs transition-[border-color,box-shadow] duration-150 ease-[var(--ease-out)] bg-tile"
-              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-            >
-              <!--
-                Clickable Header Row: Toggles Collapsible State.
-
-                A plain `div` with a `@click`, unlike every other disclosure in
-                this workspace (see "Other ways to pay" on the overview screen,
-                or PillSelect's trigger) - reachable by a pointer only. Nothing
-                here let a keyboard or screen-reader user open a ticket's own
-                details at all.
-              -->
+          <!-- `p-5 sm:p-6`, matching the header strip directly above it. -->
+          <form @submit.prevent="handleTicketSubmit" class="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+            <div class="space-y-4">
               <div
-                role="button"
-                tabindex="0"
-                :aria-expanded="isTicketExpanded(ticket.id)"
-                :aria-controls="`ticket-body-${ticket.id}`"
-                @click="toggleTicketExpanded(ticket.id)"
-                @keydown.enter.prevent="toggleTicketExpanded(ticket.id)"
-                @keydown.space.prevent="toggleTicketExpanded(ticket.id)"
-                class="press-plate px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-canvas select-none group"
+                v-if="ticketError"
+                class="ws-reveal flex items-start gap-2.5 rounded-2xl bg-overdue-soft p-4"
+                role="alert"
               >
-                <div class="min-w-0">
-                  <h3 class="font-semibold text-sm text-ink group-hover:text-brand transition-colors leading-snug">
-                    {{ ticket.title }}
-                  </h3>
-                  <p class="text-xs text-ink-soft mt-0.5">
-                    <span v-if="ticket.id" class="font-mono font-semibold text-ink-soft">#{{ ticket.id.slice(0, 8) }} · </span>
-                    Submitted {{ formatDate(ticket.created_at) }}
-                    <span v-if="ticket.rooms"> · Unit {{ ticket.rooms.room_number }}</span>
-                  </p>
+                <AlertTriangle class="mt-0.5 size-4 shrink-0 text-overdue" aria-hidden="true" />
+                <p class="text-sm leading-6 text-overdue">{{ ticketError }}</p>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-title">
+                  Issue Title
+                </label>
+                <input
+                  id="ticket-title"
+                  v-model="ticketTitle"
+                  type="text"
+                  placeholder="e.g. Bathroom sink pipe leak"
+                  class="ws-input"
+                  required
+                />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-category">
+                    Category
+                  </label>
+                  <PillSelect
+                    id="ticket-category"
+                    v-model="ticketCategory"
+                    :options="[...TICKET_CATEGORIES]"
+                    aria-label="Category"
+                    widthClass="w-full"
+                  />
                 </div>
 
-                <div class="flex items-center gap-2.5 shrink-0">
-                  <!-- Where the request has got to. The words are the meaning;
-                       the marks repeat it. -->
-                  <ol
-                    class="hidden sm:flex items-center gap-1.5"
-                    :aria-label="`Progress: ${ticketStepLabel(ticket.status)}`"
-                  >
-                    <li v-for="(step, i) in TICKET_STEPS" :key="step" class="flex items-center gap-1.5">
-                      <span
-                        aria-hidden="true"
-                        :class="[
-                          'size-2 rounded-full',
-                          i <= ticketStep(ticket.status) ? 'bg-brand' : 'bg-line',
-                        ]"
-                      />
-                      <span
-                        :class="[
-                          'text-xs',
-                          i === ticketStep(ticket.status) ? 'font-semibold text-ink' : 'text-ink-faint',
-                        ]"
-                      >
-                        {{ step }}
-                      </span>
-                      <span v-if="i < TICKET_STEPS.length - 1" aria-hidden="true" class="h-px w-4 bg-line" />
-                    </li>
-                  </ol>
-                  <span class="sm:hidden text-xs font-semibold text-ink">{{ ticketStepLabel(ticket.status) }}</span>
-                  <div class="p-1 rounded-lg text-ink-soft group-hover:text-ink transition-colors">
-                    <ChevronDown
-                      :class="[ 'size-4 transition-transform duration-200 ease-[var(--ease-out)]', isTicketExpanded(ticket.id) ? 'rotate-180 text-brand' : '' ]"
-                    />
-                  </div>
+                <div>
+                  <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-priority">
+                    Priority
+                  </label>
+                  <PillSelect
+                    id="ticket-priority"
+                    v-model="ticketPriority"
+                    :options="PRIORITY_OPTIONS"
+                    aria-label="Priority"
+                    widthClass="w-full"
+                  />
                 </div>
               </div>
 
-              <!-- Collapsible Body & Footer -->
-              <div :id="`ticket-body-${ticket.id}`" v-show="isTicketExpanded(ticket.id)" class="ws-reveal">
-                <!-- Body: description -->
-                <div class="px-5 py-3.5 bg-canvas">
-                  <p class="text-xs text-ink-soft leading-relaxed">{{ ticket.description }}</p>
+              <div>
+                <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-desc">
+                  Details &amp; Description
+                </label>
+                <textarea
+                  id="ticket-desc"
+                  v-model="ticketDescription"
+                  rows="4"
+                  placeholder="Describe the issue — where it is in the unit, when it started, and how severe it is."
+                  class="ws-textarea w-full"
+                  required
+                ></textarea>
+              </div>
 
+              <div>
+                <label class="mb-1.5 block text-xs text-ink-faint">
+                  Attach Photo <span class="font-normal text-ink-soft">(optional)</span>
+                </label>
+
+                <div
+                  v-if="!ticketPhotoUrl"
+                  class="press-plate border-2 border-dashed border-line rounded-xl p-5 text-center bg-canvas hover:bg-brand-soft/40 hover:border-brand/40"
+                >
+                  <input
+                    id="ticket-photo-input"
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    @change="handlePhotoSelect"
+                  />
+                  <label
+                    for="ticket-photo-input"
+                    class="cursor-pointer flex flex-col items-center justify-center gap-1.5"
+                  >
+                    <ImageIcon class="size-6 text-brand" />
+                    <span class="text-xs font-semibold text-ink">Click to upload a photo</span>
+                    <span class="text-xs text-ink-soft">PNG, JPG or WEBP up to {{ MAX_PHOTO_LABEL }}</span>
+                  </label>
+                </div>
+
+                <div
+                  v-else
+                  class="ws-reveal p-3 bg-brand-soft border border-brand-soft rounded-xl flex items-center justify-between gap-3"
+                >
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <img
+                      :src="ticketPhotoUrl"
+                      alt="Ticket attachment preview"
+                      class="size-12 object-cover rounded-lg border border-brand-soft shrink-0"
+                    />
+                    <div class="truncate">
+                      <span class="text-xs font-semibold text-ink block truncate">
+                        {{ ticketPhotoName }}
+                      </span>
+                      <span class="text-xs text-brand font-semibold">Photo attached</span>
+                    </div>
+                  </div>
                   <!--
-                    The photo the resident attached, shown back to them.
-
-                    `GET /api/tenant/my-tickets` did not select `ticket_attachments`, while the
-                    administrator's list always has - so the only person who could not see the
-                    photo was the one who took it.
+                    `.icon-btn`, not `p-1` around a `size-4` icon - that was a
+                    24x24 target, the smallest control on the resident's side of
+                    the application, and the one that undoes an attachment they
+                    have just taken on a phone.
                   -->
-                  <div v-if="ticket.ticket_attachments?.length" class="mt-3">
-                    <p class="text-xs font-semibold text-ink-soft mb-1.5">
-                      Photo you attached
+                  <button
+                    type="button"
+                    @click="removePhoto"
+                    class="icon-btn shrink-0 text-ink-soft hover:text-overdue"
+                    aria-label="Remove photo"
+                    title="Remove photo"
+                  >
+                    <X class="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              :disabled="submitting"
+              class="pill-btn-brand w-full min-h-11 mt-4"
+            >
+              <Send class="size-3.5" />
+              <span>{{ submitting ? 'Submitting…' : 'Submit Maintenance Ticket' }}</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Ticket Tracker (Matching Admin Table Style) -->
+        <div class="flex h-full flex-col overflow-hidden rounded-tile bg-tile lg:col-span-7">
+          <!--
+            `bg-canvas` used to sit here, which painted this strip a visibly
+            different grey-green from "Report it" beside it - a plain white
+            `bg-tile` card with just a `border-b` for its own header. Same
+            border-only treatment here now, so the two panels read as one pair
+            rather than one looking finished and the other looking like a draft.
+          -->
+          <div class="px-6 py-4 border-b border-line flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2">
+              <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
+                <FileText class="size-4 text-brand" />
+                My Ticket Tracker
+              </h2>
+              <!-- A count computed from a list that failed to load is a claim, not
+                   an absence. Both of these read 0 out of a dropped request. -->
+              <span class="text-xs text-ink-soft">
+                <template v-if="ticketsLoadFailed">(not loaded)</template>
+                <template v-else-if="loadingTickets"></template>
+                <template v-else>({{ filteredTickets.length }} ticket{{ filteredTickets.length === 1 ? '' : 's' }})</template>
+              </span>
+            </div>
+            <span class="text-xs text-ink-soft">
+              <template v-if="ticketsLoadFailed">Open and resolved counts are not available</template>
+              <template v-else-if="loadingTickets"></template>
+              <template v-else>
+                <strong class="text-ink">{{ openCount }}</strong> open ·
+                <strong class="text-ink">{{ resolvedCount }}</strong> resolved
+              </template>
+            </span>
+          </div>
+
+          <!-- Filter Bar (Identical to Admin Dispatch / Maintenance Tickets) -->
+          <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="relative w-full sm:w-80 shrink-0">
+              <!-- left-4/pl-11, which is what the comment above claims: the
+                   dispatch board's search box uses that inset, and this one was
+                   2px off it. -->
+              <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+              <label for="ticket-search" class="sr-only">Search your requests</label>
+              <input
+                id="ticket-search"
+                v-model="searchQuery"
+                type="search"
+                placeholder="What it was about"
+                class="ws-input w-full pl-11 pr-4 sm:text-sm"
+              />
+            </div>
+
+            <PillSelect
+              v-model="statusFilter"
+              :options="ticketFilterOptions"
+              aria-label="Show which requests"
+            />
+          </div>
+
+          <!--
+            The inner scroller is `lg:` only now.
+
+            Below `lg` this panel is stacked under the form rather than beside
+            it, so there is no second column for it to keep pace with - and a
+            580px scroll region inside a page that already scrolls is the
+            worst thing a phone can be handed: a thumb that starts inside the
+            list scrolls the list, a thumb two pixels outside it scrolls the
+            page, and neither tells you which one it is about to do. At
+            `lg` and up the two panels sit side by side and the cap is what
+            keeps them the same height, so it stays there.
+
+            `p-5 sm:p-6` rather than a flat `p-6`, matching `OverviewTile` and
+            the "Report it" header above it; a flat 24px gutter on a 375px
+            screen spends 13% of the width on padding.
+          -->
+          <div class="p-5 sm:p-6 flex-1 lg:overflow-y-auto lg:max-h-[580px]">
+            <div v-if="loadingTickets" class="space-y-4">
+              <SkeletonCard variant="list" :count="2" />
+            </div>
+
+            <!--
+              A failed load must not read as "you have no requests".
+
+              This branch comes first so the empty state below can only be reached
+              by a list that actually loaded. The resident who has just filed an
+              emergency plumbing ticket on a dropped connection was being told they
+              had none, and the obvious thing to do about that is file it again.
+            -->
+            <UnavailableNote
+              v-else-if="ticketsLoadFailed"
+              message="Your requests could not be loaded. That is not the same as having none — anything you have already sent is still with the landlady."
+              @retry="fetchTickets"
+            />
+
+            <div
+              v-else-if="filteredTickets.length === 0"
+              class="ws-reveal py-12 text-center space-y-2"
+            >
+              <Inbox class="size-8 text-ink-soft/50 mx-auto" />
+              <p class="text-sm font-semibold text-ink">No tickets to show</p>
+              <p class="text-xs text-ink-soft">
+                {{
+                  tickets.length === 0
+                    ? 'Submit a ticket using the form and it will appear here.'
+                    : searchQuery.trim()
+                      ? `Nothing matches "${searchQuery.trim()}".`
+                      : `You have no ${statusFilter.toLowerCase()} tickets.`
+                }}
+              </p>
+            </div>
+
+            <div v-else class="space-y-3">
+              <article
+                v-for="(ticket, i) in filteredTickets"
+                :key="ticket.id"
+                class="list-reveal-item border border-line rounded-tile overflow-hidden hover:border-brand/40 hover:shadow-xs transition-[border-color,box-shadow] duration-150 ease-[var(--ease-out)] bg-tile"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              >
+                <!--
+                  Clickable Header Row: Toggles Collapsible State.
+
+                  A plain `div` with a `@click`, unlike every other disclosure in
+                  this workspace (see "Other ways to pay" on the overview screen,
+                  or PillSelect's trigger) - reachable by a pointer only. Nothing
+                  here let a keyboard or screen-reader user open a ticket's own
+                  details at all.
+                -->
+                <div
+                  role="button"
+                  tabindex="0"
+                  :aria-expanded="isTicketExpanded(ticket.id)"
+                  :aria-controls="`ticket-body-${ticket.id}`"
+                  @click="toggleTicketExpanded(ticket.id)"
+                  @keydown.enter.prevent="toggleTicketExpanded(ticket.id)"
+                  @keydown.space.prevent="toggleTicketExpanded(ticket.id)"
+                  class="press-plate px-5 py-3.5 flex items-start justify-between gap-4 border-b border-line cursor-pointer hover:bg-canvas select-none group"
+                >
+                  <div class="min-w-0">
+                    <h3 class="font-semibold text-sm text-ink group-hover:text-brand transition-colors leading-snug">
+                      {{ ticket.title }}
+                    </h3>
+                    <p class="text-xs text-ink-soft mt-0.5">
+                      <span v-if="ticket.id" class="font-mono font-semibold text-ink-soft">#{{ ticket.id.slice(0, 8) }} · </span>
+                      Submitted {{ formatDate(ticket.created_at) }}
+                      <span v-if="ticket.rooms"> · Unit {{ ticket.rooms.room_number }}</span>
                     </p>
-                    <div class="flex flex-wrap gap-2">
-                      <a
-                        v-for="att in ticket.ticket_attachments"
-                        :key="att.id"
-                        :href="att.file_url"
-                        target="_blank"
-                        rel="noopener"
-                        class="press block size-20 rounded-xl overflow-hidden border border-line bg-tile"
-                        title="Open the full-size photo"
-                      >
-                        <img :src="att.file_url" alt="Photo attached to this request" class="w-full h-full object-cover" />
-                      </a>
+                  </div>
+
+                  <div class="flex items-center gap-2.5 shrink-0">
+                    <!-- Where the request has got to. The words are the meaning;
+                         the marks repeat it. -->
+                    <ol
+                      class="hidden sm:flex items-center gap-1.5"
+                      :aria-label="`Progress: ${ticketStepLabel(ticket.status)}`"
+                    >
+                      <li v-for="(step, i) in TICKET_STEPS" :key="step" class="flex items-center gap-1.5">
+                        <span
+                          aria-hidden="true"
+                          :class="[
+                            'size-2 rounded-full',
+                            i <= ticketStep(ticket.status) ? 'bg-brand' : 'bg-line',
+                          ]"
+                        />
+                        <span
+                          :class="[
+                            'text-xs',
+                            i === ticketStep(ticket.status) ? 'font-semibold text-ink' : 'text-ink-faint',
+                          ]"
+                        >
+                          {{ step }}
+                        </span>
+                        <span v-if="i < TICKET_STEPS.length - 1" aria-hidden="true" class="h-px w-4 bg-line" />
+                      </li>
+                    </ol>
+                    <span class="sm:hidden text-xs font-semibold text-ink">{{ ticketStepLabel(ticket.status) }}</span>
+                    <div class="p-1 rounded-lg text-ink-soft group-hover:text-ink transition-colors">
+                      <ChevronDown
+                        :class="[ 'size-4 transition-transform duration-200 ease-[var(--ease-out)]', isTicketExpanded(ticket.id) ? 'rotate-180 text-brand' : '' ]"
+                      />
                     </div>
                   </div>
                 </div>
 
-                <!-- Footer: classification metadata + View Timeline button -->
-                <div
-                  class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-line bg-tile"
-                >
-                  <StatusPill :tone="priorityTone(ticket.priority)">
-                    {{ priorityWord(ticket.priority) }}
-                  </StatusPill>
-                  <StatusPill tone="neutral">{{ ticket.category }}</StatusPill>
-                  <StatusPill v-if="ticket.resolved_at" tone="paid">
-                    Done {{ formatDate(ticket.resolved_at) }}
-                  </StatusPill>
+                <!-- Collapsible Body & Footer -->
+                <div :id="`ticket-body-${ticket.id}`" v-show="isTicketExpanded(ticket.id)" class="ws-reveal">
+                  <!-- Body: description -->
+                  <div class="px-5 py-3.5 bg-canvas">
+                    <p class="text-xs text-ink-soft leading-relaxed">{{ ticket.description }}</p>
 
-                  <!-- View Timeline Button -->
-                  <!--
-                    `min-h-9 h-9` forced `.pill-btn` down from 2.75rem to 36px -
-                    measured 74x36. It is the only way into a request's own
-                    history, and it sits at the end of a wrapping row of pills,
-                    which is where a thumb is least accurate.
-                  -->
-                  <button
-                    @click.stop="openTimeline(ticket)"
-                    class="pill-btn ml-auto text-xs px-3"
+                    <!--
+                      The photo the resident attached, shown back to them.
+
+                      `GET /api/tenant/my-tickets` did not select `ticket_attachments`, while the
+                      administrator's list always has - so the only person who could not see the
+                      photo was the one who took it.
+                    -->
+                    <div v-if="ticket.ticket_attachments?.length" class="mt-3">
+                      <p class="text-xs font-semibold text-ink-soft mb-1.5">
+                        Photo you attached
+                      </p>
+                      <div class="flex flex-wrap gap-2">
+                        <a
+                          v-for="att in ticket.ticket_attachments"
+                          :key="att.id"
+                          :href="att.file_url"
+                          target="_blank"
+                          rel="noopener"
+                          class="press block size-20 rounded-xl overflow-hidden border border-line bg-tile"
+                          title="Open the full-size photo"
+                        >
+                          <img :src="att.file_url" alt="Photo attached to this request" class="w-full h-full object-cover" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Footer: classification metadata + View Timeline button -->
+                  <div
+                    class="px-5 py-3 flex flex-wrap items-center gap-2 border-t border-line bg-tile"
                   >
-                    <ListChecks class="size-3.5 text-brand" />
-                    <span>Timeline</span>
-                    <ChevronRight class="size-3" />
-                  </button>
+                    <StatusPill :tone="priorityTone(ticket.priority)">
+                      {{ priorityWord(ticket.priority) }}
+                    </StatusPill>
+                    <StatusPill tone="neutral">{{ ticket.category }}</StatusPill>
+                    <StatusPill v-if="ticket.resolved_at" tone="paid">
+                      Done {{ formatDate(ticket.resolved_at) }}
+                    </StatusPill>
+
+                    <!-- View Timeline Button -->
+                    <!--
+                      `min-h-9 h-9` forced `.pill-btn` down from 2.75rem to 36px -
+                      measured 74x36. It is the only way into a request's own
+                      history, and it sits at the end of a wrapping row of pills,
+                      which is where a thumb is least accurate.
+                    -->
+                    <button
+                      @click.stop="openTimeline(ticket)"
+                      class="pill-btn ml-auto text-xs px-3"
+                    >
+                      <ListChecks class="size-3.5 text-brand" />
+                      <span>Timeline</span>
+                      <ChevronRight class="size-3" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Progress Timeline Modal -->
-  <WsModal
-      v-if="isTimelineOpen && activeTimelineTicket"
-      :title="activeTimelineTicket.title"
-      subtitle="Where your request has got to"
-      size="md"
-      @close="closeTimeline()"
-    >
+    <!-- Progress Timeline Modal -->
+    <WsModal
+        v-if="isTimelineOpen && activeTimelineTicket"
+        :title="activeTimelineTicket.title"
+        subtitle="Where your request has got to"
+        size="md"
+        @close="closeTimeline()"
+      >
 
-      <div class="p-6 space-y-6">
-        <!-- 5-Stage Progress Stepper -->
-        <div>
-          <p class="text-xs font-semibold text-ink-soft mb-4">Repair Progress</p>
-          <div class="space-y-0">
-            <div
-              v-for="(stage, index) in TIMELINE_STAGES"
-              :key="index"
-              class="flex gap-4"
-            >
-              <!-- Connector column -->
-              <div class="flex flex-col items-center">
-                <div
-                  :class="[ 'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors', index <= getStageIndex(activeTimelineTicket.status) ? 'bg-brand border-brand text-on-brand' : 'bg-tile border-line text-ink-soft' ]"
-                >
-                  <CheckCircle2 v-if="index <= getStageIndex(activeTimelineTicket.status)" class="size-4" />
-                  <span v-else class="text-xs font-semibold">{{ index + 1 }}</span>
-                </div>
-                <div
-                  v-if="index < TIMELINE_STAGES.length - 1"
-                  :class="[ 'w-0.5 flex-1 min-h-[28px]', index < getStageIndex(activeTimelineTicket.status) ? 'bg-brand' : 'bg-line' ]"
-                />
-              </div>
-
-              <!-- Stage text -->
-              <div class="pb-5 flex-1 min-w-0">
-                <p
-                  :class="[ 'text-xs sm:text-sm font-semibold leading-tight', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink' : 'text-ink-soft' ]"
-                >
-                  {{ stage.label }}
-                  <StatusPill
-                    v-if="index === getStageIndex(activeTimelineTicket.status)"
-                    tone="paid"
-                    class="ml-2"
-                    >Where it is now</StatusPill
+        <div class="p-6 space-y-6">
+          <!-- 5-Stage Progress Stepper -->
+          <div>
+            <p class="text-xs font-semibold text-ink-soft mb-4">Repair Progress</p>
+            <div class="space-y-0">
+              <div
+                v-for="(stage, index) in TIMELINE_STAGES"
+                :key="index"
+                class="flex gap-4"
+              >
+                <!-- Connector column -->
+                <div class="flex flex-col items-center">
+                  <div
+                    :class="[ 'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors', index <= getStageIndex(activeTimelineTicket.status) ? 'bg-brand border-brand text-on-brand' : 'bg-tile border-line text-ink-soft' ]"
                   >
-                </p>
-                <p
-                  :class="[ 'text-xs mt-0.5', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink-soft' : 'text-ink-soft' ]"
-                >
-                  {{ stage.desc }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+                    <CheckCircle2 v-if="index <= getStageIndex(activeTimelineTicket.status)" class="size-4" />
+                    <span v-else class="text-xs font-semibold">{{ index + 1 }}</span>
+                  </div>
+                  <div
+                    v-if="index < TIMELINE_STAGES.length - 1"
+                    :class="[ 'w-0.5 flex-1 min-h-[28px]', index < getStageIndex(activeTimelineTicket.status) ? 'bg-brand' : 'bg-line' ]"
+                  />
+                </div>
 
-        <div class="border-t border-line" />
-
-        <!-- Notes / Comment Feed -->
-        <div>
-          <p class="text-xs font-semibold text-ink-soft mb-3">Activity &amp; Notes</p>
-
-          <p
-            v-if="timelineError"
-            class="mb-3 rounded-xl border border-verify-soft bg-verify-soft/60 px-3.5 py-2.5 text-xs text-ink-soft"
-          >
-            <strong class="text-ink">Replies could not be loaded.</strong>
-            This does not mean nobody has answered — only that we could not check.
-            <span class="text-ink-soft">{{ timelineError }}</span>
-          </p>
-
-          <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
-            <div
-              v-for="(note, i) in timelineNotes"
-              :key="note.id"
-              class="list-reveal-item flex gap-3"
-              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-            >
-              <div class="size-7 rounded-full bg-night text-on-night text-xs font-semibold flex items-center justify-center shrink-0">
-                {{ note.author[0] }}
-              </div>
-              <div class="flex-1 bg-canvas border border-line rounded-xl px-3.5 py-2.5">
-                <p class="text-xs font-semibold text-ink">{{ note.author }}</p>
-                <p class="text-xs text-ink-soft mt-0.5 leading-relaxed">{{ note.text }}</p>
-                <p class="text-xs text-ink-soft mt-1">{{ formatDateTime(note.timestamp) }}</p>
+                <!-- Stage text -->
+                <div class="pb-5 flex-1 min-w-0">
+                  <p
+                    :class="[ 'text-xs sm:text-sm font-semibold leading-tight', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink' : 'text-ink-soft' ]"
+                  >
+                    {{ stage.label }}
+                    <StatusPill
+                      v-if="index === getStageIndex(activeTimelineTicket.status)"
+                      tone="paid"
+                      class="ml-2"
+                      >Where it is now</StatusPill
+                    >
+                  </p>
+                  <p
+                    :class="[ 'text-xs mt-0.5', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink-soft' : 'text-ink-soft' ]"
+                  >
+                    {{ stage.desc }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <!--
-            Not offered on a Closed ticket. The server refuses a note there with
-            409 ("This ticket is closed"), so the box only ever led to an error
-            toast. Resolved tickets still take notes; the server allows them.
-          -->
-          <p v-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
-            This request is closed, so it cannot take new notes. If the problem has come back, report
-            it again from this page.
-          </p>
-          <div v-else class="flex gap-2">
-            <label for="ticket-note" class="sr-only">Add a note for the landlady</label>
-            <input
-              id="ticket-note"
-              v-model="newNoteText"
-              type="text"
-              placeholder="Add a note for Mrs. Da Silva"
-              @keydown.enter.prevent="postNote"
-              class="ws-input flex-1"
-            />
-            <button
-              @click="postNote"
-              :disabled="!newNoteText.trim() || savingNote"
-              class="pill-btn-brand shrink-0"
+          <div class="border-t border-line" />
+
+          <!-- Notes / Comment Feed -->
+          <div>
+            <p class="text-xs font-semibold text-ink-soft mb-3">Activity &amp; Notes</p>
+
+            <p
+              v-if="timelineError"
+              class="mb-3 rounded-xl border border-verify-soft bg-verify-soft/60 px-3.5 py-2.5 text-xs text-ink-soft"
             >
-              <MessageSquarePlus class="size-3.5" />
-              <span>{{ savingNote ? '…' : 'Post' }}</span>
-            </button>
+              <strong class="text-ink">Replies could not be loaded.</strong>
+              This does not mean nobody has answered — only that we could not check.
+              <span class="text-ink-soft">{{ timelineError }}</span>
+            </p>
+
+            <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
+              <div
+                v-for="(note, i) in timelineNotes"
+                :key="note.id"
+                class="list-reveal-item flex gap-3"
+                :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+              >
+                <div class="size-7 rounded-full bg-night text-on-night text-xs font-semibold flex items-center justify-center shrink-0">
+                  {{ note.author[0] }}
+                </div>
+                <div class="flex-1 bg-canvas border border-line rounded-xl px-3.5 py-2.5">
+                  <p class="text-xs font-semibold text-ink">{{ note.author }}</p>
+                  <p class="text-xs text-ink-soft mt-0.5 leading-relaxed">{{ note.text }}</p>
+                  <p class="text-xs text-ink-soft mt-1">{{ formatDateTime(note.timestamp) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!--
+              Not offered on a Closed ticket. The server refuses a note there with
+              409 ("This ticket is closed"), so the box only ever led to an error
+              toast. Resolved tickets still take notes; the server allows them.
+            -->
+            <p v-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
+              This request is closed, so it cannot take new notes. If the problem has come back, report
+              it again from this page.
+            </p>
+            <div v-else class="flex gap-2">
+              <label for="ticket-note" class="sr-only">Add a note for the landlady</label>
+              <input
+                id="ticket-note"
+                v-model="newNoteText"
+                type="text"
+                placeholder="Add a note for Mrs. Da Silva"
+                @keydown.enter.prevent="postNote"
+                class="ws-input flex-1"
+              />
+              <button
+                @click="postNote"
+                :disabled="!newNoteText.trim() || savingNote"
+                class="pill-btn-brand shrink-0"
+              >
+                <MessageSquarePlus class="size-3.5" />
+                <span>{{ savingNote ? '…' : 'Post' }}</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </WsModal>
+      </WsModal>
+  </div>
 </template>
