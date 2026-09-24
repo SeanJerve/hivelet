@@ -40,6 +40,7 @@ import {
   hasEmergencyUnread,
   urgentUnreadCount,
   isPopoverOpen,
+  notificationsFetchFailed,
   startNotificationsHeartbeat,
   stopNotificationsHeartbeat
 } from '@/lib/notificationsStore';
@@ -137,6 +138,11 @@ function toggleNotifications() {
  * not a wording preference.
  */
 const notificationsLabel = computed(() => {
+  // A failed load is not "none unread": the count is 0 because nothing
+  // arrived, which is the false zero the panel itself stopped showing (342513a).
+  if (notificationsFetchFailed.value && unreadCount.value === 0) {
+    return 'Notifications, could not be loaded';
+  }
   if (unreadCount.value === 0) return 'Notifications, none unread';
   const count = `${unreadCount.value} unread`;
   const urgent = urgentUnreadCount.value;
