@@ -10,7 +10,7 @@
 -->
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import {
@@ -80,12 +80,25 @@ const ticketPhotoName = ref('');
  */
 const ticketPhotoType = ref('');
 const ticketNotice = ref('');
+/**
+ * The confirmation sits above both panels. At 375px the form is stacked and
+ * its Submit button is a long scroll below it, so a resident who sent a
+ * request saw the form empty itself and nothing else (B-61, reproduced in the
+ * mocked-API harness). `handleTicketSubmit` focuses it, which scrolls it into
+ * view and hands it to a screen reader in one step.
+ */
+const ticketNoticeEl = ref<HTMLElement | null>(null);
 const ticketError = ref('');
 const submitting = ref(false);
 
 // ---- Ticket list state ----------------------------------------------------
 const tickets = ref<TicketRow[]>([]);
-const loadingTickets = ref(false);
+/**
+ * Starts true: `onMounted` asks at once, and until it answers the header's
+ * counts have nothing to count. They read "0 open · 0 resolved" on every
+ * visit while the request was in flight.
+ */
+const loadingTickets = ref(true);
 /**
  * Set when `/tenant/my-tickets` could not be read.
  *
@@ -529,6 +542,9 @@ async function handleTicketSubmit() {
     ticketPriority.value = 'Medium';
     removePhoto();
 
+    await nextTick();
+    ticketNoticeEl.value?.focus();
+
     await fetchTickets();
   } catch (err: any) {
     ticketError.value = `Submission failed: ${err?.message || err}`;
@@ -575,7 +591,9 @@ function formatDateTime(iso: string) {
 
     <div
       v-if="ticketNotice"
-      class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5"
+      ref="ticketNoticeEl"
+      tabindex="-1"
+      class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5 outline-none"
       role="status"
     >
       <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
@@ -763,11 +781,13 @@ function formatDateTime(iso: string) {
                  an absence. Both of these read 0 out of a dropped request. -->
             <span class="text-xs text-ink-soft">
               <template v-if="ticketsLoadFailed">(not loaded)</template>
+              <template v-else-if="loadingTickets"></template>
               <template v-else>({{ filteredTickets.length }} ticket{{ filteredTickets.length === 1 ? '' : 's' }})</template>
             </span>
           </div>
           <span class="text-xs text-ink-soft">
             <template v-if="ticketsLoadFailed">Open and resolved counts are not available</template>
+            <template v-else-if="loadingTickets"></template>
             <template v-else>
               <strong class="text-ink">{{ openCount }}</strong> open ·
               <strong class="text-ink">{{ resolvedCount }}</strong> resolved
@@ -1081,8 +1101,16 @@ function formatDateTime(iso: string) {
             </div>
           </div>
 
-          <!-- Add Note Input -->
-          <div class="flex gap-2">
+          <!--
+            Not offered on a Closed ticket. The server refuses a note there with
+            409 ("This ticket is closed"), so the box only ever led to an error
+            toast. Resolved tickets still take notes; the server allows them.
+          -->
+          <p v-if="activeTimelineTicket.status === 'Closed'" class="rounded-xl bg-canvas px-3.5 py-2.5 text-sm text-ink-soft">
+            This request is closed, so it cannot take new notes. If the problem has come back, report
+            it again from this page.
+          </p>
+          <div v-else class="flex gap-2">
             <label for="ticket-note" class="sr-only">Add a note for the landlady</label>
             <input
               id="ticket-note"
