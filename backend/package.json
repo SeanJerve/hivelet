@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && node scripts/mark-dist-esm.mjs",
+    "build": "tsc && node scripts/mark-dist-esm.mjs && node scripts/bundle-for-vercel.mjs",
     "start": "node dist/server.js",
     "check:billing": "npm run build && node scripts/check-billing.mjs",
     "check:adyen": "npm run build && node scripts/check-adyen-hmac.mjs",
@@ -42,6 +42,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.12.12",
     "@types/qrcode": "^1.5.6",
+    "esbuild": "^0.28.2",
     "tsx": "^4.10.5",
     "typescript": "^5.4.5"
   },
