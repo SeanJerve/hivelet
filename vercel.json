@@ -70,7 +70,8 @@
       ]
     },
     "backend": {
-      "root": "backend"
+      "root": "backend",
+      "framework": "express"
     }
   },
   "rewrites": [
