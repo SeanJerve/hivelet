@@ -6,12 +6,12 @@
   @designRef docs/DESIGN_GUIDELINE.md
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { api } from '@/lib/api';
 import { peso } from '@/lib/canonicalUnits';
 import { propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
-import { useToast } from '@/lib/useToast';
-import { CreditCard, Search } from 'lucide-vue-next';
+import { RouterLink } from 'vue-router';
+import { CreditCard, Search, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
 import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -19,8 +19,6 @@ import StatusPill from '@/components/overview/StatusPill.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
-
-const { showToast } = useToast();
 
 const sortOrderOptions = [
   { value: 'latest', label: 'Newest first' },
@@ -42,7 +40,26 @@ const selectedBillForAdyen = ref<any | null>(null);
  */
 const payingCurrentPeriod = ref(false);
 
+/**
+ * CLOSING THE PAYMENT DIALOG DROPPED FOCUS TO THE PAGE BODY.
+ *
+ * WsModal returns focus to whatever opened it, but `closeAdyenModal` refreshed
+ * the bills in the same tick, the refresh swapped the tiles for a skeleton,
+ * and the Pay button it was returning to was already gone (B-61, reproduced
+ * in the mocked-API harness). The refresh after closing is now quiet, and if
+ * the button has still gone - a bill that is now waiting for verification
+ * has none - focus lands on the bills section instead of nowhere.
+ */
+let payTrigger: HTMLElement | null = null;
+const billsRegion = ref<HTMLElement | null>(null);
+
+function rememberPayTrigger() {
+  const el = document.activeElement;
+  payTrigger = el instanceof HTMLElement && el !== document.body ? el : null;
+}
+
 function openAdyenModalForCurrentPeriod() {
+  rememberPayTrigger();
   payingCurrentPeriod.value = true;
 }
 
@@ -52,7 +69,50 @@ async function closeAdyenModal() {
   // A bill may have just been raised as a side effect of opening the modal,
   // even if nothing was paid - refresh so "Nothing is due" cannot go on
   // being shown once that is no longer true.
-  await fetchOutstandingBills();
+  await fetchOutstandingBills({ quiet: true });
+  await nextTick();
+  // Only if focus was lost; a resident who has moved on keeps their place.
+  if (!document.activeElement || document.activeElement === document.body) {
+    if (payTrigger?.isConnected) payTrigger.focus();
+    else billsRegion.value?.focus();
+  }
+  payTrigger = null;
+}
+
+/**
+ * The outcome of a GCash return, kept on the page until it is dismissed.
+ *
+ * It was a toast, gone in four seconds, and it is the one message a resident
+ * coming back from the GCash app most needs to read: whether the money went,
+ * and whether to pay again (B-61).
+ */
+interface GatewayNotice {
+  tone: 'success' | 'warning';
+  title: string;
+  body: string;
+}
+const gatewayNotice = ref<GatewayNotice | null>(null);
+
+/**
+ * Adyen's session status in a resident's words. The raw value used to be
+ * quoted to them ("Adyen reports this checkout as "paymentPending"").
+ * Everything but `completed` is "not confirmed" on the server
+ * (`confirmCheckout` in adyenService.ts). AdyenPaymentModal.vue carries the
+ * same wording for the in-page leg; change both together.
+ */
+function gatewayStatusWords(status: string | undefined): string {
+  switch (status) {
+    case 'paymentPending':
+      return 'GCash has not finished processing this payment yet. Do not pay again; check this page again later.';
+    case 'canceled':
+      return 'The payment was cancelled before it was completed, so nothing was recorded.';
+    case 'expired':
+      return 'The payment page timed out before the payment was completed, so nothing was recorded.';
+    case 'refused':
+      return 'GCash declined the payment, so nothing was recorded.';
+    default:
+      return 'The payment was not completed, so nothing was recorded.';
+  }
 }
 
 // Outstanding bills from the database
@@ -227,38 +287,44 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
        * makes this same distinction for its in-page confirmation panel; this is
        * the matching redirect-return leg for GCash.
        */
-      showToast(
-        'success',
-        'Payment received',
-        res.recorded
-          ? "Adyen has confirmed it. It now shows as waiting for the landlady to check it, and " +
+      gatewayNotice.value = {
+        tone: 'success',
+        title: 'Payment received',
+        body: res.recorded
+          ? 'Adyen has confirmed it. It now shows as waiting for the landlady to check it, and ' +
             'you will not be asked to pay this bill again.'
-          : "Adyen has confirmed it, and we're recording it now - it usually appears within a " +
+          : "Adyen has confirmed it, and we're recording it now. It usually appears within a " +
             'few seconds. If this bill still looks unpaid for a moment, do not pay again; check ' +
-            'back shortly.'
-      );
+            'back shortly.',
+      };
     } else {
-      showToast(
-        'warning',
-        'Payment not completed',
-        `Adyen reports this checkout as "${res?.gatewayStatus ?? 'unknown'}". Nothing was ` +
-        'recorded. If money did leave your GCash, tell the landlady and do not pay again.'
-      );
+      const stillProcessing = res?.gatewayStatus === 'paymentPending';
+      gatewayNotice.value = {
+        tone: 'warning',
+        title: stillProcessing ? 'Payment still processing' : 'Payment not completed',
+        body:
+          gatewayStatusWords(res?.gatewayStatus) +
+          (stillProcessing ? '' : ' If money did leave your GCash, tell the landlady and do not pay again.'),
+      };
     }
-  } catch (err: any) {
+  } catch {
     /**
      * The payment itself is NOT in doubt here - the webhook records it
      * independently of this call. What failed is our confirmation of it, and
      * the message has to say so, because the wrong reading is "it did not work,
      * pay again".
+     *
+     * The server's own text is not shown. It can be Adyen's raw reply or a
+     * transport error ("Check that the API is running"), neither of which a
+     * resident can act on; this sentence already says everything they can.
      */
-    showToast(
-      'warning',
-      'Could not confirm your payment here',
-      (err?.message ? err.message + ' ' : '') +
-      'If money left your GCash the payment is safe - it is recorded with Adyen and reaches ' +
-      'the landlady separately. Do not pay again; check this page shortly.'
-    );
+    gatewayNotice.value = {
+      tone: 'warning',
+      title: 'Could not confirm your payment here',
+      body:
+        'If money left your GCash the payment is safe: it is recorded with Adyen and reaches ' +
+        'the landlady separately. Do not pay again; check this page shortly.',
+    };
   }
   return true;
 }
@@ -271,14 +337,18 @@ onMounted(async () => {
   await handleGatewayReturn(params);
 
   if (statusParam === 'success') {
-    showToast(
-      'success',
-      'Payment submitted',
-      refParam ? `GCash payment ${refParam} is waiting for verification.` : 'Your payment was submitted.'
-    );
+    gatewayNotice.value = {
+      tone: 'success',
+      title: 'Payment submitted',
+      body: refParam ? `GCash payment ${refParam} is waiting for verification.` : 'Your payment was submitted.',
+    };
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (statusParam === 'cancelled') {
-    showToast('warning', 'Payment cancelled', 'The online payment was cancelled before it was completed.');
+    gatewayNotice.value = {
+      tone: 'warning',
+      title: 'Payment cancelled',
+      body: 'The online payment was cancelled before it was completed.',
+    };
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
@@ -300,7 +370,9 @@ onMounted(async () => {
   if (payBillId) {
     window.history.replaceState({}, document.title, window.location.pathname);
     const target = outstandingBills.value.find((b: any) => b.id === payBillId);
-    if (target) openAdyenModal(target);
+    // Not while a payment on it waits for verification: the checkout refuses
+    // that with a 409, and the bill's own tile already says why (B-61).
+    if (target && billPayableNow(target) > 0) openAdyenModal(target);
   }
 });
 
@@ -360,8 +432,13 @@ function billTileTitle(bill: any): string {
   return billBalance(bill) < Number(bill.total_amount) ? 'Partly paid bill' : 'Bill to pay';
 }
 
-async function fetchOutstandingBills() {
-  loadingBills.value = true;
+/**
+ * `quiet` keeps the tiles on screen while it reloads. Used behind the payment
+ * dialog, where swapping them for a skeleton removed the button focus was
+ * about to return to; see `payTrigger`.
+ */
+async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
+  if (!opts.quiet) loadingBills.value = true;
   billsLoadFailed.value = false;
   try {
     const data = await api.get<any[]>('/tenant/my-bills');
@@ -406,12 +483,17 @@ async function fetchPaymentHistory() {
 }
 
 function openAdyenModal(bill: any) {
+  rememberPayTrigger();
   selectedBillForAdyen.value = bill;
 }
 
+/**
+ * The dialog stays open on its "Payment sent" panel until the resident closes
+ * it. This used to clear `selectedBillForAdyen`, which unmounted the dialog in
+ * the same tick the panel was switched on, so nobody ever saw it (B-61).
+ */
 function handleAdyenSuccess(_refId: string) {
-  selectedBillForAdyen.value = null;
-  fetchOutstandingBills();
+  fetchOutstandingBills({ quiet: true });
   fetchPaymentHistory();
 }
 
@@ -430,8 +512,46 @@ function refreshAll() {
           Payments and billing
         </h1>
         <p class="mt-1 text-sm text-ink-soft">Pay a bill with GCash, and see what has been recorded against your unit.</p>
+        <!-- Here, not inside the payment dialog: leaving the page from there
+             drops the checkout session. -->
+        <RouterLink
+          to="/terms#payments"
+          class="press inline-flex min-h-11 items-center text-sm text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+        >
+          How paying online works
+        </RouterLink>
       </div>
     </header>
+
+    <div
+      v-if="gatewayNotice"
+      :class="[
+        'ws-reveal flex items-start justify-between gap-3 rounded-tile p-4 sm:p-5',
+        gatewayNotice.tone === 'success' ? 'bg-brand-soft' : 'bg-verify-soft',
+      ]"
+      role="status"
+    >
+      <div class="min-w-0">
+        <p
+          :class="[
+            'flex items-center gap-2.5 text-sm font-semibold leading-6',
+            gatewayNotice.tone === 'success' ? 'text-brand' : 'text-ink',
+          ]"
+        >
+          <CheckCircle2 v-if="gatewayNotice.tone === 'success'" class="size-5 shrink-0" aria-hidden="true" />
+          <AlertTriangle v-else class="size-5 shrink-0" aria-hidden="true" />
+          {{ gatewayNotice.title }}
+        </p>
+        <p class="mt-1 text-sm leading-6 text-ink-soft">{{ gatewayNotice.body }}</p>
+      </div>
+      <button type="button" class="icon-btn shrink-0" aria-label="Dismiss this message" @click="gatewayNotice = null">
+        <X class="size-4" aria-hidden="true" />
+      </button>
+    </div>
+
+    <!-- `tabindex="-1"`: where focus lands when the dialog closes and its Pay
+         button is gone. See `payTrigger`. -->
+    <section ref="billsRegion" tabindex="-1" aria-label="Your bills" class="outline-none">
 
     <!-- Bills -->
     <div v-if="loadingBills" class="rounded-tile bg-tile p-6 flex flex-col gap-4" aria-busy="true">
@@ -535,6 +655,7 @@ function refreshAll() {
         </p>
       </OverviewTile>
     </div>
+    </section>
 
     <!-- Payment record -->
     <OverviewTile title="Payment record">

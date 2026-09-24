@@ -15,8 +15,7 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import { AdyenCheckout, Dropin } from '@adyen/adyen-web';
 import type { PaymentCompletedData, PaymentFailedData } from '@adyen/adyen-web';
 import '@adyen/adyen-web/styles/adyen.css';
-import { api } from '@/lib/api';
-import { useToast } from '@/lib/useToast';
+import { api, ApiRequestError } from '@/lib/api';
 import {
   ShieldCheck,
   X,
@@ -96,7 +95,39 @@ const emit = defineEmits<{
   (e: 'success', reference: string): void;
 }>();
 
-const { showToast } = useToast();
+/**
+ * RAW GATEWAY TEXT REACHED RESIDENTS.
+ *
+ * `onError` printed the Drop-in's own `error.message`, `onPaymentFailed`
+ * appended Adyen's result code in brackets, a declined confirmation quoted the
+ * session status ("paymentPending"), and a failed request showed whatever the
+ * server said, including Adyen's raw replies and "Check that the API is
+ * running" (B-61). Each is now a sentence a resident can act on. The one kind
+ * of server text still passed through is a 404 or 409: both are written for
+ * residents in `tenant.ts` and `adyenService.ts` and say what to do next.
+ *
+ * Same wording as `gatewayStatusWords` in TenantPaymentsView.vue, which handles
+ * the GCash return leg; change both together.
+ */
+function gatewayStatusWords(status: string | undefined): string {
+  switch (status) {
+    case 'paymentPending':
+      return 'GCash has not finished processing this payment yet. Do not pay again; check your payments page later.';
+    case 'canceled':
+      return 'The payment was cancelled before it was completed, so nothing was recorded.';
+    case 'expired':
+      return 'The payment page timed out before the payment was completed, so nothing was recorded.';
+    case 'refused':
+      return 'GCash declined the payment, so nothing was recorded.';
+    default:
+      return 'The payment was not completed, so nothing was recorded.';
+  }
+}
+
+/** A server refusal written for residents, or null when it is not one. */
+function residentFacingServerText(err: unknown): string | null {
+  return err instanceof ApiRequestError && (err.status === 404 || err.status === 409) ? err.message : null;
+}
 
 const adyenContainerRef = ref<HTMLDivElement | null>(null);
 const isLoading = ref(true);
@@ -110,6 +141,11 @@ const errorMessage = ref<string | null>(null);
  * has actually been authorised is the single worst thing to suggest.
  */
 const hasAttemptedPayment = ref(false);
+/**
+ * False after a 409. The server refused because a payment is already waiting
+ * for verification or the bill is paid, and "Try again" would only ask again.
+ */
+const canRetry = ref(true);
 const isCompleted = ref(false);
 /** True once the webhook's payment row is visible; false while it is in flight. */
 const isRecorded = ref(false);
@@ -121,6 +157,7 @@ onMounted(async () => {
 async function initializeAdyen() {
   isLoading.value = true;
   errorMessage.value = null;
+  canRetry.value = true;
 
   try {
     const res = await api.post<{
@@ -136,7 +173,10 @@ async function initializeAdyen() {
     });
 
     if (!res?.sessionId || !res.sessionData || !res.clientKey) {
-      throw new Error('The payment gateway did not return a usable checkout session.');
+      throw new Error(
+        'The payment page did not load properly. Nothing has been charged. Try again, and tell ' +
+        'the landlady if it keeps happening.'
+      );
     }
 
     // Authoritative either way: even a caller that already passed a `bill`
@@ -171,13 +211,23 @@ async function initializeAdyen() {
       },
       onPaymentFailed: (data?: PaymentFailedData) => {
         const code = data && 'resultCode' in data ? data.resultCode : undefined;
+        const what =
+          code === 'Refused'
+            ? 'GCash declined the payment.'
+            : code === 'Cancelled'
+              ? 'The payment was cancelled before it was completed.'
+              : 'The payment did not go through.';
         errorMessage.value =
-          `The payment did not go through${code ? ` (${code})` : ''}. ` +
-          'Adyen reports it as not completed, so you should not have been charged - but if ' +
-          'money did leave your GCash, tell the landlady rather than paying again.';
+          `${what} You should not have been charged, but if money did leave your GCash, tell ` +
+          'the landlady rather than paying again.';
       },
-      onError: (error: { message?: string }) => {
-        errorMessage.value = error?.message || 'An error occurred during checkout.';
+      onError: (error: { name?: string }) => {
+        // The Drop-in reports a resident backing out as an error named CANCEL.
+        errorMessage.value =
+          error?.name === 'CANCEL'
+            ? 'The payment was cancelled before it was completed. You should not have been charged.'
+            : 'The payment form stopped with an error before it finished. If money did leave ' +
+              'your GCash, tell the landlady rather than paying again.';
       }
     });
 
@@ -214,8 +264,13 @@ async function initializeAdyen() {
     new Dropin(checkout, { showPayButton: true }).mount(adyenContainerRef.value);
     hasAttemptedPayment.value = true;
   } catch (err: unknown) {
+    if (err instanceof ApiRequestError && err.status === 409) canRetry.value = false;
     errorMessage.value =
-      err instanceof Error ? err.message : 'Unable to reach the payment gateway.';
+      residentFacingServerText(err) ??
+      (err instanceof ApiRequestError || !(err instanceof Error)
+        ? 'The payment page could not be reached just now. Nothing has been charged. Try again ' +
+          'in a moment, and tell the landlady if it keeps happening.'
+        : err.message);
   } finally {
     // Already false on the happy path above; this covers every throw before it.
     isLoading.value = false;
@@ -245,21 +300,22 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     );
 
     if (!res?.confirmed) {
-      errorMessage.value = `Adyen reports this checkout as "${res?.gatewayStatus ?? 'unknown'}". No payment was recorded.`;
+      errorMessage.value = gatewayStatusWords(res?.gatewayStatus);
       return;
     }
 
+    // No toast as well: the "Payment sent" panel below stays until the
+    // resident closes the dialog, and it is the one that tells recorded
+    // from still being recorded.
     isCompleted.value = true;
     isRecorded.value = Boolean(res.recorded);
-    showToast(
-      'success',
-      'Payment confirmed by Adyen',
-      "It is now awaiting the landlady's verification."
-    );
     emit('success', sessionId);
   } catch (err: unknown) {
     errorMessage.value =
-      err instanceof Error ? err.message : 'Could not confirm the payment with the gateway.';
+      residentFacingServerText(err) ??
+      'We could not confirm this payment from here. If money left your GCash it is safe: Adyen ' +
+        'has it, and it reaches the landlady separately. Do not pay again; check your payments ' +
+        'page shortly.';
   } finally {
     isLoading.value = false;
   }
@@ -362,7 +418,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     </div>
 
     <!-- Paid -->
-    <div v-else-if="isCompleted" class="ws-reveal flex flex-col items-center gap-3 py-8 text-center">
+    <div v-else-if="isCompleted" class="ws-reveal flex flex-col items-center gap-3 py-8 text-center" role="status">
       <CheckCircle2 class="size-10 text-brand" aria-hidden="true" />
       <h3 class="text-lg font-semibold tracking-tight">Payment sent</h3>
       <p v-if="isRecorded" class="max-w-sm text-sm leading-6 text-ink-soft">
@@ -389,10 +445,10 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
         session for the same bill. Checkout now refuses that while a payment is
         awaiting verification, but the button should not be asking for it.
       -->
-      <button v-if="!hasAttemptedPayment" type="button" class="pill-btn" @click="initializeAdyen">
+      <button v-if="!hasAttemptedPayment && canRetry" type="button" class="pill-btn" @click="initializeAdyen">
         Try again
       </button>
-      <p v-else class="text-xs text-ink-soft">
+      <p v-else-if="hasAttemptedPayment" class="text-xs text-ink-soft">
         Close this and check your payments page. Do not pay again unless the landlady asks you to.
       </p>
     </div>
