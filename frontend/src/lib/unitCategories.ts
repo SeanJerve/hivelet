@@ -68,11 +68,14 @@ export interface UnitCategory {
  * is promised because the system stores no amenity list per unit.
  *
  * The one-bedroom blurb used to add "The two Linda units are here too, and
- * they are billed a fixed charge for water" - a real billing rule (BR-014),
- * but an administrative one, not a fact a prospective tenant needs to choose
- * a unit (asked to trim, 2026-09-24). It has nowhere else it needs to live:
- * a Linda unit's own rate already shows its actual water line on the unit
- * card, the true number rather than a rule about how it is set.
+ * they are billed a fixed charge for water" (asked to trim, 2026-09-24). It
+ * was not only more than a prospect needs; it was no longer true. BR-040's
+ * fixed charge was retired by the owner on 2026-09-20 (`computeWaterFee`,
+ * backend/src/services/billingService.ts): Linda's units are 200 a head like
+ * every other, and only where that money is remitted differs. An earlier
+ * version of this comment said the unit card showed the "true" fixed figure
+ * instead; that card was repeating the same retired rule, and now quotes the
+ * one per-person rate for every unit.
  */
 export const CATEGORIES: UnitCategory[] = [
   {

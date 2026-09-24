@@ -223,8 +223,8 @@ function syncDepositToUnit() {
  * Both forms stated this as a hardcoded `* 200`, the same defect
  * IncomeCollectionsView and AdminOverviewView were each fixed for on this
  * screen's own neighbours: the figure quoted here would go stale the moment
- * the owner changes the rate in settings, and it was never right for the two
- * Linda units, which are not billed per occupant at all. `waterChargeFor` is
+ * the owner changes the rate in settings. Every unit is billed per head,
+ * Linda's included (BR-040's flat charge was retired 2026-09-20). `waterChargeFor` is
  * the one place that computation lives, and `fetchRooms()` - already called
  * by this screen on mount - loads the live rate before it is needed here.
  */
@@ -232,16 +232,14 @@ const editOccupantsPreview = computed(() =>
   editHasRoommates.value === 'yes' ? 1 + (Number(editRoommateQty.value) || 1) : 1
 );
 const editWaterPreview = computed(() => {
-  const room = rooms.find((r) => r.unitCode.toUpperCase() === editUnitCode.value.toUpperCase());
-  return waterChargeFor(editUnitCode.value, editOccupantsPreview.value, room?.waterRateType === 'linda_fixed');
+  return waterChargeFor(editUnitCode.value, editOccupantsPreview.value);
 });
 
 const newOccupantsPreview = computed(() =>
   newHasRoommates.value === 'yes' ? 1 + (Number(newRoommateQty.value) || 1) : 1
 );
 const newWaterPreview = computed(() => {
-  const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.value.toLowerCase());
-  return waterChargeFor(newUnit.value, newOccupantsPreview.value, room?.waterRateType === 'linda_fixed');
+  return waterChargeFor(newUnit.value, newOccupantsPreview.value);
 });
 
 function checkInquiryConversion() {
@@ -1097,7 +1095,7 @@ async function handleOnboard() {
           <div
             v-for="t in visibleResidents(group.key, group.residents)"
             :key="t.id"
-            class="rounded-2xl bg-canvas p-5"
+            class="rounded-2xl border border-line p-5"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
@@ -1154,7 +1152,7 @@ async function handleOnboard() {
       :dismissible="false"
       @close="editModalTenant = null"
     >
-        <div class="rounded-2xl bg-canvas p-5">
+        <div class="rounded-2xl border border-line p-5">
           <div class="flex items-start justify-between gap-3 border-b border-line pb-3">
             <p class="text-sm font-semibold text-ink">On record</p>
             <StatusPill :tone="standing(editModalTenant).tone">

@@ -331,14 +331,14 @@ export const rooms = reactive<RoomItem[]>(
 
 export const tenants = reactive<TenantRecord[]>([]);
 /**
- * The configured water rates, fetched once and reused. BR-014 / BR-040.
+ * The configured water rate, fetched once and reused. BR-014.
  *
  * `GET /api/public/rates` needs no authentication, which is what makes it usable
- * from the public room pages.
+ * from the public room pages. There is no separate Linda rate to hold: see
+ * `waterChargeFor` below.
  */
-const waterRates = reactive<{ perOccupant: number | null; linda: Record<string, number> }>({
+const waterRates = reactive<{ perOccupant: number | null }>({
   perOccupant: null,
-  linda: {},
 });
 
 let waterRatesLoaded = false;
@@ -348,10 +348,8 @@ export async function fetchWaterRates(): Promise<void> {
   try {
     const r = await api.get<{
       waterRatePerOccupant: number;
-      lindaFixedWaterCharges: Record<string, number>;
     }>('/public/rates', false);
     waterRates.perOccupant = r?.waterRatePerOccupant ?? null;
-    waterRates.linda = r?.lindaFixedWaterCharges ?? {};
     waterRatesLoaded = true;
   } catch {
     // Left unset; buildBillingRule falls back to the seeded figures.
@@ -409,28 +407,28 @@ export function buildingNameFor(clusterCode: string): string {
 }
 
 /**
- * The monthly water charge for one unit, at the configured rates. BR-014 / BR-040.
+ * The monthly water charge for one unit, at the configured rate. BR-014.
  *
- * Exported because the dashboard's run-rate needs the same figures and was
- * computing them with a hardcoded 200 - including for Linda, where it used 200
- * for both units although LF is 400, so the run-rate understated LF every month.
+ * Exported because the dashboard's run-rate needs the same figure and was
+ * computing it with a hardcoded 200.
+ *
+ * ONE RULE FOR EVERY UNIT, LINDA'S INCLUDED. This used to return a flat 400 or
+ * 200 for LF and LB (BR-040), which the owner retired on 2026-09-20 -
+ * `computeWaterFee` in backend/src/services/billingService.ts carries her
+ * words: a third person in LF bills 600. The flat figures only ever matched
+ * because LF has always held 2 people and LB 1. `/public/rates` still sends
+ * `lindaFixedWaterCharges`, but settingsService's own docblock says that
+ * number "is not the charge and must not be treated as one" - it flags which
+ * rows route their money to Linda, which none of these screens need.
  */
-export function waterChargeFor(unitCode: string, occupants: number, isLinda: boolean): number {
-  const code = unitCode.toUpperCase();
-  if (isLinda) return waterRates.linda[code] ?? (code === 'LF' ? 400 : 200);
+export function waterChargeFor(_unitCode: string, occupants: number): number {
   return Math.max(1, occupants || 1) * (waterRates.perOccupant ?? 200);
 }
 
 /** The one-line charge summary shown against a unit on the public pages. */
-function buildBillingRule(unitCode: string, isLinda: boolean): string {
-  const code = unitCode.toUpperCase();
-  if (isLinda) {
-    // LF and LB are different figures - 400 and 200 - and saying "200" for both
-    // was wrong for LF. The electricity line is gone entirely: migration 017
-    // retired the flat charge, and nothing records one for any unit now.
-    const fixed = waterRates.linda[code] ?? (code === 'LF' ? 400 : 200);
-    return `Fixed ₱${fixed.toLocaleString()}/mo water, submetered electric`;
-  }
+function buildBillingRule(_unitCode: string, _isLinda: boolean): string {
+  // The same line for every unit: the "Fixed P400/mo" wording for LF and LB
+  // stated BR-040, retired 2026-09-20 (see `waterChargeFor` above).
   const perHead = waterRates.perOccupant ?? 200;
   return `₱${perHead.toLocaleString()}/head water, submetered electric`;
 }

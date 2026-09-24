@@ -138,6 +138,11 @@ function formatDateForDisplay(dStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
+/** "1 head" / "2 heads" - the water line always read "heads", plural, down to "1 heads". */
+function headsLabel(n: number): string {
+  return `${n} ${n === 1 ? 'head' : 'heads'}`;
+}
+
 const pendingPayments = ref<ApiPendingPayment[]>([]);
 
 /**
@@ -240,7 +245,7 @@ async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected')
 }
 
 /**
- * The configured water rates, from `GET /api/public/rates`. BR-014 / BR-036.
+ * The configured water rate, from `GET /api/public/rates`. BR-014.
  *
  * This view validated water against a hardcoded `occupants * 200`, with `LF` and
  * `LB` pinned at 400 and 200, and required the figure to be a whole multiple of
@@ -248,47 +253,44 @@ async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected')
  * one the owner uses to correct the ledger - was not, so the moment she changes
  * the rate in settings the two disagree and this one rejects a correct entry.
  *
- * The seeded values remain as the fallback, so a failed fetch degrades to
+ * The seeded value remains as the fallback, so a failed fetch degrades to
  * today's behaviour rather than to no validation at all.
+ *
+ * There is no separate Linda rate to fetch any more - see the note on
+ * `handleEditIncome`'s `waterBaseline` and the Linda reference card below.
+ * `lindaFixedWaterCharges` used to be read here too; it is a routing flag on
+ * the backend now (`getLindaFixedWaterCharge`'s own docblock says so in as many
+ * words), not a rate, and this screen stopped treating it as one.
  */
 const waterRatePerOccupant = ref<number | null>(null);
-const lindaFixedWaterCharges = ref<Record<string, number> | null>(null);
 
 async function loadWaterRates() {
   try {
-    const r = await api.get<{
-      waterRatePerOccupant: number;
-      lindaFixedWaterCharges: Record<string, number>;
-    }>('/public/rates', false);
+    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
     waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
-    lindaFixedWaterCharges.value = r?.lindaFixedWaterCharges ?? null;
   } catch {
-    // Left null; the seeded defaults below apply.
+    // Left null; the seeded default below applies.
   }
 }
 
 /**
- * The two water rates as text, for the places this screen states them.
+ * The water rate as text, for the places this screen states it - the Water
+ * tile and the Linda reference card both quote the same figure now that
+ * there is only one rate on the property.
  *
- * It already fetches both, to validate what the owner types. It then printed
- * them again as literals - "₱200 a head, each month" on the Water tile and
- * "₱400.00 / month" and "₱200.00 / month" on the Linda card - so the
- * screen could tell her one rate while the field beside it enforced another.
- * The moment she changes a rate in settings, the copy she reads and the rule
- * she is held to disagree, on the same page.
+ * It already fetches this, to validate what the owner types. It used to print
+ * it again as a literal - "₱200 a head, each month" - so the screen could
+ * tell her one rate while the field beside it enforced another. The moment
+ * she changes the rate in settings, the copy she reads and the rule she is
+ * held to disagree, on the same page.
  *
- * Neither names a figure it does not have. A rate is the kind of thing that is
+ * Names no figure it does not have. A rate is the kind of thing that is
  * either known or worth saying is not.
  */
 function perOccupantWaterText(): string {
   return waterRatePerOccupant.value !== null
     ? `${peso(waterRatePerOccupant.value)} a head, each month`
     : 'Per registered occupant, each month';
-}
-
-function lindaWaterText(code: 'LF' | 'LB'): string {
-  const fixed = lindaFixedWaterCharges.value?.[code];
-  return typeof fixed === 'number' ? `${peso(fixed, 2)} / month` : 'the rate set in settings';
 }
 
 onMounted(() => {
@@ -464,33 +466,46 @@ const clusterGroups = computed(() => {
       hasShareColumn: true, 
       units: ['1A', '1B', '1C', '1D', '1E', '1F', '1G', '1H', '2A', '2B', '2C', '2D', '2E', '2F', '2G', '3A', '3B', '3C', '3D', '3E', '3F', '3G'] 
     },
-    { 
-      key: 'Back Apartment', 
-      label: 'Back Apartment', 
-      desc: '5 Self-Contained Units · 100% Single Owner Revenue', 
-      hasShareColumn: false, 
-      units: ['B1F', 'B2F', 'B2B', 'B3F', 'B3B'] 
+    {
+      key: 'Back Apartment',
+      label: 'Back Apartment',
+      desc: '5 Rooms',
+      hasShareColumn: false,
+      units: ['B1F', 'B2F', 'B2B', 'B3F', 'B3B']
     },
-    { 
-      key: 'Penthouse', 
-      label: 'Penthouse', 
-      desc: '1 Top-Floor Suite (PH)', 
-      hasShareColumn: false, 
-      units: ['PH'] 
+    {
+      key: 'Penthouse',
+      label: 'Penthouse',
+      desc: '1 Room (PH)',
+      hasShareColumn: false,
+      units: ['PH']
     },
-    { 
-      key: 'Front Apartment', 
-      label: 'Front Apartment', 
-      desc: '3 Multi-Room Apartments · High-Capacity Units', 
-      hasShareColumn: false, 
-      units: ['F1', 'F2F', 'F2B'] 
+    {
+      key: 'Front Apartment',
+      label: 'Front Apartment',
+      desc: '3 Rooms',
+      hasShareColumn: false,
+      units: ['F1', 'F2F', 'F2B']
     },
-    { 
-      key: 'Linda', 
-      label: 'Linda Commercial & Annex', 
-      desc: '2 Commercial Spaces (*LF, *LB) · Submeter Electric Reimbursement', 
-      hasShareColumn: false, 
-      units: ['LF', 'LB', '*LF', '*LB'] 
+    {
+      // "Linda Commercial & Annex" named a kind of space nothing in this
+      // property is - these are residential units, not commercial ones - and
+      // disagreed with what every other screen calls this cluster
+      // (RoomDirectoryView, AdminOverviewView, TenantManagementView all read
+      // it off `CLUSTERS` in canonicalUnits.ts, which spells it "Linda Units").
+      //
+      // Only Linda's line says where the money goes; the others used to add
+      // "Pooled into the grand total", and Linda's "kept out of the grand
+      // total". That is true of the spreadsheet export's GRAND SUBTOTAL
+      // (judgement log 3.5), but this screen's own "collected altogether"
+      // sums every row in view, Linda included - so on this page the claim
+      // contradicted the figure above it. Where the money goes is the fact
+      // that is true everywhere.
+      key: 'Linda',
+      label: 'Linda Units',
+      desc: '2 Rooms (LF, LB) · Remitted directly to Linda',
+      hasShareColumn: false,
+      units: ['LF', 'LB', '*LF', '*LB']
     }
   ];
 
@@ -728,20 +743,21 @@ async function handleEditIncome() {
     ? summary.count
     : (roomsFetchFailed.value ? 1 : (room?.occupants || 1));
   const occupants = Number(editOccupants.value) > 0 ? Number(editOccupants.value) : carriedForward;
-  // BR-014 / BR-040 - the configured rate, with the seeded value as the fallback.
+  // BR-014 - the configured rate, with the seeded value as the fallback.
   const perOccupantRate = waterRatePerOccupant.value ?? 200;
-  const lindaFixed = lindaFixedWaterCharges.value?.[unitUpper];
 
-  let waterBaseline = occupants * perOccupantRate;
-  let isLindaUnit = false;
-  if (lindaFixed !== undefined) {
-    waterBaseline = lindaFixed;
-    isLindaUnit = true;
-  } else if (unitUpper === 'LF' || unitUpper === 'LB') {
-    // Only reached if the rates fetch failed; these are the seeded charges.
-    waterBaseline = unitUpper === 'LF' ? 400 : 200;
-    isLindaUnit = true;
-  }
+  /**
+   * BR-040's FIXED WATER CHARGE IS RETIRED (errata 2026-09-20, carried in
+   * `backend/src/services/billingService.ts computeWaterFee`). This block used
+   * to read `lindaFixedWaterCharges` and validate LF/LB against a flat 400/200
+   * with no multiple-of-rate check - the exact figures BOTH units already
+   * happened to bill at their standing headcount (1 and 2 heads), which is why
+   * the ledger never caught it. The owner confirmed directly: a third person
+   * in LF makes the water 600, same as any other unit. Every unit on the
+   * property is `occupants x rate` now; only WHERE the money is recorded and
+   * remitted still differs for LF/LB, which this form does not need to know.
+   */
+  const waterBaseline = occupants * perOccupantRate;
 
   const waterVal = Number(editWater.value) || 0;
   if (waterVal !== 0) {
@@ -749,10 +765,7 @@ async function handleEditIncome() {
       showToast('error', 'Water Payment Error', `Water payment for ${unitUpper} cannot be lower than the limit of ₱${waterBaseline} for ${occupants} occupant(s) unless it is ₱0.`);
       return;
     }
-    // The multiple only applies to per-occupant units. LF and LB are on a fixed
-    // charge (BR-040), so a figure that is not a multiple of the per-occupant
-    // rate is correct for them and must not be refused.
-    if (!isLindaUnit && waterVal % perOccupantRate !== 0) {
+    if (waterVal % perOccupantRate !== 0) {
       showToast('error', 'Water Payment Error', `Water payment must be paid in whole multiples of ₱${perOccupantRate} (e.g. 0, ${perOccupantRate}, ${perOccupantRate * 2}, ${perOccupantRate * 3}).`);
       return;
     }
@@ -1507,7 +1520,7 @@ async function exportExcel() {
                   </dd>
                 </div>
                 <div>
-                  <dt class="text-xs text-ink-faint">Water, {{ group.totalOccupants }} heads</dt>
+                  <dt class="text-xs text-ink-faint">Water, {{ headsLabel(group.totalOccupants) }}</dt>
                   <dd class="tabular font-semibold text-ink">{{ peso(group.totalWater, 2) }}</dd>
                 </div>
                 <div>
@@ -1546,7 +1559,7 @@ async function exportExcel() {
                   <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2, 2) }}</dd>
                 </div>
                 <div>
-                  <dt class="text-xs text-ink-faint">Water, {{ r.occupants }} heads</dt>
+                  <dt class="text-xs text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
                   <dd class="tabular font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
                 </div>
                 <div>
@@ -1715,7 +1728,7 @@ async function exportExcel() {
           </div>
           <div>
             <dt class="text-xs text-ink-faint">
-              Water, {{ rows.reduce((sum, r) => sum + r.occupants, 0) }} heads
+              Water, {{ headsLabel(rows.reduce((sum, r) => sum + r.occupants, 0)) }}
             </dt>
             <dd class="tabular font-semibold text-ink">{{ peso(totalWater, 2) }}</dd>
           </div>
@@ -1755,7 +1768,7 @@ async function exportExcel() {
             <dd class="tabular font-semibold text-verify">{{ peso(r.rent / 2, 2) }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-ink-faint">Water, {{ r.occupants }} heads</dt>
+            <dt class="text-xs text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
             <dd class="tabular font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
           </div>
           <div>
@@ -1775,35 +1788,54 @@ async function exportExcel() {
       </template>
     </RecordTable>
 
-    <!-- Linda Units Separate Reference Card (BR-040) -->
+    <!--
+      Linda Units Separate Reference Card (BR-040).
+
+      This used to say the two units are "billed a fixed monthly water charge
+      instead of the per-occupant rate" - true for 26 months by coincidence
+      (occupancy at LF and LB never once changed), and retired by the owner on
+      2026-09-20: a third person in LF bills 600, same as any other unit. See
+      `computeWaterFee` in billingService.ts, which now bills every unit
+      `occupants x rate` with no exception. What is NOT retired is where the
+      money goes - this card is still correct to single the two units out for
+      that reason, just not for a rate that no longer exists.
+    -->
     <div class="rounded-tile bg-tile p-6 space-y-3">
       <div class="flex items-center gap-2">
         <FileSpreadsheet class="size-5 text-accent" />
-        <h3 class="font-semibold text-base text-ink">Linda Units Fixed Charge Schedule</h3>
+        <h3 class="font-semibold text-base text-ink">Linda Units, Billed Separately</h3>
       </div>
       <p class="text-xs text-ink-soft leading-relaxed">
-        The two Linda units sit in the separate structure beside the red gate and are billed a
-        fixed monthly water charge instead of the per-occupant rate. They are not part of the
-        Front Apartment, whose income is never remitted to Linda. The flat electricity charge
-        that once applied to unmetered units was retired in September 2026 and is not recorded
-        for new periods; historical figures remain visible on past entries.
+        The two Linda units sit in the separate structure beside the red gate. Their water is
+        charged like every other unit's, {{ perOccupantWaterText().toLowerCase() }}. What is kept
+        apart is the money: it is recorded in its own column and remitted directly to Linda
+        rather than pooled with the rest. They are not part of the Front
+        Apartment. The flat electricity charge that once applied to unmetered units was retired
+        in September 2026 and is not recorded for new periods; historical figures remain visible
+        on past entries.
       </p>
 
       <div class="grid gap-4 sm:grid-cols-2 pt-2">
-        <div class="space-y-1 rounded-2xl bg-canvas p-4">
+        <!--
+          Bordered, not filled `bg-canvas` - `tone="neutral"` IS `bg-canvas`, so
+          on a filled canvas card the pill had no pill around it at all, just
+          floating text. Same collision as the room and resident matrix cards;
+          same fix.
+        -->
+        <div class="space-y-1 rounded-2xl border border-line p-4">
           <div class="flex justify-between items-center">
             <span class="font-semibold text-sm text-ink">Linda (LF)</span>
-            <StatusPill tone="neutral">A fixed charge</StatusPill>
+            <StatusPill tone="neutral">Remitted to Linda</StatusPill>
           </div>
-          <p class="text-xs text-ink-soft">Water: <strong>{{ lindaWaterText('LF') }}</strong></p>
+          <p class="text-xs text-ink-soft">Water: <strong>{{ perOccupantWaterText() }}</strong></p>
         </div>
 
-        <div class="space-y-1 rounded-2xl bg-canvas p-4">
+        <div class="space-y-1 rounded-2xl border border-line p-4">
           <div class="flex justify-between items-center">
             <span class="font-semibold text-sm text-ink">Linda (LB)</span>
-            <StatusPill tone="neutral">A fixed charge</StatusPill>
+            <StatusPill tone="neutral">Remitted to Linda</StatusPill>
           </div>
-          <p class="text-xs text-ink-soft">Water: <strong>{{ lindaWaterText('LB') }}</strong></p>
+          <p class="text-xs text-ink-soft">Water: <strong>{{ perOccupantWaterText() }}</strong></p>
         </div>
       </div>
     </div>

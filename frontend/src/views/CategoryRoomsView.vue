@@ -117,7 +117,6 @@ const publicRooms = ref<DbRoom[]>([]);
  * price that would stop matching the moment the landlady changed the setting.
  */
 const waterRatePerOccupant = ref<number | null>(null);
-const lindaFixedWaterCharge = ref<number | null>(null);
 
 /**
  * Never states a figure it has not been given.
@@ -125,13 +124,17 @@ const lindaFixedWaterCharge = ref<number | null>(null);
  * Sits next to a `<dt>Water</dt>` label, so the word itself is dropped from
  * the value column - "PHP 200 for water, each person" was saying the row's
  * own name back to the reader.
+ *
+ * One rule for every unit, Linda's included. This used to give LF and LB
+ * "PHP 400 fixed" / "A fixed charge", from BR-040 - which the owner retired
+ * on 2026-09-20 (`computeWaterFee`, backend/src/services/billingService.ts):
+ * a third person in LF bills 600, 200 a head like anywhere else. The "fixed"
+ * figures were only ever the per-head charge at a headcount that had never
+ * changed, so this line was telling a prospect something that would stop
+ * being true the day anyone moved in. What still sets Linda apart is where
+ * her money is remitted, which is none of a visitor's business.
  */
-function waterLabel(room: DbRoom): string {
-  if (room.is_linda_unit) {
-    return lindaFixedWaterCharge.value !== null
-      ? `${peso(lindaFixedWaterCharge.value)} fixed`
-      : 'A fixed charge';
-  }
+function waterLabel(_room: DbRoom): string {
   return waterRatePerOccupant.value !== null
     ? `${peso(waterRatePerOccupant.value)}, each person`
     : 'Charged for each person';
@@ -305,14 +308,10 @@ function syncFromRoute() {
 
 async function loadRates() {
   try {
-    const r = await api.get<{ waterRatePerOccupant: number; lindaFixedWaterCharge: number | null }>(
-      '/public/rates',
-      false
-    );
+    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
     waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
-    lindaFixedWaterCharge.value = r?.lindaFixedWaterCharge ?? null;
   } catch {
-    // Leave both null: the labels fall back to wording that quotes no figure.
+    // Left null: the label falls back to wording that quotes no figure.
   }
 }
 

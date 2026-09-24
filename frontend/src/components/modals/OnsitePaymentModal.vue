@@ -132,18 +132,13 @@ const currentOccupantsCount = computed(() => {
  * source.
  */
 const waterRatePerOccupant = ref<number | null>(null);
-const lindaFixedWater = ref<Record<string, number | null>>({});
 
 async function loadRates() {
   try {
-    const r = await api.get<{
-      waterRatePerOccupant: number;
-      lindaFixedWaterCharges: Record<string, number | null>;
-    }>('/public/rates', false);
+    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
     waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
-    lindaFixedWater.value = r?.lindaFixedWaterCharges ?? {};
   } catch {
-    // Leave both null; the literals below stand in.
+    // Left null; the literal below stands in.
   }
 }
 
@@ -177,12 +172,17 @@ function occupantsFor(
   return Number(room?.occupants ?? 0);
 }
 
-function waterBaselineFor(unitCode: string, occupants: number): number {
-  const code = unitCode.toUpperCase();
-  const fixed = lindaFixedWater.value[code];
-  if (fixed != null) return fixed;
-  if (code === 'LF') return 400;
-  if (code === 'LB') return 200;
+/**
+ * Per head for every unit, LF and LB included. They were a flat 400 and 200
+ * (BR-040), retired by the owner on 2026-09-20 - `computeWaterFee` in
+ * backend/src/services/billingService.ts: a third person in LF bills 600. So
+ * with three people in LF this form pre-filled 400 and validated against it,
+ * the landlady typing the correct 600 off the receipt against a baseline that
+ * was wrong. `lindaFixedWaterCharges` from `/public/rates` is not read here:
+ * settingsService's own docblock says that number is a routing flag and "must
+ * not be treated as" the charge.
+ */
+function waterBaselineFor(_unitCode: string, occupants: number): number {
   return occupants * (waterRatePerOccupant.value ?? 200);
 }
 
@@ -603,7 +603,14 @@ function triggerRecord() {
                 {{ currentOccupantsCount === 1 ? 'occupant' : 'occupants' }}
               </span>
             </span>
-            <input v-model.number="waterAmount" type="number" min="0" step="200" class="ws-input w-full" required />
+            <!--
+              `:step` follows the configured rate. It was the literal "200", and
+              the browser's own step validation refuses any figure that is not a
+              multiple of it before submit runs - so the day the rate changed,
+              the correct amount would be blocked with a native tooltip rather
+              than accepted.
+            -->
+            <input v-model.number="waterAmount" type="number" min="0" :step="waterRatePerOccupant ?? 200" class="ws-input w-full" required />
             <span class="ws-hint">
               <!--
                 The figure comes from `waterBaselineFor`, which is the function
@@ -613,10 +620,7 @@ function triggerRecord() {
                 one while the field below refused anything under the new one.
                 One source, so they cannot disagree.
               -->
-              <template v-if="selectedUnit.toLowerCase() === 'lf' || selectedUnit.toLowerCase() === 'lb'">
-                Linda's units are a fixed {{ peso(waterBaselineFor(selectedUnit, 0), 2) }} a month.
-              </template>
-              <template v-else-if="currentOccupantsCount > 0">
+              <template v-if="currentOccupantsCount > 0">
                 {{ currentOccupantsCount }} in the unit ({{ unitOccupantsSummary.text }}).
               </template>
               <template v-else>

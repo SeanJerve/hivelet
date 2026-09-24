@@ -324,21 +324,20 @@ const ledgerNote = computed(() => {
   return `Collections are entered through ${MONTH_LONG[lastRecordedMonth.value - 1]}.`;
 });
 
-// Base monthly run-rate from currently occupied rooms. Was `linda_fixed ? 200 :
-// occupants * 200`, which hardcoded the configurable rate (BR-014) and used 200
-// for LF, which is 400.
+// Base monthly run-rate from currently occupied rooms, at the configured water
+// rate (BR-014). Every unit is billed per head, Linda's included - see
+// `waterChargeFor` in systemState.ts for why the flat LF/LB figures went.
 const baseMonthlyRunRate = computed(() =>
   rooms.reduce((sum, r) => {
     if (!isOccupied(r)) return sum;
-    const isLinda = r.waterRateType === 'linda_fixed';
-    return sum + Number(r.price || 0) + waterChargeFor(r.unitCode, r.occupants || 1, isLinda);
+    return sum + Number(r.price || 0) + waterChargeFor(r.unitCode, r.occupants || 1);
   }, 0)
 );
 
 const baseMonthlyWater = computed(() =>
   rooms.reduce((sum, r) => {
     if (!isOccupied(r)) return sum;
-    return sum + waterChargeFor(r.unitCode, r.occupants || 1, r.waterRateType === 'linda_fixed');
+    return sum + waterChargeFor(r.unitCode, r.occupants || 1);
   }, 0)
 );
 
