@@ -27,7 +27,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
 import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
 import { generateTemporaryPassword } from '../utils/generateTemporaryPassword.js';
-import { auditFromRequest } from '../services/auditService.js';
+import { auditFromRequest, withoutCredentials } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
@@ -1092,23 +1092,13 @@ router.patch(
     if (beforeError) throw ApiError.internal(beforeError.message);
     if (!before) throw ApiError.notFound('Tenant profile not found.');
 
-    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    if (fullName !== undefined) patch.full_name = fullName;
-    if (phone !== undefined) patch.phone_number = phone;
-    if (emergencyContactName !== undefined) patch.emergency_contact_name = emergencyContactName;
-    if (emergencyContactPhone !== undefined) patch.emergency_contact_phone = emergencyContactPhone;
-    if (occupation !== undefined) patch.occupation = occupation;
-    if (facebookUrl !== undefined) patch.facebook_url = facebookUrl;
-    if (accountStatus !== undefined) patch.account_status = accountStatus;
-
-    const { data: after, error } = await db
-      .from('profiles')
-      .update(patch)
-      .eq('id', req.params.profileId)
-      .select('*')
-      .single();
-
-    if (error) throw ApiError.internal(error.message);
+    // The same hazard the vacate route below guards: this route can write
+    // account_status 'inactive', and pointed at an administrator's id it locks
+    // them out of their own correct password. The tenant list never shows an
+    // administrator, so the interface cannot reach this; the API could.
+    if (before.role === 'admin') {
+      throw ApiError.forbidden('That profile is an administrator, not a tenancy, so it cannot be edited here.');
+    }
 
     const explicitOccupants = occupantCount ?? (roommateQty !== undefined ? 1 + roommateQty : undefined);
 
@@ -1139,6 +1129,71 @@ router.patch(
     const unitChanged =
       roomNumber !== undefined &&
       !(currentUnit && roomNumber.toLowerCase() === String(currentUnit).trim().toLowerCase());
+    const movingInto = unitChanged && roomNumber && roomNumber.toLowerCase() !== 'none' ? roomNumber : null;
+
+    // Every refusal happens before the first write. The target unit used to be
+    // looked up and checked for an occupant only AFTER the profile was saved,
+    // the tenancy closed and the old unit marked Available - so a move refused
+    // with "already occupied" or "not found" still ended the resident's tenancy
+    // and freed a unit they were living in. (2026-09-24 audit, reproduced.)
+    let room: { id: string } | null = null;
+    const staleTenancies: string[] = [];
+    if (movingInto) {
+      const { data: target, error: roomError } = await db
+        .from('rooms')
+        .select('id, base_price, current_price')
+        .ilike('room_number', movingInto)
+        .maybeSingle();
+
+      if (roomError) throw ApiError.internal(roomError.message);
+      if (!target) throw ApiError.notFound(`Room/Unit ${movingInto} not found.`);
+      room = target;
+
+      // Check if there are other active assignments on this target room
+      const { data: targetRoomActive, error: targetRoomError } = await db
+        .from('room_assignments')
+        .select('id, tenant_profile_id, profiles (full_name, account_status)')
+        .eq('room_id', target.id)
+        .eq('is_active', true);
+
+      // This is the check for "is someone already living there". Read as an
+      // empty list, the move goes ahead and lands on
+      // `idx_single_active_assignment_per_room` - a partial UNIQUE index on
+      // (room_id) WHERE is_active, confirmed in pg_indexes - so it surfaces as
+      // a raw Postgres unique violation inside a 500 rather than as the clear
+      // conflict message below. The database stops two tenants sharing a unit;
+      // it cannot make the failure legible.
+      if (targetRoomError) throw ApiError.internal(targetRoomError.message);
+
+      for (const a of targetRoomActive ?? []) {
+        if (a.tenant_profile_id === req.params.profileId) continue;
+        const prof: any = a.profiles;
+        if (prof?.account_status === 'inactive') {
+          // A stale tenancy from an inactive tenant; closed below, once nothing can refuse.
+          staleTenancies.push(a.id);
+        } else {
+          throw ApiError.badRequest(`Unit ${movingInto.toUpperCase()} is already occupied by active tenant ${prof?.full_name || 'another resident'}.`);
+        }
+      }
+    }
+
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (fullName !== undefined) patch.full_name = fullName;
+    if (phone !== undefined) patch.phone_number = phone;
+    if (emergencyContactName !== undefined) patch.emergency_contact_name = emergencyContactName;
+    if (emergencyContactPhone !== undefined) patch.emergency_contact_phone = emergencyContactPhone;
+    if (occupation !== undefined) patch.occupation = occupation;
+    if (facebookUrl !== undefined) patch.facebook_url = facebookUrl;
+    if (accountStatus !== undefined) patch.account_status = accountStatus;
+
+    const { data: after, error } = await db
+      .from('profiles')
+      .update(patch)
+      .eq('id', req.params.profileId)
+      .select('*')
+      .single();
+
+    if (error) throw ApiError.internal(error.message);
 
     if (unitChanged) {
       // Deactivate old assignments.
@@ -1174,50 +1229,15 @@ router.patch(
         }
       }
 
-      if (roomNumber && roomNumber !== '—' && roomNumber.toLowerCase() !== 'none') {
-        const { data: room, error: roomError } = await db
-          .from('rooms')
-          .select('id, base_price, current_price')
-          .ilike('room_number', roomNumber)
-          .maybeSingle();
-
-        if (roomError) throw ApiError.internal(roomError.message);
-        if (!room) throw ApiError.notFound(`Room/Unit ${roomNumber} not found.`);
-
-        // Check if there are other active assignments on this target room
-        const { data: targetRoomActive, error: targetRoomError } = await db
-          .from('room_assignments')
-          .select('id, tenant_profile_id, profiles (full_name, account_status)')
-          .eq('room_id', room.id)
-          .eq('is_active', true);
-
-        // This is the check for "is someone already living there". Read as an
-        // empty list, the move goes ahead and lands on
-        // `idx_single_active_assignment_per_room` - a partial UNIQUE index on
-        // (room_id) WHERE is_active, confirmed in pg_indexes - so it surfaces as
-        // a raw Postgres unique violation inside a 500 rather than as the clear
-        // conflict message below. The database stops two tenants sharing a unit;
-        // it cannot make the failure legible.
-        if (targetRoomError) throw ApiError.internal(targetRoomError.message);
-
-        if (targetRoomActive && targetRoomActive.length > 0) {
-          for (const a of targetRoomActive) {
-            if (a.tenant_profile_id !== req.params.profileId) {
-              const prof: any = a.profiles;
-              if (prof?.account_status === 'inactive') {
-                // Stale assignment from inactive tenant, safely deactivate it
-                assertWritten(
-                  await db
-                    .from('room_assignments')
-                    .update({ is_active: false, end_date: propertyToday() })
-                    .eq('id', a.id),
-                  `Unit ${roomNumber.toUpperCase()} still holds a stale tenancy that could not be closed`
-                );
-              } else {
-                throw ApiError.badRequest(`Unit ${roomNumber.toUpperCase()} is already occupied by active tenant ${prof?.full_name || 'another resident'}.`);
-              }
-            }
-          }
+      if (movingInto && room) {
+        for (const staleId of staleTenancies) {
+          assertWritten(
+            await db
+              .from('room_assignments')
+              .update({ is_active: false, end_date: propertyToday() })
+              .eq('id', staleId),
+            `Unit ${movingInto.toUpperCase()} still holds a stale tenancy that could not be closed`
+          );
         }
 
         // `deposit_amount` holds ONE MONTH, held at move-in (OD-04, answered by the owner
@@ -1246,13 +1266,13 @@ router.patch(
             is_active: true
           });
 
-        // The occupancy check a few lines up cannot close the gap between
-        // itself and this insert. `idx_single_active_assignment_per_room`
-        // does, and losing to it means someone was moved in meanwhile - which
-        // is a 409 naming the unit, not a 500 naming the constraint.
+        // The occupancy check above cannot close the gap between itself and
+        // this insert. `idx_single_active_assignment_per_room` does, and losing
+        // to it means someone was moved in meanwhile - which is a 409 naming the
+        // unit, not a 500 naming the constraint.
         if (uniqueViolationOn(assignError, 'idx_single_active_assignment_per_room')) {
           throw ApiError.conflict(
-            `Unit ${roomNumber.toUpperCase()} already has an active resident - somebody was ` +
+            `Unit ${movingInto.toUpperCase()} already has an active resident - somebody was ` +
             'moved in while this was open. Reload the resident list and try again.'
           );
         }
@@ -1285,11 +1305,11 @@ router.patch(
       action: 'TENANT_UPDATE',
       entityType: 'PROFILE',
       entityId: req.params.profileId,
-      previousValues: before as Record<string, unknown>,
-      newValues: after as Record<string, unknown>
+      previousValues: withoutCredentials(before as Record<string, unknown>),
+      newValues: withoutCredentials(after as Record<string, unknown>)
     });
 
-    res.status(200).json({ success: true, data: after });
+    res.status(200).json({ success: true, data: withoutCredentials(after) });
   })
 );
 
@@ -1395,7 +1415,7 @@ router.post(
       newValues: { account_status: 'inactive' }
     });
 
-    res.status(200).json({ success: true, data: updatedProfile });
+    res.status(200).json({ success: true, data: withoutCredentials(updatedProfile) });
   })
 );
 

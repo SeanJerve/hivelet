@@ -120,6 +120,24 @@ export function clientIp(req: Request): string | null {
 }
 
 /**
+ * A profile row minus its password hash, for anything that leaves the server
+ * or lands in the trail.
+ *
+ * PATCH /admin/tenants/:profileId audited `select('*')` rows on both sides, so
+ * from 2026-08-25 every TENANT_UPDATE stored the resident's bcrypt hash in
+ * previous_values AND new_values - served back by GET /admin/audit-logs and
+ * written into audit.xlsx. Counted read-only on 2026-09-24: 16 rows, 7
+ * profiles. The routes now strip it; `recordAudit` strips it again so the next
+ * route that audits a whole row cannot repeat this.
+ */
+export function withoutCredentials<T>(row: T): T {
+  if (!row || typeof row !== 'object' || Array.isArray(row)) return row;
+  if (!('password_hash' in (row as Record<string, unknown>))) return row;
+  const { password_hash: _hash, ...rest } = row as Record<string, unknown>;
+  return rest as T;
+}
+
+/**
  * Writes one audit row.
  *
  * Failures are logged but never thrown: an audit outage must not roll back a
@@ -138,8 +156,8 @@ export async function recordAudit(entry: AuditEntry): Promise<void> {
       action: entry.action,
       entity_type: entry.entityType,
       entity_id: safeEntityId,
-      previous_values: entry.previousValues ?? null,
-      new_values: entry.newValues ?? null,
+      previous_values: withoutCredentials(entry.previousValues) ?? null,
+      new_values: withoutCredentials(entry.newValues) ?? null,
       ip_address: entry.ipAddress ?? null,
     });
 
