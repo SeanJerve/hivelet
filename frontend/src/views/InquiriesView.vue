@@ -420,7 +420,16 @@ async function handleSendReply() {
                   <StatusPill :tone="statusTone(inq.status)">{{ statusWord(inq.status) }}</StatusPill>
                 </div>
 
-                <p class="mt-2 line-clamp-2 text-sm leading-6 text-ink-soft">{{ inq.message }}</p>
+                <!--
+                  `break-words`: this is the visitor's own free text (up to
+                  2000 characters, InquireView.vue), and `line-clamp-2` only
+                  hides extra LINES - it does nothing about a single line that
+                  is one long unbroken run (a pasted URL, a typo with no
+                  spaces). Measured with such a message: 1110px of scrollWidth
+                  against a 301px row at 375px, hidden rather than shown by
+                  `body`'s `overflow-x: hidden`, so it read as a blank card.
+                -->
+                <p class="mt-2 line-clamp-2 break-words text-sm leading-6 text-ink-soft">{{ inq.message }}</p>
               </button>
             </li>
           </ul>
@@ -539,9 +548,18 @@ async function handleSendReply() {
               · {{ msg.time }}
             </p>
 
+            <!--
+              `break-words`: the first bubble is the prospect's own free text,
+              unmoderated, up to 2000 characters. `max-w-md` bounds the
+              bubble, but bounding a container does nothing for a single
+              unbroken run inside it - measured a bubble at offsetWidth 448
+              with scrollWidth 1126, 678px hidden past its own edge by
+              `body`'s `overflow-x: hidden`, in the one place the landlady
+              actually reads what a prospect asked her.
+            -->
             <div
               :class="[
-                'max-w-md rounded-2xl px-4 py-3 text-sm leading-6',
+                'max-w-md break-words rounded-2xl px-4 py-3 text-sm leading-6',
                 msg.from === 'me' ? 'bg-brand text-on-brand' : 'bg-tile text-ink',
               ]"
             >
