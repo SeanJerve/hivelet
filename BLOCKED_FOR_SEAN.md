@@ -2768,3 +2768,44 @@ these three indistinguishable from the real residents.*
 - **Correction to the brief:** "a refused request writes nothing" was not true here. Every
   401/403 wrote a permanent audit row (10,673 of 16,422 rows). Budgeted now, not removed
 - **Raised:** 2026-09-24 by Claude, backend audit
+
+### B-64 — Sean's decisions on B-63, and what each lane still owes (2026-09-24)
+
+- **Sean's decisions, 2026-09-24:**
+  1. The 16 old `audit_logs` rows holding bcrypt hashes are **left as they are**. None is a current
+     password, and the log stays append-only.
+  2. **Enforce `must_change_password` on the server: yes.** The frontend half is pushed (3fc5993).
+     After a forced change the app reloads once, so the screens behind the dialog fetch again.
+     Loyd applies the server gate he wrote up (428 on everything but `/auth/me`, change-password
+     and logout).
+  3. **A password change ends other sessions: yes.** The frontend half is pushed (3fc5993). The
+     contract: `POST /auth/change-password` returns `{ data: { token } }` with a fresh token for
+     this device, and the app stores it when present. Loyd rejects tokens issued before
+     `password_changed_at` and returns that token.
+  4. **Hosting: free first, frontend on Vercel.** `frontend/vercel.json` holds the SPA rewrite, the
+     security headers (the CSP is report-only) and the cache rules. A build on Vercel or in CI now
+     fails without `VITE_API_BASE_URL`; a local build only warns. The API host is Loyd's choice
+     on a free tier, and DEPLOYMENT_PLAN.md § 1 should be updated to match.
+- **Backend (Loyd's lane), still owed:**
+  - The retention rules on `/privacy` (CLIENT_MEETING_QUESTIONS 3c) need a deletion step before the
+    site goes public: an enquiry that never became a tenancy is deleted six months after its last
+    message, and a former resident's contact details one month after move-out. The enquiry rows
+    in `audit_logs` keep the person's name and IP address, and the step has to reconcile that.
+  - The audit workbook route builds only three trails (business, sign-ins, everything) and
+    silently builds "business" for anything else, so the Downloads chip's workbook lists business
+    events. See `backend/src/routes/admin.ts` around line 2130 and
+    `backend/src/services/auditTrailExport.ts`.
+  - Once the API host is chosen, narrow the CSP's `connect-src` in `frontend/vercel.json`. It
+    allows any https address for now.
+- **Frontend (Sean's lane), small leftovers:**
+  - `AppSidebar.vue`: the mobile drawer has no `id`, so the header's toggle has no
+    `aria-controls` yet.
+  - A cross-page link to `/public#faqs` lands too high, because the room list loads after the
+    scroll and pushes the section down.
+  - `CONTINUE_HERE.md:141` and a comment in `inquiryRules.ts` still describe the old
+    network-error wording and "retention unset".
+  - Dialogs (WsModal) still vanish on close instead of fading.
+  - B-61's other frontend items are fixed and pushed. The commit messages from 6ca3485 to
+    3fc5993 carry the evidence. Most were checked by typecheck and `check:all` rather than in a
+    browser, so re-check them in the rehearsal.
+- **Raised:** 2026-09-24 by Claude, frontend hardening pass

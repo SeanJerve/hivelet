@@ -83,7 +83,7 @@ function demoPanel(): Plugin {
  * so a deployment built without it went up cleanly and then every visitor's
  * browser called ITS OWN machine: it looks exactly like "the API is down", and
  * nothing on the page says why. Failing here is the only point where a person
- * is watching.
+ * is watching. It is enforced on Vercel and in CI only (see the call site).
  *
  * `loadEnv` reads the variable from the shell as well as from `.env*` files, so
  * a Vercel project environment variable and a gitignored
@@ -354,6 +354,18 @@ const config: UserConfig = {
 }
 
 export default defineConfig(({ command, mode }) => {
-  if (command === 'build' && mode === 'production') requireApiBaseUrl(mode)
+  // Enforced where a deployment is built (Vercel sets VERCEL=1; CI sets CI).
+  // A local build only warns: its purpose is `npm run preview` / pwa-verify
+  // against the local backend, where the localhost fallback is correct, and
+  // failing there broke every teammate's plain `npm run build`.
+  if (command === 'build' && mode === 'production') {
+    if (process.env.VERCEL || process.env.CI) requireApiBaseUrl(mode)
+    else if (!loadEnv(mode, process.cwd(), 'VITE_').VITE_API_BASE_URL?.trim()) {
+      console.warn(
+        '[hivelet] VITE_API_BASE_URL is not set: this local build calls http://localhost:5000/api. ' +
+          'Fine for preview against the local backend; never deploy this dist/.',
+      )
+    }
+  }
   return config
 })
