@@ -269,7 +269,10 @@ onUnmounted(() => {
           <span v-if="unreadCount > 0" class="text-xs font-semibold text-brand">
             {{ unreadCount }} unread
           </span>
-          <span v-else class="text-xs text-ink-faint">All read</span>
+          <!-- Not after a failed load: the count is then 0 because nothing was
+               read, and "All read" sat directly above "Notifications could not
+               be loaded" (mocked-API harness, 2026-09-24). -->
+          <span v-else-if="!notificationsFetchFailed" class="text-xs text-ink-faint">All read</span>
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
