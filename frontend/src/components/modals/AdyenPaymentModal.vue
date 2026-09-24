@@ -124,6 +124,18 @@ function gatewayStatusWords(status: string | undefined): string {
   }
 }
 
+/**
+ * An error this component throws with a sentence written for residents.
+ *
+ * `initializeAdyen` showed ANY `Error`'s message, meant for its own two
+ * throws below. `AdyenCheckout()` throws Errors too: with the session setup
+ * call failing, a resident read "Service at https://checkoutshopper-test.adyen.com/
+ * checkoutshopper/v1/sessions/.../setup?clientKey=... is not available", the
+ * client key included (B-61 re-check, mocked-API harness, 2026-09-24). Only
+ * this class's text is shown now; anything else gets the plain sentence.
+ */
+class ResidentFacingError extends Error {}
+
 /** A server refusal written for residents, or null when it is not one. */
 function residentFacingServerText(err: unknown): string | null {
   return err instanceof ApiRequestError && (err.status === 404 || err.status === 409) ? err.message : null;
@@ -173,7 +185,7 @@ async function initializeAdyen() {
     });
 
     if (!res?.sessionId || !res.sessionData || !res.clientKey) {
-      throw new Error(
+      throw new ResidentFacingError(
         'The payment page did not load properly. Nothing has been charged. Try again, and tell ' +
         'the landlady if it keeps happening.'
       );
@@ -255,7 +267,7 @@ async function initializeAdyen() {
     await nextTick();
 
     if (!adyenContainerRef.value) {
-      throw new Error(
+      throw new ResidentFacingError(
         'The payment form could not be placed on the page. Nothing has been charged. ' +
         'Close this and try again, and tell the landlady if it keeps happening.'
       );
@@ -267,10 +279,10 @@ async function initializeAdyen() {
     if (err instanceof ApiRequestError && err.status === 409) canRetry.value = false;
     errorMessage.value =
       residentFacingServerText(err) ??
-      (err instanceof ApiRequestError || !(err instanceof Error)
-        ? 'The payment page could not be reached just now. Nothing has been charged. Try again ' +
-          'in a moment, and tell the landlady if it keeps happening.'
-        : err.message);
+      (err instanceof ResidentFacingError
+        ? err.message
+        : 'The payment page could not be reached just now. Nothing has been charged. Try again ' +
+          'in a moment, and tell the landlady if it keeps happening.');
   } finally {
     // Already false on the happy path above; this covers every throw before it.
     isLoading.value = false;
