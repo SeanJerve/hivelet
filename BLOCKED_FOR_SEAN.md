@@ -2860,3 +2860,24 @@ these three indistinguishable from the real residents.*
   refuses a colon in a reference, the return-URL check, the Adyen placeholder defaults in
   production, and repeated chargeback alerts (B-63)
 - **Raised:** 2026-09-24 by Claude, Loyd's machine
+
+### B-67 — two unit descriptions still state the retired Linda water rule
+
+- **Blocked on:** a live-data edit, which is Sean's or the owner's to make, not a code change
+- **What is wrong:** the public category page shows each unit's own `rooms.description`. For LF
+  and LB that text, in the live database, ends with *"Water is charged at a fixed monthly rate
+  rather than per occupant."* BR-040's fixed charge was retired on 2026-09-20 (`computeWaterFee`
+  in `backend/src/services/billingService.ts`, with the owner's own words: a third person in LF
+  bills 600). So a prospect reads "fixed" in the description, directly above a water line that
+  now correctly says "₱200, each person".
+- **What Sean needs to do:** the simplest route is the app itself, with no migration. Sign in as
+  the administrator, open **Room & Rate Directory**, press **Edit** on each unit, and replace the
+  description with:
+  - **LF:** `Front unit in the separate two-storey structure beside the red gate.`
+  - **LB:** `Back unit in the separate two-storey structure beside the red gate.`
+
+  If a developer does it instead, it is a data change, so it goes in a new numbered migration
+  (CLAUDE.md rule 1), never an ad-hoc UPDATE.
+- **How to know it worked:** `/category/one-bedroom`, choose LF or LB, and the word "fixed"
+  appears nowhere on the page
+- **Raised:** 2026-09-25 by Claude, frontend BR-040 cleanup
