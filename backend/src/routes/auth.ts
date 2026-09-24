@@ -278,21 +278,41 @@ const passwordSchema = z.object({
     .regex(/[0-9]/, 'New password must contain a number.'),
 });
 
+/**
+ * A wrong current password here never touches `failed_login_count`, so the
+ * per-account lockout that guards /auth/login does not apply. Without this,
+ * anyone holding a session - a borrowed phone, a stolen token - could guess the
+ * current password without limit and, once right, keep the account after the
+ * token expires. Ten a quarter-hour: nobody mistypes their own password ten
+ * times in a row. Added 2026-09-24.
+ */
+const passwordChangeFailures = failureLimit({
+  max: 10,
+  windowMs: 15 * 60 * 1000,
+  what: 'failed password changes',
+});
+
 /** POST /api/auth/change-password */
 router.post(
   '/auth/change-password',
   requireAuth,
+  passwordChangeFailures,
   asyncHandler(async (req, res) => {
     const parsed = passwordSchema.safeParse(req.body);
     if (!parsed.success) {
       throw ApiError.validation('Invalid password payload.', parsed.error.flatten().fieldErrors);
     }
 
-    await changeOwnPassword(
-      req.user!.profileId,
-      parsed.data.currentPassword,
-      parsed.data.newPassword
-    );
+    try {
+      await changeOwnPassword(
+        req.user!.profileId,
+        parsed.data.currentPassword,
+        parsed.data.newPassword
+      );
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'INVALID_CREDENTIALS') passwordChangeFailures.record(req);
+      throw err;
+    }
 
     await auditFromRequest(req, {
       action: 'AUTH_PASSWORD_CHANGE',
