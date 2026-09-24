@@ -3,7 +3,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, RouterView } from 'vue-router';
 import { WifiOff } from 'lucide-vue-next';
 import { useToast } from '@/lib/useToast';
-import { isAuthenticated, mustChangePassword } from '@/lib/authStore';
+import { isAuthenticated, mustChangePassword, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
@@ -45,6 +45,17 @@ function updateOnlineStatus() {
 onMounted(() => {
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
+
+  // The confirmation for a forced password change, carried across the reload
+  // that follows it (see ChangePasswordModal.vue).
+  try {
+    if (sessionStorage.getItem(PASSWORD_CHANGED_FLAG)) {
+      sessionStorage.removeItem(PASSWORD_CHANGED_FLAG);
+      showToast('success', 'Password changed', 'Your new password is active.');
+    }
+  } catch {
+    // Storage blocked: nothing to show.
+  }
 });
 
 onUnmounted(() => {

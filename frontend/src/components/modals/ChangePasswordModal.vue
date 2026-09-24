@@ -22,9 +22,9 @@
  * finds out while typing instead of after submitting.
  */
 import { ref, computed, watch } from 'vue';
-import { api, ApiRequestError } from '@/lib/api';
+import { api, ApiRequestError, setStoredToken } from '@/lib/api';
 import { showToast } from '@/lib/systemState';
-import { clearMustChangePassword } from '@/lib/authStore';
+import { clearMustChangePassword, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
 import { Check, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import WsModal from '@/components/ui/WsModal.vue';
 
@@ -101,22 +101,42 @@ async function submit() {
   newPasswordError.value = '';
 
   try {
-    await api.post('/auth/change-password', {
+    const result = await api.post<{ token?: string } | null>('/auth/change-password', {
       currentPassword: currentPassword.value,
       newPassword: newPassword.value,
     });
 
-    showToast(
-      'success',
-      'Password changed',
-      props.mandatory
-        ? 'Your new password is active.'
-        : 'Your new password is active. Use it next time you sign in.'
-    );
-    // The server already cleared must_change_password in the same request;
-    // this mirrors that locally so the gate in App.vue lifts immediately
-    // rather than waiting on the next /auth/me.
-    if (props.mandatory) clearMustChangePassword();
+    /**
+     * B-63 decision 3 (Sean, 2026-09-24): a password change ends the account's
+     * other sessions. The server does that by refusing tokens issued before the
+     * change, so it has to hand this device a fresh one, or the person who just
+     * changed their password would be signed out too. Used when present; until
+     * the backend half lands the response carries no token and the current one
+     * stays valid, which is today's behaviour.
+     */
+    if (result && typeof result.token === 'string' && result.token) {
+      setStoredToken(result.token);
+    }
+
+    /**
+     * B-63 decision 2: the server will refuse everything but the password
+     * change while `must_change_password` is set, so the screen behind this
+     * dialog loaded nothing. One reload after the forced change fetches it all
+     * again. It happens once per account, and a flag carries the confirmation
+     * across it (read in App.vue).
+     */
+    if (props.mandatory) {
+      clearMustChangePassword();
+      try {
+        sessionStorage.setItem(PASSWORD_CHANGED_FLAG, '1');
+      } catch {
+        // Storage blocked: the reload still happens, just without the toast.
+      }
+      window.location.reload();
+      return;
+    }
+
+    showToast('success', 'Password changed', 'Your new password is active. Use it next time you sign in.');
     emit('close');
   } catch (err: unknown) {
     /**

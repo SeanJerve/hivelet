@@ -409,6 +409,21 @@ records, and nothing in them was modified.*
 
 ## 3c. Her privacy policy and terms of use · **added 2026-09-24**
 
+> **Answered by Sean, 2026-09-24. Confirm with her at the meeting; the pages already say this.**
+> - **Keeping things:** an enquiry that never became a tenancy, up to six months after the last
+>   message. A former resident's contact details, one month after move-out. Tenancy and payment
+>   history, for as long as she keeps her books, until she deletes it (the export exists for that).
+>   Nothing deletes on a schedule yet. The first two need a deletion step before the site goes
+>   public (backend, Loyd's lane).
+> - **Privacy requests:** to her, by phone or in person.
+> - **NPC registration or a named officer:** not sure. Still open; nothing is printed until she
+>   answers.
+> - **The developers:** named only as "the developers". Whether they keep access after the course
+>   is undecided.
+> - **The two terms lines:** approved.
+> - **Database region:** AWS ap-northeast-2, Seoul, South Korea, confirmed on the Supabase
+>   dashboard (B-60).
+
 > Added at the end so nothing above moves; take it after 3b. The site now has `/privacy` and
 > `/terms`. Every sentence on them is checked against the system, and where a fact is hers to
 > decide, the page says it is not set and sends the reader to her. These are those facts.

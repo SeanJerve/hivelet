@@ -62,6 +62,13 @@ export const mustChangePassword = computed(() => state.user?.mustChangePassword 
  * mirrors that locally so the gate lifts immediately rather than waiting on
  * the next `/auth/me` (a page reload, or the next natural request).
  */
+/**
+ * Set just before the one reload that follows a forced password change
+ * (ChangePasswordModal), and read once by App.vue on the next mount so the
+ * confirmation survives the reload.
+ */
+export const PASSWORD_CHANGED_FLAG = 'hivelet_password_changed';
+
 export function clearMustChangePassword(): void {
   if (state.user) state.user.mustChangePassword = false;
 }
