@@ -199,6 +199,15 @@ async function loadPayments() {
 }
 
 async function refreshAllData() {
+  /**
+   * A retry after a failure goes back behind the first-load skeleton.
+   *
+   * Each `fetch*` in systemState clears its failure flag BEFORE its request, and
+   * the arrays a failed load left empty are still empty, so for the length of
+   * the retry every affected tile rendered its figures from nothing: ₱0
+   * collected, ₱0 net (B-61). Zero is a claim; loading is not.
+   */
+  if (anyLoadFailed.value) isInitialLoading.value = true;
   isRefreshing.value = true;
   try {
     await Promise.allSettled([
