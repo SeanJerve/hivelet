@@ -518,22 +518,14 @@ onUnmounted(() => {
                     <span>My details</span>
                   </router-link>
 
-                  <!-- Signed in, there was no way back to the public site short of
-                       editing the address bar (asked for 2026-09-24). Same app, so a
-                       router link; the session stays signed in. -->
+                  <!-- "Visit the website" while inside the workspace lives in
+                       AppSidebar's drawer only now (2026-09-24) - the same
+                       link in two menus at once was one too many. This entry
+                       covers the other direction: signed in but currently ON
+                       the public site, back to the dashboard. The wordmark
+                       already goes there too, but nothing said so. -->
                   <router-link
-                    v-if="hasSidebar"
-                    to="/public"
-                    @click="isProfilePopoverOpen = false"
-                    class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
-                  >
-                    <Globe class="size-4 text-ink-soft" aria-hidden="true" />
-                    <span>Visit the website</span>
-                  </router-link>
-                  <!-- And the way back in: the wordmark already goes there, but
-                       nothing said so. -->
-                  <router-link
-                    v-else
+                    v-if="!hasSidebar"
                     :to="brandRoute"
                     @click="isProfilePopoverOpen = false"
                     class="press flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-ink hover:bg-canvas"
@@ -616,21 +608,39 @@ onUnmounted(() => {
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2"
     >
+      <!--
+        This used to be a filled, boxed dropdown - `bg-tile ... shadow-md`
+        around two rounded button-rows - which read as a generic mobile menu
+        chrome, not this site (asked to match the desktop nav's own look,
+        2026-09-24). The landing page's desktop nav has no box at all:
+        underlined text directly on the hero photo (`isLandingPage` branch,
+        above). This mirrors that exactly rather than inventing a third
+        style - same underline, same white-on-photo colour, left-aligned
+        under the wordmark instead of centred across a card. `min-h-11` is
+        kept for the tap target even though the visible text is small.
+        `isLandingPage` is false only on a defensive fallback route this menu
+        cannot currently reach (every other public page hides AppHeader and
+        draws its own masthead - App.vue's `hidesGlobalHeader`), so that
+        branch keeps the plain boxed treatment rather than assuming it is
+        dead code.
+      -->
       <div
         v-if="isPublicRoute && isMobilePublicNavOpen"
         id="public-mobile-nav"
-        class="md:hidden border-t border-line bg-tile px-4 py-3 space-y-1 shadow-md"
+        :class="[
+          'md:hidden flex flex-col items-start gap-1 px-4',
+          isLandingPage ? 'pb-6 text-white' : 'border-t border-line bg-tile py-3 shadow-md',
+        ]"
       >
-        <!--
-          `min-h-11` and centred, rather than `py-2` around a 20px line. This
-          is the only navigation a visitor has on a phone - it is what the
-          hamburger opens - and both rows measured 343x36 on an emulated
-          handset, under the 44 the sidebar drawer's own rows already keep.
-        -->
         <RouterLink
           to="/inquire"
           @click="isMobilePublicNavOpen = false"
-          class="press flex min-h-11 w-full items-center px-3 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand cursor-pointer"
+          :class="[
+            'press inline-flex min-h-11 items-center text-sm transition-colors',
+            isLandingPage
+              ? 'font-light underline underline-offset-4 decoration-1 decoration-white/45 text-white hover:decoration-white'
+              : 'w-full rounded-lg px-3 font-semibold text-ink hover:bg-canvas hover:text-brand',
+          ]"
         >
           Inquire Now
         </RouterLink>
@@ -638,7 +648,12 @@ onUnmounted(() => {
           v-if="!isAuthenticated"
           to="/login"
           @click="isMobilePublicNavOpen = false"
-          class="press flex min-h-11 w-full items-center px-3 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand cursor-pointer"
+          :class="[
+            'press inline-flex min-h-11 items-center text-sm transition-colors',
+            isLandingPage
+              ? 'font-light underline underline-offset-4 decoration-1 decoration-white/45 text-white hover:decoration-white'
+              : 'w-full rounded-lg px-3 font-semibold text-ink hover:bg-canvas hover:text-brand',
+          ]"
         >
           Sign In
         </RouterLink>
@@ -646,7 +661,12 @@ onUnmounted(() => {
           v-else
           :to="brandRoute"
           @click="isMobilePublicNavOpen = false"
-          class="press flex min-h-11 w-full items-center px-3 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand cursor-pointer"
+          :class="[
+            'press inline-flex min-h-11 items-center text-sm transition-colors',
+            isLandingPage
+              ? 'font-light underline underline-offset-4 decoration-1 decoration-white/45 text-white hover:decoration-white'
+              : 'w-full rounded-lg px-3 font-semibold text-ink hover:bg-canvas hover:text-brand',
+          ]"
         >
           Portal
         </RouterLink>
