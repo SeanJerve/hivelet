@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, loadEnv, type Plugin, type UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -75,7 +75,44 @@ function demoPanel(): Plugin {
   }
 }
 
-export default defineConfig({
+/**
+ * A production build refuses to start without `VITE_API_BASE_URL` (B-62).
+ *
+ * `lib/api.ts` falls back to `http://localhost:5000/api`, which is right for
+ * `npm run dev` and wrong everywhere else. The value is baked in at build time,
+ * so a deployment built without it went up cleanly and then every visitor's
+ * browser called ITS OWN machine: it looks exactly like "the API is down", and
+ * nothing on the page says why. Failing here is the only point where a person
+ * is watching.
+ *
+ * `loadEnv` reads the variable from the shell as well as from `.env*` files, so
+ * a Vercel project environment variable and a gitignored
+ * `frontend/.env.production.local` both satisfy it. Nothing is committed that
+ * satisfies it, deliberately: a fresh clone on Vercel's builder must fail until
+ * someone names the real API. `vercel.json` beside this file holds the rest of
+ * the hosting setup (the history-mode rewrite, security and cache headers).
+ */
+function requireApiBaseUrl(mode: string): void {
+  const value = loadEnv(mode, process.cwd(), 'VITE_').VITE_API_BASE_URL?.trim()
+  if (value) return
+  throw new Error(
+    [
+      '',
+      'VITE_API_BASE_URL is not set, so this production build would call http://localhost:5000/api',
+      "from every visitor's own computer. Set it to the API's address, ending in /api:",
+      '',
+      "  Deploying:      set VITE_API_BASE_URL in the Vercel project's Environment Variables",
+      '                  (Settings > Environment Variables, Production and Preview), then redeploy.',
+      '  Local build:    Git Bash    VITE_API_BASE_URL=http://localhost:5000/api npm run build',
+      "                  PowerShell  $env:VITE_API_BASE_URL='http://localhost:5000/api'; npm run build",
+      '  Or once, for every local build: put VITE_API_BASE_URL=http://localhost:5000/api',
+      '  in frontend/.env.production.local (gitignored, so it never reaches a build host).',
+      '',
+    ].join('\n'),
+  )
+}
+
+const config: UserConfig = {
   plugins: [
     demoPanel(),
     vue(),
@@ -314,4 +351,9 @@ export default defineConfig({
      */
     host: true
   }
+}
+
+export default defineConfig(({ command, mode }) => {
+  if (command === 'build' && mode === 'production') requireApiBaseUrl(mode)
+  return config
 })
