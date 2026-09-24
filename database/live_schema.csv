@@ -24,6 +24,7 @@ section,item,detail
 1. Columns,bills.bill_type,bill_type_enum NOT NULL DEFAULT 'Combined'::bill_type_enum
 1. Columns,bills.billing_period_end,date NOT NULL
 1. Columns,bills.billing_period_start,date NOT NULL
+1. Columns,bills.checkout_opened_at,timestamp with time zone NULL
 1. Columns,bills.created_at,timestamp with time zone NULL DEFAULT now()
 1. Columns,bills.due_date,date NOT NULL
 1. Columns,bills.grace_period_end_date,date NOT NULL
