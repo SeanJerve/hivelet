@@ -28,6 +28,14 @@ export const unreadCount = ref<number>(0);
 export const isLoading = ref<boolean>(false);
 export const isPopoverOpen = ref<boolean>(false);
 export const activeFilter = ref<NotificationFilter>('all');
+/**
+ * Whether the last attempt to load the list failed.
+ *
+ * Without it a failed load left the list empty and the panel said "Nothing
+ * here", which is a claim about the inbox, not an absence of an answer (B-61).
+ * The same distinction `pendingPaymentsError` draws on the Income screen.
+ */
+export const notificationsFetchFailed = ref<boolean>(false);
 
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 let lastKnownUnreadCount = 0;
@@ -63,6 +71,7 @@ watch(
     notifications.value = [];
     unreadCount.value = 0;
     lastKnownUnreadCount = 0;
+    notificationsFetchFailed.value = false;
     isPopoverOpen.value = false;
   }
 );
@@ -188,9 +197,14 @@ export async function fetchNotifications() {
         playNotificationChime();
       }
       lastKnownUnreadCount = unreadCount.value;
+      notificationsFetchFailed.value = false;
+    } else {
+      // A reply with no list in it is not an empty inbox either.
+      notificationsFetchFailed.value = true;
     }
   } catch (err) {
     console.error('[NotificationsStore] Failed to load notifications:', err);
+    notificationsFetchFailed.value = true;
   } finally {
     isLoading.value = false;
   }

@@ -23,6 +23,7 @@ import {
   markAsRead,
   markAllAsRead,
   fetchNotifications,
+  notificationsFetchFailed,
   type NotificationItem,
 } from '@/lib/notificationsStore';
 import { isAdmin } from '@/lib/authStore';
@@ -247,12 +248,19 @@ onUnmounted(() => {
       right corner rather than from centre, because unlike a modal this is
       anchored to the bell that opened it.
     -->
+    <!--
+      `inset-x-2`, not `right-2` with a `100vw` width. The header's backdrop
+      blur makes IT the containing block for this fixed panel, and `100vw`
+      counts a scrollbar the header does not, so the panel came out wider than
+      its box and sat 2px from the left edge at 375px (B-61). Pinning both
+      sides to the box gives an even 8px gutter whichever box it is.
+    -->
     <div
       ref="panel"
       tabindex="-1"
       role="dialog"
       aria-label="Notifications"
-      class="notif-panel fixed right-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] w-[calc(100vw-1rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:right-0 sm:top-12 sm:w-[420px]"
+      class="notif-panel fixed inset-x-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[420px]"
     >
       <!-- Header -->
       <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
@@ -271,11 +279,15 @@ onUnmounted(() => {
             so none of them picked up the scale-on-press every other control
             in the workspace answers with. On a touch screen there is no
             hover, so a tap on one of these read as not having landed.
+
+            `pointer-coarse:` 44px on every control here, as PillSelect does:
+            they were 28px (36px for the X) under a finger (B-61), and the
+            compact size stays for a mouse.
           -->
           <button
             v-if="unreadCount > 0"
             type="button"
-            class="press inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft"
+            class="press inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-brand-soft pointer-coarse:min-h-11"
             @click="markAllAsRead"
           >
             <CheckCheck class="size-3.5" aria-hidden="true" />
@@ -284,7 +296,7 @@ onUnmounted(() => {
 
           <button
             type="button"
-            class="icon-btn size-9"
+            class="icon-btn size-9 pointer-coarse:size-11"
             aria-label="Close notifications"
             @click="isPopoverOpen = false"
           >
@@ -305,7 +317,7 @@ onUnmounted(() => {
           type="button"
           :aria-pressed="activeFilter === tab.key"
           :class="[
-            'press whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold',
+            'press whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold pointer-coarse:min-h-11',
             activeFilter === tab.key
               ? 'bg-ink text-canvas'
               : 'text-ink-soft hover:bg-canvas hover:text-ink',
@@ -329,6 +341,25 @@ onUnmounted(() => {
           </div>
         </div>
 
+        <div
+          v-else-if="notificationsFetchFailed && filteredNotifications.length === 0"
+          role="status"
+          class="px-6 py-12 text-center"
+        >
+          <AlertTriangle class="mx-auto size-8 text-verify" aria-hidden="true" />
+          <p class="mt-3 text-sm font-semibold text-ink">Notifications could not be loaded</p>
+          <p class="mt-1 text-sm leading-6 text-ink-soft">
+            This does not mean there are none. We could not ask.
+          </p>
+          <button
+            type="button"
+            class="pill-btn mt-4"
+            @click="fetchNotifications"
+          >
+            Try again
+          </button>
+        </div>
+
         <div v-else-if="filteredNotifications.length === 0" class="px-6 py-12 text-center">
           <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
           <p class="mt-3 text-sm font-semibold text-ink">Nothing here</p>
@@ -342,6 +373,14 @@ onUnmounted(() => {
         </div>
 
         <div v-else class="divide-y divide-line">
+          <!-- The rows from the last good load stay; this says they may be behind. -->
+          <p
+            v-if="notificationsFetchFailed"
+            role="status"
+            class="bg-verify-soft px-4 py-2.5 text-xs leading-5 text-verify"
+          >
+            The latest could not be loaded. These are from the last time it worked.
+          </p>
           <button
             v-for="(item, i) in filteredNotifications"
             :key="item.id"
@@ -377,7 +416,12 @@ onUnmounted(() => {
                 </time>
               </span>
 
-              <span class="mt-0.5 line-clamp-2 block text-sm leading-6 text-ink-soft">
+              <!--
+                Whole, not `line-clamp-2`. The row is a link to another
+                screen, not an expander, so a clamped message had no way to be
+                read in full from here (B-61).
+              -->
+              <span class="mt-0.5 block break-words text-sm leading-6 text-ink-soft">
                 {{ item.message }}
               </span>
 
@@ -401,7 +445,7 @@ onUnmounted(() => {
         <span>Updates as they arrive</span>
         <button
           type="button"
-          class="press rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft"
+          class="press rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft pointer-coarse:min-h-11"
           @click="fetchNotifications"
         >
           Check again
