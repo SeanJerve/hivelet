@@ -424,7 +424,7 @@ const statusChips = computed(() => [
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="group flex flex-col justify-between rounded-2xl bg-canvas p-4"
+              class="group flex flex-col justify-between rounded-2xl border border-line p-4"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
@@ -456,16 +456,24 @@ const statusChips = computed(() => [
               </div>
 
               <!--
-                Quiet icons on a card that is already `bg-canvas` - no border,
-                and the hover fill is `bg-tile` rather than the `bg-canvas`
-                everywhere else uses, because a canvas hover on a canvas card
-                would not show at all.
+                This card used to be filled `bg-canvas` rather than bordered
+                like this, with the icon hover swapped to `bg-tile` in a
+                comment explaining that "a canvas hover on a canvas card
+                would not show at all" - but the same collision was sitting
+                one element above, unnoticed: the status pill's own `paid`/
+                `neutral` tones ARE `bg-brand-soft`/`bg-canvas`, so on a
+                canvas card the one thing a landlady scans this screen for
+                first - is this unit occupied - rendered as bare coloured
+                text with no pill around it at all. Bordered and unfilled,
+                matching the ticket cards on Maintenance Dispatch, so the
+                pill (and the icon hover below, back to `bg-canvas` like
+                everywhere else) has a plain surface to show up against.
               -->
               <div class="mt-4 flex justify-between">
-                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-tile cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                   <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
-                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-tile cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
                   <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
               </div>
