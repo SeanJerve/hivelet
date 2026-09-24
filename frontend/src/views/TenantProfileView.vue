@@ -11,8 +11,10 @@ import { Save, CheckCircle2, AlertTriangle, X, RotateCcw } from 'lucide-vue-next
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { showToast } from '@/lib/systemState';
+import { RouterLink } from 'vue-router';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 
 /** Tenant-editable profile fields */
 interface EditableProfile {
@@ -121,11 +123,13 @@ async function fetchProfile() {
     };
     savedSnapshot.value = { ...form.value };
   } catch (err: any) {
+    // The template swaps the whole page for an error with a retry. A notice
+    // above the form was not enough: the form still rendered blank beneath it,
+    // with "Everything here is saved", a "Not active" pill and "No email on
+    // file", each a claim made out of a request that failed (B-61, reproduced
+    // in the mocked-API harness).
+    console.error('Failed to load profile:', err?.message || err);
     loadFailed.value = true;
-    errorNotice.value =
-      `Could not load your profile: ${err?.message || err}. ` +
-      'Nothing is shown rather than a blank form, and saving is off until it loads — ' +
-      'a save now would overwrite what is on file with empty fields.';
   } finally {
     loading.value = false;
   }
@@ -219,9 +223,23 @@ function handleReset() {
         Your phone number, who to call in an emergency, and what you do. Keep these right so the
         landlady can reach you.
       </p>
+      <RouterLink
+        to="/privacy"
+        class="press inline-flex min-h-11 items-center text-sm text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+      >
+        How your details are kept and used
+      </RouterLink>
     </div>
 
     <SkeletonCard v-if="loading" variant="list" :count="2" />
+
+    <!-- No form at all on a failed read: see the catch in `fetchProfile`. -->
+    <div v-else-if="loadFailed" class="ws-reveal rounded-tile bg-tile p-5 sm:p-6">
+      <UnavailableNote
+        message="Your details could not be loaded, so they are not shown here. What is on file has not changed. The form comes back once they load, so a save cannot put blanks over them."
+        @retry="fetchProfile"
+      />
+    </div>
 
     <div v-else class="ws-reveal space-y-4 sm:space-y-6">
       <!-- What just happened, when something did -->
