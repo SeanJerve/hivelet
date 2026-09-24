@@ -1199,6 +1199,21 @@ body {
 }
 
 /*
+ * The workspace's measure: `ws-page ws-workspace` on the admin and resident
+ * screens (App.vue) and on the header above them (AppHeader.vue). Both read
+ * this one number, or the header's edges drift off the content under it.
+ *
+ * `ws-page` went full width on 2026-09-24 for the public site, and the
+ * workspace, which shares it, went with it. At 1904px the residents table
+ * then measured 1,468px wide with a 509px name column. Sean asked for the
+ * dashboards to keep the 1600px cap they had before, so this restores it for
+ * the workspace only. The 56px gutter from 1024px up stays.
+ */
+.ws-workspace {
+  max-width: 100rem;
+}
+
+/*
  * The vertical rhythm of a public section.
  *
  * These were `py-20 sm:py-28` and in one place `py-24 sm:py-32 lg:py-40` -

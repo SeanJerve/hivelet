@@ -155,7 +155,7 @@ const hidesGlobalHeader = computed(() =>
       is the same numbers and a second copy of them, so the two could drift
       apart again exactly as they had before.
     -->
-    <div :class="['flex-1 flex w-full', isWorkspaceSection ? 'ws-page' : '']">
+    <div :class="['flex-1 flex w-full', isWorkspaceSection ? 'ws-page ws-workspace' : '']">
       <AppSidebar v-if="isWorkspaceSection" />
       <main
         id="main"

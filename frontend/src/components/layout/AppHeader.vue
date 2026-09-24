@@ -260,7 +260,14 @@ onUnmounted(() => {
       instead. At normal size everything fits on one 64px line, so nothing
       moves.
     -->
-    <div class="ws-page flex min-h-16 flex-wrap items-center justify-between relative">
+    <div
+      :class="[
+        'ws-page flex min-h-16 flex-wrap items-center justify-between relative',
+        // The workspace's 1600px measure (index.css), so the header lines up
+        // with the capped content under it. The public site stays full width.
+        hasSidebar && 'ws-workspace',
+      ]"
+    >
       
       <!-- Left: Mobile Menu Toggle & Brand Logo -->
       <div class="flex items-center gap-3" :class="isLandingPage && 'on-dark'">
