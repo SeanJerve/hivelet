@@ -567,6 +567,14 @@ onUnmounted(() => {
         >
           Sign In
         </RouterLink>
+        <RouterLink
+          v-else
+          :to="brandRoute"
+          @click="isMobilePublicNavOpen = false"
+          class="press flex min-h-11 w-full items-center px-3 rounded-lg text-sm font-semibold text-ink hover:bg-canvas hover:text-brand cursor-pointer"
+        >
+          Portal
+        </RouterLink>
       </div>
     </Transition>
   </header>

@@ -462,7 +462,7 @@ const statusChips = computed(() => [
                 would not show at all.
               -->
               <div class="mt-4 flex justify-between">
-                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-tile cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-tile cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                   <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
                 </button>
                 <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-tile cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
@@ -552,7 +552,7 @@ const statusChips = computed(() => [
           </td>
           <td class="num">
             <div class="inline-flex items-center justify-end gap-2">
-              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                 <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
               </button>
               <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">

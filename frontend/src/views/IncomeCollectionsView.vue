@@ -902,7 +902,7 @@ async function exportExcel() {
           <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(totalRemitted) }}</p>
           <p class="mt-2 text-sm leading-6 text-on-night-soft">
             Rent plus water, across {{ rows.length }}
-            {{ rows.length === 1 ? 'entry' : 'entries' }} (BR-038)
+            {{ rows.length === 1 ? 'entry' : 'entries' }}
           </p>
         </template>
       </OverviewTile>
@@ -1318,7 +1318,7 @@ async function exportExcel() {
               <StatusPill
                 v-if="group.hasShareColumn"
                 tone="verify"
-                title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet (BR-035)."
+                title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet."
               >
                 Carries the 50% column
               </StatusPill>

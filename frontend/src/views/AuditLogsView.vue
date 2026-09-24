@@ -342,8 +342,7 @@ async function exportAuditTrail() {
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
           Every payment recorded, correction made, tenant moved and unit changed, in the order
-          it happened, with who did it. Nothing here can be edited or removed (FR-029, BR-018,
-          BR-028).
+          it happened, with who did it. Nothing here can be edited or removed.
         </p>
       </div>
 
@@ -407,7 +406,7 @@ async function exportAuditTrail() {
       <OverviewTile title="Can this be altered" tone="soft">
         <p class="text-2xl font-semibold leading-tight text-brand">No, by the database</p>
         <p class="mt-2 text-sm leading-6 text-ink-soft">
-          Changing and deleting are revoked from every role, the API's own included (BR-028)
+          Changing and deleting are revoked from every role, the API's own included.
         </p>
       </OverviewTile>
     </div>

@@ -94,6 +94,7 @@ const SKIP_DIR = new Set([
  */
 const SKIP_PATH = new Set([
   path.join('.claude', 'skills'),
+  path.join('.claude', 'worktrees'),
 ]);
 const EXT = new Set(['.md', '.ts', '.vue', '.sql', '.mjs', '.js', '.cjs', '.json', '.html']);
 

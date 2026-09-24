@@ -74,3 +74,6 @@ vite.config.ts.timestamp-*
 # leaked, but they should never have been offered to a commit at all.
 backend/scripts/tmp-*
 scripts/tmp-*
+
+# Binaries
+*.exe

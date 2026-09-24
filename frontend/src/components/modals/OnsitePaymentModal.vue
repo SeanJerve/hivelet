@@ -390,7 +390,7 @@ function triggerRecord() {
     showToast(
       'warning',
       'Water will be recorded as ' + peso(monthlyWaterBaseline),
-      `The ledger derives water from the registered occupants (BR-014), so it will record ` +
+      `The ledger derives water from the registered occupants, so it will record ` +
         `${peso(monthlyWaterBaseline)} for ${unitUpper}, not ${peso(waterVal)}. ` +
         (mCovered > 1
           ? `Water is one month per entry - a receipt covering ${mCovered} months is recorded as one row per month in her book. `

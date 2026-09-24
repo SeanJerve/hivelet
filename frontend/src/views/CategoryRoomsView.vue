@@ -73,10 +73,17 @@ import {
   inquiryFailureMessage,
   type InquiryErrors,
 } from '@/components/public/inquiryRules';
-import { AlertCircle, ArrowRight, Loader2, Send, X } from 'lucide-vue-next';
+import { AlertCircle, ArrowUpRight, Loader2, Send, X } from 'lucide-vue-next';
+import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
 
 const route = useRoute();
 const router = useRouter();
+
+const portalRoute = computed(() => {
+  if (isAdmin.value) return '/admin/overview';
+  if (isTenant.value) return '/tenant';
+  return '/login';
+});
 
 const isLoading = ref(true);
 /** Set when `/public/rooms` could not be read. Never replaced with seeded units. */
@@ -146,6 +153,35 @@ const categoryUnits = computed(() =>
     .sort((a, b) => a.room_number.localeCompare(b.room_number))
 );
 
+interface FloorGroup {
+  floor: number;
+  label: string;
+  units: DbRoom[];
+}
+
+/**
+ * Units grouped by floor in ascending order, displaying each floor in its own
+ * row so the visitor can browse floor-by-floor without redundant floor labels
+ * on individual cards.
+ */
+const unitsByFloor = computed<FloorGroup[]>(() => {
+  const map = new Map<number, DbRoom[]>();
+  for (const u of categoryUnits.value) {
+    const list = map.get(u.floor) ?? [];
+    list.push(u);
+    map.set(u.floor, list);
+  }
+  return Array.from(map.entries())
+    .sort(([floorA], [floorB]) => floorA - floorB)
+    .map(([floor, units]) => ({
+      floor,
+      label: floorLabelFor(floor),
+      units: units.slice().sort((a, b) =>
+        a.room_number.localeCompare(b.room_number, undefined, { numeric: true })
+      ),
+    }));
+});
+
 /**
  * What a visitor is told about availability.
  *
@@ -199,8 +235,29 @@ function photoOf(room: DbRoom): string | null {
   return photos.find((p) => p.is_primary)?.file_url ?? photos[0]?.file_url ?? null;
 }
 
+function formatUnitDescription(desc?: string | null): string {
+  if (!desc) return '';
+  return desc
+    .replace(/\s*\([B|F]R-\w+\)\.?/gi, '.')
+    .replace(/\.{2,}/g, '.')
+    .trim();
+}
+
+const showcaseSection = ref<HTMLElement | null>(null);
+
 function selectUnit(unitCode: string) {
   selectedUnitCode.value = unitCode;
+  nextTick(() => {
+    if (showcaseSection.value) {
+      const prefersReduced =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      showcaseSection.value.scrollIntoView({
+        behavior: prefersReduced ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    }
+  });
 }
 
 /**
@@ -484,25 +541,29 @@ async function submitInquiry() {
 
         <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-ink">
           <RouterLink
-            to="/public"
-            class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
-          >
-            Property
-          </RouterLink>
-          <span aria-hidden="true" class="pr-2">,</span>
-          <RouterLink
             to="/inquire"
             class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
             Inquire Now
           </RouterLink>
-          <span aria-hidden="true" class="pr-2">,</span>
-          <RouterLink
-            to="/login"
-            class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
-          >
-            Sign In
-          </RouterLink>
+          <template v-if="!isAuthenticated">
+            <span aria-hidden="true" class="pr-2">,</span>
+            <RouterLink
+              to="/login"
+              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            >
+              Sign In
+            </RouterLink>
+          </template>
+          <template v-else>
+            <span aria-hidden="true" class="pr-2">,</span>
+            <RouterLink
+              :to="portalRoute"
+              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            >
+              Portal
+            </RouterLink>
+          </template>
         </nav>
       </div>
     </header>
@@ -517,9 +578,16 @@ async function submitInquiry() {
     <section aria-label="Category overview" class="w-full">
       <div class="ws-page ws-content ws-band">
 
-        <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-          Kind of unit
-        </p>
+        <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
+          <RouterLink
+            to="/public"
+            class="press hover:text-ink transition-colors underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink"
+          >
+            Property
+          </RouterLink>
+          <span class="text-line select-none" aria-hidden="true">/</span>
+          <span class="text-ink font-semibold" aria-current="page">{{ currentCat.title }}</span>
+        </nav>
 
         <h1 class="mt-5 font-medium text-ink tracking-[-0.03em] leading-[0.98] text-[clamp(2rem,6vw,4.5rem)]">
           {{ currentCat.title }}
@@ -622,7 +690,7 @@ async function submitInquiry() {
     -->
     <AvailabilityUnavailable
       v-else-if="loadFailed"
-      :subject="`which ${currentCat.title.toLowerCase()} units are free`"
+      :subject="`which ${currentCat.title.toLowerCase()} units are available`"
     />
 
     <section
@@ -640,7 +708,7 @@ async function submitInquiry() {
             to="/inquire"
             class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >ask the landlady</RouterLink>
-          what is coming free.
+          what is coming available.
         </p>
       </div>
     </section>
@@ -661,9 +729,10 @@ async function submitInquiry() {
         (below) mark that change, by fading themselves in.
       -->
       <section
+        ref="showcaseSection"
         :key="selectedCategoryKey"
         aria-label="The unit being looked at"
-        class="list-reveal-item w-full border-t border-line"
+        class="list-reveal-item w-full border-t border-line scroll-mt-6"
       >
         <div class="ws-page ws-content grid lg:grid-cols-[1fr_26rem]">
 
@@ -759,7 +828,7 @@ async function submitInquiry() {
               someone looking for a room.
             -->
             <p class="absolute left-0 top-0 border-r border-b border-line bg-canvas px-4 py-2 text-[0.7rem] tracking-[0.18em] uppercase text-ink">
-              {{ isAvailable(activeUnit) ? 'Free to rent' : 'Someone lives here' }}
+              {{ isAvailable(activeUnit) ? 'Available to rent' : 'Someone lives here' }}
             </p>
           </div>
 
@@ -772,8 +841,6 @@ async function submitInquiry() {
               <h2 class="mt-4 font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,5vw,3.25rem)]">
                 Unit {{ activeUnit.room_number }}
               </h2>
-
-              <p class="mt-3 text-xs sm:text-sm text-ink-soft">{{ activeUnit.room_type }}</p>
 
               <p class="mt-8 font-medium text-ink tracking-[-0.02em] text-[clamp(1.5rem,3.4vw,2.25rem)] tabular-nums">
                 {{ peso(activeUnit.current_price) }}<span class="ml-2 text-xs sm:text-sm font-normal tracking-normal text-ink-soft">a month</span>
@@ -797,7 +864,7 @@ async function submitInquiry() {
 
               <!-- The unit's own description, as the landlady recorded it. -->
               <p v-if="activeUnit.description" class="mt-7 text-xs sm:text-sm text-ink-soft leading-relaxed">
-                {{ activeUnit.description }}
+                {{ formatUnitDescription(activeUnit.description) }}
               </p>
 
               <!--
@@ -819,7 +886,7 @@ async function submitInquiry() {
                 @click="openInquiry(activeUnit.room_number)"
               >
                 <span>Ask about unit {{ activeUnit.room_number }}</span>
-                <ArrowRight class="size-4 shrink-0" />
+                <ArrowUpRight class="size-4 shrink-0" />
               </button>
             </div>
           </div>
@@ -858,95 +925,90 @@ async function submitInquiry() {
             </p>
           </div>
 
-          <div
-            class="mt-12 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 sm:gap-x-8 lg:grid-cols-4 xl:grid-cols-5"
-            @mouseleave="hoveredUnit = null"
-          >
-            <button
-              v-for="(u, i) in categoryUnits"
-              :key="u.id"
-              type="button"
-              :aria-pressed="u.room_number === activeUnit.room_number"
-              :class="[
-                'list-reveal-item press-plate group block w-full text-left cursor-pointer transition-opacity duration-200 ease-[var(--ease-out)]',
-                isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
-              ]"
-              :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-              @click="selectUnit(u.room_number)"
-              @mouseenter="hoveredUnit = u.room_number"
-              @focusin="hoveredUnit = u.room_number"
-              @focusout="hoveredUnit = null"
+          <div class="mt-14 space-y-12" @mouseleave="hoveredUnit = null">
+            <div
+              v-for="group in unitsByFloor"
+              :key="group.floor"
+              class="border-t border-line pt-8 sm:grid sm:grid-cols-[10rem_1fr] sm:gap-8 items-start"
             >
-              <div
-                :class="[
-                  'relative overflow-hidden border-t pt-5 pb-6 px-4 transition-colors duration-500',
-                  u.room_number === activeUnit.room_number
-                    ? 'border-brand bg-brand-soft'
-                    : 'border-line group-hover:border-ink/60',
-                ]"
-              >
-                <!-- A hairline frame that draws itself in under the cursor. -->
-                <span
-                  aria-hidden="true"
-                  class="pointer-events-none absolute inset-2 border border-ink/15 opacity-0 transition duration-500 ease-[var(--ease-out)] motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
-                />
-
-                <span class="relative flex items-baseline justify-between gap-3">
-                  <span class="text-lg font-medium uppercase leading-none tracking-[-0.02em] text-ink">
-                    {{ u.room_number }}
-                  </span>
-                  <span class="text-xs tracking-[0.14em] uppercase text-ink-soft">
-                    Floor {{ u.floor }}
-                  </span>
-                </span>
-
-                <span class="relative mt-4 block text-sm tabular-nums text-ink">
-                  {{ peso(u.current_price) }}
-                </span>
-
-                <!--
-                  Whether it is free, and nothing else. This plate used to read
-                  "4 people - occupied", which is the unit's CAPACITY beside its
-                  status - but nobody reads it that way. It reads as four people
-                  living there, which is a fact about residents and none of a
-                  visitor's business. BR-024.
-                -->
-                <span class="relative mt-1.5 block text-xs text-ink-soft">
-                  {{ isAvailable(u) ? 'Free to rent' : 'Occupied' }}
-                </span>
-
-                <span
-                  v-if="u.room_number === activeUnit.room_number"
-                  class="relative mt-3 block text-xs tracking-[0.16em] uppercase text-ink"
-                >
-                  Shown above
-                </span>
-                <!--
-                  `.row-action`, not a hand-rolled `opacity-0
-                  group-hover:opacity-100`.
-
-                  This is the only thing on a plate that says it can be
-                  pressed, and it was revealed on hover - which a phone does
-                  not have. Verified with `matchMedia('(hover: hover)')`
-                  reporting false on an emulated handset: every one of the
-                  twenty studio plates sat there with no affordance at all,
-                  on the screen a prospect uses to choose a room.
-
-                  The shared rule hides it only under
-                  `(hover: hover) and (pointer: fine)` and leaves it visible
-                  on touch. The hairline frame above stays hover-only on
-                  purpose - it is decoration, not the affordance.
-                -->
-                <span
-                  v-else
-                  aria-hidden="true"
-                  class="row-action relative mt-3 flex items-center gap-1.5 text-xs tracking-[0.16em] uppercase text-ink-soft"
-                >
-                  <span>See it</span>
-                  <ArrowRight class="size-3 shrink-0 transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-0.5" />
-                </span>
+              <div class="mb-4 sm:mb-0">
+                <h3 class="text-xs font-semibold tracking-[0.16em] uppercase text-ink">
+                  {{ group.label }}
+                </h3>
+                <p class="mt-1 text-xs text-ink-faint">
+                  {{ group.units.length }} {{ group.units.length === 1 ? 'unit' : 'units' }}
+                </p>
               </div>
-            </button>
+
+              <div
+                class="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+              >
+                <button
+                  v-for="(u, i) in group.units"
+                  :key="u.id"
+                  type="button"
+                  :aria-label="`Look at unit ${u.room_number}`"
+                  :aria-pressed="u.room_number === activeUnit.room_number"
+                  :class="[
+                    'list-reveal-item press-plate group block w-full text-left cursor-pointer transition-opacity duration-200 ease-[var(--ease-out)]',
+                    isSubdued(u.room_number) ? 'opacity-40' : 'opacity-100',
+                  ]"
+                  :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
+                  @click="selectUnit(u.room_number)"
+                  @mouseenter="hoveredUnit = u.room_number"
+                  @focusin="hoveredUnit = u.room_number"
+                  @focusout="hoveredUnit = null"
+                >
+                  <div
+                    :class="[
+                      'relative overflow-hidden border-t pt-5 pb-6 px-4 transition-colors duration-500',
+                      u.room_number === activeUnit.room_number
+                        ? 'border-brand bg-brand-soft'
+                        : 'border-line group-hover:border-ink/60',
+                    ]"
+                  >
+                    <!-- A hairline frame that draws itself in under the cursor. -->
+                    <span
+                      aria-hidden="true"
+                      class="pointer-events-none absolute inset-2 border border-ink/15 opacity-0 transition duration-500 ease-[var(--ease-out)] motion-safe:scale-95 group-hover:opacity-100 motion-safe:group-hover:scale-100 group-focus-visible:opacity-100"
+                    />
+
+                    <span class="relative block text-lg font-medium uppercase leading-none tracking-[-0.02em] text-ink">
+                      {{ u.room_number }}
+                    </span>
+
+                    <span class="relative mt-4 block text-sm tabular-nums text-ink">
+                      {{ peso(u.current_price) }}
+                    </span>
+
+                    <!--
+                      Whether it is free, and nothing else. This plate used to read
+                      "4 people - occupied", which is the unit's CAPACITY beside its
+                      status - but nobody reads it that way. It reads as four people
+                      living there, which is a fact about residents and none of a
+                      visitor's business. BR-024.
+                    -->
+                    <span class="relative mt-1.5 block text-xs text-ink-soft">
+                      {{ isAvailable(u) ? 'Available to rent' : 'Occupied' }}
+                    </span>
+
+                    <span
+                      v-if="u.room_number === activeUnit.room_number"
+                      class="relative mt-3 block text-xs tracking-[0.16em] uppercase text-ink"
+                    >
+                      Shown above
+                    </span>
+                    <span
+                      v-else
+                      aria-hidden="true"
+                      class="row-action relative mt-3 flex items-center h-4 text-ink-soft"
+                    >
+                      <ArrowUpRight class="size-3.5 shrink-0 transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 group-hover:text-ink" />
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
 
         </div>

@@ -13,15 +13,12 @@
  *              rendering and balanced fluid typography.
  */
 import { ref, computed, onMounted } from 'vue';
-import { peso, publicStatusLabel } from '@/lib/canonicalUnits';
 import { CATEGORIES } from '@/lib/unitCategories';
-import { planFor, PLAN_SIZE } from '@/lib/floorPlans';
 import { fetchRooms, rooms, roomsFetchFailed, roomsLoaded } from '@/lib/systemState';
-import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
 import { api } from '@/lib/api';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import BookViewingPrompt from '@/components/modals/BookViewingPrompt.vue';
-import { ArrowRight, ChevronDown, MapPin } from 'lucide-vue-next';
+import { ArrowUpRight, ChevronDown, MapPin } from 'lucide-vue-next';
 
 const isLoading = ref(true);
 const openFaqIndex = ref<number | null>(0);
@@ -225,65 +222,7 @@ onMounted(async () => {
 
 
 
-/**
- * One row of the availability table is open at a time. All 33 units expanded
- * at once would push the FAQs and the map several screens down and leave the
- * reader with no sense of where they were.
- */
-const openUnitId = ref<string | null>(null);
-/**
- * Whether the open row's floor plan has actually painted, so it fades in
- * rather than popping in once the (lazy, per-unit) image lands. Reset on every
- * toggle: opening a different unit means a different plan to wait for.
- */
-const planImageLoaded = ref(false);
-function toggleUnit(id: string) {
-  openUnitId.value = openUnitId.value === id ? null : id;
-  planImageLoaded.value = false;
-}
 
-/**
- * Five rows are always on the page; the rest are behind the arrow.
- *
- * The whole table used to be collapsed, which meant the section read as a
- * heading and a button - nothing about the property was visible until the
- * reader guessed there was something worth opening. Thirty-three rows unrolled
- * by default is the other failure: it pushes the policies and the map several
- * screens down. Five is enough to show what a row contains and what the
- * columns mean, which is what makes the arrow worth pressing.
- */
-const UNITS_PREVIEW_COUNT = 5;
-const allUnitsShown = ref(false);
-
-function toggleAllUnits() {
-  allUnitsShown.value = !allUnitsShown.value;
-  // A row opened among the hidden units would otherwise stay open behind the
-  // fold, and its chevron would come back already rotated on the next reveal.
-  if (!allUnitsShown.value) openUnitId.value = null;
-}
-
-/**
- * `/public/rooms` already returns Published units only, but `fetchRooms()`
- * reads `/admin/rooms` for a signed-in administrator, and that endpoint does
- * not filter. Without this, an administrator opening the landing page would
- * publish Hidden units onto it - the same rule `public.ts` enforces in three
- * places, applied to the one surface that reads the admin list.
- */
-const listedUnits = computed(() =>
-  rooms
-    .filter((u) => u.visibility === 'Published')
-    .slice()
-    .sort((a, b) => a.floor - b.floor || a.unitCode.localeCompare(b.unitCode, 'en'))
-);
-
-/** The rows actually rendered: the first five, or all of them. */
-const visibleUnits = computed(() =>
-  allUnitsShown.value ? listedUnits.value : listedUnits.value.slice(0, UNITS_PREVIEW_COUNT)
-);
-
-const hiddenUnitCount = computed(() =>
-  Math.max(0, listedUnits.value.length - UNITS_PREVIEW_COUNT)
-);
 
 
 
@@ -478,7 +417,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             -->
             <template v-if="unitsReady">
               <span class="text-right">Units</span>
-              <span class="text-right">Free to rent</span>
+              <span class="text-right">Available to rent</span>
             </template>
             <span v-else class="text-right sm:col-span-2">Availability</span>
           </div>
@@ -492,8 +431,8 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           >
             <span class="flex items-baseline gap-2 text-base font-medium text-ink">
               {{ c.title }}
-              <ArrowRight
-                class="size-4 shrink-0 text-ink-faint transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-1 group-hover:text-brand"
+              <ArrowUpRight
+                class="size-4 shrink-0 text-ink-faint transition-transform duration-200 ease-[var(--ease-out)] motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 group-hover:text-brand"
                 aria-hidden="true"
               />
             </span>
@@ -519,7 +458,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             </template>
             <template v-else-if="unitsPending">
               <span class="mt-2 block text-xs text-ink-faint sm:col-span-2 sm:mt-0 sm:text-right">
-                Checking what is free&hellip;
+                Checking what is available&hellip;
               </span>
             </template>
             <template v-else>
@@ -527,7 +466,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 <span class="sm:hidden">Units: </span>{{ unitsInCategory(c.key).length }}
               </span>
               <span class="mt-1 block text-xs tabular-nums text-ink-soft sm:mt-0 sm:text-right sm:text-sm">
-                <span class="sm:hidden">Free to rent: </span>{{ availableInCategory(c.key) }}
+                <span class="sm:hidden">Available to rent: </span>{{ availableInCategory(c.key) }}
               </span>
             </template>
           </RouterLink>
@@ -535,342 +474,6 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       </section>
     </div>
 
-    <!--
-      Every published unit, one row each, with the detail behind a per-row
-      disclosure. Tenant names are deliberately absent: `RoomItem.tenant` is
-      populated for occupied units and this is a public page.
-    -->
-    <section id="availability" class="w-full bg-canvas border-t border-line font-editorial scroll-mt-20">
-      <div class="ws-page ws-content ws-band">
-
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
-          <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
-            All units
-          </h2>
-          <p class="max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">
-            Every unit on the property. Five are listed here and the arrow below opens the
-            rest; open a row to see its floor, capacity, billing rule and what it includes.
-          </p>
-        </div>
-
-        <!--
-          B-01, settled by Sean on 2026-09-19: when the listing cannot be read, be
-          honest and point them at her, rather than printing the seed.
-
-          `rooms` keeps the always-vacant `CANONICAL_UNITS` seed when the fetch
-          fails. This used to disclose that in a notice and then print the table
-          anyway - 33 units, every one marked Available, on a property that is 32
-          occupied, at rates where 30 of the 33 no longer match. A caveat above a
-          wrong number is still a wrong number, and the category page was already
-          refusing to show anything in the same situation. Same component both
-          places now.
-        -->
-        <AvailabilityUnavailable v-if="roomsFetchFailed" subject="the units on the property" />
-
-        <!--
-          The listing has not answered yet. Says so, rather than printing the
-          seed - see the note on `unitsReady`.
-        -->
-        <p v-else-if="unitsPending" class="mt-8 text-sm text-ink-soft">
-          Reading the current listing&hellip;
-        </p>
-
-        <!--
-          Seven columns need 44rem, so on a phone this table was 704px inside a
-          375px screen: a sideways swipe to reach the rate and the status, which
-          are the two things a person came to read.
-
-          Below `sm` the same rows are stacked instead, in this page's own
-          editorial manner - hairline rules, no tile, no card - rather than
-          importing the workspace surfaces, which belong to the admin and tenant
-          side and would read as a different site.
-        -->
-        <!--
-          The workspace's own register, not a second one.
-
-          This was a hand-rolled table set in the editorial manner - hairline
-          rules, no surface under it, sitting straight on the page. Every
-          register in the admin and tenant screens is `ws-table` inside
-          `ws-table-wrap` on a `rounded-tile bg-tile` card, and the difference
-          was one of the loudest things telling a reader the public site was a
-          different product.
-
-          It also fixes the hover Sean objected to. A row on the old table had
-          no surface of its own, so highlighting it meant painting it WHITE -
-          brighter than the page. On a white tile the workspace highlight is
-          `--canvas`, the pale green used on the active-tenants register, and
-          `ws-table` brings it with no extra rule here.
-        -->
-        <div v-if="unitsReady" class="mt-8 sm:mt-10 hidden overflow-hidden rounded-tile bg-tile sm:block">
-          <div class="ws-table-wrap">
-          <table class="ws-table">
-            <caption class="sr-only">
-              Every published unit on the property, with its cluster, type, floor, monthly rate and current status.
-            </caption>
-            <thead>
-              <tr class="border-b border-line text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft font-normal">
-                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Unit</th>
-                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Cluster</th>
-                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Type</th>
-                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Floor</th>
-                <th scope="col" class="num !px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Price</th>
-                <th scope="col" class="!px-5 !py-3 !text-[0.7rem] !tracking-[0.14em] !uppercase !text-ink-soft !font-normal">Status</th>
-                <th scope="col" class="w-12 !px-5 !py-3"><span class="sr-only">Details</span></th>
-              </tr>
-            </thead>
-            <tbody id="all-units-body">
-              <template v-for="(u, i) in visibleUnits" :key="u.id">
-                <tr
-                  :class="[
-                    'list-reveal-item cursor-pointer select-none transition-colors group',
-                    openUnitId === u.id ? 'is-active' : ''
-                  ]"
-                  :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-                  @click="toggleUnit(u.id)"
-                  :aria-expanded="openUnitId === u.id"
-                  :aria-controls="`unit-panel-${u.id}`"
-                  tabindex="0"
-                  @keydown.enter.prevent="toggleUnit(u.id)"
-                  @keydown.space.prevent="toggleUnit(u.id)"
-                >
-                  <td class="font-medium text-ink">{{ u.unitCode }}</td>
-                  <td class="text-ink-soft">{{ u.cluster }}</td>
-                  <td class="text-ink-soft">{{ u.type }}</td>
-                  <td class="text-ink-soft">{{ u.floorLabel }}</td>
-                  <td class="num text-ink-soft">{{ peso(u.price) }}</td>
-                  <td class="text-ink-soft">{{ publicStatusLabel(u.status) }}</td>
-                  <td>
-                    <div
-                      class="press grid size-8 place-items-center text-ink-soft group-hover:text-ink transition-colors"
-                    >
-                      <span class="sr-only">
-                        {{ openUnitId === u.id ? 'Hide' : 'Show' }} details for unit {{ u.unitCode }}
-                      </span>
-                      <ChevronDown
-                        :class="[
-                          'size-4 transition-transform duration-200 ease-[var(--ease-out)]',
-                          openUnitId === u.id ? 'rotate-180' : ''
-                        ]"
-                      />
-                    </div>
-                  </td>
-                </tr>
-
-                <tr v-if="openUnitId === u.id" :id="`unit-panel-${u.id}`" class="bg-tile unit-detail-row">
-                  <!--
-                    Two columns: what the unit is on the left, where it is on
-                    the right.
-
-                    Billing moved up under Capacity to clear the third column,
-                    and the amenity list came out. It listed "Private Bathroom,
-                    Submetered Electricity, Provision for Aircon, Wi-Fi Ready"
-                    against every unit identically, which tells a reader
-                    nothing about the one they just opened.
-                  -->
-                  <td colspan="7" class="px-4 py-6">
-                    <div class="ws-reveal grid gap-8 lg:grid-cols-[1fr_22rem] lg:gap-12">
-                      <div>
-                        <dl class="grid gap-x-10 gap-y-5 sm:grid-cols-2 text-xs sm:text-sm">
-                          <div>
-                            <dt class="text-ink-soft">Floor</dt>
-                            <dd class="mt-1 text-ink">{{ u.floorLabel }}</dd>
-                          </div>
-                          <div>
-                            <dt class="text-ink-soft">Capacity</dt>
-                            <dd class="mt-1 text-ink">Up to {{ u.maxOccupants }} occupants</dd>
-                            <dd class="mt-1 text-ink-soft">{{ u.billingRule }}</dd>
-                          </div>
-                        </dl>
-
-                        <p v-if="u.desc" class="mt-6 max-w-2xl text-xs sm:text-sm text-ink-soft leading-relaxed">
-                          {{ u.desc }}
-                        </p>
-                      </div>
-
-<figure class="m-0">
-                        <figcaption class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-                          Unit {{ u.unitCode }} on {{ u.floorLabel }}
-                        </figcaption>
-
-                        <div
-                          v-if="planFor(u.unitCode)"
-                          class="relative mt-3 overflow-hidden rounded-tile"
-                        >
-                          <img
-                            :src="`/floorplans/${planFor(u.unitCode)!.plan}.png`"
-                            :alt="`Floor plan of ${u.floorLabel}`"
-                            :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
-                            :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
-                            :class="[
-                              'block w-full mix-blend-multiply transition-opacity duration-300 ease-[var(--ease-out)]',
-                              planImageLoaded ? 'opacity-100' : 'opacity-0',
-                            ]"
-                            loading="lazy"
-                            decoding="async"
-                            @load="planImageLoaded = true"
-                          />
-                          <span
-                            v-if="planFor(u.unitCode)!.x !== null"
-                            class="absolute rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-on-brand shadow-lift"
-                            :style="{
-                              left: planFor(u.unitCode)!.x + '%',
-                              top: planFor(u.unitCode)!.y + '%',
-                              transform: 'translate(-30%, -100%)',
-                            }"
-                          >{{ u.unitCode }}</span>
-                        </div>
-
-                        <div
-                          v-else
-                          class="mt-3 grid aspect-[4/3] place-items-center rounded-tile border border-dashed border-hatch bg-canvas px-6 text-center"
-                        >
-                          <p class="text-xs leading-5 text-ink-faint">
-                            There is no floor plan on file for this unit yet.
-                          </p>
-                        </div>
-                      </figure>
-                    </div>
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-          </div>
-        </div>
-
-        <!-- The same units, stacked, for a phone. -->
-        <ul v-if="unitsReady" id="all-units-list" class="mt-10 sm:hidden">
-          <li
-            v-for="(u, i) in visibleUnits"
-            :key="u.id"
-            class="list-reveal-item border-b border-line"
-            :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
-          >
-            <button
-              type="button"
-              :aria-expanded="openUnitId === u.id"
-              :aria-controls="`unit-card-${u.id}`"
-              class="press-plate flex w-full items-center justify-between gap-4 py-4 text-left group"
-              @click="toggleUnit(u.id)"
-            >
-              <span class="min-w-0">
-                <span class="block font-medium text-ink">{{ u.unitCode }}</span>
-                <span class="mt-0.5 block text-xs text-ink-soft">
-                  {{ u.type }} &middot; {{ u.cluster }} &middot; {{ u.floorLabel }}
-                </span>
-              </span>
-              <span class="flex items-center gap-3 shrink-0 text-right">
-                <span>
-                  <span class="block tabular-nums text-ink">{{ peso(u.price) }}</span>
-                  <span class="mt-0.5 block text-xs text-ink-soft">
-                    {{ publicStatusLabel(u.status) }}
-                  </span>
-                </span>
-                <ChevronDown
-                  :class="[
-                    'size-4 text-ink-soft group-hover:text-ink transition-transform duration-200 ease-[var(--ease-out)]',
-                    openUnitId === u.id ? 'rotate-180' : ''
-                  ]"
-                />
-              </span>
-            </button>
-
-            <div v-if="openUnitId === u.id" :id="`unit-card-${u.id}`" class="ws-reveal pb-6">
-              <dl class="grid grid-cols-2 gap-x-6 gap-y-4 text-xs">
-                <div>
-                  <dt class="text-ink-soft">Floor</dt>
-                  <dd class="mt-1 text-ink">{{ u.floorLabel }}</dd>
-                </div>
-                <div>
-                  <dt class="text-ink-soft">Capacity</dt>
-                  <dd class="mt-1 text-ink">Up to {{ u.maxOccupants }} occupants</dd>
-                  <dd class="mt-1 text-ink-soft">{{ u.billingRule }}</dd>
-                </div>
-              </dl>
-
-              <p v-if="u.desc" class="mt-5 text-xs text-ink-soft leading-relaxed">
-                {{ u.desc }}
-              </p>
-
-<figure class="m-0 mt-5">
-                <figcaption class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-                  Unit {{ u.unitCode }} on {{ u.floorLabel }}
-                </figcaption>
-
-                <div
-                  v-if="planFor(u.unitCode)"
-                  class="relative mt-3 overflow-hidden rounded-tile"
-                >
-                  <img
-                    :src="`/floorplans/${planFor(u.unitCode)!.plan}.png`"
-                    :alt="`Floor plan of ${u.floorLabel}`"
-                    :width="PLAN_SIZE[planFor(u.unitCode)!.plan]?.w"
-                    :height="PLAN_SIZE[planFor(u.unitCode)!.plan]?.h"
-                    :class="[
-                      'block w-full mix-blend-multiply transition-opacity duration-300 ease-[var(--ease-out)]',
-                      planImageLoaded ? 'opacity-100' : 'opacity-0',
-                    ]"
-                    loading="lazy"
-                    decoding="async"
-                    @load="planImageLoaded = true"
-                  />
-                  <span
-                    v-if="planFor(u.unitCode)!.x !== null"
-                    class="absolute rounded-full bg-brand px-2 py-0.5 text-xs font-semibold text-on-brand shadow-lift"
-                    :style="{
-                      left: planFor(u.unitCode)!.x + '%',
-                      top: planFor(u.unitCode)!.y + '%',
-                      transform: 'translate(-30%, -100%)',
-                    }"
-                  >{{ u.unitCode }}</span>
-                </div>
-
-                <div
-                  v-else
-                  class="mt-3 grid aspect-[4/3] place-items-center rounded-tile border border-dashed border-hatch bg-canvas px-6 text-center"
-                >
-                  <p class="text-xs leading-5 text-ink-faint">
-                    There is no floor plan on file for this unit yet.
-                  </p>
-                </div>
-              </figure>
-            </div>
-          </li>
-        </ul>
-
-        <!--
-          The arrow, under the five rows rather than over them.
-
-          `aria-expanded` and `aria-controls` point at the table body that
-          grows, so a screen reader is told this is a disclosure and what it
-          discloses - the chevron alone says that to sighted readers only. The
-          button is not rendered at all when there is nothing behind it, which
-          is the case if the property is ever listed with five units or fewer.
-        -->
-        <div v-if="unitsReady && hiddenUnitCount > 0" class="mt-4 sm:mt-6">
-          <button
-            type="button"
-            :aria-expanded="allUnitsShown"
-            aria-controls="all-units-body all-units-list"
-            class="press-plate group flex min-h-11 w-full items-center justify-between gap-6 py-2 text-left sm:pr-[17px]"
-            @click="toggleAllUnits"
-          >
-            <span class="text-sm font-semibold text-brand underline underline-offset-4 decoration-brand/60 group-hover:decoration-brand group-hover:text-brand-strong transition-colors">
-              {{ allUnitsShown ? `Show only the first ${UNITS_PREVIEW_COUNT} units` : `Show the remaining ${hiddenUnitCount} units` }}
-            </span>
-            <span class="grid size-8 place-items-center shrink-0">
-              <ChevronDown
-                :class="[
-                  'size-4 text-brand group-hover:text-brand-strong transition-[rotate,color] duration-200 ease-[var(--ease-out)]',
-                  allUnitsShown ? 'rotate-180' : ''
-                ]"
-              />
-            </span>
-          </button>
-        </div>
-
-      </div>
-    </section>
 
     <!-- 2. Frequently Asked Questions (FAQ Section) -->
     <section id="faqs" class="w-full bg-canvas border-t border-line font-editorial ws-band scroll-mt-20">

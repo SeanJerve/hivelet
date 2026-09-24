@@ -13,7 +13,15 @@
  * `check:design-tokens` ratchets down, and the marks went with the icons when
  * the rows became text.
  */
+import { computed } from 'vue';
 import { LANDLADY } from '@/lib/systemState';
+import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
+
+const portalRoute = computed(() => {
+  if (isAdmin.value) return '/admin/overview';
+  if (isTenant.value) return '/tenant';
+  return '/login';
+});
 </script>
 
 <template>
@@ -81,8 +89,19 @@ import { LANDLADY } from '@/lib/systemState';
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/login" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+              <RouterLink
+                v-if="!isAuthenticated"
+                to="/login"
+                class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
+              >
                 Sign in
+              </RouterLink>
+              <RouterLink
+                v-else
+                :to="portalRoute"
+                class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
+              >
+                Portal
               </RouterLink>
             </li>
           </ul>
