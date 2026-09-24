@@ -229,7 +229,43 @@
   font-family: var(--font-sans);
 }
 
+/*
+ * `overflow-x: hidden` lives here, on `html`, not on `body` where it used to
+ * be - without this move, `position: sticky` was completely broken,
+ * site-wide.
+ *
+ * The CSS overflow spec force-computes an axis to `auto` the moment the
+ * OTHER axis on the SAME element is anything but `visible` - and that
+ * promotion happens regardless of what the unset axis is written as; an
+ * explicit `overflow-y: visible` sitting next to `overflow-x: hidden` is
+ * promoted to `auto` too, the same as leaving it unset. So `overflow-x:
+ * hidden` on `body`, with no way to pair it with a real `visible` on that
+ * same element, silently gave `body` `overflow-y: auto` - making it a
+ * SECOND scroll container alongside `html` right below, which is the one
+ * actually meant to scroll. `position: sticky` sticks to its nearest
+ * ancestor with a scrolling mechanism, and with two candidates in the same
+ * chain, every `sticky top-0` header in the app - AppHeader on every admin,
+ * tenant, privacy and terms page, and the "On this page" rail on the legal
+ * pages - scrolled straight off the top instead of staying put.
+ *
+ * Both axes belong on the one element meant to be the scroll container.
+ * `html` already declares `overflow-y: scroll`; declaring `overflow-x:
+ * hidden` on the SAME element is a second axis on an ALREADY-decided scroll
+ * container, not a second container - nothing here for the spec's
+ * auto-promotion rule to catch. `body` now sets neither axis, so it is not
+ * a scroll container at all, and `position: sticky` inside it resolves
+ * against `html`, the one true scroller.
+ *
+ * Measured directly on /privacy before this fix: after `window.scrollTo(0,
+ * 1500)`, the header's own `getBoundingClientRect().top` read -1500 -
+ * exactly as if it were `position: static`, not sticky at all. A first
+ * attempt at this fix (adding `overflow-y: visible` to body, still paired
+ * with `overflow-x: hidden` there) measured the same -1500 - the promotion
+ * rule caught that value too, which is what led to moving the property
+ * instead of trying to override its sibling axis in place.
+ */
 html {
+  overflow-x: hidden !important;
   overflow-y: scroll !important;
   scrollbar-gutter: stable !important;
   color: var(--foreground);
@@ -238,7 +274,6 @@ html {
 }
 
 body {
-  overflow-x: hidden !important;
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
