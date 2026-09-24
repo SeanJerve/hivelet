@@ -100,31 +100,70 @@ async function handleQuickLogin(account: DemoAccount) {
 
 <template>
   <div class="ws-focus flex-1 w-full font-editorial bg-canvas">
-    <div class="grid min-h-screen lg:grid-cols-2">
+    <!--
+      One screen tall on desktop, not a page to scroll. `lg:h-dvh` pins the two
+      columns to the viewport, and the form stays top-aligned under the
+      masthead (centred was tried and read as floating). On a screen too short
+      for the form, only this column scrolls (`lg:overflow-y-auto`), so the
+      submit button is never cut off. Phones scroll the page as normal: two
+      fields, the notes and the on-screen keyboard do not fit on one phone
+      screen.
+    -->
+    <div class="grid min-h-dvh lg:h-dvh lg:grid-cols-2">
 
       <!-- Left: the form -->
-      <div class="flex flex-col px-4 sm:px-6 lg:px-14 py-10 sm:py-14">
+      <div class="ws-page flex flex-col pb-8 sm:pb-10 lg:pb-8 lg:overflow-y-auto">
 
-        <div class="flex items-start justify-between gap-6">
+        <!--
+          The landing page's masthead bar, repeated: `h-16 items-center`, the
+          same `font-display` wordmark, on the same `ws-page` gutter. Moving
+          from the landing page to here, "Hivelet" now stays exactly where it
+          was. It used to start 32px down inside this column's padding, so the
+          page visibly dropped on arrival. Contact goes onto one line for the
+          same reason: two stacked lines do not fit a 64px bar. It may wrap on
+          a 320px phone, which the bar's height still holds.
+        -->
+        <div class="flex h-16 items-center justify-between gap-6">
           <RouterLink
             to="/public"
-            class="press text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+            class="press font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
           >
             Hivelet
           </RouterLink>
 
-          <div class="text-right shrink-0">
-            <p class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</p>
+          <p class="flex flex-wrap items-baseline justify-end gap-x-3">
+            <span class="text-[0.7rem] tracking-[0.16em] uppercase text-ink-soft">Contact us</span>
             <a
               :href="`tel:${LANDLADY.phone}`"
-              class="press mt-1 inline-block py-1 text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+              class="press inline-block py-1 text-sm font-medium text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
             >
               {{ LANDLADY.phone }}
             </a>
-          </div>
+          </p>
         </div>
 
-        <h1 class="mt-12 sm:mt-16 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3.6vw,2.75rem)] max-w-lg">
+        <!--
+          A breadcrumb above the title, where the way back used to be a link
+          at the very bottom of the form. `min-h-11` keeps "Home" at the
+          app's 44px tap-target size.
+        -->
+        <nav aria-label="Breadcrumb" class="mt-8 sm:mt-10 lg:mt-6">
+          <ol class="flex flex-wrap items-center gap-x-2 text-xs text-ink-soft">
+            <li>
+              <RouterLink
+                to="/public"
+                class="press inline-flex min-h-11 items-center gap-1.5 underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+              >
+                <ArrowLeft class="size-3.5" aria-hidden="true" />
+                Home
+              </RouterLink>
+            </li>
+            <li aria-hidden="true" class="text-ink-faint">/</li>
+            <li aria-current="page" class="text-ink">Sign in</li>
+          </ol>
+        </nav>
+
+        <h1 class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
           Sign in to your account
         </h1>
 
@@ -137,8 +176,8 @@ async function handleQuickLogin(account: DemoAccount) {
           {{ deniedReason }}
         </div>
 
-        <form class="mt-10 sm:mt-12 max-w-2xl" @submit.prevent="handleSubmit">
-          <div class="grid gap-x-8 gap-y-7 sm:grid-cols-2">
+        <form class="mt-8 lg:mt-6 max-w-2xl" @submit.prevent="handleSubmit">
+          <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
             <div>
               <label
                 for="login-email"
@@ -222,7 +261,7 @@ async function handleQuickLogin(account: DemoAccount) {
             {{ authError }}
           </div>
 
-          <p class="mt-10 max-w-xl text-xs leading-relaxed text-ink-soft">
+          <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
             Accounts are created by the landlady. If you live here and cannot get in, ask
             Mrs. {{ LANDLADY.name }} and she will set yours up.
           </p>
@@ -230,27 +269,17 @@ async function handleQuickLogin(account: DemoAccount) {
           <button
             type="submit"
             :disabled="!canSubmit"
-            class="pill-btn-brand mt-10 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
+            class="pill-btn-brand mt-6 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />
             <LogIn v-else class="size-4" aria-hidden="true" />
             <span>{{ isAuthenticating ? 'Signing in…' : 'Sign in' }}</span>
           </button>
         </form>
-
-        <p class="mt-12 text-xs text-ink-soft">
-          <RouterLink
-            to="/public"
-            class="press inline-flex items-center gap-1.5 py-1 underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
-          >
-            <ArrowLeft class="size-3.5" aria-hidden="true" />
-            Back to home
-          </RouterLink>
-        </p>
       </div>
 
       <!-- Right: Real building exterior showcase with clear background image -->
-      <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 py-10 sm:py-14 overflow-hidden bg-night">
+      <aside class="relative hidden lg:flex flex-col justify-between text-white px-10 sm:px-14 pb-10 sm:pb-14 overflow-hidden bg-night">
         <img
           src="/fe-galang-building.webp"
           alt=""
@@ -263,7 +292,8 @@ async function handleQuickLogin(account: DemoAccount) {
         <!-- Contrast gradient overlay: unblurred to keep building details clear and vibrant -->
         <div class="absolute inset-0 bg-gradient-to-t from-night/85 via-night/25 to-night/50" />
 
-        <div class="relative z-10">
+        <!-- On the masthead's line, not 56px below it: the same 64px bar. -->
+        <div class="relative z-10 flex h-16 items-center">
           <p class="text-[0.7rem] tracking-[0.18em] uppercase text-white/80 drop-shadow-sm">
             {{ LANDLADY.address }}
           </p>
