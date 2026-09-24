@@ -12,7 +12,7 @@ import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
 import { LANDLADY } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
-import { propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
+import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
@@ -89,6 +89,11 @@ const tenantData = ref({
   landladyName: LANDLADY.name,
   verifiedAt: '',
   nextDueDateDisplay: '',
+  /** The last day the recorded payments cover, and the first day they do not. */
+  paidThroughDisplay: '',
+  unbilledFromDisplay: '',
+  /** `amount_pending` on the bill shown: money sent that she has not verified. */
+  activeBillPending: 0,
 });
 
 /**
@@ -412,10 +417,17 @@ async function fetchTenantData() {
       tenantData.value.dueDateRaw = unpaidBill.due_date;
       tenantData.value.verifiedAt = '';
       tenantData.value.nextDueDateDisplay = '';
+      tenantData.value.paidThroughDisplay = '';
+      tenantData.value.unbilledFromDisplay = '';
+      tenantData.value.activeBillPending = Number(unpaidBill.amount_pending) || 0;
     } else {
       activeBillId.value = null;
+      tenantData.value.activeBillPending = 0;
       const paidBill = billsData && billsData.length > 0 ? billsData[0] : null;
-      const validCoveredDate = maxCoveredDate;
+      // The cast undoes a narrowing: TS does not see the `forEach` callback
+      // assign `maxCoveredDate`, so it reads it as `null` here and everything
+      // destructured from it as `never`.
+      const validCoveredDate = maxCoveredDate as { y: number; m: number; d: number } | null;
       if (validCoveredDate) {
         // Only from the bill. There is deliberately no fallback: a resident with
         // no bill is told there is none, rather than shown a made-up one.
@@ -441,28 +453,56 @@ async function fetchTenantData() {
         tenantData.value.dueBadgeText = 'PAID';
         tenantData.value.dueDaysRemaining = 'Settled';
 
+        /**
+         * THE NEXT DUE DATE WAS ONE CYCLE LATE, AND COULD BE IN THE PAST.
+         *
+         * This took the anniversary in the MONTH the paid-through date falls in
+         * and added a month. A period ends the day before an anniversary
+         * (`periodEnd()` in `propertyDate.ts`), so for rent paid through 12 July
+         * on the 13th, the next rent is due 13 July, and this said 13 August.
+         * Nothing compared the result with today either, so a resident whose
+         * last recorded period ended in July was still shown "Settled" in
+         * September (B-61, reproduced in the mocked-API harness).
+         *
+         * Now: the first anniversary strictly after the paid-through date, and
+         * "Settled" only while that date is still ahead. On the anniversary
+         * itself a new period has begun that nothing on record covers.
+         */
         const day = anniversaryDay.value;
+        const { y, m, d } = validCoveredDate;
+        const iso = (yy: number, mm: number, dd: number) =>
+          `${yy}-${String(mm + 1).padStart(2, '0')}-${String(dd).padStart(2, '0')}`;
+        const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
+        const paidThroughIso = iso(y, m, d);
+        let nextDueIso = '';
         if (day) {
-          // UTC throughout: `y`/`m` are already plain integers sliced from the
-          // column, so days-in-month and the final instants are built the same
-          // way `propertyDate.ts`'s own `periodEnd()` does it - no local Date
-          // getter ever reads them back, so no browser timezone can shift them.
-          const clamp = (y: number, m: number, d: number) =>
-            Math.min(d, new Date(Date.UTC(y, m + 1, 0)).getUTCDate());
+          // Plain integers throughout, as `periodEnd()` does it, so no browser
+          // timezone can shift the result.
+          const clamp = (yy: number, mm: number, dd: number) =>
+            Math.min(dd, new Date(Date.UTC(yy, mm + 1, 0)).getUTCDate());
+          let nextY = y;
+          let nextM = m;
+          if (clamp(y, m, day) <= d) {
+            nextY = m === 11 ? y + 1 : y;
+            nextM = (m + 1) % 12;
+          }
+          nextDueIso = iso(nextY, nextM, clamp(nextY, nextM, day));
+        }
+        const today = propertyToday();
+        const stillCovered = nextDueIso ? nextDueIso > today : paidThroughIso >= today;
 
-          const { y, m } = validCoveredDate;
-          const lastPaidDue = new Date(Date.UTC(y, m, clamp(y, m, day)));
-          tenantData.value.dueDate = lastPaidDue.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
-          tenantData.value.dueDateRaw = propertyDate(lastPaidDue);
-
-          const nextY = m + 1 > 11 ? y + 1 : y;
-          const nextM = (m + 1) % 12;
-          const nextDate = new Date(Date.UTC(nextY, nextM, clamp(nextY, nextM, day)));
-          tenantData.value.nextDueDateDisplay = nextDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
+        tenantData.value.dueDate = '';
+        tenantData.value.dueDateRaw = '';
+        tenantData.value.paidThroughDisplay = formatDateOnly(paidThroughIso, longDate);
+        if (stillCovered) {
+          tenantData.value.nextDueDateDisplay = formatDateOnly(nextDueIso, longDate);
+          tenantData.value.unbilledFromDisplay = '';
         } else {
-          tenantData.value.dueDate = '';
-          tenantData.value.dueDateRaw = '';
+          // `dueBadgeText` stays 'PAID' for the reason the no-bills branch below
+          // gives: it keeps a confident ₱0.00 off the tile. The words change.
+          tenantData.value.dueDaysRemaining = 'Not billed yet';
           tenantData.value.nextDueDateDisplay = '';
+          tenantData.value.unbilledFromDisplay = nextDueIso ? formatDateOnly(nextDueIso, longDate) : '';
         }
 
         const linkedPayment = paymentsData?.find((p: any) => p.verification_status === 'Verified');
@@ -489,6 +529,8 @@ async function fetchTenantData() {
         tenantData.value.dueDateRaw = '';
         tenantData.value.verifiedAt = '';
         tenantData.value.nextDueDateDisplay = '';
+        tenantData.value.paidThroughDisplay = '';
+        tenantData.value.unbilledFromDisplay = '';
       }
     }
 
@@ -527,6 +569,24 @@ function handlePayOnline() {
   payingOnline.value = true;
   router.push({ path: '/tenant/payments', query: { pay: activeBillId.value || undefined } });
 }
+
+/**
+ * A payment is in and she has not checked it yet.
+ *
+ * The Pay button used to show anyway, and the Payments screen it leads to then
+ * got a 409 from `POST /tenant/payments/checkout`: `refuseIfPaymentPending`
+ * refuses a bill while any payment on it waits for verification, and the
+ * no-bill path resolves the same unpaid bill (B-61, reproduced in the
+ * mocked-API harness). `amount_pending` is the exact figure that guard sums;
+ * any pending row in `/tenant/my-payments` is the wider net for the no-bill
+ * path, which cannot say in advance which bill it will resolve.
+ */
+const paymentAwaitingVerification = computed(
+  () => tenantData.value.activeBillPending > 0 || pendingOnlinePayments.value.length > 0
+);
+
+const awaitingVerificationLine =
+  'A payment you sent is waiting for the landlady to verify it. You can pay online again once she has checked it.';
 
 const statusTone = computed(() => {
   const s = dueDateCountdown.value.severity;
@@ -623,13 +683,20 @@ const statusTone = computed(() => {
             </div>
           </div>
           <div class="flex flex-col items-start gap-2">
-            <button type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
-              <CreditCard class="size-4" aria-hidden="true" />
-              {{ payingOnline ? 'Opening the payment page' : 'Pay with GCash' }}
-            </button>
-            <p class="text-xs leading-5 text-on-brand-soft">
-              Online payments go through Adyen. Each one counts as paid once the landlady verifies it.
+            <!-- See `paymentAwaitingVerification`: the button is not offered
+                 when the checkout would refuse it. -->
+            <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand">
+              {{ awaitingVerificationLine }}
             </p>
+            <template v-else>
+              <button type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
+                <CreditCard class="size-4" aria-hidden="true" />
+                {{ payingOnline ? 'Opening the payment page' : 'Pay with GCash' }}
+              </button>
+              <p class="text-xs leading-5 text-on-brand-soft">
+                Online payments go through Adyen. Each one counts as paid once the landlady verifies it.
+              </p>
+            </template>
           </div>
         </template>
         <div v-else class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -654,7 +721,16 @@ const statusTone = computed(() => {
             </p>
             <p class="mt-3 text-sm text-on-brand-soft">
               <template v-if="tenantData.nextDueDateDisplay">Next rent is due {{ tenantData.nextDueDateDisplay }}.</template>
-              <template v-else>No bill has been raised for this period yet — which is not the same as owing nothing.</template>
+              <template v-else-if="tenantData.dueDaysRemaining === 'Settled' && tenantData.paidThroughDisplay">
+                Your recorded payments cover rent up to {{ tenantData.paidThroughDisplay }}.
+              </template>
+              <template v-else-if="tenantData.paidThroughDisplay">
+                Your recorded payments cover rent up to {{ tenantData.paidThroughDisplay }}.
+                <template v-if="tenantData.unbilledFromDisplay">Rent from {{ tenantData.unbilledFromDisplay }} has not been billed yet,</template>
+                <template v-else>Nothing after that has been billed yet,</template>
+                which is not the same as owing nothing.
+              </template>
+              <template v-else>No bill has been raised for this period yet, which is not the same as owing nothing.</template>
             </p>
           </div>
           <!--
@@ -666,7 +742,10 @@ const statusTone = computed(() => {
             is the first screen a resident actually lands on - it should not
             be the one screen in the app that still has no way there.
           -->
-          <div class="flex flex-col items-start gap-2 shrink-0">
+          <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand sm:max-w-64">
+            {{ awaitingVerificationLine }}
+          </p>
+          <div v-else class="flex flex-col items-start gap-2 shrink-0">
             <button type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
               <CreditCard class="size-4" aria-hidden="true" />
               Pay with GCash
