@@ -423,20 +423,27 @@ onBeforeUnmount(() => {
                   </router-link>
                 </nav>
 
-                <router-link
-                  to="/public"
-                  @click="closeMobileNav"
-                  class="press mt-3 flex min-h-11 items-center gap-3 rounded-full border-t border-line px-4 pt-3 text-sm font-medium text-ink-soft hover:bg-canvas hover:text-ink"
-                >
-                  <Globe class="size-4 shrink-0 text-ink-faint" aria-hidden="true" />
-                  <span>Visit the website</span>
-                </router-link>
+                <!--
+                  The straight divider above "Executive Overview" (border-b on
+                  a plain div) sits on an element with no border-radius. This
+                  one used to put border-t directly on the rounded-full link
+                  below, so the line curved around the pill's corner instead
+                  of running straight. The divider now lives on this plain
+                  wrapping div, and rounded-full stays on the link itself,
+                  which is what every other row in this list uses for its own
+                  hover shape.
+                -->
+                <div class="mt-3 border-t border-line pt-3">
+                  <router-link
+                    to="/public"
+                    @click="closeMobileNav"
+                    class="press flex min-h-11 items-center gap-3 rounded-full px-4 text-sm font-medium text-ink-soft hover:bg-canvas hover:text-ink"
+                  >
+                    <Globe class="size-4 shrink-0 text-ink-faint" aria-hidden="true" />
+                    <span>Visit the website</span>
+                  </router-link>
+                </div>
               </div>
-            </div>
-
-            <div class="p-4 bg-canvas rounded-2xl text-xs text-ink-soft mt-6">
-              <p class="font-semibold text-ink">Fe Galang Da Silva Boarding House</p>
-              <p class="mt-0.5">33 rentable units, Legazpi City</p>
             </div>
           </div>
         </Transition>
