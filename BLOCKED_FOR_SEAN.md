@@ -2815,3 +2815,21 @@ these three indistinguishable from the real residents.*
 > cap while the public site stays full width (af18081). The workspace mobile drawer now has 
 > `aria-controls` (252bd7a), and `/public#faqs` lands on its section (252bd7a). Both browser 
 > verification passes confirmed every B-61 frontend fix on screen, with the API mocked.
+
+### B-65 — frontend files changed on Loyd's machine, at his request (2026-09-24)
+
+- **Blocked on:** nothing; this is a heads-up so the two machines do not collide
+- **What changed, and why:** Loyd asked directly for two things, so Loyd's machine edited
+  `frontend/src` this once: `TenantOverviewView.vue` and `TenantPaymentsView.vue` now read
+  `GET /tenant/my-standing` (settled only when her records cover today; no Pay button when
+  settled; owed periods shown and paid oldest first), and `AppHeader.vue`, `AppSidebar.vue`
+  and `router/index.ts` gained "Visit the website" / "Back to my dashboard" (the admin may now
+  open `/public` and `/category` when she asks). Commits `68c3796`, `b5d700e`, `99b8913`
+- **Know this before residents use the portal:** measured read-only that day, **all 32
+  residents now show overdue**, because her records stop in July (3) or August (29). That is
+  correct by the rule Loyd set - settled only when a receipt covers it - and it stays that way
+  until August and September are entered, by hand or by import
+- **What Sean needs to do:** review the three commits when he next pulls. The admin screens
+  do not show standing yet; `readStanding()` is ready if a per-resident "owes / settled" column
+  is wanted
+- **Raised:** 2026-09-24 by Claude, Loyd's machine
