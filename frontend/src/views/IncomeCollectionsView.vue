@@ -1460,7 +1460,7 @@ async function exportExcel() {
                   <span class="block whitespace-nowrap text-xs text-ink-faint">{{ r.rentFor }}</span>
                 </td>
                 <td>
-                  <span class="block text-ink">{{ r.contact }}</span>
+                  <span class="block wrap-anywhere text-ink">{{ r.contact }}</span>
                   <span v-if="r.invoice" class="block font-mono text-xs text-ink-faint">{{
                     r.invoice
                   }}</span>
@@ -1486,6 +1486,7 @@ async function exportExcel() {
                     type="button"
                     class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
                     :aria-label="`Edit ${r.contact}'s record`"
+                    title="Edit"
                     @click="startEditIncome(r)"
                   >
                     <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
@@ -1583,6 +1584,7 @@ async function exportExcel() {
                 </p>
               </div>
 
+              <!-- The compact pencil the directory cards use, not a full-width button. -->
               <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 <div>
                   <dt class="text-xs text-ink-faint">Paid</dt>
@@ -1609,15 +1611,17 @@ async function exportExcel() {
                   <dd class="tabular text-ink">{{ peso(r.garbage, 2) }}</dd>
                 </div>
               </dl>
-
+              <div class="mt-3 flex justify-end">
               <button
                 type="button"
-                class="pill-btn mt-4 w-full justify-center"
+                class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+                :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
+                title="Edit"
                 @click="startEditIncome(r)"
               >
                 <Pencil class="size-3.5" aria-hidden="true" />
-                <span>Edit</span>
               </button>
+              </div>
             </template>
           </RecordTable>
         </div>
@@ -1661,7 +1665,7 @@ async function exportExcel() {
             <span class="block whitespace-nowrap text-xs text-ink-faint">{{ r.rentFor }}</span>
           </td>
           <td>
-            <span class="block text-ink">{{ r.contact }}</span>
+            <span class="block wrap-anywhere text-ink">{{ r.contact }}</span>
             <span v-if="r.invoice" class="block font-mono text-xs text-ink-faint">{{
               r.invoice
             }}</span>
@@ -1683,6 +1687,7 @@ async function exportExcel() {
               type="button"
               class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
               :aria-label="`Edit ${r.contact}'s record`"
+                    title="Edit"
               @click="startEditIncome(r)"
             >
               <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
@@ -1822,15 +1827,17 @@ async function exportExcel() {
             <dd class="tabular text-ink">{{ peso(r.garbage, 2) }}</dd>
           </div>
         </dl>
-
+        <div class="mt-3 flex justify-end">
         <button
           type="button"
-          class="pill-btn mt-4 w-full justify-center"
+          class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+          :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
+          title="Edit"
           @click="startEditIncome(r)"
         >
           <Pencil class="size-3.5" aria-hidden="true" />
-          <span>Edit</span>
         </button>
+        </div>
       </template>
     </RecordTable>
 

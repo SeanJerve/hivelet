@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { Inbox, Phone, Mail, Send, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
+import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 
 const router = useRouter();
 
@@ -146,8 +147,8 @@ const activeInquiry = computed(() => {
 /**
  * Choosing an enquiry on a phone scrolls to it.
  *
- * Below `lg` the detail panel sits UNDER the whole list, so a tap changed a
- * panel that was off screen and nothing appeared to happen (B-61). From `lg`
+ * Below `xl` the detail panel sits UNDER the whole list, so a tap changed a
+ * panel that was off screen and nothing appeared to happen (B-61). From `xl`
  * the two are side by side and the page must not move. `scroll-mt-24` on the
  * panel keeps its heading clear of the sticky workspace header.
  */
@@ -155,7 +156,7 @@ const detailPanel = ref<HTMLElement | null>(null);
 
 async function selectInquiry(id: string) {
   activeInquiryId.value = id;
-  if (window.matchMedia('(min-width: 1024px)').matches) return;
+  if (window.matchMedia('(min-width: 1280px)').matches) return;
   await nextTick();
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   detailPanel.value?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
@@ -320,9 +321,9 @@ async function handleSendReply() {
 
     </div>
 
-    <div class="grid min-h-[620px] grid-cols-1 gap-4 lg:grid-cols-12">
+    <div class="grid min-h-[620px] grid-cols-1 gap-4 xl:grid-cols-12">
       <!-- The enquiries -->
-      <div class="flex flex-col overflow-hidden rounded-tile bg-tile lg:col-span-4">
+      <div class="flex flex-col overflow-hidden rounded-tile bg-tile xl:col-span-4">
         <div class="space-y-3 border-b border-line p-4">
           <div class="relative">
             <Search
@@ -370,14 +371,12 @@ async function handleSendReply() {
             you have typed" - which is a statement about the SEARCH, on a screen
             that had not managed to read anything at all.
           -->
-          <p
-            v-else-if="inquiriesFetchFailed"
-            role="status"
-            class="ws-reveal p-8 text-center text-sm text-overdue"
-          >
-            The inquiries could not be loaded. That is not the same as there being none. Reload
-            the page to try again.
-          </p>
+          <div v-else-if="inquiriesFetchFailed" class="ws-reveal p-4">
+            <UnavailableNote
+              message="The inquiries could not be loaded. That is not the same as there being none."
+              @retry="fetchInquiries"
+            />
+          </div>
 
           <!-- Two different empties. This said "Nothing matches what you have
                typed" to an inbox with nothing in it and nothing typed (B-61). -->
@@ -443,7 +442,7 @@ async function handleSendReply() {
       <div
         v-if="activeInquiry"
         ref="detailPanel"
-        class="ws-reveal flex min-h-[550px] scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile lg:col-span-8"
+        class="ws-reveal flex min-h-[550px] scroll-mt-24 flex-col overflow-hidden rounded-tile bg-tile xl:col-span-8"
       >
         <div class="border-b border-line p-5 sm:p-6">
           <div class="flex flex-wrap items-start justify-between gap-4">
@@ -612,7 +611,7 @@ async function handleSendReply() {
 
       <div
         v-else
-        class="grid place-items-center rounded-tile bg-tile p-12 text-center lg:col-span-8"
+        class="grid place-items-center rounded-tile bg-tile p-12 text-center xl:col-span-8"
       >
         <div>
           <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />

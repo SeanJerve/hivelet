@@ -473,7 +473,7 @@ function handleDeleteTicketPrompt() {
       </div>
     </div>
 
-    <div v-if="isLoading" class="grid gap-4 lg:grid-cols-3" aria-busy="true">
+    <div v-if="isLoading" class="grid gap-4 xl:grid-cols-3" aria-busy="true">
       <span class="sr-only" role="status">Loading repair requests</span>
       <div v-for="i in 3" :key="i" class="rounded-tile bg-tile p-6 flex flex-col gap-3">
         <Skeleton class-name="h-4 w-28 rounded-full" />
@@ -499,7 +499,8 @@ function handleDeleteTicketPrompt() {
       @retry="fetchTickets"
     />
 
-    <div v-else class="ws-reveal grid gap-4 lg:grid-cols-3">
+    <!-- One column until xl: at 1024 three columns were 202px and a title beside its priority pill had 28px. -->
+    <div v-else class="ws-reveal grid gap-4 xl:grid-cols-3">
       <section
         v-for="col in columns"
         :key="col.key"

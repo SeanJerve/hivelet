@@ -95,7 +95,7 @@ const dateCoveredEnd = computed(() => {
  * too, missed on that commit because they live in a different file.
  */
 function formatDateForDisplay(dStr: string): string {
-  return formatDateOnly(dStr, { month: 'short', day: '2-digit', year: 'numeric' });
+  return formatDateOnly(dStr, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 const unitOccupantsSummary = computed(() => {

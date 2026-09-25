@@ -248,13 +248,13 @@ function getDbCategoryCode(catStr: string): string {
   return code || '10';
 }
 
-// Normalize Date into "MMM DD, YYYY" for grouping consistency
+// "MMM D, YYYY", the string the fetched rows carry, so a just-saved entry joins its day
 function formatDateForDisplay(dateVal: string | Date): string {
   const d = new Date(dateVal);
   if (isNaN(d.getTime())) return String(dateVal);
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const month = months[d.getMonth()];
-  const day = String(d.getDate()).padStart(2, '0');
+  const day = String(d.getDate());
   const year = d.getFullYear();
   return `${month} ${day}, ${year}`;
 }
@@ -933,7 +933,7 @@ async function handleEditExpense() {
 
       Three of the six columns are the areas an expense is split across, which
       is what makes this worth being a table: the figures line up down the page
-      and can be compared. Below 1024px each day becomes a stack of tiles,
+      and can be compared. Below 1280px (at 1024 the sidebar leaves ~660px) each day becomes a stack of tiles,
       because three money columns read sideways on a phone is not a table.
     -->
     <RecordTable
@@ -943,6 +943,7 @@ async function handleEditExpense() {
       caption="Expenses by day, each split across the boarding house, the main house and the apartments"
       noun="day"
       :page-size="6"
+      table-from="xl"
     >
       <template #head>
         <tr>
@@ -965,7 +966,7 @@ async function handleEditExpense() {
           <td class="bg-canvas"><span class="sr-only">that day</span></td>
         </tr>
         <tr v-for="e in group.records" :key="e.id" class="group">
-          <th scope="row" class="font-medium text-ink">{{ e.description }}</th>
+          <th scope="row" class="font-medium wrap-anywhere text-ink">{{ e.description }}</th>
           <td>{{ e.category }}</td>
           <td class="num">
             {{ getAreaAmount(e, 'Boarding House') ? peso(getAreaAmount(e, 'Boarding House'), 2) : '—' }}
@@ -980,6 +981,7 @@ async function handleEditExpense() {
               type="button"
               class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer"
               :aria-label="`Edit ${e.description}`"
+              title="Edit"
               @click="startEditExpense(e)"
             >
               <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
@@ -1014,6 +1016,7 @@ async function handleEditExpense() {
               </p>
             </div>
 
+            <!-- The compact pencil the directory cards use, not a full-width button. -->
             <dl class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
               <div v-if="getAreaAmount(e, 'Boarding House')" class="flex gap-1.5">
                 <dt class="text-ink-faint">Boarding house</dt>
@@ -1028,15 +1031,17 @@ async function handleEditExpense() {
                 <dd class="tabular text-ink">{{ peso(getAptsOtherAmount(e), 2) }}</dd>
               </div>
             </dl>
-
+            <div class="mt-2 flex justify-end">
             <button
               type="button"
-              class="pill-btn mt-3 w-full justify-center"
+              class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+              :aria-label="`Edit ${e.description}`"
+              title="Edit"
               @click="startEditExpense(e)"
             >
               <Pencil class="size-3.5" aria-hidden="true" />
-              <span>Edit</span>
             </button>
+            </div>
           </li>
         </ul>
       </template>
