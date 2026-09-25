@@ -59,7 +59,13 @@ const editPriority = ref<'Low' | 'Medium' | 'High' | 'Emergency'>('Medium');
 const editStatus = ref<'Open' | 'In Progress' | 'Resolved' | 'Closed'>('Open');
 
 const PRIORITY_OPTIONS = ['Low', 'Medium', 'High', 'Emergency'];
-const STATUS_OPTIONS = ['Open', 'In Progress', 'Resolved', 'Closed'];
+// The same words the board and its filter use; the values are unchanged.
+const STATUS_OPTIONS = [
+  { value: 'Open', label: 'To dispatch' },
+  { value: 'In Progress', label: 'In progress' },
+  { value: 'Resolved', label: 'Resolved' },
+  { value: 'Closed', label: 'Closed' },
+];
 
 const editUnitOptions = computed(() =>
   rooms.map((r) => ({
@@ -180,7 +186,18 @@ const columns = computed(() => [
   },
 ]);
 
-const isUrgent = (p: string) => p === 'Emergency' || p === 'High';
+/**
+ * Emergency red, High amber, the rest quiet. Emergency and High were both red,
+ * so the one that cannot wait did not stand out from the one that can a little.
+ */
+const priorityTone = (p: string) => (p === 'Emergency' ? 'overdue' : p === 'High' ? 'verify' : 'neutral');
+
+/** The date as well as the time: a message from last week read as if it were today's. */
+function messageTime(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
 
 const ticketMessages = ref<any[]>([]);
 const loadingMessages = ref(false);
@@ -226,10 +243,10 @@ async function handleSendAdminComment() {
     if (res) {
       ticketMessages.value.push(res);
       newAdminMessage.value = '';
-      showToast('success', 'Comment sent', 'Resident has been notified of your message.');
+      showToast('success', 'Message sent', 'The resident has been notified.');
     }
   } catch (err: any) {
-    showToast('error', 'Failed to send comment', err?.message || 'Could not post message.');
+    showToast('error', 'Message not sent', err?.message || 'Please try again.');
   } finally {
     sendingAdminMessage.value = false;
   }
@@ -309,7 +326,8 @@ async function handleSaveEditTicket(): Promise<boolean> {
     savedStatus.value = editStatus.value;
 
     await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
-    showToast('success', 'Ticket updated', `Ticket #${ticketId} updated successfully.`);
+    // By title and unit: the id is a long code nobody reads.
+    showToast('success', 'Repair saved', `${editTitle.value}, unit ${editUnit.value.toUpperCase()}.`);
     isEditModalOpen.value = false;
     editingTicket.value = null;
     return true;
@@ -318,7 +336,7 @@ async function handleSaveEditTicket(): Promise<boolean> {
     // showing "Resolved" and a named technician for a ticket that is still Open
     // is worse than a slow one.
     await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
-    showToast('error', 'Update failed', err?.message || 'Could not update ticket.');
+    showToast('error', 'Not saved', err?.message || 'The repair could not be updated.');
     return false;
   } finally {
     isSubmitting.value = false;
@@ -341,8 +359,8 @@ async function handleQuickDispatch() {
   if (editTech.value === 'Unassigned') {
     showToast(
       'error',
-      'Choose a technician first',
-      'Pick who is attending this ticket before dispatching it.'
+      'Choose who is going first',
+      'Pick the technician under "Who is going", then press Send technician.'
     );
     return;
   }
@@ -358,7 +376,7 @@ async function handleQuickResolve() {
 /**
  * A quick action is one click that sets the status AND saves. If the save fails,
  * the status it set goes back, so the form does not keep an unsaved "Resolved"
- * that the next Save Changes would then write without her choosing it.
+ * that the next Save changes would then write without her choosing it.
  */
 async function quickSetStatus(status: 'In Progress' | 'Resolved') {
   if (isSubmitting.value) return;
@@ -371,10 +389,11 @@ function handleDeleteTicketPrompt() {
   if (!editingTicket.value) return;
   const ticketId = editingTicket.value.id;
   const unitCode = editingTicket.value.unit;
+  const ticketTitle = editingTicket.value.title;
 
   showConfirm(
-    'Delete Maintenance Ticket',
-    `Are you sure you want to delete Ticket #${ticketId} for Unit ${unitCode}? This will remove the maintenance record and restore the unit status if no other active repairs exist.`,
+    'Delete this repair?',
+    `"${ticketTitle}", unit ${unitCode.toUpperCase()}. It is removed for good. If no other repair is open for the unit, its status goes back to what it was.`,
     async () => {
       isSubmitting.value = true;
       try {
@@ -394,7 +413,7 @@ function handleDeleteTicketPrompt() {
         await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
         isEditModalOpen.value = false;
         editingTicket.value = null;
-        showToast('success', 'Ticket deleted', `Ticket #${ticketId} was successfully removed.`);
+        showToast('success', 'Repair deleted', `"${ticketTitle}" is no longer on the board.`);
       } catch (err: unknown) {
         showToast(
           'error',
@@ -476,7 +495,7 @@ function handleDeleteTicketPrompt() {
     -->
     <UnavailableNote
       v-else-if="maintenanceTicketsFetchFailed"
-      message="The repair requests could not be loaded. That is not the same as there being none — nothing is shown rather than an empty board."
+      message="The repair requests could not be loaded. That is not the same as there being none."
       @retry="fetchTickets"
     />
 
@@ -523,7 +542,7 @@ function handleDeleteTicketPrompt() {
                   Unit {{ t.unit.toUpperCase() }}, {{ t.category }}
                 </p>
               </div>
-              <StatusPill :tone="isUrgent(t.priority) ? 'overdue' : 'neutral'">{{ t.priority }}</StatusPill>
+              <StatusPill :tone="priorityTone(t.priority)">{{ t.priority }}</StatusPill>
             </div>
 
             <dl class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
@@ -565,7 +584,7 @@ function handleDeleteTicketPrompt() {
           past the edge of the panel.
         -->
         <div class="p-3 bg-canvas border border-line rounded-xl flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-          <span class="font-semibold text-ink-soft text-xs">Quick Actions:</span>
+          <span class="font-semibold text-ink-soft text-xs">Quick actions</span>
           <div class="flex flex-wrap items-center gap-2">
             <!-- `savedStatus`, not `editStatus`: this bar reports the ticket as saved. -->
             <button
@@ -575,8 +594,8 @@ function handleDeleteTicketPrompt() {
               @click="handleQuickDispatch"
               class="pill-btn px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
             >
-              <UserCheck class="size-3.5 text-brand" />
-              <span>Dispatch Tech</span>
+              <UserCheck class="size-3.5 text-brand" aria-hidden="true" />
+              <span>Send technician</span>
             </button>
             <!--
               This button said "Close / Resolve" and its companion "Ticket Resolved &
@@ -591,11 +610,11 @@ function handleDeleteTicketPrompt() {
               @click="handleQuickResolve"
               class="pill-btn-brand px-3 py-1 text-xs gap-1.5 inline-flex items-center cursor-pointer"
             >
-              <CheckCircle2 class="size-3.5" />
-              <span>Mark Resolved</span>
+              <CheckCircle2 class="size-3.5" aria-hidden="true" />
+              <span>Mark resolved</span>
             </button>
             <span v-else class="text-xs font-semibold text-brand inline-flex items-center gap-1">
-              <Check class="size-4" /> Ticket {{ savedStatus }}
+              <Check class="size-4" aria-hidden="true" /> {{ savedStatus }}
             </span>
           </div>
         </div>
@@ -645,14 +664,14 @@ function handleDeleteTicketPrompt() {
           <!-- Description -->
           <label class="ws-field">
               What was reported, and what was done
-            <textarea v-model="editDesc" rows="3" class="ws-textarea w-full" placeholder="Details regarding the maintenance request..."></textarea>
+            <textarea v-model="editDesc" rows="3" class="ws-textarea w-full" placeholder="Leak under the sink. Plumber replaced the washer."></textarea>
           </label>
 
           <!-- Resident Photo Attachment (if present) -->
           <div v-if="editingTicket?.photo" class="space-y-1.5 pt-2 border-t border-line">
-            <label class="block font-semibold text-xs text-ink-soft">
-              Resident Photo Attachment
-            </label>
+            <p class="font-semibold text-xs text-ink-soft">
+              Photo from the resident
+            </p>
             <div class="flex flex-col items-center rounded-2xl bg-canvas p-3">
               <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
                 <!--
@@ -666,31 +685,31 @@ function handleDeleteTicketPrompt() {
                 -->
                 <img
                   :src="editingTicket.photo"
-                  alt="Ticket Attachment"
+                  alt="Photo the resident attached"
                   :class="[
                     'max-h-52 w-auto object-contain rounded-lg transition-[opacity,transform] duration-300 ease-[var(--ease-out)] motion-safe:group-hover:scale-[1.02]',
                     photoLoaded ? 'opacity-100' : 'opacity-0',
                   ]"
                   @load="photoLoaded = true"
                 />
-                <span class="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-0.5 rounded font-medium">Click to view original</span>
+                <span class="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-0.5 rounded font-medium">Open full size</span>
               </a>
             </div>
           </div>
 
           <!-- Resident Communication Dialogue Stream -->
           <div class="pt-3 border-t border-line space-y-2">
-            <label class="block font-semibold text-xs text-ink-soft">
-              Resident Communication &amp; Follow-up Notes
-            </label>
+            <p class="font-semibold text-xs text-ink-soft">
+              Messages with the resident
+            </p>
 
             <!-- Message Stream Box -->
             <div class="max-h-36 space-y-2 overflow-y-auto rounded-2xl bg-canvas p-3 text-sm">
               <div v-if="loadingMessages" class="py-2 text-center text-ink-faint text-xs">
-                Loading conversation thread...
+                Loading messages…
               </div>
               <div v-else-if="ticketMessages.length === 0" class="py-2 text-center text-ink-faint text-xs">
-                No comments on this ticket yet.
+                No messages yet.
               </div>
               <div
                 v-for="(msg, i) in ticketMessages"
@@ -703,11 +722,13 @@ function handleDeleteTicketPrompt() {
                   :class="[ 'max-w-[85%] rounded-xl px-3 py-1.5 text-xs', msg.profiles?.role === 'admin' ? 'bg-night text-on-night' : 'bg-tile border border-line text-ink' ]"
                 >
                   <p class="font-semibold text-xs opacity-75 mb-0.5">
-                    {{ msg.profiles?.role === 'admin' ? 'You (Landlady)' : (msg.profiles?.full_name || 'Resident') }}
+                    {{ msg.profiles?.role === 'admin' ? 'You' : (msg.profiles?.full_name || 'Resident') }}
                   </p>
-                  <p>{{ msg.message_body }}</p>
-                  <p class="text-[9px] opacity-60 text-right mt-0.5">
-                    {{ new Date(msg.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) }}
+                  <!-- The resident's own words: a pasted link or a long run with no
+                       spaces must wrap inside the bubble, not run out of it. -->
+                  <p class="break-words whitespace-pre-line">{{ msg.message_body }}</p>
+                  <p class="text-[0.6875rem] opacity-70 text-right mt-0.5">
+                    {{ messageTime(msg.created_at) }}
                   </p>
                 </div>
               </div>
@@ -751,16 +772,16 @@ function handleDeleteTicketPrompt() {
               @click="handleDeleteTicketPrompt"
               class="pill-btn-danger-quiet"
             >
-              <Trash2 class="size-3.5" />
-              <span>Delete Ticket</span>
+              <Trash2 class="size-3.5" aria-hidden="true" />
+              <span>Delete repair</span>
             </button>
 
             <div class="flex items-center justify-end gap-2">
               <button type="button" @click="isEditModalOpen = false" class="pill-btn">Cancel</button>
               <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
-                <Check v-else class="size-3.5" />
-                <span>Save Changes</span>
+                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
+                <Check v-else class="size-3.5" aria-hidden="true" />
+                <span>Save changes</span>
               </button>
             </div>
           </div>
@@ -771,7 +792,7 @@ function handleDeleteTicketPrompt() {
       v-if="isConfirmOpen"
       :title="confirmTitle"
       :message="confirmMessage"
-      confirm-label="Delete ticket"
+      confirm-label="Delete repair"
       destructive
       :busy="isSubmitting"
       @cancel="isConfirmOpen = false"

@@ -89,16 +89,16 @@ function handleCloseLead() {
   if (!inq) return;
 
   showConfirm(
-    'Close this lead',
-    `${inq.name}, unit ${inq.unit.toUpperCase()}\n\nThe thread stays on record and can still be read. It simply stops sitting in the inbox as something waiting for an answer.`,
+    'Close this inquiry?',
+    `${inq.name}, unit ${inq.unit.toUpperCase()}.\n\nIt stays on record and can still be read. It just stops waiting for an answer.`,
     async () => {
       isSubmitting.value = true;
       try {
         await api.patch(`/admin/inquiries/${inq.id}`, { status: 'Closed' });
         await fetchInquiriesState();
-        showToast('success', 'Lead closed', `${inq.name}'s enquiry is no longer awaiting a reply.`);
+        showToast('success', 'Inquiry closed', `${inq.name} is no longer waiting for an answer.`);
       } catch (err: any) {
-        showToast('error', 'Could not close lead', err?.message || 'The inquiry was not updated.');
+        showToast('error', 'Not closed', err?.message || 'The inquiry was not updated.');
       } finally {
         isSubmitting.value = false;
       }
@@ -222,12 +222,15 @@ async function loadThread(inquiryId: string) {
       id: m.id,
       // The prospect has no profile, so a null sender is their side of it.
       from: m.sender_id ? ('me' as const) : ('them' as const),
-      author: m.sender_name || 'The office',
+      // "You" for her own replies, as the repair messages say it.
+      author: m.sender_id
+        ? 'You'
+        : (m.sender_name || inquiries.find((i) => i.id === inquiryId)?.name || 'The person asking'),
       text: m.message_body,
       time: m.sent_at ? new Date(m.sent_at).toLocaleString('en-US', {
         month: 'short',
         day: 'numeric',
-        hour: '2-digit',
+        hour: 'numeric',
         minute: '2-digit',
       }) : 'Time not recorded',
     }));
@@ -280,7 +283,7 @@ async function handleSendReply() {
      */
     await fetchInquiriesState();
 
-    showToast('success', 'Reply written down', `Your answer to ${currentInq.name} is on record.`);
+    showToast('success', 'Reply saved', `Your answer to ${currentInq.name} is on record.`);
     replyMessage.value = '';
   } catch (err: unknown) {
     // Without this the failure propagated silently: the reply box emptied, no
@@ -311,7 +314,7 @@ async function handleSendReply() {
           People asking about a unit
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          Each enquiry, what they asked, and what has been answered. Pick one to read it.
+          Each inquiry, what they asked, and what you answered.
         </p>
       </div>
 
@@ -326,7 +329,7 @@ async function handleSendReply() {
               class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
               aria-hidden="true"
             />
-            <label for="inquiry-search" class="sr-only">Search enquiries</label>
+            <label for="inquiry-search" class="sr-only">Search inquiries</label>
             <input
               id="inquiry-search"
               v-model="searchQuery"
@@ -337,7 +340,7 @@ async function handleSendReply() {
           </div>
           <p class="text-sm text-ink-soft">
             {{ filteredInquiries.length }}
-            {{ filteredInquiries.length === 1 ? 'enquiry' : 'enquiries' }}
+            {{ filteredInquiries.length === 1 ? 'inquiry' : 'inquiries' }}
           </p>
         </div>
 
@@ -349,7 +352,7 @@ async function handleSendReply() {
                this panel is already on --tile, so a card-shaped placeholder
                would have drawn no edge against it. -->
           <div v-if="isLoading" class="divide-y divide-line" aria-busy="true">
-            <span class="sr-only" role="status">Loading enquiries</span>
+            <span class="sr-only" role="status">Loading inquiries</span>
             <div v-for="i in 3" :key="i" class="space-y-2.5 p-4">
               <div class="flex items-start justify-between gap-2">
                 <Skeleton class-name="h-4 w-32 rounded-full" />
@@ -372,18 +375,18 @@ async function handleSendReply() {
             role="status"
             class="ws-reveal p-8 text-center text-sm text-overdue"
           >
-            The enquiries could not be loaded. That is not the same as there being none — reload
-            the page, and if it keeps happening the enquiries are still safely on file.
+            The inquiries could not be loaded. That is not the same as there being none. Reload
+            the page to try again.
           </p>
 
           <!-- Two different empties. This said "Nothing matches what you have
                typed" to an inbox with nothing in it and nothing typed (B-61). -->
           <p v-else-if="inquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
-            No enquiries yet. When someone asks about a unit, it arrives here.
+            No inquiries yet. When someone asks about a unit, it appears here.
           </p>
 
           <p v-else-if="filteredInquiries.length === 0" class="ws-reveal p-8 text-center text-sm text-ink-soft">
-            No enquiry matches “{{ searchQuery.trim() }}”.
+            No inquiry matches “{{ searchQuery.trim() }}”.
           </p>
 
           <!--
@@ -446,7 +449,7 @@ async function handleSendReply() {
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
-                <h2 class="text-lg font-semibold tracking-tight text-ink">
+                <h2 class="min-w-0 break-words text-lg font-semibold tracking-tight text-ink">
                   {{ activeInquiry.name }}
                 </h2>
                 <!-- Was a hardcoded "Active Prospect" on every lead, whatever its status. -->
@@ -486,7 +489,7 @@ async function handleSendReply() {
                      to show no price than a wrong one. -->
                 Asking about unit
                 <span class="font-semibold uppercase text-ink">{{ activeUnit.unitCode }}</span
-                ><template v-if="!roomsFetchFailed">, which lets at
+                ><template v-if="!roomsFetchFailed">, which rents for
                   <span class="tabular font-semibold text-ink">{{ peso(activeUnit.price) }}</span>
                   a month</template
                 >.
@@ -502,7 +505,7 @@ async function handleSendReply() {
                   @click="handleCloseLead"
                 >
                   <XCircle class="size-3.5" aria-hidden="true" />
-                  <span>Nothing came of it</span>
+                  <span>Close inquiry</span>
                 </button>
 
                 <button
@@ -525,8 +528,8 @@ async function handleSendReply() {
                   <span>Move them in</span>
                 </button>
               </template>
-
-              <StatusPill v-else tone="neutral">{{ statusWord(activeInquiry.status) }}</StatusPill>
+              <!-- A finished inquiry has no actions. Its status already shows beside
+                   the name, so it is not repeated here. -->
             </div>
           </div>
         </div>
@@ -590,8 +593,8 @@ async function handleSendReply() {
               told her answer had gone out when it had not left the building.
             -->
             <p class="ws-hint max-w-md">
-              This is kept here as a record of what you answered. It does not reach
-              {{ activeInquiry.name }} on its own, so ring or message them as well.
+              Saved here as a record only. It is not sent to {{ activeInquiry.name }},
+              so call or text them too.
             </p>
 
             <button
@@ -601,7 +604,7 @@ async function handleSendReply() {
             >
               <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
               <Send v-else class="size-4" aria-hidden="true" />
-              <span>Write it down</span>
+              <span>Save reply</span>
             </button>
           </div>
         </form>
@@ -615,7 +618,7 @@ async function handleSendReply() {
           <Inbox class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
           <p class="mt-3 text-base font-semibold text-ink">Nothing picked yet</p>
           <p class="mt-1 text-sm leading-6 text-ink-soft">
-            Choose an enquiry on the left to read it and answer.
+            Choose an inquiry to read it and answer.
           </p>
         </div>
       </div>
@@ -625,7 +628,7 @@ async function handleSendReply() {
       v-if="isConfirmOpen"
       :title="confirmTitle"
       :message="confirmMessage"
-      confirm-label="Close this lead"
+      confirm-label="Close inquiry"
       @cancel="isConfirmOpen = false"
       @confirm="handleConfirmAccept"
     />

@@ -21,7 +21,7 @@ import { X, Check, Banknote, Loader2, ReceiptText, Users } from 'lucide-vue-next
 const unitOptions = computed(() =>
   rooms.map((r) => ({
     value: r.unitCode,
-    label: `${r.unitCode.toUpperCase()} — ${formatUnitOccupantsSummary(r.unitCode).text} (${r.cluster})`,
+    label: `${r.unitCode.toUpperCase()}, ${formatUnitOccupantsSummary(r.unitCode).text} (${r.cluster})`,
   }))
 );
 
@@ -391,20 +391,21 @@ function triggerRecord() {
    * BR-036 says warn, and the recorded value is correct either way.
    */
   if (waterVal !== monthlyWaterBaseline) {
+    // Addressed to her: this said "in her book" to the owner reading it.
     showToast(
       'warning',
       'Water will be recorded as ' + peso(monthlyWaterBaseline, 2),
-      `The ledger derives water from the registered occupants, so it will record ` +
+      `The ledger counts water from the people registered in the unit, so it will record ` +
         `${peso(monthlyWaterBaseline, 2)} for ${unitUpper}, not ${peso(waterVal, 2)}. ` +
         (mCovered > 1
-          ? `Water is one month per entry - a receipt covering ${mCovered} months is recorded as one row per month in her book. `
+          ? `Each of the ${mCovered} months is its own entry, with one month of water. `
           : '') +
-        `Change the figure if that is wrong.`
+        `If the number of people is wrong, correct it on the resident's record.`
     );
   }
 
   if (waterVal !== 0 && waterVal % perOccupantRate !== 0) {
-    showToast('error', 'Water Payment Error', `Water payment must be a whole multiple of ₱${perOccupantRate}.`);
+    showToast('error', 'Check the water', `It must be a multiple of ₱${perOccupantRate}, the charge for one person.`);
     return;
   }
 
@@ -418,7 +419,7 @@ function triggerRecord() {
   // receipt book, and the column is NOT NULL. The API no longer invents one, so
   // ask here rather than failing after she has confirmed the amount.
   if (!orNum.value.trim()) {
-    showToast('error', 'OR number required', 'Enter the number from the receipt you issued.');
+    showToast('error', 'Receipt number needed', 'Enter the number from the receipt you issued.');
     return;
   }
 
@@ -508,15 +509,15 @@ function triggerRecord() {
 
         await Promise.allSettled([fetchIncomeRecords(), fetchRooms(), fetchTenants()]);
 
-        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()} · ${peso(totalAmountReceived.value, 2)} posted to the ledger.`);
+        showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()}, ${peso(totalAmountReceived.value, 2)}, is in the ledger.`);
         closeModal();
       } catch (err: unknown) {
         showToast(
           'error',
-          'Payment NOT recorded',
+          'Payment not recorded',
           err instanceof Error
-            ? `${err.message} Nothing was written to the ledger - please try again.`
-            : 'Nothing was written to the ledger - please try again.'
+            ? `${err.message} Nothing was written to the ledger. Please try again.`
+            : 'Nothing was written to the ledger. Please try again.'
         );
       } finally {
         isSubmitting.value = false;
@@ -587,26 +588,24 @@ function triggerRecord() {
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <label class="ws-field">
             Rent
-            <input v-model.number="rentAmount" type="number" min="0" class="ws-input w-full" required />
+            <input v-model.number="rentAmount" type="number" min="0" step="any" class="ws-input w-full" required />
             <!--
               Says WHY the field is empty. A blank rent with no explanation reads
               as a broken form; a blank rent with this note reads as a deliberate
               refusal to guess, which is what it is.
             -->
-            <span v-if="roomsFetchFailed" class="ws-reveal text-sm font-semibold leading-6 text-verify">
-              Live unit rates could not be loaded, so the rent has not been filled in.
-              Type the amount from the receipt, not a remembered figure.
+            <span v-if="roomsFetchFailed" class="ws-reveal ws-hint text-verify">
+              Unit rates could not be loaded. Type the rent from the receipt.
             </span>
           </label>
 
+          <!--
+            Just "Water", like "Rent" beside it. The rate and headcount sat in the
+            label and wrapped it to two lines at 375, so this field's box started
+            24px lower than Rent's. They are in the hint underneath now.
+          -->
           <label class="ws-field">
-            <span class="flex flex-wrap items-baseline justify-between gap-2">
-              <span>Water</span>
-              <span class="text-xs font-semibold text-brand">
-                ₱{{ waterRatePerOccupant ?? 200 }} × {{ currentOccupantsCount }}
-                {{ currentOccupantsCount === 1 ? 'occupant' : 'occupants' }}
-              </span>
-            </span>
+            Water
             <!--
               `:step` follows the configured rate. It was the literal "200", and
               the browser's own step validation refuses any figure that is not a
@@ -617,19 +616,17 @@ function triggerRecord() {
             <input v-model.number="waterAmount" type="number" min="0" :step="waterRatePerOccupant ?? 200" class="ws-input w-full" required />
             <span class="ws-hint">
               <!--
-                The figure comes from `waterBaselineFor`, which is the function
-                the submit path validates against - not from a literal beside
-                it. It read `=== 'lf' ? 400 : 200`, so the moment the landlady
-                changed a Linda charge in settings this sentence quoted the old
-                one while the field below refused anything under the new one.
-                One source, so they cannot disagree.
+                The rate and the headcount are the ones `waterBaselineFor` and the
+                submit path use, not a literal. It once read `=== 'lf' ? 400 : 200`
+                and quoted an old Linda charge while the field refused anything
+                under the new one. The names are on the Unit field above.
               -->
               <template v-if="currentOccupantsCount > 0">
-                {{ currentOccupantsCount }} in the unit ({{ unitOccupantsSummary.text }}).
+                ₱{{ waterRatePerOccupant ?? 200 }} × {{ currentOccupantsCount }}
+                {{ currentOccupantsCount === 1 ? 'person' : 'people' }}
               </template>
               <template v-else>
-                Nobody is registered in this unit, so no water is charged by default. Type the
-                figure from the receipt if you collected any.
+                Nobody is registered here. Type the water from the receipt, if any.
               </template>
             </span>
           </label>
@@ -638,10 +635,10 @@ function triggerRecord() {
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <label class="ws-field">
             Garbage fee
-            <input v-model.number="gbgFee" type="number" min="0" class="ws-input w-full" required />
+            <input v-model.number="gbgFee" type="number" min="0" step="any" class="ws-input w-full" required />
           </label>
           <label class="ws-field">
-            Number on the receipt you issued
+            Receipt (OR) number
             <input v-model="orNum" type="text" placeholder="OR#4627" class="ws-input w-full font-mono" required />
           </label>
         </div>
@@ -686,8 +683,8 @@ function triggerRecord() {
               holds them - OR#4895 runs across four rows.
             -->
             <span v-if="monthsOnThisReceipt > 1" class="ws-reveal ws-hint">
-              Recorded as {{ monthsOnThisReceipt }} separate ledger entries, one for each month,
-              all under receipt {{ orNum.trim() || 'this number' }}.
+              Saved as {{ monthsOnThisReceipt }} ledger entries, one per month, under
+              {{ orNum.trim() || 'this receipt' }}.
             </span>
           </label>
           <label class="ws-field">
@@ -762,7 +759,7 @@ function triggerRecord() {
           <dd class="tabular font-semibold">{{ peso(gbgFee, 2) }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
-          <dt class="font-semibold">Total received</dt>
+          <dt class="font-semibold">Total handed over</dt>
           <dd class="tabular text-lg font-semibold">{{ peso(totalAmountReceived, 2) }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">

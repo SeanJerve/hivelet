@@ -209,7 +209,7 @@ const rejectMessage = computed(() => {
   if (!p) return '';
   const unit = p.rooms?.room_number ? `, unit ${String(p.rooms.room_number).toUpperCase()}` : '';
   return `${peso(Number(p.amount) || 0, 2)} from ${p.profiles?.full_name || 'this resident'}${unit}. ` +
-    'It is marked rejected and nothing is written to the ledger. Their bill stays due.';
+    'Nothing is added to the ledger and their bill stays due.';
 });
 
 function confirmReject() {
@@ -226,19 +226,17 @@ async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected')
       verification_status: status
     });
     if (status === 'Verified') {
-      // BR-035: the 50% column is described only as what it arithmetically is.
-      // This said "50% revenue share calculated", which names a purpose for it -
-      // forbidden as squarely as naming a party, and read by the owner every time
-      // she verified a payment.
-      showToast('success', 'Payment Verified & Settled', 'Income record written to the ledger. The 50% column is computed as half the rent amount.');
+      // BR-035: the toast once named a purpose for the 50% column. It now says
+      // nothing about that column at all; the ledger shows it.
+      showToast('success', 'Payment verified', 'It is in the ledger and the bill is marked paid.');
     } else {
-      showToast('warning', 'Payment Rejected', 'Bill remains marked as Due.');
+      showToast('warning', 'Payment rejected', 'The bill is still due.');
     }
     // Refreshed in place, not through `fetchIncome`, which would blank both
     // panels behind their first-load skeletons for a single saved row.
     await Promise.allSettled([fetchPayments(), fetchIncomeRecords()]);
   } catch (err: any) {
-    showToast('error', 'Verification Error', err.message || 'Action failed.');
+    showToast('error', 'Not saved', err.message || 'The payment was not changed. Please try again.');
   } finally {
     verifying.value = null;
   }
@@ -461,8 +459,8 @@ const clusterGroups = computed(() => {
   const definitions = [
     { 
       key: 'BH', 
-      label: 'Boarding House ("BH")', 
-      desc: '22 Rentable Rooms · Column 6 retained for spreadsheet parity', 
+      label: 'Boarding House (BH)',
+      desc: '22 Rooms',
       hasShareColumn: true, 
       units: ['1A', '1B', '1C', '1D', '1E', '1F', '1G', '1H', '2A', '2B', '2C', '2D', '2E', '2F', '2G', '3A', '3B', '3C', '3D', '3E', '3F', '3G'] 
     },
@@ -701,8 +699,8 @@ function startEditIncome(r: IncomeRecord) {
 
 function handleDeleteIncome(id: string, invoice: string, unit: string) {
   showConfirm(
-    'Void Payment Record',
-    `Are you sure you want to void the payment of unit ${unit.toUpperCase()} with Invoice/OR #${invoice}? This action cannot be undone.`,
+    'Delete this entry?',
+    `Unit ${unit.toUpperCase()}, receipt ${invoice}. It is removed from the ledger and cannot be brought back.`,
     async () => {
       try {
         await api.delete(`/admin/income-records/${id}`);
@@ -710,7 +708,7 @@ function handleDeleteIncome(id: string, invoice: string, unit: string) {
         if (idx !== -1) {
           incomeRecords.splice(idx, 1);
         }
-        showToast('success', 'Payment deleted', `Voided invoice #${invoice} successfully.`);
+        showToast('success', 'Entry deleted', `Receipt ${invoice} is no longer in the ledger.`);
       } catch (err: any) {
         showToast('error', 'Delete failed', err.message || 'Server error occurred');
       }
@@ -842,11 +840,11 @@ async function handleEditIncome() {
 
     await fetchIncomeRecords();
 
-    showToast('success', 'Record Updated', `Ledger entry for Unit ${editUnit.value.toUpperCase()} updated.`);
+    showToast('success', 'Entry updated', `Unit ${editUnit.value.toUpperCase()} is saved in the ledger.`);
     isEditOpen.value = false;
     editingIncome.value = null;
   } catch (err: any) {
-    showToast('error', 'Update Failed', err?.message || 'Could not update income record.');
+    showToast('error', 'Not saved', err?.message || 'The entry could not be updated.');
   } finally {
     isSubmitting.value = false;
   }
@@ -866,13 +864,16 @@ async function handleEditIncome() {
  */
 const isExportingExcel = ref(false);
 
+// The workbook is a per-year report, so "All Years" falls back to this year
+// rather than silently exporting one of them. The button names the year, so
+// "Every year" on the filter does not read as "every year in the file".
+// The property's year, not the viewer's (lib/propertyDate.ts).
+const exportYear = computed(() => (filterYear.value !== 'All' ? filterYear.value : propertyToday().slice(0, 4)));
+
 async function exportExcel() {
   if (isExportingExcel.value) return;
   isExportingExcel.value = true;
-  // The workbook is a per-year report, so "All Years" falls back to this year
-  // rather than silently exporting one of them.
-  // The property's year, not the viewer's (lib/propertyDate.ts).
-  const year = filterYear.value !== 'All' ? filterYear.value : propertyToday().slice(0, 4);
+  const year = exportYear.value;
   try {
     await downloadReport('income', year);
   } finally {
@@ -896,7 +897,7 @@ async function exportExcel() {
           Money coming in
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          Every payment recorded against a unit, reconciled line for line with the spreadsheet.
+          Every payment received, unit by unit.
         </p>
       </div>
 
@@ -917,7 +918,7 @@ async function exportExcel() {
             :class="['size-4', isExportingExcel && 'animate-pulse']"
             aria-hidden="true"
           />
-          <span>{{ isExportingExcel ? 'Building the file' : 'Download for Excel' }}</span>
+          <span>{{ isExportingExcel ? 'Building the file' : `Download ${exportYear} for Excel` }}</span>
         </button>
 
         <button type="button" class="pill-btn-brand" @click="isOnsitePaymentModalOpen = true">
@@ -963,7 +964,7 @@ async function exportExcel() {
         <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
         <template v-else>
           <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalRent) }}</p>
-          <p class="mt-2 text-sm leading-6 text-ink-soft">Before the 50% column is derived</p>
+          <p class="mt-2 text-sm leading-6 text-ink-soft">Full rent on every entry</p>
         </template>
       </OverviewTile>
 
@@ -1052,9 +1053,20 @@ async function exportExcel() {
       </OverviewTile>
     </div>
 
-    <!-- Unified Toolbar: Tabs (Ledger / To verify) + Integrated Search with Switcher Inside + Filters -->
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div class="flex flex-wrap items-center gap-4 flex-1 min-w-0">
+    <!--
+      The toolbar, in two rows. The tabs and the cluster/list switcher on the
+      first; search and the three filters on the second, only on the ledger.
+
+      It was one wrapping row whose left group was `flex-1`, a flex-basis of
+      zero, so it never wrapped: measured at 375 the left group was 80px wide,
+      the search box 80px, and the switcher overlapped the Cluster filter; at
+      768 the search box overlapped Cluster and Month.
+
+      The filters keep their own pairing (see the note below): Cluster alone,
+      Month and Year sharing a row on a phone.
+    -->
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
         <!-- Tabs: Ledger or To verify -->
         <div role="tablist" aria-label="Income view" class="flex items-center gap-5 shrink-0">
           <button
@@ -1097,106 +1109,107 @@ async function exportExcel() {
           </button>
         </div>
 
-        <template v-if="activeTab === 'ledger'">
-          <!-- By cluster / All together switcher -->
-          <div
-            class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-xs shrink-0"
-            role="group"
-            aria-label="How to show the ledger"
+        <!-- By cluster / All together switcher -->
+        <div
+          v-if="activeTab === 'ledger'"
+          class="min-h-[2.75rem] h-11 inline-flex items-center rounded-full bg-tile border border-line p-1 shadow-xs shrink-0"
+          role="group"
+          aria-label="How to show the ledger"
+        >
+          <button
+            type="button"
+            :class="[
+              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
+              viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
+            ]"
+            :aria-pressed="viewMode === 'grouped'"
+            @click="viewMode = 'grouped'"
           >
-            <button
-              type="button"
-              :class="[
-                'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
-                viewMode === 'grouped' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-              ]"
-              :aria-pressed="viewMode === 'grouped'"
-              @click="viewMode = 'grouped'"
-            >
-              <FileSpreadsheet class="size-4" aria-hidden="true" />
-              <span>By cluster</span>
-            </button>
-            <button
-              type="button"
-              :class="[
-                'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
-                viewMode === 'flat' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
-              ]"
-              :aria-pressed="viewMode === 'flat'"
-              @click="viewMode = 'flat'"
-            >
-              <TableIcon class="size-4" aria-hidden="true" />
-              <span>As a list</span>
-            </button>
-          </div>
-
-          <!-- Standalone Pill Search Bar -->
-          <div class="relative w-full sm:w-80 shrink-0">
-            <Search
-              class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
-              aria-hidden="true"
-            />
-            <label for="income-search" class="sr-only">Search the ledger</label>
-            <input
-              id="income-search"
-              v-model="q"
-              type="search"
-              placeholder="Unit, resident or receipt number"
-              class="ws-input w-full pl-11"
-            />
-          </div>
-        </template>
+            <FileSpreadsheet class="size-4" aria-hidden="true" />
+            <span>By cluster</span>
+          </button>
+          <button
+            type="button"
+            :class="[
+              'press h-full flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold cursor-pointer whitespace-nowrap',
+              viewMode === 'flat' ? 'bg-brand text-on-brand shadow-sm' : 'text-ink-soft hover:text-brand hover:bg-brand-soft/40',
+            ]"
+            :aria-pressed="viewMode === 'flat'"
+            @click="viewMode = 'flat'"
+          >
+            <TableIcon class="size-4" aria-hidden="true" />
+            <span>As a list</span>
+          </button>
+        </div>
       </div>
 
-      <!--
-        Filters: Cluster, Month, Year.
+      <div v-if="activeTab === 'ledger'" class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <!-- Standalone Pill Search Bar -->
+        <div class="relative w-full sm:w-80">
+          <Search
+            class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
+            aria-hidden="true"
+          />
+          <label for="income-search" class="sr-only">Search the ledger</label>
+          <input
+            id="income-search"
+            v-model="q"
+            type="search"
+            placeholder="Unit, resident or receipt number"
+            class="ws-input w-full pl-11"
+          />
+        </div>
 
-        `shrink-0` is gone, and it was defeating the `flex-wrap` beside it.
-        A flex item that cannot shrink is sized at its max-content width, and
-        for a wrapping row that is every child on ONE line: 3 x 13rem plus the
-        gaps = 640px. So the wrapper never got narrow enough to wrap, and it
-        did not shrink either.
+        <!--
+          Filters: Cluster, Month, Year.
 
-        Measured in the running app at a 375px viewport: this row ran to
-        x=664 against a content column ending at 351, putting the Month and
-        Year filters completely off screen - and `body` carries
-        `overflow-x: hidden`, so they were clipped rather than reachable by
-        scrolling. Two of the three ways of narrowing this ledger could not be
-        used on a phone.
+          `shrink-0` is gone, and it was defeating the `flex-wrap` beside it.
+          A flex item that cannot shrink is sized at its max-content width, and
+          for a wrapping row that is every child on ONE line: 3 x 13rem plus the
+          gaps = 640px. So the wrapper never got narrow enough to wrap, and it
+          did not shrink either.
 
-        Fixed once already by stacking all three - functionally correct, and
-        the client called three full-width pills in a column messy. Three
-        filters do not divide evenly the way the room directory's two do, so
-        this keeps the same even pairing that already worked there rather
-        than inventing a new ratio: Month and Year are both narrowing WHEN,
-        which makes them one decision in two parts, and they share a row.
-        Cluster changes WHAT the reader is looking at, a different kind of
-        question, and sits alone above them at full width rather than being
-        paired with either.
-      -->
-      <div v-if="activeTab === 'ledger'" class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        <PillSelect
-          v-model="selectedCluster"
-          :options="clusterChips"
-          aria-label="Cluster"
-          widthClass="w-full sm:w-52"
-        />
+          Measured in the running app at a 375px viewport: this row ran to
+          x=664 against a content column ending at 351, putting the Month and
+          Year filters completely off screen - and `body` carries
+          `overflow-x: hidden`, so they were clipped rather than reachable by
+          scrolling. Two of the three ways of narrowing this ledger could not be
+          used on a phone.
 
-        <div class="flex items-center gap-2">
+          Fixed once already by stacking all three - functionally correct, and
+          the client called three full-width pills in a column messy. Three
+          filters do not divide evenly the way the room directory's two do, so
+          this keeps the same even pairing that already worked there rather
+          than inventing a new ratio: Month and Year are both narrowing WHEN,
+          which makes them one decision in two parts, and they share a row.
+          Cluster changes WHAT the reader is looking at, a different kind of
+          question, and sits alone above them at full width rather than being
+          paired with either.
+        -->
+        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <PillSelect
-            v-model="filterMonth"
-            :options="monthsList"
-            aria-label="Month"
-            widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+            v-model="selectedCluster"
+            :options="clusterChips"
+            aria-label="Cluster"
+            widthClass="w-full sm:w-52"
           />
 
-          <PillSelect
-            v-model="filterYear"
-            :options="yearOptions"
-            aria-label="Year"
-            align="right"
-            widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
-          />
+          <div class="flex items-center gap-2">
+            <PillSelect
+              v-model="filterMonth"
+              :options="monthsList"
+              aria-label="Month"
+              widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+            />
+
+            <PillSelect
+              v-model="filterYear"
+              :options="yearOptions"
+              aria-label="Year"
+              align="right"
+              widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -1227,15 +1240,13 @@ async function exportExcel() {
       <OverviewTile v-else-if="pendingPayments.length === 0" tone="soft" class="ws-reveal" title="Payments to verify">
         <p class="text-2xl font-semibold tracking-tight">Nothing is waiting</p>
         <p class="text-sm text-ink-soft">
-          No online payment is waiting for your decision. GCash payments arrive here through Adyen and count as
-          paid once you verify them.
+          GCash payments appear here and count as paid once you verify them.
         </p>
       </OverviewTile>
 
       <template v-else>
         <p class="ws-reveal text-sm leading-6 text-ink-soft">
-          Each payment below was sent through Adyen with GCash and is waiting for you. Verifying one marks the
-          resident's bill as paid and writes the entry into the ledger, including the 50% Share.
+          Paid online with GCash. Verifying one marks the bill as paid and adds it to the ledger.
         </p>
         <ul class="grid gap-4 md:grid-cols-2">
           <li
@@ -1246,9 +1257,10 @@ async function exportExcel() {
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-sm font-medium">{{ p.profiles?.full_name || 'Name not on file' }}</p>
+                <p class="text-sm font-medium break-words">{{ p.profiles?.full_name || 'Name not on file' }}</p>
+                <!-- Upper case, as the ledger below and the reject dialog print it. -->
                 <p class="mt-0.5 text-xs text-ink-faint">
-                  Unit {{ (p.rooms?.room_number || '').toString() || 'not on file' }}<template v-if="p.profiles?.phone_number">, {{ p.profiles.phone_number }}</template>
+                  Unit {{ String(p.rooms?.room_number || '').toUpperCase() || 'not on file' }}<template v-if="p.profiles?.phone_number">, {{ p.profiles.phone_number }}</template>
                 </p>
               </div>
               <StatusPill tone="verify">Waiting for you</StatusPill>
@@ -1346,7 +1358,7 @@ async function exportExcel() {
         <h2>
           <button
             type="button"
-            class="press-plate flex w-full flex-wrap items-start justify-between gap-3 p-5 text-left hover:bg-canvas sm:p-6"
+            class="press-plate flex w-full flex-col items-start gap-3 p-5 text-left hover:bg-canvas sm:flex-row sm:flex-wrap sm:justify-between sm:p-6"
             :aria-expanded="isClusterOpen(group.key, groupIndex)"
             :aria-controls="`cluster-${group.key}`"
             @click="toggleCluster(group.key, groupIndex)"
@@ -1370,9 +1382,11 @@ async function exportExcel() {
               <span class="mt-1 block text-sm leading-6 text-ink-soft">{{ group.desc }}</span>
             </span>
 
-            <!-- A closed section still says what it holds. -->
+            <!-- A closed section still says what it holds. Stacked under the title on
+                 a phone for every cluster alike; it used to sit beside short titles
+                 and wrap under long ones, so sibling headers disagreed at 375. -->
             <span class="flex flex-wrap items-center gap-x-5 gap-y-2">
-              <span class="text-right">
+              <span class="sm:text-right">
                 <span class="block text-xs text-ink-faint">Remitted</span>
                 <span class="tabular block font-semibold text-brand">{{
                   peso(group.totalRemitted, 2)
@@ -1386,7 +1400,7 @@ async function exportExcel() {
                 tone="verify"
                 title="A system-computed figure equal to half the row's Rent Amount, retained so this ledger reconciles line-for-line with Column 6 of the historical spreadsheet."
               >
-                Carries the 50% column
+                With 50% Share
               </StatusPill>
             </span>
           </button>
@@ -1425,8 +1439,8 @@ async function exportExcel() {
               <tr class="group">
                 <th scope="row" class="font-semibold uppercase text-ink">{{ r.unit }}</th>
                 <td>
-                  <span class="block">{{ r.datePaid }}</span>
-                  <span class="block text-xs text-ink-faint">{{ r.rentFor }}</span>
+                  <span class="block whitespace-nowrap">{{ r.datePaid }}</span>
+                  <span class="block whitespace-nowrap text-xs text-ink-faint">{{ r.rentFor }}</span>
                 </td>
                 <td>
                   <span class="block text-ink">{{ r.contact }}</span>
@@ -1495,11 +1509,15 @@ async function exportExcel() {
                   <p class="text-sm font-semibold text-ink">
                     {{ group.label }}, all {{ group.records.length }}
                   </p>
-                  <p class="mt-0.5 text-xs text-ink-faint">
+                  <!-- Only when some entries are still behind "Show more" (page size 8). -->
+                  <p v-if="group.records.length > 8" class="mt-0.5 text-xs text-ink-faint">
                     Every entry in this cluster, not only the ones shown
                   </p>
                 </div>
+                <!-- Labelled, as the desktop column header labels it; on a phone the
+                     figure sat there with no name, beside a rent twice its size. -->
                 <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
+                  <span class="block text-xs font-normal text-ink-faint">Remitted</span>
                   {{ peso(group.totalRemitted, 2) }}
                 </p>
               </div>
@@ -1537,6 +1555,7 @@ async function exportExcel() {
                   <p class="mt-1.5 truncate text-sm text-ink-soft">{{ r.contact }}</p>
                 </div>
                 <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
+                  <span class="block text-xs font-normal text-ink-faint">Remitted</span>
                   {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water, 2) }}
                 </p>
               </div>
@@ -1614,8 +1633,8 @@ async function exportExcel() {
             <span class="block text-xs font-normal text-ink-faint">{{ r.cluster }}</span>
           </th>
           <td>
-            <span class="block">{{ r.datePaid }}</span>
-            <span class="block text-xs text-ink-faint">{{ r.rentFor }}</span>
+            <span class="block whitespace-nowrap">{{ r.datePaid }}</span>
+            <span class="block whitespace-nowrap text-xs text-ink-faint">{{ r.rentFor }}</span>
           </td>
           <td>
             <span class="block text-ink">{{ r.contact }}</span>
@@ -1705,11 +1724,13 @@ async function exportExcel() {
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-sm font-semibold text-ink">All {{ rows.length }} on screen</p>
-            <p class="mt-0.5 text-xs text-ink-faint">
+            <!-- Only when some entries are still behind "Show more" (page size 12). -->
+            <p v-if="rows.length > 12" class="mt-0.5 text-xs text-ink-faint">
               Every entry the filters allow, not only the ones shown
             </p>
           </div>
           <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
+            <span class="block text-xs font-normal text-ink-faint">Remitted</span>
             {{ peso(totalSpreadsheetLine, 2) }}
             <span class="block text-xs font-normal text-verify">
               Rent + water: {{ peso(totalRemitted, 2) }}
@@ -1746,6 +1767,7 @@ async function exportExcel() {
             <p class="mt-1.5 truncate text-sm text-ink-soft">{{ r.cluster }}, {{ r.contact }}</p>
           </div>
           <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
+            <span class="block text-xs font-normal text-ink-faint">Remitted</span>
             {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water, 2) }}
           </p>
         </div>
@@ -1800,52 +1822,26 @@ async function exportExcel() {
       money goes - this card is still correct to single the two units out for
       that reason, just not for a rate that no longer exists.
     -->
-    <div class="rounded-tile bg-tile p-6 space-y-3">
+    <!-- Two sentences, not a paragraph and two identical LF/LB boxes: the owner
+         knows where the units are; what she needs is the one thing that differs. -->
+    <div class="rounded-tile bg-tile p-5 sm:p-6 space-y-2">
       <div class="flex items-center gap-2">
-        <FileSpreadsheet class="size-5 text-accent" />
-        <h3 class="font-semibold text-base text-ink">Linda Units, Billed Separately</h3>
+        <FileSpreadsheet class="size-5 shrink-0 text-accent" aria-hidden="true" />
+        <h3 class="font-semibold text-[0.9375rem] text-ink">Linda units (LF, LB)</h3>
       </div>
-      <p class="text-xs text-ink-soft leading-relaxed">
-        The two Linda units sit in the separate structure beside the red gate. Their water is
-        charged like every other unit's, {{ perOccupantWaterText().toLowerCase() }}. What is kept
-        apart is the money: it is recorded in its own column and remitted directly to Linda
-        rather than pooled with the rest. They are not part of the Front
-        Apartment. The flat electricity charge that once applied to unmetered units was retired
-        in September 2026 and is not recorded for new periods; historical figures remain visible
-        on past entries.
+      <p class="text-sm leading-6 text-ink-soft">
+        Water is charged like every other unit, {{ perOccupantWaterText().toLowerCase() }}.
+        Only the money is kept separate, in its own column, and remitted to Linda.
+        The flat electricity charge was retired in September 2026; that column shows past entries only.
       </p>
-
-      <div class="grid gap-4 sm:grid-cols-2 pt-2">
-        <!--
-          Bordered, not filled `bg-canvas` - `tone="neutral"` IS `bg-canvas`, so
-          on a filled canvas card the pill had no pill around it at all, just
-          floating text. Same collision as the room and resident matrix cards;
-          same fix.
-        -->
-        <div class="space-y-1 rounded-2xl border border-line p-4">
-          <div class="flex justify-between items-center">
-            <span class="font-semibold text-sm text-ink">Linda (LF)</span>
-            <StatusPill tone="neutral">Remitted to Linda</StatusPill>
-          </div>
-          <p class="text-xs text-ink-soft">Water: <strong>{{ perOccupantWaterText() }}</strong></p>
-        </div>
-
-        <div class="space-y-1 rounded-2xl border border-line p-4">
-          <div class="flex justify-between items-center">
-            <span class="font-semibold text-sm text-ink">Linda (LB)</span>
-            <StatusPill tone="neutral">Remitted to Linda</StatusPill>
-          </div>
-          <p class="text-xs text-ink-soft">Water: <strong>{{ perOccupantWaterText() }}</strong></p>
-        </div>
-      </div>
     </div>
   </div>
 
     <!-- Edit Payment Modal -->
     <WsModal
       v-if="isEditOpen"
-      title="Edit this collection"
-      subtitle="Change what was recorded against this entry."
+      title="Edit this entry"
+      :subtitle="editingIncome ? `Unit ${editingIncome.unit.toUpperCase()}${editingIncome.invoice ? `, receipt ${editingIncome.invoice}` : ''}` : undefined"
       size="lg"
       :dismissible="false"
       @close="isEditOpen = false"
@@ -1875,8 +1871,8 @@ async function exportExcel() {
               v-if="roomsFetchFailed"
               class="mb-1.5 text-xs leading-snug text-verify"
             >
-              The unit list could not be refreshed, so the occupant count has <strong>not</strong>
-              been carried forward. Enter it yourself &mdash; it sets the water line on this receipt.
+              The unit list could not be refreshed, so the number of people has <strong>not</strong>
+              been filled in. Enter it yourself. It sets the water on this receipt.
             </p>
             <!-- The warning above belongs to this field, so the label wraps the
                  select rather than sitting beside it unassociated. -->
@@ -1905,7 +1901,7 @@ async function exportExcel() {
               <input v-model.number="editRent" type="number" min="0" step="any" class="ws-input w-full" required />
             </label>
             <label class="ws-field">
-              Payment for Water (₱)
+              Water
               <input v-model.number="editWater" type="number" min="0" step="any" class="ws-input w-full" required />
             </label>
           </div>
@@ -1913,11 +1909,11 @@ async function exportExcel() {
           <!-- GBG Fee & OR Receipt Number Row -->
           <div class="grid grid-cols-2 gap-3 sm:gap-4">
             <label class="ws-field">
-              GBG Fee (₱)
+              Garbage fee
               <input v-model.number="editGarbage" type="number" min="0" step="any" class="ws-input w-full" required />
             </label>
             <label class="ws-field">
-              OR / Receipt Number
+              Receipt (OR) number
               <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="ws-input w-full font-mono" required />
             </label>
           </div>
@@ -1927,8 +1923,8 @@ async function exportExcel() {
                a reference is a long string typed off a receipt. -->
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
-              Payment Method
-              <PillSelect v-model="editMethod" :options="editMethodOptions" aria-label="Payment method" widthClass="w-full" />
+              How they paid
+              <PillSelect v-model="editMethod" :options="editMethodOptions" aria-label="How they paid" widthClass="w-full" />
             </label>
             <label class="ws-field" :class="{ 'opacity-40': !methodHasReference }">
               Their reference number
@@ -1948,12 +1944,12 @@ async function exportExcel() {
             <label class="ws-field">
               How many people
               <input v-model.number="editOccupants" type="number" min="1" max="50" class="ws-input w-full" required />
-              <span class="ws-hint">Carried from the tenancy. Water is charged for each of them.</span>
+              <span class="ws-hint">Water is charged per person.</span>
             </label>
             <label class="ws-field">
               Covering from
               <input v-model="editDateCoveredStart" type="date" class="ws-input w-full" />
-              <span class="ws-hint">Leave it blank to use the tenant's own billing cycle.</span>
+              <span class="ws-hint">Leave blank to follow their billing cycle.</span>
             </label>
             <label class="ws-field">
               Covering to
@@ -1964,12 +1960,13 @@ async function exportExcel() {
           <!-- Date Received & Read-Only Total Amount calculation -->
           <div class="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
             <label class="ws-field">
-              Date Received
+              Date received
               <input v-model="editDate" type="date" class="ws-input w-full" required />
             </label>
-            <div class="bg-canvas border border-line rounded-tile p-3.5 flex flex-col justify-center">
-              <span class="text-xs font-semibold text-ink-soft">Total Amount (₱)</span>
-              <span class="font-semibold text-lg text-brand pt-0.5">{{ peso(editTotal, 2) }}</span>
+            <!-- The same total box the payment form uses, so the twins read alike. -->
+            <div class="rounded-2xl bg-canvas px-4 py-3 self-end">
+              <p class="text-xs text-ink-faint">Total</p>
+              <p class="tabular mt-0.5 text-lg font-semibold leading-none text-brand">{{ peso(editTotal, 2) }}</p>
             </div>
           </div>
 
@@ -1991,8 +1988,8 @@ async function exportExcel() {
 
             `flex-wrap-reverse` rather than plain `flex-wrap`, so that when the
             row does break, the line that wraps is drawn ABOVE the other one.
-            Cancel and "Update Collection" stay together on top and "Delete
-            Record" drops beneath them - the destructive control ends up
+            Cancel and "Save changes" stay together on top and "Delete
+            entry" drops beneath them - the destructive control ends up
             furthest from the thumb rather than first under it.
 
             At `sm` it is one line again with `justify-between`, which is a
@@ -2005,16 +2002,16 @@ async function exportExcel() {
               @click="handleDeleteFromModal"
               class="pill-btn-danger-quiet"
             >
-              <Trash2 class="size-3.5" />
-              <span>Delete Record</span>
+              <Trash2 class="size-3.5" aria-hidden="true" />
+              <span>Delete entry</span>
             </button>
 
             <div class="flex items-center gap-2">
               <button type="button" @click="isEditOpen = false" class="pill-btn">Cancel</button>
               <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" />
-                <Check v-else class="size-3.5" />
-                <span>Update Collection</span>
+                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
+                <Check v-else class="size-3.5" aria-hidden="true" />
+                <span>Save changes</span>
               </button>
             </div>
           </div>
@@ -2026,7 +2023,7 @@ async function exportExcel() {
       v-if="isConfirmOpen"
       :title="confirmTitle"
       :message="confirmMessage"
-      confirm-label="Delete record"
+      confirm-label="Delete entry"
       destructive
       :busy="isSubmitting"
       @cancel="isConfirmOpen = false"

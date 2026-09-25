@@ -132,13 +132,15 @@ const filterYear = ref('All');
  */
 const isExportingExcel = ref(false);
 
+// A per-year report, so "All Years" falls back to this year rather than
+// silently exporting one of them. The button names the year it will write.
+// The property's year, not the viewer's (lib/propertyDate.ts).
+const exportYear = computed(() => (filterYear.value !== 'All' ? filterYear.value : propertyToday().slice(0, 4)));
+
 async function exportExpensesExcel() {
   if (isExportingExcel.value) return;
   isExportingExcel.value = true;
-  // A per-year report, so "All Years" falls back to this year rather than
-  // silently exporting one of them.
-  // The property's year, not the viewer's (lib/propertyDate.ts).
-  const year = filterYear.value !== 'All' ? filterYear.value : propertyToday().slice(0, 4);
+  const year = exportYear.value;
   try {
     await downloadReport('expenses', year);
   } finally {
@@ -363,7 +365,7 @@ function submitAddExpense() {
     return entry.allocations.some(a => !a.amount || Number(a.amount) <= 0);
   });
   if (invalid) {
-    showToast('error', 'Validation Error', 'Please fill in a description and positive amount for all item allocations.');
+    showToast('error', 'Missing details', 'Each expense needs what it was for and an amount above zero.');
     return;
   }
 
@@ -499,7 +501,7 @@ function submitAddExpense() {
 
         showToast('success', 'Expenses recorded', `${count} ${count === 1 ? 'entry' : 'entries'} saved to the ledger.`);
       } catch (err: any) {
-        showToast('error', 'Submission failed', err.message || 'Server error occurred');
+        showToast('error', 'Not saved', err.message || 'The expenses could not be saved. Please try again.');
       } finally {
         isSubmitting.value = false;
       }
@@ -549,10 +551,10 @@ const confirmAction = ref<(() => void) | null>(null);
  * red "Delete entry" button, so confirming a NEW expense looked like deleting
  * one (B-61). Each caller now says what its button does.
  */
-const confirmLabel = ref('Delete entry');
+const confirmLabel = ref('Delete expense');
 const confirmDestructive = ref(true);
 
-function showConfirm(title: string, message: string, action: () => void, label = 'Delete entry', destructive = true) {
+function showConfirm(title: string, message: string, action: () => void, label = 'Delete expense', destructive = true) {
   confirmTitle.value = title;
   confirmMessage.value = message;
   confirmAction.value = action;
@@ -636,8 +638,8 @@ function handleDeleteFromEditModal() {
 
 function handleDeleteExpense(id: string, description: string) {
   showConfirm(
-    'Void Expense Record',
-    `Are you sure you want to delete the expense "${description}"? This action is permanent and will adjust financial reports.`,
+    'Delete this expense?',
+    `"${description}" is removed from the ledger and the reports, and cannot be brought back.`,
     async () => {
       try {
         await api.delete(`/admin/expense-entries/${id}`);
@@ -645,9 +647,9 @@ function handleDeleteExpense(id: string, description: string) {
         if (index !== -1) {
           expenseRecords.splice(index, 1);
         }
-        showToast('success', 'Expense deleted', `Voided "${description}" successfully.`);
+        showToast('success', 'Expense deleted', `"${description}" is no longer in the ledger.`);
       } catch (err: any) {
-        showToast('error', 'Delete failed', err.message || 'Server error occurred');
+        showToast('error', 'Not deleted', err.message || 'The expense is still in the ledger. Please try again.');
       }
     }
   );
@@ -657,7 +659,7 @@ async function handleEditExpense() {
   if (!editingExpense.value) return;
   const invalid = editAllocations.value.some(a => !a.amount || Number(a.amount) <= 0);
   if (!editDesc.value.trim() || invalid) {
-    showToast('error', 'Validation Error', 'Please enter a description and positive amount for all allocations.');
+    showToast('error', 'Missing details', 'Enter what it was for and an amount above zero for each part.');
     return;
   }
 
@@ -687,9 +689,9 @@ async function handleEditExpense() {
 
     isEditOpen.value = false;
     editingExpense.value = null;
-    showToast('success', 'Expense updated', `Updated "${editDesc.value.trim()}" successfully.`);
+    showToast('success', 'Expense updated', `"${editDesc.value.trim()}" is saved.`);
   } catch (err: any) {
-    showToast('error', 'Update failed', err.message || 'Server error occurred');
+    showToast('error', 'Not saved', err.message || 'The expense could not be updated. Please try again.');
   } finally {
     isSubmitting.value = false;
   }
@@ -738,7 +740,7 @@ async function handleEditExpense() {
             :class="['size-4', isExportingExcel && 'animate-pulse']"
             aria-hidden="true"
           />
-          <span>{{ isExportingExcel ? 'Building the file' : 'Download for Excel' }}</span>
+          <span>{{ isExportingExcel ? 'Building the file' : `Download ${exportYear} for Excel` }}</span>
         </button>
 
         <button type="button" class="pill-btn-brand" @click="isAddOpen = true">
@@ -834,8 +836,7 @@ async function handleEditExpense() {
             </li>
           </ul>
           <p class="text-xs leading-5 text-ink-faint">
-            Main House and Other are the owner's own costs. They are recorded here but never subtracted from
-            rental income.
+            Main House and Other are your own costs. They are recorded here but not taken out of rental income.
           </p>
         </template>
       </OverviewTile>
@@ -1035,7 +1036,7 @@ async function handleEditExpense() {
     <WsModal
       v-if="isAddOpen"
       title="Record an expense"
-      subtitle="Several entries at once, each split across the property areas."
+      subtitle="Add several from the same day at once if you need to."
       size="lg"
       :dismissible="false"
       @close="isAddOpen = false"
@@ -1060,7 +1061,9 @@ async function handleEditExpense() {
             700 - and the footer below went off the bottom. `dvh` tracks what is
             actually visible. The desktop keeps the 70vh it had.
           -->
-          <div class="p-1.5 space-y-4 text-xs text-ink max-h-[55dvh] overflow-y-auto sm:max-h-[70vh] sm:p-6">
+          <!-- No `sm:p-6` any more: at desktop it was a second 24px gutter inside the
+               dialog's own, so the fields sat 48px in from the edge the title uses. -->
+          <div class="p-1.5 -mx-1.5 space-y-4 text-xs text-ink max-h-[55dvh] overflow-y-auto sm:max-h-[70vh]">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
               Date it was spent
@@ -1090,18 +1093,19 @@ async function handleEditExpense() {
               >
                 <!-- Header with Item Index and Remove Item Button -->
                 <div class="flex items-center justify-between pb-2 border-b border-line/70">
-                  <span class="font-semibold text-xs text-ink">
-                    Expense Item #{{ index + 1 }}
+                  <span class="font-semibold text-sm text-ink">
+                    Expense {{ index + 1 }}
                   </span>
-                  <button 
-                    v-if="formEntries.length > 1" 
-                    type="button" 
-                    @click="removeFormEntry(index)" 
-                    class="pill-btn text-overdue hover:bg-overdue-soft hover:border-overdue-soft min-h-7 py-0.5 px-2 text-xs gap-1 inline-flex items-center cursor-pointer"
-                    title="Remove Item"
+                  <!-- The quiet danger button the other dialogs use; this was a 28px
+                       one-off, under the size a finger needs. -->
+                  <button
+                    v-if="formEntries.length > 1"
+                    type="button"
+                    @click="removeFormEntry(index)"
+                    class="pill-btn-danger-quiet"
                   >
-                    <Trash2 class="size-3 text-overdue" />
-                    <span>Remove Item</span>
+                    <Trash2 class="size-3.5" aria-hidden="true" />
+                    <span>Remove</span>
                   </button>
                 </div>
 
@@ -1124,10 +1128,6 @@ async function handleEditExpense() {
 
                 <!-- Allocations / Splits Section -->
                 <div class="border-t border-line/70 pt-3 space-y-2.5">
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-ink-soft">Property Area Allocations (Splits)</span>
-                    <span class="text-xs text-ink-soft">Cost distribution</span>
-                  </div>
                   
                   <TransitionGroup
                     tag="div"
@@ -1216,8 +1216,8 @@ async function handleEditExpense() {
                 @click="addFormEntry" 
                 class="pill-btn min-h-10 text-xs px-3.5 py-2 gap-1.5 inline-flex items-center cursor-pointer"
               >
-                <Plus class="size-4 text-brand" />
-                <span>Add Another Expense Item</span>
+                <Plus class="size-4 text-brand" aria-hidden="true" />
+                <span>Add another expense</span>
               </button>
             </div>
           </div>
@@ -1225,11 +1225,11 @@ async function handleEditExpense() {
           <!-- Modal Actions Footer. `flex-wrap` so a longer label can never do
                here what it did on the edit dialog's footer below, where the
                row ran 111px past its box at 375. -->
-          <div class="p-4 border-t border-line flex flex-wrap items-center justify-end gap-2 bg-canvas sm:px-6">
+          <div class="mt-4 pt-4 border-t border-line flex flex-wrap items-center justify-end gap-2">
             <button type="button" @click="isAddOpen = false" class="pill-btn cursor-pointer">Cancel</button>
             <button type="submit" :disabled="isSubmitting" class="pill-btn-brand cursor-pointer disabled:opacity-50 min-w-[110px]">
-              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
-              <span>Save Entries</span>
+              <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" aria-hidden="true" />
+              <span>{{ formEntries.length === 1 ? 'Save expense' : `Save ${formEntries.length} expenses` }}</span>
             </button>
           </div>
         </form>
@@ -1239,7 +1239,6 @@ async function handleEditExpense() {
     <WsModal
       v-if="isEditOpen"
       title="Edit this expense"
-      subtitle="Change its category and how it splits across the property areas."
       size="lg"
       :dismissible="false"
       @close="isEditOpen = false"
@@ -1248,10 +1247,10 @@ async function handleEditExpense() {
         <form @submit.prevent="handleEditExpense">
           <!-- Same double gutter and same `vh` cap as the add dialog above;
                the reasoning is written out there. -->
-          <div class="p-1.5 space-y-4 text-xs text-ink max-h-[55dvh] overflow-y-auto sm:max-h-[70vh] sm:p-6">
+          <div class="p-1.5 -mx-1.5 space-y-4 text-xs text-ink max-h-[55dvh] overflow-y-auto sm:max-h-[70vh]">
             <!-- Date Field -->
             <label class="ws-field w-full sm:w-64">
-              Expense Date
+              Date it was spent
               <input 
                 v-model="editDate" 
                 type="date" 
@@ -1263,29 +1262,23 @@ async function handleEditExpense() {
             <!-- Description & Category Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="ws-field">
-              Description &amp; Receipt #
-                <input 
-                  v-model="editDesc" 
-                  placeholder="e.g. OR #88240 — supplies" 
+                What it was for
+                <input
+                  v-model="editDesc"
+                  placeholder="OR #88240, supplies"
                   class="ws-input w-full" 
                   required 
                 />
               </label>
 
               <label class="ws-field">
-                Expense Category
-                <PillSelect v-model="editCategory" :options="categoryOptions" aria-label="Expense category" widthClass="w-full" />
+                Kind of expense
+                <PillSelect v-model="editCategory" :options="categoryOptions" aria-label="Kind of expense" widthClass="w-full" />
               </label>
             </div>
 
             <!-- Allocations / Splits Section -->
             <div class="space-y-3 pt-2">
-              <div class="flex items-center justify-between">
-                <label class="block font-semibold text-xs text-ink-soft">
-                  Property Area Allocations (Splits)
-                </label>
-                <span class="text-xs text-ink-soft">Distribute cost across boarding house &amp; main house</span>
-              </div>
 
               <TransitionGroup
                 tag="div"
@@ -1361,23 +1354,23 @@ async function handleEditExpense() {
             drops underneath - the destructive one furthest from the thumb. At
             `sm` this is a single flex line again and renders exactly as before.
           -->
-          <div class="p-4 border-t border-line flex flex-wrap-reverse items-center justify-end gap-2 bg-canvas sm:justify-between sm:gap-3 sm:px-6">
+          <div class="mt-4 pt-4 border-t border-line flex flex-wrap-reverse items-center justify-end gap-2 sm:justify-between sm:gap-3">
             <button
               v-if="editingExpense"
               type="button"
               @click="handleDeleteFromEditModal"
-              class="pill-btn text-overdue hover:bg-overdue-soft hover:border-overdue-soft min-h-10 px-3 py-1.5 text-xs gap-1.5 inline-flex items-center cursor-pointer"
+              class="pill-btn-danger-quiet"
             >
-              <Trash2 class="size-3.5 text-overdue" />
-              <span>Delete Expense</span>
+              <Trash2 class="size-3.5" aria-hidden="true" />
+              <span>Delete expense</span>
             </button>
             <div v-else />
 
             <div class="flex items-center gap-2">
               <button type="button" @click="isEditOpen = false" class="pill-btn cursor-pointer">Cancel</button>
               <button type="submit" :disabled="isSubmitting" class="pill-btn-brand cursor-pointer disabled:opacity-50 min-w-[110px]">
-                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" />
-                <span>Update Entry</span>
+                <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin mr-1" aria-hidden="true" />
+                <span>Save changes</span>
               </button>
             </div>
           </div>
