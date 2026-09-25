@@ -2961,3 +2961,19 @@ these three indistinguishable from the real residents.*
 > (line 45; line 47's webhook password too) - the old key `da9a818af5` is dead everywhere. And
 > one real TEST GCash payment end to end, on the rehearsal's made-up PH tenant rather than a
 > real resident, then **Reject** it in Income so nothing reaches the owner's ledger.
+
+### B-69 — the rehearsal tenant in PH is showing on the live site and failing check:ledger
+
+- **Blocked on:** Loyd (or Sean), once the B-68 test GCash payment is done
+- **What is wrong:** the rehearsal's "Rehearsal Test" tenant was moved into PH on 2026-09-25
+  (created at 14:24 and again at 14:29 Manila; the first profile is already inactive with no
+  tenancy, so there is no duplicate). While it stays there:
+  - the public site shows every unit occupied, "0 vacant" on every category;
+  - `check:ledger` fails two rules, both on PH alone: BR-033 "system bills day 25, her ledger
+    last ran from day 28" (17, up from 16) and BR-014 "system bills water for 1, she last billed
+    7" (4, up from 3). Nothing in the code changed; the tenancy is new data.
+- **What to do:** after the test payment has been rejected in Income, move the rehearsal tenant
+  out of PH through the app (Active Tenants, move out), so PH goes back to its real state.
+- **How to know it worked:** `npm run check:all` is 20/20 again, and `/category/three-bedroom`
+  shows PH as it really is.
+- **Raised:** 2026-09-25 by Claude, from the check:all run after the second frontend audit
