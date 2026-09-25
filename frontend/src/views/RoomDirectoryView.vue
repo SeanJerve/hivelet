@@ -185,6 +185,12 @@ function statusTone(status: UnitStatus): 'paid' | 'verify' | 'neutral' {
   return 'neutral';
 }
 
+/** Under the "Tenant" label: the name(s), or "None" when the pill already says Vacant. */
+function tenantLine(unitCode: string): string {
+  const summary = formatUnitOccupantsSummary(unitCode);
+  return summary.count > 0 ? summary.text : 'None';
+}
+
 function editUnit(u: RoomItem) {
   activeAdminEditUnit.value = u;
   isAdminEditUnitModalOpen.value = true;
@@ -441,16 +447,12 @@ const statusChips = computed(() => [
                 <!-- Label above value, and the name wraps: it was truncated at
                      170px, which cut off "+ 1 roommate", the part that sets the
                      water bill. -->
-                <dl class="mt-4 grid gap-3 border-t border-line pt-3 text-sm">
+                <dl class="mt-4 border-t border-line pt-3 text-sm">
                   <div class="min-w-0">
-                    <dt class="text-xs text-ink-faint">Lived in by</dt>
+                    <dt class="text-xs text-ink-faint">Tenant</dt>
                     <dd class="mt-0.5 break-words font-medium text-ink">
-                      {{ formatUnitOccupantsSummary(u.unitCode).text }}
+                      {{ tenantLine(u.unitCode) }}
                     </dd>
-                  </div>
-                  <div>
-                    <dt class="text-xs text-ink-faint">A month</dt>
-                    <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
                   </div>
                 </dl>
               </div>
@@ -459,20 +461,24 @@ const statusChips = computed(() => [
                 Bordered and unfilled so the status pill (whose `neutral` tone
                 is `bg-canvas`) has a plain surface to show against.
 
-                Two labelled buttons, always shown. These were unlabelled
-                `row-action` icons at opposite corners: hidden until hover on a
-                desktop, which left an empty strip under every card, and on a
-                phone an eye that did not say what it opened.
+                The eye and pencil sit beside the rent, small and always shown.
+                They were hover-only icons (an empty strip until hover), then
+                two full-width labelled buttons that doubled every card's
+                height across 33 cards; the owner wanted the icons back.
               -->
-              <div class="mt-4 flex gap-2">
-                <button type="button" class="pill-btn flex-1 px-3" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
-                  <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
-                  <span>Details</span>
-                </button>
-                <button type="button" class="pill-btn flex-1 px-3" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
-                  <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
-                  <span>Edit</span>
-                </button>
+              <div class="mt-3 flex items-end justify-between gap-2">
+                <dl class="text-sm">
+                  <dt class="text-xs text-ink-faint">Monthly rent</dt>
+                  <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
+                </dl>
+                <div class="flex shrink-0 gap-1.5">
+                  <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
+                    <Eye class="size-4" aria-hidden="true" />
+                  </button>
+                  <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
+                    <Pencil class="size-4" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             </article>
           </div>
@@ -533,8 +539,8 @@ const statusChips = computed(() => [
         <tr>
           <th scope="col">Unit</th>
           <th scope="col">Where and what</th>
-          <th scope="col" class="num">A month</th>
-          <th scope="col">Lived in by</th>
+          <th scope="col" class="num">Monthly rent</th>
+          <th scope="col">Tenant</th>
           <th scope="col">Status</th>
           <th scope="col" class="w-24"><span class="sr-only">Actions</span></th>
         </tr>
@@ -547,8 +553,8 @@ const statusChips = computed(() => [
           </th>
           <td class="text-ink">{{ u.cluster }}, {{ u.type }}</td>
           <td class="num font-semibold text-ink">{{ peso(u.price) }}</td>
-          <td :title="formatUnitOccupantsSummary(u.unitCode).text">
-            {{ formatUnitOccupantsSummary(u.unitCode).text }}
+          <td :title="tenantLine(u.unitCode)">
+            {{ tenantLine(u.unitCode) }}
           </td>
           <td>
             <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
@@ -577,28 +583,28 @@ const statusChips = computed(() => [
           <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
         </div>
 
-        <dl class="mt-4 grid gap-3 border-t border-line pt-3 text-sm">
+        <dl class="mt-4 border-t border-line pt-3 text-sm">
           <div class="min-w-0">
-            <dt class="text-xs text-ink-faint">Lived in by</dt>
+            <dt class="text-xs text-ink-faint">Tenant</dt>
             <dd class="mt-0.5 break-words font-medium text-ink">
-              {{ formatUnitOccupantsSummary(u.unitCode).text }}
+              {{ tenantLine(u.unitCode) }}
             </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-ink-faint">A month</dt>
-            <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
           </div>
         </dl>
 
-        <div class="mt-4 flex gap-2">
-          <button type="button" class="pill-btn flex-1 px-3" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
-            <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
-            <span>Details</span>
-          </button>
-          <button type="button" class="pill-btn flex-1 px-3" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
-            <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
-            <span>Edit</span>
-          </button>
+        <div class="mt-3 flex items-end justify-between gap-2">
+          <dl class="text-sm">
+            <dt class="text-xs text-ink-faint">Monthly rent</dt>
+            <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
+          </dl>
+          <div class="flex shrink-0 gap-1.5">
+            <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
+              <Eye class="size-4" aria-hidden="true" />
+            </button>
+            <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
+              <Pencil class="size-4" aria-hidden="true" />
+            </button>
+          </div>
         </div>
       </template>
     </RecordTable>
