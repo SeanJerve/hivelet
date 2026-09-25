@@ -38,6 +38,20 @@ const props = withDefaults(
     noun?: string;
     /** Drops the tile chrome, for a table already sitting inside a tile. */
     flat?: boolean;
+    /**
+     * Column widths, one per column ('' leaves one to take the rest). Set it
+     * where several tables of one shape are stacked, clusters for instance:
+     * each auto-sized to its own content, so their columns did not line up.
+     */
+    cols?: string[];
+    /** The width below which a fixed-column table scrolls instead of shrinking. */
+    minWidth?: string;
+    /**
+     * Where the table takes over from the cards. 'xl' for wide registers: at
+     * 1024 with the sidebar open the table gets 588px, so a nine-column ledger
+     * scrolled sideways where the cards read cleanly.
+     */
+    tableFrom?: 'lg' | 'xl';
   }>(),
   { pageSize: 10, emptyTitle: 'Nothing here', emptyNote: '', noun: 'row', flat: false }
 );
@@ -95,10 +109,17 @@ onUnmounted(() => {
 
     <template v-else>
       <!-- The register, on a screen wide enough to read one -->
-      <div :class="['hidden overflow-hidden lg:block', flat ? '' : 'rounded-tile bg-tile']">
+      <div :class="['hidden overflow-hidden', tableFrom === 'xl' ? 'xl:block' : 'lg:block', flat ? '' : 'rounded-tile bg-tile']">
         <div class="ws-table-wrap" :class="{ 'is-first-load': revealFirstLoad }">
-          <table class="ws-table">
+          <table
+            class="ws-table"
+            :class="{ 'ws-table-fixed': cols }"
+            :style="cols && minWidth ? { '--ws-table-min': minWidth } : undefined"
+          >
             <caption class="sr-only">{{ caption }}</caption>
+            <colgroup v-if="cols">
+              <col v-for="(w, i) in cols" :key="i" :style="w ? { width: w } : undefined" />
+            </colgroup>
             <thead>
               <slot name="head" />
             </thead>
@@ -118,7 +139,7 @@ onUnmounted(() => {
         `bg-canvas`: the soft status pills are canvas-coloured too, and on a
         canvas card they lost their outline (the directory's Vacant pill, 2026-09-25).
       -->
-      <div class="space-y-3 lg:hidden">
+      <div :class="['space-y-3', tableFrom === 'xl' ? 'xl:hidden' : 'lg:hidden']">
         <div
           v-for="(row, i) in visible"
           :key="i"

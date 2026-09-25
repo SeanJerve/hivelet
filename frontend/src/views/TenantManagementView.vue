@@ -482,6 +482,9 @@ function onFile(value: string | null | undefined) {
  * The household in words. BR-014 bills water by headcount, so the number of
  * people is the fact worth reading, not a yes/no badge.
  */
+/** Resident (takes the rest), Unit, Household, Moved in, Deposit, Standing, edit. */
+const RESIDENT_TABLE_COLS = ['', '8%', '17%', '13%', '11%', '14%', '6%'];
+
 function householdLabel(t: TenantRecord) {
   const mates = t.roommateQty ?? Math.max(0, (t.occupants || 1) - 1);
   if (mates === 0) return 'Lives alone';
@@ -852,6 +855,8 @@ async function handleOnboard() {
       :rows="rows"
       caption="Residents, with unit, household, move-in date, deposit and standing"
       noun="resident"
+      :cols="RESIDENT_TABLE_COLS"
+      table-from="xl"
       empty-title="Nobody matches"
       :empty-note="q ? 'Try a name, unit, phone number or email.' : 'Pick “Everyone” to see the whole list.'"
     >
@@ -1042,10 +1047,15 @@ async function handleOnboard() {
           nested would fight over both - so the card markup is repeated from the
           `#card` template above rather than shared. Same fields, same order.
         -->
-        <div class="hidden lg:block">
+        <div class="hidden xl:block">
         <div class="ws-table-wrap">
-          <table class="ws-table">
+          <table class="ws-table ws-table-fixed">
             <caption class="sr-only">{{ group.label }} residents, with unit, household, move-in date, deposit and standing</caption>
+            <!-- Fixed widths, the same as the list view's: one table per cluster,
+                 each auto-sized to its own names, left the columns misaligned. -->
+            <colgroup>
+              <col v-for="(w, i) in RESIDENT_TABLE_COLS" :key="i" :style="w ? { width: w } : undefined" />
+            </colgroup>
             <thead>
               <tr>
                 <th scope="col">Resident</th>
@@ -1091,7 +1101,7 @@ async function handleOnboard() {
         </div>
 
         <!-- The same residents, one tile each, on anything narrower. -->
-        <div class="space-y-3 lg:hidden">
+        <div class="space-y-3 xl:hidden">
           <div
             v-for="t in visibleResidents(group.key, group.residents)"
             :key="t.id"

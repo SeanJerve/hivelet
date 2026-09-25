@@ -406,6 +406,14 @@ const totalSpreadsheetLine = computed(() =>
 const totalRemitted = computed(() => rows.value.reduce((s, r) => s + r.rent + r.water, 0));
 
 /**
+ * Unit, Paid, Who (takes the rest), Rent, the one extra slot, Water (with its
+ * heads), Garbage, Remitted, edit. Sized so a seven-figure total
+ * ("P1,485,000.00", 89px at 14px) fits on one line; percentages broke
+ * "P4,500.00" in two.
+ */
+const CLUSTER_TABLE_COLS = ['3.5rem', '6.5rem', '', '7rem', '6.25rem', '6.25rem', '5.25rem', '7rem', '4rem'];
+
+/**
  * Collections by month, for the same capsule chart the overview uses.
  *
  * Built from the rows already on screen, so it answers to the filters above it.
@@ -1418,6 +1426,9 @@ async function exportExcel() {
             noun="entry"
             :page-size="8"
             empty-title="Nothing in this cluster"
+            :cols="CLUSTER_TABLE_COLS"
+            min-width="52.75rem"
+            table-from="xl"
           >
             <template #head>
               <tr>
@@ -1425,9 +1436,15 @@ async function exportExcel() {
                 <th scope="col">Paid</th>
                 <th scope="col">Who</th>
                 <th scope="col" class="num">Rent</th>
-                <th v-if="group.hasShareColumn" scope="col" class="num">50% Share</th>
-                <th v-if="group.key === 'Linda'" scope="col" class="num">Electricity</th>
-                <th scope="col" class="num">Heads</th>
+                <!-- One slot every cluster keeps, so all five tables share one
+                     grid: BH's 50% Share, Linda's Electricity, else empty. -->
+                <th scope="col" class="num">
+                  <template v-if="group.hasShareColumn">50% Share</template>
+                  <template v-else-if="group.key === 'Linda'">Electricity</template>
+                </th>
+                <!-- Heads sits under the water it sets, as on the phone cards
+                     ("Water, 2 heads"); a column of its own made the ledger
+                     scroll sideways at 1280. -->
                 <th scope="col" class="num">Water</th>
                 <th scope="col" class="num">Garbage</th>
                 <th scope="col" class="num">Remitted</th>
@@ -1452,11 +1469,14 @@ async function exportExcel() {
                 <td v-if="group.hasShareColumn" class="num font-semibold text-verify">
                   {{ peso(r.rent / 2, 2) }}
                 </td>
-                <td v-if="group.key === 'Linda'" class="num font-semibold text-brand">
+                <td v-else-if="group.key === 'Linda'" class="num font-semibold text-brand">
                   {{ peso(r.linda?.electricity || 0, 2) }}
                 </td>
-                <td class="num">{{ r.occupants }}</td>
-                <td class="num font-semibold text-ink">{{ peso(r.water, 2) }}</td>
+                <td v-else></td>
+                <td class="num">
+                  <span class="block font-semibold text-ink">{{ peso(r.water, 2) }}</span>
+                  <span class="block text-xs text-ink-faint">{{ headsLabel(r.occupants) }}</span>
+                </td>
                 <td class="num">{{ peso(r.garbage, 2) }}</td>
                 <td class="num font-semibold text-brand">
                   {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water, 2) }}
@@ -1481,11 +1501,14 @@ async function exportExcel() {
                 <td v-if="group.hasShareColumn" class="num text-verify">
                   {{ peso(group.totalShare, 2) }}
                 </td>
-                <td v-if="group.key === 'Linda'" class="num text-brand">
+                <td v-else-if="group.key === 'Linda'" class="num text-brand">
                   {{ peso(group.records.reduce((sum, r) => sum + (r.linda?.electricity || 0), 0), 2) }}
                 </td>
-                <td class="num">{{ group.totalOccupants }}</td>
-                <td class="num">{{ peso(group.totalWater, 2) }}</td>
+                <td v-else></td>
+                <td class="num">
+                  <span class="block">{{ peso(group.totalWater, 2) }}</span>
+                  <span class="block text-xs font-normal text-ink-faint">{{ headsLabel(group.totalOccupants) }}</span>
+                </td>
                 <td class="num">{{ peso(group.totalGarbage, 2) }}</td>
                 <td class="num text-brand">{{ peso(group.totalRemitted, 2) }}</td>
                 <td></td>
@@ -1609,6 +1632,7 @@ async function exportExcel() {
       caption="Every collection on screen, with unit, date, who paid, rent, water, garbage and what was remitted"
       noun="entry"
       :page-size="12"
+      table-from="xl"
       empty-title="Nothing matches"
       empty-note="No collection answers to what you have asked for."
     >

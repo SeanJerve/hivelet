@@ -985,6 +985,28 @@ html:has(> body[style*='overflow: hidden']) {
     font-size: 0.875rem;
     border-collapse: collapse;
   }
+  /* Widths come from a <colgroup>, so stacked tables of one shape line up.
+     The floor keeps a narrow screen scrolling rather than crushing cells, and
+     amounts never break across lines (a fixed column cannot grow to fit). */
+  .ws-table-fixed {
+    table-layout: fixed;
+    min-width: var(--ws-table-min, 44rem);
+  }
+  .ws-table.ws-table-fixed th,
+  .ws-table.ws-table-fixed td {
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+    overflow-wrap: break-word;
+  }
+  .ws-table.ws-table-fixed tr > :first-child {
+    padding-left: 1rem;
+  }
+  .ws-table.ws-table-fixed tr > :last-child {
+    padding-right: 1rem;
+  }
+  .ws-table.ws-table-fixed .num {
+    white-space: nowrap;
+  }
   .ws-table thead th {
     position: sticky;
     top: 0;
