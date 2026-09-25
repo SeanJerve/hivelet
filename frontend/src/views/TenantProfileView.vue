@@ -1,7 +1,11 @@
 <!--
-  What a resident can change about themselves: phone number, emergency contact,
-  occupation and Facebook page. The name and the account status belong to the
-  tenancy record and are shown, not edited (System Bible Section 19, FR-010).
+  What a resident can change about themselves: phone number and emergency
+  contact. The name and the account status belong to the tenancy record and
+  are shown, not edited (System Bible Section 19, FR-010).
+
+  Occupation and Facebook page were editable here too; the owner asked for
+  them removed as unnecessary (2026-09-26). The columns and the backend's
+  acceptance of them are untouched, so nothing already on file was cleared.
 
   There is no photo here, and the comment in the template says why.
 -->
@@ -22,8 +26,6 @@ interface EditableProfile {
   phone_number: string;
   emergency_contact_name: string;
   emergency_contact_phone: string;
-  occupation: string;
-  facebook_url: string;
 }
 
 /** Administrator-owned identity fields — displayed for confirmation. */
@@ -38,8 +40,6 @@ const form = ref<EditableProfile>({
   phone_number: '',
   emergency_contact_name: '',
   emergency_contact_phone: '',
-  occupation: '',
-  facebook_url: '',
 });
 
 /** Snapshot of the last saved server state, used for dirty tracking and reset. */
@@ -121,8 +121,6 @@ async function fetchProfile() {
       phone_number: data?.phone_number || '',
       emergency_contact_name: data?.emergency_contact_name || '',
       emergency_contact_phone: data?.emergency_contact_phone || '',
-      occupation: data?.occupation || '',
-      facebook_url: data?.facebook_url || '',
     };
     savedSnapshot.value = { ...form.value };
   } catch (err: any) {
@@ -161,12 +159,6 @@ async function handleSave() {
     return;
   }
 
-  const url = form.value.facebook_url.trim();
-  if (url && !/^https?:\/\//i.test(url)) {
-    errorNotice.value = 'Your Facebook page link must begin with http:// or https://.';
-    return;
-  }
-
   saving.value = true;
   try {
     /**
@@ -185,8 +177,6 @@ async function handleSave() {
       phone_number: form.value.phone_number.trim(),
       emergency_contact_name: form.value.emergency_contact_name.trim(),
       emergency_contact_phone: form.value.emergency_contact_phone.trim(),
-      occupation: form.value.occupation.trim(),
-      facebook_url: form.value.facebook_url.trim(),
     };
 
     // Surfaced rather than swallowed: a profile edit that silently fails leaves
@@ -224,13 +214,13 @@ function handleReset() {
       </h1>
       <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
         Keep these right so the landlady can reach you.
+        <RouterLink
+          to="/privacy"
+          class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+        >
+          How your details are kept and used
+        </RouterLink>
       </p>
-      <RouterLink
-        to="/privacy"
-        class="press inline-flex min-h-11 items-center text-sm text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
-      >
-        How your details are kept and used
-      </RouterLink>
     </div>
 
     <SkeletonCard v-if="loading" variant="list" :count="2" />
@@ -310,12 +300,13 @@ function handleReset() {
           </div>
 
           <p class="mt-2 text-sm leading-6 text-ink-soft break-words">
-            <template v-if="identity.email">You sign in with {{ identity.email }}.</template>
-            <template v-else-if="form.phone_number">
-              No email on file, so you sign in with
-              <span class="whitespace-nowrap">{{ form.phone_number }}</span>.
+            <template v-if="form.phone_number">
+              You sign in with <span class="whitespace-nowrap">{{ form.phone_number }}</span>.
             </template>
-            <template v-else>No email on file.</template>
+            <template v-else-if="identity.email">
+              No phone number on file, so you sign in with {{ identity.email }}.
+            </template>
+            <template v-else>No phone number on file.</template>
           </p>
         </div>
       </div>
@@ -357,27 +348,6 @@ function handleReset() {
               />
             </div>
 
-            <div class="ws-field">
-              <label for="occupation">What you do</label>
-              <input
-                id="occupation"
-                v-model="form.occupation"
-                type="text"
-                placeholder="BS Nursing student, or IT specialist"
-                class="ws-input"
-              />
-            </div>
-
-            <div class="ws-field">
-              <label for="facebook">Your Facebook page</label>
-              <input
-                id="facebook"
-                v-model="form.facebook_url"
-                type="url"
-                placeholder="https://facebook.com/your.profile"
-                class="ws-input"
-              />
-            </div>
           </div>
 
           <div class="border-t border-line pt-6">
