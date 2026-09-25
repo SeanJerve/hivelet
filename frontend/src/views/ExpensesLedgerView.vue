@@ -1017,7 +1017,8 @@ async function handleEditExpense() {
               </p>
             </div>
 
-            <!-- The compact pencil the directory cards use, not a full-width button. -->
+            <!-- The compact pencil the directory cards use: hover/focus-reveal,
+                 no border, not a full-width button. -->
             <dl class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
               <div v-if="getAreaAmount(e, 'Boarding House')" class="flex gap-1.5">
                 <dt class="text-ink-faint">Boarding house</dt>
@@ -1035,7 +1036,7 @@ async function handleEditExpense() {
             <div class="mt-2 flex justify-end">
             <button
               type="button"
-              class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+              class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
               :aria-label="`Edit ${e.description}`"
               title="Edit"
               @click="startEditExpense(e)"

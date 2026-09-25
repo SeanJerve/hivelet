@@ -933,14 +933,14 @@ async function handleOnboard() {
           </div>
         </dl>
 
-        <!-- The pencil beside the deposit, like the directory's cards: a
-             full-width Edit button on every card was the pattern the owner rejected. -->
+        <!-- The pencil beside the deposit, like the directory's cards:
+             hover/focus-reveal, no border (owner's call, 2026-09-26). -->
         <div class="mt-3 flex items-end justify-between gap-2">
           <dl class="text-sm">
             <dt class="text-xs text-ink-faint">Deposit</dt>
             <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
           </dl>
-          <button type="button" class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
+          <button type="button" class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
             <Pencil class="size-4" aria-hidden="true" />
           </button>
         </div>
@@ -1109,7 +1109,7 @@ async function handleOnboard() {
           <div
             v-for="t in visibleResidents(group.key, group.residents)"
             :key="t.id"
-            class="rounded-2xl border border-line p-5"
+            class="group rounded-2xl border border-line p-5"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
@@ -1139,7 +1139,7 @@ async function handleOnboard() {
                 <dt class="text-xs text-ink-faint">Deposit</dt>
                 <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
               </dl>
-              <button type="button" class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
+              <button type="button" class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
                 <Pencil class="size-4" aria-hidden="true" />
               </button>
             </div>

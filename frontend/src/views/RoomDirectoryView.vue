@@ -433,7 +433,7 @@ const statusChips = computed(() => [
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="flex flex-col justify-between rounded-2xl border border-line p-4"
+              class="group flex flex-col justify-between rounded-2xl border border-line p-4"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
@@ -460,13 +460,11 @@ const statusChips = computed(() => [
               </div>
 
               <!--
-                Bordered and unfilled so the status pill (whose `neutral` tone
-                is `bg-canvas`) has a plain surface to show against.
-
-                The eye and pencil sit beside the rent, small and always shown.
-                They were hover-only icons (an empty strip until hover), then
+                Hover-reveal, no border - back to this after a detour through
                 two full-width labelled buttons that doubled every card's
-                height across 33 cards; the owner wanted the icons back.
+                height across 33 cards. `.row-action` fades them in on
+                `:hover`/`:focus-within` of the `group` card and stays opaque
+                on touch, where hover does not exist (owner's call, 2026-09-26).
               -->
               <div class="mt-3 flex items-end justify-between gap-2">
                 <dl class="text-sm">
@@ -474,10 +472,10 @@ const statusChips = computed(() => [
                   <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
                 </dl>
                 <div class="flex shrink-0 gap-1.5">
-                  <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
+                  <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
                     <Eye class="size-4" aria-hidden="true" />
                   </button>
-                  <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
+                  <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
                     <Pencil class="size-4" aria-hidden="true" />
                   </button>
                 </div>
@@ -602,10 +600,10 @@ const statusChips = computed(() => [
             <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
           </dl>
           <div class="flex shrink-0 gap-1.5">
-            <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
+            <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" title="Details" @click="openSpecs(u)">
               <Eye class="size-4" aria-hidden="true" />
             </button>
-            <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
+            <button type="button" class="press-plate flex size-10 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" title="Edit" @click="editUnit(u)">
               <Pencil class="size-4" aria-hidden="true" />
             </button>
           </div>

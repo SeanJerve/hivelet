@@ -144,7 +144,7 @@ onUnmounted(() => {
           v-for="(row, i) in visible"
           :key="i"
           :class="[
-            'rounded-2xl p-5',
+            'group rounded-2xl p-5',
             flat ? 'border border-line' : 'rounded-tile bg-tile',
             revealFirstLoad ? 'list-reveal-item' : '',
           ]"

@@ -1614,7 +1614,7 @@ async function exportExcel() {
               <div class="mt-3 flex justify-end">
               <button
                 type="button"
-                class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+                class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
                 :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
                 title="Edit"
                 @click="startEditIncome(r)"
@@ -1830,7 +1830,7 @@ async function exportExcel() {
         <div class="mt-3 flex justify-end">
         <button
           type="button"
-          class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
+          class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full row-action text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer"
           :aria-label="`Edit ${r.unit.toUpperCase()}, ${r.invoice || r.contact}`"
           title="Edit"
           @click="startEditIncome(r)"
