@@ -2950,3 +2950,14 @@ these three indistinguishable from the real residents.*
 >   5. Adyen → **Test configuration**, then Vercel logs, search `adyen-webhook`: expect
 >      `accepted`. If still `FAILED`, compare the fingerprint in the log with
 >      `node backend/scripts/hmac-fingerprint.mjs <the key you pasted>`
+
+> **B-68 RESOLVED, 2026-09-25 14:16 (Manila).** Loyd regenerated the HMAC key on the production
+> webhook, saved it, and set it in Vercel (server fingerprint `43be437b43`). Adyen's **Test
+> configuration** now returns **200 OK, event delivered**. Checked read-only right after: the test
+> notification (a EUR `AUTHORISATION` on HiveletECOM) was acknowledged and audited as
+> "did not match this property: expected PHP … nothing recorded", with 0 payments, bills or
+> income rows written and one admin notification. That is the handler doing its job.
+> **Still to do:** put the new key in Loyd's root `.env` and Sean's `credentials/loyd.env`
+> (line 45; line 47's webhook password too) - the old key `da9a818af5` is dead everywhere. And
+> one real TEST GCash payment end to end, on the rehearsal's made-up PH tenant rather than a
+> real resident, then **Reject** it in Income so nothing reaches the owner's ledger.
