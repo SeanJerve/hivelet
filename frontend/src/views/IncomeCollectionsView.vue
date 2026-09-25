@@ -966,8 +966,8 @@ async function exportExcel() {
                figure is still the ledger's Remitted column. -->
           <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(collectedAltogether) }}</p>
           <p class="mt-2 text-sm leading-6 text-on-night-soft">
-            Rent, water and garbage, across {{ rows.length }}
-            {{ rows.length === 1 ? 'entry' : 'entries' }}
+            Rent, water and garbage, from {{ rows.length }}
+            {{ rows.length === 1 ? 'payment' : 'payments' }}
           </p>
         </template>
       </OverviewTile>
@@ -976,7 +976,7 @@ async function exportExcel() {
         <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
         <template v-else>
           <p class="tabular text-3xl font-semibold leading-none text-ink">{{ peso(totalRent) }}</p>
-          <p class="mt-2 text-sm leading-6 text-ink-soft">Full rent on every entry</p>
+          <p class="mt-2 text-sm leading-6 text-ink-soft">The full rent from every payment</p>
         </template>
       </OverviewTile>
 
@@ -997,12 +997,12 @@ async function exportExcel() {
            quoted here - repeating it would put the banned phrasing back into
            the repository, which is what the rule is for. See BR-035 in
            docs/claude_pipeline/PHASE1_LOCKED_DECISIONS.md. -->
-      <OverviewTile title="50% Share, on BH rows">
+      <OverviewTile title="50% Share">
         <UnavailableNote v-if="incomeRecordsFetchFailed" :retry="false" message="Not loaded." />
         <template v-else>
           <p class="tabular text-3xl font-semibold leading-none text-verify">{{ peso(totalShare) }}</p>
           <p class="mt-2 text-sm leading-6 text-ink-soft">
-            Half of each row's Rent Amount, computed by the system
+            Half of each BH payment's rent, worked out automatically
           </p>
         </template>
       </OverviewTile>
@@ -1053,9 +1053,9 @@ async function exportExcel() {
         <!-- Her spreadsheet's own bottom line is a different sum from BR-038's
              remitted_amount, and both were once shown under the same heading. -->
         <p class="mt-4 border-t border-line pt-4 text-sm leading-6 text-ink-soft">
-          The spreadsheet's own line reads
-          <strong class="tabular font-semibold text-ink">{{ peso(totalSpreadsheetLine) }}</strong
-          >: BH at half rent, every other cluster at full rent, plus water.
+          Her spreadsheet adds it up differently: half rent for BH, full rent for every
+          other cluster, plus water. That comes to
+          <strong class="tabular font-semibold text-ink">{{ peso(totalSpreadsheetLine) }}</strong>.
         </p>
         </template>
       </OverviewTile>
@@ -1163,7 +1163,7 @@ async function exportExcel() {
             id="income-search"
             v-model="q"
             type="search"
-            placeholder="Unit, tenant or receipt number"
+            placeholder="Search"
             class="ws-input w-full pl-11"
           />
         </div>
@@ -1427,7 +1427,7 @@ async function exportExcel() {
             :page-size="8"
             empty-title="Nothing in this cluster"
             :cols="CLUSTER_TABLE_COLS"
-            min-width="52.75rem"
+            min-width="55.25rem"
             table-from="xl"
           >
             <template #head>
@@ -1841,31 +1841,6 @@ async function exportExcel() {
       </template>
     </RecordTable>
 
-    <!--
-      Linda Units Separate Reference Card (BR-040).
-
-      This used to say the two units are "billed a fixed monthly water charge
-      instead of the per-occupant rate" - true for 26 months by coincidence
-      (occupancy at LF and LB never once changed), and retired by the owner on
-      2026-09-20: a third person in LF bills 600, same as any other unit. See
-      `computeWaterFee` in billingService.ts, which now bills every unit
-      `occupants x rate` with no exception. What is NOT retired is where the
-      money goes - this card is still correct to single the two units out for
-      that reason, just not for a rate that no longer exists.
-    -->
-    <!-- Two sentences, not a paragraph and two identical LF/LB boxes: the owner
-         knows where the units are; what she needs is the one thing that differs. -->
-    <div class="rounded-tile bg-tile p-5 sm:p-6 space-y-2">
-      <div class="flex items-center gap-2">
-        <FileSpreadsheet class="size-5 shrink-0 text-accent" aria-hidden="true" />
-        <h3 class="font-semibold text-[0.9375rem] text-ink">Linda units (LF, LB)</h3>
-      </div>
-      <p class="text-sm leading-6 text-ink-soft">
-        Water is charged like every other unit, {{ perOccupantWaterText().toLowerCase() }}.
-        Only the money is kept separate, in its own column, and remitted to Linda.
-        The flat electricity charge was retired in September 2026; that column shows past entries only.
-      </p>
-    </div>
   </div>
 
     <!-- Edit Payment Modal -->

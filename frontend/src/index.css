@@ -1001,15 +1001,15 @@ html:has(> body[style*='overflow: hidden']) {
   }
   .ws-table.ws-table-fixed th,
   .ws-table.ws-table-fixed td {
-    padding-left: 0.625rem;
-    padding-right: 0.625rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
     overflow-wrap: break-word;
   }
   .ws-table.ws-table-fixed tr > :first-child {
-    padding-left: 1rem;
+    padding-left: 1.25rem;
   }
   .ws-table.ws-table-fixed tr > :last-child {
-    padding-right: 1rem;
+    padding-right: 1.25rem;
   }
   .ws-table.ws-table-fixed .num {
     white-space: nowrap;
