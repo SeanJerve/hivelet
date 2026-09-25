@@ -562,7 +562,7 @@ async function submitInquiry() {
             to="/inquire"
             class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >
-            Inquire Now
+            Inquire now
           </RouterLink>
           <template v-if="!isAuthenticated">
             <span aria-hidden="true" class="pr-2">,</span>
@@ -570,7 +570,7 @@ async function submitInquiry() {
               to="/login"
               class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
             >
-              Sign In
+              Sign in
             </RouterLink>
           </template>
           <template v-else>
@@ -1028,7 +1028,7 @@ async function submitInquiry() {
                   v-for="(u, i) in group.units"
                   :key="u.id"
                   type="button"
-                  :aria-label="`Look at unit ${u.room_number}`"
+                  :aria-label="`Unit ${u.room_number.toUpperCase()}, ${peso(u.current_price)}, ${isAvailable(u) ? 'Vacant' : 'Occupied'}`"
                   :aria-pressed="u.room_number === activeUnit.room_number"
                   :class="[
                     'list-reveal-item press-plate group block w-full text-left cursor-pointer transition-opacity duration-200 ease-[var(--ease-out)]',
@@ -1290,7 +1290,7 @@ async function submitInquiry() {
           >
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" />
             <Send v-else class="size-4" />
-            <span>{{ isSubmitting ? 'Sending' : 'Send' }}</span>
+            <span>{{ isSubmitting ? 'Sending…' : 'Send inquiry' }}</span>
           </button>
 
           <!--

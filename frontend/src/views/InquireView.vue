@@ -244,13 +244,13 @@ async function submitInquiry() {
               </RouterLink>
             </li>
             <li aria-hidden="true" class="text-ink-faint">/</li>
-            <li aria-current="page" class="text-ink">Register interest</li>
+            <li aria-current="page" class="text-ink">Inquire</li>
           </ol>
         </nav>
 
-        <!-- Was one run-on line, "Viewings by appointment, register your interest". -->
+        <!-- Every link here says "Inquire now"; the page was titled "Register your interest", the wording the owner dropped. -->
         <h1 class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
-          Register your interest
+          Send an inquiry
         </h1>
         <p class="mt-3 text-sm text-ink-soft">Viewings are by appointment.</p>
 
@@ -455,13 +455,8 @@ async function submitInquiry() {
             :disabled="isSubmitting"
             class="pill-btn-brand mt-6 max-w-full whitespace-normal px-5 py-2.5 text-center disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <!--
-              "Register your interest" names the PAGE (the title, the
-              breadcrumb, the nav link) - kept there. On the button itself
-              it read as a formal, roundabout way to say what pressing it
-              does: sends the form. "Send inquiry" says the action plainly
-              (asked to simplify, 2026-09-24).
-            -->
+            <!-- "Send inquiry", not "Register your interest" (asked to simplify, 2026-09-24). -->
+
             <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
             <span>{{ isSubmitting ? 'Sending…' : 'Send inquiry' }}</span>
           </button>

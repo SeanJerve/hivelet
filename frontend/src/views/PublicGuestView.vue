@@ -19,6 +19,7 @@ import { fetchRooms, rooms, roomsFetchFailed, roomsLoaded } from '@/lib/systemSt
 import { api } from '@/lib/api';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import BookViewingPrompt from '@/components/modals/BookViewingPrompt.vue';
+import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
 import { ArrowUpRight, ChevronDown, MapPin } from 'lucide-vue-next';
 
 const isLoading = ref(true);
@@ -449,17 +450,12 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           >
             <span>Kind</span>
             <span>What it is</span>
-            <!--
-              With the listing unreachable the rows carry one "could not be
-              loaded" line across both right-hand columns, so heading them
-              "Units" and "Free to rent" labels two columns that have no
-              values under them. The header follows the rows.
-            -->
+            <!-- The header follows the rows: no count columns while they have no counts. -->
             <template v-if="unitsReady">
               <span class="text-right">Units</span>
               <span class="text-right">Vacant</span>
             </template>
-            <span v-else class="text-right sm:col-span-2">Availability</span>
+            <span v-else-if="unitsPending" class="text-right sm:col-span-2">Availability</span>
           </div>
 
           <RouterLink
@@ -482,27 +478,22 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             </span>
 
             <!--
-              The counts, or an admission that they are not known.
+              The counts, and nothing when they are not known.
 
               With the room list unreachable, `rooms` still holds the seed from
               `systemState.ts`, whose types are the wrong ones - so grouping it
               by `room_type` matches nothing and every row would report nought.
-              A zero is a claim: it says this property has no studios. B-01 in
-              BLOCKED_FOR_SEAN.md is the open decision; this is the honest
-              interim.
+              A zero is a claim: it says this property has no studios. The
+              failure is said once, under the list (AvailabilityUnavailable),
+              with a retry and the landlady's number, not four times here.
             -->
-            <template v-if="roomsFetchFailed">
-              <span class="mt-2 block text-xs text-ink-faint sm:col-span-2 sm:mt-0 sm:text-right">
-                Availability could not be loaded
-              </span>
-            </template>
-            <template v-else-if="unitsPending">
+            <template v-if="unitsPending">
               <span class="mt-2 block text-xs text-ink-faint sm:col-span-2 sm:mt-0 sm:text-right">
                 Checking what is available&hellip;
               </span>
             </template>
             <!-- One line on a phone; the two columns from `sm`. A vacancy is in brand green, as on the category page. -->
-            <template v-else>
+            <template v-else-if="unitsReady">
               <span class="mt-2 block text-xs tabular-nums text-ink-soft sm:hidden">
                 {{ unitsInCategory(c.key).length }}
                 {{ unitsInCategory(c.key).length === 1 ? 'unit' : 'units' }},
@@ -525,6 +516,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
       </section>
     </div>
 
+    <AvailabilityUnavailable v-if="roomsFetchFailed" />
 
     <!-- 2. Frequently Asked Questions (FAQ Section) -->
     <section id="faqs" class="w-full bg-canvas border-t border-line font-editorial ws-band scroll-mt-20">

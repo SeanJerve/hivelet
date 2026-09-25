@@ -87,7 +87,7 @@ function reload() {
 
         <RouterLink to="/inquire" class="pill-btn">
           <MessageSquare class="size-4" aria-hidden="true" />
-          Send an inquiry
+          Inquire now
         </RouterLink>
 
         <button v-if="showRetry" type="button" class="pill-btn" @click="reload">
