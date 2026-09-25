@@ -1,35 +1,36 @@
 <script setup lang="ts">
 /**
- * The building as a half ring: one segment per rentable unit, grouped by
- * cluster with a wider gap between clusters. Occupied units are solid; vacant
- * ones are hatched. It is a count of real units, not a percentage gauge.
+ * Occupancy as a half ring of one segment per rentable unit, filled from the
+ * left: occupied units first, solid, then vacant ones as empty track. Full reads
+ * as a full ring and every vacancy shortens the fill. Which units are vacant is
+ * listed in words under the ring (and in the aria label), not by position.
+ *
+ * It used to keep each unit in its cluster's place, with wider gaps between
+ * clusters, and hatch a vacant one where it stood. The small clusters sit
+ * together at the right end (PH, the Front Apartment, Linda), so their gaps
+ * made a fully occupied ring look broken there, and a vacancy never read as
+ * "less" (asked for, 2026-09-25).
  */
-import { computed, useId } from 'vue';
+import { computed } from 'vue';
 import type { ArcUnit } from './types';
 
 const props = defineProps<{
   units: ArcUnit[];
 }>();
 
-const patternId = useId();
-
 const CX = 120;
 const CY = 118;
 const R = 96;
-const UNIT_GAP = 1.1;
-const CLUSTER_GAP = 5;
+const GAP = 1.4;
 
 const segments = computed(() => {
-  const list = props.units;
+  const list = [...props.units.filter((u) => u.occupied), ...props.units.filter((u) => !u.occupied)];
   if (list.length === 0) return [];
-  let clusterBreaks = 0;
-  for (let i = 1; i < list.length; i++) if (list[i].cluster !== list[i - 1].cluster) clusterBreaks++;
-  const unitBreaks = list.length - 1 - clusterBreaks;
-  const sweep = (180 - clusterBreaks * CLUSTER_GAP - unitBreaks * UNIT_GAP) / list.length;
+  const sweep = (180 - (list.length - 1) * GAP) / list.length;
 
   let angle = 180;
   return list.map((u, i) => {
-    if (i > 0) angle -= list[i].cluster !== list[i - 1].cluster ? CLUSTER_GAP : UNIT_GAP;
+    if (i > 0) angle -= GAP;
     const start = angle;
     const end = angle - sweep;
     angle = end;
@@ -71,12 +72,6 @@ const description = computed(
 <template>
   <div class="relative w-full max-w-[17rem] mx-auto">
     <svg viewBox="0 0 240 128" role="img" :aria-label="description" class="w-full h-auto block">
-      <defs>
-        <pattern :id="patternId" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <rect width="6" height="6" class="fill-tile" />
-          <rect width="1.6" height="6" class="fill-hatch" />
-        </pattern>
-      </defs>
       <path
         v-for="(s, i) in segments"
         :key="s.code"
@@ -87,8 +82,7 @@ const description = computed(
         pathLength="100"
         class="arc-segment"
         :style="{ animationDelay: `${sweepDelay(i)}ms` }"
-        :class="s.occupied ? 'stroke-brand' : undefined"
-        :stroke="s.occupied ? undefined : `url(#${patternId})`"
+        :class="s.occupied ? 'stroke-brand' : 'stroke-line'"
       />
     </svg>
     <div aria-hidden="true" class="absolute inset-x-0 bottom-0 text-center arc-count">
