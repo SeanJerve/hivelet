@@ -10,7 +10,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
-import { LANDLADY, floorLabelFor } from '@/lib/systemState';
+import { floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
@@ -19,7 +19,7 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
-import { CreditCard, Wrench, X, CheckCircle2, ChevronDown, Home } from 'lucide-vue-next';
+import { CreditCard, Wrench, X, CheckCircle2, Home } from 'lucide-vue-next';
 
 const { showToast } = useToast();
 const router = useRouter();
@@ -28,7 +28,6 @@ const submissionNotice = ref('');
 const activeBillId = ref<string | null>(null);
 
 const payingOnline = ref(false);
-const showOtherWaysToPay = ref(false);
 
 /**
  * Resident and assigned-unit data. Everything starts empty.
@@ -85,8 +84,6 @@ const tenantData = ref({
   dueBadgeText: '',
   dueDaysRemaining: '',
   dueDateRaw: '',
-  landladyGCash: LANDLADY.gcash,
-  landladyName: LANDLADY.name,
   verifiedAt: '',
   nextDueDateDisplay: '',
   /** The last day the recorded payments cover, and the first day they do not. */
@@ -570,7 +567,10 @@ const statusTone = computed(() => {
            cascade - 30ms apart, same rhythm as any other first-load list in
            this file - reads as one dashboard settling in rather than a jump
            cut from skeleton to content. -->
-      <OverviewTile tone="brand" title="Amount due" class="list-reveal-item md:col-span-2 xl:col-span-5" style="animation-delay: 0ms">
+      <OverviewTile tone="brand" title="Amount due" class="list-reveal-item order-1 md:order-none md:col-span-2 xl:col-span-5" style="animation-delay: 0ms">
+        <template v-if="!tenantDataLoadFailed && !isSettled" #actions>
+          <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
+        </template>
         <UnavailableNote
           v-if="tenantDataLoadFailed"
           dark
@@ -594,10 +594,7 @@ const statusTone = computed(() => {
               0px of overflow in every case, one line at 100%.
             -->
             <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl break-all">{{ peso(tenantData.totalAmountDue, 2) }}</p>
-            <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-on-brand-soft">
-              <StatusPill :tone="statusTone">{{ dueDateCountdown.label }}</StatusPill>
-              <span v-if="tenantData.dueDate">Due {{ tenantData.dueDate }}</span>
-            </div>
+            <p v-if="tenantData.dueDate" class="mt-3 text-sm text-on-brand-soft">Due {{ tenantData.dueDate }}</p>
             <p v-if="owedSummary" class="mt-3 text-sm leading-6 text-on-brand-soft">{{ owedSummary }}</p>
           </div>
           <div class="flex flex-col items-start gap-2">
@@ -606,15 +603,10 @@ const statusTone = computed(() => {
             <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand">
               {{ awaitingVerificationLine }}
             </p>
-            <template v-else>
-              <button type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
-                <CreditCard class="size-4" aria-hidden="true" />
-                {{ payingOnline ? 'Opening the payment page' : 'Pay with GCash' }}
-              </button>
-              <p class="text-xs leading-5 text-on-brand-soft">
-                Online payments go through Adyen. Each one counts as paid once the landlady verifies it.
-              </p>
-            </template>
+            <button v-else type="button" class="pill-btn-light" :disabled="payingOnline" @click="handlePayOnline">
+              <CreditCard class="size-4" aria-hidden="true" />
+              {{ payingOnline ? 'Opening the payment page' : 'Pay with GCash' }}
+            </button>
           </div>
         </template>
         <div v-else class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -662,41 +654,13 @@ const statusTone = computed(() => {
             {{ awaitingVerificationLine }}
           </p>
         </div>
-
-        <div class="mt-auto border-t border-white/20 pt-3">
-          <!--
-            `min-h-11`, not `py-1`. This full-width row was 28px tall, and it
-            is the disclosure that holds the landlady's GCash number - the
-            fallback a resident reaches for when the online payment will not
-            go through, which is exactly when they are on a phone.
-          -->
-          <button
-            type="button"
-            class="press flex min-h-11 w-full items-center justify-between gap-3 rounded-xl text-sm font-semibold cursor-pointer"
-            :aria-expanded="showOtherWaysToPay"
-            aria-controls="other-ways-to-pay"
-            @click="showOtherWaysToPay = !showOtherWaysToPay"
-          >
-            Other ways to pay
-            <ChevronDown
-              :class="['size-4 transition-transform duration-200 ease-[var(--ease-out)]', showOtherWaysToPay && 'rotate-180']"
-              aria-hidden="true"
-            />
-          </button>
-          <div v-show="showOtherWaysToPay" id="other-ways-to-pay" class="ws-reveal pt-2 text-sm leading-6 text-on-brand-soft">
-            <p>
-              Send a GCash transfer to <span class="font-semibold text-on-brand tabular">{{ tenantData.landladyGCash }}</span>,
-              account name {{ tenantData.landladyName }}, or pay the landlady in person.
-            </p>
-          </div>
-        </div>
       </OverviewTile>
 
       <OverviewTile
         :title="isSettled ? 'Latest bill' : 'Current bill'"
         to="/tenant/payments"
         to-label="Open payments and billing"
-        class="list-reveal-item xl:col-span-4"
+        class="list-reveal-item order-3 md:order-none xl:col-span-4"
         style="animation-delay: 30ms"
       >
         <UnavailableNote
@@ -757,7 +721,7 @@ const statusTone = computed(() => {
         </template>
       </OverviewTile>
 
-      <OverviewTile tone="night" title="Repairs" class="list-reveal-item xl:col-span-3" style="animation-delay: 60ms">
+      <OverviewTile tone="night" title="Repairs" class="list-reveal-item order-2 md:order-none xl:col-span-3" style="animation-delay: 60ms">
         <p class="text-sm leading-6 text-on-night-soft">
           Tell the landlady what needs fixing in your unit, then follow the request until it is done.
         </p>
@@ -771,7 +735,7 @@ const statusTone = computed(() => {
         title="Payments"
         to="/tenant/payments"
         to-label="Open payments and billing"
-        class="list-reveal-item md:col-span-2 xl:col-span-8"
+        class="list-reveal-item order-4 md:order-none md:col-span-2 xl:col-span-8"
         style="animation-delay: 90ms"
       >
         <UnavailableNote
@@ -871,7 +835,7 @@ const statusTone = computed(() => {
 
       <OverviewTile
         :title="tenantData.room || 'Your unit'"
-        class="list-reveal-item md:col-span-2 xl:col-span-4"
+        class="list-reveal-item order-5 md:order-none md:col-span-2 xl:col-span-4"
         style="animation-delay: 120ms"
       >
         <UnavailableNote
