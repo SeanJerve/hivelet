@@ -208,7 +208,7 @@ const rejectMessage = computed(() => {
   const p = rejectTarget.value;
   if (!p) return '';
   const unit = p.rooms?.room_number ? `, unit ${String(p.rooms.room_number).toUpperCase()}` : '';
-  return `${peso(Number(p.amount) || 0, 2)} from ${p.profiles?.full_name || 'this resident'}${unit}. ` +
+  return `${peso(Number(p.amount) || 0, 2)} from ${p.profiles?.full_name || 'this tenant'}${unit}. ` +
     'Nothing is added to the ledger and their bill stays due.';
 });
 
@@ -1163,7 +1163,7 @@ async function exportExcel() {
             id="income-search"
             v-model="q"
             type="search"
-            placeholder="Unit, resident or receipt number"
+            placeholder="Unit, tenant or receipt number"
             class="ws-input w-full pl-11"
           />
         </div>

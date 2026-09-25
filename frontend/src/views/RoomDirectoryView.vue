@@ -280,7 +280,7 @@ const statusChips = computed(() => [
             id="unit-search"
             v-model="q"
             type="search"
-            placeholder="Unit, resident or kind of unit"
+            placeholder="Unit, tenant or kind of unit"
             class="ws-input w-full pl-11"
           />
         </div>

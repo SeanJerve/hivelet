@@ -707,11 +707,11 @@ async function handleOnboard() {
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-          Residents
+          Tenants
         </h1>
         <!-- Blank, not "0 residents", until the list has loaded; min-h keeps the header still. -->
         <p class="mt-1 min-h-6 max-w-2xl text-sm leading-6 text-ink-soft">
-          <template v-if="hasLoadedOnce && !tenantsFetchFailed">{{ residentCount }} {{ residentCount === 1 ? 'resident' : 'residents' }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.</template>
+          <template v-if="hasLoadedOnce && !tenantsFetchFailed">{{ residentCount }} {{ residentCount === 1 ? 'tenant' : 'tenants' }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.</template>
         </p>
       </div>
 
@@ -753,7 +753,7 @@ async function handleOnboard() {
             class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
             aria-hidden="true"
           />
-          <label for="resident-search" class="sr-only">Search residents</label>
+          <label for="resident-search" class="sr-only">Search tenants</label>
           <input
             id="resident-search"
             v-model="q"
@@ -767,7 +767,7 @@ async function handleOnboard() {
         <div
           class="min-h-[2.75rem] h-11 inline-flex w-full items-center rounded-full bg-tile border border-line p-1 shadow-xs sm:w-auto sm:shrink-0"
           role="group"
-          aria-label="How to show the residents"
+          aria-label="How to show the tenants"
         >
           <button
             type="button"
@@ -836,7 +836,7 @@ async function handleOnboard() {
     -->
     <UnavailableNote
       v-else-if="tenantsFetchFailed"
-      message="The resident list could not be loaded."
+      message="The tenant list could not be loaded."
       @retry="fetchTenants"
     />
 
@@ -854,8 +854,8 @@ async function handleOnboard() {
       v-else-if="viewMode === 'list'"
       class="ws-reveal"
       :rows="rows"
-      caption="Residents, with unit, household, move-in date, deposit and standing"
-      noun="resident"
+      caption="Tenants, with unit, household, move-in date, deposit and standing"
+      noun="tenant"
       :cols="RESIDENT_TABLE_COLS"
       table-from="xl"
       empty-title="Nobody matches"
@@ -863,7 +863,7 @@ async function handleOnboard() {
     >
       <template #head>
         <tr>
-          <th scope="col">Resident</th>
+          <th scope="col">Tenant</th>
           <th scope="col">Unit</th>
           <th scope="col">Household</th>
           <th scope="col">Moved in</th>
@@ -1011,7 +1011,7 @@ async function handleOnboard() {
               <span class="text-[0.9375rem] font-semibold text-ink">{{ group.label }}</span>
             </span>
             <span class="tabular text-xs text-ink-soft">
-              {{ group.residents.length }} {{ group.residents.length === 1 ? 'resident' : 'residents' }}
+              {{ group.residents.length }} {{ group.residents.length === 1 ? 'tenant' : 'tenants' }}
             </span>
           </button>
         </h2>
@@ -1054,7 +1054,7 @@ async function handleOnboard() {
         <div class="hidden xl:block">
         <div class="ws-table-wrap">
           <table class="ws-table ws-table-fixed">
-            <caption class="sr-only">{{ group.label }} residents, with unit, household, move-in date, deposit and standing</caption>
+            <caption class="sr-only">{{ group.label }} tenants, with unit, household, move-in date, deposit and standing</caption>
             <!-- Fixed widths, the same as the list view's: one table per cluster,
                  each auto-sized to its own names, left the columns misaligned. -->
             <colgroup>
@@ -1062,7 +1062,7 @@ async function handleOnboard() {
             </colgroup>
             <thead>
               <tr>
-                <th scope="col">Resident</th>
+                <th scope="col">Tenant</th>
                 <th scope="col">Unit</th>
                 <th scope="col">Household</th>
                 <th scope="col">Moved in</th>
@@ -1151,7 +1151,7 @@ async function handleOnboard() {
             :total="group.residents.length"
             :remaining="residentsRemaining(group.key, group.residents.length)"
             :next-step="Math.min(8, residentsRemaining(group.key, group.residents.length)) || 8"
-            noun="resident"
+            noun="tenant"
             @more="showMoreResidents(group.key)"
             @all="showAllResidents(group.key, group.residents.length)"
           />
@@ -1247,7 +1247,7 @@ async function handleOnboard() {
               -->
               <PillSelect id="edit-unit" v-model="editUnitCode" :options="editUnitOptions" aria-label="Unit" widthClass="w-full" />
               <p v-if="editUnitCode === '—'" class="ws-hint">
-                This resident holds no unit. Pick one to assign them, or save to change the
+                This tenant holds no unit. Pick one to assign them, or save to change the
                 other details and leave them unassigned.
               </p>
             </div>
@@ -1333,7 +1333,7 @@ async function handleOnboard() {
     -->
     <ConfirmDialog
       v-if="vacateModalTenant"
-      title="Move this resident out"
+      title="Move this tenant out"
       confirm-label="Move them out"
       destructive
       :busy="isSubmitting"
@@ -1343,7 +1343,7 @@ async function handleOnboard() {
       @confirm="confirmVacate"
     >
       <p class="text-sm leading-6 text-ink-soft">
-        <strong class="text-ink">{{ vacateModalTenant.name }}</strong> can no longer use the resident portal,
+        <strong class="text-ink">{{ vacateModalTenant.name }}</strong> can no longer use the tenant portal,
         starting now, even if they are signed in. Unit
         <strong class="text-ink">{{ vacateModalTenant.unitCode }}</strong> becomes free to let.
       </p>

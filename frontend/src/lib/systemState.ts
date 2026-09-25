@@ -836,7 +836,7 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
             name: t.emergency_contact_name || '—',
             phone: t.emergency_contact_phone || '—'
           },
-          occupation: t.occupation || 'Resident',
+          occupation: t.occupation || 'Tenant',
           facebook: t.facebook_url || '',
           occupants: Number(activeAssignment?.occupant_count || 1),
           hasRoommates: Number(activeAssignment?.occupant_count || 1) > 1,
@@ -914,7 +914,7 @@ export function formatUnitOccupantsSummary(unitCode: string): { text: string; co
       const txt = rQty > 0 ? `${r.tenant} + ${rQty} ${rQty === 1 ? 'roommate' : 'roommates'}` : r.tenant;
       return { text: txt, count: occ, residents: [r.tenant] };
     }
-    return { text: 'No active residents', count: 0, residents: [] };
+    return { text: 'No active tenants', count: 0, residents: [] };
   }
 
   let totalCount = 0;
@@ -998,7 +998,7 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
           month: inc.month ? Number(inc.month) : (inc.date_paid ? Number(inc.date_paid.slice(5, 7)) : 1),
           datePaid: datePaidFormatted,
           rawDate: inc.date_paid || '',
-          contact: inc.contact_name || 'Resident',
+          contact: inc.contact_name || 'Tenant',
           /**
            * An OR number is a physical receipt in the landlady's book, so it is
            * never composed here.
@@ -1191,7 +1191,7 @@ export async function fetchMaintenanceTickets(): Promise<MaintenanceTicket[]> {
           technician: t.assigned_technician || 'Unassigned',
           status: statusMapped,
           photo: t.ticket_attachments?.[0]?.file_url || null,
-          tenantName: t.profiles?.full_name || 'Resident',
+          tenantName: t.profiles?.full_name || 'Tenant',
           tenantProfileId: t.tenant_profile_id
         };
       });

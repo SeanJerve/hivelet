@@ -400,7 +400,7 @@ function triggerRecord() {
         (mCovered > 1
           ? `Each of the ${mCovered} months is its own entry, with one month of water. `
           : '') +
-        `If the number of people is wrong, correct it on the resident's record.`
+        `If the number of people is wrong, correct it on the tenant's record.`
     );
   }
 

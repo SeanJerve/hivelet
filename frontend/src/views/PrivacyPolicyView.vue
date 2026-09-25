@@ -72,7 +72,7 @@ const sections = Object.values(S);
 </script>
 
 <template>
-  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-24" :sections="sections">
+  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-26" :sections="sections">
     <template #lead>
       <p>
         This policy explains what Hivelet, the system Mrs. {{ LANDLADY.name }} uses to run her
@@ -82,7 +82,7 @@ const sections = Object.values(S);
         rights over this information, and this page says how to use them.
       </p>
       <p>
-        How the site and the resident portal may be used is set out separately in the
+        How the site and the tenant portal may be used is set out separately in the
         <RouterLink to="/terms">terms of use</RouterLink>.
       </p>
     </template>
@@ -195,7 +195,7 @@ const sections = Object.values(S);
     <section :aria-labelledby="S.recipients.id">
       <h2 :id="S.recipients.id" tabindex="-1">{{ S.recipients.title }}</h2>
       <p>
-        Inside Hivelet, a resident sees only their own account, bills, payments and tickets, and
+        Inside Hivelet, a tenant sees only their own account, bills, payments and tickets, and
         only Mrs. Da Silva's account can open an inquiry. She sees every account, because running
         the property requires it. Outside Hivelet, these receive some of your information, and
         only for the purpose given:
@@ -276,7 +276,7 @@ const sections = Object.values(S);
       nothing in Hivelet deletes on a schedule today.
 
       ⚠ The first two need a deletion step before the site goes public - an
-      enquiry six months after its last message, and a former resident's phone,
+      enquiry six months after its last message, and a former tenant's phone,
       emergency contact and Facebook one month after move-out. Tracked for the
       backend. Whoever builds it: the INQUIRY_CREATE row in `audit_logs` holds
       the enquirer's name and IP address, the log is append-only (migration
@@ -291,7 +291,7 @@ const sections = Object.values(S);
           months after the last message about it, and then deleted.
         </li>
         <li>
-          <strong>When a resident moves out</strong>, the account is made inactive and can no
+          <strong>When a tenant moves out</strong>, the account is made inactive and can no
           longer sign in. Their phone number, emergency contact and Facebook page are kept for one
           month after move-out, and then removed.
         </li>
@@ -312,11 +312,11 @@ const sections = Object.values(S);
       <h2 :id="S.security.id" tabindex="-1">{{ S.security.title }}</h2>
       <ul>
         <li>Passwords are stored only in scrambled (hashed) form, so nobody, Mrs. Da Silva included, can read yours.</li>
-        <li>Every new resident account starts with a one-time password, which has to be replaced the first time it is used.</li>
+        <li>Every new tenant account starts with a one-time password, which has to be replaced the first time it is used.</li>
         <li>Five wrong passwords in a row lock an account for 15 minutes.</li>
         <li>
           Your browser never reads the database directly. Every request goes through Hivelet's
-          server, which checks who is asking and lets a resident reach only their own records.
+          server, which checks who is asking and lets a tenant reach only their own records.
         </li>
         <li>Payment details stay with Adyen.</li>
         <li>The activity record shows who changed what, and cannot be edited.</li>
@@ -341,7 +341,7 @@ const sections = Object.values(S);
       <p>
         To use any of them, contact Mrs. Da Silva by phone on
         <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a> or in person at the address
-        above. Residents can already see their bills, payments and tickets in the portal, and
+        above. Tenants can already see their bills, payments and tickets in the portal, and
         correct their own phone number, emergency contact, occupation and Facebook page on the My
         details screen. For anything else, including your name, ask her.
       </p>

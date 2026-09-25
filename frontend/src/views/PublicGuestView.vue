@@ -108,8 +108,8 @@ const FAQS = computed(() => [
     q: 'What do I need to move in?',
     a:
       cheapestRent.value !== null
-        ? `A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. Our cheapest unit is ₱${cheapestRent.value.toLocaleString('en-PH')} a month, so that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} to bring on the day; for any other unit it is twice that unit's rent. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.`
-        : 'A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit, so twice the monthly rent of the unit you take. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
+        ? `A valid government or student ID, the tenant registration form, and two months of money: one month of rent in advance, and one month as a deposit. Our cheapest unit is ₱${cheapestRent.value.toLocaleString('en-PH')} a month, so that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} to bring on the day; for any other unit it is twice that unit's rent. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.`
+        : 'A valid government or student ID, the tenant registration form, and two months of money: one month of rent in advance, and one month as a deposit, so twice the monthly rent of the unit you take. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
   },
   {
     q: 'Are visitors and guests allowed inside the rooms?',

@@ -150,7 +150,7 @@ const editVisibility = ref<'Published' | 'Hidden'>('Published');
 const isSaving = ref(false);
 
 const occupantsSummary = computed(() => {
-  if (!unit.value) return { text: 'No active residents', count: 0, residents: [] };
+  if (!unit.value) return { text: 'No active tenants', count: 0, residents: [] };
   return formatUnitOccupantsSummary(unit.value.unitCode);
 });
 

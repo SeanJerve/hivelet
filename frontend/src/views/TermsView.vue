@@ -45,7 +45,7 @@ import { LANDLADY } from '@/lib/systemState';
 const S = {
   about: { id: 'about', title: 'About these terms' },
   site: { id: 'site', title: 'Units, rates and availability' },
-  accounts: { id: 'accounts', title: 'Resident accounts' },
+  accounts: { id: 'accounts', title: 'Tenant accounts' },
   payments: { id: 'payments', title: 'Paying online' },
   tickets: { id: 'tickets', title: 'Maintenance tickets and messages' },
   use: { id: 'use', title: 'Acceptable use' },
@@ -59,10 +59,10 @@ const sections = Object.values(S);
 </script>
 
 <template>
-  <LegalPage title="Terms of use" effective="2026-09-24" updated="2026-09-24" :sections="sections">
+  <LegalPage title="Terms of use" effective="2026-09-24" updated="2026-09-26" :sections="sections">
     <template #lead>
       <p>
-        These terms cover this website and its resident portal, both run on Hivelet, the system
+        These terms cover this website and its tenant portal, both run on Hivelet, the system
         Mrs. {{ LANDLADY.name }} uses to manage the {{ LANDLADY.property }}. What happens to the
         information you give is set out in the
         <RouterLink to="/privacy">privacy policy</RouterLink>.
@@ -97,7 +97,7 @@ const sections = Object.values(S);
       <h2 :id="S.accounts.id" tabindex="-1">{{ S.accounts.title }}</h2>
       <p>
         There is no public sign-up. Accounts are created by the landlady: Mrs. Da Silva sets one up
-        for a resident when they move in, and makes it inactive when they move out, after which it
+        for a tenant when they move in, and makes it inactive when they move out, after which it
         can no longer sign in.
       </p>
       <ul>
@@ -161,7 +161,7 @@ const sections = Object.values(S);
       <h2 :id="S.use.id" tabindex="-1">{{ S.use.title }}</h2>
       <p>Please do not:</p>
       <ul>
-        <li>try to reach another resident's information, or any part of the site your account is not for;</li>
+        <li>try to reach another tenant's information, or any part of the site your account is not for;</li>
         <li>interfere with the site, probe its security, or overload it, including by sending the same inquiry repeatedly;</li>
         <li>give false information, or register interest in someone else's name; or</li>
         <li>use the site for anything unlawful.</li>

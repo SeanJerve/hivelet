@@ -521,7 +521,7 @@ onUnmounted(() => {
                     </p>
                     <p class="truncate text-xs text-ink-soft">{{ currentUser.email }}</p>
                     <p class="mt-1 text-xs font-semibold text-brand">
-                      {{ isTenant ? 'Resident' : 'Owner' }}
+                      {{ isTenant ? 'Tenant' : 'Owner' }}
                     </p>
                   </div>
                 </div>

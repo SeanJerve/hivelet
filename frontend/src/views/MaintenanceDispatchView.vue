@@ -243,7 +243,7 @@ async function handleSendAdminComment() {
     if (res) {
       ticketMessages.value.push(res);
       newAdminMessage.value = '';
-      showToast('success', 'Message sent', 'The resident has been notified.');
+      showToast('success', 'Message sent', 'The tenant has been notified.');
     }
   } catch (err: any) {
     showToast('error', 'Message not sent', err?.message || 'Please try again.');
@@ -435,7 +435,7 @@ function handleDeleteTicketPrompt() {
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">Repairs</h1>
         <p class="mt-1 text-sm text-ink-soft">
-          What residents have reported, who is attending it, and what is finished.
+          What tenants have reported, who is attending it, and what is finished.
         </p>
       </div>
     </header>
@@ -671,7 +671,7 @@ function handleDeleteTicketPrompt() {
           <!-- Resident Photo Attachment (if present) -->
           <div v-if="editingTicket?.photo" class="space-y-1.5 pt-2 border-t border-line">
             <p class="font-semibold text-xs text-ink-soft">
-              Photo from the resident
+              Photo from the tenant
             </p>
             <div class="flex flex-col items-center rounded-2xl bg-canvas p-3">
               <a :href="editingTicket.photo" target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-lg">
@@ -686,7 +686,7 @@ function handleDeleteTicketPrompt() {
                 -->
                 <img
                   :src="editingTicket.photo"
-                  alt="Photo the resident attached"
+                  alt="Photo the tenant attached"
                   :class="[
                     'max-h-52 w-auto object-contain rounded-lg transition-[opacity,transform] duration-300 ease-[var(--ease-out)] motion-safe:group-hover:scale-[1.02]',
                     photoLoaded ? 'opacity-100' : 'opacity-0',
@@ -701,7 +701,7 @@ function handleDeleteTicketPrompt() {
           <!-- Resident Communication Dialogue Stream -->
           <div class="pt-3 border-t border-line space-y-2">
             <p class="font-semibold text-xs text-ink-soft">
-              Messages with the resident
+              Messages with the tenant
             </p>
 
             <!-- Message Stream Box -->
@@ -723,7 +723,7 @@ function handleDeleteTicketPrompt() {
                   :class="[ 'max-w-[85%] rounded-xl px-3 py-1.5 text-xs', msg.profiles?.role === 'admin' ? 'bg-night text-on-night' : 'bg-tile border border-line text-ink' ]"
                 >
                   <p class="font-semibold text-xs opacity-75 mb-0.5">
-                    {{ msg.profiles?.role === 'admin' ? 'You' : (msg.profiles?.full_name || 'Resident') }}
+                    {{ msg.profiles?.role === 'admin' ? 'You' : (msg.profiles?.full_name || 'Tenant') }}
                   </p>
                   <!-- The resident's own words: a pasted link or a long run with no
                        spaces must wrap inside the bubble, not run out of it. -->
@@ -737,12 +737,12 @@ function handleDeleteTicketPrompt() {
 
             <!-- Quick Comment Box -->
             <div class="flex gap-2">
-              <label for="dispatch-reply" class="sr-only">Write back to the resident</label>
+              <label for="dispatch-reply" class="sr-only">Write back to the tenant</label>
               <input
                 id="dispatch-reply"
                 v-model="newAdminMessage"
                 @keydown.enter.prevent="handleSendAdminComment"
-                placeholder="Write back to the resident"
+                placeholder="Write back to the tenant"
                 class="ws-input flex-1"
               />
               <button

@@ -965,7 +965,7 @@ router.post(
         throw ApiError.internal(
           `${fullName} was created, but could not be assigned to ${room.room_number}: ` +
           (clash
-            ? `unit ${room.room_number} already has an active resident - somebody was ` +
+            ? `unit ${room.room_number} already has an active tenant - somebody was ` +
               'moved in while this form was open.'
             : assignError.message) +
           ' The person is on file - assign the unit from their record rather than adding them ' +
@@ -1173,7 +1173,7 @@ router.patch(
           // A stale tenancy from an inactive tenant; closed below, once nothing can refuse.
           staleTenancies.push(a.id);
         } else {
-          throw ApiError.badRequest(`Unit ${movingInto.toUpperCase()} is already occupied by active tenant ${prof?.full_name || 'another resident'}.`);
+          throw ApiError.badRequest(`Unit ${movingInto.toUpperCase()} is already occupied by active tenant ${prof?.full_name || 'another tenant'}.`);
         }
       }
     }
@@ -1273,7 +1273,7 @@ router.patch(
         // unit, not a 500 naming the constraint.
         if (uniqueViolationOn(assignError, 'idx_single_active_assignment_per_room')) {
           throw ApiError.conflict(
-            `Unit ${movingInto.toUpperCase()} already has an active resident - somebody was ` +
+            `Unit ${movingInto.toUpperCase()} already has an active tenant - somebody was ` +
             'moved in while this was open. Reload the resident list and try again.'
           );
         }
@@ -1555,7 +1555,7 @@ router.patch(
         throw ApiError.conflict(
           `${before.prospect_name || 'This enquiry'} has already been moved in, and an enquiry ` +
           'can only become one tenancy. Linking it to a different resident would erase the ' +
-          'record of which enquiry that first resident came from. If you are moving somebody ' +
+          'record of which enquiry that first tenant came from. If you are moving somebody ' +
           'else in, go to Residents and add them there instead of starting from this enquiry.'
         );
       }
@@ -3743,9 +3743,9 @@ router.post(
     }
 
     if (!tenantProfileId) {
-      throw ApiError.validation('That unit has no resident on record.', {
+      throw ApiError.validation('That unit has no tenant on record.', {
         roomNumber: [
-          'A repair is filed against the resident of the unit, and this one has nobody in it. ' +
+          'A repair is filed against the tenant of the unit, and this one has nobody in it. ' +
             'Assign the tenancy first, or raise the repair once someone has moved in.',
         ],
       });

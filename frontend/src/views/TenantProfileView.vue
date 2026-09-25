@@ -60,7 +60,7 @@ const errorNotice = ref('');
 
 /** First and last name, as the header's avatar does: "Ana Marie Bonto" is AB there, not AM. */
 const initials = computed(() => {
-  const name = form.value.full_name || currentUser.value?.fullName || 'Resident';
+  const name = form.value.full_name || currentUser.value?.fullName || 'Tenant';
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const picked = parts.length >= 2 ? [parts[0], parts[parts.length - 1]] : parts;
   return picked.map((p) => p[0]?.toUpperCase() || '').join('') || 'T';
