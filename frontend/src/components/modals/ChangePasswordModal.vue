@@ -206,7 +206,7 @@ async function submit() {
           autocomplete="current-password"
           :class="['ws-input', currentPasswordError && 'border-overdue']"
           :aria-invalid="currentPasswordError ? 'true' : undefined"
-          aria-describedby="cp-current-error"
+          :aria-describedby="currentPasswordError ? 'cp-current-error' : undefined"
           @input="currentPasswordError = ''"
         />
         <span v-if="currentPasswordError" id="cp-current-error" class="ws-reveal text-sm text-overdue">
@@ -294,8 +294,10 @@ async function submit() {
           :type="reveal ? 'text' : 'password'"
           autocomplete="new-password"
           class="ws-input"
+          :aria-invalid="confirmPassword.length > 0 && !matches ? 'true' : undefined"
+          :aria-describedby="confirmPassword.length > 0 && !matches ? 'cp-confirm-error' : undefined"
         />
-        <span v-if="confirmPassword.length > 0 && !matches" class="ws-reveal text-sm text-overdue">
+        <span v-if="confirmPassword.length > 0 && !matches" id="cp-confirm-error" class="ws-reveal text-sm text-overdue">
           The two passwords do not match.
         </span>
       </label>

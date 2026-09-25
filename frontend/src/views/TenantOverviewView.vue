@@ -10,7 +10,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
-import { LANDLADY } from '@/lib/systemState';
+import { LANDLADY, floorLabelFor } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useToast } from '@/lib/useToast';
@@ -94,6 +94,8 @@ const tenantData = ref({
   unbilledFromDisplay: '',
   /** `amount_pending` on the bill shown: money sent that she has not verified. */
   activeBillPending: 0,
+  /** `amount_paid` on the bill shown, so a partly paid bill's balance adds up on screen. */
+  activeBillPaid: 0,
 });
 
 /**
@@ -373,6 +375,7 @@ async function fetchTenantData() {
       : '';
     tenantData.value.unbilledFromDisplay = '';
     tenantData.value.verifiedAt = '';
+    tenantData.value.activeBillPaid = 0;
     owedSummary.value = '';
 
     if (unpaidBill) {
@@ -389,6 +392,7 @@ async function fetchTenantData() {
       tenantData.value.dueDateRaw = unpaidBill.due_date;
       tenantData.value.nextDueDateDisplay = '';
       tenantData.value.activeBillPending = Number(unpaidBill.amount_pending) || 0;
+      tenantData.value.activeBillPaid = Number(unpaidBill.amount_paid) || 0;
     } else if (standing && standing.owedPeriods.length > 0) {
       // Owed, but no bill raised yet. The checkout raises the OLDEST owed period.
       const first = standing.owedPeriods[0]!;
@@ -527,8 +531,9 @@ const statusTone = computed(() => {
       <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight break-words">
         Good {{ partOfDay }}<template v-if="firstName">, {{ firstName }}</template>
       </h1>
-      <p v-if="tenantData.room" class="mt-1 text-sm text-ink-soft">
-        {{ tenantData.room }}<template v-if="tenantData.floor">, floor {{ tenantData.floor }}</template>
+      <!-- Held open while loading so the tiles do not drop when the unit arrives. -->
+      <p v-if="tenantData.room || loading" class="mt-1 min-h-5 text-sm text-ink-soft">
+        {{ tenantData.room }}<template v-if="tenantData.floor">, {{ floorLabelFor(tenantData.floor) }}</template>
       </p>
     </header>
 
@@ -549,9 +554,9 @@ const statusTone = computed(() => {
     <div v-if="loading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading your account</span>
       <div
-        v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8']"
+        v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8', 'md:col-span-2 xl:col-span-4']"
         :key="i"
-        :class="['rounded-tile bg-tile p-6 flex flex-col gap-4', span]"
+        :class="['rounded-tile bg-tile p-6 flex flex-col gap-4 min-h-64', span]"
       >
         <Skeleton class-name="h-4 w-28 rounded-full" />
         <Skeleton class-name="h-12 w-40 rounded-2xl" />
@@ -737,6 +742,10 @@ const statusTone = computed(() => {
               </dt>
               <dd class="font-semibold tabular">{{ peso(tenantData.waterFee) }}</dd>
             </div>
+            <div v-if="!isSettled && tenantData.activeBillPaid > 0" class="flex items-baseline justify-between gap-3 py-2.5">
+              <dt>Already paid</dt>
+              <dd class="font-semibold tabular">{{ peso(tenantData.activeBillPaid, 2) }}</dd>
+            </div>
             <div v-if="!isSettled" class="flex items-baseline justify-between gap-3 py-2.5">
               <dt class="font-semibold">Still to pay</dt>
               <dd class="text-lg font-semibold tabular">{{ peso(tenantData.totalAmountDue, 2) }}</dd>
@@ -897,12 +906,12 @@ const statusTone = computed(() => {
                nothing to a resident, about a place they already live in. -->
           <dl class="grid grid-cols-3 gap-x-4 gap-y-3 text-sm">
             <div>
-              <dt class="text-xs text-ink-faint">Room type</dt>
+              <dt class="text-xs text-ink-faint">Type</dt>
               <dd class="font-medium">{{ tenantData.roomDetails || 'Not on file' }}</dd>
             </div>
             <div>
               <dt class="text-xs text-ink-faint">Floor</dt>
-              <dd class="font-medium">{{ tenantData.floor || 'Not on file' }}</dd>
+              <dd class="font-medium">{{ tenantData.floor ? floorLabelFor(tenantData.floor) : 'Not on file' }}</dd>
             </div>
             <div>
               <dt class="text-xs text-ink-faint">Occupants</dt>

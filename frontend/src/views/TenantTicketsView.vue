@@ -86,6 +86,8 @@ const ticketNotice = ref('');
  */
 const ticketNoticeEl = ref<HTMLElement | null>(null);
 const ticketError = ref('');
+/** Which field the error is about, so it is tied to that field and focus goes there. */
+const ticketErrorField = ref<'ticket-title' | 'ticket-desc' | null>(null);
 const submitting = ref(false);
 
 // ---- Ticket list state ----------------------------------------------------
@@ -494,13 +496,18 @@ async function handleTicketSubmit() {
   // next render still reaches here with the button not yet visibly disabled.
   if (submitting.value) return;
   ticketError.value = '';
+  ticketErrorField.value = null;
 
   if (!ticketTitle.value.trim() || ticketTitle.value.trim().length < 3) {
-    ticketError.value = 'Please enter an issue title of at least 3 characters.';
+    ticketError.value = 'Say what needs fixing in at least 3 characters.';
+    ticketErrorField.value = 'ticket-title';
+    document.getElementById('ticket-title')?.focus();
     return;
   }
   if (!ticketDescription.value.trim() || ticketDescription.value.trim().length < 5) {
-    ticketError.value = 'Please describe the maintenance issue in more detail.';
+    ticketError.value = 'Add a few more words to the details.';
+    ticketErrorField.value = 'ticket-desc';
+    document.getElementById('ticket-desc')?.focus();
     return;
   }
 
@@ -637,6 +644,7 @@ function formatDateTime(iso: string) {
             <div class="space-y-4">
               <div
                 v-if="ticketError"
+                id="ticket-error"
                 class="ws-reveal flex items-start gap-2.5 rounded-2xl bg-overdue-soft p-4"
                 role="alert"
               >
@@ -655,6 +663,9 @@ function formatDateTime(iso: string) {
                   placeholder="e.g. Bathroom sink pipe leak"
                   class="ws-input"
                   required
+                  :aria-invalid="ticketErrorField === 'ticket-title' || undefined"
+                  :aria-describedby="ticketErrorField === 'ticket-title' ? 'ticket-error' : undefined"
+                  @input="ticketErrorField === 'ticket-title' && (ticketErrorField = null)"
                 />
               </div>
 
@@ -697,6 +708,9 @@ function formatDateTime(iso: string) {
                   placeholder="Where it is in the unit, when it started, and how bad it is."
                   class="ws-textarea w-full"
                   required
+                  :aria-invalid="ticketErrorField === 'ticket-desc' || undefined"
+                  :aria-describedby="ticketErrorField === 'ticket-desc' ? 'ticket-error' : undefined"
+                  @input="ticketErrorField === 'ticket-desc' && (ticketErrorField = null)"
                 ></textarea>
               </div>
 
@@ -1048,7 +1062,7 @@ function formatDateTime(iso: string) {
                   <div
                     :class="[ 'size-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors', index <= getStageIndex(activeTimelineTicket.status) ? 'bg-brand border-brand text-on-brand' : 'bg-tile border-line text-ink-soft' ]"
                   >
-                    <CheckCircle2 v-if="index <= getStageIndex(activeTimelineTicket.status)" class="size-4" />
+                    <CheckCircle2 v-if="index <= getStageIndex(activeTimelineTicket.status)" class="size-4" aria-hidden="true" />
                     <span v-else class="text-xs font-semibold">{{ index + 1 }}</span>
                   </div>
                   <div

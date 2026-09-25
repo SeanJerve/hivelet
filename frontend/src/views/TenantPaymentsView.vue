@@ -681,7 +681,7 @@ function refreshAll() {
       >
         <div>
           <!-- The balance, not the debt as issued. BR-013. -->
-          <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(billBalance(bill), 2) }}</p>
+          <p class="text-4xl leading-none font-semibold tabular tracking-tight break-all">{{ peso(billBalance(bill), 2) }}</p>
           <p class="mt-2 text-sm text-on-brand-soft">
             Due {{ new Date(bill.due_date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE }) }}
           </p>
@@ -706,7 +706,7 @@ function refreshAll() {
                it (BR-017), and it is stated here so the balance is not read as a
                bill that never arrived. -->
           <div v-if="billPending(bill) > 0" class="flex items-baseline justify-between gap-3">
-            <dt>Sent, waiting for her to check it</dt>
+            <dt>Sent, waiting for verification</dt>
             <dd class="tabular text-on-brand">{{ peso(billPending(bill), 2) }}</dd>
           </div>
         </dl>
