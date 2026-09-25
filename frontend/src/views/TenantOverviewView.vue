@@ -495,9 +495,16 @@ function handlePayOnline() {
  * mocked-API harness). `amount_pending` is the exact figure that guard sums;
  * any pending row in `/tenant/my-payments` is the wider net for the no-bill
  * path, which cannot say in advance which bill it will resolve.
+ *
+ * The wider net applies ONLY when no bill is raised. With a bill, the checkout
+ * refuses that bill alone (`refuseIfPaymentPending(bill.id)`), so a payment
+ * waiting on some other bill hid a button the server would accept, while the
+ * Payments screen, which follows the per-bill rule, showed it.
  */
-const paymentAwaitingVerification = computed(
-  () => tenantData.value.activeBillPending > 0 || pendingOnlinePayments.value.length > 0
+const paymentAwaitingVerification = computed(() =>
+  activeBillId.value
+    ? tenantData.value.activeBillPending > 0
+    : pendingOnlinePayments.value.length > 0
 );
 
 const awaitingVerificationLine =
@@ -886,21 +893,19 @@ const statusTone = computed(() => {
               <Home class="size-6 text-brand" aria-hidden="true" />
             </div>
           </div>
-          <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <!-- No "Building" row: it showed the cluster code ("BH"), which means
+               nothing to a resident, about a place they already live in. -->
+          <dl class="grid grid-cols-3 gap-x-4 gap-y-3 text-sm">
             <div>
               <dt class="text-xs text-ink-faint">Room type</dt>
               <dd class="font-medium">{{ tenantData.roomDetails || 'Not on file' }}</dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Building</dt>
-              <dd class="font-medium">{{ tenantData.roomType || 'Not on file' }}</dd>
             </div>
             <div>
               <dt class="text-xs text-ink-faint">Floor</dt>
               <dd class="font-medium">{{ tenantData.floor || 'Not on file' }}</dd>
             </div>
             <div>
-              <dt class="text-xs text-ink-faint">Registered occupants</dt>
+              <dt class="text-xs text-ink-faint">Occupants</dt>
               <dd class="font-medium">{{ tenantData.occupants || 'Not on file' }}</dd>
             </div>
           </dl>
