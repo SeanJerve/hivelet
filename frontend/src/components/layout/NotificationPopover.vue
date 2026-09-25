@@ -205,7 +205,11 @@ function onKeyDown(e: KeyboardEvent) {
 
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
-  if (e.shiftKey && document.activeElement === first) {
+  // The panel itself holds focus on open; Shift+Tab from it went back to the bell with the panel still open.
+  if (document.activeElement === panel.value) {
+    e.preventDefault();
+    (e.shiftKey ? last : first).focus();
+  } else if (e.shiftKey && document.activeElement === first) {
     e.preventDefault();
     last.focus();
   } else if (!e.shiftKey && document.activeElement === last) {
@@ -242,7 +246,9 @@ onUnmounted(() => {
 
 <template>
   <div v-if="isPopoverOpen" class="ws-focus">
-    <div class="notif-backdrop fixed inset-0 z-40 bg-night/30 sm:hidden" aria-hidden="true" />
+    <!-- `h-dvh`, not `inset-0`: the blurred header is this fixed layer's
+         containing block, so `inset-0` dimmed only the 64px header strip. -->
+    <div class="notif-backdrop fixed inset-x-0 top-0 z-40 h-dvh bg-night/30 sm:hidden" aria-hidden="true" />
 
     <!--
       This panel opened and closed as a hard `v-if` cut, the one surface the

@@ -140,9 +140,9 @@ const ADMIN_NAV = computed(() => [
 
 const TENANT_NAV = computed(() => [
   { to: '/tenant', aliases: ['/tenant/overview'], label: 'Unit Overview', icon: Home, badge: null, badgeColor: '' },
-  { to: '/tenant/payments', aliases: [], label: 'Payment & Billing', icon: CreditCard, badge: null, badgeColor: '' },
+  { to: '/tenant/payments', aliases: [], label: 'Payments & Billing', icon: CreditCard, badge: null, badgeColor: '' },
   { to: '/tenant/tickets', aliases: [], label: 'Maintenance Tickets', icon: Wrench, badge: null, badgeColor: '' },
-  { to: '/tenant/profile', aliases: [], label: 'My Profile', icon: UserCheck, badge: null, badgeColor: '' },
+  { to: '/tenant/profile', aliases: [], label: 'My Details', icon: UserCheck, badge: null, badgeColor: '' },
 ]);
 
 const activeNav = computed(() => isTenantSection.value ? TENANT_NAV.value : ADMIN_NAV.value);
@@ -384,7 +384,7 @@ onBeforeUnmount(() => {
                   class="icon-btn"
                   aria-label="Close menu"
                 >
-                  <X class="size-5" />
+                  <X class="size-5" aria-hidden="true" />
                 </button>
               </div>
 

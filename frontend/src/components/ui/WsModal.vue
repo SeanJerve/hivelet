@@ -75,6 +75,37 @@ const widths = {
   xl: 'max-w-5xl',
 };
 
+// `:not([tabindex="-1"])` on every kind: a PillSelect's open options are
+// buttons at -1, and the browser's own Tab never lands on them either.
+function focusables(): HTMLElement[] {
+  if (!panel.value) return [];
+  return [...panel.value.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
+  )].filter((el) => el.offsetParent !== null && el.getAttribute('tabindex') !== '-1');
+}
+
+/**
+ * Tab and Escape when focus is NOT inside the dialog. The listener above sits
+ * on the overlay, so it hears nothing once focus has fallen to `<body>` - which
+ * is what happens when the focused button disables itself (ConfirmDialog while
+ * busy). After a failed request Escape then did nothing and Tab walked into the
+ * page behind. Only the topmost open dialog answers.
+ */
+function onDocumentKeydown(e: KeyboardEvent) {
+  if (e.defaultPrevented || (e.key !== 'Tab' && e.key !== 'Escape')) return;
+  if (overlay.value?.contains(document.activeElement)) return;
+  const open = document.querySelectorAll('.ws-modal-overlay:not([aria-hidden="true"])');
+  if (open[open.length - 1] !== overlay.value) return;
+  if (e.key === 'Escape') {
+    if (!props.dismissible || props.mandatory) return;
+    emit('close');
+    return;
+  }
+  e.preventDefault();
+  const focusable = focusables();
+  (focusable.length ? focusable[e.shiftKey ? focusable.length - 1 : 0] : panel.value)?.focus();
+}
+
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
     if (!props.dismissible || props.mandatory) return;
@@ -102,11 +133,7 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key !== 'Tab' || !panel.value || !panel.value.contains(document.activeElement)) return;
   e.stopPropagation();
 
-  // `:not([tabindex="-1"])` on every kind: a PillSelect's open options are
-  // buttons at -1, and the browser's own Tab never lands on them either.
-  const focusable = [...panel.value.querySelectorAll<HTMLElement>(
-    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
-  )].filter((el) => el.offsetParent !== null && el.getAttribute('tabindex') !== '-1');
+  const focusable = focusables();
   if (focusable.length === 0) return;
 
   const first = focusable[0];
@@ -139,6 +166,7 @@ onMounted(async () => {
    * two counters that cannot see each other, whichever closes last winning.
    */
   lockBodyScroll();
+  document.addEventListener('keydown', onDocumentKeydown);
   await nextTick();
   /**
    * Focus goes to the dialog itself, which is named by its heading, not to its
@@ -207,9 +235,13 @@ function leaveGhost(): void {
 
 onBeforeUnmount(() => {
   leaveGhost();
+  document.removeEventListener('keydown', onDocumentKeydown);
   // Only the last holder to let go releases the page behind it.
   unlockBodyScroll();
-  previouslyFocused?.focus?.();
+  // The opener can be gone by now (a row re-rendered after a save); land on
+  // the page content rather than `<body>`, which restarts Tab at the skip link.
+  if (previouslyFocused?.isConnected) previouslyFocused.focus();
+  else document.getElementById('main')?.focus({ preventScroll: true });
 });
 </script>
 

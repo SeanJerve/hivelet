@@ -962,6 +962,13 @@ html:has(> body[style*='overflow: hidden']) {
     outline: none;
     border-color: var(--brand);
   }
+  /* A field the form has marked invalid. `border-overdue` on the element lost
+     to the base rule above, so no error border ever showed. */
+  .ws-input[aria-invalid='true'],
+  .ws-textarea[aria-invalid='true'],
+  .ws-select[aria-invalid='true'] {
+    border-color: var(--overdue);
+  }
   .ws-input::placeholder,
   .ws-textarea::placeholder {
     color: var(--ink-faint);

@@ -173,6 +173,12 @@ function onProfileKeyDown(e: KeyboardEvent) {
   }
 }
 
+// Tab past "Sign out" left the menu open over the page it had moved on to.
+function onProfileFocusOut(e: FocusEvent) {
+  const next = e.relatedTarget as Node | null;
+  if (next && !profileMenu.value?.contains(next)) closeProfileMenu();
+}
+
 function onProfilePointerDown(e: PointerEvent) {
   if (!isProfilePopoverOpen.value) return;
   const target = e.target as Node;
@@ -289,7 +295,7 @@ onUnmounted(() => {
           :aria-expanded="isMobileSidebarOpen"
           aria-controls="workspace-mobile-nav"
         >
-          <Menu class="size-5" />
+          <Menu class="size-5" aria-hidden="true" />
         </button>
 
         <!--
@@ -308,7 +314,7 @@ onUnmounted(() => {
           :aria-expanded="isMobilePublicNavOpen"
           aria-controls="public-mobile-nav"
         >
-          <Menu class="size-5" />
+          <Menu class="size-5" aria-hidden="true" />
         </button>
 
         <!--
@@ -350,7 +356,7 @@ onUnmounted(() => {
               to="/inquire"
               class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
             >
-              Inquire Now
+              Inquire now
             </RouterLink>
             <template v-if="!isAuthenticated">
               <span aria-hidden="true" class="pr-2 text-white">,</span>
@@ -358,7 +364,7 @@ onUnmounted(() => {
                 to="/login"
                 class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
               >
-                Sign In
+                Sign in
               </RouterLink>
             </template>
           </div>
@@ -370,7 +376,7 @@ onUnmounted(() => {
               to="/inquire"
               class="press inline-flex min-h-11 items-center px-3.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-tile cursor-pointer"
             >
-              Inquire Now
+              Inquire now
             </RouterLink>
           </div>
         </template>
@@ -453,7 +459,9 @@ onUnmounted(() => {
           </div>
 
           <!-- The account menu. Opens on click; see the note in the script. -->
-          <div ref="profileMenu" class="ws-focus relative py-1">
+          <!-- A disclosure, not `aria-haspopup`: that promises an ARIA menu
+               with arrow-key movement, and these are plain links and buttons. -->
+          <div ref="profileMenu" class="ws-focus relative py-1" @focusout="onProfileFocusOut">
             <button
               data-account-trigger
               @click="isProfilePopoverOpen = !isProfilePopoverOpen"
@@ -461,7 +469,7 @@ onUnmounted(() => {
               :class="isLandingPage ? 'hover:bg-white/10' : 'hover:bg-tile/80'"
               :aria-label="`Account menu for ${isTenant ? currentUser.fullName : 'the administrator'}`"
               :aria-expanded="isProfilePopoverOpen"
-              aria-haspopup="true"
+              aria-controls="account-menu"
             >
               <span
                 class="grid size-9 place-items-center rounded-full bg-brand text-xs font-semibold text-on-brand"
@@ -496,6 +504,7 @@ onUnmounted(() => {
             >
               <div
                 v-if="isProfilePopoverOpen"
+                id="account-menu"
                 class="absolute right-0 top-14 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
               >
                 <!-- Who is signed in, read left to right like everything else. -->
@@ -583,7 +592,7 @@ onUnmounted(() => {
             class="pill-btn-brand"
           >
             <LogIn class="size-3.5 text-white" />
-            <span>Sign In</span>
+            <span>Sign in</span>
           </router-link>
         </template>
 
@@ -632,7 +641,7 @@ onUnmounted(() => {
           @click="isMobilePublicNavOpen = false"
           class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
         >
-          Inquire Now
+          Inquire now
         </RouterLink>
         <RouterLink
           v-if="!isAuthenticated"
@@ -640,7 +649,7 @@ onUnmounted(() => {
           @click="isMobilePublicNavOpen = false"
           class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
         >
-          Sign In
+          Sign in
         </RouterLink>
         <RouterLink
           v-else

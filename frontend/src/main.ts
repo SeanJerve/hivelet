@@ -34,10 +34,17 @@ import './index.css'
  */
 setAuthFailureHandler(() => {
   handleAuthFailure()
-  if (router.currentRoute.value.path === '/login') return
+  const current = router.currentRoute.value
+  if (current.path === '/login') return
+  // Only a page that needs a sign-in sends you to one. A stale token on a public
+  // page, or on the very first load (no route resolved yet, so no `meta.roles`),
+  // just clears the session; the router's own guard still sends anyone headed
+  // for a protected page to /login. It used to bounce a visitor with an expired
+  // token from the landing page to "Sign in".
+  if (!current.meta.roles) return
   router.push({
     path: '/login',
-    query: { redirect: router.currentRoute.value.fullPath },
+    query: { redirect: current.fullPath },
   })
 })
 
@@ -51,14 +58,14 @@ setAuthFailureHandler(() => {
  */
 const PAGE_TITLES: Record<string, string> = {
   PublicGuest: 'Fe Galang Da Silva Boarding House, Legazpi City',
-  Inquire: 'Register interest',
+  Inquire: 'Send an inquiry',
   PrivacyPolicy: 'Privacy policy',
   Terms: 'Terms of use',
   Login: 'Sign in',
   TenantOverview: 'Unit overview',
-  TenantPayments: 'Payment and billing',
+  TenantPayments: 'Payments and billing',
   TenantTickets: 'Maintenance tickets',
-  TenantProfile: 'My profile',
+  TenantProfile: 'My details',
   AdminOverview: 'Executive overview',
   RoomDirectory: 'Room and rate directory',
   TenantManagement: 'Active tenants',

@@ -82,12 +82,11 @@ const isPublicPage = computed(() =>
 );
 
 /**
- * The public routes that draw their own masthead - the landing over its hero,
- * the enquiry page in its own left column, and the category pages in a hairline
- * bar at the top of the screen - so the shared bar would be a second masthead
- * above the first. Still narrower than `isPublicPage`: `/login` has no masthead
- * of its own and keeps `AppHeader`. `/` only redirects to `/public`, so
- * matching it here is belt and braces.
+ * The public routes that draw their own masthead - the enquiry and sign-in
+ * pages in their own left column, and the category pages in a hairline bar at
+ * the top of the screen - so the shared bar would be a second masthead above
+ * the first. The landing (`/public`) keeps `AppHeader`, drawn transparent over
+ * its hero; `/` only redirects there.
  *
  * THIS COMMENT HAD A PRECONDITION IN IT, AND THE PRECONDITION EXPIRED.
  * Until 2026-09-19 it read "the category and login routes have no masthead of
@@ -95,7 +94,7 @@ const isPublicPage = computed(() =>
  * `CategoryRoomsView` was rebuilt in the public register and grew one. Read it
  * as a claim with a date on it when the next public route appears.
  *
- * What a signed-in visitor loses on these four routes is the bell and the
+ * What a signed-in visitor loses on these routes is the bell and the
  * profile menu, which live in `AppHeader` only. An administrator cannot reach
  * them at all - the router guard in `router/index.ts` sends `/public`,
  * `/category` and `/tenant` back to `/admin/overview` - and a resident who
