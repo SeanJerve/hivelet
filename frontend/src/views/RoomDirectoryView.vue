@@ -234,14 +234,16 @@ const statusChips = computed(() => [
       and RATE Directory, and its whole job is to be believed, so a failed load
       has to say so rather than quietly show the old figures.
     -->
-    <div v-if="roomsFetchFailed" class="ws-reveal rounded-tile bg-verify-soft p-5 sm:p-6" role="alert">
-      <p class="text-base font-semibold text-verify">
-        These rates could not be loaded, and may be out of date.
-      </p>
-      <p class="mt-1 text-sm leading-6 text-verify">
-        What you see below is the built-in list, not the live database. Do not quote a rate from
-        this screen until it loads. Reload the page to try again.
-      </p>
+    <div v-if="roomsFetchFailed" class="ws-reveal flex flex-col items-start gap-3 rounded-tile bg-verify-soft p-5 sm:p-6" role="alert">
+      <div>
+        <p class="text-base font-semibold text-verify">
+          These rates could not be loaded, and may be out of date.
+        </p>
+        <p class="mt-1 text-sm leading-6 text-verify">
+          Below is the built-in list, not the live database. Do not quote a rate from it.
+        </p>
+      </div>
+      <button type="button" class="pill-btn" :disabled="isLoading" @click="fetchRooms">Try again</button>
     </div>
 
     <!-- Page header -->
@@ -520,7 +522,8 @@ const statusChips = computed(() => [
     <!--
       The register. It needed 950px, so it scrolled sideways on a laptop and on
       every phone. The cluster and the kind of unit share one column, and below
-      1024px it becomes one tile per unit, laid out like the cluster cards.
+      `xl` it becomes one tile per unit, laid out like the cluster cards: at 1024
+      the sidebar leaves 636px and the table needed 646.
 
       The billing line is not repeated here: it is the same for every unit, so
       it said the same thing 33 times. The unit's own dialogs still show it.
@@ -532,6 +535,7 @@ const statusChips = computed(() => [
       caption="Every unit, with where it is, what it costs, who lives in it and its standing"
       noun="unit"
       :page-size="12"
+      table-from="xl"
       empty-title="No unit matches"
       empty-note="Clear the search, or pick “Every unit” and “Every cluster”."
     >

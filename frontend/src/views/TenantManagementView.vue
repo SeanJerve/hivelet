@@ -709,8 +709,9 @@ async function handleOnboard() {
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
           Residents
         </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          {{ residentCount }} {{ residentCount === 1 ? 'resident' : 'residents' }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.
+        <!-- Blank, not "0 residents", until the list has loaded; min-h keeps the header still. -->
+        <p class="mt-1 min-h-6 max-w-2xl text-sm leading-6 text-ink-soft">
+          <template v-if="hasLoadedOnce && !tenantsFetchFailed">{{ residentCount }} {{ residentCount === 1 ? 'resident' : 'residents' }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.</template>
         </p>
       </div>
 
@@ -930,16 +931,19 @@ async function handleOnboard() {
             <dt class="text-xs text-ink-faint">Moved in</dt>
             <dd class="text-ink">{{ t.moveInDate }}</dd>
           </div>
-          <div>
-            <dt class="text-xs text-ink-faint">Deposit</dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
-          </div>
         </dl>
 
-        <button type="button" class="pill-btn mt-4 w-full justify-center" @click="openEdit(t)">
-          <Pencil class="size-3.5" aria-hidden="true" />
-          <span>Edit</span>
-        </button>
+        <!-- The pencil beside the deposit, like the directory's cards: a
+             full-width Edit button on every card was the pattern the owner rejected. -->
+        <div class="mt-3 flex items-end justify-between gap-2">
+          <dl class="text-sm">
+            <dt class="text-xs text-ink-faint">Deposit</dt>
+            <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
+          </dl>
+          <button type="button" class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
+            <Pencil class="size-4" aria-hidden="true" />
+          </button>
+        </div>
       </template>
     </RecordTable>
 
@@ -1128,16 +1132,17 @@ async function handleOnboard() {
                 <dt class="text-xs text-ink-faint">Moved in</dt>
                 <dd class="text-ink">{{ t.moveInDate }}</dd>
               </div>
-              <div>
-                <dt class="text-xs text-ink-faint">Deposit</dt>
-                <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
-              </div>
             </dl>
 
-            <button type="button" class="pill-btn mt-4 w-full justify-center" @click="openEdit(t)">
-              <Pencil class="size-3.5" aria-hidden="true" />
-              <span>Edit</span>
-            </button>
+            <div class="mt-3 flex items-end justify-between gap-2">
+              <dl class="text-sm">
+                <dt class="text-xs text-ink-faint">Deposit</dt>
+                <dd class="tabular font-semibold text-ink">{{ peso(t.depositAmount) }}</dd>
+              </dl>
+              <button type="button" class="press-plate flex size-10 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:bg-canvas hover:text-ink cursor-pointer" :aria-label="`Edit ${t.name}`" title="Edit" @click="openEdit(t)">
+                <Pencil class="size-4" aria-hidden="true" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1302,7 +1307,7 @@ async function handleOnboard() {
               <button type="submit" :disabled="isSubmitting" class="pill-btn-brand">
                 <Loader2 v-if="isSubmitting" class="size-3.5 animate-spin" aria-hidden="true" />
                 <Check v-else class="size-3.5" aria-hidden="true" />
-                <span>Save the changes</span>
+                <span>Save changes</span>
               </button>
             </div>
           </div>
@@ -1351,7 +1356,7 @@ async function handleOnboard() {
     <!-- Onboard Tenant Modal -->
     <WsModal
       v-if="isOnboardModalOpen"
-      title="Move a tenant in"
+      title="Move someone in"
       subtitle="Creates the account and assigns the unit."
       size="lg"
       :dismissible="false"

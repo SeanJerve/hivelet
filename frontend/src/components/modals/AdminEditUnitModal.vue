@@ -268,7 +268,7 @@ async function onFileSelected(event: Event) {
   if (!file) return;
 
   if (!file.type.startsWith('image/')) {
-    showToast('error', 'Invalid File', 'Please select a valid image file (JPG, PNG, WebP).');
+    showToast('error', 'Not an image', 'Choose a JPG, PNG or WebP file.');
     return;
   }
 
@@ -279,9 +279,9 @@ async function onFileSelected(event: Event) {
     uploadedFileName.value = file.name;
     const kb = Math.round((compressed.length * 3 / 4) / 1024);
     uploadedFileSize.value = `${kb} KB`;
-    showToast('info', 'Photo Attached', `Ready to save: ${file.name} (~${kb} KB).`);
+    showToast('info', 'Photo attached', `Ready to save: ${file.name} (~${kb} KB).`);
   } catch (err: any) {
-    showToast('error', 'Upload Error', 'Could not process selected image.');
+    showToast('error', 'Could not read the photo', 'Try a different image.');
   } finally {
     isUploadingPhoto.value = false;
   }
@@ -337,7 +337,7 @@ async function handleSave() {
 
     closeModal();
   } catch (err: any) {
-    showToast('error', 'Save Failed', err?.message || 'Could not save unit changes.');
+    showToast('error', 'Could not save', err?.message || 'The changes were not saved.');
   } finally {
     isSaving.value = false;
   }

@@ -138,7 +138,7 @@ function statusLabel(status: string) {
           <dd class="font-medium tabular">{{ activeRoomDetail.maxOccupants }}</dd>
         </div>
         <div v-if="activeRoomDetail.tenant" class="flex items-baseline justify-between gap-3">
-          <dt class="text-ink-soft">Resident</dt>
+          <dt class="text-ink-soft">Tenant</dt>
           <dd class="min-w-0 break-words text-right font-medium">{{ activeRoomDetail.tenant }}</dd>
         </div>
       </dl>

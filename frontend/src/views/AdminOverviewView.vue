@@ -804,7 +804,7 @@ const isExportingArchive = ref(false);
       role="status"
       class="ws-reveal flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-verify-soft px-4 py-3 text-sm text-verify"
     >
-      <span>Some figures could not be loaded. Each section that is affected says so.</span>
+      <span>Some figures could not be loaded.</span>
       <button type="button" class="pill-btn" :disabled="isRefreshing" @click="refreshAllData">Try again</button>
     </div>
 
@@ -814,7 +814,7 @@ const isExportingArchive = ref(false);
     <div v-if="isInitialLoading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-12" aria-busy="true">
       <span class="sr-only" role="status">Loading the overview</span>
       <div
-        v-for="(span, i) in ['xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8', 'xl:col-span-4']"
+        v-for="(span, i) in ['md:col-span-2 xl:col-span-5', 'xl:col-span-4', 'xl:col-span-3', 'md:col-span-2 xl:col-span-8', 'md:col-span-2 xl:col-span-4']"
         :key="i"
         :class="['rounded-tile bg-tile p-6 flex flex-col gap-4', span]"
       >
@@ -946,7 +946,8 @@ const isExportingArchive = ref(false);
         <template v-else>
           <OccupancyArc :units="arcUnits" />
           <p class="text-center text-sm text-ink-soft">
-            <template v-if="vacantUnits.length">
+            <template v-if="totalRoomsCount && vacantUnits.length === totalRoomsCount">All {{ totalRoomsCount }} units are vacant.</template>
+            <template v-else-if="vacantUnits.length">
               Vacant: {{ vacantUnits.map((u) => u.unitCode.toUpperCase()).join(', ') }}
             </template>
             <template v-else>All {{ totalRoomsCount }} units are occupied.</template>
