@@ -164,7 +164,17 @@ const monthsList = [
   { val: 'Dec', label: 'December' },
 ];
 
-const yearsList = ['All', '2026', '2025', '2024'];
+// From the ledger, like the income screen: a fixed list would stop offering
+// the new year every January. `e.date` is the display string, "Sep 19, 2026".
+const yearsList = computed(() => {
+  const years = new Set<string>();
+  for (const e of expenseRecords) {
+    const y = e.date.split(' ')[2];
+    if (y) years.add(y);
+  }
+  years.add(propertyToday().slice(0, 4));
+  return ['All', ...Array.from(years).sort((a, b) => Number(b) - Number(a))];
+});
 
 const expenseCategoryOptions = computed(() => [
   { value: 'All', label: 'Every kind' },
@@ -172,7 +182,7 @@ const expenseCategoryOptions = computed(() => [
 ]);
 
 const yearOptions = computed(() =>
-  yearsList.map((y) => ({
+  yearsList.value.map((y) => ({
     value: y,
     label: y === 'All' ? 'Every year' : y,
   }))
