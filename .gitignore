@@ -75,5 +75,11 @@ vite.config.ts.timestamp-*
 backend/scripts/tmp-*
 scripts/tmp-*
 
+# Local audit harnesses: pages that mount the real app against fixture data
+# with a mocked fetch, so a screen can be looked at without a sign-in. Four
+# of them sat untracked in frontend/ on 2026-09-25, one `git add -A` away
+# from the public repository - the same trap as the probe scripts above.
+frontend/_harness-*.html
+
 # Binaries
 *.exe
