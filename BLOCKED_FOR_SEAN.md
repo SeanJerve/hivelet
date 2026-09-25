@@ -2881,3 +2881,45 @@ these three indistinguishable from the real residents.*
 - **How to know it worked:** `/category/one-bedroom`, choose LF or LB, and the word "fixed"
   appears nowhere on the page
 - **Raised:** 2026-09-25 by Claude, frontend BR-040 cleanup
+
+### B-68 — Adyen webhook: Basic Auth is fixed and proven; the HMAC key still doesn't match
+
+- **Blocked on:** Lloyd — needs Vercel access and a source for the real current HMAC key
+- **What was wrong, and is now fixed:** the webhook (`/api/public/payments/adyen/webhook`) was
+  returning 401 on every Adyen test. Traced to `ADYEN_WEBHOOK_USER` / `ADYEN_WEBHOOK_PASSWORD` on
+  the Vercel backend project not matching what was configured on Adyen's side. Sean set a fresh
+  password (copy-pasted into both Adyen and Vercel, not retyped from memory) and redeployed. **This
+  is now proven working**, not assumed: a manual `curl.exe -u "user:pass" ...` request from his own
+  machine got a 400 (JSON body rejected — expected, it wasn't a real Adyen-signed payload) instead
+  of a 401, which only happens after Basic Auth succeeds. Vercel's runtime logs also show clean
+  `HMAC verification FAILED` entries (see next item) with no `Basic Auth failed` mixed in once the
+  new password was live — Basic Auth is not the remaining problem.
+- **What is still wrong:** every notification — from Adyen's own test button and from a real
+  declined GCash payment attempt (unit 1c, ~2026-09-25 07:29 GMT) — fails at HMAC signature
+  verification. `credentials/loyd.env` line 45 has a recorded `ADYEN_HMAC_KEY`; Sean pasted that
+  exact value into Vercel's `ADYEN_HMAC_KEY` and redeployed, and it **still** fails HMAC
+  verification (Vercel logs, `[adyen-webhook] HMAC verification FAILED for
+  pspReference=AZ4AFBGZBPGS0SGO`, 2026-09-25 07:53:57 GMT). So the value recorded in `loyd.env` is
+  stale, the same way its recorded webhook password turned out to be stale (that line is also now
+  wrong — the real password is the fresh one Sean set today, not `Hivelet2026.`).
+- **What Lloyd needs to do:**
+  1. Check whether he has a more current HMAC key recorded somewhere `loyd.env` doesn't reflect
+     (password manager, notes, wherever the Adyen webhook was originally set up). If so, paste that
+     exact value into Vercel's `ADYEN_HMAC_KEY` (Production scope), redeploy, and update
+     `credentials/loyd.env` line 45 to match so it stops being stale.
+  2. If no other copy exists: `CLAUDE.md` is explicit that the HMAC key should never be regenerated
+     casually, because Adyen keeps its own copy to sign with and a mismatch fails every
+     notification — which is exactly the state today, already broken. Given there is no known-good
+     copy of the current key anywhere, regenerating is the only way to get a genuinely matching
+     pair: on the Adyen webhook's HMAC section, generate a new key, copy the value shown **at that
+     moment** (Adyen won't show it again after), paste it into Vercel's `ADYEN_HMAC_KEY`, redeploy,
+     and update `credentials/loyd.env` line 45 to the new value.
+  3. Either way, also fix `credentials/loyd.env` line 47 (`ADYEN_WEBHOOK_PASSWORD`) — it still
+     records the old password that never worked, not the one actually live on Vercel now.
+- **How to know it worked:** Adyen's "Test configuration" is not reliable for this by itself (it
+  gave inconsistent Basic-Auth-failed / HMAC-failed results across repeated clicks in the same few
+  minutes today, even with no config changes between them) — trust Vercel's runtime logs instead.
+  Search `adyen-webhook` there after testing; look for `[adyen-webhook] accepted ...` rather than
+  any `FAILED` line.
+- **Raised:** 2026-09-25 by Claude, working with Sean live through the Adyen dashboard, Vercel
+  dashboard, and a manual curl request
