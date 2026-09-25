@@ -234,8 +234,8 @@ const sections = Object.values(S);
         </li>
       </ul>
       <p>
-        Hivelet connects to no other service. The Facebook and map links on this site open those
-        services, and what you do there is covered by their own policies.
+        Hivelet connects to no other service. The map link on this site opens that
+        service, and what you do there is covered by its own policy.
       </p>
     </section>
 

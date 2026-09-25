@@ -558,13 +558,13 @@ async function submitInquiry() {
         </RouterLink>
 
         <nav aria-label="Property sections" class="flex flex-wrap justify-end items-baseline text-[0.8rem] font-light text-ink">
-          <RouterLink
-            to="/inquire"
-            class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
-          >
-            Inquire now
-          </RouterLink>
           <template v-if="!isAuthenticated">
+            <RouterLink
+              to="/inquire"
+              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
+            >
+              Inquire now
+            </RouterLink>
             <span aria-hidden="true" class="pr-2">,</span>
             <RouterLink
               to="/login"
@@ -574,7 +574,6 @@ async function submitInquiry() {
             </RouterLink>
           </template>
           <template v-else>
-            <span aria-hidden="true" class="pr-2">,</span>
             <RouterLink
               :to="portalRoute"
               class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"

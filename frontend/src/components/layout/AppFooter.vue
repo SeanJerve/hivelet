@@ -40,22 +40,6 @@ const portalRoute = computed(() => {
             already carries both.
           -->
           <p class="text-xl font-semibold tracking-tight">Hivelet</p>
-          <!--
-            "Centralised operational, financial and enquiry workflows for 33
-            rentable units" described the ADMIN software to the person
-            reading it here - a prospective tenant, at the bottom of the
-            PUBLIC site, who has never seen the workspace this sentence is
-            actually about. Replaced with what this page is for her: the
-            property (asked to trim the AI-sounding copy, 2026-09-26).
-
-            Just the city here, not the full street address - the "Address"
-            column two along in this same footer already carries that in
-            full, and a first pass at this fix put the whole thing in both
-            places at once.
-          -->
-          <p class="mt-6 text-xs leading-relaxed text-on-night-soft">
-            The website for Fe Galang Da Silva Boarding House, Legazpi City.
-          </p>
         </div>
 
         <div>
@@ -94,7 +78,7 @@ const portalRoute = computed(() => {
                 Rentable units
               </RouterLink>
             </li>
-            <li>
+            <li v-if="!isAuthenticated">
               <!-- Was a second link to /public, which went nowhere in particular.
                    "Inquire now", the header's own word for this link. -->
               <RouterLink to="/inquire" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
@@ -127,16 +111,6 @@ const portalRoute = computed(() => {
             <li>
               <a :href="`tel:${LANDLADY.phone}`" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 {{ LANDLADY.phone }}
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://www.facebook.com/michelle.millete.16"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors"
-              >
-                Facebook<span class="sr-only"> (opens in a new tab)</span>
               </a>
             </li>
           </ul>

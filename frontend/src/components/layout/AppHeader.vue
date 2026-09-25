@@ -351,27 +351,25 @@ onUnmounted(() => {
       >
         <!-- Landing page: Editorial underlined links matching reference photo -->
         <template v-if="isLandingPage">
-          <div class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light drop-shadow-sm text-white">
+          <div v-if="!isAuthenticated" class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light drop-shadow-sm text-white">
             <RouterLink
               to="/inquire"
               class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
             >
               Inquire now
             </RouterLink>
-            <template v-if="!isAuthenticated">
-              <span aria-hidden="true" class="pr-2 text-white">,</span>
-              <RouterLink
-                to="/login"
-                class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
-              >
-                Sign in
-              </RouterLink>
-            </template>
+            <span aria-hidden="true" class="pr-2 text-white">,</span>
+            <RouterLink
+              to="/login"
+              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+            >
+              Sign in
+            </RouterLink>
           </div>
         </template>
         <!-- Other public routes (fallback) -->
         <template v-else>
-          <div class="flex items-center gap-1 sm:gap-2">
+          <div v-if="!isAuthenticated" class="flex items-center gap-1 sm:gap-2">
             <RouterLink
               to="/inquire"
               class="press inline-flex min-h-11 items-center px-3.5 rounded-xl text-xs sm:text-sm font-semibold text-ink hover:text-brand hover:bg-tile cursor-pointer"
@@ -505,7 +503,7 @@ onUnmounted(() => {
               <div
                 v-if="isProfilePopoverOpen"
                 id="account-menu"
-                class="absolute right-0 top-14 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
+                class="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
               >
                 <!-- Who is signed in, read left to right like everything else. -->
                 <div class="flex items-center gap-3 border-b border-line p-5">
