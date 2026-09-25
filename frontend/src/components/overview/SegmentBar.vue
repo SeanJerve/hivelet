@@ -19,6 +19,8 @@ const toneClass: Record<Segment['tone'], string> = {
   night: 'bg-night',
   hatch: 'hatch bg-tile',
   soft: 'bg-brand-soft',
+  // A sixth, for the six property areas: with five, two areas shared a green.
+  faint: 'bg-ink-faint',
 };
 </script>
 

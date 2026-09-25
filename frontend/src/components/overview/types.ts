@@ -1,7 +1,7 @@
 export interface Segment {
   label: string;
   value: number;
-  tone: 'brand' | 'bright' | 'night' | 'hatch' | 'soft';
+  tone: 'brand' | 'bright' | 'night' | 'hatch' | 'soft' | 'faint';
 }
 
 /**

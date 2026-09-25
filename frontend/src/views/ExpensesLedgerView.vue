@@ -352,7 +352,7 @@ const areaSplit = computed(() => {
       totals.set(s.area, (totals.get(s.area) ?? 0) + s.amount);
     }
   }
-  const tones = ['brand', 'bright', 'night', 'soft', 'hatch'] as const;
+  const tones = ['brand', 'bright', 'night', 'soft', 'hatch', 'faint'] as const;
   return [...totals.entries()]
     .filter(([, value]) => value > 0)
     .sort((a, b) => b[1] - a[1])
@@ -833,6 +833,7 @@ async function handleEditExpense() {
                     a.tone === 'night' && 'bg-night',
                     a.tone === 'soft' && 'bg-brand-soft',
                     a.tone === 'hatch' && 'hatch border border-line',
+                    a.tone === 'faint' && 'bg-ink-faint',
                   ]"
                 />
                 <span class="truncate">{{ a.label }}</span>
