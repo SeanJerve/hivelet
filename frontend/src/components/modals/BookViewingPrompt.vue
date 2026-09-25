@@ -25,6 +25,7 @@
  */
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
+import { isAuthenticated } from '@/lib/authStore';
 import { X } from 'lucide-vue-next';
 
 const STORAGE_KEY = 'hivelet.viewingPromptDismissed';
@@ -75,7 +76,9 @@ function onCancel() {
 }
 
 onMounted(() => {
-  if (alreadyDismissed()) return;
+  // A signed-in resident or the landlady is not a prospect; the router has
+  // already restored the session before any page mounts.
+  if (alreadyDismissed() || isAuthenticated.value) return;
   dialogRef.value?.showModal();
 });
 
@@ -104,10 +107,14 @@ onBeforeUnmount(() => {
 
       <h2
         id="viewing-prompt-title"
-        class="font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
+        class="text-balance font-medium tracking-[-0.025em] leading-[1.15] text-[clamp(1.35rem,3.4vw,1.9rem)]"
       >
-        Viewings by appointment<br />Register your interest
+        Viewings are by appointment
       </h2>
+      <!-- Was a second heading line, "Register your interest", over a button saying "Inquire now": two names for one action. -->
+      <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
+        Send the landlady a message to arrange one.
+      </p>
 
       <!--
         `px-6`, not `px-10`. `.pill-btn-brand` already sets `padding: 0
@@ -142,7 +149,7 @@ onBeforeUnmount(() => {
       -->
       <button
         type="button"
-        class="pill-btn-brand mt-10 px-5"
+        class="pill-btn-brand mt-8 px-5"
         @click="bookNow"
       >
         Inquire now

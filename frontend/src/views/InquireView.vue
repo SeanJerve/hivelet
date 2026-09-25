@@ -128,7 +128,7 @@ async function submitInquiry() {
     if (!defaultRoom) {
       formError.value =
         'Your message was not sent: every unit is taken or reserved at the moment, so none ' +
-        `is open for enquiries. Please try again in a few days, or ring Mrs. ${LANDLADY.name} ` +
+        `is open for inquiries. Please try again in a few days, or call Mrs. ${LANDLADY.name} ` +
         `on ${LANDLADY.phone}.`;
       return;
     }
@@ -248,9 +248,11 @@ async function submitInquiry() {
           </ol>
         </nav>
 
+        <!-- Was one run-on line, "Viewings by appointment, register your interest". -->
         <h1 class="mt-1 font-medium text-ink tracking-[-0.025em] leading-[1.05] text-[clamp(1.75rem,3vw,2.75rem)] max-w-xl">
-          Viewings by appointment, register your interest
+          Register your interest
         </h1>
+        <p class="mt-3 text-sm text-ink-soft">Viewings are by appointment.</p>
 
         <!--
           The labels are visible, and were placeholders.
@@ -278,13 +280,13 @@ async function submitInquiry() {
             Your message is saved
           </h2>
           <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
-            Mrs. {{ LANDLADY.name }} reads every enquiry herself, and replies by phone or message
+            Mrs. {{ LANDLADY.name }} reads every inquiry herself, and replies by phone or message
             to <span class="text-ink break-all">{{ sentTo.phone }}</span> or
             <span class="text-ink break-all">{{ sentTo.email }}</span>. No automatic confirmation
             email or text is sent.
           </p>
           <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink-soft">
-            If it is urgent, ring her on
+            If it is urgent, call her on
             <a
               :href="`tel:${LANDLADY.phone}`"
               class="press text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
@@ -309,8 +311,13 @@ async function submitInquiry() {
           class="mt-8 lg:mt-6 max-w-2xl"
           @submit.prevent="submitInquiry"
         >
+          <!--
+            Name spans both columns below `lg`, so email and phone pair up
+            under it. At 768px the phone field sat alone with an empty half-row
+            beside it.
+          -->
           <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-            <div class="lg:col-start-1">
+            <div class="sm:col-span-2 lg:col-span-1 lg:col-start-1">
               <label
                 for="iq-name"
                 class="block text-xs text-ink-faint"
@@ -335,7 +342,7 @@ async function submitInquiry() {
               <label
                 for="iq-email"
                 class="block text-xs text-ink-faint"
-                >Email</label
+                >Email address</label
               >
               <input
                 id="iq-email"
@@ -356,7 +363,7 @@ async function submitInquiry() {
               <label
                 for="iq-phone"
                 class="block text-xs text-ink-faint"
-                >Phone</label
+                >Phone number</label
               >
               <input
                 id="iq-phone"
@@ -377,7 +384,7 @@ async function submitInquiry() {
               <label
                 for="iq-msg"
                 class="block text-xs text-ink-faint"
-                >What would you like to ask</label
+                >Your question</label
               >
               <!--
                 A textarea, not a single-line input squeezed into half the
@@ -394,7 +401,7 @@ async function submitInquiry() {
                 v-model="inquiryMsg"
                 rows="3"
                 required
-                placeholder="Tell her what you'd like to know - move-in timing, the unit, anything else."
+                placeholder="For example: which unit, when you would like to move in, or a time to view."
                 :aria-invalid="errors.message ? 'true' : undefined"
                 :aria-describedby="errors.message ? 'iq-msg-error' : undefined"
                 :class="['ws-textarea w-full mt-2 lg:flex-1', errors.message && 'border-overdue']"
@@ -413,9 +420,10 @@ async function submitInquiry() {
             it now lives on its own page (B-50 in BLOCKED_FOR_SEAN.md), linked
             by name rather than just mentioned.
           -->
+          <!-- Both contact fields are required, so "include a number or address" asked for less than the form does. -->
           <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
-            No automatic confirmation is sent, so please include a number or address
-            Mrs. {{ LANDLADY.name }} can reach you on. See the
+            Mrs. {{ LANDLADY.name }} replies by phone or email. Nothing is sent to you
+            automatically. See the
             <RouterLink to="/privacy" class="press underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy</RouterLink>
             for what happens to this information.
           </p>

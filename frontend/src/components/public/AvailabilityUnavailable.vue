@@ -66,14 +66,14 @@ function reload() {
       </h2>
 
       <!--
-        The second sentence is the important one, and it is the same sentence the
+        The first sentence is the important one, and it is the same point the
         category page has always carried: an outage is not a full house, and a
         visitor who assumes otherwise simply leaves.
       -->
+      <!-- "Her" had no one to refer to until the footer line; she is named here now. -->
       <p class="mt-5 max-w-xl text-xs sm:text-sm text-ink-soft leading-relaxed">
-        This is not the same as having nothing free - the listing is temporarily
-        unreachable, so rather than show you figures we cannot stand behind, we would
-        rather you asked her directly.
+        That does not mean nothing is vacant. The list is out of reach for the moment,
+        so please ask Mrs. {{ LANDLADY.name }} directly.
       </p>
 
       <div class="mt-8 flex flex-wrap items-center gap-3">
@@ -82,12 +82,12 @@ function reload() {
           class="pill-btn-brand"
         >
           <Phone class="size-4" aria-hidden="true" />
-          Ring {{ LANDLADY.phone }}
+          Call {{ LANDLADY.phone }}
         </a>
 
         <RouterLink to="/inquire" class="pill-btn">
           <MessageSquare class="size-4" aria-hidden="true" />
-          Leave a message instead
+          Send an inquiry
         </RouterLink>
 
         <button v-if="showRetry" type="button" class="pill-btn" @click="reload">

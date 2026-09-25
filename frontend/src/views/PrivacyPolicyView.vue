@@ -108,8 +108,8 @@ const sections = Object.values(S);
 
       <h3>If you register your interest</h3>
       <p>
-        The enquiry form asks for your name, email address, phone number and your question. It
-        has no field for anything else. The system also notes when the enquiry arrived, and the
+        The inquiry form asks for your name, email address, phone number and your question. It
+        has no field for anything else. The system also notes when the inquiry arrived, and the
         network (IP) address it came from, in the activity record described below.
       </p>
 
@@ -142,7 +142,7 @@ const sections = Object.values(S);
       <h3>The activity record</h3>
       <p>
         Hivelet records important actions, such as signing in, changes to an account, payments,
-        tickets and enquiries: who did it, when, what changed, and the network address the
+        tickets and inquiries: who did it, when, what changed, and the network address the
         request came from. Entries cannot be edited or deleted through Hivelet. The server also
         keeps a routine technical log of the requests it receives.
       </p>
@@ -151,7 +151,7 @@ const sections = Object.values(S);
     <section :aria-labelledby="S.purposes.id">
       <h2 :id="S.purposes.id" tabindex="-1">{{ S.purposes.title }}</h2>
       <ul>
-        <li>To answer your enquiry and arrange a viewing.</li>
+        <li>To answer your inquiry and arrange a viewing.</li>
         <li>To set up and run your tenancy: your account, your bills, and the record of what you have paid.</li>
         <li>To take online payments and match each one to the right bill.</li>
         <li>To deal with the maintenance problems you report.</li>
@@ -165,7 +165,7 @@ const sections = Object.values(S);
       <p>
         Hivelet has no mailing list and shows no advertising. It sends no emails or text messages
         of any kind, so nothing is sent to you automatically, including a confirmation of an
-        enquiry.
+        inquiry.
       </p>
     </section>
 
@@ -177,7 +177,7 @@ const sections = Object.values(S);
       </p>
       <ul>
         <li>
-          <strong>Your enquiry and your tenancy.</strong> Processing needed to act on your request
+          <strong>Your inquiry and your tenancy.</strong> Processing needed to act on your request
           before a tenancy begins, and to carry out the tenancy once it does (Section 12(b)).
         </li>
         <li>
@@ -196,7 +196,7 @@ const sections = Object.values(S);
       <h2 :id="S.recipients.id" tabindex="-1">{{ S.recipients.title }}</h2>
       <p>
         Inside Hivelet, a resident sees only their own account, bills, payments and tickets, and
-        only Mrs. Da Silva's account can open an enquiry. She sees every account, because running
+        only Mrs. Da Silva's account can open an inquiry. She sees every account, because running
         the property requires it. Outside Hivelet, these receive some of your information, and
         only for the purpose given:
       </p>
@@ -287,7 +287,7 @@ const sections = Object.values(S);
       <h2 :id="S.retention.id" tabindex="-1">{{ S.retention.title }}</h2>
       <ul>
         <li>
-          <strong>An enquiry</strong> that does not lead to a tenancy is kept for up to six
+          <strong>An inquiry</strong> that does not lead to a tenancy is kept for up to six
           months after the last message about it, and then deleted.
         </li>
         <li>

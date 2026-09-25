@@ -136,8 +136,27 @@ const waterRatePerOccupant = ref<number | null>(null);
  */
 function waterLabel(_room: DbRoom): string {
   return waterRatePerOccupant.value !== null
-    ? `${peso(waterRatePerOccupant.value)}, each person`
-    : 'Charged for each person';
+    ? `${peso(waterRatePerOccupant.value)} per person, each month`
+    : 'Charged per person, each month';
+}
+
+/**
+ * Where a unit is, in words: "1st Floor, main boarding house". The penthouse
+ * is its own floor and its own building, so it is named once - the eyebrow
+ * read "Penthouse - Floor 4" and the plan's alt "the Penthouse of the penthouse".
+ */
+function isWholeLevel(room: DbRoom): boolean {
+  return floorLabelFor(room.floor).toLowerCase() === buildingNameFor(room.cluster_code).toLowerCase();
+}
+function whereIs(room: DbRoom): string {
+  return isWholeLevel(room)
+    ? floorLabelFor(room.floor)
+    : `${floorLabelFor(room.floor)}, ${buildingNameFor(room.cluster_code)}`;
+}
+function planAlt(room: DbRoom): string {
+  return isWholeLevel(room)
+    ? `Floor plan of the ${buildingNameFor(room.cluster_code)}`
+    : `Floor plan of the ${floorLabelFor(room.floor)} of the ${buildingNameFor(room.cluster_code)}`;
 }
 
 const selectedCategoryKey = ref<CategoryKey>('Studio');
@@ -617,7 +636,6 @@ async function submitInquiry() {
             <template v-else-if="rateFloor">
               {{ peso(rateFloor) }} a month.
             </template>
-            Pick one below to see it at size.
           </p>
         </div>
 
@@ -721,7 +739,7 @@ async function submitInquiry() {
             to="/inquire"
             class="press inline-block text-ink underline underline-offset-4 decoration-1 decoration-line hover:decoration-ink transition-colors"
           >ask the landlady</RouterLink>
-          what is coming available.
+          when one will be free.
         </p>
       </div>
     </section>
@@ -757,7 +775,18 @@ async function submitInquiry() {
         -->
         <div class="ws-page ws-content grid grid-cols-1 lg:grid-cols-[1fr_26rem]">
 
-          <div class="relative aspect-[4/3] lg:aspect-auto lg:min-h-[30rem] border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden">
+          <!--
+            A 4:3 box only for a photograph. A floor plan is nearly square, so
+            in a 4:3 box on a phone its bottom was cut off, and with it the
+            marker for 1A (measured at 375px: plan 286px tall in a 257px box).
+            The plan now sits in the flow and the panel is as tall as it is.
+          -->
+          <div
+            :class="[
+              'relative flex flex-col justify-center border-b border-line lg:border-b-0 lg:border-r bg-tile overflow-hidden lg:min-h-[30rem]',
+              photoOf(activeUnit) && 'aspect-[4/3] lg:aspect-auto',
+            ]"
+          >
             <img
               v-if="photoOf(activeUnit)"
               :src="photoOf(activeUnit)!"
@@ -793,7 +822,7 @@ async function submitInquiry() {
               plan with the unit shapes carrying their codes replaces this
               stack in the same box without the section being rebuilt.
             -->
-            <div v-else class="absolute inset-0 flex flex-col justify-between px-6 py-8 sm:px-10 sm:py-10">
+            <div v-else class="px-6 pt-16 pb-8 sm:px-10 sm:pb-10">
               <!--
                 The floor plan, now that there is one for every unit.
 
@@ -823,7 +852,7 @@ async function submitInquiry() {
               <div v-if="planFor(activeUnit.room_number)" class="relative mx-auto w-full max-w-md">
                 <img
                   :src="`/floorplans/${planFor(activeUnit.room_number)!.plan}.png`"
-                  :alt="'Floor plan of the ' + floorLabelFor(activeUnit.floor) + ' of the ' + buildingNameFor(activeUnit.cluster_code)"
+                  :alt="planAlt(activeUnit)"
                   :width="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.w"
                   :height="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.h"
                   :class="[
@@ -842,17 +871,18 @@ async function submitInquiry() {
                     top: planFor(activeUnit.room_number)!.y + '%',
                     transform: 'translate(-30%, -100%)',
                   }"
-                >{{ activeUnit.room_number }}</span>
+                >{{ activeUnit.room_number.toUpperCase() }}</span>
                 <p class="sr-only">
-                  Unit {{ activeUnit.room_number }} is on the
-                  {{ floorLabelFor(activeUnit.floor) }} of the
-                  {{ buildingNameFor(activeUnit.cluster_code) }}.
+                  <template v-if="isWholeLevel(activeUnit)">
+                    Unit {{ activeUnit.room_number }} is the whole {{ buildingNameFor(activeUnit.cluster_code) }}.
+                  </template>
+                  <template v-else>
+                    Unit {{ activeUnit.room_number }} is on the
+                    {{ floorLabelFor(activeUnit.floor) }} of the
+                    {{ buildingNameFor(activeUnit.cluster_code) }}.
+                  </template>
                 </p>
               </div>
-
-              <p class="max-w-xs text-xs sm:text-sm text-ink-faint leading-relaxed">
-                See exactly where your unit sits in the building.
-              </p>
             </div>
 
             <!--
@@ -884,12 +914,13 @@ async function submitInquiry() {
 
           <div class="flex flex-col justify-between px-6 sm:px-8 lg:px-10 py-10 sm:py-12">
             <div>
+              <!-- In words, not "BH - Floor 1": the cluster code is the owner's shorthand. -->
               <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">
-                {{ activeUnit.cluster_code }} — Floor {{ activeUnit.floor }}
+                {{ whereIs(activeUnit) }}
               </p>
 
               <h2 class="mt-4 font-medium text-ink tracking-[-0.03em] leading-[0.95] text-[clamp(2rem,5vw,3.25rem)]">
-                Unit {{ activeUnit.room_number }}
+                Unit {{ activeUnit.room_number.toUpperCase() }}
               </h2>
 
               <p class="mt-8 font-medium text-ink tracking-[-0.02em] text-[clamp(1.5rem,3.4vw,2.25rem)] tabular-nums">
@@ -935,7 +966,7 @@ async function submitInquiry() {
                 class="pill-btn-brand w-full px-8"
                 @click="openInquiry(activeUnit.room_number)"
               >
-                <span>Ask about unit {{ activeUnit.room_number }}</span>
+                <span>Ask about unit {{ activeUnit.room_number.toUpperCase() }}</span>
                 <ArrowUpRight class="size-4 shrink-0" />
               </button>
             </div>
@@ -958,20 +989,20 @@ async function submitInquiry() {
         `border-ink` and the label says so in words, because a border
         alone is not a state a screen reader can hear; `aria-pressed` carries it.
       -->
-      <section aria-label="The units of this kind" class="w-full border-t border-line">
+      <!--
+        Not drawn for a kind with one unit (the penthouse): "Pick one" from a
+        list of one, already shown above, was a second copy of the same card.
+        The vacancy count is in the overview at the top of the page.
+      -->
+      <section v-if="categoryUnits.length > 1" aria-label="The units of this kind" class="w-full border-t border-line">
         <div class="ws-page ws-content ws-band">
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
             <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
-              The {{ categoryUnits.length }}
-              {{ categoryUnits.length === 1 ? 'unit' : 'units' }} of this kind
+              The {{ categoryUnits.length }} units of this kind
             </h2>
             <p class="max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">
-              Pick one to see it above.
-              <strong class="font-semibold text-ink">
-                {{ availableHere }} of them {{ availableHere === 1 ? 'is' : 'are' }} vacant
-              </strong>
-              at the moment.
+              Pick one to see its floor plan and details above.
             </p>
           </div>
 
@@ -1041,7 +1072,7 @@ async function submitInquiry() {
                       Both states read identically here - plain text-ink-soft -
                       which means scanning twenty tiles for the one usually-rare
                       vacant unit meant reading every label. text-brand and
-                      font-semibold on "Available to rent" only, matching the
+                      font-semibold on "Vacant" only, matching the
                       colour this same page already uses for good news
                       elsewhere (the corner flag on the panel above, the
                       floor plates' own vacancy counter), so it is the one
@@ -1054,7 +1085,7 @@ async function submitInquiry() {
                         isAvailable(u) ? 'font-semibold text-brand' : 'text-ink-soft',
                       ]"
                     >
-                      {{ isAvailable(u) ? 'Available to rent' : 'Occupied' }}
+                      {{ isAvailable(u) ? 'Vacant' : 'Occupied' }}
                     </span>
 
                     <span
@@ -1103,7 +1134,7 @@ async function submitInquiry() {
           Your message about unit {{ inquiryUnit.toUpperCase() }} is saved
         </h2>
         <p class="mt-4 max-w-md text-sm text-ink-soft leading-relaxed">
-          Mrs. {{ LANDLADY.name }} reads every enquiry herself, and replies by phone or message
+          Mrs. {{ LANDLADY.name }} reads every inquiry herself, and replies by phone or message
           to <span class="text-ink break-all">{{ inquirySentTo.phone }}</span> or
           <span class="text-ink break-all">{{ inquirySentTo.email }}</span>. No automatic
           confirmation email or text is sent.
@@ -1135,8 +1166,8 @@ async function submitInquiry() {
         </h2>
 
         <p class="mt-4 max-w-md text-xs text-ink-soft leading-relaxed">
-          Mrs. {{ LANDLADY.name }} reads these herself. Nothing is emailed or texted
-          automatically, so leave a number or an address she can reach you on.
+          Mrs. {{ LANDLADY.name }} reads these herself and replies by phone or email.
+          Nothing is sent to you automatically.
         </p>
 
         <div class="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2">
@@ -1171,7 +1202,7 @@ async function submitInquiry() {
 
           <div>
             <label for="cq-phone" class="block text-xs text-ink-faint">
-              Your phone number
+              Phone number
             </label>
             <input
               id="cq-phone"
@@ -1191,7 +1222,7 @@ async function submitInquiry() {
 
           <div>
             <label for="cq-email" class="block text-xs text-ink-faint">
-              Your email
+              Email address
             </label>
             <input
               id="cq-email"
@@ -1211,7 +1242,7 @@ async function submitInquiry() {
 
           <div class="sm:col-span-2">
             <label for="cq-msg" class="block text-xs text-ink-faint">
-              What you would like to ask
+              Your question
             </label>
             <textarea
               id="cq-msg"

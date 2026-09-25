@@ -115,7 +115,7 @@ export function serverFieldErrors(err: unknown): InquiryErrors {
  * written for her: the rate limit names the wait, and BR-006 names the unit.
  */
 export function inquiryFailureMessage(err: unknown): string {
-  const ring = `or ring Mrs. ${LANDLADY.name} on ${LANDLADY.phone}.`;
+  const ring = `or call Mrs. ${LANDLADY.name} on ${LANDLADY.phone}.`;
   if (!(err instanceof ApiRequestError)) {
     return `Your message was not sent. Please try again, ${ring}`;
   }

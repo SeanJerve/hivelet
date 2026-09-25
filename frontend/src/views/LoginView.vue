@@ -252,8 +252,13 @@ async function handleQuickLogin(account: DemoAccount) {
           {{ deniedReason }}
         </div>
 
-        <form class="mt-8 lg:mt-6 max-w-2xl" @submit.prevent="handleSubmit">
-          <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+        <!--
+          One column, and Sign in straight under the password. The two fields
+          sat side by side from 640px, with the note and both policy links
+          between them and the button.
+        -->
+        <form class="mt-8 lg:mt-6 max-w-md" @submit.prevent="handleSubmit">
+          <div class="grid gap-y-5">
             <div>
               <label
                 for="login-email"
@@ -346,9 +351,19 @@ async function handleQuickLogin(account: DemoAccount) {
             {{ shownError }}
           </div>
 
-          <p class="mt-6 max-w-xl text-xs leading-relaxed text-ink-soft">
-            Accounts are created by the landlady. If you live here and cannot get in, ask
-            Mrs. {{ LANDLADY.name }} and she will set yours up.
+          <button
+            type="submit"
+            :disabled="!canSubmit"
+            class="pill-btn-brand mt-6 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />
+            <LogIn v-else class="size-4" aria-hidden="true" />
+            <span>{{ isAuthenticating ? 'Signing in…' : 'Sign in' }}</span>
+          </button>
+
+          <p class="mt-8 max-w-xl text-xs leading-relaxed text-ink-soft">
+            Accounts are created by the landlady. If you live here and have no account, or
+            cannot sign in, ask Mrs. {{ LANDLADY.name }}.
           </p>
           <!--
             Signing in is where a resident starts using the portal, so the rules
@@ -369,16 +384,6 @@ async function handleQuickLogin(account: DemoAccount) {
               Privacy policy
             </RouterLink>
           </p>
-
-          <button
-            type="submit"
-            :disabled="!canSubmit"
-            class="pill-btn-brand mt-6 px-8 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Loader2 v-if="isAuthenticating" class="size-4 animate-spin" aria-hidden="true" />
-            <LogIn v-else class="size-4" aria-hidden="true" />
-            <span>{{ isAuthenticating ? 'Signing in…' : 'Sign in' }}</span>
-          </button>
         </form>
       </div>
 

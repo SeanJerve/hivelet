@@ -162,7 +162,7 @@ const sections = Object.values(S);
       <p>Please do not:</p>
       <ul>
         <li>try to reach another resident's information, or any part of the site your account is not for;</li>
-        <li>interfere with the site, probe its security, or overload it, including by sending the same enquiry repeatedly;</li>
+        <li>interfere with the site, probe its security, or overload it, including by sending the same inquiry repeatedly;</li>
         <li>give false information, or register interest in someone else's name; or</li>
         <li>use the site for anything unlawful.</li>
       </ul>

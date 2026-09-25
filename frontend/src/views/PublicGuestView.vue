@@ -101,13 +101,13 @@ const FAQS = computed(() => [
   },
   {
     q: 'What are the curfew hours and security policies?',
-    a: 'The property has a gated perimeter with a 10:00 PM curfew. Registered tenants hold key access for late arrivals and academic schedules.',
+    a: 'The compound is gated, with a 10:00 PM curfew. Registered tenants have a key for coming home later than that.',
   },
   {
     q: 'What do I need to move in?',
     a:
       cheapestRent.value !== null
-        ? `A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. Our cheapest unit is ₱${cheapestRent.value.toLocaleString('en-PH')} a month, so that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} to bring on the day; for a dearer unit it is twice that unit's rent. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.`
+        ? `A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit. Our cheapest unit is ₱${cheapestRent.value.toLocaleString('en-PH')} a month, so that is ₱${(cheapestRent.value * 2).toLocaleString('en-PH')} to bring on the day; for any other unit it is twice that unit's rent. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.`
         : 'A valid government or student ID, the resident registration form, and two months of money: one month of rent in advance, and one month as a deposit, so twice the monthly rent of the unit you take. The deposit is held while you live here. When you move out it is put towards repairing and cleaning the unit, and whatever is left over is returned to you.',
   },
   {
@@ -341,11 +341,13 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
 
       <div class="relative z-10 ws-page w-full flex flex-col justify-end pt-24 pb-20 sm:pb-16 md:pb-12 lg:pb-6">
         <!--
-          "Boarding House" comes off the display line and sits right after
-          "Silva" on its baseline. It used to be pushed to the far right to
-          line up with the header navigation, which left it stranded a screen's
-          width from the name it finishes. Both stay inside the <h1>, so the
+          "Boarding House" comes off the display line and sits under the name,
+          at its left edge. It used to be pushed to the far right to line up
+          with the header navigation, which left it stranded a screen's width
+          from the name it finishes. Both stay inside the <h1>, so the
           accessible name is still the full "Fe Galang Da Silva Boarding House".
+          `text-balance` on the name: without it a desktop width broke it as
+          "Fe Galang Da / Silva", one word left alone on the second line.
 
           `pb-6` on desktop sets the name as close to the bottom edge as the
           masthead sits to the top edge, so the photograph is framed evenly
@@ -369,7 +371,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           factor (lg: and up).
         -->
         <h1 class="font-editorial drop-shadow-sm flex flex-wrap items-baseline gap-x-5 gap-y-2 w-full">
-          <span class="font-medium tracking-[-0.03em] leading-[0.9] text-[clamp(3.25rem,10.5vw,9.75rem)]"
+          <span class="text-balance font-medium tracking-[-0.03em] leading-[0.9] text-[clamp(3.25rem,10.5vw,9.75rem)]"
             >Fe Galang Da Silva</span>
           <span class="whitespace-nowrap text-sm sm:text-base md:text-lg font-light tracking-wide text-white/90"
             >Boarding House</span>
@@ -415,8 +417,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             Explore by unit category
           </h2>
           <p class="max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">
-            The four kinds of unit on the property, smallest first. Choose one to browse live
-            availability and view all rooms of that kind.
+            Choose one to see its units, their rates and which are vacant.
           </p>
         </div>
 
@@ -444,7 +445,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           <p class="sr-only">Four kinds of unit. Each row opens that kind.</p>
 
           <div
-            class="hidden border-b border-line px-5 py-3 text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:gap-6"
+            class="hidden border-b border-line px-5 py-3 text-[0.7rem] tracking-[0.14em] uppercase text-ink-soft sm:grid sm:grid-cols-[10.5rem_1fr_4rem_4.5rem] sm:gap-5 lg:grid-cols-[14rem_1fr_9rem_9rem] lg:gap-6"
           >
             <span>Kind</span>
             <span>What it is</span>
@@ -456,7 +457,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             -->
             <template v-if="unitsReady">
               <span class="text-right">Units</span>
-              <span class="text-right">Available to rent</span>
+              <span class="text-right">Vacant</span>
             </template>
             <span v-else class="text-right sm:col-span-2">Availability</span>
           </div>
@@ -465,7 +466,7 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
             v-for="(c, i) in CATEGORIES"
             :key="c.key"
             :to="'/category/' + c.slug"
-            class="list-reveal-item press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-canvas sm:grid sm:grid-cols-[14rem_1fr_9rem_9rem] sm:items-baseline sm:gap-6"
+            class="list-reveal-item press-plate group block border-b border-line px-5 py-5 transition-colors hover:bg-canvas sm:grid sm:grid-cols-[10.5rem_1fr_4rem_4.5rem] sm:items-baseline sm:gap-5 lg:grid-cols-[14rem_1fr_9rem_9rem] lg:gap-6"
             :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
           >
             <span class="flex items-baseline gap-2 text-base font-medium text-ink">
@@ -500,12 +501,23 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
                 Checking what is available&hellip;
               </span>
             </template>
+            <!-- One line on a phone; the two columns from `sm`. A vacancy is in brand green, as on the category page. -->
             <template v-else>
-              <span class="mt-2 block text-xs tabular-nums text-ink-soft sm:mt-0 sm:text-right sm:text-sm">
-                <span class="sm:hidden">Units: </span>{{ unitsInCategory(c.key).length }}
+              <span class="mt-2 block text-xs tabular-nums text-ink-soft sm:hidden">
+                {{ unitsInCategory(c.key).length }}
+                {{ unitsInCategory(c.key).length === 1 ? 'unit' : 'units' }},
+                <span :class="availableInCategory(c.key) > 0 && 'font-semibold text-brand'">{{ availableInCategory(c.key) }} vacant</span>
               </span>
-              <span class="mt-1 block text-xs tabular-nums text-ink-soft sm:mt-0 sm:text-right sm:text-sm">
-                <span class="sm:hidden">Available to rent: </span>{{ availableInCategory(c.key) }}
+              <span class="hidden text-right text-sm tabular-nums text-ink-soft sm:block">
+                {{ unitsInCategory(c.key).length }}
+              </span>
+              <span
+                :class="[
+                  'hidden text-right text-sm tabular-nums sm:block',
+                  availableInCategory(c.key) > 0 ? 'font-semibold text-brand' : 'text-ink-soft',
+                ]"
+              >
+                {{ availableInCategory(c.key) }}
               </span>
             </template>
           </RouterLink>
@@ -518,14 +530,10 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
     <section id="faqs" class="w-full bg-canvas border-t border-line font-editorial ws-band scroll-mt-20">
       <div class="ws-page ws-content">
 
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
-          <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
-            Policies &amp; guidelines
-          </h2>
-          <p class="max-w-md text-xs sm:text-sm text-ink-soft leading-relaxed">
-            Standard operating guidelines, individual utilities submetering, security curfews, and payment methods for Fe Galang Da Silva Boarding House.
-          </p>
-        </div>
+        <!-- No standfirst: it listed the questions below in stiffer words, and "utilities submetering" is not how water is billed. -->
+        <h2 class="text-xl sm:text-2xl font-medium text-ink tracking-[-0.02em]">
+          Policies &amp; guidelines
+        </h2>
 
         <!--
           Same disclosure pattern as the availability table above: a hairline

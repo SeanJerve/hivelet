@@ -82,8 +82,8 @@ export const CATEGORIES: UnitCategory[] = [
     key: 'Studio',
     slug: 'studio',
     title: 'Studio',
-    blurb:
-      '1st Floor Studio with private bathroom & cabinets.',
+    // Not "1st Floor": the studios are on floors 1 to 3 (see the table above).
+    blurb: 'One room with its own bathroom and cabinets.',
     icon: BedSingle,
   },
   {
