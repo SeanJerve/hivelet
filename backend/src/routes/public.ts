@@ -24,7 +24,9 @@ import { getWaterRatePerOccupant, getLindaFixedWaterCharge } from '../services/s
 import { safeReturnUrl, defaultReturnUrl } from '../utils/safeRedirect.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { adyenService } from '../services/adyenService.js';
-import { verifyNotificationItem, isWebhookConfigured, type AdyenNotificationItem } from '../services/adyenWebhook.js';
+import {
+  verifyNotificationItem, isWebhookConfigured, cleanHmacKey, hmacKeyFingerprint, type AdyenNotificationItem,
+} from '../services/adyenWebhook.js';
 import { applyNotificationItem } from '../services/adyenWebhookHandler.js';
 import { config } from '../config/env.js';
 import { notificationService } from '../services/notificationService.js';
@@ -1108,8 +1110,16 @@ router.post(
     // item is a forged batch.
     for (const item of items) {
       if (!verifyNotificationItem(item, hmacKey)) {
+        // The fingerprint says WHICH key this server holds without revealing it,
+        // so a mismatch can be told apart from a paste gone wrong (B-68): compare
+        // it with `node backend/scripts/hmac-fingerprint.mjs <key>` on the value
+        // Adyen shows. Adyen sends a signature on every item it signs; none at all
+        // means the webhook in Adyen has no HMAC key set.
+        const key = cleanHmacKey(hmacKey);
         console.error(
-          `[adyen-webhook] HMAC verification FAILED for pspReference=${item?.pspReference ?? '(none)'}`
+          `[adyen-webhook] HMAC verification FAILED for pspReference=${item?.pspReference ?? '(none)'}` +
+          ` - server key: ${key.length} chars, fingerprint ${hmacKeyFingerprint(key)};` +
+          ` signature ${item?.additionalData?.hmacSignature ? 'present' : 'MISSING'}`
         );
         res.status(401).json({ success: false, error: 'Invalid HMAC signature.' });
         return;

@@ -4,22 +4,35 @@
  * Run with `npm run check:adyen` from `backend/`. Builds first, touches nothing,
  * and needs no credentials.
  *
- * NOTE ON WHAT THIS PROVES. These assertions verify the algorithm against its
- * specification: the eight-field payload order, the escaping rules, hex key
- * decoding, HMAC-SHA256, base64 output, and constant-time comparison. They do NOT
- * prove interoperability with Adyen's servers, because that can only be proven by
- * a real signed notification. Send a test webhook from
- * Customer Area -> Developers -> Webhooks -> Test, and confirm this accepts it.
+ * NOTE ON WHAT THIS PROVES. These assertions verify the algorithm against Adyen's
+ * published example and against Adyen's OWN library (`@adyen/api-library`'s
+ * HmacValidator): the eight-field payload order, the raw join, hex key decoding,
+ * HMAC-SHA256, base64 output, and constant-time comparison. They do NOT prove the
+ * key on a server is the one Adyen signs with - only a real signed notification
+ * proves that. Send a test webhook from Customer Area -> Developers -> Webhooks ->
+ * Test, and read the server log.
+ *
+ * Until 2026-09-25 this file asserted that `:` and `\` inside a value were
+ * escaped, and its "independent computation" called buildSignedPayload itself, so
+ * it could not notice the escaping was not Adyen's rule. It now asks the library.
  */
 import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import {
   buildSignedPayload,
   computeSignature,
   verifyNotificationItem,
   isWebhookConfigured,
-  resolveEventTime
+  resolveEventTime,
+  cleanHmacKey,
+  hmacKeyFingerprint
 } from '../dist/services/adyenWebhook.js';
+import { fingerprint as scriptFingerprint } from './hmac-fingerprint.mjs';
+
+// Adyen's own signer, loaded by path: importing the whole library takes over a minute.
+const AdyenHmac = createRequire(import.meta.url)('@adyen/api-library/lib/src/utils/hmacValidator.js').default;
+const adyen = new AdyenHmac();
 
 let pass = 0, fail = 0;
 function check(label, actual, expected) {
@@ -46,29 +59,60 @@ check('eight fields, colon separated, empty originalReference preserved',
   buildSignedPayload(base),
   '7914073381342284::TestMerchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true');
 
-// A colon inside a value must be escaped, or an attacker could shift the field
-// boundaries and make one field masquerade as two.
-check('colon inside a value is escaped',
+// Joined RAW, as Adyen's library does for notifications: no escaping.
+check('a colon inside a value is NOT escaped',
   buildSignedPayload({ ...base, merchantReference: 'a:b' }),
-  '7914073381342284::TestMerchant:a\\:b:1130:EUR:AUTHORISATION:true');
+  '7914073381342284::TestMerchant:a:b:1130:EUR:AUTHORISATION:true');
 
-// Backslash must be escaped FIRST, otherwise the escape character introduced for
-// a colon could itself be forged by a value containing a backslash.
-check('backslash is escaped, and escaped before the colon',
+check('a backslash inside a value is NOT escaped',
   buildSignedPayload({ ...base, merchantReference: 'x\\y' }),
-  '7914073381342284::TestMerchant:x\\\\y:1130:EUR:AUTHORISATION:true');
-
-check('backslash followed by colon',
-  buildSignedPayload({ ...base, merchantReference: 'x\\:y' }),
-  '7914073381342284::TestMerchant:x\\\\\\:y:1130:EUR:AUTHORISATION:true');
+  '7914073381342284::TestMerchant:x\\y:1130:EUR:AUTHORISATION:true');
 
 check('boolean success is stringified',
   buildSignedPayload({ ...base, success: true }),
   '7914073381342284::TestMerchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true');
 
+// --- Adyen's published example, with its own key ----------------------------
+const PUBLISHED_KEY = '44782DEF547AAA06C910C43932B1EB0C71FC68D9D0C057550C48EC2ACF6BA056';
+check("Adyen's published example signs to Adyen's published signature",
+  computeSignature(base, PUBLISHED_KEY), 'coqCmt/IZ4E3CzPvMY8zTjQVL5hYJUiBRg8UU+iCWo0=');
+
+// --- agrees with Adyen's own library, including awkward values ---------------
+for (const [label, item] of [
+  ['the plain example', base],
+  ['a colon in merchantReference', { ...base, merchantReference: 'INV:42' }],
+  ['a backslash in merchantReference', { ...base, merchantReference: 'x\\y' }],
+  ['a backslash then a colon', { ...base, merchantReference: 'x\\:y' }],
+  ['a missing originalReference', { ...base, originalReference: undefined }],
+  ['a real GCash-shaped reference', { ...base, merchantReference: 'BILL-4f1c2e2a-9b7d-4d1e-8a0b-2c3d4e5f6a7b-1790240000000', amount: { value: 890000, currency: 'PHP' } }],
+]) {
+  check(`matches Adyen's library: ${label}`, computeSignature(item, PUBLISHED_KEY), adyen.calculateHmac(item, PUBLISHED_KEY));
+}
+
+// --- a key as pasted into a dashboard ---------------------------------------
+// Buffer.from(hex, 'hex') stops silently at the first non-hex character, so a
+// wrapping quote or a leading space used to turn the key into a different one.
+for (const [label, pasted] of [
+  ['wrapped in double quotes', `"${PUBLISHED_KEY}"`],
+  ['wrapped in single quotes', `'${PUBLISHED_KEY}'`],
+  ['with a leading space', ` ${PUBLISHED_KEY}`],
+  ['with a trailing newline', `${PUBLISHED_KEY}\n`],
+]) {
+  check(`a key ${label} still verifies`,
+    verifyNotificationItem({ ...base, additionalData: { hmacSignature: 'coqCmt/IZ4E3CzPvMY8zTjQVL5hYJUiBRg8UU+iCWo0=' } }, pasted), true);
+}
+check('cleaning leaves a genuinely wrong key wrong',
+  verifyNotificationItem({ ...base, additionalData: { hmacSignature: 'coqCmt/IZ4E3CzPvMY8zTjQVL5hYJUiBRg8UU+iCWo0=' } }, `"${'AB'.repeat(32)}"`), false);
+check('cleanHmacKey strips one pair of quotes and the whitespace, nothing else', cleanHmacKey(`  "AB12"  `), 'AB12');
+
+// --- the fingerprint the server logs equals the one the script prints --------
+check('server and script fingerprints agree, however the key was pasted',
+  [hmacKeyFingerprint(PUBLISHED_KEY), hmacKeyFingerprint(`"${PUBLISHED_KEY}"`), scriptFingerprint(` ${PUBLISHED_KEY}\n`)],
+  Array(3).fill(scriptFingerprint(PUBLISHED_KEY)));
+
 // --- signature matches an independent implementation -----------------------
 const independent = createHmac('sha256', Buffer.from(KEY, 'hex'))
-  .update(buildSignedPayload(base), 'utf8').digest('base64');
+  .update('7914073381342284::TestMerchant:TestPayment-1407325143704:1130:EUR:AUTHORISATION:true', 'utf8').digest('base64');
 check('HMAC matches an independent computation', computeSignature(base, KEY), independent);
 
 // --- verification ----------------------------------------------------------

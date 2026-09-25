@@ -26,15 +26,25 @@
  *   pspReference : originalReference : merchantAccountCode : merchantReference :
  *   amount.value : amount.currency : eventCode : success
  *
- * Any `\` or `:` inside a value is escaped first, so a colon in a merchant
- * reference cannot be used to shift the field boundaries - which is the attack the
- * escaping exists to stop. The key is hex; it is decoded to raw bytes before use.
+ * The values are joined RAW - no escaping. This file used to escape `\` and `:`
+ * first, which is Adyen's rule for a different payload (key-value payment data),
+ * not for notifications. Adyen's own library, `@adyen/api-library`'s
+ * `HmacValidator.getDataToSign`, pushes the eight values and joins them with `:`
+ * as they are (read 2026-09-25). So a notification whose merchantReference held a
+ * colon was refused every time. `check:adyen` now cross-checks against that
+ * library directly, not against a copy of this function.
+ *
+ * The key is hex, decoded to raw bytes. `Buffer.from(hex, 'hex')` stops SILENTLY
+ * at the first non-hex character: a key pasted into a dashboard with a wrapping
+ * quote or a leading space decodes to a different key, and every signature then
+ * fails exactly as if the key were wrong (B-68, 2026-09-25). `cleanHmacKey`
+ * strips those before anything uses the key.
  *
  * The result is compared with `timingSafeEqual`, not `===`. A byte-by-byte string
  * comparison returns early on the first mismatch, and the time it takes therefore
  * leaks how much of a guessed signature was correct.
  */
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 /** One notification item, as Adyen nests it inside `notificationItems[]`. */
 export interface AdyenNotificationItem {
@@ -54,16 +64,30 @@ export interface AdyenNotificationItem {
   additionalData?: Record<string, string> & { hmacSignature?: string };
 }
 
-/** Escapes a field for the signed payload: backslash first, then colon. */
-function escapeField(value: unknown): string {
-  return String(value ?? '')
-    .replace(/\\/g, '\\\\')
-    .replace(/:/g, '\\:');
+/**
+ * The key as pasted, minus what a paste adds: surrounding whitespace and one pair
+ * of wrapping quotes. Anything else stays, so a key that is genuinely wrong still
+ * reads as wrong.
+ */
+export function cleanHmacKey(raw: string | undefined): string {
+  return String(raw ?? '').trim().replace(/^(["'])(.*)\1$/, '$2').trim();
 }
 
 /**
- * Rebuilds the exact string Adyen signed for this notification item.
- * Exported so it can be tested directly against Adyen's published example.
+ * A short, one-way fingerprint of the key, safe to log: the first 10 hex
+ * characters of SHA-256 over the decoded key bytes. It reveals nothing usable
+ * about a 256-bit key, and lets two people confirm they hold the SAME key without
+ * either reading it out - compare it with `node backend/scripts/hmac-fingerprint.mjs`.
+ */
+export function hmacKeyFingerprint(hexKey: string): string {
+  const key = cleanHmacKey(hexKey);
+  return createHash('sha256').update(Buffer.from(key, 'hex')).digest('hex').slice(0, 10);
+}
+
+/**
+ * Rebuilds the exact string Adyen signed for this notification item: the eight
+ * values, raw, joined with `:`. `undefined` becomes an empty field, as
+ * `Array.prototype.join` does in Adyen's own library.
  */
 export function buildSignedPayload(item: AdyenNotificationItem): string {
   return [
@@ -76,13 +100,13 @@ export function buildSignedPayload(item: AdyenNotificationItem): string {
     item.eventCode,
     typeof item.success === 'boolean' ? String(item.success) : item.success
   ]
-    .map(escapeField)
+    .map((value) => String(value ?? ''))
     .join(':');
 }
 
 /** Computes the expected base64 HMAC-SHA256 signature for an item. */
 export function computeSignature(item: AdyenNotificationItem, hexKey: string): string {
-  const key = Buffer.from(hexKey, 'hex');
+  const key = Buffer.from(cleanHmacKey(hexKey), 'hex');
   return createHmac('sha256', key).update(buildSignedPayload(item), 'utf8').digest('base64');
 }
 
@@ -99,6 +123,7 @@ export function verifyNotificationItem(
 ): boolean {
   const provided = item.additionalData?.hmacSignature;
   if (!provided || typeof provided !== 'string') return false;
+  hexKey = cleanHmacKey(hexKey);
   if (!hexKey || !/^[0-9a-fA-F]+$/.test(hexKey) || hexKey.length % 2 !== 0) return false;
 
   let expected: string;
@@ -168,7 +193,8 @@ export function resolveEventTime(
   };
 }
 
-export function isWebhookConfigured(hexKey: string | undefined): boolean {
+export function isWebhookConfigured(rawKey: string | undefined): boolean {
+  const hexKey = cleanHmacKey(rawKey);
   return Boolean(
     hexKey &&
     !hexKey.startsWith('mock_') &&
