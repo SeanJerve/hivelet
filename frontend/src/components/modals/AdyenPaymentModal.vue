@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
 import { peso } from '@/lib/canonicalUnits';
+import { formatDateOnly } from '@/lib/propertyDate';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { AdyenCheckout, Dropin } from '@adyen/adyen-web';
 import type { PaymentCompletedData, PaymentFailedData } from '@adyen/adyen-web';
@@ -82,6 +83,10 @@ const amountDue = computed(() => {
   const outstanding = Number(billInfo.value.amount_outstanding);
   return Number.isFinite(outstanding) ? outstanding : Number(billInfo.value.total_amount) || 0;
 });
+
+const dueLabel = computed(() =>
+  formatDateOnly(billInfo.value?.due_date, { month: 'long', day: 'numeric', year: 'numeric' })
+);
 
 const partiallySettled = computed(
   () =>
@@ -158,6 +163,11 @@ const hasAttemptedPayment = ref(false);
  * for verification or the bill is paid, and "Try again" would only ask again.
  */
 const canRetry = ref(true);
+/**
+ * A 409 is a deliberate refusal written for residents (the 15-minute hold, a
+ * payment already waiting, a paid bill), not a fault, so it is not drawn as one.
+ */
+const isRefusal = computed(() => !hasAttemptedPayment.value && !canRetry.value);
 const isCompleted = ref(false);
 /** True once the webhook's payment row is visible; false while it is in flight. */
 const isRecorded = ref(false);
@@ -337,7 +347,6 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
 <template>
   <WsModal
     title="Pay with GCash"
-    subtitle="Adyen handles the payment. Your details are entered in their fields and never reach Hivelet."
     size="md"
     :dismissible="false"
     @close="emit('close')"
@@ -369,17 +378,17 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       reads as a claim that nothing is owed.
     -->
     <dl v-if="billInfo" class="rounded-2xl bg-canvas p-4 flex flex-col gap-2 text-sm">
-      <div class="flex items-baseline justify-between gap-3">
-        <dt class="text-ink-soft">This bill</dt>
-        <dd class="font-medium">
-          {{ billInfo.rooms?.room_number ? 'Unit ' + String(billInfo.rooms.room_number) : 'Monthly dues' }}
-        </dd>
+      <div v-if="dueLabel" class="flex items-baseline justify-between gap-3">
+        <dt class="text-ink-soft">Due</dt>
+        <dd class="font-medium">{{ dueLabel }}</dd>
       </div>
       <div class="flex items-baseline justify-between gap-3">
-        <dt class="text-ink-soft">Rent and water</dt>
-        <dd class="tabular">
-          {{ peso(billInfo.rent_amount) }} and {{ peso(billInfo.water_amount) }}
-        </dd>
+        <dt class="text-ink-soft">Rent</dt>
+        <dd class="tabular">{{ peso(billInfo.rent_amount) }}</dd>
+      </div>
+      <div class="flex items-baseline justify-between gap-3">
+        <dt class="text-ink-soft">Water</dt>
+        <dd class="tabular">{{ peso(billInfo.water_amount) }}</dd>
       </div>
       <div v-if="partiallySettled" class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">Already paid</dt>
@@ -444,23 +453,39 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       </p>
     </div>
 
-    <!-- Could not open -->
-    <div v-else-if="errorMessage" class="ws-reveal flex flex-col items-start gap-3 rounded-2xl bg-overdue-soft p-4 text-sm text-overdue">
-      <p class="flex items-center gap-2 font-semibold">
-        <AlertCircle class="size-4" aria-hidden="true" />
-        {{ hasAttemptedPayment ? 'This payment did not complete' : 'The payment page could not be opened' }}
+    <!-- Could not open, refused, or did not complete. The body is ink, not
+         red: a paragraph of red text is hard to read on the pink. -->
+    <div
+      v-else-if="errorMessage"
+      :class="[
+        'ws-reveal flex flex-col items-start gap-2 rounded-2xl p-4 text-sm leading-6',
+        isRefusal ? 'bg-verify-soft' : 'bg-overdue-soft',
+      ]"
+    >
+      <p :class="['flex items-start gap-2 font-semibold', isRefusal ? 'text-ink' : 'text-overdue']">
+        <AlertCircle
+          :class="['mt-1 size-4 shrink-0', isRefusal ? 'text-verify' : 'text-overdue']"
+          aria-hidden="true"
+        />
+        {{
+          hasAttemptedPayment
+            ? 'This payment did not complete'
+            : isRefusal
+              ? 'Payment not opened'
+              : 'The payment page could not be opened'
+        }}
       </p>
-      <p>{{ errorMessage }}</p>
+      <p class="text-ink">{{ errorMessage }}</p>
       <!--
         No retry once the form has been on screen. Past that point the resident
         may already have authorised in GCash, and "Try again" would open a second
         session for the same bill. Checkout now refuses that while a payment is
         awaiting verification, but the button should not be asking for it.
       -->
-      <button v-if="!hasAttemptedPayment && canRetry" type="button" class="pill-btn" @click="initializeAdyen">
+      <button v-if="!hasAttemptedPayment && canRetry" type="button" class="pill-btn mt-1" @click="initializeAdyen">
         Try again
       </button>
-      <p v-else-if="hasAttemptedPayment" class="text-xs text-ink-soft">
+      <p v-else-if="hasAttemptedPayment" class="text-xs leading-5 text-ink-soft">
         Close this and check your payments page. Do not pay again unless the landlady asks you to.
       </p>
     </div>
@@ -477,7 +502,7 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
         Payment details stay with Adyen
       </p>
       <button type="button" class="pill-btn" @click="emit('close')">
-        {{ isCompleted ? 'Done' : 'Cancel' }}
+        {{ isCompleted ? 'Done' : errorMessage ? 'Close' : 'Cancel' }}
       </button>
     </template>
   </WsModal>

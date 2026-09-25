@@ -151,6 +151,12 @@ const pendingOnlinePayments = ref<PaymentRow[]>([]);
 const rejectedPayments = ref<PaymentRow[]>([]);
 const recordedReceipts = ref<ReceiptRow[]>([]);
 
+/** `Adyen Online` is the ledger's name for a GCash payment made through this portal. */
+function methodLabel(method: string | null | undefined): string {
+  if (!method) return '';
+  return method === 'Adyen Online' ? 'GCash (online)' : method;
+}
+
 const firstName = computed(() => {
   const full = tenantData.value.name || currentUser.value?.fullName || '';
   return full.split(/\s+/)[0] ?? '';
@@ -299,7 +305,7 @@ async function fetchTenantData() {
         id: String(p.id),
         amount: Number(p.amount) || 0,
         date: shortDate(p.paid_at || p.created_at, true),
-        method: p.payment_method || 'Online payment',
+        method: methodLabel(p.payment_method) || 'Online payment',
       }));
 
     rejectedPayments.value = (paymentsData ?? [])
@@ -308,7 +314,7 @@ async function fetchTenantData() {
         id: String(p.id),
         amount: Number(p.amount) || 0,
         date: shortDate(p.paid_at || p.created_at, true),
-        method: p.payment_method || 'Online payment',
+        method: methodLabel(p.payment_method) || 'Online payment',
       }));
 
     recordedReceipts.value = (incomeData ?? []).slice(0, 4).map((inc: any) => ({
@@ -320,7 +326,7 @@ async function fetchTenantData() {
       // for not being it.
       amount: (Number(inc.remitted_amount) || 0) + (Number(inc.gbg_fee) || 0),
       date: shortDate(inc.date_paid, true),
-      method: inc.payment_method || '',
+      method: methodLabel(inc.payment_method),
       period:
         inc.rent_period_start && inc.rent_period_end
           ? `${shortDate(inc.rent_period_start)} to ${shortDate(inc.rent_period_end, true)}`
@@ -507,26 +513,16 @@ const statusTone = computed(() => {
 
 <template>
   <div class="ws-focus flex flex-col gap-5 text-ink">
-    <header class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-      <div class="min-w-0">
-        <p class="text-sm text-ink-faint">{{ todayLabel }}</p>
-        <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight">
-          Good {{ partOfDay }}<template v-if="firstName">, {{ firstName }}</template>
-        </h1>
-        <p v-if="tenantData.room" class="mt-1 text-sm text-ink-soft">
-          {{ tenantData.room }}<template v-if="tenantData.floor">, floor {{ tenantData.floor }}</template>
-        </p>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <router-link to="/tenant/tickets" class="pill-btn">
-          <Wrench class="size-4 text-ink-soft" aria-hidden="true" />
-          Request a repair
-        </router-link>
-        <router-link to="/tenant/payments" class="pill-btn">
-          <CreditCard class="size-4 text-ink-soft" aria-hidden="true" />
-          Payment history
-        </router-link>
-      </div>
+    <!-- No quick links here: "Request a repair" and "Payment history" repeated
+         the Repairs tile's button and the Payments tile's link below. -->
+    <header class="min-w-0">
+      <p class="text-sm text-ink-faint">{{ todayLabel }}</p>
+      <h1 class="mt-1 text-3xl sm:text-[2.125rem] leading-tight font-medium tracking-tight break-words">
+        Good {{ partOfDay }}<template v-if="firstName">, {{ firstName }}</template>
+      </h1>
+      <p v-if="tenantData.room" class="mt-1 text-sm text-ink-soft">
+        {{ tenantData.room }}<template v-if="tenantData.floor">, floor {{ tenantData.floor }}</template>
+      </p>
     </header>
 
     <div
@@ -703,7 +699,7 @@ const statusTone = computed(() => {
           <p v-if="tenantData.unitRent" class="text-sm leading-6 text-ink-soft">
             Your unit lets at
             <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent) }}</strong>
-            a month. A bill appears here once the landlady raises one.
+            a month. A bill appears here once one is raised.
           </p>
         </div>
         <template v-else>
@@ -773,22 +769,25 @@ const statusTone = computed(() => {
         >
           No payments are on file yet.
         </p>
-        <template v-else>
+        <!-- One divided list, so the sections read as rows of the same list. -->
+        <div v-else class="flex flex-col divide-y divide-line">
           <!-- First, because it is the only one that needs the resident to do
                something. Rejecting a payment reopens its bill to 'Due'. -->
+          <!-- The first two headings are for screen readers only: each row's
+               pill already says "Not accepted" or "Waiting for verification". -->
           <section v-if="rejectedPayments.length" aria-labelledby="rejected-payments-heading">
-            <h3 id="rejected-payments-heading" class="text-xs font-medium text-ink-faint">Not accepted</h3>
+            <h3 id="rejected-payments-heading" class="sr-only">Not accepted</h3>
             <ul class="divide-y divide-line">
               <li
                 v-for="(p, i) in rejectedPayments"
                 :key="p.id"
-                class="list-reveal-item flex flex-wrap items-center justify-between gap-3 py-3"
+                class="list-reveal-item flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
-                <span class="min-w-0">
+                <span class="min-w-0 flex-1 basis-48">
                   <span class="block text-sm font-medium">{{ p.method }}</span>
-                  <span class="block text-xs text-ink-faint">
-                    Sent {{ p.date }}. This money was not accepted and the bill it was for is still owed.
+                  <span class="block text-xs leading-5 text-ink-faint">
+                    Sent {{ p.date }}. The bill it was for is still owed.
                   </span>
                 </span>
                 <span class="flex items-center gap-3">
@@ -799,15 +798,15 @@ const statusTone = computed(() => {
             </ul>
           </section>
           <section v-if="pendingOnlinePayments.length" aria-labelledby="pending-payments-heading">
-            <h3 id="pending-payments-heading" class="text-xs font-medium text-ink-faint">Waiting for verification</h3>
+            <h3 id="pending-payments-heading" class="sr-only">Waiting for verification</h3>
             <ul class="divide-y divide-line">
               <li
                 v-for="(p, i) in pendingOnlinePayments"
                 :key="p.id"
-                class="list-reveal-item flex flex-wrap items-center justify-between gap-3 py-3"
+                class="list-reveal-item flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
-                <span class="min-w-0">
+                <span class="min-w-0 flex-1 basis-48">
                   <span class="block text-sm font-medium">{{ p.method }}</span>
                   <span class="block text-xs text-ink-faint">Sent {{ p.date }}</span>
                 </span>
@@ -818,16 +817,16 @@ const statusTone = computed(() => {
               </li>
             </ul>
           </section>
-          <section v-if="recordedReceipts.length" aria-labelledby="recorded-receipts-heading">
-            <h3 id="recorded-receipts-heading" class="text-xs font-medium text-ink-faint">Recorded by the landlady</h3>
+          <section v-if="recordedReceipts.length" aria-labelledby="recorded-receipts-heading" class="pt-4 first:pt-0">
+            <h3 id="recorded-receipts-heading" class="pb-1 text-xs font-medium text-ink-faint">Recorded by the landlady</h3>
             <ul class="divide-y divide-line">
               <li
                 v-for="(r, i) in recordedReceipts"
                 :key="r.id"
-                class="list-reveal-item flex flex-wrap items-center justify-between gap-3 py-3"
+                class="list-reveal-item flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
               >
-                <span class="min-w-0">
+                <span class="min-w-0 flex-1 basis-48">
                   <span class="block text-sm font-medium">
                     {{ r.period ? `Rent for ${r.period}` : 'Rent payment' }}
                   </span>
@@ -847,11 +846,11 @@ const statusTone = computed(() => {
                  so the portal read short of the paper in the resident's hand and
                  a note here had to apologise for it. `tenant.ts` selects
                  `gbg_fee` now and the sum is taken above. -->
-            <p class="text-xs leading-5 text-ink-faint">
-              Each figure is the whole receipt — rent, water and the garbage fee together.
+            <p class="pt-1 text-xs leading-5 text-ink-faint">
+              Amounts include rent, water and the garbage fee.
             </p>
           </section>
-        </template>
+        </div>
       </OverviewTile>
 
       <OverviewTile
@@ -893,7 +892,7 @@ const statusTone = computed(() => {
               <dd class="font-medium">{{ tenantData.roomDetails || 'Not on file' }}</dd>
             </div>
             <div>
-              <dt class="text-xs text-ink-faint">Cluster</dt>
+              <dt class="text-xs text-ink-faint">Building</dt>
               <dd class="font-medium">{{ tenantData.roomType || 'Not on file' }}</dd>
             </div>
             <div>

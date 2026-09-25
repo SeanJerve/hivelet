@@ -58,9 +58,12 @@ const loadFailed = ref(false);
 const successNotice = ref('');
 const errorNotice = ref('');
 
+/** First and last name, as the header's avatar does: "Ana Marie Bonto" is AB there, not AM. */
 const initials = computed(() => {
   const name = form.value.full_name || currentUser.value?.fullName || 'Resident';
-  return name.split(/\s+/).slice(0, 2).map(p => p[0]?.toUpperCase() || '').join('') || 'T';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const picked = parts.length >= 2 ? [parts[0], parts[parts.length - 1]] : parts;
+  return picked.map((p) => p[0]?.toUpperCase() || '').join('') || 'T';
 });
 
 const isDirty = computed(
@@ -160,7 +163,7 @@ async function handleSave() {
 
   const url = form.value.facebook_url.trim();
   if (url && !/^https?:\/\//i.test(url)) {
-    errorNotice.value = 'Facebook URL must begin with http:// or https://';
+    errorNotice.value = 'Your Facebook page link must begin with http:// or https://.';
     return;
   }
 
@@ -194,11 +197,11 @@ async function handleSave() {
     // into the session made an edit the server refused look like it had been accepted.
 
     savedSnapshot.value = { ...form.value };
-    successNotice.value = 'Your profile details have been saved successfully!';
-    showToast('success', 'Profile Updated', 'Your profile details have been saved successfully.');
+    successNotice.value = 'Your details are saved.';
+    showToast('success', 'Details saved', 'Your details are saved.');
   } catch (err: any) {
     errorNotice.value = `Save failed: ${err?.message || err}`;
-    showToast('error', 'Save Failed', err?.message || 'Could not save profile details.');
+    showToast('error', 'Not saved', err?.message || 'Your details could not be saved.');
   } finally {
     saving.value = false;
   }
@@ -220,8 +223,7 @@ function handleReset() {
         My details
       </h1>
       <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-        Your phone number, who to call in an emergency, and what you do. Keep these right so the
-        landlady can reach you.
+        Keep these right so the landlady can reach you.
       </p>
       <RouterLink
         to="/privacy"
@@ -297,7 +299,7 @@ function handleReset() {
 
         <div class="min-w-0 flex-1">
           <div class="flex flex-col items-center gap-2 sm:flex-row">
-            <h2 class="text-xl font-semibold tracking-tight text-ink">{{ form.full_name }}</h2>
+            <h2 class="min-w-0 text-xl font-semibold tracking-tight text-ink break-words">{{ form.full_name }}</h2>
             <!--
               This pill read "Active Tenant" on every account, whatever the record said,
               beside a line printing the real status two rows below it.
@@ -307,10 +309,11 @@ function handleReset() {
             </StatusPill>
           </div>
 
-          <p class="mt-2 text-sm leading-6 text-ink-soft">
+          <p class="mt-2 text-sm leading-6 text-ink-soft break-words">
             <template v-if="identity.email">You sign in with {{ identity.email }}.</template>
             <template v-else-if="form.phone_number">
-              No email on file, so you sign in with {{ form.phone_number }}.
+              No email on file, so you sign in with
+              <span class="whitespace-nowrap">{{ form.phone_number }}</span>.
             </template>
             <template v-else>No email on file.</template>
           </p>
@@ -416,7 +419,7 @@ function handleReset() {
           <div class="flex items-center gap-2">
             <button type="button" :disabled="!isDirty || saving || loadFailed" class="pill-btn" @click="handleReset">
               <RotateCcw class="size-3.5" aria-hidden="true" />
-              <span>Put it back</span>
+              <span>Undo changes</span>
             </button>
             <button type="submit" :disabled="!isDirty || saving || loadFailed" class="pill-btn-brand">
               <Save class="size-4" aria-hidden="true" />

@@ -13,13 +13,10 @@ import WsModal from '@/components/ui/WsModal.vue';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
+import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import {
-  FileText,
   Send,
   CheckCircle2,
-  Clock,
-  ShieldCheck,
-  Paperclip,
   Image as ImageIcon,
   X,
   AlertTriangle,
@@ -39,9 +36,9 @@ import { useToast } from '@/lib/useToast';
 const { showToast } = useToast();
 
 const ticketFilterOptions = [
-  { value: 'All', label: 'All Tickets' },
-  { value: 'Open', label: 'Open Only' },
-  { value: 'Resolved', label: 'Resolved Only' },
+  { value: 'All', label: 'All requests' },
+  { value: 'Open', label: 'Open' },
+  { value: 'Resolved', label: 'Done' },
 ];
 
 interface TicketRow {
@@ -150,6 +147,9 @@ function priorityWord(priority: string) {
   return 'No rush';
 }
 
+/** The priority select, in the same words the list shows. The value sent is the enum. */
+const priorityOptions = PRIORITY_OPTIONS.map((value) => ({ value, label: priorityWord(value) }));
+
 function priorityTone(priority: string): 'overdue' | 'verify' | 'neutral' {
   if (priority === 'Emergency') return 'overdue';
   if (priority === 'High') return 'verify';
@@ -232,10 +232,10 @@ const savingNote = ref(false);
  * outcomes to the person who filed the ticket.
  */
 const TIMELINE_STAGES = [
-  { key: 'Submitted',   label: 'Submitted',   desc: 'Your ticket has been received.' },
-  { key: 'In Progress', label: 'In Progress', desc: 'Work on this request is underway.' },
-  { key: 'Resolved',    label: 'Resolved',    desc: 'The issue has been resolved.' },
-  { key: 'Closed',      label: 'Closed',      desc: 'This ticket is closed.' },
+  { key: 'Submitted',   label: 'Submitted',   desc: 'The landlady has your request.' },
+  { key: 'In Progress', label: 'In progress', desc: 'Work on it is underway.' },
+  { key: 'Resolved',    label: 'Resolved',    desc: 'The problem has been fixed.' },
+  { key: 'Closed',      label: 'Closed',      desc: 'This request is closed.' },
 ];
 
 function getStageIndex(status: string): number {
@@ -275,7 +275,7 @@ async function openTimeline(ticket: TicketRow) {
     if (msgs && Array.isArray(msgs) && msgs.length > 0) {
       timelineNotes.value = msgs.map((m) => ({
         id: m.id,
-        author: m.profiles?.role === 'admin' ? 'Landlady Fe' : 'You (Resident)',
+        author: m.profiles?.role === 'admin' ? 'Landlady' : 'You',
         text: m.message_body,
         timestamp: m.created_at,
       }));
@@ -320,7 +320,7 @@ function seedNotesForTicket(ticket: TicketRow): TicketNote[] {
     {
       id: `note-sys-${ticket.id}`,
       author: 'System',
-      text: `Ticket #${ticket.id.slice(0, 8)} was submitted on ${formatDate(ticket.created_at)}.`,
+      text: `Sent on ${formatDate(ticket.created_at)}.`,
       timestamp: ticket.created_at,
     },
   ];
@@ -328,7 +328,7 @@ function seedNotesForTicket(ticket: TicketRow): TicketNote[] {
     base.push({
       id: `note-progress-${ticket.id}`,
       author: 'System',
-      text: 'This ticket is marked In Progress.',
+      text: 'Marked in progress.',
       timestamp: ticket.created_at,
     });
   }
@@ -357,7 +357,7 @@ async function postNote() {
     });
     timelineNotes.value.push({
       id: res?.id || `note-${Date.now()}`,
-      author: 'You (Resident)',
+      author: 'You',
       text: text,
       timestamp: new Date().toISOString(),
     });
@@ -533,9 +533,8 @@ async function handleTicketSubmit() {
     // ticket still exists and the server says so here rather than returning an
     // error - submitting again would file the same complaint twice.
     ticketNotice.value = created?.attachmentWarning
-      ? `Ticket "${ticketTitle.value.trim()}" has been submitted to Landlady Fe Galang Da Silva ` +
-        `for review. ${created.attachmentWarning}`
-      : `Ticket "${ticketTitle.value.trim()}" has been submitted to Landlady Fe Galang Da Silva for review.`;
+      ? `"${ticketTitle.value.trim()}" was sent to the landlady. ${created.attachmentWarning}`
+      : `"${ticketTitle.value.trim()}" was sent to the landlady.`;
     ticketTitle.value = '';
     ticketDescription.value = '';
     ticketCategory.value = 'Plumbing';
@@ -559,6 +558,7 @@ function formatDate(iso: string) {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: PROPERTY_TIMEZONE,
   });
 }
 
@@ -570,6 +570,7 @@ function formatDateTime(iso: string) {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
+    timeZone: PROPERTY_TIMEZONE,
   });
 }
 
@@ -605,9 +606,10 @@ function formatDateTime(iso: string) {
         class="ws-reveal flex items-center justify-between gap-3 rounded-tile bg-brand-soft p-4 sm:p-5 outline-none"
         role="status"
       >
-        <p class="flex items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
+        <p class="flex min-w-0 items-center gap-2.5 text-sm font-semibold leading-6 text-brand">
           <CheckCircle2 class="size-5 shrink-0" aria-hidden="true" />
-          {{ ticketNotice }}
+          <!-- The resident's own title, which can be one unbroken run. -->
+          <span class="min-w-0 wrap-anywhere">{{ ticketNotice }}</span>
         </p>
         <!-- No `size-9`: it overrode `.icon-btn`'s own 2.75rem down to 36px. -->
         <button
@@ -626,7 +628,7 @@ function formatDateTime(iso: string) {
           <div class="border-b border-line p-5 sm:p-6">
             <h2 class="text-base font-semibold text-ink">Report it</h2>
             <p class="mt-1 text-sm leading-6 text-ink-soft">
-              This goes straight to Mrs. Da Silva.
+              This goes straight to the landlady.
             </p>
           </div>
 
@@ -644,7 +646,7 @@ function formatDateTime(iso: string) {
 
               <div>
                 <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-title">
-                  Issue Title
+                  What needs fixing
                 </label>
                 <input
                   id="ticket-title"
@@ -672,13 +674,13 @@ function formatDateTime(iso: string) {
 
                 <div>
                   <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-priority">
-                    Priority
+                    How urgent
                   </label>
                   <PillSelect
                     id="ticket-priority"
                     v-model="ticketPriority"
-                    :options="PRIORITY_OPTIONS"
-                    aria-label="Priority"
+                    :options="priorityOptions"
+                    aria-label="How urgent"
                     widthClass="w-full"
                   />
                 </div>
@@ -686,22 +688,22 @@ function formatDateTime(iso: string) {
 
               <div>
                 <label class="mb-1.5 block text-xs text-ink-faint" for="ticket-desc">
-                  Details &amp; Description
+                  Details
                 </label>
                 <textarea
                   id="ticket-desc"
                   v-model="ticketDescription"
                   rows="4"
-                  placeholder="Describe the issue — where it is in the unit, when it started, and how severe it is."
+                  placeholder="Where it is in the unit, when it started, and how bad it is."
                   class="ws-textarea w-full"
                   required
                 ></textarea>
               </div>
 
               <div>
-                <label class="mb-1.5 block text-xs text-ink-faint">
-                  Attach Photo <span class="font-normal text-ink-soft">(optional)</span>
-                </label>
+                <p class="mb-1.5 block text-xs text-ink-faint">
+                  Photo <span class="text-ink-soft">(optional)</span>
+                </p>
 
                 <div
                   v-if="!ticketPhotoUrl"
@@ -718,8 +720,8 @@ function formatDateTime(iso: string) {
                     for="ticket-photo-input"
                     class="cursor-pointer flex flex-col items-center justify-center gap-1.5"
                   >
-                    <ImageIcon class="size-6 text-brand" />
-                    <span class="text-xs font-semibold text-ink">Click to upload a photo</span>
+                    <ImageIcon class="size-6 text-brand" aria-hidden="true" />
+                    <span class="text-xs font-semibold text-ink">Add a photo</span>
                     <span class="text-xs text-ink-soft">PNG, JPG or WEBP up to {{ MAX_PHOTO_LABEL }}</span>
                   </label>
                 </div>
@@ -765,8 +767,8 @@ function formatDateTime(iso: string) {
               :disabled="submitting"
               class="pill-btn-brand w-full min-h-11 mt-4"
             >
-              <Send class="size-3.5" />
-              <span>{{ submitting ? 'Submitting…' : 'Submit Maintenance Ticket' }}</span>
+              <Send class="size-3.5" aria-hidden="true" />
+              <span>{{ submitting ? 'Sending…' : 'Send request' }}</span>
             </button>
           </form>
         </div>
@@ -780,33 +782,24 @@ function formatDateTime(iso: string) {
             border-only treatment here now, so the two panels read as one pair
             rather than one looking finished and the other looking like a draft.
           -->
-          <div class="px-6 py-4 border-b border-line flex items-center justify-between gap-3 flex-wrap">
-            <div class="flex items-center gap-2">
-              <h2 class="font-semibold text-sm text-ink flex items-center gap-2">
-                <FileText class="size-4 text-brand" />
-                My Ticket Tracker
-              </h2>
-              <!-- A count computed from a list that failed to load is a claim, not
-                   an absence. Both of these read 0 out of a dropped request. -->
-              <span class="text-xs text-ink-soft">
-                <template v-if="ticketsLoadFailed">(not loaded)</template>
-                <template v-else-if="loadingTickets"></template>
-                <template v-else>({{ filteredTickets.length }} ticket{{ filteredTickets.length === 1 ? '' : 's' }})</template>
-              </span>
-            </div>
-            <span class="text-xs text-ink-soft">
-              <template v-if="ticketsLoadFailed">Open and resolved counts are not available</template>
+          <!-- Same shape and padding as "Report it", so the two header strips
+               line up side by side at `lg`. -->
+          <div class="border-b border-line p-5 sm:p-6">
+            <h2 class="text-base font-semibold text-ink">Your requests</h2>
+            <!-- A count computed from a list that failed to load is a claim, not
+                 an absence. It read 0 out of a dropped request. -->
+            <p class="mt-1 min-h-6 text-sm leading-6 text-ink-soft">
+              <template v-if="ticketsLoadFailed">Not loaded</template>
               <template v-else-if="loadingTickets"></template>
-              <template v-else>
-                <strong class="text-ink">{{ openCount }}</strong> open ·
-                <strong class="text-ink">{{ resolvedCount }}</strong> resolved
-              </template>
-            </span>
+              <template v-else>{{ openCount }} open, {{ resolvedCount }} done</template>
+            </p>
           </div>
 
-          <!-- Filter Bar (Identical to Admin Dispatch / Maintenance Tickets) -->
-          <div class="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div class="relative w-full sm:w-80 shrink-0">
+          <!-- Wraps rather than sitting in one fixed row: at `lg` this panel is
+               7 of 12 columns, and a fixed 20rem search plus a 13rem select ran
+               66px past its right edge at 1024. -->
+          <div class="flex flex-wrap items-center gap-3 border-b border-line px-5 py-4 sm:px-6">
+            <div class="relative min-w-0 flex-1 basis-60">
               <!-- left-4/pl-11, which is what the comment above claims: the
                    dispatch board's search box uses that inset, and this one was
                    2px off it. -->
@@ -816,7 +809,7 @@ function formatDateTime(iso: string) {
                 id="ticket-search"
                 v-model="searchQuery"
                 type="search"
-                placeholder="What it was about"
+                placeholder="Search by title or details"
                 class="ws-input w-full pl-11 pr-4 sm:text-sm"
               />
             </div>
@@ -825,6 +818,7 @@ function formatDateTime(iso: string) {
               v-model="statusFilter"
               :options="ticketFilterOptions"
               aria-label="Show which requests"
+              width-class="w-full sm:w-52"
             />
           </div>
 
@@ -859,7 +853,7 @@ function formatDateTime(iso: string) {
             -->
             <UnavailableNote
               v-else-if="ticketsLoadFailed"
-              message="Your requests could not be loaded. That is not the same as having none — anything you have already sent is still with the landlady."
+              message="Your requests could not be loaded. That is not the same as having none. Anything you already sent is still with the landlady."
               @retry="fetchTickets"
             />
 
@@ -867,15 +861,19 @@ function formatDateTime(iso: string) {
               v-else-if="filteredTickets.length === 0"
               class="ws-reveal py-12 text-center space-y-2"
             >
-              <Inbox class="size-8 text-ink-soft/50 mx-auto" />
-              <p class="text-sm font-semibold text-ink">No tickets to show</p>
-              <p class="text-xs text-ink-soft">
+              <Inbox class="size-8 text-ink-soft/50 mx-auto" aria-hidden="true" />
+              <p class="text-sm font-semibold text-ink">
+                {{ tickets.length === 0 ? 'No requests yet' : 'Nothing to show' }}
+              </p>
+              <p class="text-sm text-ink-soft break-words">
                 {{
                   tickets.length === 0
-                    ? 'Submit a ticket using the form and it will appear here.'
+                    ? 'Send one with the form and it will appear here.'
                     : searchQuery.trim()
                       ? `Nothing matches "${searchQuery.trim()}".`
-                      : `You have no ${statusFilter.toLowerCase()} tickets.`
+                      : statusFilter === 'Resolved'
+                        ? 'None of your requests is done yet.'
+                        : 'You have no open requests.'
                 }}
               </p>
             </div>
@@ -915,11 +913,9 @@ function formatDateTime(iso: string) {
                     <h3 class="font-semibold text-sm text-ink group-hover:text-brand transition-colors leading-snug break-words">
                       {{ ticket.title }}
                     </h3>
-                    <p class="text-xs text-ink-soft mt-0.5">
-                      <span v-if="ticket.id" class="font-mono font-semibold text-ink-soft">#{{ ticket.id.slice(0, 8) }} · </span>
-                      Submitted {{ formatDate(ticket.created_at) }}
-                      <span v-if="ticket.rooms"> · Unit {{ ticket.rooms.room_number }}</span>
-                    </p>
+                    <!-- No ticket id or unit number: the id means nothing to a
+                         resident, and every request here is for their own unit. -->
+                    <p class="text-xs text-ink-soft mt-0.5">Sent {{ formatDate(ticket.created_at) }}</p>
                   </div>
 
                   <div class="flex items-center gap-2.5 shrink-0">
@@ -949,7 +945,7 @@ function formatDateTime(iso: string) {
                       </li>
                     </ol>
                     <span class="sm:hidden text-xs font-semibold text-ink">{{ ticketStepLabel(ticket.status) }}</span>
-                    <div class="p-1 rounded-lg text-ink-soft group-hover:text-ink transition-colors">
+                    <div class="p-1 rounded-lg text-ink-soft group-hover:text-ink transition-colors" aria-hidden="true">
                       <ChevronDown
                         :class="[ 'size-4 transition-transform duration-200 ease-[var(--ease-out)]', isTicketExpanded(ticket.id) ? 'rotate-180 text-brand' : '' ]"
                       />
@@ -962,7 +958,7 @@ function formatDateTime(iso: string) {
                   <!-- Body: description -->
                   <div class="px-5 py-3.5 bg-canvas">
                     <!-- break-words: same free-text overflow risk as the title above. -->
-                    <p class="text-xs text-ink-soft leading-relaxed break-words">{{ ticket.description }}</p>
+                    <p class="text-sm text-ink-soft leading-6 break-words">{{ ticket.description }}</p>
 
                     <!--
                       The photo the resident attached, shown back to them.
@@ -1014,9 +1010,9 @@ function formatDateTime(iso: string) {
                       @click.stop="openTimeline(ticket)"
                       class="pill-btn ml-auto text-xs px-3"
                     >
-                      <ListChecks class="size-3.5 text-brand" />
-                      <span>Timeline</span>
-                      <ChevronRight class="size-3" />
+                      <ListChecks class="size-3.5 text-brand" aria-hidden="true" />
+                      <span>Progress and notes</span>
+                      <ChevronRight class="size-3" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -1036,10 +1032,11 @@ function formatDateTime(iso: string) {
         @close="closeTimeline()"
       >
 
-        <div class="p-6 space-y-6">
-          <!-- 5-Stage Progress Stepper -->
+        <!-- No padding of its own: WsModal's body already pads, and a second
+             `p-6` left 255px for the stepper on a 375px phone. -->
+        <div class="space-y-6">
           <div>
-            <p class="text-xs font-semibold text-ink-soft mb-4">Repair Progress</p>
+            <p class="text-xs font-semibold text-ink-soft mb-4">Progress</p>
             <div class="space-y-0">
               <div
                 v-for="(stage, index) in TIMELINE_STAGES"
@@ -1063,13 +1060,12 @@ function formatDateTime(iso: string) {
                 <!-- Stage text -->
                 <div class="pb-5 flex-1 min-w-0">
                   <p
-                    :class="[ 'text-xs sm:text-sm font-semibold leading-tight', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink' : 'text-ink-soft' ]"
+                    :class="[ 'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold leading-tight', index <= getStageIndex(activeTimelineTicket.status) ? 'text-ink' : 'text-ink-soft' ]"
                   >
                     {{ stage.label }}
                     <StatusPill
                       v-if="index === getStageIndex(activeTimelineTicket.status)"
                       tone="paid"
-                      class="ml-2"
                       >Where it is now</StatusPill
                     >
                   </p>
@@ -1087,15 +1083,14 @@ function formatDateTime(iso: string) {
 
           <!-- Notes / Comment Feed -->
           <div>
-            <p class="text-xs font-semibold text-ink-soft mb-3">Activity &amp; Notes</p>
+            <p class="text-xs font-semibold text-ink-soft mb-3">Notes</p>
 
             <p
               v-if="timelineError"
               class="mb-3 rounded-xl border border-verify-soft bg-verify-soft/60 px-3.5 py-2.5 text-xs text-ink-soft"
             >
               <strong class="text-ink">Replies could not be loaded.</strong>
-              This does not mean nobody has answered — only that we could not check.
-              <span class="text-ink-soft">{{ timelineError }}</span>
+              That does not mean nobody has answered. Close this and open it again to retry.
             </p>
 
             <div class="space-y-3 mb-4 max-h-48 overflow-y-auto">
@@ -1108,10 +1103,10 @@ function formatDateTime(iso: string) {
                 <div class="size-7 rounded-full bg-night text-on-night text-xs font-semibold flex items-center justify-center shrink-0">
                   {{ note.author[0] }}
                 </div>
-                <div class="flex-1 bg-canvas border border-line rounded-xl px-3.5 py-2.5">
+                <div class="min-w-0 flex-1 bg-canvas border border-line rounded-xl px-3.5 py-2.5">
                   <p class="text-xs font-semibold text-ink">{{ note.author }}</p>
-                  <p class="text-xs text-ink-soft mt-0.5 leading-relaxed">{{ note.text }}</p>
-                  <p class="text-xs text-ink-soft mt-1">{{ formatDateTime(note.timestamp) }}</p>
+                  <p class="text-sm text-ink-soft mt-0.5 leading-6 break-words">{{ note.text }}</p>
+                  <p class="text-xs text-ink-faint mt-1">{{ formatDateTime(note.timestamp) }}</p>
                 </div>
               </div>
             </div>
@@ -1131,17 +1126,17 @@ function formatDateTime(iso: string) {
                 id="ticket-note"
                 v-model="newNoteText"
                 type="text"
-                placeholder="Add a note for Mrs. Da Silva"
+                placeholder="Add a note"
                 @keydown.enter.prevent="postNote"
-                class="ws-input flex-1"
+                class="ws-input min-w-0 flex-1"
               />
               <button
                 @click="postNote"
                 :disabled="!newNoteText.trim() || savingNote"
                 class="pill-btn-brand shrink-0"
               >
-                <MessageSquarePlus class="size-3.5" />
-                <span>{{ savingNote ? '…' : 'Post' }}</span>
+                <MessageSquarePlus class="size-3.5" aria-hidden="true" />
+                <span>{{ savingNote ? '…' : 'Send' }}</span>
               </button>
             </div>
           </div>

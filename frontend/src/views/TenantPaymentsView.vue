@@ -222,7 +222,8 @@ const filteredPayments = computed(() => {
     return (
       p.invoiceRef.toLowerCase().includes(q) ||
       p.paymentMethod.toLowerCase().includes(q) ||
-      p.status.toLowerCase().includes(q)
+      p.status.toLowerCase().includes(q) ||
+      statusLabel(p.status).toLowerCase().includes(q)
     );
   });
 
@@ -232,6 +233,15 @@ const filteredPayments = computed(() => {
     return sortOrder.value === 'latest' ? timeB - timeA : timeA - timeB;
   });
 });
+
+/**
+ * The method as the resident would say it, not upper-cased. `Adyen Online` is
+ * the ledger's name for a GCash payment made through this portal.
+ */
+function methodLabel(method: string | null | undefined): string {
+  if (!method) return 'Not recorded';
+  return method === 'Adyen Online' ? 'GCash (online)' : method;
+}
 
 const isVerified = (status: string) => status === 'VERIFIED & SETTLED' || status === 'VERIFIED';
 
@@ -498,7 +508,7 @@ async function fetchPaymentHistory() {
       // GCash - every one of the 937 historical records is Cash - and
       // `|| 'VERIFIED'` displayed a payment with no verification status as
       // settled, which is the single thing BR-017 exists to prevent.
-      paymentMethod: (p.payment_method || 'UNKNOWN').toUpperCase(),
+      paymentMethod: methodLabel(p.payment_method),
       status: (p.verification_status || 'PENDING VERIFICATION').toUpperCase(),
     }));
   } catch (err: any) {
@@ -614,30 +624,24 @@ function refreshAll() {
           </template>
           <template v-else>No payment is on record for this tenancy yet.</template>
           <template v-if="standing.periodsDue > 1"> {{ standing.periodsDue }} periods are unpaid since then.</template>
+          Paying now covers {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
+          {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }}.
         </p>
       </div>
       <!--
-        `whitespace-normal max-w-full items-start text-left`, overriding
-        `.pill-btn-light`'s own `white-space: nowrap` (a Tailwind utility
-        class wins: `components` loses to `utilities` regardless of
-        selector weight). The label is a real date range, and "Pay July 13,
-        2026 to August 12, 2026 with GCash" measured 365px wide against a
-        320-375px phone - 10 to 65px past the edge, hidden rather than
-        wrapped by `body`'s `overflow-x: hidden`. Every resident with an
-        owed period sees this button, which today (2026-09-24) is all 32 of
-        them (B-65). `items-start` keeps the icon at the first line rather
-        than centred across the wrapped height.
+        The period is in the sentence above, not on the button. As a label,
+        "Pay July 13, 2026 to August 12, 2026 with GCash" ran 365px, wider than
+        a 320-375px phone (B-65), and wrapped to two lines inside a pill whose
+        `line-height: 1` and zero vertical padding left them touching its edges.
+        Same shape as the overview's amount-due tile now.
       -->
       <button
         type="button"
-        class="pill-btn-light mt-auto max-w-full items-start self-start whitespace-normal text-left"
+        class="pill-btn-light mt-auto self-start"
         @click="openAdyenModalForCurrentPeriod"
       >
-        <CreditCard class="size-4 shrink-0 translate-y-0.5" aria-hidden="true" />
-        <span
-          >Pay {{ formatDateOnly(standing.owedPeriods[0]!.start, longDate) }} to
-          {{ formatDateOnly(standing.owedPeriods[0]!.end, longDate) }} with GCash</span
-        >
+        <CreditCard class="size-4" aria-hidden="true" />
+        Pay with GCash
       </button>
       <p class="text-xs leading-5 text-on-brand-soft">
         {{ peso(standing.perPeriod.totalAmount, 2) }} per period. Paid in person? It shows here once the
@@ -748,29 +752,25 @@ function refreshAll() {
           />
         </div>
         <!--
-          No `shrink-0`: it was cancelling the `flex-wrap` beside it. An item
-          that cannot shrink is sized at max-content, which for a wrapping row
-          is every child on one line - 2 x 13rem plus the gap = 424px - so the
-          row never became narrow enough to wrap.
-
-          Measured in the running app at 375px, inside this tile's own padding:
-          the row ran to x=472 against a tile ending at 327, so the sort control
-          was entirely off screen, and `body`'s `overflow-x: hidden` meant it
-          was clipped rather than reachable. A resident on a phone could not
-          change the order of their own payment history. Re-measured after: two
-          rows at 375, one row on the same right edge at 1280.
+          No `shrink-0`. Sized at max-content (2 x 13rem plus the gap = 424px)
+          this row ran to x=472 against a tile ending at 327 on a 375px phone,
+          clipped rather than reachable by `body`'s `overflow-x: hidden`, so a
+          resident could not change the order of their own payment history.
+          Below `sm` the two selects now share one full-width row, half each.
         -->
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex w-full items-center gap-2 sm:w-auto">
           <PillSelect
             v-model="selectedYear"
             :options="yearOptions"
             aria-label="Filter by year"
+            width-class="min-w-0 flex-1 sm:w-52 sm:flex-none"
           />
           <PillSelect
             v-model="sortOrder"
             :options="sortOrderOptions"
             aria-label="Sort order"
             align="right"
+            width-class="min-w-0 flex-1 sm:w-52 sm:flex-none"
           />
         </div>
       </div>
@@ -801,8 +801,8 @@ function refreshAll() {
             <th scope="col">Reference</th>
             <th scope="col">Date paid</th>
             <th scope="col" class="num">Amount</th>
-            <th scope="col">How</th>
-            <th scope="col">Standing</th>
+            <th scope="col">Method</th>
+            <th scope="col">Status</th>
           </tr>
         </template>
 
@@ -811,14 +811,13 @@ function refreshAll() {
             <th scope="row" class="font-medium">{{ record.invoiceRef }}</th>
             <td class="whitespace-nowrap text-ink-soft">{{ record.datePaid }}</td>
             <td class="num font-semibold">{{ peso(record.amountPaid, 2) }}</td>
-            <td class="text-ink-soft">{{ record.paymentMethod }}</td>
+            <td class="whitespace-nowrap text-ink-soft">{{ record.paymentMethod }}</td>
             <td>
               <StatusPill :tone="statusTone(record.status)">
                 {{ statusLabel(record.status) }}
               </StatusPill>
               <p v-if="isRejected(record.status)" class="mt-1.5 text-sm text-ink-soft">
-                This money was not accepted, and the bill it was for is still owed. Pay it again or
-                speak to the landlady.
+                The bill it was for is still owed. Pay it again or speak to the landlady.
               </p>
             </td>
           </tr>
@@ -840,8 +839,7 @@ function refreshAll() {
             </StatusPill>
           </div>
           <p v-if="isRejected(record.status)" class="mt-1.5 text-sm text-ink-soft">
-            This money was not accepted, and the bill it was for is still owed. Pay it again or
-            speak to the landlady.
+            The bill it was for is still owed. Pay it again or speak to the landlady.
           </p>
 
           <dl class="mt-4 space-y-3 text-sm">
