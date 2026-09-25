@@ -96,13 +96,14 @@ onMounted(() => {
 <template>
   <div class="ws-focus flex-1 w-full font-editorial bg-canvas" @click="onHashClick">
     <div class="ws-page ws-content pt-4 pb-16 sm:pt-6 sm:pb-24">
-      <!-- The breadcrumb the enquiry page uses, at the same 44px tap height. -->
+      <!-- The breadcrumb the enquiry page uses, at the same 44px tap height. Underlined
+           in `ink-faint`, not `line`: see the note on `.legal-prose a` below. -->
       <nav aria-label="Breadcrumb">
         <ol class="flex flex-wrap items-center gap-x-2 text-xs text-ink-soft">
           <li>
             <RouterLink
               to="/public"
-              class="press inline-flex min-h-11 items-center gap-1.5 underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+              class="press inline-flex min-h-11 items-center gap-1.5 underline underline-offset-4 decoration-1 decoration-ink-faint hover:text-ink hover:decoration-ink transition-colors"
             >
               <ArrowLeft class="size-3.5" aria-hidden="true" />
               Home
@@ -146,7 +147,7 @@ onMounted(() => {
             <li v-for="s in sections" :key="s.id" class="break-inside-avoid">
               <a
                 :href="`#${s.id}`"
-                class="press flex min-h-11 items-center py-1 text-ink-soft underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink transition-colors"
+                class="press flex min-h-11 items-center py-1 text-ink-soft underline underline-offset-4 decoration-1 decoration-ink-faint hover:text-ink hover:decoration-ink transition-colors"
               >
                 {{ s.title }}
               </a>

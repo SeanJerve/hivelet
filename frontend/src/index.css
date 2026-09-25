@@ -282,6 +282,16 @@ body {
   padding: 0;
 }
 
+/*
+ * The scroll lock (lib/scrollLock.ts) sets `overflow: hidden` on body, but html
+ * is the scroll container (above), so the page behind every dialog and the
+ * phone menu still scrolled (measured 2026-09-25). This carries the lock up to
+ * html. The gutter stays reserved, so nothing shifts sideways.
+ */
+html:has(> body[style*='overflow: hidden']) {
+  overflow-y: hidden !important;
+}
+
 /* Modern sleek custom scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;

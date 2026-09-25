@@ -12,7 +12,7 @@
  * page. The filters are a pressed-state group, not tabs: they narrow one list
  * rather than swapping panels.
  */
-import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   unreadCount,
@@ -69,13 +69,18 @@ watch(
   { immediate: true }
 );
 
-const FILTERS = [
+const ALL_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'unread', label: 'Unread' },
   { key: 'payments', label: 'Billing' },
   { key: 'maintenance', label: 'Maintenance' },
   { key: 'inquiries', label: 'Inquiries' },
 ] as const;
+
+// Prospect inquiries reach the administrator only; a resident never has one.
+const FILTERS = computed(() =>
+  isAdmin.value ? ALL_FILTERS : ALL_FILTERS.filter((f) => f.key !== 'inquiries')
+);
 
 function getIconForType(type: string) {
   switch (type) {
@@ -352,7 +357,7 @@ onUnmounted(() => {
           <AlertTriangle class="mx-auto size-8 text-verify" aria-hidden="true" />
           <p class="mt-3 text-sm font-semibold text-ink">Notifications could not be loaded</p>
           <p class="mt-1 text-sm leading-6 text-ink-soft">
-            This does not mean there are none. We could not ask.
+            This does not mean there are none. Check your connection and try again.
           </p>
           <button
             type="button"
@@ -370,7 +375,9 @@ onUnmounted(() => {
             {{
               activeFilter === 'unread'
                 ? 'You have read everything.'
-                : 'Nothing has come in under this filter.'
+                : activeFilter === 'all'
+                  ? 'Nothing has come in yet.'
+                  : 'Nothing has come in under this filter.'
             }}
           </p>
         </div>
@@ -407,8 +414,10 @@ onUnmounted(() => {
             </span>
 
             <span class="min-w-0 flex-1">
+              <!-- The title wraps rather than truncating: at 375px even a
+                   short one was cut off, and the row is the only place it is shown. -->
               <span class="flex items-baseline justify-between gap-3">
-                <span class="truncate text-sm font-semibold text-ink group-hover:text-brand">
+                <span class="min-w-0 break-words text-sm font-semibold text-ink group-hover:text-brand">
                   {{ item.title }}
                 </span>
                 <time
@@ -441,11 +450,11 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Footer -->
+      <!-- Footer. Not under the failed state, which has its own "Try again". -->
       <div
-        class="flex items-center justify-between gap-3 border-t border-line px-4 py-3 text-xs text-ink-faint"
+        v-if="!(notificationsFetchFailed && filteredNotifications.length === 0 && !isLoading)"
+        class="flex items-center justify-end gap-3 border-t border-line px-4 py-3 text-xs"
       >
-        <span>Updates as they arrive</span>
         <button
           type="button"
           class="press rounded-full px-2.5 py-1.5 font-semibold text-brand hover:bg-brand-soft pointer-coarse:min-h-11"

@@ -95,9 +95,10 @@ const portalRoute = computed(() => {
               </RouterLink>
             </li>
             <li>
-              <!-- Was a second link to /public, which went nowhere in particular. -->
+              <!-- Was a second link to /public, which went nowhere in particular.
+                   "Inquire now", the header's own word for this link. -->
               <RouterLink to="/inquire" class="press inline-block py-3 text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
-                Register your interest
+                Inquire now
               </RouterLink>
             </li>
             <li>

@@ -297,9 +297,10 @@ onUnmounted(() => {
           so a screen reader hears whether the drawer is open; the drawer is a
           `v-if`, so `aria-controls` names an element only while it exists,
           which is allowed when `aria-expanded` is false.
+          Not on the landing page: its two links sit in the bar at every width.
         -->
         <button
-          v-if="isPublicRoute"
+          v-if="isPublicRoute && !isLandingPage"
           @click="isMobilePublicNavOpen = !isMobilePublicNavOpen"
           class="press flex md:hidden -ml-1 p-3 rounded-xl cursor-pointer"
           :class="isLandingPage ? 'text-white hover:bg-white/10' : 'text-ink-soft hover:bg-tile hover:text-ink'"
@@ -332,7 +333,16 @@ onUnmounted(() => {
         the text sits where it did, and the comma still meets them on the
         baseline because an inline-flex box takes its first line's baseline.
       -->
-      <nav v-if="isPublicRoute" class="hidden md:flex items-center ml-auto" :class="isLandingPage && 'on-dark'">
+      <!--
+        On the landing page this shows at every width, phones included: the
+        same two underlined links, not a menu button that drops them down
+        (asked for the phone to match the desktop, 2026-09-25).
+      -->
+      <nav
+        v-if="isPublicRoute"
+        class="items-center ml-auto"
+        :class="isLandingPage ? 'flex on-dark' : 'hidden md:flex'"
+      >
         <!-- Landing page: Editorial underlined links matching reference photo -->
         <template v-if="isLandingPage">
           <div class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light drop-shadow-sm text-white">
@@ -498,7 +508,7 @@ onUnmounted(() => {
                   </span>
                   <div class="min-w-0">
                     <p class="truncate text-sm font-semibold text-ink">
-                      {{ isTenant ? currentUser.fullName : 'Administrator' }}
+                      {{ currentUser.fullName || 'Administrator' }}
                     </p>
                     <p class="truncate text-xs text-ink-soft">{{ currentUser.email }}</p>
                     <p class="mt-1 text-xs font-semibold text-brand">
@@ -556,9 +566,6 @@ onUnmounted(() => {
                   </button>
                 </div>
 
-                <div class="border-t border-line px-5 py-3 text-xs text-ink-faint">
-                  Fe Galang Da Silva Boarding House
-                </div>
               </div>
             </Transition>
           </div>
@@ -582,10 +589,11 @@ onUnmounted(() => {
 
       </div>
 
-      <!-- Light green divider at bottom of header, same width as navbar elements -->
+      <!-- Light green divider at bottom of header, same width as navbar elements.
+           Its insets are `ws-page`'s gutters, 56px from `lg` included. -->
       <div
         v-if="!isLandingPage"
-        class="absolute bottom-0 inset-x-4 sm:inset-x-6 border-b border-line pointer-events-none"
+        class="absolute bottom-0 inset-x-4 sm:inset-x-6 lg:inset-x-14 border-b border-line pointer-events-none"
         aria-hidden="true"
       />
     </div>
@@ -609,38 +617,20 @@ onUnmounted(() => {
       leave-to-class="opacity-0 -translate-y-2"
     >
       <!--
-        This used to be a filled, boxed dropdown - `bg-tile ... shadow-md`
-        around two rounded button-rows - which read as a generic mobile menu
-        chrome, not this site (asked to match the desktop nav's own look,
-        2026-09-24). The landing page's desktop nav has no box at all:
-        underlined text directly on the hero photo (`isLandingPage` branch,
-        above). This mirrors that exactly rather than inventing a third
-        style - same underline, same white-on-photo colour, left-aligned
-        under the wordmark instead of centred across a card. `min-h-11` is
-        kept for the tap target even though the visible text is small.
-        `isLandingPage` is false only on a defensive fallback route this menu
-        cannot currently reach (every other public page hides AppHeader and
-        draws its own masthead - App.vue's `hidesGlobalHeader`), so that
-        branch keeps the plain boxed treatment rather than assuming it is
-        dead code.
+        Only for a public route other than the landing page, which draws its
+        links in the bar itself at every width (see the nav above). No such
+        route shows this header today (App.vue's `hidesGlobalHeader`), so this
+        is the defensive fallback, kept plain rather than deleted.
       -->
       <div
-        v-if="isPublicRoute && isMobilePublicNavOpen"
+        v-if="isPublicRoute && !isLandingPage && isMobilePublicNavOpen"
         id="public-mobile-nav"
-        :class="[
-          'md:hidden flex flex-col items-start gap-1 px-4',
-          isLandingPage ? 'pb-6 text-white' : 'border-t border-line bg-tile py-3 shadow-md',
-        ]"
+        class="md:hidden flex flex-col items-start gap-1 border-t border-line bg-tile px-4 py-3 shadow-md"
       >
         <RouterLink
           to="/inquire"
           @click="isMobilePublicNavOpen = false"
-          :class="[
-            'press inline-flex min-h-11 items-center text-sm transition-colors',
-            isLandingPage
-              ? 'font-light underline underline-offset-4 decoration-1 decoration-white/45 text-white hover:decoration-white'
-              : 'w-full rounded-lg px-3 font-semibold text-ink hover:bg-canvas hover:text-brand',
-          ]"
+          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
         >
           Inquire Now
         </RouterLink>
@@ -648,12 +638,7 @@ onUnmounted(() => {
           v-if="!isAuthenticated"
           to="/login"
           @click="isMobilePublicNavOpen = false"
-          :class="[
-            'press inline-flex min-h-11 items-center text-sm transition-colors',
-            isLandingPage
-              ? 'font-light underline underline-offset-4 decoration-1 decoration-white/45 text-white hover:decoration-white'
-              : 'w-full rounded-lg px-3 font-semibold text-ink hover:bg-canvas hover:text-brand',
-          ]"
+          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
         >
           Sign In
         </RouterLink>
@@ -661,14 +646,9 @@ onUnmounted(() => {
           v-else
           :to="brandRoute"
           @click="isMobilePublicNavOpen = false"
-          :class="[
-            'press inline-flex min-h-11 items-center text-sm transition-colors',
-            isLandingPage
-              ? 'font-light underline underline-offset-4 decoration-1 decoration-white/45 text-white hover:decoration-white'
-              : 'w-full rounded-lg px-3 font-semibold text-ink hover:bg-canvas hover:text-brand',
-          ]"
+          class="press inline-flex min-h-11 w-full items-center rounded-lg px-3 text-sm font-semibold text-ink transition-colors hover:bg-canvas hover:text-brand"
         >
-          Portal
+          Back to my dashboard
         </RouterLink>
       </div>
     </Transition>

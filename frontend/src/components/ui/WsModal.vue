@@ -148,8 +148,10 @@ onMounted(async () => {
    * `sr-only` file input, so focus sat on something nobody could see; and it
    * skipped any PillSelect above the first input, which is a `<button>`. From
    * the panel, the first Tab reaches the first control in order, whatever it is.
+   * `preventScroll`: focusing a panel taller than the screen scrolled the
+   * overlay about 40px, pushing the title and the X off the top.
    */
-  panel.value?.focus();
+  panel.value?.focus({ preventScroll: true });
 });
 
 /**

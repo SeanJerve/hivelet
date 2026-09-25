@@ -29,7 +29,7 @@ const iconTone: Record<string, string> = {
   <div
     class="ws-focus pointer-events-none fixed inset-x-4 top-4 z-[60] flex flex-col items-end gap-2 sm:inset-x-auto sm:right-6 sm:top-6 sm:max-w-sm"
     role="region"
-    aria-label="Notifications"
+    aria-label="Messages"
     aria-live="polite"
   >
     <TransitionGroup name="toast">
@@ -46,8 +46,8 @@ const iconTone: Record<string, string> = {
         </span>
 
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-semibold leading-snug">{{ toast.title }}</p>
-          <p class="mt-0.5 text-sm leading-6 text-on-night-soft">{{ toast.message }}</p>
+          <p class="break-words text-sm font-semibold leading-snug">{{ toast.title }}</p>
+          <p class="mt-0.5 break-words text-sm leading-6 text-on-night-soft">{{ toast.message }}</p>
         </div>
 
         <button

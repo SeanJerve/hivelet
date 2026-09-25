@@ -236,7 +236,19 @@ watch(
   { flush: 'post' }
 );
 
+/**
+ * The drawer is `lg:hidden`, so a tablet turned to landscape (or a window
+ * widened) with it open left an invisible drawer holding the scroll lock and
+ * focus trap. Close it once the desktop sidebar takes over.
+ */
+const desktopQuery = typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)') : null;
+function onDesktopChange(e: MediaQueryListEvent) {
+  if (e.matches) closeMobileNav();
+}
+desktopQuery?.addEventListener('change', onDesktopChange);
+
 onBeforeUnmount(() => {
+  desktopQuery?.removeEventListener('change', onDesktopChange);
   document.removeEventListener('keydown', onDrawerKeydown);
   if (isMobileSidebarOpen.value) unlockBodyScroll();
 });

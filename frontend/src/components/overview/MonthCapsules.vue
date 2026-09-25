@@ -67,6 +67,9 @@ function move(delta: number) {
 }
 
 const current = computed(() => props.months[selected.value]);
+
+/** The legend names only the kinds this chart actually draws. */
+const kindsShown = computed(() => new Set(props.months.map((m) => m.kind)));
 </script>
 
 <template>
@@ -159,9 +162,10 @@ const current = computed(() => props.months[selected.value]);
         <span class="block text-xl leading-7 font-semibold tabular tracking-tight text-ink">{{ describe(current) }}</span>
       </p>
       <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-soft">
-        <li class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />Recorded</li>
-        <li class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />Not entered yet</li>
-        <li class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />Expected</li>
+        <li v-if="kindsShown.has('recorded')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full bg-brand-bright" />Recorded</li>
+        <li v-if="kindsShown.has('unentered')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full hatch border border-line" />Not entered yet</li>
+        <li v-if="kindsShown.has('expected')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border-2 border-dashed border-ink-faint" />Expected</li>
+        <li v-if="kindsShown.has('future')" class="flex items-center gap-1.5"><span aria-hidden="true" class="size-3 rounded-full border border-dashed border-hatch" />Nothing to estimate from</li>
       </ul>
     </div>
   </div>

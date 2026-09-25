@@ -113,14 +113,18 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- One tile per row, on a phone -->
+      <!--
+        One tile per row, on a phone. A flat card is bordered, not filled
+        `bg-canvas`: the soft status pills are canvas-coloured too, and on a
+        canvas card they lost their outline (the directory's Vacant pill, 2026-09-25).
+      -->
       <div class="space-y-3 lg:hidden">
         <div
           v-for="(row, i) in visible"
           :key="i"
           :class="[
             'rounded-2xl p-5',
-            flat ? 'bg-canvas' : 'rounded-tile bg-tile',
+            flat ? 'border border-line' : 'rounded-tile bg-tile',
             revealFirstLoad ? 'list-reveal-item' : '',
           ]"
           :style="revealFirstLoad ? { animationDelay: `${Math.min(i, 9) * 30}ms` } : undefined"
