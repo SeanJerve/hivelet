@@ -360,6 +360,8 @@ interface MonthIncomeData {
   month: string;
   monthNum: number;
   hasIncome: boolean;
+  /** Any expense entry at all this month. None means not entered, not "cost nothing". */
+  hasExpenses: boolean;
   grossIncome: number;
   halfOfRentShare: number;
   waterIncome: number;
@@ -387,6 +389,7 @@ const live12MonthsData = computed<MonthIncomeData[]>(() =>
         month: name,
         monthNum,
         hasIncome: true,
+        hasExpenses: matchingExpenses.length > 0,
         grossIncome,
         halfOfRentShare: matchingRecords.reduce(
           (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0),
@@ -413,6 +416,7 @@ const live12MonthsData = computed<MonthIncomeData[]>(() =>
       month: name,
       monthNum,
       hasIncome: false,
+      hasExpenses: matchingExpenses.length > 0,
       grossIncome: projectedGross,
       halfOfRentShare: Math.round(projectedGross * 0.5),
       waterIncome: canProject ? baseMonthlyWater.value : 0,
@@ -510,6 +514,7 @@ const historical12MonthsData = computed<MonthIncomeData[]>(() =>
       month: name,
       monthNum,
       hasIncome: matchingRecords.length > 0,
+      hasExpenses: matchingExpenses.length > 0,
       grossIncome,
       halfOfRentShare: matchingRecords.reduce(
         (sum, r) => sum + Number(r.fiftyPercentShare || (r.cluster === 'BH' ? r.rent / 2 : r.rent) || 0),
@@ -1099,8 +1104,14 @@ const isExportingArchive = ref(false);
               >
                 <th scope="row">{{ d.month }}</th>
                 <td class="num">{{ peso(d.grossIncome) }}</td>
-                <td class="num text-ink-soft">{{ peso(d.expenses) }}</td>
-                <td :class="['num font-semibold', d.noi < 0 && 'text-overdue']">{{ peso(d.noi) }}</td>
+                <!-- A month with no expense entries is not entered, the same as a
+                     month with no collections: "P0" read as a month that cost
+                     nothing, and its Net as pure profit. -->
+                <td class="num text-ink-soft">
+                  <StatusPill v-if="!d.hasExpenses" tone="unentered">Not entered</StatusPill>
+                  <template v-else>{{ peso(d.expenses) }}</template>
+                </td>
+                <td :class="['num font-semibold', d.noi < 0 && 'text-overdue']">{{ d.hasExpenses ? peso(d.noi) : '' }}</td>
               </tr>
             </tbody>
           </table>
@@ -1288,9 +1299,12 @@ const isExportingArchive = ref(false);
                   <StatusPill v-if="!d.hasIncome" tone="unentered">Not entered</StatusPill>
                   <template v-else>{{ peso(d.grossIncome) }}</template>
                 </td>
-                <td class="num text-ink-soft">{{ peso(d.expenses) }}</td>
+                <td class="num text-ink-soft">
+                  <StatusPill v-if="!d.hasExpenses" tone="unentered">Not entered</StatusPill>
+                  <template v-else>{{ peso(d.expenses) }}</template>
+                </td>
                 <td :class="['num font-semibold', d.noi < 0 && 'text-overdue']">
-                  {{ d.hasIncome ? peso(d.noi) : '' }}
+                  {{ d.hasIncome && d.hasExpenses ? peso(d.noi) : '' }}
                 </td>
                 <td class="num text-ink-faint">{{ peso(d.personalExpenses) }}</td>
               </tr>
