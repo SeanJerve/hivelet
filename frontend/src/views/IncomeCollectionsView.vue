@@ -952,9 +952,13 @@ async function exportExcel() {
           @retry="fetchIncome"
         />
         <template v-else>
-          <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(totalRemitted) }}</p>
+          <!-- Everything handed over, the same sum the breakdown below is made of.
+               It was rent plus water (BR-038's remitted_amount), which left it
+               250 short of the breakdown's own total with no reason given; that
+               figure is still the ledger's Remitted column. -->
+          <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(collectedAltogether) }}</p>
           <p class="mt-2 text-sm leading-6 text-on-night-soft">
-            Rent plus water, across {{ rows.length }}
+            Rent, water and garbage, across {{ rows.length }}
             {{ rows.length === 1 ? 'entry' : 'entries' }}
           </p>
         </template>
@@ -1024,11 +1028,7 @@ async function exportExcel() {
           @retry="fetchIncome"
         />
         <template v-else>
-        <p class="tabular text-3xl font-semibold leading-none text-ink">
-          {{ peso(collectedAltogether) }}
-        </p>
         <SegmentBar
-          class="mt-4"
           :segments="collectionParts"
           label="Rent, water and the garbage fee as parts of what was collected"
         />
