@@ -1353,7 +1353,7 @@ const isExportingArchive = ref(false);
                   id="historical-roster-search"
                   v-model="historicalSearchQuery"
                   type="search"
-                  placeholder="Tenant or unit"
+                  placeholder="Search"
                   class="ws-input w-full pl-11"
                 />
               </div>

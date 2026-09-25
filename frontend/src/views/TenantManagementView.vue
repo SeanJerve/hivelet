@@ -758,7 +758,7 @@ async function handleOnboard() {
             id="resident-search"
             v-model="q"
             type="search"
-            placeholder="Name, unit, phone or email"
+            placeholder="Search"
             class="ws-input w-full pl-11"
           />
         </div>

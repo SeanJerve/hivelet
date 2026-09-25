@@ -823,7 +823,7 @@ function formatDateTime(iso: string) {
                 id="ticket-search"
                 v-model="searchQuery"
                 type="search"
-                placeholder="Search by title or details"
+                placeholder="Search"
                 class="ws-input w-full pl-11 pr-4 sm:text-sm"
               />
             </div>

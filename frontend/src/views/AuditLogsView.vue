@@ -537,7 +537,7 @@ async function exportAuditTrail() {
           id="audit-search"
           v-model="searchQuery"
           type="search"
-          placeholder="Action, person, record or address"
+          placeholder="Search"
           class="ws-input w-full pl-11"
         />
       </div>

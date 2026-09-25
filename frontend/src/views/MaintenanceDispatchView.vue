@@ -459,7 +459,7 @@ function handleDeleteTicketPrompt() {
           id="maintenance-search"
           v-model="q"
           type="search"
-          placeholder="Title, unit or technician"
+          placeholder="Search"
           class="ws-input w-full pl-11"
         />
       </div>

@@ -865,7 +865,7 @@ async function handleEditExpense() {
           id="expense-search"
           v-model="q"
           type="search"
-          placeholder="What it was for, receipt number or kind"
+          placeholder="Search"
           class="ws-input w-full pl-11"
         />
       </div>

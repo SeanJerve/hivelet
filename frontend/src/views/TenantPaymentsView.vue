@@ -747,7 +747,7 @@ function refreshAll() {
             id="tenant-payment-search"
             v-model="searchQuery"
             type="search"
-            placeholder="Reference, method or status"
+            placeholder="Search"
             class="ws-input w-full pl-11"
           />
         </div>
