@@ -568,7 +568,7 @@ export const LANDLADY = {
   gcash: "09494150382",
   phone: "09494150382",
   property: "Fe Galang Da Silva Boarding House",
-  address: "32 Sapaguita Street Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
+  address: "32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City, Philippines",
 };
 
 // Global Modals State
@@ -882,7 +882,7 @@ export function asListedUnitCode(value: string): string {
 
 /**
  * Returns dynamic summary of residing occupants for a unit code,
- * e.g. "Mark Cruz + 2 roommates" or "Mark Cruz (Solo)"
+ * e.g. "Mark Cruz + 2 roommates", or just "Mark Cruz" for someone living alone
  */
 export function formatUnitOccupantsSummary(unitCode: string): { text: string; count: number; residents: string[] } {
   if (!unitCode) return { text: 'None (Vacant)', count: 0, residents: [] };
@@ -928,7 +928,7 @@ export function formatUnitOccupantsSummary(unitCode: string): { text: string; co
     if (rQty > 0) {
       parts.push(`${t.name} + ${rQty} ${rQty === 1 ? 'roommate' : 'roommates'}`);
     } else {
-      parts.push(`${t.name} (Solo)`);
+      parts.push(t.name);
     }
   }
 

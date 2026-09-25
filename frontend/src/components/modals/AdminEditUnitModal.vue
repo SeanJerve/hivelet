@@ -33,12 +33,21 @@ const UNIT_TYPE_CHOICES = [
   'Three-bedroom',
 ] as const;
 
+/**
+ * The values are `operational_status` exactly; the labels are the words the
+ * directory's own pill uses for the same state, so "Vacant" on the card is not
+ * "Available" one click later.
+ */
 const OPERATIONAL_STATUS_OPTIONS = [
-  'Available',
-  'Occupied',
-  'Reserved',
-  'Under Maintenance',
+  { value: 'Available', label: 'Vacant' },
+  { value: 'Occupied', label: 'Occupied' },
+  { value: 'Reserved', label: 'Reserved' },
+  { value: 'Under Maintenance', label: 'Being repaired' },
 ] as const;
+
+function statusWord(value: string): string {
+  return OPERATIONAL_STATUS_OPTIONS.find((o) => o.value === value)?.label ?? value;
+}
 
 /**
  * Coerces whatever a room record carries into a valid `room_type_enum` value, so the
@@ -322,8 +331,8 @@ async function handleSave() {
 
     showToast(
       'success',
-      `Unit ${unit.value.unitCode.toUpperCase()} Updated`,
-      `Status set to ${editStatus.value} at ${peso(unit.value.price)}/mo.`
+      `Unit ${unit.value.unitCode.toUpperCase()} saved`,
+      `${statusWord(editStatus.value)}, ${peso(unit.value.price)} a month.`
     );
 
     closeModal();
@@ -339,7 +348,7 @@ async function handleSave() {
   <WsModal
     v-if="isAdminEditUnitModalOpen && unit"
     :title="`Unit ${unit.unitCode.toUpperCase()}`"
-    :subtitle="`${unit.cluster}, floor ${unit.floor}, ${unit.type}`"
+    :subtitle="`${unit.cluster}, ${unit.floorLabel || `floor ${unit.floor}`}, ${unit.type}`"
     size="lg"
     :dismissible="false"
     @close="closeModal"
@@ -431,7 +440,7 @@ async function handleSave() {
              rate off the hundred could not be saved at all: unit 1D's live ₱7,250
              was refused by the browser before the form submitted (B-61). -->
         <label class="ws-field">
-          Rent a month
+          Monthly rent
           <input
             v-model.number="monthlyRate"
             type="number"
@@ -468,8 +477,8 @@ async function handleSave() {
           </label>
 
           <label class="ws-field">
-            Standing
-            <PillSelect v-model="editStatus" :options="[...OPERATIONAL_STATUS_OPTIONS]" aria-label="Standing" widthClass="w-full" />
+            Status
+            <PillSelect v-model="editStatus" :options="OPERATIONAL_STATUS_OPTIONS" aria-label="Status" widthClass="w-full" />
           </label>
         </div>
 
@@ -483,22 +492,23 @@ async function handleSave() {
           </span>
         </label>
 
-        <label class="ws-field">
-          How it is billed
-          <input :value="billingRule" type="text" class="ws-input w-full" readonly disabled />
-          <span class="ws-hint">
-            Worked out from the water rate, not stored on the unit. To change it, change the
-            water rate - the rate history is what the bills are raised from.
-          </span>
-        </label>
+        <!-- Plain text, not a disabled input: it cannot be edited here, and a
+             greyed-out field read as one that was broken. -->
+        <div class="ws-field">
+          <span>How it is billed</span>
+          <p class="rounded-2xl bg-canvas px-4 py-3 text-sm text-ink">{{ billingRule }}</p>
+          <span class="ws-hint">The same for every unit, so it is not changed here.</span>
+        </div>
 
+        <!-- "Description", the word the unit's own details dialog uses for
+             the same text. -->
         <label class="ws-field">
-          What comes with it
+          Description
           <textarea
             v-model="amenitiesText"
             rows="3"
             class="ws-textarea w-full"
-            placeholder="Separate each one with a comma"
+            placeholder="For example: private bathroom, cabinets, study desk"
           ></textarea>
         </label>
       </form>

@@ -189,6 +189,7 @@ const filteredLogs = computed(() => {
 
     return (
       log.action.toLowerCase().includes(query) ||
+      actionLabel(log.action).toLowerCase().includes(query) ||
       (log.entity_type && log.entity_type.toLowerCase().includes(query)) ||
       (log.entity_id && log.entity_id.toLowerCase().includes(query)) ||
       (log.profiles?.full_name && log.profiles.full_name.toLowerCase().includes(query)) ||
@@ -266,10 +267,23 @@ function actionTone(action: string): 'verify' | 'paid' | 'overdue' | 'neutral' {
   return 'neutral';
 }
 
-/** EXPENSE_ENTRY reads as "expense entry". */
+/** What each `entity_type` is, in words. Anything unlisted reads as its code, lower-cased. */
+const ENTITY_WORDS: Record<string, string> = {
+  PROFILE: 'an account',
+  ROOM: 'a unit',
+  ROOM_ASSIGNMENT: 'a tenancy',
+  INQUIRY: 'an inquiry',
+  BILL: 'a bill',
+  PAYMENT: 'a payment',
+  INCOME_RECORD: 'an income entry',
+  EXPENSE_ENTRY: 'an expense entry',
+  TICKET: 'a repair request',
+  AUDIT_LOG: 'this trail',
+};
+
 function entityLabel(entity?: string): string {
   if (!entity) return 'the system';
-  return entity.toLowerCase().replace(/_/g, ' ');
+  return ENTITY_WORDS[entity.toUpperCase()] ?? entity.toLowerCase().replace(/_/g, ' ');
 }
 
 /**
@@ -290,7 +304,7 @@ function recordId(id?: string): string | null {
  * actions that do create a row say so now.
  */
 function beforeText(l: AuditRecord): string {
-  if (l.previous_values) return JSON.stringify(l.previous_values, null, 2);
+  if (l.previous_values) return formatValues(l.previous_values);
   const a = l.action.toUpperCase();
   if (a === 'AUTH_PASSWORD_CHANGE') return 'Not recorded. A password is never written to the trail.';
   if (a.startsWith('AUTH_')) return 'Nothing. A sign-in, sign-out or refused request changes no record.';
@@ -299,10 +313,70 @@ function beforeText(l: AuditRecord): string {
   return 'Nothing recorded.';
 }
 
-/** ADMIN_CREATE_EXPENSE reads as "Admin create expense". */
+/**
+ * The actions `auditService.ts` writes, as what happened. "Payment verify" and
+ * "Expense entry create" were the codes with the underscores taken out. An
+ * unlisted code still reads that way rather than being hidden.
+ */
+const ACTION_WORDS: Record<string, string> = {
+  AUTH_LOGIN: 'Signed in',
+  AUTH_LOGOUT: 'Signed out',
+  AUTH_PASSWORD_CHANGE: 'Password changed',
+  AUTH_ACCESS_DENIED: 'Request refused',
+  PROFILE_UPDATE: 'Profile edited',
+  ROOM_UPDATE: 'Unit edited',
+  ROOM_DELETE: 'Unit deleted',
+  ROOM_STATUS_CHANGE: 'Unit status changed',
+  ROOM_PHOTO_UPLOAD: 'Unit photo added',
+  TENANT_CREATE: 'Account created',
+  TENANT_UPDATE: 'Resident edited',
+  TENANT_DEACTIVATE: 'Resident moved out',
+  INQUIRY_CREATE: 'Inquiry received',
+  INQUIRY_STATUS_CHANGE: 'Inquiry status changed',
+  INQUIRY_MESSAGE_SEND: 'Inquiry reply sent',
+  BILL_CREATE: 'Bill raised',
+  BILL_UPDATE: 'Bill edited',
+  PAYMENT_RECORD: 'Payment recorded',
+  PAYMENT_VERIFY: 'Payment verified',
+  PAYMENT_CORRECT: 'Payment corrected',
+  TICKET_CREATE: 'Repair request made',
+  TICKET_STATUS_CHANGE: 'Repair status changed',
+  TICKET_CLOSE: 'Repair request closed',
+  TICKET_DELETE: 'Repair request deleted',
+  TICKET_MESSAGE_SEND: 'Repair message sent',
+  EXPENSE_CREATE: 'Expense recorded',
+  EXPENSE_UPDATE: 'Expense edited',
+  EXPENSE_VOID: 'Expense voided',
+  LEDGER_EXPORT: 'Ledger downloaded',
+};
+
 function actionLabel(action: string): string {
+  const known = ACTION_WORDS[action.toUpperCase()];
+  if (known) return known;
   const words = action.toLowerCase().replace(/_/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * Recorded values as one "Field: value" line each, rather than raw JSON with
+ * its braces and quotes. Nothing is left out or rounded.
+ */
+function formatValues(values: unknown): string {
+  if (values === null || typeof values !== 'object' || Array.isArray(values)) {
+    return JSON.stringify(values, null, 2);
+  }
+  const lines = Object.entries(values as Record<string, unknown>).map(([key, value]) => {
+    const name = key.replace(/_/g, ' ');
+    const label = name.charAt(0).toUpperCase() + name.slice(1);
+    const shown =
+      value === null || value === undefined
+        ? 'empty'
+        : typeof value === 'object'
+          ? JSON.stringify(value)
+          : String(value);
+    return `${label}: ${shown}`;
+  });
+  return lines.length ? lines.join('\n') : 'Nothing recorded.';
 }
 
 function formatDate(isoStr: string): string {
@@ -402,8 +476,12 @@ async function exportAuditTrail() {
     <!--
       What each figure counts is now part of what it says. Three of these tiles
       used to print the size of the window on screen under the word "Total".
+
+      Not on a phone. Stacked there they were 800px of tiles before the first
+      entry, and each one repeats something already on screen: the three counts
+      are on the filter chips below, and the header says nothing can be edited.
     -->
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="hidden gap-4 sm:grid sm:grid-cols-2 xl:grid-cols-4">
       <OverviewTile title="Everything on record" tone="night">
         <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ count(grandTotal) }}</p>
         <p class="mt-2 text-sm leading-6 text-on-night-soft">
@@ -425,7 +503,7 @@ async function exportAuditTrail() {
           {{ count(authEventCount) }}
         </p>
         <p class="mt-2 text-sm leading-6 text-ink-soft">
-          most of them a fault this application has since had fixed
+          sign-ins, sign-outs and refused requests
         </p>
       </OverviewTile>
 
@@ -439,10 +517,10 @@ async function exportAuditTrail() {
         remove an audit row. Verified by attempting a delete, which PostgreSQL
         refuses with 42501.
       -->
-      <OverviewTile title="Can this be altered" tone="soft">
-        <p class="text-2xl font-semibold leading-tight text-brand">No, by the database</p>
+      <OverviewTile title="Can entries be changed?" tone="soft">
+        <p class="text-2xl font-semibold leading-tight text-brand">No</p>
         <p class="mt-2 text-sm leading-6 text-ink-soft">
-          Changing and deleting are revoked from every role, the API's own included.
+          Nobody can edit or delete an entry, not even the app itself.
         </p>
       </OverviewTile>
     </div>
@@ -500,10 +578,6 @@ async function exportAuditTrail() {
     <div v-if="loadError" role="status" class="ws-reveal rounded-tile bg-overdue-soft p-5 sm:p-6">
       <p class="text-base font-semibold text-overdue">The trail could not be loaded.</p>
       <p class="mt-1 text-sm leading-6 text-overdue">{{ loadError }}</p>
-      <p class="mt-2 text-sm leading-6 text-overdue">
-        Nothing is listed below rather than sample entries, so what you read here is always the
-        real record.
-      </p>
       <button type="button" class="pill-btn-night mt-4" @click="fetchAuditLogs">Try again</button>
     </div>
 
@@ -525,7 +599,7 @@ async function exportAuditTrail() {
       <ShieldCheck class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
       <p class="mt-3 text-base font-semibold text-ink">Nothing matches</p>
       <p class="mt-1 text-sm leading-6 text-ink-soft">
-        No entry in this window answers to what you have asked for.
+        No entry among the newest {{ rowLimit }} matches. Try another search, or read further back.
       </p>
     </div>
 
@@ -612,7 +686,7 @@ async function exportAuditTrail() {
             <div class="rounded-2xl bg-canvas p-4">
               <p class="text-sm font-semibold text-ink">Before</p>
               <pre
-                class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-5 text-ink-soft"
+                class="mt-2 whitespace-pre-wrap wrap-anywhere font-mono text-xs leading-5 text-ink-soft"
                 >{{ beforeText(l) }}</pre
               >
             </div>
@@ -620,9 +694,9 @@ async function exportAuditTrail() {
             <div class="rounded-2xl bg-brand-soft p-4">
               <p class="text-sm font-semibold text-brand">After</p>
               <pre
-                class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-5 text-brand"
+                class="mt-2 whitespace-pre-wrap wrap-anywhere font-mono text-xs leading-5 text-brand"
                 >{{
-                  l.new_values ? JSON.stringify(l.new_values, null, 2) : 'Nothing recorded.'
+                  l.new_values ? formatValues(l.new_values) : 'Nothing recorded.'
                 }}</pre
               >
             </div>

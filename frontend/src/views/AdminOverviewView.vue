@@ -694,7 +694,9 @@ const isExportingArchive = ref(false);
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <div ref="yearMenuRoot" class="relative" @keydown.escape="closeYearMenu(true)">
+        <!-- Last on a phone, so the two actions share the first row instead of one
+             of them wrapping onto a row of its own. -->
+        <div ref="yearMenuRoot" class="relative order-last sm:order-none" @keydown.escape="closeYearMenu(true)">
           <button
             ref="yearButton"
             type="button"
@@ -847,7 +849,7 @@ const isExportingArchive = ref(false);
           <p class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span class="text-5xl leading-none font-semibold tabular tracking-tight">{{ pendingCount }}</span>
             <span class="text-sm text-on-night-soft">
-              {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal) }} in total</template>
+              {{ pendingCount === 1 ? 'payment' : 'payments' }} to verify<template v-if="pendingCount > 0">, {{ peso(pendingTotal, 2) }} in total</template>
             </span>
           </p>
           <ul v-if="pendingPreview.length" class="mt-4 divide-y divide-white/10">
@@ -901,7 +903,7 @@ const isExportingArchive = ref(false);
       >
         <UnavailableNote
           v-if="incomeRecordsFetchFailed"
-          message="Collections could not be loaded. That is not the same as nothing being collected."
+          message="Collections could not be loaded."
           @retry="refreshAllData"
         />
         <template v-else>
@@ -938,7 +940,7 @@ const isExportingArchive = ref(false);
       <OverviewTile title="Occupancy" to="/admin/directory" to-label="Open the room and rate directory" class="xl:col-span-3">
         <UnavailableNote
           v-if="roomsFetchFailed"
-          message="Room status could not be loaded. The building is not necessarily empty."
+          message="Room status could not be loaded."
           @retry="refreshAllData"
         />
         <template v-else>
@@ -988,7 +990,7 @@ const isExportingArchive = ref(false);
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open the room and rate directory" class="xl:col-span-4">
+      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open the room and rate directory" class="md:col-span-2 xl:col-span-4">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -1021,7 +1023,9 @@ const isExportingArchive = ref(false);
         </ul>
       </OverviewTile>
 
-      <OverviewTile title="Operating cash flow" to="/admin/expenses" to-label="Open the expense ledger" class="xl:col-span-6">
+      <!-- The full row until xl: at half width its table needed 321px of a 287px
+           wrapper, so the Net column sat behind a sideways scroll. -->
+      <OverviewTile title="Operating cash flow" to="/admin/expenses" to-label="Open the expense ledger" class="md:col-span-2 xl:col-span-6">
         <UnavailableNote
           v-if="incomeRecordsFetchFailed || expenseRecordsFetchFailed"
           message="Income or expenses could not be loaded, so net figures cannot be worked out."
@@ -1101,8 +1105,8 @@ const isExportingArchive = ref(false);
           </table>
           </div>
           <p class="text-xs leading-5 text-ink-faint">
-            Operating expenses leave out personal costs for the Main House and Other, which are recorded in the
-            same ledger but not subtracted. So far this year they come to {{ peso(livePersonalTotal) }}.
+            Personal costs for the Main House and Other are not subtracted. This year so far:
+            {{ peso(livePersonalTotal) }}.
           </p>
         </template>
       </OverviewTile>
@@ -1134,7 +1138,7 @@ const isExportingArchive = ref(false);
                      width, silently, by body's overflow-x: hidden). -->
                 <span class="block break-words text-sm font-medium">{{ t.title }}</span>
                 <span class="block text-xs text-ink-faint">
-                  {{ t.unit }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician }}</template>
+                  {{ t.unit }}, {{ t.status === 'Open' ? 'submitted' : t.status.toLowerCase() }}<template v-if="t.technician">, {{ t.technician === 'Unassigned' ? 'no one assigned yet' : t.technician }}</template>
                 </span>
               </span>
               <StatusPill :tone="t.priority === 'Emergency' || t.priority === 'High' ? 'overdue' : 'neutral'">
@@ -1157,7 +1161,9 @@ const isExportingArchive = ref(false);
         <UnavailableNote v-if="incomeRecordsFetchFailed" dark @retry="refreshAllData" />
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualGrossTotal) }}</p>
-          <p class="mt-2 text-sm text-on-brand-soft">{{ historicalIncomeRecords.length }} entries</p>
+          <p class="mt-2 text-sm text-on-brand-soft">
+            {{ historicalIncomeRecords.length }} {{ historicalIncomeRecords.length === 1 ? 'entry' : 'entries' }}
+          </p>
         </div>
       </OverviewTile>
 
@@ -1177,8 +1183,8 @@ const isExportingArchive = ref(false);
         <div v-else>
           <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(historicalAnnualExpenseTotal) }}</p>
           <p class="mt-2 text-sm text-ink-soft">
-            {{ historicalExpenseRecords.length }} entries. Leaves out {{ peso(historicalAnnualPersonalTotal) }} of
-            personal costs for the Main House and Other.
+            {{ historicalExpenseRecords.length }} {{ historicalExpenseRecords.length === 1 ? 'entry' : 'entries' }}.
+            Leaves out {{ peso(historicalAnnualPersonalTotal) }} of personal costs for the Main House and Other.
           </p>
         </div>
       </OverviewTile>
@@ -1240,8 +1246,12 @@ const isExportingArchive = ref(false);
               />
             </div>
             <p class="mt-1.5 text-xs text-ink-faint tabular">
-              {{ c.share.toFixed(1) }}% of the year. {{ c.recordCount }} entries across {{ c.uniqueRooms }}
-              {{ c.uniqueRooms === 1 ? 'unit' : 'units' }}.
+              <template v-if="c.recordCount === 0">No entries this year.</template>
+              <template v-else>
+                {{ c.share.toFixed(1) }}% of the year. {{ c.recordCount }}
+                {{ c.recordCount === 1 ? 'entry' : 'entries' }} across {{ c.uniqueRooms }}
+                {{ c.uniqueRooms === 1 ? 'unit' : 'units' }}.
+              </template>
             </p>
           </li>
         </ul>

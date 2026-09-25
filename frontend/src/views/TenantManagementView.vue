@@ -143,10 +143,10 @@ const editUnitOptions = computed(() => {
     opts.push({ value: '—', label: 'No unit assigned' });
   }
   rooms.forEach((u) => {
-    const priceStr = !roomsFetchFailed.value ? ` (${peso(u.price)})` : '';
+    const priceStr = !roomsFetchFailed.value ? `, ${peso(u.price)}` : '';
     opts.push({
       value: u.unitCode.toUpperCase(),
-      label: `${u.unitCode.toUpperCase()} — ${u.cluster}${priceStr}`,
+      label: `${u.unitCode.toUpperCase()}, ${u.cluster}${priceStr}`,
     });
   });
   return opts;
@@ -169,11 +169,11 @@ const occupiedUnitCodes = computed(
 
 const newUnitOptions = computed(() =>
   rooms.map((u) => {
-    const priceStr = !roomsFetchFailed.value ? ` — ${peso(u.price)}` : '';
-    const taken = occupiedUnitCodes.value.has(u.unitCode.toUpperCase()) ? ' · occupied' : '';
+    const priceStr = !roomsFetchFailed.value ? `, ${peso(u.price)}` : '';
+    const taken = occupiedUnitCodes.value.has(u.unitCode.toUpperCase()) ? ' (occupied)' : '';
     return {
       value: u.unitCode,
-      label: `${u.unitCode.toUpperCase()}${priceStr} (${u.cluster})${taken}`,
+      label: `${u.unitCode.toUpperCase()}, ${u.cluster}${priceStr}${taken}`,
     };
   })
 );
@@ -257,7 +257,7 @@ function checkInquiryConversion() {
     }
     syncDepositToUnit();
     isOnboardModalOpen.value = true;
-    showToast('info', 'Inquiry Pre-filled', `Details loaded from prospect inquiry for ${newName.value}.`);
+    showToast('info', 'Filled in from the inquiry', `Check ${newName.value}'s details, then choose a unit.`);
   }
 }
 
@@ -517,7 +517,7 @@ async function saveEdit() {
     t.id !== currentTenantId
   );
   if (unitChanged && isOccupiedByOther && targetUnit !== '—' && targetUnit !== 'none') {
-    showToast('error', 'Unit Already Occupied', `Unit ${editUnitCode.value.toUpperCase()} already has an active tenant.`);
+    showToast('error', 'Unit already occupied', `Someone already lives in ${editUnitCode.value.toUpperCase()}.`);
     return;
   }
 
@@ -555,10 +555,10 @@ async function saveEdit() {
 
     await fetchTenants();
     await fetchRooms();
-    showToast('success', 'Tenant details updated', `Resident info for ${editModalTenant.value.name} updated.`);
+    showToast('success', 'Saved', `${editModalTenant.value.name}'s details are updated.`);
     editModalTenant.value = null;
   } catch (err: any) {
-    showToast('error', 'Update Failed', err?.message || 'Could not update tenant details.');
+    showToast('error', 'Could not save', err?.message || 'The changes were not saved.');
   } finally {
     isSubmitting.value = false;
   }
@@ -576,10 +576,10 @@ async function confirmVacate() {
     await api.post(`/admin/tenants/${vacateModalTenant.value.id}/vacate`);
     await fetchTenants();
     await fetchRooms();
-    showToast('warning', 'Vacancy settled', `Unit ${vacateModalTenant.value.unitCode} released back to directory.`);
+    showToast('warning', 'Moved out', `${vacateModalTenant.value.unitCode} is free to let again.`);
     vacateModalTenant.value = null;
   } catch (err: any) {
-    showToast('error', 'Vacate Failed', err?.message || 'Could not settle vacancy.');
+    showToast('error', 'Could not move them out', err?.message || 'Nothing was changed.');
   } finally {
     isSubmitting.value = false;
   }
@@ -592,7 +592,7 @@ async function handleOnboard() {
   }
   const isOccupied = tenants.some(t => t.status === 'active' && t.unitCode.toLowerCase() === newUnit.value.toLowerCase());
   if (isOccupied) {
-    showToast('error', 'Unit Already Occupied', `Unit ${newUnit.value.toUpperCase()} already has an active tenant.`);
+    showToast('error', 'Unit already occupied', `Someone already lives in ${newUnit.value.toUpperCase()}.`);
     return;
   }
 
@@ -655,7 +655,7 @@ async function handleOnboard() {
       } catch (err: any) {
         showToast(
           'info',
-          'Tenant onboarded',
+          'Moved in',
           `${newName.value} was added, but the inquiry could not be marked Converted. ` +
             'Set it from the Inquiries page.'
         );
@@ -687,10 +687,10 @@ async function handleOnboard() {
       // Only reachable if onboarding somehow ran with neither an email nor
       // a phone number - the form requires phone, so nothing generates
       // this today, but the API's own type is honest that it can happen.
-      showToast('success', 'Tenant onboarded', 'Resident portal access and room assignment registered.');
+      showToast('success', 'Moved in', 'Their account is made and the unit is assigned.');
     }
   } catch (err: any) {
-    showToast('error', 'Onboarding Failed', err?.message || 'Could not onboard tenant.');
+    showToast('error', 'Could not move them in', err?.message || 'Nothing was saved.');
   } finally {
     isSubmitting.value = false;
   }
@@ -707,7 +707,7 @@ async function handleOnboard() {
           Residents
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
-          {{ residentCount }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.
+          {{ residentCount }} {{ residentCount === 1 ? 'resident' : 'residents' }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.
         </p>
       </div>
 
@@ -832,7 +832,7 @@ async function handleOnboard() {
     -->
     <UnavailableNote
       v-else-if="tenantsFetchFailed"
-      message="The resident list could not be loaded. That is not the same as there being no residents — nothing is shown rather than an empty register."
+      message="The resident list could not be loaded."
       @retry="fetchTenants"
     />
 
@@ -853,7 +853,7 @@ async function handleOnboard() {
       caption="Residents, with unit, household, move-in date, deposit and standing"
       noun="resident"
       empty-title="Nobody matches"
-      :empty-note="q ? `Nothing on this list answers to “${q}”.` : 'Nothing on this list answers to this filter.'"
+      :empty-note="q ? 'Try a name, unit, phone number or email.' : 'Pick “Everyone” to see the whole list.'"
     >
       <template #head>
         <tr>
@@ -967,7 +967,7 @@ async function handleOnboard() {
       >
         <p class="text-base font-semibold text-ink">Nobody matches</p>
         <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-          {{ q ? `Nothing on this list answers to “${q}”.` : 'Nothing on this list answers to this filter.' }}
+          {{ q ? 'Try a name, unit, phone number or email.' : 'Pick “Everyone” to see the whole list.' }}
         </p>
       </div>
 
@@ -1165,6 +1165,14 @@ async function handleOnboard() {
               <dt class="text-xs text-ink-faint">Phone</dt>
               <dd class="tabular mt-0.5 text-ink">{{ editModalTenant.phone }}</dd>
             </div>
+            <!-- Deposit sits beside Phone: with Email between them, Phone and
+                 Anniversary each had an empty column beside them at 375. -->
+            <div>
+              <dt class="text-xs text-ink-faint">Deposit</dt>
+              <dd class="tabular mt-0.5 font-semibold text-ink">
+                {{ peso(editModalTenant.depositAmount) }}
+              </dd>
+            </div>
             <!--
               The two fields that hold something long get the whole row on a
               phone. A column of this grid is 141px at a 375px viewport, and
@@ -1179,12 +1187,6 @@ async function handleOnboard() {
                    truthy, so the dialog printed "—" instead of saying so. -->
               <dd class="mt-0.5 truncate text-ink" :title="onFile(editModalTenant.email) ?? undefined">
                 {{ onFile(editModalTenant.email) ?? 'No email on file' }}
-              </dd>
-            </div>
-            <div>
-              <dt class="text-xs text-ink-faint">Deposit</dt>
-              <dd class="tabular mt-0.5 font-semibold text-ink">
-                {{ peso(editModalTenant.depositAmount) }}
               </dd>
             </div>
             <div>
@@ -1326,14 +1328,13 @@ async function handleOnboard() {
       @confirm="confirmVacate"
     >
       <p class="text-sm leading-6 text-ink-soft">
-        <strong class="text-ink">{{ vacateModalTenant.name }}</strong> loses access to the resident portal
-        straight away — the next thing they tap will sign them out, even if they are already signed in.
-        Unit <strong class="text-ink">{{ vacateModalTenant.unitCode }}</strong> is freed and can be let again.
+        <strong class="text-ink">{{ vacateModalTenant.name }}</strong> can no longer use the resident portal,
+        starting now, even if they are signed in. Unit
+        <strong class="text-ink">{{ vacateModalTenant.unitCode }}</strong> becomes free to let.
       </p>
       <p class="text-sm leading-6 text-ink-soft">
-        <strong class="text-ink">Their records stay.</strong> Every receipt, payment and repair they are on
-        remains in the ledger exactly as it is — this ends their tenancy and their access, it does not erase
-        anything. Giving access back means onboarding them again.
+        <strong class="text-ink">Their records stay.</strong> Every receipt, payment and repair request stays in
+        the ledger. To give them access again, move them in again.
       </p>
     </ConfirmDialog>
 
@@ -1347,8 +1348,14 @@ async function handleOnboard() {
       @close="isOnboardModalOpen = false"
     >
 
+        <!--
+          Laid out in pairs that belong together: email and phone, the unit and
+          the deposit filled in from it, the two dates, the household, and the
+          emergency contact's name beside their number. The contact's name used
+          to share a row with the deposit and their phone sat alone below it.
+        -->
         <form @submit.prevent="handleOnboard" class="grid gap-5 sm:grid-cols-2">
-          <div class="ws-field">
+          <div class="ws-field sm:col-span-2">
             <label for="new-name">Full name</label>
             <input
               id="new-name"
@@ -1378,7 +1385,6 @@ async function handleOnboard() {
               placeholder="you@email.com"
               class="ws-input w-full"
             />
-            <p class="ws-hint">Leave this blank and they sign in with their phone number.</p>
           </div>
           <div class="ws-field">
             <label for="new-phone">Phone</label>
@@ -1394,41 +1400,6 @@ async function handleOnboard() {
           <div class="ws-field">
             <label for="new-unit">Unit</label>
             <PillSelect id="new-unit" v-model="newUnit" :options="newUnitOptions" aria-label="Unit" placeholder="Choose a unit" widthClass="w-full" />
-          </div>
-
-          <div class="ws-field">
-            <label for="new-sharing">Sharing the unit</label>
-            <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" aria-label="Sharing the unit" widthClass="w-full" />
-          </div>
-
-          <div v-if="newHasRoommates === 'yes'" class="ws-reveal ws-field">
-            <label for="new-roommate-qty">How many roommates</label>
-            <input
-              id="new-roommate-qty"
-              v-model.number="newRoommateQty"
-              type="number"
-              min="1"
-              max="8"
-              class="ws-input w-full"
-              required
-            />
-          </div>
-          <div v-else class="hidden sm:block" aria-hidden="true" />
-
-          <div class="ws-field">
-            <label for="new-move-in">Move-in date</label>
-            <input id="new-move-in" v-model="newMoveIn" type="date" class="ws-input w-full" required />
-          </div>
-          <div class="ws-field">
-            <label for="new-anniversary">Anniversary date</label>
-            <input
-              id="new-anniversary"
-              v-model="newAnniv"
-              type="date"
-              class="ws-input w-full"
-              required
-            />
-            <p class="ws-hint">The date their year is counted from.</p>
           </div>
           <div class="ws-field">
             <!-- OD-04, answered by the owner 2026-09-19: two months are collected at
@@ -1459,10 +1430,43 @@ async function handleOnboard() {
               class="ws-input w-full"
               required
             />
-            <p class="ws-hint">One month, filled in from the unit's current rate once you choose a unit. Change it if she agreed something else.</p>
+            <p class="ws-hint">One month's rent, filled in when you choose a unit. Change it if you agreed on a different amount.</p>
           </div>
           <div class="ws-field">
-            <label for="new-emerg-name">In an emergency, who to call</label>
+            <label for="new-move-in">Move-in date</label>
+            <input id="new-move-in" v-model="newMoveIn" type="date" class="ws-input w-full" required />
+          </div>
+          <div class="ws-field">
+            <label for="new-anniversary">Anniversary date</label>
+            <input
+              id="new-anniversary"
+              v-model="newAnniv"
+              type="date"
+              class="ws-input w-full"
+              required
+            />
+            <p class="ws-hint">The date their year is counted from.</p>
+          </div>
+          <div class="ws-field">
+            <label for="new-sharing">Sharing the unit</label>
+            <PillSelect id="new-sharing" v-model="newHasRoommates" :options="newSharingOptions" aria-label="Sharing the unit" widthClass="w-full" />
+          </div>
+
+          <div v-if="newHasRoommates === 'yes'" class="ws-reveal ws-field">
+            <label for="new-roommate-qty">How many roommates</label>
+            <input
+              id="new-roommate-qty"
+              v-model.number="newRoommateQty"
+              type="number"
+              min="1"
+              max="8"
+              class="ws-input w-full"
+              required
+            />
+          </div>
+          <div v-else class="hidden sm:block" aria-hidden="true" />
+          <div class="ws-field">
+            <label for="new-emerg-name">Emergency contact</label>
             <input
               id="new-emerg-name"
               v-model="newEmergName"
@@ -1470,8 +1474,8 @@ async function handleOnboard() {
               class="ws-input w-full"
             />
           </div>
-          <div class="ws-field sm:col-span-2">
-            <label for="new-emerg-phone">Their phone number</label>
+          <div class="ws-field">
+            <label for="new-emerg-phone">Emergency contact's phone</label>
             <input
               id="new-emerg-phone"
               v-model="newEmergPhone"
@@ -1505,8 +1509,8 @@ async function handleOnboard() {
     -->
     <WsModal
       v-if="onboardedCredentials"
-      title="Tenant onboarded"
-      :subtitle="`A one-time password was generated for ${onboardedCredentials.name}.`"
+      title="Moved in"
+      :subtitle="`A one-time password for ${onboardedCredentials.name}.`"
       size="sm"
       :dismissible="false"
       @close="closeCredentialsReveal"

@@ -180,10 +180,13 @@ export const CLUSTERS: Cluster[] = [
  * on every rounded overview figure at once.
  */
 export function peso(value: number, decimals = 0) {
-  return `₱${value.toLocaleString("en-PH", {
+  // The sign goes before the symbol: "-₱6,151", not "₱-6,151".
+  const rounded = Number(value.toFixed(decimals));
+  const digits = Math.abs(rounded).toLocaleString("en-PH", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  })}`;
+  });
+  return `${rounded < 0 ? "-" : ""}₱${digits}`;
 }
 
 /**

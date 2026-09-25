@@ -329,23 +329,24 @@ const statusChips = computed(() => [
         2026-09-23: that stack was two 208px pills on two rows, left-aligned
         under a 236px switcher, and the client called the result messy. They
         share ONE row at phone width now - `flex-1` off a 343px column is
-        167.5px each - and `sm:w-52 sm:flex-none` hands them back their exact
-        previous width from `sm` up, so everything the paragraph above measured
-        still holds.
+        167.5px each - and `sm:w-48 sm:flex-none` fixes their width from `sm`
+        up. 2026-09-25: 12rem rather than 13rem, because at 1366 the toolbar
+        needed 990px of a 980px column and the filters wrapped onto a second
+        row by themselves.
       -->
       <div class="flex flex-wrap items-center gap-2 sm:ml-auto">
         <PillSelect
           v-model="selectedStatus"
           :options="statusChips"
           aria-label="Filter by status"
-          widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+          widthClass="min-w-0 flex-1 sm:w-48 sm:flex-none"
         />
         <PillSelect
           v-model="cluster"
           :options="clusterOptions"
           aria-label="Cluster"
           align="right"
-          widthClass="min-w-0 flex-1 sm:w-52 sm:flex-none"
+          widthClass="min-w-0 flex-1 sm:w-48 sm:flex-none"
         />
       </div>
     </div>
@@ -424,7 +425,7 @@ const statusChips = computed(() => [
             <article
               v-for="u in visibleUnits(clusterName)"
               :key="u.unitCode"
-              class="group flex flex-col justify-between rounded-2xl border border-line p-4"
+              class="flex flex-col justify-between rounded-2xl border border-line p-4"
             >
               <div>
                 <div class="flex items-start justify-between gap-2">
@@ -437,44 +438,40 @@ const statusChips = computed(() => [
                   <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
                 </div>
 
-                <dl class="mt-4 space-y-1.5 border-t border-line pt-3 text-sm">
-                  <div class="flex items-baseline justify-between gap-2">
-                    <dt class="shrink-0 text-ink-faint">Lived in by</dt>
-                    <dd
-                      class="max-w-[170px] truncate text-right font-medium text-ink"
-                      :title="formatUnitOccupantsSummary(u.unitCode).text"
-                    >
+                <!-- Label above value, and the name wraps: it was truncated at
+                     170px, which cut off "+ 1 roommate", the part that sets the
+                     water bill. -->
+                <dl class="mt-4 grid gap-3 border-t border-line pt-3 text-sm">
+                  <div class="min-w-0">
+                    <dt class="text-xs text-ink-faint">Lived in by</dt>
+                    <dd class="mt-0.5 break-words font-medium text-ink">
                       {{ formatUnitOccupantsSummary(u.unitCode).text }}
                     </dd>
                   </div>
-
-                  <div class="flex items-baseline justify-between gap-2">
-                    <dt class="text-ink-faint">A month</dt>
-                    <dd class="tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
+                  <div>
+                    <dt class="text-xs text-ink-faint">A month</dt>
+                    <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
                   </div>
                 </dl>
               </div>
 
               <!--
-                This card used to be filled `bg-canvas` rather than bordered
-                like this, with the icon hover swapped to `bg-tile` in a
-                comment explaining that "a canvas hover on a canvas card
-                would not show at all" - but the same collision was sitting
-                one element above, unnoticed: the status pill's own `paid`/
-                `neutral` tones ARE `bg-brand-soft`/`bg-canvas`, so on a
-                canvas card the one thing a landlady scans this screen for
-                first - is this unit occupied - rendered as bare coloured
-                text with no pill around it at all. Bordered and unfilled,
-                matching the ticket cards on Maintenance Dispatch, so the
-                pill (and the icon hover below, back to `bg-canvas` like
-                everywhere else) has a plain surface to show up against.
+                Bordered and unfilled so the status pill (whose `neutral` tone
+                is `bg-canvas`) has a plain surface to show against.
+
+                Two labelled buttons, always shown. These were unlabelled
+                `row-action` icons at opposite corners: hidden until hover on a
+                desktop, which left an empty strip under every card, and on a
+                phone an eye that did not say what it opened.
               -->
-              <div class="mt-4 flex justify-between">
-                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+              <div class="mt-4 flex gap-2">
+                <button type="button" class="pill-btn flex-1 px-3" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                   <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
+                  <span>Details</span>
                 </button>
-                <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+                <button type="button" class="pill-btn flex-1 px-3" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
                   <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+                  <span>Edit</span>
                 </button>
               </div>
             </article>
@@ -509,17 +506,18 @@ const statusChips = computed(() => [
         <Search class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
         <p class="mt-3 text-base font-semibold text-ink">No unit matches</p>
         <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-          Nothing in the directory answers to what you have asked for. Clear the search, or pick
-          “Every cluster”.
+          Clear the search, or pick “Every unit” and “Every cluster”.
         </p>
       </div>
     </div>
 
     <!--
       The register. It needed 950px, so it scrolled sideways on a laptop and on
-      every phone. The cluster and the kind of unit now share one column, the
-      rate and the billing rule share another, and below 1024px it becomes one
-      tile per unit.
+      every phone. The cluster and the kind of unit share one column, and below
+      1024px it becomes one tile per unit, laid out like the cluster cards.
+
+      The billing line is not repeated here: it is the same for every unit, so
+      it said the same thing 33 times. The unit's own dialogs still show it.
     -->
     <RecordTable
       v-else
@@ -529,7 +527,7 @@ const statusChips = computed(() => [
       noun="unit"
       :page-size="12"
       empty-title="No unit matches"
-      empty-note="Nothing in the directory answers to what you have asked for."
+      empty-note="Clear the search, or pick “Every unit” and “Every cluster”."
     >
       <template #head>
         <tr>
@@ -547,10 +545,7 @@ const statusChips = computed(() => [
           <th scope="row" class="font-semibold uppercase text-ink">
             {{ u.unitCode.toUpperCase() }}
           </th>
-          <td>
-            <span class="block text-ink">{{ u.cluster }}, {{ u.type }}</span>
-            <span class="block text-xs text-ink-faint">{{ u.billingRule }}</span>
-          </td>
+          <td class="text-ink">{{ u.cluster }}, {{ u.type }}</td>
           <td class="num font-semibold text-ink">{{ peso(u.price) }}</td>
           <td :title="formatUnitOccupantsSummary(u.unitCode).text">
             {{ formatUnitOccupantsSummary(u.unitCode).text }}
@@ -560,7 +555,7 @@ const statusChips = computed(() => [
           </td>
           <td class="num">
             <div class="inline-flex items-center justify-end gap-2">
-              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+              <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
                 <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
               </button>
               <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full row-action hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
@@ -582,27 +577,27 @@ const statusChips = computed(() => [
           <StatusPill :tone="statusTone(u.status)">{{ getStatusLabel(u.status) }}</StatusPill>
         </div>
 
-        <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-          <div>
-            <dt class="text-xs text-ink-faint">A month</dt>
-            <dd class="tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
-          </div>
+        <dl class="mt-4 grid gap-3 border-t border-line pt-3 text-sm">
           <div class="min-w-0">
             <dt class="text-xs text-ink-faint">Lived in by</dt>
-            <dd class="truncate text-ink">{{ formatUnitOccupantsSummary(u.unitCode).text }}</dd>
+            <dd class="mt-0.5 break-words font-medium text-ink">
+              {{ formatUnitOccupantsSummary(u.unitCode).text }}
+            </dd>
           </div>
-          <div class="col-span-2">
-            <dt class="text-xs text-ink-faint">How it is billed</dt>
-            <dd class="text-ink">{{ u.billingRule }}</dd>
+          <div>
+            <dt class="text-xs text-ink-faint">A month</dt>
+            <dd class="mt-0.5 tabular font-semibold text-ink">{{ peso(u.price) }}</dd>
           </div>
         </dl>
 
-        <div class="mt-4 flex justify-between">
-          <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Look at ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
+        <div class="mt-4 flex gap-2">
+          <button type="button" class="pill-btn flex-1 px-3" :aria-label="`Details of ${u.unitCode.toUpperCase()}`" @click="openSpecs(u)">
             <Eye class="size-3.5 text-ink-soft" aria-hidden="true" />
+            <span>Details</span>
           </button>
-          <button type="button" class="press-plate flex size-9 items-center justify-center rounded-full hover:bg-canvas cursor-pointer" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
+          <button type="button" class="pill-btn flex-1 px-3" :aria-label="`Edit ${u.unitCode.toUpperCase()}`" @click="editUnit(u)">
             <Pencil class="size-3.5 text-ink-soft" aria-hidden="true" />
+            <span>Edit</span>
           </button>
         </div>
       </template>
