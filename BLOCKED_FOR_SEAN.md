@@ -2923,3 +2923,30 @@ these three indistinguishable from the real residents.*
   any `FAILED` line.
 - **Raised:** 2026-09-25 by Claude, working with Sean live through the Adyen dashboard, Vercel
   dashboard, and a manual curl request
+
+> **B-68 update, 2026-09-25 (Loyd's machine) — our side checked before anyone regenerates.**
+> - **Two real defects on our side, fixed in `40387b9`:** the signed string escaped `\` and `:`,
+>   which is not how Adyen signs notifications (its own library joins the eight values raw), and
+>   a key pasted with a wrapping quote or a leading space silently decoded to a different key.
+>   Neither explains THIS failure on its own: the test notifications carry no colons, and the
+>   recorded key is well-formed (64 hex characters, no quotes or spaces).
+> - **The recorded key has no evidence of ever matching.** The last webhook-recorded payment is
+>   2026-08-25 (eight ₱4,700 tests); nothing has verified since. Its fingerprint is `da9a818af5`.
+>   Sean's conclusion stands: regenerate. There is no known-good copy to preserve.
+> - **Now diagnosable:** a failed notification logs `server key: 64 chars, fingerprint XXXXXXXXXX`
+>   and whether a signature was present. `node backend/scripts/hmac-fingerprint.mjs <key>` prints
+>   the fingerprint of any key. Same fingerprint and still failing = Adyen signs with a different
+>   key (wrong webhook, or not saved). Different fingerprint = Vercel holds a different value.
+> - **Regeneration steps (Loyd, 2026-09-25):**
+>   1. Adyen → Developers → **Webhooks**: count them. Exactly **one** should point at
+>      `https://hivelet.vercel.app/api/public/payments/adyen/webhook`. Disable any pointing at an
+>      old `trycloudflare.com` URL: each webhook signs with its own key and retries forever
+>   2. In that webhook: **Security → HMAC key → Generate**. Copy it right away, then click
+>      **Save configuration**. A key generated but not saved is not the one Adyen signs with
+>   3. Vercel → Settings → Environment Variables → `ADYEN_HMAC_KEY` → paste (no quotes) → save
+>      → **Redeploy** (variables only apply to a new deployment)
+>   4. Put the same key in this machine's root `.env` and in Sean's `credentials/loyd.env`
+>      (line 45), and fix line 47's webhook password there too
+>   5. Adyen → **Test configuration**, then Vercel logs, search `adyen-webhook`: expect
+>      `accepted`. If still `FAILED`, compare the fingerprint in the log with
+>      `node backend/scripts/hmac-fingerprint.mjs <the key you pasted>`

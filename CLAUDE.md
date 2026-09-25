@@ -98,12 +98,13 @@ and person-named files were addressed to the wrong people overnight.
 - **Two machines share this repository.** Pull before you start and before every push. Lanes:
   `backend/src/` and `database/migrations/` on Sean's side, `docs/` and `frontend/src/` on the
   other.
-- **One Adyen webhook, shared.** Both machines have the keys. Adyen cannot reach a laptop, so
-  whoever is testing points that one webhook at their own `cloudflared` tunnel — and the URL
-  changes every restart. **Never generate a new HMAC key** unless you are creating a second
-  webhook: Adyen issues it and keeps its own copy to sign with, so a different value makes
-  every notification fail signature verification, which looks exactly like a broken
-  integration.
+- **The Adyen webhook serves production.** Since 2026-09-24 it points at
+  `https://hivelet.vercel.app/api/public/payments/adyen/webhook`. **Never repoint it at a laptop
+  tunnel** - that silently stops the live site recording payments. To test locally, add a
+  *second* webhook in Adyen with its own HMAC key. **Never generate a new HMAC key** on the
+  production webhook without updating Vercel's `ADYEN_HMAC_KEY` and redeploying in the same
+  sitting: Adyen keeps its own copy to sign with, so a different value makes every notification
+  fail signature verification, which looks exactly like a broken integration (B-68).
 - **Commit in small pieces with real messages.** The history here is the reasoning and is worth
   more than the diff.
 - **Never stop because something is out of reach.** Record it in `BLOCKED_FOR_SEAN.md` with
