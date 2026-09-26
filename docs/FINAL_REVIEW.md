@@ -124,6 +124,30 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   and that nothing needs voiding; add the three missing events.
 - **Status:** see the fix log below.
 
+## F5. The new duplicate-payment warning cannot see a GCash payment still waiting to be verified
+
+- **Where:** `frontend/src/components/modals/OnsitePaymentModal.vue`, `findOverlappingPayments`.
+  It reads `incomeRecords` only. A GCash payment is not an income row until the owner verifies it;
+  until then it is a `payments` row in `Pending Verification`.
+- **What breaks:** the one double collection the system still allows goes past the warning
+  written to catch it. The reverse order is already closed (a recorded receipt moves the tenant's
+  standing and pays the bill, so checkout will not charge that period again). This order is not:
+  - the tenant pays by GCash; the webhook records it as Pending Verification;
+  - before she verifies it, the tenant also pays cash at the counter (the GCash screen was
+    unclear, or they forgot);
+  - she records the cash. `allocateReceipt` counts Verified payments only, so the bill is still
+    open, the cash settles it, and the warning finds no income row, so it says nothing;
+  - she verifies the GCash payment. `settle_verified_payment` books a second income row for the
+    same period.
+- **Trigger:** unit 2e pays ₱6,900 by GCash at 21:00; at 08:00 next day the tenant hands over
+  ₱6,900 cash. The confirm dialog shows no warning. After verification the ledger holds ₱13,800 for
+  one month and the tenant has paid twice.
+- **Severity:** medium. The money is real and recorded, but it was collected twice from a tenant,
+  and the month's income is overstated until someone notices.
+- **Fix:** the modal also loads the verification queue and lists any payment waiting to be
+  verified for the same unit in the same warning banner, in the same words and style.
+- **Status:** see the fix log below.
+
 ---
 
 ## Fix log
