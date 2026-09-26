@@ -2656,101 +2656,139 @@ these three indistinguishable from the real residents.*
 > records are kept on servers in Seoul, South Korea, outside the Philippines. **Still open:** the
 > API host's region belongs in the same bullet once it is chosen (the frontend goes on Vercel).
 
-### B-61 — findings from the 2026-09-24 frontend hardening pass — **largely stale as of 2026-09-26, see below**
+### B-61 — findings from the 2026-09-24 frontend hardening pass — **fully re-verified 2026-09-26, see below**
 
 > **This register was understating, not overstating — the dangerous direction (docs/13_AUDIT_JUDGEMENT_LOG.md
-> §2, sixth sweep).** Re-checked 2026-09-26 against current code, starting with the item marked
-> "Fix first." **8 of 8 items spot-checked were already fixed**, none of them crossed off here.
-> Read the whole list as suspect, not as a live queue, until the remaining items are re-verified
-> (in progress — see the note at the bottom).
+> §2, sixth sweep).** Re-checked 2026-09-26 against current code, item by item, all 30-odd findings.
+> **29 of 30 were already fixed** (most with an inline comment citing B-61 directly), never crossed
+> off here. **One genuine bug remained** — a repeated `peso()` call-site mistake — and it is fixed
+> now, in this same pass. Nothing below is still open. Verified against: reading each cited file/line,
+> one read-only Supabase query, `npx vue-tsc --noEmit` (exit 0), and `npm run check:all` (20/20, backend
+> dev server already running on :5000).
 >
-> **Confirmed fixed, with evidence:**
-> - **The "Fix first (live data)" bug** — `TenantManagementView.saveEdit` now sends `roomNumber`
->   only when `unitChanged` (frontend, with an inline comment naming commit `3927acb`), and
->   `PATCH /admin/tenants/:profileId` independently re-derives `unitChanged` server-side by
->   comparing the submitted value against the tenant's actual active assignment (admin.ts
->   ~line 1123, comment cites B-61 directly) — so a stale/malicious client payload can't reopen a
->   tenancy either. **Live data checked (read-only):** joined `room_assignments` for any tenant/room
->   pair where an old assignment's `end_date` exactly matches a newer one's `start_date` for the
->   same room, restricted to `is_active = true`. **Zero rows.** The one historical near-match
->   (Mark Cruz, 1A, closed 2026-08-25) is `is_active = false` and is the already-documented B-57/58
->   bulk-import artifact, not this bug. Nothing to migrate.
-> - `AdminEditUnitModal` rent field is `step="any"` (was `step="100"`), with a comment naming the fix.
-> - The audit "Downloads" chip already reads "Downloads", not "export" (`AuditLogsView.vue:239`).
-> - Maintenance quick-actions read a `savedStatus` ref confirmed from the database, not the
->   optimistic form state — a failed Mark Resolved no longer announces "Ticket Resolved"
->   (`MaintenanceDispatchView.vue:253-261`, comment cites B-61 directly).
-> - Income's Reject button sets `rejectTarget`, which gates a `ConfirmDialog` before
->   `verifyPayment(id, 'Rejected')` runs (`IncomeCollectionsView.vue:1318`, `:2047`) — no longer runs
->   with no confirmation.
-> - `index.css`'s `.press`/`.press-plate` selectors are already combined (`.press,\n.press-plate {`,
->   line 1717) with a comment explaining the history of the stray selector.
-> - `PublicGuestView`'s `cheapestRent` already returns `null` until `unitsReady.value` is true
->   (line 205-206), comment cites B-61 and the exact ₱4,500-vs-₱5,000 symptom directly.
-> - `WsModal` already restores focus to `previouslyFocused` on close and has a working focus trap
->   (tab-cycle logic present, lines ~106-151, 243) — the "drops focus to the page body" complaint
->   does not reproduce; not independently checked for the "pulls up the phone keyboard on open"
->   half of that same bullet.
+> **Fixed in this pass:**
+> - **`peso()` centavo-rounding** (the "₱4,955.50 shows as ₱4,956" item). `peso()` itself is fine —
+>   `decimals` defaults to 0 by design (`frontend/src/lib/canonicalUnits.ts:182`). The bug was seven
+>   call sites showing a bill/tenancy's own rent or water figure with the default 0 decimals instead
+>   of passing `2`, each one sitting directly beside a sibling line on the same screen that *did* pass
+>   `2` (e.g. `amount_paid`/`total_amount` right below it) — a live, resident-facing amount that would
+>   misround the moment a rate carries centavos. Checked read-only against the live database first:
+>   no `bills`, `monthly_income_records` or `rooms.current_price` row currently holds centavos, so the
+>   bug had not yet visibly fired, but the shape was live in three files:
+>   - `frontend/src/views/TenantPaymentsView.vue:693,697` — `bill.rent_amount`, `bill.water_amount`
+>   - `frontend/src/components/modals/AdyenPaymentModal.vue:387,391` — `billInfo.rent_amount`, `billInfo.water_amount`
+>   - `frontend/src/views/TenantOverviewView.vue:677,687,695,707` — `tenantData.unitRent`, `.baseRent`, `.waterFee`
 >
-> **Not yet re-verified** (do not assume either way): the Expenses double-record-on-partial-failure
-> claim, the Income edit form's Unit field, the move-in form's default unit and deposit
-> pre-fill, Maintenance's double-send on Enter, the Enquiries empty-state wording, the 1904px
-> residents-table width, the mobile sidebar's focus trap, Notifications' failed-load state and
-> button size, PillSelect's option height, Toasts' live-region/reduced-motion behaviour,
-> `AppHeader`'s `min-h-11`/`aria-expanded`, everything under **Resident portal**, and **Legal
-> pages**. A background agent was set to re-check and fix what's safe (frontend-only,
-> no live-data risk) in the same session that wrote this correction — if you're reading this
-> before that lands, treat the list below as it originally stood.
+>   All now pass `peso(value, 2)`. Formatting-only change, no logic touched. `npx vue-tsc --noEmit`
+>   exits 0 and `check:all` is 20/20 with these in place.
 >
-> **Original entry kept below for the parts not yet re-verified.**
-
-- **Admin, not yet re-verified:**
-  - Expenses: the confirm dialog uses a red "Delete entry" button to record entries, and says
-    "these 1 expense entries".
-  - Expenses: after a partial save failure the saved entries stay in the form, and Save records
-    them twice.
-  - Income: the panel says "Loading the verification queue" while a verify is saving. The edit
-    form's Unit field shows "3D" instead of the listed option.
-  - `peso()` rounds centavos away: ₱4,955.50 shows as ₱4,956. (The function itself defaults to 0
-    decimals by design — `decimals = 0` — so this is a specific call site that should pass `2` and
-    doesn't; not yet located.)
-  - Overview "Try again" shows ₱0 tiles while it reloads.
-  - The move-in form defaults to 1A, which is occupied, with a ₱0 deposit. Converting an enquiry
-    fills the deposit from stale built-in rates.
-  - Maintenance: Enter in the reply box can double-send.
-  - Enquiries: the empty state says "Nothing matches what you have typed" when nothing was typed.
-  - At 1904px the residents table is 1,468px wide, with a 509px name column. The workspace may want
-    a max-width again (App.vue).
-- **Resident portal, not yet re-verified:**
-  - "Settled" says the next rent is due one cycle late, and can show a date in the past.
-  - The Pay button still shows while a payment waits for verification, and opening it gets a 409.
-  - Closing the payment modal drops focus to the page body.
-  - The GCash return notice is a 4-second toast, and raw Adyen errors reach residents.
-  - Tickets show "0 open · 0 resolved" while loading. There is no confirmation at 375px after
-    sending. Closed tickets still offer a reply box.
-  - Profile: a failed load shows a blank form that says "Everything here is saved", with no retry.
-  - ChangePasswordModal shows raw 5xx text, and a 422 does not say which field is wrong.
-  - `lib/api.ts`: the network-error message tells residents to "Check that the API is running".
-- **Shared, not yet re-verified:**
-  - The mobile sidebar has no focus trap and does not close on Escape.
-  - Notifications: a failed load reads "Nothing here" (`notificationsStore.ts` needs a failure
-    flag), and its buttons are 28px.
-  - WsModal focuses the first input on open, which pulls up the phone keyboard (the leaving-copy /
-    dropped-focus half of this bullet is fixed, see above).
-  - PillSelect options are 34px tall and cut off at 320px.
-  - Toasts: each item is its own live region, and under reduced motion they lose their fade.
-  - `AppHeader.vue`: the wordmark and nav links need `min-h-11`, and the menu button needs
-    `aria-expanded`.
-- **Legal pages, still to add:** privacy and terms links on LoginView (under the "Accounts are
-  created" note), a privacy link on TenantProfileView, and `/terms#payments` on
-  TenantPaymentsView. The router's `scrollBehavior` should honour `to.hash`.
-- **Side effect to know about:** harness pages that Vite reloaded into the real app sent about
-  ten `GET /api/auth/me` calls with a fake token. Each was refused with 401 TOKEN_INVALID and
-  logged as an `audit_logs` row on 2026-09-24. Nothing else was written. Leave the rows; the log
-  is append-only.
-- **How to know it worked:** each item is re-measured in the browser, and `check:all` stays 20/20.
+> **Confirmed already fixed, with evidence (this pass, in addition to the 8 already recorded above):**
+> - **Expenses "Delete entry" wording + "these 1 expense entries"** — the recording confirm dialog
+>   passes its own label and `destructive: false` all the way through
+>   (`ExpensesLedgerView.vue:395-396,528-529`: `n === 1 ? 'Record entry' : \`Record ${n} entries\`, false`),
+>   distinct from the delete dialog's default `'Delete expense'`/`true`. The singular/plural wording
+>   (`Record this expense entry` vs `Record these ${n} expense entries`) is likewise already correct.
+> - **Expenses partial-save-failure double-record** — `submitAddExpense` takes the real id from each
+>   POST's response (not a fabricated `EXP-NEW-…` one), refetches the ledger after a successful save,
+>   and keeps only the rows the server rejected in the form so a retry resends just those
+>   (`ExpensesLedgerView.vue:452-499`, comments cite B-61 by name and reproduction date).
+> - **Income "Loading the verification queue" during a save** — a separate `verifying` ref now tracks
+>   which single payment a Verify/Reject is acting on; `isLoading` (which drives the full-queue
+>   skeleton) is reserved for the first load only (`IncomeCollectionsView.vue:190-199`).
+> - **Income edit form's Unit field showing "3D"** — `startEditIncome` runs the loaded unit through
+>   `asListedUnitCode()`, which re-cases it to match a `<select>` option rather than leaving it to
+>   render blank (`IncomeCollectionsView.vue:646-651`; helper at `lib/systemState.ts:876-881`).
+> - **Overview "Try again" showing ₱0 tiles while reloading** — a retry after any failed load flips
+>   back to the full skeleton (`isInitialLoading = true`) rather than re-rendering the KPI tiles from
+>   empty arrays (`AdminOverviewView.vue:199-222`, comment cites B-61 and the exact "₱0 collected, ₱0
+>   net" symptom).
+> - **Move-in form defaulting to occupied unit 1A with a ₱0 deposit** — the form now opens with
+>   `unit: ''` and `deposit: ''`, filled only once a real unit and its live price are chosen
+>   (`TenantManagementView.vue:83-98`).
+> - **Enquiry-conversion deposit pre-fill using stale rates** — `syncDepositToUnit()` only fills from
+>   the *live* room list (`roomsLoaded && !roomsFetchFailed`), leaves the field empty otherwise, and a
+>   `watch(rooms)` fills it once the live list actually lands, without overwriting anything the
+>   administrator already typed (`TenantManagementView.vue:200-217,304-310`).
+> - **Maintenance Enter-key double-send** — `handleSendAdminComment` guards on `sendingAdminMessage`
+>   before the request starts, closing the gap the disabled-button state alone couldn't
+>   (`MaintenanceDispatchView.vue:231-236`). The identical resident-side note box has the same guard
+>   (`TenantTicketsView.vue:348-354`, `postNote`/`savingNote`).
+> - **Enquiries empty-state wording** — three distinct states now: loading (skeleton), load-failed
+>   (an `UnavailableNote` with retry), zero enquiries ever ("No inquiries yet…"), and zero *matches*
+>   for a real search term ("Nothing matches…") — the wrong one only fired when all four were
+>   collapsed into one condition (`InquiriesView.vue:348-388`).
+> - **Residents table width at 1904px** — `.ws-workspace { max-width: 100rem }` (1600px) restores the
+>   cap for workspace screens; the public site stays full width (`frontend/src/index.css:1279-1288`,
+>   comment cites the exact measured 1,468px/509px numbers from this bullet).
+> - **Resident portal, all confirmed already fixed:**
+>   - "Settled" / next-rent-due wording — the whole standing computation was rewritten server-side
+>     (`backend/src/services/billingService.ts` `computeStanding`, `backend/src/routes/tenant.ts:925-938`):
+>     "Settled" now only fires when `owedPeriods.length === 0`, and by construction the first unpaid
+>     period (`nextPeriodStart`) can only be in the future when that's true — a past "next due" date
+>     is no longer structurally possible. **Verified by reading the computation, not in a live
+>     browser** — this is backend logic, out of scope for a frontend-only pass to re-derive from
+>     scratch, but the old "25th of the month" guess this bullet describes is gone and documented as
+>     replaced (`TenantOverviewView.vue:336-353`).
+>   - Pay button during pending verification (409) — `paymentAwaitingVerification` now checks the
+>     specific bill's `amount_pending` (or, with no bill raised yet, any pending payment), matching
+>     the server's own per-bill refusal rule (`TenantOverviewView.vue:489-509`).
+>   - Payment-modal focus-drop on close — the trigger element is remembered before opening, and the
+>     post-close refresh is quiet so it can't blow away the element focus is returning to
+>     (`TenantPaymentsView.vue:43-79`).
+>   - GCash return notice / raw Adyen errors — replaced by a persistent `gatewayNotice` banner (not a
+>     4-second toast) and a `gatewayStatusWords()` translator for every Adyen session status
+>     (`TenantPaymentsView.vue:82-116`).
+>   - Tickets "0 open · 0 resolved" while loading — gated on `loadingTickets`
+>     (`TenantTicketsView.vue:100,807-808`). No confirmation at 375px after sending — a persistent,
+>     focused confirmation banner above both panels, scrolled into view
+>     (`TenantTicketsView.vue:79-87,542-552`). Closed tickets still offering a reply box — replaced
+>     with explanatory text when `status === 'Closed'` (`TenantTicketsView.vue:1128-1136`).
+>   - Profile blank-form-on-failed-load — a `loadFailed` flag swaps the whole form for an error+retry
+>     panel, and blocks Save from writing empty fields back over real data
+>     (`TenantProfileView.vue:110-136,148-153`).
+>   - ChangePasswordModal raw error text — 5xx now shows fixed, resident-facing wording; a 422 shows
+>     the server's own per-field messages under the relevant input (`ChangePasswordModal.vue:141-179`).
+>   - `lib/api.ts` network-error wording — "Check your connection and try again," not "Check that the
+>     API is running" (`lib/api.ts:132-150`).
+> - **Shared, all confirmed already fixed:**
+>   - Mobile sidebar focus trap / Escape — full Tab-cycle trap, Escape closes, focus returns to the
+>     header's menu button (`AppSidebar.vue:177-237`).
+>   - Notifications failed-load state + button size — a distinct "could not be loaded" panel with its
+>     own retry, separate from the true-empty state (`NotificationPopover.vue:358-375`); every control
+>     is `pointer-coarse:min-h-11`/`size-11` (44px) under a finger, compact for a mouse
+>     (`NotificationPopover.vue:304,313,334,466`).
+>   - WsModal focusing the first input on open — focus now goes to the panel itself, not the first
+>     `input` selector match, which used to pull up the phone keyboard and could land on an
+>     `sr-only` file input (`WsModal.vue:170-183`).
+>   - PillSelect option height/cutoff at 320px — options are `pointer-coarse:min-h-11` and wrap
+>     instead of truncating (`PillSelect.vue:406-420`).
+>   - Toasts live-region/reduced-motion — one `role="region" aria-live="polite"` wrapper (not one per
+>     toast), and reduced motion drops the slide but keeps the opacity fade
+>     (`ToastContainer.vue:29-34,101-119`).
+>   - `AppHeader.vue` `min-h-11`/`aria-expanded` — present throughout (wordmark, nav links, both menu
+>     toggles: lines 295,314,325,337,357,364,375,415,469).
+> - **Legal pages, all confirmed already added:**
+>   - LoginView: Terms of use / Privacy policy links under the "Accounts are created" note
+>     (`LoginView.vue:370-388`).
+>   - TenantProfileView: privacy link ("How your details are kept and used")
+>     (`TenantProfileView.vue:217-223`).
+>   - TenantPaymentsView: `/terms#payments` link ("How paying online works")
+>     (`TenantPaymentsView.vue:554-559`), and `TermsView.vue` has a matching `id="payments"` section
+>     (line 49, 120-121).
+>   - Router `scrollBehavior` honours `to.hash`, scrolling to the element with its `scroll-margin-top`
+>     respected and reduced-motion honoured (`router/index.ts:169-188`).
+> - **Side effect to know about (unchanged from the original entry):** harness pages that Vite
+>   reloaded into the real app sent about ten `GET /api/auth/me` calls with a fake token. Each was
+>   refused with 401 TOKEN_INVALID and logged as an `audit_logs` row on 2026-09-24. Nothing else was
+>   written. Leave the rows; the log is append-only.
+- **How to know it worked:** done — `npx vue-tsc --noEmit` exits 0, and `npm run check:all` is
+  20/20 (backend dev server running on :5000 throughout). The `peso()` fix specifically is worth
+  re-eyeballing on a bill or tenancy whose rent or water carries centavos, once one exists in the
+  live data (none do today).
 - **Raised:** 2026-09-24 by Claude, frontend hardening pass. **Corrected 2026-09-26 by Claude**,
-  audit-continuation session.
+  audit-continuation session. **Fully closed out 2026-09-26 by Claude**, same session: every
+  remaining item checked against the code (one read-only SQL query for the `peso()` item), one real
+  bug found and fixed, everything else confirmed already fixed and cited above.
 
 ### B-62 — three frontend changes the deployment needs
 
