@@ -432,7 +432,10 @@ export async function applyNotificationItem(
   const account = String(item.merchantAccountCode ?? '');
   const expectedAccount = config.adyen.merchantAccount;
 
-  if (currency !== 'PHP' || (expectedAccount && account && account !== expectedAccount)) {
+  // An EMPTY account passed this check (`account &&`). The field is signed, so
+  // it cannot be forged empty, but a notification that does not say which
+  // account it was for is not one this property can bank (FINAL_REVIEW, low).
+  if (currency !== 'PHP' || (expectedAccount && account !== expectedAccount)) {
     await recordAudit({
       actorProfileId: null,
       action: 'PAYMENT_RECORD',

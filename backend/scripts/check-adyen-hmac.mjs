@@ -339,6 +339,22 @@ try {
   check('an expired authorisation is reported', (await tell('EXPIRE', 'true')).count, 1);
   check('a technical cancel is reported', (await tell('TECHNICAL_CANCEL', 'true')).count, 1);
   check('a routine capture still wakes nobody', (await tell('CAPTURE', 'true')).count, 0);
+
+  // An authorisation that names no merchant account is not banked. The stub now
+  // finds nothing anywhere, so reaching an insert would mean it was accepted.
+  let inserted = false;
+  const empty = () => new Proxy(() => {}, {
+    get: (_t, prop) => prop === 'then'
+      ? (resolve) => resolve({ data: null, error: null })
+      : (...args) => { if (prop === 'insert' && args[0]?.payment_method) inserted = true; return empty(); },
+  });
+  stubDb.from = () => empty();
+  const noAccount = await applyNotificationItem({
+    pspReference: 'AUTH-NOACCT', originalReference: '', merchantAccountCode: '',
+    merchantReference: 'BILL-00000000-0000-4000-8000-000000000001-1', amount: { value: 690000, currency: 'PHP' },
+    eventCode: 'AUTHORISATION', success: 'true',
+  }, null);
+  check('an authorisation naming no merchant account is not banked', [noAccount.outcome, inserted], ['ignored', false]);
 } finally {
   stubDb.from = realFrom;
   stubNotifier.notify = realNotify;
