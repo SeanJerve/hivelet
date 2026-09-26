@@ -30,7 +30,7 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   lookup nor the unique index sees a duplicate. The tenant is charged twice.
 - **Severity:** high. One bill's full amount charged twice to a tenant's GCash.
 - **Fix:** send `expiresAt` equal to the hold, so no session outlives the guard that protects it.
-- **Status:** see the fix log below.
+- **Status:** **FIXED** in `981e2ac`.
 
 ## F2. Voiding an income row does not reopen the bill it settled, so the debt stays closed
 
@@ -98,7 +98,7 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   screens and a spreadsheet disagree about what came in for a year.
 - **Fix:** filter and chart by `r.year` / `r.month`, the same fields the Overview and the export
   use, and chart rent + water. No API, calculation or wording change.
-- **Status:** see the fix log below.
+- **Status:** **FIXED** in `c451f4f`.
 
 ## F4. A refund Adyen refused is announced to the owner as a refund that happened
 
@@ -122,7 +122,7 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
 - **Severity:** high. The wrong instruction, on the screen she acts from, about real money.
 - **Fix:** when `success` is false on a modification event, say plainly that it did NOT happen
   and that nothing needs voiding; add the three missing events.
-- **Status:** see the fix log below.
+- **Status:** **FIXED** in `63df720`.
 
 ## F5. The new duplicate-payment warning cannot see a GCash payment still waiting to be verified
 
@@ -146,7 +146,7 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   and the month's income is overstated until someone notices.
 - **Fix:** the modal also loads the verification queue and lists any payment waiting to be
   verified for the same unit in the same warning banner, in the same words and style.
-- **Status:** see the fix log below.
+- **Status:** **FIXED** in `6471a28`.
 
 ## F6. Phone-first sign-in gives iPhones a keypad with no letters, so an email cannot be typed
 
@@ -165,10 +165,87 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   was the change asked for; the keyboard is the ordinary one, which types both.
 - **Verified against:** the HTML standard's definition of `inputmode="tel"` (a telephone keypad)
   and iOS's tel keyboard layout. Not tried on a device from this session.
-- **Status:** see the fix log below.
+- **Status:** **FIXED** in `722ebf5`.
+
+## F7. A month skipped and a later month paid reads as nothing owed
+
+- **Where:** `backend/src/services/standingService.ts` `readStanding` and
+  `backend/src/services/billingService.ts` `computeStanding`. Paid-through is the single latest
+  `rent_period_end` on a verified, unvoided receipt; owed periods start the day after it.
+- **What breaks:** a gap in her records before the latest receipt is invisible. The tenant
+  portal's Amount due, the tenant's standing and the checkout (which bills `owedPeriods[0]`) all
+  read from this.
+- **Trigger:** a tenant paid through 31 July, skipped August, and paid September in cash. She
+  records September. Paid-through becomes 30 September, the portal says nothing is due, and the
+  checkout refuses to bill August. August's rent is never asked for by the system.
+- **Severity:** medium. A month's rent can go uncollected with nothing on screen to say so.
+- **Why not fixed here:** the fix is to find the earliest uncovered period since the tenancy
+  started, not the one after the latest. That changes what every tenant is told they owe, and it
+  would run over 937 imported rows whose periods came from her book and do not tile cleanly (16
+  anniversaries are still placeholders, B-32). Done without measuring it against the live rows
+  first, it could show tenants debts they do not have, the week of the defense. It needs a
+  read-only count of how many active tenancies have a gap, and Sean's decision.
+- **Status:** OPEN. Added to `BLOCKED_FOR_SEAN.md`.
+
+---
+
+## Low severity, recorded and left
+
+- **The merchant account check passes an empty value.** `adyenWebhookHandler.ts` refuses a
+  notification for another merchant account only when `merchantAccountCode` is present. The field
+  is HMAC-signed, so an empty one cannot be forged; it can only come from Adyen. Worth tightening
+  if the webhook is ever shared.
+- **The verification queue dates a GCash payment in the viewer's time zone.**
+  `IncomeCollectionsView.vue` formats `paid_at` with no `timeZone`, the B-59 display shape. A
+  payment at 07:00 Manila shows the day before to a browser in the Americas. Display only; the
+  ledger row is dated in Manila (`propertyParts`).
+- **A hardcoded phone number on the no-gateway cashier page.** `routes/public.ts` prints
+  "Auto-fill Tenant Phone: 0906 354 9001". The page returns 404 whenever the gateway is
+  configured, so production never serves it. If that number belongs to a real person, it should
+  not be in the repository.
+- **A tenant who has moved out can still file a repair request against their old unit.**
+  `POST /tenant/tickets` scopes to current and historical rooms (`scopeService.ts`). Nothing of
+  the new tenant's is read or changed, but the request lands on someone else's unit.
+
+## Checked and clean
+
+These were read for the defect classes in the brief and nothing survived:
+
+- **Webhook authentication.** Basic Auth (both-or-neither, constant-time, non-short-circuiting),
+  HMAC over the eight fields with Adyen's own library as the reference, every item verified before
+  any is applied, and the verifier never throws.
+- **Webhook idempotency and failures.** Lookup scoped to the unique index's predicate, `23505`
+  treated as a duplicate, permanent failures acknowledged rather than retried forever, and a
+  failed item making the whole batch retry safely.
+- **Verification.** `settle_verified_payment` locks the row and is idempotent; Verified to
+  Rejected is refused; a compare-and-set stops two administrators overwriting each other; partial
+  payments leave the bill Partially Paid.
+- **Checkout.** Ownership check on an explicit bill, the pending-payment refusal on both branches,
+  the one-row conditional UPDATE for the hold, and migration 038's index catching a double tap.
+- **On-site receipts, edits and voids.** Duplicate and cross-unit receipt guards, one row per
+  month through a database function, water derived rather than typed, the double-void guard.
+- **Expenses.** Create and edit go through database functions that derive the total from the
+  allocation rows; allocations are validated before anything is written.
+- **Access.** `/admin` is gated as a whole (`requireAuth`, `requirePasswordCurrent`,
+  `requireAdmin`), every tenant route filters on the caller's own profile id, and no public route
+  returns a tenant's name or contact (a separate read of every public and tenant route found
+  nothing).
 
 ---
 
 ## Fix log
 
-(filled in as fixes land)
+| | Finding | Commit | Proved by |
+| :-- | :--- | :--- | :--- |
+| F1 | GCash session outlives its hold | `981e2ac` | `check:adyen`: 4 new assertions failed before, pass after; moving the expiry past the hold fails again |
+| F3 | Money coming in filed by date paid | `c451f4f` | `node frontend/scripts/check-income-filing.mts`: 9 of 10 failed on the old logic, 10 of 10 pass, in Manila and New York time |
+| F4 | A refused refund announced as a refund | `63df720` | `check:adyen` drives the real handler: 8 new assertions failed before, 71 of 71 pass; disabling the fix fails 4 |
+| F5 | Warning blind to a pending GCash payment | `6471a28` | The real modal in Chromium, API answered locally: no warning before, the pending payment listed after |
+| F6 | iPhone keypad cannot type an email | `722ebf5` | Rendered DOM: `inputmode="tel"` before, absent after. Not tried on a device |
+| F2 | A void leaves the bill Paid | none | OPEN, `BLOCKED_FOR_SEAN.md` |
+| F7 | A skipped month reads as paid | none | OPEN, `BLOCKED_FOR_SEAN.md` |
+
+**Nothing here changed live data or the schema, and no migration was written.** F1 changes the
+request sent to Adyen when a session is created: after it deploys, one real checkout is worth
+opening to confirm Adyen accepts the `expiresAt` (it is in Adyen's documented request, and a
+refusal would show as "The payment gateway did not accept this checkout").

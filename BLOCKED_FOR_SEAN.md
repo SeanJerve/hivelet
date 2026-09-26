@@ -33,6 +33,47 @@ thing did not work" is not.
 
 ## Open
 
+### B-71 — voiding an income row leaves its bill Paid, so the debt cannot be collected again
+
+- **Blocked on:** a decision about what a void should reverse, and a database function to do it
+  in one transaction. Full reasoning in `docs/FINAL_REVIEW.md` F2.
+- **What I was doing:** the final pre-defense review of money paths (2026-09-26).
+- **What I found:** `DELETE /admin/income-records/:id` sets `voided_at` on the income row only.
+  The `payments` row stays Verified and the bill stays Paid. After a GCash chargeback or refund,
+  the webhook tells her to void the payment; she does, the tenant's portal still reads Paid, and
+  the checkout answers 409 "No unpaid bill could be resolved", because the new bill for that
+  period collides with the Paid one on `idx_one_bill_per_tenant_per_period` and 0 is outstanding.
+- **What I already did:** nothing in code. No migration written, because the shape is a
+  decision: for a GCash settlement the matching payment is exact (`transaction_reference` =
+  pspReference, `payment_method = 'Adyen Online'`); for an on-site receipt covering several months
+  it is not, since one receipt's payments are spread across bills by `allocateReceipt`.
+- **What Sean needs to do:** decide whether a void of a GCash settlement should also reverse its
+  payment and reopen its bill. If yes: a `void_income_record(p_id, p_by, p_reason)` function
+  shaped like `settle_verified_payment` (migration 018), GCash rows only, leaving on-site voids as
+  they are until the owner says what voiding one month of a multi-month receipt means.
+- **How to know it worked:** void a verified GCash settlement on a scratch row; the payment is no
+  longer counted by `outstandingOnBill`, the bill reads Due, and a checkout opens for it.
+- **Raised:** 2026-09-26 by Claude (final review)
+
+### B-72 — a skipped month followed by a paid month reads as nothing owed
+
+- **Blocked on:** a read-only measurement of the live ledger, then a decision. Full reasoning in
+  `docs/FINAL_REVIEW.md` F7.
+- **What I found:** `readStanding` takes the single latest `rent_period_end` as paid-through.
+  July paid, August skipped, September recorded: the portal says nothing is due and the checkout
+  will not bill August.
+- **What I already did:** nothing in code. Finding the earliest uncovered period instead would
+  change what every tenant is told they owe, over imported periods that do not tile cleanly.
+- **What Sean needs to do:** count, read-only, how many active tenancies have an uncovered period
+  between their start (or a sensible horizon) and their latest `rent_period_end`. If the count is
+  small and every one is a real arrear, switch `computeStanding` to the earliest gap. If it is
+  large, the gaps are import noise and this stays as it is.
+- **How to know it worked:** the count, and for any tenant it names, her book agrees there is a
+  month unpaid.
+- **Raised:** 2026-09-26 by Claude (final review)
+
+---
+
 ### ~~B-59 — a frontend bug could have re-shifted an income date by a day on any edit since B-27's fix~~ — **RESOLVED 2026-09-23, confirmed clean**
 
 > **Conclusively ruled out, not just unobserved.** The open question below was whether the
