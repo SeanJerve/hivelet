@@ -148,6 +148,25 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   verified for the same unit in the same warning banner, in the same words and style.
 - **Status:** see the fix log below.
 
+## F6. Phone-first sign-in gives iPhones a keypad with no letters, so an email cannot be typed
+
+- **Where:** `frontend/src/views/LoginView.vue`, the sign-in identifier input, `inputmode="tel"`
+  (added in `b6a5ab1` this week).
+- **What breaks:** the field accepts a phone number or an email, and its own comment says it is
+  `type="text"` so that neither is refused. `inputmode="tel"` asks the phone for a telephone
+  keypad. On iOS that keypad has digits, `*`, `#` and `+` only, with no key to switch to letters.
+  Anyone whose account signs in by email cannot type it on an iPhone.
+- **Trigger:** the owner, or any account with no phone number on file, opens the site on an
+  iPhone and taps the field. No `@`, no letters.
+- **Severity:** medium. Not money, but it can lock the one person who verifies payments out of
+  the system on her phone. Whether it bites depends on which accounts have a phone number, which
+  this session cannot read.
+- **Fix:** drop `inputmode`. The label and placeholder still lead with the phone number, which
+  was the change asked for; the keyboard is the ordinary one, which types both.
+- **Verified against:** the HTML standard's definition of `inputmode="tel"` (a telephone keypad)
+  and iOS's tel keyboard layout. Not tried on a device from this session.
+- **Status:** see the fix log below.
+
 ---
 
 ## Fix log
