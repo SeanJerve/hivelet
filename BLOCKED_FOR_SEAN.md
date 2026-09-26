@@ -33,6 +33,29 @@ thing did not work" is not.
 
 ## Open
 
+### B-75 — the tenant portal shows voided receipts as real payments · **one line, backend**
+
+- **Blocked on:** backend lane. The design branch does not change `backend/src/`.
+- **What was found, 2026-09-26:** `GET /tenant/my-income-records` (`backend/src/routes/tenant.ts`,
+  the query ending `.eq('tenant_profile_id', ...)` near line 432) has no `.is('voided_at', null)`
+  and does not select `voided_at`, so the client cannot filter either. A voided row also keeps
+  `verification_status = 'Verified'`. Every other reader already filters it (`standingService.ts:86`,
+  both exports, three places in `admin.ts`).
+- **Live example:** unit 1a, the cash receipt recorded and voided on 2026-09-22 (the only voided row
+  of 938). That tenant's Overview lists it as a Verified ₱8,200 receipt. The balance itself is right,
+  because `readStanding()` skips it.
+- **Why it matters now:** the Payments page's history (commit on `claude/friendly-dirac-njqvs1`, same
+  day) now reads this endpoint too. Before that it showed the two `payments` rows that same receipt
+  wrote, also Verified, so this is not a regression. But the fix is what makes both screens right.
+- **What Sean needs to do:** add `.is('voided_at', null)` to that query. Nothing else.
+- **How to know it worked:** the 1a tenant's Overview and Payments pages no longer list a 22 Sep
+  receipt; `npm run check:api` stays green.
+- **Related, a decision rather than a bug:** that same void left its two on-site `payments` rows
+  Verified and bill `880799ef` Paid. Migration 054 leaves on-site voids alone deliberately (its
+  header explains why), so the 1a portal says that bill is paid while `my-standing` says the period
+  is owed. Worth a look before the defense, since the example is live.
+- **Raised:** 2026-09-26 by Claude (design branch, from a screenshot of unit 1c's empty history)
+
 ### B-74 — GCash on the Adyen TEST account is refused before it becomes a payment · **waiting on Adyen, Case 08657379**
 
 - **Blocked on:** Adyen support. Not code.

@@ -1,5 +1,7 @@
 # Chapter 3 — reconciliation with the system as built
 
+> **Superseded 2026-09-26 by [`docs/FINAL MANUSCRIPT/FIXES_TO_CHAPTERS_1_TO_3.md`](FINAL%20MANUSCRIPT/FIXES_TO_CHAPTERS_1_TO_3.md).** Kept as a record. Two things below are out of date: the database is PostgreSQL **17.6**, not 15 (read from the live database), and the deployment question in section 6 is settled (Vercel and Supabase).
+
 **Prepared 2026-09-18.** Every replacement below is **paste-ready** and every version number was
 read from `package.json` on this machine, not estimated.
 

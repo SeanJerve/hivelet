@@ -35,7 +35,7 @@ docs/claude_pipeline/
    - `docs/01_SYSTEM_BIBLE.md`
    - `docs/05_DATABASE_DESIGN.md`
    - `docs/04_ARCHITECTURE.md`
-   - `docs/reference/Hivelet_ A Web-Based Apartment Management System for  Fe Galang Da Silva Boarding House.docx.pdf`
+   - `docs/FINAL MANUSCRIPT/Hivelet_Manuscript_as_of_2026-09-18.pdf`
    - The 5 images in `docs/claude_pipeline/diagrams/reference_dfds/`
 3. Set the Project Instructions to:
    > *"You are Claude, Principal Backend Architect and Database Engineer for Hivelet Group 4. Adhere strictly to CLAUDE_PIPELINE.md. Frontend is strictly READ-ONLY. Follow all business rules in 01_SYSTEM_BIBLE.md. CRITICAL RULE: If anything is unclear, ambiguous, or not yet finalized, DO NOT assume or guess. Initiate a conversation with the user first, present options/tradeoffs, and get explicit alignment before producing final code, schemas, or diagrams."*

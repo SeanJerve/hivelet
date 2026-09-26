@@ -6,13 +6,12 @@
   @designRef docs/DESIGN_GUIDELINE.md
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue';
 import { api } from '@/lib/api';
 import { peso } from '@/lib/canonicalUnits';
-import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
+import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
 import { CreditCard, Search, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
-import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -24,6 +23,21 @@ const sortOrderOptions = [
   { value: 'latest', label: 'Newest first' },
   { value: 'oldest', label: 'Oldest first' },
 ];
+
+/**
+ * Loaded on demand, not with the page.
+ *
+ * `AdyenPaymentModal.vue` imports `@adyen/adyen-web` at its top, and that one
+ * import is the whole reason this view's own bundle chunk was ~209 KB, next
+ * to every other view's 5-40 KB. A resident opening this screen just to read
+ * their balance downloaded and parsed the entire GCash Drop-in SDK for a
+ * dialog that stays closed - v-if only skips mounting it, not bundling it.
+ * A dynamic import gives it its own chunk that only fetches the moment
+ * `selectedBillForAdyen` or `payingCurrentPeriod` actually goes true.
+ */
+const AdyenPaymentModal = defineAsyncComponent(
+  () => import('@/components/modals/AdyenPaymentModal.vue')
+);
 
 // Selected bill for the Adyen web component checkout modal
 const selectedBillForAdyen = ref<any | null>(null);
@@ -165,8 +179,11 @@ const paymentHistory = ref<Array<{
   id: string | number;
   invoiceRef: string;
   datePaid: string;
-  datePaidRaw: string; // ISO string for year filtering
-  billingPeriod: string;
+  datePaidRaw: string; // for sorting
+  /** The property's year, worked out per row: a receipt's bare date and a payment's timestamp need different handling. */
+  year: number;
+  /** What the money was for: a receipt's rent period, or "Online payment". */
+  forLabel: string;
   amountPaid: number;
   paymentMethod: string;
   status: string;
@@ -202,8 +219,7 @@ const loadingHistory = ref(true);
 const availableYears = computed(() => {
   const years = new Set<number>();
   paymentHistory.value.forEach((p) => {
-    const year = new Date(p.datePaidRaw).getFullYear();
-    if (!isNaN(year)) years.add(year);
+    if (p.year) years.add(p.year);
   });
   years.add(currentYear);
   return Array.from(years).sort((a, b) => b - a);
@@ -216,10 +232,10 @@ const yearOptions = computed(() =>
 const filteredPayments = computed(() => {
   const q = searchQuery.value.trim().toLowerCase();
   const filtered = paymentHistory.value.filter((p) => {
-    const year = new Date(p.datePaidRaw).getFullYear();
-    if (year !== selectedYear.value) return false;
+    if (p.year !== selectedYear.value) return false;
     if (!q) return true;
     return (
+      p.forLabel.toLowerCase().includes(q) ||
       p.invoiceRef.toLowerCase().includes(q) ||
       p.paymentMethod.toLowerCase().includes(q) ||
       p.status.toLowerCase().includes(q) ||
@@ -490,27 +506,77 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
   }
 }
 
+/**
+ * EVERY RESIDENT'S HISTORY READ "NOTHING RECORDED" (found 2026-09-26).
+ *
+ * This read `/tenant/my-payments` alone - the `payments` table, which holds only
+ * money that went through the system itself. Every receipt the landlady wrote,
+ * including all 937 imported from her workbook, lives in
+ * `monthly_income_records`, so unit 1c, with seven receipts in 2026, saw an
+ * empty year. The Overview already read both; this screen now does the same.
+ *
+ * Receipts are the record. A payment appears as well only while it is NOT
+ * Verified: verifying a GCash payment writes its receipt (`settle_verified_payment`),
+ * and cash taken through the on-site form writes the receipt and the payment
+ * together, so a Verified payment is already on the list as its receipt and
+ * would otherwise show twice. What is left - waiting, or not accepted - has no
+ * receipt yet and is exactly what the resident needs to see.
+ *
+ * Both reads or neither: a history missing one half is a wrong history, and
+ * "could not be loaded" is the only safe thing to say about it.
+ */
 async function fetchPaymentHistory() {
   loadingHistory.value = true;
   historyLoadFailed.value = false;
   try {
-    const data = await api.get<any[]>('/tenant/my-payments');
-    paymentHistory.value = (data ?? []).map((p) => ({
-      id: p.id,
-      // A cash payment recorded by hand genuinely has no gateway reference, so
-      // this label describes the absence rather than inventing a number.
-      invoiceRef: p.transaction_reference || 'No reference, recorded by hand',
-      datePaid: new Date(p.paid_at || p.created_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric', timeZone: PROPERTY_TIMEZONE }),
-      datePaidRaw: p.paid_at || p.created_at,
-      billingPeriod: 'Monthly Statement',
-      amountPaid: Number(p.amount) || 0,
-      // Neither is guessed. `|| 'GCASH'` showed a payment of unknown method as
-      // GCash - every one of the 937 historical records is Cash - and
-      // `|| 'VERIFIED'` displayed a payment with no verification status as
-      // settled, which is the single thing BR-017 exists to prevent.
-      paymentMethod: methodLabel(p.payment_method),
-      status: (p.verification_status || 'PENDING VERIFICATION').toUpperCase(),
-    }));
+    const [payments, receipts] = await Promise.all([
+      api.get<any[]>('/tenant/my-payments'),
+      api.get<any[]>('/tenant/my-income-records'),
+    ]);
+
+    const receiptRows = (receipts ?? []).map((r) => {
+      const period =
+        r.rent_period_start && r.rent_period_end
+          ? `Rent, ${formatDateOnly(r.rent_period_start, { month: 'short', day: 'numeric' })} to ${formatDateOnly(r.rent_period_end, { month: 'short', day: 'numeric' })}`
+          : 'Rent';
+      return {
+        id: `receipt-${r.id}`,
+        invoiceRef: '',
+        forLabel: period,
+        datePaid: formatDateOnly(r.date_paid, { year: 'numeric', month: 'short', day: 'numeric' }),
+        datePaidRaw: r.date_paid,
+        year: Number(String(r.date_paid ?? '').slice(0, 4)),
+        // `remitted_amount` is rent plus water only; garbage is its own column
+        // (BR-037). The sum is what the paper receipt says.
+        amountPaid: (Number(r.remitted_amount) || 0) + (Number(r.gbg_fee) || 0),
+        paymentMethod: methodLabel(r.payment_method),
+        status: (r.verification_status || 'PENDING VERIFICATION').toUpperCase(),
+      };
+    });
+
+    const paymentRows = (payments ?? [])
+      .filter((p) => p.verification_status !== 'Verified')
+      .map((p) => {
+        const raw = p.paid_at || p.created_at;
+        return {
+          id: `payment-${p.id}`,
+          // No reference is shown rather than an invented one.
+          invoiceRef: p.transaction_reference || '',
+          forLabel: p.payment_method === 'Adyen Online' ? 'Online payment' : 'Payment',
+          datePaid: new Date(raw).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric', timeZone: PROPERTY_TIMEZONE }),
+          datePaidRaw: raw,
+          year: Number(propertyDate(new Date(raw)).slice(0, 4)),
+          amountPaid: Number(p.amount) || 0,
+          // Neither is guessed. `|| 'GCASH'` showed a payment of unknown method as
+          // GCash - every one of the 937 historical records is Cash - and
+          // `|| 'VERIFIED'` displayed a payment with no verification status as
+          // settled, which is the single thing BR-017 exists to prevent.
+          paymentMethod: methodLabel(p.payment_method),
+          status: (p.verification_status || 'PENDING VERIFICATION').toUpperCase(),
+        };
+      });
+
+    paymentHistory.value = [...paymentRows, ...receiptRows];
   } catch (err: any) {
     console.error('Failed to load payments:', err?.message || err);
     historyLoadFailed.value = true;
@@ -798,7 +864,7 @@ function refreshAll() {
       >
         <template #head>
           <tr>
-            <th scope="col">Reference</th>
+            <th scope="col">For</th>
             <th scope="col">Date paid</th>
             <th scope="col" class="num">Amount</th>
             <th scope="col">Method</th>
@@ -808,7 +874,12 @@ function refreshAll() {
 
         <template #row="{ row: record, index }">
           <tr class="list-reveal-item" :style="{ animationDelay: `${Math.min(index, 9) * 30}ms` }">
-            <th scope="row" class="font-medium">{{ record.invoiceRef }}</th>
+            <th scope="row" class="font-medium">
+              {{ record.forLabel }}
+              <span v-if="record.invoiceRef" class="block text-xs font-normal text-ink-soft">
+                {{ record.invoiceRef }}
+              </span>
+            </th>
             <td class="whitespace-nowrap text-ink-soft">{{ record.datePaid }}</td>
             <td class="num font-semibold">{{ peso(record.amountPaid, 2) }}</td>
             <td class="whitespace-nowrap text-ink-soft">{{ record.paymentMethod }}</td>
@@ -848,6 +919,10 @@ function refreshAll() {
               <dd class="text-ink">{{ record.paymentMethod }}</dd>
             </div>
             <div class="min-w-0">
+              <dt class="text-xs text-ink-faint">For</dt>
+              <dd class="break-words text-ink">{{ record.forLabel }}</dd>
+            </div>
+            <div v-if="record.invoiceRef" class="min-w-0">
               <dt class="text-xs text-ink-faint">Reference</dt>
               <dd class="break-words text-ink">{{ record.invoiceRef }}</dd>
             </div>

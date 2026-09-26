@@ -411,7 +411,9 @@ onUnmounted(() => {
             :key="item.id"
             type="button"
             :class="[
-              'press-plate group flex w-full items-start gap-3 p-4 text-left hover:bg-canvas',
+              // Negative offset: these rows run edge to edge inside a scrolling
+              // list, which clipped the workspace's outset focus outline.
+              'press-plate group flex w-full items-start gap-3 p-4 text-left hover:bg-canvas focus-visible:outline-offset-[-3px]',
               item.is_read ? 'bg-tile' : 'bg-brand-soft/50',
               revealRows ? 'list-reveal-item' : '',
             ]"

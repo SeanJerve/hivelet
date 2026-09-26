@@ -143,7 +143,7 @@ Whenever formulating architecture, designing database structures, or writing bac
    - Reflects the active, running system. Always inspect existing implementations before introducing changes. Never duplicate existing services or create orphan models.
 2. **`docs/01_SYSTEM_BIBLE.md` (Primary Operational Authority)**
    - The authoritative source for business rules, roles, financial formulas, room-centric logic, and module boundaries.
-3. **Capstone Paper** (`docs/reference/Hivelet_ A Web-Based Apartment Management System for  Fe Galang Da Silva Boarding House.docx.pdf`)
+3. **Capstone Paper** (`docs/FINAL MANUSCRIPT/Hivelet_Manuscript_as_of_2026-09-18.pdf`)
    - The academic authority for research problems, objectives, scope, limitations, and ISO/IEC 25010 evaluation standards.
 4. **Group Decisions & Module 01 Defense Submissions**
    - `CAPSTONE ACTS/Module 01 - System Design Refinement.md`
