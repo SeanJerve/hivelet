@@ -150,6 +150,65 @@ interface ResidentStanding {
   totalPayable: number;
 }
 const standing = ref<ResidentStanding | null>(null);
+
+/** The configured water rate (BR-014), for the "Your rent" tile. Null if it could not be read. */
+const waterRatePerOccupant = ref<number | null>(null);
+async function loadWaterRate() {
+  try {
+    const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
+    waterRatePerOccupant.value = r?.waterRatePerOccupant ?? null;
+  } catch {
+    // Left null: the tile then states the water figure without the rate behind it.
+  }
+}
+
+function ordinal(n: number): string {
+  const tens = n % 100;
+  if (tens >= 11 && tens <= 13) return `${n}th`;
+  return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'}`;
+}
+
+/**
+ * "YOUR RENT": the rules she is billed under, with her own figures.
+ *
+ * BR-010 (the due day follows the move-in day), BR-014 (water per registered
+ * occupant), BR-011/BR-012 (overdue from the day after, no grace period), and
+ * how far her recorded payments reach. All of it comes from `my-standing`,
+ * already loaded for the bill above; nothing here is a new claim.
+ *
+ * The due day is read off the next period's start. Periods are clamped to the
+ * month's length (billingService `clampToMonth`), so a start on the 29th or
+ * later, or on a month's last day, may be a clamped one: those are worded as
+ * the move-in day rather than as a number that could be wrong.
+ */
+/** Beside a loaded bill state only: not while loading, and not over a failed read. */
+const showRentTile = computed(() => !loadingBills.value && !billsLoadFailed.value && standing.value !== null);
+
+const rentFacts = computed(() => {
+  const st = standing.value;
+  if (!st) return null;
+  const start = st.owedPeriods[0]?.start ?? st.nextPeriodStart;
+  let dueDay = 'on the same day each month as the day you moved in';
+  if (/^\d{4}-\d{2}-\d{2}/.test(start)) {
+    const [y, m, d] = start.split('-').map(Number) as [number, number, number];
+    const lastOfMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    if (d <= 28 && d !== lastOfMonth) dueDay = `on the ${ordinal(d)} of each month`;
+    else dueDay += ', or on the last day of a shorter month';
+  }
+  const rate = waterRatePerOccupant.value;
+  const occupants = rate && rate > 0 ? Math.round(st.perPeriod.waterAmount / rate) : null;
+  return {
+    rent: st.perPeriod.rentAmount,
+    water: st.perPeriod.waterAmount,
+    total: st.perPeriod.totalAmount,
+    waterNote:
+      rate !== null && occupants !== null && occupants * rate === st.perPeriod.waterAmount
+        ? `${occupants} registered ${occupants === 1 ? 'occupant' : 'occupants'} at ${peso(rate)} each`
+        : '',
+    paidThrough: st.paidThrough,
+    dueDay,
+  };
+});
 const standingOwes = computed(() => (standing.value?.owedPeriods.length ?? 0) > 0);
 const longDate = { month: 'long', day: 'numeric', year: 'numeric' } as const;
 /**
@@ -380,6 +439,7 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
 }
 
 onMounted(async () => {
+  loadWaterRate();
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get('status');
   const refParam = params.get('ref');
@@ -657,7 +717,14 @@ function refreshAll() {
 
     <!-- `tabindex="-1"`: where focus lands when the dialog closes and its Pay
          button is gone. See `payTrigger`. -->
-    <section ref="billsRegion" tabindex="-1" aria-label="Your bills" class="outline-none">
+    <!-- The bill on the left, "Your rent" beside it from md up. The bill tile
+         alone left the right half of the row empty (2026-09-26). -->
+    <section
+      ref="billsRegion"
+      tabindex="-1"
+      aria-label="Your bills"
+      :class="['outline-none grid gap-4', showRentTile && 'md:grid-cols-2']"
+    >
 
     <!-- Bills -->
     <div v-if="loadingBills" class="rounded-tile bg-tile p-6 flex flex-col gap-4" aria-busy="true">
@@ -739,7 +806,7 @@ function refreshAll() {
       </p>
     </OverviewTile>
 
-    <div v-else class="grid gap-4 md:grid-cols-2">
+    <template v-else>
       <OverviewTile
         v-for="(bill, i) in outstandingBills"
         :key="bill.id"
@@ -801,7 +868,38 @@ function refreshAll() {
           </template>
         </p>
       </OverviewTile>
-    </div>
+    </template>
+
+    <!-- The rules she is billed under, with her own figures. See `rentFacts`. -->
+    <OverviewTile v-if="showRentTile && rentFacts" title="Your rent" class="ws-reveal">
+      <dl class="flex flex-col divide-y divide-line text-sm">
+        <div class="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
+          <dt>Rent</dt>
+          <dd class="font-semibold tabular">{{ peso(rentFacts.rent, 2) }}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3 py-2.5">
+          <dt>
+            Water
+            <span v-if="rentFacts.waterNote" class="block text-xs text-ink-faint">{{ rentFacts.waterNote }}</span>
+          </dt>
+          <dd class="font-semibold tabular">{{ peso(rentFacts.water, 2) }}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3 py-2.5">
+          <dt class="font-semibold">Each month</dt>
+          <dd class="text-lg font-semibold tabular">{{ peso(rentFacts.total, 2) }}</dd>
+        </div>
+        <!-- Only beside a raised bill: the other two states say it in their own sentence. -->
+        <div v-if="outstandingBills.length > 0" class="flex items-baseline justify-between gap-3 py-2.5">
+          <dt>Paid up to</dt>
+          <dd class="font-medium">
+            {{ rentFacts.paidThrough ? formatDateOnly(rentFacts.paidThrough, longDate) : 'No payment on record yet' }}
+          </dd>
+        </div>
+      </dl>
+      <p class="text-sm leading-6 text-ink-soft">
+        Rent is due {{ rentFacts.dueDay }}. It counts as overdue from the day after, with no grace period.
+      </p>
+    </OverviewTile>
     </section>
 
     <!-- Payment record -->

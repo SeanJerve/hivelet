@@ -132,6 +132,8 @@ interface PaymentRow {
   amount: number;
   date: string;
   method: string;
+  /** When it was paid or sent, as stored. Only for ordering the rows below. */
+  at: string;
 }
 interface ReceiptRow extends PaymentRow {
   period: string;
@@ -151,6 +153,29 @@ const pendingOnlinePayments = ref<PaymentRow[]>([]);
  */
 const rejectedPayments = ref<PaymentRow[]>([]);
 const recordedReceipts = ref<ReceiptRow[]>([]);
+
+/**
+ * The Payments tile shows the newest three rows, whatever their kind, so the
+ * dashboard fits a desktop screen without scrolling. The full record is one
+ * click away on Payments and billing.
+ *
+ * Newest first across all three kinds: a rejected payment still leads while it
+ * is recent, and gives way once newer receipts arrive instead of holding a
+ * place for good.
+ */
+const PAYMENT_ROWS = 3;
+const shownPaymentIds = computed(() => {
+  const time = (r: PaymentRow) => Date.parse(r.at) || 0;
+  return new Set(
+    [...rejectedPayments.value, ...pendingOnlinePayments.value, ...recordedReceipts.value]
+      .sort((a, b) => time(b) - time(a))
+      .slice(0, PAYMENT_ROWS)
+      .map((r) => r.id),
+  );
+});
+const shownRejected = computed(() => rejectedPayments.value.filter((p) => shownPaymentIds.value.has(p.id)));
+const shownPending = computed(() => pendingOnlinePayments.value.filter((p) => shownPaymentIds.value.has(p.id)));
+const shownReceipts = computed(() => recordedReceipts.value.filter((r) => shownPaymentIds.value.has(r.id)));
 
 /** `Adyen Online` is the ledger's name for a GCash payment made through this portal. */
 function methodLabel(method: string | null | undefined): string {
@@ -307,6 +332,7 @@ async function fetchTenantData() {
         amount: Number(p.amount) || 0,
         date: shortDate(p.paid_at || p.created_at, true),
         method: methodLabel(p.payment_method) || 'Online payment',
+        at: String(p.paid_at || p.created_at || ''),
       }));
 
     rejectedPayments.value = (paymentsData ?? [])
@@ -316,10 +342,14 @@ async function fetchTenantData() {
         amount: Number(p.amount) || 0,
         date: shortDate(p.paid_at || p.created_at, true),
         method: methodLabel(p.payment_method) || 'Online payment',
+        at: String(p.paid_at || p.created_at || ''),
       }));
 
-    recordedReceipts.value = (incomeData ?? []).slice(0, 4).map((inc: any) => ({
+    // All of them, not the first four: the tile picks the newest few across
+    // every kind of payment (`PAYMENT_ROWS`). Its arrow opens the full record.
+    recordedReceipts.value = (incomeData ?? []).map((inc: any) => ({
       id: String(inc.id),
+      at: String(inc.date_paid || ''),
       // `remitted_amount` is GENERATED as `rent_amount + water_payment`. Garbage
       // (BR-037) is its own column and is not inside it, so this read short of
       // the paper receipt by exactly the garbage fee. `tenant.ts` now selects
@@ -713,8 +743,11 @@ const statusTone = computed(() => {
                   <span aria-hidden="true" class="size-2.5 rounded-full bg-brand-bright" />
                   Water
                 </span>
+                <!-- The rate rides on this line rather than in a two-line note
+                     under the list, so the dashboard fits a desktop screen. -->
                 <span v-if="tenantData.occupants" class="block pl-4.5 text-xs text-ink-faint">
-                  {{ tenantData.occupants }} registered {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }}
+                  <template v-if="waterRatePerOccupant !== null">{{ tenantData.occupants }} {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }} at {{ peso(waterRatePerOccupant) }} each</template>
+                  <template v-else>{{ tenantData.occupants }} registered {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }}</template>
                 </span>
               </dt>
               <dd class="font-semibold tabular">{{ peso(tenantData.waterFee, 2) }}</dd>
@@ -728,9 +761,6 @@ const statusTone = computed(() => {
               <dd class="text-lg font-semibold tabular">{{ peso(tenantData.totalAmountDue, 2) }}</dd>
             </div>
           </dl>
-          <p v-if="waterRatePerOccupant !== null" class="text-xs leading-5 text-ink-faint">
-            Water is charged at {{ peso(waterRatePerOccupant) }} for each registered occupant every month.
-          </p>
         </template>
       </OverviewTile>
 
@@ -768,11 +798,11 @@ const statusTone = computed(() => {
                something. Rejecting a payment reopens its bill to 'Due'. -->
           <!-- The first two headings are for screen readers only: each row's
                pill already says "Not accepted" or "Waiting for verification". -->
-          <section v-if="rejectedPayments.length" aria-labelledby="rejected-payments-heading">
+          <section v-if="shownRejected.length" aria-labelledby="rejected-payments-heading">
             <h3 id="rejected-payments-heading" class="sr-only">Not accepted</h3>
             <ul class="divide-y divide-line">
               <li
-                v-for="(p, i) in rejectedPayments"
+                v-for="(p, i) in shownRejected"
                 :key="p.id"
                 class="list-reveal-item flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
@@ -790,11 +820,11 @@ const statusTone = computed(() => {
               </li>
             </ul>
           </section>
-          <section v-if="pendingOnlinePayments.length" aria-labelledby="pending-payments-heading">
+          <section v-if="shownPending.length" aria-labelledby="pending-payments-heading">
             <h3 id="pending-payments-heading" class="sr-only">Waiting for verification</h3>
             <ul class="divide-y divide-line">
               <li
-                v-for="(p, i) in pendingOnlinePayments"
+                v-for="(p, i) in shownPending"
                 :key="p.id"
                 class="list-reveal-item flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
@@ -810,11 +840,11 @@ const statusTone = computed(() => {
               </li>
             </ul>
           </section>
-          <section v-if="recordedReceipts.length" aria-labelledby="recorded-receipts-heading" class="pt-4 first:pt-0">
+          <section v-if="shownReceipts.length" aria-labelledby="recorded-receipts-heading" class="pt-4 first:pt-0">
             <h3 id="recorded-receipts-heading" class="pb-1 text-xs font-medium text-ink-faint">Recorded by the landlady</h3>
             <ul class="divide-y divide-line">
               <li
-                v-for="(r, i) in recordedReceipts"
+                v-for="(r, i) in shownReceipts"
                 :key="r.id"
                 class="list-reveal-item flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3"
                 :style="{ animationDelay: `${Math.min(i, 9) * 30}ms` }"
