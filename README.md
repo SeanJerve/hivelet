@@ -33,7 +33,7 @@ If a requirement is unclear, do not silently invent a major business rule. Recor
 
 The capstone paper should be placed in:
 
-`docs/reference/Hivelet_Capstone_Paper.pdf`
+`docs/FINAL MANUSCRIPT/Hivelet_Manuscript_as_of_2026-09-18.pdf` (an old version, kept for comparison; the chapters are now written as Markdown in the same folder)
 
 The capstone paper provides academic context. The documentation files translate the paper and validated business decisions into implementable system requirements.
 

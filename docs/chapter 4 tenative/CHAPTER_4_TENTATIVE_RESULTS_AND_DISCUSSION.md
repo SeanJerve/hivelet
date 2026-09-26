@@ -1,5 +1,7 @@
 # Chapter 4 — working copy
 
+> **Superseded 2026-09-26 by [`docs/FINAL MANUSCRIPT/CHAPTER_4_RESULTS_AND_DISCUSSION.md`](../FINAL%20MANUSCRIPT/CHAPTER_4_RESULTS_AND_DISCUSSION.md)**, which carries figures re-verified that day. Kept as a record; the survey instrument in this folder is still current.
+
 **Revised 2026-09-18 to match the manuscript.** This file is the **working copy**; the
 submittable document is **[`CHAPTER_4_DRAFT.docx`](CHAPTER_4_DRAFT.docx)**, which carries the
 manuscript's own formatting — Arial 12, justified, 0.5″ first-line indent, double spacing, US
