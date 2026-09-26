@@ -189,7 +189,7 @@ const filteredLogs = computed(() => {
 
     return (
       log.action.toLowerCase().includes(query) ||
-      actionLabel(log.action).toLowerCase().includes(query) ||
+      entryLabel(log).toLowerCase().includes(query) ||
       (log.entity_type && log.entity_type.toLowerCase().includes(query)) ||
       (log.entity_id && log.entity_id.toLowerCase().includes(query)) ||
       (log.profiles?.full_name && log.profiles.full_name.toLowerCase().includes(query)) ||
@@ -355,6 +355,29 @@ function actionLabel(action: string): string {
   if (known) return known;
   const words = action.toLowerCase().replace(/_/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * A GCASH CHECKOUT READ AS MONEY RECEIVED (found 2026-09-26).
+ *
+ * The checkout route writes PAYMENT_RECORD with `status: "Checkout Session
+ * Initiated"` the moment a tenant opens the GCash window - before anything is
+ * paid. The trail labelled all of them "Payment recorded": six on 25-26
+ * September, none of which became a payment (Adyen refused each, B-74). The
+ * owner reading her own trail would believe money had arrived. The action
+ * name is the backend's; what the entry SAYS is decided here, per entry.
+ */
+function entryLabel(log: { action: string; new_values?: unknown }): string {
+  const values = log.new_values as Record<string, unknown> | null | undefined;
+  if (log.action.toUpperCase() === 'PAYMENT_RECORD' && values?.status === 'Checkout Session Initiated') {
+    return 'GCash payment started';
+  }
+  return actionLabel(log.action);
+}
+
+/** Green is money received; a checkout that was only opened is not that. */
+function entryTone(log: { action: string; new_values?: unknown }): 'verify' | 'paid' | 'overdue' | 'neutral' {
+  return entryLabel(log) === 'GCash payment started' ? 'neutral' : actionTone(log.action);
 }
 
 /**
@@ -616,7 +639,7 @@ async function exportAuditTrail() {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
-                <StatusPill :tone="actionTone(l.action)">{{ actionLabel(l.action) }}</StatusPill>
+                <StatusPill :tone="entryTone(l)">{{ entryLabel(l) }}</StatusPill>
                 <time :datetime="l.created_at" class="tabular text-sm text-ink-soft">
                   {{ formatDate(l.created_at) }}
                 </time>
