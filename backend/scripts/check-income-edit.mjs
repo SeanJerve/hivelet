@@ -1,7 +1,8 @@
 /**
- * Targeted test for docs/FINAL_REVIEW.md F9: moving a receipt to another unit
- * must move it to that unit's tenant, because a tenant's standing is read by
- * `tenant_profile_id`.
+ * Targeted test for docs/FINAL_REVIEW.md F9 and F10: a receipt belongs to the
+ * tenancy that covered the period it pays for, because a tenant's standing and
+ * open bills are read by `tenant_profile_id`. F9 is the edit that moves a row
+ * to another unit; F10 is a new receipt for a period before the current tenancy.
  *
  * Run from backend/:  npm run build && node scripts/check-income-edit.mjs
  *
@@ -47,8 +48,31 @@ const tenanciesOf2B = [
 ];
 
 let updateSent = null;
+let insertedIncome = null;
+let billsReadFor = [];
+let billUpdates = [];
+const Y_OPEN_BILL = { id: 'bill-y-sep', total_amount: 6900, status: 'Due' };
 function answer(table, calls) {
   const names = calls.map((c) => c[0]);
+  const eqValue = (col) => calls.find((c) => c[0] === 'eq' && c[1][0] === col)?.[1][1];
+  if (table === 'monthly_income_records' && names.includes('insert')) {
+    insertedIncome = calls.find((c) => c[0] === 'insert')[1][0];
+    return { data: { id: 'new-row', ...insertedIncome }, error: null };
+  }
+  if (table === 'monthly_income_records' && names.includes('limit')) return { data: [], error: null };
+  if (table === 'bills' && names.includes('update')) {
+    billUpdates.push(eqValue('id'));
+    return { data: null, error: null };
+  }
+  if (table === 'bills') {
+    const who = eqValue('tenant_profile_id');
+    billsReadFor.push(who);
+    return { data: who === TENANT_Y ? [Y_OPEN_BILL] : [], error: null };
+  }
+  if (table === 'payments') return { data: [], error: null };
+  if (table === 'room_assignments' && names.includes('maybeSingle')) {
+    return { data: { id: 'a-y', tenant_profile_id: TENANT_Y, anniversary_date: '2026-03-01', occupant_count: 1 }, error: null };
+  }
   if (table === 'monthly_income_records' && names.includes('update')) {
     updateSent = calls.find((c) => c[0] === 'update')[1][0];
     return { data: { ...before, ...updateSent }, error: null };
@@ -56,7 +80,7 @@ function answer(table, calls) {
   if (table === 'monthly_income_records') return { data: before, error: null };
   if (table === 'rooms' && names.includes('ilike')) {
     const code = String(calls.find((c) => c[0] === 'ilike')[1][1]).toLowerCase();
-    return { data: code === '2b' ? { id: ROOM_2B } : code === '2a' ? { id: ROOM_2A } : null, error: null };
+    return { data: code === '2b' ? { id: ROOM_2B, capacity: 2 } : code === '2a' ? { id: ROOM_2A, capacity: 2 } : null, error: null };
   }
   if (table === 'rooms') {
     const id = calls.find((c) => c[0] === 'eq')?.[1][1];
@@ -76,13 +100,20 @@ db.from = (table) => {
   return chain;
 };
 
-const layer = adminRouter.stack.find(
-  (l) => l.route?.path === '/admin/income-records/:id' && l.route.methods.patch
-);
-const handler = layer.route.stack.at(-1).handle;
+const routeHandler = (path, method) =>
+  adminRouter.stack.find((l) => l.route?.path === path && l.route.methods[method]).route.stack.at(-1).handle;
 
 async function patch(body) {
   updateSent = null;
+  return call(routeHandler('/admin/income-records/:id', 'patch'), { id: ROW }, body);
+}
+
+async function post(body) {
+  insertedIncome = null; billsReadFor = []; billUpdates = [];
+  return call(routeHandler('/admin/income-records', 'post'), {}, body);
+}
+
+function call(handler, params, body) {
   return new Promise((resolve) => {
     const res = {
       statusCode: 200,
@@ -90,7 +121,7 @@ async function patch(body) {
       json(payload) { resolve({ status: this.statusCode, payload }); return this; },
     };
     const req = {
-      params: { id: ROW }, body, headers: {}, ip: '127.0.0.1', socket: {},
+      params, body, headers: {}, ip: '127.0.0.1', socket: {},
       user: { profileId: '00000000-0000-4000-8000-0000000000ad', role: 'admin' }, role: 'admin',
       get: () => undefined,
     };
@@ -111,6 +142,29 @@ check('a period from before the current tenancy goes to the tenant who held it t
 const sameUnit = await patch({ roomNumber: '2A', occupants: 1, rentAmount: 6500, monthsCovered: 1 });
 check('an edit that keeps the unit does not touch the tenant', 'tenant_profile_id' in (updateSent ?? {}), false);
 check('and still saves', sameUnit.status, 200);
+
+// F10. Z left 2B at the end of February owing January; Y has lived there since
+// March and has an open September bill. Z pays January in cash.
+const arrears = await post({
+  roomNumber: '2B', datePaid: '2026-09-26', contactName: 'Z', invoiceNumber: 'OR#9100',
+  rentAmount: 6700, gbgFee: 0, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
+  dateCoveredStart: '2026-01-01', dateCoveredEnd: '2026-01-31',
+});
+check('the arrears receipt is recorded', arrears.status, 201);
+check('it is credited to Z, who held 2B in January', insertedIncome?.tenant_profile_id, TENANT_Z);
+check('and to Z\'s tenancy', insertedIncome?.assignment_id, 'a-z');
+check('its money is applied to Z\'s bills, not Y\'s', billsReadFor, [TENANT_Z]);
+check('Y\'s open September bill is left alone', billUpdates.includes(Y_OPEN_BILL.id), false);
+
+// And an ordinary receipt for the current period still goes to Y and pays Y's bill.
+const current = await post({
+  roomNumber: '2B', datePaid: '2026-09-26', contactName: 'Y', invoiceNumber: 'OR#9101',
+  rentAmount: 6700, gbgFee: 0, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
+  dateCoveredStart: '2026-09-01', dateCoveredEnd: '2026-09-30',
+});
+check('a current receipt is recorded', current.status, 201);
+check('and credited to Y', insertedIncome?.tenant_profile_id, TENANT_Y);
+check('and settles Y\'s open bill', billUpdates.includes(Y_OPEN_BILL.id), true);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

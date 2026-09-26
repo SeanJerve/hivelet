@@ -2270,6 +2270,42 @@ router.get(
  * bare 500 carrying `duplicate key value violates unique constraint ...`, which
  * tells the person at the counter nothing. `23505` is the code for it.
  */
+/**
+ * The tenancy a receipt for this unit belongs to: the one that covered the
+ * rent period it pays for, else the unit's active tenancy, else none.
+ *
+ * A tenant's standing and open bills are keyed by `tenant_profile_id`, so the
+ * tenant a receipt is credited to decides whose month reads as paid and whose
+ * bill its money settles. Taking the ACTIVE tenancy regardless of period
+ * credited a former tenant's arrears to whoever lives there now (FINAL_REVIEW
+ * F10), and editing a row to another unit left it on the old unit's tenant
+ * (F9). The active fallback is what both paths did before, and it is harmless
+ * for standing, which ignores receipts from before a tenancy began.
+ */
+async function tenancyForPeriod(
+  roomId: string,
+  periodStartIso: string
+): Promise<{ id: string; tenant_profile_id: string } | null> {
+  const { data, error } = await db
+    .from('room_assignments')
+    .select('id, tenant_profile_id, start_date, end_date, is_active')
+    .eq('room_id', roomId)
+    .order('start_date', { ascending: false });
+  if (error) throw ApiError.internal(error.message);
+
+  const anchor = String(periodStartIso).slice(0, 10);
+  const list = (data ?? []) as {
+    id: string; tenant_profile_id: string; start_date: string; end_date: string | null; is_active: boolean | null;
+  }[];
+  const covering = list.find(
+    (t) =>
+      String(t.start_date).slice(0, 10) <= anchor &&
+      (!t.end_date || String(t.end_date).slice(0, 10) >= anchor)
+  );
+  const chosen = covering ?? list.find((t) => t.is_active) ?? null;
+  return chosen ? { id: chosen.id, tenant_profile_id: chosen.tenant_profile_id } : null;
+}
+
 function receiptAlreadyRecorded(err: { code?: string; message?: string } | null): boolean {
   return err?.code === '23505' && String(err?.message ?? '').includes('idx_one_receipt_per_unit_per_month');
 }
@@ -2443,6 +2479,11 @@ router.post(
     const periodDiverges =
       derivedPeriod !== null &&
       (periodStart !== derivedPeriod.start || periodEnd !== derivedPeriod.end);
+
+    // Who this receipt is credited to, and whose open bills it settles: the
+    // tenancy that covered the period, not simply whoever lives there now.
+    // `assign` still supplies the derived period and the occupant carry-forward.
+    const payer = await tenancyForPeriod(room.id, periodStart);
 
     /**
      * One span per month, because that is the shape her book keeps.
@@ -2640,8 +2681,8 @@ router.post(
         .from('monthly_income_records')
         .insert({
           room_id: room.id,
-          tenant_profile_id: assign?.tenant_profile_id || null,
-          assignment_id: assign?.id || null,
+          tenant_profile_id: payer?.tenant_profile_id || null,
+          assignment_id: payer?.id || null,
           year: spans[0].year,
           month: spans[0].month,
           date_paid: datePaid,
@@ -2674,8 +2715,8 @@ router.post(
     } else {
       const { data, error: rpcError } = await db.rpc('record_income_for_months', {
         p_room_id: room.id,
-        p_tenant_profile_id: assign?.tenant_profile_id || null,
-        p_assignment_id: assign?.id || null,
+        p_tenant_profile_id: payer?.tenant_profile_id || null,
+        p_assignment_id: payer?.id || null,
         p_date_paid: datePaid,
         p_contact_name: contactName,
         p_invoice_number: invoiceNumber,
@@ -2761,7 +2802,7 @@ router.post(
           : newRecord
     });
 
-    if (assign?.tenant_profile_id) {
+    if (payer?.tenant_profile_id) {
       /**
        * BR-013 - apply this receipt to what the tenant actually owes.
        *
@@ -2774,7 +2815,7 @@ router.post(
       const { data: openBills, error: openBillsError } = await db
         .from('bills')
         .select('id, total_amount, status')
-        .eq('tenant_profile_id', assign.tenant_profile_id)
+        .eq('tenant_profile_id', payer.tenant_profile_id)
         .in('status', ['Due', 'Overdue', 'Pending', 'Partially Paid'])
         .order('due_date', { ascending: true });
 
@@ -2864,7 +2905,7 @@ router.post(
         const { error: paymentError } = await db.from('payments').insert({
           bill_id: step.billId,
           room_id: room.id,
-          tenant_profile_id: assign.tenant_profile_id,
+          tenant_profile_id: payer.tenant_profile_id,
           amount: step.amount,
           payment_method: normalizedMethod,
           payment_source: paymentSource,
@@ -3081,28 +3122,13 @@ router.patch(
      */
     let reattributed: { tenant_profile_id: string | null; assignment_id: string | null } | null = null;
     if (roomNumber && roomId !== before.room_id) {
-      const anchor = String(
-        dateCoveredStart ?? before.rent_period_start ?? datePaid ?? before.date_paid ?? ''
-      ).slice(0, 10);
-      const { data: tenancies, error: tenanciesError } = await db
-        .from('room_assignments')
-        .select('id, tenant_profile_id, start_date, end_date, is_active')
-        .eq('room_id', roomId)
-        .order('start_date', { ascending: false });
-      if (tenanciesError) throw ApiError.internal(tenanciesError.message);
-
-      const list = (tenancies ?? []) as {
-        id: string; tenant_profile_id: string; start_date: string; end_date: string | null; is_active: boolean | null;
-      }[];
-      const covering = list.find(
-        (t) =>
-          String(t.start_date).slice(0, 10) <= anchor &&
-          (!t.end_date || String(t.end_date).slice(0, 10) >= anchor)
+      const tenancy = await tenancyForPeriod(
+        roomId,
+        String(dateCoveredStart ?? before.rent_period_start ?? datePaid ?? before.date_paid ?? '')
       );
-      const chosen = covering ?? list.find((t) => t.is_active) ?? null;
       reattributed = {
-        tenant_profile_id: chosen?.tenant_profile_id ?? null,
-        assignment_id: chosen?.id ?? null,
+        tenant_profile_id: tenancy?.tenant_profile_id ?? null,
+        assignment_id: tenancy?.id ?? null,
       };
     }
 
