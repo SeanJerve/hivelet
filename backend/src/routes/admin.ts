@@ -3066,6 +3066,46 @@ router.patch(
       roomId = room.id;
     }
 
+    /**
+     * A receipt moved to another unit belongs to that unit's tenant.
+     *
+     * Only `room_id` used to change. A tenant's standing - paid-through, the
+     * portal's Amount due, the period the GCash checkout bills - is read by
+     * `tenant_profile_id`, so correcting a wrong-unit entry left the tenant who
+     * paid still owing that month (and able to pay it again online) while the
+     * tenant it was wrongly entered against kept it as paid (FINAL_REVIEW F9).
+     *
+     * The new unit's tenancy that covered the row's rent period, else its
+     * active tenancy - the one the create path uses, and harmless for standing,
+     * which ignores receipts from before a tenancy began - else nobody.
+     */
+    let reattributed: { tenant_profile_id: string | null; assignment_id: string | null } | null = null;
+    if (roomNumber && roomId !== before.room_id) {
+      const anchor = String(
+        dateCoveredStart ?? before.rent_period_start ?? datePaid ?? before.date_paid ?? ''
+      ).slice(0, 10);
+      const { data: tenancies, error: tenanciesError } = await db
+        .from('room_assignments')
+        .select('id, tenant_profile_id, start_date, end_date, is_active')
+        .eq('room_id', roomId)
+        .order('start_date', { ascending: false });
+      if (tenanciesError) throw ApiError.internal(tenanciesError.message);
+
+      const list = (tenancies ?? []) as {
+        id: string; tenant_profile_id: string; start_date: string; end_date: string | null; is_active: boolean | null;
+      }[];
+      const covering = list.find(
+        (t) =>
+          String(t.start_date).slice(0, 10) <= anchor &&
+          (!t.end_date || String(t.end_date).slice(0, 10) >= anchor)
+      );
+      const chosen = covering ?? list.find((t) => t.is_active) ?? null;
+      reattributed = {
+        tenant_profile_id: chosen?.tenant_profile_id ?? null,
+        assignment_id: chosen?.id ?? null,
+      };
+    }
+
     const rent = rentAmount !== undefined ? Number(rentAmount) : Number(before.rent_amount);
     const occ = occupants !== undefined ? Number(occupants) : Number(before.occupants || 1);
 
@@ -3096,6 +3136,10 @@ router.patch(
     };
 
     if (roomId) updatePatch.room_id = roomId;
+    if (reattributed) {
+      updatePatch.tenant_profile_id = reattributed.tenant_profile_id;
+      updatePatch.assignment_id = reattributed.assignment_id;
+    }
     if (datePaid) updatePatch.date_paid = datePaid;
     if (contactName) updatePatch.contact_name = contactName;
     if (invoiceNumber) updatePatch.invoice_number = invoiceNumber;

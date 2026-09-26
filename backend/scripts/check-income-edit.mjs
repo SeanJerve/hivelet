@@ -1,0 +1,116 @@
+/**
+ * Targeted test for docs/FINAL_REVIEW.md F9: moving a receipt to another unit
+ * must move it to that unit's tenant, because a tenant's standing is read by
+ * `tenant_profile_id`.
+ *
+ * Run from backend/:  npm run build && node scripts/check-income-edit.mjs
+ *
+ * Drives the real PATCH /admin/income-records/:id handler. The database client
+ * is replaced by a stub that answers from the fixtures below and records the
+ * update it is asked to make, so nothing is read or written anywhere, and the
+ * environment values are placeholders that only let the config load.
+ */
+Object.assign(process.env, {
+  JWT_SECRET: process.env.JWT_SECRET || 'check-income-edit-placeholder-secret-0123456789',
+  SUPABASE_URL: process.env.SUPABASE_URL || 'https://placeholder.invalid',
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder',
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'placeholder',
+});
+
+const { db } = await import('../dist/config/db.js');
+const { default: adminRouter } = await import('../dist/routes/admin.js');
+
+let pass = 0, fail = 0;
+function check(label, actual, expected) {
+  const ok = JSON.stringify(actual) === JSON.stringify(expected);
+  ok ? pass++ : fail++;
+  console.log(`${ok ? 'PASS' : 'FAIL'}  ${label}`);
+  if (!ok) console.log(`        got  ${JSON.stringify(actual)}\n        want ${JSON.stringify(expected)}`);
+}
+
+const ROOM_2A = '00000000-0000-4000-8000-00000000002a';
+const ROOM_2B = '00000000-0000-4000-8000-00000000002b';
+const TENANT_X = '00000000-0000-4000-8000-0000000000aa';   // lives in 2A
+const TENANT_Y = '00000000-0000-4000-8000-0000000000bb';   // lives in 2B, and paid
+const TENANT_Z = '00000000-0000-4000-8000-0000000000cc';   // lived in 2B before Y
+const ROW = '00000000-0000-4000-8000-000000000123';
+
+const before = {
+  id: ROW, room_id: ROOM_2A, tenant_profile_id: TENANT_X, assignment_id: null,
+  year: 2026, month: 9, date_paid: '2026-09-01', rent_period_start: '2026-09-01',
+  rent_period_end: '2026-09-30', rent_amount: 6700, occupants: 1, water_payment: 200,
+  invoice_number: 'OR#9001', contact_name: 'Y', voided_at: null,
+};
+const tenanciesOf2B = [
+  { id: 'a-y', tenant_profile_id: TENANT_Y, start_date: '2026-03-01', end_date: null, is_active: true },
+  { id: 'a-z', tenant_profile_id: TENANT_Z, start_date: '2025-01-01', end_date: '2026-02-28', is_active: false },
+];
+
+let updateSent = null;
+function answer(table, calls) {
+  const names = calls.map((c) => c[0]);
+  if (table === 'monthly_income_records' && names.includes('update')) {
+    updateSent = calls.find((c) => c[0] === 'update')[1][0];
+    return { data: { ...before, ...updateSent }, error: null };
+  }
+  if (table === 'monthly_income_records') return { data: before, error: null };
+  if (table === 'rooms' && names.includes('ilike')) {
+    const code = String(calls.find((c) => c[0] === 'ilike')[1][1]).toLowerCase();
+    return { data: code === '2b' ? { id: ROOM_2B } : code === '2a' ? { id: ROOM_2A } : null, error: null };
+  }
+  if (table === 'rooms') {
+    const id = calls.find((c) => c[0] === 'eq')?.[1][1];
+    return { data: { room_number: id === ROOM_2B ? '2b' : '2a' }, error: null };
+  }
+  if (table === 'room_assignments') return { data: tenanciesOf2B, error: null };
+  if (table === 'system_settings') return { data: [], error: null };
+  return { data: null, error: null };   // audit_logs and anything else
+}
+db.from = (table) => {
+  const calls = [];
+  const chain = new Proxy(() => {}, {
+    get: (_t, prop) => prop === 'then'
+      ? (resolve) => resolve(answer(table, calls))
+      : (...args) => { calls.push([prop, args]); return chain; },
+  });
+  return chain;
+};
+
+const layer = adminRouter.stack.find(
+  (l) => l.route?.path === '/admin/income-records/:id' && l.route.methods.patch
+);
+const handler = layer.route.stack.at(-1).handle;
+
+async function patch(body) {
+  updateSent = null;
+  return new Promise((resolve) => {
+    const res = {
+      statusCode: 200,
+      status(code) { this.statusCode = code; return this; },
+      json(payload) { resolve({ status: this.statusCode, payload }); return this; },
+    };
+    const req = {
+      params: { id: ROW }, body, headers: {}, ip: '127.0.0.1', socket: {},
+      user: { profileId: '00000000-0000-4000-8000-0000000000ad', role: 'admin' }, role: 'admin',
+      get: () => undefined,
+    };
+    handler(req, res, (err) => resolve({ status: err?.statusCode ?? 500, error: String(err?.message ?? err) }));
+  });
+}
+
+const moved = await patch({ roomNumber: '2B', occupants: 1, monthsCovered: 1 });
+check('the edit succeeds', moved.status, 200);
+check('the row moves to 2B', updateSent?.room_id, ROOM_2B);
+check('and to the tenant of 2B who covered that period', updateSent?.tenant_profile_id, TENANT_Y);
+check('and to that tenancy', updateSent?.assignment_id, 'a-y');
+
+const movedBack = await patch({ roomNumber: '2B', occupants: 1, dateCoveredStart: '2025-06-01', monthsCovered: 1 });
+check('a period from before the current tenancy goes to the tenant who held it then',
+  updateSent?.tenant_profile_id, TENANT_Z);
+
+const sameUnit = await patch({ roomNumber: '2A', occupants: 1, rentAmount: 6500, monthsCovered: 1 });
+check('an edit that keeps the unit does not touch the tenant', 'tenant_profile_id' in (updateSent ?? {}), false);
+check('and still saves', sameUnit.status, 200);
+
+console.log(`\n${pass} passed, ${fail} failed`);
+process.exit(fail === 0 ? 0 : 1);
