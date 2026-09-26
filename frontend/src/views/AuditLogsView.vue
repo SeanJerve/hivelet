@@ -17,6 +17,7 @@
  */
 import { ref, computed, onMounted, watch } from 'vue';
 import { api } from '@/lib/api';
+import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { downloadReport } from '@/lib/downloadReport';
 import { usePaged } from '@/lib/usePaged';
 import ShowMore from '@/components/ui/ShowMore.vue';
@@ -412,7 +413,10 @@ function formatDate(isoStr: string): string {
   if (!isoStr) return 'No time recorded';
   try {
     const d = new Date(isoStr);
+    // The property's clock, not the viewer's: a trail read from anywhere else
+    // must still say when it happened at the boarding house.
     return d.toLocaleString('en-US', {
+      timeZone: PROPERTY_TIMEZONE,
       month: 'short',
       day: 'numeric',
       year: 'numeric',
