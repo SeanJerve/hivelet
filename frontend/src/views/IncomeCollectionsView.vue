@@ -598,7 +598,7 @@ const editMethod = ref<'Cash' | 'GCash' | 'Bank Transfer' | 'Adyen Online'>('Cas
 const editUnitOptions = computed(() =>
   rooms.map((r) => ({
     value: r.unitCode,
-    label: `${r.unitCode.toUpperCase()} — ${r.tenant || 'Vacant'} (${r.cluster})`,
+    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'Vacant'} (${r.cluster})`,
   }))
 );
 

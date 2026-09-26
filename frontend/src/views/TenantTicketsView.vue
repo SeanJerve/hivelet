@@ -598,7 +598,7 @@ function formatDateTime(iso: string) {
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">My account</p>
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-          Something needs fixing
+          Repairs
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
           Tell the landlady what is wrong<span v-if="activeRoomNumber"> in unit {{ activeRoomNumber }}</span>, and

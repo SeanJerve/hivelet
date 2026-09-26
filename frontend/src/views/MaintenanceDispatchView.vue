@@ -417,8 +417,8 @@ function handleDeleteTicketPrompt() {
       } catch (err: unknown) {
         showToast(
           'error',
-          'Ticket not deleted',
-          err instanceof Error ? err.message : 'The ticket could not be removed. It is still on the board.'
+          'Repair not deleted',
+          err instanceof Error ? err.message : 'The repair request could not be removed. It is still on the board.'
         );
       } finally {
         isSubmitting.value = false;

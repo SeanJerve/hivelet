@@ -128,21 +128,21 @@ onBeforeUnmount(() => {
 });
 
 const ADMIN_NAV = computed(() => [
-  { to: '/admin/overview', aliases: ['/basis/overview'], label: 'Executive Overview', icon: LayoutDashboard, badge: null, badgeColor: '' },
-  { to: '/admin/directory', aliases: ['/basis/directory'], label: 'Room & Rate Directory', icon: Building2, badge: null, badgeColor: '' },
-  { to: '/admin/tenants', aliases: ['/basis/tenants'], label: 'Active Tenants', icon: Users, badge: null, badgeColor: '' },
-  { to: '/admin/income', aliases: ['/basis/income'], label: 'Income & Collections', icon: Wallet, badge: null, badgeColor: '' },
-  { to: '/admin/expenses', aliases: ['/basis/expenses'], label: 'Monthly Expenses', icon: ReceiptText, badge: null, badgeColor: '' },
-  { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Maintenance Dispatch', icon: Wrench, badge: urgentTicketsCount.value > 0 ? urgentTicketsCount.value : null, badgeColor: 'bg-overdue text-white' },
-  { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Prospect Inquiries', icon: Inbox, badge: inquiriesCount.value > 0 ? inquiriesCount.value : null, badgeColor: 'bg-brand text-on-brand' },
-  { to: '/admin/audit-logs', aliases: ['/admin/audit'], label: 'System Audit Trail', icon: ShieldCheck, badge: null, badgeColor: '' },
+  { to: '/admin/overview', aliases: ['/basis/overview'], label: 'Overview', icon: LayoutDashboard, badge: null, badgeColor: '' },
+  { to: '/admin/directory', aliases: ['/basis/directory'], label: 'Rooms and rates', icon: Building2, badge: null, badgeColor: '' },
+  { to: '/admin/tenants', aliases: ['/basis/tenants'], label: 'Tenants', icon: Users, badge: null, badgeColor: '' },
+  { to: '/admin/income', aliases: ['/basis/income'], label: 'Money coming in', icon: Wallet, badge: null, badgeColor: '' },
+  { to: '/admin/expenses', aliases: ['/basis/expenses'], label: 'Money going out', icon: ReceiptText, badge: null, badgeColor: '' },
+  { to: '/admin/tickets', aliases: ['/basis/tickets'], label: 'Repairs', icon: Wrench, badge: urgentTicketsCount.value > 0 ? urgentTicketsCount.value : null, badgeColor: 'bg-overdue text-white' },
+  { to: '/admin/inquiries', aliases: ['/basis/inquiries'], label: 'Inquiries', icon: Inbox, badge: inquiriesCount.value > 0 ? inquiriesCount.value : null, badgeColor: 'bg-brand text-on-brand' },
+  { to: '/admin/audit-logs', aliases: ['/admin/audit'], label: 'Activity', icon: ShieldCheck, badge: null, badgeColor: '' },
 ]);
 
 const TENANT_NAV = computed(() => [
-  { to: '/tenant', aliases: ['/tenant/overview'], label: 'Unit Overview', icon: Home, badge: null, badgeColor: '' },
-  { to: '/tenant/payments', aliases: [], label: 'Payments & Billing', icon: CreditCard, badge: null, badgeColor: '' },
-  { to: '/tenant/tickets', aliases: [], label: 'Maintenance Tickets', icon: Wrench, badge: null, badgeColor: '' },
-  { to: '/tenant/profile', aliases: [], label: 'My Details', icon: UserCheck, badge: null, badgeColor: '' },
+  { to: '/tenant', aliases: ['/tenant/overview'], label: 'Overview', icon: Home, badge: null, badgeColor: '' },
+  { to: '/tenant/payments', aliases: [], label: 'Payments and billing', icon: CreditCard, badge: null, badgeColor: '' },
+  { to: '/tenant/tickets', aliases: [], label: 'Repairs', icon: Wrench, badge: null, badgeColor: '' },
+  { to: '/tenant/profile', aliases: [], label: 'My details', icon: UserCheck, badge: null, badgeColor: '' },
 ]);
 
 const activeNav = computed(() => isTenantSection.value ? TENANT_NAV.value : ADMIN_NAV.value);
@@ -436,7 +436,7 @@ onBeforeUnmount(() => {
                 </nav>
 
                 <!--
-                  The straight divider above "Executive Overview" (border-b on
+                  The straight divider above "Overview" (border-b on
                   a plain div) sits on an element with no border-radius. This
                   one used to put border-t directly on the rounded-full link
                   below, so the line curved around the pill's corner instead

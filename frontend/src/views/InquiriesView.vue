@@ -312,7 +312,7 @@ async function handleSendReply() {
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-          People asking about a unit
+          Inquiries
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
           Each inquiry, what they asked, and what you answered.

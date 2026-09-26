@@ -851,7 +851,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
               </span>
             </p>
             <router-link to="/admin/tickets" class="press inline-block py-1 text-sm font-semibold underline underline-offset-4">
-              Open maintenance dispatch
+              Open repairs
             </router-link>
           </div>
         </div>
@@ -899,7 +899,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Occupancy" to="/admin/directory" to-label="Open the room and rate directory" class="xl:col-span-3">
+      <OverviewTile title="Occupancy" to="/admin/directory" to-label="Open rooms and rates" class="xl:col-span-3">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -953,7 +953,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
         </template>
       </OverviewTile>
 
-      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open the room and rate directory" class="md:col-span-2 xl:col-span-4">
+      <OverviewTile title="Units by cluster" to="/admin/directory" to-label="Open rooms and rates" class="md:col-span-2 xl:col-span-4">
         <UnavailableNote
           v-if="roomsFetchFailed"
           message="Room status could not be loaded."
@@ -1083,7 +1083,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
       <OverviewTile
         title="Open repair requests"
         to="/admin/tickets"
-        to-label="Open maintenance dispatch"
+        to-label="Open repairs"
         class="md:col-span-2 xl:col-span-6"
       >
         <UnavailableNote
@@ -1116,7 +1116,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
             </li>
           </ul>
           <p v-if="openTickets.length > openTicketsPreview.length" class="text-xs text-ink-faint">
-            {{ openTickets.length - openTicketsPreview.length }} more open in maintenance dispatch.
+            {{ openTickets.length - openTicketsPreview.length }} more open in Repairs.
           </p>
         </template>
       </OverviewTile>

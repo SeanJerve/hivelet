@@ -151,7 +151,7 @@ async function fetchAuditLogs() {
     businessTotal.value = 0;
     grandTotal.value = 0;
     loadError.value =
-      err instanceof Error ? err.message : 'The audit trail could not be loaded.';
+      err instanceof Error ? err.message : 'The activity log could not be loaded.';
   } finally {
     isLoading.value = false;
   }
@@ -444,7 +444,7 @@ async function exportAuditTrail() {
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-          What has been done
+          Activity
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
           Every payment recorded, correction made, tenant moved and unit changed, in the order
@@ -587,7 +587,7 @@ async function exportAuditTrail() {
          would have let only the first (this span) render, silently dropping
          the visual skeleton the moment the announcement was added. -->
     <template v-else-if="isLoading">
-      <span class="sr-only" role="status">Loading the audit trail</span>
+      <span class="sr-only" role="status">Loading the activity log</span>
       <SkeletonTable :columns="4" :rows="8" />
     </template>
 
