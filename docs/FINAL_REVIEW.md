@@ -232,6 +232,25 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   from the original entry are the F2 problem and stay with it.
 - **Status:** see the fix log below.
 
+## F10. A receipt for a period before the current tenancy is credited to the current tenant
+
+- **Where:** `backend/src/routes/admin.ts`, `POST /admin/income-records`. `assign` is the unit's
+  ACTIVE tenancy, whatever period the receipt covers, and it decides `tenant_profile_id`,
+  `assignment_id` and whose open bills `allocateReceipt` settles.
+- **What breaks:** a former tenant settling arrears for a unit that has since been let again. The
+  receipt is credited to the new tenant, and its money pays down the new tenant's open bill. The
+  same happens when a tenant who moved rooms pays an old room's arrears.
+- **Trigger:** Z left 2B in February owing January. Y has lived in 2B since March and has an open
+  September bill (raised when Y opened the GCash screen). Z pays January in cash; she records it
+  against 2B with the January dates. Y's September bill is marked Paid with Z's money, the row
+  carries Y's id, and Z's debt is still open against nothing.
+- **Severity:** medium. It needs a re-let unit and an open bill, but then one tenant's payment
+  closes another tenant's debt.
+- **Fix:** the same rule as F9. The tenancy that covered the receipt's rent period pays; the
+  active tenancy only when none did. The period derivation and the occupant carry-forward still
+  read the active tenancy, as before.
+- **Status:** see the fix log below.
+
 ## Low severity, recorded and left
 
 - **The merchant account check passes an empty value.** `adyenWebhookHandler.ts` refuses a
