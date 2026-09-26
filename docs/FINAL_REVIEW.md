@@ -69,6 +69,37 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   void of one month of a multi-month receipt should do.
 - **Status:** OPEN. Added to `BLOCKED_FOR_SEAN.md`.
 
+## F3. Money coming in files a payment under the month it was paid; the Overview and the Excel export file it under the month it is for
+
+- **Where:** `frontend/src/views/IncomeCollectionsView.vue`, `matchesExceptCluster` (the year and
+  month filters) and `collectionsByMonth` (the month chart). Both parse `r.datePaid`, the display
+  string of `date_paid`.
+- **What breaks:** every other money figure files an income row by its `year`/`month` columns,
+  which are the month the rent covers: the Overview (`r.year === CURRENT_YEAR`, `r.month`), the
+  Excel export (`.eq('year', year)`), and the page's own year list (`yearsList` is built from
+  `r.year`). Only this page's filter and chart used the date paid. Her book files by the month the
+  rent covers; the create path says so and counts it (216 rows follow the period, 50 the date).
+  With the shared year added this week, one pick now shows two different totals for the same year
+  on two screens, and the Excel file the page exports for that year matches neither of the page's
+  own totals.
+- **Trigger:** rent for January 2026 paid on 28 December 2025, which is how she collects (OD-03,
+  "the closing days of a month for the month ahead"). Pick 2025: the page counts it in 2025, the
+  Overview and `hivelet-income-2025.xlsx` do not. Pick 2026: the reverse.
+- **Size, from her source spreadsheet** (`INCOME AND EXPENSES PAST RECORDS/`, the file B-27
+  reconciled against; a quick parse caught 661 rows, so treat these as approximate): 25 rows sit
+  in a different year by date paid, worth about ₱209,200 of rent and water. By year, 2024 reads
+  about ₱113,400 lower on this page than on the Overview, and 2026 about ₱53,400 higher. About 221
+  rows sit in a different month. Two rows with a mistyped payment year (1900 and 2027) could only
+  ever be seen under All years.
+- **Also:** the month chart summed rent + water + garbage, where the Overview's month capsules
+  and the page's own "Rent + water" total sum rent + water. Garbage has been zero since June 2025,
+  so this only shows for 2024 and early 2025.
+- **Severity:** high for the defense and for her trust in the numbers. No row is wrong, but two
+  screens and a spreadsheet disagree about what came in for a year.
+- **Fix:** filter and chart by `r.year` / `r.month`, the same fields the Overview and the export
+  use, and chart rent + water. No API, calculation or wording change.
+- **Status:** see the fix log below.
+
 ---
 
 ## Fix log
