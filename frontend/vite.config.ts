@@ -137,9 +137,9 @@ const config: UserConfig = {
       // them precached is the 471 KB `property-map.png` mistake again.
       includeAssets: ['favicon.svg', 'fe-galang-building.webp'],
       manifest: {
-        name: 'Hivelet — Apartment Management & Financial Operations',
+        name: 'Hivelet for Fe Galang Da Silva Boarding House',
         short_name: 'Hivelet',
-        description: 'Centralized apartment management, tenant portal, billing, maintenance dispatch, and financial analytics for Fe Galang Da Silva Boarding House.',
+        description: 'Rent, payments and repairs for Fe Galang Da Silva Boarding House.',
         // Was `#0c66e4` (`--primary` in `src/index.css`), a blue that appears
         // in exactly one file across the whole frontend (`App.vue`) and not
         // at all in the persistent chrome. `--brand` (`#17603f`) is what
