@@ -290,13 +290,8 @@ function handleReset() {
         <div class="min-w-0 flex-1">
           <div class="flex flex-col items-center gap-2 sm:flex-row">
             <h2 class="min-w-0 text-xl font-semibold tracking-tight text-ink break-words">{{ form.full_name }}</h2>
-            <!--
-              This pill read "Active Tenant" on every account, whatever the record said,
-              beside a line printing the real status two rows below it.
-            -->
-            <StatusPill :tone="identity.account_status === 'active' ? 'paid' : 'neutral'">
-              {{ identity.account_status === 'active' ? 'Living here' : 'Not active' }}
-            </StatusPill>
+            <!-- Only the exception gets a pill: anyone signed in here lives here. -->
+            <StatusPill v-if="identity.account_status !== 'active'" tone="neutral">Not active</StatusPill>
           </div>
 
           <p class="mt-2 text-sm leading-6 text-ink-soft break-words">

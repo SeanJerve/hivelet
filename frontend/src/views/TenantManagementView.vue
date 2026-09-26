@@ -313,9 +313,15 @@ watch(() => route.query.convertInquiryId, () => {
   checkInquiryConversion();
 });
 
-type StatusFilter = 'all' | 'active' | 'vacated' | 'prospect';
+type StatusFilter = 'active' | 'vacated' | 'prospect';
 
-const statusFilter = ref<StatusFilter>('all');
+/**
+ * Current tenants by default, and only them. A tenant who has moved out keeps
+ * every receipt and payment in the ledger, but stops appearing here unless the
+ * owner picks "Moved out" on purpose (owner's call, 2026-09-26). There is no
+ * "Everyone" view: mixing the two is what made a per-row standing pill needed.
+ */
+const statusFilter = ref<StatusFilter>('active');
 
 /**
  * The ways of looking at the list, each carrying its own count. Prospects only
@@ -323,9 +329,10 @@ const statusFilter = ref<StatusFilter>('all');
  * a question nobody asked.
  */
 const filterChips = computed<{ key: StatusFilter; label: string; count: number }[]>(() => [
-  { key: 'all', label: 'Everyone', count: tenants.length },
   { key: 'active', label: 'Living here', count: activeCount.value },
-  { key: 'vacated', label: 'Moved out', count: vacatedCount.value },
+  ...(vacatedCount.value
+    ? [{ key: 'vacated' as const, label: 'Moved out', count: vacatedCount.value }]
+    : []),
   ...(prospectCount.value
     ? [{ key: 'prospect' as const, label: 'Prospects', count: prospectCount.value }]
     : []),
@@ -341,7 +348,6 @@ const filterChips = computed<{ key: StatusFilter; label: string; count: number }
  * the same green Active badge. With 33 units on the property, a headcount that is quietly
  * one too high is the kind of number someone checks.
  */
-const residentCount = computed(() => tenants.filter(t => t.role === 'tenant').length);
 const prospectCount = computed(() => tenants.filter(t => t.role === 'prospect').length);
 
 const activeCount = computed(
@@ -354,9 +360,7 @@ const vacatedCount = computed(
 const rows = computed(() => {
   const query = q.value.toLowerCase().trim();
   return tenants.filter((t) => {
-    // Every chip but "All" is about residents, so a prospect answers only her own.
     const matchesFilter =
-      statusFilter.value === 'all' ||
       (statusFilter.value === 'prospect' && t.role === 'prospect') ||
       (statusFilter.value === 'active' && t.role === 'tenant' && t.status === 'active') ||
       (statusFilter.value === 'vacated' && t.role === 'tenant' && (t.status === 'vacated' || t.status === 'notice'));
@@ -482,8 +486,8 @@ function onFile(value: string | null | undefined) {
  * The household in words. BR-014 bills water by headcount, so the number of
  * people is the fact worth reading, not a yes/no badge.
  */
-/** Resident (takes the rest), Unit, Household, Moved in, Deposit, Standing, edit. */
-const RESIDENT_TABLE_COLS = ['', '8%', '17%', '13%', '11%', '14%', '6%'];
+/** Tenant (takes the rest), Unit, Household, Moved in, Deposit, edit. */
+const RESIDENT_TABLE_COLS = ['', '9%', '19%', '15%', '13%', '6%'];
 
 function householdLabel(t: TenantRecord) {
   const mates = t.roommateQty ?? Math.max(0, (t.occupants || 1) - 1);
@@ -491,11 +495,18 @@ function householdLabel(t: TenantRecord) {
   return mates === 1 ? 'With 1 roommate' : `With ${mates} roommates`;
 }
 
-/** A prospect is not a resident. The three states each get their own words. */
+/**
+ * A prospect is not a tenant. The three states each get their own words, but
+ * only the unusual two are ever shown as a pill: living here is the default.
+ */
 function standing(t: TenantRecord): { label: string; tone: 'paid' | 'verify' | 'neutral' } {
   if (t.role === 'prospect') return { label: 'Prospect', tone: 'verify' };
   if (t.status === 'active') return { label: 'Living here', tone: 'paid' };
   return { label: 'Moved out', tone: 'neutral' };
+}
+
+function isCurrentTenant(t: TenantRecord) {
+  return t.role === 'tenant' && t.status === 'active';
 }
 
 function openEdit(t: TenantRecord) {
@@ -711,7 +722,7 @@ async function handleOnboard() {
         </h1>
         <!-- Blank, not "0 residents", until the list has loaded; min-h keeps the header still. -->
         <p class="mt-1 min-h-6 max-w-2xl text-sm leading-6 text-ink-soft">
-          <template v-if="hasLoadedOnce && !tenantsFetchFailed">{{ residentCount }} {{ residentCount === 1 ? 'tenant' : 'tenants' }} on record<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.</template>
+          <template v-if="hasLoadedOnce && !tenantsFetchFailed">{{ activeCount }} living here<span v-if="prospectCount">, and {{ prospectCount }} prospect<span v-if="prospectCount > 1">s</span> with no unit yet</span>.</template>
         </p>
       </div>
 
@@ -854,12 +865,12 @@ async function handleOnboard() {
       v-else-if="viewMode === 'list'"
       class="ws-reveal"
       :rows="rows"
-      caption="Tenants, with unit, household, move-in date, deposit and standing"
+      caption="Tenants, with unit, household, move-in date and deposit"
       noun="tenant"
       :cols="RESIDENT_TABLE_COLS"
       table-from="xl"
       empty-title="Nobody matches"
-      :empty-note="q ? 'Try a name, unit, phone number or email.' : 'Pick “Everyone” to see the whole list.'"
+      :empty-note="q ? 'Try a name, unit, phone number or email.' : ''"
     >
       <template #head>
         <tr>
@@ -868,7 +879,6 @@ async function handleOnboard() {
           <th scope="col">Household</th>
           <th scope="col">Moved in</th>
           <th scope="col" class="num">Deposit</th>
-          <th scope="col">Standing</th>
           <th scope="col" class="w-14"><span class="sr-only">Actions</span></th>
         </tr>
       </template>
@@ -883,9 +893,6 @@ async function handleOnboard() {
           <td>{{ householdLabel(t) }}</td>
           <td>{{ t.moveInDate }}</td>
           <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
-          <td>
-            <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
-          </td>
           <td class="num">
             <!--
               A quiet icon, not a bordered chip. `.icon-btn` draws a ring
@@ -910,12 +917,9 @@ async function handleOnboard() {
       </template>
 
       <template #card="{ row: t }">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-base font-semibold leading-snug text-ink">{{ t.name }}</p>
-            <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
-          </div>
-          <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
+        <div class="min-w-0">
+          <p class="text-base font-semibold leading-snug text-ink">{{ t.name }}</p>
+          <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
         </div>
 
         <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -975,8 +979,8 @@ async function handleOnboard() {
         class="ws-reveal rounded-tile bg-tile px-6 py-16 text-center"
       >
         <p class="text-base font-semibold text-ink">Nobody matches</p>
-        <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-          {{ q ? 'Try a name, unit, phone number or email.' : 'Pick “Everyone” to see the whole list.' }}
+        <p v-if="q" class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
+          Try a name, unit, phone number or email.
         </p>
       </div>
 
@@ -1054,7 +1058,7 @@ async function handleOnboard() {
         <div class="hidden xl:block">
         <div class="ws-table-wrap">
           <table class="ws-table ws-table-fixed">
-            <caption class="sr-only">{{ group.label }} tenants, with unit, household, move-in date, deposit and standing</caption>
+            <caption class="sr-only">{{ group.label }} tenants, with unit, household, move-in date and deposit</caption>
             <!-- Fixed widths, the same as the list view's: one table per cluster,
                  each auto-sized to its own names, left the columns misaligned. -->
             <colgroup>
@@ -1067,7 +1071,6 @@ async function handleOnboard() {
                 <th scope="col">Household</th>
                 <th scope="col">Moved in</th>
                 <th scope="col" class="num">Deposit</th>
-                <th scope="col">Standing</th>
                 <th scope="col" class="w-14"><span class="sr-only">Actions</span></th>
               </tr>
             </thead>
@@ -1085,9 +1088,6 @@ async function handleOnboard() {
                 <td>{{ householdLabel(t) }}</td>
                 <td>{{ t.moveInDate }}</td>
                 <td class="num font-semibold text-ink">{{ peso(t.depositAmount) }}</td>
-                <td>
-                  <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
-                </td>
                 <td class="num">
                   <button
                     type="button"
@@ -1111,12 +1111,9 @@ async function handleOnboard() {
             :key="t.id"
             class="group rounded-2xl border border-line p-5"
           >
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <p class="text-base font-semibold leading-snug text-ink">{{ t.name }}</p>
-                <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
-              </div>
-              <StatusPill :tone="standing(t).tone">{{ standing(t).label }}</StatusPill>
+            <div class="min-w-0">
+              <p class="text-base font-semibold leading-snug text-ink">{{ t.name }}</p>
+              <p class="tabular mt-0.5 text-sm text-ink-soft">{{ t.phone }}</p>
             </div>
 
             <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -1170,7 +1167,7 @@ async function handleOnboard() {
         <div class="rounded-2xl border border-line p-5">
           <div class="flex items-start justify-between gap-3 border-b border-line pb-3">
             <p class="text-sm font-semibold text-ink">On record</p>
-            <StatusPill :tone="standing(editModalTenant).tone">
+            <StatusPill v-if="!isCurrentTenant(editModalTenant)" :tone="standing(editModalTenant).tone">
               {{ standing(editModalTenant).label }}
             </StatusPill>
           </div>
