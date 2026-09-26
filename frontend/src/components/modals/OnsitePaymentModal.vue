@@ -873,9 +873,8 @@ function triggerRecord() {
       >
         <AlertTriangle class="mt-0.5 size-4 shrink-0 text-verify" aria-hidden="true" />
         <span>
-          The payment ledger could not be checked, so this could not be compared against what is
-          already recorded for {{ selectedUnit.toUpperCase() }}. Confirm yourself there isn't
-          already a payment for this period before recording.
+          The ledger could not be loaded, so {{ selectedUnit.toUpperCase() }} was not checked for an
+          earlier payment this period. Make sure there isn't one before recording.
         </span>
       </div>
 
@@ -899,13 +898,12 @@ function triggerRecord() {
         </p>
         <ul class="flex flex-col gap-1 text-ink">
           <li v-for="rec in overlappingPayments" :key="rec.id">
-            {{ rec.rentFor }} — {{ peso(rec.rent, 2) }} rent, OR#{{ rec.invoice || '—' }}, paid {{ rec.datePaid }}
+            {{ rec.rentFor }}: {{ peso(rec.rent, 2) }} rent<template v-if="rec.invoice">, OR#{{ rec.invoice }}</template>, paid {{ rec.datePaid }}
           </li>
         </ul>
         <p class="text-ink">
-          If this is a genuine second payment for the same period — settling a remaining
-          balance, for instance — recording it below is correct. If it is the same receipt
-          entered twice, go back and check the OR number first.
+          Fine if this settles a remaining balance. If it's the same receipt entered twice, check
+          the OR number first.
         </p>
       </div>
 
