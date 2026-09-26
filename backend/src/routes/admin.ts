@@ -4251,6 +4251,37 @@ router.patch(
       }
     }
 
+    /**
+     * THE TENANT IS TOLD THEIR REPAIR IS DONE (B-47, owner's decision via Sean,
+     * 2026-09-26). Until now the only maintenance notices a tenant got were her
+     * comments; a repair marked done said nothing, and they found out by
+     * opening the portal.
+     *
+     * Only on the way IN to done: Open or In Progress becoming Resolved or
+     * Closed. Resolved -> Closed is the same repair finishing its paperwork and
+     * does not tell them twice. A repair logged for an empty unit has no tenant
+     * to tell (B-28).
+     */
+    const becameDone =
+      (patch.status === 'Resolved' || patch.status === 'Closed') &&
+      before.status !== 'Resolved' && before.status !== 'Closed';
+    if (becameDone && after.tenant_profile_id) {
+      const unit = after.rooms?.room_number ? ` in unit ${String(after.rooms.room_number).toUpperCase()}` : '';
+      await notificationService.notify({
+        recipientProfileId: after.tenant_profile_id,
+        title: 'Your repair is done',
+        // A tenant can still reply on a Resolved repair; a Closed one takes no replies.
+        message: `"${after.title}"${unit} has been marked ${String(patch.status).toLowerCase()}. ` +
+          (patch.status === 'Resolved'
+            ? 'If something is still wrong, reply on the repair.'
+            : 'If something is still wrong, report it again.'),
+        type: 'Maintenance',
+        priority: 'Medium',
+        relatedEntityType: 'TICKET',
+        relatedEntityId: after.id,
+      });
+    }
+
     await auditFromRequest(req, {
       action: patch.status === 'Closed' ? 'TICKET_CLOSE' : 'TICKET_STATUS_CHANGE',
       entityType: 'TICKET',
