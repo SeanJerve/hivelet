@@ -85,10 +85,12 @@ export const CHECKOUT_HOLD_MS = 15 * 60 * 1000;
 /**
  * When Adyen stops accepting payment on a new session: a minute inside the hold,
  * so a difference between our clock and Adyen's cannot leave both open at once.
- * Seconds precision, the ISO 8601 form Adyen documents for `expiresAt`.
+ * `toISOString()`, byte for byte the form Adyen's own SDK sends for this field
+ * (@adyen/api-library 32, ObjectSerializer, `Date` -> `toISOString()`); its
+ * model documents a one-hour default and a 24-hour maximum, and no minimum.
  */
 function sessionExpiresAt(nowMs: number): string {
-  return new Date(nowMs + CHECKOUT_HOLD_MS - 60 * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  return new Date(nowMs + CHECKOUT_HOLD_MS - 60 * 1000).toISOString();
 }
 
 /** Drops sessions older than the TTL. Cheap: this map holds tens of entries. */
