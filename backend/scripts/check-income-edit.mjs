@@ -170,6 +170,23 @@ check('a current receipt is recorded', current.status, 201);
 check('and credited to Y', insertedIncome?.tenant_profile_id, TENANT_Y);
 check('and settles Y\'s open bill', billUpdates.includes(Y_OPEN_BILL.id), true);
 
+// The live data that corrected this rule (2026-09-26): in 1a the seeded demo
+// tenant's tenancy runs 2025-06-05 to 2026-08-25 and OVERLAPS the real tenant's,
+// which starts 2026-07-01 though she has paid 1a since 2024. Overlapping
+// tenancies mean the dates cannot be trusted, so the receipt stays with the
+// current tenant, as it always did.
+const savedTenancies = tenanciesOf2B.splice(0, tenanciesOf2B.length,
+  { id: 'a-real', tenant_profile_id: TENANT_Y, start_date: '2026-07-01', end_date: null, is_active: true },
+  { id: 'a-demo', tenant_profile_id: TENANT_Z, start_date: '2025-06-05', end_date: '2026-08-25', is_active: false });
+const overlapping = await post({
+  roomNumber: '2B', datePaid: '2026-02-02', contactName: 'Y', invoiceNumber: 'OR#9102',
+  rentAmount: 6700, gbgFee: 0, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
+  dateCoveredStart: '2026-01-07', dateCoveredEnd: '2026-02-06',
+});
+check('overlapping tenancies: the receipt is recorded', overlapping.status, 201);
+check('overlapping tenancies: it stays with the current tenant', insertedIncome?.tenant_profile_id, TENANT_Y);
+tenanciesOf2B.splice(0, tenanciesOf2B.length, ...savedTenancies);
+
 // B-71 / F2. Voiding goes through void_income_record (migration 054) when it exists.
 async function voidRow() {
   updateSent = null; rpcCalls = [];

@@ -2302,7 +2302,29 @@ async function tenancyForPeriod(
       String(t.start_date).slice(0, 10) <= anchor &&
       (!t.end_date || String(t.end_date).slice(0, 10) >= anchor)
   );
-  const chosen = covering ?? list.find((t) => t.is_active) ?? null;
+  const active = list.find((t) => t.is_active) ?? null;
+
+  /**
+   * A past tenancy takes the receipt only on a CLEAN hand-over: it ended on or
+   * before the day the current one began. Tenancies that overlap mean the dates
+   * do not describe what happened, and then the receipt stays with the current
+   * tenant, as it always did.
+   *
+   * Found on the live data, 2026-09-26: in 1a the seeded demo tenancy runs
+   * 2025-06-05 to 2026-08-25 and overlaps the real tenant's, which is dated
+   * 2026-07-01 although she has paid 1a since 2024. Without this, six of her 2026
+   * receipts would have been re-credited to the demo profile on any edit, and any
+   * new receipt for those months with them.
+   */
+  const cleanHandOver =
+    !!covering && !!active && covering.id !== active.id &&
+    !!covering.end_date &&
+    String(covering.end_date).slice(0, 10) <= String(active.start_date).slice(0, 10);
+
+  const chosen =
+    !covering ? active
+      : !active || covering.id === active.id || cleanHandOver ? covering
+        : active;
   return chosen ? { id: chosen.id, tenant_profile_id: chosen.tenant_profile_id } : null;
 }
 
