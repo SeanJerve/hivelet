@@ -24,7 +24,13 @@ thing in this document.** Section 3 is three quick confirmations. Section 4 is n
 
 ---
 
-## 1. Seven receipts that cannot be right as written
+## 1. Seven receipts that cannot be right as written · **CLOSED 2026-09-26: they stay as written**
+
+> **Sean's decision, 2026-09-26:** past records are not corrected. Whatever she wrote is the
+> record of what happened, mistakes included. The standard that matters is the one the system
+> is accountable for: every record it produces itself must be right. (056 was different: the
+> import had misread her period, so it made the database match her book, not the other way round.)
+> Nothing in this section needs asking. It is kept as the record of what was found.
 
 These are in her ledger now. **None has been altered.** Each needs her to say what the correct
 figure is, from her own receipt book.
@@ -78,7 +84,10 @@ Each covers **minus one day**. Almost certainly the end date should be a month l
 
 ## 2. Five things about how she keeps the books
 
-### 2a. The ₱20 garbage fee stopped after June 2025 — was that deliberate?
+### 2a. The ₱20 garbage fee stopped after June 2025 — was that deliberate? · **CLOSED 2026-09-26: not pursued**
+
+> **Sean's decision, 2026-09-26:** not asked. The fee is entered by hand when she charges it
+> (BR-037), and the system never adds it on its own, so there is nothing to decide.
 
 We found this by counting, not by being told:
 
@@ -96,7 +105,11 @@ and **it stopped completely after June 2025**.
 ☐ Stopped by accident — it should still be charged, and the missing months need adding
 ☐ Paused — it will come back
 
-### 2b. August and September 2026 collections are not in the ledger
+### 2b. August and September 2026 collections are not in the ledger · **waiting on her data, not a question**
+
+> **Sean, 2026-09-26:** they will be migrated when her records for those months arrive. Until
+> then, tenants whose last receipt is July read as owing from August. That is the system being
+> right about the records it has.
 
 Her records run **complete through July 2026** (last payment recorded 7 Aug 2026). Today is
 **17 September**. So **two months of collections are not entered anywhere.**

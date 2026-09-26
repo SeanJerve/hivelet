@@ -33,7 +33,37 @@ thing did not work" is not.
 
 ## Open
 
-### B-78 — remove all test data (055) and correct INV#5182 (056) · **written and tested, NOT applied**
+### B-79 — delete the demo profile Mark Cruz (057) · **DONE 2026-09-26, applied by Sean**
+
+- **Applied and checked live:** `DIAGNOSTIC_profiles_not_current.sql` now returns no rows. Every
+  tenant or prospect account left has an active tenancy. The entry as written before applying follows.
+
+
+- **Sean's decision, 2026-09-26,** after `DIAGNOSTIC_profiles_not_current.sql` showed Mark Cruz as
+  the only account that is not a current tenant: no tenancy, receipt or repair; 902 audit rows.
+  He showed under Tenants, "Moved out", as a former tenant who never lived here.
+- **The trade:** as in 053, his 902 audit rows stay with the actor blanked (NULL); the audit
+  constraint is loosened for that one statement and restored before it commits.
+- **Guards:** only that id, name, inactive tenant, with no tenancy or receipt; stops if anything
+  other than his audit rows and notifications names him; one DO block, so it runs in the editor.
+- **Proved:** `database/test-057-mark-cruz.mjs`, run the way the editor runs it: 12 of 12,
+  including stopping on another reference and on an unexpected profile, and running twice.
+- **What Sean needs to do:** `npm run backup`, then run `057_delete_demo_profile_mark_cruz.sql`
+  in the SQL editor. Then `DIAGNOSTIC_profiles_not_current.sql` should return no rows.
+- **Raised:** 2026-09-26 by Claude
+
+### B-78 — remove all test data (055) and correct INV#5182 (056) · **DONE 2026-09-26, both applied by Sean**
+
+- **Applied and checked on the live database, 2026-09-26:** payments 0 (all 20 were tests),
+  ledger 937 rows (the voided test receipt gone, her 937 untouched), Lobby Toor's 1a bill
+  `880799ef` back to Due, INV#5182 reads 2026-05-15 to 2026-06-14. The AUDIT_CORRECTION row
+  records bills 1, payments 20, notifications 16, room_assignments 2, one bill back to Due.
+- **On the way:** the first 055 stopped in the SQL editor at its second statement (`relation
+  "_demo" does not exist`, nothing changed) because it kept its lists in temporary tables across
+  statements. Rewritten as one DO block (PR #8); the test now runs it statement by statement the
+  way the editor does. **For any future migration: one DO block, no temp tables across statements.**
+- The entry as written before applying is kept below.
+
 
 - **Sean's decision, 2026-09-26:** remove every transaction that only happened in testing.
 - **What 055 removes:**
@@ -171,7 +201,7 @@ thing did not work" is not.
   Verification payment in Money coming in's verification queue within seconds (the webhook).
 - **Raised:** 2026-09-26 by Claude (final review, live trace with Sean)
 
-### B-73 — unit 1a's tenancy dates do not describe who lived there · **resolved by 055 once applied (B-78)**
+### B-73 — unit 1a's tenancy dates do not describe who lived there · **DONE 2026-09-26: 055 removed the demo tenancy (B-78)**
 
 - **2026-09-26:** 055 removes Mark Cruz's demo tenancy, which is what overlapped. Lobby Toor's
   `start_date` of 2026-07-01 is not hers alone: all 32 tenancies carry the import's placeholder, which
@@ -838,7 +868,11 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
   tidiness call about what her screen shows, not a correctness one.
 - **Raised:** 2026-09-20 by Claude
 
-### B-45 — can a resident pay the rest of a bill while the first part is still unchecked?
+### B-45 — can a resident pay the rest of a bill while the first part is still unchecked? · **CLOSED 2026-09-26, Sean: no, wait**
+
+- **Decision:** the tenant waits until she has checked the first payment. That is what the code
+  does, and the screen already says so. It also keeps a tenant from paying twice. Nothing to build.
+
 
 - **Blocked on:** her decision, then a small backend change. It is a question about how she wants
   to work, not a bug.
@@ -856,7 +890,11 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
 - **If she says wait:** nothing to do. The screen already explains it.
 - **Raised:** 2026-09-20 by Claude
 
-### B-46 — reopening a repair does not take the unit off the listing again
+### B-46 — reopening a repair does not take the unit off the listing again · **CLOSED 2026-09-26, Sean: leave it**
+
+- **Decision:** she keeps control. Reopening a repair does not change the listing by itself; she
+  sets Under Maintenance from the unit editor when she wants it. Nothing to build.
+
 
 - **Blocked on:** a decision about how she wants this to behave. Deliberately **not** changed.
 - **What it is:** raising an Emergency repair marks a unit Under Maintenance, and resolving it
@@ -870,7 +908,12 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
 - **How to know it worked:** reopen a ticket on a vacant unit and check `/public/rooms`.
 - **Raised:** 2026-09-20 by Claude
 
-### B-47 — a resident is never told their repair was attended to
+### B-47 — a resident is never told their repair was attended to · **DONE 2026-09-26, Sean: yes**
+
+- **Built:** marking a repair Resolved or Closed from Open or In Progress sends the tenant "Your
+  repair is done", linked to the repair. Resolved → Closed does not repeat it. Proved by
+  `backend/scripts/check-ticket-done.mjs` (5 of 9 before, 9 of 9 after).
+
 
 - **Blocked on:** her decision. It is a missing feature, not a defect, and it may be deliberate.
 - **What it is:** there are exactly three maintenance notifications in the system — she is told
@@ -1314,7 +1357,12 @@ the untested half of BR-024, and they only become testable after a person has us
   its own function and says what happened when it did not.
 - **Raised, fixed and corrected:** 2026-09-19 / 2026-09-20
 
-### B-42 — the audit trail's IP address is only as true as `trust proxy`
+### B-42 — the audit trail's IP address is only as true as `trust proxy` · **CLOSED 2026-09-26 by the deployment**
+
+- **Settled by Vercel.** Production runs behind exactly one proxy, Vercel's edge, which sets
+  `X-Forwarded-For` itself, and there is no direct `localhost:5000` path in production. So
+  `trust proxy = 1` is now the right setting. The column still records what the edge reported.
+
 
 - **Improved, not solved, and the difference matters** because the audit row is the *only*
   durable record for an unmatched online payment.
@@ -1412,7 +1460,15 @@ the untested half of BR-024, and they only become testable after a person has us
   figure is unchanged; it was never the number in question (B-31).
 - **Raised:** 2026-09-20
 
-### B-28 — a repair cannot be recorded for an empty unit
+### B-28 — a repair cannot be recorded for an empty unit · **DONE 2026-09-26, 058 applied by Sean**
+
+- **Built:** `058_a_repair_can_be_logged_for_an_empty_unit.sql` makes
+  `maintenance_tickets.tenant_profile_id` nullable (one statement). `POST /admin/tickets` files an
+  empty unit's repair with no tenant; until 058 runs it refuses in words naming 058. Comments and
+  "repair done" notices skip a repair with no tenant. "Log a repair" lists "PH, no tenant".
+- **What Sean needs to do:** run 058 in the SQL editor ("Success. No rows returned"), then log a
+  repair for PH from the Repairs screen.
+
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
   (B-22). Nothing is broken today; the failure is now legible instead of a 500.
@@ -1509,7 +1565,11 @@ the untested half of BR-024, and they only become testable after a person has us
   statement; once she starts using the system the ledger becomes a mix.
 - **Raised:** 2026-09-19
 
-### B-26 — five receipt numbers were mistyped, and the book says what each should be
+### B-26 — five receipt numbers were mistyped, and the book says what each should be · **CLOSED 2026-09-26: kept as written**
+
+- **Sean's decision:** historical records are not corrected; they stay the true record of what
+  was written. What must always be right is what the system itself produces.
+
 
 - **Blocked on:** her receipt book, for two of the five. The other three are as good as proven
   but still touch her records, so they wait with the rest.
@@ -1624,7 +1684,11 @@ the untested half of BR-024, and they only become testable after a person has us
   that is not in question here — only what happens the day someone means to leave it.
 - **Raised:** 2026-09-19
 
-### B-23 — no garbage fee has been recorded since July 2025 · **partly answered 2026-09-19**
+### B-23 — no garbage fee has been recorded since July 2025 · **CLOSED 2026-09-26: not pursued**
+
+- **Sean's decision:** left alone. The fee is entered by hand when charged (BR-037); the system
+  never adds it. Also closes B-76's side question about garbage inside her Remitted column.
+
 
 - **Answered by Sean:** the rule follows her, not the other way round. BR-037 has been
   corrected to say **PHP 20 per unit per month**, which is what her ledger has always shown.
@@ -1670,7 +1734,15 @@ the ₱20 charged once, or once per month?**
 - **Nothing to fix in the data.** 531 rows carry a fee and they are all hers.
 - **Raised:** 2026-09-19
 
-### B-22 — the landlady cannot log a repair she is told about in person
+### B-22 — the landlady cannot log a repair she is told about in person · **DONE 2026-09-26**
+
+- **Built:** "Log a repair" on the Repairs screen, a dialog with unit, what is wrong, category,
+  priority, who is going and what was reported, posting to `POST /admin/tickets`. Only units with
+  a tenant are offered, labelled with the tenant's name, since the server refuses an empty unit
+  (B-28, still open as a schema question). Checked in Chromium with the API answered locally: the
+  list offered 1A and 3D and not the vacant PH, the POST carried the chosen unit and fields, and
+  the board reloaded.
+
 
 - **Blocked on:** Kiel, or your say-so. The endpoint exists and works; what is missing is a form,
   and a form is design. I have not invented one.
@@ -1815,7 +1887,11 @@ the ₱20 charged once, or once per month?**
   December just gone, or the one coming? That single answer settles all 48 of Group A.
 - **Raised:** 2026-09-19
 
-### B-18 — every `check:all` writes ~45 permanent rows into the owner's audit trail
+### B-18 — every `check:all` writes ~45 permanent rows into the owner's audit trail · **CLOSED 2026-09-26, Sean: leave it**
+
+- **Decision:** left as it is. The Activity screen's default tab already shows only what was done
+  to the records, and the trail is append-only by design. Nothing to build.
+
 
 - **Blocked on:** your judgement. Nothing here is a bug, and the fix is not obvious enough for
   me to pick one on your behalf — it trades a security record against a readable one
@@ -2839,7 +2915,12 @@ these three indistinguishable from the real residents.*
   rather than ₱0.00 with the backend stopped
 - **Raised:** 2026-09-17
 
-### B-60 — the privacy policy cannot say where the database is stored
+### B-60 — the privacy policy cannot say where the database is stored · **DONE 2026-09-26**
+
+- **Closed:** Sean read Vercel's Function Region as `icn1` (Seoul). `/privacy` now names Vercel
+  beside Supabase: it runs the website and server, sees network addresses, and is in Seoul,
+  outside the Philippines, like the database.
+
 
 - **Blocked on:** the Supabase project's region, and where the production site will be hosted
 - **What I was doing:** rebuilding `/privacy` against the RA 10173 notice elements (2026-09-24)
@@ -2997,7 +3078,14 @@ these three indistinguishable from the real residents.*
   remaining item checked against the code (one read-only SQL query for the `peso()` item), one real
   bug found and fixed, everything else confirmed already fixed and cited above.
 
-### B-62 — three frontend changes the deployment needs
+### B-62 — three frontend changes the deployment needs · **DONE / CLOSED 2026-09-26**
+
+- (1) Done: `vite.config.ts` refuses a production build without `VITE_API_BASE_URL`.
+- (3) Done: `og:image` and `og:url` are absolute on `hivelet.vercel.app`.
+- (2) Closed: it was for Cloudflare Pages. Production is Vercel, and `vercel.json` sends HSTS,
+  nosniff, frame and referrer headers and a report-only CSP allowing the Adyen Drop-in. Left
+  report-only on purpose before the defense: enforcing it untested could stop the GCash page.
+
 
 - **Blocked on:** the frontend lane (`frontend/`), and for the last item the hosting decision in
   `DEPLOYMENT_PLAN.md` § 1

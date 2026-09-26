@@ -312,12 +312,14 @@ async function submitInquiry() {
           @submit.prevent="submitInquiry"
         >
           <!--
-            Name spans both columns below `lg`, so email and phone pair up
-            under it. At 768px the phone field sat alone with an empty half-row
-            beside it.
+            One order at every width: name across the top, email and phone
+            side by side, the question full width underneath. On desktop the
+            question used to stand in a second column beside the three fields
+            (owner's call, 2026-09-26: it did not look right), and a form reads
+            top to bottom.
           -->
           <div class="grid gap-x-8 gap-y-5 sm:grid-cols-2">
-            <div class="sm:col-span-2 lg:col-span-1 lg:col-start-1">
+            <div class="sm:col-span-2">
               <label
                 for="iq-name"
                 class="block text-xs text-ink-faint"
@@ -338,7 +340,7 @@ async function submitInquiry() {
                 {{ errors.name }}
               </p>
             </div>
-            <div class="lg:col-start-1">
+            <div>
               <label
                 for="iq-email"
                 class="block text-xs text-ink-faint"
@@ -359,7 +361,7 @@ async function submitInquiry() {
                 {{ errors.email }}
               </p>
             </div>
-            <div class="lg:col-start-1">
+            <div>
               <label
                 for="iq-phone"
                 class="block text-xs text-ink-faint"
@@ -380,7 +382,7 @@ async function submitInquiry() {
                 {{ errors.phone }}
               </p>
             </div>
-            <div class="sm:col-span-2 lg:col-span-1 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:flex lg:flex-col">
+            <div class="sm:col-span-2">
               <label
                 for="iq-msg"
                 class="block text-xs text-ink-faint"
@@ -392,19 +394,17 @@ async function submitInquiry() {
                 2000 characters - see the validation above), and a one-line
                 box that scrolls its own text sideways does not invite one.
                 Full width for the same reason: this is the field that
-                decides whether Mrs. Da Silva has anything to answer. On
-                desktop it takes the whole height of the three fields beside
-                it instead, which is more room, not less.
+                decides whether Mrs. Da Silva has anything to answer.
               -->
               <textarea
                 id="iq-msg"
                 v-model="inquiryMsg"
-                rows="3"
+                rows="4"
                 required
                 placeholder="For example: which unit, when you would like to move in, or a time to view."
                 :aria-invalid="errors.message ? 'true' : undefined"
                 :aria-describedby="errors.message ? 'iq-msg-error' : undefined"
-                :class="['ws-textarea w-full mt-2 lg:flex-1', errors.message && 'border-overdue']"
+                :class="['ws-textarea w-full mt-2', errors.message && 'border-overdue']"
                 @input="delete errors.message"
               ></textarea>
               <p v-if="errors.message" id="iq-msg-error" class="mt-1.5 text-xs leading-relaxed text-overdue">

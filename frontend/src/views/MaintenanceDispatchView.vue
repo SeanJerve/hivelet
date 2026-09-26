@@ -8,6 +8,8 @@ import {
   maintenanceTicketsFetchFailed,
   rooms, 
   fetchRooms, 
+  roomsLoaded,
+  roomsFetchFailed,
   TECHNICIANS,
   TICKET_CATEGORIES,
   showToast,
@@ -74,6 +76,73 @@ const editUnitOptions = computed(() =>
     label: `${r.unitCode.toUpperCase()} (${r.cluster})`,
   }))
 );
+
+/**
+ * "LOG A REPAIR": THE ONE VERB THIS SCREEN LACKED (B-22).
+ *
+ * It could list, assign, comment on, resolve and delete repairs, but not
+ * create one. A repair only entered the system when a tenant filed it in the
+ * portal, so one the owner noticed herself, or heard about on the stairs, had
+ * nowhere to go. `POST /admin/tickets` has existed, guarded and audited, the
+ * whole time; this is its form.
+ *
+ * Every unit is offered, with its tenant's name so she can check she has the
+ * right flat, or "no tenant" for an empty one. A repair to an empty unit is
+ * filed with no tenant (B-28, migration 058): the penthouse she is getting
+ * ready to let is exactly where one gets logged.
+ */
+const isLogOpen = ref(false);
+const logUnit = ref('');
+const logTitle = ref('');
+const logCategory = ref<string>('General');
+const logPriority = ref('Medium');
+const logTech = ref('Unassigned');
+const logDesc = ref('');
+
+// Only from a list that actually loaded: `rooms` starts as the 33 canonical
+// units with no tenants and keeps them if the read fails, which would label
+// every occupied flat "no tenant".
+const logUnitOptions = computed(() =>
+  !roomsLoaded.value || roomsFetchFailed.value ? [] : rooms.map((r) => ({
+    value: r.unitCode.toLowerCase(),
+    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'no tenant'}`,
+  })),
+);
+
+function openLogRepair() {
+  logUnit.value = logUnitOptions.value[0]?.value ?? '';
+  logTitle.value = '';
+  logCategory.value = 'General';
+  logPriority.value = 'Medium';
+  logTech.value = 'Unassigned';
+  logDesc.value = '';
+  isLogOpen.value = true;
+  // The unit list comes from the rooms read; ask again in case it failed or is stale.
+  fetchRooms().catch(() => {});
+}
+
+async function handleLogRepair() {
+  if (isSubmitting.value || !logUnit.value) return;
+  isSubmitting.value = true;
+  try {
+    await api.post('/admin/tickets', {
+      roomNumber: logUnit.value,
+      title: logTitle.value.trim(),
+      description: logDesc.value.trim(),
+      category: logCategory.value,
+      priority: logPriority.value,
+      assignedTechnician: logTech.value,
+    });
+    showToast('success', 'Repair logged', `${logTitle.value.trim()}, unit ${logUnit.value.toUpperCase()}.`);
+    isLogOpen.value = false;
+    await fetchMaintenanceTickets();
+  } catch (err: any) {
+    // The dialog stays open with what she typed, so nothing has to be entered twice.
+    showToast('error', 'Not logged', err?.message || 'The repair could not be saved. Please try again.');
+  } finally {
+    isSubmitting.value = false;
+  }
+}
 
 /**
  * Resolved and Closed are both "no longer on the board", and several counts here mean that
@@ -450,6 +519,10 @@ function handleDeleteTicketPrompt() {
           What tenants have reported, who is attending it, and what is finished.
         </p>
       </div>
+      <button type="button" class="pill-btn-brand shrink-0 self-start sm:self-auto" @click="openLogRepair">
+        <Plus class="size-4" aria-hidden="true" />
+        Log a repair
+      </button>
     </header>
 
     <!--
@@ -579,6 +652,64 @@ function handleDeleteTicketPrompt() {
     </div>
 
     <!-- Edit & Manage Ticket Modal -->
+    <WsModal
+      v-if="isLogOpen"
+      title="Log a repair"
+      subtitle="For a repair you were told about or noticed yourself."
+      :dismissible="false"
+      @close="isLogOpen = false"
+    >
+      <form id="log-repair-form" @submit.prevent="handleLogRepair" class="space-y-4 text-xs">
+        <p v-if="logUnitOptions.length === 0" class="text-sm leading-6 text-verify">
+          The unit list could not be loaded, so a repair cannot be logged yet. Close this and try again.
+        </p>
+        <template v-else>
+          <label class="ws-field">
+            Unit
+            <PillSelect v-model="logUnit" :options="logUnitOptions" aria-label="Unit" widthClass="w-full" />
+          </label>
+          <label class="ws-field">
+            What is wrong
+            <input v-model="logTitle" class="ws-input w-full" required maxlength="255" placeholder="Leaking faucet in the bathroom" />
+          </label>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label class="ws-field">
+              Category
+              <PillSelect v-model="logCategory" :options="[...TICKET_CATEGORIES]" aria-label="Category" widthClass="w-full" />
+            </label>
+            <label class="ws-field">
+              Priority
+              <PillSelect v-model="logPriority" :options="PRIORITY_OPTIONS" aria-label="Priority" widthClass="w-full" />
+            </label>
+          </div>
+          <label class="ws-field">
+            Who is going
+            <PillSelect v-model="logTech" :options="[...TECHNICIANS]" aria-label="Who is going" widthClass="w-full" />
+          </label>
+          <label class="ws-field">
+            What was reported
+            <textarea v-model="logDesc" rows="3" class="ws-textarea w-full" required placeholder="The tenant says water drips from under the sink."></textarea>
+          </label>
+          <p v-if="logPriority === 'Emergency'" class="text-sm leading-6 text-ink-soft">
+            An emergency also marks the unit as under maintenance, the same as when a tenant reports one.
+          </p>
+        </template>
+      </form>
+      <template #actions>
+        <button type="button" class="pill-btn" :disabled="isSubmitting" @click="isLogOpen = false">Cancel</button>
+        <button
+          type="submit"
+          form="log-repair-form"
+          class="pill-btn-brand"
+          :disabled="isSubmitting || logUnitOptions.length === 0"
+        >
+          <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
+          <Plus v-else class="size-4" aria-hidden="true" />
+          Log repair
+        </button>
+      </template>
+    </WsModal>
+
     <WsModal
       v-if="isEditModalOpen && editingTicket"
       title="Manage this repair"
