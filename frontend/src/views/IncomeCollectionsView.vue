@@ -714,7 +714,7 @@ function startEditIncome(r: IncomeRecord) {
 
 function handleDeleteIncome(id: string, invoice: string, unit: string) {
   showConfirm(
-    'Delete this entry?',
+    'Delete this payment?',
     `Unit ${unit.toUpperCase()}, receipt ${invoice}. It is removed from the ledger and cannot be brought back.`,
     async () => {
       try {
@@ -723,7 +723,7 @@ function handleDeleteIncome(id: string, invoice: string, unit: string) {
         if (idx !== -1) {
           incomeRecords.splice(idx, 1);
         }
-        showToast('success', 'Entry deleted', `Receipt ${invoice} is no longer in the ledger.`);
+        showToast('success', 'Payment deleted', `Receipt ${invoice} is no longer in the ledger.`);
       } catch (err: any) {
         showToast('error', 'Delete failed', err.message || 'Server error occurred');
       }
@@ -855,7 +855,7 @@ async function handleEditIncome() {
 
     await fetchIncomeRecords();
 
-    showToast('success', 'Entry updated', `Unit ${editUnit.value.toUpperCase()} is saved in the ledger.`);
+    showToast('success', 'Payment updated', `Unit ${editUnit.value.toUpperCase()} is saved in the ledger.`);
     isEditOpen.value = false;
     editingIncome.value = null;
   } catch (err: any) {
@@ -1853,7 +1853,7 @@ async function exportExcel() {
     <!-- Edit Payment Modal -->
     <WsModal
       v-if="isEditOpen"
-      title="Edit this entry"
+      title="Edit this payment"
       :subtitle="editingIncome ? `Unit ${editingIncome.unit.toUpperCase()}${editingIncome.invoice ? `, receipt ${editingIncome.invoice}` : ''}` : undefined"
       size="lg"
       :dismissible="false"
@@ -2016,7 +2016,7 @@ async function exportExcel() {
               class="pill-btn-danger-quiet"
             >
               <Trash2 class="size-3.5" aria-hidden="true" />
-              <span>Delete entry</span>
+              <span>Delete payment</span>
             </button>
 
             <div class="flex items-center gap-2">
@@ -2036,7 +2036,7 @@ async function exportExcel() {
       v-if="isConfirmOpen"
       :title="confirmTitle"
       :message="confirmMessage"
-      confirm-label="Delete entry"
+      confirm-label="Delete payment"
       destructive
       :busy="isSubmitting"
       @cancel="isConfirmOpen = false"
