@@ -2983,32 +2983,39 @@ these three indistinguishable from the real residents.*
   shows PH as it really is.
 - **Raised:** 2026-09-25 by Claude, from the check:all run after the second frontend audit
 
-### B-70 — delete migration for the "Rehearsal Test" rows is written and backed up, not yet run
+### B-70 — the "Rehearsal Test" profiles cannot be deleted, by design — not a task, a fact to know
 
-- **Blocked on:** applying a DELETE against the live database — the auto-mode permission
-  classifier refuses it even with Sean's own go-ahead in chat, same as `[[live-db-writes-need-sean]]`
-  says it will. Needs either an explicit approval on the tool call, or Sean running it himself.
-- **What I was doing:** Sean asked, in chat, to remove the two "Rehearsal Test" profiles from the
-  database entirely rather than leave them inactive (B-69's move-out already handled the public
-  vacancy count; this is the cleanup Sean called "nonsense" sitting in the live tables).
-- **What I already did:**
-  - Ran `npm run backup` first — written to `backups/2026-09-26T00-00-47/`.
-  - Checked, read-only, exactly what these two rows touch: `9502bf06-83c0-4898-a951-933681bc3a93`
-    (assignment `f5f5fbc9-...`, no bill) and `7a8dcec3-ac68-4309-8f92-2a01a2ba8728` (assignment
-    `065c86f2-...`, one bill). **Zero rows** in `monthly_income_records` or `payments` for either —
-    nothing here is real money, confirming Sean's read that it's safe to remove outright.
-  - Wrote `database/migrations/052_remove_rehearsal_test_tenant.sql`: an assertion that exactly
-    these 2 profiles still exist and match, then `DELETE` from `bills`, `payments`,
-    `room_assignments`, `notifications` and finally `profiles`, scoped to those two exact IDs only
-    (never a blanket delete). Wrapped in `BEGIN`/`COMMIT`.
-  - **Left alone on purpose:** `audit_logs`. `UPDATE`/`DELETE` are revoked from every role on that
-    table (System Bible Section 14) — the rows naming this rehearsal, as actor or as entity, are
-    permanent by design and this migration does not touch them.
-- **What Sean needs to do:** run `database/migrations/052_remove_rehearsal_test_tenant.sql`
-  against the live database — paste it into the Supabase SQL editor, or grant the specific
-  Supabase-migration tool call a permission so a session can run it directly.
-- **How to know it worked:** `SELECT * FROM profiles WHERE full_name = 'Rehearsal Test';` and the
-  matching `room_assignments` query (both in a comment at the bottom of the migration file) return
-  zero rows. `npm run check:all` unaffected either way — it was already clean once B-69's move-out
-  landed.
-- **Raised:** 2026-09-26 by Claude, at Sean's request in chat
+> **Ran and failed, 2026-09-26 — cleanly, nothing half-done.** Sean ran
+> `database/migrations/052_remove_rehearsal_test_tenant.sql` in the Supabase SQL editor. It hit a
+> foreign key violation on `DELETE FROM profiles` (`audit_logs_actor_profile_id_fkey`) and, being
+> one `BEGIN`/`COMMIT` transaction, rolled back in full — confirmed read-only afterward that both
+> profiles, both `room_assignments` and the one `bill` are exactly as they were before.
+>
+> **Why it can never succeed as a DELETE.** Both profiles are `audit_logs.actor_profile_id` for
+> real recorded actions — `AUTH_LOGIN`, `AUTH_ACCESS_DENIED`, `AUTH_PASSWORD_CHANGE`,
+> `PAYMENT_RECORD` — because the rehearsal genuinely exercised those flows as this tenant.
+> `audit_logs` has `UPDATE`/`DELETE` revoked from every role (System Bible Section 14) and the
+> foreign key has no `ON DELETE` action, so Postgres refuses to delete a profile any audit row
+> still names. This is not a permissions gap to work around - it is the audit trail doing exactly
+> what it exists for: nobody who ever acted in the system, rehearsal included, can be made to
+> disappear from it. The only mechanical fix - changing the FK to `CASCADE` or `SET NULL` - would
+> mean Postgres silently rewriting `actor_profile_id` on rows already written, which is a real edit
+> to a table designed to never have one. Not done without Sean deciding it explicitly, and not
+> recommended.
+>
+> **What is already true, and probably enough.** B-69's move-out did the part that actually
+> mattered: both profiles are `account_status: inactive`, both `room_assignments` are
+> `is_active: false` with an `end_date`. Nothing public or in the ledger shows them. What's left is
+> two inactive rows and one bill that no normal screen surfaces - not gone, but not "nonsense"
+> anyone will trip over either.
+>
+> `database/migrations/052_remove_rehearsal_test_tenant.sql` is kept as a record of the attempt,
+> marked at the top not to be re-run - it will fail the same way every time.
+
+- **What Sean needs to decide, if this still bothers him:** the only path to a real delete is
+  loosening the `audit_logs_actor_profile_id_fkey` constraint (to `SET NULL`, most likely), which
+  trades "every action is traceable to who did it, forever" for "this one profile stops existing."
+  That is a judgment call about what the audit trail is for, not a code fix - flag it back if you
+  want it scoped as its own migration.
+- **Raised:** 2026-09-26 by Claude, at Sean's request in chat; closed out same day once the actual
+  constraint was found
