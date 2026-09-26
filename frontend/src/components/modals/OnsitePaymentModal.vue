@@ -18,6 +18,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
+import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle } from 'lucide-vue-next';
 
 const unitOptions = computed(() =>
@@ -326,6 +327,7 @@ watch(isOnsitePaymentModalOpen, (isOpen) => {
     // rooms and tenants already are, closes that gap rather than trusting
     // some other view to have done it first.
     fetchIncomeRecords();
+    loadPaymentsAwaitingVerification();
   }
 });
 
@@ -403,6 +405,66 @@ const overlappingPayments = ref<IncomeRecord[]>([]);
 const overlapCheckFailed = ref(false);
 
 /**
+ * GCash payments on this unit that the webhook has recorded and she has not yet
+ * verified, for a month this receipt covers.
+ *
+ * A GCash payment is not an income row until it is verified, so the ledger check
+ * above cannot see one. That was the gap in the one double collection still
+ * open: the tenant pays by GCash, then pays cash before she has verified it. The
+ * cash settles the bill (`allocateReceipt` counts Verified payments only), this
+ * dialog found nothing, and verifying the GCash payment later booked the month a
+ * second time (FINAL_REVIEW F5). The other order is already closed: a recorded
+ * receipt moves the tenant's standing, so checkout will not charge that period.
+ */
+interface AwaitingVerification {
+  id: string;
+  amount: number;
+  paid_at: string | null;
+  room_id: string | null;
+  verification_status: string;
+  bills?: { billing_period_start?: string | null } | null;
+}
+const paymentsAwaitingVerification = ref<AwaitingVerification[]>([]);
+const awaitingCheckFailed = ref(false);
+const waitingPayments = ref<AwaitingVerification[]>([]);
+
+async function loadPaymentsAwaitingVerification() {
+  try {
+    const data = await api.get<AwaitingVerification[]>('/admin/payments');
+    paymentsAwaitingVerification.value = (Array.isArray(data) ? data : []).filter(
+      (p) => p.verification_status === 'Pending Verification'
+    );
+    awaitingCheckFailed.value = false;
+  } catch {
+    awaitingCheckFailed.value = true;
+  }
+}
+
+/** Same unit, and a bill for a month this receipt covers. No bill period on file counts as a match. */
+function findWaitingPayments(
+  roomId: string | undefined,
+  spans: { year: number; month: number }[]
+): AwaitingVerification[] {
+  if (!roomId || spans.length === 0) return [];
+  return paymentsAwaitingVerification.value.filter((p) => {
+    if (p.room_id !== roomId) return false;
+    const start = p.bills?.billing_period_start ?? '';
+    if (!/^\d{4}-\d{2}/.test(start)) return true;
+    const year = Number(start.slice(0, 4));
+    const month = Number(start.slice(5, 7));
+    return spans.some((s) => s.year === year && s.month === month);
+  });
+}
+
+function sentOn(paidAt: string | null): string {
+  if (!paidAt) return 'date not on file';
+  const d = new Date(paidAt);
+  return isNaN(d.getTime())
+    ? 'date not on file'
+    : d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE });
+}
+
+/**
  * Mirrors `monthlySpansFrom` in backend/src/services/billingService.ts closely
  * enough for a warning: same anchor-day-and-clamp arithmetic, so "the 15th of
  * this month" and "the 15th of next month" agree with what the server would
@@ -477,6 +539,7 @@ function handleConfirmAccept() {
 function closeModal() {
   isOnsitePaymentModalOpen.value = false;
   overlappingPayments.value = [];
+  waitingPayments.value = [];
   overlapCheckFailed.value = false;
 }
 
@@ -550,7 +613,8 @@ function triggerRecord() {
   // still one click away, same as any other submission.
   const warningSpans = monthYearSpansForWarning(dateCoveredStart.value, mCovered);
   overlappingPayments.value = findOverlappingPayments(unitUpper, room?.id, warningSpans);
-  overlapCheckFailed.value = incomeRecordsFetchFailed.value;
+  waitingPayments.value = findWaitingPayments(room?.id, warningSpans);
+  overlapCheckFailed.value = incomeRecordsFetchFailed.value || awaitingCheckFailed.value;
 
   showConfirm(
     async () => {
@@ -888,7 +952,7 @@ function triggerRecord() {
         the form itself.
       -->
       <div
-        v-if="overlappingPayments.length > 0"
+        v-if="overlappingPayments.length > 0 || waitingPayments.length > 0"
         class="ws-reveal mb-3 flex flex-col items-start gap-2 rounded-2xl bg-verify-soft p-4 text-sm leading-6"
         role="alert"
       >
@@ -900,8 +964,15 @@ function triggerRecord() {
           <li v-for="rec in overlappingPayments" :key="rec.id">
             {{ rec.rentFor }}: {{ peso(rec.rent, 2) }} rent<template v-if="rec.invoice">, OR#{{ rec.invoice }}</template>, paid {{ rec.datePaid }}
           </li>
+          <li v-for="p in waitingPayments" :key="p.id">
+            GCash: {{ peso(p.amount, 2) }}, sent {{ sentOn(p.paid_at) }}, not verified yet
+          </li>
         </ul>
-        <p class="text-ink">
+        <p v-if="waitingPayments.length > 0" class="text-ink">
+          A GCash payment for this period is waiting for you to verify it. If the tenant is paying
+          again in cash, check that payment first.
+        </p>
+        <p v-if="overlappingPayments.length > 0" class="text-ink">
           Fine if this settles a remaining balance. If it's the same receipt entered twice, check
           the OR number first.
         </p>
@@ -955,7 +1026,7 @@ function triggerRecord() {
       <template #actions>
         <button type="button" class="pill-btn" @click="isConfirmOpen = false">Go back</button>
         <button type="button" class="pill-btn-brand" @click="handleConfirmAccept">
-          {{ overlappingPayments.length > 0 || overlapCheckFailed ? 'Record it anyway' : 'Record it' }}
+          {{ overlappingPayments.length > 0 || waitingPayments.length > 0 || overlapCheckFailed ? 'Record it anyway' : 'Record it' }}
         </button>
       </template>
     </WsModal>
