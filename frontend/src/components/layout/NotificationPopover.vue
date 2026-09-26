@@ -280,7 +280,7 @@ onUnmounted(() => {
       tabindex="-1"
       role="dialog"
       aria-label="Notifications"
-      class="notif-panel fixed inset-x-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[420px]"
+      class="notif-panel fixed inset-x-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[420px]"
     >
       <!-- Header -->
       <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
@@ -352,7 +352,7 @@ onUnmounted(() => {
       </div>
 
       <!-- The stream -->
-      <div class="max-h-[440px] flex-1 overflow-y-auto">
+      <div class="max-h-[440px] flex-1 overflow-y-auto overscroll-contain">
         <div v-if="isLoading" class="divide-y divide-line">
           <div v-for="i in 3" :key="'sk-' + i" class="flex items-start gap-3 p-4">
             <Skeleton class-name="size-9 shrink-0 rounded-xl" />

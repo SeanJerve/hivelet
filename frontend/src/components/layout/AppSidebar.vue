@@ -372,7 +372,7 @@ onBeforeUnmount(() => {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            class="w-72 bg-tile h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto"
+            class="w-72 bg-tile h-full shadow-2xl p-5 flex flex-col justify-between overflow-y-auto overscroll-contain"
           >
             <div class="space-y-6">
               <div class="flex items-center justify-between pb-4 border-b border-line">

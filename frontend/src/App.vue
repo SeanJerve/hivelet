@@ -111,7 +111,7 @@ const hidesGlobalHeader = computed(() =>
 <template>
   <div
     :class="[
-      'min-h-screen text-foreground flex flex-col font-sans selection:bg-primary/10 selection:text-foreground',
+      'min-h-screen supports-[min-height:100dvh]:min-h-dvh text-foreground flex flex-col font-sans selection:bg-primary/10 selection:text-foreground',
       isWorkspaceSection ? 'bg-canvas' : 'bg-background',
     ]"
   >

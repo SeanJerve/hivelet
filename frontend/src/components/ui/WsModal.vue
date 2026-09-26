@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="overlay"
-    class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto bg-ink/40 p-4 sm:p-6"
+    class="ws-modal-overlay ws-focus fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overscroll-contain bg-ink/40 p-4 sm:p-6"
     @click.self="dismissible && !mandatory && emit('close')"
     @keydown="onKeydown"
   >
