@@ -2858,6 +2858,38 @@ these three indistinguishable from the real residents.*
 > real ids is unchanged. The other three items under "still being fixed in parallel" — query
 > numbers, attachment URL scheme, and the money/Adyen items — are untouched and still open.
 
+> **Update, later the same day (Claude, backend):** the other two input-validation items are done
+> too, so "input validation (non-UUID ids, query numbers, attachment URL scheme)" is now fully
+> closed — only the money and Adyen items under "still being fixed in parallel" remain open.
+>
+> **Attachment URL scheme.** `ticket_attachments.file_url` (a resident's maintenance-ticket photo)
+> only ever required a non-empty string. It renders as a real clickable `<a :href>`, not just an
+> `<img src>`, in both the tenant's own ticket view (`TenantTicketsView.vue:992`) and the
+> administrator's Maintenance Dispatch view (`MaintenanceDispatchView.vue:677`) — reachable by any
+> of the 32 tenants, viewed by the one account worth compromising. A `javascript:...` "attachment"
+> would have been a working stored-XSS payload against the administrator's own session. Restricted
+> to the two shapes already legitimate in the live data (an `https://` URL, or the base64
+> `data:image/…` fallback the current client actually produces) — `backend/src/routes/tenant.ts`,
+> the `attachments` field on `ticketSchema`. 0 existing `ticket_attachments` rows in the live
+> database, so nothing already stored is affected either way. Verified: the regex against 9 cases
+> (both legitimate shapes, five malicious variants including a leading-whitespace bypass attempt) —
+> 9/9 correct.
+>
+> **Query numbers.** `year`/`month`/`limit`/`offset` arrived as `Number(req.query.x)` with no guard
+> in nine places across `admin.ts` and `tenant.ts` — the same NaN-sorting defect `validators.ts`'s
+> own `money` docstring already describes for a request body, just never checked for a query
+> string. A non-numeric value either threw a raw Postgres error as an unhandled 500, or, for
+> `Math.min(NaN, 500)`, silently returned `NaN` rather than the clamp it looks like it applies. New
+> `queryInt(raw, opts)` in `utils/validators.ts`: `undefined` when the param wasn't supplied (so
+> `?? theRealDefault` still works exactly as before), a clean `422 VALIDATION_FAILED` when it was
+> supplied and isn't a whole number in range. `GET /admin/reports/audit.xlsx`'s own `limit` was
+> already guarded inside `buildAuditTrailWorkbook` — left alone, one fewer place to touch.
+>
+> **Verified against, both items together:** `npx tsc --noEmit` from `backend/`, exit 0. `npm run
+> check:all` from the repo root, 20/20. Live against the running dev backend with a real admin
+> token: `?year=garbage` and `?limit=abc` both now return a clean `422 VALIDATION_FAILED`;
+> `?year=2026` and `?limit=5` still return `200` exactly as before.
+
 ### B-64 — Sean's decisions on B-63, and what each lane still owes (2026-09-24)
 
 - **Sean's decisions, 2026-09-24:**
