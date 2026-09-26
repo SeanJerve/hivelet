@@ -263,12 +263,13 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   gives a receipt to a past tenancy only on a clean hand-over (that tenancy ended on or before
   the day the current one began); overlapping tenancies fall back to the current tenant, as
   before F10. Fixed in `f96967a`, with the 1a shape added to the test. Re-run this read-only
-  query, which applies the corrected rule. **It should return no rows**, or only rows where the
-  former tenant really did pay:
+  query. It lists only receipts where the corrected rule credits someone OTHER than the old
+  code would have (the unit's current tenant), which is exactly what F10 changes. Each row it
+  returns should be a former tenant who really did pay that month:
 
   ```sql
   SELECT rm.room_number AS unit, mir.rent_period_start, mir.invoice_number,
-         pr.full_name AS credited_now, pn.full_name AS new_rule_credits
+         pr.full_name AS credited_now, pa.full_name AS old_code_credits, pn.full_name AS new_code_credits
     FROM monthly_income_records mir
     JOIN rooms rm ON rm.id = mir.room_id
     LEFT JOIN profiles pr ON pr.id = mir.tenant_profile_id
@@ -280,15 +281,22 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
     LEFT JOIN LATERAL (
       SELECT ra.* FROM room_assignments ra
        WHERE ra.room_id = mir.room_id AND ra.is_active LIMIT 1) act ON true
+    LEFT JOIN profiles pa ON pa.id = act.tenant_profile_id
     LEFT JOIN profiles pn ON pn.id = CASE
          WHEN cov.id IS NULL THEN act.tenant_profile_id
          WHEN act.id IS NULL OR cov.id = act.id
            OR (cov.end_date IS NOT NULL AND cov.end_date <= act.start_date) THEN cov.tenant_profile_id
          ELSE act.tenant_profile_id END
-   WHERE mir.voided_at IS NULL AND mir.year = 2026 AND mir.tenant_profile_id IS NOT NULL
-     AND pn.id IS DISTINCT FROM mir.tenant_profile_id
+   WHERE mir.voided_at IS NULL AND mir.year = 2026
+     AND pn.id IS DISTINCT FROM act.tenant_profile_id
    ORDER BY rm.room_number, mir.rent_period_start;
   ```
+
+  A first version of this query compared the rule against today's crediting instead, and on
+  the live data it listed 9 receipts in 1g, 3b and 3g paid by tenants who have since moved
+  (Jan to Mar 2026). Those are not changes: their earlier tenancies are not in the table, so
+  the old and the new code both credit a new receipt for those months to the current tenant.
+  F10 cannot improve units whose history was never recorded; it does not make them worse.
 
   Checked in PGlite against the 1a shape and a clean re-let: 1a stays with the current tenant,
   and only a genuine mismatch is listed.
