@@ -33,7 +33,11 @@ thing did not work" is not.
 
 ## Open
 
-### B-79 — delete the demo profile Mark Cruz (057) · **written and tested, NOT applied**
+### B-79 — delete the demo profile Mark Cruz (057) · **DONE 2026-09-26, applied by Sean**
+
+- **Applied and checked live:** `DIAGNOSTIC_profiles_not_current.sql` now returns no rows. Every
+  tenant or prospect account left has an active tenancy. The entry as written before applying follows.
+
 
 - **Sean's decision, 2026-09-26,** after `DIAGNOSTIC_profiles_not_current.sql` showed Mark Cruz as
   the only account that is not a current tenant: no tenancy, receipt or repair; 902 audit rows.
