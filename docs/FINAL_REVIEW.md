@@ -326,6 +326,26 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   began). A tenant who left and came back later still starts fresh.
 - **Status:** **FIXED** in `5acef2c`.
 
+## F12. A resident back from a successful GCash payment is told it could not be confirmed
+
+- **Where:** `frontend/src/views/TenantPaymentsView.vue` `handleGatewayReturn` and
+  `backend/src/services/adyenService.ts` `confirmCheckout`.
+- **What breaks:** the return leg from GCash. The page sent Adyen's `redirectResult` as a
+  `sessionResult`, which the session-result endpoint cannot read; and the checkout session it
+  looks up lives in one process's memory, which on Vercel is often not the instance the resident
+  comes back to. Either one alone ends in the warning.
+- **Found:** live, 2026-09-26, on the first GCash test payment that ever went through
+  (`NDQW3Z5ZQL8MNB75`, after Adyen fixed the acquirer account, B-74). The payment, the webhook
+  and the verification queue were all right; the resident's screen said "Could not confirm
+  your payment here".
+- **Severity:** medium. No money is at risk and the wording tells them not to pay again, but
+  every successful GCash payment ended on a warning, in front of the person who just paid.
+- **Fix:** the return leg asks Adyen with `POST /payments/details` and the `redirectResult`,
+  server to server. Its answer carries the pspReference and our merchantReference, so the bill,
+  its owner and "recorded" are all read from the database, not from memory. Still writes nothing.
+- **Status:** **FIXED** in `f7535eb`, with its Activity label in `a7d6d1d`. Confirmed against a stub of Adyen, not yet against Adyen
+  itself: the next GCash test payment should end on "Payment received".
+
 ## Low severity, recorded and left
 
 - ~~**The merchant account check passes an empty value.**~~ **FIXED** in `45ef05e`
@@ -390,6 +410,8 @@ These were read for the defect classes in the brief and nothing survived:
 | F9 | A moved receipt keeps the old tenant | `2d236ef` | `node backend/scripts/check-income-edit.mjs` drives the real edit handler, database stubbed: 3 of 7 failed before, all pass after |
 | F10 | Old-period receipts credited to the current tenant | `02fb01a`, corrected in `f96967a` after the live check | The same script drives the real create handler: 4 of 15 failed on the previous route, 15 of 15 pass |
 | F11 | A room move wipes arrears from standing | `5acef2c` | `node backend/scripts/check-standing-move.mjs` drives the real `readStanding`, database stubbed: 3 of 5 failed before, 5 of 5 pass |
+| F12 | Back from GCash, told it could not be confirmed | `f7535eb`, with its Activity label in `a7d6d1d` | `node backend/scripts/check-adyen-return.mjs` (in `check:adyen`) drives the real service, Adyen and the database stubbed: no redirect path before, 14 of 14 after, 4 mutations each fail it. Chromium, API answered locally: warning before, "Payment received" after |
+| Low | Activity timed on the viewer's clock | `8d84c69` | Chromium in UTC, made-up rows: 10:16:40 AM before, 06:16:40 PM (Manila) after |
 | F2 | A void leaves the bill Paid | `e2c2a27` | Migration 054 run unchanged in PGlite: 14 of 14; the route's void checks: 5 failed before, 23 of 23 pass. **054 not applied** |
 | F7 | A skipped month reads as paid | `4bda6b5` | Decided: a read-only report, not auto-billing. SQL checked in PGlite against fixtures |
 

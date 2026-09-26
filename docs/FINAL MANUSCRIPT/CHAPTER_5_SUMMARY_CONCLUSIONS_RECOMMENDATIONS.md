@@ -36,13 +36,15 @@ accomplished:
    26 September 2026, all passed, including 490 report reconciliation checks, 78 access control
    and endpoint checks and 73 payment gateway checks. In live use the system raised a correct bill,
    recorded and voided a receipt without changing the ledger total, and was corrected the same day
-   after the client reviewed it on a phone. [DATA PENDING: one sentence on the 26-step walkthrough
+   after the client reviewed it on a phone. A screen-by-screen comparison with the live records
+   found five defects the automated checks had missed, four of which were corrected the same day.
+   [DATA PENDING: one sentence on the 26-step walkthrough
    and one on the measured load times.]
 
 4. **The system was evaluated using ISO/IEC 25010** by the owner, the tenants and technical
    evaluators. [DATA PENDING: the overall mean and its interpretation, then one line per
-   characteristic with its composite mean, in the order of Table 21.] Changes were made in response
-   to feedback and testing, recorded in Table 22.
+   characteristic with its composite mean, in the order of Table 22.] Changes were made in response
+   to feedback and testing, recorded in Table 23.
 
 ## 5.2 Conclusions
 
@@ -62,8 +64,10 @@ Based on the results of the study, the following conclusions were drawn:
 3. **Automated verification is necessary when a system holds real financial records.** The most
    serious defects found during development gave no error on screen. They were found only because
    the system was checked against its own data and rules, and the checks now prevent them from
-   returning. [DATA PENDING: add the walkthrough result here, and state whether it confirmed the
-   automated results.]
+   returning. **Automated checks are necessary but not sufficient**: comparing each screen with
+   the records it claims to show found five further defects, including a tenant payment history
+   that showed nothing although every check had passed. [DATA PENDING: add the walkthrough result
+   here, and state whether it confirmed the automated results.]
 
 4. [DATA PENDING: conclusion on the ISO/IEC 25010 evaluation. State which characteristics scored
    highest and lowest, what the open comments said about the lowest, and what was changed as a

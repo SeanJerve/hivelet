@@ -662,6 +662,9 @@ export const adyenService = {
         newValues: {
           note: 'Adyen confirmed a completed checkout session to the returning browser. ' +
                 'No payment was written here - the webhook is the writer.',
+          // Read by the Activity screen, which labels this row as the tenant's
+          // return rather than as a second "Payment recorded" beside the webhook's.
+          status: 'Confirmed On Return',
           sessionId,
           adyenSessionStatus: status,
           webhookRowPresent: recorded
@@ -670,6 +673,115 @@ export const adyenService = {
       }).catch(() => {});
 
       checkoutSessions.delete(sessionId);
+    }
+
+    return { status, confirmed, recorded };
+  },
+
+  /**
+   * The GCash return leg: asks Adyen what became of the payment a resident has
+   * just come back from. WRITES NOTHING - the webhook is the writer.
+   *
+   * GCash is a redirect method, so the browser comes back with `redirectResult`,
+   * not `sessionResult`. The return page used to pass it to `confirmCheckout`
+   * above as if it were one, and it failed twice over: the session-result
+   * endpoint does not accept a redirectResult, and the session itself lives in
+   * this process's memory, which on Vercel is often not the instance the
+   * resident comes back to. The first GCash payment that ever succeeded
+   * (NDQW3Z5ZQL8MNB75, 2026-09-26) was answered "Could not confirm your payment
+   * here".
+   *
+   * `/payments/details` is Adyen's own way to finish a redirect, it is called
+   * server to server with our API key, and its answer carries the pspReference
+   * and our merchantReference. So nothing here depends on memory: the bill comes
+   * from the reference, ownership from the bill, and "recorded" is an exact
+   * match on the pspReference the webhook stores.
+   */
+  async confirmRedirect(redirectResult: string, tenantProfileId: string) {
+    if (!this.isLiveConfigured()) {
+      throw ApiError.internal('Adyen is not configured in this environment.');
+    }
+    assertAdyenEnvironmentWired();
+
+    let body: { resultCode?: string; pspReference?: string; merchantReference?: string; message?: string };
+    let ok: boolean;
+    let httpStatus: number;
+    try {
+      const response = await fetch(`${ADYEN_CHECKOUT_HOST}/payments/details`, {
+        method: 'POST',
+        headers: { 'x-api-key': config.adyen.apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ details: { redirectResult } }),
+      });
+      ok = response.ok;
+      httpStatus = response.status;
+      body = (await response.json()) as typeof body;
+    } catch (err) {
+      throw ApiError.internal(
+        `Could not reach Adyen to confirm this payment: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+
+    if (!ok || typeof body.resultCode !== 'string') {
+      throw ApiError.validation(
+        `Adyen did not accept this checkout result: ${body.message ?? `HTTP ${httpStatus}`}`
+      );
+    }
+
+    // Same shape the webhook matches: `BILL-<uuid>-<timestamp>`.
+    const billId = String(body.merchantReference ?? '').match(
+      /^BILL-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i
+    )?.[1];
+    if (!billId) throw ApiError.notFound(SESSION_UNAVAILABLE);
+
+    const { data: bill, error: billError } = await db
+      .from('bills')
+      .select('id, tenant_profile_id')
+      .eq('id', billId)
+      .maybeSingle();
+    if (billError) throw ApiError.internal(billError.message);
+    // One string for "no such bill" and "not your bill" - see SESSION_UNAVAILABLE.
+    if (!bill || bill.tenant_profile_id !== tenantProfileId) {
+      throw ApiError.notFound(SESSION_UNAVAILABLE);
+    }
+
+    // Translated into the words the return page already has for a session.
+    // Only Authorised is success; anything unrecognised is "not completed".
+    const status =
+      ({ Authorised: 'completed', Pending: 'paymentPending', Received: 'paymentPending',
+         Refused: 'refused', Cancelled: 'canceled' } as Record<string, string>)[body.resultCode] ??
+      body.resultCode.toLowerCase();
+    const confirmed = status === 'completed';
+
+    let recorded = false;
+    if (body.pspReference) {
+      const { data: rows, error: rowsError } = await db
+        .from('payments')
+        .select('id')
+        .eq('transaction_reference', body.pspReference)
+        .neq('verification_status', 'Rejected')
+        .limit(1);
+      // A failed read leaves `recorded` false, which the page words as "being
+      // recorded, do not pay again" - the safe reading. Logged, not swallowed.
+      if (rowsError) console.error(`[adyen] could not look up ${body.pspReference}: ${rowsError.message}`);
+      recorded = Boolean(rows && rows.length > 0);
+    }
+
+    if (confirmed) {
+      await recordAudit({
+        actorProfileId: tenantProfileId,
+        action: 'PAYMENT_RECORD',
+        entityType: 'PAYMENT',
+        entityId: billId,
+        newValues: {
+          note: 'Adyen confirmed a completed GCash payment to the returning browser. ' +
+                'No payment was written here - the webhook is the writer.',
+          status: 'Confirmed On Return',
+          pspReference: body.pspReference ?? null,
+          adyenResultCode: body.resultCode,
+          webhookRowPresent: recorded
+        },
+        ipAddress: null
+      }).catch(() => {});
     }
 
     return { status, confirmed, recorded };

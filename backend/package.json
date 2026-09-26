@@ -9,7 +9,7 @@
     "build": "tsc && node scripts/mark-dist-esm.mjs && node scripts/bundle-for-vercel.mjs",
     "start": "node dist/server.js",
     "check:billing": "npm run build && node scripts/check-billing.mjs",
-    "check:adyen": "npm run build && node scripts/check-adyen-hmac.mjs",
+    "check:adyen": "npm run build && node scripts/check-adyen-hmac.mjs && node scripts/check-adyen-return.mjs",
     "check:api": "node scripts/check-api-contract.mjs",
     "check:writes": "node scripts/check-silent-writes.mjs",
     "check:columns": "node scripts/check-column-refs.mjs",

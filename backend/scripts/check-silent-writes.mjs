@@ -298,7 +298,7 @@ const AUDITED_ELSEWHERE = new Map([
   ['/auth/register',                         'authService writes a TENANT_CREATE row before the login audit'],
   ['/public/payments/adyen/webhook',         'adyenWebhookHandler audits every branch, matched and unmatched'],
   ['/public/payments/local-cashier/complete','adyenService.recordLocalCheckoutPayment -> PAYMENT_RECORD'],
-  ['/tenant/payments/adyen/verify-session',  'adyenService.confirmCheckout -> PAYMENT_RECORD'],
+  ['/tenant/payments/adyen/verify-session',  'adyenService.confirmCheckout / confirmRedirect -> PAYMENT_RECORD'],
   ['/admin/notifications/:id/read',          'marking a message read is not a financial or security fact'],
   ['/admin/notifications/mark-all-read',     'as above'],
   ['/tenant/my-notifications/:id/read',      'as above'],

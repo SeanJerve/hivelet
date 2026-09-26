@@ -17,6 +17,7 @@
  */
 import { ref, computed, onMounted, watch } from 'vue';
 import { api } from '@/lib/api';
+import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { downloadReport } from '@/lib/downloadReport';
 import { usePaged } from '@/lib/usePaged';
 import ShowMore from '@/components/ui/ShowMore.vue';
@@ -189,7 +190,7 @@ const filteredLogs = computed(() => {
 
     return (
       log.action.toLowerCase().includes(query) ||
-      actionLabel(log.action).toLowerCase().includes(query) ||
+      entryLabel(log).toLowerCase().includes(query) ||
       (log.entity_type && log.entity_type.toLowerCase().includes(query)) ||
       (log.entity_id && log.entity_id.toLowerCase().includes(query)) ||
       (log.profiles?.full_name && log.profiles.full_name.toLowerCase().includes(query)) ||
@@ -358,6 +359,35 @@ function actionLabel(action: string): string {
 }
 
 /**
+ * A GCASH CHECKOUT READ AS MONEY RECEIVED (found 2026-09-26).
+ *
+ * The checkout route writes PAYMENT_RECORD with `status: "Checkout Session
+ * Initiated"` the moment a tenant opens the GCash window - before anything is
+ * paid. The trail labelled all of them "Payment recorded": six on 25-26
+ * September, none of which became a payment (Adyen refused each, B-74). The
+ * owner reading her own trail would believe money had arrived. The action
+ * name is the backend's; what the entry SAYS is decided here, per entry.
+ */
+function entryLabel(log: { action: string; new_values?: unknown }): string {
+  const values = log.new_values as Record<string, unknown> | null | undefined;
+  if (log.action.toUpperCase() === 'PAYMENT_RECORD' && values?.status === 'Checkout Session Initiated') {
+    return 'GCash payment started';
+  }
+  // The tenant's browser coming back from GCash and Adyen confirming it to them.
+  // The webhook's own row is the payment; this one is not a second payment.
+  if (log.action.toUpperCase() === 'PAYMENT_RECORD' && values?.status === 'Confirmed On Return') {
+    return 'Tenant back from GCash';
+  }
+  return actionLabel(log.action);
+}
+
+/** Green is money received; a checkout that was only opened is not that. */
+function entryTone(log: { action: string; new_values?: unknown }): 'verify' | 'paid' | 'overdue' | 'neutral' {
+  const label = entryLabel(log);
+  return label === 'GCash payment started' || label === 'Tenant back from GCash' ? 'neutral' : actionTone(log.action);
+}
+
+/**
  * Recorded values as one "Field: value" line each, rather than raw JSON with
  * its braces and quotes. Nothing is left out or rounded.
  */
@@ -383,7 +413,10 @@ function formatDate(isoStr: string): string {
   if (!isoStr) return 'No time recorded';
   try {
     const d = new Date(isoStr);
+    // The property's clock, not the viewer's: a trail read from anywhere else
+    // must still say when it happened at the boarding house.
     return d.toLocaleString('en-US', {
+      timeZone: PROPERTY_TIMEZONE,
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -616,7 +649,7 @@ async function exportAuditTrail() {
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
-                <StatusPill :tone="actionTone(l.action)">{{ actionLabel(l.action) }}</StatusPill>
+                <StatusPill :tone="entryTone(l)">{{ entryLabel(l) }}</StatusPill>
                 <time :datetime="l.created_at" class="tabular text-sm text-ink-soft">
                   {{ formatDate(l.created_at) }}
                 </time>

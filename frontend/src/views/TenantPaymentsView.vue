@@ -318,7 +318,10 @@ async function handleGatewayReturn(params: URLSearchParams): Promise<boolean> {
   try {
     const res = await api.post<{ confirmed: boolean; recorded: boolean; gatewayStatus: string }>(
       '/tenant/payments/adyen/verify-session',
-      { sessionId, sessionResult: redirectResult }
+      // `redirectResult`, not `sessionResult`: the two are not interchangeable,
+      // and sending one as the other told every resident whose GCash payment
+      // had gone through that it could not be confirmed (FINAL_REVIEW F12).
+      { sessionId, redirectResult }
     );
 
     if (res?.confirmed) {

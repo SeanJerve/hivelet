@@ -1,5 +1,23 @@
 # CONTINUE HERE — handoff for the next machine
 
+> [!IMPORTANT]
+> **2026-09-26, design branch `claude/friendly-dirac-njqvs1` — four commits NOT yet in `main`:**
+> `e234f58` expenses (personal costs get their own column), `8690773` tenants (placeholder
+> 2026-07-01 reads "Not recorded"), `e2009e6` activity (an opened GCash checkout reads "GCash
+> payment started", not "Payment recorded"), `c2e65fd` manuscript. **Merge the branch to ship them.**
+>
+> - **Queued for Sean in `BLOCKED_FOR_SEAN.md`:** B-75 (tenant receipt list shows a voided receipt,
+>   one line in `tenant.ts`), B-76 (BH "Remitted" on the income screen is half rent + water; DB,
+>   export and BR-038 say full rent + water - settle it from her workbook, do not guess), B-77
+>   (`/admin/payments` unpaged). B-74: Adyen replied on Case 08657379 - read it first.
+> - **The capstone manuscript now lives in `docs/FINAL MANUSCRIPT/`** as Markdown (Chapters 4 and
+>   5, fixes for 1-3, team tasks, `QUESTIONS_FOR_THE_TEAM.md` still unanswered). The PDF there is
+>   the old 18 Sep version.
+> - **New verification habit, and it found five defects every suite missed:** compare what each
+>   screen shows with a read-only DB query for the same records (Chapter 4 §4.3.3). All owner
+>   screens and the tenant Payments page are done. **Still to do: tenant Overview, Repairs and My
+>   details, signed in as a tenant (unit 1c).**
+
 **Last updated:** 2026-09-23.
 **Branch:** `main`. Everything described here is committed and pushed.
 **Read this first, then `docs/claude_pipeline/CONTINUE_HERE.md` for pipeline detail.**

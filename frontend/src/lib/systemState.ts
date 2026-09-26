@@ -197,6 +197,12 @@ export const TICKET_CATEGORIES: readonly string[] = [
   'General'
 ] as const;
 
+/**
+ * The bulk import wrote this as every tenancy's start date. It is not a move-in
+ * anyone recorded (BLOCKED_FOR_SEAN B-11, B-32), so screens say "Not recorded".
+ */
+export const IMPORT_PLACEHOLDER_START_DATE = '2026-07-01';
+
 export const PROPERTY_AREA_OPTIONS: readonly { value: PropertyArea; label: string }[] = [
   { value: 'Boarding House', label: 'Boarding House' },
   { value: 'Main House', label: 'Main House (personal)' },
@@ -817,7 +823,21 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
         // `formatDateOnly`, not `new Date(...).toLocaleDateString(...)` - see the
         // matching fix and its comment on `fetchIncomeRecords` above. Both were
         // the same unfixed defect `fetchExpenseRecords` already found once.
-        const moveInDate = formatDateOnly(activeAssignment?.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) || '—';
+        /**
+         * THE IMPORT'S PLACEHOLDER READ AS A REAL MOVE-IN (found 2026-09-26).
+         *
+         * All 32 active tenancies carry `start_date = 2026-07-01`, the bulk
+         * import's invented date (BLOCKED_FOR_SEAN B-11, B-32). 29 of those
+         * tenants have receipts from before it, back to January 2024, so the
+         * register was telling the owner every tenant moved in on 1 July 2026.
+         * Say it is not recorded rather than state a date nobody entered.
+         * A real move-in typed through the app is never this exact date
+         * unless backdated to it; B-11's backfill replaces these rows.
+         */
+        const startIso = String(activeAssignment?.start_date ?? '').slice(0, 10);
+        const moveInDate = startIso === IMPORT_PLACEHOLDER_START_DATE
+          ? 'Not recorded'
+          : formatDateOnly(activeAssignment?.start_date, { month: 'short', day: 'numeric', year: 'numeric' }) || '—';
         const anniversary = formatDateOnly(activeAssignment?.anniversary_date, { month: 'short', day: 'numeric' }) || '—';
 
         return {

@@ -250,12 +250,64 @@ session is created, GCash is offered, and the account shows GCash as active. The
 an open support case with Adyen (Case 08657379). The system's own handling of gateway messages is
 covered by the 73 passing checks in Table 8.
 
-### 4.3.3 Functional Walkthrough Testing [DATA PENDING]
+### 4.3.3 Screen-versus-Database Audit
+
+The automated suites prove that each part of the system is correct on its own. They do not prove
+that a screen shows a person what the database holds for that person. On 26 September 2026 a team
+member noticed that a tenant's payment history read "Nothing recorded" although the tenant had
+seven receipts that year. Every suite had passed, because the screen was correct code reading the
+wrong list.
+
+The team therefore audited every owner screen, and the tenant payment screen, directly. [DATA
+PENDING: add the remaining tenant screens once audited with a tenant session.] Each figure a screen displayed was compared with
+a read-only query of the live database for the same records. The owner's screens were read with
+the owner's own session on the live site; where a screen could only be tested locally, it was given
+the live figures with every personal detail removed. Nothing was written to the database during the
+audit. Table 9 shows the result.
+
+**Table 9.** Results of the Screen-versus-Database Audit (26 September 2026)
+
+| Screen | What was compared | Result |
+| :--- | :--- | :--- |
+| Owner overview | Collections for each month of 2026, the year's total, occupancy, rent per cluster, expected monthly income, operating and personal costs | Matched to the peso |
+| Money coming in | Totals for rent, water and garbage; collections by cluster | Matched, except one figure under review (below) |
+| Money going out | Total spent, split by kind and by area | Matched; one layout defect fixed |
+| Rooms and rates | Rent and number of occupants for each unit | Matched |
+| Tenants | Number of tenants per cluster; move-in dates | Counts matched; one defect fixed |
+| Activity (audit trail) | Each recent entry against the recorded action | One defect fixed |
+| Repairs, inquiries | Number of open items | Matched |
+| Tenant payments | A tenant's receipts for 2026 | One defect fixed |
+
+The audit found five defects that no automated check had caught:
+
+1. **A tenant's payment history showed no payments.** The page read only payments made through the
+   system, while every receipt the owner recorded lives in the ledger. It now reads both.
+2. **Rental and personal expenses shared one column.** A repair to the Back Apartment and one of the
+   owner's personal costs looked the same on a row, on a page that says personal costs are not
+   deducted from rental income. They now have separate columns, as in the owner's workbook.
+3. **Every tenant appeared to have moved in on 1 July 2026.** That date was a placeholder written
+   when the records were transferred; 29 of the 32 tenants have receipts from before it. The screen
+   now says the date is not recorded.
+4. **An opened GCash checkout was listed as "Payment recorded".** Six such entries appeared on 25 and
+   26 September, and none became a payment. They now read "GCash payment started".
+5. **A voided receipt still appeared in the tenant's own receipt list.** This one requires a change
+   to the server and is scheduled with the development lead.
+
+One figure remains under review. For the Boarding House cluster, the income screen totals the
+remitted amount as half the rent plus water, while the database, the Excel export and business rule
+BR-038 define it as the full rent plus water. The two sources disagree about the owner's own
+workbook, so the figure will be settled against that workbook rather than by choosing one.
+
+The lesson is the same one Section 4.3.1 draws, from the other side: **passing checks show that
+what was tested is correct, not that everything is.** Comparing each screen with the records it
+claims to show is now part of how the team verifies the system.
+
+### 4.3.4 Functional Walkthrough Testing [DATA PENDING]
 
 A 26-step walkthrough exercises every function that writes data exactly once. It runs against the
 one unoccupied unit so that no real tenancy, receipt or expense is touched.
 
-**Table 9.** Results of the Functional Walkthrough [DATA PENDING]
+**Table 10.** Results of the Functional Walkthrough [DATA PENDING]
 
 | Step | Function tested | Expected result | Actual result | Pass or fail |
 | :--- | :--- | :--- | :--- | :--- |
@@ -266,11 +318,11 @@ one unoccupied unit so that no real tenancy, receipt or expense is touched.
 [DATA PENDING: after the walkthrough, write one paragraph stating how many steps passed the first
 time, what failed, and how each failure was fixed.]
 
-### 4.3.4 Responsiveness and Operational Performance [DATA PENDING]
+### 4.3.5 Responsiveness and Operational Performance [DATA PENDING]
 
 Performance was measured on the hardware listed in Tables 2 and 3.
 
-**Table 10.** Page Load and Response Times [DATA PENDING]
+**Table 11.** Page Load and Response Times [DATA PENDING]
 
 | Screen | Workstation (Table 2) | Mobile phone (Table 3) |
 | :--- | :--- | :--- |
@@ -303,7 +355,7 @@ Maintainability, because judging it requires reading the source code and documen
 
 ### 4.4.1 Respondents
 
-**Table 11.** Distribution of Respondents [DATA PENDING]
+**Table 12.** Distribution of Respondents [DATA PENDING]
 
 | Group | Number | Percent |
 | :--- | ---: | ---: |
@@ -314,9 +366,9 @@ Maintainability, because judging it requires reading the source code and documen
 
 ### 4.4.2 Interpretation of Scores
 
-Each item was rated on the five-point scale in Table 4. Mean scores are read using Table 12.
+Each item was rated on the five-point scale in Table 4. Mean scores are read using Table 13.
 
-**Table 12.** Interpretation of Mean Scores
+**Table 13.** Interpretation of Mean Scores
 
 | Mean score | Verbal interpretation |
 | :--- | :--- |
@@ -332,7 +384,7 @@ is chosen, write it here in one sentence.]
 
 ### 4.4.3 Functional Suitability
 
-**Table 13.** Evaluation Results for Functional Suitability [DATA PENDING]
+**Table 14.** Evaluation Results for Functional Suitability [DATA PENDING]
 
 | Indicator | Rated by | Mean | Interpretation |
 | :--- | :--- | ---: | :--- |
@@ -359,7 +411,7 @@ is chosen, write it here in one sentence.]
 
 ### 4.4.4 Performance Efficiency
 
-**Table 14.** Evaluation Results for Performance Efficiency [DATA PENDING]
+**Table 15.** Evaluation Results for Performance Efficiency [DATA PENDING]
 
 | Indicator | Rated by | Mean | Interpretation |
 | :--- | :--- | ---: | :--- |
@@ -378,7 +430,7 @@ is chosen, write it here in one sentence.]
 
 ### 4.4.5 Compatibility
 
-**Table 15.** Evaluation Results for Compatibility [DATA PENDING]
+**Table 16.** Evaluation Results for Compatibility [DATA PENDING]
 
 | Indicator | Rated by | Mean | Interpretation |
 | :--- | :--- | ---: | :--- |
@@ -397,7 +449,7 @@ is chosen, write it here in one sentence.]
 
 ### 4.4.6 Usability
 
-**Table 16.** Evaluation Results for Usability [DATA PENDING]
+**Table 17.** Evaluation Results for Usability [DATA PENDING]
 
 | Indicator | Rated by | Mean | Interpretation |
 | :--- | :--- | ---: | :--- |
@@ -423,7 +475,7 @@ is chosen, write it here in one sentence.]
 
 ### 4.4.7 Reliability
 
-**Table 17.** Evaluation Results for Reliability [DATA PENDING]
+**Table 18.** Evaluation Results for Reliability [DATA PENDING]
 
 | Indicator | Rated by | Mean | Interpretation |
 | :--- | :--- | ---: | :--- |
@@ -448,7 +500,7 @@ is chosen, write it here in one sentence.]
 Tenants did not rate Security. They see only their own portal and cannot judge how the rest of the
 system is protected.
 
-**Table 18.** Evaluation Results for Security [DATA PENDING]
+**Table 19.** Evaluation Results for Security [DATA PENDING]
 
 | Indicator | Rated by | Mean | Interpretation |
 | :--- | :--- | ---: | :--- |
@@ -473,7 +525,7 @@ report their grades here as supporting evidence, with the date and tool name.]
 Only technical evaluators rated Maintainability, after being given access to the source code and
 documentation.
 
-**Table 19.** Evaluation Results for Maintainability [DATA PENDING]
+**Table 20.** Evaluation Results for Maintainability [DATA PENDING]
 
 | Indicator | Rated by | Mean | Interpretation |
 | :--- | :--- | ---: | :--- |
@@ -486,7 +538,7 @@ documentation.
 
 ### 4.4.10 Portability
 
-**Table 20.** Evaluation Results for Portability [DATA PENDING]
+**Table 21.** Evaluation Results for Portability [DATA PENDING]
 
 | Indicator | Rated by | Mean | Interpretation |
 | :--- | :--- | ---: | :--- |
@@ -506,7 +558,7 @@ documentation.
 
 ### 4.4.11 Summary of Evaluation Results and Optimization
 
-**Table 21.** Summary of Evaluation Results [DATA PENDING]
+**Table 22.** Summary of Evaluation Results [DATA PENDING]
 
 | Characteristic | Composite mean | Interpretation |
 | :--- | ---: | :--- |
@@ -520,11 +572,11 @@ documentation.
 | Portability | | |
 | **Overall** | | |
 
-Objective 4 asks for the system to be evaluated **and optimized**. Table 22 records the changes
+Objective 4 asks for the system to be evaluated **and optimized**. Table 23 records the changes
 made in response to feedback and testing. The first rows are changes already made during the
 pilot; the rows after them will come from the survey results.
 
-**Table 22.** Optimizations Made in Response to Evaluation
+**Table 23.** Optimizations Made in Response to Evaluation
 
 | Source | Finding | Change made | Characteristic |
 | :--- | :--- | :--- | :--- |
@@ -534,6 +586,11 @@ pilot; the rows after them will come from the survey results.
 | Client review on a phone, 23 Sep 2026 | Forms with typed input had no close button | Every form can be closed; only the required first password change cannot | Usability |
 | Performance review, 26 Sep 2026 | The payments page loaded the whole payment gateway library for every visitor | The library now loads only when a tenant starts an online payment; the page's own code fell from 209 kB to 17 kB [CONFIRM this change is on the live site before submission] | Performance Efficiency |
 | Final review, 26 Sep 2026 | A refused refund could be announced as successful; a receipt could be credited to the wrong tenant | Both corrected, with checks added | Reliability, Functional Suitability |
+| Screen audit, 26 Sep 2026 | A tenant's payment history showed no payments | Receipts from the ledger now shown with online payments | Functional Suitability |
+| Screen audit, 26 Sep 2026 | Rental and personal expenses shared one column | Separate columns, as in the owner's workbook | Usability, Functional Suitability |
+| Screen audit, 26 Sep 2026 | A placeholder date read as every tenant's move-in | Shown as not recorded until the real dates are entered | Reliability |
+| Screen audit, 26 Sep 2026 | An opened GCash checkout was listed as a recorded payment | Listed as "GCash payment started" | Security (accountability of the audit trail) |
+| Team review, 26 Sep 2026 | The highlighted option in every dropdown was cut off at the sides | Outline drawn inside the option | Usability |
 | Survey results | [DATA PENDING] | | |
 
 ---
@@ -542,9 +599,9 @@ pilot; the rows after them will come from the survey results.
 
 The system is hosted on Vercel at a public web address, with the database on Supabase and the
 payment gateway on Adyen. Every approved change is deployed automatically from the project's main
-code branch. Table 23 lists what is needed to use the system, and Table 24 the deployment plan.
+code branch. Table 24 lists what is needed to use the system, and Table 25 the deployment plan.
 
-**Table 23.** Software and Hardware Requirements for Deployment
+**Table 24.** Software and Hardware Requirements for Deployment
 
 | Side | Requirement |
 | :--- | :--- |
@@ -552,7 +609,7 @@ code branch. Table 23 lists what is needed to use the system, and Table 24 the d
 | Hosting | Vercel (application), Supabase (PostgreSQL database), Adyen merchant account with GCash (optional online payment) |
 | Administration | A computer that can run Node.js, used only for backups and verification runs |
 
-**Table 24.** Deployment Plan and Strategies
+**Table 25.** Deployment Plan and Strategies
 
 | Stage | Activity | Status |
 | :--- | :--- | :--- |

@@ -33,6 +33,35 @@ thing did not work" is not.
 
 ## Open
 
+### B-77 — `/admin/payments` reads in one request, capped at 1,000 rows · low, not urgent
+
+- **Found 2026-09-26** in the screen audit. Income and expense lists page through in batches of 1,000
+  (`admin.ts` ~2213 and ~3434); `GET /admin/payments` (~1634) does not. 15 rows today; at roughly one
+  payment per unit per month it reaches the cap in about 2.5 years, and past it the Overview, the
+  verification queue and the duplicate-payment warning all read a silently truncated list.
+- **What Sean needs to do:** the same `.range()` loop the income route uses.
+- **Raised:** 2026-09-26 by Claude
+
+### B-76 — BH "Remitted" on the income screen is half rent + water; everywhere else it is full rent + water · **needs her workbook**
+
+- **Found 2026-09-26** by rendering Money coming in against the live figures (no personal data).
+- **The two numbers, all BH rows, all years:**
+  - screen, BH cluster header, subtotal and every BH row: **₱2,543,775.00** = half rent (₱2,343,375) + water (₱200,400).
+    `IncomeCollectionsView.vue` ~543 and ~1496: `hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water`.
+  - database `remitted_amount` (GENERATED, BR-038), the Excel export (`check:reports` passes on it)
+    and `docs/10`/`docs/09` column 10: **₱4,887,150.00** = rent (₱4,686,750) + water.
+- **Why I did not change it:** the screen's own note says her spreadsheet adds BH up at half rent,
+  and `docs/09_MONTHLY_INCOME_REPORT.md` says Remitted = Rent + Water. Two sources disagree about
+  what her book does; picking one is how this project got eight rules wrong. Her workbook is not in
+  the repository.
+- **What Sean needs to do:** open her workbook, read one BH row's Remitted Amount (column 10). If it
+  equals rent + water, change the three expressions above to `r.rent + r.water` and the BH total to
+  match. If it equals half rent + water, BR-038 and docs/09 are wrong for BH and need correcting,
+  and so does the export.
+- **How to know it worked:** the BH header on the screen and the BH subtotal in the downloaded Excel
+  file show the same figure.
+- **Raised:** 2026-09-26 by Claude
+
 ### B-75 — the tenant portal shows voided receipts as real payments · **one line, backend**
 
 - **Blocked on:** backend lane. The design branch does not change `backend/src/`.
@@ -56,7 +85,20 @@ thing did not work" is not.
   is owed. Worth a look before the defense, since the example is live.
 - **Raised:** 2026-09-26 by Claude (design branch, from a screenshot of unit 1c's empty history)
 
-### B-74 — GCash on the Adyen TEST account is refused before it becomes a payment · **waiting on Adyen, Case 08657379**
+### B-74 — GCash on the Adyen TEST account is refused before it becomes a payment · **DONE 2026-09-26: Adyen fixed the acquirer account**
+
+- **Resolved:** Adyen support (Chun Kit, Case 08657379) found the GCash acquirer account
+  misconfigured and set up a new one. Sean's retest the same day went through end to end:
+  the redirect reached Adyen's GCash test page; "Successful payment" produced
+  `NDQW3Z5ZQL8MNB75` (SentForSettle, ₱7,450.00, `HiveletECOM`); the AUTHORISATION webhook was
+  delivered and Accepted; the payment appeared in the verification queue; Sean rejected it
+  there, and the tenant saw "Not accepted, the bill it was for is still owed". One earlier
+  attempt that day, `SRXVZDJ7B2GLGB75` at 18:00, is listed as Error, before the change took hold.
+- **Found on the way:** the resident's screen said "Could not confirm your payment here" after
+  that successful payment. Fixed as `docs/FINAL_REVIEW.md` F12. **Next GCash test payment:**
+  it should end on "Payment received"; reject it in the queue afterwards, as before.
+- The record below is kept as it was written.
+
 
 - **Blocked on:** Adyen support. Not code.
 - **What was established, 2026-09-26, on the live site after the final-review merge:**

@@ -568,9 +568,25 @@ function getAreaAmount(e: ExpenseRecord, areaName: 'Boarding House' | 'Main Hous
  * out of the row the same way. The three columns now partition the splits by
  * construction.
  */
-function getAptsOtherAmount(e: ExpenseRecord): number {
+/**
+ * APARTMENTS AND PERSONAL COSTS SHARED ONE COLUMN (found 2026-09-26).
+ *
+ * "Apartments and other" summed everything that was neither the boarding house
+ * nor the main house, so a Back Apartment repair and an Other (personal) cost
+ * read identically on a row - on a page that tells her personal costs are NOT
+ * taken out of rental income. Her workbook gives every area its own column
+ * (docs/10_MONTHLY_EXPENSES_REPORT.md, columns 3-7). Split along the line that
+ * matters: the rental apartments, and her own "Other".
+ */
+function getApartmentsAmount(e: ExpenseRecord): number {
   return e.splits
-    .filter(s => s.area !== 'Boarding House' && s.area !== 'Main House')
+    .filter(s => s.area === 'Front Apartment' || s.area === 'Back Apartment' || s.area === 'Penthouse')
+    .reduce((sum, s) => sum + s.amount, 0);
+}
+
+function getPersonalOtherAmount(e: ExpenseRecord): number {
+  return e.splits
+    .filter(s => s.area === 'Other Expenses / Personal')
     .reduce((sum, s) => sum + s.amount, 0);
 }
 
@@ -964,7 +980,7 @@ async function handleEditExpense() {
       v-else
       class="ws-reveal"
       :rows="groupedExpenses"
-      caption="Expenses by day, each split across the boarding house, the main house and the apartments"
+      caption="Expenses by day, each split across the boarding house, the main house, the apartments and other personal costs"
       noun="day"
       :page-size="6"
       table-from="xl"
@@ -975,7 +991,8 @@ async function handleEditExpense() {
           <th scope="col">Kind</th>
           <th scope="col" class="num">Boarding house</th>
           <th scope="col" class="num">Main house</th>
-          <th scope="col" class="num">Apartments and other</th>
+          <th scope="col" class="num">Apartments</th>
+          <th scope="col" class="num">Other (personal)</th>
           <th scope="col" class="num">All of it</th>
           <th scope="col"><span class="sr-only">Actions</span></th>
         </tr>
@@ -983,7 +1000,7 @@ async function handleEditExpense() {
 
       <template #row="{ row: group }">
         <tr>
-          <th scope="colgroup" colspan="5" class="bg-canvas text-sm text-ink-soft">
+          <th scope="colgroup" colspan="6" class="bg-canvas text-sm text-ink-soft">
             {{ group.dateStr }}
           </th>
           <td class="num bg-canvas text-sm font-semibold text-ink">{{ peso(group.dayTotal, 2) }}</td>
@@ -998,7 +1015,8 @@ async function handleEditExpense() {
           <td class="num">
             {{ getAreaAmount(e, 'Main House') ? peso(getAreaAmount(e, 'Main House'), 2) : '—' }}
           </td>
-          <td class="num">{{ getAptsOtherAmount(e) ? peso(getAptsOtherAmount(e), 2) : '—' }}</td>
+          <td class="num">{{ getApartmentsAmount(e) ? peso(getApartmentsAmount(e), 2) : '—' }}</td>
+          <td class="num">{{ getPersonalOtherAmount(e) ? peso(getPersonalOtherAmount(e), 2) : '—' }}</td>
           <td class="num font-semibold text-ink">{{ peso(getExpenseTotal(e), 2) }}</td>
           <td class="num">
             <button
@@ -1051,9 +1069,13 @@ async function handleEditExpense() {
                 <dt class="text-ink-faint">Main house</dt>
                 <dd class="tabular text-ink">{{ peso(getAreaAmount(e, 'Main House'), 2) }}</dd>
               </div>
-              <div v-if="getAptsOtherAmount(e)" class="flex gap-1.5">
-                <dt class="text-ink-faint">Apartments and other</dt>
-                <dd class="tabular text-ink">{{ peso(getAptsOtherAmount(e), 2) }}</dd>
+              <div v-if="getApartmentsAmount(e)" class="flex gap-1.5">
+                <dt class="text-ink-faint">Apartments</dt>
+                <dd class="tabular text-ink">{{ peso(getApartmentsAmount(e), 2) }}</dd>
+              </div>
+              <div v-if="getPersonalOtherAmount(e)" class="flex gap-1.5">
+                <dt class="text-ink-faint">Other (personal)</dt>
+                <dd class="tabular text-ink">{{ peso(getPersonalOtherAmount(e), 2) }}</dd>
               </div>
             </dl>
             <div class="mt-2 flex justify-end">

@@ -55,16 +55,16 @@ date and a screenshot of each.
 >
 > If the team wants an active scan, ask Sean to arrange it against a local copy of the system first.
 
-### 3. The 26-step functional walkthrough (feeds §4.3.3, Table 9)
+### 3. The 26-step functional walkthrough (feeds §4.3.4, Table 10)
 
 Follow `TESTING_REHEARSAL.md`. It must be done by a person because it needs signing in, which
 Claude is not allowed to do. It uses only the one unoccupied unit, so no real record is touched.
 Write down, per step: what you did, what you expected, what happened, pass or fail. Send the notes to
-Claude to turn into Table 9.
+Claude to turn into Table 10.
 
-### 4. Performance measurement on real devices (feeds §4.3.4, Table 10)
+### 4. Performance measurement on real devices (feeds §4.3.5, Table 11)
 
-On the workstation in Table 2 and a phone like the one in Table 3, time each screen in Table 10.
+On the workstation in Table 2 and a phone like the one in Table 3, time each screen in Table 11.
 Use the browser's developer tools (Network tab, "Load" time) or PageSpeed Insights, and write down
 the device, browser, network and date. **Measured numbers only.**
 
@@ -92,7 +92,7 @@ on a phone. Use the unoccupied unit or blur tenant names; the manuscript is publ
 
 ### 8. For Sean (system side)
 
-- [ ] Merge the design branch into main, so the payments-page speed-up in Table 22 is on the live
+- [ ] Merge the design branch into main, so the payments-page speed-up in Table 23 is on the live
       site before the manuscript claims it.
 - [ ] Apply migration 054 (B-71 in `BLOCKED_FOR_SEAN.md`).
 - [ ] Follow up the Adyen support case (B-74) so GCash can be demonstrated end to end.
@@ -103,9 +103,9 @@ on a phone. Use the unoccupied unit or blur tenant names; the manuscript is publ
 | :--- | :--- |
 | Now, anytime | Re-run the 20 check suites and update Table 8 with the new date and counts |
 | Now, anytime | Draft the Abstract once the survey means exist (it needs the results) |
-| After the survey | Compute every mean, group mean and composite from the exported sheet; fill Tables 11 to 21; write each interpretation paragraph from the numbers and the open comments |
-| After the survey | Turn the low-scoring items into fixes where they are in the design lane, and add them to Table 22 as the "optimize" half of Objective 4 |
-| After the walkthrough | Turn the notes into Table 9 and its paragraph; fix any design problems it finds |
-| After the performance runs | Turn the measurements into Table 10 and its paragraph |
+| After the survey | Compute every mean, group mean and composite from the exported sheet; fill Tables 12 to 22; write each interpretation paragraph from the numbers and the open comments |
+| After the survey | Turn the low-scoring items into fixes where they are in the design lane, and add them to Table 23 as the "optimize" half of Objective 4 |
+| After the walkthrough | Turn the notes into Table 10 and its paragraph; fix any design problems it finds |
+| After the performance runs | Turn the measurements into Table 11 and its paragraph |
 | After the security scans | Explain each finding, fix what is in the design lane, and queue the rest for Sean |
 | At the end | Update Chapter 5's summary and conclusions so every claim matches Chapter 4 |
