@@ -487,9 +487,32 @@ const ticketSchema = z.object({
    * Moving attachments to object storage is the real answer and it is a storage decision with
    * a cost attached, not a validation change. Recorded here so the next reader does not add a
    * cap thinking it is free.
+   *
+   * The scheme, unlike the length, IS a validation change and a necessary one. This value is
+   * stored as `ticket_attachments.file_url` and later rendered as `<a :href="att.file_url">`
+   * (`TenantTicketsView.vue`) AND, for the administrator reviewing the same ticket, as
+   * `<a :href="editingTicket.photo">` (`MaintenanceDispatchView.vue`) - a real clickable link,
+   * not just an `<img src>`. Nothing before this checked the value was one of the two shapes
+   * the comment above describes. A resident submitting `javascript:...` as their "photo" would
+   * have stored a working stored-XSS payload that fires in whichever administrator clicks the
+   * attachment to look at the leak she was told about - the higher-value target, since her
+   * session is the one worth having. Restricting to exactly the two legitimate shapes already
+   * seen in the live data - a real URL, or a base64 data URL of an image - closes it without
+   * touching the length reasoning above.
    */
   attachments: z
-    .array(z.object({ fileUrl: z.string().min(1), fileType: z.string().max(80).optional() }))
+    .array(
+      z.object({
+        fileUrl: z
+          .string()
+          .min(1)
+          .refine(
+            (v) => /^https:\/\//i.test(v) || /^data:image\/[a-z0-9.+-]+;base64,/i.test(v),
+            'Attachment must be an https:// URL or a base64-encoded image.'
+          ),
+        fileType: z.string().max(80).optional(),
+      })
+    )
     .max(10)
     .optional(),
 });
