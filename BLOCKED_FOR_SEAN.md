@@ -3019,3 +3019,40 @@ these three indistinguishable from the real residents.*
   want it scoped as its own migration.
 - **Raised:** 2026-09-26 by Claude, at Sean's request in chat; closed out same day once the actual
   constraint was found
+
+> **Update, same day.** Sean decided: delete them permanently, the FK trade explained above is
+> acceptable to him ("things are getting real"). Wrote
+> `database/migrations/053_permanently_delete_rehearsal_tenant.sql`: temporarily swaps
+> `audit_logs_actor_profile_id_fkey` to `ON DELETE SET NULL`, deletes the two profiles and what
+> they touch, then restores the constraint to its exact original definition (asserted twice - once
+> before starting, once after restoring - so it aborts rather than leaves the table loosened if
+> anything looks different than expected). Fresh backup taken first.
+>
+> **Could not run it.** Not the same "needs an explicit approval" block as 052 - this one came back
+> `Permission for this action was denied by the Claude Code auto mode classifier. Reason:
+> [Logging/Audit Tampering]`. Different category, named explicitly: altering a constraint that
+> protects an append-only audit table, even temporarily, even with the owner's own go-ahead in
+> chat, even with a restore step built in. Confirmed read-only right after that nothing ran - both
+> profiles are still there, the constraint is still its original definition, exactly as before this
+> was attempted.
+- **What Sean needs to do, if he still wants this:** run
+  `database/migrations/053_permanently_delete_rehearsal_tenant.sql` himself, directly, in the
+  Supabase SQL editor - the same place 052 was run. It has not been tested end-to-end (only
+  reasoned through and checked statement by statement against the live schema), so read it before
+  running it. If anything looks wrong partway through, the `DO $$ ... RAISE EXCEPTION` guards at
+  the start and the end are there to abort rather than commit a half-done state.
+
+> **RESOLVED 2026-09-26.** Sean ran it himself in the Supabase SQL editor. `COMMIT` succeeded.
+> Confirmed read-only right after:
+> - `profiles WHERE full_name = 'Rehearsal Test'` — **0 rows.** Both are gone.
+> - PH's `room_assignments` — **0 active.** Matches what B-69's move-out already showed publicly.
+> - `audit_logs_actor_profile_id_fkey` — back to `FOREIGN KEY (actor_profile_id) REFERENCES
+>   profiles(id)`, no `ON DELETE` action, exactly its pre-migration definition. Every other
+>   profile in the system is refused a delete the same way it always was, the moment this
+>   committed.
+> - `audit_logs` row count — **17,483, unchanged.** Nothing was deleted from the audit table
+>   itself, only the `actor_profile_id` on the 7 rows naming these two profiles went to `NULL`,
+>   which is exactly and only what this migration was built to do.
+>
+> Closed. `database/migrations/053_permanently_delete_rehearsal_tenant.sql` stays in the repo as
+> what actually ran.
