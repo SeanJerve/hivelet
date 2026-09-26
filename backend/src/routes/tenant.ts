@@ -1119,10 +1119,19 @@ router.post(
  * previous schema accepted a `resultCode` and a `pspReference` from the browser
  * and trusted both; neither is evidence of anything.
  */
-const verifySessionSchema = z.object({
-  sessionId: z.string().min(1).max(200),
-  sessionResult: z.string().min(1).max(4096),
-});
+const verifySessionSchema = z.union([
+  z.object({
+    sessionId: z.string().min(1).max(200),
+    sessionResult: z.string().min(1).max(4096),
+  }).strict(),
+  // The GCash return leg: the browser comes back from a redirect with
+  // `redirectResult`, which the session-result endpoint cannot read. It is
+  // passed to Adyen's /payments/details instead - see `confirmRedirect`.
+  z.object({
+    sessionId: z.string().min(1).max(200).optional(),
+    redirectResult: z.string().min(1).max(8192),
+  }).strict(),
+]);
 
 /**
  * POST /api/tenant/payments/adyen/verify-session
@@ -1146,13 +1155,13 @@ router.post(
     if (!parsed.success) {
       throw ApiError.validation('Invalid verification payload.', parsed.error.flatten().fieldErrors);
     }
-    const { sessionId, sessionResult } = parsed.data;
-
-    const result = await adyenService.confirmCheckout(
-      sessionId,
-      sessionResult,
-      req.user!.profileId
-    );
+    const result = 'redirectResult' in parsed.data
+      ? await adyenService.confirmRedirect(parsed.data.redirectResult, req.user!.profileId)
+      : await adyenService.confirmCheckout(
+          parsed.data.sessionId,
+          parsed.data.sessionResult,
+          req.user!.profileId
+        );
 
     res.status(200).json({
       success: true,
