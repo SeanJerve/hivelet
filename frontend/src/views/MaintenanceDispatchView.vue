@@ -8,6 +8,8 @@ import {
   maintenanceTicketsFetchFailed,
   rooms, 
   fetchRooms, 
+  roomsLoaded,
+  roomsFetchFailed,
   TECHNICIANS,
   TICKET_CATEGORIES,
   showToast,
@@ -84,11 +86,10 @@ const editUnitOptions = computed(() =>
  * nowhere to go. `POST /admin/tickets` has existed, guarded and audited, the
  * whole time; this is its form.
  *
- * Only units with a tenant are offered. A repair is filed against the unit's
- * tenant (`maintenance_tickets.tenant_profile_id` is NOT NULL), so the server
- * refuses an empty unit (B-28). Listing one here would offer a choice that can
- * only fail. The tenant's name is in the label so she can check she has the
- * right flat.
+ * Every unit is offered, with its tenant's name so she can check she has the
+ * right flat, or "no tenant" for an empty one. A repair to an empty unit is
+ * filed with no tenant (B-28, migration 058): the penthouse she is getting
+ * ready to let is exactly where one gets logged.
  */
 const isLogOpen = ref(false);
 const logUnit = ref('');
@@ -98,10 +99,14 @@ const logPriority = ref('Medium');
 const logTech = ref('Unassigned');
 const logDesc = ref('');
 
+// Only from a list that actually loaded: `rooms` starts as the 33 canonical
+// units with no tenants and keeps them if the read fails, which would label
+// every occupied flat "no tenant".
 const logUnitOptions = computed(() =>
-  rooms
-    .filter((r) => r.tenant)
-    .map((r) => ({ value: r.unitCode.toLowerCase(), label: `${r.unitCode.toUpperCase()}, ${r.tenant}` })),
+  !roomsLoaded.value || roomsFetchFailed.value ? [] : rooms.map((r) => ({
+    value: r.unitCode.toLowerCase(),
+    label: `${r.unitCode.toUpperCase()}, ${r.tenant || 'no tenant'}`,
+  })),
 );
 
 function openLogRepair() {
@@ -656,8 +661,7 @@ function handleDeleteTicketPrompt() {
     >
       <form id="log-repair-form" @submit.prevent="handleLogRepair" class="space-y-4 text-xs">
         <p v-if="logUnitOptions.length === 0" class="text-sm leading-6 text-verify">
-          The unit list could not be loaded, or no unit has a tenant on record. A repair is filed
-          against the unit's tenant, so it cannot be logged until the list loads.
+          The unit list could not be loaded, so a repair cannot be logged yet. Close this and try again.
         </p>
         <template v-else>
           <label class="ws-field">

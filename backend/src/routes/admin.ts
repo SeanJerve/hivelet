@@ -3898,11 +3898,11 @@ router.post(
      * request for **1a** returned 201. PH is the one vacant unit - and the unit
      * being made ready to let, which is exactly when a repair gets logged.
      *
-     * A clear refusal is the honest answer while the column stays NOT NULL. That
-     * the column is NOT NULL at all is a real question - a repair to an empty
-     * flat genuinely has no tenant - but relaxing it changes what a ticket means
-     * and belongs with the form that has never been built (B-22), not with a
-     * handler nothing calls yet.
+     * Decided with the form that now calls this (B-22, B-28, 2026-09-26): a
+     * repair to an empty flat genuinely has no tenant, so migration 058 makes
+     * the column nullable and such a repair is filed with none. Until 058 is
+     * applied the insert still fails on the constraint, and that is turned
+     * into the same clear refusal as before, below.
      */
     let tenantProfileId: string | null = null;
     if (roomId) {
@@ -3917,14 +3917,7 @@ router.post(
       if (assignment) tenantProfileId = assignment.tenant_profile_id;
     }
 
-    if (!tenantProfileId) {
-      throw ApiError.validation('That unit has no tenant on record.', {
-        roomNumber: [
-          'A repair is filed against the tenant of the unit, and this one has nobody in it. ' +
-            'Assign the tenancy first, or raise the repair once someone has moved in.',
-        ],
-      });
-    }
+    // An empty unit's repair is filed with no tenant (B-28, migration 058).
 
     let createStatus = parsed.data.status || 'Submitted';
     if (createStatus === 'Open') createStatus = 'Submitted';
@@ -3944,7 +3937,20 @@ router.post(
       .select('*, rooms:room_id (id, room_number), profiles:tenant_profile_id (id, full_name, phone_number)')
       .single();
 
-    if (error) throw ApiError.internal(error.message);
+    if (error) {
+      // 23502 is not_null_violation: 058 has not been applied yet, so the column
+      // still demands a tenant. Said plainly rather than as a bare 500.
+      if (!tenantProfileId && error.code === '23502') {
+        throw ApiError.validation(
+          'That unit has no tenant, and repairs for an empty unit are not switched on yet (migration 058).', {
+          roomNumber: [
+            'Repairs for an empty unit need migration 058, which has not been applied yet. ' +
+              'Log it once someone has moved in, or apply 058.',
+          ],
+        });
+      }
+      throw ApiError.internal(error.message);
+    }
 
     if (roomId && (parsed.data.setRoomMaintenance || parsed.data.priority === 'Emergency')) {
       assertWritten(
@@ -4784,7 +4790,10 @@ router.post(
       (data as { profiles?: { full_name?: string | null } } | null)?.profiles?.full_name?.trim() ||
       'The administrator';
 
-    await notificationService.notify({
+    // A repair to an empty unit has no tenant to tell (B-28). Without this the
+    // notification service, given no recipient, would route it to the owner,
+    // who has just written the comment herself.
+    if (ticket.tenant_profile_id) await notificationService.notify({
       recipientProfileId: ticket.tenant_profile_id,
       title: 'New Maintenance Ticket Comment',
       message: `${senderName} commented on ticket "${ticket.title}": "${parsed.data.message.slice(0, 80)}${parsed.data.message.length > 80 ? '...' : ''}"`,

@@ -1,6 +1,7 @@
 /**
  * Targeted test for BLOCKED_FOR_SEAN.md B-47: a tenant is told when their
- * repair is done, once, and only on the way into done.
+ * repair is done, once, and only on the way into done. And B-28: a repair
+ * can be logged for an empty unit, and says why not while 058 is unapplied.
  *
  * Run from backend/:  npm run build && node scripts/check-ticket-done.mjs
  *
@@ -30,6 +31,9 @@ const TICKET = '00000000-0000-4000-8000-000000000071';
 const TENANT = '00000000-0000-4000-8000-0000000000aa';
 let before;
 let notifications = [];
+let activeTenant = null;          // who lives in the unit a new repair is logged for
+let ticketInsert = null;
+let columnStillNotNull = false;   // 058 not yet applied
 
 db.from = (table) => {
   const calls = [];
@@ -41,6 +45,17 @@ db.from = (table) => {
           if (table === 'notifications' && names.includes('insert')) {
             notifications.push(calls.find((c) => c[0] === 'insert')[1][0]);
             return resolve({ data: { id: 'n1' }, error: null });
+          }
+          if (table === 'rooms' && names.includes('ilike')) return resolve({ data: { id: 'rph' }, error: null });
+          if (table === 'maintenance_tickets' && names.includes('insert')) {
+            ticketInsert = calls.find((c) => c[0] === 'insert')[1][0];
+            if (columnStillNotNull && !ticketInsert.tenant_profile_id) {
+              return resolve({ data: null, error: { code: '23502', message: 'null value in column "tenant_profile_id" violates not-null constraint' } });
+            }
+            return resolve({ data: { id: 'new', ...ticketInsert }, error: null });
+          }
+          if (table === 'room_assignments' && names.includes('select') && calls.some((c) => c[0] === 'select' && c[1][0] === 'tenant_profile_id')) {
+            return resolve({ data: activeTenant ? { tenant_profile_id: activeTenant } : null, error: null });
           }
           if (table === 'maintenance_tickets' && names.includes('update')) {
             const patch = calls.find((c) => c[0] === 'update')[1][0];
@@ -103,6 +118,36 @@ check('sending a technician is not "done"', notifications.length, 0);
 
 r = await patch('Submitted', 'Resolved', null);
 check('a repair with no tenant (an empty unit) tells nobody, and still saves', [r.status, notifications.length], [200, 0]);
+
+// --- B-28: logging a repair for an empty unit
+const create = adminRouter.stack
+  .find((l) => l.route?.path === '/admin/tickets' && l.route.methods.post).route.stack.at(-1).handle;
+function post(body) {
+  ticketInsert = null;
+  return new Promise((resolve) => {
+    const res = {
+      statusCode: 200,
+      status(code) { this.statusCode = code; return this; },
+      json(payload) { resolve({ status: this.statusCode, payload }); return this; },
+    };
+    const req = { params: {}, body, headers: {}, ip: '127.0.0.1', socket: {},
+      user: { profileId: '00000000-0000-4000-8000-0000000000ad', role: 'admin' }, get: () => undefined };
+    create(req, res, (err) => resolve({ status: err?.statusCode ?? 500, error: String(err?.message ?? err) }));
+  });
+}
+const repair = { roomNumber: 'ph', title: 'Repaint before letting', description: 'Walls marked.', priority: 'Low' };
+
+activeTenant = null; columnStillNotNull = false;
+r = await post(repair);
+check('an empty unit takes a repair once 058 is applied', [r.status, ticketInsert?.tenant_profile_id], [201, null]);
+
+activeTenant = null; columnStillNotNull = true;
+r = await post(repair);
+check('before 058, it is refused in words, not as a 500', [r.status, /058/.test(r.error)], [422, true]);
+
+activeTenant = TENANT; columnStillNotNull = true;
+r = await post({ ...repair, roomNumber: '3d' });
+check('an occupied unit is filed against its tenant, as before', [r.status, ticketInsert?.tenant_profile_id], [201, TENANT]);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);
