@@ -2216,6 +2216,10 @@ router.get(
         .select('*, rooms:room_id (id, room_number, cluster_code)')
         .is('voided_at', null)
         .order('date_paid', { ascending: false })
+        // Unique last key: pages are separate queries, and rows sharing a date
+        // have no fixed order between them, so a page boundary could repeat one
+        // receipt and drop another from every total built on this list (FINAL_REVIEW F8).
+        .order('id', { ascending: true })
         .range(from, from + batchSize - 1);
 
       if (year) query = query.eq('year', year);
@@ -3294,6 +3298,10 @@ router.get(
         )
         .is('voided_at', null)
         .order('expense_date', { ascending: false })
+        // Unique last key, as the expense export already has: this list is more
+        // than one page, and rows sharing a date have no fixed order between two
+        // queries, so an entry could be counted twice or not at all (FINAL_REVIEW F8).
+        .order('id', { ascending: true })
         .range(from, from + batchSize - 1);
 
       if (year) {
