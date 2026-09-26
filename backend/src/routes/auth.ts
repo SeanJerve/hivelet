@@ -13,7 +13,7 @@ import {
   updateOwnProfile,
   changeOwnPassword,
 } from '../services/authService.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requirePasswordCurrent } from '../middleware/auth.js';
 import { rateLimit, failureLimit } from '../middleware/rateLimit.js';
 import { config } from '../config/env.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -230,10 +230,22 @@ router.get(
  * System Bible Section 19 — a tenant may update phone number, emergency
  * contact, occupation and contact links. `role` and `account_status` are
  * stripped in the service, so this cannot be used to self-promote.
+ *
+ * GATED behind `requirePasswordCurrent` (B-63/B-64), and that is a decision,
+ * not an oversight: B-63's own wording names three exemptions to the 428
+ * gate - `GET /auth/me`, change-password, logout - and this is a fourth,
+ * different route that happens to share a path with the first. Exempting it
+ * too would mean an account still sitting on a one-time onboarding password
+ * could edit its phone number, emergency contact and Facebook link before ever
+ * proving it holds a password of its own choosing - none of which is needed to
+ * get unstuck, unlike the three named routes. Gated, so B-63's stated reach
+ * ("428 on everything but those three") is literally true rather than true
+ * modulo one same-path exception nobody wrote down.
  */
 router.patch(
   '/auth/me',
   requireAuth,
+  requirePasswordCurrent,
   asyncHandler(async (req, res) => {
     const before = await getOwnProfile(req.user!.profileId);
     // `updateOwnProfile` already strips anything outside TENANT_EDITABLE_FIELDS,
@@ -303,12 +315,14 @@ router.post(
       throw ApiError.validation('Invalid password payload.', parsed.error.flatten().fieldErrors);
     }
 
+    let token: string;
     try {
-      await changeOwnPassword(
+      const result = await changeOwnPassword(
         req.user!.profileId,
         parsed.data.currentPassword,
         parsed.data.newPassword
       );
+      token = result.token;
     } catch (err) {
       if (err instanceof ApiError && err.code === 'INVALID_CREDENTIALS') passwordChangeFailures.record(req);
       throw err;
@@ -320,7 +334,12 @@ router.post(
       entityId: req.user!.profileId,
     });
 
-    res.status(200).json({ success: true, data: { message: 'Password updated.' } });
+    // B-64 decision 3: `changeOwnPassword` just set `password_changed_at`, and
+    // `resolveAuthUser` refuses any token issued before it - including the one
+    // this request came in on. `ChangePasswordModal.vue` reads `data.token` and
+    // stores it, so this device stays signed in; every other device holding an
+    // older token is signed out on its next request.
+    res.status(200).json({ success: true, data: { message: 'Password updated.', token } });
   })
 );
 

@@ -14,6 +14,8 @@ export type ApiErrorCode =
   | 'ACCOUNT_LOCKED'
   | 'TOKEN_EXPIRED'
   | 'TOKEN_INVALID'
+  | 'SESSION_SUPERSEDED'
+  | 'PASSWORD_CHANGE_REQUIRED'
   | 'FORBIDDEN'
   | 'NOT_FOUND'
   | 'CONFLICT'
@@ -73,6 +75,37 @@ export class ApiError extends Error {
       429,
       'ACCOUNT_LOCKED',
       `Too many failed attempts. Try again in ${minutes} minute(s).`
+    );
+  }
+
+  /**
+   * A valid token, but issued before this profile's most recent password
+   * change (B-64 decision 3). Same 401 shape as `TOKEN_EXPIRED`/`TOKEN_INVALID`
+   * so `ApiRequestError.isAuthFailure` on the frontend catches it without any
+   * change there - it checks `status === 401` for any code other than
+   * `INVALID_CREDENTIALS`, and this is a genuinely distinct code only so the
+   * reason is legible in logs and `audit_logs`, not because the client branches
+   * on it.
+   */
+  static sessionSuperseded() {
+    return new ApiError(
+      401,
+      'SESSION_SUPERSEDED',
+      'Your password was changed. Sign in again on this device.'
+    );
+  }
+
+  /**
+   * 428 Precondition Required. B-63/B-64: an account issued a one-time
+   * onboarding password (`must_change_password`) may reach only the handful of
+   * routes that let it get unstuck - see `requirePasswordCurrent` in
+   * `middleware/auth.ts` for exactly which ones and why.
+   */
+  static passwordChangeRequired() {
+    return new ApiError(
+      428,
+      'PASSWORD_CHANGE_REQUIRED',
+      'Set your own password before continuing.'
     );
   }
 

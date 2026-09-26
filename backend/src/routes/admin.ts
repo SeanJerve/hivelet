@@ -15,7 +15,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../config/db.js';
-import { requireAuth, requireAdmin, requirePermission } from '../middleware/auth.js';
+import { requireAuth, requireAdmin, requirePermission, requirePasswordCurrent } from '../middleware/auth.js';
+import { requireUuidParam } from '../middleware/requireUuidParam.js';
 import { PERMISSIONS } from '../config/rbac.js';
 import {
   PROPERTY_AREAS,
@@ -39,7 +40,10 @@ import { money, occupantCount, isoDate, shortText, unitCode, uuid } from '../uti
 const router = Router();
 
 // BR-048 and System Bible Section 20: administrator-only, without exception.
-router.use('/admin', requireAuth, requireAdmin);
+// `requirePasswordCurrent` (B-63/B-64) sits between the two: authenticate,
+// then check whether this account is still locked to a one-time onboarding
+// password, then check role. No route under this router is exempt from it.
+router.use('/admin', requireAuth, requirePasswordCurrent, requireAdmin);
 
 /* ========================================================================== *
  * ROOMS — FR-007, FR-008
@@ -242,6 +246,7 @@ const roomUpdateSchema = z.object({
 router.patch(
   '/admin/rooms/:roomId',
   requirePermission(PERMISSIONS.ROOM_MANAGE),
+  requireUuidParam('roomId', 'Room'),
   asyncHandler(async (req, res) => {
     const parsed = roomUpdateSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -422,6 +427,7 @@ router.patch(
 router.delete(
   '/admin/rooms/:roomId',
   requirePermission(PERMISSIONS.ROOM_MANAGE),
+  requireUuidParam('roomId', 'Room'),
   asyncHandler(async (req, res) => {
     const { data: before, error: beforeError } = await db
       .from('rooms')
@@ -1067,22 +1073,18 @@ const tenantUpdateSchema = z.object({
 router.patch(
   '/admin/tenants/:profileId',
   requirePermission(PERMISSIONS.TENANT_MANAGE),
+  requireUuidParam('profileId', 'Tenant profile'),
   asyncHandler(async (req, res) => {
     const parsed = tenantUpdateSchema.safeParse(req.body);
     if (!parsed.success) {
       throw ApiError.validation('Invalid update payload.', parsed.error.flatten().fieldErrors);
     }
 
-    const { 
-      fullName, phone, emergencyContactName, emergencyContactPhone, 
+    const {
+      fullName, phone, emergencyContactName, emergencyContactPhone,
       occupation, facebookUrl, roomNumber, accountStatus,
-      occupantCount, roommateQty 
+      occupantCount, roommateQty
     } = parsed.data;
-
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.profileId);
-    if (!isUuid) {
-      throw ApiError.notFound(`Tenant profile ${req.params.profileId} not found.`);
-    }
 
     const { data: before, error: beforeError } = await db
       .from('profiles')
@@ -1325,6 +1327,7 @@ const tenantStatusSchema = z.object({
 router.post(
   '/admin/tenants/:profileId/vacate',
   requirePermission(PERMISSIONS.TENANT_MANAGE),
+  requireUuidParam('profileId', 'Tenant profile'),
   asyncHandler(async (req, res) => {
     const { data: profile, error: profileError } = await db
       .from('profiles')
@@ -1484,6 +1487,7 @@ const inquiryStatusSchema = z.object({
 router.patch(
   '/admin/inquiries/:inquiryId',
   requirePermission(PERMISSIONS.INQUIRY_MANAGE),
+  requireUuidParam('inquiryId', 'Inquiry'),
   asyncHandler(async (req, res) => {
     const parsed = inquiryStatusSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -1658,6 +1662,7 @@ const verifySchema = z.object({
 router.patch(
   '/admin/payments/:paymentId/verify',
   requirePermission(PERMISSIONS.PAYMENT_VERIFY),
+  requireUuidParam('paymentId', 'Payment'),
   asyncHandler(async (req, res) => {
     const parsed = verifySchema.safeParse(req.body);
     if (!parsed.success) {
@@ -2975,6 +2980,7 @@ const incomeRecordPatchSchema = z.object({
 router.patch(
   '/admin/income-records/:id',
   requirePermission(PERMISSIONS.PAYMENT_VERIFY),
+  requireUuidParam('id', 'Income record'),
   asyncHandler(async (req, res) => {
     const { data: before, error: beforeError } = await db
       .from('monthly_income_records')
@@ -3200,6 +3206,7 @@ router.patch(
 router.delete(
   '/admin/income-records/:id',
   requirePermission(PERMISSIONS.PAYMENT_VERIFY),
+  requireUuidParam('id', 'Income record'),
   asyncHandler(async (req, res) => {
     const { data: before, error: checkError } = await db
       .from('monthly_income_records')
@@ -3426,6 +3433,7 @@ router.post(
 router.patch(
   '/admin/expense-entries/:id',
   requirePermission(PERMISSIONS.PAYMENT_VERIFY),
+  requireUuidParam('id', 'Expense entry'),
   asyncHandler(async (req, res) => {
     const { data: before, error: beforeError } = await db
       .from('monthly_expense_entries')
@@ -3559,6 +3567,7 @@ router.patch(
 router.delete(
   '/admin/expense-entries/:id',
   requirePermission(PERMISSIONS.PAYMENT_VERIFY),
+  requireUuidParam('id', 'Expense entry'),
   asyncHandler(async (req, res) => {
     const { data: before, error: checkError } = await db
       .from('monthly_expense_entries')
@@ -3822,6 +3831,7 @@ const ticketUpdateSchema = z.object({
 router.patch(
   '/admin/tickets/:ticketId',
   requirePermission(PERMISSIONS.TICKET_MANAGE),
+  requireUuidParam('ticketId', 'Ticket'),
   asyncHandler(async (req, res) => {
     const parsed = ticketUpdateSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -4093,6 +4103,7 @@ router.patch(
 router.delete(
   '/admin/tickets/:ticketId',
   requirePermission(PERMISSIONS.TICKET_MANAGE),
+  requireUuidParam('ticketId', 'Ticket'),
   asyncHandler(async (req, res) => {
     const { data: before, error: beforeError } = await db
       .from('maintenance_tickets')
@@ -4359,6 +4370,7 @@ router.get(
 router.patch(
   '/admin/notifications/:id/read',
   requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  requireUuidParam('id', 'Notification'),
   asyncHandler(async (req, res) => {
     /**
      * A 200 that says `success: false` is a contradiction, and nothing could
@@ -4393,6 +4405,7 @@ router.post(
 router.get(
   '/admin/inquiries/:id/messages',
   requirePermission(PERMISSIONS.INQUIRY_READ_ALL),
+  requireUuidParam('id', 'Inquiry'),
   asyncHandler(async (req, res) => {
     const { data, error } = await db
       .from('inquiry_messages')
@@ -4415,6 +4428,7 @@ const postInquiryMessageSchema = z.object({
 router.post(
   '/admin/inquiries/:id/messages',
   requirePermission(PERMISSIONS.INQUIRY_MANAGE),
+  requireUuidParam('id', 'Inquiry'),
   asyncHandler(async (req, res) => {
     const parsed = postInquiryMessageSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -4508,6 +4522,7 @@ router.post(
 router.get(
   '/admin/tickets/:id/messages',
   requirePermission(PERMISSIONS.TICKET_READ_ALL),
+  requireUuidParam('id', 'Ticket'),
   asyncHandler(async (req, res) => {
     const { data, error } = await db
       .from('ticket_messages')
@@ -4527,6 +4542,7 @@ const postTicketMessageSchema = z.object({
 router.post(
   '/admin/tickets/:id/messages',
   requirePermission(PERMISSIONS.TICKET_COMMENT_ANY),
+  requireUuidParam('id', 'Ticket'),
   asyncHandler(async (req, res) => {
     const parsed = postTicketMessageSchema.safeParse(req.body);
     if (!parsed.success) {

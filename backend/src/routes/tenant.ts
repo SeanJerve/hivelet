@@ -17,7 +17,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { db } from '../config/db.js';
-import { requireAuth, requirePermission } from '../middleware/auth.js';
+import { requireAuth, requirePermission, requirePasswordCurrent } from '../middleware/auth.js';
+import { requireUuidParam } from '../middleware/requireUuidParam.js';
 import { PERMISSIONS } from '../config/rbac.js';
 import { resolveTenantScope, isEmptyScope, assertRoomInScope } from '../services/scopeService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -34,7 +35,10 @@ import { config } from '../config/env.js';
 const router = Router();
 
 // Everything below requires an authenticated, active account.
-router.use('/tenant', requireAuth);
+// `requirePasswordCurrent` (B-63/B-64): a resident issued a one-time
+// onboarding password cannot reach any of this until they replace it - no
+// route under this router is exempt.
+router.use('/tenant', requireAuth, requirePasswordCurrent);
 
 /**
  * GET /api/tenant/my-rooms
@@ -597,6 +601,7 @@ const messageSchema = z.object({ message: z.string().min(1).max(2000) });
 router.get(
   '/tenant/tickets/:ticketId/messages',
   requirePermission(PERMISSIONS.TICKET_READ_OWN),
+  requireUuidParam('ticketId', 'Ticket'),
   asyncHandler(async (req, res) => {
     const { data: ticket } = await db
       .from('maintenance_tickets')
@@ -626,6 +631,7 @@ router.get(
 router.post(
   '/tenant/tickets/:ticketId/messages',
   requirePermission(PERMISSIONS.TICKET_COMMENT_OWN),
+  requireUuidParam('ticketId', 'Ticket'),
   asyncHandler(async (req, res) => {
     const parsed = messageSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -753,6 +759,7 @@ router.get(
 router.patch(
   '/tenant/my-notifications/:id/read',
   requirePermission(PERMISSIONS.NOTIFICATION_READ_OWN),
+  requireUuidParam('id', 'Notification'),
   asyncHandler(async (req, res) => {
     /**
      * A 200 that says `success: false` is a contradiction, and nothing could

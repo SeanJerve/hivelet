@@ -55,7 +55,7 @@ export const optionalAuth: RequestHandler = async (req, _res, next) => {
 
   try {
     const payload = verifyToken(token);
-    const user = await resolveAuthUser(payload.sub);
+    const user = await resolveAuthUser(payload.sub, payload.iat);
     req.user = user;
     req.role = user.role;
     next();
@@ -69,6 +69,8 @@ export const optionalAuth: RequestHandler = async (req, _res, next) => {
  *
  * The profile is re-read from the database rather than trusted from the token
  * claims, so a deactivated tenant (BR-025) loses access on their next request.
+ * `payload.iat` is passed through so `resolveAuthUser` can also reject a token
+ * that predates the profile's most recent password change (B-64 decision 3).
  */
 export const requireAuth: RequestHandler = async (req, _res, next) => {
   try {
@@ -78,7 +80,7 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
     }
 
     const payload = verifyToken(token);
-    const user = await resolveAuthUser(payload.sub);
+    const user = await resolveAuthUser(payload.sub, payload.iat);
 
     req.user = user;
     req.role = user.role;
@@ -86,6 +88,43 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+/**
+ * Blocks a caller who has not yet replaced a one-time onboarding password
+ * (B-53 `must_change_password`) from reaching anything except the routes that
+ * let them get unstuck.
+ *
+ * DELIBERATELY NOT FOLDED INTO `requireAuth`.
+ *
+ * `requireAuth` runs on every protected route in the app, including the three
+ * B-63 names as exemptions - `GET /auth/me`, `POST /auth/change-password` and
+ * `POST /auth/logout` - which must stay reachable BECAUSE this gate is up, not
+ * despite it. Teaching the shared authentication middleware an exemption list
+ * for one business policy would mean every future protected route inherits
+ * that list's correctness by accident, and a route added to `auth.ts` later
+ * gets silently exempted (or silently gated) depending on whether its path
+ * happens to match a hardcoded pattern nobody reads at the call site.
+ *
+ * Mounted explicitly instead, on the routes/routers that should be gated:
+ *   - `router.use('/admin', requireAuth, requirePasswordCurrent, requireAdmin)`
+ *     and the equivalent for `/tenant` gate the WHOLE router - no partial
+ *     exemptions apply to either, so one line covers it.
+ *   - `auth.ts` mounts it on `PATCH /auth/me` only, individually, right beside
+ *     `requireAuth` on that one route - so reading the router tells you
+ *     exactly which of its own routes are gated without checking a separate
+ *     list. `GET /auth/me`, `POST /auth/change-password` and
+ *     `POST /auth/logout` do NOT carry it, which is what makes them the
+ *     escape hatch B-63 asks for.
+ *
+ * Must run after `requireAuth` - it reads `req.user`, which `requireAuth` sets.
+ */
+export const requirePasswordCurrent: RequestHandler = (req, _res, next) => {
+  if (req.user?.mustChangePassword) {
+    next(ApiError.passwordChangeRequired());
+    return;
+  }
+  next();
 };
 
 /**

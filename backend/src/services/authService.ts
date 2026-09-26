@@ -197,7 +197,16 @@ async function registerFailedAttempt(row: CredentialRow): Promise<void> {
   );
 }
 
-export function issueToken(user: AuthUser): string {
+/**
+ * Everything `issueToken` actually reads off an `AuthUser`. Kept separate so
+ * `changeOwnPassword` - which never loads `fullName`, `accountStatus` or
+ * `mustChangePassword` - can mint a fresh token without a second profile read
+ * for fields the token does not carry anyway. A full `AuthUser` still
+ * satisfies this structurally, so `login()` and `register()` are unchanged.
+ */
+export type TokenSubject = Pick<AuthUser, 'profileId' | 'email' | 'role'>;
+
+export function issueToken(user: TokenSubject): string {
   const payload: JwtPayload = {
     sub: user.profileId,
     email: user.email,
@@ -233,13 +242,30 @@ export function verifyToken(token: string): JwtPayload {
  * Called on every authenticated request so that deactivating a tenant
  * (BR-025) or changing a role revokes access immediately, rather than when the
  * JWT happens to expire.
+ *
+ * `tokenIssuedAt` is the JWT's own `iat` claim (seconds since epoch,
+ * `jsonwebtoken` adds it automatically - `JwtPayload` does not declare it, but
+ * every real token carries it). B-64 decision 3: a password change ends the
+ * account's OTHER sessions, and a 7-day stateless JWT has no server-side
+ * revocation list to check instead - the profile's own `password_changed_at`
+ * IS the revocation list, one row deep. A token issued strictly before that
+ * timestamp belonged to a session that predates the change and is refused;
+ * `changeOwnPassword` mints a fresh token for the device that just changed it,
+ * so that one device is never locked out by its own action.
  */
-export async function resolveAuthUser(profileId: string): Promise<AuthUser> {
+export async function resolveAuthUser(
+  profileId: string,
+  tokenIssuedAt?: number
+): Promise<AuthUser> {
   const { data, error } = await db
     .from('profiles')
-    .select('id, email, full_name, role, account_status, must_change_password')
+    .select('id, email, full_name, role, account_status, must_change_password, password_changed_at')
     .eq('id', profileId)
-    .maybeSingle<Omit<CredentialRow, 'password_hash' | 'failed_login_count' | 'locked_until'>>();
+    .maybeSingle<
+      Omit<CredentialRow, 'password_hash' | 'failed_login_count' | 'locked_until'> & {
+        password_changed_at: string | null;
+      }
+    >();
 
   if (error) {
     throw ApiError.internal(`Profile lookup failed: ${error.message}`);
@@ -249,6 +275,18 @@ export async function resolveAuthUser(profileId: string): Promise<AuthUser> {
   }
   if (data.account_status !== 'active') {
     throw ApiError.accountInactive();
+  }
+
+  // See the function comment: a token older than the account's last password
+  // change belongs to a session that change was meant to end. `password_changed_at`
+  // is NULL for every account that has never changed its password since migration
+  // 001 added the column (or since 048, for a tenant still on its onboarding
+  // one-time password) - nothing to compare against, so nothing is rejected.
+  if (data.password_changed_at && typeof tokenIssuedAt === 'number') {
+    const changedAtEpochSeconds = Math.floor(new Date(data.password_changed_at).getTime() / 1000);
+    if (tokenIssuedAt < changedAtEpochSeconds) {
+      throw ApiError.sessionSuperseded();
+    }
   }
 
   return {
@@ -338,12 +376,12 @@ export async function changeOwnPassword(
   profileId: string,
   currentPassword: string,
   newPassword: string
-): Promise<void> {
+): Promise<{ token: string }> {
   const { data, error } = await db
     .from('profiles')
-    .select('id, password_hash')
+    .select('id, password_hash, email, role')
     .eq('id', profileId)
-    .maybeSingle<{ id: string; password_hash: string | null }>();
+    .maybeSingle<{ id: string; password_hash: string | null; email: string | null; role: StoredRole }>();
 
   if (error) throw ApiError.internal(error.message);
   if (!data?.password_hash) throw ApiError.invalidCredentials();
@@ -375,6 +413,19 @@ export async function changeOwnPassword(
     .eq('id', profileId);
 
   if (updateError) throw ApiError.internal(updateError.message);
+
+  /**
+   * B-64 decision 3: a password change ends every OTHER session. `resolveAuthUser`
+   * now refuses any token whose `iat` predates the `password_changed_at` just
+   * written above - which would include the token THIS request came in on,
+   * mid-request, the very next time this device calls anything. So a fresh one
+   * is minted here, for this device only, and handed back in the response.
+   * `ChangePasswordModal.vue` (frontend, already pushed in 3fc5993) reads
+   * `data.token` and stores it when present - see the contract note there.
+   */
+  return {
+    token: issueToken({ profileId: data.id, email: data.email, role: data.role }),
+  };
 }
 
 /** Best-effort login audit; never blocks or fails the login itself. */
