@@ -33,6 +33,21 @@ thing did not work" is not.
 
 ## Open
 
+### B-79 — delete the demo profile Mark Cruz (057) · **written and tested, NOT applied**
+
+- **Sean's decision, 2026-09-26,** after `DIAGNOSTIC_profiles_not_current.sql` showed Mark Cruz as
+  the only account that is not a current tenant: no tenancy, receipt or repair; 902 audit rows.
+  He showed under Tenants, "Moved out", as a former tenant who never lived here.
+- **The trade:** as in 053, his 902 audit rows stay with the actor blanked (NULL); the audit
+  constraint is loosened for that one statement and restored before it commits.
+- **Guards:** only that id, name, inactive tenant, with no tenancy or receipt; stops if anything
+  other than his audit rows and notifications names him; one DO block, so it runs in the editor.
+- **Proved:** `database/test-057-mark-cruz.mjs`, run the way the editor runs it: 12 of 12,
+  including stopping on another reference and on an unexpected profile, and running twice.
+- **What Sean needs to do:** `npm run backup`, then run `057_delete_demo_profile_mark_cruz.sql`
+  in the SQL editor. Then `DIAGNOSTIC_profiles_not_current.sql` should return no rows.
+- **Raised:** 2026-09-26 by Claude
+
 ### B-78 — remove all test data (055) and correct INV#5182 (056) · **DONE 2026-09-26, both applied by Sean**
 
 - **Applied and checked on the live database, 2026-09-26:** payments 0 (all 20 were tests),
