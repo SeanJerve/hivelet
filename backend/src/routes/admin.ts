@@ -2171,7 +2171,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const raw = String(req.query.category ?? 'business');
     const category: AuditCategory =
-      raw === 'auth' || raw === 'all' || raw === 'business' ? raw : 'business';
+      raw === 'auth' || raw === 'all' || raw === 'business' || raw === 'export' ? raw : 'business';
     const limit = Number(req.query.limit ?? 500);
 
     const { workbook, rowCount } = await buildAuditTrailWorkbook(category, limit);

@@ -410,24 +410,21 @@ const isExporting = ref(false);
 /**
  * The trail the workbook endpoint will actually build for this chip.
  *
- * It knows `business`, `auth` and `all`, and builds anything else as
- * `business` (`backend/src/routes/admin.ts`, `/admin/reports/audit.xlsx`). The
- * chip's own key was sent as the scope, so on "Downloads" the file arrived
- * named `hivelet-audit-export.xlsx` holding changes to the records, not
- * downloads (B-61). The name now says what is inside it.
+ * `backend/src/services/auditTrailExport.ts` now knows `business`, `auth`,
+ * `export` and `all` (B-64: it used to know only the first three, and built
+ * anything else - including 'export' - as `business`, so the Downloads chip's
+ * file arrived holding changes to the records, not downloads). The chip's own
+ * key is the scope now, for real, on every tab.
  */
 const workbookCategory = computed(() =>
-  categoryFilter.value === 'auth' || categoryFilter.value === 'all' ? categoryFilter.value : 'business'
-);
-
-/** The button says so when the file is not the list on screen. */
-const exportButtonLabel = computed(() =>
-  categoryFilter.value === 'export' ? 'Download changes for Excel' : 'Download for Excel'
+  categoryFilter.value === 'auth' || categoryFilter.value === 'all' || categoryFilter.value === 'export'
+    ? categoryFilter.value
+    : 'business'
 );
 
 async function exportAuditTrail() {
   if (isExporting.value) return;
-  if (filteredLogs.value.length === 0 && categoryFilter.value !== 'export') {
+  if (filteredLogs.value.length === 0) {
     showToast('warning', 'Nothing to export', 'No entry is listed to export.');
     return;
   }
@@ -461,14 +458,13 @@ async function exportAuditTrail() {
           type="button"
           class="pill-btn-brand"
           :disabled="isExporting"
-          :title="categoryFilter === 'export' ? 'The workbook holds changes to the records. It cannot list downloads yet.' : undefined"
           @click="exportAuditTrail"
         >
           <FileSpreadsheet
             :class="['size-4', isExporting && 'animate-pulse']"
             aria-hidden="true"
           />
-          <span>{{ isExporting ? 'Building the file' : exportButtonLabel }}</span>
+          <span>{{ isExporting ? 'Building the file' : 'Download for Excel' }}</span>
         </button>
       </div>
     </div>

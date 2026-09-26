@@ -27,8 +27,8 @@ import { ApiError } from '../utils/ApiError.js';
 const INK = 'FF1F2430';
 const RULE = 'FFD8DCE3';
 
-/** The same three the screen offers, applied by the database before the limit. */
-export type AuditCategory = 'business' | 'auth' | 'all';
+/** The same four the screen offers, applied by the database before the limit. */
+export type AuditCategory = 'business' | 'auth' | 'export' | 'all';
 
 /**
  * Authentication events, by action prefix.
@@ -74,8 +74,18 @@ export async function buildAuditTrailWorkbook(
 
   // Applied by the database, before the limit. It has to be: the newest rows are
   // overwhelmingly AUTH_*, so a filter applied after the limit returns nothing.
-  if (category === 'business') query = query.not('action', 'like', `${AUTH_PREFIX}%`);
+  //
+  // 'business' excludes LEDGER_EXPORT the same way the on-screen list endpoint
+  // does (admin.ts's GET /admin/audit-logs) - a download is a read, not a change,
+  // and the two views disagreeing on that would make the Downloads chip's count
+  // and this workbook's contents tell two different stories (B-64: this endpoint
+  // had no 'export' category at all, so requesting it silently built 'business'
+  // instead - the workbook named "downloads" held changes to the records).
+  if (category === 'business') {
+    query = query.not('action', 'like', `${AUTH_PREFIX}%`).neq('action', 'LEDGER_EXPORT');
+  }
   if (category === 'auth') query = query.like('action', `${AUTH_PREFIX}%`);
+  if (category === 'export') query = query.eq('action', 'LEDGER_EXPORT');
 
   const { data, error } = await query;
   if (error) throw ApiError.internal(error.message);
