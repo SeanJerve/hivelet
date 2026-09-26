@@ -291,19 +291,22 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
 - **Fix:** standing counts from the start of the tenant's continuous stay: the current tenancy
   and every earlier one that ran into it with no gap (an end on or after the day before the next
   began). A tenant who left and came back later still starts fresh.
-- **Status:** see the fix log below.
+- **Status:** **FIXED** in `5acef2c`.
 
 ## Low severity, recorded and left
 
-- **The merchant account check passes an empty value.** `adyenWebhookHandler.ts` refuses a
+- ~~**The merchant account check passes an empty value.**~~ **FIXED** in `45ef05e`
+  (`check:adyen` fails without it). `adyenWebhookHandler.ts` refuses a
   notification for another merchant account only when `merchantAccountCode` is present. The field
   is HMAC-signed, so an empty one cannot be forged; it can only come from Adyen. Worth tightening
   if the webhook is ever shared.
-- **The verification queue dates a GCash payment in the viewer's time zone.**
+- ~~**The verification queue dates a GCash payment in the viewer's time zone.**~~ **FIXED** in
+  `3b2358c`.
   `IncomeCollectionsView.vue` formats `paid_at` with no `timeZone`, the B-59 display shape. A
   payment at 07:00 Manila shows the day before to a browser in the Americas. Display only; the
   ledger row is dated in Manila (`propertyParts`).
-- **A hardcoded phone number on the no-gateway cashier page.** `routes/public.ts` prints
+- ~~**A hardcoded phone number on the no-gateway cashier page.**~~ **FIXED** in `c8187a0`
+  (now 0900 000 0000). It is still in the git history, which is not rewritten here. `routes/public.ts` prints
   "Auto-fill Tenant Phone: 0906 354 9001". The page returns 404 whenever the gateway is
   configured, so production never serves it. If that number belongs to a real person, it should
   not be in the repository.
@@ -353,6 +356,7 @@ These were read for the defect classes in the brief and nothing survived:
 | F8 | Ledger lists paged on a date alone | `7aa28ec` | `check:writes` gains a rule: failed on these 4 reads before, passes after, fails again with one tiebreak removed; request checked as `order=expense_date.desc,id.asc` |
 | F9 | A moved receipt keeps the old tenant | `2d236ef` | `node backend/scripts/check-income-edit.mjs` drives the real edit handler, database stubbed: 3 of 7 failed before, all pass after |
 | F10 | Old-period receipts credited to the current tenant | `02fb01a` | The same script drives the real create handler: 4 of 15 failed on the previous route, 15 of 15 pass |
+| F11 | A room move wipes arrears from standing | `5acef2c` | `node backend/scripts/check-standing-move.mjs` drives the real `readStanding`, database stubbed: 3 of 5 failed before, 5 of 5 pass |
 | F2 | A void leaves the bill Paid | `e2c2a27` | Migration 054 run unchanged in PGlite: 14 of 14; the route's void checks: 5 failed before, 23 of 23 pass. **054 not applied** |
 | F7 | A skipped month reads as paid | `4bda6b5` | Decided: a read-only report, not auto-billing. SQL checked in PGlite against fixtures |
 
