@@ -276,6 +276,23 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   ```
 - **Status:** **FIXED** in `02fb01a`.
 
+## F11. Moving a tenant to another unit wipes their arrears from what they are shown
+
+- **Where:** `backend/src/services/standingService.ts` `readStanding`, which passes the ACTIVE
+  tenancy's `start_date` as `tenancyStart`; `computeStanding` never counts a period before it.
+  A room move (`PATCH /admin/tenants/:profileId`) ends the old tenancy and starts a new one
+  dated today.
+- **What breaks:** everything owed from before the move day disappears from the portal's Amount
+  due and from what the checkout will bill, although the tenant never left the property.
+- **Trigger:** a tenant paid through 31 August and owes September. On 26 September she moves
+  them from 2A to 2B. Their standing now starts on 26 September: 1 to 25 September is no longer
+  owed anywhere the system looks.
+- **Severity:** medium. Room moves are rare, but each one can erase up to a month's rent.
+- **Fix:** standing counts from the start of the tenant's continuous stay: the current tenancy
+  and every earlier one that ran into it with no gap (an end on or after the day before the next
+  began). A tenant who left and came back later still starts fresh.
+- **Status:** see the fix log below.
+
 ## Low severity, recorded and left
 
 - **The merchant account check passes an empty value.** `adyenWebhookHandler.ts` refuses a
