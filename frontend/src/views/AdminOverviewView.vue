@@ -33,6 +33,7 @@ import {
 } from '@/lib/systemState';
 import { CLUSTERS, peso } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
+import { pickedYear } from '@/lib/yearScope';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -126,27 +127,44 @@ const availableHistoricalYears = computed(() => {
 });
 
 function syncFromRoute() {
-  const qYear = route.query.archiveYear as string | undefined;
-  if (qYear && availableHistoricalYears.value.includes(qYear)) {
+  const qYear = route.query.archiveYear;
+  if (typeof qYear === 'string' && qYear) pickedYear.value = qYear;
+  if (typeof qYear === 'string' && availableHistoricalYears.value.includes(qYear)) {
     isHistoricalMode.value = true;
     selectedArchiveYear.value = qYear;
   } else {
     isHistoricalMode.value = false;
+    if (!qYear) followPickedYear();
   }
 }
 
 watch(() => route.query.archiveYear, syncFromRoute);
+
+/**
+ * Opens the archive for a past year picked here or on a ledger. This year,
+ * "All years", or a year with no records leaves the live year showing. Runs
+ * again when the first load settles, since the past years come from records
+ * that may still be loading. The route check stops it writing `?archiveYear=`
+ * onto another page's address mid-navigation.
+ */
+function followPickedYear() {
+  const year = pickedYear.value;
+  if (route.name !== 'AdminOverview' || isHistoricalMode.value || !year) return;
+  if (availableHistoricalYears.value.includes(year)) enterHistoricalMode(year);
+}
 
 // The switch used to show a 180 ms skeleton although every figure was already in
 // memory: a loading state with nothing loading. It is instant now.
 function enterHistoricalMode(year: string) {
   selectedArchiveYear.value = year;
   isHistoricalMode.value = true;
+  pickedYear.value = year;
   router.replace({ query: { ...route.query, archiveYear: year } });
 }
 
 function exitHistoricalMode() {
   isHistoricalMode.value = false;
+  pickedYear.value = String(CURRENT_YEAR);
   const nextQuery = { ...route.query };
   delete nextQuery.archiveYear;
   router.replace({ query: nextQuery });
@@ -221,6 +239,10 @@ async function refreshAllData() {
     isInitialLoading.value = false;
   }
 }
+
+watch(isInitialLoading, (loading) => {
+  if (!loading) followPickedYear();
+});
 
 onMounted(() => {
   syncFromRoute();

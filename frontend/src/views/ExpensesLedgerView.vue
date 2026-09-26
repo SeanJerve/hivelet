@@ -2,12 +2,13 @@
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { propertyToday } from '@/lib/propertyDate';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { downloadReport } from '@/lib/downloadReport';
+import { pickedYear } from '@/lib/yearScope';
 import { Plus, Search, X, Loader2, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -190,6 +191,19 @@ const yearOptions = computed(() =>
     label: y === 'All' ? 'All years' : y,
   }))
 );
+
+// The year picked on another money page, as on the income screen (`followPickedYear` there).
+function followPickedYear() {
+  const year = pickedYear.value;
+  if (year && yearsList.value.includes(year)) filterYear.value = year;
+}
+followPickedYear();
+watch(isLoading, (loading) => {
+  if (!loading) followPickedYear();
+});
+watch(filterYear, (year) => {
+  pickedYear.value = year;
+}, { flush: 'sync' });
 
 // New Expense Form Entries (At least one default entry)
 // The property's today, not UTC's - see lib/propertyDate.

@@ -2,7 +2,7 @@
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { periodEnd, propertyToday } from '@/lib/propertyDate';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
   incomeRecords, 
@@ -20,6 +20,7 @@ import {
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { downloadReport } from '@/lib/downloadReport';
+import { pickedYear } from '@/lib/yearScope';
 import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -132,6 +133,24 @@ const yearOptions = computed(() =>
     label: y === 'All' ? 'All years' : y,
   }))
 );
+
+/**
+ * Starts on the year picked on the Overview or the other ledger, when this
+ * ledger lists it, and reports her own pick back. Tried again once the records
+ * load, since the list is built from them; a pick she makes meanwhile has
+ * already become `pickedYear`, so it is repeated, not overridden.
+ */
+function followPickedYear() {
+  const year = pickedYear.value;
+  if (year && yearsList.value.includes(year)) filterYear.value = year;
+}
+followPickedYear();
+watch(isLoading, (loading) => {
+  if (!loading) followPickedYear();
+});
+watch(filterYear, (year) => {
+  pickedYear.value = year;
+}, { flush: 'sync' });
 
 function formatDateForDisplay(dStr: string): string {
   const d = new Date(dStr);
