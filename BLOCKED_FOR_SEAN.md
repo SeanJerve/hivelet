@@ -2656,35 +2656,72 @@ these three indistinguishable from the real residents.*
 > records are kept on servers in Seoul, South Korea, outside the Philippines. **Still open:** the
 > API host's region belongs in the same bullet once it is chosen (the frontend goes on Vercel).
 
-### B-61 — unfixed findings from the 2026-09-24 frontend hardening pass
+### B-61 — findings from the 2026-09-24 frontend hardening pass — **largely stale as of 2026-09-26, see below**
 
-- **Blocked on:** session time. Five agents found these on 2026-09-24 in a harness that runs the
-  real app against mocked API replies. They were stopped before fixing them. Every item below was
-  reproduced in that harness. None of them has been fixed yet.
-- **Fix first (live data):** `TenantManagementView.saveEdit` always sends `roomNumber`, even when
-  the unit did not change. The PATCH in `backend/src/routes/admin.ts` then closes the tenancy and
-  opens a new one dated today, which shifts that resident's move-in and anniversary dates and every
-  rent period after them. Send `roomNumber` only when it changed, and check the live tenancies for
-  any row that was reopened by an edit. That second part is a read-only SQL query, and any repair
-  is a migration.
-- **Admin:**
-  - `AdminEditUnitModal` has rent `step="100"`, so unit 1D (₱7,250) cannot be saved. Use `step="any"`.
+> **This register was understating, not overstating — the dangerous direction (docs/13_AUDIT_JUDGEMENT_LOG.md
+> §2, sixth sweep).** Re-checked 2026-09-26 against current code, starting with the item marked
+> "Fix first." **8 of 8 items spot-checked were already fixed**, none of them crossed off here.
+> Read the whole list as suspect, not as a live queue, until the remaining items are re-verified
+> (in progress — see the note at the bottom).
+>
+> **Confirmed fixed, with evidence:**
+> - **The "Fix first (live data)" bug** — `TenantManagementView.saveEdit` now sends `roomNumber`
+>   only when `unitChanged` (frontend, with an inline comment naming commit `3927acb`), and
+>   `PATCH /admin/tenants/:profileId` independently re-derives `unitChanged` server-side by
+>   comparing the submitted value against the tenant's actual active assignment (admin.ts
+>   ~line 1123, comment cites B-61 directly) — so a stale/malicious client payload can't reopen a
+>   tenancy either. **Live data checked (read-only):** joined `room_assignments` for any tenant/room
+>   pair where an old assignment's `end_date` exactly matches a newer one's `start_date` for the
+>   same room, restricted to `is_active = true`. **Zero rows.** The one historical near-match
+>   (Mark Cruz, 1A, closed 2026-08-25) is `is_active = false` and is the already-documented B-57/58
+>   bulk-import artifact, not this bug. Nothing to migrate.
+> - `AdminEditUnitModal` rent field is `step="any"` (was `step="100"`), with a comment naming the fix.
+> - The audit "Downloads" chip already reads "Downloads", not "export" (`AuditLogsView.vue:239`).
+> - Maintenance quick-actions read a `savedStatus` ref confirmed from the database, not the
+>   optimistic form state — a failed Mark Resolved no longer announces "Ticket Resolved"
+>   (`MaintenanceDispatchView.vue:253-261`, comment cites B-61 directly).
+> - Income's Reject button sets `rejectTarget`, which gates a `ConfirmDialog` before
+>   `verifyPayment(id, 'Rejected')` runs (`IncomeCollectionsView.vue:1318`, `:2047`) — no longer runs
+>   with no confirmation.
+> - `index.css`'s `.press`/`.press-plate` selectors are already combined (`.press,\n.press-plate {`,
+>   line 1717) with a comment explaining the history of the stray selector.
+> - `PublicGuestView`'s `cheapestRent` already returns `null` until `unitsReady.value` is true
+>   (line 205-206), comment cites B-61 and the exact ₱4,500-vs-₱5,000 symptom directly.
+> - `WsModal` already restores focus to `previouslyFocused` on close and has a working focus trap
+>   (tab-cycle logic present, lines ~106-151, 243) — the "drops focus to the page body" complaint
+>   does not reproduce; not independently checked for the "pulls up the phone keyboard on open"
+>   half of that same bullet.
+>
+> **Not yet re-verified** (do not assume either way): the Expenses double-record-on-partial-failure
+> claim, the Income edit form's Unit field, the move-in form's default unit and deposit
+> pre-fill, Maintenance's double-send on Enter, the Enquiries empty-state wording, the 1904px
+> residents-table width, the mobile sidebar's focus trap, Notifications' failed-load state and
+> button size, PillSelect's option height, Toasts' live-region/reduced-motion behaviour,
+> `AppHeader`'s `min-h-11`/`aria-expanded`, everything under **Resident portal**, and **Legal
+> pages**. A background agent was set to re-check and fix what's safe (frontend-only,
+> no live-data risk) in the same session that wrote this correction — if you're reading this
+> before that lands, treat the list below as it originally stood.
+>
+> **Original entry kept below for the parts not yet re-verified.**
+
+- **Admin, not yet re-verified:**
   - Expenses: the confirm dialog uses a red "Delete entry" button to record entries, and says
     "these 1 expense entries".
   - Expenses: after a partial save failure the saved entries stay in the form, and Save records
     them twice.
-  - Income: Reject runs with no confirmation, and the panel says "Loading the verification queue"
-    while a verify is saving. The edit form's Unit field shows "3D" instead of the listed option.
-  - `peso()` rounds centavos away: ₱4,955.50 shows as ₱4,956.
+  - Income: the panel says "Loading the verification queue" while a verify is saving. The edit
+    form's Unit field shows "3D" instead of the listed option.
+  - `peso()` rounds centavos away: ₱4,955.50 shows as ₱4,956. (The function itself defaults to 0
+    decimals by design — `decimals = 0` — so this is a specific call site that should pass `2` and
+    doesn't; not yet located.)
   - Overview "Try again" shows ₱0 tiles while it reloads.
   - The move-in form defaults to 1A, which is occupied, with a ₱0 deposit. Converting an enquiry
     fills the deposit from stale built-in rates.
-  - Maintenance: a failed save still says "Ticket Resolved". Enter in the reply box can double-send.
+  - Maintenance: Enter in the reply box can double-send.
   - Enquiries: the empty state says "Nothing matches what you have typed" when nothing was typed.
-  - The audit "Downloads" chip is named "export", but its workbook holds business events.
   - At 1904px the residents table is 1,468px wide, with a 509px name column. The workspace may want
     a max-width again (App.vue).
-- **Resident portal:**
+- **Resident portal, not yet re-verified:**
   - "Settled" says the next rent is due one cycle late, and can show a date in the past.
   - The Pay button still shows while a payment waits for verification, and opening it gets a 409.
   - Closing the payment modal drops focus to the page body.
@@ -2694,20 +2731,16 @@ these three indistinguishable from the real residents.*
   - Profile: a failed load shows a blank form that says "Everything here is saved", with no retry.
   - ChangePasswordModal shows raw 5xx text, and a 422 does not say which field is wrong.
   - `lib/api.ts`: the network-error message tells residents to "Check that the API is running".
-- **Shared:**
+- **Shared, not yet re-verified:**
   - The mobile sidebar has no focus trap and does not close on Escape.
   - Notifications: a failed load reads "Nothing here" (`notificationsStore.ts` needs a failure
     flag), and its buttons are 28px.
-  - WsModal focuses the first input on open, which pulls up the phone keyboard. It still vanishes
-    on close; it needs a leaving copy, because a `<Transition>` cannot run there.
+  - WsModal focuses the first input on open, which pulls up the phone keyboard (the leaving-copy /
+    dropped-focus half of this bullet is fixed, see above).
   - PillSelect options are 34px tall and cut off at 320px.
   - Toasts: each item is its own live region, and under reduced motion they lose their fade.
-  - `index.css`: a stray `.press,` on the `.row-action` rule makes `.press` animate opacity only.
-    Move `.press` to the `.press-plate` selector.
   - `AppHeader.vue`: the wordmark and nav links need `min-h-11`, and the menu button needs
     `aria-expanded`.
-  - `PublicGuestView`: `cheapestRent` should return null until the live listing loads. While
-    loading, the FAQ quotes the fallback ₱4,500.
 - **Legal pages, still to add:** privacy and terms links on LoginView (under the "Accounts are
   created" note), a privacy link on TenantProfileView, and `/terms#payments` on
   TenantPaymentsView. The router's `scrollBehavior` should honour `to.hash`.
@@ -2716,7 +2749,8 @@ these three indistinguishable from the real residents.*
   logged as an `audit_logs` row on 2026-09-24. Nothing else was written. Leave the rows; the log
   is append-only.
 - **How to know it worked:** each item is re-measured in the browser, and `check:all` stays 20/20.
-- **Raised:** 2026-09-24 by Claude, frontend hardening pass
+- **Raised:** 2026-09-24 by Claude, frontend hardening pass. **Corrected 2026-09-26 by Claude**,
+  audit-continuation session.
 
 ### B-62 — three frontend changes the deployment needs
 
