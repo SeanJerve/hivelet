@@ -298,6 +298,10 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   the old and the new code both credit a new receipt for those months to the current tenant.
   F10 cannot improve units whose history was never recorded; it does not make them worse.
 
+  **Result on the live data, 2026-09-26: no rows.** Run read-only by Sean after `f96967a`. On
+  today's data the corrected rule credits every 2026 receipt exactly as the old code did; it
+  only acts on a clean re-let, and there is none on record yet.
+
   Checked in PGlite against the 1a shape and a clean re-let: 1a stays with the current tenant,
   and only a genuine mismatch is listed.
 - **Status:** **FIXED** in `02fb01a`.
