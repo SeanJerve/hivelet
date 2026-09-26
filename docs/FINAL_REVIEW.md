@@ -100,6 +100,30 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   use, and chart rent + water. No API, calculation or wording change.
 - **Status:** see the fix log below.
 
+## F4. A refund Adyen refused is announced to the owner as a refund that happened
+
+- **Where:** `backend/src/services/adyenWebhookHandler.ts`, the non-AUTHORISATION branch of
+  `applyNotificationItem`. The `REVERSAL_EVENTS` message is chosen by `eventCode` alone; `success`
+  is computed and never consulted for it.
+- **What breaks:** for a modification event, Adyen's `success` says whether it happened. A
+  `REFUND` with `success: "false"` means the refund request was refused and the money is still in
+  the owner's account. The handler sends the same High-priority notification either way: "Adyen
+  reports that this payment has been refunded to the payer ... void the payment here if the money
+  really has gone back." The same holds for `CANCEL_OR_REFUND` and `CANCELLATION`.
+- **Trigger:** she refunds a mistaken GCash payment from the Adyen Customer Area and Adyen
+  refuses it (for example the payment is too old for the method, or the balance is short). The
+  notification reads `eventCode: REFUND, success: "false"`. She is told the payer has been paid
+  back, voids a payment she still holds, and the tenant's rent disappears from her ledger. Nothing
+  tells her the refund needs retrying.
+- **Also:** `CAPTURE_FAILED`, `EXPIRE` and `TECHNICAL_CANCEL` are missing from the map, so they
+  are audited and answered silently. Each means an authorisation that is sitting in her
+  verification queue as "Pending Verification" will never become money. Verifying it books rent
+  that never arrived.
+- **Severity:** high. The wrong instruction, on the screen she acts from, about real money.
+- **Fix:** when `success` is false on a modification event, say plainly that it did NOT happen
+  and that nothing needs voiding; add the three missing events.
+- **Status:** see the fix log below.
+
 ---
 
 ## Fix log
