@@ -189,6 +189,29 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
 
 ---
 
+## F8. Money going out and the Overview page the ledgers on a date alone, so a row can be counted twice or not at all
+
+- **Where:** `backend/src/routes/admin.ts`, `GET /admin/expense-entries` (ordered by
+  `expense_date` only) and `GET /admin/income-records` (ordered by `date_paid` only). Both read
+  in 1,000-row pages with `.range()`. Also `notificationService.getNotifications`
+  (`created_at` only) and the income export (`month, date_paid, invoice_number`, not unique).
+- **What breaks:** PostgreSQL gives no fixed order among rows that tie on the sort key, and
+  each page is a separate query. A receipt dated the same day as the thousandth row can come
+  back on both pages, or on neither. The browser sums whatever arrives, so the Overview, Money
+  going out and Money coming in can be off by whole entries, differently on each load. The PostgreSQL
+  manual says so directly: without an ORDER BY that fixes the order, LIMIT and OFFSET "will
+  give inconsistent results".
+- **This is live for expenses today.** The frontend asks for `/admin/expense-entries` with no
+  year, and 2025 alone holds 837 entries (`expenseReportExport.ts` says so), so the expense list
+  is already more than one page. Income is 937 rows and passes 1,000 at about 33 rows a month,
+  around November.
+- **Already known in one place:** `expenseReportExport.ts` added `.order('id')` for exactly this
+  reason, with a comment saying so. The list endpoints the screens use never got it.
+- **Severity:** high. The totals the owner reads and presents can silently be wrong.
+- **Fix:** end every paged ordering on `id`, and teach `check:writes` to refuse a `.range()`
+  read whose ordering does not end on a unique key.
+- **Status:** see the fix log below.
+
 ## Low severity, recorded and left
 
 - **The merchant account check passes an empty value.** `adyenWebhookHandler.ts` refuses a
