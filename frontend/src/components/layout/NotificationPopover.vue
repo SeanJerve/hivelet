@@ -72,8 +72,8 @@ watch(
 const ALL_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'unread', label: 'Unread' },
-  { key: 'payments', label: 'Billing' },
-  { key: 'maintenance', label: 'Maintenance' },
+  { key: 'payments', label: 'Payments' },
+  { key: 'maintenance', label: 'Repairs' },
   { key: 'inquiries', label: 'Inquiries' },
 ] as const;
 
@@ -81,6 +81,15 @@ const ALL_FILTERS = [
 const FILTERS = computed(() =>
   isAdmin.value ? ALL_FILTERS : ALL_FILTERS.filter((f) => f.key !== 'inquiries')
 );
+
+// The page names the owner reads everywhere else; the stored types stay as they are.
+const TYPE_WORDS: Record<string, string> = {
+  Payment: 'Payment',
+  Billing: 'Bill',
+  Maintenance: 'Repair',
+  Inquiry: 'Inquiry',
+  Chat: 'Message',
+};
 
 function getIconForType(type: string) {
   switch (type) {
@@ -448,7 +457,7 @@ onUnmounted(() => {
                   Needs someone now
                 </StatusPill>
                 <StatusPill v-else-if="item.priority === 'High'" tone="verify">Soon</StatusPill>
-                <span class="text-xs font-medium text-ink-faint">{{ item.type }}</span>
+                <span v-if="TYPE_WORDS[item.type]" class="text-xs font-medium text-ink-faint">{{ TYPE_WORDS[item.type] }}</span>
                 <span v-if="!item.is_read" class="text-xs font-semibold text-brand">Unread</span>
               </span>
             </span>

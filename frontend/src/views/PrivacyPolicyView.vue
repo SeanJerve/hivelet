@@ -106,7 +106,7 @@ const sections = Object.values(S);
       <h2 :id="S.collected.id" tabindex="-1">{{ S.collected.title }}</h2>
       <p>Only what running the boarding house needs. What that is depends on how you use the site.</p>
 
-      <h3>If you register your interest</h3>
+      <h3>If you send an inquiry</h3>
       <p>
         The inquiry form asks for your name, email address, phone number and your question. It
         has no field for anything else. The system also notes when the inquiry arrived, and the
