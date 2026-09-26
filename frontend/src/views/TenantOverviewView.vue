@@ -89,6 +89,8 @@ const tenantData = ref({
   /** The last day the recorded payments cover, and the first day they do not. */
   paidThroughDisplay: '',
   unbilledFromDisplay: '',
+  /** The dates the open bill is for, shown under its due date. */
+  billPeriodDisplay: '',
   /** `amount_pending` on the bill shown: money sent that she has not verified. */
   activeBillPending: 0,
   /** `amount_paid` on the bill shown, so a partly paid bill's balance adds up on screen. */
@@ -371,6 +373,7 @@ async function fetchTenantData() {
       ? formatDateOnly(standing.paidThrough, longDate)
       : '';
     tenantData.value.unbilledFromDisplay = '';
+    tenantData.value.billPeriodDisplay = '';
     tenantData.value.verifiedAt = '';
     tenantData.value.activeBillPaid = 0;
     owedSummary.value = '';
@@ -390,6 +393,10 @@ async function fetchTenantData() {
       tenantData.value.nextDueDateDisplay = '';
       tenantData.value.activeBillPending = Number(unpaidBill.amount_pending) || 0;
       tenantData.value.activeBillPaid = Number(unpaidBill.amount_paid) || 0;
+      if (unpaidBill.billing_period_start && unpaidBill.billing_period_end) {
+        tenantData.value.billPeriodDisplay =
+          `${shortDate(unpaidBill.billing_period_start)} to ${shortDate(unpaidBill.billing_period_end, true)}`;
+      }
     } else if (standing && standing.owedPeriods.length > 0) {
       // Owed, but no bill raised yet. The checkout raises the OLDEST owed period.
       const first = standing.owedPeriods[0]!;
@@ -595,9 +602,15 @@ const statusTone = computed(() => {
             -->
             <p class="text-4xl leading-none font-semibold tabular tracking-tight sm:text-5xl break-all">{{ peso(tenantData.totalAmountDue, 2) }}</p>
             <p v-if="tenantData.dueDate" class="mt-3 text-sm text-on-brand-soft">Due {{ tenantData.dueDate }}</p>
+            <!-- Which dates this pays for, in the words the Payments list uses. -->
+            <p v-if="tenantData.billPeriodDisplay" class="mt-1 text-sm text-on-brand-soft">Rent for {{ tenantData.billPeriodDisplay }}</p>
             <p v-if="owedSummary" class="mt-3 text-sm leading-6 text-on-brand-soft">{{ owedSummary }}</p>
           </div>
-          <div class="flex flex-col items-start gap-2">
+          <!-- `mt-auto`: at the foot of the tile, level with Request a repair
+               beside it. The row is as tall as the Current bill tile, and the
+               button used to sit under the figure with a band of empty green
+               below it. -->
+          <div class="mt-auto flex flex-col items-start gap-2">
             <!-- See `paymentAwaitingVerification`: the button is not offered
                  when the checkout would refuse it. -->
             <p v-if="paymentAwaitingVerification" class="text-sm leading-6 text-on-brand">
@@ -844,7 +857,9 @@ const statusTone = computed(() => {
           @retry="fetchTenantData"
         />
         <template v-else>
-          <div class="relative h-40 overflow-hidden rounded-2xl">
+          <!-- A photo earns the height. Without one the box only repeats the
+               unit number already in the title, so it is kept short. -->
+          <div :class="['relative overflow-hidden rounded-2xl', tenantData.photoUrl ? 'h-40' : 'h-24']">
             <!-- Fades in on load rather than popping in once the network answers.
                  The box already holds its full height, so nothing shifts while
                  the image is still transparent - it just sits on the tile's own

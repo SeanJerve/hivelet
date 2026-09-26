@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
+import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { Inbox, Phone, Mail, Send, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -123,9 +124,17 @@ async function fetchInquiries() {
 
 onMounted(async () => {
   await fetchInquiries();
-  if (inquiries.length > 0) {
+  // Only when nothing is chosen yet: a notification may already have opened one.
+  if (!activeInquiryId.value && inquiries.length > 0) {
     activeInquiryId.value = inquiries[0].id;
   }
+});
+
+/** An enquiry named by its notification (`?inquiry=<id>`) opens on its thread. */
+useOpenFromQuery('inquiry', async (id) => {
+  if (!inquiries.some((i) => i.id === id)) await fetchInquiriesState();
+  if (inquiries.some((i) => i.id === id)) await selectInquiry(id);
+  else if (!inquiriesFetchFailed.value) showToast('info', 'Not found', 'That enquiry is no longer in the list.');
 });
 
 const filteredInquiries = computed(() => {

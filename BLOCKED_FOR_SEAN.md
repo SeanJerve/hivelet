@@ -95,8 +95,9 @@ thing did not work" is not.
   there, and the tenant saw "Not accepted, the bill it was for is still owed". One earlier
   attempt that day, `SRXVZDJ7B2GLGB75` at 18:00, is listed as Error, before the change took hold.
 - **Found on the way:** the resident's screen said "Could not confirm your payment here" after
-  that successful payment. Fixed as `docs/FINAL_REVIEW.md` F12. **Next GCash test payment:**
-  it should end on "Payment received"; reject it in the queue afterwards, as before.
+  that successful payment. Fixed as `docs/FINAL_REVIEW.md` F12, and confirmed live after
+  the PR #4 deploy: the next GCash test payment (₱8,200.00) ended on "Payment received". Both
+  test payments are to be rejected in the queue; they are Adyen test money against real bills.
 - The record below is kept as it was written.
 
 

@@ -14,6 +14,7 @@ import {
   type MaintenanceTicket
 } from '@/lib/systemState';
 import { api } from '@/lib/api';
+import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { 
   Plus, 
   Search, 
@@ -118,6 +119,17 @@ async function fetchTickets() {
 
 onMounted(() => {
   fetchTickets();
+});
+
+/** A ticket named by its notification (`?ticket=<id>`) opens on its own dialog. */
+useOpenFromQuery('ticket', async (id) => {
+  let t = maintenanceTickets.find((item) => item.id === id);
+  if (!t) {
+    await fetchMaintenanceTickets();
+    t = maintenanceTickets.find((item) => item.id === id);
+  }
+  if (t) openEditModal(t);
+  else if (!maintenanceTicketsFetchFailed.value) showToast('info', 'Not found', 'That ticket is no longer on the board.');
 });
 
 const PRIORITY_RANK: Record<string, number> = {

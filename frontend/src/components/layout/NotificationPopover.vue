@@ -27,6 +27,7 @@ import {
   type NotificationItem,
 } from '@/lib/notificationsStore';
 import { isAdmin } from '@/lib/authStore';
+import { notificationTarget } from '@/lib/openFromQuery';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import {
@@ -146,23 +147,10 @@ async function handleNotificationClick(item: NotificationItem) {
   await markAsRead(item.id);
   isPopoverOpen.value = false;
 
-  if (isAdmin.value) {
-    if (item.type === 'Payment' || item.type === 'Billing') {
-      router.push('/admin/income?tab=verify');
-    } else if (item.type === 'Maintenance') {
-      router.push('/admin/tickets');
-    } else if (item.type === 'Inquiry') {
-      router.push('/admin/inquiries');
-    }
-  } else {
-    if (item.type === 'Payment' || item.type === 'Billing') {
-      router.push('/tenant/payments');
-    } else if (item.type === 'Maintenance') {
-      router.push('/tenant/tickets');
-    } else {
-      router.push('/tenant');
-    }
-  }
+  // The record itself when the notification names one: a payment opens with its
+  // Verify and Reject buttons, a ticket or enquiry opens on its own thread.
+  const target = notificationTarget(item, isAdmin.value);
+  if (target) router.push(target);
 }
 
 /** Where focus came from, so Escape can put it back on the bell. */

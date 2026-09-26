@@ -13,6 +13,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
+import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import {
   Send,
@@ -384,6 +385,16 @@ async function postNote() {
 
 onMounted(async () => {
   await Promise.all([fetchActiveRoom(), fetchTickets()]);
+});
+
+/** A ticket named by its notification (`?ticket=<id>`) opens on its thread. */
+useOpenFromQuery('ticket', async (id) => {
+  let t = tickets.value.find((x) => x.id === id);
+  if (!t) {
+    await fetchTickets();
+    t = tickets.value.find((x) => x.id === id);
+  }
+  if (t) openTimeline(t);
 });
 
 async function fetchActiveRoom() {
