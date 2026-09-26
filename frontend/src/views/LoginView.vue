@@ -264,20 +264,22 @@ async function handleQuickLogin(account: DemoAccount) {
                 for="login-email"
                 class="block text-xs text-ink-faint"
               >
-                Email or phone number
+                Phone number or email
               </label>
               <!--
                 Either identifier is accepted (OD-09: a tenant may have no
-                email), so this is type="text". type="email" would make the
-                browser reject a phone number before it was ever sent.
+                email, but every tenant has a phone number), so this is
+                type="text". type="email" would make the browser reject a
+                phone number before it was ever sent.
               -->
               <input
                 id="login-email"
                 v-model="email"
                 type="text"
+                inputmode="tel"
                 autocomplete="username"
                 required
-                placeholder="you@email.com or 0917-000-0000"
+                placeholder="0917-000-0000 or you@email.com"
                 class="ws-input mt-2"
               />
             </div>
