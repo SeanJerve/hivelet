@@ -1670,7 +1670,15 @@ the ₱20 charged once, or once per month?**
 - **Nothing to fix in the data.** 531 rows carry a fee and they are all hers.
 - **Raised:** 2026-09-19
 
-### B-22 — the landlady cannot log a repair she is told about in person
+### B-22 — the landlady cannot log a repair she is told about in person · **DONE 2026-09-26**
+
+- **Built:** "Log a repair" on the Repairs screen, a dialog with unit, what is wrong, category,
+  priority, who is going and what was reported, posting to `POST /admin/tickets`. Only units with
+  a tenant are offered, labelled with the tenant's name, since the server refuses an empty unit
+  (B-28, still open as a schema question). Checked in Chromium with the API answered locally: the
+  list offered 1A and 3D and not the vacant PH, the POST carried the chosen unit and fields, and
+  the board reloaded.
+
 
 - **Blocked on:** Kiel, or your say-so. The endpoint exists and works; what is missing is a form,
   and a form is design. I have not invented one.
