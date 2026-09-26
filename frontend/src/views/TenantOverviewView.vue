@@ -674,7 +674,7 @@ const statusTone = computed(() => {
                rate, not printed in the shape of a bill. -->
           <p v-if="tenantData.unitRent" class="text-sm leading-6 text-ink-soft">
             Your unit lets at
-            <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent) }}</strong>
+            <strong class="tabular font-semibold text-ink">{{ peso(tenantData.unitRent, 2) }}</strong>
             a month. A bill appears here once one is raised.
           </p>
         </div>
@@ -684,7 +684,7 @@ const statusTone = computed(() => {
               { label: 'Rent', value: tenantData.baseRent, tone: 'brand' },
               { label: 'Water', value: tenantData.waterFee, tone: 'bright' },
             ]"
-            :label="`Rent ${peso(tenantData.baseRent)} and water ${peso(tenantData.waterFee)}`"
+            :label="`Rent ${peso(tenantData.baseRent, 2)} and water ${peso(tenantData.waterFee, 2)}`"
           />
           <dl class="flex flex-col divide-y divide-line text-sm">
             <div class="flex items-baseline justify-between gap-3 py-2.5">
@@ -692,7 +692,7 @@ const statusTone = computed(() => {
                 <span aria-hidden="true" class="size-2.5 rounded-full bg-brand" />
                 Rent
               </dt>
-              <dd class="font-semibold tabular">{{ peso(tenantData.baseRent) }}</dd>
+              <dd class="font-semibold tabular">{{ peso(tenantData.baseRent, 2) }}</dd>
             </div>
             <div class="flex items-baseline justify-between gap-3 py-2.5">
               <dt>
@@ -704,7 +704,7 @@ const statusTone = computed(() => {
                   {{ tenantData.occupants }} registered {{ tenantData.occupants === 1 ? 'occupant' : 'occupants' }}
                 </span>
               </dt>
-              <dd class="font-semibold tabular">{{ peso(tenantData.waterFee) }}</dd>
+              <dd class="font-semibold tabular">{{ peso(tenantData.waterFee, 2) }}</dd>
             </div>
             <div v-if="!isSettled && tenantData.activeBillPaid > 0" class="flex items-baseline justify-between gap-3 py-2.5">
               <dt>Already paid</dt>

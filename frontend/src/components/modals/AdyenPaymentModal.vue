@@ -384,11 +384,11 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
       </div>
       <div class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">Rent</dt>
-        <dd class="tabular">{{ peso(billInfo.rent_amount) }}</dd>
+        <dd class="tabular">{{ peso(billInfo.rent_amount, 2) }}</dd>
       </div>
       <div class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">Water</dt>
-        <dd class="tabular">{{ peso(billInfo.water_amount) }}</dd>
+        <dd class="tabular">{{ peso(billInfo.water_amount, 2) }}</dd>
       </div>
       <div v-if="partiallySettled" class="flex items-baseline justify-between gap-3">
         <dt class="text-ink-soft">Already paid</dt>

@@ -690,11 +690,11 @@ function refreshAll() {
         <dl class="flex flex-col gap-1.5 text-sm text-on-brand-soft">
           <div class="flex items-baseline justify-between gap-3">
             <dt>Rent</dt>
-            <dd class="tabular text-on-brand">{{ peso(bill.rent_amount) }}</dd>
+            <dd class="tabular text-on-brand">{{ peso(bill.rent_amount, 2) }}</dd>
           </div>
           <div class="flex items-baseline justify-between gap-3">
             <dt>Water</dt>
-            <dd class="tabular text-on-brand">{{ peso(bill.water_amount) }}</dd>
+            <dd class="tabular text-on-brand">{{ peso(bill.water_amount, 2) }}</dd>
           </div>
           <div v-if="Number(bill.amount_paid) > 0" class="flex items-baseline justify-between gap-3">
             <dt>Already paid</dt>
