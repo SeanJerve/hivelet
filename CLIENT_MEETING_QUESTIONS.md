@@ -356,6 +356,18 @@ way to notice if they go out of date.
 
 ---
 
+## 3d. Rejecting a GCash payment does not give the money back · **added 2026-09-26, to tell her, not to ask**
+
+Pressing **Reject** in the verification queue means "this is not accepted into my records". The
+bill stays owed and the tenant is told. **It does not return the money.** Adyen has already
+collected it, and a refund is made from the Adyen Customer Area (Transactions, the payment,
+Refund). Until the system can do that itself, a GCash payment she rejects because it is a
+duplicate or a mistake needs that second step, or the tenant has paid and not been credited.
+
+This is a known limitation of the current version, recorded in Chapter 5 of the manuscript.
+
+---
+
 ## 4. Not for her — Sean's calls
 
 These need no client input. **Every row re-verified 2026-09-17**, because four of them had

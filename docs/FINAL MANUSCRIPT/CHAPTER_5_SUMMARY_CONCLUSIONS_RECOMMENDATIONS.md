@@ -91,8 +91,10 @@ Based on the summary and conclusions of the study, the following are recommended
 
 **For the continued development of the system**
 
-5. Offer GCash to tenants only after Adyen resolves the open support case and a complete test
-   payment has passed through to Pending Verification.
+5. Before accepting real GCash payments, move the Adyen account from test to live, which needs
+   the account's live endpoint configured. Also let the system refund a GCash payment the owner
+   rejects. In this version, rejecting a payment keeps it out of the records but does not return
+   the money, which must be refunded from the Adyen Customer Area.
 6. Move the remaining database logic out of the route files into separate service modules, which
    the system's architecture document sets as its target.
 7. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
