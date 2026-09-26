@@ -214,13 +214,21 @@ const sections = Object.values(S);
           on 2026-09-24 (the database host resolves into 2406:da12::/36, which
           AWS's ip-ranges.json lists as ap-northeast-2), then confirmed by Sean
           on the Supabase dashboard (Project Settings > General) the same day.
-          If the project ever moves, this sentence moves with it. The API host's
-          region belongs here too once it is chosen.
+          If the project ever moves, this sentence moves with it.
+
+          The website and its server run on Vercel, Function Region icn1 (Seoul),
+          read by Sean in the Vercel project settings on 2026-09-26. Every page
+          request and every form passes through it, so it is named here too.
         -->
         <li>
           <strong>Supabase</strong>, which hosts Hivelet's database. Everything described on this
           page is stored there. Those records are kept on servers in Seoul, South Korea, which is
           outside the Philippines.
+        </li>
+        <li>
+          <strong>Vercel</strong>, which runs the website and the server that handles what you
+          send it. Everything you enter passes through it on the way to the database, and it sees
+          your network address. It also runs in Seoul, South Korea, outside the Philippines.
         </li>
         <li>
           <strong>Google Fonts.</strong> The site's typefaces are loaded from Google's servers, so

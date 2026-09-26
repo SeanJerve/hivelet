@@ -1565,7 +1565,11 @@ the untested half of BR-024, and they only become testable after a person has us
   statement; once she starts using the system the ledger becomes a mix.
 - **Raised:** 2026-09-19
 
-### B-26 — five receipt numbers were mistyped, and the book says what each should be
+### B-26 — five receipt numbers were mistyped, and the book says what each should be · **CLOSED 2026-09-26: kept as written**
+
+- **Sean's decision:** historical records are not corrected; they stay the true record of what
+  was written. What must always be right is what the system itself produces.
+
 
 - **Blocked on:** her receipt book, for two of the five. The other three are as good as proven
   but still touch her records, so they wait with the rest.
@@ -1680,7 +1684,11 @@ the untested half of BR-024, and they only become testable after a person has us
   that is not in question here — only what happens the day someone means to leave it.
 - **Raised:** 2026-09-19
 
-### B-23 — no garbage fee has been recorded since July 2025 · **partly answered 2026-09-19**
+### B-23 — no garbage fee has been recorded since July 2025 · **CLOSED 2026-09-26: not pursued**
+
+- **Sean's decision:** left alone. The fee is entered by hand when charged (BR-037); the system
+  never adds it. Also closes B-76's side question about garbage inside her Remitted column.
+
 
 - **Answered by Sean:** the rule follows her, not the other way round. BR-037 has been
   corrected to say **PHP 20 per unit per month**, which is what her ledger has always shown.
@@ -2907,7 +2915,12 @@ these three indistinguishable from the real residents.*
   rather than ₱0.00 with the backend stopped
 - **Raised:** 2026-09-17
 
-### B-60 — the privacy policy cannot say where the database is stored
+### B-60 — the privacy policy cannot say where the database is stored · **DONE 2026-09-26**
+
+- **Closed:** Sean read Vercel's Function Region as `icn1` (Seoul). `/privacy` now names Vercel
+  beside Supabase: it runs the website and server, sees network addresses, and is in Seoul,
+  outside the Philippines, like the database.
+
 
 - **Blocked on:** the Supabase project's region, and where the production site will be hosted
 - **What I was doing:** rebuilding `/privacy` against the RA 10173 notice elements (2026-09-24)
