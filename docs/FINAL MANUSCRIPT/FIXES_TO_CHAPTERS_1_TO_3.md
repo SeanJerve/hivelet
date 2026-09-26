@@ -84,7 +84,7 @@ version (15) was wrong: the live database is **PostgreSQL 17.6**, read with `sel
 > tenants do not rate Security or Maintainability, and only technical evaluators rate
 > Maintainability, since it requires reviewing the source code and documentation. Responses are
 > measured using the 5-point Likert scale in Table 4, and mean scores are interpreted using the
-> ranges in Table 12.
+> ranges in Table 13.
 
 ## C. Numbering, cross-references and typos
 
@@ -114,7 +114,7 @@ is to apply Word heading styles to every heading and insert an automatic table o
 - **Abstract and Acknowledgement** are both listed on page vii. The Acknowledgement page does not
   exist yet, and the Abstract page is blank.
 - **List of Tables:** "Table 2. Hardware Requirements" is titled "Workstation Hardware
-  Specifications" in the body, and Tables 5 to 10 are template entries. Replace with Tables 5 to 24
+  Specifications" in the body, and Tables 5 to 10 are template entries. Replace with Tables 5 to 25
   from Chapter 4.
 - **List of Figures:** add Figures 4 to 8 from Chapter 4.
 - **Appendices:** Appendix J shows page "10"; Appendix L still says "<System Name>"; the TOC calls
