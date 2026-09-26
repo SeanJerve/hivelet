@@ -230,5 +230,55 @@ check('89 days late is still a delivery delay, and trusted',
   et(new Date(NOW - 89 * 24 * HOUR).toISOString()).fromGateway, true);
 check('a fallback never claims to come from the gateway', et(undefined).fromGateway, false);
 
+/**
+ * A CHECKOUT SESSION MUST NOT OUTLIVE THE HOLD THAT STOPS A SECOND ONE.
+ *
+ * The tenant checkout refuses a second session on a bill for CHECKOUT_HOLD_MS
+ * after the first opens (migration 051). Adyen keeps a session payable for an
+ * hour unless told otherwise, and the Drop-in stays mounted until the dialog is
+ * closed - so without `expiresAt` a tab left open past the hold could take a
+ * second full payment after a second session was opened and paid (FINAL_REVIEW
+ * F1). Checked against the request body itself: `fetch` is replaced, so nothing
+ * leaves this machine, and the environment values below are placeholders that
+ * only make `isLiveConfigured()` true.
+ */
+Object.assign(process.env, {
+  JWT_SECRET: process.env.JWT_SECRET || 'check-adyen-placeholder-secret-0123456789abcdef',
+  SUPABASE_URL: process.env.SUPABASE_URL || 'https://placeholder.invalid',
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder',
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'placeholder',
+  ADYEN_API_KEY: 'check-adyen-api-key',
+  ADYEN_MERCHANT_ACCOUNT: 'CheckAdyenMerchant',
+  ADYEN_CLIENT_KEY: 'test_checkadyenclientkey',
+  ADYEN_HMAC_KEY: KEY,
+  ADYEN_ENVIRONMENT: 'TEST',
+});
+const svc = await import('../dist/services/adyenService.js');
+const realFetch = globalThis.fetch;
+let sentBody = null;
+globalThis.fetch = async (_url, init) => {
+  sentBody = JSON.parse(String(init?.body ?? '{}'));
+  return new Response(JSON.stringify({ id: 'CS_CHECK', sessionData: 'opaque' }), { status: 201 });
+};
+const opened = Date.now();
+try {
+  await svc.adyenService.createCheckoutSession(
+    '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000002', 6900
+  );
+} finally {
+  globalThis.fetch = realFetch;
+}
+const HOLD_MS = svc.CHECKOUT_HOLD_MS ?? 15 * 60 * 1000;
+const expiresMs = Date.parse(sentBody?.expiresAt ?? '');
+check('the session request carries an expiresAt', Number.isFinite(expiresMs), true);
+check('the session expires before the checkout hold lapses',
+  Number.isFinite(expiresMs) && expiresMs <= opened + HOLD_MS, true);
+check('but leaves the tenant at least ten minutes to pay',
+  Number.isFinite(expiresMs) && expiresMs - opened >= 10 * 60 * 1000, true);
+check('the amount still goes out in centavos', sentBody?.amount, { currency: 'PHP', value: 690000 });
+const tenantRouteSource = readFileSync(new URL('../src/routes/tenant.ts', import.meta.url), 'utf8');
+check('the tenant route takes the hold from adyenService rather than its own copy',
+  /CHECKOUT_HOLD_MS\s*=/.test(tenantRouteSource), false);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

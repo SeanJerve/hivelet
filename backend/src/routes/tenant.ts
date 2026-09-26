@@ -29,7 +29,7 @@ import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { computeBillAmounts, billPeriodFor, isOverdue, toCentavos, billAlreadyRaised }
   from '../services/billingService.js';
 import { readStanding } from '../services/standingService.js';
-import { adyenService } from '../services/adyenService.js';
+import { adyenService, CHECKOUT_HOLD_MS } from '../services/adyenService.js';
 import { notificationService } from '../services/notificationService.js';
 import { config } from '../config/env.js';
 
@@ -246,8 +246,11 @@ async function pendingOnBill(billId: string): Promise<number> {
  * One conditional UPDATE is the claim, so two taps at once cannot both win.
  * Before 051 is applied the column does not exist; the guard then logs and
  * steps aside rather than taking checkout down with it.
+ *
+ * `CHECKOUT_HOLD_MS` lives in adyenService, because the Adyen session is set to
+ * expire inside it: a session that outlived the hold could still be paid from a
+ * tab left open after a second one had been opened and paid.
  */
-const CHECKOUT_HOLD_MS = 15 * 60 * 1000;
 let warnedCheckoutColumnMissing = false;
 
 function checkoutColumnMissing(err: { code?: string; message?: string }): boolean {
