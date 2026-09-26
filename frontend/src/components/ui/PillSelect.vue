@@ -424,7 +424,10 @@ onBeforeUnmount(() => {
                 : index === activeIndex
                   ? 'bg-brand-soft/40 text-brand'
                   : 'text-ink hover:bg-brand-soft/40 hover:text-brand',
-              index === activeIndex && 'ring-2 ring-brand',
+              // `ring-inset`: an outer ring is a box-shadow outside the button,
+              // and the `overflow-y-auto` list around it cut the ring's sides
+              // off - the active option read as a broken outline (2026-09-26).
+              index === activeIndex && 'ring-2 ring-inset ring-brand',
             ]"
             @click="selectOption(opt.value)"
           >
