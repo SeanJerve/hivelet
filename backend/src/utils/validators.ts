@@ -22,6 +22,7 @@
  * property (`'Infinity'::numeric >= 0` is also true). `.finite()` rejects both.
  */
 import { z } from 'zod';
+import { ApiError } from './ApiError.js';
 
 /**
  * A monetary amount. Finite, not negative, at most two decimal places, and
@@ -58,6 +59,45 @@ export const isoDate = z
 
 /** A UUID, for path and body identifiers. */
 export const uuid = z.string().uuid('must be a UUID');
+
+/**
+ * A whole number arriving as a query string - `?year=`, `?limit=`, `?offset=`,
+ * `?month=` - which `Number(req.query.x)` has never guarded against anywhere
+ * in this codebase (B-63's "query numbers" input-validation item). The same
+ * NaN-sorting defect `money`'s own docstring above describes for a request
+ * body applies here too: a non-numeric query value becomes `NaN`, and `NaN`
+ * reaching a Supabase `.eq()`/`.limit()`/`.range()` either throws a raw
+ * Postgres error (a 500 leaking an internal message, for what is usually a
+ * typo'd URL) or - for a bound like `Math.min(NaN, 500)`, which is `NaN`,
+ * not `500` - silently drops the clamp it looks like it applies.
+ *
+ * Returns `undefined` when the param was not supplied at all, so a call site
+ * can still `?? theRealDefault` exactly as it already does. Throws
+ * `ApiError.validation` when the param WAS supplied but is not a whole number
+ * in range, rather than silently substituting a default for it - matching
+ * this project's posture elsewhere (`requireUuidParam`, `money`): a value the
+ * caller actually sent and got wrong is worth a clear answer, not a guess.
+ */
+export function queryInt(
+  raw: unknown,
+  opts: { fieldName: string; min?: number; max?: number }
+): number | undefined {
+  if (raw === undefined) return undefined;
+  const parsed = z.coerce
+    .number({ invalid_type_error: `${opts.fieldName} must be a number` })
+    .int(`${opts.fieldName} must be a whole number`)
+    .min(opts.min ?? Number.MIN_SAFE_INTEGER, `${opts.fieldName} is too small`)
+    .max(opts.max ?? Number.MAX_SAFE_INTEGER, `${opts.fieldName} is too large`)
+    .safeParse(raw);
+
+  if (!parsed.success) {
+    throw ApiError.validation(
+      `Invalid ${opts.fieldName}.`,
+      { [opts.fieldName]: parsed.error.issues.map((i) => i.message) }
+    );
+  }
+  return parsed.data;
+}
 
 /** Free text with a sane ceiling, trimmed. Rejects an all-whitespace value. */
 export const shortText = (max = 255) =>

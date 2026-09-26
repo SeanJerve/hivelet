@@ -35,7 +35,7 @@ import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthly
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
 import { buildAuditTrailWorkbook, type AuditCategory } from '../services/auditTrailExport.js';
-import { money, occupantCount, isoDate, shortText, unitCode, uuid } from '../utils/validators.js';
+import { money, occupantCount, isoDate, shortText, unitCode, uuid, queryInt } from '../utils/validators.js';
 
 const router = Router();
 
@@ -2096,7 +2096,7 @@ router.get(
   '/admin/reports/income.xlsx',
   requirePermission(PERMISSIONS.INCOME_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = Number(req.query.year ?? propertyParts(Date.now()).year);
+    const year = queryInt(req.query.year, { fieldName: 'year', min: 2000, max: 2100 }) ?? propertyParts(Date.now()).year;
 
     const workbook = await buildIncomeReportWorkbook(year);
 
@@ -2134,7 +2134,7 @@ router.get(
   '/admin/reports/expenses.xlsx',
   requirePermission(PERMISSIONS.EXPENSE_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = Number(req.query.year ?? propertyParts(Date.now()).year);
+    const year = queryInt(req.query.year, { fieldName: 'year', min: 2000, max: 2100 }) ?? propertyParts(Date.now()).year;
 
     const workbook = await buildExpenseReportWorkbook(year);
 
@@ -2203,8 +2203,8 @@ router.get(
   '/admin/income-records',
   requirePermission(PERMISSIONS.INCOME_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = req.query.year ? Number(req.query.year) : undefined;
-    const month = req.query.month ? Number(req.query.month) : undefined;
+    const year = queryInt(req.query.year, { fieldName: 'year', min: 2000, max: 2100 });
+    const month = queryInt(req.query.month, { fieldName: 'month', min: 1, max: 12 });
 
     let allData: any[] = [];
     let from = 0;
@@ -3279,7 +3279,7 @@ router.get(
   '/admin/expense-entries',
   requirePermission(PERMISSIONS.EXPENSE_LEDGER_READ),
   asyncHandler(async (req, res) => {
-    const year = req.query.year ? Number(req.query.year) : undefined;
+    const year = queryInt(req.query.year, { fieldName: 'year', min: 2000, max: 2100 });
 
     let allData: any[] = [];
     let from = 0;
@@ -4226,7 +4226,7 @@ router.get(
   '/admin/audit-logs',
   requirePermission(PERMISSIONS.AUDIT_READ),
   asyncHandler(async (req, res) => {
-    const limit = Math.min(Number(req.query.limit ?? 100), 500);
+    const limit = queryInt(req.query.limit, { fieldName: 'limit', min: 1, max: 500 }) ?? 100;
 
     /**
      * `category` filters BEFORE the row limit, which is the whole point.
@@ -4322,8 +4322,8 @@ router.get(
     const isReadParam = req.query.is_read;
     const isRead = isReadParam !== undefined ? isReadParam === 'true' : undefined;
     const type = typeof req.query.type === 'string' ? req.query.type : undefined;
-    const limit = Math.min(Number(req.query.limit ?? 50), 100);
-    const offset = Number(req.query.offset ?? 0);
+    const limit = queryInt(req.query.limit, { fieldName: 'limit', min: 1, max: 100 }) ?? 50;
+    const offset = queryInt(req.query.offset, { fieldName: 'offset', min: 0 }) ?? 0;
 
     const result = await notificationService.getNotifications(req.user!.profileId, {
       isRead,

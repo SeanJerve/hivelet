@@ -23,6 +23,7 @@ import { PERMISSIONS } from '../config/rbac.js';
 import { resolveTenantScope, isEmptyScope, assertRoomInScope } from '../services/scopeService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
+import { queryInt } from '../utils/validators.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
 import { computeBillAmounts, billPeriodFor, isOverdue, toCentavos, billAlreadyRaised }
@@ -722,8 +723,8 @@ router.get(
     const isReadParam = req.query.is_read;
     const isRead = isReadParam !== undefined ? isReadParam === 'true' : undefined;
     const type = typeof req.query.type === 'string' ? req.query.type : undefined;
-    const limit = Math.min(Number(req.query.limit ?? 50), 100);
-    const offset = Number(req.query.offset ?? 0);
+    const limit = queryInt(req.query.limit, { fieldName: 'limit', min: 1, max: 100 }) ?? 50;
+    const offset = queryInt(req.query.offset, { fieldName: 'offset', min: 0 }) ?? 0;
 
     const result = await notificationService.getNotifications(req.user!.profileId, {
       isRead,
