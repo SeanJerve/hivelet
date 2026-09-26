@@ -61,7 +61,7 @@ A Node.js process running Express in TypeScript. This tier terminates every requ
 
 ### Tier 3 — Domain Service Layer (Modular Monolith)
 
-Domain logic organized by business capability inside a single deployable process. **This tier is partially realized.** Five services exist; eight are the target of a mechanical extraction scheduled for Phase 3. The table below is the authoritative status register, and no planned service may be described elsewhere as though it exists.
+Domain logic organized by business capability inside a single deployable process. **This tier is partially realized.** **Corrected — this table contradicted D-1, D-2 and D-4 of §6 in this same document, which already cite both as implemented and closed.** `billingService.ts` and `settingsService.ts` exist, are imported by route handlers (`billingService` at `backend/src/routes/admin.ts:33`, `backend/src/routes/tenant.ts:28`, `backend/src/services/adyenService.ts:47`; `settingsService` at `backend/src/routes/public.ts:23` and consumed internally by `billingService.ts`) and are no longer planned. Seven services exist; six are the target of a mechanical extraction scheduled for Phase 3. The table below is the authoritative status register, and no planned service may be described elsewhere as though it exists.
 
 | Service | Responsibility | Status |
 | :--- | :--- | :--- |
@@ -70,12 +70,12 @@ Domain logic organized by business capability inside a single deployable process
 | `authService.ts` | Credential verification, token issue, session lifecycle | **Implemented** (388 lines) |
 | `notificationService.ts` | In-app notification fan-out | **Implemented** (197 lines) |
 | `scopeService.ts` | Row-scope resolution for self-scoped roles | **Implemented** (64 lines) |
-| `billingService.ts` | Bill generation, water derivation, due-date and grace computation | Planned (Phase 3) |
+| `billingService.ts` | Bill generation, water derivation, due-date and grace computation | **Implemented** — see D-2, D-4 |
+| `settingsService.ts` | Reads of `system_settings` parameters (cached) | **Implemented** — see D-1 |
 | `paymentService.ts` | Cash settlement, verification queue, gateway dispatch | Planned (Phase 3) |
 | `occupancyService.ts` | Unit catalog, assignment lifecycle, occupant headcount | Planned (Phase 3) |
 | `ticketService.ts` | Maintenance ticket lifecycle and triage | Planned (Phase 3) |
 | `inquiryService.ts` | Inquiry intake and conversion to tenancy | Planned (Phase 3) |
-| `settingsService.ts` | Reads and writes of `system_settings` parameters | Planned (Phase 3) |
 | `expenseService.ts` | Expense entry and cluster allocation | Planned (Phase 3) |
 | `financialReportService.ts` | Income-versus-expense aggregation | Planned (Phase 3) |
 

@@ -53,6 +53,25 @@
 > is worth taking seriously even though this particular register has aged: the expense
 > Property Area picker omitted **Penthouse**, making penthouse costs unallocatable
 > (`430d4e1`).
+>
+> **Re-sampled 2026-09-26, eleven days on — the warning above still holds, and understates it
+> for everything past §2.** Sections 3 through 7 describe the mock-`reactive()`-store era this
+> box already calls obsolete, and every claim sampled from them this pass was also stale:
+>
+> | Row | Claim | Verified 2026-09-26 |
+> | :--- | :--- | :--- |
+> | §3.1 Expense categories | "UI list is invented," codes 1-5 silently wrong | **Fixed.** `ExpensesLedgerView.vue:270` fetches `/admin/expense-categories` live; the hardcoded ten-item array is a `.catch(() => [])` fallback only, per the file's own comment at `:90-100`. |
+> | §3.5 Room status | "no way to set `Reserved`... no way to set `Under Maintenance`" | **Fixed.** `AdminEditUnitModal.vue:44-45` offers both as selectable options. |
+> | §3.6 Payment method | "UI emits `Cash`/`Online`... Maya has no enum value" | **Fixed.** `OnsitePaymentModal.vue:30-34` offers exactly `Cash`/`GCash`/`Bank Transfer` — the DB enum minus `Adyen Online`, which only the gateway can write. No `Online`, no Maya. |
+> | §3.7 Ticket status | "admin 'Close Ticket' button... collapses" Resolved and Closed | **Fixed.** `MaintenanceDispatchView.vue:48-49,66-67` list `Resolved` and `Closed` as distinct, separately selectable statuses. |
+> | §5 BR-037 | "GBG fee absent from every form" | **Fixed.** `OnsitePaymentModal.vue:51,767` has a required GBG fee input; `IncomeCollectionsView.vue` and `TenantOverviewView.vue` also carry it. (The backend side of this same fix is `9ff46e0`/`9808317`, 2026-09-17/20 — see `PHASE1_OPEN_DECISIONS_REGISTER.md` OD-02, corrected in the same pass as this file.) |
+> | §5 BR-038 | "`OnsitePaymentModal` runs the formula backwards: `rent = amount - 400`" | **Fixed.** `rentAmount` and `waterAmount` are independent fields (`OnsitePaymentModal.vue:45-50`), populated by a watcher from the room's actual price; the comments at those lines describe fixing exactly this bug, not the bug itself. |
+> | §7.1 Tenant email | "profiles.email is NOT NULL... needs your call" | **Closed**, and by a different document: `database/migrations/006_profiles_optional_login.sql` made it nullable, matching OD-09's resolution in `PHASE1_OPEN_DECISIONS_REGISTER.md` §2. |
+>
+> **None of the seven sampled this pass was still accurate.** That is a stronger result than the
+> 2026-09-15 box above found, and it means the right posture for §3 onward is not "check before
+> trusting" but "assume superseded by the live frontend and re-derive from source if a claim is
+> ever needed" — the mock-data architecture these sections describe has been fully replaced.
 
 **Scope:** every form, input, select, textarea and file picker in `website/src/`
 (the live app on port 5174), mapped against the live Supabase schema.

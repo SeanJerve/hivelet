@@ -71,15 +71,17 @@ Bicol University — College of Science — IT 124 Capstone Project 2 — **Grou
 > Counting the live rows shows it is **₱20 per unit per month**, not annual — and that it stopped
 > after June 2025. The question is rewritten below to ask the thing that actually needs answering.
 >
-> What genuinely remains for the owner: **OD-01, OD-02 (as rewritten), OD-07, OD-08, OD-10**, plus
-> the ledger items gathered in `CLIENT_MEETING_QUESTIONS.md`.
+> What genuinely remains for the owner: **OD-01, OD-02 (as rewritten), OD-08, OD-10**, plus
+> the ledger items gathered in `CLIENT_MEETING_QUESTIONS.md`. **OD-07 dropped off this list on
+> 2026-09-17** — see its row below; it stayed in this sentence after its own row was closed, which
+> the 2026-09-26 sweep corrects here.
 
 ### 1.1 Income ledger — sourced from `docs/09_MONTHLY_INCOME_REPORT.md` Section 8
 
 | ID | Item | Source | Owner | What it blocks | Gate |
 | --- | --- | --- | --- | --- | --- |
 | **OD-01** | **Income running-total scope.** The source spreadsheet's bottom-of-page total (e.g. `1,179,150`) far exceeds a single month's grand subtotal (e.g. `232,350`), implying a year-to-date running total across all months on the sheet rather than a per-month figure. Confirm whether Hivelet's report shows per-month totals only, year-to-date totals, or both. | `docs/09_MONTHLY_INCOME_REPORT.md:133` | **Client decision** — Mrs. Fe Galang Da Silva; elicited and minuted by Kiel Hedrix V. Relos (QA / Systems Analyst) | The Monthly Income Report footer layout; the Excel export required by **BR-049** / **FR-044**; the aggregate contract of the planned `financialReportService.ts`. ~~**BR-019** (Report Recalculation) cannot be specified until the totals being recalculated are defined.~~ **Withdrawn 2026-09-14** - this conflated two questions. OD-01 settles which totals the report *shows*; BR-019 asks whether a correction reaches them. It does, by construction: the database holds 0 views, 0 materialized views and no aggregate table, and every report figure is derived on read from raw rows. OD-01 still governs the report footer and the BR-049 / FR-044 Excel export, and remains open for those. | **Phase 2** |
-| **OD-02** | **GBG fee — the question was wrong, 2026-09-17.** This asked which month carries *the annual garbage fee*. **It is not annual.** Counted over the live ledger: **₱20 on every unit every month** — 357 of 366 rows in 2024, 174 across Jan–Jun 2025, every one of them exactly ₱20. The real question is that it **stopped after June 2025** and has been absent for fifteen consecutive months. Was that deliberate? | `docs/09_MONTHLY_INCOME_REPORT.md:134` | **Client decision**; modelled by Victor Noel A. Napay (Backend / Integration) | Any write to `monthly_income_records.gbg_fee` (`database/FULL_DATABASE_SCHEMA.sql:271`). The column exists and the token `gbg` appears **zero times** in `backend/src` — **BR-037** is currently *Schema only*. An anniversary-month answer additionally couples the fee to `room_assignments.anniversary_date` (`:158`) and changes the planned `billingService.ts` signature. | **Phase 3** |
+| **OD-02** | **GBG fee — the question was wrong, 2026-09-17.** This asked which month carries *the annual garbage fee*. **It is not annual.** Counted over the live ledger: **₱20 on every unit every month** — 357 of 366 rows in 2024, 174 across Jan–Jun 2025, every one of them exactly ₱20. The real question is that it **stopped after June 2025** and has been absent for fifteen consecutive months. Was that deliberate? | `docs/09_MONTHLY_INCOME_REPORT.md:134` | **Client decision**; modelled by Victor Noel A. Napay (Backend / Integration) | **Stale as of 2026-09-26 — the code-side blocker is gone.** `gbgFee` is now wired end to end: captured on the receipt form and its edit dialog (`backend/src/routes/admin.ts:2295`, `:2970`), persisted (`:2650`, `:3131`), read back on the tenant statement (`backend/src/routes/tenant.ts:425`) and totalled in the income export (`backend/src/services/incomeReportExport.ts:162`) — fixed by `9ff46e0` (2026-09-17) and `9808317` (2026-09-20), after a bug where the counter's GBG input was collected, printed on the receipt and then dropped before the INSERT. BR-037 is no longer *Schema only*. What genuinely remains is the timing question itself: the fee is entered by hand at the counter (BR-037: "the figure is hers"), not derived automatically, and the comment at `admin.ts:2277-2294` still flags OD-02 as open for exactly that reason. An anniversary-month answer would additionally couple the fee to `room_assignments.anniversary_date` (`:158`). | **Phase 3** |
 | ~~**OD-03**~~ | **Mid-cycle vacancy proration.** Confirm how Rent Amount, Water Payment and Remitted Amount are handled when a tenant vacates partway through a billing period. | `docs/09_MONTHLY_INCOME_REPORT.md:135` | **Client decision**; arithmetic owned by Sean Jerve Ll. Rebancos (System Architect) | The **BR-038** Remitted Amount formula and the **BR-035** derived half-of-rent arithmetic for a partial month. Also blocks the vacate handler (`backend/src/routes/admin.ts:671-723`), which today ends the assignment and frees the unit without generating any final or prorated ledger row. | **CLOSED 2026-09-17 — already built.** Rent is **never prorated**: a tenant leaving mid-month owes the whole month and nothing is refunded. Stated and cited at `backend/src/services/billingService.ts:80-81`, and again at `:142` for the collection window. |
 | **OD-04** | **Deposit refund or forfeiture on move-out.** Confirm whether and how a stored deposit is reconciled, refunded or forfeited when a tenant vacates. Ties directly to **BR-025** Tenant Deactivation. | `docs/09_MONTHLY_INCOME_REPORT.md:136` | **Client decision**; schema owned by John Lloyd M. Cuario (Database Administrator) | A schema gap, not just a code gap. `room_assignments.deposit_amount` (`database/FULL_DATABASE_SCHEMA.sql:159`) has no disposition column — no `deposit_refunded_amount`, no `deposit_forfeited_amount`, no settlement date. The vacate endpoint (`backend/src/routes/admin.ts:692-708`) deactivates the account and frees the unit with no deposit settlement step at all, so **BR-025** is recorded as *Partial* in the crosswalk. A refund answer requires a Phase 2 migration before any Phase 3 code. | ~~**CLOSED 2026-09-17 — already built.** The move-in sum is **advance rent, not a refundable security deposit**. Cited at `backend/src/routes/admin.ts:661`; the column is `room_assignments.deposit_amount`, `NOT NULL DEFAULT 0.00`, `CHECK (>= 0)`.~~ **REOPENED 2026-09-17 — CONTESTED. Two client answers, four days apart, and both are recorded.** **(a) 2026-09-13**, cited in code at `admin.ts:800` as *"ADVANCE RENT, not a refundable security deposit — this business collects no separate damage or security sum (OD-04, confirmed 2026-09-13)"*, and again at `:577-594` under BR-039. **(b) 2026-09-17**, relayed: *"the deposit is usually used to fix and maintain the apartment when the tenant leaves… whatever is left of that entire expenses will be refunded to the tenant"* — ₱6,500 held, ₱6,400 of repairs, ₱100 returned — and the repairs go into the expenses book **labelled as deposit-funded**, settled when the unit is ready to re-let. **Do not build from either.** One question separates them, and it is in § 1.5 below. |
 
@@ -294,16 +296,34 @@ on the Phase 1 errata sheet.
 
 ## 3. Summary
 
+> **Corrected 2026-09-26 — this table had not been updated since each item's own row was closed.**
+> The rows above for **OD-03** (closed 2026-09-17), **OD-05** (closed 2026-09-13, no longer
+> blocking as of 2026-09-14), **OD-06** (closed 2026-09-17), **OD-07** (closed 2026-09-17, dropped
+> from the client sheet) and **OD-04** (closed 2026-09-18 — "one held sum," no migration, no new
+> column, no settlement engine) each carry their own closure in full above. This table kept
+> counting all five as open regardless — exactly the failure `docs/13_AUDIT_JUDGEMENT_LOG.md`'s
+> sixth sweep found in this same file once already (`d224574`). Re-verified against current code
+> before this correction: `gbg` now appears throughout `backend/src` (OD-02, see its row), the
+> `/admin/expense-categories` route is still GET-only with no write endpoint (`backend/src/routes/admin.ts:3615-3627`,
+> confirming OD-08 is still open), and no `payment:submit:own` permission or F-12 form exists
+> anywhere in `backend/src/config/rbac.ts` or `frontend/src/` (confirming OD-10 is still open).
+
 | Gate | Count | Items |
 | --- | --- | --- |
-| **Phase 2** (schema, migration, specification) | 6 | OD-01, OD-04, OD-05, OD-06, OD-07, OD-08 |
-| **Phase 3** (service extraction and implementation) | 3 | OD-02, OD-03, OD-10 |
-| | **9** | |
+| **Phase 2** (specification) | 1 | OD-01 |
+| **Phase 2** (schema, migration, specification) | 1 | OD-08 |
+| **Phase 3** (service extraction and implementation) | 2 | OD-02, OD-10 |
+| | **4** | |
 
-**Critical path.** Three items require a database migration and therefore gate everything
-downstream of them: **OD-04** (deposit disposition columns for reconciliation on move-out),
-**OD-05** (what "Main House" covers) and **OD-07** (whether the category cumulative is stored or
-computed).
+**Nothing on the critical path requires a database migration any more.** OD-04, OD-05 and OD-07 —
+the three items this section used to name as migration-gating — are all closed and none of the
+three needed schema work in the end: OD-04 resolved to the existing `deposit_amount` column with no
+new disposition columns, OD-05 resolved to the "Main House" naming question alone (the lookup table
+and CHECK constraint it once gated already exist, via migrations `008` and `012`), and OD-07
+resolved to a computed window in `expenseReportExport.ts` rather than a stored column. What remains
+is a specification decision (**OD-01**, the report footer), an RBAC/write-endpoint decision
+(**OD-08**), and two Phase 3 policy decisions (**OD-02**, **OD-10**) — none of them gates a
+migration.
 
 > **Corrected 2026-09-14, three times over.** This paragraph said *four* items and listed
 > **OD-04** twice under two different descriptions; the summary above totalled **10** against a
@@ -316,10 +336,10 @@ computed).
 > gates is narrower - "Main House" maps to no unit cluster under **BR-032**, so the owner should
 > confirm what it covers. That constrains what **BR-041** *means*, not whether it is enforced.
 
-All nine remaining items require a decision from Mrs. Fe Galang Da Silva rather than from the
+All four remaining items require a decision from Mrs. Fe Galang Da Silva rather than from the
 development team; they should be gathered into a single client consultation rather than raised
-piecemeal. The three items closed on 2026-09-13 (**OD-11**, **OD-12** and **OD-13**) are recorded
-in Section 2.
+piecemeal. The eight items closed since (**OD-03** through **OD-07**, plus **OD-11**, **OD-12** and
+**OD-13** closed on 2026-09-13) are recorded above and in Section 2.
 
 **What this register is not.** None of the nine items above is a defect. The defects identified
 against the codebase have known remedies and are tracked elsewhere. Their status as of
