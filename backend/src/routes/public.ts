@@ -699,12 +699,12 @@ router.get(
               <div style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Enter your 11-digit mobile number</div>
               
               <button type="button" class="helper-tag" onclick="fillPhone()">
-                ✨ Auto-fill Tenant Phone: 0906 354 9001
+                ✨ Auto-fill Tenant Phone: 0900 000 0000
               </button>
 
               <div class="phone-input-group">
                 <span class="phone-prefix">+63</span>
-                <input type="tel" id="m-phone" class="phone-field" value="906 354 9001" maxlength="12">
+                <input type="tel" id="m-phone" class="phone-field" value="900 000 0000" maxlength="12">
               </div>
 
               <button type="button" class="btn-simulate-scan" onclick="goToMStep(2)">NEXT</button>
@@ -835,7 +835,7 @@ router.get(
           }
 
           function fillPhone() {
-            document.getElementById('m-phone').value = '906 354 9001';
+            document.getElementById('m-phone').value = '900 000 0000';
           }
 
           function fillOtp() {
