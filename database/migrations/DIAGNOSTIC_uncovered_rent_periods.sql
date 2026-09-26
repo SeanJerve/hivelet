@@ -2,7 +2,7 @@
 --
 -- Month-sized holes in a CURRENT tenant's paid rent periods: a stretch of 28
 -- days or more, inside the last 12 months, that no verified, unvoided receipt of
--- theirs covers, with receipts on both sides of it.
+-- theirs covers, with receipts of THEIRS on both sides of it.
 --
 -- WHY THIS EXISTS (BLOCKED_FOR_SEAN.md B-72, docs/FINAL_REVIEW.md F7)
 -- ---------------------------------------------------------------------------
@@ -59,6 +59,10 @@ JOIN rooms    rm ON rm.id = ra.room_id
 WHERE r.covered_through IS NOT NULL
   AND r.rent_period_start - r.covered_through - 1 >= 28
   AND r.rent_period_start >= current_date - 365
-  -- Only inside the current tenancy: a hole before they moved in is not theirs.
-  AND r.covered_through >= ra.start_date
+  -- No filter on the tenancy's start_date. A hole is only ever found BETWEEN two
+  -- receipts credited to the same tenant, which already shows they lived there
+  -- on both sides. And start dates are not reliable: in 1a the current tenancy
+  -- is dated 2026-07-01 though she has paid since 2024 (B-73). The first version
+  -- filtered on it and returned nothing on the live data, 2026-09-26, hiding the
+  -- holes her spreadsheet shows.
 ORDER BY rm.room_number, uncovered_from;
