@@ -1634,15 +1634,32 @@ router.get(
   '/admin/payments',
   requirePermission(PERMISSIONS.PAYMENT_READ_ALL),
   asyncHandler(async (_req, res) => {
-    const { data, error } = await db
-      .from('payments')
-      .select(
-        '*, rooms:room_id (id, room_number, cluster_code), profiles:tenant_profile_id (id, full_name, phone_number), bills:bill_id (*)'
-      )
-      .order('paid_at', { ascending: false });
+    // Paged like the income and expense lists. PostgREST caps one read at 1,000
+    // rows, and past it the Overview, the verification queue and the duplicate
+    // payment warning would all have read a silently truncated list (B-77).
+    let allData: any[] = [];
+    let from = 0;
+    const batchSize = 1000;
 
-    if (error) throw ApiError.internal(error.message);
-    res.status(200).json({ success: true, data: data ?? [] });
+    while (true) {
+      const { data, error } = await db
+        .from('payments')
+        .select(
+          '*, rooms:room_id (id, room_number, cluster_code), profiles:tenant_profile_id (id, full_name, phone_number), bills:bill_id (*)'
+        )
+        .order('paid_at', { ascending: false })
+        // Unique last key, so a page boundary cannot repeat one row and drop another (F8).
+        .order('id', { ascending: true })
+        .range(from, from + batchSize - 1);
+
+      if (error) throw ApiError.internal(error.message);
+      if (!data || data.length === 0) break;
+      allData = allData.concat(data);
+      if (data.length < batchSize) break;
+      from += batchSize;
+    }
+
+    res.status(200).json({ success: true, data: allData });
   })
 );
 
