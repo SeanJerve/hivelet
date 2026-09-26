@@ -1357,7 +1357,12 @@ the untested half of BR-024, and they only become testable after a person has us
   its own function and says what happened when it did not.
 - **Raised, fixed and corrected:** 2026-09-19 / 2026-09-20
 
-### B-42 — the audit trail's IP address is only as true as `trust proxy`
+### B-42 — the audit trail's IP address is only as true as `trust proxy` · **CLOSED 2026-09-26 by the deployment**
+
+- **Settled by Vercel.** Production runs behind exactly one proxy, Vercel's edge, which sets
+  `X-Forwarded-For` itself, and there is no direct `localhost:5000` path in production. So
+  `trust proxy = 1` is now the right setting. The column still records what the edge reported.
+
 
 - **Improved, not solved, and the difference matters** because the audit row is the *only*
   durable record for an unmatched online payment.
@@ -1455,7 +1460,7 @@ the untested half of BR-024, and they only become testable after a person has us
   figure is unchanged; it was never the number in question (B-31).
 - **Raised:** 2026-09-20
 
-### B-28 — a repair cannot be recorded for an empty unit · **DONE in code 2026-09-26, Sean: yes; 058 NOT applied**
+### B-28 — a repair cannot be recorded for an empty unit · **DONE 2026-09-26, 058 applied by Sean**
 
 - **Built:** `058_a_repair_can_be_logged_for_an_empty_unit.sql` makes
   `maintenance_tickets.tenant_profile_id` nullable (one statement). `POST /admin/tickets` files an
@@ -3060,7 +3065,14 @@ these three indistinguishable from the real residents.*
   remaining item checked against the code (one read-only SQL query for the `peso()` item), one real
   bug found and fixed, everything else confirmed already fixed and cited above.
 
-### B-62 — three frontend changes the deployment needs
+### B-62 — three frontend changes the deployment needs · **DONE / CLOSED 2026-09-26**
+
+- (1) Done: `vite.config.ts` refuses a production build without `VITE_API_BASE_URL`.
+- (3) Done: `og:image` and `og:url` are absolute on `hivelet.vercel.app`.
+- (2) Closed: it was for Cloudflare Pages. Production is Vercel, and `vercel.json` sends HSTS,
+  nosniff, frame and referrer headers and a report-only CSP allowing the Adyen Drop-in. Left
+  report-only on purpose before the defense: enforcing it untested could stop the GCash page.
+
 
 - **Blocked on:** the frontend lane (`frontend/`), and for the last item the hosting decision in
   `DEPLOYMENT_PLAN.md` § 1
