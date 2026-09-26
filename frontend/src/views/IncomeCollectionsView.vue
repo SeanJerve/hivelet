@@ -128,7 +128,7 @@ const yearsList = computed(() => {
 const yearOptions = computed(() =>
   yearsList.value.map((y) => ({
     value: y,
-    label: y === 'All' ? 'Every year' : y,
+    label: y === 'All' ? 'All years' : y,
   }))
 );
 
@@ -363,7 +363,7 @@ const rows = computed(() =>
 const clusterChips = computed(() => {
   const inScope = incomeRecords.filter(matchesExceptCluster);
   return [
-    { key: 'All', label: 'Every cluster', count: inScope.length },
+    { key: 'All', label: 'All clusters', count: inScope.length },
     ...CLUSTERS.map((c) => ({
       key: c as string,
       label: c as string,

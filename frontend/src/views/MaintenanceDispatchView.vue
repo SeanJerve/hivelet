@@ -42,7 +42,7 @@ const isLoading = ref(false);
 const isSubmitting = ref(false);
 
 const statusFilterOptions = [
-  { value: 'All', label: 'Every status' },
+  { value: 'All', label: 'All statuses' },
   { value: 'Open', label: 'To dispatch' },
   { value: 'In Progress', label: 'In progress' },
   { value: 'Resolved', label: 'Resolved' },

@@ -35,7 +35,7 @@ const selectedStatus = ref<string>('All');
 const viewMode = ref<ViewMode>('matrix');
 
 const clusterOptions = computed(() => [
-  { value: 'All', label: 'Every cluster' },
+  { value: 'All', label: 'All clusters' },
   ...CLUSTERS.map((c) => ({ value: c, label: c })),
 ]);
 
@@ -207,7 +207,7 @@ function openSpecs(u: RoomItem) {
  * the same control rather than two that can disagree.
  */
 const statusChips = computed(() => [
-  { key: 'All', label: 'Every unit', count: rooms.length },
+  { key: 'All', label: 'All units', count: rooms.length },
   // Matches `getStatusLabel` below exactly. This read 'Paid up' and 'Owing' -
   // the same payment framing that comment documents removing from the result
   // badges - so the filter menu offered words the results themselves no
@@ -512,7 +512,7 @@ const statusChips = computed(() => [
         <Search class="mx-auto size-8 text-ink-faint" aria-hidden="true" />
         <p class="mt-3 text-base font-semibold text-ink">No unit matches</p>
         <p class="mx-auto mt-1 max-w-md text-sm leading-6 text-ink-soft">
-          Clear the search, or pick “Every unit” and “Every cluster”.
+          Clear the search, or pick “All units” and “All clusters”.
         </p>
       </div>
     </div>
@@ -535,7 +535,7 @@ const statusChips = computed(() => [
       :page-size="12"
       table-from="xl"
       empty-title="No unit matches"
-      empty-note="Clear the search, or pick “Every unit” and “Every cluster”."
+      empty-note="Clear the search, or pick “All units” and “All clusters”."
     >
       <template #head>
         <tr>

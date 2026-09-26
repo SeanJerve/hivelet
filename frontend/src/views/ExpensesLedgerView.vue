@@ -177,14 +177,14 @@ const yearsList = computed(() => {
 });
 
 const expenseCategoryOptions = computed(() => [
-  { value: 'All', label: 'Every kind' },
+  { value: 'All', label: 'All kinds' },
   ...categoryOptions.value.map((c) => ({ value: c, label: c })),
 ]);
 
 const yearOptions = computed(() =>
   yearsList.value.map((y) => ({
     value: y,
-    label: y === 'All' ? 'Every year' : y,
+    label: y === 'All' ? 'All years' : y,
   }))
 );
 
