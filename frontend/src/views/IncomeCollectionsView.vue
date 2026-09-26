@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import { periodEnd, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
+import { periodEnd, propertyToday, formatDateOnly, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
+import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
@@ -66,7 +67,10 @@ interface ApiPendingPayment {
   paid_at: string;
   profiles?: { full_name: string; phone_number: string };
   rooms?: { room_number: string; cluster_code: string };
-  bills?: { rent_amount: number; water_amount: number; total_amount: number };
+  bills?: {
+    rent_amount: number; water_amount: number; total_amount: number;
+    billing_period_start?: string | null; billing_period_end?: string | null;
+  };
 }
 
 const q = ref('');
@@ -237,6 +241,57 @@ function confirmReject() {
   const p = rejectTarget.value;
   rejectTarget.value = null;
   if (p) verifyPayment(p.id, 'Rejected');
+}
+
+/**
+ * One payment, opened from its notification (`?payment=<id>`), with Verify and
+ * Reject in the dialog itself. The owner used to land on the queue and scroll
+ * for it.
+ */
+const openedPayment = ref<ApiPendingPayment | null>(null);
+
+async function openPaymentFromNotification(id: string) {
+  activeTab.value = 'verify';
+  let p = pendingPayments.value.find((x) => x.id === id);
+  if (!p) {
+    // The notification is usually newer than this page's last load.
+    await fetchPayments();
+    p = pendingPayments.value.find((x) => x.id === id);
+  }
+  if (p) {
+    openedPayment.value = p;
+  } else if (!pendingPaymentsError.value) {
+    showToast('info', 'Already done', 'That payment has already been verified or rejected.');
+  }
+  // On a failed load the queue itself says it could not be read.
+}
+
+useOpenFromQuery('payment', openPaymentFromNotification);
+
+async function verifyOpenedPayment() {
+  const p = openedPayment.value;
+  if (!p) return;
+  await verifyPayment(p.id, 'Verified');
+  // Closed only once it has left the queue; a failed save keeps it open, with its toast.
+  if (!pendingPayments.value.some((x) => x.id === p.id)) openedPayment.value = null;
+}
+
+function rejectOpenedPayment() {
+  rejectTarget.value = openedPayment.value;
+  openedPayment.value = null;
+}
+
+function billPeriodText(b: ApiPendingPayment['bills']): string {
+  if (!b?.billing_period_start || !b.billing_period_end) return '';
+  const o: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+  return `${formatDateOnly(b.billing_period_start, o)} to ${formatDateOnly(b.billing_period_end, o)}`;
+}
+
+function sentAtText(iso: string): string {
+  return new Date(iso).toLocaleString('en-PH', {
+    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+    timeZone: PROPERTY_TIMEZONE,
+  });
 }
 
 async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected') {
@@ -2049,6 +2104,69 @@ async function exportExcel() {
       @cancel="isConfirmOpen = false"
       @confirm="handleConfirmAccept"
     />
+
+    <WsModal
+      v-if="openedPayment"
+      title="Payment to verify"
+      :subtitle="`${openedPayment.profiles?.full_name || 'Name not on file'}, unit ${String(openedPayment.rooms?.room_number || '').toUpperCase() || 'not on file'}`"
+      @close="openedPayment = null"
+    >
+      <div class="flex flex-col gap-5">
+        <p class="text-4xl leading-none font-semibold tabular tracking-tight">{{ peso(openedPayment.amount, 2) }}</p>
+
+        <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+          <template v-if="billPeriodText(openedPayment.bills)">
+            <dt class="text-ink-faint">For</dt>
+            <dd>{{ billPeriodText(openedPayment.bills) }}</dd>
+          </template>
+          <template v-if="openedPayment.bills">
+            <dt class="text-ink-faint">Rent</dt>
+            <dd class="tabular">{{ peso(Number(openedPayment.bills.rent_amount) || 0, 2) }}</dd>
+            <dt class="text-ink-faint">Water</dt>
+            <dd class="tabular">{{ peso(Number(openedPayment.bills.water_amount) || 0, 2) }}</dd>
+          </template>
+          <dt class="text-ink-faint">Method</dt>
+          <dd>{{ openedPayment.payment_method }}</dd>
+          <dt class="text-ink-faint">Reference</dt>
+          <dd class="break-all">{{ openedPayment.transaction_reference || 'None recorded' }}</dd>
+          <template v-if="openedPayment.paid_at">
+            <dt class="text-ink-faint">Sent</dt>
+            <dd>{{ sentAtText(openedPayment.paid_at) }}</dd>
+          </template>
+          <template v-if="openedPayment.profiles?.phone_number">
+            <dt class="text-ink-faint">Phone</dt>
+            <dd>{{ openedPayment.profiles.phone_number }}</dd>
+          </template>
+        </dl>
+
+        <p class="text-sm leading-6 text-ink-soft">
+          Verifying marks the bill as paid and adds it to the ledger.
+        </p>
+      </div>
+
+      <template #actions>
+        <button
+          type="button"
+          class="pill-btn-danger-quiet disabled:opacity-50"
+          :disabled="verifying !== null"
+          @click="rejectOpenedPayment"
+        >
+          <X class="size-4" aria-hidden="true" />
+          Reject
+        </button>
+        <button
+          type="button"
+          class="pill-btn-brand disabled:opacity-50"
+          :disabled="verifying !== null"
+          :aria-busy="verifying?.id === openedPayment.id"
+          @click="verifyOpenedPayment"
+        >
+          <Loader2 v-if="verifying?.id === openedPayment.id" class="size-4 animate-spin" aria-hidden="true" />
+          <Check v-else class="size-4" aria-hidden="true" />
+          {{ verifying?.id === openedPayment.id ? 'Verifying…' : 'Verify payment' }}
+        </button>
+      </template>
+    </WsModal>
 
     <ConfirmDialog
       v-if="rejectTarget"
