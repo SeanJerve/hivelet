@@ -1,5 +1,7 @@
 /**
- * Verifies the Adyen webhook HMAC implementation.
+ * Verifies the Adyen webhook HMAC implementation, and two things around it that
+ * decide money: the checkout session expires inside its hold, and a gateway
+ * event is described to the owner as what actually happened (FINAL_REVIEW F1, F4).
  *
  * Run with `npm run check:adyen` from `backend/`. Builds first, touches nothing,
  * and needs no credentials.
@@ -279,6 +281,68 @@ check('the amount still goes out in centavos', sentBody?.amount, { currency: 'PH
 const tenantRouteSource = readFileSync(new URL('../src/routes/tenant.ts', import.meta.url), 'utf8');
 check('the tenant route takes the hold from adyenService rather than its own copy',
   /CHECKOUT_HOLD_MS\s*=/.test(tenantRouteSource), false);
+
+/**
+ * WHAT THE OWNER IS TOLD WHEN MONEY MOVES THE OTHER WAY - AND WHEN IT DID NOT.
+ *
+ * For a modification event Adyen's `success` says whether it happened. A REFUND
+ * with success "false" is a refund Adyen refused: the money is still hers. It
+ * was announced as "this payment has been refunded to the payer", with advice to
+ * void the payment (FINAL_REVIEW F4). Driven through the real handler: the
+ * database client and the notifier are replaced, so nothing is read or written.
+ */
+const { db: stubDb } = await import('../dist/config/db.js');
+const { notificationService: stubNotifier } = await import('../dist/services/notificationService.js');
+const { applyNotificationItem } = await import('../dist/services/adyenWebhookHandler.js');
+const recordedPayment = {
+  id: '00000000-0000-4000-8000-000000000003', amount: 6900, paid_at: '2026-09-03T02:00:00Z',
+  verification_status: 'Verified', rooms: { room_number: '2e' }, profiles: { full_name: 'Test Tenant' },
+};
+const chain = () => new Proxy(() => {}, {
+  get: (_t, prop) => prop === 'then'
+    ? (resolve) => resolve({ data: recordedPayment, error: null })
+    : () => chain(),
+  apply: () => chain(),
+});
+const realFrom = stubDb.from;
+const realNotify = stubNotifier.notify;
+let told = [];
+stubDb.from = () => chain();
+stubNotifier.notify = async (opts) => { told.push(opts); return null; };
+async function tell(eventCode, success) {
+  told = [];
+  const result = await applyNotificationItem({
+    pspReference: 'MOD123', originalReference: 'AUTH123', merchantAccountCode: 'CheckAdyenMerchant',
+    merchantReference: 'BILL-x', amount: { value: 690000, currency: 'PHP' }, eventCode, success,
+  }, null);
+  return { result, message: told[0]?.message ?? '', priority: told[0]?.priority ?? null, count: told.length };
+}
+try {
+  const refunded = await tell('REFUND', 'true');
+  check('a refund that happened is announced as one', /has been refunded to the payer/.test(refunded.message), true);
+  check('and still advises voiding the payment', /void the payment/.test(refunded.message), true);
+
+  const refused = await tell('REFUND', 'false');
+  check('a refused refund is still reported, never silent', refused.count, 1);
+  check('a refused refund is NOT announced as a refund', /has been refunded to the payer/.test(refused.message), false);
+  check('a refused refund says it did not happen', /did NOT go through/.test(refused.message), true);
+  check('and does not advise voiding a payment she still holds', /void the payment here/.test(refused.message), false);
+  check('the payment it refers to is still named', /Test Tenant \(unit 2e\)/.test(refused.message), true);
+  check('a refused refund is acknowledged, not retried', refused.result.outcome, 'ignored');
+
+  const cancelRefused = await tell('CANCEL_OR_REFUND', false);
+  check('a refused cancel-or-refund says it did not happen', /did NOT go through/.test(cancelRefused.message), true);
+
+  const captureFailed = await tell('CAPTURE_FAILED', 'true');
+  check('a failed capture is reported to the owner', captureFailed.count, 1);
+  check('a failed capture warns against verifying', /do not verify/i.test(captureFailed.message), true);
+  check('an expired authorisation is reported', (await tell('EXPIRE', 'true')).count, 1);
+  check('a technical cancel is reported', (await tell('TECHNICAL_CANCEL', 'true')).count, 1);
+  check('a routine capture still wakes nobody', (await tell('CAPTURE', 'true')).count, 0);
+} finally {
+  stubDb.from = realFrom;
+  stubNotifier.notify = realNotify;
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);
