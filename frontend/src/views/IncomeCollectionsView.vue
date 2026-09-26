@@ -457,21 +457,17 @@ const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster ===
 const totalWater = computed(() => rows.value.reduce((s, r) => s + r.water, 0));
 const totalGarbage = computed(() => rows.value.reduce((s, r) => s + r.garbage, 0));
 /**
- * The spreadsheet's own bottom line: BH rows at half their rent, every other
- * cluster at full rent, plus water throughout.
+ * BR-038, matching the generated column exactly: Rent Amount + Water Payment.
  *
- * CAREFUL - this is NOT `monthly_income_records.remitted_amount`. That column is
- * `GENERATED ALWAYS AS (rent_amount + water_payment)` per BR-038 and sums to
- * P8,086,250; this figure is P5,742,875. Two different quantities were both
- * being called "Total Remitted", one on screen and one in the database, and a
- * panelist comparing the two would have found a P2.3M discrepancy with no
- * explanation. Both are now shown, each labelled with the arithmetic it performs.
+ * The one Remitted figure on this screen, for every cluster. There used to be
+ * a second, "her spreadsheet's own bottom line", counting BH rows at HALF
+ * their rent, and the BH rows and header showed that one. Her workbook says
+ * otherwise (B-76, read 2026-09-26): Remitted is `=SUM(E5,H5:I5)`, full rent
+ * plus water plus garbage, and the BH total `=SUM(J3:J24)` adds those rows at
+ * full rent. Half rent appears only in her 50% column (`=SUM(E3*0.5)`), which
+ * is shown on its own. So the screen now agrees with the database and the
+ * Excel export. (Garbage has its own column here, as BR-038 defines it.)
  */
-const totalSpreadsheetLine = computed(() =>
-  rows.value.reduce((s, r) => s + (r.cluster === 'BH' ? (r.rent / 2) : r.rent) + r.water, 0)
-);
-
-/** BR-038, matching the generated column exactly: Rent Amount + Water Payment. */
 const totalRemitted = computed(() => rows.value.reduce((s, r) => s + r.rent + r.water, 0));
 
 /**
@@ -595,7 +591,7 @@ const clusterGroups = computed(() => {
     const gOccupants = groupRecords.reduce((sum, r) => sum + r.occupants, 0);
     const gWater = groupRecords.reduce((sum, r) => sum + r.water, 0);
     const gGarbage = groupRecords.reduce((sum, r) => sum + r.garbage, 0);
-    const gRemitted = groupRecords.reduce((sum, r) => sum + (def.hasShareColumn ? (r.rent / 2) : r.rent) + r.water, 0);
+    const gRemitted = groupRecords.reduce((sum, r) => sum + r.rent + r.water, 0);
 
     return {
       ...def,
@@ -1119,13 +1115,6 @@ async function exportExcel() {
             <dd class="tabular font-semibold text-ink">{{ peso(part.value) }}</dd>
           </div>
         </dl>
-        <!-- Her spreadsheet's own bottom line is a different sum from BR-038's
-             remitted_amount, and both were once shown under the same heading. -->
-        <p class="mt-4 border-t border-line pt-4 text-sm leading-6 text-ink-soft">
-          Her spreadsheet adds it up differently: half rent for BH, full rent for every
-          other cluster, plus water. That comes to
-          <strong class="tabular font-semibold text-ink">{{ peso(totalSpreadsheetLine) }}</strong>.
-        </p>
         </template>
       </OverviewTile>
     </div>
@@ -1548,7 +1537,7 @@ async function exportExcel() {
                 </td>
                 <td class="num">{{ peso(r.garbage, 2) }}</td>
                 <td class="num font-semibold text-brand">
-                  {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water, 2) }}
+                  {{ peso(r.rent + r.water, 2) }}
                 </td>
                 <td class="num">
                   <button
@@ -1649,7 +1638,7 @@ async function exportExcel() {
                 </div>
                 <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
                   <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-                  {{ peso(group.hasShareColumn ? r.rent / 2 + r.water : r.rent + r.water, 2) }}
+                  {{ peso(r.rent + r.water, 2) }}
                 </p>
               </div>
 
@@ -1749,7 +1738,7 @@ async function exportExcel() {
           <td class="num font-semibold text-ink">{{ peso(r.water, 2) }}</td>
           <td class="num">{{ peso(r.garbage, 2) }}</td>
           <td class="num font-semibold text-brand">
-            {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water, 2) }}
+            {{ peso(r.rent + r.water, 2) }}
           </td>
           <td class="num">
             <button
@@ -1775,30 +1764,8 @@ async function exportExcel() {
           <td class="num">{{ rows.reduce((sum, r) => sum + r.occupants, 0) }}</td>
           <td class="num">{{ peso(totalWater, 2) }}</td>
           <td class="num">{{ peso(totalGarbage, 2) }}</td>
-          <!--
-            THE COLUMN ABOVE NOW ADDS UP TO THIS.
-
-            It did not. Each Remitted cell puts a BH row at half its rent, so
-            the column sums to `totalSpreadsheetLine`; this foot printed
-            `totalRemitted`, which is BR-038's rent-plus-water over every row.
-            Both figures are correct and they are not the same quantity - one
-            is the owner's own spreadsheet bottom line, the other is what the
-            generated column in the database holds - but one sat at the foot of
-            a column of the other, about ₱2.3M apart on the full ledger, with
-            nothing saying why. Anybody adding the column by eye got a different
-            answer from the total beneath it.
-
-            Shown the way the Rent cell three columns left already does it: the
-            column's own sum first, the other figure named underneath. Nothing
-            is re-derived and no stored value changes - both computeds already
-            existed.
-          -->
-          <td class="num text-brand">
-            <span class="block">{{ peso(totalSpreadsheetLine, 2) }}</span>
-            <span class="block text-xs font-normal text-verify">
-              Rent + water: {{ peso(totalRemitted, 2) }}
-            </span>
-          </td>
+          <!-- The column's own sum: every row is rent + water (BR-038). -->
+          <td class="num text-brand">{{ peso(totalRemitted, 2) }}</td>
           <td></td>
         </tr>
       </template>
@@ -1811,12 +1778,7 @@ async function exportExcel() {
         Each figure is the same computed total the table foot prints, taken
         from the same names - nothing is re-derived here.
 
-        The headline is `totalSpreadsheetLine`, matching what the foot now
-        leads with, so the phone and the desk agree. `totalRemitted` - BR-038's
-        rent-plus-water - is named underneath it rather than dropped, for the
-        same reason it is named in the foot: both figures are real, they are
-        about ₱2.3M apart on the full ledger, and the one thing that must not
-        happen is either appearing without saying which it is.
+        The headline is `totalRemitted`, the same figure the table foot prints.
       -->
       <template #foot-card>
         <div class="flex items-start justify-between gap-3">
@@ -1829,10 +1791,7 @@ async function exportExcel() {
           </div>
           <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
             <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-            {{ peso(totalSpreadsheetLine, 2) }}
-            <span class="block text-xs font-normal text-verify">
-              Rent + water: {{ peso(totalRemitted, 2) }}
-            </span>
+            {{ peso(totalRemitted, 2) }}
           </p>
         </div>
 
@@ -1866,7 +1825,7 @@ async function exportExcel() {
           </div>
           <p class="tabular shrink-0 text-right text-base font-semibold text-brand">
             <span class="block text-xs font-normal text-ink-faint">Remitted</span>
-            {{ peso((r.cluster === 'BH' ? r.rent / 2 : r.rent) + r.water, 2) }}
+            {{ peso(r.rent + r.water, 2) }}
           </p>
         </div>
 
