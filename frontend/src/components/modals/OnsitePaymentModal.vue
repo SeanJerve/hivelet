@@ -10,13 +10,14 @@ import {
   formatUnitOccupantsSummary, 
   showToast,
   roomsFetchFailed,
-  asListedUnitCode
+  asListedUnitCode,
+  type IncomeRecord
 } from '@/lib/systemState';
 import WsModal from '@/components/ui/WsModal.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
-import { X, Check, Banknote, Loader2, ReceiptText, Users } from 'lucide-vue-next';
+import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle } from 'lucide-vue-next';
 
 const unitOptions = computed(() =>
   rooms.map((r) => ({
@@ -313,6 +314,17 @@ watch(isOnsitePaymentModalOpen, (isOpen) => {
     loadRates();
     fetchTenants();
     fetchRooms();
+    // The overlap warning below (`findOverlappingPayments`) reads this array
+    // directly rather than calling an endpoint of its own, on the reasoning
+    // that it is already loaded, unfiltered, for the administrator - see the
+    // note on that function. That reasoning only holds if the array is
+    // actually populated by the time the form is submitted; if this modal is
+    // the first admin screen touched this session (nothing else has called
+    // `fetchIncomeRecords()` yet), `incomeRecords` would still be empty and
+    // the warning would silently never fire. Asking for it here, the same way
+    // rooms and tenants already are, closes that gap rather than trusting
+    // some other view to have done it first.
+    fetchIncomeRecords();
   }
 });
 
@@ -342,6 +354,96 @@ const totalAmountReceived = computed(() => {
 const isConfirmOpen = ref(false);
 const confirmAction = ref<(() => void) | null>(null);
 
+/**
+ * Every already-recorded, non-voided payment on this unit whose (year, month)
+ * falls inside the span this receipt is about to cover. Populated right before
+ * `showConfirm` opens the dialog below, and read by the banner in it.
+ *
+ * WHY THIS EXISTS, AND WHY IT IS A WARNING AND NOT A REFUSAL
+ * -----------------------------------------------------------
+ * `POST /admin/income-records` already refuses an EXACT duplicate receipt -
+ * same room, invoice number, date, amount, year and month
+ * (docs/13_AUDIT_JUDGEMENT_LOG.md SS3.6b). That guard is deliberately narrow: it
+ * is aimed at a double-click on this same form, not at a second real payment,
+ * and the team declined to widen it into a hard constraint because the
+ * threat model is "one administrator at a counter," not a retrying webhook.
+ *
+ * It says nothing when the OR number or the amount differs but the unit and
+ * the month being paid for is the same - which is exactly the shape of typing
+ * a fresh receipt against a period that was already settled, whether that is
+ * a genuine second payment (an arrears top-up, a remaining balance) or the
+ * same visit recorded twice under two different receipt numbers by mistake.
+ * Nothing before this warned about that gap at all.
+ *
+ * SS3.1 of the same document states the house posture for exactly this shape
+ * of situation: derive or detect, warn, let the human proceed anyway, and
+ * record that they did. This follows it - it does not block the submit
+ * button and does not touch the exact-duplicate guard above, which stays
+ * exactly as narrow as it was. It only makes the confirm dialog say what it
+ * found, so a genuine second payment for the same period still goes through
+ * once the administrator has seen the warning and clicked through it.
+ */
+const overlappingPayments = ref<IncomeRecord[]>([]);
+
+/**
+ * Mirrors `monthlySpansFrom` in backend/src/services/billingService.ts closely
+ * enough for a warning: same anchor-day-and-clamp arithmetic, so "the 15th of
+ * this month" and "the 15th of next month" agree with what the server would
+ * actually write. It is not the source of truth - the server still derives the
+ * real spans on its own - this only has to be right enough to ask "does a
+ * recorded payment already exist for any of the months this receipt is about
+ * to cover."
+ */
+function monthYearSpansForWarning(
+  startIso: string,
+  monthsCovered: number
+): { year: number; month: number }[] {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startIso)) return [];
+
+  const [baseYear, baseMonthOneBased, anchorDay] = startIso.split('-').map(Number);
+  const baseMonth = baseMonthOneBased - 1;
+  const clampToMonth = (y: number, m: number, d: number) =>
+    Math.min(d, new Date(Date.UTC(y, m + 1, 0)).getUTCDate());
+
+  const count = Math.max(1, Math.floor(Number(monthsCovered) || 1));
+  const out: { year: number; month: number }[] = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const startMonth = baseMonth + i;
+    const start = new Date(Date.UTC(baseYear, startMonth, clampToMonth(baseYear, startMonth, anchorDay)));
+    out.push({ year: start.getUTCFullYear(), month: start.getUTCMonth() + 1 });
+  }
+
+  return out;
+}
+
+/**
+ * `incomeRecords` is already the full, unfiltered ledger - all rows, no
+ * per-year or per-tenant scoping (confirmed in `fetchIncomeRecords`) - and
+ * this is the admin-only on-site form, so reading it here costs nothing new
+ * and needs no endpoint of its own. Voided rows never reach it in the first
+ * place: `GET /admin/income-records` already filters `voided_at IS NULL`, so
+ * a corrected entry does not haunt this warning.
+ *
+ * Matched by room id when the row carries one (it always should - see the
+ * note on `IncomeRecord.roomId`), falling back to the unit code itself,
+ * compared case-insensitively like every other unit comparison in this file.
+ */
+function findOverlappingPayments(
+  unitCode: string,
+  roomId: string | undefined,
+  spans: { year: number; month: number }[]
+): IncomeRecord[] {
+  if (spans.length === 0) return [];
+  const wantedUnit = unitCode.toLowerCase();
+
+  return incomeRecords.filter((ir) => {
+    const sameUnit = (roomId && ir.roomId && ir.roomId === roomId) || ir.unit.toLowerCase() === wantedUnit;
+    if (!sameUnit) return false;
+    return spans.some((s) => ir.year === s.year && ir.month === s.month);
+  });
+}
+
 function showConfirm(action: () => void) {
   confirmAction.value = action;
   isConfirmOpen.value = true;
@@ -357,6 +459,7 @@ function handleConfirmAccept() {
 
 function closeModal() {
   isOnsitePaymentModalOpen.value = false;
+  overlappingPayments.value = [];
 }
 
 function triggerRecord() {
@@ -422,6 +525,13 @@ function triggerRecord() {
     showToast('error', 'Receipt number needed', 'Enter the number from the receipt you issued.');
     return;
   }
+
+  // See the docblock on `overlappingPayments` above. This does not gate the
+  // confirm dialog that follows - it only decides whether that dialog shows
+  // the warning banner, so a genuine second payment for the same period is
+  // still one click away, same as any other submission.
+  const warningSpans = monthYearSpansForWarning(dateCoveredStart.value, mCovered);
+  overlappingPayments.value = findOverlappingPayments(unitUpper, room?.id, warningSpans);
 
   showConfirm(
     async () => {
@@ -732,6 +842,36 @@ function triggerRecord() {
       size="sm"
       @close="isConfirmOpen = false"
     >
+      <!--
+        A warning, not a refusal - see the docblock on `overlappingPayments`.
+        This unit already has a non-voided ledger row for a month this receipt
+        is about to cover. That is sometimes exactly right (a remaining balance,
+        an arrears top-up) and sometimes the same visit typed in twice under a
+        different OR number - the banner names what was found and lets the
+        administrator decide, same as she already can for a water mismatch on
+        the form itself.
+      -->
+      <div
+        v-if="overlappingPayments.length > 0"
+        class="ws-reveal mb-3 flex flex-col items-start gap-2 rounded-2xl bg-verify-soft p-4 text-sm leading-6"
+        role="alert"
+      >
+        <p class="flex items-start gap-2 font-semibold text-ink">
+          <AlertTriangle class="mt-0.5 size-4 shrink-0 text-verify" aria-hidden="true" />
+          {{ selectedUnit.toUpperCase() }} already has a payment recorded for this period
+        </p>
+        <ul class="flex flex-col gap-1 text-ink">
+          <li v-for="rec in overlappingPayments" :key="rec.id">
+            {{ rec.rentFor }} — {{ peso(rec.rent, 2) }} rent, OR#{{ rec.invoice || '—' }}, paid {{ rec.datePaid }}
+          </li>
+        </ul>
+        <p class="text-ink">
+          If this is a genuine second payment for the same period — settling a remaining
+          balance, for instance — recording it below is correct. If it is the same receipt
+          entered twice, go back and check the OR number first.
+        </p>
+      </div>
+
       <dl class="flex flex-col gap-2 text-sm">
         <div class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Unit</dt>
@@ -779,7 +919,9 @@ function triggerRecord() {
 
       <template #actions>
         <button type="button" class="pill-btn" @click="isConfirmOpen = false">Go back</button>
-        <button type="button" class="pill-btn-brand" @click="handleConfirmAccept">Record it</button>
+        <button type="button" class="pill-btn-brand" @click="handleConfirmAccept">
+          {{ overlappingPayments.length > 0 ? 'Record it anyway' : 'Record it' }}
+        </button>
       </template>
     </WsModal>
 
