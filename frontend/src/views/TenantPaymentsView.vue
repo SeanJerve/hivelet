@@ -6,13 +6,12 @@
   @designRef docs/DESIGN_GUIDELINE.md
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue';
 import { api } from '@/lib/api';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
 import { CreditCard, Search, CheckCircle2, AlertTriangle, X } from 'lucide-vue-next';
-import AdyenPaymentModal from '@/components/modals/AdyenPaymentModal.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
 import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -24,6 +23,21 @@ const sortOrderOptions = [
   { value: 'latest', label: 'Newest first' },
   { value: 'oldest', label: 'Oldest first' },
 ];
+
+/**
+ * Loaded on demand, not with the page.
+ *
+ * `AdyenPaymentModal.vue` imports `@adyen/adyen-web` at its top, and that one
+ * import is the whole reason this view's own bundle chunk was ~209 KB, next
+ * to every other view's 5-40 KB. A resident opening this screen just to read
+ * their balance downloaded and parsed the entire GCash Drop-in SDK for a
+ * dialog that stays closed - v-if only skips mounting it, not bundling it.
+ * A dynamic import gives it its own chunk that only fetches the moment
+ * `selectedBillForAdyen` or `payingCurrentPeriod` actually goes true.
+ */
+const AdyenPaymentModal = defineAsyncComponent(
+  () => import('@/components/modals/AdyenPaymentModal.vue')
+);
 
 // Selected bill for the Adyen web component checkout modal
 const selectedBillForAdyen = ref<any | null>(null);
