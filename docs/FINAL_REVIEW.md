@@ -255,25 +255,43 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
 - **Fix:** the same rule as F9. The tenancy that covered the receipt's rent period pays; the
   active tenancy only when none did. The period derivation and the occupant carry-forward still
   read the active tenancy, as before.
-- **Depends on tenancy dates being right.** If a current tenancy's `start_date` is later than
-  the real move-in while the previous tenancy's `end_date` is later still, a current receipt
-  could be credited to the previous tenant. A normal move (old tenancy ends the day the new one
-  starts) is handled: the newer tenancy wins a tie. Worth running this read-only query before
-  deploying. `differ` should be 0 or explained row by row:
+- **Checked against the live data, and corrected (2026-09-26).** Sean ran the first check query
+  read-only: 6 of 44 receipts in 2026 would have been credited differently. All six were unit 1a,
+  January to July 2026, paid by Lobby Toor. In 1a the seeded demo tenancy (Mark Cruz,
+  2025-06-05 to 2026-08-25, no income rows) overlaps hers, which is dated 2026-07-01 although
+  she has paid 1a since 2024. The rule trusted dates that do not describe what happened. It now
+  gives a receipt to a past tenancy only on a clean hand-over (that tenancy ended on or before
+  the day the current one began); overlapping tenancies fall back to the current tenant, as
+  before F10. Fixed in `f96967a`, with the 1a shape added to the test. Re-run this read-only
+  query, which applies the corrected rule. **It should return no rows**, or only rows where the
+  former tenant really did pay:
 
   ```sql
-  SELECT count(*) AS rows_2026,
-         count(*) FILTER (WHERE cov.tenant_profile_id IS DISTINCT FROM mir.tenant_profile_id) AS differ
+  SELECT rm.room_number AS unit, mir.rent_period_start, mir.invoice_number,
+         pr.full_name AS credited_now, pn.full_name AS new_rule_credits
     FROM monthly_income_records mir
+    JOIN rooms rm ON rm.id = mir.room_id
+    LEFT JOIN profiles pr ON pr.id = mir.tenant_profile_id
     LEFT JOIN LATERAL (
-      SELECT ra.tenant_profile_id FROM room_assignments ra
-       WHERE ra.room_id = mir.room_id
-         AND ra.start_date <= mir.rent_period_start
+      SELECT ra.* FROM room_assignments ra
+       WHERE ra.room_id = mir.room_id AND ra.start_date <= mir.rent_period_start
          AND (ra.end_date IS NULL OR ra.end_date >= mir.rent_period_start)
        ORDER BY ra.start_date DESC LIMIT 1) cov ON true
-   WHERE mir.voided_at IS NULL AND mir.year = 2026
-     AND mir.tenant_profile_id IS NOT NULL AND cov.tenant_profile_id IS NOT NULL;
+    LEFT JOIN LATERAL (
+      SELECT ra.* FROM room_assignments ra
+       WHERE ra.room_id = mir.room_id AND ra.is_active LIMIT 1) act ON true
+    LEFT JOIN profiles pn ON pn.id = CASE
+         WHEN cov.id IS NULL THEN act.tenant_profile_id
+         WHEN act.id IS NULL OR cov.id = act.id
+           OR (cov.end_date IS NOT NULL AND cov.end_date <= act.start_date) THEN cov.tenant_profile_id
+         ELSE act.tenant_profile_id END
+   WHERE mir.voided_at IS NULL AND mir.year = 2026 AND mir.tenant_profile_id IS NOT NULL
+     AND pn.id IS DISTINCT FROM mir.tenant_profile_id
+   ORDER BY rm.room_number, mir.rent_period_start;
   ```
+
+  Checked in PGlite against the 1a shape and a clean re-let: 1a stays with the current tenant,
+  and only a genuine mismatch is listed.
 - **Status:** **FIXED** in `02fb01a`.
 
 ## F11. Moving a tenant to another unit wipes their arrears from what they are shown
@@ -355,7 +373,7 @@ These were read for the defect classes in the brief and nothing survived:
 | F6 | iPhone keypad cannot type an email | `722ebf5` | Rendered DOM: `inputmode="tel"` before, absent after. Not tried on a device |
 | F8 | Ledger lists paged on a date alone | `7aa28ec` | `check:writes` gains a rule: failed on these 4 reads before, passes after, fails again with one tiebreak removed; request checked as `order=expense_date.desc,id.asc` |
 | F9 | A moved receipt keeps the old tenant | `2d236ef` | `node backend/scripts/check-income-edit.mjs` drives the real edit handler, database stubbed: 3 of 7 failed before, all pass after |
-| F10 | Old-period receipts credited to the current tenant | `02fb01a` | The same script drives the real create handler: 4 of 15 failed on the previous route, 15 of 15 pass |
+| F10 | Old-period receipts credited to the current tenant | `02fb01a`, corrected in `f96967a` after the live check | The same script drives the real create handler: 4 of 15 failed on the previous route, 15 of 15 pass |
 | F11 | A room move wipes arrears from standing | `5acef2c` | `node backend/scripts/check-standing-move.mjs` drives the real `readStanding`, database stubbed: 3 of 5 failed before, 5 of 5 pass |
 | F2 | A void leaves the bill Paid | `e2c2a27` | Migration 054 run unchanged in PGlite: 14 of 14; the route's void checks: 5 failed before, 23 of 23 pass. **054 not applied** |
 | F7 | A skipped month reads as paid | `4bda6b5` | Decided: a read-only report, not auto-billing. SQL checked in PGlite against fixtures |

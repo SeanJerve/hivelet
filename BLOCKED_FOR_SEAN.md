@@ -33,6 +33,22 @@ thing did not work" is not.
 
 ## Open
 
+### B-73 — unit 1a's tenancy dates do not describe who lived there · data question, nothing to run
+
+- **Found:** 2026-09-26, by the read-only F10 check Sean ran (`docs/FINAL_REVIEW.md` F10).
+- **What the table says:** 1a has two tenancies that overlap. Mark Cruz, the seeded demo tenant
+  (migration 049 deactivated him; B61 names him), runs 2025-06-05 to 2026-08-25. Lobby Toor runs
+  2026-07-01 to now. Her book has Lobby Toor paying 1a since 2024 (`OR#4627`), and every 2026
+  receipt for 1a is hers.
+- **What it costs today:** nothing. The receipts are credited to her, and the F10 rule was
+  corrected (`f96967a`) so overlapping tenancies can never move a receipt to the demo profile.
+  Standing reads her paid periods, not her start date, except as a floor: a receipt of hers
+  dated before 2026-07-01 is ignored by standing, which is harmless while later ones exist.
+- **What Sean could do, only if he wants the record tidy:** a numbered migration setting Lobby
+  Toor's `start_date` to her real move-in, which only the owner knows. Not written, because the
+  date is a fact nobody here holds. The demo tenancy stays: `audit_logs` anchors it (see 052/053).
+- **Raised:** 2026-09-26 by Claude (final review)
+
 ### B-71 — voiding a GCash settlement now reverses it · **DONE in code; migration 054 written and tested, NOT applied**
 
 > **Decided and built 2026-09-26** (Sean delegated the call). A void of a GCash settlement voids
