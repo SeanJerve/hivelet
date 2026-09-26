@@ -67,7 +67,9 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   `Adyen Online` payment as reversed and sets its bill back to Due or Partially Paid from the
   remaining Verified payments. On-site receipts keep today's behaviour until the owner says what a
   void of one month of a multi-month receipt should do.
-- **Status:** OPEN. Added to `BLOCKED_FOR_SEAN.md`.
+- **Status:** **FIXED in code** in `e2c2a27`, by the proposed shape: migration 054 adds
+  `void_income_record()`, and the route calls it (falling back to the plain void until it is
+  applied). **Migration 054 is written and tested, not applied** (B-71).
 
 ## F3. Money coming in files a payment under the month it was paid; the Overview and the Excel export file it under the month it is for
 
@@ -185,7 +187,11 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   anniversaries are still placeholders, B-32). Done without measuring it against the live rows
   first, it could show tenants debts they do not have, the week of the defense. It needs a
   read-only count of how many active tenancies have a gap, and Sean's decision.
-- **Status:** OPEN. Added to `BLOCKED_FOR_SEAN.md`.
+- **Status:** **DECIDED, not auto-billed.** Measured against her source spreadsheet: her book
+  holds real month-sized holes (2026: unit 3d mid-May to mid-June, unit 2f November to February)
+  beside formatting noise, and whether each is owed is her fact. Standing is unchanged; the holes
+  go to her as a read-only list, `database/migrations/DIAGNOSTIC_uncovered_rent_periods.sql`
+  (`4bda6b5`, checked in PGlite). B-72.
 
 ---
 
@@ -330,10 +336,11 @@ These were read for the defect classes in the brief and nothing survived:
 | F8 | Ledger lists paged on a date alone | `7aa28ec` | `check:writes` gains a rule: failed on these 4 reads before, passes after, fails again with one tiebreak removed; request checked as `order=expense_date.desc,id.asc` |
 | F9 | A moved receipt keeps the old tenant | `2d236ef` | `node backend/scripts/check-income-edit.mjs` drives the real edit handler, database stubbed: 3 of 7 failed before, all pass after |
 | F10 | Old-period receipts credited to the current tenant | `02fb01a` | The same script drives the real create handler: 4 of 15 failed on the previous route, 15 of 15 pass |
-| F2 | A void leaves the bill Paid | none | OPEN, `BLOCKED_FOR_SEAN.md` |
-| F7 | A skipped month reads as paid | none | OPEN, `BLOCKED_FOR_SEAN.md` |
+| F2 | A void leaves the bill Paid | `e2c2a27` | Migration 054 run unchanged in PGlite: 14 of 14; the route's void checks: 5 failed before, 23 of 23 pass. **054 not applied** |
+| F7 | A skipped month reads as paid | `4bda6b5` | Decided: a read-only report, not auto-billing. SQL checked in PGlite against fixtures |
 
-**Nothing here changed live data or the schema, and no migration was written.** F1 changes the
+**Nothing here changed live data or the schema.** One migration was written, 054, and it is
+not applied (B-71). F1 changes the
 request sent to Adyen when a session is created: after it deploys, one real checkout is worth
 opening to confirm Adyen accepts the `expiresAt` (it is in Adyen's documented request, and a
 refusal would show as "The payment gateway did not accept this checkout").
