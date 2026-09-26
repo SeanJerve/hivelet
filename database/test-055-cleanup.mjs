@@ -80,6 +80,27 @@ async function fresh() {
 }
 const rows = async (db, q) => (await db.query(q)).rows;
 
+/**
+ * How Supabase's SQL editor ran the first 055: one statement at a time, with
+ * no temporary table surviving from one to the next. Top-level statements are
+ * split outside $$ bodies, and DISCARD TEMP runs between them.
+ */
+async function runLikeTheEditor(db, sql) {
+  const code = sql.split('\n').filter((l) => !l.trim().startsWith('--')).join('\n');
+  const parts = [];
+  let cur = '', inBody = false;
+  for (let i = 0; i < code.length; i++) {
+    if (code.startsWith('$$', i)) { inBody = !inBody; cur += '$$'; i++; continue; }
+    if (code[i] === ';' && !inBody) { if (cur.trim()) parts.push(cur); cur = ''; continue; }
+    cur += code[i];
+  }
+  if (cur.trim()) parts.push(cur);
+  for (const stmt of parts) {
+    await db.exec(stmt);
+    if (!/^\s*BEGIN\s*$/i.test(stmt)) await db.exec('DISCARD TEMP').catch(() => {});
+  }
+}
+
 // --- the diagnostic reads, and writes nothing
 let db = await fresh();
 const d = await rows(db, diag);
@@ -92,8 +113,8 @@ check('diagnostic: nothing blocks', sec('6').length, 0);
 check('diagnostic: INV#5182 shown as it stands', sec('7')[0]?.status, '2026-05-01 to 2026-05-31');
 check('diagnostic: changed nothing', (await rows(db, 'SELECT count(*)::int n FROM payments'))[0].n, 7);
 
-// --- 055
-await db.exec(m055);
+// --- 055, run the way the SQL editor runs it
+await runLikeTheEditor(db, m055);
 check('055: only the real cash payment is left', (await rows(db, 'SELECT id::text FROM payments')).map((r) => r.id), ['40000000-0000-0000-0000-000000000004']);
 check("055: real tenants' bills stay, the demo bill goes", (await rows(db, 'SELECT id::text FROM bills')).map((r) => r.id).sort(), ['30000000-0000-0000-0000-00000000000b', '30000000-0000-0000-0000-0000000001a1', '30000000-0000-0000-0000-0000000002c1']);
 check("055: Mark Cruz's 1a tenancy goes, Lobby Toor's stays", (await rows(db, 'SELECT id::text FROM room_assignments ORDER BY id')).map((r) => r.id), ['20000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-00000000000b']);

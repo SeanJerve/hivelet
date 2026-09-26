@@ -57,74 +57,81 @@
 -- from pg_constraint, and each is checked for rows that point at something
 -- being removed without being removed themselves. Any such row stops the
 -- whole migration with its table and column named: nothing is deleted
--- until the answer is "nothing real depends on this". All in one
--- transaction; an error anywhere undoes everything.
+-- until the answer is "nothing real depends on this".
+--
+-- ONE STATEMENT. Everything is a single DO block holding its lists in
+-- variables. The first version kept them in temporary tables across
+-- statements, and Supabase's SQL editor does not keep a temporary table from
+-- one statement to the next: it stopped on its second statement with
+-- `relation "_demo" does not exist`, before changing anything (2026-09-26).
+-- A single DO block is one statement and one transaction wherever it runs;
+-- an error anywhere in it undoes all of it. No BEGIN/COMMIT around it: they
+-- add nothing to one statement, and through a pooled connection they can
+-- leave a transaction open.
 -- =============================================================================
 
-BEGIN;
-
-CREATE TEMP TABLE _demo ON COMMIT DROP AS
-  SELECT id FROM profiles
-  WHERE (id = '22222222-2222-2222-2222-222222222222' AND full_name = 'Mark Cruz')
-     OR id IN ('33333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444',
-               'a8305b4f-c98a-4241-be13-ff507826b2ba', '318cfbc2-7180-45ac-aaa0-6e4c49054c1c',
-               '99ef1471-cbf0-4d21-9701-8e173b07e222');
-
-CREATE TEMP TABLE _t_monthly_income_records ON COMMIT DROP AS
-  SELECT id, room_id, invoice_number, transaction_reference FROM monthly_income_records
-  WHERE payment_method::text = 'Adyen Online'
-     OR tenant_profile_id IN (SELECT id FROM _demo)
-     OR voided_at IS NOT NULL;
-
--- A voided receipt's on-site payment rows carry its number as their reference
--- (admin.ts: `reference = transactionReference || invoiceNumber`), same unit.
-CREATE TEMP TABLE _t_payments ON COMMIT DROP AS
-  SELECT p.id, p.bill_id FROM payments p
-  WHERE p.payment_method::text = 'Adyen Online'
-     OR p.tenant_profile_id IN (SELECT id FROM _demo)
-     OR EXISTS (
-          SELECT 1 FROM monthly_income_records v
-          WHERE v.voided_at IS NOT NULL
-            AND v.room_id = p.room_id
-            AND p.transaction_reference IN (v.invoice_number, v.transaction_reference));
-
-CREATE TEMP TABLE _t_bills ON COMMIT DROP AS
-  SELECT id FROM bills WHERE tenant_profile_id IN (SELECT id FROM _demo);
-
-CREATE TEMP TABLE _t_room_assignments ON COMMIT DROP AS
-  SELECT id FROM room_assignments WHERE tenant_profile_id IN (SELECT id FROM _demo);
-
-CREATE TEMP TABLE _t_notifications ON COMMIT DROP AS
-  SELECT id FROM notifications
-  WHERE recipient_profile_id IN (SELECT id FROM _demo)
-     OR related_entity_id::text IN (SELECT id::text FROM _t_payments)
-     OR (type::text = 'Payment'
-         AND (title ILIKE 'online payment%' OR title = 'Payment Verification Declined'));
-
--- Bills a removed payment had settled, and what they read once it is gone.
-CREATE TEMP TABLE _t_restatus ON COMMIT DROP AS
-  SELECT b.id,
-         CASE WHEN coalesce(k.kept, 0) <= 0 THEN 'Due'
-              WHEN k.kept < b.total_amount - 0.005 THEN 'Partially Paid'
-              ELSE 'Paid' END AS new_status
-  FROM bills b
-  LEFT JOIN LATERAL (
-    SELECT sum(p.amount) AS kept FROM payments p
-    WHERE p.bill_id = b.id AND p.verification_status::text = 'Verified'
-      AND p.id NOT IN (SELECT id FROM _t_payments)
-  ) k ON true
-  WHERE b.id IN (SELECT bill_id FROM _t_payments WHERE bill_id IS NOT NULL)
-    AND b.id NOT IN (SELECT id FROM _t_bills)
-    AND b.status::text IN ('Paid', 'Partially Paid');
-
--- Nothing real may point at anything being removed.
 DO $$
 DECLARE
-  fk record;
-  target_of_parent text;
-  target_of_child text;
-  n bigint;
+  demo   uuid[];
+  t_inc  uuid[];
+  t_pay  uuid[];
+  t_bill uuid[];
+  t_asg  uuid[];
+  t_note uuid[];
+  settled_bills uuid[];
+  refs   jsonb;
+  fk     record;
+  parent_ids uuid[];
+  child_ids  uuid[];
+  n      bigint;
+  n_restatus bigint;
 BEGIN
+  demo := ARRAY(
+    SELECT id FROM profiles
+    WHERE (id = '22222222-2222-2222-2222-222222222222' AND full_name = 'Mark Cruz')
+       OR id IN ('33333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444',
+                 'a8305b4f-c98a-4241-be13-ff507826b2ba', '318cfbc2-7180-45ac-aaa0-6e4c49054c1c',
+                 '99ef1471-cbf0-4d21-9701-8e173b07e222'));
+
+  t_inc := ARRAY(
+    SELECT id FROM monthly_income_records
+    WHERE payment_method::text = 'Adyen Online'
+       OR tenant_profile_id = ANY(demo)
+       OR voided_at IS NOT NULL);
+
+  -- A voided receipt's on-site payment rows carry its number as their
+  -- reference (admin.ts: `reference = transactionReference || invoiceNumber`).
+  t_pay := ARRAY(
+    SELECT p.id FROM payments p
+    WHERE p.payment_method::text = 'Adyen Online'
+       OR p.tenant_profile_id = ANY(demo)
+       OR EXISTS (
+            SELECT 1 FROM monthly_income_records v
+            WHERE v.voided_at IS NOT NULL
+              AND v.room_id = p.room_id
+              AND p.transaction_reference IN (v.invoice_number, v.transaction_reference)));
+
+  t_bill := ARRAY(SELECT id FROM bills WHERE tenant_profile_id = ANY(demo));
+  t_asg  := ARRAY(SELECT id FROM room_assignments WHERE tenant_profile_id = ANY(demo));
+  t_note := ARRAY(
+    SELECT id FROM notifications
+    WHERE recipient_profile_id = ANY(demo)
+       OR related_entity_id::text IN (SELECT unnest(t_pay)::text)
+       OR (type::text = 'Payment'
+           AND (title ILIKE 'online payment%' OR title = 'Payment Verification Declined')));
+
+  -- Real bills a removed payment had settled.
+  settled_bills := ARRAY(
+    SELECT DISTINCT b.id FROM bills b
+    JOIN payments p ON p.bill_id = b.id
+    WHERE p.id = ANY(t_pay)
+      AND NOT (b.id = ANY(t_bill))
+      AND b.status::text IN ('Paid', 'Partially Paid'));
+
+  refs := (SELECT coalesce(jsonb_agg(transaction_reference), '[]'::jsonb)
+           FROM payments WHERE id = ANY(t_pay) AND transaction_reference IS NOT NULL);
+
+  -- Nothing real may point at anything being removed.
   FOR fk IN
     SELECT c.conname,
            child.relname  AS child_table,
@@ -139,17 +146,18 @@ BEGIN
       AND array_length(c.conkey, 1) = 1
       AND parent.relname IN ('payments', 'bills', 'room_assignments', 'monthly_income_records')
   LOOP
-    target_of_parent := '_t_' || fk.parent_table;
-    target_of_child := CASE WHEN fk.child_table IN
-      ('payments', 'bills', 'room_assignments', 'monthly_income_records', 'notifications')
-      THEN '_t_' || fk.child_table END;
+    parent_ids := CASE fk.parent_table
+      WHEN 'payments' THEN t_pay WHEN 'bills' THEN t_bill
+      WHEN 'room_assignments' THEN t_asg ELSE t_inc END;
+    child_ids := CASE fk.child_table
+      WHEN 'payments' THEN t_pay WHEN 'bills' THEN t_bill
+      WHEN 'room_assignments' THEN t_asg WHEN 'monthly_income_records' THEN t_inc
+      WHEN 'notifications' THEN t_note ELSE ARRAY[]::uuid[] END;
 
     EXECUTE format(
-      'SELECT count(*) FROM public.%I s WHERE s.%I IN (SELECT id FROM %I)%s',
-      fk.child_table, fk.child_column, target_of_parent,
-      CASE WHEN target_of_child IS NOT NULL
-           THEN format(' AND s.id NOT IN (SELECT id FROM %I)', target_of_child) ELSE '' END
-    ) INTO n;
+      'SELECT count(*) FROM public.%I s WHERE s.%I = ANY($1) AND NOT (s.id = ANY($2))',
+      fk.child_table, fk.child_column)
+      INTO n USING parent_ids, child_ids;
 
     IF n > 0 THEN
       RAISE EXCEPTION
@@ -157,73 +165,75 @@ BEGIN
         n, fk.child_table, fk.child_column, fk.conname, fk.parent_table;
     END IF;
   END LOOP;
-END $$;
 
--- The record of what is about to go, written before it goes.
-INSERT INTO audit_logs (action, entity_type, entity_id, new_values, ip_address)
-SELECT 'AUDIT_CORRECTION',
-       'PAYMENT',
-       '00000000-0000-0000-0000-000000000000',
-       jsonb_build_object(
-         'note',   'Removed the test data of development: every GCash payment made against Adyen''s test account, any ledger row written by verifying one, and the demo profiles'' payments, bills, tenancies and notifications. No real money was involved in any of it.',
-         'why',    'The gateway only talks to Adyen''s test host, so no Adyen Online row is real money. Test payments were showing in real tenants'' histories as "Not accepted".',
-         'counts', jsonb_build_object(
-           'payments',               (SELECT count(*) FROM _t_payments),
-           'monthly_income_records', (SELECT count(*) FROM _t_monthly_income_records),
-           'bills',                  (SELECT count(*) FROM _t_bills),
-           'room_assignments',       (SELECT count(*) FROM _t_room_assignments),
-           'notifications',          (SELECT count(*) FROM _t_notifications),
-           'bills_back_to_due',      (SELECT count(*) FROM _t_restatus WHERE new_status <> 'Paid')),
-         'references', (SELECT coalesce(jsonb_agg(transaction_reference), '[]'::jsonb)
-                        FROM payments WHERE id IN (SELECT id FROM _t_payments)
-                          AND transaction_reference IS NOT NULL),
-         'kept',   'audit_logs rows about the testing are kept (append-only); profiles are kept, deactivated.',
-         'reference', 'migration 055, Sean''s decision 2026-09-26'
-       ),
-       NULL
--- Only when there is something to remove: a second run records nothing.
-WHERE (SELECT count(*) FROM _t_payments) + (SELECT count(*) FROM _t_monthly_income_records)
-    + (SELECT count(*) FROM _t_bills) + (SELECT count(*) FROM _t_room_assignments)
-    + (SELECT count(*) FROM _t_notifications) > 0;
+  -- Children before parents.
+  DELETE FROM notifications          WHERE id = ANY(t_note);
+  DELETE FROM monthly_income_records WHERE id = ANY(t_inc);
+  DELETE FROM payments               WHERE id = ANY(t_pay);
+  DELETE FROM bills                  WHERE id = ANY(t_bill);
+  DELETE FROM room_assignments       WHERE id = ANY(t_asg);
 
--- Children before parents.
-DELETE FROM notifications          WHERE id IN (SELECT id FROM _t_notifications);
-DELETE FROM monthly_income_records WHERE id IN (SELECT id FROM _t_monthly_income_records);
-DELETE FROM payments               WHERE id IN (SELECT id FROM _t_payments);
-DELETE FROM bills                  WHERE id IN (SELECT id FROM _t_bills);
-DELETE FROM room_assignments       WHERE id IN (SELECT id FROM _t_room_assignments);
+  -- What each settled bill reads now its removed payments are gone: the rule
+  -- 054 applies on a void, from the verified payments that remain.
+  UPDATE bills b
+     SET status = (CASE WHEN coalesce(k.kept, 0) <= 0 THEN 'Due'
+                        WHEN k.kept < b.total_amount - 0.005 THEN 'Partially Paid'
+                        ELSE 'Paid' END)::bill_status_type,
+         updated_at = NOW()
+    FROM (SELECT x.id,
+                 (SELECT sum(p.amount) FROM payments p
+                   WHERE p.bill_id = x.id AND p.verification_status::text = 'Verified') AS kept
+            FROM unnest(settled_bills) AS x(id)) k
+   WHERE b.id = k.id
+     AND b.status::text <> (CASE WHEN coalesce(k.kept, 0) <= 0 THEN 'Due'
+                                 WHEN k.kept < b.total_amount - 0.005 THEN 'Partially Paid'
+                                 ELSE 'Paid' END);
+  GET DIAGNOSTICS n_restatus = ROW_COUNT;
 
-UPDATE bills b
-   SET status = r.new_status::bill_status_type, updated_at = NOW()
-  FROM _t_restatus r
- WHERE b.id = r.id AND b.status::text <> r.new_status;
+  -- The record of what went. Only when something did: a second run records nothing.
+  IF cardinality(t_pay) + cardinality(t_inc) + cardinality(t_bill)
+     + cardinality(t_asg) + cardinality(t_note) > 0 THEN
+    INSERT INTO audit_logs (action, entity_type, entity_id, new_values, ip_address)
+    VALUES ('AUDIT_CORRECTION',
+            'PAYMENT',
+            '00000000-0000-0000-0000-000000000000',
+            jsonb_build_object(
+              'note',   'Removed the test data of development: every GCash payment made against Adyen''s test account, any ledger row written by verifying one, the voided test receipt with its payment rows, and the demo profiles'' payments, bills, tenancies and notifications. No real money was involved in any of it.',
+              'why',    'The gateway only talks to Adyen''s test host, so no Adyen Online row is real money. Test payments were showing in real tenants'' histories as "Not accepted".',
+              'counts', jsonb_build_object(
+                'payments',               cardinality(t_pay),
+                'monthly_income_records', cardinality(t_inc),
+                'bills',                  cardinality(t_bill),
+                'room_assignments',       cardinality(t_asg),
+                'notifications',          cardinality(t_note),
+                'bills_back_to_due',      n_restatus),
+              'references', refs,
+              'kept',   'audit_logs rows about the testing are kept (append-only); profiles are kept, deactivated.',
+              'reference', 'migration 055, Sean''s decision 2026-09-26'),
+            NULL);
+  END IF;
 
--- Nothing left of any of it, or nothing commits.
-DO $$
-DECLARE
-  n bigint;
-BEGIN
+  -- Nothing left of any of it, or nothing commits.
   SELECT count(*) INTO n FROM payments WHERE payment_method::text = 'Adyen Online';
   IF n <> 0 THEN RAISE EXCEPTION '055: % GCash payment(s) remain. Rolled back.', n; END IF;
 
   SELECT count(*) INTO n FROM monthly_income_records WHERE payment_method::text = 'Adyen Online';
   IF n <> 0 THEN RAISE EXCEPTION '055: % GCash ledger row(s) remain. Rolled back.', n; END IF;
 
-  SELECT count(*) INTO n FROM payments WHERE tenant_profile_id IN (SELECT id FROM _demo);
+  SELECT count(*) INTO n FROM payments WHERE tenant_profile_id = ANY(demo);
   IF n <> 0 THEN RAISE EXCEPTION '055: % demo payment(s) remain. Rolled back.', n; END IF;
 
-  SELECT count(*) INTO n FROM room_assignments WHERE tenant_profile_id IN (SELECT id FROM _demo);
+  SELECT count(*) INTO n FROM room_assignments WHERE tenant_profile_id = ANY(demo);
   IF n <> 0 THEN RAISE EXCEPTION '055: % demo tenancy(ies) remain. Rolled back.', n; END IF;
 
   SELECT count(*) INTO n FROM monthly_income_records WHERE voided_at IS NOT NULL;
   IF n <> 0 THEN RAISE EXCEPTION '055: % voided ledger row(s) remain. Rolled back.', n; END IF;
 END $$;
 
-COMMIT;
-
 -- "Success. No rows returned" means it ran. Check afterwards:
--- SELECT count(*) FROM payments WHERE payment_method::text = 'Adyen Online';          -- 0
--- SELECT count(*) FROM room_assignments
---   WHERE tenant_profile_id = '22222222-2222-2222-2222-222222222222';                   -- 0
+-- SELECT (SELECT count(*) FROM payments) AS payments_left,                       -- 0 on 2026-09-26
+--        (SELECT count(*) FROM monthly_income_records) AS ledger_rows,           -- 937
+--        (SELECT status FROM bills
+--          WHERE id = '880799ef-0162-49ec-9a51-c3506669b49a') AS lobby_bill;    -- Due
 -- SELECT new_values FROM audit_logs WHERE action = 'AUDIT_CORRECTION'
---   ORDER BY created_at DESC LIMIT 1;                                                   -- the record of this
+--   ORDER BY created_at DESC LIMIT 1;                                            -- the record of this
