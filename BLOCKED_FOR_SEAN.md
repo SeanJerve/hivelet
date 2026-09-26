@@ -33,7 +33,41 @@ thing did not work" is not.
 
 ## Open
 
-### B-77 — `/admin/payments` reads in one request, capped at 1,000 rows · low, not urgent
+### B-78 — remove all test data (055) and correct INV#5182 (056) · **written and tested, NOT applied**
+
+- **Sean's decision, 2026-09-26:** remove every transaction that only happened in testing.
+- **What 055 removes:**
+  - every GCash payment (`Adyen Online`); the gateway only talks to Adyen's test host, so none is real money;
+  - any ledger row a GCash verification wrote, and the one voided test receipt (unit 1a,
+    22 Sep) with its two cash payment rows;
+  - the demo profiles' payments, bills, tenancies and notifications (Mark Cruz, whose fake 1a
+    tenancy is B-73, and 047's five if still present);
+  - the notifications those payments raised.
+
+  A real bill that a removed payment had marked Paid goes back to Due (1a's, B-75). Real bills,
+  cash receipts, profiles and `audit_logs` stay; it adds one `AUDIT_CORRECTION` row listing what went.
+- **Before deleting anything,** it reads every foreign key pointing at the four tables from
+  `pg_constraint`. If a row that isn't being removed points at one that is, it stops and names
+  the table and column. It runs as one transaction.
+- **What 056 changes:** INV#5182 (3d) from 1 to 31 May to 15 May to 14 June, from her workbook
+  ("May.15-un.14/26"). Money and filing month unchanged. Only if the row is still exactly as imported.
+- **Proved:** `database/test-055-cleanup.mjs` runs the diagnostic, 055 and 056 unchanged in PGlite,
+  26 of 26. That includes refusing when a real row depends on a removal, and running each twice.
+  Disabling the dependency check, the bill reset or the voided-receipt link each fails it.
+- **What Sean needs to do, in order:**
+  1. `npm run backup`.
+  2. Run `database/migrations/DIAGNOSTIC_test_data_before_055.sql` in the SQL editor and send the
+     table. Section 5 lists every payment that STAYS: anything test-looking there needs saying first.
+  3. Run `055_...sql`, then `056_...sql`. "Success. No rows returned" means each one ran.
+- **How to know it worked:** unit 1D and 2C tenants no longer see "Not accepted" payments; the
+  verification queue and Activity's newest entry explain the removal; `SELECT count(*) FROM payments
+  WHERE payment_method::text = 'Adyen Online'` is 0; INV#5182 reads 2026-05-15 to 2026-06-14.
+- **Raised:** 2026-09-26 by Claude
+
+### B-77 — `/admin/payments` reads in one request, capped at 1,000 rows · **DONE 2026-09-26**
+
+- **Fixed:** the route pages with `.range()` on `paid_at` then `id`, like the income list.
+  `backend/scripts/check-list-reads.mjs` drives the real handler over 2,345 rows: 0 of 4 before, 4 of 4 after.
 
 - **Found 2026-09-26** in the screen audit. Income and expense lists page through in batches of 1,000
   (`admin.ts` ~2213 and ~3434); `GET /admin/payments` (~1634) does not. 15 rows today; at roughly one
@@ -42,7 +76,17 @@ thing did not work" is not.
 - **What Sean needs to do:** the same `.range()` loop the income route uses.
 - **Raised:** 2026-09-26 by Claude
 
-### B-76 — BH "Remitted" on the income screen is half rent + water; everywhere else it is full rent + water · **needs her workbook**
+### B-76 — BH "Remitted" on the income screen is half rent + water; everywhere else it is full rent + water · **DONE 2026-09-26, answered by her workbook**
+
+- **Her workbook says full rent.** Monthly Income, January 2024, BH: Remitted is `=SUM(E5,H5:I5)`,
+  rent + water + garbage (1a: 8,000 + 200 + 20 = 8,220). The BH total `=SUM(J3:J24)` adds those
+  full-rent rows (169,390). Half rent exists only in her 50% column (`=SUM(E3*0.5)`). Nothing in
+  the book adds BH up at half rent, and the screen's sentence saying so was wrong.
+- **Fixed:** every Remitted figure on Money coming in is now rent + water (BR-038), for BH as for
+  every cluster, matching the database, the Excel export and the Overview. The 50% Share column is
+  unchanged. Rendered before/after: BH header ₱8,600 → ₱16,600 on two 8,000 rows.
+- **Left as a question, not a bug:** her Remitted also adds the garbage fee; BR-038 and the
+  screen keep garbage in its own column.
 
 - **Found 2026-09-26** by rendering Money coming in against the live figures (no personal data).
 - **The two numbers, all BH rows, all years:**
@@ -62,7 +106,11 @@ thing did not work" is not.
   file show the same figure.
 - **Raised:** 2026-09-26 by Claude
 
-### B-75 — the tenant portal shows voided receipts as real payments · **one line, backend**
+### B-75 — the tenant portal shows voided receipts as real payments · **DONE 2026-09-26**
+
+- **Fixed:** `.is('voided_at', null)` on `GET /tenant/my-income-records`, proved by
+  `backend/scripts/check-list-reads.mjs`. The one live voided row, and the Paid status it left on
+  1a's bill, are removed or reset by 055 (B-78).
 
 - **Blocked on:** backend lane. The design branch does not change `backend/src/`.
 - **What was found, 2026-09-26:** `GET /tenant/my-income-records` (`backend/src/routes/tenant.ts`,
@@ -123,7 +171,12 @@ thing did not work" is not.
   Verification payment in Money coming in's verification queue within seconds (the webhook).
 - **Raised:** 2026-09-26 by Claude (final review, live trace with Sean)
 
-### B-73 — unit 1a's tenancy dates do not describe who lived there · data question, nothing to run
+### B-73 — unit 1a's tenancy dates do not describe who lived there · **resolved by 055 once applied (B-78)**
+
+- **2026-09-26:** 055 removes Mark Cruz's demo tenancy, which is what overlapped. Lobby Toor's
+  `start_date` of 2026-07-01 is not hers alone: all 32 tenancies carry the import's placeholder, which
+  the Tenants page shows as "Not recorded" (8690773). Her workbook's Anniv Date for 1a is Nov 7, 2021,
+  if anyone backfills start dates later (B-11).
 
 - **Found:** 2026-09-26, by the read-only F10 check Sean ran (`docs/FINAL_REVIEW.md` F10).
 - **What the table says:** 1a has two tenancies that overlap. Mark Cruz, the seeded demo tenant

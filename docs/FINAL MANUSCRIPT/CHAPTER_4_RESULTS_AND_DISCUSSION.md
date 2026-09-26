@@ -244,11 +244,28 @@ following real events are part of the pilot:
   hidden below the screen, and toolbars that overlapped. All were fixed the same day (Section
   4.4.11).
 
-The GCash payment method could not yet be completed end to end. Adyen's test account refuses
-GCash payments before a payment is created. The setup has been checked step by step: the payment
-session is created, GCash is offered, and the account shows GCash as active. The matter is under
-an open support case with Adyen (Case 08657379). The system's own handling of gateway messages is
-covered by the 73 passing checks in Table 8.
+At first, Adyen's test account refused every GCash payment. The team traced the fault using
+Adyen's own API logs:
+- the payment session was created (HTTP 201);
+- GCash was offered as a payment method;
+- but the payment request came back "Refused", with no redirect and no reason;
+- and no transaction ever appeared in the account's payment list.
+
+A bank decline or a fraud-risk rule acts on a transaction that exists. A refusal with no
+transaction therefore pointed to how the account was set up, not to the system. Adyen support
+(Case 08657379) confirmed this. The GCash acquirer account, which actually processes the payment,
+was misconfigured, and Adyen set up a new one.
+
+On 26 September 2026 a test payment passed end to end:
+- Adyen authorised it;
+- its signed notification reached the system;
+- it appeared as Pending Verification in the owner's queue;
+- the owner rejected it, and the tenant's bill stayed owed.
+
+That retest found one defect in the system itself. A tenant returning from a successful GCash
+payment was told the payment could not be confirmed. It was fixed and confirmed on a second test
+payment the same day. The system's own handling of gateway messages is covered by the passing
+checks in Table 8.
 
 ### 4.3.3 Screen-versus-Database Audit
 
