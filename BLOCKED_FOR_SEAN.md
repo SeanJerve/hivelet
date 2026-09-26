@@ -33,7 +33,18 @@ thing did not work" is not.
 
 ## Open
 
-### B-78 — remove all test data (055) and correct INV#5182 (056) · **written and tested, NOT applied**
+### B-78 — remove all test data (055) and correct INV#5182 (056) · **DONE 2026-09-26, both applied by Sean**
+
+- **Applied and checked on the live database, 2026-09-26:** payments 0 (all 20 were tests),
+  ledger 937 rows (the voided test receipt gone, her 937 untouched), Lobby Toor's 1a bill
+  `880799ef` back to Due, INV#5182 reads 2026-05-15 to 2026-06-14. The AUDIT_CORRECTION row
+  records bills 1, payments 20, notifications 16, room_assignments 2, one bill back to Due.
+- **On the way:** the first 055 stopped in the SQL editor at its second statement (`relation
+  "_demo" does not exist`, nothing changed) because it kept its lists in temporary tables across
+  statements. Rewritten as one DO block (PR #8); the test now runs it statement by statement the
+  way the editor does. **For any future migration: one DO block, no temp tables across statements.**
+- The entry as written before applying is kept below.
+
 
 - **Sean's decision, 2026-09-26:** remove every transaction that only happened in testing.
 - **What 055 removes:**
@@ -171,7 +182,7 @@ thing did not work" is not.
   Verification payment in Money coming in's verification queue within seconds (the webhook).
 - **Raised:** 2026-09-26 by Claude (final review, live trace with Sean)
 
-### B-73 — unit 1a's tenancy dates do not describe who lived there · **resolved by 055 once applied (B-78)**
+### B-73 — unit 1a's tenancy dates do not describe who lived there · **DONE 2026-09-26: 055 removed the demo tenancy (B-78)**
 
 - **2026-09-26:** 055 removes Mark Cruz's demo tenancy, which is what overlapped. Lobby Toor's
   `start_date` of 2026-07-01 is not hers alone: all 32 tenancies carry the import's placeholder, which
