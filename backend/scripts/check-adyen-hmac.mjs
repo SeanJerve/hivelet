@@ -355,6 +355,24 @@ try {
     eventCode: 'AUTHORISATION', success: 'true',
   }, null);
   check('an authorisation naming no merchant account is not banked', [noAccount.outcome, inserted], ['ignored', false]);
+
+  // A refused authorisation carries its explanation in the item's `reason`
+  // field, where Adyen puts it for success=false. The audit row read it from
+  // additionalData.refusalReason, which a refusal does not carry, so the one
+  // line that says WHY a tenant's GCash payment failed was stored as null.
+  let audited = null;
+  const capture = () => new Proxy(() => {}, {
+    get: (_t, prop) => prop === 'then'
+      ? (resolve) => resolve({ data: null, error: null })
+      : (...args) => { if (prop === 'insert' && args[0]?.action) audited = args[0]; return capture(); },
+  });
+  stubDb.from = () => capture();
+  await applyNotificationItem({
+    pspReference: 'AUTH-REFUSED', originalReference: '', merchantAccountCode: 'CheckAdyenMerchant',
+    merchantReference: 'BILL-x', amount: { value: 820000, currency: 'PHP' },
+    eventCode: 'AUTHORISATION', success: 'false', reason: 'FRAUD-CANCELLED',
+  }, null);
+  check('a refused authorisation records the reason Adyen gave', audited?.new_values?.reason, 'FRAUD-CANCELLED');
 } finally {
   stubDb.from = realFrom;
   stubNotifier.notify = realNotify;

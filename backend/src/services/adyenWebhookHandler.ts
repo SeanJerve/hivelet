@@ -314,7 +314,9 @@ export async function applyNotificationItem(
       entityType: 'PAYMENT',
       entityId: pspReference,
       newValues: { pspReference, merchantReference: item.merchantReference ?? null, eventCode, success: false,
-                   reason: item.additionalData?.refusalReason ?? null },
+                   // Adyen puts a refusal's explanation in the item's `reason`;
+                   // `additionalData.refusalReason` is kept as a fallback only.
+                   reason: item.reason || item.additionalData?.refusalReason || null },
       ipAddress
     });
     return { pspReference, eventCode, outcome: 'ignored', detail: 'authorisation refused' };

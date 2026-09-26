@@ -61,6 +61,11 @@ export interface AdyenNotificationItem {
    * rather than proof, and the handler treats it that way.
    */
   eventDate?: string;
+  /**
+   * For `success: false`, Adyen's short explanation of the refusal. Not signed,
+   * so it is recorded for the administrator, never acted on.
+   */
+  reason?: string;
   additionalData?: Record<string, string> & { hmacSignature?: string };
 }
 

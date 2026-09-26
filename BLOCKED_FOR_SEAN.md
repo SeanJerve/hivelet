@@ -33,6 +33,30 @@ thing did not work" is not.
 
 ## Open
 
+### B-74 — GCash on the Adyen TEST account is refused before it becomes a payment · **waiting on Adyen, Case 08657379**
+
+- **Blocked on:** Adyen support. Not code.
+- **What was established, 2026-09-26, on the live site after the final-review merge:**
+  - `POST /v71/sessions` returns **201** (Adyen's own API log), with the right amount, PHP, PH,
+    `HiveletECOM` and the new `expiresAt`.
+  - The Drop-in's `/setup` offers `gcash`.
+  - The Drop-in's `/payments` returns `resultCode: "Refused"` with **no action** (no redirect to
+    Adyen's GCash Payment Simulator) and no refusal reason.
+  - **No transaction exists** in the Payment list for the last 180 days. So Adyen refuses
+    before a payment is created, which a risk rule or a decline would not do.
+  - GCash shows **Active, PH, any currency, via Alipay+** on `HiveletECOM`.
+  - Same symptom as the first live attempt on 2026-09-22 (B-54), before any of this week's changes.
+- **Do not** test with a card to "prove it works": the webhook serves production, so a
+  successful test payment writes a real Pending Verification row into her database against a
+  real tenant's bill.
+- **What Sean needs to do:** wait for the reply to Case 08657379. The ticket form recorded
+  merchant "Hivelet" and "API Only"; the account is `HiveletECOM` and the integration is the Web
+  Drop-in, Sessions flow; a one-line correction was sent on the thread. When Adyen fixes it, the
+  pay screen should redirect to the simulator instead of refusing.
+- **How to know it worked:** choosing "Authorised" on the simulator produces a Pending
+  Verification payment in Money coming in's verification queue within seconds (the webhook).
+- **Raised:** 2026-09-26 by Claude (final review, live trace with Sean)
+
 ### B-73 — unit 1a's tenancy dates do not describe who lived there · data question, nothing to run
 
 - **Found:** 2026-09-26, by the read-only F10 check Sean ran (`docs/FINAL_REVIEW.md` F10).
