@@ -210,7 +210,7 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
 - **Severity:** high. The totals the owner reads and presents can silently be wrong.
 - **Fix:** end every paged ordering on `id`, and teach `check:writes` to refuse a `.range()`
   read whose ordering does not end on a unique key.
-- **Status:** see the fix log below.
+- **Status:** **FIXED** in `7aa28ec`.
 
 ## F9. Moving a receipt to the right unit leaves it credited to the wrong tenant
 
@@ -230,7 +230,7 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
 - **Fix:** when the unit changes, re-attribute the row to the tenancy of the new unit that covered
   the row's rent period (by `start_date`/`end_date`), or to nobody if none did. The payments rows
   from the original entry are the F2 problem and stay with it.
-- **Status:** see the fix log below.
+- **Status:** **FIXED** in `2d236ef`.
 
 ## F10. A receipt for a period before the current tenancy is credited to the current tenant
 
@@ -249,7 +249,26 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
 - **Fix:** the same rule as F9. The tenancy that covered the receipt's rent period pays; the
   active tenancy only when none did. The period derivation and the occupant carry-forward still
   read the active tenancy, as before.
-- **Status:** see the fix log below.
+- **Depends on tenancy dates being right.** If a current tenancy's `start_date` is later than
+  the real move-in while the previous tenancy's `end_date` is later still, a current receipt
+  could be credited to the previous tenant. A normal move (old tenancy ends the day the new one
+  starts) is handled: the newer tenancy wins a tie. Worth running this read-only query before
+  deploying. `differ` should be 0 or explained row by row:
+
+  ```sql
+  SELECT count(*) AS rows_2026,
+         count(*) FILTER (WHERE cov.tenant_profile_id IS DISTINCT FROM mir.tenant_profile_id) AS differ
+    FROM monthly_income_records mir
+    LEFT JOIN LATERAL (
+      SELECT ra.tenant_profile_id FROM room_assignments ra
+       WHERE ra.room_id = mir.room_id
+         AND ra.start_date <= mir.rent_period_start
+         AND (ra.end_date IS NULL OR ra.end_date >= mir.rent_period_start)
+       ORDER BY ra.start_date DESC LIMIT 1) cov ON true
+   WHERE mir.voided_at IS NULL AND mir.year = 2026
+     AND mir.tenant_profile_id IS NOT NULL AND cov.tenant_profile_id IS NOT NULL;
+  ```
+- **Status:** **FIXED** in `02fb01a`.
 
 ## Low severity, recorded and left
 
@@ -265,6 +284,10 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   "Auto-fill Tenant Phone: 0906 354 9001". The page returns 404 whenever the gateway is
   configured, so production never serves it. If that number belongs to a real person, it should
   not be in the repository.
+- **A tenant can be told their GCash session is "no longer available" after paying.** The
+  sessions `confirmCheckout` looks up live in memory, and production runs on Vercel, where the
+  confirm request can reach a different instance. The wording is safe ("Do not pay again", and
+  the webhook still records the payment), so it confuses rather than costs.
 - **A tenant who has moved out can still file a repair request against their old unit.**
   `POST /tenant/tickets` scopes to current and historical rooms (`scopeService.ts`). Nothing of
   the new tenant's is read or changed, but the request lands on someone else's unit.
@@ -304,6 +327,9 @@ These were read for the defect classes in the brief and nothing survived:
 | F4 | A refused refund announced as a refund | `63df720` | `check:adyen` drives the real handler: 8 new assertions failed before, 71 of 71 pass; disabling the fix fails 4 |
 | F5 | Warning blind to a pending GCash payment | `6471a28` | The real modal in Chromium, API answered locally: no warning before, the pending payment listed after |
 | F6 | iPhone keypad cannot type an email | `722ebf5` | Rendered DOM: `inputmode="tel"` before, absent after. Not tried on a device |
+| F8 | Ledger lists paged on a date alone | `7aa28ec` | `check:writes` gains a rule: failed on these 4 reads before, passes after, fails again with one tiebreak removed; request checked as `order=expense_date.desc,id.asc` |
+| F9 | A moved receipt keeps the old tenant | `2d236ef` | `node backend/scripts/check-income-edit.mjs` drives the real edit handler, database stubbed: 3 of 7 failed before, all pass after |
+| F10 | Old-period receipts credited to the current tenant | `02fb01a` | The same script drives the real create handler: 4 of 15 failed on the previous route, 15 of 15 pass |
 | F2 | A void leaves the bill Paid | none | OPEN, `BLOCKED_FOR_SEAN.md` |
 | F7 | A skipped month reads as paid | none | OPEN, `BLOCKED_FOR_SEAN.md` |
 
