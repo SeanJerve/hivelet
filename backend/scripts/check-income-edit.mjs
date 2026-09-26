@@ -100,6 +100,10 @@ db.from = (table) => {
   return chain;
 };
 
+let rpcAnswer = null;
+let rpcCalls = [];
+db.rpc = async (fn, args) => { rpcCalls.push([fn, args]); return rpcAnswer; };
+
 const routeHandler = (path, method) =>
   adminRouter.stack.find((l) => l.route?.path === path && l.route.methods[method]).route.stack.at(-1).handle;
 
@@ -165,6 +169,30 @@ const current = await post({
 check('a current receipt is recorded', current.status, 201);
 check('and credited to Y', insertedIncome?.tenant_profile_id, TENANT_Y);
 check('and settles Y\'s open bill', billUpdates.includes(Y_OPEN_BILL.id), true);
+
+// B-71 / F2. Voiding goes through void_income_record (migration 054) when it exists.
+async function voidRow() {
+  updateSent = null; rpcCalls = [];
+  return call(routeHandler('/admin/income-records/:id', 'delete'), { id: ROW }, {});
+}
+rpcAnswer = { data: { already_voided: false, payment_id: 'pay-1', bill_id: 'bill-1', bill_status: 'Due' }, error: null };
+const viaFunction = await voidRow();
+check('a void goes through void_income_record', rpcCalls.map((c) => c[0]), ['void_income_record']);
+check('with the row and the administrator', [rpcCalls[0]?.[1].p_income_id, rpcCalls[0]?.[1].p_voided_by],
+  [ROW, '00000000-0000-4000-8000-0000000000ad']);
+check('and writes nothing else itself', updateSent, null);
+check('and reports success', viaFunction.status, 200);
+
+rpcAnswer = { data: { already_voided: true }, error: null };
+check('a row voided a moment ago by someone else is a 409', (await voidRow()).status, 409);
+
+rpcAnswer = { data: null, error: { code: 'PGRST202', message: 'Could not find the function' } };
+const fallback = await voidRow();
+check('before migration 054 is applied, the plain void still works', fallback.status, 200);
+check('and sets voided_at itself', Boolean(updateSent?.voided_at), true);
+
+rpcAnswer = { data: null, error: { code: '57014', message: 'canceling statement due to statement timeout' } };
+check('any other database error is a 500, not a silent plain void', (await voidRow()).status, 500);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

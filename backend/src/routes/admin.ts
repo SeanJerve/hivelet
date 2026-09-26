@@ -3319,30 +3319,79 @@ router.delete(
       );
     }
 
-    const { data: voided, error } = await db
-      .from('monthly_income_records')
-      .update({
-        voided_at: new Date().toISOString(),
-        voided_by: req.user!.profileId,
-        void_reason: 'Administrator manual deletion'
-      })
-      .eq('id', req.params.id)
-      .is('voided_at', null)
-      .select('id');
+    /**
+     * A GCash settlement is reversed with its void, in one transaction.
+     *
+     * Voiding used to set `voided_at` on this row and nothing else. For a GCash
+     * payment that left the payment Verified and its bill Paid, so after a
+     * chargeback - which the webhook tells her to handle by voiding here - the
+     * tenant's portal still read Paid and the checkout refused to open for the
+     * period (FINAL_REVIEW F2, B-71). `void_income_record` (migration 054) voids
+     * the row, marks that one Adyen Online payment Rejected, and re-derives its
+     * bill from what is still Verified. On-site receipts are voided and nothing
+     * else, as before: which bills one month of a multi-month receipt should
+     * reopen has no single right answer.
+     *
+     * Until 054 is applied the function does not exist, and this falls back to
+     * the plain void below rather than taking voiding down with it.
+     */
+    let reversal: { payment_id: string | null; bill_id: string | null; bill_status: string | null } | null = null;
+    const { data: rpcResult, error: rpcError } = await db.rpc('void_income_record', {
+      p_income_id: req.params.id,
+      p_voided_by: req.user!.profileId,
+      p_reason: 'Administrator manual deletion',
+    });
 
-    if (error) throw ApiError.internal(error.message);
-    if (!voided || voided.length === 0) {
-      throw ApiError.conflict(
-        'That income record was voided by someone else a moment ago. Nothing was changed. ' +
-        'Reload the ledger.'
-      );
+    const functionMissing =
+      !!rpcError && (rpcError.code === '42883' || rpcError.code === 'PGRST202');
+
+    if (rpcError && !functionMissing) throw ApiError.internal(rpcError.message);
+
+    if (!functionMissing) {
+      const result = (rpcResult ?? {}) as {
+        already_voided?: boolean; payment_id?: string | null; bill_id?: string | null; bill_status?: string | null;
+      };
+      if (result.already_voided) {
+        throw ApiError.conflict(
+          'That income record was voided by someone else a moment ago. Nothing was changed. ' +
+          'Reload the ledger.'
+        );
+      }
+      reversal = {
+        payment_id: result.payment_id ?? null,
+        bill_id: result.bill_id ?? null,
+        bill_status: result.bill_status ?? null,
+      };
+    } else {
+      const { data: voided, error } = await db
+        .from('monthly_income_records')
+        .update({
+          voided_at: new Date().toISOString(),
+          voided_by: req.user!.profileId,
+          void_reason: 'Administrator manual deletion'
+        })
+        .eq('id', req.params.id)
+        .is('voided_at', null)
+        .select('id');
+
+      if (error) throw ApiError.internal(error.message);
+      if (!voided || voided.length === 0) {
+        throw ApiError.conflict(
+          'That income record was voided by someone else a moment ago. Nothing was changed. ' +
+          'Reload the ledger.'
+        );
+      }
     }
 
     await auditFromRequest(req, {
       action: 'PAYMENT_CORRECT',
       entityType: 'PAYMENT',
       entityId: req.params.id,
-      previousValues: before
+      previousValues: before,
+      ...(reversal?.payment_id
+        ? { newValues: { gcash_payment_reversed: reversal.payment_id, bill_id: reversal.bill_id,
+                         bill_status: reversal.bill_status } }
+        : {}),
     });
 
     res.status(200).json({ success: true, data: { message: 'Income record voided.' } });
