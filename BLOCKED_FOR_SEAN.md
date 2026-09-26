@@ -85,7 +85,20 @@ thing did not work" is not.
   is owed. Worth a look before the defense, since the example is live.
 - **Raised:** 2026-09-26 by Claude (design branch, from a screenshot of unit 1c's empty history)
 
-### B-74 — GCash on the Adyen TEST account is refused before it becomes a payment · **waiting on Adyen, Case 08657379**
+### B-74 — GCash on the Adyen TEST account is refused before it becomes a payment · **DONE 2026-09-26: Adyen fixed the acquirer account**
+
+- **Resolved:** Adyen support (Chun Kit, Case 08657379) found the GCash acquirer account
+  misconfigured and set up a new one. Sean's retest the same day went through end to end:
+  the redirect reached Adyen's GCash test page; "Successful payment" produced
+  `NDQW3Z5ZQL8MNB75` (SentForSettle, ₱7,450.00, `HiveletECOM`); the AUTHORISATION webhook was
+  delivered and Accepted; the payment appeared in the verification queue; Sean rejected it
+  there, and the tenant saw "Not accepted, the bill it was for is still owed". One earlier
+  attempt that day, `SRXVZDJ7B2GLGB75` at 18:00, is listed as Error, before the change took hold.
+- **Found on the way:** the resident's screen said "Could not confirm your payment here" after
+  that successful payment. Fixed as `docs/FINAL_REVIEW.md` F12. **Next GCash test payment:**
+  it should end on "Payment received"; reject it in the queue afterwards, as before.
+- The record below is kept as it was written.
+
 
 - **Blocked on:** Adyen support. Not code.
 - **What was established, 2026-09-26, on the live site after the final-review merge:**
