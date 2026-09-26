@@ -2962,7 +2962,12 @@ these three indistinguishable from the real residents.*
 > one real TEST GCash payment end to end, on the rehearsal's made-up PH tenant rather than a
 > real resident, then **Reject** it in Income so nothing reaches the owner's ledger.
 
-### B-69 — the rehearsal tenant in PH is showing on the live site and failing check:ledger
+### B-69 — the rehearsal tenant in PH is showing on the live site and failing check:ledger — **move-out done 2026-09-26; see B-70 for the leftover rows**
+
+> **Confirmed 2026-09-26, read-only.** Both "Rehearsal Test" profiles are `account_status:
+> inactive` and both room_assignments are `is_active: false` with an `end_date` set. PH is out of
+> the "occupied" count again. The two rows themselves (and the one bill the second profile
+> created) are still in the database, inactive rather than gone — B-70 is the migration for that.
 
 - **Blocked on:** Loyd (or Sean), once the B-68 test GCash payment is done
 - **What is wrong:** the rehearsal's "Rehearsal Test" tenant was moved into PH on 2026-09-25
@@ -2977,3 +2982,33 @@ these three indistinguishable from the real residents.*
 - **How to know it worked:** `npm run check:all` is 20/20 again, and `/category/three-bedroom`
   shows PH as it really is.
 - **Raised:** 2026-09-25 by Claude, from the check:all run after the second frontend audit
+
+### B-70 — delete migration for the "Rehearsal Test" rows is written and backed up, not yet run
+
+- **Blocked on:** applying a DELETE against the live database — the auto-mode permission
+  classifier refuses it even with Sean's own go-ahead in chat, same as `[[live-db-writes-need-sean]]`
+  says it will. Needs either an explicit approval on the tool call, or Sean running it himself.
+- **What I was doing:** Sean asked, in chat, to remove the two "Rehearsal Test" profiles from the
+  database entirely rather than leave them inactive (B-69's move-out already handled the public
+  vacancy count; this is the cleanup Sean called "nonsense" sitting in the live tables).
+- **What I already did:**
+  - Ran `npm run backup` first — written to `backups/2026-09-26T00-00-47/`.
+  - Checked, read-only, exactly what these two rows touch: `9502bf06-83c0-4898-a951-933681bc3a93`
+    (assignment `f5f5fbc9-...`, no bill) and `7a8dcec3-ac68-4309-8f92-2a01a2ba8728` (assignment
+    `065c86f2-...`, one bill). **Zero rows** in `monthly_income_records` or `payments` for either —
+    nothing here is real money, confirming Sean's read that it's safe to remove outright.
+  - Wrote `database/migrations/052_remove_rehearsal_test_tenant.sql`: an assertion that exactly
+    these 2 profiles still exist and match, then `DELETE` from `bills`, `payments`,
+    `room_assignments`, `notifications` and finally `profiles`, scoped to those two exact IDs only
+    (never a blanket delete). Wrapped in `BEGIN`/`COMMIT`.
+  - **Left alone on purpose:** `audit_logs`. `UPDATE`/`DELETE` are revoked from every role on that
+    table (System Bible Section 14) — the rows naming this rehearsal, as actor or as entity, are
+    permanent by design and this migration does not touch them.
+- **What Sean needs to do:** run `database/migrations/052_remove_rehearsal_test_tenant.sql`
+  against the live database — paste it into the Supabase SQL editor, or grant the specific
+  Supabase-migration tool call a permission so a session can run it directly.
+- **How to know it worked:** `SELECT * FROM profiles WHERE full_name = 'Rehearsal Test';` and the
+  matching `room_assignments` query (both in a comment at the bottom of the migration file) return
+  zero rows. `npm run check:all` unaffected either way — it was already clean once B-69's move-out
+  landed.
+- **Raised:** 2026-09-26 by Claude, at Sean's request in chat
