@@ -33,6 +33,70 @@ thing did not work" is not.
 
 ## Open
 
+### B-73 — unit 1a's tenancy dates do not describe who lived there · data question, nothing to run
+
+- **Found:** 2026-09-26, by the read-only F10 check Sean ran (`docs/FINAL_REVIEW.md` F10).
+- **What the table says:** 1a has two tenancies that overlap. Mark Cruz, the seeded demo tenant
+  (migration 049 deactivated him; B61 names him), runs 2025-06-05 to 2026-08-25. Lobby Toor runs
+  2026-07-01 to now. Her book has Lobby Toor paying 1a since 2024 (`OR#4627`), and every 2026
+  receipt for 1a is hers.
+- **What it costs today:** nothing. The receipts are credited to her, and the F10 rule was
+  corrected (`f96967a`) so overlapping tenancies can never move a receipt to the demo profile.
+  Standing reads her paid periods, not her start date, except as a floor: a receipt of hers
+  dated before 2026-07-01 is ignored by standing, which is harmless while later ones exist.
+- **What Sean could do, only if he wants the record tidy:** a numbered migration setting Lobby
+  Toor's `start_date` to her real move-in, which only the owner knows. Not written, because the
+  date is a fact nobody here holds. The demo tenancy stays: `audit_logs` anchors it (see 052/053).
+- **Raised:** 2026-09-26 by Claude (final review)
+
+### B-71 — voiding a GCash settlement now reverses it · **DONE in code; migration 054 written and tested, NOT applied**
+
+> **Decided and built 2026-09-26** (Sean delegated the call). A void of a GCash settlement voids
+> the row, marks that one `Adyen Online` payment Rejected, and re-derives its bill (Paid /
+> Partially Paid / Due) in one transaction. On-site receipts are voided and nothing else, as
+> before. Full reasoning: `docs/FINAL_REVIEW.md` F2.
+
+- **Blocked on:** only applying the migration. It needs the live database, which the review
+  session could not reach.
+- **What is done:** `database/migrations/054_void_income_reverses_gcash_settlement.sql` (schema
+  only, adds one function, touches no row). `DELETE /admin/income-records/:id` calls it and falls
+  back to the old plain void while it does not exist, so the code can deploy first.
+- **What Sean needs to do:** `npm run backup`, then run `054_...sql` in the Supabase SQL editor.
+  It ends with a check that raises if the function is missing or `anon` can execute it, and a
+  `NOTIFY pgrst` so the API sees it immediately.
+- **How to know it worked:** the migration prints `Migration 054 OK`. Proved beforehand by
+  `cd database && npm i --no-save @electric-sql/pglite && node test-054-void.mjs` (the file run
+  unchanged in PostgreSQL-in-WebAssembly: 14 of 14) and `backend/scripts/check-income-edit.mjs`
+  (23 of 23).
+- **Raised:** 2026-09-26 by Claude (final review)
+
+### ~~B-72 — a skipped month followed by a paid month reads as nothing owed~~ · **DECIDED and CLOSED: report ran clean**
+
+> **Decided 2026-09-26** (Sean delegated the call). Standing is NOT changed. Measured against her
+> source spreadsheet: her own book has month-sized holes with the same tenant either side (2026:
+> unit 3d mid-May to mid-June, unit 2f November to February) next to formatting noise. Whether
+> each is unpaid is her fact; auto-billing them would put contested debts on tenants' screens.
+> Full reasoning: `docs/FINAL_REVIEW.md` F7.
+
+- **Blocked on:** the owner reading one list, and a read-only query only Sean's machine can run.
+- **What is done:** `database/migrations/DIAGNOSTIC_uncovered_rent_periods.sql`, read-only. It
+  lists month-sized holes (28 days or more, last 12 months, current tenancies only) in each
+  tenant's verified, unvoided receipts. Checked in PGlite against fixtures.
+- **What Sean needs to do:** run it in the Supabase SQL editor and put the rows in front of
+  Mrs. Da Silva. For each: if the month is owed, it is collected and recorded as usual; if it was
+  paid and written elsewhere, the receipt is corrected.
+- **How to know it worked:** the list is empty, or every row on it has her answer.
+- **RESULT, 2026-09-26: no rows on the live data**, after the report stopped trusting tenancy
+  start dates. Cross-checked by hand on 3d, the unit her spreadsheet suggested: Alejandro
+  Delarosa's 2026 receipts run INV#5157 (15 Apr to 14 May), INV#5182 (typed as 1 to 31 May),
+  INV#5204 (15 Jun to 14 Jul). INV#5182 is almost certainly his 15 May to 14 Jun payment with the
+  period typed off his cycle, so the only uncovered stretch is 1 to 14 June, under a month. No
+  arrears are hidden. Optional tidy-up for her: correct INV#5182's period in the edit dialog.
+  Closed.
+- **Raised:** 2026-09-26 by Claude (final review)
+
+---
+
 ### ~~B-59 — a frontend bug could have re-shifted an income date by a day on any edit since B-27's fix~~ — **RESOLVED 2026-09-23, confirmed clean**
 
 > **Conclusively ruled out, not just unobserved.** The open question below was whether the

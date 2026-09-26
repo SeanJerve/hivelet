@@ -118,6 +118,8 @@ export const notificationService = {
       .select('*', { count: 'exact' })
       .eq('recipient_profile_id', profileId)
       .order('created_at', { ascending: false })
+      // Unique last key so "load more" cannot repeat or skip one (FINAL_REVIEW F8).
+      .order('id', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (filters?.isRead !== undefined) {

@@ -2216,6 +2216,10 @@ router.get(
         .select('*, rooms:room_id (id, room_number, cluster_code)')
         .is('voided_at', null)
         .order('date_paid', { ascending: false })
+        // Unique last key: pages are separate queries, and rows sharing a date
+        // have no fixed order between them, so a page boundary could repeat one
+        // receipt and drop another from every total built on this list (FINAL_REVIEW F8).
+        .order('id', { ascending: true })
         .range(from, from + batchSize - 1);
 
       if (year) query = query.eq('year', year);
@@ -2266,6 +2270,64 @@ router.get(
  * bare 500 carrying `duplicate key value violates unique constraint ...`, which
  * tells the person at the counter nothing. `23505` is the code for it.
  */
+/**
+ * The tenancy a receipt for this unit belongs to: the one that covered the
+ * rent period it pays for, else the unit's active tenancy, else none.
+ *
+ * A tenant's standing and open bills are keyed by `tenant_profile_id`, so the
+ * tenant a receipt is credited to decides whose month reads as paid and whose
+ * bill its money settles. Taking the ACTIVE tenancy regardless of period
+ * credited a former tenant's arrears to whoever lives there now (FINAL_REVIEW
+ * F10), and editing a row to another unit left it on the old unit's tenant
+ * (F9). The active fallback is what both paths did before, and it is harmless
+ * for standing, which ignores receipts from before a tenancy began.
+ */
+async function tenancyForPeriod(
+  roomId: string,
+  periodStartIso: string
+): Promise<{ id: string; tenant_profile_id: string } | null> {
+  const { data, error } = await db
+    .from('room_assignments')
+    .select('id, tenant_profile_id, start_date, end_date, is_active')
+    .eq('room_id', roomId)
+    .order('start_date', { ascending: false });
+  if (error) throw ApiError.internal(error.message);
+
+  const anchor = String(periodStartIso).slice(0, 10);
+  const list = (data ?? []) as {
+    id: string; tenant_profile_id: string; start_date: string; end_date: string | null; is_active: boolean | null;
+  }[];
+  const covering = list.find(
+    (t) =>
+      String(t.start_date).slice(0, 10) <= anchor &&
+      (!t.end_date || String(t.end_date).slice(0, 10) >= anchor)
+  );
+  const active = list.find((t) => t.is_active) ?? null;
+
+  /**
+   * A past tenancy takes the receipt only on a CLEAN hand-over: it ended on or
+   * before the day the current one began. Tenancies that overlap mean the dates
+   * do not describe what happened, and then the receipt stays with the current
+   * tenant, as it always did.
+   *
+   * Found on the live data, 2026-09-26: in 1a the seeded demo tenancy runs
+   * 2025-06-05 to 2026-08-25 and overlaps the real tenant's, which is dated
+   * 2026-07-01 although she has paid 1a since 2024. Without this, six of her 2026
+   * receipts would have been re-credited to the demo profile on any edit, and any
+   * new receipt for those months with them.
+   */
+  const cleanHandOver =
+    !!covering && !!active && covering.id !== active.id &&
+    !!covering.end_date &&
+    String(covering.end_date).slice(0, 10) <= String(active.start_date).slice(0, 10);
+
+  const chosen =
+    !covering ? active
+      : !active || covering.id === active.id || cleanHandOver ? covering
+        : active;
+  return chosen ? { id: chosen.id, tenant_profile_id: chosen.tenant_profile_id } : null;
+}
+
 function receiptAlreadyRecorded(err: { code?: string; message?: string } | null): boolean {
   return err?.code === '23505' && String(err?.message ?? '').includes('idx_one_receipt_per_unit_per_month');
 }
@@ -2439,6 +2501,11 @@ router.post(
     const periodDiverges =
       derivedPeriod !== null &&
       (periodStart !== derivedPeriod.start || periodEnd !== derivedPeriod.end);
+
+    // Who this receipt is credited to, and whose open bills it settles: the
+    // tenancy that covered the period, not simply whoever lives there now.
+    // `assign` still supplies the derived period and the occupant carry-forward.
+    const payer = await tenancyForPeriod(room.id, periodStart);
 
     /**
      * One span per month, because that is the shape her book keeps.
@@ -2636,8 +2703,8 @@ router.post(
         .from('monthly_income_records')
         .insert({
           room_id: room.id,
-          tenant_profile_id: assign?.tenant_profile_id || null,
-          assignment_id: assign?.id || null,
+          tenant_profile_id: payer?.tenant_profile_id || null,
+          assignment_id: payer?.id || null,
           year: spans[0].year,
           month: spans[0].month,
           date_paid: datePaid,
@@ -2670,8 +2737,8 @@ router.post(
     } else {
       const { data, error: rpcError } = await db.rpc('record_income_for_months', {
         p_room_id: room.id,
-        p_tenant_profile_id: assign?.tenant_profile_id || null,
-        p_assignment_id: assign?.id || null,
+        p_tenant_profile_id: payer?.tenant_profile_id || null,
+        p_assignment_id: payer?.id || null,
         p_date_paid: datePaid,
         p_contact_name: contactName,
         p_invoice_number: invoiceNumber,
@@ -2757,7 +2824,7 @@ router.post(
           : newRecord
     });
 
-    if (assign?.tenant_profile_id) {
+    if (payer?.tenant_profile_id) {
       /**
        * BR-013 - apply this receipt to what the tenant actually owes.
        *
@@ -2770,7 +2837,7 @@ router.post(
       const { data: openBills, error: openBillsError } = await db
         .from('bills')
         .select('id, total_amount, status')
-        .eq('tenant_profile_id', assign.tenant_profile_id)
+        .eq('tenant_profile_id', payer.tenant_profile_id)
         .in('status', ['Due', 'Overdue', 'Pending', 'Partially Paid'])
         .order('due_date', { ascending: true });
 
@@ -2860,7 +2927,7 @@ router.post(
         const { error: paymentError } = await db.from('payments').insert({
           bill_id: step.billId,
           room_id: room.id,
-          tenant_profile_id: assign.tenant_profile_id,
+          tenant_profile_id: payer.tenant_profile_id,
           amount: step.amount,
           payment_method: normalizedMethod,
           payment_source: paymentSource,
@@ -3062,6 +3129,31 @@ router.patch(
       roomId = room.id;
     }
 
+    /**
+     * A receipt moved to another unit belongs to that unit's tenant.
+     *
+     * Only `room_id` used to change. A tenant's standing - paid-through, the
+     * portal's Amount due, the period the GCash checkout bills - is read by
+     * `tenant_profile_id`, so correcting a wrong-unit entry left the tenant who
+     * paid still owing that month (and able to pay it again online) while the
+     * tenant it was wrongly entered against kept it as paid (FINAL_REVIEW F9).
+     *
+     * The new unit's tenancy that covered the row's rent period, else its
+     * active tenancy - the one the create path uses, and harmless for standing,
+     * which ignores receipts from before a tenancy began - else nobody.
+     */
+    let reattributed: { tenant_profile_id: string | null; assignment_id: string | null } | null = null;
+    if (roomNumber && roomId !== before.room_id) {
+      const tenancy = await tenancyForPeriod(
+        roomId,
+        String(dateCoveredStart ?? before.rent_period_start ?? datePaid ?? before.date_paid ?? '')
+      );
+      reattributed = {
+        tenant_profile_id: tenancy?.tenant_profile_id ?? null,
+        assignment_id: tenancy?.id ?? null,
+      };
+    }
+
     const rent = rentAmount !== undefined ? Number(rentAmount) : Number(before.rent_amount);
     const occ = occupants !== undefined ? Number(occupants) : Number(before.occupants || 1);
 
@@ -3092,6 +3184,10 @@ router.patch(
     };
 
     if (roomId) updatePatch.room_id = roomId;
+    if (reattributed) {
+      updatePatch.tenant_profile_id = reattributed.tenant_profile_id;
+      updatePatch.assignment_id = reattributed.assignment_id;
+    }
     if (datePaid) updatePatch.date_paid = datePaid;
     if (contactName) updatePatch.contact_name = contactName;
     if (invoiceNumber) updatePatch.invoice_number = invoiceNumber;
@@ -3245,30 +3341,79 @@ router.delete(
       );
     }
 
-    const { data: voided, error } = await db
-      .from('monthly_income_records')
-      .update({
-        voided_at: new Date().toISOString(),
-        voided_by: req.user!.profileId,
-        void_reason: 'Administrator manual deletion'
-      })
-      .eq('id', req.params.id)
-      .is('voided_at', null)
-      .select('id');
+    /**
+     * A GCash settlement is reversed with its void, in one transaction.
+     *
+     * Voiding used to set `voided_at` on this row and nothing else. For a GCash
+     * payment that left the payment Verified and its bill Paid, so after a
+     * chargeback - which the webhook tells her to handle by voiding here - the
+     * tenant's portal still read Paid and the checkout refused to open for the
+     * period (FINAL_REVIEW F2, B-71). `void_income_record` (migration 054) voids
+     * the row, marks that one Adyen Online payment Rejected, and re-derives its
+     * bill from what is still Verified. On-site receipts are voided and nothing
+     * else, as before: which bills one month of a multi-month receipt should
+     * reopen has no single right answer.
+     *
+     * Until 054 is applied the function does not exist, and this falls back to
+     * the plain void below rather than taking voiding down with it.
+     */
+    let reversal: { payment_id: string | null; bill_id: string | null; bill_status: string | null } | null = null;
+    const { data: rpcResult, error: rpcError } = await db.rpc('void_income_record', {
+      p_income_id: req.params.id,
+      p_voided_by: req.user!.profileId,
+      p_reason: 'Administrator manual deletion',
+    });
 
-    if (error) throw ApiError.internal(error.message);
-    if (!voided || voided.length === 0) {
-      throw ApiError.conflict(
-        'That income record was voided by someone else a moment ago. Nothing was changed. ' +
-        'Reload the ledger.'
-      );
+    const functionMissing =
+      !!rpcError && (rpcError.code === '42883' || rpcError.code === 'PGRST202');
+
+    if (rpcError && !functionMissing) throw ApiError.internal(rpcError.message);
+
+    if (!functionMissing) {
+      const result = (rpcResult ?? {}) as {
+        already_voided?: boolean; payment_id?: string | null; bill_id?: string | null; bill_status?: string | null;
+      };
+      if (result.already_voided) {
+        throw ApiError.conflict(
+          'That income record was voided by someone else a moment ago. Nothing was changed. ' +
+          'Reload the ledger.'
+        );
+      }
+      reversal = {
+        payment_id: result.payment_id ?? null,
+        bill_id: result.bill_id ?? null,
+        bill_status: result.bill_status ?? null,
+      };
+    } else {
+      const { data: voided, error } = await db
+        .from('monthly_income_records')
+        .update({
+          voided_at: new Date().toISOString(),
+          voided_by: req.user!.profileId,
+          void_reason: 'Administrator manual deletion'
+        })
+        .eq('id', req.params.id)
+        .is('voided_at', null)
+        .select('id');
+
+      if (error) throw ApiError.internal(error.message);
+      if (!voided || voided.length === 0) {
+        throw ApiError.conflict(
+          'That income record was voided by someone else a moment ago. Nothing was changed. ' +
+          'Reload the ledger.'
+        );
+      }
     }
 
     await auditFromRequest(req, {
       action: 'PAYMENT_CORRECT',
       entityType: 'PAYMENT',
       entityId: req.params.id,
-      previousValues: before
+      previousValues: before,
+      ...(reversal?.payment_id
+        ? { newValues: { gcash_payment_reversed: reversal.payment_id, bill_id: reversal.bill_id,
+                         bill_status: reversal.bill_status } }
+        : {}),
     });
 
     res.status(200).json({ success: true, data: { message: 'Income record voided.' } });
@@ -3294,6 +3439,10 @@ router.get(
         )
         .is('voided_at', null)
         .order('expense_date', { ascending: false })
+        // Unique last key, as the expense export already has: this list is more
+        // than one page, and rows sharing a date have no fixed order between two
+        // queries, so an entry could be counted twice or not at all (FINAL_REVIEW F8).
+        .order('id', { ascending: true })
         .range(from, from + batchSize - 1);
 
       if (year) {

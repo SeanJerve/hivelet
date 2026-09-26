@@ -59,7 +59,7 @@ export interface WebhookResult {
  * `false` here means "worth recording, not worth waking anyone" - a capture or a
  * report is routine. Anything absent from this map keeps the old behaviour.
  */
-const REVERSAL_EVENTS: Record<string, { priority: NotificationPriority; meaning: string }> = {
+const REVERSAL_EVENTS: Record<string, { priority: NotificationPriority; meaning: string; advice?: string }> = {
   CHARGEBACK: { priority: 'Emergency',
     meaning: 'the money has been TAKEN BACK by the payer’s bank or wallet provider' },
   SECOND_CHARGEBACK: { priority: 'Emergency',
@@ -80,6 +80,40 @@ const REVERSAL_EVENTS: Record<string, { priority: NotificationPriority; meaning:
     meaning: 'a refund was attempted and DID NOT go through - the payer has not been paid back' },
   REFUNDED_REVERSED: { priority: 'High',
     meaning: 'a refund was reversed and the money has come back to you' },
+  /**
+   * An AUTHORISATION that will never become money. The authorisation itself was
+   * recorded as `Pending Verification`, so it is sitting in her queue looking
+   * exactly like a payment she should verify. These were absent from this map
+   * and so were answered with an audit row and nothing else (FINAL_REVIEW F4).
+   */
+  CAPTURE_FAILED: { priority: 'High',
+    meaning: 'the capture FAILED, so this authorised payment never reached your account',
+    advice: 'If it is still waiting for your verification, do not verify it: reject it. ' +
+            'If it was already verified, void it here, because the money never arrived.' },
+  EXPIRE: { priority: 'High',
+    meaning: 'this authorisation EXPIRED before it was captured, and the money went back to the payer',
+    advice: 'If it is still waiting for your verification, do not verify it: reject it. ' +
+            'If it was already verified, void it here, because the money never arrived.' },
+  TECHNICAL_CANCEL: { priority: 'High',
+    meaning: 'Adyen cancelled this payment for a technical reason before the money settled',
+    advice: 'If it is still waiting for your verification, do not verify it: reject it. ' +
+            'If it was already verified, void it here, because the money never arrived.' },
+};
+
+/**
+ * A REQUEST SHE MADE, AND WHETHER IT WENT THROUGH.
+ *
+ * For these, Adyen's `success` is the answer: "false" means the refund or
+ * cancellation was REFUSED and the money has not moved. The map above was read
+ * by `eventCode` alone, so a refused refund was announced as "this payment has
+ * been refunded to the payer", with advice to void a payment she still holds
+ * (FINAL_REVIEW F4). A chargeback has no such reading - it is not her request,
+ * and Adyen reports it as it happens - so it is not listed here.
+ */
+const REQUESTED_MODIFICATIONS: Record<string, string> = {
+  REFUND: 'a refund',
+  CANCEL_OR_REFUND: 'a cancellation or refund',
+  CANCELLATION: 'a cancellation',
 };
 
 /**
@@ -177,6 +211,8 @@ export async function applyNotificationItem(
      */
     let subject = '';
     const originalReference = String(item.originalReference ?? '').trim();
+    // Her own refund or cancellation, and Adyen refused it: nothing moved.
+    const refusedRequest = !success && eventCode in REQUESTED_MODIFICATIONS;
     if (reversal && originalReference) {
       const { data: original, error: originalError } = await db
         .from('payments')
@@ -203,9 +239,10 @@ export async function applyNotificationItem(
           `It was PHP ${Number(row.amount).toFixed(2)} from ${who} (unit ${room}), paid ` +
           `${when} and currently recorded as "${row.verification_status}". `;
       } else {
-        subject =
-          'No payment with that reference is recorded in Hivelet, so nothing here needs voiding - ' +
-          'but check the Adyen dashboard, because the money moved there. ';
+        subject = refusedRequest
+          ? 'No payment with that reference is recorded in Hivelet. '
+          : 'No payment with that reference is recorded in Hivelet, so nothing here needs voiding - ' +
+            'but check the Adyen dashboard, because the money moved there. ';
       }
     }
 
@@ -216,7 +253,11 @@ export async function applyNotificationItem(
       entityId: pspReference,
       newValues: { pspReference, originalReference: originalReference || null,
                    merchantReference: item.merchantReference ?? null, eventCode, success,
-                   note: reversal
+                   note: refusedRequest
+                     ? `Adyen ${eventCode} with success=false: the request was REFUSED and no money ` +
+                       'moved. The ledger was NOT changed, and nothing needs voiding. The ' +
+                       'administrator was notified so the request can be made again if it is still owed.'
+                     : reversal
                      ? `Adyen ${eventCode} acknowledged. The ledger was NOT changed - reversing a ` +
                        'recorded payment is the administrator’s decision (BR-048), not the ' +
                        'gateway’s. A high-priority notification was raised so she can void it ' +
@@ -225,15 +266,31 @@ export async function applyNotificationItem(
       ipAddress
     });
 
-    if (reversal) {
+    const references =
+      `Reference ${pspReference}${originalReference ? `, original payment ${originalReference}` : ''}.`;
+
+    if (refusedRequest) {
+      const what = REQUESTED_MODIFICATIONS[eventCode];
+      await notificationService.notify({
+        title: `Online payment: ${what.replace(/^an? /, '')} did not go through`,
+        message:
+          `Adyen reports that ${what} on this payment did NOT go through. The money has not ` +
+          `moved and is still in your account. ${subject}` +
+          'Nothing needs voiding in Hivelet. If the payer is still owed this money, make the ' +
+          `request again from the Adyen dashboard. ${references}`,
+        type: 'Payment',
+        priority: 'High',
+        relatedEntityType: 'PAYMENT',
+      }).catch(() => {});
+    } else if (reversal) {
       await notificationService.notify({
         title: `Online payment: ${eventCode.replace(/_/g, ' ').toLowerCase()}`,
         message:
           `Adyen reports that ${reversal.meaning}. ${subject}` +
           'Hivelet has NOT changed the ledger, because reversing a payment is your decision and ' +
-          'is recorded against your name. Check the Adyen dashboard, then void the payment here ' +
-          'if the money really has gone back. ' +
-          `Reference ${pspReference}${originalReference ? `, original payment ${originalReference}` : ''}.`,
+          'is recorded against your name. Check the Adyen dashboard, then ' +
+          (reversal.advice ?? 'void the payment here if the money really has gone back.') +
+          ` ${references}`,
         type: 'Payment',
         priority: reversal.priority,
         relatedEntityType: 'PAYMENT',
@@ -242,7 +299,9 @@ export async function applyNotificationItem(
 
     return {
       pspReference, eventCode, outcome: 'ignored',
-      detail: reversal ? `${eventCode} - administrator notified` : 'not an AUTHORISATION',
+      detail: refusedRequest
+        ? `${eventCode} refused - administrator notified`
+        : reversal ? `${eventCode} - administrator notified` : 'not an AUTHORISATION',
     };
   }
 
@@ -373,7 +432,10 @@ export async function applyNotificationItem(
   const account = String(item.merchantAccountCode ?? '');
   const expectedAccount = config.adyen.merchantAccount;
 
-  if (currency !== 'PHP' || (expectedAccount && account && account !== expectedAccount)) {
+  // An EMPTY account passed this check (`account &&`). The field is signed, so
+  // it cannot be forged empty, but a notification that does not say which
+  // account it was for is not one this property can bank (FINAL_REVIEW, low).
+  if (currency !== 'PHP' || (expectedAccount && account !== expectedAccount)) {
     await recordAudit({
       actorProfileId: null,
       action: 'PAYMENT_RECORD',

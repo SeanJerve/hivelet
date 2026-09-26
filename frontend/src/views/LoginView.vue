@@ -270,13 +270,14 @@ async function handleQuickLogin(account: DemoAccount) {
                 Either identifier is accepted (OD-09: a tenant may have no
                 email, but every tenant has a phone number), so this is
                 type="text". type="email" would make the browser reject a
-                phone number before it was ever sent.
+                phone number before it was ever sent. For the same reason there
+                is no inputmode="tel": an iPhone's telephone keypad has no
+                letters and no @, so an email could not be typed at all.
               -->
               <input
                 id="login-email"
                 v-model="email"
                 type="text"
-                inputmode="tel"
                 autocomplete="username"
                 required
                 placeholder="0917-000-0000 or you@email.com"

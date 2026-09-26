@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import { periodEnd, propertyToday } from '@/lib/propertyDate';
+import { periodEnd, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
@@ -21,6 +21,7 @@ import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
+import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
 import { Plus, Search, Pencil, Trash2, X, Loader2, Check, FileSpreadsheet, Table as TableIcon, ChevronDown } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import Skeleton from '@/components/ui/Skeleton.vue';
@@ -333,9 +334,10 @@ onMounted(() => {
  * computed separately are two things that can disagree, and the number is the
  * one nobody checks.
  *
- * The date handling is the original's, unchanged: a row whose `datePaid` will
- * not parse is left in rather than silently dropped, and a row with no date at
- * all is excluded only once a month or year has actually been asked for.
+ * The year and month are the ones the row is filed under - the month the rent
+ * is for - not the date paid. The date paid put rent collected in late December
+ * for January into the other year from the Overview and the Excel export, and
+ * left a row whose date would not parse in every month at once (FINAL_REVIEW F3).
  */
 function matchesExceptCluster(r: IncomeRecord): boolean {
   const query = q.value.toLowerCase().trim();
@@ -348,22 +350,8 @@ function matchesExceptCluster(r: IncomeRecord): boolean {
     return false;
   }
 
-  if (r.datePaid && r.datePaid !== '—') {
-    const d = new Date(r.datePaid);
-    if (!isNaN(d.getTime())) {
-      if (filterYear.value !== 'All' && String(d.getFullYear()) !== filterYear.value) return false;
-      if (
-        filterMonth.value !== 'All' &&
-        d.toLocaleString('en-US', { month: 'short' }) !== filterMonth.value
-      ) {
-        return false;
-      }
-    }
-  } else if (filterYear.value !== 'All' || filterMonth.value !== 'All') {
-    return false;
-  }
-
-  return true;
+  // The month the rent is for, as the Overview and the Excel export count it.
+  return incomeRowInPeriod(r, filterYear.value, filterMonth.value);
 }
 
 const rows = computed(() =>
@@ -457,13 +445,13 @@ const collectionsByMonth = computed<CapsuleMonth[]>(() => {
   const totals = new Array(12).fill(0);
   const seen = new Array(12).fill(false);
 
+  // Filed and summed as the Overview's capsules are: the month the rent is for,
+  // rent plus water (lib/incomeFiling.ts).
   for (const r of rows.value) {
-    if (!r.datePaid || r.datePaid === '—') continue;
-    const d = new Date(r.datePaid);
-    if (isNaN(d.getTime())) continue;
-    const m = d.getMonth();
-    seen[m] = true;
-    totals[m] += r.rent + r.water + r.garbage;
+    const month = incomeRowMonth(r);
+    if (month === null) continue;
+    seen[month - 1] = true;
+    totals[month - 1] += r.rent + r.water;
   }
 
   return MONTH_SHORT.map((short, i) => ({
@@ -1313,7 +1301,7 @@ async function exportExcel() {
               </div>
               <div v-if="p.paid_at" class="flex gap-1.5">
                 <dt class="text-ink-faint">Sent</dt>
-                <dd>{{ new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</dd>
+                <dd>{{ new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE }) }}</dd>
               </div>
             </dl>
 

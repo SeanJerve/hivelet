@@ -208,6 +208,8 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
       .order('month', { ascending: true })
       .order('date_paid', { ascending: true })
       .order('invoice_number', { ascending: true })
+      // Those three can tie, and pages are separate queries (FINAL_REVIEW F8).
+      .order('id', { ascending: true })
       .range(from, from + BATCH - 1);
 
     if (error) throw ApiError.internal(`The income ledger could not be read: ${error.message}`);

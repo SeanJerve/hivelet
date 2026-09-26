@@ -1,5 +1,7 @@
 /**
- * Verifies the Adyen webhook HMAC implementation.
+ * Verifies the Adyen webhook HMAC implementation, and two things around it that
+ * decide money: the checkout session expires inside its hold, and a gateway
+ * event is described to the owner as what actually happened (FINAL_REVIEW F1, F4).
  *
  * Run with `npm run check:adyen` from `backend/`. Builds first, touches nothing,
  * and needs no credentials.
@@ -229,6 +231,134 @@ check('an eventDate older than 90 days is NOT trusted',
 check('89 days late is still a delivery delay, and trusted',
   et(new Date(NOW - 89 * 24 * HOUR).toISOString()).fromGateway, true);
 check('a fallback never claims to come from the gateway', et(undefined).fromGateway, false);
+
+/**
+ * A CHECKOUT SESSION MUST NOT OUTLIVE THE HOLD THAT STOPS A SECOND ONE.
+ *
+ * The tenant checkout refuses a second session on a bill for CHECKOUT_HOLD_MS
+ * after the first opens (migration 051). Adyen keeps a session payable for an
+ * hour unless told otherwise, and the Drop-in stays mounted until the dialog is
+ * closed - so without `expiresAt` a tab left open past the hold could take a
+ * second full payment after a second session was opened and paid (FINAL_REVIEW
+ * F1). Checked against the request body itself: `fetch` is replaced, so nothing
+ * leaves this machine, and the environment values below are placeholders that
+ * only make `isLiveConfigured()` true.
+ */
+Object.assign(process.env, {
+  JWT_SECRET: process.env.JWT_SECRET || 'check-adyen-placeholder-secret-0123456789abcdef',
+  SUPABASE_URL: process.env.SUPABASE_URL || 'https://placeholder.invalid',
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder',
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'placeholder',
+  ADYEN_API_KEY: 'check-adyen-api-key',
+  ADYEN_MERCHANT_ACCOUNT: 'CheckAdyenMerchant',
+  ADYEN_CLIENT_KEY: 'test_checkadyenclientkey',
+  ADYEN_HMAC_KEY: KEY,
+  ADYEN_ENVIRONMENT: 'TEST',
+});
+const svc = await import('../dist/services/adyenService.js');
+const realFetch = globalThis.fetch;
+let sentBody = null;
+globalThis.fetch = async (_url, init) => {
+  sentBody = JSON.parse(String(init?.body ?? '{}'));
+  return new Response(JSON.stringify({ id: 'CS_CHECK', sessionData: 'opaque' }), { status: 201 });
+};
+const opened = Date.now();
+try {
+  await svc.adyenService.createCheckoutSession(
+    '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000002', 6900
+  );
+} finally {
+  globalThis.fetch = realFetch;
+}
+const HOLD_MS = svc.CHECKOUT_HOLD_MS ?? 15 * 60 * 1000;
+const expiresMs = Date.parse(sentBody?.expiresAt ?? '');
+check('the session request carries an expiresAt', Number.isFinite(expiresMs), true);
+check('the session expires before the checkout hold lapses',
+  Number.isFinite(expiresMs) && expiresMs <= opened + HOLD_MS, true);
+check('but leaves the tenant at least ten minutes to pay',
+  Number.isFinite(expiresMs) && expiresMs - opened >= 10 * 60 * 1000, true);
+check('the amount still goes out in centavos', sentBody?.amount, { currency: 'PHP', value: 690000 });
+const tenantRouteSource = readFileSync(new URL('../src/routes/tenant.ts', import.meta.url), 'utf8');
+check('the tenant route takes the hold from adyenService rather than its own copy',
+  /CHECKOUT_HOLD_MS\s*=/.test(tenantRouteSource), false);
+
+/**
+ * WHAT THE OWNER IS TOLD WHEN MONEY MOVES THE OTHER WAY - AND WHEN IT DID NOT.
+ *
+ * For a modification event Adyen's `success` says whether it happened. A REFUND
+ * with success "false" is a refund Adyen refused: the money is still hers. It
+ * was announced as "this payment has been refunded to the payer", with advice to
+ * void the payment (FINAL_REVIEW F4). Driven through the real handler: the
+ * database client and the notifier are replaced, so nothing is read or written.
+ */
+const { db: stubDb } = await import('../dist/config/db.js');
+const { notificationService: stubNotifier } = await import('../dist/services/notificationService.js');
+const { applyNotificationItem } = await import('../dist/services/adyenWebhookHandler.js');
+const recordedPayment = {
+  id: '00000000-0000-4000-8000-000000000003', amount: 6900, paid_at: '2026-09-03T02:00:00Z',
+  verification_status: 'Verified', rooms: { room_number: '2e' }, profiles: { full_name: 'Test Tenant' },
+};
+const chain = () => new Proxy(() => {}, {
+  get: (_t, prop) => prop === 'then'
+    ? (resolve) => resolve({ data: recordedPayment, error: null })
+    : () => chain(),
+  apply: () => chain(),
+});
+const realFrom = stubDb.from;
+const realNotify = stubNotifier.notify;
+let told = [];
+stubDb.from = () => chain();
+stubNotifier.notify = async (opts) => { told.push(opts); return null; };
+async function tell(eventCode, success) {
+  told = [];
+  const result = await applyNotificationItem({
+    pspReference: 'MOD123', originalReference: 'AUTH123', merchantAccountCode: 'CheckAdyenMerchant',
+    merchantReference: 'BILL-x', amount: { value: 690000, currency: 'PHP' }, eventCode, success,
+  }, null);
+  return { result, message: told[0]?.message ?? '', priority: told[0]?.priority ?? null, count: told.length };
+}
+try {
+  const refunded = await tell('REFUND', 'true');
+  check('a refund that happened is announced as one', /has been refunded to the payer/.test(refunded.message), true);
+  check('and still advises voiding the payment', /void the payment/.test(refunded.message), true);
+
+  const refused = await tell('REFUND', 'false');
+  check('a refused refund is still reported, never silent', refused.count, 1);
+  check('a refused refund is NOT announced as a refund', /has been refunded to the payer/.test(refused.message), false);
+  check('a refused refund says it did not happen', /did NOT go through/.test(refused.message), true);
+  check('and does not advise voiding a payment she still holds', /void the payment here/.test(refused.message), false);
+  check('the payment it refers to is still named', /Test Tenant \(unit 2e\)/.test(refused.message), true);
+  check('a refused refund is acknowledged, not retried', refused.result.outcome, 'ignored');
+
+  const cancelRefused = await tell('CANCEL_OR_REFUND', false);
+  check('a refused cancel-or-refund says it did not happen', /did NOT go through/.test(cancelRefused.message), true);
+
+  const captureFailed = await tell('CAPTURE_FAILED', 'true');
+  check('a failed capture is reported to the owner', captureFailed.count, 1);
+  check('a failed capture warns against verifying', /do not verify/i.test(captureFailed.message), true);
+  check('an expired authorisation is reported', (await tell('EXPIRE', 'true')).count, 1);
+  check('a technical cancel is reported', (await tell('TECHNICAL_CANCEL', 'true')).count, 1);
+  check('a routine capture still wakes nobody', (await tell('CAPTURE', 'true')).count, 0);
+
+  // An authorisation that names no merchant account is not banked. The stub now
+  // finds nothing anywhere, so reaching an insert would mean it was accepted.
+  let inserted = false;
+  const empty = () => new Proxy(() => {}, {
+    get: (_t, prop) => prop === 'then'
+      ? (resolve) => resolve({ data: null, error: null })
+      : (...args) => { if (prop === 'insert' && args[0]?.payment_method) inserted = true; return empty(); },
+  });
+  stubDb.from = () => empty();
+  const noAccount = await applyNotificationItem({
+    pspReference: 'AUTH-NOACCT', originalReference: '', merchantAccountCode: '',
+    merchantReference: 'BILL-00000000-0000-4000-8000-000000000001-1', amount: { value: 690000, currency: 'PHP' },
+    eventCode: 'AUTHORISATION', success: 'true',
+  }, null);
+  check('an authorisation naming no merchant account is not banked', [noAccount.outcome, inserted], ['ignored', false]);
+} finally {
+  stubDb.from = realFrom;
+  stubNotifier.notify = realNotify;
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

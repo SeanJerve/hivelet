@@ -72,6 +72,27 @@ export interface SessionDetails {
  */
 const SESSION_TTL_MS = 60 * 60 * 1000;
 
+/**
+ * How long a new checkout on a bill is refused after one opens (migration 051,
+ * `claimCheckout` in routes/tenant.ts). Defined here because the Adyen session
+ * below has to expire inside it: Adyen keeps a session payable for an hour
+ * unless told otherwise, and the Drop-in stays mounted until the dialog is
+ * closed, so a tab left open past the hold could take a second full payment
+ * after a second session was opened and paid (FINAL_REVIEW F1).
+ */
+export const CHECKOUT_HOLD_MS = 15 * 60 * 1000;
+
+/**
+ * When Adyen stops accepting payment on a new session: a minute inside the hold,
+ * so a difference between our clock and Adyen's cannot leave both open at once.
+ * `toISOString()`, byte for byte the form Adyen's own SDK sends for this field
+ * (@adyen/api-library 32, ObjectSerializer, `Date` -> `toISOString()`); its
+ * model documents a one-hour default and a 24-hour maximum, and no minimum.
+ */
+function sessionExpiresAt(nowMs: number): string {
+  return new Date(nowMs + CHECKOUT_HOLD_MS - 60 * 1000).toISOString();
+}
+
 /** Drops sessions older than the TTL. Cheap: this map holds tens of entries. */
 function sweepExpiredSessions(nowMs: number): void {
   for (const [id, s] of checkoutSessions) {
@@ -226,6 +247,7 @@ export const adyenService = {
             // 55 characters, within Adyen's 80-character merchantReference limit.
             reference: `BILL-${billId}-${Date.now()}`,
             returnUrl: fallbackReturnUrl,
+            expiresAt: sessionExpiresAt(Date.now()),
             shopperLocale: 'en-US',
             channel: 'Web',
             /**

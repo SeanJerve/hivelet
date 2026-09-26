@@ -484,7 +484,44 @@ if (unaudited.length > 0) {
   );
 }
 
-if (findings.length > 0 || readsOverBudget || unaudited.length > 0 || unguarded.length > 0) process.exit(1);
+/**
+ * A PAGED READ MUST END ITS ORDERING ON A UNIQUE KEY.
+ *
+ * `.range()` pages are separate queries, and PostgreSQL gives no fixed order
+ * among rows that tie on the sort key - so a page boundary that falls inside a
+ * run of equal dates can return one row twice and another never. The expense
+ * and income lists that feed the Overview and both ledgers ordered by a date
+ * alone, and the expense ledger was already past one page (FINAL_REVIEW F8).
+ * `expenseReportExport.ts` had already added `.order('id')` for exactly this;
+ * the list endpoints had not. The statement is read back from the `.range(`
+ * line to the `.from(` that opened it.
+ */
+const unstablePages = [];
+for (const file of scanned) {
+  const lines = fs.readFileSync(file, 'utf8').split('\n');
+  lines.forEach((line, i) => {
+    if (!/\.range\s*\(/.test(line) || /^\s*(\*|\/\/)/.test(line)) return;
+    let start = i;
+    while (start > 0 && i - start < 30 && !/\.from\s*\(/.test(lines[start])) start -= 1;
+    if (!/\.from\s*\(/.test(lines[start])) return;   // not a query
+    const statement = lines.slice(start, i + 1).join('\n');
+    if (!/\.order\(\s*['"]id['"]/.test(statement)) {
+      unstablePages.push(`${path.relative(root, file)}:${i + 1}`);
+    }
+  });
+}
+if (unstablePages.length > 0) {
+  console.log(`\n  FAIL  ${unstablePages.length} paged read(s) do not end their ordering on id:`);
+  for (const u of unstablePages) console.log(`          ${u}`);
+  console.log(
+    '\n  Rows that tie on the sort key have no fixed order between two queries, so\n' +
+    '  a page boundary can repeat one and drop another. Add .order(\'id\') last.'
+  );
+} else {
+  console.log('\n  OK    paged reads - every .range() read ends its ordering on id');
+}
+
+if (findings.length > 0 || readsOverBudget || unaudited.length > 0 || unguarded.length > 0 || unstablePages.length > 0) process.exit(1);
 
 console.log('\nALL CHECKS PASSED');
 process.exit(0);
