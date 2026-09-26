@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
-import { periodEnd, propertyToday } from '@/lib/propertyDate';
+import { periodEnd, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
@@ -1301,7 +1301,7 @@ async function exportExcel() {
               </div>
               <div v-if="p.paid_at" class="flex gap-1.5">
                 <dt class="text-ink-faint">Sent</dt>
-                <dd>{{ new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</dd>
+                <dd>{{ new Date(p.paid_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', timeZone: PROPERTY_TIMEZONE }) }}</dd>
               </div>
             </dl>
 
