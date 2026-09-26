@@ -212,6 +212,26 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   read whose ordering does not end on a unique key.
 - **Status:** see the fix log below.
 
+## F9. Moving a receipt to the right unit leaves it credited to the wrong tenant
+
+- **Where:** `backend/src/routes/admin.ts`, `PATCH /admin/income-records/:id`. A new
+  `roomNumber` rewrites `room_id`; `tenant_profile_id` and `assignment_id` are never touched.
+- **What breaks:** the edit dialog on Money coming in offers every unit with its tenant's name,
+  and the route's own comment says moving the row "is the point of supplying the number". But a
+  tenant's standing (`readStanding`: paid-through, the portal's Amount due, what the GCash checkout
+  bills) is read by `tenant_profile_id`, not by unit. After the move:
+  - the tenant who actually paid still has that period uncovered, so the portal says it is owed
+    and the checkout will charge it again;
+  - the tenant it was wrongly entered against keeps it, so their unpaid month reads as paid.
+- **Trigger:** cash from unit 2B is recorded against 2A by mistake. She opens the row, picks 2B,
+  saves. 2B's tenant opens the portal, sees the month due, and pays it again by GCash.
+- **Severity:** high. The correction she is offered for a wrong-unit entry produces a double
+  charge on one tenant and a hidden arrear on another.
+- **Fix:** when the unit changes, re-attribute the row to the tenancy of the new unit that covered
+  the row's rent period (by `start_date`/`end_date`), or to nobody if none did. The payments rows
+  from the original entry are the F2 problem and stay with it.
+- **Status:** see the fix log below.
+
 ## Low severity, recorded and left
 
 - **The merchant account check passes an empty value.** `adyenWebhookHandler.ts` refuses a
