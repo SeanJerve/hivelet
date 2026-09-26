@@ -430,6 +430,11 @@ router.get(
       .select('id, rent_period_start, rent_period_end, date_paid, remitted_amount, gbg_fee, ' +
               'payment_method, verification_status')
       .eq('tenant_profile_id', req.user!.profileId)
+      // A voided receipt keeps `verification_status = 'Verified'`, so without
+      // this the portal listed it as a real payment (B-75: unit 1a's receipt
+      // voided on 2026-09-22 read as a Verified P8,200). Every other reader of
+      // this table already skips voided rows; standing does too.
+      .is('voided_at', null)
       .order('date_paid', { ascending: false });
 
     if (error) throw ApiError.internal(error.message);
