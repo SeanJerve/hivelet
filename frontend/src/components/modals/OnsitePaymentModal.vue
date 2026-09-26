@@ -10,6 +10,7 @@ import {
   formatUnitOccupantsSummary, 
   showToast,
   roomsFetchFailed,
+  incomeRecordsFetchFailed,
   asListedUnitCode,
   type IncomeRecord
 } from '@/lib/systemState';
@@ -386,6 +387,22 @@ const confirmAction = ref<(() => void) | null>(null);
 const overlappingPayments = ref<IncomeRecord[]>([]);
 
 /**
+ * Snapshot of `incomeRecordsFetchFailed` at the moment the check below ran.
+ *
+ * `findOverlappingPayments` reads `incomeRecords` as if it is complete. If the
+ * ledger failed to load - first admin screen touched this session, a dropped
+ * connection, a backend restart - `incomeRecords` can be empty or stale while
+ * `overlappingPayments` comes back `[]` for the ordinary reason, and an empty
+ * result read as "confirmed clear" is the exact defect class this project has
+ * already found and fixed five times (`*FetchFailed` refs throughout
+ * systemState.ts; `roomsFetchFailed`'s own hint two fields above this one:
+ * "ask, do not assume"). This makes the same distinction here: the confirm
+ * dialog needs to say "the check could not run" rather than silently show no
+ * warning and let that read as an answer.
+ */
+const overlapCheckFailed = ref(false);
+
+/**
  * Mirrors `monthlySpansFrom` in backend/src/services/billingService.ts closely
  * enough for a warning: same anchor-day-and-clamp arithmetic, so "the 15th of
  * this month" and "the 15th of next month" agree with what the server would
@@ -460,6 +477,7 @@ function handleConfirmAccept() {
 function closeModal() {
   isOnsitePaymentModalOpen.value = false;
   overlappingPayments.value = [];
+  overlapCheckFailed.value = false;
 }
 
 function triggerRecord() {
@@ -532,6 +550,7 @@ function triggerRecord() {
   // still one click away, same as any other submission.
   const warningSpans = monthYearSpansForWarning(dateCoveredStart.value, mCovered);
   overlappingPayments.value = findOverlappingPayments(unitUpper, room?.id, warningSpans);
+  overlapCheckFailed.value = incomeRecordsFetchFailed.value;
 
   showConfirm(
     async () => {
@@ -843,6 +862,24 @@ function triggerRecord() {
       @close="isConfirmOpen = false"
     >
       <!--
+        Not "no warning" - "the check did not run". See `overlapCheckFailed`.
+        Same posture as `roomsFetchFailed`'s hint on the rent field: say what
+        is not known, rather than let silence be read as "confirmed clear".
+      -->
+      <div
+        v-if="overlapCheckFailed"
+        class="ws-reveal mb-3 flex items-start gap-2 rounded-2xl bg-verify-soft p-4 text-sm leading-6 text-ink"
+        role="alert"
+      >
+        <AlertTriangle class="mt-0.5 size-4 shrink-0 text-verify" aria-hidden="true" />
+        <span>
+          The payment ledger could not be checked, so this could not be compared against what is
+          already recorded for {{ selectedUnit.toUpperCase() }}. Confirm yourself there isn't
+          already a payment for this period before recording.
+        </span>
+      </div>
+
+      <!--
         A warning, not a refusal - see the docblock on `overlappingPayments`.
         This unit already has a non-voided ledger row for a month this receipt
         is about to cover. That is sometimes exactly right (a remaining balance,
@@ -920,7 +957,7 @@ function triggerRecord() {
       <template #actions>
         <button type="button" class="pill-btn" @click="isConfirmOpen = false">Go back</button>
         <button type="button" class="pill-btn-brand" @click="handleConfirmAccept">
-          {{ overlappingPayments.length > 0 ? 'Record it anyway' : 'Record it' }}
+          {{ overlappingPayments.length > 0 || overlapCheckFailed ? 'Record it anyway' : 'Record it' }}
         </button>
       </template>
     </WsModal>
