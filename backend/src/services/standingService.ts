@@ -23,6 +23,41 @@ export interface ResidentStanding extends Standing {
 }
 
 /**
+ * When the tenant's CONTINUOUS stay began: the active tenancy, and every earlier
+ * one that ran into it with no gap (ended on or after the day before the next
+ * began).
+ *
+ * `computeStanding` never counts a period before `tenancyStart`, and a room move
+ * ends the old tenancy and starts a new one dated the day of the move. Passing
+ * the active tenancy's own start therefore wiped whatever was owed before a
+ * move from the portal and the checkout (FINAL_REVIEW F11). A tenant who left
+ * and came back after a gap still starts fresh, as before.
+ */
+async function continuousStayStart(tenantProfileId: string, activeStart: string): Promise<string> {
+  const { data, error } = await db
+    .from('room_assignments')
+    .select('start_date, end_date')
+    .eq('tenant_profile_id', tenantProfileId)
+    .order('start_date', { ascending: false });
+  if (error) throw ApiError.internal(error.message);
+
+  const dayBefore = (iso: string) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10);
+  };
+
+  let start = activeStart;
+  for (const t of (data ?? []) as { start_date: string; end_date: string | null }[]) {
+    const tStart = String(t.start_date).slice(0, 10);
+    const tEnd = t.end_date ? String(t.end_date).slice(0, 10) : null;
+    if (tStart >= start) continue;                      // the active one, or a later one
+    if (tEnd === null || tEnd >= dayBefore(start)) start = tStart;   // ran into the stay
+    else break;                                         // a gap: the stay began at `start`
+  }
+  return start;
+}
+
+/**
  * The resident's standing, or null when they hold no active tenancy.
  *
  * Paid-through is the latest `rent_period_end` on a VERIFIED, UNVOIDED receipt.
@@ -58,7 +93,7 @@ export async function readStanding(tenantProfileId: string): Promise<ResidentSta
   const today = propertyToday();
   const standing = computeStanding({
     paidThrough,
-    tenancyStart: String(assignment.start_date).slice(0, 10),
+    tenancyStart: await continuousStayStart(tenantProfileId, String(assignment.start_date).slice(0, 10)),
     today,
   });
 
