@@ -23,7 +23,6 @@ import {
   fetchExpenseRecords,
   fetchMaintenanceTickets,
   fetchTenants,
-  isOnsitePaymentModalOpen,
   waterChargeFor,
   type RoomItem,
   type MaintenanceTicket,
@@ -53,7 +52,6 @@ import {
   ArrowLeft,
   Search,
 } from 'lucide-vue-next';
-import { downloadReport } from '@/lib/downloadReport';
 
 const router = useRouter();
 const route = useRoute();
@@ -653,29 +651,6 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
     .sort((a, b) => b.totalRevenue - a.totalRevenue)
 );
 
-/**
- * The year's two reports, as the workbooks she already keeps.
- *
- * This used to build a third format nobody else produces: one CSV with income
- * and expense rows stacked under a shared ten-column header, five of which were
- * always 0 for an expense row, plus a banner row and a totals row above the
- * header. Nothing verified it, no other screen wrote it, and it disagreed in
- * shape with both of the real reports.
- *
- * `check:reports` checks these two against the database month by month, which
- * is the whole reason to prefer them.
- */
-async function exportArchiveYear(kind: 'income' | 'expenses') {
-  if (isExportingArchive.value) return;
-  isExportingArchive.value = true;
-  try {
-    await downloadReport(kind, selectedArchiveYear.value);
-  } finally {
-    isExportingArchive.value = false;
-  }
-}
-
-const isExportingArchive = ref(false);
 </script>
 
 <template>
@@ -768,34 +743,16 @@ const isExportingArchive = ref(false);
         </div>
 
         <template v-if="!isHistoricalMode">
-          <button type="button" class="pill-btn-brand" @click="isOnsitePaymentModalOpen = true">
+          <router-link to="/admin/income?openPayment=1" class="pill-btn-brand">
             <Plus class="size-4" aria-hidden="true" />
             Record payment
-          </button>
-          <router-link to="/admin/expenses" class="pill-btn">
+          </router-link>
+          <router-link to="/admin/expenses?openExpense=1" class="pill-btn">
             <ReceiptText class="size-4 text-ink-soft" aria-hidden="true" />
             Record expense
           </router-link>
         </template>
         <template v-else>
-          <button
-            type="button"
-            class="pill-btn"
-            :disabled="isExportingArchive"
-            @click="exportArchiveYear('income')"
-          >
-            <FileSpreadsheet class="size-4" aria-hidden="true" />
-            {{ selectedArchiveYear }} income
-          </button>
-          <button
-            type="button"
-            class="pill-btn"
-            :disabled="isExportingArchive"
-            @click="exportArchiveYear('expenses')"
-          >
-            <FileSpreadsheet class="size-4" aria-hidden="true" />
-            {{ selectedArchiveYear }} expenses
-          </button>
           <button type="button" class="pill-btn-brand" @click="exitHistoricalMode">
             <ArrowLeft class="size-4" aria-hidden="true" />
             Back to {{ CURRENT_YEAR }}

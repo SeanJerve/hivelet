@@ -3,7 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { periodEnd, propertyToday } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { 
   incomeRecords, 
   fetchIncomeRecords, 
@@ -34,6 +34,7 @@ import SkeletonCard from '@/components/ui/SkeletonCard.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 
 const route = useRoute();
+const router = useRouter();
 const activeTab = ref<'ledger' | 'verify'>('ledger');
 
 interface ApiIncome {
@@ -294,6 +295,12 @@ function perOccupantWaterText(): string {
 onMounted(() => {
   if (route.query.tab === 'verify') {
     activeTab.value = 'verify';
+  }
+  if (route.query.openPayment === '1') {
+    isOnsitePaymentModalOpen.value = true;
+    const nextQuery = { ...route.query };
+    delete nextQuery.openPayment;
+    router.replace({ query: nextQuery });
   }
   fetchIncome();
   loadWaterRates();

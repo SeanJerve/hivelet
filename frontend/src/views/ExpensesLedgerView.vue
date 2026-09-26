@@ -3,6 +3,7 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { propertyToday } from '@/lib/propertyDate';
 import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
@@ -45,6 +46,8 @@ interface FormExpenseEntry {
 const q = ref('');
 const selectedCategory = ref('All');
 const isAddOpen = ref(false);
+const route = useRoute();
+const router = useRouter();
 const isLoading = ref(false);
 const isSubmitting = ref(false);
 const dbCategories = ref<ApiCat[]>([]);
@@ -278,6 +281,12 @@ async function fetchExpenses() {
 }
 
 onMounted(() => {
+  if (route.query.openExpense === '1') {
+    isAddOpen.value = true;
+    const nextQuery = { ...route.query };
+    delete nextQuery.openExpense;
+    router.replace({ query: nextQuery });
+  }
   fetchExpenses();
 });
 
