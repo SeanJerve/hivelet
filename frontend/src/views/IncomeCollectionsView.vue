@@ -938,7 +938,7 @@ async function exportExcel() {
 
         <button type="button" class="pill-btn-brand" @click="isOnsitePaymentModalOpen = true">
           <Plus class="size-4" aria-hidden="true" />
-          <span>Record a payment</span>
+          <span>Record payment</span>
         </button>
       </div>
     </div>

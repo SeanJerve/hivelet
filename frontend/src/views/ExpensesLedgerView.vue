@@ -764,7 +764,7 @@ async function handleEditExpense() {
 
         <button type="button" class="pill-btn-brand" @click="isAddOpen = true">
           <Plus class="size-4" aria-hidden="true" />
-          <span>Record an expense</span>
+          <span>Record expense</span>
         </button>
       </div>
     </div>
@@ -1061,7 +1061,7 @@ async function handleEditExpense() {
     <!-- Record Expense Modal (Supports Multiple Entries) -->
     <WsModal
       v-if="isAddOpen"
-      title="Record an expense"
+      title="Record expense"
       subtitle="Add several from the same day at once if you need to."
       size="lg"
       :dismissible="false"

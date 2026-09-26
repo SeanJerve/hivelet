@@ -659,7 +659,7 @@ function triggerRecord() {
 <template>
   <WsModal
     v-if="isOnsitePaymentModalOpen"
-    title="Record a payment"
+    title="Record payment"
     subtitle="Money handed over in person, or an online payment you are entering yourself."
     size="lg"
     :dismissible="false"
