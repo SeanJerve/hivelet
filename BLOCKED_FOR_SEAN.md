@@ -2841,6 +2841,23 @@ these three indistinguishable from the real residents.*
   401/403 wrote a permanent audit row (10,673 of 16,422 rows). Budgeted now, not removed
 - **Raised:** 2026-09-24 by Claude, backend audit
 
+> **Update, 2026-09-26 (Claude, backend):** the "non-UUID ids giving 500s" item under "still being
+> fixed in parallel" is now applied. Every id-shaped route param in `backend/src/routes/admin.ts`
+> (17 routes) and `backend/src/routes/tenant.ts` (3 routes) that reaches a Supabase query now runs
+> `requireUuidParam(paramName, resourceLabel)` — a new middleware, `backend/src/middleware/requireUuidParam.ts` — before the handler's first read, and answers a malformed id with the same
+> `ApiError.notFound` shape every other "no such row" check in these files already uses. This
+> replaces the one-off inline regex that had only been applied to `PATCH /admin/tenants/:profileId`
+> (`admin.ts:1076` now reads `requireUuidParam('profileId', 'Tenant profile')`), rather than adding a
+> second copy of it. Verified against: `npx tsc --noEmit` from `backend/` (exit 0); `npm run
+> check:all` from the repo root, 20/20 green including `check:api` against the live backend; and a
+> live check against the running dev backend and an admin session — `PATCH /api/admin/rooms/not-a-real-uuid`, `GET /api/admin/tickets/garbage/messages`, `GET /api/admin/inquiries/garbage/messages`,
+> `PATCH /api/admin/notifications/garbage/read` and `GET /api/tenant/tickets/not-a-uuid/messages` all
+> now return a clean `404 NOT_FOUND` naming the resource rather than a raw Postgres error, while a
+> well-formed but nonexistent id (`DELETE /api/admin/rooms/00000000-0000-0000-0000-000000000000`)
+> still falls through to the ordinary "Room not found." path — the existing not-found behaviour for
+> real ids is unchanged. The other three items under "still being fixed in parallel" — query
+> numbers, attachment URL scheme, and the money/Adyen items — are untouched and still open.
+
 ### B-64 — Sean's decisions on B-63, and what each lane still owes (2026-09-24)
 
 - **Sean's decisions, 2026-09-24:**
@@ -2887,6 +2904,57 @@ these three indistinguishable from the real residents.*
 > cap while the public site stays full width (af18081). The workspace mobile drawer now has 
 > `aria-controls` (252bd7a), and `/public#faqs` lands on its section (252bd7a). Both browser 
 > verification passes confirmed every B-61 frontend fix on screen, with the API mocked.
+
+> **Update, 2026-09-26 (Claude, backend):** decisions 2 and 3 are both applied now. The frontend
+> half (3fc5993) needed no changes — its contract was read first and matched exactly.
+>
+> **Decision 2, the 428 gate.** New middleware `requirePasswordCurrent`
+> (`backend/src/middleware/auth.ts:93-128`) answers `ApiError.passwordChangeRequired()` (428,
+> `backend/src/utils/ApiError.ts:104-109`) when `req.user.mustChangePassword` is true. It is
+> mounted, not folded into `requireAuth`: the whole `/admin` and `/tenant` routers carry it
+> (`backend/src/routes/admin.ts:46`, `backend/src/routes/tenant.ts:41`), and inside `auth.ts` it
+> sits on individual routes rather than as a path-matching exemption list buried in shared code —
+> see the reasoning at `middleware/auth.ts:93-121`. **`GET /auth/me`, `POST /auth/change-password`
+> and `POST /auth/logout` carry no gate, exactly as B-63 named. `PATCH /auth/me` now DOES** —
+> that one wasn't named either way in B-63's wording, and it isn't needed to get unstuck (unlike
+> the three exempted routes), so a one-time-password account can no longer edit its own profile
+> before replacing it. Reasoning is at `routes/auth.ts:228-243`; flag if you wanted it exempted
+> instead, it's a one-line change.
+>
+> **Decision 3, session invalidation.** `resolveAuthUser` (`authService.ts:237-291`) now takes the
+> JWT's own `iat` and rejects any token issued before the profile's `password_changed_at`, via a
+> new `ApiError.sessionSuperseded()` (401, `ApiError.ts:90-98`) — same shape as `TOKEN_EXPIRED` so
+> the frontend's `isAuthFailure` catches it with no changes there. `changeOwnPassword`
+> (`authService.ts:375-419`) now mints and returns a fresh token for the calling device in the
+> same response (`POST /auth/change-password`'s handler, `routes/auth.ts`, now returns
+> `{ data: { message, token } }`), matching exactly what `ChangePasswordModal.vue` already reads.
+>
+> **Verified against:** `npx tsc --noEmit` from `backend/`, exit 0. An isolated unit test (no DB,
+> no network — built, run against `dist/`, then deleted) exercised `requirePasswordCurrent` both
+> ways, both new `ApiError` factories, and the `iat`-vs-`password_changed_at` comparison at its
+> edges (one second before/at/after the change, and a week stale) — 12/12 passed. Logged into the
+> live app as every account `check:api` and `check:billing` depend on before touching anything:
+> **0 of 33 live accounts (the administrator plus all 32 seeded tenants) currently have
+> `must_change_password = true`**, so nobody already signed in is locked out by this. `npm run
+> check:all` from a bare rerun: **20/20**, read from the summary table
+> (`grep -E "^  (pass|FAIL)"`), not the tail — the first run showed `check:api` failing on a raw
+> `ECONNRESET` mid-suite, traced to the dev server hot-reloading when `tenant.ts` picked up an
+> unrelated concurrent edit from the other machine (a `requireUuidParam` addition) mid-run; reran
+> `check:api` alone clean (78/78), then `check:all` clean end to end. Live in the browser: signed
+> out of the real admin account and back in through the login page's Demo accounts panel — full
+> round trip, `POST /auth/login` through every `/admin/*` dashboard call, all 200, dashboard
+> rendered with real figures, no 428 anywhere in the network log. Did **not** exercise the
+> voluntary change-password success path against the real admin account — same reason
+> `check:api`'s own header gives for never probing it: rotating a live credential to prove a
+> feature works is not a test worth having.
+>
+> **No `must_change_password` account existed to prove the 428 gate against a real session** —
+> every live account already has it false, migration 048 set it false retroactively, and nothing
+> since has flagged one. The gate is proven by source-level unit test and by the fact every
+> unflagged account still passes through untouched, not by watching a live lockout happen. If
+> you want that last mile closed, the honest way is onboarding one throwaway tenant through the
+> real UI and watching the modal — flagging it in the database directly would be the ad-hoc write
+> rule 1 exists to forbid.
 
 ### B-65 — frontend files changed on Loyd's machine, at his request (2026-09-24)
 
