@@ -70,7 +70,7 @@ thing did not work" is not.
   (23 of 23).
 - **Raised:** 2026-09-26 by Claude (final review)
 
-### B-72 — a skipped month followed by a paid month reads as nothing owed · **DECIDED: report, not auto-bill**
+### ~~B-72 — a skipped month followed by a paid month reads as nothing owed~~ · **DECIDED and CLOSED: report ran clean**
 
 > **Decided 2026-09-26** (Sean delegated the call). Standing is NOT changed. Measured against her
 > source spreadsheet: her own book has month-sized holes with the same tenant either side (2026:
@@ -86,6 +86,13 @@ thing did not work" is not.
   Mrs. Da Silva. For each: if the month is owed, it is collected and recorded as usual; if it was
   paid and written elsewhere, the receipt is corrected.
 - **How to know it worked:** the list is empty, or every row on it has her answer.
+- **RESULT, 2026-09-26: no rows on the live data**, after the report stopped trusting tenancy
+  start dates. Cross-checked by hand on 3d, the unit her spreadsheet suggested: Alejandro
+  Delarosa's 2026 receipts run INV#5157 (15 Apr to 14 May), INV#5182 (typed as 1 to 31 May),
+  INV#5204 (15 Jun to 14 Jul). INV#5182 is almost certainly his 15 May to 14 Jun payment with the
+  period typed off his cycle, so the only uncovered stretch is 1 to 14 June, under a month. No
+  arrears are hidden. Optional tidy-up for her: correct INV#5182's period in the edit dialog.
+  Closed.
 - **Raised:** 2026-09-26 by Claude (final review)
 
 ---

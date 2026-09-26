@@ -191,7 +191,10 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
   holds real month-sized holes (2026: unit 3d mid-May to mid-June, unit 2f November to February)
   beside formatting noise, and whether each is owed is her fact. Standing is unchanged; the holes
   go to her as a read-only list, `database/migrations/DIAGNOSTIC_uncovered_rent_periods.sql`
-  (`4bda6b5`, checked in PGlite). B-72.
+  (`4bda6b5`, checked in PGlite). B-72. **Run on the live data 2026-09-26: no rows**, after a
+  first version that trusted tenancy start dates was corrected. The 3d hole in her spreadsheet
+  is a typed period (INV#5182 entered as 1 to 31 May on a 15th-to-14th cycle), leaving two weeks
+  uncovered, not a missed month. No hidden arrears.
 
 ---
 
