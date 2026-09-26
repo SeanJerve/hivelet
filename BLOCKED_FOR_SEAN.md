@@ -868,7 +868,11 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
   tidiness call about what her screen shows, not a correctness one.
 - **Raised:** 2026-09-20 by Claude
 
-### B-45 — can a resident pay the rest of a bill while the first part is still unchecked?
+### B-45 — can a resident pay the rest of a bill while the first part is still unchecked? · **CLOSED 2026-09-26, Sean: no, wait**
+
+- **Decision:** the tenant waits until she has checked the first payment. That is what the code
+  does, and the screen already says so. It also keeps a tenant from paying twice. Nothing to build.
+
 
 - **Blocked on:** her decision, then a small backend change. It is a question about how she wants
   to work, not a bug.
@@ -886,7 +890,11 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
 - **If she says wait:** nothing to do. The screen already explains it.
 - **Raised:** 2026-09-20 by Claude
 
-### B-46 — reopening a repair does not take the unit off the listing again
+### B-46 — reopening a repair does not take the unit off the listing again · **CLOSED 2026-09-26, Sean: leave it**
+
+- **Decision:** she keeps control. Reopening a repair does not change the listing by itself; she
+  sets Under Maintenance from the unit editor when she wants it. Nothing to build.
+
 
 - **Blocked on:** a decision about how she wants this to behave. Deliberately **not** changed.
 - **What it is:** raising an Emergency repair marks a unit Under Maintenance, and resolving it
@@ -900,7 +908,12 @@ editing outright, since the schema is `.strict()` and the frontend sends the fie
 - **How to know it worked:** reopen a ticket on a vacant unit and check `/public/rooms`.
 - **Raised:** 2026-09-20 by Claude
 
-### B-47 — a resident is never told their repair was attended to
+### B-47 — a resident is never told their repair was attended to · **DONE 2026-09-26, Sean: yes**
+
+- **Built:** marking a repair Resolved or Closed from Open or In Progress sends the tenant "Your
+  repair is done", linked to the repair. Resolved → Closed does not repeat it. Proved by
+  `backend/scripts/check-ticket-done.mjs` (5 of 9 before, 9 of 9 after).
+
 
 - **Blocked on:** her decision. It is a missing feature, not a defect, and it may be deliberate.
 - **What it is:** there are exactly three maintenance notifications in the system — she is told
@@ -1442,7 +1455,15 @@ the untested half of BR-024, and they only become testable after a person has us
   figure is unchanged; it was never the number in question (B-31).
 - **Raised:** 2026-09-20
 
-### B-28 — a repair cannot be recorded for an empty unit
+### B-28 — a repair cannot be recorded for an empty unit · **DONE in code 2026-09-26, Sean: yes; 058 NOT applied**
+
+- **Built:** `058_a_repair_can_be_logged_for_an_empty_unit.sql` makes
+  `maintenance_tickets.tenant_profile_id` nullable (one statement). `POST /admin/tickets` files an
+  empty unit's repair with no tenant; until 058 runs it refuses in words naming 058. Comments and
+  "repair done" notices skip a repair with no tenant. "Log a repair" lists "PH, no tenant".
+- **What Sean needs to do:** run 058 in the SQL editor ("Success. No rows returned"), then log a
+  repair for PH from the Repairs screen.
+
 
 - **Blocked on:** a schema decision that belongs with the repair form nobody has built yet
   (B-22). Nothing is broken today; the failure is now legible instead of a 500.
@@ -1853,7 +1874,11 @@ the ₱20 charged once, or once per month?**
   December just gone, or the one coming? That single answer settles all 48 of Group A.
 - **Raised:** 2026-09-19
 
-### B-18 — every `check:all` writes ~45 permanent rows into the owner's audit trail
+### B-18 — every `check:all` writes ~45 permanent rows into the owner's audit trail · **CLOSED 2026-09-26, Sean: leave it**
+
+- **Decision:** left as it is. The Activity screen's default tab already shows only what was done
+  to the records, and the trail is append-only by design. Nothing to build.
+
 
 - **Blocked on:** your judgement. Nothing here is a bug, and the fix is not obvious enough for
   me to pick one on your behalf — it trades a security record against a readable one
