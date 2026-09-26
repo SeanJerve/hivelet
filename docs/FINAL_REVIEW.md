@@ -343,8 +343,9 @@ Findings are ranked by money or data at stake. Status is one of **FIXED** (commi
 - **Fix:** the return leg asks Adyen with `POST /payments/details` and the `redirectResult`,
   server to server. Its answer carries the pspReference and our merchantReference, so the bill,
   its owner and "recorded" are all read from the database, not from memory. Still writes nothing.
-- **Status:** **FIXED** in `f7535eb`, with its Activity label in `a7d6d1d`. Confirmed against a stub of Adyen, not yet against Adyen
-  itself: the next GCash test payment should end on "Payment received".
+- **Status:** **FIXED** in `f7535eb`, with its Activity label in `a7d6d1d`. **Confirmed live** after the PR #4 deploy, 2026-09-26: a
+  second GCash test payment (₱8,200.00) ended on "Payment received", and the bill card read
+  "Payment sent, waiting for verification".
 
 ## Low severity, recorded and left
 
