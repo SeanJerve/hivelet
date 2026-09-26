@@ -372,12 +372,18 @@ function entryLabel(log: { action: string; new_values?: unknown }): string {
   if (log.action.toUpperCase() === 'PAYMENT_RECORD' && values?.status === 'Checkout Session Initiated') {
     return 'GCash payment started';
   }
+  // The tenant's browser coming back from GCash and Adyen confirming it to them.
+  // The webhook's own row is the payment; this one is not a second payment.
+  if (log.action.toUpperCase() === 'PAYMENT_RECORD' && values?.status === 'Confirmed On Return') {
+    return 'Tenant back from GCash';
+  }
   return actionLabel(log.action);
 }
 
 /** Green is money received; a checkout that was only opened is not that. */
 function entryTone(log: { action: string; new_values?: unknown }): 'verify' | 'paid' | 'overdue' | 'neutral' {
-  return entryLabel(log) === 'GCash payment started' ? 'neutral' : actionTone(log.action);
+  const label = entryLabel(log);
+  return label === 'GCash payment started' || label === 'Tenant back from GCash' ? 'neutral' : actionTone(log.action);
 }
 
 /**

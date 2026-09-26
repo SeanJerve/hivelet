@@ -52,8 +52,10 @@ globalThis.fetch = async (url, init = {}) => {
 
 // --- database ----------------------------------------------------------------
 let paymentRows = [];
+const audits = [];
 db.from = (table) => {
   const filters = [];
+  let inserted = null;
   const chain = new Proxy(() => {}, {
     get: (_t, prop) => {
       if (prop === 'then') {
@@ -67,11 +69,13 @@ db.from = (table) => {
               op === 'eq' ? r[col] === v : op === 'neq' ? r[col] !== v : true));
             return resolve({ data: rows, error: null });
           }
-          return resolve({ data: null, error: null });   // audit_logs insert
+          if (table === 'audit_logs') audits.push(inserted);
+          return resolve({ data: null, error: null });
         };
       }
       return (...args) => {
         if (prop === 'eq' || prop === 'neq') filters.push([prop, args[0], args[1]]);
+        if (prop === 'insert') inserted = args[0];
         return chain;
       };
     },
@@ -89,6 +93,9 @@ check('an authorised GCash payment is confirmed on return', r, { status: 'comple
 check('it asks Adyen with POST /payments/details', [lastRequest.method, lastRequest.url.endsWith('/v71/payments/details')], ['POST', true]);
 check('carrying the redirectResult as details', JSON.parse(lastRequest.body), { details: { redirectResult: 'redirect-blob' } });
 check('with the API key', lastRequest.headers['x-api-key'], 'test_api_key');
+const audit = [].concat(audits.at(-1) ?? [])[0];
+check('the audit row is marked as the return, not as a second payment',
+  audit?.new_values?.status ?? audit?.newValues?.status, 'Confirmed On Return');
 
 // 2. The webhook has not landed yet.
 paymentRows = [];

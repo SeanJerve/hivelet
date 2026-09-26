@@ -662,6 +662,9 @@ export const adyenService = {
         newValues: {
           note: 'Adyen confirmed a completed checkout session to the returning browser. ' +
                 'No payment was written here - the webhook is the writer.',
+          // Read by the Activity screen, which labels this row as the tenant's
+          // return rather than as a second "Payment recorded" beside the webhook's.
+          status: 'Confirmed On Return',
           sessionId,
           adyenSessionStatus: status,
           webhookRowPresent: recorded
@@ -772,6 +775,7 @@ export const adyenService = {
         newValues: {
           note: 'Adyen confirmed a completed GCash payment to the returning browser. ' +
                 'No payment was written here - the webhook is the writer.',
+          status: 'Confirmed On Return',
           pspReference: body.pspReference ?? null,
           adyenResultCode: body.resultCode,
           webhookRowPresent: recorded
