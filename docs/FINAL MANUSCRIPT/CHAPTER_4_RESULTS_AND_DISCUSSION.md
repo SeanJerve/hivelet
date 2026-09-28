@@ -374,9 +374,36 @@ one unoccupied unit so that no real tenancy, receipt or expense is touched.
 
 | Step | Function tested | Expected result | Actual result | Pass or fail |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | [from TESTING_REHEARSAL.md] | | | |
-| ... | | | | |
-| 26 | | | | |
+| 1 | Public unit catalogue browsing | 33 units listed without resident names or sensitive details | [DATA PENDING] | [DATA PENDING] |
+| 2 | Public unit detail inspection | Correct rate, floor, and cluster; resident names omitted (LB and LF verified) | [DATA PENDING] | [DATA PENDING] |
+| 3 | Public booking enquiry submission | Confirmation message displayed; rate limiter guards abuse | [DATA PENDING] | [DATA PENDING] |
+| 4 | Authentication negative test | Wrong current password rejected with inline message; session stays active | [DATA PENDING] | [DATA PENDING] |
+| 5 | Administrator password rotation | Password updated successfully; active session maintained | [DATA PENDING] | [DATA PENDING] |
+| 6 | Re-authentication with new credential | Successful sign-in using updated administrator password | [DATA PENDING] | [DATA PENDING] |
+| 7 | Unit rate update and audit trigger | Rate updated; database trigger writes immutable price history row | [DATA PENDING] | [DATA PENDING] |
+| 8 | Tenant onboarding to vacant unit (PH) | Tenancy created; unit status transitions to Occupied | [DATA PENDING] | [DATA PENDING] |
+| 9 | Duplicate credential guard | Duplicate phone number registration rejected with validation message | [DATA PENDING] | [DATA PENDING] |
+| 10 | Tenancy details modification | Occupant count updated and persisted in database | [DATA PENDING] | [DATA PENDING] |
+| 11 | Tenant portal authentication | Tenant dashboard displays correct unit details, rate, and occupancy | [DATA PENDING] | [DATA PENDING] |
+| 12 | Maintenance ticket creation with attachment | Ticket submitted with photo; size guard informs user if file is too large | [DATA PENDING] | [DATA PENDING] |
+| 13 | Ticket communication thread | Follow-up message posted and displayed within ticket conversation | [DATA PENDING] | [DATA PENDING] |
+| 14 | Tenant emergency contact update | Updated emergency contact saved and reflected in profile | [DATA PENDING] | [DATA PENDING] |
+| 15 | Online payment checkout initialization | Adyen Web Drop-in mounts inside modal and displays GCash button | [DATA PENDING] | [DATA PENDING] |
+| 15b | On-demand billing generation | Bill generated on demand matching unit rate plus ₱200/occupant water | [DATA PENDING] | [DATA PENDING] |
+| 16 | Notification state management | Notification marked as read; unread badge counter decrements | [DATA PENDING] | [DATA PENDING] |
+| 17 | Cross-tenant authorization perimeter | Accessing foreign ticket ID returns HTTP 404 (Not Found), not 403 | [DATA PENDING] | [DATA PENDING] |
+| 18 | On-site cash collection recording | Collection recorded against receipt REHEARSAL-001; bill marked settled | [DATA PENDING] | [DATA PENDING] |
+| 19 | Duplicate receipt prevention | Re-submitting identical receipt number is blocked with explicit alert | [DATA PENDING] | [DATA PENDING] |
+| 19b | Receipt voiding and double-void guard | First void reverses ledger entry; second void attempt is rejected | [DATA PENDING] | [DATA PENDING] |
+| 20 | Enquiry processing and resolution | Administrator reply sent; enquiry status marked Closed | [DATA PENDING] | [DATA PENDING] |
+| 21 | Maintenance resolution and notification | Ticket advanced to Resolved; tenant receives resolution notification | [DATA PENDING] | [DATA PENDING] |
+| 22 | Expense recording and allocation | ₱100 expense logged with property allocation; edits/deletion verified | [DATA PENDING] | [DATA PENDING] |
+| 22b | Expense allocation split derivation | Expense split across areas; total derived automatically via trigger | [DATA PENDING] | [DATA PENDING] |
+| 23 | Financial workbook export | income.xlsx and expenses.xlsx downloaded matching owner layout | [DATA PENDING] | [DATA PENDING] |
+| 23b | Fail-safe presentation on API interruption | Backend stopped; money tiles display "—" instead of misleading ₱0.00 | [DATA PENDING] | [DATA PENDING] |
+| 24 | Tenant vacating and tenancy termination | Tenancy ended; unit returns to Available; end_date recorded | [DATA PENDING] | [DATA PENDING] |
+| 25 | Ledger baseline verification | Rehearsal records removed; ledger restored to exact 937 baseline rows | [DATA PENDING] | [DATA PENDING] |
+| 26 | Unit rate restoration | PH rate restored to confirmed ₱30,000 rate card baseline | [DATA PENDING] | [DATA PENDING] |
 
 [DATA PENDING: after the walkthrough, write one paragraph stating how many steps passed the first
 time, what failed, and how each failure was fixed.]
