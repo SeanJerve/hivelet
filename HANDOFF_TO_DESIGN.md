@@ -257,3 +257,44 @@ in a morning.
 
 **Start by running `npm run check:all`, opening `docs/SCREEN_CONTRACT.md`, and reading § 4 of
 this file twice.**
+
+---
+
+## Documentation and clean-up of the codebase (added 2026-09-28)
+
+Sean has asked this seat to tidy the documentation and remove what is no longer needed. The repo
+has been worked on by several people and many sessions, so plenty is stale. Some of it only looks
+stale: the check suites read documents by name, and the live database's history is in files
+nobody opens. **Work on a branch and open a pull request; small commits, one kind of change each.**
+
+**Never delete or rewrite (load-bearing):**
+
+| Path | Why |
+| :--- | :--- |
+| `database/` (every migration, including the non-numbered `DIAGNOSTIC_*`, `RUN_IN_SUPABASE_*`) | The history of changes to a live financial database. Sean's lane. Ask him before moving any of it |
+| `database/FULL_DATABASE_SCHEMA.sql` | Never edited (CLAUDE.md rule 2); checks refer to it |
+| `CLAUDE.md`, `BLOCKED_FOR_SEAN.md`, `CONTINUE_HERE.md`, `TESTING_REHEARSAL.md`, `AGENTS.md`, `AI_DEVELOPMENT_WORKFLOW.md`, the `HANDOFF_TO_*.md` files | Read by people and sessions to find their bearings; several are read by check scripts |
+| `docs/02_BUSINESS_RULES.md`, `docs/04_ARCHITECTURE.md`, `docs/08_OPEN_DECISIONS.md`, `docs/13_AUDIT_JUDGEMENT_LOG.md`, `docs/SCREEN_CONTRACT.md`, `docs/DESIGN_GUIDELINE.md`, `docs/UI_DESIGN_*.md`, `docs/claude_pipeline/` | Read by `check:rules`, `check:matrix`, `check:canon` and the contract generator |
+| `docs/FINAL MANUSCRIPT/`, and `docs/chapter 4 tenative/ISO_25010_SURVEY_INSTRUMENT.md` | The capstone manuscript in progress, and the survey source (see `START_HERE_CHAPTERS_4_AND_5.md`) |
+| `scripts/`, `backend/scripts/`, `frontend/scripts/`, `.githooks/` | The 20 check suites and the secrets hook |
+| `INCOME AND EXPENSES PAST RECORDS/` | The owner's own workbook; the source the ledger was imported from |
+
+**Likely stale; verify each before removing:** root notes such as `RESTART_THE_TUNNEL.md` (the site
+moved to Vercel on 2026-09-24; the tunnel is gone), `PASTE_THIS_IN_CLAUDE_APP.md`,
+`SESSION_REPORT_2026-09-15.md`, `PROGRESS_REPORT.md`, `CLIENT_CONFIRMATION.md`,
+`CLIENT_FOLLOWUP_QUESTIONS.md`; `docs/superpowers/`; the rest of `docs/chapter 4 tenative/`
+(superseded by `docs/FINAL MANUSCRIPT/`, except the survey instrument). The AI tooling folders
+`.claude/`, `.agent/`, `.agents/` (about 1,000 files of installed skills): ask Sean before touching.
+
+**Before deleting any file:**
+1. Search for its name across the repo (docs link to each other, and scripts read docs by path).
+2. Delete, then run `npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"` and read the table. On a
+   machine without `.env`, 13 suites run; a newly failing one means the file was needed.
+3. For frontend files, `check:reachable` reports unused source files; `npm run build` in
+   `frontend/` must still succeed.
+4. Merging two documents is better than deleting one when both are linked from elsewhere; leave a
+   one-line pointer at the old path if people are likely to look there.
+
+**Code comments are not clutter here.** The long comments record why something is the way it is
+(CLAUDE.md: "a comment explaining why something is safe encodes a precondition"). Fix or shorten a
+comment that no longer matches the code; do not strip them in bulk.
