@@ -662,8 +662,13 @@ if (live.length) {
    * carrying no income. Verified after: profiles 40 -> 34, while active
    * tenancies held at 32, units at 33, income at 937 rows and the remitted
    * total at ₱8,086,250.00.
+   *
+   * Lowered again, 2 to 1, on 2026-09-28, after migrations 055-057 (development
+   * test data and the demo profile removed, B-78/B-79) were applied. Verified
+   * only that the live count now reads 1; which of those deletes carried the
+   * row off was not traced.
    */
-  const KNOWN_ENDLESS = 2;
+  const KNOWN_ENDLESS = 1;
   const endless = (await rows(
     'room_assignments?select=id&is_active=eq.false&end_date=is.null'
   )).length;
