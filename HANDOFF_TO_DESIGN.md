@@ -151,11 +151,11 @@ Do not go back to hex literals in components.
 ## 6b. Three things that reach outside `frontend/src/`
 
 **Renaming a screen has a cost in another file.** `TESTING_REHEARSAL.md` walks 26 steps by
-**sidebar label**, read out of `AppSidebar.vue` rather than remembered: *Executive Overview, Room
-& Rate Directory, Active Tenants, Income & Collections, Monthly Expenses, Maintenance Dispatch,
-Prospect Inquiries, System Audit Trail* — and for a resident, *Unit Overview, Payment & Billing,
-Maintenance Tickets, My Profile*. **If you rename any of them, rename them there in the same
-commit.** A rehearsal sheet that sends a person hunting for a screen that no longer exists under
+**sidebar label**, read out of `AppSidebar.vue` rather than remembered (as of 2026-09-28):
+*Overview, Rooms and rates, Tenants, Monthly Income, Monthly Expenses, Repairs, Inquiries,
+Activity* — and for a resident, *Overview, Payments and billing, Repairs, My details*. **If you
+rename any of them, rename them there in the same commit**, and in `docs/FINAL MANUSCRIPT/`
+Chapter 4, which names the ledger pages too. A rehearsal sheet that sends a person hunting for a screen that no longer exists under
 that name is worse than no sheet.
 
 **`room_photos` is empty**, so all 33 units render without a photo. That is expected, not a bug —

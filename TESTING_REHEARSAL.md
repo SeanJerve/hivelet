@@ -47,6 +47,22 @@
 > **for**, not the day it was received — which is what her 937 rows do. A back-dated receipt
 > lands in the right month now.
 
+> [!IMPORTANT]
+> **Updated 2026-09-28 for the system as it now stands.** What changed underneath these steps:
+>
+> - **Screen names** are the current sidebar's (below), including **Monthly Income** and
+>   **Monthly Expenses**, renamed to match her workbook's two sheets.
+> - **`PH` is ₱30,000**, the owner's confirmed rate. Every "set it back" step says ₱30,000.
+> - **Never delete the rehearsal tenant's profile.** The audit trail names it, so the database
+>   refuses, and the last attempt needed two migrations (052, 053) to clean up. Vacating it in
+>   step 24 deactivates it, which is enough.
+> - **The GCash webhook serves the live site** (`CLAUDE.md`). A GCash payment completed in step 15
+>   lands as Pending Verification against a real bill. If you complete one, **Reject** it.
+> - **All test payments are gone** (migration 055, 2026-09-26), so the admin payments list starts
+>   empty. Anything that appears there during the rehearsal is yours.
+> - **Repairs** now tell the tenant when a repair is marked done (step 21 checks it), and the owner
+>   can log a repair herself, including for an empty unit.
+
 ## Why this exists
 
 The write paths are covered by eighteen verification suites and **have never been used for real**.
@@ -66,7 +82,7 @@ what it means if you do not.
 > order — the undo steps run in reverse at the end. Nothing here touches an existing resident,
 > an existing receipt, or an existing expense.
 >
-> **The rehearsal unit is `PH` (Penthouse, ₱12,000, floor 4).** It is the only unit not currently
+> **The rehearsal unit is `PH` (Penthouse, ₱30,000, floor 4).** It is the only unit not currently
 > occupied — 32 of 33 are. Everything is done against `PH` and a made-up tenant, so no real
 > person's record is involved.
 
@@ -83,10 +99,10 @@ Every row in the summary table green — read the table, not the tail, and not a
 again at the end: a suite that was green before and red after tells you exactly what the rehearsal
 broke.
 
-**Screen names below are the ones in the sidebar**, read from `AppSidebar.vue` rather than
-remembered: *Executive Overview, Room & Rate Directory, Active Tenants, Income & Collections,
-Monthly Expenses, Maintenance Dispatch, Prospect Inquiries, System Audit Trail* — and for a
-resident, *Unit Overview, Payment & Billing, Maintenance Tickets, My Profile*. **If the redesign
+**Screen names below are the ones in the sidebar**, read from `AppSidebar.vue` on 2026-09-28
+rather than remembered: *Overview, Rooms and rates, Tenants, Monthly Income, Monthly Expenses,
+Repairs, Inquiries, Activity* — and for a resident, *Overview, Payments and billing, Repairs, My
+details*. **If the redesign
 renames any of them, these steps need renaming with it.**
 
 Keep a note of anything that does not match the "should see" column. **A step that fails is the
@@ -133,14 +149,15 @@ Sign in as the administrator.
 | 4 | **Change Password** from the account menu. Type the wrong current password first, deliberately. | *"That is not your current password."* against the field — **and you stay signed in.** If you get bounced to the login screen, stop and say so: that is the failure this was built to avoid. | |
 | 5 | Now change it for real, to something you will remember. | Toast: *"Password changed."* You stay signed in. | ✍ |
 | 6 | Sign out, sign back in with the **new** password. | Works. | |
-| 7 | Open **Room & Rate Directory**, edit `PH`. **PH is now ₱30,000** — the owner's confirmed rate, applied 2026-09-20 by migration 045. Change it to **₱30,500** and save. | Saved. This also writes a `room_price_history` row — by database trigger, so the history cannot drift from the rate. That table now holds 31 real rows from 045, so yours will be the 32nd rather than the first. | ✍ |
+| 7 | Open **Rooms and rates**, edit `PH`. **PH is now ₱30,000** — the owner's confirmed rate, applied 2026-09-20 by migration 045. Change it to **₱30,500** and save. | Saved. This also writes a `room_price_history` row — by database trigger, so the history cannot drift from the rate. | ✍ |
 | 8 | Onboard a tenant into `PH`. Use an obviously fake name — *"REHEARSAL Test"* — a phone number you control, move-in date today. | Created, and `PH` flips to **Occupied**. | ✍ |
 | 9 | Try to onboard a **second** tenant with the same phone number. | Refused: *"That phone number already signs someone in to the portal."* | |
 | 10 | Edit the rehearsal tenant — change the occupant count to 2. | Saved. | ✍ |
 
 **Undo 5:** none needed — keep the new password, the old one is burned anyway.
-**Undo 7:** set `PH` back to ₱12,000 (the history keeps both changes, which is correct).
-**Undo 8/10:** step 24 vacates them; delete the `profiles` row afterwards.
+**Undo 7:** step 26 sets `PH` back to ₱30,000 (the history keeps both changes, which is correct).
+**Undo 8/10:** step 24 vacates them and the account goes inactive. **Do not delete the `profiles`
+row**: the audit trail names it, the database refuses, and 052/053 show what that costs.
 
 ---
 
@@ -153,8 +170,8 @@ Sign in as the rehearsal tenant from step 8.
 | 11 | Open the overview. | Unit `PH`, the rate, occupancy. No photo — same as step 1. | |
 | 12 | File a maintenance ticket **with a photo attached**. | *"...has been submitted to Landlady Fe Galang Da Silva for review."* If the photo fails, you get the **same message plus** *"the photo could not be attached — reply to it with the photo instead."* **You must not see "Submission failed" for a ticket that exists** — that was the bug fixed on 17 Sep. | ✍ |
 | 13 | Post a message on that ticket. | Appears in the thread. | ✍ |
-| 14 | Open **My Profile**, change the emergency contact. | Saved. | ✍ |
-| 15 | Start a **GCash payment** for a bill. | **The Adyen Drop-in appears inside the modal, with a GCash button** — not a hosted page; this flow mounts Adyen's component on our own screen. **Do not complete a real payment.** ⚠ **Until 2026-09-20 this rendered an empty box**: the Drop-in mounted into a container that had not been drawn yet, so the ref was always null and the mount was silently skipped. Seeing the button at all is the thing this step now proves. Run `npm run simulate:adyen` first — it exercises every refusal path against the real webhook, so if this step fails the cause is the browser half. | ✍ |
+| 14 | Open **My details**, change the emergency contact. | Saved. | ✍ |
+| 15 | Start a **GCash payment** for a bill. | **The Adyen Drop-in appears inside the modal, with a GCash button** — not a hosted page; this flow mounts Adyen's component on our own screen. **Do not complete a payment.** The webhook serves the live site, so a completed test payment lands as Pending Verification against a real bill; if one slips through, **Reject** it in the verification queue. ⚠ **Until 2026-09-20 this rendered an empty box**: the Drop-in mounted into a container that had not been drawn yet, so the ref was always null and the mount was silently skipped. Seeing the button at all is the thing this step now proves. Run `npm run simulate:adyen` first — it exercises every refusal path against the real webhook, so if this step fails the cause is the browser half. | ✍ |
 | 15b | **Pay when nothing is due yet.** On a resident whose current period has no bill row, use **Pay this period with GCash** from the Overview tile or the Payments screen. | **A bill is raised on the spot and checkout opens against it.** This is the path added 2026-09-22, and before it a resident with no bill row could not reach checkout at all — the screen said "Settled" with no way to pay, which is why nobody had ever tested a payment. Bills are raised on demand by design (judgement log § 3.6), so this is the normal case, not an edge one. **It has been exercised once already** and produced a correct bill — unit 1a, ₱8,200 for 7 Sep–6 Oct, rent plus BR-014 water for one occupant (B-54). Check the amount matches the unit's rate plus ₱200 a head before going further. | ✍ |
 | 16 | Mark a notification read. | The unread badge drops by one. | ✍ |
 | 17 | **Try to reach another resident's data.** In the address bar, change a ticket id to one belonging to someone else. | **404 — not 403.** 403 would confirm the record exists to someone who should not know. Asserted by `check:api`; confirm by hand once. | |
@@ -163,9 +180,9 @@ Sign in as the rehearsal tenant from step 8.
 **Undo 15:** an abandoned checkout writes nothing — the session is in memory and expires.
 
 > [!NOTE]
-> **A resident's "My Bills" is empty, and that is correct.** There are **2 bills** in the whole
-> database against **32 active tenancies** — because bills are **raised on demand**, not generated
-> monthly (judgement log § 3.6). All **32** residents do have receipts: their payment history lives
+> **Most residents have no bill, and that is correct.** Only a handful of bills exist against
+> **32 active tenancies**, each raised when a resident opened the pay screen, because bills are
+> **raised on demand**, not generated monthly (judgement log § 3.6). All **32** residents do have receipts: their payment history lives
 > in the income ledger, which is the record Mrs. Da Silva actually keeps.
 >
 > So a panel signing in as a resident sees **no bill and a full payment history**. That is the
@@ -182,8 +199,8 @@ Back to the administrator.
 | 18 | **Record an on-site collection** for `PH`. Receipt number **`REHEARSAL-001`** so it is findable. | Written to the ledger, bills settled against it. **This is the path no real collection has ever taken.** | ✍ |
 | 19 | Record **the exact same receipt again** — same unit, number, date and amount. | Refused: *"Receipt REHEARSAL-001 is already recorded for unit PH on …"* If it accepts it, the duplicate guard is broken and the ledger can double-count. | |
 | 19b | **Void the `REHEARSAL-001` record, then try to void it a second time.** | The first void succeeds. The second is **refused**: *"That income record was already voided on …"* ⚠ Until 2026-09-20 the second void **succeeded silently and overwrote who voided it first** — the one thing a soft delete exists to record. 35 rows were in that state. Verified against the live API as a no-op; this confirms it on the path a person actually uses. | ✍ |
-| 20 | Open **Prospect Inquiries**. Reply to the enquiry from step 3, then close it. | Message posts; status moves to **Closed**. | ✍ |
-| 21 | Open **Maintenance Dispatch**. Move the rehearsal ticket to In Progress, then Resolved, then delete it. | Each transition saves. `PH` returns from **Under Maintenance** to **Occupied**. | ✍ |
+| 20 | Open **Inquiries**. Reply to the enquiry from step 3, then close it. | Message posts; status moves to **Closed**. | ✍ |
+| 21 | Open **Repairs**. Move the rehearsal ticket to In Progress, then Resolved, then delete it. | Each transition saves. `PH` returns from **Under Maintenance** to **Occupied**. At **Resolved**, the rehearsal tenant gets a *"Your repair is done"* notification (B-47, added 2026-09-26); sign in as them before step 24 to see it. | ✍ |
 | 22 | Add an expense entry against **Penthouse**, ₱100, description *"REHEARSAL"*. Then edit the amount, then delete it. | Each step saves; allocations recompute. | ✍ |
 | 22b | **Edit that expense's ALLOCATIONS** — split the ₱100 across two property areas, say ₱60 Penthouse and ₱40 Boarding House. | Saves, and the entry's total still reads **₱100**. BR-047: allocations must total the entry. ⚠ The handler no longer writes that total itself — `replace_expense_allocations` and `trg_update_expense_total` derive it, so the figure follows the allocations by construction. This route has **no automated coverage at all** (B-37); this step is its only test. | ✍ |
 | 23 | Download **income.xlsx** and **expenses.xlsx**. | Real workbooks that open in Excel. Check `REHEARSAL-001` appears in the income sheet, and that the **LINDA** line is present — ₱18,600 across 2024–2026. | |
@@ -200,7 +217,7 @@ Back to the administrator.
 | # | Do | Should see | ✍ |
 | :-- | :--- | :--- | :-- |
 | 24 | Vacate the rehearsal tenant from `PH`. | Tenancy ends, `PH` returns to **Available**, the account goes inactive. | ✍ |
-| 24b | **Immediately after step 24, run `npm run check:relations`.** | Its pinned line must still read **16** ended tenancies with no end date — **not 17**. This is the one step that proves the vacate path records *when* a tenancy ended. The code has written `end_date` since 2026-09-16, and **no human has used that path since**, so this is the first correctly-dated row the system will ever have produced. If the count rises to 17, the date was not written and **B-11 is a code defect rather than a data gap**. | |
+| 24b | **Immediately after step 24, run `npm run check:relations`.** | Its pinned line must still read **2** ended tenancies with no end date — **not 3** (the baseline was 16 until the clean-up of 23-26 September). This is the one step that proves the vacate path records *when* a tenancy ended. The code has written `end_date` since 2026-09-16, and **no human has used that path since**, so this is the first correctly-dated row the system will ever have produced. If the count rises to 3, the date was not written and **B-11 is a code defect rather than a data gap**. | |
 | 25 | Delete the `REHEARSAL-001` income record if you have not. | Gone from the ledger. | ✍ |
 | 26 | Set `PH` back to **₱30,000**. ⚠ **NOT ₱12,000** — this step said 12,000 until 2026-09-20, which was the stale seeded rate. Putting that back would undo the owner's confirmed rate card and re-advertise the Penthouse at less than half what it lets for. | Saved, and `PH` reads ₱30,000 again. | ✍ |
 
@@ -227,7 +244,8 @@ on the machine you will film from.
   unit is named here, a write stopped halfway and the unit and its tenancy disagree. It says which.
 - **`no unrecorded anomaly in 937 income rows`** — if the count is no longer 937, a rehearsal row is
   still in the ledger.
-- The **seven receipts awaiting the owner** print every run. That is expected, not a failure.
+- The **five flagged receipts** print every run. That is expected, not a failure: since
+  2026-09-26 they stay exactly as she wrote them.
 
 ---
 
@@ -258,9 +276,9 @@ of quietly excluding it. That is the right answer to the ₱2.5M question on the
 system is not hiding that spending, it is declining to call it a cost of the rental business.
 
 **One thing to know before a demo:** the income ledger sorts newest first, so the **first row is
-`INVOICE#5120`, dated 26 February 2027** — one of the seven receipts awaiting the owner. It is the
-first thing anyone sees on that screen. Either settle it with her first, or be ready to say what it
-is.
+`INVOICE#5120`, dated 26 February 2027**, a date typed in her own book. Historical records stay
+as she wrote them (decided 2026-09-26), so it will stay there. It is the first thing anyone sees on
+that screen: be ready to say what it is.
 
 ---
 
@@ -270,10 +288,10 @@ Stated plainly, so nobody claims more than was done.
 
 | | |
 | :--- | :--- |
-| **A completed GCash payment.** | Step 15 stops at Adyen's page. A real payment writes a `Pending Verification` row and fires the webhook — worth doing **once**, with the tunnel up, if you want the verification path exercised end to end. Only then does step 18's sibling path (`PATCH /admin/payments/:id/verify`) get used. **If you do it, try this:** verify the payment, then press **Reject** on the same row. It must refuse, and the refusal must tell you to void the income record instead. Before 17 Sep it accepted — reopening the bill while the money stayed booked in the ledger. Guarded in code; never yet exercised by a human. |
+| **A completed GCash payment.** | Step 15 stops at Adyen's page. The end-to-end path was exercised on 2026-09-26 on the live site (B-74): authorised, webhook received, Pending Verification, rejected. **No tunnel is needed or wanted**; the webhook points at the live site. Only then does step 18's sibling path (`PATCH /admin/payments/:id/verify`) get used. **If you do it, try this:** verify the payment, then press **Reject** on the same row. It must refuse, and the refusal must tell you to void the income record instead. Before 17 Sep it accepted — reopening the bill while the money stayed booked in the ledger. Guarded in code; never yet exercised by a human. |
 | **Concurrency.** | One person clicking. Two administrators recording the same receipt at the same moment is not covered: the **on-site receipt** guard is a read-then-write, not a database constraint (deliberately — judgement log § 3.6b). Two paths *are* now hard-guarded and neither is exercised here: the **gateway reference** carries a unique index (migration `024`), and **verifying a payment** locks its row and re-checks the status, so a second verify returns `already_done` rather than posting a second ledger line. Rejecting is compare-and-set on the status read, so a stale queue cannot overwrite another administrator's decision. |
 | **Volume.** | The ledger is ~1,500 rows. It has never been asked to render or export ten years of them. |
-| **12 test payments are visible.** | The `payments` table holds **13** rows from the build window — **8** `ADYEN-GCASH-*` and **5** `CASH-REC-*`, **PHP 62,500** across the **12** with no bill. (Re-counted against the live table 2026-09-22; this row said 15 / 8 / 7 / PHP 67,000 / 13 before migration 047 removed five test profiles and cascaded some of these with them.) **Nothing sums them**, so no figure the owner reads is wrong, and her ledger is `monthly_income_records`. But they show in the admin payments list, so know they are there before a panel asks. |
+| **Test payments.** | **None left.** Migration 055 removed all 20 on 2026-09-26 (B-78), so the admin payments list is empty until someone pays. Her ledger is `monthly_income_records`, which it did not touch. |
 | **August and September 2026.** | Not in the ledger at all — see `CLIENT_MEETING_QUESTIONS.md` §2b. A demonstration today shows *"0 collections this month"* because the data is absent, not because the figure is wrong. |
 
 ---
