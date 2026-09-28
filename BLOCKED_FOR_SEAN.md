@@ -33,18 +33,24 @@ thing did not work" is not.
 
 ## Open
 
-### B-81 — two checks count "ended tenancies with no end date" and disagree: 1 and 2 · **read-only look needed**
+### B-81 — two checks count "ended tenancies with no end date" and disagree: 1 and 2 · **answered 2026-09-28; run 059**
+
+> **Answered, read-only, 2026-09-28.** The table holds 2 ended tenancies, 1 without an end date, and
+> no NULL `is_active` at all, so the guess below was wrong. `check:ledger`'s 1 was right.
+> `check:relations`' 2 was the check misreading: `/admin/tenants` did not return `end_date`, so every
+> ended tenancy looked undated to it. The route now returns `end_date` and the baseline is 1; both
+> checks read 1. **The one row:** Jaye Casia's move to unit 3e, created and switched off the same day
+> (2026-08-19), no receipt on it; she is current in LB. **Run
+> `database/migrations/059_end_date_for_jaye_casia_3e_move.sql` in the Supabase SQL editor** - it
+> gives the row the date it ended, guarded so it changes nothing if the row is not as described.
+> Then both baselines can go from 1 to 0.
 
 - **What:** on 2026-09-28, `check:ledger` (`KNOWN_ENDLESS`, reads `room_assignments` directly with
   `is_active=eq.false&end_date=is.null`) counts **1**; `check:relations` (reads `/admin/tenants` and
   treats any falsy `is_active` as ended) counts **2**. Both ratchets were lowered to what each
   reads (1 and 2), so both pass.
-- **Likeliest reason, not verified:** one `room_assignments` row with `is_active` NULL and no
-  `end_date`. The session could not read the live table to confirm.
-- **What Sean needs to do:** `SELECT id, tenant_profile_id, room_id, is_active, start_date FROM
-  room_assignments WHERE end_date IS NULL AND is_active IS NOT TRUE;` If one row has
-  `is_active` NULL, say whether it is a live tenancy (then `is_active` should be `true`) or an ended
-  one (then it needs an `end_date`, which only the owner knows). Either fix is a numbered migration.
+- **Likeliest reason, not verified (wrong, see above):** one `room_assignments` row with `is_active`
+  NULL and no `end_date`.
 - **Raised:** 2026-09-28 by Claude
 
 ### B-80 — the public site tells visitors they can pay with GCash, and the gateway is on Adyen's test account · **decision, not a bug**

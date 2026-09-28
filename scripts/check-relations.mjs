@@ -225,11 +225,10 @@ for (const b of bills ?? []) {
 //
 // Lowered 16 to 2 on 2026-09-28: the clean-up migrations of 23-26 September
 // deleted the profiles most of these belonged to, and the run that day counted
-// 2. check:ledger's KNOWN_ENDLESS counts the same thing straight from the table
-// (`is_active=eq.false&end_date=is.null`) and read 1 the same day. The two
-// filters differ on a NULL `is_active`, which this loop treats as ended; that
-// is the likeliest reason, not a verified one (B-81).
-const UNDATED_BASELINE = 2;
+// 2, against check:ledger's 1 read straight from the table. The 2 was wrong:
+// /admin/tenants did not return `end_date`, so every ended tenancy looked
+// undated here. It does now, and this reads the table's 1 (B-81, 2026-09-28).
+const UNDATED_BASELINE = 1;
 const undated = [];
 for (const t of tenants) {
   for (const a of allOf(t)) {
