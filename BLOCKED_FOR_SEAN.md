@@ -33,7 +33,7 @@ thing did not work" is not.
 
 ## Open
 
-### B-81 — two checks count "ended tenancies with no end date" and disagree: 1 and 2 · **answered 2026-09-28; run 059**
+### B-81 — two checks count "ended tenancies with no end date" and disagree: 1 and 2 · **DONE 2026-09-28: 059 applied by Sean, both checks at 0**
 
 > **Answered, read-only, 2026-09-28.** The table holds 2 ended tenancies, 1 without an end date, and
 > no NULL `is_active` at all, so the guess below was wrong. `check:ledger`'s 1 was right.

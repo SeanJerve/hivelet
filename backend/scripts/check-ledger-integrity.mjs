@@ -667,8 +667,11 @@ if (live.length) {
    * test data and the demo profile removed, B-78/B-79) were applied. Verified
    * only that the live count now reads 1; which of those deletes carried the
    * row off was not traced.
+   *
+   * Lowered to 0 on 2026-09-28: 059 gave the last one, Jaye Casia's undone
+   * move to 3e, its end date (B-81). Any undated ended tenancy now fails.
    */
-  const KNOWN_ENDLESS = 1;
+  const KNOWN_ENDLESS = 0;
   const endless = (await rows(
     'room_assignments?select=id&is_active=eq.false&end_date=is.null'
   )).length;

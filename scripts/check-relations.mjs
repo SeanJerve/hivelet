@@ -228,7 +228,8 @@ for (const b of bills ?? []) {
 // 2, against check:ledger's 1 read straight from the table. The 2 was wrong:
 // /admin/tenants did not return `end_date`, so every ended tenancy looked
 // undated here. It does now, and this reads the table's 1 (B-81, 2026-09-28).
-const UNDATED_BASELINE = 1;
+// 0 the same day, once 059 gave that last row its end date.
+const UNDATED_BASELINE = 0;
 const undated = [];
 for (const t of tenants) {
   for (const a of allOf(t)) {
