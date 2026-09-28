@@ -34,7 +34,7 @@ erDiagram
     PROFILES                     ||--o{ MONTHLY_EXPENSE_ENTRIES      : "entered_by"
 
     ROOMS                        ||--o{ MAINTENANCE_TICKETS          : "reported_for"
-    PROFILES                     ||--o{ MAINTENANCE_TICKETS          : "raised_by"
+    PROFILES                     |o--o{ MAINTENANCE_TICKETS          : "raised_by"
     MAINTENANCE_TICKETS          ||--o{ TICKET_ATTACHMENTS           : "evidenced_by"
     MAINTENANCE_TICKETS          ||--o{ TICKET_MESSAGES              : "discussed_in"
     PROFILES                     ||--o{ TICKET_MESSAGES              : "posted_by"
@@ -113,6 +113,7 @@ erDiagram
         timestamptz locked_until "Lockout expiry"
         timestamptz last_login_at "Most recent successful login"
         timestamptz password_changed_at "Credential rotation marker"
+        boolean must_change_password "New password required at first sign-in, migration 048"
         timestamptz created_at "Row creation"
         timestamptz updated_at "Last mutation"
     }
@@ -162,11 +163,12 @@ erDiagram
         date billing_period_start "First day covered"
         date billing_period_end "Last day covered. Never prorated, OD-03"
         date due_date "Payment deadline, BR-010"
-        date grace_period_end_date "Due date plus grace, BR-012"
+        date grace_period_end_date "Equals due_date for bills since migration 016: no grace, BR-012"
         numeric rent_amount "Rent component. CHECK >= 0"
         numeric water_amount "Water component. CHECK >= 0"
         numeric total_amount "Invoiced total. CHECK >= 0"
         bill_status_type status "Pending, Due, Overdue, Paid, Partially Paid"
+        timestamptz checkout_opened_at "Last GCash checkout opened. Blocks a second for 15 minutes, migration 051"
         timestamptz created_at "Row creation"
         timestamptz updated_at "Last mutation"
     }
@@ -258,7 +260,7 @@ erDiagram
     MAINTENANCE_TICKETS {
         uuid id PK "Surrogate key"
         uuid room_id FK "Unit the fault is in"
-        uuid tenant_profile_id FK "Tenant who reported it"
+        uuid tenant_profile_id FK "Tenant it concerns. NULL for an empty unit, migration 058"
         varchar title "Short summary"
         text description "Full report"
         varchar category "Fault class, defaults to General Repair"
