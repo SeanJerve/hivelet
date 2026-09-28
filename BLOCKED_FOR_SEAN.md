@@ -33,6 +33,20 @@ thing did not work" is not.
 
 ## Open
 
+### B-81 — two checks count "ended tenancies with no end date" and disagree: 1 and 2 · **read-only look needed**
+
+- **What:** on 2026-09-28, `check:ledger` (`KNOWN_ENDLESS`, reads `room_assignments` directly with
+  `is_active=eq.false&end_date=is.null`) counts **1**; `check:relations` (reads `/admin/tenants` and
+  treats any falsy `is_active` as ended) counts **2**. Both ratchets were lowered to what each
+  reads (1 and 2), so both pass.
+- **Likeliest reason, not verified:** one `room_assignments` row with `is_active` NULL and no
+  `end_date`. The session could not read the live table to confirm.
+- **What Sean needs to do:** `SELECT id, tenant_profile_id, room_id, is_active, start_date FROM
+  room_assignments WHERE end_date IS NULL AND is_active IS NOT TRUE;` If one row has
+  `is_active` NULL, say whether it is a live tenancy (then `is_active` should be `true`) or an ended
+  one (then it needs an `end_date`, which only the owner knows). Either fix is a numbered migration.
+- **Raised:** 2026-09-28 by Claude
+
 ### B-80 — the public site tells visitors they can pay with GCash, and the gateway is on Adyen's test account · **decision, not a bug**
 
 - **What the site says:** the public FAQ (`frontend/src/views/PublicGuestView.vue`, "What payment
