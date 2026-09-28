@@ -33,6 +33,23 @@ thing did not work" is not.
 
 ## Open
 
+### B-80 — the public site tells visitors they can pay with GCash, and the gateway is on Adyen's test account · **decision, not a bug**
+
+- **What the site says:** the public FAQ (`frontend/src/views/PublicGuestView.vue`, "What payment
+  methods does the boarding house accept?"): *"You can pay online with GCash through the portal,
+  or hand the money to Mrs. Fe Galang Da Silva on site."*
+- **What the system does:** `backend/src/services/adyenService.ts` talks only to
+  `ADYEN_CHECKOUT_HOST = 'https://checkout-test.adyen.com/v71'`, and refuses `ADYEN_ENVIRONMENT=LIVE`
+  until a live endpoint prefix is wired. So a GCash payment made in the portal today is a test
+  payment: no real money moves, but it still arrives as Pending Verification against a real bill.
+- **The risk:** a tenant who reads the FAQ, pays in the portal and sees "Payment received" believes
+  they have paid. If the owner then verifies it, the bill reads Paid with nothing collected. Reject
+  is safe; Verify is not.
+- **Not changed, because it is a call about her business:** either (a) the FAQ and the pay screen
+  say online payment is not yet taking real money, or (b) the account goes live first (Chapter 5,
+  recommendation 5). Do not use the words the canon check forbids for the gateway either way.
+- **Raised:** 2026-09-28 by Claude (manuscript-versus-system audit)
+
 ### B-79 — delete the demo profile Mark Cruz (057) · **DONE 2026-09-26, applied by Sean**
 
 - **Applied and checked live:** `DIAGNOSTIC_profiles_not_current.sql` now returns no rows. Every
