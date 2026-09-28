@@ -264,7 +264,7 @@ thing did not work" is not.
   date is a fact nobody here holds. The demo tenancy stays: `audit_logs` anchors it (see 052/053).
 - **Raised:** 2026-09-26 by Claude (final review)
 
-### B-71 — voiding a GCash settlement now reverses it · **DONE in code; migration 054 written and tested, NOT applied**
+### B-71 — voiding a GCash settlement now reverses it · **DONE 2026-09-28: 054 applied by Sean; function live, not callable by anon or authenticated**
 
 > **Decided and built 2026-09-26** (Sean delegated the call). A void of a GCash settlement voids
 > the row, marks that one `Adyen Online` payment Rejected, and re-derives its bill (Paid /

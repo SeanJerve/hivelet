@@ -92,5 +92,4 @@ These are checked by `npm run check:canon` or have been wrong before:
   (Chapter 5, recommendation 5; Table 23).
 - **B-81 closed:** the one tenancy ended without an end date got it (migration 059, applied); both
   checks now fail on any new one (Table 23).
-- **Still open for Sean, not the manuscript:** migration 054 (B-71, a voided GCash settlement is
-  reversed), written and tested, not applied.
+- **B-71 closed:** migration 054 applied; voiding a GCash settlement now reverses it on the bill.

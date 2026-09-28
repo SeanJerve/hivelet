@@ -98,8 +98,7 @@ on a phone. Use the unoccupied unit or blur tenant names; the manuscript is publ
 
 - [x] ~~Merge the design branch into main~~ Done: the payments-page speed-up in Table 23 was
       measured on the live site on 2026-09-28.
-- [ ] Apply migration 054 (B-71 in `BLOCKED_FOR_SEAN.md`), if not already done. The queue still
-      lists it as not applied.
+- [x] ~~Apply migration 054 (B-71 in `BLOCKED_FOR_SEAN.md`)~~ Applied by Sean 2026-09-28.
 - [x] ~~Follow up the Adyen support case (B-74)~~ Done 2026-09-26: Adyen fixed the account and a
       test GCash payment passed end to end (Chapter 4, §4.3.2).
 
