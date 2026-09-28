@@ -33,7 +33,18 @@ thing did not work" is not.
 
 ## Open
 
-### B-81 — two checks count "ended tenancies with no end date" and disagree: 1 and 2 · **read-only look needed**
+### B-81 — two checks count "ended tenancies with no end date" and disagree: 1 and 2 · **cause found 2026-09-28; confirm with one check:all**
+
+- **Found:** `GET /admin/tenants` did not select `end_date` for its tenancies, so
+  `check:relations` saw `a.end_date` as undefined on every row and counted EVERY ended tenancy as
+  undated, dated or not. The route now selects `end_date` (the Tenants page never read it, so
+  nothing on screen changes). Most likely one ended tenancy has an end date and one does not,
+  which would make both checks read 1.
+- **What Sean needs to do now:** after this deploys, run `check:all` (backend up). If
+  `check:relations` prints "the baseline can come down to 1", set `UNDATED_BASELINE = 1` in
+  `scripts/check-relations.mjs`. The SQL below is only needed if it still reads 2.
+- The entry as first written follows.
+
 
 - **What:** on 2026-09-28, `check:ledger` (`KNOWN_ENDLESS`, reads `room_assignments` directly with
   `is_active=eq.false&end_date=is.null`) counts **1**; `check:relations` (reads `/admin/tenants` and

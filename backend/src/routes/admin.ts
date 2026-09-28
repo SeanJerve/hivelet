@@ -530,7 +530,7 @@ router.get(
       .select(
         'id, email, full_name, phone_number, emergency_contact_name, emergency_contact_phone, ' +
           'occupation, facebook_url, role, account_status, last_login_at, created_at, ' +
-          'room_assignments (id, is_active, start_date, anniversary_date, deposit_amount, occupant_count, rooms (id, room_number))'
+          'room_assignments (id, is_active, start_date, end_date, anniversary_date, deposit_amount, occupant_count, rooms (id, room_number))'
       )
       .in('role', ['tenant', 'prospect'])
       .order('full_name');
