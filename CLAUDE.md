@@ -81,6 +81,7 @@ here:
 | `HANDOFF_TO_QA.md` | **QA and systems analysis** (Eljohn). The rehearsal, what the suites do and do not prove, the open client decisions |
 | `HANDOFF_TO_DOCS.md` | **Documentation** (Vince). Which file is the authority, and the four checks that fail the build on a document |
 | `HANDOFF_TO_LOYD.md` | For the machine without Sean's setup — what runs, and the seven-receipt workflow |
+| `docs/FINAL MANUSCRIPT/START_HERE_CHAPTERS_4_AND_5.md` | **The manuscript.** What is left in Chapters 4 and 5, who produces each piece, and what Claude does with it |
 
 **Handoffs are named for the seat, not the occupant** — Eljohn and Kiel swapped roles on 17 Sep
 and person-named files were addressed to the wrong people overnight.

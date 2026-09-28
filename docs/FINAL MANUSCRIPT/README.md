@@ -5,6 +5,7 @@ now the source we write in**; the finished text is carried into the `.docx` at t
 
 | File | What it is | State (2026-09-28) |
 | :--- | :--- | :--- |
+| `START_HERE_CHAPTERS_4_AND_5.md` | **Read first.** What is left in Chapters 4 and 5, what fills each pending part, and in what order | Current |
 | `Hivelet_Manuscript_as_of_2026-09-18.pdf` | The manuscript as it stood on 18 September. Kept only to compare against; **do not cite it as a description of the system** | Old version |
 | `FIXES_TO_CHAPTERS_1_TO_3.md` | Every error found in the front matter and Chapters 1 to 3, with paste-ready replacements | Ready to apply; second pass added section G |
 | `CHAPTER_4_RESULTS_AND_DISCUSSION.md` | Replaces the Lorem Ipsum Chapter 4 | Drafted and brought up to date with the system on 2026-09-28; walkthrough, performance and survey data pending |
