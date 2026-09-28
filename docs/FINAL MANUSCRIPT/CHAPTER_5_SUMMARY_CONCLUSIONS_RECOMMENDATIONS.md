@@ -103,7 +103,8 @@ Based on the summary and conclusions of the study, the following are recommended
 
 5. Before accepting real GCash payments, move the Adyen account from test to live, which needs
    the account's live endpoint configured. Until then, a GCash payment made through the portal
-   moves no real money, so tenants should be told to pay in person. Also let the system refund a
+   moves no real money. The public FAQ already tells tenants this and asks them to pay in person;
+   keep that note until the account is live. Also let the system refund a
    GCash payment the owner
    rejects. In this version, rejecting a payment keeps it out of the records but does not return
    the money, which must be refunded from the Adyen Customer Area.
