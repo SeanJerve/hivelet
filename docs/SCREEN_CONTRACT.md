@@ -60,12 +60,13 @@ before the redesign started.
 
 ### `views/IncomeCollectionsView.vue`
 
-5 call(s), **4 of them write**.
+6 call(s), **4 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | **writes** | `DELETE /admin/income-records/:id` | void a receipt |
 | reads | `GET /admin/payments` | payments awaiting verification |
+| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
 | **writes** | `PATCH /admin/income-records/:id` | correct a receipt |
 | **writes** | `PATCH /admin/payments/:id/verify` | verify a payment — atomic, settles the bill and the ledger together |
 | **writes** | `POST /admin/income-records` | record an on-site collection — the money path |
@@ -91,13 +92,14 @@ before the redesign started.
 
 ### `views/MaintenanceDispatchView.vue`
 
-4 call(s), **3 of them write**.
+5 call(s), **4 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | **writes** | `DELETE /admin/tickets/:id` | delete a ticket |
 | reads | `GET /admin/tickets/:id/messages` | read a ticket thread |
 | **writes** | `PATCH /admin/tickets/:id` | move a ticket, and the unit status with it |
+| **writes** | `POST /admin/tickets` | raise a ticket — also sets the unit Under Maintenance |
 | **writes** | `POST /admin/tickets/:id/messages` | reply on a ticket |
 
 ### `views/TenantManagementView.vue`
@@ -126,11 +128,13 @@ before the redesign started.
 
 ### `views/TenantPaymentsView.vue`
 
-4 call(s), **1 of them write**.
+6 call(s), **1 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
+| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
 | reads | `GET /tenant/my-bills` | my bills |
+| reads | `GET /tenant/my-income-records` | my receipts |
 | reads | `GET /tenant/my-payments` | my payments |
 | reads | `GET /tenant/my-standing` | whether my records cover today, and which periods are owed |
 | **writes** | `POST /tenant/payments/adyen/verify-session` | confirm the gateway session on return |
@@ -186,11 +190,13 @@ before the redesign started.
 
 ### `components/modals/OnsitePaymentModal.vue`
 
-2 call(s), **1 of them write**.
+4 call(s), **1 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
+| reads | `GET /admin/payments` | payments awaiting verification |
 | reads | `GET /admin/rooms` | the unit directory |
+| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
 | **writes** | `POST /admin/income-records` | record an on-site collection — the money path |
 
 ### `lib/authStore.ts`
@@ -216,7 +222,7 @@ before the redesign started.
 
 ### `lib/systemState.ts`
 
-5 call(s), **0 of them write**.
+6 call(s), **0 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
@@ -225,7 +231,8 @@ before the redesign started.
 | reads | `GET /admin/inquiries` | enquiries from the public site |
 | reads | `GET /admin/tenants` | the resident directory |
 | reads | `GET /admin/tickets` | the maintenance board |
+| reads | `GET /public/rates` | the water rate and the two Linda fixed charges |
 
 ---
 
-**20 files make 63 distinct calls, 30 of which write.** Generated 2026-09-24.
+**20 files make 70 distinct calls, 31 of which write.** Generated 2026-09-28.
