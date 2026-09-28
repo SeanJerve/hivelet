@@ -71,8 +71,17 @@ described in Chapter 2 (Ullah et al., 2021; Burke, 2026; Magno et al., 2024).
 The analysis produced **44 functional requirements** and **49 business rules**. Every requirement
 is traced to the part of the system that implements it in a traceability matrix, and every rule
 is recorded with its status and evidence in a business rule register. Both documents are checked
-automatically for internal consistency on every verification run (Section 4.3.1). Table 6 shows how
-each identified gap became a requirement and a module.
+automatically for internal consistency on every verification run (Section 4.3.1).
+
+The matrix grades each requirement against the code, not against the plan. At its last full
+grading (16 September 2026), 25 of the 44 were implemented as worded, 15 in part, 1 in the
+interface only, and 3 not as worded. None of the three is absent from what the owner sees. Cash
+flow (FR-019) and profitability (FR-020) appear on her overview as operating cash flow, net
+operating income and collections by month, but they are computed in the browser from the two
+ledgers rather than produced by a server report, which is what the requirements specify. The
+number of occupants (FR-033) carries forward from the tenancy, which the owner edits, rather than
+from the previous month's row as the requirement words it. Table 6 shows how each identified gap
+became a requirement and a module.
 
 **Table 6.** Identified Gaps, System Requirements and Implementing Modules
 

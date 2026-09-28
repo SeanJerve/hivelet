@@ -24,8 +24,10 @@ accomplished:
    cash collection on site, and requests sent by messaging application or in person. Transferring
    her records into the system showed the weaknesses of this approach: 43% of the 937 income rows
    lacked an anniversary date and deposit, and five receipt numbers had each been used for two
-   payments. The analysis produced 44 functional requirements and 49 business rules, each traced
-   to the part of the system that implements it.
+   payments. The analysis produced 44 functional requirements and 49 business rules. Each
+   requirement is graded against the code in a traceability matrix: 25 are implemented as worded,
+   15 in part, 1 in the interface only, and 3 not as worded, although what those three describe is
+   visible to the owner in another form.
 
 2. **The system was developed with all six features named in the objective:** tenant and room
    management, booking and reservation management, financial tracking with optional online payment
@@ -106,7 +108,8 @@ Based on the summary and conclusions of the study, the following are recommended
    rejects. In this version, rejecting a payment keeps it out of the records but does not return
    the money, which must be refunded from the Adyen Customer Area.
 6. Move the remaining database logic out of the route files into separate service modules, which
-   the system's architecture document sets as its target.
+   the system's architecture document sets as its target, and let one of them produce the cash
+   flow and profitability figures (FR-019, FR-020) that the overview now computes in the browser.
 7. Add automated browser tests that sign in and perform each of the 26 walkthrough steps, so that
    every function that writes data is tested by a machine on every change and not only once by a
    person.
