@@ -53,7 +53,12 @@ thing did not work" is not.
   NULL and no `end_date`.
 - **Raised:** 2026-09-28 by Claude
 
-### B-80 — the public site tells visitors they can pay with GCash, and the gateway is on Adyen's test account · **decision, not a bug**
+### B-80 — the public site tells visitors they can pay with GCash, and the gateway is on Adyen's test account · **DECIDED 2026-09-28 by Sean**
+
+> **Decided:** keep the FAQ answer and say plainly it is a capstone project in development: online
+> GCash payments run on Adyen's test account, no real money is charged yet, pay in person until it
+> goes live (`PublicGuestView.vue` FAQ). The Verify risk stays: do not Verify an online payment as
+> real money until the account is live.
 
 - **What the site says:** the public FAQ (`frontend/src/views/PublicGuestView.vue`, "What payment
   methods does the boarding house accept?"): *"You can pay online with GCash through the portal,
