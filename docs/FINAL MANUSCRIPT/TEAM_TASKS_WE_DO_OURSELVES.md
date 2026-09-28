@@ -77,9 +77,12 @@ on a phone. Use the unoccupied unit or blur tenant names; the manuscript is publ
 
 - [ ] How did enquiries about rooms arrive before the system (walk-in, referral, phone)? (§4.1.1,
       Table 5, marked CONFIRM)
-- [ ] The five flagged receipt numbers: check them against her receipt book.
-- [ ] The five open business questions listed in Chapter 5, recommendation 2. All are in
-      `CLIENT_MEETING_QUESTIONS.md`, ready to ask in one sitting.
+- [x] ~~The five flagged receipt numbers: check them against her receipt book.~~ Not needed:
+      decided 2026-09-26 that historical records stay as she wrote them (Chapter 4, §4.1.1).
+- [ ] The open business questions listed in Chapter 5, recommendation 2, and the move-in dates
+      in recommendation 3. All are in `CLIENT_MEETING_QUESTIONS.md`, ready to ask in one sitting.
+- [ ] Whether the public site should keep telling visitors they can pay online with GCash while
+      the gateway is still Adyen's test account (B-80 in `BLOCKED_FOR_SEAN.md`).
 
 ### 7. Manuscript housekeeping
 
@@ -92,10 +95,12 @@ on a phone. Use the unoccupied unit or blur tenant names; the manuscript is publ
 
 ### 8. For Sean (system side)
 
-- [ ] Merge the design branch into main, so the payments-page speed-up in Table 23 is on the live
-      site before the manuscript claims it.
-- [ ] Apply migration 054 (B-71 in `BLOCKED_FOR_SEAN.md`).
-- [ ] Follow up the Adyen support case (B-74) so GCash can be demonstrated end to end.
+- [x] ~~Merge the design branch into main~~ Done: the payments-page speed-up in Table 23 was
+      measured on the live site on 2026-09-28.
+- [ ] Apply migration 054 (B-71 in `BLOCKED_FOR_SEAN.md`), if not already done. The queue still
+      lists it as not applied.
+- [x] ~~Follow up the Adyen support case (B-74)~~ Done 2026-09-26: Adyen fixed the account and a
+      test GCash payment passed end to end (Chapter 4, §4.3.2).
 
 ## Part 2. What Claude does
 

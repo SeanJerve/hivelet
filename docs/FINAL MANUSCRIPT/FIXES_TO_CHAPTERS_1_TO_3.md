@@ -132,6 +132,28 @@ is to apply Word heading styles to every heading and insert an automatic table o
   whether they need to be reissued with the current title.
 - **Curriculum Vitae (p.50 to 51):** still the blank template, with 2019 to 2023 as example years.
 
+## G. Found on the second pass (2026-09-28)
+
+Checked against the same PDF, and against the system as it stands on 2026-09-28. These were not
+in the first pass.
+
+| # | Where | Now says | Change to |
+| :--- | :--- | :--- | :--- |
+| G1 | p.7, §1.4, the delimitation sentence on online payment | "restricted to basic transaction recording and explicitly excludes advanced financial processing capabilities like automated reconciliation, refunds, or direct banking integration" | See G6. The refund part is right and Chapter 5 (recommendation 5) now rests on it, but "basic transaction recording" undersells a real payment through the Adyen gateway |
+| G2 | p.23, §2.3, the Output phase | "generated outputs such as financial reports, booking records, and transaction receipts" | "generated outputs such as financial reports exportable as Excel files, enquiry and tenancy records, and payment records". **The system does not produce receipts:** it records the number from the owner's paper receipt book and never makes one up (Chapter 4, §4.2.4) |
+| G3 | p.24, §2.4, Progressive Web Application | "without requiring installation" | "without requiring installation from an app store". Chapter 4, §4.2.7 says the app **can** be installed on a phone, and the Portability survey asks about exactly that |
+| G4 | p.33, §3.2.2 Design | "covering three user roles: public users, tenants, and administrators" | Keep; it matches the system. The code also stores a *prospect*, but that is only the saved record of a visitor who sent an enquiry, with the same rights as the public, so it is not a fourth kind of user. Chapter 4, §4.2.6 now says so |
+| G5 | p.28, §3.1.1, and p.33, §3.2.2 | Figma used for the interface prototypes | **Team to confirm.** No Figma file or link is in the repository. If the prototypes were made some other way, name that instead; a panel member may ask to see them |
+
+**G6. §1.4, the delimitation sentence on online payment (p.7).** Replace from "Additionally, the
+supplementary online payment feature" to "direct banking integration."
+
+> Additionally, the supplementary online payment feature lets a tenant pay a bill through GCash
+> using the Adyen payment gateway; each such payment is recorded as pending and counts only after
+> the administrator verifies it. The feature explicitly excludes refunds, which are made from the
+> gateway's own dashboard, automated reconciliation against bank records, and direct banking
+> integration.
+
 ## F. Optional improvements (not errors)
 
 - §2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would
