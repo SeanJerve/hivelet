@@ -108,13 +108,13 @@ const routes: RouteRecordRaw[] = [
     path: '/admin/income',
     name: 'IncomeCollections',
     component: IncomeCollectionsView,
-    meta: { roles: ['admin'], label: 'money coming in' },
+    meta: { roles: ['admin'], label: 'Monthly Income' },
   },
   {
     path: '/admin/expenses',
     name: 'ExpensesLedger',
     component: ExpensesLedgerView,
-    meta: { roles: ['admin'], label: 'money going out' },
+    meta: { roles: ['admin'], label: 'Monthly Expenses' },
   },
   {
     path: '/admin/tickets',

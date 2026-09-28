@@ -765,7 +765,7 @@ async function handleEditExpense() {
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-          Money going out
+          Monthly Expenses
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
           What was spent, what kind of thing it was, and which part of the property it belongs to.
@@ -816,7 +816,7 @@ async function handleEditExpense() {
         claim with a date on it, the tile's note describes the overview, where
         the dark tile really is a queue of work; across the three admin
         registers the rank the tone carries is "this is the figure the screen
-        is about". "Money going out" was the only one of the four without one.
+        is about". "Monthly Expenses" was the only one of the four without one.
 
         The figure steps DOWN, 5xl to 4xl, to the same line "Collected
         altogether" uses - the tone now does the work the size was being asked

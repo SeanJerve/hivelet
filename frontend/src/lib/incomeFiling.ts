@@ -8,7 +8,7 @@
  * Overview (`r.year`, `r.month`) and the Excel export (`.eq('year', year)`)
  * already count by.
  *
- * Money coming in used to filter and chart by the date paid instead. Rent for
+ * Monthly Income used to filter and chart by the date paid instead. Rent for
  * January paid on 28 December then sat in one year on this page and in the other
  * on the Overview and in the spreadsheet the page exports, so a year picked once
  * across all three (lib/yearScope.ts) showed three totals that disagreed

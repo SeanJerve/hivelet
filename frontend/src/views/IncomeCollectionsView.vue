@@ -967,7 +967,7 @@ async function exportExcel() {
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-ink-faint">Admin</p>
         <h1 class="mt-1 text-3xl font-medium leading-tight tracking-tight sm:text-[2.125rem]">
-          Money coming in
+          Monthly Income
         </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-soft">
           Every payment received, unit by unit.
@@ -1008,7 +1008,7 @@ async function exportExcel() {
       decoration. They are sums over `rows`, which derives from
       `incomeRecords`, which stays EMPTY when the fetch fails - so without this
       a refused or broken request rendered "₱0" four times over, on the screen
-      the owner opens to see money coming in, against a table holding 937 real
+      the owner opens to see money received, against a table holding 937 real
       income rows. A failure presented as a financial fact.
 
       The flag already existed and was already set by `fetchIncomeRecords`.
