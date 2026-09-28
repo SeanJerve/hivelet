@@ -109,6 +109,11 @@ npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"
 
 ## 2. The seven receipts, and the check that was written waiting for you
 
+> **Update 2026-09-28: no longer needed.** Sean decided on 2026-09-26 that historical records
+> stay exactly as she wrote them (`CLIENT_MEETING_QUESTIONS.md` § 1, closed). There is nothing to
+> take to the receipt book. `check:ledger` still pins **five** and prints them every run. The rest
+> of this section is kept as the record of what was found.
+
 `check:ledger` already re-derives the whole ledger — every `remitted_amount` and every 50%
 figure against its formula, on all 937 rows. It found seven entries that **cannot be right as
 written**, and rather than silencing them it **pins them by receipt number** and prints all seven

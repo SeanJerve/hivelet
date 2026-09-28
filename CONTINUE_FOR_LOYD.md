@@ -69,10 +69,10 @@ with a nine-step build walkthrough. **Do the rehearsal first**; a survey shouldn
 
 | | |
 | :--- | :--- |
-| **B-05** | Apply migration `027`. Two junk tickets are on the owner's dispatch board **right now**, one titled with a slur |
-| **B-10** | The repository is **public** — confirmed. Decide on visibility; history holds 33 residents' details and no file edit reaches that |
-| **B-11** | 16 ended tenancies record no end date. Needs a backfill migration. **OD-04's deposit settlement depends on move-out dates** |
-| **Mrs. Da Silva** | `CLIENT_MEETING_QUESTIONS.md` §§ 1–2 — the seven receipts and five accounting habits. Untouched |
+| ~~**B-05**~~ | Closed 2026-09-19 (see `BLOCKED_FOR_SEAN.md`) |
+| ~~**B-10**~~ | Closed 2026-09-19, accepted by Sean |
+| **B-11** | Was 16 ended tenancies with no end date; after the 23-26 Sep clean-up the checks read 1 and 2 (B-81). Still needs the owner's move-out date. **OD-04's deposit settlement depends on it** |
+| **Mrs. Da Silva** | `CLIENT_MEETING_QUESTIONS.md` § 2 onward — the accounting questions. **§ 1, the flagged receipts, is closed**: decided 2026-09-26 that they stay as she wrote them (five are still pinned by `check:ledger`) |
 
 ---
 

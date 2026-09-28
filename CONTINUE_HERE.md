@@ -1,6 +1,24 @@
 # CONTINUE HERE — handoff for the next machine
 
 > [!IMPORTANT]
+> **2026-09-28, on `main`, all pushed. 20 of 20 suites green with the backend up.**
+>
+> - **The design branch is merged** (PRs #3-#9), and B-74 to B-79 are done: the box below is history.
+> - **Ledger pages renamed** "Monthly Income" / "Monthly Expenses", her workbook's sheet names.
+>   Live on the site.
+> - **Manuscript realigned with the system** (`docs/FINAL MANUSCRIPT/`): Chapters 4 and 5 re-checked
+>   claim by claim (six screen-audit defects, all fixed; test data removal; receipts kept as
+>   written; roles; audit trail), and section G added to the Chapters 1-3 fixes.
+>   `TESTING_REHEARSAL.md` updated for the team's walkthrough (current screen names, PH ₱30,000,
+>   never delete the rehearsal profile).
+> - **Ratchets lowered to the live counts:** `check:ledger` KNOWN_ENDLESS 1, `check:relations`
+>   baseline 2. They disagree on the same thing: **B-81**.
+> - **Needs a decision: B-80.** The public FAQ says tenants can pay online with GCash; the gateway
+>   is on Adyen's test host, so no real money moves, and a verified test payment would mark a real
+>   bill Paid.
+> - **Still needs people:** the 26-step walkthrough, the survey, device timings, Figures 4-8.
+
+> [!NOTE]
 > **2026-09-26, design branch `claude/friendly-dirac-njqvs1` — four commits NOT yet in `main`:**
 > `e234f58` expenses (personal costs get their own column), `8690773` tenants (placeholder
 > 2026-07-01 reads "Not recorded"), `e2009e6` activity (an opened GCash checkout reads "GCash
@@ -18,7 +36,7 @@
 >   screens and the tenant Payments page are done. **Still to do: tenant Overview, Repairs and My
 >   details, signed in as a tenant (unit 1c).**
 
-**Last updated:** 2026-09-23.
+**Last updated:** 2026-09-28 (the box above); the sections below from 2026-09-23 back.
 **Branch:** `main`. Everything described here is committed and pushed.
 **Read this first, then `docs/claude_pipeline/CONTINUE_HERE.md` for pipeline detail.**
 

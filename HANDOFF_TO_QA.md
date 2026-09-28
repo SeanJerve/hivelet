@@ -132,6 +132,11 @@ specific message, not the exit code.**
 
 ## 5. The seven receipts, and why they are pinned rather than fixed
 
+> **Update 2026-09-28.** Sean decided on 2026-09-26 that historical records stay exactly as she
+> wrote them (`CLIENT_MEETING_QUESTIONS.md` § 1, closed), so nobody is taking these to her now.
+> `check:ledger` pins **five** today, reported every run so they are never mistaken for the
+> system's own errors. The mechanism below is unchanged; only the "waiting for an answer" is gone.
+
 `check:ledger` found seven entries in the owner's books that **cannot be right as written** — two
 impossible dates, three rent periods ending the day before they start, two receipt numbers used
 twice. It pins them by receipt number and prints all seven on every run.
