@@ -222,7 +222,14 @@ for (const b of bills ?? []) {
 // So: pin the count, print it every run, and fail only if it GROWS. A new undated
 // tenancy means the fixed path was bypassed, and that is worth stopping the build
 // for. The existing ones need a migration, which is not this script's business.
-const UNDATED_BASELINE = 16;
+//
+// Lowered 16 to 2 on 2026-09-28: the clean-up migrations of 23-26 September
+// deleted the profiles most of these belonged to, and the run that day counted
+// 2. check:ledger's KNOWN_ENDLESS counts the same thing straight from the table
+// (`is_active=eq.false&end_date=is.null`) and read 1 the same day. The two
+// filters differ on a NULL `is_active`, which this loop treats as ended; that
+// is the likeliest reason, not a verified one (B-81).
+const UNDATED_BASELINE = 2;
 const undated = [];
 for (const t of tenants) {
   for (const a of allOf(t)) {
