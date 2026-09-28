@@ -8,6 +8,11 @@
 > expectation. Table and figure numbers continue from Chapter 3 (the last table there is Table 4,
 > the Likert scale, and the last figure is Figure 3), because the manuscript numbers them across
 > the whole document.
+>
+> **Updated 2026-09-28** against the system as it stands after the 26 September fixes and
+> clean-up: Table 8 re-run, Table 9 and the defect list brought up to date (all six defects now
+> fixed), the ledger pages' new names, the maintenance features added on 26 September, the removal
+> of test data, and the decision about historical receipts.
 
 This chapter presents the results of the study and discusses what they mean. It is organized by
 the four specific objectives in Section 1.2: the analysis of existing practices (4.1), the
@@ -50,8 +55,10 @@ problems that had gone unnoticed in the spreadsheet:
 - **402 of the 937 income rows (43%)** had no anniversary date and no deposit recorded.
 - **Five official receipt numbers** were each used for two different payments. In one case, a
   single receipt number was used for two different tenants on the same day. Each case is recorded
-  in the system and reported on every verification run, and none has been changed, because only
-  the owner's receipt book can say which entry is correct.
+  in the system and reported on every verification run. None has been changed: the team decided
+  on 26 September 2026 that historical records stay exactly as the owner wrote them, as the record
+  of what happened. The standard the system is held to is that every record it produces itself is
+  correct.
 
 These are not errors by the owner. They are what happens when records are kept by hand with
 nothing to check them against, and they are the kind of problem the system was built to catch.
@@ -80,10 +87,13 @@ each identified gap became a requirement and a module.
 | One file on one device | Make the system reachable from any phone or computer | Progressive Web Application (4.2.7) |
 
 Where the owner's answer was needed to settle a requirement, it was asked rather than assumed. For
-example, the owner confirmed that there is no grace period on rent, that she sets room rates by
-hand (so the system keeps a history of every rate change instead of applying any automatic
-increase), and that a tenant does not need an email address to be recorded. **Five questions are
-still waiting for her answer** and are listed in Chapter 5 as recommendations.
+example, the owner confirmed that a bill is overdue from the day after its due date (she allows
+about a week before following up a late payment, but that week does not change when rent is due),
+that she sets room rates by hand (so the system keeps a history of every rate change instead of
+applying any automatic increase), and that a tenant does not need an email address to be recorded.
+On 20 September 2026 she gave the current rate of every unit, and every one agreed with her own
+receipts. **The questions still waiting for her answer** are collected in one list for a single
+meeting and are named in Chapter 5 as recommendations.
 
 ---
 
@@ -117,7 +127,9 @@ file (more than fifty so far), so the history of the data can be reviewed and re
 ### 4.2.2 Tenant and Room Management Module
 
 Each unit carries its cluster, floor, current rate and status. Each tenancy carries the number of
-occupants, the move-in date and emergency contacts. When the owner changes a room rate, a database
+occupants, the move-in date and emergency contacts. The owner's workbook did not record move-in
+dates, so for the transferred tenancies the screen says the date is not recorded rather than
+showing a guessed one. When the owner changes a room rate, a database
 trigger records the old rate, the new rate, the date and who made the change. Because the trigger
 runs inside the database, a rate cannot be changed through any path without being recorded.
 *Figure 4. Room and Rate Directory.* [SCREENSHOT PENDING]
@@ -136,7 +148,7 @@ Catalogue and Enquiry Form.* [SCREENSHOT PENDING]
 A bill carries rent and water as separate amounts. Water is the number of occupants multiplied by
 a rate the owner can change in the settings, currently ₱200 per occupant. The two Linda units are
 charged a fixed water amount instead and are kept out of the property's grand totals, as in the
-owner's own workbook. There is no grace period, as the owner confirmed.
+owner's own workbook. A bill is overdue from the day after its due date, as the owner confirmed.
 
 Cash payments are recorded by the owner with the official receipt number from her receipt book.
 The system never makes up a receipt number. Online payments go through Adyen with GCash: a payment
@@ -144,10 +156,11 @@ made this way enters a **Pending Verification** state and changes nothing on the
 until the owner verifies it. Before the owner records a payment, the system warns her if the same
 tenant already has a payment for that month, including one still waiting for verification.
 
-Income and expenses are shown in the same layout as the owner's two workbook sheets and can be
-exported as Excel files in that layout. Income is filed under the month the rent is for, not the
-day it was paid, so a late payment still counts toward the right month. *Figure 6. Income and
-Collections Ledger.* [SCREENSHOT PENDING]
+Income and expenses are shown on two pages named after the owner's two workbook sheets, **Monthly
+Income** and **Monthly Expenses**, in the same layout as those sheets, and can be exported as Excel
+files in that layout. Income is filed under the month the rent is for, not the
+day it was paid, so a late payment still counts toward the right month. *Figure 6. The Monthly
+Income Ledger.* [SCREENSHOT PENDING]
 
 The system does not handle electricity. Every unit has its own meter and the tenant pays the
 electric company directly, as the owner confirmed on 18 September 2026.
@@ -155,14 +168,20 @@ electric company directly, as the owner confirmed on 18 September 2026.
 ### 4.2.5 Maintenance Ticketing and Notification Module
 
 A tenant submits a request with a title, description and priority, and follows its status through
-to completion. Only the owner can close a request. The system sends in-app notifications to the
-tenant when a payment is verified or declined, and to the owner when a payment, enquiry or request
-comment arrives. *Figure 7. Maintenance Requests Board.* [SCREENSHOT PENDING]
+to completion. The owner can also log a repair herself when she is told about it in person,
+including a repair to an empty unit, which has no tenant to report it. Only the owner can close a
+request, and when she marks a tenant's repair as done the tenant is notified. The system also sends
+in-app notifications to the tenant when a payment is verified or declined, and to the owner when a
+payment, enquiry or request comment arrives. Opening a notification opens the record it is about,
+for example the payment waiting to be verified, rather than only the page it is on. *Figure 7.
+Maintenance Requests Board.* [SCREENSHOT PENDING]
 
 ### 4.2.6 Role-Based Access Control
 
-The system defines four roles (guest, prospect, tenant and administrator) over a named permission
-matrix, which is more than the two roles described in Section 2.4. Each of the 55 administrator and
+The system has the three kinds of user designed in Section 3.2.2: the public, tenants and the
+administrator. It also keeps a record of each visitor who sends an enquiry (a *prospect*), with
+the same rights as the public, so that their details carry over if they become a tenant. Every
+role's rights come from one named permission matrix. Each of the 55 administrator and
 tenant routes declares the permission it requires, and this is checked on every verification run.
 Access is also enforced by the database itself: row-level security is enabled on all 22 operational
 tables (checked on the live database on 26 September 2026). The two remaining tables are backups
@@ -175,7 +194,10 @@ Other security measures in the system:
   compared, and it is kept per account so that an attacker cannot avoid it by changing address.
 - A new account must change its password at first sign-in, and changing a password ends every
   other session of that account.
-- Every administrator action is written to an audit trail that cannot be edited or deleted.
+- Every administrator action is written to an audit trail. The database refuses to let the
+  application edit or delete its entries. The only change ever made to it was deliberate and
+  reviewed: when test accounts were deleted, the name on their entries was removed and every entry
+  kept.
 - Messages from the payment gateway are accepted only with a valid HMAC signature.
 - A check for committed passwords and keys runs before every commit.
 
@@ -198,10 +220,10 @@ on a phone. *Figure 8. The Tenant Portal on a Mobile Phone.* [SCREENSHOT PENDING
 
 Twenty automated check suites were written during development. They run against the live system
 and **perform no writes**, which is what makes them safe to run against the owner's real records.
-The full set was run on 26 September 2026 and **all 20 passed**. Table 8 shows the principal
-results.
+The full set was run again on 28 September 2026, after the last changes of the pilot, and **all
+20 passed**. Table 8 shows the principal results.
 
-**Table 8.** Results of Automated Verification (26 September 2026)
+**Table 8.** Results of Automated Verification (28 September 2026)
 
 | Suite | What it checks | Result |
 | :--- | :--- | :--- |
@@ -209,7 +231,7 @@ results.
 | Ledger integrity | All 937 income rows against the business rules; room, tenant and occupancy agreement | Passed; 5 receipt anomalies reported for the owner |
 | Report reconciliation | The exported Excel reports against the database, month by month | 490 of 490 passed |
 | Payment gateway | Signature checking on gateway messages and how each kind of message is recorded | 73 of 73 passed |
-| Record relations | That separate records agree with each other (payments with bills, tickets with units) | 26 of 26 passed |
+| Record relations | That separate records agree with each other (payments with bills, tickets with units) | 30 of 30 passed |
 | Billing arithmetic | Water, billing period and how a payment is split across bills | Passed |
 | Data presentation | That no screen shows stored, sample or empty data as a live figure | 6 of 6 passed |
 | Interface integrity | That every screen component exists, every input has a label, and every source file is used | Passed |
@@ -236,7 +258,7 @@ following real events are part of the pilot:
 - **22 September 2026.** A checkout in the tenant portal, made during a live payment test, raised
   the first bill the system ever created for real use: ₱8,200.00 for unit 1a, made of the ₱8,000 rate and ₱200 water for one occupant. The amount
   was computed by the system and matches the rules exactly.
-- **23 September 2026.** A cash receipt was recorded during testing and voided four minutes later.
+- **22 September 2026.** A cash receipt was recorded during testing and voided four minutes later.
   The ledger returned to exactly 937 rows and its previous total, which shows the void path works.
 - **23 September 2026.** The client opened the system on a phone and found it hard to use. The
   team measured the problems instead of guessing: a table 518 pixels wide inside a 301-pixel
@@ -259,13 +281,22 @@ was misconfigured, and Adyen set up a new one.
 On 26 September 2026 a test payment passed end to end:
 - Adyen authorised it;
 - its signed notification reached the system;
-- it appeared as Pending Verification in the owner's queue;
-- the owner rejected it, and the tenant's bill stayed owed.
+- it appeared as Pending Verification in the administrator's verification queue;
+- it was rejected there, and the tenant's bill stayed owed.
 
 That retest found one defect in the system itself. A tenant returning from a successful GCash
 payment was told the payment could not be confirmed. It was fixed and confirmed on a second test
 payment the same day. The system's own handling of gateway messages is covered by the passing
 checks in Table 8.
+
+When the pilot tests were finished, every record they had created was removed the same day, 26
+September 2026, by a single reviewed migration run after a backup: all 20 payment records, every
+one of them a test (the GCash payments, which could not be real money because the gateway account
+is still Adyen's test account; the voided test receipt and its cash entries; and the demo accounts'
+payments), together with 16 notifications and the demo accounts' bills and tenancies. The bill raised on 22 September stayed, because
+it is a correct bill for a real tenancy, and went back to owed. The owner's 937 income rows were not
+touched. The audit trail was not edited either: it keeps the record of the testing and gained one
+entry saying what was removed and why.
 
 ### 4.3.3 Screen-versus-Database Audit
 
@@ -287,15 +318,16 @@ audit. Table 9 shows the result.
 | Screen | What was compared | Result |
 | :--- | :--- | :--- |
 | Owner overview | Collections for each month of 2026, the year's total, occupancy, rent per cluster, expected monthly income, operating and personal costs | Matched to the peso |
-| Money coming in | Totals for rent, water and garbage; collections by cluster | Matched, except one figure under review (below) |
-| Money going out | Total spent, split by kind and by area | Matched; one layout defect fixed |
+| Monthly Income | Totals for rent, water and garbage; collections by cluster | Matched after one defect was fixed |
+| Monthly Expenses | Total spent, split by kind and by area | Matched; one layout defect fixed |
 | Rooms and rates | Rent and number of occupants for each unit | Matched |
 | Tenants | Number of tenants per cluster; move-in dates | Counts matched; one defect fixed |
 | Activity (audit trail) | Each recent entry against the recorded action | One defect fixed |
 | Repairs, inquiries | Number of open items | Matched |
-| Tenant payments | A tenant's receipts for 2026 | One defect fixed |
+| Tenant payments | A tenant's receipts for 2026 | Two defects fixed |
 
-The audit found five defects that no automated check had caught:
+The audit found six defects that no automated check had caught, and all six were fixed on 26
+September 2026:
 
 1. **A tenant's payment history showed no payments.** The page read only payments made through the
    system, while every receipt the owner recorded lives in the ledger. It now reads both.
@@ -307,13 +339,18 @@ The audit found five defects that no automated check had caught:
    now says the date is not recorded.
 4. **An opened GCash checkout was listed as "Payment recorded".** Six such entries appeared on 25 and
    26 September, and none became a payment. They now read "GCash payment started".
-5. **A voided receipt still appeared in the tenant's own receipt list.** This one requires a change
-   to the server and is scheduled with the development lead.
+5. **A voided receipt still appeared in the tenant's own receipt list.** The server now leaves
+   voided receipts out of what a tenant is shown, as every other screen already did.
+6. **The Boarding House's remitted amount was halved on the income screen.** The screen totalled
+   it as half the rent plus water, while the database, the Excel export and business rule BR-038
+   used the full rent plus water. Rather than choose between the two, the team read the formula in
+   the owner's own workbook, which adds the full rent; half the rent appears only in her separate
+   50% column. The screen was corrected to match.
 
-One figure remains under review. For the Boarding House cluster, the income screen totals the
-remitted amount as half the rent plus water, while the database, the Excel export and business rule
-BR-038 define it as the full rent plus water. The two sources disagree about the owner's own
-workbook, so the figure will be settled against that workbook rather than by choosing one.
+The audit also found that the list of payments behind the owner's overview would have stopped
+silently at 1,000 records, a limit of the database service, which at the property's pace would
+have been reached in about two and a half years. It now reads the list in batches, as the income
+list already did.
 
 The lesson is the same one Section 4.3.1 draws, from the other side: **passing checks show that
 what was tested is correct, not that everything is.** Comparing each screen with the records it
@@ -601,12 +638,17 @@ pilot; the rows after them will come from the survey results.
 | Client review on a phone, 23 Sep 2026 | The tenant register was wider than the phone screen | Tables become cards on small screens | Usability, Portability |
 | Client review on a phone, 23 Sep 2026 | The payment form's buttons were hidden below the screen | Form height limited on phones so the buttons stay visible | Usability |
 | Client review on a phone, 23 Sep 2026 | Forms with typed input had no close button | Every form can be closed; only the required first password change cannot | Usability |
-| Performance review, 26 Sep 2026 | The payments page loaded the whole payment gateway library for every visitor | The library now loads only when a tenant starts an online payment; the page's own code fell from 209 kB to 17 kB [CONFIRM this change is on the live site before submission] | Performance Efficiency |
+| Performance review, 26 Sep 2026 | The payments page loaded the whole payment gateway library for every visitor | The library (about 194 kB) now loads only when a tenant starts an online payment; the page's own code is about 20 kB, measured on the live site on 28 Sep 2026 | Performance Efficiency |
 | Final review, 26 Sep 2026 | A refused refund could be announced as successful; a receipt could be credited to the wrong tenant | Both corrected, with checks added | Reliability, Functional Suitability |
 | Screen audit, 26 Sep 2026 | A tenant's payment history showed no payments | Receipts from the ledger now shown with online payments | Functional Suitability |
 | Screen audit, 26 Sep 2026 | Rental and personal expenses shared one column | Separate columns, as in the owner's workbook | Usability, Functional Suitability |
 | Screen audit, 26 Sep 2026 | A placeholder date read as every tenant's move-in | Shown as not recorded until the real dates are entered | Reliability |
 | Screen audit, 26 Sep 2026 | An opened GCash checkout was listed as a recorded payment | Listed as "GCash payment started" | Security (accountability of the audit trail) |
+| Screen audit, 26 Sep 2026 | A voided receipt was listed to the tenant as a real payment | Voided receipts left out of the tenant's list | Reliability |
+| Screen audit, 26 Sep 2026 | The Boarding House's remitted amount was halved on the income screen | Corrected to full rent plus water, read from the owner's workbook formula | Functional Suitability |
+| Screen audit, 26 Sep 2026 | The payments list would stop silently at 1,000 records | Read in batches, like the income list | Reliability |
+| Requirements review, 26 Sep 2026 | The owner could not record a repair she was told about in person, or one for an empty unit; a tenant was never told a repair was done | "Log a repair" added for any unit; the tenant is notified when the repair is marked done | Functional Suitability |
+| Team review, 28 Sep 2026 | The two ledger pages were named "Money coming in" and "Money going out", which are not the owner's words | Renamed "Monthly Income" and "Monthly Expenses", the names of the two sheets in her workbook | Usability |
 | Team review, 26 Sep 2026 | The highlighted option in every dropdown was cut off at the sides | Outline drawn inside the option | Usability |
 | Survey results | [DATA PENDING] | | |
 
@@ -643,5 +685,5 @@ Three risks are managed deliberately:
 - **Gateway and database credentials** are kept outside the code, passed between team members
   separately, and never written in any document. A check for committed credentials runs before
   every commit.
-- **The five historical receipt anomalies** are reported on every verification run and will be
-  corrected only against the owner's receipt book.
+- **The five historical receipt anomalies** are kept exactly as the owner wrote them and reported
+  on every verification run, so they are never mistaken for errors made by the system.

@@ -3,11 +3,11 @@
 The working copy of the capstone manuscript for Hivelet. **The Markdown files in this folder are
 now the source we write in**; the finished text is carried into the `.docx` at the end.
 
-| File | What it is | State (2026-09-26) |
+| File | What it is | State (2026-09-28) |
 | :--- | :--- | :--- |
 | `Hivelet_Manuscript_as_of_2026-09-18.pdf` | The manuscript as it stood on 18 September. Kept only to compare against; **do not cite it as a description of the system** | Old version |
-| `FIXES_TO_CHAPTERS_1_TO_3.md` | Every error found in the front matter and Chapters 1 to 3, with paste-ready replacements | Ready to apply |
-| `CHAPTER_4_RESULTS_AND_DISCUSSION.md` | Replaces the Lorem Ipsum Chapter 4 | Drafted; walkthrough, performance and survey data pending |
+| `FIXES_TO_CHAPTERS_1_TO_3.md` | Every error found in the front matter and Chapters 1 to 3, with paste-ready replacements | Ready to apply; second pass added section G |
+| `CHAPTER_4_RESULTS_AND_DISCUSSION.md` | Replaces the Lorem Ipsum Chapter 4 | Drafted and brought up to date with the system on 2026-09-28; walkthrough, performance and survey data pending |
 | `CHAPTER_5_SUMMARY_CONCLUSIONS_RECOMMENDATIONS.md` | Replaces the auto shop Chapter 5 left over from another project | Drafted; parts that depend on the survey pending |
 | `TEAM_TASKS_WE_DO_OURSELVES.md` | What the team must do in person (usability testing, security scans, walkthrough) and what Claude does with the results | Checklist |
 

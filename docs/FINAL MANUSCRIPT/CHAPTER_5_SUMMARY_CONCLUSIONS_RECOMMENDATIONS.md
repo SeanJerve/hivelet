@@ -5,6 +5,8 @@
 > ISO/IEC 25010 ratings (4.98, 4.43, 4.15) that are not Hivelet's. **Remove all of that text.**
 > Items marked **[DATA PENDING]** wait on the walkthrough and the survey. Every conclusion must
 > follow from a result in Chapter 4; if Chapter 4 changes, check this chapter again.
+> **Checked again 2026-09-28** against the updated Chapter 4 (six screen-audit defects, all fixed;
+> the decision to keep historical receipts as written; the owner's open questions).
 
 This chapter summarizes the study, states the conclusions drawn from its results, and gives
 recommendations for the owner, for the continued development of the system, and for future
@@ -33,11 +35,13 @@ accomplished:
    records: 937 income rows and 1,327 expense allocations across 33 units.
 
 3. **The system was pilot tested.** Twenty automated check suites, run against the live system on
-   26 September 2026, all passed, including 490 report reconciliation checks, 78 access control
+   28 September 2026, all passed, including 490 report reconciliation checks, 78 access control
    and endpoint checks and 73 payment gateway checks. In live use the system raised a correct bill,
    recorded and voided a receipt without changing the ledger total, and was corrected the same day
    after the client reviewed it on a phone. A screen-by-screen comparison with the live records
-   found five defects the automated checks had missed, four of which were corrected the same day.
+   found six defects the automated checks had missed, and all six were corrected the same day.
+   When testing ended, every record it had created was removed by one reviewed change, leaving the
+   owner's 937 income rows untouched.
    [DATA PENDING: one sentence on the 26-step walkthrough
    and one on the measured load times.]
 
@@ -65,7 +69,7 @@ Based on the results of the study, the following conclusions were drawn:
    serious defects found during development gave no error on screen. They were found only because
    the system was checked against its own data and rules, and the checks now prevent them from
    returning. **Automated checks are necessary but not sufficient**: comparing each screen with
-   the records it claims to show found five further defects, including a tenant payment history
+   the records it claims to show found six further defects, including a tenant payment history
    that showed nothing although every check had passed. [DATA PENDING: add the walkthrough result
    here, and state whether it confirmed the automated results.]
 
@@ -79,20 +83,26 @@ Based on the summary and conclusions of the study, the following are recommended
 
 **For the owner of the Fe Galang Da Silva Boarding House**
 
-1. Check the five flagged receipt numbers against the paper receipt book so the records can be
-   corrected. The system reports them on every verification run until they are resolved.
-2. Answer the five remaining questions about how the business should work: whether report totals
-   show monthly figures, year-to-date or both; when the garbage fee is charged; whether expense
-   category totals restart every year; whether expense categories may be edited; and whether
-   tenants may submit their own payment records.
-3. Record the move-out dates of the four past tenancies that have none, since settling deposits
-   on move-out depends on those dates.
+1. Keep the five flagged receipt numbers in mind when reading older records. They stay exactly as
+   she wrote them, and the system lists them on every verification run so that they are never
+   mistaken for its own errors.
+2. Answer the questions that remain about how her records are kept, collected in one list for a
+   single sitting. The main ones are: whether the large figure at the bottom of her income sheet
+   is a year-to-date total; whether she may add her own expense categories; whether tenants may
+   report a cash payment for her to confirm; where the Penthouse's past spending belongs; whether
+   Linda's fixed water counts as remitted money; whether the ₱2.56 million booked as personal in
+   2025 is correct; and the three missing months of receipts for one unit.
+3. Supply the move-in date of each current tenancy, which her workbook did not record, and the
+   move-out date of the one past tenancy that has none, since settling a deposit on move-out
+   depends on these dates.
 4. Keep taking a backup before any change to the records, as the team has done throughout.
 
 **For the continued development of the system**
 
 5. Before accepting real GCash payments, move the Adyen account from test to live, which needs
-   the account's live endpoint configured. Also let the system refund a GCash payment the owner
+   the account's live endpoint configured. Until then, a GCash payment made through the portal
+   moves no real money, so tenants should be told to pay in person. Also let the system refund a
+   GCash payment the owner
    rejects. In this version, rejecting a payment keeps it out of the records but does not return
    the money, which must be refunded from the Adyen Customer Area.
 6. Move the remaining database logic out of the route files into separate service modules, which
