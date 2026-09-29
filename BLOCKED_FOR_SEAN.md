@@ -73,6 +73,27 @@ thing did not work" is not.
   line is untouched. No suite was run against the live tenants before or after.
 - **Raised:** 2026-09-29 by Claude, on Loyd's machine, at Loyd's request
 
+### B-85 — after the testing day: remove the REHEARSAL tenant's bill (and anything else the walkthrough leaves)
+
+- **Blocked on:** the testing day happening (30 September), then a migration
+- **What I found:** walkthrough step 15b (test case A-20) raises a real bill for the REHEARSAL
+  tenant on `PH`. Step 18 settles it, step 19b voids that receipt (and migration 054 reverses the
+  settlement, so the bill is owed again), and step 24 vacates the tenant. The vacate route
+  (`POST /admin/tenants/:profileId/vacate`) closes the assignment, frees the unit and deactivates
+  the profile, but never touches `bills`, and `bill_status_type` has no cancelled state. So one
+  open bill is left on an inactive tenancy. Harmless on screen (no owner screen reads `bills`, and
+  `POST /admin/income-records` settles bills per `tenant_profile_id`, so a later PH tenant is never
+  charged against it), but a test record in her books.
+- **What Sean needs to do:** after the day, one reviewed migration (backup first) that deletes the
+  REHEARSAL tenant's bills and any payments on them, the way 055 removed the earlier test
+  payments; the audit trail keeps its entries. The team writes the bill's date and amount down in
+  the clean-up step of `TESTING_DAY_GUIDE.md` §8.
+- **Worth deciding:** whether vacating should close a departed tenant's open bills at all (a real
+  departure can leave a real debt, so probably not automatically).
+- **How to know it worked:** no `bills` row for the REHEARSAL tenant's profile; `check:all` 19/20
+  as before.
+- **Raised:** 2026-09-30 by Claude
+
 ### ~~B-83 — no way to reset a tenant's password from the app~~ — **DONE 2026-09-29 (`8cf0e80`), with Loyd's go-ahead for backend work**
 
 > `POST /admin/tenants/:profileId/reset-password` and Tenants > Edit > Reset password, built as

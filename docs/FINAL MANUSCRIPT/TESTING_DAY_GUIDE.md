@@ -359,6 +359,12 @@ numbers, emails and money amounts before any image leaves the team's drive.
       or delete `REHEARSAL-001`; set `PH` back to ₱30,000).
 - [ ] If any GCash payment was completed by mistake: **Reject** it in the verification queue, and
       write it in the defect log.
+- [ ] **Write down the bill raised in A-20** for the REHEARSAL tenant on `PH` (date and amount; it
+      is on the owner's Activity page as "Bill created"). Moving the tenant out does not close a
+      bill, and no screen deletes one, so it stays open against an inactive tenancy. It is seen
+      nowhere and a later PH tenant's payments never touch it (bills are settled per tenant), but it
+      is a test record in her books: hand it to Sean to remove with a reviewed migration after the
+      day, as migration 055 removed the earlier test payments.
 - [ ] Enquiries sent as tests: reply and close.
 - [ ] `npm run check:ledger`. The income row count should be 937 **plus any real receipts the
       owner recorded today**, and nothing else. Write down which receipts were real.
