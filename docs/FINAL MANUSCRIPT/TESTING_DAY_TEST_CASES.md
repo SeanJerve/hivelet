@@ -12,7 +12,7 @@ the evidence file name in **Evidence**. A fail always gets a line in the defect 
 
 | Part | Cases | Chapter 4 |
 | :--- | :--- | :--- |
-| A. Owner / administrator | A-01 to A-30 | §4.3.4, Table 10 (the 26 walkthrough steps are A-05 to A-30) |
+| A. Owner / administrator | A-01 to A-35 | §4.3.4, Table 10 (the walkthrough steps are A-05 to A-32) |
 | T. Tenant tasks | T-01 to T-18 | §4.3.7, Table 11C |
 | P. Public site | P-01 to P-08 | §4.3.4, Table 10 steps 1 to 3 |
 | C. Simultaneous use | C-01 to C-08 | §4.3.7, Table 11D |
@@ -30,8 +30,8 @@ Portability. Quality in use (ISO/IEC 25010's second model) is measured in part T
 
 ## Part A. Owner / administrator
 
-Signed in as the owner on the admin laptop, `https://hivelet.vercel.app`. Steps A-05 to A-30 are
-the 26-step walkthrough in `TESTING_REHEARSAL.md`, in the same order, using the vacant unit `PH`
+Signed in as the owner on the admin laptop, `https://hivelet.vercel.app`. Steps A-05 to A-32 are
+the 26-step walkthrough in `TESTING_REHEARSAL.md` (its step number in brackets), in the same order, using the vacant unit `PH`
 and names beginning **REHEARSAL**. The rehearsal file has the detail and the undo for each; this
 table is the sheet to fill.
 
@@ -73,7 +73,7 @@ table is the sheet to fill.
 | A-34 | FS | FR-016 | Monthly Income: the payment verification queue | Opens; shows pending items or says there are none | | |
 | A-35 | US | NFR-002 | Ask: "What would you use first tomorrow morning?" Write the answer | | | |
 
-*A-10 (real)*: if the owner records a **real** collection today, add it as its own line: receipt
+*A-23 (real)*: if the owner records a **real** collection today, add it as its own line: receipt
 number, unit, amount, and whether the ledger and the tenant's own Payments screen both show it.
 That single real entry is stronger evidence than the rehearsal.
 

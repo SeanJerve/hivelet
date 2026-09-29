@@ -202,7 +202,7 @@ simultaneous session need things the admin session creates.
 | # | Session | Who | About | Test cases |
 | :-- | :--- | :--- | :--- | :--- |
 | 0 | Morning checks | Technical lead | 15 min | Backup, `/api/health`, live commit, check:all table |
-| 1 | Owner session | Owner + facilitator + observer + recorder | 60-90 min | A-01 to A-30 |
+| 1 | Owner session | Owner + facilitator + observer + recorder | 60-90 min | A-01 to A-35 |
 | 2 | Tenant sessions, one at a time | Each tenant + facilitator + observer | 20-30 min each | T-01 to T-18 |
 | 3 | Everyone at once | All tenants + owner, same room or same hour | 20 min | C-01 to C-08 |
 | 4 | Offline, weak signal, install | Two tenants (one Android, one iPhone) + team | 20 min | O-01 to O-12 |
@@ -225,7 +225,7 @@ the test cases, lets her try, and only helps after she asks twice or is stuck fo
 (write down when and why help was given; that is data).
 
 **Real, not rehearsed, wherever possible.** If she has a real payment to record today, record the
-real one (A-10) with her real receipt number. That is a better test than any rehearsal, and it is
+real one (A-23, real) with her real receipt number. That is a better test than any rehearsal, and it is
 exactly what the system is for. Anything clearly a test uses the **vacant unit `PH`** and a name
 starting **REHEARSAL**, as in `TESTING_REHEARSAL.md`, and is undone at the end (§8).
 
