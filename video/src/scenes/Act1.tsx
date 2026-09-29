@@ -1,19 +1,26 @@
 // Act 1, one continuous camera move through a dark space.
-//   0     Her spreadsheet, typed into by hand. "33 units. Every peso. Every tenant."
-//   180+  The problems, each waiting in its own place: the drive, the receipts,
-//         the incomplete rows, the repair chat, the tenant asking what they owe.
-//   600   Pull back: all five surround "Nothing connected one record to another."
-//   740   Each becomes a hexagon; the hexagons form a hive; the centre cell grows
-//         into the Hivelet icon: "One connected system."
-// Every fact is from the build prompt's verified list (Chapter 4 and 5).
+//   0       Her spreadsheet, typed into by hand. "33 units." "One spreadsheet."
+//   B[0]    The sheet shrinks into her workbook file, which slides into a drive.
+//   B[1..5] The other problems, each in its own place: receipts nobody checks,
+//           rows left incomplete, repairs in a chat, tenants asking what they owe,
+//           inquiries arriving from everywhere.
+//   CON     Pull back: all six on a ring around "Nothing connected."; the links
+//           between neighbours reach for each other and break.
+//   HIVE    Each problem bends into a hexagon carrying its icon and flies into a
+//           hive; the centre cell grows into the Hivelet icon.
+// Facts: Chapter 4 and 5 (two sheets on removable storage, receipt numbers used
+// twice, 402 of 937 rows incomplete, requests by message or in person). How
+// prospects asked before the system (social media, text, walk-in) is from Sean;
+// the manuscript does not state it yet (see SCENES.md).
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
-import {CircleHelp, FileSpreadsheet, MessageCircle, ReceiptText, Table2} from 'lucide-react';
+import {CircleHelp, FileSpreadsheet, Footprints, Inbox, MessageCircle, ReceiptText, Share2, Smartphone, Table2} from 'lucide-react';
 import {C, jakarta, sora} from '../theme';
-import {camera, cameraAt, easeIn, easeInOut, gentle, lerp, pop, t01, typed} from '../anim';
+import {camera, easeIn, easeInOut, easeOut, gentle, lerp, pop, t01} from '../anim';
 import {Bg, Head, Kin, Stage} from '../fx';
 import {Mark} from '../ui/Kit';
-import {Sfx} from '../Sfx';
+import {Cues} from '../Sfx';
+import {doneOf, typedOf} from '../typing.mjs';
 import tl from '../timeline.json';
 
 const B = tl.act1.beats;
@@ -23,11 +30,46 @@ const BRAAM = tl.act1.braam;
 const hand = "'Segoe Print', 'Comic Sans MS', cursive";
 const mono = 'ui-monospace, Consolas, monospace';
 
-// Where each problem waits in the world (stage pixels), around the centre.
-const CENTER = {x: 1800, y: 1100};
-const P = {usb: {x: 600, y: 1100}, receipts: {x: 1200, y: 600}, rows: {x: 2400, y: 600}, chat: {x: 3000, y: 1100}, ask: {x: 1800, y: 1650}};
-const RING: [typeof ORDER[number], typeof ORDER[number]][] = [['usb', 'receipts'], ['receipts', 'rows'], ['rows', 'chat'], ['chat', 'ask'], ['ask', 'usb']];
-const ORDER = ['usb', 'receipts', 'rows', 'chat', 'ask'] as const;
+// The pulled-back view: the camera centred on CENTER at SCALE_BACK, and the six
+// problems on an ellipse around the middle of the screen (EL, in screen pixels),
+// leaving the middle for "Nothing connected." and then for the hive.
+const CENTER = {x: 1800, y: 1000};
+const SCALE_BACK = 0.44;
+const EL = {rx: 660, ry: 345};
+const ORDER = ['usb', 'receipts', 'rows', 'chat', 'ask', 'inquiries'] as const;
+type Prop = typeof ORDER[number];
+const ANG: Record<Prop, number> = {usb: 180, receipts: 240, rows: 300, chat: 360, ask: 420, inquiries: 480};
+const rad = (d: number) => (d * Math.PI) / 180;
+const P = Object.fromEntries(ORDER.map((k) => [k, {
+  x: CENTER.x + (EL.rx / SCALE_BACK) * Math.cos(rad(ANG[k])), y: CENTER.y + (EL.ry / SCALE_BACK) * Math.sin(rad(ANG[k])),
+}])) as Record<Prop, {x: number; y: number}>;
+const SIZE: Record<Prop, [number, number]> = {usb: [760, 300], receipts: [760, 420], rows: [800, 560], chat: [700, 460], ask: [640, 260], inquiries: [700, 480]};
+const ICON = {usb: FileSpreadsheet, receipts: ReceiptText, rows: Table2, chat: MessageCircle, ask: CircleHelp, inquiries: Inbox};
+
+// The hive, in screen pixels once the camera has pulled back.
+const HR = 58;
+const axial = (q: number, r: number) => ({x: 960 + HR * Math.sqrt(3) * (q + r / 2), y: 540 + HR * 1.5 * r});
+const toWorld = (s: {x: number; y: number}) => ({x: CENTER.x + (s.x - 960) / SCALE_BACK, y: CENTER.y + (s.y - 540) / SCALE_BACK});
+// Each problem goes to the ring-one cell on its own side of the centre.
+const TARGET: Record<Prop, [number, number]> = {usb: [-1, 0], receipts: [0, -1], rows: [1, -1], chat: [1, 0], ask: [0, 1], inquiries: [-1, 1]};
+const RING2 = (() => {
+  const out: [number, number][] = [];
+  for (let q = -2; q <= 2; q++) for (let r = -2; r <= 2; r++) if (Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r)) === 2) out.push([q, r]);
+  const a = ([q, r]: [number, number]) => { const p = axial(q, r); return Math.atan2(p.y - 540, p.x - 960); };
+  return out.sort((m, n) => a(m) - a(n));
+})();
+const SHADES = [C.brand, '#1f7048', C.brandStrong, '#2a8a5c', C.brandBright, '#236b47'];
+const HEX_W = Math.sqrt(3) * (HR / SCALE_BACK) * 0.95, HEX_H = 2 * (HR / SCALE_BACK) * 0.95;
+
+// A rectangle whose corners slide to a pointy-top hexagon as m goes 0 to 1. The
+// clip starts `pad` pixels outside the box so the props' shadows are not cut off
+// in one frame, and closes in as the shape bends.
+const morphClip = (m: number, pad: number) => {
+  const y1 = `calc(${25 * m}% - ${pad}px)`, y2 = `calc(${100 - 25 * m}% + ${pad}px)`;
+  const L = `${-pad}px`, R = `calc(100% + ${pad}px)`;
+  return `polygon(50% ${-pad}px, ${R} ${y1}, ${R} ${y2}, 50% calc(100% + ${pad}px), ${L} ${y2}, ${L} ${y1})`;
+};
+const HEX_CLIP = morphClip(1, 0);
 
 // ---- The props ------------------------------------------------------------------
 
@@ -37,10 +79,20 @@ const NAMES = ['Andrea Villanueva', 'Paolo Dimayuga', 'Kristine Salcedo', 'Mark 
 const UNITS = ['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h', '2a', '2b', '2c', '2d', '2e', '2f'];
 const RENT = [4500, 4500, 4800, 4800, 4500, 4500, 4800, 4500, 6000, 4800, 4500, 4800, 4500, 4800];
 
-// Her workbook, as a spreadsheet: two tabs, rows typed in by hand.
+// Two rents typed into the sheet as plain digits; Enter formats each and moves
+// the selection down a row, as a spreadsheet does.
+export const SHEET_ENTER = [Math.round(doneOf('sheet1') + 7), Math.round(doneOf('sheet2') + 7)];
+const SHEET_ROWS: [number, 'sheet1' | 'sheet2', string][] = [[4, 'sheet1', '4,800.00'], [5, 'sheet2', '4,500.00']];
+
 const Sheet: React.FC<{f: number}> = ({f}) => {
-  const cell = (r: number) => (r === 4 ? typed('4,800.00', f, 24, 4) : r === 5 ? typed('4,500.00', f, 118, 4) : null);
-  const sel = f < 110 ? 4 : 5;
+  const sel = f < SHEET_ENTER[0] ? 4 : f < SHEET_ENTER[1] ? 5 : 6;
+  const cell = (r: number) => {
+    const i = SHEET_ROWS.findIndex(([row]) => row === r);
+    if (i < 0) return null;
+    const [, key, formatted] = SHEET_ROWS[i];
+    const typed = typedOf(key, f);
+    return {text: f >= SHEET_ENTER[i] ? formatted : typed, editing: f < SHEET_ENTER[i] && typed.length > 0};
+  };
   return (
     <div style={{width: 1500, height: 880, borderRadius: 18, background: '#132119', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', fontFamily: mono, fontSize: 17,
       color: 'rgba(238,245,240,0.62)', boxShadow: '0 80px 160px rgba(0,0,0,0.55)'}}>
@@ -52,17 +104,20 @@ const Sheet: React.FC<{f: number}> = ({f}) => {
         const header = r === 0;
         const d = r - 1;
         const vals = header ? COLS : [UNITS[d % 14], NAMES[d % 14], `Sep ${(d % 27) + 1}`, `Sep ${(d % 27) + 1}`, `${5070 + d}`, (RENT[d % 14]).toLocaleString('en-US') + '.00', ['200.00', '400.00'][d % 2], '50.00', (RENT[d % 14] + [200, 400][d % 2] + 50).toLocaleString('en-US') + '.00'];
+        const typedCell = header ? null : cell(r);
         return (
           <div key={r} style={{display: 'flex', height: 45, alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', color: header ? C.glow : undefined, fontWeight: header ? 700 : 400}}>
             <div style={{width: 50, textAlign: 'center', color: 'rgba(238,245,240,0.3)', fontSize: 14}}>{r + 1}</div>
             {vals.map((v, i) => {
-              const typedHere = !header && i === 5 && cell(r) !== null;
+              const here = i === 5 && typedCell !== null;
               const selected = !header && i === 5 && r === sel;
               return (
                 <div key={i} style={{width: WIDTHS[i], padding: '0 12px', boxSizing: 'border-box', textAlign: i >= 5 ? 'right' : 'left', whiteSpace: 'nowrap', overflow: 'hidden',
-                  height: 45, lineHeight: '45px', position: 'relative', outline: selected ? `2.5px solid ${C.glow}` : 'none', outlineOffset: -2, background: selected ? 'rgba(95,194,142,0.10)' : 'transparent',
-                  color: typedHere ? '#fff' : undefined}}>
-                  {typedHere ? cell(r) : r >= 4 && r <= 5 && i === 5 ? '' : v}
+                  height: 45, lineHeight: '45px', outline: selected ? `2.5px solid ${C.glow}` : 'none', outlineOffset: -2, background: selected ? 'rgba(95,194,142,0.10)' : 'transparent',
+                  color: here ? '#fff' : undefined}}>
+                  {here ? (
+                    <>{typedCell!.text}{typedCell!.editing ? <span style={{display: 'inline-block', width: 2, height: 20, marginLeft: 2, verticalAlign: -3, background: C.glow}} /> : null}</>
+                  ) : v}
                 </div>
               );
             })}
@@ -115,10 +170,10 @@ export const Receipt: React.FC<{no: string; amt: string; unit: string; style?: R
   </div>
 );
 
-// Her rows, with the anniversary and deposit columns hatched where nothing was
-// recorded - the same hatching the app uses for a missing figure.
+// Her rows, with the anniversary and deposit hatched where nothing was recorded -
+// the same hatching the app uses for a missing figure.
+const MISSING = [0, 1, 3, 4, 6, 8];
 const Rows: React.FC<{f: number; at: number}> = ({f, at}) => {
-  const missing = [0, 1, 3, 4, 6, 8];
   const ring = t01(f, at + 30, at + 64, gentle);
   return (
     <div style={{width: 760, borderRadius: 24, background: '#16241c', border: '1px solid rgba(255,255,255,0.08)', padding: '26px 30px', boxSizing: 'border-box', position: 'relative',
@@ -127,7 +182,7 @@ const Rows: React.FC<{f: number; at: number}> = ({f, at}) => {
         {['Unit', 'Rent for', 'Anniversary', 'Deposit'].map((h, i) => <div key={h} style={{width: [110, 190, 190, 190][i]}}>{h}</div>)}
       </div>
       {Array.from({length: 9}, (_, r) => {
-        const miss = missing.includes(r);
+        const miss = MISSING.includes(r);
         const show = t01(f, at + 8 + r * 3, at + 20 + r * 3);
         return (
           <div key={r} style={{display: 'flex', alignItems: 'center', height: 42, fontSize: 17, borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
@@ -184,28 +239,62 @@ const Ask: React.FC<{f: number; at: number}> = ({f, at}) => {
   );
 };
 
-// ---- The hive ---------------------------------------------------------------------
-
-const hexPoints = (r: number) => Array.from({length: 6}, (_, k) => { const a = (Math.PI / 3) * k - Math.PI / 2; return `${(r * Math.cos(a)).toFixed(2)},${(r * Math.sin(a)).toFixed(2)}`; }).join(' ');
-const Hex: React.FC<{x: number; y: number; r: number; fill: string; rot?: number; opacity?: number; glow?: number; icon?: React.ReactNode}> = ({x, y, r, fill, rot = 0, opacity = 1, glow = 0, icon}) => (
-  <div style={{position: 'absolute', left: x - r, top: y - r, width: r * 2, height: r * 2, opacity, transform: `rotate(${rot}deg)`,
-    filter: glow > 0 ? `drop-shadow(0 0 ${24 * glow}px rgba(95,194,142,${0.7 * glow}))` : undefined}}>
-    <svg width={r * 2} height={r * 2} viewBox={`${-r} ${-r} ${r * 2} ${r * 2}`} style={{position: 'absolute', inset: 0}}>
-      <polygon points={hexPoints(r * 0.96)} fill={fill} stroke="rgba(255,255,255,0.18)" strokeWidth={1.5} />
-    </svg>
-    {icon ? <div style={{position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.55}}>{icon}</div> : null}
+// Inquiries arriving three different ways, none of them kept in one place.
+const Source: React.FC<{Icon: typeof Share2; label: string; children: React.ReactNode; p: number; rot: number; style?: React.CSSProperties}> = ({Icon, label, children, p, rot, style}) => (
+  <div style={{position: 'absolute', width: 380, opacity: Math.min(1, p * 1.6), transform: `translateY(${(1 - p) * 40}px) rotate(${rot * p}deg) scale(${lerp(0.9, 1, p)})`, ...style}}>
+    <div style={{display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', color: C.onNightSoft,
+      fontFamily: jakarta, fontSize: 15, fontWeight: 600, marginBottom: 10}}><Icon size={16} />{label}</div>
+    {children}
+  </div>
+);
+const Inquiries: React.FC<{f: number; at: number}> = ({f, at}) => (
+  <div style={{position: 'relative', width: 700, height: 480}}>
+    <Source Icon={Share2} label="Social media" p={pop(f, at + 12)} rot={-3} style={{left: 0, top: 0}}>
+      <div style={{borderRadius: 18, background: '#26352d', padding: '16px 18px', display: 'flex', gap: 12, fontFamily: jakarta, color: '#fff', boxShadow: '0 30px 60px rgba(0,0,0,0.4)'}}>
+        <span style={{width: 40, height: 40, borderRadius: 20, background: C.brandBright, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15}}>KO</span>
+        <div><div style={{fontSize: 15, fontWeight: 700}}>Kaye O.</div><div style={{fontSize: 20, marginTop: 2}}>Is this still available?</div></div>
+      </div>
+    </Source>
+    <Source Icon={Smartphone} label="Text" p={pop(f, at + 26)} rot={2} style={{left: 320, top: 150}}>
+      <div style={{borderRadius: '22px 22px 22px 6px', background: '#26352d', padding: '16px 20px', fontFamily: jakarta, color: '#fff', fontSize: 21, boxShadow: '0 30px 60px rgba(0,0,0,0.4)'}}>Hi po, how much is a studio?</div>
+    </Source>
+    <Source Icon={Footprints} label="In person" p={pop(f, at + 40)} rot={-4} style={{left: 40, top: 300}}>
+      <div style={{width: 300, background: '#f3e7a6', padding: '16px 20px', fontFamily: hand, color: '#3b3a2c', fontSize: 22, lineHeight: 1.35, boxShadow: '0 30px 60px rgba(0,0,0,0.45)'}}>Walk-in asked about 2a. Will come back?</div>
+    </Source>
   </div>
 );
 
-const HR = 58;
-const cells = (() => {
-  const out: {q: number; r: number}[] = [];
-  for (let q = -2; q <= 2; q++) for (let r = -2; r <= 2; r++) if (Math.abs(q + r) <= 2) out.push({q, r});
-  return out.sort((a, b) => (Math.abs(a.q) + Math.abs(a.r) + Math.abs(a.q + a.r)) - (Math.abs(b.q) + Math.abs(b.r) + Math.abs(b.q + b.r)));
-})();
-const cellXY = ({q, r}: {q: number; r: number}) => ({x: 960 + HR * Math.sqrt(3) * (q + r / 2), y: 540 + HR * 1.5 * r});
-const SHADES = [C.brand, '#1f7048', C.brandStrong, '#2a8a5c', C.brandBright];
-const ICONS = [FileSpreadsheet, ReceiptText, Table2, MessageCircle, CircleHelp];
+const hexPoints = (r: number) => Array.from({length: 6}, (_, k) => { const a = (Math.PI / 3) * k - Math.PI / 2; return `${(r * Math.cos(a)).toFixed(2)},${(r * Math.sin(a)).toFixed(2)}`; }).join(' ');
+const ScreenHex: React.FC<{x: number; y: number; r: number; fill: string; opacity?: number; glow?: number}> = ({x, y, r, fill, opacity = 1, glow = 0}) => (
+  <svg width={r * 2} height={r * 2} viewBox={`${-r} ${-r} ${r * 2} ${r * 2}`} style={{position: 'absolute', left: x - r, top: y - r, opacity,
+    filter: glow > 0 ? `drop-shadow(0 0 ${24 * glow}px rgba(95,194,142,${0.7 * glow}))` : undefined}}>
+    <polygon points={hexPoints(r * 0.95)} fill={fill} stroke="rgba(255,255,255,0.2)" strokeWidth={1.5} />
+  </svg>
+);
+
+// The part of a polyline between two fractional indices.
+const slice = (pts: {x: number; y: number}[], a: number, b: number) => {
+  if (b <= a) return '';
+  const at = (t: number) => { const i = Math.min(pts.length - 2, Math.floor(t)); const u = t - i; return {x: lerp(pts[i].x, pts[i + 1].x, u), y: lerp(pts[i].y, pts[i + 1].y, u)}; };
+  const out = [at(a)];
+  for (let i = Math.ceil(a); i < b; i++) out.push(pts[i]);
+  out.push(at(b));
+  return out.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+};
+
+// Where each link along the ring can be seen: the stretch of the ellipse between
+// two neighbouring problems, outside both of their boxes.
+const LINKS = ORDER.map((a, i) => {
+  const b = ORDER[(i + 1) % ORDER.length];
+  const N = 90;
+  const pts = Array.from({length: N + 1}, (_, n) => { const t = rad(ANG[a] + (60 * n) / N); return {x: 960 + EL.rx * Math.cos(t), y: 540 + EL.ry * Math.sin(t)}; });
+  const box = (k: Prop) => ({x: 960 + EL.rx * Math.cos(rad(ANG[k])), y: 540 + EL.ry * Math.sin(rad(ANG[k])), hw: (SIZE[k][0] / 2) * SCALE_BACK + 20, hh: (SIZE[k][1] / 2) * SCALE_BACK + 20});
+  const inside = (p: {x: number; y: number}, k: Prop) => { const q = box(k); return Math.abs(p.x - q.x) < q.hw && Math.abs(p.y - q.y) < q.hh; };
+  const i0 = pts.findIndex((p) => !inside(p, a));
+  let i1 = N;
+  while (i1 > 0 && inside(pts[i1], b)) i1--;
+  return {pts, i0, i1};
+});
 
 // ---- The act ----------------------------------------------------------------------
 
@@ -213,167 +302,177 @@ export const Act1: React.FC = () => {
   const f = useCurrentFrame();
   const focus = (p: {x: number; y: number}, off = 330) => ({x: p.x - off / 1.15, y: p.y, s: 1.15});
   const keys = [
-    {at: 0, x: 1400, y: 880, s: 1.75, rx: 26, rz: -10},
+    {at: 0, x: 1600, y: 880, s: 1.75, rx: 26, rz: -10},
     {at: 70, x: 1860, y: 1130, s: 0.8, rx: 42, rz: -20, dur: 110, ease: gentle},
-    {at: B[0], ...focus(P.usb), rx: 0, rz: 0, dur: 56},
-    ...ORDER.slice(1).map((k, i) => ({at: B[i + 1], ...focus(P[k], k === 'rows' ? 390 : 330), dur: 56})),
-    {at: CONNECTED, x: CENTER.x, y: CENTER.y - 200, s: 0.5, dur: 70},
+    {at: B[0], ...focus({x: P.usb.x - 60, y: P.usb.y}, 330), rx: 0, rz: 0, dur: 80},
+    ...ORDER.slice(1).map((k, i) => ({at: B[i + 1], ...focus(P[k], k === 'rows' ? 390 : 330), dur: 48})),
+    {at: CONNECTED, x: CENTER.x, y: CENTER.y, s: SCALE_BACK, dur: 70},
   ];
   const cam = camera(f, keys);
-  const worldOut = t01(f, HIVE, HIVE + 34, easeIn);
 
-  // The sheet shrinks into the file, and the file goes into the drive.
-  const shrink = t01(f, B[0], B[0] + 40, easeInOut);
-  const sheetX = lerp(CENTER.x, P.usb.x - 130, shrink), sheetY = lerp(CENTER.y, P.usb.y, shrink);
-  const fileIn = pop(f, B[0] + 30);
-  const plug = t01(f, B[0] + 46, B[0] + 66, easeInOut);
+  // Beat 0, slowly: the sheet shrinks to the size of a file card and becomes it;
+  // the card rests, then slides into the drive, and the drive's light comes on.
+  const CARD = {x: P.usb.x - 380 + 20 + 150, y: P.usb.y};
+  const shrink = t01(f, B[0] + 10, B[0] + 76, easeInOut);
+  const toCard = t01(f, B[0] + 52, B[0] + 76);
+  const plug = t01(f, B[0] + 98, B[0] + 124, easeInOut);
+  const ledOn = f > B[0] + 128 && Math.sin(f / 5) > 0 ? 1 : 0;
 
-  // Receipts slide onto each other.
-  const slide = t01(f, B[1] + 28, B[1] + 48, easeInOut);
-  const ring = t01(f, B[1] + 48, B[1] + 66, gentle);
+  // Receipts slide together and are circled.
+  const slide = t01(f, B[1] + 56, B[1] + 76, easeInOut);
+  const ring = t01(f, B[1] + 76, B[1] + 94, gentle);
 
-  // "Nothing connected": the links reach toward the centre, then break.
-  const reach = t01(f, CONNECTED + 44, CONNECTED + 76, gentle);
-  const snap = t01(f, CONNECTED + 92, CONNECTED + 100);
+  // Nothing connected: the links reach for each other, then break.
+  const reach = t01(f, CONNECTED + 64, CONNECTED + 96, gentle);
+  const snap = t01(f, CONNECTED + 104, CONNECTED + 112);
   const bob = (i: number) => Math.sin((f + i * 23) / 28) * 10 * t01(f, CONNECTED, CONNECTED + 30);
 
-  const propStyle = (k: typeof ORDER[number], i: number, w: number, h: number): React.CSSProperties => {
-    const arrive = B[i] + (k === 'usb' ? 0 : 6);
+  // The hive glows once whole, then lets go as the light comes up.
+  const glow = t01(f, BRAAM - 40, BRAAM - 14) * (1 - t01(f, BRAAM - 14, BRAAM));
+  const release = t01(f, BRAAM - 14, BRAAM + 6, easeIn);
+  const glowFilter = glow > 0 ? `drop-shadow(0 0 ${40 * glow}px rgba(95,194,142,${0.6 * glow}))` : undefined;
+
+  // Each problem as a world object: in place, lit while it is discussed, then
+  // bending into a hexagon with its icon and flying to its cell.
+  const prop = (k: Prop, i: number, content: React.ReactNode) => {
+    const [w, h] = SIZE[k];
+    // Each arrives once the camera has all but settled on it.
+    const arrive = k === 'usb' ? 0 : B[i] + 28;
     const shown = k === 'usb' ? 1 : t01(f, arrive, arrive + 18);
-    const dim = t01(f, CONNECTED, CONNECTED + 30) * 0.3;
-    // A spotlight: while each problem is discussed, the others step back.
-    const lit = t01(f, B[i] - 4, B[i] + 16) * (i < 4 ? 1 - t01(f, B[i + 1] - 4, B[i + 1] + 16) : 1);
+    const lit = t01(f, B[i] - 4, B[i] + 16) * (i < 5 ? 1 - t01(f, B[i + 1] - 4, B[i + 1] + 16) : 1);
     const spot = lerp(lerp(0.2, 1, lit), 1, t01(f, CONNECTED, CONNECTED + 30));
-    return {position: 'absolute', left: P[k].x - w / 2, top: P[k].y - h / 2 + bob(i), width: w, height: h, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      opacity: shown * (1 - dim) * spot, transform: `translateY(${(1 - shown) * 60}px)`};
+    const dim = t01(f, CONNECTED, CONNECTED + 30) * 0.3 * (1 - t01(f, HIVE, HIVE + 20));
+    const m = t01(f, HIVE + i * 4, HIVE + 44 + i * 4, easeInOut);
+    const g = t01(f, HIVE + 30 + i * 4, HIVE + 84 + i * 4, easeInOut);
+    const target = toWorld(axial(...TARGET[k]));
+    const cx = lerp(P[k].x, target.x, g) + (target.x - CENTER.x) * release * 1.2;
+    const cy = lerp(P[k].y, target.y, g) + bob(i) * (1 - g) + (target.y - CENTER.y) * release * 1.2;
+    const bw = lerp(w, HEX_W, m), bh = lerp(h, HEX_H, m);
+    const inner = lerp(1, Math.min(HEX_W / w, HEX_H / h) * 1.15, m);
+    const pad = 200 * (1 - t01(m, 0, 0.5, easeOut));
+    const Icon = ICON[k];
+    return (
+      <div key={k} style={{position: 'absolute', left: cx - bw / 2, top: cy - bh / 2, width: bw, height: bh, opacity: shown * (1 - dim) * spot * (1 - release),
+        transform: `translateY(${(1 - shown) * 60}px) scale(${1 - release * 0.4})`, filter: glowFilter}}>
+        <div style={{position: 'absolute', inset: 0, clipPath: m > 0 ? morphClip(m, pad) : undefined}}>
+          <div style={{position: 'absolute', left: bw / 2 - w / 2, top: bh / 2 - h / 2, width: w, height: h, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transform: `scale(${inner})`, opacity: 1 - t01(m, 0.35, 0.8)}}>{content}</div>
+          {m > 0 ? <div style={{position: 'absolute', inset: 0, background: SHADES[i], opacity: t01(m, 0.25, 0.75)}} /> : null}
+          {m > 0.5 ? (
+            <div style={{position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: t01(m, 0.55, 0.95) * 0.92,
+              transform: `scale(${lerp(0.8, 1, t01(m, 0.55, 1))})`}}><Icon size={72} color="#fff" strokeWidth={1.6} /></div>
+          ) : null}
+        </div>
+      </div>
+    );
   };
 
-  // Screen positions of the props once the camera has pulled back.
-  const v = cameraAt(Math.max(f, CONNECTED + 70), keys);
-  const onScreen = (p: {x: number; y: number}) => ({x: 960 + (p.x - v.x) * v.s, y: 540 + (p.y - v.y) * v.s});
+  const grow = t01(f, BRAAM - 10, BRAAM + 26, easeInOut);
+  const light = t01(f, BRAAM - 2, BRAAM + 30, easeInOut);
+  const shift = t01(f, BRAAM + 40, BRAAM + 70, easeInOut);
+  const centre = pop(f, HIVE + 122);
 
   return (
     <AbsoluteFill>
       <Bg mood="night" hex glowX={55} />
-      <div style={{position: 'absolute', inset: 0, opacity: 1 - worldOut}}>
-        <Stage cam={cam} w={3600} h={2200}>
-          {f < B[0] + 44 ? (
-            <div style={{position: 'absolute', left: sheetX - 750, top: sheetY - 440, width: 1500, height: 880, transform: `scale(${lerp(1, 0.18, shrink)})`, opacity: 1 - t01(f, B[0] + 30, B[0] + 42)}}>
-              <Sheet f={f} />
-            </div>
-          ) : null}
-          <div style={propStyle('usb', 0, 760, 300)}>
-            <div style={{position: 'relative', width: 760, height: 200}}>
-              <div style={{position: 'absolute', left: 0, top: 5, transform: `translateX(${plug * 190}px) scale(${lerp(0.7, 1, fileIn) * lerp(1, 0.55, plug)})`,
-                opacity: Math.min(1, fileIn * 2) * (1 - t01(f, B[0] + 60, B[0] + 68))}}><FileCard /></div>
-              <div style={{position: 'absolute', left: 330, top: 45, opacity: t01(f, B[0] + 10, B[0] + 30)}}><Usb led={f > B[0] + 66 ? (Math.sin(f / 5) > 0 ? 1 : 0) : 0} /></div>
-            </div>
+      <Stage cam={cam} w={3600} h={2200}>
+        {f < B[0] + 80 ? (
+          <div style={{position: 'absolute', left: lerp(CENTER.x, CARD.x, shrink) - 750, top: lerp(CENTER.y + 100, CARD.y, shrink) - 440, width: 1500, height: 880,
+            transform: `scale(${lerp(1, 0.2, shrink)})`, opacity: 1 - toCard, borderRadius: lerp(18, 110, shrink), overflow: 'hidden'}}>
+            <Sheet f={f} />
           </div>
-          <div style={propStyle('receipts', 1, 760, 420)}>
-            <div style={{position: 'relative', width: 700, height: 360}}>
-              <Receipt no="1183" amt="6,000" unit="2a" style={{position: 'absolute', left: 350, top: 20, transform: 'rotate(8deg)'}} />
-              <Receipt no="1182" amt="4,500" unit="2c" style={{position: 'absolute', left: 0, top: 70, transform: `rotate(${lerp(-9, -3, slide)}deg)`}} ring={ring} />
-              <Receipt no="1182" amt="4,800" unit="3b" style={{position: 'absolute', left: lerp(200, 40, slide), top: lerp(150, 100, slide), transform: `rotate(${lerp(4, 2, slide)}deg)`}} ring={ring} />
-            </div>
+        ) : null}
+        {prop('usb', 0, (
+          <div style={{position: 'relative', width: 760, height: 300}}>
+            <div style={{position: 'absolute', left: 20, top: 55, transform: `translateX(${plug * 200}px) scale(${lerp(1, 0.5, plug)})`, transformOrigin: '100% 50%',
+              opacity: toCard * (1 - t01(f, B[0] + 116, B[0] + 126))}}><FileCard /></div>
+            <div style={{position: 'absolute', left: 350, top: 95, opacity: t01(f, B[0] + 30, B[0] + 60)}}><Usb led={ledOn} /></div>
           </div>
-          <div style={propStyle('rows', 2, 800, 560)}><Rows f={f} at={B[2]} /></div>
-          <div style={propStyle('chat', 3, 700, 460)}><Chat f={f} at={B[3]} /></div>
-          <div style={propStyle('ask', 4, 640, 260)}><Ask f={f} at={B[4]} /></div>
-        </Stage>
-      </div>
+        ))}
+        {prop('receipts', 1, (
+          <div style={{position: 'relative', width: 700, height: 360}}>
+            <Receipt no="1183" amt="6,000" unit="2a" style={{position: 'absolute', left: 350, top: 20, transform: 'rotate(8deg)'}} />
+            <Receipt no="1182" amt="4,500" unit="2c" style={{position: 'absolute', left: 0, top: 70, transform: `rotate(${lerp(-9, -3, slide)}deg)`}} ring={ring} />
+            <Receipt no="1182" amt="4,800" unit="3b" style={{position: 'absolute', left: lerp(200, 40, slide), top: lerp(150, 100, slide), transform: `rotate(${lerp(4, 2, slide)}deg)`}} ring={ring} />
+          </div>
+        ))}
+        {prop('rows', 2, <Rows f={f} at={B[2] + 36} />)}
+        {prop('chat', 3, <Chat f={f} at={B[3] + 26} />)}
+        {prop('ask', 4, <Ask f={f} at={B[4] + 28} />)}
+        {prop('inquiries', 5, <Inquiries f={f} at={B[5] + 26} />)}
+        {/* The rest of the hive: twelve more cells gathering from the dark. */}
+        {RING2.map(([q, r], j) => {
+          const t = toWorld(axial(q, r));
+          const ang = Math.atan2(t.y - CENTER.y, t.x - CENTER.x);
+          const g = t01(f, HIVE + 64 + j * 2, HIVE + 100 + j * 2, easeInOut);
+          if (g <= 0) return null;
+          const x = lerp(t.x + Math.cos(ang) * 1400, t.x, g) + (t.x - CENTER.x) * release * 1.2;
+          const y = lerp(t.y + Math.sin(ang) * 900, t.y, g) + (t.y - CENTER.y) * release * 1.2;
+          return (
+            <div key={j} style={{position: 'absolute', left: x - HEX_W / 2, top: y - HEX_H / 2, width: HEX_W, height: HEX_H, filter: glowFilter,
+              opacity: Math.min(1, g * 2) * (1 - release), transform: `rotate(${(1 - g) * 60}deg) scale(${lerp(0.4, 1, g) * (1 - release * 0.4)})`}}>
+              <div style={{position: 'absolute', inset: 0, clipPath: HEX_CLIP, background: SHADES[(j + 2) % 6]}} />
+            </div>
+          );
+        })}
+      </Stage>
 
       {/* The text column keeps a dark wash behind it while the camera travels. */}
       <AbsoluteFill style={{background: 'linear-gradient(90deg, rgba(8,17,12,0.88) 0%, rgba(8,17,12,0.7) 34%, rgba(8,17,12,0) 56%)', opacity: 1 - t01(f, CONNECTED - 10, CONNECTED + 20)}} />
       <Head dark text="33 units." size={140} at={20} out={98} sub="Every peso. Every tenant." subSize={38} top={380} />
       <Head dark text="One spreadsheet." accent={['spreadsheet.']} size={104} width={940} at={110} out={B[0] - 8} sub="Typed by hand." subSize={38} top={390} />
-      <Head dark width={820} size={100} text={'One file.\nOne drive.'} accent={['drive.']} at={B[0] + 14} out={B[1] - 8} />
-      <Head dark width={820} size={100} text={'Receipts,\nunchecked.'} accent={['unchecked.']} accentColor={C.coral} at={B[1] + 14} out={B[2] - 8} sub="5 numbers, used twice." subSize={34} />
+      <Head dark width={820} size={100} text={'One file.\nOne drive.'} accent={['drive.']} at={B[0] + 16} out={B[1] - 8} />
+      <Head dark width={820} size={100} text={'Receipts,\nunchecked.'} accent={['unchecked.']} accentColor={C.coral} at={B[1] + 14} out={B[2] - 8} sub="Duplicates go unnoticed." subSize={34} />
       <Head dark width={820} size={86} text={'402 of 937\nrows incomplete.'} accent={['402']} accentColor={C.amber} at={B[2] + 14} out={B[3] - 8} sub="No anniversary. No deposit." subSize={34} />
       <Head dark width={820} size={100} text={'Repairs,\nin a chat.'} accent={['chat.']} at={B[3] + 14} out={B[4] - 8} />
-      <Head dark width={820} size={100} text={'Tenants had\nto ask.'} accent={['ask.']} at={B[4] + 14} out={CONNECTED - 8} sub="What do I owe?" subSize={34} />
+      <Head dark width={820} size={100} text={'Tenants had\nto ask.'} accent={['ask.']} at={B[4] + 14} out={B[5] - 8} sub="What do I owe?" subSize={34} />
+      <Head dark width={820} size={100} text={'Inquiries,\neverywhere.'} accent={['everywhere.']} at={B[5] + 14} out={CONNECTED - 8} sub="Social media, texts, walk-ins." subSize={34} />
 
-      {/* Nothing connected: the links reach toward the centre and break. */}
+      {/* Nothing connected: along the ring, each neighbour reaches for the next and
+          stops short; then the links break and fall back. */}
       {f >= CONNECTED && f < HIVE + 30 ? (
         <>
-          {RING.map(([k1, k2]) => {
-            const a = onScreen(P[k1]), b = onScreen(P[k2]);
-            const dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
-            const len = Math.max(0, dist - 330);
-            const s = reach * (1 - snap * 0.75);
-            const dash = `repeating-linear-gradient(90deg, ${snap > 0 ? C.coral : 'rgba(238,245,240,0.5)'} 0 10px, transparent 10px 18px)`;
-            return (
-              <div key={k1} style={{position: 'absolute', left: a.x + Math.cos(ang) * 165, top: a.y + Math.sin(ang) * 165, width: len, height: 2.5,
-                transformOrigin: '0 50%', transform: `rotate(${ang}rad)`, opacity: (1 - worldOut) * 0.9}}>
-                <div style={{position: 'absolute', left: 0, width: len / 2, height: '100%', transformOrigin: '0 50%', transform: `scaleX(${s})`, background: dash}} />
-                <div style={{position: 'absolute', right: 0, width: len / 2, height: '100%', transformOrigin: '100% 50%', transform: `scaleX(${s})`, background: dash}} />
-              </div>
-            );
-          })}
-          <div style={{position: 'absolute', left: 0, right: 0, top: 70, opacity: 1 - worldOut}}>
-            <Kin text={'Nothing connected.'} at={CONNECTED + 24} out={HIVE - 6} size={104} color="#fff" align="center" accent={['connected']} accentColor={C.coral} />
+          <svg width={1920} height={1080} style={{position: 'absolute', inset: 0, opacity: 0.9 * (1 - t01(f, HIVE, HIVE + 20))}}>
+            {LINKS.map(({pts, i0, i1}, n) => {
+              const mid = (i0 + i1) / 2;
+              const s = reach * (1 - snap * 0.7) * 0.86;
+              return (
+                <g key={n} fill="none" stroke={snap > 0 ? C.coral : 'rgba(238,245,240,0.5)'} strokeWidth={2.5} strokeDasharray="10 8" strokeLinecap="round">
+                  <polyline points={slice(pts, i0, i0 + (mid - i0) * s)} />
+                  <polyline points={slice(pts, i1 - (i1 - mid) * s, i1)} />
+                </g>
+              );
+            })}
+          </svg>
+          <div style={{position: 'absolute', left: 0, right: 0, top: 438}}>
+            <Kin text={'Nothing\nconnected.'} at={CONNECTED + 24} out={HIVE - 6} size={96} color="#fff" align="center" accent={['connected.']} accentColor={C.coral} />
           </div>
         </>
       ) : null}
 
-      {/* The hive. Each problem becomes a cell; the cells gather; the centre grows into the icon. */}
-      {f >= HIVE ? (() => {
-        const gather = (i: number) => t01(f, HIVE + 24 + i * 2, HIVE + 70 + i * 2, easeInOut);
-        const release = t01(f, BRAAM - 14, BRAAM + 6, easeIn);
-        const grow = t01(f, BRAAM - 10, BRAAM + 26, easeInOut);
-        const light = t01(f, BRAAM - 2, BRAAM + 30, easeInOut);
-        const glow = t01(f, BRAAM - 40, BRAAM - 14) * (1 - release);
-        const shift = t01(f, BRAAM + 40, BRAAM + 70, easeInOut);
-        const ring1 = cells.slice(1, 7);
-        return (
-          <>
-            <AbsoluteFill style={{clipPath: `circle(${light * 1300}px at 50% 50%)`}}><Bg mood="light" hex /></AbsoluteFill>
-            {cells.slice(1).map((c, idx) => {
-              const i = idx;
-              const target = cellXY(c);
-              const fromProp = ring1.indexOf(c) >= 0 && ring1.indexOf(c) < 5 ? ORDER[ring1.indexOf(c)] : null;
-              const seed = Math.sin((i + 3) * 12.9898) * 43758.5453;
-              const rnd = seed - Math.floor(seed);
-              const start = fromProp ? onScreen(P[fromProp]) : {x: 960 + Math.cos(rnd * 6.28) * 1100, y: 540 + Math.sin(rnd * 6.28) * 700};
-              const g = gather(i);
-              const appear = fromProp ? t01(f, HIVE, HIVE + 18) : t01(f, HIVE + 20 + i * 2, HIVE + 40 + i * 2);
-              const Icon = fromProp ? ICONS[ORDER.indexOf(fromProp)] : null;
-              const out = release;
-              return <Hex key={i} x={lerp(start.x, target.x, g) + (target.x - 960) * out * 0.6} y={lerp(start.y, target.y, g) + (target.y - 540) * out * 0.6}
-                r={lerp(fromProp ? 130 : 30, HR, g) * (1 - out * 0.5)} fill={SHADES[i % SHADES.length]} rot={(1 - g) * (fromProp ? 30 : 120)} opacity={appear * (1 - out)} glow={glow}
-                icon={Icon ? <Icon size={lerp(64, 30, g)} color="#fff" strokeWidth={1.6} /> : null} />;
-            })}
-            {/* The centre cell, then the icon it becomes. */}
-            <Hex x={960 - shift * 420} y={540} r={lerp(HR, 170, grow)} fill={C.brandBright} opacity={t01(f, HIVE + 70, HIVE + 90) * (1 - t01(f, BRAAM + 14, BRAAM + 26))} glow={glow} />
-            {f >= BRAAM + 8 ? (
-              <div style={{position: 'absolute', left: 960 - 150 - shift * 420, top: 390, width: 300, height: 300, transform: `scale(${lerp(1.15, 1, t01(f, BRAAM + 8, BRAAM + 40, easeInOut))})`,
-                opacity: t01(f, BRAAM + 8, BRAAM + 24), filter: 'drop-shadow(0 30px 60px rgba(15,27,21,0.25))'}}>
-                <Mark size={300} draw={t01(f, BRAAM + 14, BRAAM + 44, easeInOut)} />
-              </div>
-            ) : null}
-            {f >= BRAAM + 40 ? (
-              <div style={{position: 'absolute', left: 960 + 220 - shift * 420, top: 400, width: lerp(0, 860, shift), overflow: 'hidden', whiteSpace: 'nowrap'}}>
-                <Kin text="Hivelet" at={BRAAM + 48} size={220} color={C.ink} stagger={0} ls="-0.055em" />
-              </div>
-            ) : null}
-            <div style={{position: 'absolute', left: 0, right: 0, top: 760}}>
-              <Kin text="One connected system." at={BRAAM + 64} size={64} weight={600} color={C.inkSoft} align="center" accent={['connected']} accentColor={C.brand} ls="-0.03em" />
+      {/* The centre cell, then the icon it becomes, on a light ground. */}
+      {f >= HIVE + 96 ? (
+        <>
+          <AbsoluteFill style={{clipPath: `circle(${light * 1300}px at 50% 50%)`}}><Bg mood="light" hex /></AbsoluteFill>
+          <ScreenHex x={960 - shift * 420} y={540} r={lerp(HR * lerp(0.6, 1, centre), 170, grow)} fill={C.brandBright}
+            opacity={Math.min(1, centre * 1.6) * (1 - t01(f, BRAAM + 14, BRAAM + 26))} glow={glow} />
+          {f >= BRAAM + 8 ? (
+            <div style={{position: 'absolute', left: 960 - 150 - shift * 420, top: 390, width: 300, height: 300, transform: `scale(${lerp(1.15, 1, t01(f, BRAAM + 8, BRAAM + 40, easeInOut))})`,
+              opacity: t01(f, BRAAM + 8, BRAAM + 24), filter: 'drop-shadow(0 30px 60px rgba(15,27,21,0.25))'}}>
+              <Mark size={300} draw={t01(f, BRAAM + 14, BRAAM + 44, easeInOut)} />
             </div>
-          </>
-        );
-      })() : null}
-
-      {[24, 28, 32, 36, 40].map((a) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[a % 3]} vol={0.07} />)}
-      {[118, 122, 126, 130].map((a) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[a % 3]} vol={0.07} />)}
-      <Sfx at={74} name="air-long" vol={0.4} />
-      <Sfx at={B[0]} name="air" vol={0.35} />
-      <Sfx at={B[0] + 64} name="soft-click" vol={0.35} />
-      {B.slice(1).map((b) => <Sfx key={b} at={b} name="air" vol={0.3} />)}
-            <Sfx at={B[1] + 50} name="soft-warn" vol={0.3} />
-      {[B[3] + 12, B[3] + 28, B[3] + 44, B[4] + 10].map((a) => <Sfx key={a} at={a} name="blip" vol={0.28} />)}
-      <Sfx at={CONNECTED} name="air-long" vol={0.4} />
-      <Sfx at={CONNECTED + 92} name="snap" vol={0.14} />
-      <Sfx at={HIVE + 4} name="air" vol={0.35} />
-      <Sfx at={BRAAM + 48} name="shimmer" vol={0.35} />
+          ) : null}
+          {f >= BRAAM + 40 ? (
+            <div style={{position: 'absolute', left: 960 + 220 - shift * 420, top: 400, width: lerp(0, 860, shift), overflow: 'hidden', whiteSpace: 'nowrap'}}>
+              <Kin text="Hivelet" at={BRAAM + 48} size={220} color={C.ink} stagger={0} ls="-0.055em" />
+            </div>
+          ) : null}
+          <div style={{position: 'absolute', left: 0, right: 0, top: 760}}>
+            <Kin text="One connected system." at={BRAAM + 64} size={64} weight={600} color={C.inkSoft} align="center" accent={['connected']} accentColor={C.brand} ls="-0.03em" />
+          </div>
+        </>
+      ) : null}
+      <Cues scene="act1" />
     </AbsoluteFill>
   );
 };
