@@ -8,6 +8,7 @@
 import type { DemoAccount } from '@/lib/demoAccounts.dev';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
+import BrandMark from '@/components/ui/BrandMark.vue';
 import { LogIn, AlertCircle, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-vue-next';
 import { login, authError, isAuthenticating, homeRouteForRole } from '@/lib/authStore';
 import { showToast, LANDLADY } from '@/lib/systemState';
@@ -202,8 +203,9 @@ async function handleQuickLogin(account: DemoAccount) {
         <div class="flex min-h-16 flex-wrap items-center justify-between gap-x-6">
           <RouterLink
             to="/public"
-            class="press inline-flex min-h-11 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+            class="press inline-flex min-h-11 items-center gap-2 font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
           >
+            <BrandMark class="size-7" />
             Hivelet
           </RouterLink>
 

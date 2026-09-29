@@ -26,8 +26,11 @@
       title, summary and photograph instead of the bare URL. `og:image` needs
       an absolute URL, which needed the production domain (B-62 item 3);
       the site went live on Vercel at hivelet.vercel.app on 2026-09-24
-      (B-66), so it is filled in now. Same photograph as the landing hero,
-      same intrinsic size (vite.config.ts's PWA precache comment).
+      (B-66), so it is filled in now. The picture is og-image.jpg, 1200x630 as
+      Facebook and Messenger crop it: the Hivelet mark, the property's name and
+      the building photo, rendered by video/capture/render-app-icons.mjs. JPEG
+      on purpose, so the service worker's `**/*.png` precache never downloads
+      it for every visitor.
     -->
     <meta name="description" content="Rooms for rent at Fe Galang Da Silva Boarding House, 32 Sapaguita Street, Brgy. 4 Sagpon Old Albay, Legazpi City. See the units and their rates, and send an inquiry to arrange a viewing.">
     <meta property="og:type" content="website">
@@ -35,9 +38,10 @@
     <meta property="og:title" content="Fe Galang Da Silva Boarding House, Legazpi City">
     <meta property="og:description" content="See the units and their rates, and send an inquiry to arrange a viewing.">
     <meta property="og:url" content="https://hivelet.vercel.app/public">
-    <meta property="og:image" content="https://hivelet.vercel.app/fe-galang-building.webp">
-    <meta property="og:image:width" content="1790">
-    <meta property="og:image:height" content="879">
+    <meta property="og:image" content="https://hivelet.vercel.app/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="The Hivelet mark beside the front of the Fe Galang Da Silva Boarding House">
     <meta property="og:locale" content="en_PH">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="apple-mobile-web-app-title" content="Hivelet">

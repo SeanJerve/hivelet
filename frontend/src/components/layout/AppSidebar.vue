@@ -8,6 +8,7 @@
  */
 import { computed, ref, watch, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
+import BrandMark from '@/components/ui/BrandMark.vue';
 import {
   isMobileSidebarOpen,
   inquiries,
@@ -376,7 +377,8 @@ onBeforeUnmount(() => {
           >
             <div class="space-y-6">
               <div class="flex items-center justify-between pb-4 border-b border-line">
-                <div>
+                <div class="flex items-center gap-2">
+                  <BrandMark class="size-6" />
                   <span class="font-display text-base font-semibold tracking-tight text-ink">Hivelet</span>
                 </div>
                 <button 

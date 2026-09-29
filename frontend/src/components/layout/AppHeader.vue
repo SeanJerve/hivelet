@@ -12,6 +12,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { isMobileSidebarOpen } from '@/lib/systemState';
+import BrandMark from '@/components/ui/BrandMark.vue';
 import { 
   currentUser, 
   isAuthenticated, 
@@ -323,6 +324,7 @@ onUnmounted(() => {
           the box around the text moves nothing on screen.
         -->
         <router-link :to="brandRoute" class="press flex min-h-11 items-center gap-2 group">
+          <BrandMark class="size-7" :inverse="isLandingPage" />
           <span
             class="font-display font-semibold text-xl tracking-tight transition-colors"
             :class="isLandingPage ? 'text-white drop-shadow-sm group-hover:text-white/80' : 'text-ink group-hover:text-brand'"

@@ -161,25 +161,22 @@ const config: UserConfig = {
         // own file - not one icon carrying both purposes. A maskable icon
         // needs a full-bleed background (the OS applies its own shape on top
         // and clips everything outside a centred safe zone), while an `any`
-        // icon is drawn as-is with no cropping. `favicon.svg`'s background is
-        // a rounded square (rx 128) with transparent corners: correct for
-        // `any`, but a shape an OS mask could reveal as a transparent gap if
-        // declared `maskable` too - the anti-pattern the previous single
-        // "any maskable" SVG entry was. The house glyph itself already sits
-        // inside the required 40%-radius safe circle (farthest vertex ~166px
-        // from centre on a 512px canvas, against a 204.8px allowance), so the
-        // maskable PNGs reuse the same glyph over a full-bleed square.
+        // icon is drawn as-is with no cropping. `favicon.svg` is the mark on
+        // transparent: a green hexagon (R 244 of 512, the cell the hive in the
+        // product film is built from) with a minimal H under a roof. Correct
+        // for `any`, but its transparent corners are what an OS mask could
+        // reveal as gaps if it were declared `maskable` too. The maskable PNGs
+        // draw the hexagon smaller (R 196, inside the required 40%-radius safe
+        // circle of 204.8px) on a full-bleed darker green square.
         //
         // PNG fallbacks exist alongside the SVG because maskable SVG icon
         // support is inconsistent across Android launchers/WebAPK, and
-        // Lighthouse's installability audit still looks for a PNG. All four
-        // (`frontend/public/icon-*.png` and `maskable-icon-*.png`) were
-        // rasterized from `favicon.svg` ONCE and checked in as static files -
-        // there is no build step that regenerates them. If `favicon.svg`
-        // changes, these four go stale silently; regenerate them by hand (or
-        // script it) at the same time. There is no separate editable source
-        // for the maskable variant beyond the rx-128-to-rx-0 background
-        // change described above.
+        // Lighthouse's installability audit still looks for a PNG. All of them
+        // (`frontend/public/icon-*.png`, `maskable-icon-*.png`,
+        // `apple-touch-icon.png` and `og-image.jpg`) are rendered from
+        // `favicon.svg` by `node video/capture/render-app-icons.mjs` and
+        // checked in; there is no build step that regenerates them, so run it
+        // whenever `favicon.svg` changes or they go stale silently.
         icons: [
           {
             src: '/favicon.svg',

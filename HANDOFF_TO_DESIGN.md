@@ -8,6 +8,13 @@ Bicol University Group 4 for IT 124 Capstone Project 2. The owner, Mrs. Fe Galan
 her books in it. **The database is live**: 937 income rows, 1,327 expense allocations, 33 units
 with 32 occupied. There is no staging copy.
 
+**New mark, 2026-09-29 (Sean's decision).** The logo is now a green hexagon with a minimal H under
+a roof. `frontend/public/favicon.svg` is the one source; `components/ui/BrandMark.vue` draws it
+beside every "Hivelet" wordmark (`inverse` on the landing photo and the night footer); and
+`node video/capture/render-app-icons.mjs` renders the tab, install, Apple and maskable icons and the
+link-preview `og-image.jpg` from it. Change the SVG and rerun the script, or the PNGs go stale
+silently.
+
 ---
 
 ## 1. Your remit, and its edges

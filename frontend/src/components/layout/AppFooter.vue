@@ -15,6 +15,7 @@
  */
 import { computed } from 'vue';
 import { LANDLADY } from '@/lib/systemState';
+import BrandMark from '@/components/ui/BrandMark.vue';
 import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
 
 const portalRoute = computed(() => {
@@ -39,7 +40,7 @@ const portalRoute = computed(() => {
             sentence now, where it belongs, and the copyright line below
             already carries both.
           -->
-          <p class="text-xl font-semibold tracking-tight">Hivelet</p>
+          <p class="flex items-center gap-2.5 text-xl font-semibold tracking-tight"><BrandMark class="size-8" inverse />Hivelet</p>
         </div>
 
         <div>
