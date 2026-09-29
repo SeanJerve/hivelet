@@ -116,6 +116,13 @@ export interface IncomeRecord {
    * mapped, so the form had nothing to restore and reset every record it touched to Cash.
    */
   transactionReference?: string;
+  /**
+   * The stored `rent_period_end` (`YYYY-MM-DD`) and whose receipt it is. Record
+   * payment starts a new receipt the day after the tenant's latest one, the same
+   * paid-through their own standing reads (`standingService.ts`).
+   */
+  periodEnd?: string;
+  tenantProfileId?: string;
   verificationStatus?: string;
   fiftyPercentShare?: number;
   totalRemitted?: number;
@@ -1042,6 +1049,8 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
           deposit: 0,
           paymentMethod: inc.payment_method || 'Cash',
           transactionReference: inc.transaction_reference || '',
+          periodEnd: inc.rent_period_end ? String(inc.rent_period_end).slice(0, 10) : '',
+          tenantProfileId: inc.tenant_profile_id || '',
           /**
            * Unknown is not Verified, and defaulting the other way is how this
            * project already shipped "a payment with no status displayed as

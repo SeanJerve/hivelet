@@ -77,6 +77,44 @@ const transactionReference = ref('');
 const monthsCovered = ref(1);
 const dateCoveredStart = ref(propertyToday());
 
+/**
+ * Where a new receipt's period starts: the day after the latest period on the
+ * unit's current tenant's verified, unvoided receipts - the paid-through their
+ * own standing reads (`standingService.ts`). Today when they have none yet, as
+ * a tenant who moved in today does.
+ *
+ * It opened on today whatever the unit. Tomorrow she enters every receipt since
+ * 8 August, and one left at today covered late September to late October -
+ * and since paid-through is the latest period on record, that one slip showed
+ * the tenant paid a month ahead. Per tenant, not per unit: `PH` still holds a
+ * former occupant's receipts ending November 2024. Found 2026-09-29.
+ *
+ * Only a default. A date she types is kept until she picks another unit, and
+ * the confirm dialog shows the period before anything is saved.
+ */
+const coverStartTyped = ref(false);
+const nextCoverStart = computed(() => {
+  const room = rooms.find((r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase());
+  if (!room?.tenantId) return null;
+  let latest = '';
+  for (const r of incomeRecords) {
+    if (r.tenantProfileId !== room.tenantId || r.verificationStatus !== 'Verified' || !r.periodEnd) continue;
+    if (r.periodEnd > latest) latest = r.periodEnd;
+  }
+  if (!latest) return null;
+  const [y, m, d] = latest.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+});
+
+watch(
+  [selectedUnit, nextCoverStart],
+  ([unit], [previousUnit]) => {
+    if (unit !== previousUnit) coverStartTyped.value = false;
+    if (!coverStartTyped.value) dateCoveredStart.value = nextCoverStart.value ?? propertyToday();
+  },
+  { immediate: true }
+);
+
 // Auto-calculate end date based on start date + monthsCovered
 const dateCoveredEnd = computed(() => {
   // Shared with the server's rule. The version here overflowed on month ends -
@@ -313,6 +351,9 @@ watch(
 
 watch(isOnsitePaymentModalOpen, (isOpen) => {
   if (isOpen) {
+    // A fresh receipt: the period follows the tenant again, not the last one typed.
+    coverStartTyped.value = false;
+    dateCoveredStart.value = nextCoverStart.value ?? propertyToday();
     loadRates();
     fetchTenants();
     fetchRooms();
@@ -889,7 +930,7 @@ function triggerRecord() {
           </label>
           <label class="ws-field">
             Covering from
-            <input v-model="dateCoveredStart" type="date" class="ws-input w-full" required />
+            <input v-model="dateCoveredStart" type="date" class="ws-input w-full" required @input="coverStartTyped = true" />
           </label>
           <label class="ws-field">
             Covering to
