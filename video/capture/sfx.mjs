@@ -273,18 +273,31 @@ air('air-long', 3.4, 180, 900);
 // thing on screen moving: a card landing, paper, a pen, a row, a bubble, a cell.
 
 // A soft felt thud for a card or tile settling into place, in four weights.
-function settle(name, f0, dec, peak) {
+// Under the product groove the thud alone is masked by the bass and kick (measured
+// 16 to 28 dB under the music above 1 kHz), so each also has the soft contact of
+// a card meeting a surface: a short knock of filtered noise and a brief woody
+// note in the mids, which is what the ear actually picks out. Its own seeded
+// noise, so the sounds written after these are unchanged.
+function settle(name, f0, dec, peak, tapF) {
   const b = buf(0.35);
   glide(b, 0, f0 * 1.25, f0, 0.03, dec, 1);
   tone(b, 0, f0 * 2, dec * 0.35, 0.25);
   const n = buf(0.05); burst(n, 0, 0.004, 0.15, 0);
   const nl = lowpass(n, 800); for (let i = 0; i < nl.length; i++) b[i] += nl[i];
-  write(name, lowpass(b, 3000), undefined, peak);
+  const low = lowpass(b, 3000);
+  let s = tapF * 7 + 11;
+  const own = () => { s = (s * 16807) % 2147483647; return (s / 2147483647) * 2 - 1; };
+  const k = buf(0.06);
+  for (let i = 0; i < k.length; i++) k[i] = own() * Math.exp(-(i / SR) / 0.005);
+  const knock = bandpass(k, () => tapF, 1.1);
+  const wood = buf(0.1); tone(wood, 0, tapF * 0.55, 0.022, 1, 0.0008);
+  for (let i = 0; i < knock.length; i++) low[i] = low[i] * 0.6 + knock[i] * 1.6 + wood[i] * 0.4;
+  write(name, low, undefined, peak);
 }
-settle('settle-a', 190, 0.07, 0.45);
-settle('settle-b', 165, 0.075, 0.45);
-settle('settle-c', 220, 0.065, 0.45);
-settle('settle-deep', 95, 0.13, 0.55);
+settle('settle-a', 190, 0.07, 0.45, 1500);
+settle('settle-b', 165, 0.075, 0.45, 1300);
+settle('settle-c', 220, 0.065, 0.45, 1700);
+settle('settle-deep', 95, 0.13, 0.55, 1000);
 
 // Flick: the tiny sound of something small leaving a surface. Short, not a whoosh.
 {

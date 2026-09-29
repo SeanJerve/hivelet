@@ -76,3 +76,15 @@ npm run render               # out/hivelet.mp4
 
 Change a scene's length in `src/timeline.json` and run `score.mjs` again, so the music still
 lands on the cuts; move a scene's events and move its cues in `src/cues.mjs` with them.
+
+## Checking that each sound can be heard
+
+```bash
+node capture/levels.mjs    # every product-scene sound against the music under it; exits 1 if any is 4 dB off
+```
+
+The groove's energy is in the bass, so a broadband comparison says every effect is buried; it
+compares above 1 kHz, where clicks, taps and ticks are heard. Targets: small object sounds a
+little under the music, pointer clicks a little over, notifications clearly over. The first
+measurement found the landing thuds 16 to 28 dB under the music, inaudible, which is why each
+`settle-*` now has a soft contact tap in the mids.
