@@ -367,6 +367,13 @@ async function postNote() {
     newNoteText.value = '';
   } catch (err: any) {
     console.error('Failed to post ticket comment:', err);
+    // A TIMEOUT is the one failure that may have been saved (`lib/api.ts`, the
+    // deadline): saying "not sent" there invites the duplicate this handler
+    // exists to prevent. The text stays in the box either way.
+    if (err?.code === 'TIMEOUT') {
+      showToast('error', 'Could not confirm your note was sent', err.message);
+      return;
+    }
     // The only visible change used to be the button label flicking from "…" back
     // to "Post". The note was not appended, nothing was rendered, and the input
     // kept its text - so "the leak is worse today" looked unsent AND looked
@@ -564,7 +571,9 @@ async function handleTicketSubmit() {
 
     await fetchTickets();
   } catch (err: any) {
-    ticketError.value = `Submission failed: ${err?.message || err}`;
+    // Not "Submission failed" on a TIMEOUT: the request may have arrived, and
+    // the message itself says to check the list before sending it again.
+    ticketError.value = err?.code === 'TIMEOUT' ? err.message : `Submission failed: ${err?.message || err}`;
   } finally {
     submitting.value = false;
   }

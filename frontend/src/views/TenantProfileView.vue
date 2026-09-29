@@ -190,6 +190,13 @@ async function handleSave() {
     successNotice.value = 'Your details are saved.';
     showToast('success', 'Details saved', 'Your details are saved.');
   } catch (err: any) {
+    // A TIMEOUT may have saved (`lib/api.ts`, the deadline). Saving the same
+    // details again is harmless here, but "Not saved" would still be a claim.
+    if (err?.code === 'TIMEOUT') {
+      errorNotice.value = err.message;
+      showToast('error', 'Could not confirm', err.message);
+      return;
+    }
     errorNotice.value = `Save failed: ${err?.message || err}`;
     showToast('error', 'Not saved', err?.message || 'Your details could not be saved.');
   } finally {
