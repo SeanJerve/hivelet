@@ -40,11 +40,11 @@
 >   to fail). Audit findings F-12 to F-18 record all of this.
 > - **Rehearsed by machine** (admin and tenant harness, every write answered in the page, nothing
 >   sent to a server): A-11, A-12, A-14, A-23, A-26, A-27, A-28, A-31, T-10, T-12, all passing now;
->   A-28 failed until F-18. Audit section 9b lists them.  at 19:45 UTC with the backend
+>   A-28 failed until F-18. Audit section 9b lists them. `check:all` at 19:45 UTC with the backend
 >   up: **19/20**, the one FAIL the expected B-82 tenant block. One run at 19:35 showed
->    failing in 0.5 s; it passed alone (30/30) and in the re-run, so treat a single
->   fast failure of it as a connection blip and run it again before believing it. A fresh backup was taken at 16:13 UTC
->   (`backups/2026-09-29T16-13-15`, 21,903 rows).
+>   `check:relations` failing in 0.5 s; it passed alone (30/30) and in the re-run, so treat a single
+>   fast failure of it as a connection blip and run it again before believing it.
+> - A fresh backup was taken at 16:13 UTC (`backups/2026-09-29T16-13-15`, 21,903 rows).
 > - A tenant link to a repair that is not theirs now says **"Not found"** instead of doing nothing
 >   (A-22, step 17). Test cases fixed where a pass would have been marked a fail: O-12 (use a
 >   60000 ms throttling profile, not Offline), A-25 / 19b (void twice from a second tab), T-11
