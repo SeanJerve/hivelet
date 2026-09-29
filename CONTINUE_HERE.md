@@ -45,6 +45,13 @@
 >   `check:relations` failing in 0.5 s; it passed alone (30/30) and in the re-run, so treat a single
 >   fast failure of it as a connection blip and run it again before believing it.
 > - A fresh backup was taken at 16:13 UTC (`backups/2026-09-29T16-13-15`, 21,903 rows).
+> - **Testing day, 30 Sep, from Sean's machine: no pushes after 06:00 Manila; this line is a local
+>   commit pushed afterwards.** A backup was taken at 07:32 Manila (`backups/2026-09-29T23-32-26`,
+>   21,932 rows, 937 income records, nothing entered since 28 Aug). **The owner's Activity page shows
+>   administrator sign-ins and ledger downloads at 00:09-00:10 and 03:34-03:36 on 30 Sep, and about
+>   36 refused requests: those are this machine's check runs, not her account being used.** Tell
+>   her before A-33. Do not run `check:all` on a testing day: `check:api` signs in as her account
+>   and writes sign-ins, ledger downloads and refusals to the audit log she reads.
 > - A tenant link to a repair that is not theirs now says **"Not found"** instead of doing nothing
 >   (A-22, step 17). Test cases fixed where a pass would have been marked a fail: O-12 (use a
 >   60000 ms throttling profile, not Offline), A-25 / 19b (void twice from a second tab), T-11
