@@ -5,6 +5,7 @@
   "scripts": {
     "capture": "node capture/capture.mjs",
     "sfx": "node capture/sfx.mjs",
+    "score": "node capture/score.mjs",
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts Hivelet out/hivelet.mp4",
     "storyboard": "node capture/storyboard.mjs"

@@ -1,47 +1,55 @@
 # The Hivelet film: every scene and where it comes from
 
-84 seconds, 1920x1080, 30 fps, sound effects only (no voice). Rebuilt on 2026-09-29 after the
-first cut, screenshots in a browser frame, was judged a slide deck. The look follows the promo
-Lloyd's session made that morning (dark green for the old way, a bright stage for the product,
-headlines with one coloured word, a honeycomb, depth of field); the content does not, because
-that one invented its own labels.
+About 100 seconds, 1920x1080, 30 fps. A synthesized score and a few soft sound effects; no
+voice. Third cut, 2026-09-29, after Sean's notes on the second: slower, calmer sound with a
+trailer-style score, no dot labels, one mention of "33 units", nothing crowding the frame,
+sharper graphics, no activity log, and an opening built the way Lloyd's promo opens.
 
 **The rule:** every piece of the app on screen is one of the app's own components, rebuilt in
-React from the Vue source (`src/ui/`) with the app's exact labels, sizes and colours, so it can
-move piece by piece. The people and amounts are invented sample data (the same set as
-`capture/harness.html`); unit codes, clusters and room types are the property's real ones.
-The facts in the story come from the verified list in the build prompt.
+React from the Vue source (`src/ui/`) with the app's exact labels, sizes and colours. The
+people and amounts are invented sample data; unit codes, clusters and room types are the
+property's real ones. Every fact comes from the verified list in the build prompt.
 
-| # | Frames | Scene | App pieces, and their source | Facts used |
-| :-- | :-- | :--- | :--- | :--- |
-| 1 | 0-150 | 33 / 5 / 1 slam in; the building photo opens; the name | `frontend/public/fe-galang-building.webp` | 33 units, 5 clusters, 1 owner, Legazpi City |
-| 2 | 150-400 | The old way, 1 to 4: spreadsheet and USB drive, receipt book, cash, repairs in a chat; then the links between them snap | Illustrations of the old way, not app UI | Chapter 5, 5.1: spreadsheet on removable storage, paper receipts, cash, requests by message |
-| 3 | 400-580 | 937, 43%, 5 duplicate receipts | none | Chapter 5, 5.1 |
-| 4 | 580-690 | A honeycomb builds and becomes the app icon; "Hivelet" | `frontend/public/favicon.svg` mark | none |
-| 5 | 690-960 | The Overview assembles in 3D: attention tile, collected, occupancy gauge, collections chart, clusters | `views/AdminOverviewView.vue`, `components/overview/*` | Sample figures |
-| 6 | 960-1110 | All 33 unit cards flip in; 1A steps forward | `views/RoomDirectoryView.vue` (card, "Occupied"/"Vacant") | 33 units, 32 occupied, B3B vacant (sample) |
-| 7 | 1110-1440 | Monthly Income fills in; Record payment opens; unit 2B chosen; OR typed; the second-payment warning | `views/IncomeCollectionsView.vue`, `components/modals/OnsitePaymentModal.vue` (form and its confirmation) | The warning's wording is the modal's own |
-| 8 | 1440-1830 | Tenant phone: amount due, Pay with GCash, the owner's attention tile, "Settled"; a repair typed, sent, moved across the board; "Your repair is done" | `views/TenantOverviewView.vue`, `views/TenantTicketsView.vue`, `views/MaintenanceDispatchView.vue`, notification title from `backend/src/routes/admin.ts` | GCash counts once she verifies it |
-| 9 | 1830-2040 | Two-bedroom page with B3B vacant; the inquiry form typed and sent; it lands in Inquiries | `views/CategoryRoomsView.vue`, `views/InquireView.vue`, `views/InquiriesView.vue` | Category counts 20 / 8 / 4 / 1 |
-| 10 | 2040-2220 | The activity trail streams in; "Can entries be changed? No"; the app icon drops | `views/AuditLogsView.vue` (tags and the tile's own words), `frontend/public/icon-512.png` | Nothing can be edited or removed |
-| 11 | 2220-2370 | 937, 1,327, 33; "20 automated check suites, all passing" | none | CLAUDE.md, Chapter 4 Table 8 |
-| 12 | 2370-2520 | Name, address, team | none | Group 4, Bicol University, IT 124 Capstone Project 2 |
+**Sharpness:** 3D stages are laid out at twice their size and scaled down by the camera
+(`Stage` in `src/fx.tsx`, `camera` in `src/anim.ts`), and zoomed pieces use CSS `zoom`, so
+nothing is enlarged from a small raster.
+
+**Layout:** `GRID` in `src/fx.tsx`. Text stays in the left column (x 120 to 860); the app stays
+in the zone to its right, masked before it can reach the text.
+
+| Scene | Frames | What happens | App source | Facts |
+| :--- | :-- | :--- | :--- | :--- |
+| Act 1 | 0-960 | Her spreadsheet typed into by hand ("33 units. Every peso. Every tenant.", "One spreadsheet."); the camera travels to each problem: the workbook going onto a removable drive, two receipts with one number, the incomplete rows, repairs in a chat, a tenant asking what they owe; all five around "Nothing connected one record to another."; each becomes a hexagon, the hive forms, and its centre grows into the icon: "One connected system." | Illustrations of the old way; the icon is `frontend/public/favicon.svg` | Chapter 4 and 5: two sheets on removable storage, 5 receipt numbers used twice, 402 of 937 rows with no anniversary date and no deposit, requests by message |
+| For the landlady | 960-1020 | Chapter card | | |
+| Overview | 1020-1290 | The Overview assembles; the attention tile; the month's collections count up; the whole year | `views/AdminOverviewView.vue`, `components/overview/*` | Sample figures |
+| Rooms and rates | 1290-1470 | All 33 unit cards flip in; 1A steps forward | `views/RoomDirectoryView.vue` | 33 units, B3B vacant (sample) |
+| Monthly Income | 1470-1830 | The ledger fills; Record payment; unit 2B; OR number typed; the second-payment warning | `views/IncomeCollectionsView.vue`, `components/modals/OnsitePaymentModal.vue` | The warning's wording is the modal's own |
+| For the tenants | 1830-1890 | Chapter card | | |
+| Tenant | 1890-2340 | Amount due; Pay with GCash; her attention tile; "Settled"; a repair typed and sent, moving across her board; "Your repair is done" | `views/TenantOverviewView.vue`, `views/TenantTicketsView.vue`, `views/MaintenanceDispatchView.vue`, notification from `backend/src/routes/admin.ts` | A GCash payment counts once she verifies it |
+| For guests | 2340-2400 | Chapter card | | |
+| Guests | 2400-2670 | The vacant two-bedroom; the inquiry typed and sent; it lands in her Inquiries | `views/CategoryRoomsView.vue`, `views/InquireView.vue`, `views/InquiriesView.vue` | |
+| Proof | 2670-2835 | 937, 1,327, 20 | | CLAUDE.md, Chapter 4 Table 8 |
+| End | 2835-3015 | Icon, name, "One connected system for the Fe Galang Da Silva Boarding House.", address, team | | Group 4, Bicol University, IT 124 Capstone Project 2 |
 
 ## Sound
 
-Every effect is synthesized by `capture/sfx.mjs` (camera swipes, mouse clicks, phone taps, pops,
-pings, blings, key taps, a riser and an impact), so there is nothing to license. Drop a track
-at `public/music.mp3` and render again to lay music under them.
+`capture/score.mjs` writes `public/score.wav` to the same timeline: a drone and a quickening
+heartbeat under the old way, a low hit on each problem, a tension cluster under "Nothing
+connected", a riser and a moment of silence, a deep brass hit as the icon appears, then a warm
+chord bed with soft plucks under the product, and a lighter hit on the end card.
+`capture/sfx.mjs` writes the few effects laid over it (swipes, clicks, taps, pops, pings), kept
+quiet. Both are synthesized, so nothing needs a licence. A track at `public/music.mp3`
+replaces the score.
 
 ## Rebuilding
 
 ```bash
 npm install
-node capture/sfx.mjs        # the sound effects
-node capture/storyboard.mjs # contact sheets for review, three frames a scene
-npm run render              # out/hivelet.mp4
+node capture/sfx.mjs         # effects
+node capture/score.mjs       # score, timed to src/timeline.json
+node capture/storyboard.mjs  # contact sheets for review
+npm run render               # out/hivelet.mp4
 ```
 
-`capture/capture.mjs` and `capture/harness.html` film the real pages with the sample data; the
-film no longer uses those screenshots, but they are the reference the rebuilt components were
-checked against. `capture/study.mjs` turns a reference video into contact sheets.
+Change a scene's length in `src/timeline.json` and run `score.mjs` again, so the music still
+lands on the cuts.

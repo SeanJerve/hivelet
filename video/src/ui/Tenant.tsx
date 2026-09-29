@@ -32,13 +32,9 @@ export const Phone: React.FC<{children: React.ReactNode; style?: React.CSSProper
   </div>
 );
 
-export const TenantHome: React.FC<{amount: string; settled?: number; press?: number; unread?: number; pill?: number}> = ({amount, settled = 0, press = 0, unread = 2, pill = 1}) => (
-  <div style={{padding: '0 16px', fontFamily: jakarta, color: C.ink}}>
-    <AppHeader phone initials="AV" unread={unread} />
-    <div style={{fontSize: 14, color: C.inkSoft, marginTop: 20}}>Tuesday, September 29, 2026</div>
-    <div style={{fontSize: 30, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4}}>Good afternoon, Andrea</div>
-    <div style={{fontSize: 14, color: C.inkSoft, marginTop: 4}}>Unit 1A, 1st Floor</div>
-    <Tile tone="brand" title="Amount due" style={{marginTop: 20, gap: 12, minHeight: 300}}
+// The Amount due tile on the tenant's Overview.
+export const AmountDue: React.FC<{amount: string; settled?: number; press?: number; pill?: number; style?: React.CSSProperties}> = ({amount, settled = 0, press = 0, pill = 1, style}) => (
+    <Tile tone="brand" title="Amount due" style={{gap: 12, minHeight: 300, ...style}}
       actions={settled < 0.5 ? <span style={{opacity: pill, transform: `scale(${0.6 + 0.4 * pill})`, display: 'inline-block'}}><Pill tone="on-dark">Due in 6 days</Pill></span> : null}>
       {settled < 0.5 ? (
         <div style={{opacity: 1 - settled * 2}}>
@@ -56,6 +52,15 @@ export const TenantHome: React.FC<{amount: string; settled?: number; press?: num
         </div>
       )}
     </Tile>
+);
+
+export const TenantHome: React.FC<{amount: string; settled?: number; press?: number; unread?: number; pill?: number}> = ({amount, settled = 0, press = 0, unread = 2, pill = 1}) => (
+  <div style={{padding: '0 16px', fontFamily: jakarta, color: C.ink}}>
+    <AppHeader phone initials="AV" unread={unread} />
+    <div style={{fontSize: 14, color: C.inkSoft, marginTop: 20}}>Tuesday, September 29, 2026</div>
+    <div style={{fontSize: 30, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4}}>Good afternoon, Andrea</div>
+    <div style={{fontSize: 14, color: C.inkSoft, marginTop: 4}}>Unit 1A, 1st Floor</div>
+    <AmountDue amount={amount} settled={settled} press={press} pill={pill} style={{marginTop: 20}} />
     <Tile tone="night" title="Repairs" style={{marginTop: 16, gap: 12}}>
       <div style={{fontSize: 14, lineHeight: '22px', color: C.onNightSoft}}>Tell the landlady what needs fixing in your unit, then follow the request until it is done.</div>
       <div><Btn kind="light" icon={<Wrench size={16} />}>Request a repair</Btn></div>

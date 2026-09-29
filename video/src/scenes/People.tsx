@@ -1,233 +1,202 @@
-// Scenes 8 and 9: the tenant's side on a phone, handing off to the owner's
-// screens as each thing happens, and a guest's inquiry reaching her.
+// For the tenants and for guests. The tenant's phone stays on the left; what
+// reaches the landlady appears on the right, under the headline, never across it.
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
-import {C, jakarta, sora} from '../theme';
+import {C, jakarta} from '../theme';
 import {easeIn, easeInOut, lerp, peso, pop, t01, typed} from '../anim';
-import {Bg, FloorShadow, Head, Kin} from '../fx';
+import {Bg, FloorShadow, Head} from '../fx';
 import {AppHeader, Cursor, Field, Input, Ripple} from '../ui/Kit';
 import {AttentionTile, BoardColumn, InquiryItem, RepairCard} from '../ui/Admin';
-import {DoneNote, Phone, RepairForm, STATUS, TenantHome} from '../ui/Tenant';
-import {CATEGORIES, InquiryForm, UnitPanel} from '../ui/Public';
-import {Sfx, Ticks, Typing} from '../Sfx';
+import {AmountDue, DoneNote, Phone, RepairForm, STATUS, TenantHome} from '../ui/Tenant';
+import {InquiryForm, UnitPanel} from '../ui/Public';
+import {Sfx} from '../Sfx';
 
-// Headlines to the right of the phone: one line each, so the owner's screens
-// that answer the tenant have the lower half of the frame.
-const RightHead: React.FC<{text: string; accent: string[]; sub: string; at: number; out?: number}> = (p) => (
-  <Head kicker="For the tenants" size={92} left={760} top={96} width={1080} {...p} />
+// Headlines to the right of the phone, one line each.
+const TopHead: React.FC<{text: string; accent: string[]; sub: string; at: number; out?: number}> = (p) => (
+  <Head size={74} subSize={26} left={720} top={110} width={1100} {...p} />
 );
 
-// 8. Tenant: see the bill, pay by GCash, report a repair, hear it is done.
 const REPAIR_TITLE = 'Kitchen faucet keeps dripping';
 const REPAIR_DETAILS = 'Under the kitchen sink. It started this morning and drips even when closed.';
+
 export const Tenant: React.FC = () => {
   const f = useCurrentFrame();
-  const PS = 1.1, PX = 150, PY = 60; // phone scale and position
-  const screen = (x: number, y: number) => ({x: PX + (12 + x) * PS, y: PY + (12 + STATUS + y) * PS});
-  const enter = pop(f, 0, {damping: 18, stiffness: 110});
-  const amount = Math.round(lerp(0, 4700, t01(f, 10, 44)));
-  const payTap = 92;
-  const settled = t01(f, 170, 190);
-  const toForm = t01(f, 204, 222, easeInOut);
-  const titleText = typed(REPAIR_TITLE, f, 222, 1.2);
-  const detailText = typed(REPAIR_DETAILS, f, 262, 0.4);
-  const sendTap = 296;
-  const note = pop(f, 364, {damping: 16, stiffness: 150});
+  const PZ = 1.08, PX = 150, PY = 71;
+  const screen = (x: number, y: number) => ({x: PX + (12 + x) * PZ, y: PY + (12 + STATUS + y) * PZ});
+  const enter = pop(f, 0, {damping: 20, stiffness: 70});
+  const amount = Math.round(lerp(0, 4700, t01(f, 14, 62)));
+  const payTap = 100, sendTap = 330;
+  const settled = t01(f, 198, 218);
+  const toForm = t01(f, 226, 248, easeInOut);
+  const titleText = typed(REPAIR_TITLE, f, 250, 1.5);
+  const detailText = typed(REPAIR_DETAILS, f, 296, 0.42);
+  const note = pop(f, 404, {damping: 20, stiffness: 90});
 
-  // Owner tile for the payment, then the repairs board.
-  const tileIn = pop(f, 104, {damping: 17, stiffness: 150});
-  const tileOut = t01(f, 198, 210, easeIn);
-  const boardIn = pop(f, 286, {damping: 18, stiffness: 140});
+  const tileIn = pop(f, 116, {damping: 20, stiffness: 90});
+  const tileOut = t01(f, 184, 202, easeIn);
+  const TX = 1000, TY = 380, TZ = 1.2;
+  const reviewAt = 176;
+  const cur = {x: lerp(1760, TX + 104 * TZ, t01(f, 148, 170, easeInOut)), y: lerp(1000, TY + 212 * TZ, t01(f, 148, 170, easeInOut))};
+  const cPress = t01(f, reviewAt - 3, reviewAt) * (1 - t01(f, reviewAt, reviewAt + 7));
 
-  // The repair card's flight: from the phone's Send button into the board, then along it.
-  const from = screen(195, 706);
-  const col = (i: number) => ({x: 772 + i * 352 + 24 * 0.98, y: 380 + 86 * 0.98});
-  const fly = t01(f, 300, 320, easeInOut);
-  const step1 = t01(f, 334, 346, easeInOut), step2 = t01(f, 350, 362, easeInOut);
-  const cardX = lerp(lerp(from.x - 147, col(0).x, fly), col(1).x, step1);
-  const cardX2 = lerp(cardX, col(2).x, step2);
-  const cardY = lerp(from.y - 90, col(0).y, fly) - Math.sin(fly * Math.PI) * 160;
-
-  // The pointer on the owner's tile.
-  const reviewAt = 158;
-  const cur = {x: lerp(1500, 900 + 104 * 1.25, t01(f, 136, 154, easeInOut)), y: lerp(980, 400 + 212 * 1.25, t01(f, 136, 154, easeInOut))};
-  const cPress = t01(f, reviewAt - 3, reviewAt) * (1 - t01(f, reviewAt, reviewAt + 6));
-
-  // A chip carrying the payment from the phone to her.
-  const chip = t01(f, 96, 114, easeInOut);
   const pay = screen(125, 448);
+  const chip = t01(f, 104, 128, easeInOut);
+
+  const boardIn = pop(f, 332, {damping: 20, stiffness: 90});
+  const BZ = 0.95, BX = 740, BY = 360;
+  const colX = (i: number) => BX + i * (341 + 12) * BZ + 24 * BZ;
+  const cardY = BY + 84 * BZ;
+  const from = screen(195, 706);
+  const fly = t01(f, 336, 362, easeInOut);
+  const s1 = t01(f, 372, 388, easeInOut), s2 = t01(f, 392, 408, easeInOut);
+  const cardX = lerp(lerp(lerp(from.x - 139, colX(0), fly), colX(1), s1), colX(2), s2);
+  const cardTop = lerp(from.y - 90, cardY, fly) - Math.sin(fly * Math.PI) * 140;
 
   return (
     <AbsoluteFill>
-      <Bg mood="light" hex glowX={30} />
-      <FloorShadow x={PX + 207 * PS} y={PY + 868 * PS + 6} w={520} lift={1 - enter} />
-      <div style={{position: 'absolute', left: PX, top: PY, transformOrigin: '0 0', perspective: 1800}}>
-        <div style={{transformOrigin: '50% 60%', transform: `scale(${PS}) translateY(${(1 - enter) * 300}px) rotateY(${(1 - enter) * -38}deg) rotateX(${(1 - enter) * 14}deg)`,
-          opacity: Math.min(1, enter * 2)}}>
+      <Bg mood="light" hex glowX={32} />
+      <FloorShadow x={PX + 207 * PZ} y={PY + 868 * PZ + 4} w={480} lift={1 - enter} />
+      <div style={{position: 'absolute', left: PX / PZ, top: PY / PZ, zoom: PZ, perspective: 1800}}>
+        <div style={{transformOrigin: '50% 60%', transform: `translateY(${(1 - enter) * 260}px) rotateY(${(1 - enter) * -30}deg) rotateX(${(1 - enter) * 10}deg)`, opacity: Math.min(1, enter * 1.6)}}>
           <Phone>
             <div style={{position: 'absolute', inset: 0, transform: `translateX(${-toForm * 390}px)`}}>
-              <TenantHome amount={peso(amount, 2)} settled={settled} press={f >= payTap - 3 && f < payTap + 6 ? 1 : 0} pill={pop(f, 44)} />
+              <TenantHome amount={peso(amount, 2)} settled={settled} press={f >= payTap - 3 && f < payTap + 7 ? 1 : 0} pill={pop(f, 62)} />
             </div>
             <div style={{position: 'absolute', inset: 0, transform: `translateX(${(1 - toForm) * 390}px)`, background: C.canvas}}>
-              <RepairForm title={titleText} details={detailText} focus={f < 262 ? 'title' : f < 294 ? 'details' : null} press={f >= sendTap - 3 && f < sendTap + 6 ? 1 : 0}
-                unread={f >= 366 ? 3 : 2} />
+              <RepairForm title={titleText} details={detailText} focus={f < 294 ? 'title' : f < 326 ? 'details' : null} press={f >= sendTap - 3 && f < sendTap + 7 ? 1 : 0} unread={f >= 406 ? 3 : 2} />
             </div>
-            {f >= 364 ? <div style={{position: 'absolute', left: 0, right: 0, top: 72, transform: `translateY(${(1 - note) * -160}px)`, opacity: Math.min(1, note * 2)}}><DoneNote /></div> : null}
-            {f >= 364 ? <div style={{position: 'absolute', left: 16, right: 16, top: 0}}><AppHeader phone initials="AV" unread={3} ring={t01(f, 364, 390)} /></div> : null}
+            {f >= 404 ? <div style={{position: 'absolute', left: 16, right: 16, top: 0, background: C.canvas}}><AppHeader phone initials="AV" unread={3} ring={t01(f, 404, 436)} /></div> : null}
+            {f >= 404 ? <div style={{position: 'absolute', left: 0, right: 0, top: 74, transform: `translateY(${(1 - note) * -140}px)`, opacity: Math.min(1, note * 1.6)}}><DoneNote /></div> : null}
           </Phone>
         </div>
       </div>
-      <Ripple x={pay.x} y={pay.y} p={t01(f, payTap, payTap + 16)} />
-      <Ripple x={from.x} y={from.y} p={t01(f, sendTap, sendTap + 16)} />
+      <Ripple x={pay.x} y={pay.y} p={t01(f, payTap, payTap + 18)} />
+      <Ripple x={from.x} y={from.y} p={t01(f, sendTap, sendTap + 18)} />
 
-      {/* The payment reaching the owner. */}
-      {f >= 96 && f < 116 ? (
-        <div style={{position: 'absolute', left: lerp(pay.x, 1000, chip), top: lerp(pay.y, 560, chip) - Math.sin(chip * Math.PI) * 180, transform: `translate(-50%, -50%) scale(${1 + Math.sin(chip * Math.PI) * 0.3})`,
-          background: C.brand, color: '#fff', borderRadius: 999, padding: '14px 22px', fontFamily: jakarta, fontWeight: 700, fontSize: 24, boxShadow: '0 20px 40px rgba(15,27,21,0.3)'}}>₱4,700.00</div>
+      <TopHead text="Tenants see what they owe." accent={['owe.']} sub="The amount, the due date and the period it covers, on their own phone." at={12} out={108} />
+      <TopHead text="Pay by GCash. She confirms it." accent={['GCash.']} sub="A GCash payment counts once she verifies it. Cash works as it always has." at={120} out={220} />
+      <TopHead text="Report a repair from the phone." accent={['repair']} sub="It goes straight to the landlady, with the unit already on it." at={232} out={332} />
+      <TopHead text="Follow it until it is done." accent={['done.']} sub="Each step shows on her board, and the tenant is told when it is fixed." at={344} />
+
+      {/* A close-up of what the tenant sees, while the phone is on screen alone. */}
+      {f >= 14 && f < 106 ? (
+        <div style={{position: 'absolute', left: 970 / 1.6, top: 360 / 1.6, zoom: 1.6, width: 358, transform: `translateY(${t01(f, 90, 106, easeIn) * 30}px) scale(${lerp(0.94, 1, pop(f, 14))})`,
+          opacity: Math.min(1, pop(f, 14) * 1.6) * (1 - t01(f, 90, 104)), borderRadius: 24, boxShadow: '0 40px 90px rgba(15,27,21,0.2)'}}>
+          <AmountDue amount={peso(amount, 2)} pill={pop(f, 62)} press={f >= payTap - 3 && f < payTap + 7 ? 1 : 0} />
+        </div>
       ) : null}
-      {f >= 104 && f < 214 ? (
-        <div style={{position: 'absolute', left: 900, top: 400, transformOrigin: '0 0', transform: `scale(${1.25 * lerp(0.7, 1, tileIn)}) translateX(${tileOut * 900}px)`, opacity: Math.min(1, tileIn * 2)}}>
-          <div style={{borderRadius: 24, boxShadow: '0 40px 90px rgba(15,27,21,0.25)'}}>
-            <AttentionTile f={f} at={100} name="Andrea Villanueva" unit="Unit 1A, Sep 29" amount={4700} press={cPress} />
+
+      {/* The payment reaching her. */}
+      {f >= 104 && f < 130 ? (
+        <div style={{position: 'absolute', left: lerp(pay.x, TX + 200, chip), top: lerp(pay.y, TY + 150, chip) - Math.sin(chip * Math.PI) * 160, transform: `translate(-50%, -50%) scale(${1 + Math.sin(chip * Math.PI) * 0.25})`,
+          background: C.brand, color: '#fff', borderRadius: 999, padding: '14px 22px', fontFamily: jakarta, fontWeight: 700, fontSize: 24, boxShadow: '0 20px 40px rgba(15,27,21,0.28)'}}>₱4,700.00</div>
+      ) : null}
+      {f >= 116 && f < 204 ? (
+        <div style={{position: 'absolute', left: TX / TZ, top: TY / TZ, zoom: TZ, transformOrigin: '0 0', transform: `scale(${lerp(0.85, 1, tileIn)}) translateX(${tileOut * 700}px)`, opacity: Math.min(1, tileIn * 1.6) * (1 - tileOut)}}>
+          <div style={{borderRadius: 24, boxShadow: '0 40px 90px rgba(15,27,21,0.22)'}}>
+            <AttentionTile f={f} at={112} name="Andrea Villanueva" unit="Unit 1A, Sep 29" amount={4700} press={cPress} />
           </div>
         </div>
       ) : null}
-      {f >= 136 && f < 200 ? <><Ripple x={cur.x} y={cur.y} p={t01(f, reviewAt, reviewAt + 16)} /><Cursor x={cur.x} y={cur.y} press={cPress} size={40} opacity={t01(f, 136, 142)} /></> : null}
+      {f >= 148 && f < 200 ? <><Ripple x={cur.x} y={cur.y} p={t01(f, reviewAt, reviewAt + 18)} /><Cursor x={cur.x} y={cur.y} press={cPress} size={40} opacity={t01(f, 148, 156) * (1 - t01(f, 184, 196))} /></> : null}
 
-      {/* A close-up of the form as the tenant types, so the words can be read. */}
-      {f >= 214 && f < 298 ? (
-        <div style={{position: 'absolute', left: 800, top: 390, transformOrigin: '0 0', transform: `scale(${2.1 * lerp(0.85, 1, pop(f, 214))}) translateY(${t01(f, 284, 296, easeIn) * 40}px)`,
-          opacity: Math.min(1, pop(f, 214) * 2) * (1 - t01(f, 284, 296))}}>
-          <div style={{width: 470, borderRadius: 26, background: C.tile, padding: 22, boxShadow: '0 40px 90px rgba(15,27,21,0.18)', display: 'flex', flexDirection: 'column', gap: 14}}>
-            <Field label="What needs fixing"><Input value={titleText} placeholder="e.g. Bathroom sink pipe leak" focus={f < 262} caret={f < 262} /></Field>
-            <Field label="Details"><Input area value={detailText} placeholder="Where it is in the unit, when it started, and how bad it is." focus={f >= 262} caret={f >= 262 && f < 294} /></Field>
+      {/* A close-up of the form as the tenant types. */}
+      {f >= 240 && f < 336 ? (
+        <div style={{position: 'absolute', left: 820 / 1.9, top: 380 / 1.9, zoom: 1.9, transform: `translateY(${t01(f, 322, 336, easeIn) * 30}px) scale(${lerp(0.94, 1, pop(f, 240))})`,
+          opacity: Math.min(1, pop(f, 240) * 1.6) * (1 - t01(f, 322, 336))}}>
+          <div style={{width: 470, borderRadius: 26, background: C.tile, padding: 22, boxShadow: '0 30px 70px rgba(15,27,21,0.14)', display: 'flex', flexDirection: 'column', gap: 14}}>
+            <Field label="What needs fixing"><Input value={titleText} placeholder="e.g. Bathroom sink pipe leak" focus={f < 294} caret={f < 294} /></Field>
+            <Field label="Details"><Input area value={detailText} placeholder="Where it is in the unit, when it started, and how bad it is." focus={f >= 294} caret={f >= 294 && f < 326} /></Field>
           </div>
         </div>
       ) : null}
 
-      {/* The owner's repairs board. */}
-      {f >= 286 ? (
-        <div style={{position: 'absolute', left: 772, top: 380, display: 'flex', gap: 352 - 341 * 0.98, transformOrigin: '0 0', transform: `scale(0.98) translateY(${(1 - boardIn) * 120}px)`, opacity: Math.min(1, boardIn * 2)}}>
-          <BoardColumn title="To dispatch" sub="No technician assigned yet" n={f >= 320 && f < 334 ? 1 : 0} h={430} />
-          <BoardColumn title="In progress" sub="A technician is on it" n={f >= 340 && f < 350 ? 1 : 0} h={430} />
-          <BoardColumn title="Done" sub="Resolved or closed" n={f >= 356 ? 1 : 0} h={430} />
+      {/* Her repairs board, and the card travelling across it. */}
+      {f >= 332 ? (
+        <div style={{position: 'absolute', left: BX / BZ, top: BY / BZ, zoom: BZ, display: 'flex', gap: 12, transform: `translateY(${(1 - boardIn) * 80}px)`, opacity: Math.min(1, boardIn * 1.6)}}>
+          <BoardColumn title="To dispatch" sub="No technician assigned yet" n={f >= 362 && f < 380 ? 1 : 0} h={430} />
+          <BoardColumn title="In progress" sub="A technician is on it" n={f >= 380 && f < 400 ? 1 : 0} h={430} />
+          <BoardColumn title="Done" sub="Resolved or closed" n={f >= 400 ? 1 : 0} h={430} />
         </div>
       ) : null}
-      {f >= 300 ? (
-        <div style={{position: 'absolute', left: cardX2, top: cardY, transform: `rotate(${Math.sin(fly * Math.PI) * -8}deg) scale(${lerp(0.7, 0.98, fly)})`, transformOrigin: '0 0',
-          boxShadow: `0 ${30 * Math.sin(fly * Math.PI) + 8}px 60px rgba(15,27,21,0.2)`, borderRadius: 20}}>
-          <RepairCard title={REPAIR_TITLE} meta="Unit 1A, Plumbing" reported="Sep 29, 2026" tech={f < 334 ? 'Unassigned' : 'Plumber'} prio="Medium" />
+      {f >= 336 ? (
+        <div style={{position: 'absolute', left: cardX / BZ, top: cardTop / BZ, zoom: BZ, transform: `rotate(${Math.sin(fly * Math.PI) * -6}deg) scale(${lerp(0.75, 1, fly)})`, transformOrigin: '0 0',
+          boxShadow: `0 ${24 * Math.sin(fly * Math.PI) + 8}px 50px rgba(15,27,21,0.16)`, borderRadius: 20}}>
+          <RepairCard title={REPAIR_TITLE} meta="Unit 1A, Plumbing" reported="Sep 29, 2026" tech={f < 372 ? 'Unassigned' : 'Plumber'} prio="Medium" />
         </div>
       ) : null}
 
-      <Head kicker="For the tenants" text={'Tenants see\nwhat they owe.'} accent={['owe.']} size={116} left={760} top={320} width={1080}
-        sub="The amount, the due date and the period it covers, on their own phone." at={10} out={96} />
-      <RightHead text="Pay by GCash. She confirms it." accent={['GCash.']} sub="A GCash payment counts once she verifies it. Cash works as it always has." at={108} out={196} />
-      <RightHead text="Report a repair from the phone." accent={['repair']} sub="It goes straight to the landlady, with the unit already on it." at={212} out={318} />
-      <RightHead text="Follow it until it is done." accent={['done.']} sub="Each step shows on the board, and the tenant is told when it is fixed." at={324} />
-
-      <Sfx at={0} name="whoosh-low" vol={0.5} />
-      <Ticks at={10} dur={34} vol={0.18} />
-      <Sfx at={44} name="pop" vol={0.3} />
-      <Sfx at={payTap - 1} name="tap" vol={0.8} />
-      <Sfx at={96} name="swipe" vol={0.4} />
-      <Sfx at={112} name="pop" vol={0.35} />
-      <Sfx at={reviewAt - 1} name="click" vol={0.7} />
-      <Sfx at={170} name="chime" vol={0.55} />
-      <Sfx at={200} name="whoosh" vol={0.35} />
-      <Typing at={222} chars={REPAIR_TITLE.length} perChar={1.2} vol={0.26} />
-      <Typing at={262} chars={30} perChar={1} vol={0.2} />
-      <Sfx at={sendTap - 1} name="tap" vol={0.8} />
-      <Sfx at={286} name="whoosh" vol={0.3} />
-      <Sfx at={300} name="swipe" vol={0.45} />
-      <Sfx at={320} name="pop" vol={0.35} />
-      <Sfx at={334} name="swipe" vol={0.3} />
-      <Sfx at={350} name="swipe" vol={0.3} />
-      <Sfx at={362} name="pop" vol={0.3} />
-      <Sfx at={364} name="ping" vol={0.55} />
+      <Sfx at={0} name="whoosh-low" vol={0.18} />
+      <Sfx at={62} name="pop" vol={0.12} />
+      <Sfx at={payTap - 1} name="tap" vol={0.36} />
+      <Sfx at={104} name="swipe" vol={0.14} />
+      <Sfx at={120} name="pop" vol={0.14} />
+      <Sfx at={reviewAt - 1} name="click" vol={0.32} />
+      <Sfx at={200} name="chime" vol={0.26} />
+      <Sfx at={226} name="whoosh" vol={0.12} />
+      {[250, 262, 274, 286, 300, 312].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[i % 3]} vol={0.1} />)}
+      <Sfx at={sendTap - 1} name="tap" vol={0.36} />
+      <Sfx at={336} name="swipe" vol={0.16} />
+      <Sfx at={362} name="pop" vol={0.12} />
+      <Sfx at={372} name="swipe" vol={0.1} />
+      <Sfx at={392} name="swipe" vol={0.1} />
+      <Sfx at={406} name="ping" vol={0.26} />
     </AbsoluteFill>
   );
 };
 
-// 9. A guest finds the vacant unit and asks; the owner sees it with the unit attached.
+// ---- For guests ------------------------------------------------------------------
 const QUESTION = 'Good day! Is the two-bedroom in the back apartment still available? Could we view it this Saturday?';
 export const Guests: React.FC = () => {
   const f = useCurrentFrame();
-  const partA = 1 - t01(f, 70, 82, easeIn);
-  const formIn = pop(f, 74, {damping: 18, stiffness: 150});
-  const formOut = t01(f, 150, 162, easeIn);
-  const listIn = pop(f, 152, {damping: 18, stiffness: 140});
-  const bubble = t01(f, 148, 170, easeInOut);
-  const newItem = pop(f, 170, {damping: 14, stiffness: 180});
-  const tab = t01(f, 16, 30, easeInOut);
-  const tabX = [0, 212, 470, 718];
+  const panelIn = pop(f, 6, {damping: 20, stiffness: 80});
+  const panelOut = t01(f, 92, 106, easeIn);
+  const formIn = pop(f, 100, {damping: 20, stiffness: 90});
+  const formOut = t01(f, 188, 202, easeIn);
+  const bubble = t01(f, 186, 214, easeInOut);
+  const listIn = pop(f, 200, {damping: 20, stiffness: 90});
+  const newItem = pop(f, 214, {damping: 20, stiffness: 110});
+  const FZ = 1.2;
   return (
     <AbsoluteFill>
-      <Bg mood="light" hex glowX={60} />
-      {/* The public category page. */}
-      <div style={{position: 'absolute', inset: 0, opacity: partA, transform: `translateX(${(1 - partA) * -300}px)`}}>
-        <Head kicker="For guests · the public site" text="Two-bedroom" size={150} top={170} width={1100} at={4} />
-        <div style={{position: 'absolute', left: 110, top: 470}}>
-          <div style={{display: 'flex', gap: 60, fontFamily: jakarta, fontSize: 30, color: C.inkSoft, position: 'relative'}}>
-            {CATEGORIES.map(([name, n], i) => (
-              <span key={name} style={{color: i === 2 ? C.ink : C.inkSoft, opacity: t01(f, 8 + i * 3, 18 + i * 3), transform: `translateY(${(1 - t01(f, 8 + i * 3, 22 + i * 3)) * 20}px)`}}>
-                {name} <span style={{fontSize: 22, marginLeft: 6}}>{Math.round(n * t01(f, 8 + i * 3, 30 + i * 3))}</span>
-              </span>
-            ))}
-            <div style={{position: 'absolute', left: tabX[2] * tab, bottom: -12, width: 190, height: 3, background: C.ink, transform: `scaleX(${tab})`, transformOrigin: 'left'}} />
-          </div>
-          <div style={{fontFamily: jakarta, fontSize: 30, color: C.inkSoft, marginTop: 60, width: 720, lineHeight: 1.45, opacity: t01(f, 24, 36)}}>
-            4 units of this kind, <b style={{color: C.ink}}>1 vacant</b> at the moment.
-          </div>
-        </div>
-        <div style={{position: 'absolute', left: 1250, top: 190, transform: `translateX(${(1 - pop(f, 12, {damping: 18, stiffness: 130})) * 700}px)`}}>
-          <UnitPanel />
-        </div>
+      <Bg mood="light" hex glowX={68} />
+      <div style={{position: 'absolute', left: 1020, top: 150, opacity: Math.min(1, panelIn * 1.6) * (1 - panelOut), transform: `translateX(${(1 - panelIn) * 200 - panelOut * 120}px)`}}>
+        <UnitPanel />
       </div>
-      {/* The inquiry form, typed in. */}
-      {f >= 70 ? (
-        <div style={{position: 'absolute', left: 110, top: 150, transformOrigin: '0 0', transform: `scale(1.18) translateX(${(1 - formIn) * 900 - formOut * 1400}px)`, opacity: Math.min(1, formIn * 2)}}>
-          <InquiryForm name={typed('Kaye Ordoñez', f, 84, 1.3)} phone={typed('0918 555 0142', f, 102, 0.9)} question={typed(QUESTION, f, 116, 0.28)}
-            focus={f < 100 ? 'name' : f < 114 ? 'phone' : f < 144 ? 'question' : null} press={f >= 141 && f < 150 ? 1 : 0} />
+      <Head text={'Guests find a\nvacant room.'} accent={['vacant']} sub="The public site shows each kind of unit, its rate, and which are free." at={10} out={96} />
+      {f >= 100 && f < 206 ? (
+        <div style={{position: 'absolute', left: 980 / FZ, top: 170 / FZ, zoom: FZ, transform: `translateX(${(1 - formIn) * 200 - formOut * 120}px)`, opacity: Math.min(1, formIn * 1.6) * (1 - formOut)}}>
+          <InquiryForm name={typed('Kaye Ordoñez', f, 114, 2)} phone={typed('0918 555 0142', f, 142, 1.4)} question={typed(QUESTION, f, 162, 0.2)}
+            focus={f < 140 ? 'name' : f < 160 ? 'phone' : f < 180 ? 'question' : null} press={f >= 181 && f < 190 ? 1 : 0} />
         </div>
       ) : null}
-      {f >= 80 && f < 160 ? (
-        <Head kicker="For guests · Send an inquiry" text={'Guests find a room,\nand ask.'} accent={['ask.']} sub="No account needed. Viewings are by appointment." left={980} top={300} width={880} size={88} at={84} out={146} />
-      ) : null}
-      {/* The question flying to her Inquiries. */}
-      {f >= 148 && f < 172 ? (
-        <div style={{position: 'absolute', left: lerp(300, 1180, bubble), top: lerp(820, 420, bubble) - Math.sin(bubble * Math.PI) * 140, width: 420, transform: `scale(${lerp(1, 0.8, bubble)})`,
-          background: C.brand, color: '#fff', borderRadius: '24px 24px 24px 6px', padding: '18px 22px', fontFamily: jakarta, fontSize: 18, lineHeight: 1.45, boxShadow: '0 20px 50px rgba(15,27,21,0.3)'}}>
+      <Head text={'And ask, without\nan account.'} accent={['ask,']} sub="Viewings are by appointment. She replies by phone or email." at={108} out={190} />
+      {f >= 186 && f < 216 ? (
+        <div style={{position: 'absolute', left: lerp(1060, 1180, bubble), top: lerp(820, 330, bubble) - Math.sin(bubble * Math.PI) * 120, width: 440, transform: `scale(${lerp(1, 0.75, bubble)})`,
+          background: C.brand, color: '#fff', borderRadius: '24px 24px 24px 6px', padding: '18px 22px', fontFamily: jakarta, fontSize: 19, lineHeight: 1.45, boxShadow: '0 20px 50px rgba(15,27,21,0.26)',
+          opacity: 1 - t01(f, 208, 216)}}>
           {QUESTION.slice(0, 64)}…
         </div>
       ) : null}
-      {f >= 150 ? (
-        <>
-          <Head kicker="For the landlady · Inquiries" text={'She sees it,\nwith the unit.'} accent={['unit.']} sub="Each inquiry lands in her Inquiries, with the unit they asked about." width={780} at={160} />
-          <div style={{position: 'absolute', left: 1030, top: 250, borderRadius: 24, overflow: 'hidden', background: C.tile, boxShadow: '0 40px 90px rgba(15,27,21,0.15)',
-            transformOrigin: '0 0', transform: `scale(1.3) translateY(${(1 - listIn) * 200}px)`, opacity: Math.min(1, listIn * 2)}}>
-            <div style={{height: newItem * 150, overflow: 'hidden'}}>
-              <div style={{transform: `scale(${lerp(0.9, 1, newItem)})`}}>
-                <InquiryItem name="Kaye Ordoñez" when="Sep 29, 2026" unit="B3B" status="Waiting for an answer" tone="verify" active msg="Good day! Is the two-bedroom in the back apartment still available? Could we view it this…" />
-              </div>
-            </div>
-            <InquiryItem name="Luis Barrameda" when="Sep 26, 2026" unit="B3B" status="Answered" tone="neutral" msg="Hello, I start at Bicol University next month. How much is the monthly rate?" />
-            <InquiryItem name="Mica Tolentino" when="Sep 21, 2026" unit="1G" status="Nothing came of it" tone="neutral" msg="Do you have a studio for one person?" />
+      {f >= 200 ? (
+        <div style={{position: 'absolute', left: 1020 / 1.25, top: 230 / 1.25, zoom: 1.25, borderRadius: 24, overflow: 'hidden', background: C.tile, boxShadow: '0 40px 90px rgba(15,27,21,0.12)',
+          transform: `translateY(${(1 - listIn) * 60}px)`, opacity: Math.min(1, listIn * 1.6)}}>
+          <div style={{height: newItem * 152, overflow: 'hidden'}}>
+            <InquiryItem name="Kaye Ordoñez" when="Sep 29, 2026" unit="B3B" status="Waiting for an answer" tone="verify" active msg="Good day! Is the two-bedroom in the back apartment still available? Could we view it this…" />
           </div>
-        </>
+          <InquiryItem name="Luis Barrameda" when="Sep 26, 2026" unit="B3B" status="Answered" tone="neutral" msg="Hello, I start at Bicol University next month. How much is the monthly rate?" />
+          <InquiryItem name="Mica Tolentino" when="Sep 21, 2026" unit="1G" status="Nothing came of it" tone="neutral" msg="Do you have a studio for one person?" />
+        </div>
       ) : null}
-      <Sfx at={0} name="whoosh" vol={0.4} />
-      <Ticks at={8} dur={24} vol={0.15} />
-      <Sfx at={12} name="whoosh" vol={0.3} />
-      <Sfx at={26} name="pop" vol={0.35} />
-      <Sfx at={70} name="swipe" vol={0.45} />
-      <Typing at={84} chars={12} perChar={1.3} vol={0.24} />
-      <Typing at={102} chars={13} perChar={0.9} vol={0.2} />
-      <Typing at={116} chars={40} perChar={0.7} vol={0.16} />
-      <Sfx at={140} name="click" vol={0.7} />
-      <Sfx at={148} name="swipe" vol={0.45} />
-      <Sfx at={170} name="pop" vol={0.4} />
-      <Sfx at={172} name="ping" vol={0.45} />
+      <Head text={'She sees it,\nwith the unit.'} accent={['unit.']} sub="Each inquiry lands in her Inquiries, with the unit they asked about." at={204} />
+      <Sfx at={6} name="whoosh" vol={0.14} />
+      <Sfx at={100} name="whoosh" vol={0.14} />
+      {[114, 120, 126, 142, 150, 166, 172].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[i % 3]} vol={0.1} />)}
+      <Sfx at={180} name="click" vol={0.32} />
+      <Sfx at={188} name="swipe" vol={0.16} />
+      <Sfx at={214} name="pop" vol={0.14} />
+      <Sfx at={218} name="ping" vol={0.22} />
     </AbsoluteFill>
   );
 };
+

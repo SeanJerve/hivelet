@@ -18,16 +18,17 @@ mkdirSync(outDir, {recursive: true});
 const serveUrl = await bundle({entryPoint: join(root, 'src', 'index.ts'), publicDir: join(root, 'public')});
 const composition = await selectComposition({serveUrl, id: 'Hivelet'});
 
-// Scene lengths, read from the same table the video uses (src/Video.tsx).
-const src = readFileSync(join(root, 'src', 'Video.tsx'), 'utf8');
-const scenes = [...src.matchAll(/\['(\w+)', \w+, (\d+), (?:true|false)\]/g)].map((m) => ({id: m[1], dur: Number(m[2])}));
+// Scene lengths, read from the same table the video uses (src/timeline.json).
+const scenes = JSON.parse(readFileSync(join(root, 'src', 'timeline.json'), 'utf8')).scenes.map((s) => ({id: s.id, dur: s.frames}));
 let t = 0;
 for (const s of scenes) { s.from = t; t += s.dur; }
 
 const asked = process.argv.slice(2).map(Number);
 const frames = asked.length
   ? asked.map((f) => ({id: `f${f}`, frame: f}))
-  : scenes.flatMap((s) => [0.22, 0.55, 0.88].map((k) => ({id: s.id, frame: s.from + Math.round(s.dur * k)})));
+  // Long scenes get a frame every 80; short ones three.
+  : scenes.flatMap((s) => (s.dur > 400 ? Array.from({length: Math.floor(s.dur / 80)}, (_, k) => 40 + k * 80) : [0.22, 0.55, 0.88].map((k) => Math.round(s.dur * k)))
+    .map((o) => ({id: s.id, frame: s.from + o})));
 
 const file = ({id, frame}) => join(outDir, `${String(frame).padStart(4, '0')}-${id}.png`);
 for (const fr of frames) {
