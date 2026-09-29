@@ -1,9 +1,12 @@
 # The Hivelet film: every scene and where it comes from
 
-About 100 seconds, 1920x1080, 30 fps. A synthesized score and a few soft sound effects; no
-voice. Headlines are short on purpose (two to four words a line, few sentences under them). Third cut, 2026-09-29, after Sean's notes on the second: slower, calmer sound with a
-trailer-style score, no dot labels, one mention of "33 units", nothing crowding the frame,
-sharper graphics, no activity log, and an opening built the way Lloyd's promo opens.
+About 118 seconds, 1920x1080, 30 fps. A synthesized score and soft object sounds; no voice.
+Headlines are short on purpose (two to four words a line, few sentences under them).
+
+Fifth cut, 2026-09-29, after Sean's notes on the fourth: a sixth problem (inquiries arriving by
+social media, text and in person), a slower sheet-to-drive beat, the problems bending into
+hexagons with their icons instead of fading out, the floor plan on the public page, a sound for
+the repair card moving between columns, and shorter typing at a person's uneven pace.
 
 **The rule:** every piece of the app on screen is one of the app's own components, rebuilt in
 React from the Vue source (`src/ui/`) with the app's exact labels, sizes and colours. The
@@ -19,32 +22,47 @@ in the zone to its right, masked before it can reach the text.
 
 | Scene | Frames | What happens | App source | Facts |
 | :--- | :-- | :--- | :--- | :--- |
-| Act 1 | 0-960 | Her spreadsheet typed into by hand ("33 units. Every peso. Every tenant.", "One spreadsheet."); the camera travels to each problem: the workbook going onto a removable drive, two receipts with one number, the incomplete rows, repairs in a chat, a tenant asking what they owe; all five around "Nothing connected one record to another."; each becomes a hexagon, the hive forms, and its centre grows into the icon: "One connected system." | Illustrations of the old way; the icon is `frontend/public/favicon.svg` | Chapter 4 and 5: two sheets on removable storage, 5 receipt numbers used twice, 402 of 937 rows with no anniversary date and no deposit, requests by message |
-| For the landlady | 960-1020 | Chapter card | | |
-| Overview | 1020-1290 | The Overview assembles; the attention tile; the month's collections count up; the whole year | `views/AdminOverviewView.vue`, `components/overview/*` | Sample figures |
-| Rooms and rates | 1290-1470 | All 33 unit cards flip in; 1A steps forward | `views/RoomDirectoryView.vue` | 33 units, B3B vacant (sample) |
-| Monthly Income | 1470-1830 | The ledger fills; Record payment; unit 2B; OR number typed; the second-payment warning | `views/IncomeCollectionsView.vue`, `components/modals/OnsitePaymentModal.vue` | The warning's wording is the modal's own |
-| For the tenants | 1830-1890 | Chapter card | | |
-| Tenant | 1890-2340 | Amount due; Pay with GCash; her attention tile; "Settled"; a repair typed and sent, moving across her board; "Your repair is done" | `views/TenantOverviewView.vue`, `views/TenantTicketsView.vue`, `views/MaintenanceDispatchView.vue`, notification from `backend/src/routes/admin.ts` | A GCash payment counts once she verifies it |
-| For guests | 2340-2400 | Chapter card | | |
-| Guests | 2400-2670 | The vacant two-bedroom; the inquiry typed and sent; it lands in her Inquiries | `views/CategoryRoomsView.vue`, `views/InquireView.vue`, `views/InquiriesView.vue` | |
-| Proof | 2670-2835 | 937, 1,327, 20 | | CLAUDE.md, Chapter 4 Table 8 |
-| End | 2835-3015 | Icon, name, "One connected system for the Fe Galang Da Silva Boarding House.", address, team | | Group 4, Bicol University, IT 124 Capstone Project 2 |
+| Act 1 | 0-1270 | Her spreadsheet typed into by hand ("33 units. Every peso. Every tenant.", "One spreadsheet."); the sheet shrinks into her workbook file and slides into a removable drive; the camera travels to each problem: two receipts with one number, the incomplete rows, repairs in a chat, a tenant asking what they owe, inquiries by social media, text and walk-in; all six on a ring around "Nothing connected." with the links between them breaking; each bends into a hexagon with its icon, the hive forms, and its centre grows into the icon: "One connected system." | Illustrations of the old way; the icon is `frontend/public/favicon.svg` | Chapter 4 and 5: two sheets on removable storage, receipt numbers used twice, 402 of 937 rows with no anniversary date and no deposit, requests by message. **Inquiries by social media, text and walk-in are from Sean (2026-09-29); the manuscript does not state them yet.** |
+| For the landlady | 1270-1330 | Chapter card | | |
+| Overview | 1330-1600 | The Overview assembles; the attention tile; the month's collections count up; the whole year | `views/AdminOverviewView.vue`, `components/overview/*` | Sample figures |
+| Rooms and rates | 1600-1780 | All 33 unit cards flip in; 1A steps forward | `views/RoomDirectoryView.vue` | 33 units, B3B vacant (sample) |
+| Monthly Income | 1780-2140 | The ledger fills; Record payment; unit 2B; OR number typed; the second-payment warning | `views/IncomeCollectionsView.vue`, `components/modals/OnsitePaymentModal.vue` | The warning's wording is the modal's own |
+| For the tenants | 2140-2200 | Chapter card | | |
+| Tenant | 2200-2700 | Amount due; Pay with GCash; her attention tile; "Settled"; a repair typed and sent, moving across her board column by column; "Your repair is done" | `views/TenantOverviewView.vue`, `views/TenantTicketsView.vue`, `views/MaintenanceDispatchView.vue`, notification from `backend/src/routes/admin.ts` | A GCash payment counts once she verifies it |
+| For guests | 2700-2760 | Chapter card | | |
+| Guests | 2760-3180 | Vacant unit B3B with its floor plan drawn in and the unit marked; the plan lifted for a closer look; "Ask about unit B3B"; the question typed and sent; it lands in her Inquiries | `views/CategoryRoomsView.vue` (showcase, `lib/floorPlans.ts`, the inquiry dialog), `views/InquiriesView.vue`; the plan is `frontend/public/floorplans/back3rdfloor.png` | B3B is on the back apartment's 3rd floor; each unit has a floor plan |
+| Proof | 3180-3345 | 937, 1,327, 20 | | CLAUDE.md, Chapter 4 Table 8 |
+| End | 3345-3525 | Icon, name, "One connected system for the Fe Galang Da Silva Boarding House.", address, team | | Group 4, Bicol University, IT 124 Capstone Project 2 |
 
 ## Sound
 
 `capture/score.mjs` writes `public/score.wav` to the same timeline: a drone and a quickening
-heartbeat under the old way, a low hit on each problem, a tension cluster under "Nothing
-connected", a riser and a moment of silence, a deep brass hit as the icon appears. Then a
-hopeful groove in A (I-V-vi-IV at 96 bpm): pads swell under the icon, and on "For the
-landlady" a soft kick, claps, a shaker, a bass line and plucks come in, the pads ducking with
-the kick. The groove steps aside for each chapter card, lifts for the proof, and resolves on a
-held chord under the end card.
-`capture/sfx.mjs` writes the effects laid over it. Camera moves get a soft "air" swell whose
-length matches the move (`air-short`, `air`, `air-long`); arrivals a `blip`; clicks a
-`soft-click`; notifications a `bell`; the duplicate-payment warning a `soft-warn`; reveals a
-`shimmer`. No sharp whooshes. Both are synthesized, so nothing needs a licence. A track at `public/music.mp3`
-replaces the score.
+heartbeat under the old way, a low hit on each problem and on the links breaking, a tension
+cluster under "Nothing connected", a rising tone and a moment of silence, a deep brass hit as the
+icon appears. Then a hopeful groove in A (I-V-vi-IV at 96 bpm): pads swell under the icon, and on
+"For the landlady" a soft kick, claps, a shaker, a bass line and plucks come in, the pads ducking
+with the kick. The groove steps aside for each chapter card, lifts for the proof, and resolves on
+a held chord under the end card. No swells or risers made of noise.
+
+`capture/sfx.mjs` writes the object sounds. **Every sound belongs to something moving on
+screen**, and `src/cues.mjs` is the one list of them: frame, sound, volume, and what it belongs
+to. Camera moves are silent. Cards and tiles settling get a soft thud (`settle-*`), paper a
+rustle, the circled receipt number a pen, rows and cascades small wooden ticks, messages a
+two-note pop (`sms` for a text), the walk-in's note a dry tap, the floor plan a few pencil
+strokes, the repair card a low slide between columns and a rising note as it lands in each
+(`status-1..3`), the hive's cells a click as each locks in.
+
+Typing is written once in `src/typing.mjs`: short text at an uneven, human pace. The same times
+put each character on screen and play its key, so a key is only heard as its letter appears.
+
+## Checking picture against sound
+
+```bash
+node capture/cuecheck.mjs          # a still at every cue, labelled, in out/cues-N.png
+node capture/frames.mjs act1 0-120/20   # any frames of one scene, side by side, in out/frames.png
+```
+
+Read every cue sheet: the thing named under each still must be moving or arriving in it.
 
 ## Rebuilding
 
@@ -57,4 +75,4 @@ npm run render               # out/hivelet.mp4
 ```
 
 Change a scene's length in `src/timeline.json` and run `score.mjs` again, so the music still
-lands on the cuts.
+lands on the cuts; move a scene's events and move its cues in `src/cues.mjs` with them.
