@@ -150,6 +150,31 @@ the local build against the live records, writes blocked (`scripts/field-tests/o
 screens on phone widths with real data, after the client called them "messy" on a phone on
 23 September; the fixes of that day had been checked on replicas only.
 
+## 7b. Lighthouse, the landing page (30 September)
+
+Lighthouse 12.8 run locally in Chrome 154 against `https://hivelet.vercel.app/public`, three runs
+each, median reported (PageSpeed Insights' shared daily quota was used up, so Google's own servers
+could not run it). Mobile uses Lighthouse's simulated slow 4G phone; desktop its desktop preset.
+
+| | Performance | Accessibility | Best practices | SEO | LCP | CLS |
+| :--- | --: | --: | --: | --: | --: | --: |
+| Desktop, before the fix (00:20) | 76 | 100 | 100 | 100 | 1.2 s | **0.50** |
+| Desktop, after the fix (00:50) | **95** | 100 | 100 | 100 | 1.4 s | **0** |
+| Mobile, before | 73 | 100 | 100 | 100 | 4.8 s | 0 (one run 0.97) |
+| Mobile, after | 70 | 100 | 100 | 100 | 5.6 s | 0 |
+
+**The fix (F-12, `App.vue`):** until the first page's code arrived, the page area was empty and the
+footer sat in view; the page then shoved it 466 px down, one jump scored 0.50. A full-height
+placeholder now holds the space. Measured A/B on two local production builds under the same
+throttling: CLS 0.501-0.516 without it, 0.016 with it.
+
+**Mobile, left as it is, on purpose:** the largest element is the "Hivelet" wordmark, text that waits
+4.9 s because the whole page is drawn by JavaScript. The levers are pre-rendering the landing page,
+loading the Google Fonts stylesheet without blocking (822 ms), and smaller photo sizes for phones
+(about 410 KB). Each changes delivery or appearance; none was made the night before real users
+test. They are Chapter 5, recommendation 11. The mobile runs vary by a few points with the network
+(73 before, 70 after, all CLS 0); Table 11's real-phone timings are the measurement that counts.
+
 ## 8. Writing twice, and writing at the same time (read from the code)
 
 | Path | Guard |
@@ -176,6 +201,7 @@ screens on phone widths with real data, after the client called them "messy" on 
 | F-8 | The forced "Set your password" window, which every tenant meets first, asked for a "Current password" without saying it is the slip's, called the reset accounts "created", and had no way out but closing the browser | **Fixed** in `91b874a`: it asks for the "Starting password (the one you just signed in with)" and has a Sign out button. Verified 17/17 on the local build with every server answer faked (no real account) |
 | F-10 | **All 32 tenants' screens say they are overdue.** The last receipt in the ledger is dated 8 August 2026 (August 13 receipts, September none, against about 30 a month before). Tenant screens were audited against the database the same night and matched; the records are what is behind | **For the owner and the team before the tenant sessions**: the owner enters the receipts she has collected, or each tester is told first (`TESTING_DAY_GUIDE.md`, the CAUTION box) |
 | F-11 | A photo from a phone (2 to 5 MB) was refused by the repair form, whose request carries at most about 700 KB of image | **Fixed** in `caf0115`: the photo is made smaller in the browser first; a 7.5 MB worst case became 373 KB in 0.2 s |
+| F-12 | The landing page jumped while loading: the footer, in view on an empty page, was shoved down when the page arrived (Lighthouse CLS 0.50, desktop performance 76) | **Fixed**: full-height placeholder until the first page renders. Live after deploy: CLS 0, desktop performance 95 (section 7b) |
 | F-9 | After F-3, three tenant screens would have headed a timed-out save "not sent" or "failed", inviting a duplicate | **Fixed** in `6b778d1`: "could not confirm", with the check-first message |
 | F-12 | F-9 had no owner-side twin: a timed-out save on Record payment read "Payment not recorded ... Nothing was written to the ledger. Please try again.", and 17 other owner toasts headed a timeout "Not saved" | **Fixed** in `163266e`: "Not confirmed" on a timeout everywhere, the ledger fetched again, a timed-out move-in points to Reset password. Harness: 45.7 s, form kept |
 | F-13 | Record payment opened every receipt on today, whatever the unit, the night before the owner enters every receipt since 8 August; one left at the default would show the tenant paid a month ahead | **Fixed** in `a58f656`: Covering from starts the day after the tenant's last verified period (all 32 open on August 2026), per tenant not per unit (`PH` holds 2024 rows) |

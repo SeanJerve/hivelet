@@ -505,6 +505,17 @@ than the window and none had a violation. These were the screens the owner had f
 her phone on 23 September (Section 4.3.2); the fixes of that day are here measured on the real
 screens with real records for the first time.
 
+Google Lighthouse (version 12.8, run on the same laptop against the live public page, three runs
+each, median reported) scored accessibility, best practices and search optimization 100 on both a
+simulated phone and a computer. It also found the page jumping as it loaded: the footer appeared on
+an empty page and was pushed down when the page's content arrived, a layout shift of 0.50 where
+0.1 is the limit for "good", which held the computer performance score at 76. The space the page
+needs is now held until it loads; after the change the live page measured a layout shift of 0 and
+a computer performance score of 95. On the simulated slow phone the score stayed about 70, because
+the page's main text appears only after its code has arrived and run, about five seconds on that
+connection (Chapter 5, recommendation 11). The real-device timings in Table 11 are the measurement
+that decides how fast the system is for the owner and tenants.
+
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants [DATA PENDING]
 
 > **TEAM NOTE.** Filled from the testing day of 30 September 2026. The procedure is
@@ -825,6 +836,7 @@ pilot; the rows after them will come from the survey results.
 | Check review, 28 Sep 2026 | Two checks disagreed on how many ended tenancies had no end date (2 and 1): the tenant list never sent end dates, and one real record had none | The list now sends end dates; the record was given its date (migration 059); both checks now fail on any new case | Reliability |
 | Team review, 28 Sep 2026 | The public FAQ offered online GCash payment while the gateway is still Adyen's test account | The FAQ now says online payments charge no real money yet and asks tenants to pay in person | Functional Suitability |
 | Pre-testing audit, 29 Sep 2026 | Every tenant account shared one password that the development team had used, so a tenant given it could have signed in as a neighbour | Each tenant given their own starting password, handed over in person, with a new password required at first sign-in; every earlier session ended | Security |
+| Lighthouse audit, 30 Sep 2026 | The public page jumped while it loaded: the footer showed on an empty page and was pushed down when the page arrived (layout shift 0.50; desktop performance score 76) | The page's space is held until it loads; layout shift 0, desktop performance score 95, measured on the live site | Performance Efficiency, Usability |
 | Pre-testing audit, 29 Sep 2026 | A tenant who forgot their password had no way back in, and the owner no way to help | The owner can reset a tenant's password from the tenant list; the tenant gets a one-time password and chooses their own at next sign-in | Usability, Security |
 | Pre-testing audit, 29 Sep 2026 | The window that makes a tenant set their own password did not say which password it wanted, and had no way out | It asks for the starting password by name and offers Sign out | Usability |
 | Pre-testing audit, 29 Sep 2026 | On a weak signal a page or a save could wait for minutes with no message | Pages stop after 25 seconds and saves after 45, each with a message; a save that may have arrived asks the reader to check before sending it again | Reliability, Usability |

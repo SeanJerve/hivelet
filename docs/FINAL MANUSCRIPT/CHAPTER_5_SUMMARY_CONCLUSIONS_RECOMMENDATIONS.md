@@ -119,17 +119,22 @@ Based on the summary and conclusions of the study, the following are recommended
    person.
 8. Consider sending notifications by SMS as well, since not every tenant opens the system daily.
 9. Switch the browser security policy the site already declares from reporting to enforcing,
-   once its reports show nothing legitimate would be blocked.
+   once its reports show nothing legitimate would be blocked. As written it would also block the
+   map on the public page, which must be allowed first (Chapter 4, §4.4.8).
 10. Add a self-service "forgot password" for tenants, sent by SMS or email. The owner can reset a
     password from the tenant list (Chapter 4, §4.2.6), but a tenant must reach her first.
+11. Make the public page appear faster on phones. On a simulated slow mobile connection its main
+    text appears after about five seconds, because the page is drawn in the browser after its code
+    arrives (Chapter 4, §4.3.6). Pre-rendering the page, loading the font stylesheet without
+    holding the page back, and sending phones smaller photographs would each shorten that.
 
 **For future researchers**
 
-11. Use this study's approach of checking a system against its own real data, not only against
+12. Use this study's approach of checking a system against its own real data, not only against
     test cases. Several of the most important defects in this study would have passed ordinary
     testing.
-12. Study offline recording, so that a payment taken where there is no signal can be saved on the
+13. Study offline recording, so that a payment taken where there is no signal can be saved on the
     device and sent once the connection returns.
-13. Extend the evaluation over a longer period of real use, and measure whether the owner's time
+14. Extend the evaluation over a longer period of real use, and measure whether the owner's time
     spent on record-keeping actually falls after adoption.
-14. Study support for more than one property, for owners who manage several small buildings.
+15. Study support for more than one property, for owners who manage several small buildings.
