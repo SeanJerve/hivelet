@@ -14,6 +14,7 @@ now the source we write in**; the finished text is carried into the `.docx` at t
 | `TESTING_DAY_GUIDE.md` | **For 30 September.** How to run the test with the owner and tenants: seats, the night-before checklist, accounts, consent, the sessions, evidence, clean-up | Written 2026-09-29 |
 | `TESTING_DAY_TEST_CASES.md` | Every test case for the day, each traced to an ISO/IEC 25010 characteristic, a requirement and a Chapter 4 table | Print it |
 | `TESTING_DAY_FORMS.md` | Consent (English and Filipino), observation sheet, defect log, timing sheet, attendance, the owner's acceptance certificate | Print it |
+| `USER_MANUAL_APPENDIX_K.md` | **Appendix K**, the user manual Chapter 4 §4.5 names: Part 1 for tenants (bilingual, one page, hand out with the slips), Part 2 for the owner. Every button name is the system's own | Written 2026-09-29 |
 | `PRE_TESTING_AUDIT_2026-09-29.md` | What was measured the evening before: suites, account reset, offline, weak signal, simultaneous users, accessibility | Evidence for §4.3.1 and §4.3.6 |
 
 ## Three things the old PDF gets wrong that matter most

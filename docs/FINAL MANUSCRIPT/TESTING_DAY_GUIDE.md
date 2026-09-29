@@ -131,6 +131,9 @@ is evidence.
 
 **Materials**
 
+- [ ] 10b. Print **Part 1 of `USER_MANUAL_APPENDIX_K.md`** (the tenant guide, one page, English and
+      Filipino) once per tester, to give them after their session with their slip, and Part 2 for the
+      owner. Handing it over is Table 25's stage 4; note who received it.
 - [ ] 11. Print from `TESTING_DAY_FORMS.md`: consent forms (one per tester plus the owner), one
       observation sheet per tester, the defect log, the timing sheet, the attendance sheet, the
       acceptance certificate.
