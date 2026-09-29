@@ -372,7 +372,16 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
           factor (lg: and up).
         -->
         <h1 class="font-editorial drop-shadow-sm flex flex-wrap items-baseline gap-x-5 gap-y-2 w-full">
-          <span class="text-balance font-medium tracking-[-0.03em] leading-[0.9] text-[clamp(3.25rem,10.5vw,9.75rem)]"
+          <!--
+            `ml-[calc(1px-0.09em)]`: at display size the "F" carries its own side
+            bearing, so the name's ink started right of "Boarding House" under it
+            and of the header's "Hivelet" above it - 3px on a phone, 11px on a
+            desktop (Chrome's measureText, 2026-09-29: the F's ink starts 4, 7, 12
+            and 15px into its box at 52, 80, 134 and 156px, about 0.09em; the B and
+            the header's H about 1px). The pull scales with the size, less the 1px
+            the smaller lines keep, so all three share one left edge at every width.
+          -->
+          <span class="ml-[calc(1px-0.09em)] text-balance font-medium tracking-[-0.03em] leading-[0.9] text-[clamp(3.25rem,10.5vw,9.75rem)]"
             >Fe Galang Da Silva</span>
           <span class="whitespace-nowrap text-sm sm:text-base md:text-lg font-light tracking-wide text-white/90"
             >Boarding House</span>

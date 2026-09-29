@@ -68,6 +68,9 @@ thing did not work" is not.
   a unit of its own or a filter on the list; that is a design call, which is why it is still here.
 - **How to know it worked:** `select count(*) from profiles where role='tenant' and
   must_change_password` returns 32 today and falls as tenants sign in and choose their own.
+- **Sean's machine: done 2026-09-29.** The shared tenant `Password:` line in `credentials/creds.txt` is
+  replaced by a note that does not start with `Password:`, so nothing reads it as one. The admin
+  line is untouched. No suite was run against the live tenants before or after.
 - **Raised:** 2026-09-29 by Claude, on Loyd's machine, at Loyd's request
 
 ### ~~B-83 — no way to reset a tenant's password from the app~~ — **DONE 2026-09-29 (`8cf0e80`), with Loyd's go-ahead for backend work**
@@ -115,7 +118,7 @@ thing did not work" is not.
   NULL and no `end_date`.
 - **Raised:** 2026-09-28 by Claude
 
-### B-81 - website safety audit, 2026-09-29: what needs a person · **OPEN**
+### B-84 - website safety audit, 2026-09-29: what needs a person (filed as a second "B-81" by mistake; renumbered the same day) · **OPEN**
 
 - **Apply migration `060`** (`database/migrations/060_record_income_for_months_is_the_servers_alone.sql`).
   Supabase advisor WARN: `record_income_for_months` has no fixed search_path and anon may EXECUTE it.
