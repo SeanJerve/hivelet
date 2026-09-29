@@ -403,6 +403,12 @@ useOpenFromQuery('ticket', async (id) => {
     t = tickets.value.find((x) => x.id === id);
   }
   if (t) openTimeline(t);
+  // Someone else's id, or one the landlady has since deleted: it opened nothing
+  // and said nothing. The list only ever holds their own requests, so saying
+  // "not found" reveals nothing about anyone else's (rehearsal step 17, A-22).
+  else if (!ticketsLoadFailed.value) {
+    showToast('info', 'Not found', 'That repair request is not in your list. It may have been removed.');
+  }
 });
 
 async function fetchActiveRoom() {
