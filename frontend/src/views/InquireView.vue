@@ -18,7 +18,6 @@
 import { ref, reactive, nextTick } from 'vue';
 import { Loader2, ArrowLeft, AlertCircle } from 'lucide-vue-next';
 import { LANDLADY } from '@/lib/systemState';
-import BrandMark from '@/components/ui/BrandMark.vue';
 import { api } from '@/lib/api';
 import {
   validateInquiry,
@@ -212,9 +211,8 @@ async function submitInquiry() {
         <div class="flex min-h-16 flex-wrap items-center justify-between gap-x-6">
           <RouterLink
             to="/public"
-            class="press inline-flex min-h-11 items-center gap-2 font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+            class="press inline-flex min-h-11 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
           >
-            <BrandMark class="size-7" />
             Hivelet
           </RouterLink>
 

@@ -9,11 +9,11 @@ her books in it. **The database is live**: 937 income rows, 1,327 expense alloca
 with 32 occupied. There is no staging copy.
 
 **New mark, 2026-09-29 (Sean's decision).** The logo is now a green hexagon with a minimal H under
-a roof. `frontend/public/favicon.svg` is the one source; `components/ui/BrandMark.vue` draws it
-beside every "Hivelet" wordmark (`inverse` on the landing photo and the night footer); and
+a roof. `frontend/public/favicon.svg` is the one source, and
 `node video/capture/render-app-icons.mjs` renders the tab, install, Apple and maskable icons and the
 link-preview `og-image.jpg` from it. Change the SVG and rerun the script, or the PNGs go stale
-silently.
+silently. **In the pages themselves the brand is the word "Hivelet" alone** (Sean, 2026-09-29): the
+mark beside the wordmark was tried and taken out, so do not add it back.
 
 ---
 

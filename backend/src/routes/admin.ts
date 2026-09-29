@@ -27,6 +27,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { likeLiteral } from '../utils/likeLiteral.js';
 import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClock.js';
+import { attachmentHeader } from '../utils/reportFileName.js';
 import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
 import { generateTemporaryPassword } from '../utils/generateTemporaryPassword.js';
 import { auditFromRequest, withoutCredentials } from '../services/auditService.js';
@@ -2123,7 +2124,7 @@ router.get(
     );
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="hivelet-income-${year}.xlsx"`
+      attachmentHeader('income', year)
     );
 
     await auditFromRequest(req, {
@@ -2161,7 +2162,7 @@ router.get(
     );
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="hivelet-expenses-${year}.xlsx"`
+      attachmentHeader('expenses', year)
     );
 
     await auditFromRequest(req, {
@@ -2202,7 +2203,7 @@ router.get(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     );
-    res.setHeader('Content-Disposition', 'attachment; filename="hivelet-audit-trail.xlsx"');
+    res.setHeader('Content-Disposition', attachmentHeader('audit', category));
 
     await auditFromRequest(req, {
       action: 'LEDGER_EXPORT',

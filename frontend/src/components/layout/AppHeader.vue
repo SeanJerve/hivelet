@@ -12,7 +12,6 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { isMobileSidebarOpen } from '@/lib/systemState';
-import BrandMark from '@/components/ui/BrandMark.vue';
 import { 
   currentUser, 
   isAuthenticated, 
@@ -324,7 +323,6 @@ onUnmounted(() => {
           the box around the text moves nothing on screen.
         -->
         <router-link :to="brandRoute" class="press flex min-h-11 items-center gap-2 group">
-          <BrandMark class="size-7" :inverse="isLandingPage" />
           <span
             class="font-display font-semibold text-xl tracking-tight transition-colors"
             :class="isLandingPage ? 'text-white drop-shadow-sm group-hover:text-white/80' : 'text-ink group-hover:text-brand'"
@@ -402,16 +400,13 @@ onUnmounted(() => {
             <button
               data-notifications-trigger
               @click="toggleNotifications"
-              class="icon-btn relative transition-colors"
+              class="icon-btn relative transition-colors border-transparent bg-transparent hover:border-transparent"
               :class="[
-                isLandingPage
-                  ? 'border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30'
-                  // Both `bg-tile` and Tailwind's `white` are #ffffff, so a
-                  // `hover:bg-white` here was a no-op - the pill is already
-                  // white and stays white on hover. `.icon-btn`'s own hover
-                  // rule (border-color shift to --hatch) is the real feedback.
-                  : 'bg-tile text-ink',
-                isPopoverOpen && (isLandingPage ? 'bg-white/25 text-white' : 'bg-tile text-ink')
+                // The bell is its icon alone, no circle and no fill (Sean,
+                // 2026-09-29): the circle crowded the account menu beside it.
+                // A soft fill on hover and while open still answers the pointer.
+                isLandingPage ? 'text-white hover:bg-white/10' : 'text-ink hover:bg-tile',
+                isPopoverOpen && (isLandingPage ? 'bg-white/15' : 'bg-tile')
               ]"
               :aria-label="notificationsLabel"
               :aria-expanded="isPopoverOpen"
@@ -505,7 +500,7 @@ onUnmounted(() => {
               <div
                 v-if="isProfilePopoverOpen"
                 id="account-menu"
-                class="absolute right-0 top-12 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
+                class="absolute right-0 top-14 z-50 w-72 origin-top-right overflow-hidden rounded-tile bg-tile shadow-lift sm:w-80"
               >
                 <!-- Who is signed in, read left to right like everything else. -->
                 <div class="flex items-center gap-3 border-b border-line p-5">

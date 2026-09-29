@@ -1,5 +1,6 @@
 import { nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { afterArrival } from './afterArrival';
 
 /**
  * Opens one record named in the URL, then takes the name back out.
@@ -18,17 +19,24 @@ import { useRoute, useRouter } from 'vue-router';
 export function useOpenFromQuery(key: string, open: (id: string) => void | Promise<void>): void {
   const route = useRoute();
   const router = useRouter();
+  // Arriving from another page, the page shows itself before the dialog opens
+  // (lib/afterArrival.ts). Already on the page, a second notification opens its
+  // record straight away: there is no arrival to wait for.
+  let arriving = true;
 
   watch(
     () => route.query[key],
     async (value) => {
+      const first = arriving;
+      arriving = false;
       if (typeof value !== 'string' || !value) return;
       const next = { ...route.query };
       delete next[key];
       router.replace({ query: next });
       // `immediate` runs this during the page's setup, before the state its
       // dialog uses has been declared. One tick later the page is whole.
-      await nextTick();
+      if (first) await afterArrival();
+      else await nextTick();
       await open(value);
     },
     { immediate: true },

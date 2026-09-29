@@ -20,6 +20,7 @@ import {
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
+import { afterArrival } from '@/lib/afterArrival';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
 import { incomeRowInPeriod, incomeRowMonth } from '@/lib/incomeFiling';
@@ -371,14 +372,17 @@ onMounted(() => {
   if (route.query.tab === 'verify') {
     activeTab.value = 'verify';
   }
+  const loading = fetchIncome();
+  loadWaterRates();
   if (route.query.openPayment === '1') {
-    isOnsitePaymentModalOpen.value = true;
     const nextQuery = { ...route.query };
     delete nextQuery.openPayment;
     router.replace({ query: nextQuery });
+    // The ledger arrives first, then the dialog (lib/afterArrival.ts).
+    afterArrival(loading).then(() => {
+      isOnsitePaymentModalOpen.value = true;
+    });
   }
-  fetchIncome();
-  loadWaterRates();
 });
 
 /**

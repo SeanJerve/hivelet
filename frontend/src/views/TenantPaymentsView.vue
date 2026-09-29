@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue';
 import { api } from '@/lib/api';
+import { afterArrival } from '@/lib/afterArrival';
 import { peso } from '@/lib/canonicalUnits';
 import { formatDateOnly, propertyDate, propertyToday, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { RouterLink } from 'vue-router';
@@ -462,7 +463,11 @@ onMounted(async () => {
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  await Promise.all([fetchOutstandingBills(), fetchPaymentHistory()]);
+  const loading = Promise.all([fetchOutstandingBills(), fetchPaymentHistory()]);
+  // `?pay=` below opens the checkout, and it waits for the page to arrive first
+  // (lib/afterArrival.ts); without it, loading finishes as before.
+  if (params.get('pay')) await afterArrival(loading);
+  else await loading;
 
   /**
    * `?pay=<billId>` opens that bill's checkout straight away.

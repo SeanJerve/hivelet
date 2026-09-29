@@ -60,7 +60,6 @@
  */
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import BrandMark from '@/components/ui/BrandMark.vue';
 import { peso } from '@/lib/canonicalUnits';
 import { CATEGORIES, resolveSlug, type CategoryKey } from '@/lib/unitCategories';
 import AvailabilityUnavailable from '@/components/public/AvailabilityUnavailable.vue';
@@ -553,9 +552,8 @@ async function submitInquiry() {
       <div class="ws-page min-h-16 flex items-center justify-between gap-6 sm:gap-10">
         <RouterLink
           to="/public"
-          class="press inline-flex min-h-11 shrink-0 items-center gap-2 font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
+          class="press inline-flex min-h-11 shrink-0 items-center font-display text-xl font-semibold tracking-tight text-ink hover:text-ink-soft transition-colors"
         >
-          <BrandMark class="size-7" />
           Hivelet
         </RouterLink>
 

@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
 import { api } from '@/lib/api';
+import { afterArrival } from '@/lib/afterArrival';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
 import { Plus, Search, X, Loader2, FileSpreadsheet, Pencil, Trash2, ChevronDown } from 'lucide-vue-next';
@@ -295,13 +296,16 @@ async function fetchExpenses() {
 }
 
 onMounted(() => {
+  const loading = fetchExpenses();
   if (route.query.openExpense === '1') {
-    isAddOpen.value = true;
     const nextQuery = { ...route.query };
     delete nextQuery.openExpense;
     router.replace({ query: nextQuery });
+    // The ledger arrives first, then the dialog (lib/afterArrival.ts).
+    afterArrival(loading).then(() => {
+      isAddOpen.value = true;
+    });
   }
-  fetchExpenses();
 });
 
 const filtered = computed(() => {
