@@ -9,7 +9,7 @@
     "dev:frontend": "cd frontend && npm run dev",
     "build:backend": "cd backend && npm run build",
     "build:frontend": "cd frontend && npm run build",
-    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "verify:rbac": "node database/verify-rbac.mjs",
     "check:all": "node scripts/check-all.mjs",
     "check:secrets": "node scripts/check-secrets.mjs --all",
@@ -49,6 +49,11 @@
   ],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.9",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5"
+  },
   "devDependencies": {
     "docx": "^9.7.1"
   }
