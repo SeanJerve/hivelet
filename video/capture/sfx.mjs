@@ -213,3 +213,64 @@ whoosh('whoosh-low', 0.8, 120, 1600, 0.7);
   for (let i = 0; i < nl.length; i++) b[i] += nl[i];
   write('impact', room(b, 0.15));
 }
+
+// ---- The softer set, for the third cut ----------------------------------------
+// Air: a slow, low swell of breath-like noise that rises and falls over the
+// length of a camera move, instead of a sharp whoosh. Three lengths, so the
+// sound lasts exactly as long as the motion it sits under.
+function air(name, dur, lo, hi) {
+  const n = buf(dur);
+  for (let i = 0; i < n.length; i++) n[i] = noise();
+  const f = lowpass(bandpass(n, (t) => {
+    const p = t / dur;
+    return lo * Math.pow(hi / lo, Math.sin(Math.PI * p));
+  }, 0.55), 2400);
+  const L = new Float32Array(f.length), R = new Float32Array(f.length);
+  for (let i = 0; i < f.length; i++) {
+    const p = i / f.length;
+    const env = Math.pow(Math.sin(Math.PI * p), 1.6);
+    const pan = 0.5 + 0.35 * Math.sin(Math.PI * (p - 0.5));
+    L[i] = f[i] * env * Math.cos(pan * Math.PI / 2);
+    R[i] = f[i] * env * Math.sin(pan * Math.PI / 2);
+  }
+  write(name, L, R, 0.5);
+}
+air('air-short', 0.9, 350, 1500);
+air('air', 1.7, 260, 1200);
+air('air-long', 3.4, 180, 900);
+
+// Blip: a soft rounded tone for something arriving on screen.
+{
+  const b = buf(0.3);
+  glide(b, 0, 740, 990, 0.05, 0.09, 1);
+  tone(b, 0.004, 1980, 0.03, 0.12);
+  write('blip', lowpass(room(b, 0.2), 7000), undefined, 0.55);
+}
+// Soft click: a trackpad click rather than a mouse button.
+{
+  const b = buf(0.1);
+  tone(b, 0, 1500, 0.006, 1, 0.0008); burst(b, 0, 0.0008, 0.35, 1200);
+  tone(b, 0.055, 1800, 0.004, 0.45, 0.0008);
+  write('soft-click', lowpass(b, 6000), undefined, 0.6);
+}
+// Bell: a gentle notification, two partials with a slow attack.
+{
+  const L = buf(1.6);
+  tone(L, 0, 1318.5, 0.55, 0.8, 0.006); tone(L, 0, 2637, 0.2, 0.15, 0.006);
+  tone(L, 0.09, 1760, 0.7, 0.9, 0.006); tone(L, 0.09, 3520, 0.25, 0.12, 0.006);
+  const R = new Float32Array(L.length);
+  R.set(L.subarray(0, L.length - 400), 400);
+  write('bell', room(L, 0.3), room(R, 0.3), 0.6);
+}
+// Soft warning: two rounded falling tones.
+{
+  const b = buf(0.8);
+  tone(b, 0, 783.99, 0.16, 0.9, 0.01); tone(b, 0.16, 659.25, 0.22, 0.9, 0.01);
+  write('soft-warn', room(b, 0.25), undefined, 0.6);
+}
+// Shimmer: a bright cluster that blooms and fades, for a reveal.
+{
+  const b = buf(3.2);
+  [1760, 2217.46, 2637, 3520].forEach((f, i) => tone(b, i * 0.07, f, 1.1, 0.5, 0.25));
+  write('shimmer', room(room(b, 0.35), 0.3), undefined, 0.5);
+}

@@ -211,12 +211,12 @@ const ICONS = [FileSpreadsheet, ReceiptText, Table2, MessageCircle, CircleHelp];
 
 export const Act1: React.FC = () => {
   const f = useCurrentFrame();
-  const focus = (p: {x: number; y: number}) => ({x: p.x - 330 / 1.15, y: p.y, s: 1.15});
+  const focus = (p: {x: number; y: number}, off = 330) => ({x: p.x - off / 1.15, y: p.y, s: 1.15});
   const keys = [
     {at: 0, x: 1400, y: 880, s: 1.75, rx: 26, rz: -10},
     {at: 70, x: 1860, y: 1130, s: 0.8, rx: 42, rz: -20, dur: 110, ease: gentle},
     {at: B[0], ...focus(P.usb), rx: 0, rz: 0, dur: 56},
-    ...ORDER.slice(1).map((k, i) => ({at: B[i + 1], ...focus(P[k]), dur: 56})),
+    ...ORDER.slice(1).map((k, i) => ({at: B[i + 1], ...focus(P[k], k === 'rows' ? 390 : 330), dur: 56})),
     {at: CONNECTED, x: CENTER.x, y: CENTER.y - 200, s: 0.5, dur: 70},
   ];
   const cam = camera(f, keys);
@@ -285,12 +285,12 @@ export const Act1: React.FC = () => {
       {/* The text column keeps a dark wash behind it while the camera travels. */}
       <AbsoluteFill style={{background: 'linear-gradient(90deg, rgba(8,17,12,0.88) 0%, rgba(8,17,12,0.7) 34%, rgba(8,17,12,0) 56%)', opacity: 1 - t01(f, CONNECTED - 10, CONNECTED + 20)}} />
       <Head dark text="33 units." size={140} at={20} out={98} sub="Every peso. Every tenant." subSize={38} top={380} />
-      <Head dark text="One spreadsheet." accent={['spreadsheet.']} size={104} width={940} at={110} out={B[0] - 8} sub="Two sheets, typed by hand." subSize={34} top={390} />
-      <Head dark width={820} text={'One file,\non one drive.'} accent={['drive.']} at={B[0] + 14} out={B[1] - 8} sub="Her whole ledger lived on a removable drive." />
-      <Head dark width={820} text={'Receipts, checked\nagainst nothing.'} accent={['nothing.']} accentColor={C.coral} at={B[1] + 14} out={B[2] - 8} sub="Five receipt numbers were each used for two payments." />
-      <Head dark width={820} text={'402 of 937 rows,\nleft incomplete.'} accent={['402']} accentColor={C.amber} at={B[2] + 14} out={B[3] - 8} sub="No anniversary date and no deposit on file." />
-      <Head dark width={820} text={'Repairs asked\nin a chat.'} accent={['chat.']} at={B[3] + 14} out={B[4] - 8} sub="By message or in person, with nothing to track them." />
-      <Head dark width={820} text={'Tenants had to ask\nwhat they owe.'} accent={['ask']} at={B[4] + 14} out={CONNECTED - 8} sub="Their bill lived only in her records." />
+      <Head dark text="One spreadsheet." accent={['spreadsheet.']} size={104} width={940} at={110} out={B[0] - 8} sub="Typed by hand." subSize={38} top={390} />
+      <Head dark width={820} size={100} text={'One file.\nOne drive.'} accent={['drive.']} at={B[0] + 14} out={B[1] - 8} />
+      <Head dark width={820} size={100} text={'Receipts,\nunchecked.'} accent={['unchecked.']} accentColor={C.coral} at={B[1] + 14} out={B[2] - 8} sub="5 numbers, used twice." subSize={34} />
+      <Head dark width={820} size={86} text={'402 of 937\nrows incomplete.'} accent={['402']} accentColor={C.amber} at={B[2] + 14} out={B[3] - 8} sub="No anniversary. No deposit." subSize={34} />
+      <Head dark width={820} size={100} text={'Repairs,\nin a chat.'} accent={['chat.']} at={B[3] + 14} out={B[4] - 8} />
+      <Head dark width={820} size={100} text={'Tenants had\nto ask.'} accent={['ask.']} at={B[4] + 14} out={CONNECTED - 8} sub="What do I owe?" subSize={34} />
 
       {/* Nothing connected: the links reach toward the centre and break. */}
       {f >= CONNECTED && f < HIVE + 30 ? (
@@ -310,7 +310,7 @@ export const Act1: React.FC = () => {
             );
           })}
           <div style={{position: 'absolute', left: 0, right: 0, top: 70, opacity: 1 - worldOut}}>
-            <Kin text={'Nothing connected\none record to another.'} at={CONNECTED + 24} out={HIVE - 6} size={88} color="#fff" align="center" accent={['connected']} accentColor={C.coral} />
+            <Kin text={'Nothing connected.'} at={CONNECTED + 24} out={HIVE - 6} size={104} color="#fff" align="center" accent={['connected']} accentColor={C.coral} />
           </div>
         </>
       ) : null}
@@ -362,19 +362,18 @@ export const Act1: React.FC = () => {
         );
       })() : null}
 
-      {[24, 28, 32, 36, 40].map((a) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[a % 3]} vol={0.1} />)}
-      {[118, 122, 126, 130].map((a) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[a % 3]} vol={0.1} />)}
-      <Sfx at={72} name="whoosh-low" vol={0.16} />
-      <Sfx at={B[0]} name="whoosh" vol={0.14} />
-      <Sfx at={B[0] + 64} name="click" vol={0.18} />
-      {B.slice(1).map((b) => <Sfx key={b} at={b} name="whoosh" vol={0.12} />)}
-      <Sfx at={B[1] + 30} name="swipe" vol={0.1} />
-      <Sfx at={B[1] + 50} name="warn" vol={0.16} />
-      {[B[3] + 12, B[3] + 28, B[3] + 44, B[4] + 10].map((a) => <Sfx key={a} at={a} name="pop" vol={0.1} />)}
-      <Sfx at={CONNECTED} name="whoosh-low" vol={0.2} />
-      <Sfx at={CONNECTED + 92} name="snap" vol={0.26} />
-      <Sfx at={HIVE + 2} name="whoosh" vol={0.16} />
-      <Sfx at={BRAAM + 50} name="bling" vol={0.22} />
+      {[24, 28, 32, 36, 40].map((a) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[a % 3]} vol={0.07} />)}
+      {[118, 122, 126, 130].map((a) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[a % 3]} vol={0.07} />)}
+      <Sfx at={74} name="air-long" vol={0.4} />
+      <Sfx at={B[0]} name="air" vol={0.35} />
+      <Sfx at={B[0] + 64} name="soft-click" vol={0.35} />
+      {B.slice(1).map((b) => <Sfx key={b} at={b} name="air" vol={0.3} />)}
+            <Sfx at={B[1] + 50} name="soft-warn" vol={0.3} />
+      {[B[3] + 12, B[3] + 28, B[3] + 44, B[4] + 10].map((a) => <Sfx key={a} at={a} name="blip" vol={0.28} />)}
+      <Sfx at={CONNECTED} name="air-long" vol={0.4} />
+      <Sfx at={CONNECTED + 92} name="snap" vol={0.14} />
+      <Sfx at={HIVE + 4} name="air" vol={0.35} />
+      <Sfx at={BRAAM + 48} name="shimmer" vol={0.35} />
     </AbsoluteFill>
   );
 };

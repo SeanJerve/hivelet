@@ -12,8 +12,8 @@ import {InquiryForm, UnitPanel} from '../ui/Public';
 import {Sfx} from '../Sfx';
 
 // Headlines to the right of the phone, one line each.
-const TopHead: React.FC<{text: string; accent: string[]; sub: string; at: number; out?: number}> = (p) => (
-  <Head size={74} subSize={26} left={720} top={110} width={1100} {...p} />
+const TopHead: React.FC<{text: string; accent: string[]; sub?: string; at: number; out?: number}> = (p) => (
+  <Head size={90} subSize={32} left={720} top={110} width={1100} {...p} />
 );
 
 const REPAIR_TITLE = 'Kitchen faucet keeps dripping';
@@ -73,10 +73,10 @@ export const Tenant: React.FC = () => {
       <Ripple x={pay.x} y={pay.y} p={t01(f, payTap, payTap + 18)} />
       <Ripple x={from.x} y={from.y} p={t01(f, sendTap, sendTap + 18)} />
 
-      <TopHead text="Tenants see what they owe." accent={['owe.']} sub="The amount, the due date and the period it covers, on their own phone." at={12} out={108} />
-      <TopHead text="Pay by GCash. She confirms it." accent={['GCash.']} sub="A GCash payment counts once she verifies it. Cash works as it always has." at={120} out={220} />
-      <TopHead text="Report a repair from the phone." accent={['repair']} sub="It goes straight to the landlady, with the unit already on it." at={232} out={332} />
-      <TopHead text="Follow it until it is done." accent={['done.']} sub="Each step shows on her board, and the tenant is told when it is fixed." at={344} />
+      <TopHead text="Their bill, on their phone." accent={['phone.']} at={12} out={108} />
+      <TopHead text="Pay by GCash." accent={['GCash.']} sub="She confirms it." at={120} out={220} />
+      <TopHead text="Report a repair." accent={['repair.']} at={232} out={332} />
+      <TopHead text="Follow it to the end." accent={['end.']} at={344} />
 
       {/* A close-up of what the tenant sees, while the phone is on screen alone. */}
       {f >= 14 && f < 106 ? (
@@ -126,21 +126,21 @@ export const Tenant: React.FC = () => {
         </div>
       ) : null}
 
-      <Sfx at={0} name="whoosh-low" vol={0.18} />
-      <Sfx at={62} name="pop" vol={0.12} />
-      <Sfx at={payTap - 1} name="tap" vol={0.36} />
-      <Sfx at={104} name="swipe" vol={0.14} />
-      <Sfx at={120} name="pop" vol={0.14} />
-      <Sfx at={reviewAt - 1} name="click" vol={0.32} />
-      <Sfx at={200} name="chime" vol={0.26} />
-      <Sfx at={226} name="whoosh" vol={0.12} />
-      {[250, 262, 274, 286, 300, 312].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[i % 3]} vol={0.1} />)}
-      <Sfx at={sendTap - 1} name="tap" vol={0.36} />
-      <Sfx at={336} name="swipe" vol={0.16} />
-      <Sfx at={362} name="pop" vol={0.12} />
-      <Sfx at={372} name="swipe" vol={0.1} />
-      <Sfx at={392} name="swipe" vol={0.1} />
-      <Sfx at={406} name="ping" vol={0.26} />
+      <Sfx at={0} name="air-long" vol={0.35} />
+      <Sfx at={62} name="blip" vol={0.24} />
+      <Sfx at={payTap - 1} name="tap" vol={0.28} />
+      <Sfx at={104} name="air-short" vol={0.35} />
+      <Sfx at={120} name="blip" vol={0.28} />
+      <Sfx at={reviewAt - 1} name="soft-click" vol={0.5} />
+      <Sfx at={200} name="bell" vol={0.36} />
+      <Sfx at={226} name="air-short" vol={0.3} />
+      {[250, 262, 274, 286, 300, 312].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[i % 3]} vol={0.07} />)}
+      <Sfx at={sendTap - 1} name="tap" vol={0.28} />
+      <Sfx at={336} name="air-short" vol={0.35} />
+      <Sfx at={362} name="blip" vol={0.24} />
+      <Sfx at={372} name="air-short" vol={0.24} />
+      <Sfx at={392} name="air-short" vol={0.24} />
+      <Sfx at={406} name="bell" vol={0.4} />
     </AbsoluteFill>
   );
 };
@@ -163,14 +163,14 @@ export const Guests: React.FC = () => {
       <div style={{position: 'absolute', left: 1020, top: 150, opacity: Math.min(1, panelIn * 1.6) * (1 - panelOut), transform: `translateX(${(1 - panelIn) * 200 - panelOut * 120}px)`}}>
         <UnitPanel />
       </div>
-      <Head text={'Guests find a\nvacant room.'} accent={['vacant']} sub="The public site shows each kind of unit, its rate, and which are free." at={10} out={96} />
+      <Head size={100} text={'Find a\nvacant room.'} accent={['vacant']} at={10} out={96} />
       {f >= 100 && f < 206 ? (
         <div style={{position: 'absolute', left: 980 / FZ, top: 170 / FZ, zoom: FZ, transform: `translateX(${(1 - formIn) * 200 - formOut * 120}px)`, opacity: Math.min(1, formIn * 1.6) * (1 - formOut)}}>
           <InquiryForm name={typed('Kaye Ordoñez', f, 114, 2)} phone={typed('0918 555 0142', f, 142, 1.4)} question={typed(QUESTION, f, 162, 0.2)}
             focus={f < 140 ? 'name' : f < 160 ? 'phone' : f < 180 ? 'question' : null} press={f >= 181 && f < 190 ? 1 : 0} />
         </div>
       ) : null}
-      <Head text={'And ask, without\nan account.'} accent={['ask,']} sub="Viewings are by appointment. She replies by phone or email." at={108} out={190} />
+      <Head size={100} text={'Just ask.\nNo sign-up.'} accent={['ask.']} at={108} out={190} />
       {f >= 186 && f < 216 ? (
         <div style={{position: 'absolute', left: lerp(1060, 1180, bubble), top: lerp(820, 330, bubble) - Math.sin(bubble * Math.PI) * 120, width: 440, transform: `scale(${lerp(1, 0.75, bubble)})`,
           background: C.brand, color: '#fff', borderRadius: '24px 24px 24px 6px', padding: '18px 22px', fontFamily: jakarta, fontSize: 19, lineHeight: 1.45, boxShadow: '0 20px 50px rgba(15,27,21,0.26)',
@@ -188,14 +188,14 @@ export const Guests: React.FC = () => {
           <InquiryItem name="Mica Tolentino" when="Sep 21, 2026" unit="1G" status="Nothing came of it" tone="neutral" msg="Do you have a studio for one person?" />
         </div>
       ) : null}
-      <Head text={'She sees it,\nwith the unit.'} accent={['unit.']} sub="Each inquiry lands in her Inquiries, with the unit they asked about." at={204} />
-      <Sfx at={6} name="whoosh" vol={0.14} />
-      <Sfx at={100} name="whoosh" vol={0.14} />
-      {[114, 120, 126, 142, 150, 166, 172].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[i % 3]} vol={0.1} />)}
-      <Sfx at={180} name="click" vol={0.32} />
-      <Sfx at={188} name="swipe" vol={0.16} />
-      <Sfx at={214} name="pop" vol={0.14} />
-      <Sfx at={218} name="ping" vol={0.22} />
+      <Head size={100} text={'Straight to\nher Inquiries.'} accent={['Inquiries.']} at={204} />
+      <Sfx at={6} name="air" vol={0.3} />
+      <Sfx at={100} name="air" vol={0.3} />
+      {[114, 120, 126, 142, 150, 166, 172].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[i % 3]} vol={0.07} />)}
+      <Sfx at={180} name="soft-click" vol={0.5} />
+      <Sfx at={188} name="air-short" vol={0.35} />
+      <Sfx at={214} name="blip" vol={0.28} />
+      <Sfx at={218} name="bell" vol={0.35} />
     </AbsoluteFill>
   );
 };

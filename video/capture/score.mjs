@@ -35,10 +35,13 @@ const noise = () => rnd() * 2 - 1;
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const lerp = (a, b, t) => a + (b - a) * t;
 
+// Everything writes to the master pair, or to BUS when one is set (the groove's
+// pads and bass go through a bus so the kick can duck them).
+let BUS = null;
 function out(i, v, pan = 0, send = 0) {
   if (i < 0 || i >= N) return;
-  L[i] += v * Math.cos((pan + 1) * Math.PI / 4);
-  R[i] += v * Math.sin((pan + 1) * Math.PI / 4);
+  const l = v * Math.cos((pan + 1) * Math.PI / 4), r = v * Math.sin((pan + 1) * Math.PI / 4);
+  if (BUS) { BUS[0][i] += l; BUS[1][i] += r; } else { L[i] += l; R[i] += r; }
   W[i] += v * send;
 }
 
@@ -143,54 +146,84 @@ function braam(at, g) {
 }
 braam(BRAAM, 1);
 
-// ---- The product: a warm bed -----------------------------------------------------
-const BEAT = 60 / 90; // 90 bpm
+// ---- The product: a hopeful groove -----------------------------------------------
+// I-V-vi-IV in A at 96 bpm. Pads swell in under the icon; on "For the landlady" a
+// soft four-on-the-floor kick, claps, a shaker and a bass line come in and carry
+// the rest, the pads breathing with the kick. The groove steps aside for each
+// chapter card and comes back on the next bar; it lifts for the proof.
+const BEAT = 60 / 96;
 const BAR = BEAT * 4;
-const n = (semi) => 440 * Math.pow(2, (semi - 9) / 12 - 4); // semitones from C0
+const hz = (m) => 440 * Math.pow(2, (m - 69) / 12); // MIDI note to frequency
 const CHORDS = [
-  [n(33), n(40), n(45), n(49), n(59)], // A add9
-  [n(30), n(37), n(45), n(52)],        // F#m7
-  [n(26), n(33), n(42), n(49), n(52)], // D maj9
-  [n(28), n(35), n(40), n(44), n(47)], // E
+  [45, 52, 57, 61, 64, 71], // A add9
+  [40, 47, 52, 56, 59, 66], // E add9
+  [42, 49, 54, 57, 61, 64], // F#m7
+  [38, 45, 50, 54, 57, 64], // D add9
 ];
-const bedStart = BRAAM + 0.1;
-const bedEnd = TOTAL + 1.5;
-const fadeOut = (t) => clamp01((TOTAL - 0.5 - t) / 3);
-for (let t = bedStart, c = 0; t < bedEnd; t += BAR, c++) {
-  const chord = CHORDS[t >= start.end ? 0 : c % 4];
-  const isLast = t >= start.end;
-  const dur = isLast ? bedEnd - t : BAR + 1.3;
-  for (const f0 of chord) {
-    for (const d of [-5, 5]) {
-      sawVoice({f0, t0: t, t1: Math.min(bedEnd, t + dur), detune: d, pan: d / 12, send: 0.5, gain: 0.044 * (f0 > 400 ? 0.7 : 1) * (t >= start.proof ? 1.3 : 1),
-        env: (x) => clamp01(x / 0.9) * clamp01((dur - x) / 1.2) * (t < bedStart + 0.01 ? clamp01(x / 2.6) : 1) * fadeOut(t + x),
-        cutoff: (x) => 900 + 350 * Math.sin((t + x) * 0.35)});
+const ROOTS = [33, 40, 42, 38];
+const G0 = start['ch-landlady'];
+const grooveEnd = start.end;
+const fadeOut = (t) => clamp01((TOTAL - 0.4 - t) / 2.8);
+// The groove rests while a chapter card is up, and returns on the next bar.
+const rests = ['ch-tenants', 'ch-guests'].map((id) => [start[id] - 0.1, G0 + Math.ceil((start[id] + 1.6 - G0) / BAR) * BAR]);
+const resting = (t) => rests.some(([a, b]) => t >= a && t < b);
+const lift = (t) => (t >= start.proof ? 1.3 : 1);
+
+const DL = new Float32Array(N), DR = new Float32Array(N);
+BUS = [DL, DR];
+const padChord = (chord, t0, dur, g, swell = 0.25) => {
+  for (const m of chord.slice(1)) {
+    for (const d of [-6, 6]) {
+      sawVoice({f0: hz(m), t0, t1: Math.min(N / SR, t0 + dur), detune: d, pan: d / 14, send: 0.5, gain: g * (m > 66 ? 0.6 : 1),
+        env: (x) => clamp01(x / swell) * clamp01((dur - x) / 0.9) * fadeOut(t0 + x), cutoff: (x) => 1150 + 400 * Math.sin((t0 + x) * 0.5)});
     }
   }
-  if (isLast) break;
+};
+// Under the icon and "One connected system": one long A chord swelling in.
+padChord(CHORDS[0], BRAAM + 0.1, G0 - BRAAM + 0.6, 0.032, 2.4);
+// Then a chord a bar, through to the end card.
+for (let t = G0, b = 0; t < grooveEnd; t += BAR, b++) padChord(CHORDS[b % 4], t, BAR + 0.9, 0.038 * lift(t));
+// The bass: eighth notes on the root, up an octave on the last one of the bar.
+for (let t = G0, k = 0; t < grooveEnd - 0.01; t += BEAT / 2, k++) {
+  if (resting(t)) continue;
+  const root = ROOTS[Math.floor(k / 8) % 4] + (k % 8 === 7 ? 12 : 0);
+  sawVoice({f0: hz(root), t0: t, t1: t + 0.3, gain: 0.21, send: 0.05, env: (x) => Math.min(1, x / 0.004) * Math.exp(-x / 0.16),
+    cutoff: (x) => 260 + 900 * Math.exp(-x / 0.05)});
 }
+// Plucks: a light arpeggio through the chord.
+for (let t = G0, k = 0; t < grooveEnd - 0.01; t += BEAT / 2, k++) {
+  const chord = CHORDS[Math.floor(k / 8) % 4];
+  const m = chord[[2, 4, 5, 3, 4, 5, 3, 4][k % 8]] + 12;
+  const g = (resting(t) ? 0.5 : 1) * lift(t);
+  sineVoice({freq: () => hz(m), t0: t, dur: 0.8, gain: 0.065 * g, pan: k % 2 ? 0.35 : -0.35, send: 0.5, env: decay(0.24, 0.004)});
+  sineVoice({freq: () => hz(m + 12), t0: t, dur: 0.3, gain: 0.012 * g, pan: k % 2 ? -0.3 : 0.3, send: 0.5, env: decay(0.1, 0.003)});
+}
+BUS = null;
 
-// Soft plucks: eighth notes through the chord, from the Overview to the end card.
-const pluckStart = start.overview, pluckEnd = start.end;
-const firstBar = bedStart + Math.ceil((pluckStart - bedStart) / BAR) * BAR;
-for (let t = firstBar, k = 0; t < pluckEnd; t += BEAT / 2, k++) {
-  const bar = Math.floor((t - bedStart) / BAR) % 4;
-  const chord = CHORDS[bar];
-  const pattern = [0, 2, 3, 1, 3, 2, 4, 2];
-  const note = chord[Math.min(chord.length - 1, pattern[k % 8])] * (chord[pattern[k % 8] % chord.length] < 300 ? 4 : 2);
-  const build = t > start.proof ? 1.25 : 1;
-  sineVoice({freq: () => note, t0: t, dur: 0.9, gain: 0.08 * build, pan: k % 2 ? 0.35 : -0.35, send: 0.45, env: decay(0.26, 0.004)});
-  sineVoice({freq: () => note * 2, t0: t, dur: 0.4, gain: 0.022 * build, pan: k % 2 ? 0.35 : -0.35, send: 0.45, env: decay(0.12, 0.003)});
+// The kick (four on the floor, soft), which also ducks the pads and bass.
+const SC = new Float32Array(N).fill(1);
+for (let t = G0; t < grooveEnd - 0.01; t += BEAT) {
+  if (resting(t)) continue;
+  sineVoice({freq: (x) => lerp(92, 46, clamp01(x / 0.06)), t0: t, dur: 0.35, gain: 0.44, env: decay(0.12, 0.002)});
+  noiseVoice({t0: t, dur: 0.02, centre: () => 3000, q: 0.7, gain: 0.05, env: decay(0.004)});
+  const a = Math.floor(t * SR);
+  for (let i = 0; i < 0.45 * SR && a + i < N; i++) SC[a + i] = Math.min(SC[a + i], 1 - 0.5 * Math.exp(-(i / SR) / 0.12));
 }
-// A quiet pulse on beats one and three.
-for (let t = firstBar; t < start.proof; t += BEAT * 2) {
-  sineVoice({freq: (x) => lerp(60, 44, clamp01(x / 0.08)), t0: t, dur: 0.4, gain: 0.24, env: decay(0.14, 0.004)});
+for (let i = 0; i < N; i++) { L[i] += DL[i] * SC[i]; R[i] += DR[i] * SC[i]; }
+// Claps on two and four, a shaker on the off-beats, open hats for the proof.
+for (let t = G0 + BEAT, k = 0; t < grooveEnd - 0.01; t += BEAT * 2, k++) {
+  if (resting(t)) continue;
+  for (const off of [0, 0.009, 0.018]) noiseVoice({t0: t + off, dur: 0.2, centre: () => 1400, q: 0.8, gain: 0.08 * lift(t), send: 0.35, env: decay(off ? 0.012 : 0.09)});
 }
-// The proof builds: soft hats on the off-beats, and a short riser into the end card.
-for (let t = start.proof + BEAT / 2; t < start.end - 0.1; t += BEAT) {
-  noiseVoice({t0: t, dur: 0.12, centre: () => 8000, q: 0.9, gain: 0.05, env: decay(0.025), pan: 0.2});
+for (let t = G0 + BEAT / 2; t < grooveEnd - 0.01; t += BEAT) {
+  if (resting(t)) continue;
+  noiseVoice({t0: t, dur: 0.1, centre: () => 7500, q: 1, gain: 0.035, pan: 0.25, env: decay(0.03)});
+  if (t >= start.proof) noiseVoice({t0: t, dur: 0.3, centre: () => 9000, q: 0.8, gain: 0.04, pan: -0.2, env: decay(0.1)});
 }
-noiseVoice({t0: start.end - 1.6, dur: 1.55, centre: (t) => 400 * Math.pow(12, t / 1.55), q: 1.2, gain: 0.22, send: 0.4, env: (t) => Math.pow(t / 1.55, 2)});
+// A short riser into the end card.
+noiseVoice({t0: start.end - 1.6, dur: 1.55, centre: (t) => 400 * Math.pow(12, t / 1.55), q: 1.2, gain: 0.2, send: 0.4, env: (t) => Math.pow(t / 1.55, 2)});
+// The last chord, held under the end card.
+padChord(CHORDS[0], start.end, TOTAL - start.end + 1.5, 0.034, 0.6);
 
 // Chapter cards: a soft swell into each, and a small shimmer on the card.
 for (const id of ['ch-landlady', 'ch-tenants', 'ch-guests']) {

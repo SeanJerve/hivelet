@@ -55,14 +55,14 @@ export const Overview: React.FC = () => {
           <Piece f={f} at={40} x={713} y={456}><ClustersTile f={f} at={70} /></Piece>
         </Stage>
       </Zone>
-      <Head text={'What needs her,\nfirst.'} accent={['first.']} sub="Payments to verify and urgent repairs lead the screen she opens first." at={16} out={138} />
-      <Head text={'Money in,\nas it is recorded.'} accent={['Money']} sub="Every payment she enters moves the month's total, and the year's." at={150} />
-      <Sfx at={0} name="whoosh-low" vol={0.18} />
-      {[8, 24, 40].map((a) => <Sfx key={a} at={a} name="pop" vol={0.1} />)}
-      <Sfx at={96} name="whoosh" vol={0.12} />
-      <Sfx at={112} name="ping" vol={0.16} />
-      <Sfx at={150} name="whoosh" vol={0.12} />
-      <Sfx at={206} name="whoosh" vol={0.1} />
+      <Head size={100} text={'What needs her,\nfirst.'} accent={['first.']} at={16} out={138} />
+      <Head size={100} text={'Every peso,\ncounted.'} accent={['peso,']} at={150} />
+      <Sfx at={0} name="air-long" vol={0.35} />
+      {[8, 24, 40].map((a) => <Sfx key={a} at={a} name="blip" vol={0.24} />)}
+      <Sfx at={96} name="air" vol={0.3} />
+      <Sfx at={112} name="bell" vol={0.3} />
+      <Sfx at={150} name="air" vol={0.28} />
+      <Sfx at={206} name="air" vol={0.28} />
     </AbsoluteFill>
   );
 };
@@ -109,11 +109,11 @@ export const Rooms: React.FC = () => {
           })}
         </Stage>
       </Zone>
-      <Head text={'All 33 units,\nin one place.'} accent={['33']} sub="Every unit in its cluster, occupied or vacant." at={12} out={94} />
-      <Head text={'Who lives where,\nand for how much.'} accent={['where,']} sub="Each unit's tenant and monthly rent, kept on one record." at={106} />
-      <Sfx at={4} name="whoosh-low" vol={0.16} />
-      <Sfx at={98} name="whoosh" vol={0.12} />
-      <Sfx at={112} name="pop" vol={0.14} />
+      <Head size={100} text={'Every unit,\none place.'} accent={['one']} at={12} out={94} />
+      <Head size={100} text={'Every tenant.\nEvery rate.'} accent={['rate.']} at={106} />
+      <Sfx at={4} name="air-long" vol={0.35} />
+      <Sfx at={98} name="air" vol={0.3} />
+      <Sfx at={112} name="blip" vol={0.3} />
     </AbsoluteFill>
   );
 };
@@ -203,9 +203,9 @@ export const Income: React.FC = () => {
         </Stage>
       </Zone>
       <AbsoluteFill style={{background: C.night, opacity: dim, WebkitMaskImage: DIM_MASK, maskImage: DIM_MASK}} />
-      <Head text={'Her own ledger,\nher own layout.'} accent={['ledger,']} sub="Rent, water and garbage per unit, laid out like her workbook." at={14} out={116} />
-      <Head text={'Every receipt,\nher number.'} accent={['receipt,']} sub="The number from her paper receipt book goes on the record." at={138} out={284} />
-      <Head text={'Paid twice?\nIt asks first.'} accent={['twice?']} sub="A second payment for the same unit and month is flagged before it is saved." at={298} />
+      <Head size={100} text={'Her ledger.\nHer layout.'} accent={['ledger.']} at={14} out={116} />
+      <Head size={100} text={'Her receipt\nnumbers, kept.'} accent={['kept.']} at={138} out={284} />
+      <Head size={100} text={'Paid twice?\nIt asks first.'} accent={['twice?']} at={298} />
       {f >= 128 ? (
         <div style={{position: 'absolute', left: MX / MZ, top: MY / MZ, zoom: MZ, transformOrigin: '100% 0', transform: `scale(${lerp(0.4, 1, modalP)})`, opacity: Math.min(1, modalP * 1.6)}}>
           <RecordModal f={f} unit={chosen ? '2B, Renzo Abrenica (BH)' : '1A, Andrea Villanueva (BH)'} unitOpen={unitOpen}
@@ -227,12 +227,12 @@ export const Income: React.FC = () => {
           <Cursor x={cx} y={cy} press={press} size={40} opacity={t01(f, 100, 110) * (1 - t01(f, 298, 308))} />
         </>
       ) : null}
-      <Sfx at={2} name="whoosh-low" vol={0.14} />
-      {clicks.map((c) => <Sfx key={c} at={c - 1} name="click" vol={0.34} />)}
-      <Sfx at={128} name="whoosh" vol={0.16} />
-      {[240, 246, 252, 258].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3', 'key1'] as const)[i]} vol={0.14} />)}
-      <Sfx at={294} name="pop" vol={0.14} />
-      <Sfx at={304} name="warn" vol={0.3} />
+      <Sfx at={2} name="air-long" vol={0.3} />
+      {clicks.map((c) => <Sfx key={c} at={c - 1} name="soft-click" vol={0.5} />)}
+      <Sfx at={128} name="air-short" vol={0.35} />
+      {[240, 246, 252, 258].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3', 'key1'] as const)[i]} vol={0.1} />)}
+      <Sfx at={294} name="blip" vol={0.3} />
+      <Sfx at={304} name="soft-warn" vol={0.45} />
     </AbsoluteFill>
   );
 };

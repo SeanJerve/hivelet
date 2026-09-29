@@ -3,7 +3,8 @@ import {Audio, Sequence, staticFile} from 'remotion';
 
 export type SfxName =
   | 'whoosh' | 'swipe' | 'whoosh-low' | 'click' | 'tap' | 'pop' | 'key1' | 'key2' | 'key3'
-  | 'tick' | 'ping' | 'bling' | 'chime' | 'warn' | 'snap' | 'riser' | 'impact';
+  | 'tick' | 'ping' | 'bling' | 'chime' | 'warn' | 'snap' | 'riser' | 'impact'
+  | 'air-short' | 'air' | 'air-long' | 'blip' | 'soft-click' | 'bell' | 'soft-warn' | 'shimmer';
 
 // One sound effect at one frame of the scene it sits in.
 export const Sfx: React.FC<{at: number; name: SfxName; vol?: number}> = ({at, name, vol = 0.6}) => (

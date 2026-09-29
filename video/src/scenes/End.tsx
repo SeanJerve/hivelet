@@ -33,8 +33,8 @@ export const Proof: React.FC = () => {
           );
         })}
       </div>
-      {stats.map(([, , , at]) => <Sfx key={at} at={at} name="pop" vol={0.12} />)}
-      <Sfx at={120} name="chime" vol={0.2} />
+      {stats.map(([, , , at]) => <Sfx key={at} at={at} name="blip" vol={0.28} />)}
+      <Sfx at={118} name="shimmer" vol={0.3} />
     </AbsoluteFill>
   );
 };
@@ -70,7 +70,7 @@ export const End: React.FC = () => {
           </div>
         </div>
       </AbsoluteFill>
-      <Sfx at={46} name="bling" vol={0.2} />
+      <Sfx at={44} name="shimmer" vol={0.35} />
     </AbsoluteFill>
   );
 };

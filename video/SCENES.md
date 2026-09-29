@@ -1,7 +1,7 @@
 # The Hivelet film: every scene and where it comes from
 
 About 100 seconds, 1920x1080, 30 fps. A synthesized score and a few soft sound effects; no
-voice. Third cut, 2026-09-29, after Sean's notes on the second: slower, calmer sound with a
+voice. Headlines are short on purpose (two to four words a line, few sentences under them). Third cut, 2026-09-29, after Sean's notes on the second: slower, calmer sound with a
 trailer-style score, no dot labels, one mention of "33 units", nothing crowding the frame,
 sharper graphics, no activity log, and an opening built the way Lloyd's promo opens.
 
@@ -35,10 +35,15 @@ in the zone to its right, masked before it can reach the text.
 
 `capture/score.mjs` writes `public/score.wav` to the same timeline: a drone and a quickening
 heartbeat under the old way, a low hit on each problem, a tension cluster under "Nothing
-connected", a riser and a moment of silence, a deep brass hit as the icon appears, then a warm
-chord bed with soft plucks under the product, and a lighter hit on the end card.
-`capture/sfx.mjs` writes the few effects laid over it (swipes, clicks, taps, pops, pings), kept
-quiet. Both are synthesized, so nothing needs a licence. A track at `public/music.mp3`
+connected", a riser and a moment of silence, a deep brass hit as the icon appears. Then a
+hopeful groove in A (I-V-vi-IV at 96 bpm): pads swell under the icon, and on "For the
+landlady" a soft kick, claps, a shaker, a bass line and plucks come in, the pads ducking with
+the kick. The groove steps aside for each chapter card, lifts for the proof, and resolves on a
+held chord under the end card.
+`capture/sfx.mjs` writes the effects laid over it. Camera moves get a soft "air" swell whose
+length matches the move (`air-short`, `air`, `air-long`); arrivals a `blip`; clicks a
+`soft-click`; notifications a `bell`; the duplicate-payment warning a `soft-warn`; reveals a
+`shimmer`. No sharp whooshes. Both are synthesized, so nothing needs a licence. A track at `public/music.mp3`
 replaces the score.
 
 ## Rebuilding
