@@ -149,9 +149,13 @@ not.
 
 1. The tenant opens `https://hivelet.vercel.app/login` on their own phone.
 2. Types their **phone number** (or email) and the **starting password** from their slip.
-3. The system asks them to choose a new password straight away. It must be **at least 10
-   characters, with a letter and a number**. They cannot skip it.
-4. After saving, they land on their Overview. The starting password no longer works.
+3. A **"Set your password"** window opens straight away. It asks for the **starting password
+   again** (the one on the slip, which they just typed), then a new one twice. The new one must be
+   **at least 10 characters, with a letter and a number**, and different from the starting one;
+   the window ticks each rule as they type. They cannot skip it. If they want to stop, **Sign out**
+   is in the window, and it will be back at their next sign-in.
+4. After saving, the page reloads once, shows "Password changed", and they are on their Overview.
+   The starting password no longer works.
 5. The tenant keeps or tears up the slip. The team does not take it back.
 
 **If something goes wrong**

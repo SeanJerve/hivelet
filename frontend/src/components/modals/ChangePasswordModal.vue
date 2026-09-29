@@ -22,9 +22,11 @@
  * finds out while typing instead of after submitting.
  */
 import { ref, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { api, ApiRequestError, setStoredToken } from '@/lib/api';
 import { showToast } from '@/lib/systemState';
-import { clearMustChangePassword, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
+import { clearMustChangePassword, logout, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
+import { stopNotificationsHeartbeat } from '@/lib/notificationsStore';
 import { Check, Loader2, Eye, EyeOff } from 'lucide-vue-next';
 import WsModal from '@/components/ui/WsModal.vue';
 
@@ -91,6 +93,25 @@ watch(() => props.open, (isOpen) => { if (!isOpen) reset(); });
 function close() {
   if (isSubmitting.value || props.mandatory) return;
   emit('close');
+}
+
+/**
+ * The one way out of the mandatory dialog, and it does not bypass it.
+ *
+ * Mandatory mode has no Cancel, no X and no backdrop, so a tenant who signed in
+ * on a borrowed phone, or who wants to do this later, could only close the
+ * browser - leaving their session on that device. `POST /auth/logout` is
+ * deliberately exempt from `requirePasswordCurrent` (B-63's escape hatch); this
+ * is the button for it. Signing out does not clear `must_change_password`, so
+ * the dialog is back at the next sign-in. Added 2026-09-29, before every tenant
+ * met this dialog on the testing day.
+ */
+const router = useRouter();
+async function signOutInstead() {
+  if (isSubmitting.value) return;
+  stopNotificationsHeartbeat();
+  await logout();
+  router.push('/login');
 }
 
 async function submit() {
@@ -189,7 +210,7 @@ async function submit() {
     :title="mandatory ? 'Set your password' : 'Change password'"
     :subtitle="
       mandatory
-        ? 'Your account was created with a one-time password. Set your own before continuing.'
+        ? 'You signed in with a one-time starting password. Choose your own before continuing.'
         : 'You will stay signed in on this device.'
     "
     size="sm"
@@ -199,7 +220,7 @@ async function submit() {
   >
     <form id="change-password-form" class="flex flex-col gap-5" @submit.prevent="submit">
       <label class="ws-field">
-        Current password
+        {{ mandatory ? 'Starting password (the one you just signed in with)' : 'Current password' }}
         <input
           v-model="currentPassword"
           type="password"
@@ -308,6 +329,9 @@ async function submit() {
     <template #actions>
       <button v-if="!mandatory" type="button" class="pill-btn" :disabled="isSubmitting" @click="close">
         Cancel
+      </button>
+      <button v-else type="button" class="pill-btn" :disabled="isSubmitting" @click="signOutInstead">
+        Sign out
       </button>
       <button
         type="submit"
