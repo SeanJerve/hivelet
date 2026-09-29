@@ -54,12 +54,18 @@ thing did not work" is not.
   - The dev-only demo sign-in panel reads the same line. With it deleted the panel hides itself,
     which is its designed behaviour, rather than locking real tenants out.
   - Even with the right password, the seeded tenant now answers **428 PASSWORD_CHANGE_REQUIRED**
-    on every `/tenant/*` route until that tenant sets their own password. `check:api`'s 9 tenant
-    checks read FAIL (428) on Loyd's machine for exactly this reason; the gate is working.
+    on every `/tenant/*` route until that tenant sets their own password.
+- **`check:api` now protects the real tenant itself** (later the same night): with `.env`
+  present it compares the fixture password with the stored hash **locally** before signing in,
+  and a stale fixture is reported **without a sign-in attempt**, so no counter moves (mutation-
+  tested: `failed_login_count` 0 before and after). A tenant block that cannot run is now one
+  FAIL line saying why, not a silent skip: expect **"66 passed, 1 failed - tenant and isolation
+  checks not run: ... must set a new password first"** until this is settled. The change-password
+  failure paths still run on the gated token.
 - **What Sean needs to decide:** the suites should stop signing in as a real tenant at all. The
-  clean fix is a dedicated test tenant (the walkthrough's rehearsal tenant on PH is the natural
-  one) with its identifier in `seeded-tenant-credentials.json`. Until then, expect `check:api`
-  to show 9 tenant FAILs at 428 and treat that as "gate on", not "API broken".
+  clean fix is a dedicated test tenant with its identifier in `seeded-tenant-credentials.json`.
+  It must not show in the owner's Tenants list (a tenant with no unit would), so it needs either
+  a unit of its own or a filter on the list; that is a design call, which is why it is still here.
 - **How to know it worked:** `select count(*) from profiles where role='tenant' and
   must_change_password` returns 32 today and falls as tenants sign in and choose their own.
 - **Raised:** 2026-09-29 by Claude, on Loyd's machine, at Loyd's request

@@ -75,10 +75,10 @@ is evidence.
 - [ ] 1. **Sean's polish is pushed and live**, or explicitly held until after testing. Agree a cutoff
       time tonight.
 - [ ] 2. `git pull` on the admin laptop; `npm run check:all 2>&1 | grep -E "^  (pass|FAIL)"`.
-      Expect every row `pass` **except** `check:api`, whose ten tenant-side checks read FAIL with
-      status **428** since the tenant reset (B-82). That 428 means "this tenant must change the
-      password first", which is correct. Any other FAIL, or a tenant check failing with anything
-      other than 428: stop and fix before tomorrow.
+      Expect every row `pass` **except** `check:api`, which reads **66 passed, 1 failed** since
+      the tenant reset (B-82). The one failure says the tenant and isolation checks could not run
+      because the seeded tenant "must set a new password first", which is correct. Any other
+      FAIL: stop and fix before tomorrow.
 - [ ] 3. `curl https://hivelet.vercel.app/api/health` returns `"status":"online"` and
       `"database":{"status":"connected"...}`.
 - [ ] 4. Write down the commit that is live: `git log --oneline -1`. It goes in the method section

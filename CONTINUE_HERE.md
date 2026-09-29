@@ -11,8 +11,10 @@
 >   laptop only. `node scripts/reset-tenant-accounts.mjs --only <phone>` re-issues one. **The old
 >   shared tenant password in your `creds.txt` opens nothing now, and `check:api` would spend a
 >   real tenant's failed-login allowance with it** - delete that line first (B-82).
-> - **Expect `check:api`'s ten tenant-side checks to FAIL with 428** until the suites get their
->   own test tenant. That is the forced-change gate working.
+> - **Expect `check:api` to read "66 passed, 1 failed"**: the one failure says the tenant and
+>   isolation checks could not run because the seeded tenant must set a new password (the
+>   forced-change gate, working). It no longer signs in with a stale password, so it cannot lock
+>   a real tenant out (B-82).
 > - **Fixed tonight, live only after `main` is pushed and deployed:** requests now give up on a
 >   stalled connection (25 s reads, 45 s saves, and a timed-out save says "check before sending
 >   again", never "not sent"); the forced password window says which password it wants and has a

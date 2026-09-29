@@ -101,16 +101,102 @@ else {
 }
 
 // ---- tenant -------------------------------------------------------------
-let tenantEmail = null, tenantToken = null;
-const seededPath = path.join(root, 'database', 'seeded-tenant-credentials.json');
+/**
+ * THE SEEDED TENANT IS A REAL PERSON, SO NEVER GUESS AT THEIR PASSWORD.
+ *
+ * Since 2026-09-29 every tenant has their own password (scripts/
+ * reset-tenant-accounts.mjs), and the seeded one is a resident who will choose
+ * their own. Signing in with a stale fixture is a wrong password against a real
+ * account: five runs lock that resident out for 15 minutes. So when `.env` is
+ * here, the fixture is checked against the stored hash LOCALLY first, which
+ * moves no counter, and a stale one is reported without a sign-in attempt.
+ *
+ * And a tenant block that did not run is a FAILURE, not a skip. It used to
+ * print "token FAILED" and carry on, so the suite read "21 passed, 0 failed"
+ * with a third of it, including the tenant-isolation check, never run.
+ * `SEEDED_TENANT_FILE` points at another fixture (used to mutation-test this).
+ */
+let tenantEmail = null, tenantToken = null, tenantBlocked = null;
+// A token held by a tenant who must still change their password. Every tenant
+// route refuses it (428), but `POST /auth/change-password` is the gate's own
+// exit, so the change-password failure paths below can still run on it.
+let gatedTenantToken = null;
+const seededPath = process.env.SEEDED_TENANT_FILE
+  || path.join(root, 'database', 'seeded-tenant-credentials.json');
 const seeded = fs.existsSync(seededPath)
   ? JSON.parse(fs.readFileSync(seededPath, 'utf8'))
   : [];
+
+async function fixtureVerdict(email, password) {
+  let db, bcrypt;
+  try {
+    const dotenv = (await import('dotenv')).default;
+    dotenv.config({ path: path.join(root, '.env') });
+    const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!process.env.SUPABASE_URL || !key) return { verified: false };
+    const { createClient } = await import('@supabase/supabase-js');
+    db = createClient(process.env.SUPABASE_URL, key, { auth: { persistSession: false } });
+    bcrypt = (await import('bcryptjs')).default;
+  } catch {
+    return { verified: false };
+  }
+  const { data, error } = await db
+    .from('profiles')
+    .select('password_hash, role, account_status, locked_until')
+    .ilike('email', email)
+    .maybeSingle();
+  if (error) return { verified: false };
+  if (!data) return { verified: true, ok: false, why: 'no profile has this email' };
+  if (data.role !== 'tenant' || data.account_status !== 'active') {
+    return { verified: true, ok: false, why: `profile is ${data.role}/${data.account_status}, not an active tenant` };
+  }
+  if (data.locked_until && new Date(data.locked_until) > new Date()) {
+    return { verified: true, ok: false, why: `account is locked until ${data.locked_until}` };
+  }
+  if (!data.password_hash || !(await bcrypt.compare(password, data.password_hash))) {
+    return { verified: true, ok: false, why: 'the fixture password no longer matches (the tenant has changed it)' };
+  }
+  return { verified: true, ok: true };
+}
+
 for (const entry of seeded) {
-  const t = await login(entry.email, entry.password ?? tenantPass);
-  if (t) { tenantEmail = entry.email; tenantToken = t; break; }
+  const pw = entry.password ?? tenantPass;
+  const verdict = await fixtureVerdict(entry.email, pw);
+  if (verdict.verified && !verdict.ok) {
+    tenantBlocked = `${entry.email}: ${verdict.why}. Sign-in NOT attempted, so this real ` +
+      "tenant's failed-login allowance is untouched. Point database/seeded-tenant-credentials.json " +
+      'at a test tenant (B-82).';
+    continue;
+  }
+  const r = await fetch(`${BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: entry.email, password: pw })
+  });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) { tenantBlocked = `${entry.email}: sign-in answered ${r.status}`; continue; }
+  if (j?.data?.user?.mustChangePassword) {
+    tenantBlocked = `${entry.email}: signed in, but must set a new password first, so every ` +
+      'tenant route answers 428 PASSWORD_CHANGE_REQUIRED (the forced-change gate, working). ' +
+      'Tenant and isolation checks cannot run until the suites have a test tenant (B-82).';
+    tenantEmail = entry.email;
+    gatedTenantToken = j?.data?.token ?? null;
+    break;
+  }
+  tenantEmail = entry.email;
+  tenantToken = j?.data?.token ?? null;
+  tenantBlocked = null;
+  break;
+}
+if (!seeded.length) {
+  tenantBlocked = 'no tenant fixture (database/seeded-tenant-credentials.json is missing or empty)';
 }
 console.log(`\nTENANT (${tenantEmail ?? 'none found'}) - token ${tenantToken ? 'issued' : 'FAILED'}`);
+if (!tenantToken) {
+  fail++;
+  failures.push(`tenant and isolation checks NOT RUN - ${tenantBlocked ?? 'no tenant token'}`);
+  console.log(`  FAIL      tenant and isolation checks not run: ${tenantBlocked ?? 'no tenant token'}`);
+}
 if (tenantToken) {
   for (const p of [
     '/auth/me', '/tenant/my-rooms', '/tenant/my-bills', '/tenant/my-payments',
@@ -236,7 +322,8 @@ if (tenantToken && adminToken) {
  * `ApiRequestError.isAuthFailure` deliberately excludes that code, so typing
  * your current password wrong ends the attempt rather than the session.
  */
-if (tenantToken) {
+const changePasswordToken = tenantToken ?? gatedTenantToken;
+if (changePasswordToken) {
   console.log('\nCHANGE PASSWORD (failure paths only - no credential is rotated)');
 
   const cases = [
@@ -255,7 +342,7 @@ if (tenantToken) {
   for (const [label, body, want, wantCode] of cases) {
     const r = await fetch(`${BASE}/auth/change-password`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${tenantToken}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${changePasswordToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
     let code = null;
