@@ -36,6 +36,16 @@ under five minutes or your completion rate suffers.
 
 ---
 
+# The fast way (added 2026-09-29)
+
+`build_survey_form.gs` in this folder builds the whole form below in one run of Google Apps
+Script: sections, branching on Q1, every rated item as a required 1-to-5 scale, the bilingual
+tenant section, and the settings in step 2. Paste it at script.google.com, run
+`buildHiveletSurvey`, and read the links from the log. Checked against a stand-in for Google's
+form API: 28 owner, 18 tenant and 33 technical items, each word for word as Chapter 4 prints it.
+**Walk the three branches in preview anyway (step 8).** The manual steps below remain the
+reference if it cannot be used.
+
 # How to build it — step by step
 
 **Budget about 45 minutes.** Do the steps in this order; two of them do not work in reverse.

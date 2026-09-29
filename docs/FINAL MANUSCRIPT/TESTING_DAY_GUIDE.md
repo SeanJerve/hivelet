@@ -134,9 +134,11 @@ is evidence.
 - [ ] 11. Print from `TESTING_DAY_FORMS.md`: consent forms (one per tester plus the owner), one
       observation sheet per tester, the defect log, the timing sheet, the attendance sheet, the
       acceptance certificate.
-- [ ] 12. Build the Google Form from `ISO_25010_SURVEY_INSTRUMENT.md` (change "Resident" to
-      "Tenant" in the form, nothing else). Walk all three branches in preview. Print its link as a
-      QR code.
+- [ ] 12. Build the Google Form **in two minutes**: paste `docs/chapter 4 tenative/build_survey_form.gs`
+      into a new project at script.google.com and Run `buildHiveletSurvey` (steps at the top of the
+      file). It builds every section, item and branch from `ISO_25010_SURVEY_INSTRUMENT.md`, with
+      "Tenant" for "Resident", and each rated item word for word as Chapter 4 prints it (checked).
+      Walk all three branches in preview. Print the short link it logs as a QR code.
 - [ ] 13. Make the evidence folder on the team's shared drive (**not in the repository**; it will
       hold tenants' faces and personal screens):
       ```
