@@ -3644,15 +3644,39 @@ const expenseEntrySchema = z.object({
    * bare **500 "Internal server error."** - verified by sending exactly that.
    * One request, ten thousand rows attempted, and an opaque failure.
    *
-   * Fifty is far above any real receipt - it allows the same area several times
-   * over, which she may want for an itemised bill - and far below a number that
-   * costs the database anything.
+   * Fifty is far above any real receipt and far below a number that costs the
+   * database anything.
+   *
+   * This said fifty "allows the same area several times over, which she may
+   * want for an itemised bill". It never could: `expense_property_allocations`
+   * is UNIQUE on (expense_entry_id, property_area) (pg_constraint, checked
+   * 2026-09-30), so a repeated area failed inside the write. `oneAmountPerArea`
+   * below now refuses it before any write, in words.
    */
   allocations: z
     .array(expenseAllocationSchema)
     .min(1, 'an expense needs at least one allocation')
     .max(50, 'an expense cannot be split more than 50 ways - there are only six property areas'),
 });
+
+/**
+ * One amount per area per expense, refused before any write.
+ *
+ * `expense_property_allocations` is UNIQUE on (expense_entry_id, property_area),
+ * and both write functions insert the parts as given, so a split naming one
+ * area twice failed inside the write: a 500 carrying the constraint's name, and
+ * on PATCH only after the date and supplier had been saved. The screen's
+ * "Split across another area" added its row on the same area as the first,
+ * which is how an ordinary 60/40 split reached it (test case A-28, 2026-09-30).
+ */
+function oneAmountPerArea(areas: string[]): void {
+  const repeated = areas.find((a, i) => areas.indexOf(a) !== i);
+  if (repeated) {
+    throw ApiError.validation(
+      `${repeated} is given twice in this expense. Each area takes one amount: add the two parts together.`
+    );
+  }
+}
 
 /**
  * POST /api/admin/expense-entries
@@ -3668,6 +3692,7 @@ router.post(
     }
 
     const { expenseDate, orSupplier, categoryCode, allocations } = parsed.data;
+    oneAmountPerArea(allocations.map((a) => a.propertyArea));
 
     /**
      * Atomic - migration 019. BR-047.
@@ -3780,6 +3805,7 @@ router.patch(
         }
         return { property_area: area, amount };
       });
+      oneAmountPerArea(normalizedAllocations.map((a) => a.property_area));
     }
 
     /**
