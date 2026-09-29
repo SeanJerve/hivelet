@@ -58,6 +58,7 @@ const PURPOSE = new Map([
   ['GET /admin/tenants', 'the resident directory'],
   ['POST /admin/tenants', 'onboard a resident — writes profile, tenancy and unit status'],
   ['PATCH /admin/tenants/:id', 'edit a resident'],
+  ['POST /admin/tenants/:id/reset-password', 'a new one-time password for a tenant (B-83); ends their sessions'],
   ['POST /admin/tenants/:id/vacate', 'end a tenancy and free the unit'],
   ['GET /admin/bills', 'bills with the overdue overlay — NOTHING CALLS THIS (A-11)'],
   ['GET /admin/payments', 'payments awaiting verification'],

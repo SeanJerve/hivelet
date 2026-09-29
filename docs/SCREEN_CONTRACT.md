@@ -104,13 +104,14 @@ before the redesign started.
 
 ### `views/TenantManagementView.vue`
 
-4 call(s), **4 of them write**.
+5 call(s), **5 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
 | **writes** | `PATCH /admin/inquiries/:id` | advance or close an enquiry |
 | **writes** | `PATCH /admin/tenants/:id` | edit a resident |
 | **writes** | `POST /admin/tenants` | onboard a resident — writes profile, tenancy and unit status |
+| **writes** | `POST /admin/tenants/:id/reset-password` | a new one-time password for a tenant (B-83); ends their sessions |
 | **writes** | `POST /admin/tenants/:id/vacate` | end a tenancy and free the unit |
 
 ### `views/TenantOverviewView.vue`
@@ -235,4 +236,4 @@ before the redesign started.
 
 ---
 
-**20 files make 70 distinct calls, 31 of which write.** Generated 2026-09-28.
+**20 files make 71 distinct calls, 32 of which write.** Generated 2026-09-30.
