@@ -268,7 +268,7 @@ onUnmounted(() => {
       tabindex="-1"
       role="dialog"
       aria-label="Notifications"
-      class="notif-panel fixed inset-x-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[420px]"
+      class="notif-panel fixed inset-x-2 top-16 z-50 flex max-h-[calc(100vh-5rem)] supports-[height:100dvh]:max-h-[calc(100dvh-5rem)] origin-top-right flex-col overflow-hidden rounded-tile bg-tile shadow-lift outline-none sm:absolute sm:inset-x-auto sm:right-0 sm:top-14 sm:w-[420px]"
     >
       <!-- Header -->
       <div class="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
