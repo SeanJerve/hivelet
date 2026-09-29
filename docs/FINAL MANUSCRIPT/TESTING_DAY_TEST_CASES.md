@@ -210,9 +210,9 @@ for are on screen.
 
 | ID | ISO | Req | Do | Should see | Result | Evidence |
 | :-- | :-- | :-- | :--- | :--- | :-- | :--- |
-| S-01 | SE | NFR-003 | Mozilla HTTP Observatory, `hivelet.vercel.app` | Grade (write it); note that the Content Security Policy is still in report-only mode | | |
+| S-01 | SE | NFR-003 | Mozilla HTTP Observatory, `hivelet.vercel.app` | Grade (write it). Expect **B, 75/100, 11 of 12** (run 30 Sep 00:04); the one failure is the report-only Content Security Policy, which is deliberate | | |
 | S-02 | SE | NFR-003 | securityheaders.com | Grade | | |
-| S-03 | SE | NFR-003 | SSL Labs, `hivelet.vercel.app` | Grade | | |
+| S-03 | SE | NFR-003 | SSL Labs, `hivelet.vercel.app` | Grade. Expect **A+** (run 30 Sep 00:10; one of two addresses A) | | |
 | S-04 | SE | FR-001 | Rehearsal tenant only: 5 wrong passwords | Locked for 15 minutes with a clear message. **Never on a real account** | | |
 | S-05 | SE | FR-002 | Tenant opens `/admin` (T-15) | Refused | | |
 | S-06 | SE | FR-002 | Signed out, open `/tenant` | Sent to sign-in | | |
