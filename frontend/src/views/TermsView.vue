@@ -29,6 +29,15 @@
  * tickets (BR-023); everything done while signed in is recorded against the actor
  * (auditService.ts).
  *
+ * REFUNDS AND DEPOSITS, added 2026-09-29, promise nothing that is not already decided or
+ * already public: rent is never prorated (CLIENT_MEETING_QUESTIONS.md, "What she does not
+ * need to be asked"); one month in advance plus one month deposit, with the deposit spent on
+ * repairs and cleaning at move-out and the rest returned, is the landing page's own FAQ
+ * (PublicGuestView.vue "What do I need to move in?", her words of 2026-09-17 in section
+ * 2f-iv); Reject does not return money and an online refund is made through Adyen (section
+ * 3d). The test-account sentence under Paying online is Sean's B-80 decision, 2026-09-28,
+ * in the FAQ's own words.
+ *
  * Rates and availability are "subject to confirmation" for a measured reason, not as
  * boilerplate: CLIENT_MEETING_QUESTIONS.md 2f-i found 31 of 33 stored rates disagreeing with
  * what tenants actually pay, and the public site advertises from the stored figure.
@@ -47,6 +56,7 @@ const S = {
   site: { id: 'site', title: 'Units, rates and availability' },
   accounts: { id: 'accounts', title: 'Tenant accounts' },
   payments: { id: 'payments', title: 'Paying online' },
+  refunds: { id: 'refunds', title: 'Refunds and deposits' },
   tickets: { id: 'tickets', title: 'Maintenance tickets and messages' },
   use: { id: 'use', title: 'Acceptable use' },
   availability: { id: 'availability', title: 'When the site is unavailable' },
@@ -59,7 +69,7 @@ const sections = Object.values(S);
 </script>
 
 <template>
-  <LegalPage title="Terms of use" effective="2026-09-24" updated="2026-09-26" :sections="sections">
+  <LegalPage title="Terms of use" effective="2026-09-24" updated="2026-09-29" :sections="sections">
     <template #lead>
       <p>
         These terms cover this website and its tenant portal, both run on Hivelet, the system
@@ -124,6 +134,11 @@ const sections = Object.values(S);
         counts as paid once the landlady verifies it. Until she does, it shows as waiting for
         verification, and the bill stays on your balance.
       </p>
+      <p>
+        Hivelet is a capstone project still in development. Online GCash payments run on Adyen's
+        test account, so no real money is charged yet. Pay your rent in person until online
+        payment goes live.
+      </p>
       <ul>
         <li>
           If a payment does not go through but money has left your GCash, tell the landlady and do
@@ -139,6 +154,32 @@ const sections = Object.values(S);
           If what the portal shows does not match your own receipts, raise it with Mrs. Da Silva.
         </li>
       </ul>
+    </section>
+
+    <section :aria-labelledby="S.refunds.id">
+      <h2 :id="S.refunds.id" tabindex="-1">{{ S.refunds.title }}</h2>
+      <ul>
+        <li>
+          <strong>Rent is not divided by the day.</strong> If you move out partway through a month
+          you have paid for, the whole month is owed and none of it is refunded.
+        </li>
+        <li>
+          <strong>Moving in</strong> takes one month of rent in advance and one month as a deposit.
+          The advance is your first month's rent. The deposit is held while you live here; when
+          you move out it is put towards repairing and cleaning the unit, and whatever is left over
+          is returned to you.
+        </li>
+        <li>
+          <strong>If you paid twice, or paid too much,</strong> tell Mrs. Da Silva. A payment she does
+          not accept is marked as not accepted, and it is not paid back automatically. An online
+          payment can only be refunded through Adyen, to the GCash account it came from; money
+          paid in person is settled with her directly.
+        </li>
+      </ul>
+      <p>
+        For anything about a refund, contact Mrs. Da Silva on
+        <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a>.
+      </p>
     </section>
 
     <section :aria-labelledby="S.tickets.id">

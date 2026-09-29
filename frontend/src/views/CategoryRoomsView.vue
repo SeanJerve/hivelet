@@ -1168,7 +1168,10 @@ async function submitInquiry() {
 
         <p class="mt-4 max-w-md text-xs text-ink-soft leading-relaxed">
           Mrs. {{ LANDLADY.name }} reads these herself and replies by phone or email.
-          Nothing is sent to you automatically.
+          Nothing is sent to you automatically. See the
+          <!-- A new tab, so reading the policy does not throw away a half-typed question. -->
+          <a href="/privacy" target="_blank" rel="noopener" class="underline underline-offset-4 decoration-1 decoration-line hover:text-ink hover:decoration-ink">privacy policy<span class="sr-only"> (opens in a new tab)</span></a>
+          for what happens to this information.
         </p>
 
         <div class="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2">

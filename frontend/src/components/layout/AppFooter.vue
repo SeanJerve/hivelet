@@ -18,6 +18,10 @@ import { LANDLADY } from '@/lib/systemState';
 import BrandMark from '@/components/ui/BrandMark.vue';
 import { isAuthenticated, isAdmin, isTenant } from '@/lib/authStore';
 
+// The year on the copyright line follows the calendar rather than being typed
+// in, so it does not go stale every January.
+const year = new Date().getFullYear();
+
 const portalRoute = computed(() => {
   if (isAdmin.value) return '/admin/overview';
   if (isTenant.value) return '/tenant';
@@ -40,7 +44,7 @@ const portalRoute = computed(() => {
             sentence now, where it belongs, and the copyright line below
             already carries both.
           -->
-          <p class="flex items-center gap-2.5 text-xl font-semibold tracking-tight"><BrandMark class="size-8" inverse />Hivelet</p>
+          <RouterLink to="/public" class="press inline-flex min-h-11 items-center gap-2.5 text-xl font-semibold tracking-tight text-on-night hover:text-on-night-soft transition-colors"><BrandMark class="size-8" inverse />Hivelet</RouterLink>
         </div>
 
         <div>
@@ -136,7 +140,7 @@ const portalRoute = computed(() => {
         14px of their own above the text.
       -->
       <div class="mt-20 flex flex-col gap-3 border-t border-on-night/15 pt-4 text-xs text-on-night-soft sm:flex-row sm:items-center sm:justify-between">
-        <p>© 2026 Hivelet. Fe Galang Da Silva Boarding House.</p>
+        <p>© {{ year }} Hivelet. Fe Galang Da Silva Boarding House.</p>
         <nav aria-label="Policies">
           <ul class="flex flex-wrap gap-x-6">
             <li>
@@ -147,6 +151,16 @@ const portalRoute = computed(() => {
             <li>
               <RouterLink to="/terms" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
                 Terms of use
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/terms#refunds" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+                Refunds
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/privacy#browser" class="press inline-flex min-h-11 items-center text-on-night-soft underline underline-offset-4 decoration-1 decoration-on-night-soft hover:text-on-night hover:decoration-on-night transition-colors">
+                Cookies
               </RouterLink>
             </li>
           </ul>

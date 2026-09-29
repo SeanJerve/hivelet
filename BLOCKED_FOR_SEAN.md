@@ -53,6 +53,27 @@ thing did not work" is not.
   NULL and no `end_date`.
 - **Raised:** 2026-09-28 by Claude
 
+### B-81 - website safety audit, 2026-09-29: what needs a person · **OPEN**
+
+- **Apply migration `060`** (`database/migrations/060_record_income_for_months_is_the_servers_alone.sql`).
+  Supabase advisor WARN: `record_income_for_months` has no fixed search_path and anon may EXECUTE it.
+  Not a live hole (0 table grants to anon/authenticated, RLS deny-all on all 22 tables), hardening only.
+  `npm run backup` first; the verify query is at the foot of the file.
+- **Spend caps**: set them yourself in Supabase (Billing, spend cap on), Vercel (Settings, Spend
+  Management) and check Adyen has no paid add-ons. Dashboards, not code.
+- **Rate limits are in memory** (`middleware/rateLimit.ts`), so on Vercel serverless they reset per
+  instance. Per-account lockout is in the database and holds. A durable limiter needs a table (a migration).
+- **CSP is still report-only** (vercel.json), on purpose until a TEST GCash payment runs clean under it.
+- **Pay dialog**: B-80 put the test-account sentence in the FAQ and now the Terms; the Pay with GCash
+  dialog itself still says nothing. One line if you want it there too.
+- **Photos**: confirm who took `fe-galang-building.webp` and `fe-galang-gate.webp` (yours or the
+  owner's = fine; from Google Maps or Facebook = replace).
+- **Law to confirm with her, not code**: RA 11967 (Internet Transactions Act) may expect her business
+  name and DTI or permit number on the site; the Rent Control Act (RA 9653) caps yearly increases on
+  low-rent units and allows at most 1 month advance + 2 months deposit (her 1 + 1 is inside it).
+- **Refunds wording** in the Terms uses only settled facts and the landing FAQ; show it to her once.
+- **Raised:** 2026-09-29 by Claude
+
 ### B-80 — the public site tells visitors they can pay with GCash, and the gateway is on Adyen's test account · **DECIDED 2026-09-28 by Sean**
 
 > **Decided:** keep the FAQ answer and say plainly it is a capstone project in development: online

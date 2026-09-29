@@ -78,7 +78,8 @@ const isPublicPage = computed(() =>
   route.path.startsWith('/category') ||
   route.path === '/privacy' ||
   route.path === '/terms' ||
-  route.path === '/'
+  route.path === '/' ||
+  route.name === 'NotFound'
 );
 
 /**

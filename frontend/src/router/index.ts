@@ -39,6 +39,7 @@ const TenantOverviewView = () => import('@/views/TenantOverviewView.vue');
 const TenantPaymentsView = () => import('@/views/TenantPaymentsView.vue');
 const TenantTicketsView = () => import('@/views/TenantTicketsView.vue');
 const TenantProfileView = () => import('@/views/TenantProfileView.vue');
+const NotFoundView = () => import('@/views/NotFoundView.vue');
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -140,7 +141,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/basis/directory', redirect: '/admin/directory' },
   { path: '/basis/income', redirect: '/admin/income' },
 
-  { path: '/:pathMatch(.*)*', redirect: '/public' },
+  // An address that is not a page says so (NotFoundView.vue) instead of quietly
+  // landing on the home page, which read as the site ignoring the link.
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFoundView },
 ];
 
 /**

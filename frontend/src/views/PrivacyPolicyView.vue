@@ -25,7 +25,10 @@
  *   back from Adyen          adyenWebhookHandler.ts payment insert: amount, method, reference
  *   Google Fonts             frontend/index.html stylesheet link
  *   browser storage          lib/api.ts (token), lib/authStore.ts (session snapshot, cleared on
- *                            sign-out), BookViewingPrompt.vue (dismissal flag); no
+ *                            sign-out), BookViewingPrompt.vue (dismissal flag), and two
+ *                            sessionStorage entries: lib/yearScope.ts (the year picked on the
+ *                            admin screens) and authStore.ts PASSWORD_CHANGED_FLAG (read once
+ *                            after a forced password change), rechecked 2026-09-29; no
  *                            `document.cookie` in frontend/src, no `res.cookie` in backend/src,
  *                            no analytics script anywhere
  *   offline cache            frontend/vite.config.ts workbox: static files, fonts, and
@@ -60,7 +63,7 @@ const S = {
   purposes: { id: 'purposes', title: 'What it is used for' },
   basis: { id: 'basis', title: 'The legal basis' },
   recipients: { id: 'recipients', title: 'Who else receives it' },
-  browser: { id: 'browser', title: 'What your browser keeps' },
+  browser: { id: 'browser', title: 'Cookies and what your browser keeps' },
   retention: { id: 'retention', title: 'How long it is kept' },
   security: { id: 'security', title: 'How it is protected' },
   rights: { id: 'rights', title: 'Your rights, and how to use them' },
@@ -72,7 +75,7 @@ const sections = Object.values(S);
 </script>
 
 <template>
-  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-26" :sections="sections">
+  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-29" :sections="sections">
     <template #lead>
       <p>
         This policy explains what Hivelet, the system Mrs. {{ LANDLADY.name }} uses to run her
@@ -265,6 +268,11 @@ const sections = Object.values(S);
           did, so it is not shown again.
         </li>
         <li>
+          <strong>While a tab is open:</strong> on the landlady's screens, the year she chose to
+          look at; and, after you set a new password, a one-time note so the confirmation still
+          shows once the page reloads. Both are gone when the tab closes.
+        </li>
+        <li>
           <strong>An offline copy of the site.</strong> Hivelet installs a small helper in your
           browser (a service worker) that keeps the site's own files, its typefaces, and the public
           information about the units, so pages still open on a weak connection. The unit
@@ -275,6 +283,10 @@ const sections = Object.values(S);
       <p>
         While you pay, Adyen's payment form runs inside the page, under Adyen's own privacy terms.
         You can clear everything above at any time from your browser's settings for this site.
+      </p>
+      <p>
+        Everything above is needed for the site to work the way you asked it to, and none of it
+        tracks you or is used for advertising, so the site does not ask you to accept cookies.
       </p>
     </section>
 

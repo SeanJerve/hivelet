@@ -1,0 +1,8 @@
+# Hivelet: the public pages are for everyone; the portals behind a sign-in are not.
+User-agent: *
+Disallow: /admin
+Disallow: /tenant
+Disallow: /login
+Disallow: /api/
+
+Sitemap: https://hivelet.vercel.app/sitemap.xml

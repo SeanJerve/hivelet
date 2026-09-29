@@ -74,7 +74,33 @@ const PAGE_TITLES: Record<string, string> = {
   MaintenanceDispatch: 'Repairs',
   Inquiries: 'Inquiries',
   AdminAuditLogs: 'Activity',
+  NotFound: 'Page not found',
 }
+
+/*
+ * What a search result shows under each public page's title. index.html carries
+ * the landing page's own description, which every page used to share; the ones
+ * below replace it on their page and it comes back everywhere else.
+ */
+const PAGE_DESCRIPTIONS: Record<string, string> = {
+  Inquire: 'Send Mrs. Fe Galang Da Silva a question about a unit, or ask to arrange a viewing at the boarding house in Legazpi City.',
+  PrivacyPolicy: 'What the Fe Galang Da Silva Boarding House website collects, why, who else receives it, and your rights under the Data Privacy Act of 2012.',
+  Terms: 'How the boarding house website and tenant portal may be used, including paying online, refunds and deposits.',
+}
+
+/*
+ * Search engines: the public pages are indexed, with a canonical address on the
+ * production domain and permission to show a large image (what Google Discover
+ * and large link previews need). Everything behind a sign-in, the sign-in page
+ * itself and the not-found page are marked noindex; public/robots.txt also keeps
+ * crawlers out of /admin and /tenant.
+ */
+const SITE = 'https://hivelet.vercel.app'
+const headTag = (selector: string, create: () => HTMLElement) => document.head.querySelector(selector) ?? document.head.appendChild(create())
+const descriptionTag = headTag('meta[name="description"]', () => Object.assign(document.createElement('meta'), { name: 'description' })) as HTMLMetaElement
+const defaultDescription = descriptionTag.content
+const robotsTag = headTag('meta[name="robots"]', () => Object.assign(document.createElement('meta'), { name: 'robots' })) as HTMLMetaElement
+const canonicalTag = headTag('link[rel="canonical"]', () => Object.assign(document.createElement('link'), { rel: 'canonical' })) as HTMLLinkElement
 
 router.afterEach((to) => {
   const slug = typeof to.params.categorySlug === 'string' ? to.params.categorySlug : ''
@@ -82,6 +108,14 @@ router.afterEach((to) => {
   const category = slug ? slug.charAt(0).toUpperCase() + slug.slice(1) + ' units' : ''
   const page = category || PAGE_TITLES[String(to.name)] || ''
   document.title = page ? `${page} · Hivelet` : 'Hivelet'
+
+  const categoryDescription = category
+    ? `${category} at the Fe Galang Da Silva Boarding House in Legazpi City: their rates, which are vacant, and the floor plan of each.`
+    : ''
+  descriptionTag.content = categoryDescription || PAGE_DESCRIPTIONS[String(to.name)] || defaultDescription
+  const privatePage = Boolean(to.meta.roles) || to.name === 'Login' || to.name === 'NotFound'
+  robotsTag.content = privatePage ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'
+  canonicalTag.href = SITE + (to.path === '/' ? '/public' : to.path)
 })
 
 const app = createApp(App)
