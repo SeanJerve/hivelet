@@ -1,40 +1,53 @@
 import React from 'react';
 import {AbsoluteFill, Audio, getStaticFiles, interpolate, Sequence, staticFile} from 'remotion';
 import {C} from './theme';
-import {OVERLAP, SceneId, T, TOTAL, VOICE, VOICE_CUES} from './timeline';
-import {Answer, Before, Cost, Place} from './scenes/Story';
-import {Activity, Guests, Income, Overview, Repairs, Rooms, Tenant} from './scenes/Product';
-import {Close, Proof} from './scenes/Close';
+import {Wipe} from './fx';
+import {Sfx} from './Sfx';
+import {Before, Cost, Hook, Reveal} from './scenes/Open';
+import {Income, Overview, Rooms} from './scenes/Owner';
+import {Guests, Tenant} from './scenes/People';
+import {End, Proof, Trust} from './scenes/End';
 
-const SCENES: [SceneId, React.FC][] = [
-  ['place', Place], ['before', Before], ['cost', Cost], ['answer', Answer], ['rooms', Rooms],
-  ['income', Income], ['overview', Overview], ['tenant', Tenant], ['repairs', Repairs],
-  ['guests', Guests], ['activity', Activity], ['proof', Proof], ['close', Close],
+// Scene lengths in frames at 30 fps. Kept in step with SCENES.md.
+export const SCENES: [string, React.FC, number, boolean][] = [
+  // id, scene, frames, whether a brand wipe covers the cut into it
+  ['hook', Hook, 150, false],
+  ['before', Before, 250, true],
+  ['cost', Cost, 180, true],
+  ['reveal', Reveal, 110, false],
+  ['overview', Overview, 270, true],
+  ['rooms', Rooms, 150, true],
+  ['income', Income, 330, true],
+  ['tenant', Tenant, 390, true],
+  ['guests', Guests, 210, true],
+  ['trust', Trust, 180, true],
+  ['proof', Proof, 150, true],
+  ['end', End, 150, true],
 ];
+export const TOTAL = SCENES.reduce((s, [, , d]) => s + d, 0);
 
-// Music is optional: drop a track at public/music.mp3 and it plays under the
-// voice, lowered while a line is spoken. Without it the video is complete.
+// Optional music: drop a track at public/music.mp3 and it plays low under the effects.
 const hasMusic = getStaticFiles().some((f) => f.name === 'music.mp3');
 
-const musicVolume = (frame: number) => {
-  const speaking = VOICE_CUES.some((c) => frame >= c.at - 8 && frame <= c.at + c.dur + 8);
-  const fadeIn = interpolate(frame, [0, 30], [0, 1], {extrapolateRight: 'clamp'});
-  const fadeOut = interpolate(frame, [TOTAL - 60, TOTAL], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-  return (speaking ? 0.1 : 0.32) * fadeIn * fadeOut;
+export const Video: React.FC = () => {
+  let at = 0;
+  const starts = SCENES.map(([, , d]) => { const s = at; at += d; return s; });
+  return (
+    <AbsoluteFill style={{background: C.canvas}}>
+      {SCENES.map(([id, Scene, d], i) => (
+        <Sequence key={id} from={starts[i]} durationInFrames={d} name={id}>
+          <Scene />
+        </Sequence>
+      ))}
+      {SCENES.map(([id, , , wipe], i) => (wipe ? (
+        <Sequence key={`w-${id}`} from={starts[i] - 8} durationInFrames={24} name={`wipe into ${id}`}>
+          <Wipe at={0} />
+          <Sfx at={0} name="whoosh" vol={0.45} />
+        </Sequence>
+      ) : null))}
+      {hasMusic ? (
+        <Audio src={staticFile('music.mp3')} volume={(f) => 0.25 * interpolate(f, [0, 30, TOTAL - 60, TOTAL], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})} />
+      ) : null}
+    </AbsoluteFill>
+  );
 };
-
-export const Video: React.FC = () => (
-  <AbsoluteFill style={{background: C.canvas}}>
-    {SCENES.map(([id, Component]) => (
-      <Sequence key={id} from={T[id].from} durationInFrames={T[id].dur + OVERLAP} name={id}>
-        <Component />
-      </Sequence>
-    ))}
-    {VOICE_CUES.map((c) => (
-      <Sequence key={c.id} from={c.at} durationInFrames={c.dur} name={`voice ${c.id}`}>
-        <Audio src={staticFile(`voice/${VOICE}/${c.id}.mp3`)} />
-      </Sequence>
-    ))}
-    {hasMusic ? <Audio src={staticFile('music.mp3')} volume={musicVolume} /> : null}
-  </AbsoluteFill>
-);

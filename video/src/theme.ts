@@ -1,11 +1,11 @@
-// Hivelet's own look, taken from the "workspace system" tokens in
-// frontend/src/index.css and checked against the rendered screens.
-import {Easing} from 'remotion';
+// Hivelet's own look: the "workspace system" tokens in frontend/src/index.css.
+// The workspace sets everything in Plus Jakarta Sans; the public site's large
+// headings and the film's own titles use Sora, as the site does.
 import {loadFont as loadSora} from '@remotion/google-fonts/Sora';
 import {loadFont as loadJakarta} from '@remotion/google-fonts/PlusJakartaSans';
 
-export const sora = loadSora('normal', {weights: ['400', '500', '600', '700'], subsets: ['latin']}).fontFamily;
-export const jakarta = loadJakarta('normal', {weights: ['400', '500', '600'], subsets: ['latin']}).fontFamily;
+export const sora = loadSora('normal', {weights: ['400', '500', '600', '700', '800'], subsets: ['latin']}).fontFamily;
+export const jakarta = loadJakarta('normal', {weights: ['400', '500', '600', '700'], subsets: ['latin']}).fontFamily;
 
 export const C = {
   canvas: '#edf1ee',
@@ -18,21 +18,26 @@ export const C = {
   brandStrong: '#0e4a30',
   brandSoft: '#e2f0e7',
   brandBright: '#3f9a6b',
+  onBrand: '#ffffff',
+  onBrandSoft: '#d3e8db',
   night: '#0f1b15',
   nightRaised: '#1b2a22',
   onNight: '#eef5f0',
   onNightSoft: '#a9baaf',
+  hatch: '#7a8c81',
   verify: '#8a5300',
   verifySoft: '#fcefd6',
   overdue: '#b3261e',
+  overdueSoft: '#fde6e3',
+  // Lighter steps of the app's own brand, verify and overdue hues, used only
+  // for accent words on the dark background, where the app's values would not
+  // read. The app has no dark theme to take them from.
+  glow: '#5fc28e',
+  amber: '#f2b252',
+  coral: '#f07a6f',
+  deep: '#08110c',
+  moss: '#123324',
 };
 
-// One curve for everything that arrives, one for everything the camera moves.
-export const easeOut = Easing.bezier(0.23, 1, 0.32, 1);
-export const easeInOut = Easing.bezier(0.65, 0, 0.35, 1);
-
-export const FPS = 30;
 export const W = 1920;
 export const H = 1080;
-
-export const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;

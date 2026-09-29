@@ -1,10 +1,10 @@
 {
   "name": "hivelet-video",
   "private": true,
-  "description": "The Hivelet product video. Real screens captured from the app with sample data, animated with Remotion.",
+  "description": "The Hivelet product film: the app's own components rebuilt in React and animated with Remotion, with synthesized sound effects.",
   "scripts": {
     "capture": "node capture/capture.mjs",
-    "voice": "node capture/voice.mjs",
+    "sfx": "node capture/sfx.mjs",
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts Hivelet out/hivelet.mp4",
     "storyboard": "node capture/storyboard.mjs"

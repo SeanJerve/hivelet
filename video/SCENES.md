@@ -1,67 +1,47 @@
-# The Hivelet video: every scene and where it comes from
+# The Hivelet film: every scene and where it comes from
 
-About 90 seconds, 1920x1080, 30 fps. Built from `VIDEO PRESENTATION DOCS/MOTION VIDEO PROMPT.md`
-(on Sean's laptop; that folder is gitignored).
+84 seconds, 1920x1080, 30 fps, sound effects only (no voice). Rebuilt on 2026-09-29 after the
+first cut, screenshots in a browser frame, was judged a slide deck. The look follows the promo
+Lloyd's session made that morning (dark green for the old way, a bright stage for the product,
+headlines with one coloured word, a honeycomb, depth of field); the content does not, because
+that one invented its own labels.
 
-**The rule:** every frame is either a real screen of the app or a verified fact. The screens
-are the actual Vue pages from `frontend/src`, rendered by `capture/harness.html` against
-invented sample data (made-up tenants, sample amounts, the property's real 33 unit codes and
-clusters) and filmed with Playwright. Nobody signs in, and nothing reaches the live API or
-database: every request that is not localhost or Google Fonts is aborted, and the harness
-answers the app's own API calls.
+**The rule:** every piece of the app on screen is one of the app's own components, rebuilt in
+React from the Vue source (`src/ui/`) with the app's exact labels, sizes and colours, so it can
+move piece by piece. The people and amounts are invented sample data (the same set as
+`capture/harness.html`); unit codes, clusters and room types are the property's real ones.
+The facts in the story come from the verified list in the build prompt.
 
-| # | Time | Shows | Source | On screen |
+| # | Frames | Scene | App pieces, and their source | Facts used |
 | :-- | :-- | :--- | :--- | :--- |
-| 1 | 0:00 | The building, then 33 / 5 / 1 | `frontend/public/fe-galang-building.webp` (the site's own photo) | Fe Galang Da Silva Boarding House, Legazpi City. 33 units, 5 clusters, 1 owner |
-| 2 | 0:06 | Four cards: spreadsheet, receipt book, cash, Messenger | Fact list (Chapter 5, 5.1). Icons from lucide, the set the app uses | Her records lived in four places. / None of them talked to each other. |
-| 3 | 0:15 | 937, 43%, 5 | Fact list (Chapter 5, 5.1) | When her records were moved in |
-| 4 | 0:22 | App icon and name | `frontend/public/icon-512.png` | One place for rooms, tenants, money and repairs. |
-| 5 | 0:26 | Rooms and rates, by cluster; unit 1A lifted | `/admin/directory`, `views/RoomDirectoryView.vue` | All 33 units, in one place. / Who lives there, and what each rents for. |
-| 6 | 0:33 | Ledger rows; Record payment with the OR number; the second-payment warning | `/admin/income`, `views/IncomeCollectionsView.vue`, `components/modals/OnsitePaymentModal.vue` (the confirmation's overlap warning) | Laid out like her own workbook. / Her paper receipt number stays on the record. / It flags a second payment for the same unit and month. |
-| 7 | 0:45 | Overview with the year picker and the collections chart; Monthly Expenses, where it landed | `/admin/overview`, `views/AdminOverviewView.vue`; `/admin/expenses`, `views/ExpensesLedgerView.vue` | Money in and money out, for any year. / What was spent, and where it went. |
-| 8 | 0:51 | Tenant on a phone: Amount due, Pay with GCash, then the repair form | `/tenant`, `views/TenantOverviewView.vue`; `/tenant/tickets`, `views/TenantTicketsView.vue` | Tenants see what they owe. / Pay by GCash if they want. She confirms it. / Report a repair from their phone. |
-| 9 | 1:02 | Repairs board, then the notification bell | `/admin/tickets`, `views/MaintenanceDispatchView.vue`; `components/layout/NotificationPopover.vue` | Requests land in one list, not a chat thread. |
-| 10 | 1:08 | Public two-bedroom page, the inquiry form, then Inquiries | `/category/two-bedroom`, `views/CategoryRoomsView.vue`; `/inquire`, `views/InquireView.vue`; `/admin/inquiries`, `views/InquiriesView.vue` | Guests browse rooms and send an inquiry. / She sees it, with the unit they asked about. |
-| 11 | 1:14 | Activity, "Can entries be changed? No"; then the installable app icon | `/admin/audit-logs`, `views/AuditLogsView.vue`; `frontend/public/icon-512.png` (web manifest icon) | Every change is logged, and none can be edited. / Installs on a phone like an app. |
-| 12 | 1:20 | 937, 1,327, 20 | Fact list (CLAUDE.md, Chapter 4 Table 8) | Built on her real records. |
-| 13 | 1:26 | Name, address, team | Fact list | Hivelet, hivelet.vercel.app, Group 4, Bicol University, IT 124 Capstone Project 2 |
+| 1 | 0-150 | 33 / 5 / 1 slam in; the building photo opens; the name | `frontend/public/fe-galang-building.webp` | 33 units, 5 clusters, 1 owner, Legazpi City |
+| 2 | 150-400 | The old way, 1 to 4: spreadsheet and USB drive, receipt book, cash, repairs in a chat; then the links between them snap | Illustrations of the old way, not app UI | Chapter 5, 5.1: spreadsheet on removable storage, paper receipts, cash, requests by message |
+| 3 | 400-580 | 937, 43%, 5 duplicate receipts | none | Chapter 5, 5.1 |
+| 4 | 580-690 | A honeycomb builds and becomes the app icon; "Hivelet" | `frontend/public/favicon.svg` mark | none |
+| 5 | 690-960 | The Overview assembles in 3D: attention tile, collected, occupancy gauge, collections chart, clusters | `views/AdminOverviewView.vue`, `components/overview/*` | Sample figures |
+| 6 | 960-1110 | All 33 unit cards flip in; 1A steps forward | `views/RoomDirectoryView.vue` (card, "Occupied"/"Vacant") | 33 units, 32 occupied, B3B vacant (sample) |
+| 7 | 1110-1440 | Monthly Income fills in; Record payment opens; unit 2B chosen; OR typed; the second-payment warning | `views/IncomeCollectionsView.vue`, `components/modals/OnsitePaymentModal.vue` (form and its confirmation) | The warning's wording is the modal's own |
+| 8 | 1440-1830 | Tenant phone: amount due, Pay with GCash, the owner's attention tile, "Settled"; a repair typed, sent, moved across the board; "Your repair is done" | `views/TenantOverviewView.vue`, `views/TenantTicketsView.vue`, `views/MaintenanceDispatchView.vue`, notification title from `backend/src/routes/admin.ts` | GCash counts once she verifies it |
+| 9 | 1830-2040 | Two-bedroom page with B3B vacant; the inquiry form typed and sent; it lands in Inquiries | `views/CategoryRoomsView.vue`, `views/InquireView.vue`, `views/InquiriesView.vue` | Category counts 20 / 8 / 4 / 1 |
+| 10 | 2040-2220 | The activity trail streams in; "Can entries be changed? No"; the app icon drops | `views/AuditLogsView.vue` (tags and the tile's own words), `frontend/public/icon-512.png` | Nothing can be edited or removed |
+| 11 | 2220-2370 | 937, 1,327, 33; "20 automated check suites, all passing" | none | CLAUDE.md, Chapter 4 Table 8 |
+| 12 | 2370-2520 | Name, address, team | none | Group 4, Bicol University, IT 124 Capstone Project 2 |
 
-## Voice
+## Sound
 
-Six lines only (`src/voice-lines.mjs`), generated with edge-tts, voice `en-PH-RosaNeural`.
-A second set in `en-US-AvaMultilingualNeural` is in `public/voice/ava/`; set `VOICE` in
-`src/timeline.ts` to switch.
-
-## Music
-
-None is bundled. Put a track at `public/music.mp3` and render again: it plays under the voice,
-lowered while a line is spoken, and fades out at the end.
-
-## Corrections made to the prompt's table
-
-- **Palette.** The prompt named the blue `--primary` tokens in `index.css`. The screens use the
-  green "workspace system" tokens (`--brand #17603f`, `--canvas #edf1ee`), so the video does too.
-- **App icon.** It was still the first theme's blue gradient on a green app. Fixed in the app
-  itself (commit `4bf952c`, `capture/render-app-icons.mjs`), so the icon in the video is the one
-  a tenant installs.
-- **Scene 5** reads "All 33 units, in one place." (the page's own subtitle says "All 33 units
-  across 5 clusters").
-- **Scene 6's voice** says every payment "is checked before it is saved", not "recorded once":
-  the check warns about an earlier payment for the same period and lets her record it anyway
-  when it settles a balance.
-- **Scene 10** adds the owner's side ("She sees it..."), since the inquiry lands in her
-  Inquiries page with the unit attached.
-- **Scene 11** says entries cannot be edited, which is what the Activity page itself states.
+Every effect is synthesized by `capture/sfx.mjs` (camera swipes, mouse clicks, phone taps, pops,
+pings, blings, key taps, a riser and an impact), so there is nothing to license. Drop a track
+at `public/music.mp3` and render again to lay music under them.
 
 ## Rebuilding
 
 ```bash
 npm install
-npx playwright install chromium
-python -m pip install edge-tts
-npm run dev:frontend        # from the repository root, in another terminal
-node capture/capture.mjs    # the screens
-node capture/voice.mjs      # the voice
-node capture/storyboard.mjs # a contact sheet for review
+node capture/sfx.mjs        # the sound effects
+node capture/storyboard.mjs # contact sheets for review, three frames a scene
 npm run render              # out/hivelet.mp4
 ```
+
+`capture/capture.mjs` and `capture/harness.html` film the real pages with the sample data; the
+film no longer uses those screenshots, but they are the reference the rebuilt components were
+checked against. `capture/study.mjs` turns a reference video into contact sheets.
