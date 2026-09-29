@@ -216,7 +216,7 @@ Back to the administrator.
 
 | # | Do | Should see | ✍ |
 | :-- | :--- | :--- | :-- |
-| 24 | Vacate the rehearsal tenant from `PH`. | Tenancy ends, `PH` returns to **Available**, the account goes inactive. | ✍ |
+| 24 | **First**, the one write path added after this list was written (B-83): Tenants > **Edit** the rehearsal tenant > **Reset password** > confirm, then sign in as them with the new one-time password in a private window (test case A-36 has the expected result). **Then** vacate the rehearsal tenant from `PH`. | Tenancy ends, `PH` returns to **Available**, the account goes inactive. | ✍ |
 | 24b | **Immediately after step 24, run `npm run check:relations`.** | Its pinned line must still read **2** ended tenancies with no end date — **not 3** (the baseline was 16 until the clean-up of 23-26 September). This is the one step that proves the vacate path records *when* a tenancy ended. The code has written `end_date` since 2026-09-16, and **no human has used that path since**, so this is the first correctly-dated row the system will ever have produced. If the count rises to 3, the date was not written and **B-11 is a code defect rather than a data gap**. | |
 | 25 | Delete the `REHEARSAL-001` income record if you have not. | Gone from the ledger. | ✍ |
 | 26 | Set `PH` back to **₱30,000**. ⚠ **NOT ₱12,000** — this step said 12,000 until 2026-09-20, which was the stale seeded rate. Putting that back would undo the owner's confirmed rate card and re-advertise the Penthouse at less than half what it lets for. | Saved, and `PH` reads ₱30,000 again. | ✍ |
