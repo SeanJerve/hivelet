@@ -753,9 +753,10 @@ function triggerRecord() {
         /**
          * One receipt, one set of figures. This dialog lives for the whole
          * session (App.vue), so the next receipt opened on this one's OR number,
-         * reference, garbage fee and months - a fee carried onto a receipt that
-         * had none, or one OR number on two units, which the per-unit duplicate
-         * guard does not catch. Seen in the admin harness 2026-09-30, before she
+         * reference, garbage fee and months. A fee or a typed rent carried onto
+         * the next receipt is saved as if she had entered it; a carried OR number
+         * is refused by the server (it checks every unit and date for the same
+         * number), which is only a confusing stop. Seen in the admin harness 2026-09-30, before she
          * enters every receipt since 8 August in one sitting. The unit and the
          * date received stay, for a run of receipts from one day; rent and water
          * go back to the unit's own figures, so a part-payment typed here is not
