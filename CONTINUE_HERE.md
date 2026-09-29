@@ -14,7 +14,13 @@
 >   robots.txt and sitemap.xml; the Pay with GCash dialog now says it is on Adyen's test account.
 > - **B-82 done here:** the dead shared tenant password is out of this machine's `creds.txt`.
 >   **B-84** lists what still needs a person, including **migration 060** (not applied).
-> - **No more pushes from this machine until testing is over** (the guide's rule 5).
+> - **Later the same night:** `check:api` no longer falls back to the admin password for a tenant
+>   (with B-82's line gone it would have); F-7 fixed, so `npm run backup` works on a fresh clone
+>   (`npm run install:all` installs the root too); the test cases and rehearsal name the workbooks
+>   by their new file names. `check:all` with the backend up: **19/20**, the one FAIL the expected
+>   B-82 tenant block (sign-in not attempted, 0 failed logins on any tenant before and after).
+>   Everything above was confirmed in production (headers, robots, sitemap, the new chunks).
+> - **No more pushes from this machine after 06:00 Manila on 30 September** (the guide's rule 5).
 
 > [!IMPORTANT]
 > **2026-09-29, Loyd's machine, the evening before the first test with the owner and real
