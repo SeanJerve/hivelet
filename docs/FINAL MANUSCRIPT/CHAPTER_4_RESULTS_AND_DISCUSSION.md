@@ -13,6 +13,11 @@
 > clean-up: Table 8 re-run, Table 9 and the defect list brought up to date (all six defects now
 > fixed), the ledger pages' new names, the maintenance features added on 26 September, the removal
 > of test data, and the decision about historical receipts.
+>
+> **Updated 2026-09-29**, the evening before the testing day: Table 8 re-run; §4.3.6 added with
+> measured offline, installation, weak-connection and simultaneous-use results (Tables 11A, 11B);
+> §4.3.7 added for the owner and tenant acceptance test (Tables 11C, 11D, pending); two rows added
+> to Table 23; the tenant account reset in §4.2.6 and Table 25.
 
 This chapter presents the results of the study and discusses what they mean. It is organized by
 the four specific objectives in Section 1.2: the analysis of existing practices (4.1), the
@@ -202,7 +207,12 @@ Other security measures in the system:
 - An account locks after repeated failed sign-ins. The lock is checked before the password is
   compared, and it is kept per account so that an attacker cannot avoid it by changing address.
 - A new account must change its password at first sign-in, and changing a password ends every
-  other session of that account.
+  other session of that account. Before the tenants first used the system, on 29 September 2026,
+  every tenant account was given its own starting password, handed to the tenant in person, and
+  set to require a new password at first sign-in; every earlier session was ended. Until then the
+  tenant accounts had shared one password used by the development team. The system does not yet
+  let the owner reset a forgotten password; the team reissues a starting password with a script
+  (Chapter 5, recommendation 9).
 - Every administrator action is written to an audit trail. The database refuses to let the
   application edit or delete its entries. The only change ever made to it was deliberate and
   reviewed: when test accounts were deleted, the name on their entries was removed and every entry
@@ -229,10 +239,11 @@ on a phone. *Figure 8. The Tenant Portal on a Mobile Phone.* [SCREENSHOT PENDING
 
 Twenty automated check suites were written during development. They run against the live system
 and **perform no writes**, which is what makes them safe to run against the owner's real records.
-The full set was run again on 28 September 2026, after the last changes of the pilot, and **all
-20 passed**. Table 8 shows the principal results.
+The full set was run again on 29 September 2026, the evening before the first test with real
+users, and **all 20 passed**, with the same counts as the run of 28 September. Table 8 shows the
+principal results.
 
-**Table 8.** Results of Automated Verification (28 September 2026)
+**Table 8.** Results of Automated Verification (29 September 2026)
 
 | Suite | What it checks | Result |
 | :--- | :--- | :--- |
@@ -424,6 +435,105 @@ Performance was measured on the hardware listed in Tables 2 and 3.
 
 [DATA PENDING: state the device, browser, network and date of the measurement, and how each time
 was taken. Report measured numbers only.]
+
+### 4.3.6 Offline Use, Installation, Weak Connections and Simultaneous Users
+
+> **TEAM NOTE.** Tables 11A to 11D are new (29 September 2026). Renumber every table after
+> Table 11 when this chapter goes into the Word file. The measurements are in
+> `PRE_TESTING_AUDIT_2026-09-29.md`, with the device and time of each.
+
+Before the system was used by its tenants, the behaviour a real day of use would test was measured
+on the live system on 29 September 2026: what happens without a connection, on a weak one, when the
+application is installed, and when several people use it at once. The measurements were taken with
+Google Chrome 154 driven by an automated browser (Playwright) on an Acer Nitro ANV15-52 laptop
+(Intel Core i5-13420H, 16 GB) on a home broadband connection, using Chrome's phone emulation
+(390 × 844 pixels). Every attempt to save data was blocked inside the browser, so the tests wrote
+nothing to the owner's records.
+
+**Table 11A.** Offline and Installation Behaviour (29 September 2026)
+
+| Test | Result |
+| :--- | :--- |
+| Installation requirements (manifest, service worker, icons) | Met; the service worker keeps 67 application files on the device after the first visit |
+| Opening ten addresses with no connection | The application opened on all ten in about 1.5 seconds instead of the browser's "no internet" page |
+| Tenant and administrator pages with no connection, signed out | The application opened and asked for sign-in; no personal or financial data is stored on the device |
+| Notice when the connection drops | Shown at once: "No connection. You can read what is already loaded, but nothing can be saved or paid until it is back." |
+| Notice when the connection returns | "Back online" |
+| Public unit list with no connection | Shown from the device's memory |
+| Public unit list when the server stops answering | Shown from the device's memory after 3.1 seconds |
+| Public page on a slow connection (400 kbps, 400 ms), first visit | Units on screen after 4.6 seconds |
+| The same page, returning visitor | Units on screen after 0.3 seconds, because the installed application already holds its files |
+
+**Table 11B.** Simultaneous Users, Read Operations (29 September 2026)
+
+| Test | Users at once | Duration | Requests | Errors | Slowest 5% took longer than |
+| :--- | --: | --: | --: | --: | --: |
+| Public pages and public data, live site | 12 | 60 s | 1,085 | 0 | 0.52 s |
+| The owner's ten main data requests, live database | 6 | 45 s | 285 | 0 | 0.80 s |
+
+The results show that the application behaves as Section 1.4 and Section 4.2.7 say it should, and
+no more. It opens without a connection and says plainly what it cannot do, but the owner's and
+tenants' records need the connection, which is also why no personal data is left on a shared phone.
+Under loads several times larger than the property's own (a few tenants and one owner), no request
+failed and nineteen in twenty were answered in under a second.
+
+The same tests found one weakness. A weak signal usually stalls instead of failing, and the
+application waited for as long as the browser did, which can be minutes, with the button showing
+"Sending…" and no advice. A time limit was added the same evening: a page now stops waiting after
+25 seconds and says it could not reach the server, and a save stops after 45 seconds and says it
+**cannot tell whether the save arrived, so the reader should check before sending it again**. Only
+the save message makes no claim, because a save that timed out may still have been recorded. With
+the server held open on purpose, the public page showed its notice at 27 seconds and the enquiry
+form its message at 46 seconds with the typed text kept; without the change, the same page still
+showed nothing after 41 seconds (Table 23).
+
+An accessibility scan of the seven public pages (axe-core 4, WCAG 2 levels A and AA) at phone and
+computer widths found no violations, and no page was wider than a 360-pixel phone screen.
+
+### 4.3.7 User Acceptance Testing with the Owner and Tenants [DATA PENDING]
+
+> **TEAM NOTE.** Filled from the testing day of 30 September 2026. The procedure is
+> `TESTING_DAY_GUIDE.md`, the cases `TESTING_DAY_TEST_CASES.md`, the forms
+> `TESTING_DAY_FORMS.md`. Send Claude the observation sheets, the defect log and the survey export.
+
+The owner and [DATA PENDING: number] tenants used the live system for their own tasks on 30
+September 2026, each on their own device and signed in to their own account, after giving written
+consent. A facilitator read each task aloud without showing where to tap; an observer recorded
+whether the task was completed without help, with help, or not at all, how long it took, and the
+number of wrong turns. Following the quality-in-use model of ISO/IEC 25010, completion measures
+effectiveness, time measures efficiency, and the survey in Section 4.4 measures satisfaction. The
+owner's session followed the 26-step walkthrough (Table 10) and her real work of the day. The
+tenants then used the system all at the same time, and two of them repeated the offline and
+installation tests of Table 11A on their own phones.
+
+**Table 11C.** Tenant Task Results [DATA PENDING]
+
+| Task | Tenants attempting | Completed without help | Completed with help | Not completed | Median time (s) | Mean wrong turns |
+| :--- | --: | --: | --: | --: | --: | --: |
+| First sign-in and choosing a password (T-01, T-02) | | | | | | |
+| Finding their unit, rent and balance (T-03, T-04) | | | | | | |
+| Finding their payments (T-05, T-06) | | | | | | |
+| Sending a repair request with a photo (T-07 to T-09) | | | | | | |
+| Following up a request (T-10, T-11) | | | | | | |
+| Checking their details and notifications (T-12, T-13) | | | | | | |
+| Opening the GCash payment (T-14) | | | | | | |
+| Staying out of the owner's pages; signing out (T-15, T-16) | | | | | | |
+| **All tasks** | | | | | | |
+
+**Table 11D.** Simultaneous Use by the Owner and Tenants [DATA PENDING]
+
+| Test (at the same moment) | Result |
+| :--- | :--- |
+| Every tenant opens their overview (C-01) | |
+| Each tenant sees only their own unit and records (C-02) | |
+| Every tenant sends a message on a request (C-03, C-04) | |
+| The owner changes two requests; only those tenants are notified (C-05) | |
+| A double tap on Send saves one message (C-06) | |
+
+[DATA PENDING: one paragraph on the task results: which tasks every tenant completed alone, which
+needed help and why (from the observers' notes), and what the tenants said. Then one paragraph on
+the simultaneous session and the offline tests on real phones, compared with Table 11A. Report
+failures as they happened.]
 
 ---
 
@@ -692,6 +802,8 @@ pilot; the rows after them will come from the survey results.
 | Mobile review, 26 Sep 2026 | On phones, every tap flashed a grey box, short pages scrolled slightly, and the notification panel could end under the browser's toolbar | Tap highlight removed; pages and the panel sized to the visible screen height | Usability, Portability |
 | Check review, 28 Sep 2026 | Two checks disagreed on how many ended tenancies had no end date (2 and 1): the tenant list never sent end dates, and one real record had none | The list now sends end dates; the record was given its date (migration 059); both checks now fail on any new case | Reliability |
 | Team review, 28 Sep 2026 | The public FAQ offered online GCash payment while the gateway is still Adyen's test account | The FAQ now says online payments charge no real money yet and asks tenants to pay in person | Functional Suitability |
+| Pre-testing audit, 29 Sep 2026 | Every tenant account shared one password that the development team had used, so a tenant given it could have signed in as a neighbour | Each tenant given their own starting password, handed over in person, with a new password required at first sign-in; every earlier session ended | Security |
+| Pre-testing audit, 29 Sep 2026 | On a weak signal a page or a save could wait for minutes with no message | Pages stop after 25 seconds and saves after 45, each with a message; a save that may have arrived asks the reader to check before sending it again | Reliability, Usability |
 | Survey results | [DATA PENDING] | | |
 
 ---
@@ -717,7 +829,7 @@ code branch. Table 24 lists what is needed to use the system, and Table 25 the d
 | 1. Environment preparation | Hosting, database and gateway set up; security settings applied | Done |
 | 2. Record transfer | The owner's workbook transferred: 937 income rows and 1,327 expense allocations | Done |
 | 3. Pilot use | The system used alongside the owner's existing records; differences investigated | In progress |
-| 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | [DATA PENDING] |
+| 4. Training and hand-over | The owner and tenants shown how to use the system; user manual (Appendix K) handed over; accounts issued | In progress: every tenant account prepared with its own starting password on 29 September 2026. [DATA PENDING: training and hand-over dates] |
 | 5. Full transition | The system becomes the owner's main record once both records agree | [DATA PENDING] |
 
 Three risks are managed deliberately:

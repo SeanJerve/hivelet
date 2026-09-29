@@ -155,12 +155,89 @@ supplementary online payment feature" to "direct banking integration."
 > gateway's own dashboard, automated reconciliation against bank records, and direct banking
 > integration.
 
+## H. The testing method, written for Chapter 3 (added 2026-09-29)
+
+Chapter 4 now reports automated verification, measured offline and simultaneous-use tests, a
+walkthrough, a user acceptance test with the owner and tenants, and the survey. Chapter 3 must
+describe each of them as the method, or the panel will find results with no method behind them.
+These replace the optional note on §3.2.4 in section F. They are written in the past tense because
+the work will be done by the time the paper is read; if the manuscript is submitted before
+30 September, change "were" to "will be".
+
+**H1. §3.2.4 Testing (p.34). Replace the whole subsection.**
+
+> Testing was carried out in four layers, each answering a different question.
+>
+> **Automated verification.** Twenty check suites were written alongside the system. They verify
+> every endpoint and the separation of roles, re-derive the owner's ledger and exported reports
+> from the database, check the payment gateway's message signatures, and confirm that no screen
+> presents stored or empty data as a live figure. They run against the live system without writing
+> to it, and were run after every significant change.
+>
+> **Screen-versus-database audit.** Each figure shown on each screen was compared with a read-only
+> query of the live database for the same records, to confirm that a screen shows a person what
+> the database holds for them.
+>
+> **Offline, installation and simultaneous-use tests.** With an automated browser, the installed
+> application was opened without a connection and on throttled slow connections, and the live
+> system was read by several simultaneous users, with every save blocked in the browser so that no
+> record was written.
+>
+> **Functional walkthrough and user acceptance testing.** A 26-step walkthrough exercised every
+> function that writes data once, on the one vacant unit. The owner and three to five tenants then
+> used the live system for their own tasks on their own devices, observed by the researchers, and
+> used it all at the same time. Results are reported in Chapter 4, Section 4.3.
+
+**H2. §3.3 Evaluation Procedure (p.35). Add after the paragraph in B7.**
+
+> **Participants.** The owner, as the only administrator, took part as a matter of course. Tenants
+> were chosen by purposive sampling from the occupied units, to include tenants who pay in cash on
+> site, tenants less used to mobile applications, users of both Android and iPhone handsets, and
+> residents of more than one cluster. Technical evaluators were IT faculty, developers or IT
+> professionals who were given access to the source code and documentation before rating.
+>
+> **Instruments.** Four instruments were used: task cards read aloud to each tester, in English
+> and Filipino; an observation sheet recording, for each task, whether it was completed without
+> help, with help, or not at all, the time taken, and the number of wrong turns; a defect log; and
+> the ISO/IEC 25010 survey questionnaire, with a separate section for each respondent group and the
+> tenant section in English and Filipino.
+>
+> **Data gathering.** Each tester gave written consent before taking part. Each used their own
+> account on their own device while a facilitator read the tasks without indicating where to tap
+> and an observer completed the observation sheet. Screen recordings and photographs were taken
+> only with the tester's permission. Each tester answered the survey immediately after their
+> session, without the researchers viewing their answers. Page load times were measured on the
+> workstation in Table 2 and the phone in Table 3, three times per screen, and the median was
+> recorded.
+>
+> **Statistical treatment.** For each survey item the weighted mean was computed as
+>
+> WM = Σ(f × w) / N
+>
+> where *f* is the number of respondents choosing a rating, *w* the rating (1 to 5) and *N* the
+> number of respondents, and interpreted using Table 13. The composite mean of each characteristic
+> is the mean of its item means, computed per respondent group and then [DECISION PENDING: as the
+> mean of the group means, or across all respondents; the same choice as Chapter 4, §4.4.2]. For
+> the acceptance test, the task completion rate is the number of tasks completed without help
+> divided by the number attempted, reported with the median time per task and the mean number of
+> wrong turns, following the effectiveness and efficiency measures of the ISO/IEC 25010 quality in
+> use model.
+
+**H3. Ethical considerations. Add at the end of §3.3, or as §3.4 if the template allows one.**
+
+> The study used the owner's real records and the tenants' real accounts, so it followed the Data
+> Privacy Act of 2012 (Republic Act No. 10173). Participation was voluntary and could be withdrawn
+> at any time without any effect on a tenant's tenancy. Each tenant used only their own account,
+> which shows only their own records, and received an individual starting password in person, which
+> they replaced at first sign-in. Survey responses were anonymous. Names, contact details and
+> amounts are hidden in every figure in this paper, and faces appear only with consent. Recordings
+> and notes were kept by the research team and are deleted after the defense.
+
 ## F. Optional improvements (not errors)
 
 - §2.4 defines ISO/IEC 25010 with only three example characteristics. Listing all eight would
   match Objective 4.
-- §3.2.4 Testing describes unit and integration testing. What was actually done is the 20
-  automated check suites and the 26-step walkthrough (Chapter 4, Section 4.3). Consider describing
-  those instead.
+- ~~§3.2.4 Testing describes unit and integration testing. Consider describing the suites and the
+  walkthrough instead.~~ Now a required fix with paste-ready text: section H1.
 - Chapter 3 is written in the future tense ("will be used"). Where the work is done, the past or
   present tense avoids a second disagreement with Chapter 4.

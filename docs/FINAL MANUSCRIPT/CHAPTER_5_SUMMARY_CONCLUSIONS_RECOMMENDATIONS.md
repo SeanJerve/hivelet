@@ -43,9 +43,12 @@ accomplished:
    after the client reviewed it on a phone. A screen-by-screen comparison with the live records
    found six defects the automated checks had missed, and all six were corrected the same day.
    When testing ended, every record it had created was removed by one reviewed change, leaving the
-   owner's 937 income rows untouched.
-   [DATA PENDING: one sentence on the 26-step walkthrough
-   and one on the measured load times.]
+   owner's 937 income rows untouched. Measured on the live system on 29 September 2026, the
+   application opened without a connection and said plainly what it could not do, could be
+   installed on a phone, and answered 1,085 requests from twelve simultaneous visitors and 285 from
+   six simultaneous readers of the owner's records without a single error.
+   [DATA PENDING: one sentence on the 26-step walkthrough, one on the tenants' task results, and
+   one on the measured load times.]
 
 4. **The system was evaluated using ISO/IEC 25010** by the owner, the tenants and technical
    evaluators. [DATA PENDING: the overall mean and its interpretation, then one line per
@@ -115,14 +118,19 @@ Based on the summary and conclusions of the study, the following are recommended
    every function that writes data is tested by a machine on every change and not only once by a
    person.
 8. Consider sending notifications by SMS as well, since not every tenant opens the system daily.
+9. Let the owner reset a tenant's password from the tenant list. In this version a tenant who
+   forgets a password cannot get back in without the development team, who reissue a starting
+   password from a script (Chapter 4, §4.2.6).
+10. Switch the browser security policy the site already declares from reporting to enforcing,
+    once its reports show nothing legitimate would be blocked.
 
 **For future researchers**
 
-9. Use this study's approach of checking a system against its own real data, not only against
-   test cases. Several of the most important defects in this study would have passed ordinary
-   testing.
-10. Study offline recording, so that a payment taken where there is no signal can be saved on the
+11. Use this study's approach of checking a system against its own real data, not only against
+    test cases. Several of the most important defects in this study would have passed ordinary
+    testing.
+12. Study offline recording, so that a payment taken where there is no signal can be saved on the
     device and sent once the connection returns.
-11. Extend the evaluation over a longer period of real use, and measure whether the owner's time
+13. Extend the evaluation over a longer period of real use, and measure whether the owner's time
     spent on record-keeping actually falls after adoption.
-12. Study support for more than one property, for owners who manage several small buildings.
+14. Study support for more than one property, for owners who manage several small buildings.
