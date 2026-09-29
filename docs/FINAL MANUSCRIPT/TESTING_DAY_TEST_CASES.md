@@ -171,11 +171,13 @@ personal and financial data is never kept on the phone** (Chapter 4, §4.2.7; th
 | O-09 | SE | FR-030 | Sign out, airplane mode on, open the app | No personal data visible anywhere | | | |
 | O-10 | RE | FR-003 | Offline: open the public units page | Units shown from memory, or a notice that availability cannot be shown (never a made-up list) | | | |
 | O-11 | RE | NFR-006 | **Weak signal**: on the laptop, DevTools > Network > **Slow 3G**; open Repairs and send a note | It gets there, slowly; the button shows "Sending…" and cannot be pressed twice | | | |
-| O-12 | RE | NFR-006 | Weak signal that stops answering (walk to a dead spot, or DevTools **Offline** right after pressing Send) | Within 45 seconds a message says it cannot tell whether it was saved and to **check before sending again** | | | |
+| O-12 | RE | NFR-006 | Weak signal that stops answering (walk to a dead spot, or on the laptop DevTools > Network > throttling > **Add** a custom profile with **60000 ms** latency, select it, then send) | Within 45 seconds a message says it cannot tell whether it was saved and to **check before sending again** | | | |
 
 O-12 depends on the request deadline added on 29 September (`frontend/src/lib/api.ts`). If that
 change is not live yet, a save on a dead connection spins until the browser gives up; record what
 happens either way.
+
+DevTools **Offline** does not reproduce O-12: it fails the request at once or lets the reply through, so it shows O-06's "could not reach the server" or a normal save, never the 45-second message. Use the 60000 ms profile.
 
 ---
 
