@@ -129,8 +129,8 @@ thing did not work" is not.
 - **Rate limits are in memory** (`middleware/rateLimit.ts`), so on Vercel serverless they reset per
   instance. Per-account lockout is in the database and holds. A durable limiter needs a table (a migration).
 - **CSP is still report-only** (vercel.json), on purpose until a TEST GCash payment runs clean under it.
-- **Pay dialog**: B-80 put the test-account sentence in the FAQ and now the Terms; the Pay with GCash
-  dialog itself still says nothing. One line if you want it there too.
+- ~~**Pay dialog**~~ **done 2026-09-29**: the Pay with GCash dialog now says the same test-account
+  sentence as the FAQ and Terms, above the Drop-in. Remove it with the change that wires the live account.
 - **Photos**: confirm who took `fe-galang-building.webp` and `fe-galang-gate.webp` (yours or the
   owner's = fine; from Google Maps or Facebook = replace).
 - **Law to confirm with her, not code**: RA 11967 (Internet Transactions Act) may expect her business

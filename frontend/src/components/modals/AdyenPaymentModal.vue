@@ -403,6 +403,20 @@ async function confirmWithServer(sessionId: string, sessionResult?: string) {
     </dl>
 
     <!--
+      B-80, said where the tenant actually pays (2026-09-29). The public FAQ and
+      the terms already say it; this dialog did not, so a tenant could finish a
+      GCash payment, read "Payment received", and believe the rent was paid -
+      and a verified test payment marks a real bill Paid with nothing collected.
+      The words are the FAQ's own. True for as long as adyenService.ts talks only
+      to Adyen's test host (ADYEN_CHECKOUT_HOST); remove it in the same change
+      that wires the live account.
+    -->
+    <p class="rounded-2xl bg-verify-soft px-4 py-3 text-sm leading-6 text-ink">
+      Online GCash payments run on Adyen's test account, so no real money is charged yet. Pay
+      your rent in person until online payment goes live.
+    </p>
+
+    <!--
       This same panel covers two different waits: opening the Drop-in, and
       afterwards confirming what Adyen just did with `confirmWithServer`. Both
       set `isLoading`, and this used to say "Opening the payment page" for
