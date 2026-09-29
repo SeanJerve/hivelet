@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hivelet tenant quick guide (print)</title>
+<!--
+  Appendix K, Part 1, laid out to print: two copies per A4 sheet, cut along the dashed line, one
+  per tenant with their sign-in slip. Same content as USER_MANUAL_APPENDIX_K.md Part 1; change
+  both together. No names, no passwords: safe to keep in the repository and to print anywhere.
+  Open in Chrome > Print > A4, margins Default, scale 100%.
+-->
+<style>
+  @page { size: A4; margin: 10mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 9.3pt/1.32 "Segoe UI", system-ui, -apple-system, Arial, sans-serif; color: #111; background: #fff; }
+  .sheet { display: grid; grid-template-rows: 1fr 1fr; gap: 0; height: 276mm; }
+  .card { padding: 4.5mm 6mm; display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 6mm; align-content: start; overflow: hidden; }
+  .card + .card { border-top: 1px dashed #666; }
+  .head { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid #17603f; padding-bottom: 2mm; }
+  .head h1 { margin: 0; font-size: 15pt; color: #17603f; letter-spacing: -0.01em; }
+  .head .url { font: 700 12pt Consolas, "Courier New", monospace; }
+  h2 { margin: 0 0 1mm; font-size: 10.5pt; color: #17603f; }
+  p, ol, ul { margin: 0; }
+  ol, ul { padding-left: 4.5mm; }
+  li + li { margin-top: 0.8mm; }
+  .fil { color: #444; font-style: italic; }
+  .box { border: 1px solid #17603f; border-radius: 2mm; padding: 2mm 3mm; background: #eef5f1; }
+  .foot { grid-column: 1 / -1; font-size: 8.5pt; color: #444; border-top: 1px solid #ccc; padding-top: 1.5mm; }
+  @media screen { body { background: #ddd; } .sheet { width: 210mm; margin: 8mm auto; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.2); } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <!-- Two identical cards; the template is duplicated below by a line of script so the text lives once. -->
+  <section class="card" id="card">
+    <div class="head"><h1>Hivelet: your tenant portal</h1><span class="url">hivelet.vercel.app</span></div>
+
+    <div>
+      <h2>1. First sign-in / Unang pag-sign in</h2>
+      <ol>
+        <li>Open <b>hivelet.vercel.app</b>, tap <b>Sign in</b>.</li>
+        <li>Type your <b>phone number</b> (or email) and the <b>starting password</b> on your slip.</li>
+        <li>Set <b>your own password</b>: type the starting one again, then the new one twice. At least <b>10 characters, a letter and a number</b>.</li>
+      </ol>
+      <p class="fil">I-type ang numero at ang starting password sa slip, saka gumawa ng sariling password (10+ character, may letra at numero).</p>
+    </div>
+
+    <div>
+      <h2>2. What you will see / Makikita ninyo</h2>
+      <ul>
+        <li><b>Overview</b>: your unit, rent and <b>Amount due</b>. It counts only payments the landlady has recorded.</li>
+        <li><b>Payments and billing</b>: rent plus water at <b>₱200 per occupant a month</b>, and every payment recorded.</li>
+        <li><b>My details</b>: keep your number and emergency contact right.</li>
+      </ul>
+      <p class="fil">Ang "Amount due" ay batay lang sa mga bayad na naitala na ng landlady.</p>
+    </div>
+
+    <div>
+      <h2>3. Report a repair / Mag-report ng sira</h2>
+      <ol>
+        <li><b>Repairs</b> &gt; say what needs fixing and <b>How urgent</b>.</li>
+        <li><b>Add a photo</b> if you can (a normal phone photo is fine).</li>
+        <li><b>Send request</b>. Follow it and add notes there; you are told when it is done.</li>
+      </ol>
+    </div>
+
+    <div>
+      <h2>4. Put it on your home screen</h2>
+      <ul>
+        <li><b>Android</b> (Chrome): <b>⋮</b> &gt; <b>Install app</b>.</li>
+        <li><b>iPhone</b> (Safari): <b>Share</b> &gt; <b>Add to Home Screen</b>.</li>
+      </ul>
+      <p>No signal? It still opens and says <b>"No connection"</b>; nothing is sent until the signal is back.</p>
+    </div>
+
+    <div class="box">
+      <b>Paying:</b> pay the landlady in person as usual. <b>Pay with GCash</b> does not charge real money yet.
+      <span class="fil">Sa landlady pa rin po magbayad nang personal.</span>
+    </div>
+
+    <div class="box">
+      <b>Forgot your password?</b> Ask the landlady; she can give you a new starting password. Five wrong tries lock it for 15 minutes.
+      <span class="fil">Nakalimutan? Lumapit sa landlady.</span>
+    </div>
+
+    <p class="foot">Keep your password to yourself. Sign out on a phone that is not yours (your initials, top right &gt; Sign out). Fe Galang Da Silva Boarding House.</p>
+  </section>
+</div>
+<script>
+  // Second copy on the same sheet, cut along the dashed line.
+  const card = document.getElementById('card');
+  const copy = card.cloneNode(true);
+  copy.removeAttribute('id');
+  card.parentNode.appendChild(copy);
+</script>
+</body>
+</html>

@@ -8,7 +8,8 @@ Hivelet is at **https://hivelet.vercel.app**. It works in any current browser on
 computer, and it can be installed on a phone's home screen (Part 1, step 6).
 
 > **TEAM NOTE (delete before pasting into the manuscript).** Part 1 is also the one-page handout
-> for tenants: print it on the back of each sign-in slip, or as its own page. Screenshots for the
+> for tenants: `TENANT_QUICK_GUIDE_PRINT.html` is the same text laid out to print, two per A4 sheet.
+> Change both together. Screenshots for the
 > manuscript's copy of this appendix: take them from the vacant unit `PH` or blur names, as for
 > Figures 4 to 8.
 
