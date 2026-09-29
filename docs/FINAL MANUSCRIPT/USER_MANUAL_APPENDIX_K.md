@@ -98,6 +98,8 @@ refresh when the connection is back.
 2. Choose the **Unit**, type the **Receipt (OR) number** from your receipt book, the **Date
    received**, **How they paid**, and the period it covers (**Covering from**, **Covering to**, or
    **Months covered** for more than one month at once).
+   **Covering from** starts on the day after that tenant's last recorded period, so receipts
+   entered oldest first need no change. Change it if this receipt is for a different period.
 3. **Rent** and **Water** fill in from the unit's rate and its occupants (₱200 each). If you type a
    different water figure, the form warns you before saving. Add a **Garbage fee** if one was paid.
 4. Save. The payment appears in the month it pays for, and on the tenant's own screen.
