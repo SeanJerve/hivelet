@@ -125,7 +125,7 @@ Three runs per screen; the middle one goes in the table.
 | PF-02 | Public home, second load | | | | | | |
 | PF-03 | Sign-in to Overview | | | | | | |
 | PF-04 | Monthly Income, full year | | | | n/a | n/a | n/a |
-| PF-05 | income.xlsx export | | | | n/a | n/a | n/a |
+| PF-05 | Monthly Income workbook export | | | | n/a | n/a | n/a |
 | PF-06 | Tenant Overview, first load | | | | | | |
 | PF-07 | Tenant Payments | | | | | | |
 | PF-08 | Send a repair request | | | | | | |

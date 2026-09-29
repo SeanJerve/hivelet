@@ -65,7 +65,7 @@ table is the sheet to fill.
 | A-26 | FS | FR-005 | (20) Inquiries: reply to A-07's enquiry, close it | Message posted; Closed | | |
 | A-27 | FS | FR-025, FR-027 | (21) Repairs: In Progress, Resolved, delete | Each saves; tenant gets "repair is done" | | |
 | A-28 | FS | FR-018, FR-038, FR-039 | (22, 22b) Monthly Expenses: ₱100 REHEARSAL, edit, split 60/40, delete | Saves; total stays ₱100 when split | | |
-| A-29 | FS, CO | FR-044, FR-028 | (23) Download income.xlsx and expenses.xlsx, open in Excel | Open correctly; her layout | | |
+| A-29 | FS, CO | FR-044, FR-028 | (23) Download the Monthly Income and Monthly Expenses workbooks, open in Excel. They save as "Monthly Income September 2026 - MI092026.xlsx" and "Monthly Expenses September 2026 - ME092026.xlsx" | Open correctly; her layout | | |
 | A-30 | RE | NFR-006 | (23b) With Overview open, disconnect the laptop's internet, reload | Money tiles show "—", never ₱0.00 | | |
 | A-31 | FS | FR-009 | (24) Vacate the rehearsal tenant | `PH` Available; account inactive | | |
 | A-32 | FS | FR-007 | (26) Set `PH` back to ₱30,000 | Saved | | |
@@ -193,7 +193,7 @@ for are on screen.
 | PF-02 | Public home, second load | (supporting) | Normal reload | | |
 | PF-03 | Sign in to Overview | Sign-in to dashboard | Stopwatch from pressing Sign in to figures shown | | |
 | PF-04 | Monthly Income, full year | Income ledger, one full year | Stopwatch to the last row visible | | n/a |
-| PF-05 | income.xlsx export | Excel export of one year | Stopwatch from click to file saved | | n/a |
+| PF-05 | Monthly Income workbook export | Excel export of one year | Stopwatch from click to file saved | | n/a |
 | PF-06 | Tenant Overview, first load | Tenant portal, first load | Cache cleared | | |
 | PF-07 | Tenant Payments | (supporting) | Stopwatch | | |
 | PF-08 | Send a repair request | (supporting) | Stopwatch from Send to confirmation | | |
