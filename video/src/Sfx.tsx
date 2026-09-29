@@ -1,13 +1,13 @@
 import React from 'react';
 import {Audio, Sequence, staticFile} from 'remotion';
-import {buildCues} from './cues.mjs';
+import {GAIN, buildCues} from './cues.mjs';
 import tl from './timeline.json';
 
 // One sound effect at one frame of the scene it sits in. The files are made by
 // capture/sfx.mjs.
 export const Sfx: React.FC<{at: number; name: string; vol?: number}> = ({at, name, vol = 0.3}) => (
   <Sequence from={Math.max(0, Math.round(at))} durationInFrames={100} name={`sfx ${name}`} layout="none">
-    <Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} />
+    <Audio src={staticFile(`sfx/${name}.wav`)} volume={Math.min(1, vol * GAIN)} />
   </Sequence>
 );
 

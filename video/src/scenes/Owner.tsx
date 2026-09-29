@@ -6,7 +6,7 @@ import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {Download, Plus} from 'lucide-react';
 import {C, jakarta} from '../theme';
 import {camera, cameraAt, Cam, count, easeInOut, flyIn, lerp, peso, pop, t01} from '../anim';
-import {Bg, GRID, Head, Stage} from '../fx';
+import {ActionCam, Bg, Focus, GRID, Head, Stage} from '../fx';
 import {Btn, Cursor, Ripple, Tile} from '../ui/Kit';
 import {AttentionTile, ChartTile, ClustersTile, CollectedTile, ConfirmDialog, LedgerHead, LedgerRow, LedgerRowData, OccupancyTile, OverviewHead, RecordModal, UnitCard} from '../ui/Admin';
 import {Cues} from '../Sfx';
@@ -41,7 +41,7 @@ export const Overview: React.FC = () => {
     {at: 30, x: 527, y: 438, s: 0.8, rx: 18, rz: -6, dur: 70},
     {at: 96, x: 215, y: 270, s: 1.45, rx: 4, rz: -1, dur: 60},
     {at: 150, x: 616, y: 270, s: 1.45, rx: 3, rz: 0, dur: 56},
-    {at: 206, x: 527, y: 666, s: 0.86, rx: 0, rz: 0, dur: 60},
+    {at: 200, x: 420, y: 650, s: 1.18, rx: 0, rz: 0, dur: 44},
   ], 2, CX);
   return (
     <AbsoluteFill>
@@ -83,6 +83,7 @@ export const Rooms: React.FC = () => {
     {at: 0, x: 1413, y: 321, s: 0.52, rx: 50, rz: -24},
     {at: 16, x: 1150, y: 321, s: 0.57, rx: 46, rz: -20, dur: 80},
     {at: 98, x: 121, y: 110, s: 1.55, rx: 0, rz: 0, dur: 58},
+    {at: 136, x: 121, y: 118, s: 1.85, rx: 0, rz: 0, dur: 40},
   ], 2, CX);
   const lift = pop(f, 140, {damping: 20, stiffness: 80});
   return (
@@ -148,11 +149,25 @@ export const Income: React.FC = () => {
     cx = lerp(cx, path[i][1], t); cy = lerp(cy, path[i][2], t);
   }
   const clicks = [124, 168, 206, 234, 288];
+  // Where the camera goes, in screen pixels: to Record payment, back out as the
+  // dialog opens, into the Unit field and its list, close on the receipt number
+  // while it is typed, to the dialog's Record payment, then to the warning.
+  const zoom: Focus[] = [
+    {at: 96, x: 1686, y: 192, s: 1.45, tx: 1420, ty: 400, dur: 26},
+    {at: 126, s: 1, dur: 22},
+    {at: 150, x: 1340, y: 380, s: 1.35, tx: 1340, ty: 470},
+    {at: 184, x: 1250, y: 480, s: 1.35, tx: 1300, ty: 500, dur: 22},
+    {at: 220, x: 1538, y: 568, s: 1.7, tx: 1420, ty: 540, dur: 22},
+    {at: 264, x: 1600, y: 800, s: 1.4, tx: 1420, ty: 640, dur: 22},
+    {at: 292, x: 1340, y: 400, s: 1.3, tx: 1340, ty: 480},
+    {at: 336, x: 1340, y: 540, s: 1.08, dur: 24},
+  ];
   const press = Math.max(...clicks.map((c) => t01(f, c - 3, c) * (1 - t01(f, c, c + 7))));
 
   return (
     <AbsoluteFill>
       <Bg mood="light" hex glowX={70} />
+      <Zone><ActionCam keys={zoom}>
       <Zone>
         <Stage cam={cam} w={1100} h={900}>
           <Piece f={f} at={2} x={0} y={0} shadow={false}>
@@ -197,9 +212,6 @@ export const Income: React.FC = () => {
         </Stage>
       </Zone>
       <AbsoluteFill style={{background: C.night, opacity: dim, WebkitMaskImage: DIM_MASK, maskImage: DIM_MASK}} />
-      <Head size={100} text={'Her ledger.\nHer layout.'} accent={['ledger.']} at={14} out={116} />
-      <Head size={100} text={'Her receipt\nnumbers, kept.'} accent={['kept.']} at={138} out={284} />
-      <Head size={100} text={'Paid twice?\nIt asks first.'} accent={['twice?']} at={298} />
       {f >= 128 ? (
         <div style={{position: 'absolute', left: MX / MZ, top: MY / MZ, zoom: MZ, transformOrigin: '100% 0', transform: `scale(${lerp(0.4, 1, modalP)})`, opacity: Math.min(1, modalP * 1.6)}}>
           <RecordModal f={f} unit={chosen ? '2B, Renzo Abrenica (BH)' : '1A, Andrea Villanueva (BH)'} unitOpen={unitOpen}
@@ -221,6 +233,10 @@ export const Income: React.FC = () => {
           <Cursor x={cx} y={cy} press={press} size={40} opacity={t01(f, 100, 110) * (1 - t01(f, 298, 308))} />
         </>
       ) : null}
+      </ActionCam></Zone>
+      <Head size={100} text={'Her ledger.\nHer layout.'} accent={['ledger.']} at={14} out={116} />
+      <Head size={100} text={'Her receipt\nnumbers, kept.'} accent={['kept.']} at={138} out={284} />
+      <Head size={100} text={'Paid twice?\nIt asks first.'} accent={['twice?']} at={298} />
       <Cues scene="income" />
     </AbsoluteFill>
   );

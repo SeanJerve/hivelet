@@ -17,14 +17,15 @@ import {dirname, join} from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const tl = JSON.parse(readFileSync(join(root, 'src', 'timeline.json'), 'utf8'));
-const {buildCues} = await import(pathToFileURL(join(root, 'src', 'cues.mjs')).href);
+const {GAIN, buildCues} = await import(pathToFileURL(join(root, 'src', 'cues.mjs')).href);
 const SR = 44100;
 
-// Targets in dB relative to the music, by kind of sound: small object sounds a
+// Targets in dB relative to the music (raised 2 dB on 2026-09-29, when Sean asked
+// for every effect a little louder: GAIN in src/cues.mjs), by kind of sound: small object sounds a
 // little under it, pointer clicks and taps a little over, notifications clearly over.
-const TARGET = (n) => /^settle/.test(n) || /^tick/.test(n) ? -3 : /^flip/.test(n) ? -6 : /^pluck/.test(n) ? -2
+const TARGET = (n) => 2 + (/^settle/.test(n) || /^tick/.test(n) ? -3 : /^flip/.test(n) ? -6 : /^pluck/.test(n) ? -2
   : ({nav: -3, flick: -3, sketch: -3, open: -1, 'status-1': -1, 'status-2': -1, 'status-3': -1, 'card-slide': 0,
-    blip: 3, 'soft-click': 5, tap: 6, chime: 8, 'soft-warn': 9, bell: 10})[n];
+    blip: 3, 'soft-click': 5, tap: 6, chime: 8, 'soft-warn': 9, bell: 10})[n]);
 
 const wav = (p) => {
   const b = readFileSync(p);
@@ -53,7 +54,7 @@ for (const [scene, cues] of Object.entries(buildCues(tl))) {
   if (scene === 'act1') continue;
   for (const [at, name, vol] of cues) {
     const target = TARGET(name);
-    if (name.startsWith('key') || target === undefined) continue;
+    if (name.startsWith('key') || !Number.isFinite(target)) continue;
     const fx = (cache[name] ??= highpass(wav(join(root, 'public', 'sfx', `${name}.wav`))));
     const w = Math.round(0.1 * SR);
     let best = 0, peakAt = 0, acc = 0;
@@ -61,7 +62,8 @@ for (const [scene, cues] of Object.entries(buildCues(tl))) {
     const s0 = Math.round(((start[scene] + Math.round(at)) / 30) * SR);
     let m = 0;
     for (let i = s0 + peakAt - w; i < s0 + peakAt; i++) m += (score[i] ?? 0) ** 2 * 0.81;
-    const rel = 10 * Math.log10((best / w) * vol * vol + 1e-12) - 10 * Math.log10(m / w + 1e-12);
+    const g = Math.min(1, vol * GAIN);
+    const rel = 10 * Math.log10((best / w) * g * g + 1e-12) - 10 * Math.log10(m / w + 1e-12);
     (groups[`${scene} ${name}`] ??= {target, rel: []}).rel.push(rel);
   }
 }

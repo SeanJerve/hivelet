@@ -4,7 +4,7 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {C, H, W, jakarta, sora} from './theme';
-import {easeIn, lerp, pop, t01} from './anim';
+import {easeIn, easeInOut, lerp, pop, t01} from './anim';
 
 // The grid every scene keeps to. Text lives in the left column; the visual
 // lives in its own zone to the right. Nothing crosses from one to the other.
@@ -142,3 +142,28 @@ export const FadeIn: React.FC<{children: React.ReactNode; dur?: number}> = ({chi
 };
 
 export const clampLerp = (a: number, b: number, t: number) => lerp(a, b, Math.max(0, Math.min(1, t)));
+
+// A tutorial camera over the flat, on-screen layer of a scene: it zooms toward
+// where the action is (the field being typed into, the button about to be
+// clicked, the card being moved) and slides so the action sits where the eye
+// already is. Each key puts the screen point (x, y) at (tx, ty) at scale s, and
+// eases there over `dur` frames; {at, s: 1} alone returns to the whole view.
+// Headlines stay outside it, so they never move.
+export type Focus = {at: number; x?: number; y?: number; s?: number; tx?: number; ty?: number; dur?: number};
+export function focusAt(f: number, keys: Focus[]) {
+  let s = 1, ox = 0, oy = 0;
+  for (const k of keys) {
+    if (f < k.at) break;
+    const t = t01(f, k.at, k.at + (k.dur ?? 24), easeInOut);
+    const ks = k.s ?? 1, x = k.x ?? 960, y = k.y ?? 540;
+    const kox = (k.tx ?? x) - ks * x, koy = (k.ty ?? y) - ks * y;
+    s = Math.exp(lerp(Math.log(s), Math.log(ks), t));
+    ox = lerp(ox, kox, t); oy = lerp(oy, koy, t);
+  }
+  return {s, ox, oy, at: (p: {x: number; y: number}) => ({x: ox + s * p.x, y: oy + s * p.y})};
+}
+export const ActionCam: React.FC<{keys: Focus[]; children: React.ReactNode}> = ({keys, children}) => {
+  const f = useCurrentFrame();
+  const v = focusAt(f, keys);
+  return <AbsoluteFill style={{transformOrigin: '0 0', transform: `translate(${v.ox}px, ${v.oy}px) scale(${v.s})`}}>{children}</AbsoluteFill>;
+};

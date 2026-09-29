@@ -101,7 +101,8 @@ export const AppHeader: React.FC<{initials: string; unread: number; phone?: bool
   <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: phone ? 64 : 62, borderBottom: `1px solid ${C.line}`, fontFamily: jakarta}}>
     <div style={{display: 'flex', alignItems: 'center', gap: 18}}>
       {phone ? <Menu size={22} color={C.inkSoft} /> : null}
-      <span style={{fontSize: phone ? 21 : 22, fontWeight: 700, letterSpacing: '-0.03em', color: C.ink}}>Hivelet</span>
+      <span style={{display: 'flex', alignItems: 'center', gap: 8}}><Mark size={phone ? 26 : 28} />
+      <span style={{fontSize: phone ? 21 : 22, fontWeight: 700, letterSpacing: '-0.03em', color: C.ink}}>Hivelet</span></span>
     </div>
     <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
       <div style={{position: 'relative', transform: `rotate(${Math.sin(ring * Math.PI * 6) * 14 * (1 - ring)}deg)`}}>
@@ -131,14 +132,21 @@ export const Ripple: React.FC<{x: number; y: number; p: number; color?: string; 
   );
 
 // The app icon: same mark as frontend/public/favicon.svg. `draw` strokes it on.
-export const Mark: React.FC<{size: number; draw?: number; fill?: number}> = ({size, draw = 1, fill = 1}) => (
-  <svg width={size} height={size} viewBox="0 0 512 512">
-    <rect width="512" height="512" rx="128" fill={C.brand} opacity={fill} />
-    <path d="M256 90 L396 170 L396 342 L256 422 L116 342 L116 170 Z" fill="none" stroke="#fff" strokeWidth="24" strokeLinejoin="round"
-      strokeDasharray="1000" strokeDashoffset={1000 * (1 - draw)} />
-    <path d="M196 230 L256 195 L316 230 L316 340 L196 340 Z" fill="#fff" fillOpacity={0.25 * draw} stroke="#fff" strokeWidth="16" strokeLinejoin="round"
-      strokeDasharray="520" strokeDashoffset={520 * (1 - Math.min(1, draw * 1.3))} />
-    <rect x="236" y="270" width="40" height="70" rx="6" fill="#fff" opacity={Math.max(0, draw * 3 - 2)} />
-    <circle cx="256" cy="150" r="14" fill="#fff" opacity={Math.max(0, draw * 3 - 2)} />
-  </svg>
-);
+// The Hivelet mark (frontend/public/favicon.svg): a green hexagon, the same cell
+// the hive is built from, with a minimal H under a roof. `draw` strokes the roof
+// and then the H in; `fill` fades the hexagon; `hex` colours it (the hive's
+// centre cell arrives brighter and settles to the brand green).
+export const HEX_PATH = 'M217.89 34 Q256 12 294.11 34 L429.21 112 Q467.31 134 467.31 178 L467.31 334 Q467.31 378 429.21 400 L294.11 478 Q256 500 217.89 478 L82.79 400 Q44.69 378 44.69 334 L44.69 178 Q44.69 134 82.79 112 Z';
+export const Mark: React.FC<{size: number; draw?: number; fill?: number; hex?: string}> = ({size, draw = 1, fill = 1, hex = C.brand}) => {
+  const seg = (a: number, b: number) => Math.max(0, Math.min(1, (draw - a) / (b - a)));
+  const line = {fill: 'none', stroke: '#fff', strokeWidth: 36, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const};
+  return (
+    <svg width={size} height={size} viewBox="0 0 512 512">
+      <path d={HEX_PATH} fill={hex} opacity={fill} />
+      <path d="M146 226 L256 136 L366 226" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0, 0.45))} opacity={draw > 0 ? 1 : 0} />
+      <path d="M186 254 V376" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.35, 0.65))} opacity={draw > 0.35 ? 1 : 0} />
+      <path d="M326 254 V376" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.45, 0.75))} opacity={draw > 0.45 ? 1 : 0} />
+      <path d="M186 314 H326" {...line} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - seg(0.7, 1))} opacity={draw > 0.7 ? 1 : 0} />
+    </svg>
+  );
+};

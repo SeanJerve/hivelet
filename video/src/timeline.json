@@ -7,7 +7,7 @@
     {"id": "rooms", "frames": 180},
     {"id": "income", "frames": 360},
     {"id": "ch-tenants", "frames": 60},
-    {"id": "tenant", "frames": 500},
+    {"id": "tenant", "frames": 570},
     {"id": "ch-guests", "frames": 60},
     {"id": "guests", "frames": 420},
     {"id": "proof", "frames": 165},

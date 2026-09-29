@@ -14,7 +14,7 @@
 // the manuscript does not state it yet (see SCENES.md).
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
-import {CircleHelp, FileSpreadsheet, Footprints, Inbox, MessageCircle, ReceiptText, Share2, Smartphone, Table2} from 'lucide-react';
+import {CircleHelp, FileSpreadsheet, Footprints, Inbox, MessageCircle, ReceiptText, Table2} from 'lucide-react';
 import {C, jakarta, sora} from '../theme';
 import {camera, easeIn, easeInOut, easeOut, gentle, lerp, pop, t01} from '../anim';
 import {Bg, Head, Kin, Stage} from '../fx';
@@ -132,14 +132,27 @@ const Sheet: React.FC<{f: number}> = ({f}) => {
   );
 };
 
-const FileCard: React.FC = () => (
-  <div style={{width: 300, height: 190, borderRadius: 22, background: '#1d2d24', border: '1px solid rgba(255,255,255,0.1)', padding: 24, boxSizing: 'border-box',
-    boxShadow: '0 30px 60px rgba(0,0,0,0.45)', fontFamily: jakarta, color: C.onNight}}>
-    <FileSpreadsheet size={46} color={C.glow} strokeWidth={1.5} />
-    <div style={{fontSize: 20, fontWeight: 700, marginTop: 14}}>Her workbook</div>
+// Her workbook as a file: a spreadsheet page with a folded corner and an XLSX
+// band. CardFace is its content alone, so the sheet can morph into it.
+const XlsxIcon: React.FC<{size?: number}> = ({size = 58}) => (
+  <svg width={size * 0.82} height={size} viewBox="0 0 48 58">
+    <path d="M4 2 H32 L44 14 V54 a2 2 0 0 1 -2 2 H4 a2 2 0 0 1 -2 -2 V4 a2 2 0 0 1 2 -2 Z" fill="#e8f3ec" />
+    <path d="M32 2 V12 a2 2 0 0 0 2 2 H44" fill="#b9d9c5" />
+    {[20, 27, 34].map((y) => <rect key={y} x={9} y={y} width={28} height={4} rx={1} fill="#9cc7ad" />)}
+    <rect x={0} y={40} width={36} height={13} rx={3} fill="#1d7a4c" />
+    <text x={18} y={49.6} textAnchor="middle" fontFamily="Plus Jakarta Sans, sans-serif" fontWeight={800} fontSize={8.4} fill="#fff" letterSpacing={0.6}>XLSX</text>
+  </svg>
+);
+const CardFace: React.FC = () => (
+  <div style={{width: 300, height: 190, padding: 24, boxSizing: 'border-box', fontFamily: jakarta, color: C.onNight}}>
+    <XlsxIcon />
+    <div style={{fontSize: 20, fontWeight: 700, marginTop: 12}}>Her workbook.xlsx</div>
     <div style={{fontSize: 15, color: C.onNightSoft, marginTop: 4}}>Monthly Income · Monthly Expenses</div>
   </div>
 );
+const CARD_BOX: React.CSSProperties = {width: 300, height: 190, borderRadius: 22, background: '#1d2d24', border: '1px solid rgba(255,255,255,0.1)', boxSizing: 'border-box',
+  boxShadow: '0 30px 60px rgba(0,0,0,0.45)', overflow: 'hidden'};
+const FileCard: React.FC = () => <div style={CARD_BOX}><CardFace /></div>;
 
 const Usb: React.FC<{led: number}> = ({led}) => (
   <div style={{display: 'flex', alignItems: 'center'}}>
@@ -240,37 +253,56 @@ const Ask: React.FC<{f: number; at: number}> = ({f, at}) => {
 };
 
 // Inquiries arriving three different ways, none of them kept in one place.
-const Source: React.FC<{Icon: typeof Share2; label: string; children: React.ReactNode; p: number; rot: number; style?: React.CSSProperties}> = ({Icon, label, children, p, rot, style}) => (
+const FacebookLogo: React.FC<{size?: number}> = ({size = 26}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24">
+    <circle cx={12} cy={12} r={12} fill="#1877F2" />
+    <path d="M16.2 15.47 16.73 12H13.4V9.75c0-.95.47-1.87 1.96-1.87h1.51V4.93s-1.37-.23-2.68-.23c-2.74 0-4.53 1.66-4.53 4.66V12H6.61v3.47h3.05V24h3.74v-8.53h2.8Z" fill="#fff" />
+  </svg>
+);
+const MessagesLogo: React.FC<{size?: number}> = ({size = 26}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24">
+    <defs><linearGradient id="imsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#5BF675" /><stop offset="1" stopColor="#0CBD2A" /></linearGradient></defs>
+    <rect width={24} height={24} rx={5.4} fill="url(#imsg)" />
+    <path d="M12 5.2c-4.2 0-7.5 2.7-7.5 6.1 0 1.9 1.1 3.6 2.8 4.7-.1.9-.6 1.9-1.5 2.6 1.6 0 3-.6 3.9-1.4.7.2 1.5.3 2.3.3 4.2 0 7.5-2.7 7.5-6.1S16.2 5.2 12 5.2Z" fill="#fff" />
+  </svg>
+);
+const Source: React.FC<{logo: React.ReactNode; label: string; children: React.ReactNode; p: number; rot: number; style?: React.CSSProperties}> = ({logo, label, children, p, rot, style}) => (
   <div style={{position: 'absolute', width: 380, opacity: Math.min(1, p * 1.6), transform: `translateY(${(1 - p) * 40}px) rotate(${rot * p}deg) scale(${lerp(0.9, 1, p)})`, ...style}}>
-    <div style={{display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', color: C.onNightSoft,
-      fontFamily: jakarta, fontSize: 15, fontWeight: 600, marginBottom: 10}}><Icon size={16} />{label}</div>
+    <div style={{display: 'inline-flex', alignItems: 'center', gap: 9, padding: '5px 14px 5px 6px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', color: C.onNightSoft,
+      fontFamily: jakarta, fontSize: 16, fontWeight: 600, marginBottom: 10}}>{logo}{label}</div>
     {children}
   </div>
 );
 const Inquiries: React.FC<{f: number; at: number}> = ({f, at}) => (
   <div style={{position: 'relative', width: 700, height: 480}}>
-    <Source Icon={Share2} label="Social media" p={pop(f, at + 12)} rot={-3} style={{left: 0, top: 0}}>
+    <Source logo={<FacebookLogo />} label="Facebook" p={pop(f, at + 12)} rot={-3} style={{left: 0, top: 0}}>
       <div style={{borderRadius: 18, background: '#26352d', padding: '16px 18px', display: 'flex', gap: 12, fontFamily: jakarta, color: '#fff', boxShadow: '0 30px 60px rgba(0,0,0,0.4)'}}>
         <span style={{width: 40, height: 40, borderRadius: 20, background: C.brandBright, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15}}>KO</span>
         <div><div style={{fontSize: 15, fontWeight: 700}}>Kaye O.</div><div style={{fontSize: 20, marginTop: 2}}>Is this still available?</div></div>
       </div>
     </Source>
-    <Source Icon={Smartphone} label="Text" p={pop(f, at + 26)} rot={2} style={{left: 320, top: 150}}>
+    <Source logo={<MessagesLogo />} label="Text" p={pop(f, at + 26)} rot={2} style={{left: 320, top: 150}}>
       <div style={{borderRadius: '22px 22px 22px 6px', background: '#26352d', padding: '16px 20px', fontFamily: jakarta, color: '#fff', fontSize: 21, boxShadow: '0 30px 60px rgba(0,0,0,0.4)'}}>Hi po, how much is a studio?</div>
     </Source>
-    <Source Icon={Footprints} label="In person" p={pop(f, at + 40)} rot={-4} style={{left: 40, top: 300}}>
+    <Source logo={<span style={{width: 26, height: 26, borderRadius: 13, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><Footprints size={15} /></span>} label="In person" p={pop(f, at + 40)} rot={-4} style={{left: 40, top: 300}}>
       <div style={{width: 300, background: '#f3e7a6', padding: '16px 20px', fontFamily: hand, color: '#3b3a2c', fontSize: 22, lineHeight: 1.35, boxShadow: '0 30px 60px rgba(0,0,0,0.45)'}}>Walk-in asked about 2a. Will come back?</div>
     </Source>
   </div>
 );
 
-const hexPoints = (r: number) => Array.from({length: 6}, (_, k) => { const a = (Math.PI / 3) * k - Math.PI / 2; return `${(r * Math.cos(a)).toFixed(2)},${(r * Math.sin(a)).toFixed(2)}`; }).join(' ');
-const ScreenHex: React.FC<{x: number; y: number; r: number; fill: string; opacity?: number; glow?: number}> = ({x, y, r, fill, opacity = 1, glow = 0}) => (
-  <svg width={r * 2} height={r * 2} viewBox={`${-r} ${-r} ${r * 2} ${r * 2}`} style={{position: 'absolute', left: x - r, top: y - r, opacity,
-    filter: glow > 0 ? `drop-shadow(0 0 ${24 * glow}px rgba(95,194,142,${0.7 * glow}))` : undefined}}>
-    <polygon points={hexPoints(r * 0.95)} fill={fill} stroke="rgba(255,255,255,0.2)" strokeWidth={1.5} />
-  </svg>
-);
+// Blend two #rrggbb colours.
+const mix = (a: string, b: string, t: number) => '#' + [1, 3, 5].map((i) => Math.round(lerp(parseInt(a.slice(i, i + 2), 16), parseInt(b.slice(i, i + 2), 16), t)).toString(16).padStart(2, '0')).join('');
+// A hive cell drawn as the mark's own rounded hexagon, with the circumradius of
+// the cells around it (0.95 r), so the centre cell and the logo are one shape.
+const CentreCell: React.FC<{x: number; y: number; r: number; hex: string; draw: number; opacity?: number; glow?: number; shadow?: number}> = ({x, y, r, hex, draw, opacity = 1, glow = 0, shadow = 0}) => {
+  const size = (0.95 * r * 512) / 244;
+  const filters = [glow > 0 ? `drop-shadow(0 0 ${24 * glow}px rgba(95,194,142,${0.7 * glow}))` : '', shadow > 0 ? `drop-shadow(0 30px 60px rgba(15,27,21,${0.25 * shadow}))` : ''].join(' ').trim();
+  return (
+    <div style={{position: 'absolute', left: x - size / 2, top: y - size / 2, width: size, height: size, opacity, filter: filters || undefined}}>
+      <Mark size={size} hex={hex} draw={draw} />
+    </div>
+  );
+};
 
 // The part of a polyline between two fractional indices.
 const slice = (pts: {x: number; y: number}[], a: number, b: number) => {
@@ -313,8 +345,9 @@ export const Act1: React.FC = () => {
   // Beat 0, slowly: the sheet shrinks to the size of a file card and becomes it;
   // the card rests, then slides into the drive, and the drive's light comes on.
   const CARD = {x: P.usb.x - 380 + 20 + 150, y: P.usb.y};
-  const shrink = t01(f, B[0] + 10, B[0] + 76, easeInOut);
-  const toCard = t01(f, B[0] + 52, B[0] + 76);
+  const morph = t01(f, B[0] + 10, B[0] + 76, easeInOut);
+  const toCard = f >= B[0] + 76 ? 1 : 0;
+  const mw = Math.exp(lerp(Math.log(1500), Math.log(300), morph)), mh = Math.exp(lerp(Math.log(880), Math.log(190), morph));
   const plug = t01(f, B[0] + 98, B[0] + 124, easeInOut);
   const ledOn = f > B[0] + 128 && Math.sin(f / 5) > 0 ? 1 : 0;
 
@@ -376,17 +409,19 @@ export const Act1: React.FC = () => {
     <AbsoluteFill>
       <Bg mood="night" hex glowX={55} />
       <Stage cam={cam} w={3600} h={2200}>
-        {f < B[0] + 80 ? (
-          <div style={{position: 'absolute', left: lerp(CENTER.x, CARD.x, shrink) - 750, top: lerp(CENTER.y + 100, CARD.y, shrink) - 440, width: 1500, height: 880,
-            transform: `scale(${lerp(1, 0.2, shrink)})`, opacity: 1 - toCard, borderRadius: lerp(18, 110, shrink), overflow: 'hidden'}}>
-            <Sheet f={f} />
+        {f < B[0] + 76 ? (
+          <div style={{position: 'absolute', left: lerp(CENTER.x, CARD.x, morph) - mw / 2, top: lerp(CENTER.y + 100, CARD.y, morph) - mh / 2, width: mw, height: mh,
+            borderRadius: lerp(18, 22, morph), overflow: 'hidden', background: mix('#132119', '#1d2d24', morph), border: '1px solid rgba(255,255,255,0.1)', boxSizing: 'border-box',
+            boxShadow: `0 ${lerp(80, 30, morph)}px ${lerp(160, 60, morph)}px rgba(0,0,0,0.5)`}}>
+            <div style={{position: 'absolute', left: 0, top: 0, transformOrigin: '0 0', transform: `scale(${mw / 1500})`, opacity: 1 - t01(morph, 0.35, 0.72)}}><Sheet f={f} /></div>
+            <div style={{position: 'absolute', left: mw / 2 - 150, top: mh / 2 - 95, transform: `scale(${Math.max(1, mw / 300)})`, opacity: t01(morph, 0.5, 0.92)}}><CardFace /></div>
           </div>
         ) : null}
         {prop('usb', 0, (
           <div style={{position: 'relative', width: 760, height: 300}}>
             <div style={{position: 'absolute', left: 20, top: 55, transform: `translateX(${plug * 200}px) scale(${lerp(1, 0.5, plug)})`, transformOrigin: '100% 50%',
               opacity: toCard * (1 - t01(f, B[0] + 116, B[0] + 126))}}><FileCard /></div>
-            <div style={{position: 'absolute', left: 350, top: 95, opacity: t01(f, B[0] + 30, B[0] + 60)}}><Usb led={ledOn} /></div>
+            <div style={{position: 'absolute', left: 350, top: 95, opacity: t01(f, B[0] + 70, B[0] + 92), transform: `translateX(${(1 - t01(f, B[0] + 70, B[0] + 96, easeOut)) * 60}px)`}}><Usb led={ledOn} /></div>
           </div>
         ))}
         {prop('receipts', 1, (
@@ -454,14 +489,9 @@ export const Act1: React.FC = () => {
       {f >= HIVE + 96 ? (
         <>
           <AbsoluteFill style={{clipPath: `circle(${light * 1300}px at 50% 50%)`}}><Bg mood="light" hex /></AbsoluteFill>
-          <ScreenHex x={960 - shift * 420} y={540} r={lerp(HR * lerp(0.6, 1, centre), 170, grow)} fill={C.brandBright}
-            opacity={Math.min(1, centre * 1.6) * (1 - t01(f, BRAAM + 14, BRAAM + 26))} glow={glow} />
-          {f >= BRAAM + 8 ? (
-            <div style={{position: 'absolute', left: 960 - 150 - shift * 420, top: 390, width: 300, height: 300, transform: `scale(${lerp(1.15, 1, t01(f, BRAAM + 8, BRAAM + 40, easeInOut))})`,
-              opacity: t01(f, BRAAM + 8, BRAAM + 24), filter: 'drop-shadow(0 30px 60px rgba(15,27,21,0.25))'}}>
-              <Mark size={300} draw={t01(f, BRAAM + 14, BRAAM + 44, easeInOut)} />
-            </div>
-          ) : null}
+          <CentreCell x={960 - shift * 420} y={540} r={lerp(HR * lerp(0.6, 1, centre), 150.5, grow) * (1 + 0.04 * Math.sin(Math.PI * t01(f, BRAAM + 20, BRAAM + 44)))}
+            hex={mix('#3f9a6b', '#17603f', t01(f, BRAAM - 4, BRAAM + 30))} draw={t01(f, BRAAM + 14, BRAAM + 48, easeInOut)}
+            opacity={Math.min(1, centre * 1.6)} glow={glow} shadow={t01(f, BRAAM + 10, BRAAM + 40)} />
           {f >= BRAAM + 40 ? (
             <div style={{position: 'absolute', left: 960 + 220 - shift * 420, top: 400, width: lerp(0, 860, shift), overflow: 'hidden', whiteSpace: 'nowrap'}}>
               <Kin text="Hivelet" at={BRAAM + 48} size={220} color={C.ink} stagger={0} ls="-0.055em" />

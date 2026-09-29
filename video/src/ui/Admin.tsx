@@ -70,26 +70,31 @@ export const CollectedTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) =
   </Tile>
 );
 
+// Occupancy as components/overview/OccupancyArc.vue draws it: one segment per unit,
+// 33 in a half ring, occupied first in brand green and the vacant one as empty
+// track at the end, drawing in from left to right. So 32/33 reads as one short.
 export const OccupancyTile: React.FC<{f: number; at?: number}> = ({f, at = 0}) => {
-  const ticks = 44;
-  const filled = t01(f, at + 4, at + 40) * ticks * (32 / 33);
+  const units = 33, occupied = 32, CX = 120, CY = 118, R = 96, GAP = 1.4;
+  const sweep = (180 - (units - 1) * GAP) / units;
+  const pt = (deg: number) => { const r = (deg * Math.PI) / 180; return `${(CX + R * Math.cos(r)).toFixed(2)} ${(CY - R * Math.sin(r)).toFixed(2)}`; };
   return (
     <Tile title="Occupancy" goto w={252} h={340}>
       <div style={{position: 'relative', height: 170, display: 'flex', justifyContent: 'center'}}>
-        <svg width={200} height={110} viewBox="0 0 200 110" style={{marginTop: 18}}>
-          {Array.from({length: ticks}, (_, i) => {
-            const a = Math.PI - (i / (ticks - 1)) * Math.PI;
-            const c = Math.cos(a), s = Math.sin(a);
-            return <line key={i} x1={100 + c * 70} y1={100 - s * 70} x2={100 + c * 94} y2={100 - s * 94} stroke={i < filled ? C.brand : C.line} strokeWidth={5.5} strokeLinecap="round" />;
+        <svg width={206} height={110} viewBox="0 0 240 128" style={{marginTop: 18}}>
+          {Array.from({length: units}, (_, i) => {
+            const start = 180 - i * (sweep + GAP), end = start - sweep;
+            const d = t01(f, at + 4 + i * 1.1, at + 12 + i * 1.1);
+            return <path key={i} d={`M ${pt(start)} A ${R} ${R} 0 0 1 ${pt(end)}`} fill="none" strokeWidth={24} pathLength={100}
+              strokeDasharray="100" strokeDashoffset={100 * (1 - d)} stroke={i < occupied ? C.brand : C.line} />;
           })}
         </svg>
         <div style={{position: 'absolute', top: 74, textAlign: 'center'}}>
-          <span style={{fontSize: 38, fontWeight: 600, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums'}}>{count(f, at + 4, 36, 32)}</span>
-          <span style={{fontSize: 24, color: C.inkSoft}}>/33</span>
+          <span style={{fontSize: 38, fontWeight: 600, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums'}}>{count(f, at + 4, 40, 32)}</span>
+          <span style={{fontSize: 24, color: C.inkFaint}}>/33</span>
           <div style={{fontSize: 13, color: C.inkSoft}}>units occupied</div>
         </div>
       </div>
-      <div style={{textAlign: 'center', fontSize: 15, color: C.inkSoft, opacity: t01(f, at + 30, at + 40)}}>Vacant: B3B</div>
+      <div style={{textAlign: 'center', fontSize: 15, color: C.inkSoft, opacity: t01(f, at + 40, at + 50)}}>Vacant: B3B</div>
     </Tile>
   );
 };

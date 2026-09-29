@@ -179,6 +179,22 @@ const padChord = (chord, t0, dur, g, swell = 0.25) => {
 };
 // Under the icon and "One connected system": one long A chord swelling in.
 padChord(CHORDS[0], BRAAM + 0.1, G0 - BRAAM + 0.6, 0.032, 2.4);
+// The way in (Sean: a real transition, not the beat simply switching on). One bar
+// before "For the landlady" the arpeggio starts under the name, quietly and in
+// tempo, and grows; on the last two beats the bass comes up with its filter
+// opening; the kick and a clap fill arrive in the drum code below, and the whole
+// groove lands on the card's first beat.
+const IN = G0 - BAR;
+for (let t = IN, k = 0; t < G0 - 0.01; t += BEAT / 2, k++) {
+  const m = CHORDS[0][[2, 4, 5, 3, 4, 5, 3, 4][k % 8]] + 12;
+  const g = lerp(0.25, 0.95, k / 7);
+  sineVoice({freq: () => hz(m), t0: t, dur: 0.8, gain: 0.065 * g, pan: k % 2 ? 0.35 : -0.35, send: 0.6, env: decay(0.24, 0.004)});
+  sineVoice({freq: () => hz(m + 12), t0: t, dur: 0.3, gain: 0.012 * g, pan: k % 2 ? -0.3 : 0.3, send: 0.6, env: decay(0.1, 0.003)});
+}
+for (let t = IN + 2 * BEAT, k = 0; t < G0 - 0.01; t += BEAT / 2, k++) {
+  sawVoice({f0: hz(ROOTS[0] + (k === 3 ? 12 : 0)), t0: t, t1: t + 0.3, gain: 0.21 * lerp(0.35, 0.85, k / 3), send: 0.05,
+    env: (x) => Math.min(1, x / 0.004) * Math.exp(-x / 0.16), cutoff: (x) => 160 + 110 * k + (500 + 150 * k) * Math.exp(-x / 0.05)});
+}
 // Then a chord a bar, through to the end card.
 for (let t = G0, b = 0; t < grooveEnd; t += BAR, b++) padChord(CHORDS[b % 4], t, BAR + 0.9, 0.038 * lift(t));
 // The bass: eighth notes on the root, up an octave on the last one of the bar.
@@ -200,13 +216,21 @@ BUS = null;
 
 // The kick (four on the floor, soft), which also ducks the pads and bass.
 const SC = new Float32Array(N).fill(1);
-for (let t = G0; t < grooveEnd - 0.01; t += BEAT) {
+for (let t = IN; t < grooveEnd - 0.01; t += BEAT) {
   if (resting(t)) continue;
-  sineVoice({freq: (x) => lerp(92, 46, clamp01(x / 0.06)), t0: t, dur: 0.35, gain: 0.44, env: decay(0.12, 0.002)});
-  noiseVoice({t0: t, dur: 0.02, centre: () => 3000, q: 0.7, gain: 0.05, env: decay(0.004)});
+  const g = t < G0 - 0.01 ? lerp(0.3, 0.8, (t - IN) / (3 * BEAT)) : 1;
+  sineVoice({freq: (x) => lerp(92, 46, clamp01(x / 0.06)), t0: t, dur: 0.35, gain: 0.44 * g, env: decay(0.12, 0.002)});
+  noiseVoice({t0: t, dur: 0.02, centre: () => 3000, q: 0.7, gain: 0.05 * g, env: decay(0.004)});
   const a = Math.floor(t * SR);
-  for (let i = 0; i < 0.45 * SR && a + i < N; i++) SC[a + i] = Math.min(SC[a + i], 1 - 0.5 * Math.exp(-(i / SR) / 0.12));
+  for (let i = 0; i < 0.45 * SR && a + i < N; i++) SC[a + i] = Math.min(SC[a + i], 1 - 0.5 * g * Math.exp(-(i / SR) / 0.12));
 }
+// The fill: claps in sixteenths through the last beat of the lead-in, rising,
+// and a soft cymbal on the downbeat where the groove lands.
+for (let i = 0; i < 4; i++) {
+  const t = G0 - BEAT + (i * BEAT) / 4;
+  for (const off of [0, 0.009]) noiseVoice({t0: t + off, dur: 0.16, centre: () => 1300 + 150 * i, q: 0.8, gain: (0.028 + 0.016 * i) * (off ? 0.6 : 1), send: 0.35, pan: i % 2 ? 0.2 : -0.2, env: decay(off ? 0.012 : 0.07)});
+}
+noiseVoice({t0: G0, dur: 2.6, centre: () => 7800, q: 0.45, gain: 0.05, send: 0.5, env: decay(0.9, 0.003)});
 for (let i = 0; i < N; i++) { L[i] += DL[i] * SC[i]; R[i] += DR[i] * SC[i]; }
 // Claps on two and four, a shaker on the off-beats, open hats for the proof.
 for (let t = G0 + BEAT, k = 0; t < grooveEnd - 0.01; t += BEAT * 2, k++) {

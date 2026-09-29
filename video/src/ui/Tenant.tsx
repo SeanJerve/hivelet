@@ -1,7 +1,7 @@
 // The tenant's phone screens, from views/TenantOverviewView.vue and
 // views/TenantTicketsView.vue, at the phone's own 390px width.
 import React from 'react';
-import {ChevronDown, CreditCard, Send, Wrench} from 'lucide-react';
+import {ChevronDown, CreditCard, Loader2, Send, Wrench, X} from 'lucide-react';
 import {C, jakarta} from '../theme';
 import {AppHeader, Btn, Field, Input, Pill, Tile} from './Kit';
 
@@ -99,5 +99,40 @@ export const DoneNote: React.FC<{style?: React.CSSProperties}> = ({style}) => (
       <div style={{fontSize: 15, fontWeight: 600}}>Your repair is done</div>
       <div style={{fontSize: 13, lineHeight: '19px', color: C.inkSoft, marginTop: 3}}>"Kitchen faucet keeps dripping" in unit 1A has been marked resolved. If something is still wrong, reply on the repair.</div>
     </div>
+  </div>
+);
+
+// ---- Paying by GCash ------------------------------------------------------------
+// The "Pay with GCash" dialog opening the payment page (AdyenPaymentModal.vue),
+// and, back from GCash, the confirmation on the payments page
+// (TenantPaymentsView.vue's gateway notice). Their words are the app's own.
+export const PayOpening: React.FC<{spin: number; style?: React.CSSProperties}> = ({spin, style}) => (
+  <div style={{width: 358, borderRadius: 24, background: C.tile, padding: '22px 22px 30px', boxSizing: 'border-box', fontFamily: jakarta, color: C.ink, ...style}}>
+    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+      <span style={{fontSize: 19, fontWeight: 600, letterSpacing: '-0.02em'}}>Pay with GCash</span><X size={16} color={C.inkSoft} />
+    </div>
+    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '34px 0 4px', textAlign: 'center'}}>
+      <Loader2 size={28} color={C.brand} style={{transform: `rotate(${spin * 360}deg)`}} />
+      <div style={{fontSize: 14, fontWeight: 500}}>Opening the payment page</div>
+      <div style={{fontSize: 14, color: C.inkSoft}}>This takes a few seconds.</div>
+    </div>
+  </div>
+);
+
+export const PaymentReceived: React.FC<{check: number; style?: React.CSSProperties}> = ({check, style}) => (
+  <div style={{width: 358, borderRadius: 24, background: C.brandSoft, padding: '18px 18px 18px 20px', boxSizing: 'border-box', fontFamily: jakarta, display: 'flex', gap: 12, ...style}}>
+    <div style={{minWidth: 0}}>
+      <div style={{display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, fontWeight: 600, lineHeight: '24px', color: C.brand}}>
+        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={C.brand} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx={12} cy={12} r={10} pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - Math.min(1, check * 1.6))} transform="rotate(-90 12 12)" />
+          <path d="m9 12 2 2 4-4" pathLength={100} strokeDasharray="100" strokeDashoffset={100 * (1 - Math.max(0, check * 2.5 - 1.5))} />
+        </svg>
+        Payment received
+      </div>
+      <div style={{fontSize: 14, lineHeight: '23px', color: C.inkSoft, marginTop: 4}}>
+        Adyen has confirmed it. It now shows as waiting for the landlady to check it, and you will not be asked to pay this bill again.
+      </div>
+    </div>
+    <X size={16} color={C.inkSoft} style={{flexShrink: 0, marginTop: 4}} />
   </div>
 );
