@@ -114,7 +114,7 @@ on a phone. Use the unoccupied unit or blur tenant names; the manuscript is publ
 | :--- | :--- |
 | Now, anytime | Re-run the 20 check suites and update Table 8 with the new date and counts |
 | Now, anytime | Draft the Abstract once the survey means exist (it needs the results) |
-| After the survey | Compute every mean, group mean and composite from the exported sheet; fill Tables 12 to 22; write each interpretation paragraph from the numbers and the open comments |
+| After the survey | Run `scripts/survey/compute-survey.mjs` on the exported CSV (every mean, SD, group mean and composite); fill Tables 12 to 22 from its output; write each interpretation paragraph from the numbers and the open comments it lists |
 | After the survey | Turn the low-scoring items into fixes where they are in the design lane, and add them to Table 23 as the "optimize" half of Objective 4 |
 | After the walkthrough | Turn the notes into Table 10 and its paragraph; fix any design problems it finds |
 | After the performance runs | Turn the measurements into Table 11 and its paragraph |

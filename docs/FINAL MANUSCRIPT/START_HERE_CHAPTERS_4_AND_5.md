@@ -14,6 +14,13 @@ the system as it stands that evening.
 > 29 September**: each tenant has their own starting password on a printed slip and must choose a
 > new one at first sign-in (guide §4).
 
+> **Survey results in one command (Claude or anyone):** export the Google Form responses as CSV,
+> then `node scripts/survey/compute-survey.mjs responses.csv --method=A --out=tables.md`. It prints
+> Tables 12 and 14 to 22 in Chapter 4's layout (item means, SD, group means, composites,
+> interpretations per Table 13) and every open comment grouped by question. It reads the items from
+> `build_survey_form.gs`, so it scores exactly what the form asked; it warns if a column is
+> missing. `--method=B` gives the other composite if the team chooses it (Q11).
+
 ## Where the chapters stand
 
 - **Both chapters are drafted and current with the system.** Every number in them was read from
