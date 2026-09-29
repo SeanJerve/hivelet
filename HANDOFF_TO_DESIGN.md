@@ -278,6 +278,7 @@ nobody opens. **Work on a branch and open a pull request; small commits, one kin
 | `docs/FINAL MANUSCRIPT/`, and `docs/chapter 4 tenative/ISO_25010_SURVEY_INSTRUMENT.md` | The capstone manuscript in progress, and the survey source (see `START_HERE_CHAPTERS_4_AND_5.md`) |
 | `scripts/`, `backend/scripts/`, `frontend/scripts/`, `.githooks/` | The 20 check suites and the secrets hook |
 | `INCOME AND EXPENSES PAST RECORDS/` | The owner's own workbook; the source the ledger was imported from |
+| `docs/USER_MANUAL.md` (+ `docs/manual-images/`), `docs/API_REFERENCE.md`, `docs/INSTALLATION_AND_OPERATIONS.md`, `docs/CODE_DOCUMENTATION.md`, `README.md`, `docs/README.md` | The capstone's technical documentation, written or refreshed 2026-09-28. Edit to keep them true; do not remove |
 
 **Likely stale; verify each before removing:** root notes such as `RESTART_THE_TUNNEL.md` (the site
 moved to Vercel on 2026-09-24; the tunnel is gone), `PASTE_THIS_IN_CLAUDE_APP.md`,
