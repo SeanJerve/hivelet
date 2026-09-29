@@ -98,7 +98,7 @@ These three numbers per task are the quality-in-use measures Chapter 4 reports.
 | T-08 | FS | FR-021, FR-023 | "Report it, and say how urgent it is." *I-report po at sabihin kung gaano kaapurahan.* (real problem, or title starting TEST) | "was sent to the landlady"; appears in their list | | | | |
 | T-09 | FS | FR-022 | "Add a photo of it." *Maglagay po ng litrato.* | Attached, even a normal multi-megabyte phone photo (it is made smaller before sending) | | | | |
 | T-10 | FS | FR-026 | "Add a note to your request." *Magdagdag po ng mensahe sa request.* | Note appears in the thread | | | | |
-| T-11 | FS | FR-024 | "What is its status now?" *Ano po ang status nito?* | Status visible (Open / In Progress / Resolved) | | | | |
+| T-11 | FS | FR-024 | "What is its status now?" *Ano po ang status nito?* | Status visible: Submitted, In progress or Done in the list (the thread also shows Resolved or Closed) | | | | |
 | T-12 | FS | FR-010 | "Check your contact details and fix anything wrong." *Tingnan po ang contact details ninyo.* | Saved, or nothing to change | | | | |
 | T-13 | FS | FR-027 | "Do you have any notifications?" *May notification po ba kayo?* | Bell opens; marking one read lowers the count | | | | |
 | T-14 | FS | FR-015 | "Open the GCash payment, but **do not pay**. Close it." *Buksan po ang GCash pero huwag magbayad. Isara.* | GCash option appears; closing it changes nothing | | | | |
