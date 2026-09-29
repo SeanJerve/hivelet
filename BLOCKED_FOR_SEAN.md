@@ -33,6 +33,56 @@ thing did not work" is not.
 
 ## Open
 
+### B-82 — every tenant account was reset on 2026-09-29; update your local credential files before your next `check:all` · **ACT BEFORE RUNNING THE SUITES**
+
+- **What happened:** before the first acceptance test with real tenants (2026-09-30), Loyd asked
+  for every account except the administrator to be reset so each tenant sets their own password
+  on first sign-in. `node scripts/reset-tenant-accounts.mjs` (new, committed) ran against live at
+  2026-09-29 ~13:54 UTC after `npm run backup` (`backups/2026-09-29T13-53-21/` on Loyd's
+  machine holds the old hashes). Result: **32/32** tenants got their **own** random starting
+  password, `must_change_password = true`, `password_changed_at = now` (every older token is
+  dead), lockouts cleared. Administrator verified unchanged (hash compared before and after).
+- **Why not one shared password with a forced change:** the shared demo password from B-49 opened
+  all 32 accounts. Handing it to 3-5 real tenants would have let any of them sign in as a
+  neighbour and set the neighbour's password first. The forced change does not close that window;
+  a password only one person knows does.
+- **What it does to your machine (read this before `check:all`):**
+  - The second `Password:` in your `credentials/creds.txt` (the shared tenant one) **opens nothing
+    now**. `check:api` falls back to it for the seeded tenant, so each run would charge a **real
+    tenant's** failed-login allowance (5 wrong = locked 15 minutes). **Delete that line, or
+    delete your `database/seeded-tenant-credentials.json`, before running `check:api`.**
+  - The dev-only demo sign-in panel reads the same line. With it deleted the panel hides itself,
+    which is its designed behaviour, rather than locking real tenants out.
+  - Even with the right password, the seeded tenant now answers **428 PASSWORD_CHANGE_REQUIRED**
+    on every `/tenant/*` route until that tenant sets their own password. `check:api`'s 9 tenant
+    checks read FAIL (428) on Loyd's machine for exactly this reason; the gate is working.
+- **What Sean needs to decide:** the suites should stop signing in as a real tenant at all. The
+  clean fix is a dedicated test tenant (the walkthrough's rehearsal tenant on PH is the natural
+  one) with its identifier in `seeded-tenant-credentials.json`. Until then, expect `check:api`
+  to show 9 tenant FAILs at 428 and treat that as "gate on", not "API broken".
+- **How to know it worked:** `select count(*) from profiles where role='tenant' and
+  must_change_password` returns 32 today and falls as tenants sign in and choose their own.
+- **Raised:** 2026-09-29 by Claude, on Loyd's machine, at Loyd's request
+
+### B-83 — no way to reset a tenant's password from the app (no "forgot password", no admin reset)
+
+- **Blocked on:** backend lane (a new admin route) and your call on the design
+- **What I found:** the only password-issuing paths are onboarding a new tenant (`POST
+  /admin/tenants`) and `POST /auth/change-password`, which needs the current password. A tenant
+  who forgets theirs has no way back in, and the owner has no button to help. In real use this
+  will happen in the first week.
+- **What I already did:** `scripts/reset-tenant-accounts.mjs --only <phone-or-email>` re-issues
+  one tenant's starting password from a team laptop (with `.env`), appends to the CSV and writes a
+  separate slip file. That is the stop-gap for testing day.
+- **What Sean needs to do:** an admin-only `POST /admin/tenants/:profileId/reset-password` that
+  reuses `generateTemporaryPassword()` and sets `must_change_password = true` and
+  `password_changed_at = now()`, returned once like onboarding's `temporaryPassword`, audited
+  without the value, plus a button on the tenant row. Self-service "forgot password" needs email
+  or SMS delivery and is a larger decision; the admin button covers the real case.
+- **How to know it worked:** the owner resets a test tenant from the tenant screen and that tenant
+  is forced to change the password at next sign-in.
+- **Raised:** 2026-09-29 by Claude
+
 ### B-81 — two checks count "ended tenancies with no end date" and disagree: 1 and 2 · **DONE 2026-09-28: 059 applied by Sean, both checks at 0**
 
 > **Answered, read-only, 2026-09-28.** The table holds 2 ended tenancies, 1 without an end date, and
