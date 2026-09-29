@@ -1322,6 +1322,132 @@ const tenantStatusSchema = z.object({
 });
 
 /**
+ * POST /api/admin/tenants/:profileId/reset-password
+ * Issues a tenant a new one-time starting password (B-83).
+ *
+ * WHY THIS EXISTS: there was no way back in for a tenant who forgot their
+ * password. `POST /auth/change-password` needs the current one, and the only
+ * other path that issued a password was onboarding. The owner had no button to
+ * help, and the team's stop-gap was a script run from a laptop holding the
+ * service key (`scripts/reset-tenant-accounts.mjs --only`). Real tenants began
+ * using the portal on 2026-09-30; the first forgotten password was a matter of
+ * days.
+ *
+ * WHAT IT DOES, and each line is load-bearing:
+ *   - a fresh random password from `generateTemporaryPassword()`, the same
+ *     generator onboarding uses, returned ONCE in this response for the owner
+ *     to hand over in person. Never logged, audited or stored in plain text;
+ *   - `must_change_password = true` - the tenant sees nothing until they set
+ *     their own (migration 048, `requirePasswordCurrent`);
+ *   - `password_changed_at = now()` - every token issued before this moment
+ *     stops working (`resolveAuthUser`), so a phone left signed in, or a
+ *     session someone else holds, ends here too;
+ *   - the failed-login counter and lock cleared, since a locked-out tenant is
+ *     the usual reason for coming to her.
+ *
+ * REFUSED for an administrator (resetting her own sign-in from a list she
+ * reaches through that sign-in is a lock-out waiting to happen; she has Change
+ * password), for an inactive account (a tenant who has moved out has nothing to
+ * sign in to), and for a profile with neither email nor phone (nothing to sign
+ * in WITH; the database refuses a password there anyway).
+ */
+router.post(
+  '/admin/tenants/:profileId/reset-password',
+  requirePermission(PERMISSIONS.TENANT_MANAGE),
+  requireUuidParam('profileId', 'Tenant profile'),
+  asyncHandler(async (req, res) => {
+    const { data: profile, error: profileError } = await db
+      .from('profiles')
+      .select('id, full_name, role, account_status, email, phone_number')
+      .eq('id', req.params.profileId)
+      .maybeSingle<{
+        id: string;
+        full_name: string;
+        role: string;
+        account_status: string;
+        email: string | null;
+        phone_number: string | null;
+      }>();
+
+    if (profileError) throw ApiError.internal(profileError.message);
+    if (!profile) throw ApiError.notFound('Tenant profile not found.');
+    if (profile.role === 'admin') {
+      throw ApiError.forbidden(
+        'That profile is an administrator. Use Change password from your own account menu instead.'
+      );
+    }
+    if (profile.role !== 'tenant') {
+      throw ApiError.badRequest(`${profile.full_name} is not a tenant, so there is no portal sign-in to reset.`);
+    }
+    if (profile.account_status !== 'active') {
+      throw ApiError.badRequest(
+        `${profile.full_name}'s account is inactive (moved out), so there is nothing to sign in to. ` +
+          'Set the account back to active first if they are living here again.'
+      );
+    }
+    if (!profile.email && !profile.phone_number) {
+      throw ApiError.badRequest(
+        `${profile.full_name} has no email or phone number on file, so there is nothing to sign in with. ` +
+          'Add a phone number to their record first.'
+      );
+    }
+
+    const temporaryPassword = generateTemporaryPassword();
+    const bcrypt = (await import('bcryptjs')).default;
+    const passwordHash = await bcrypt.hash(temporaryPassword, 12);
+    const now = new Date().toISOString();
+
+    // `.eq('role', 'tenant')` again on the write: the read above and this update
+    // are separate statements, and the guard is what keeps a role change in
+    // between from turning this into a reset of something else.
+    const { data: updated, error: updateError } = await db
+      .from('profiles')
+      .update({
+        password_hash: passwordHash,
+        must_change_password: true,
+        password_changed_at: now,
+        failed_login_count: 0,
+        locked_until: null,
+        updated_at: now,
+      })
+      .eq('id', profile.id)
+      .eq('role', 'tenant')
+      .select('id')
+      .maybeSingle();
+
+    if (updateError) throw ApiError.internal(updateError.message);
+    if (!updated) {
+      throw ApiError.conflict(`${profile.full_name}'s record changed while this was being done. Reload and try again.`);
+    }
+
+    // AUTH_PASSWORD_CHANGE rather than a new action name: it is the action the
+    // Activity page already knows how to show, and the note says who did it.
+    await auditFromRequest(req, {
+      action: 'AUTH_PASSWORD_CHANGE',
+      entityType: 'PROFILE',
+      entityId: profile.id,
+      newValues: {
+        note:
+          'Starting password reset by the administrator (B-83). The tenant must choose a new ' +
+          'password at next sign-in; every earlier session was ended.',
+        tenant: profile.full_name,
+      },
+    });
+
+    res.json({
+      success: true,
+      // Inside `data`, as onboarding does: `lib/api.ts` unwraps to `data` only.
+      data: {
+        profileId: profile.id,
+        fullName: profile.full_name,
+        // The only place this plaintext value ever exists outside memory.
+        temporaryPassword,
+      },
+    });
+  })
+);
+
+/**
  * POST /api/admin/tenants/:profileId/vacate
  * Settle vacancy: deactivates tenant, closes active room assignment, and frees the unit.
  */

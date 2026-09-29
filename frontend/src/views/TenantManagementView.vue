@@ -7,7 +7,7 @@ import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFet
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api } from '@/lib/api';
-import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon } from 'lucide-vue-next';
+import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import RecordTable from '@/components/ui/RecordTable.vue';
@@ -32,8 +32,36 @@ const isOnboardModalOpen = ref(false);
  * is not dismissible by accident (Escape/backdrop) so an admin cannot lose
  * it to a stray keypress before it is copied or written down.
  */
-const onboardedCredentials = ref<{ name: string; password: string } | null>(null);
+const onboardedCredentials = ref<{ name: string; password: string; reason: 'onboarded' | 'reset' } | null>(null);
 const justCopiedPassword = ref(false);
+
+/**
+ * B-83: a new one-time password for a tenant who forgot theirs, or never got
+ * the slip. Confirmed first, because it also ends every session that tenant has
+ * open - their phone asks them to sign in again - which a bare button does not
+ * say. The password then shows in the same one-time reveal onboarding uses.
+ */
+const resetModalTenant = ref<TenantRecord | null>(null);
+
+function openResetFromModal(t: TenantRecord) {
+  editModalTenant.value = null;
+  resetModalTenant.value = t;
+}
+
+async function confirmResetPassword() {
+  const t = resetModalTenant.value;
+  if (!t || isSubmitting.value) return;
+  isSubmitting.value = true;
+  try {
+    const result = await api.post<{ temporaryPassword: string }>(`/admin/tenants/${t.id}/reset-password`);
+    resetModalTenant.value = null;
+    onboardedCredentials.value = { name: t.name, password: result.temporaryPassword, reason: 'reset' };
+  } catch (err: any) {
+    showToast('error', 'Password not reset', err?.message || 'Nothing was changed.');
+  } finally {
+    isSubmitting.value = false;
+  }
+}
 
 async function copyTemporaryPassword() {
   if (!onboardedCredentials.value) return;
@@ -696,7 +724,7 @@ async function handleOnboard() {
       // The credential reveal modal below is the confirmation - a toast
       // would say the same thing and then take the one thing she needs
       // with it when it auto-dismisses.
-      onboardedCredentials.value = { name: onboardedName, password: created.temporaryPassword };
+      onboardedCredentials.value = { name: onboardedName, password: created.temporaryPassword, reason: 'onboarded' };
     } else {
       // Only reachable if onboarding somehow ran with neither an email nor
       // a phone number - the form requires phone, so nothing generates
@@ -1290,14 +1318,25 @@ async function handleOnboard() {
           <div
             class="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between"
           >
-            <button
-              type="button"
-              class="pill-btn-danger-quiet"
-              @click="openVacateFromModal(editModalTenant)"
-            >
-              <LogOut class="size-3.5" aria-hidden="true" />
-              <span>Move them out</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                class="pill-btn-danger-quiet"
+                @click="openVacateFromModal(editModalTenant)"
+              >
+                <LogOut class="size-3.5" aria-hidden="true" />
+                <span>Move them out</span>
+              </button>
+              <button
+                v-if="editModalTenant.role === 'tenant' && editModalTenant.status !== 'vacated'"
+                type="button"
+                class="pill-btn"
+                @click="openResetFromModal(editModalTenant)"
+              >
+                <KeyRound class="size-3.5" aria-hidden="true" />
+                <span>Reset password</span>
+              </button>
+            </div>
 
             <div class="flex items-center justify-end gap-2">
               <button type="button" class="pill-btn" @click="editModalTenant = null">Cancel</button>
@@ -1310,6 +1349,24 @@ async function handleOnboard() {
           </div>
         </form>
     </WsModal>
+
+    <ConfirmDialog
+      v-if="resetModalTenant"
+      title="Reset this tenant's password"
+      confirm-label="Reset password"
+      :busy="isSubmitting"
+      @cancel="resetModalTenant = null"
+      @confirm="confirmResetPassword"
+    >
+      <p class="text-sm leading-6 text-ink-soft">
+        <strong class="text-ink">{{ resetModalTenant.name }}</strong> gets a new one-time password, shown
+        to you once on the next screen. Give it to them in person.
+      </p>
+      <p class="text-sm leading-6 text-ink-soft">
+        Their old password stops working now, and any phone they are signed in on will ask them to sign
+        in again. They choose their own password the first time they use the new one.
+      </p>
+    </ConfirmDialog>
 
     <!-- Vacate Confirm Dialog -->
     <!--
@@ -1521,7 +1578,7 @@ async function handleOnboard() {
     -->
     <WsModal
       v-if="onboardedCredentials"
-      title="Moved in"
+      :title="onboardedCredentials.reason === 'reset' ? 'Password reset' : 'Moved in'"
       :subtitle="`A one-time password for ${onboardedCredentials.name}.`"
       size="sm"
       :dismissible="false"
