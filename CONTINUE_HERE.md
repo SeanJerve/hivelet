@@ -24,6 +24,12 @@
 >   users and 285 admin reads from 6, all without an error; no WCAG A/AA violation on the public
 >   pages. Chapter 4 gained §4.3.6 and §4.3.7; Chapter 3's method is `FIXES_TO_CHAPTERS_1_TO_3.md`
 >   section H.
+> - **Every tenant's portal says they are overdue**, because the ledger's last receipt is dated
+>   8 August 2026 (screens audited against the database: they are right about the records). The
+>   owner should enter the receipts she has collected before tenants use the portal; the testing
+>   guide makes it the first thing on the day.
+> - **Phone photos now go through on repair requests** (shrunk in the browser; before, anything
+>   over ~700 KB was refused).
 > - **B-83 done the same night:** the owner resets a tenant's password from Tenants > Edit >
 >   Reset password (backend route + button, verified live).
 

@@ -327,14 +327,15 @@ member noticed that a tenant's payment history read "Nothing recorded" although 
 seven receipts that year. Every suite had passed, because the screen was correct code reading the
 wrong list.
 
-The team therefore audited every owner screen, and the tenant payment screen, directly. [DATA
-PENDING: add the remaining tenant screens once audited with a tenant session.] Each figure a screen displayed was compared with
+The team therefore audited every owner screen, and the tenant payment screen, directly; the
+remaining tenant screens followed on 29 September 2026, read with a tenant session on a local copy
+of the application connected to the live records. Each figure a screen displayed was compared with
 a read-only query of the live database for the same records. The owner's screens were read with
 the owner's own session on the live site; where a screen could only be tested locally, it was given
 the live figures with every personal detail removed. Nothing was written to the database during the
 audit. Table 9 shows the result.
 
-**Table 9.** Results of the Screen-versus-Database Audit (26 September 2026)
+**Table 9.** Results of the Screen-versus-Database Audit (26 and 29 September 2026)
 
 | Screen | What was compared | Result |
 | :--- | :--- | :--- |
@@ -346,6 +347,7 @@ audit. Table 9 shows the result.
 | Activity (audit trail) | Each recent entry against the recorded action | One defect fixed |
 | Repairs, inquiries | Number of open items | Matched |
 | Tenant payments | A tenant's receipts for 2026 | Two defects fixed |
+| Tenant overview, repairs and details (29 Sep 2026) | Unit, rate, occupants, monthly charge (rent plus ₱200 per occupant), the period the receipts reach, amount due, requests, contact details | Matched |
 
 The audit found six defects that no automated check had caught, and all six were fixed on 26
 September 2026:
@@ -372,6 +374,13 @@ The audit also found that the list of payments behind the owner's overview would
 silently at 1,000 records, a limit of the database service, which at the property's pace would
 have been reached in about two and a half years. It now reads the list in batches, as the income
 list already did.
+
+The tenant screens showed one thing that is not a defect of the system but matters to anyone using
+it. On 29 September 2026 the latest receipt in the ledger was dated 8 August 2026, so the portal
+told every one of the 32 tenants that they were behind by one or two periods. The screens were
+right about the records; the records were behind the owner's receipt book. A system that tenants
+can see makes the owner's entry of receipts part of what they experience, and the testing day was
+prepared accordingly (the owner enters the receipts she holds first, or tenants are told).
 
 The lesson is the same one Section 4.3.1 draws, from the other side: **passing checks show that
 what was tested is correct, not that everything is.** Comparing each screen with the records it

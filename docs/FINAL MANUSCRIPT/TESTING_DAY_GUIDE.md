@@ -46,6 +46,25 @@ that need a person and a real device, so the chapter can report both.
    under the testers and makes the results unrepeatable. Write down the commit that was live
    (§3, step 4).
 
+> [!CAUTION]
+> **Before any tenant signs in: the ledger stops on 8 August 2026.** Measured on 29 September:
+> the last receipt recorded is dated 8 August, August has 13 receipts against about 30 in earlier
+> months, and September has none. So **all 32 tenants' Overview and Payments screens say they are
+> overdue**, by one or two periods (₱7,000 to ₱14,000 for most), with a "Pay with GCash" button.
+> The system is computing correctly from what is recorded; the missing part is the receipts the
+> owner has collected but not entered (`CLIENT_MEETING_QUESTIONS.md` §2b).
+>
+> **Do one of these before the tenant sessions, in this order of preference:**
+> 1. **The owner enters the receipts she has collected since 8 August** in Monthly Income, from her
+>    receipt book, in her own session (it is test case A-23 done for real, the best evidence the day
+>    can produce). At least for the tenants who are testing.
+> 2. If that cannot be done in time, **tell each tester before they sign in**: "the amount due only
+>    counts receipts the landlady has entered so far; hers stop in early August, so it may say you
+>    owe when you have paid." Write on their observation sheet that they were told, and read their
+>    T-04 and survey answers on "up to date" with that in mind.
+>
+> Either way, remind them the GCash button charges no real money yet and they should close it (T-14).
+
 ---
 
 ## 2. People and their seats
@@ -97,6 +116,10 @@ is evidence.
 - [ ] 8. The owner can sign in with **her** password. If only the team knows the admin password,
       decide tonight whether she changes it tomorrow at the start of her session (recommended: she
       should be the only one who knows it once she runs the business on it).
+
+- [ ] 5b. **Ask the owner tonight** whether she can enter the receipts she has collected since
+      8 August before the tenant sessions (the CAUTION box above). Bring her receipt book to her
+      session either way.
 
 **Participants**
 
