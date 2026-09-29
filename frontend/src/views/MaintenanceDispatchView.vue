@@ -15,7 +15,7 @@ import {
   showToast,
   type MaintenanceTicket
 } from '@/lib/systemState';
-import { api } from '@/lib/api';
+import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { 
   Plus, 
@@ -138,7 +138,7 @@ async function handleLogRepair() {
     await fetchMaintenanceTickets();
   } catch (err: any) {
     // The dialog stays open with what she typed, so nothing has to be entered twice.
-    showToast('error', 'Not logged', err?.message || 'The repair could not be saved. Please try again.');
+    showToast('error', failureTitle(err, 'Not logged'), err?.message || 'The repair could not be saved. Please try again.');
   } finally {
     isSubmitting.value = false;
   }
@@ -327,7 +327,7 @@ async function handleSendAdminComment() {
       showToast('success', 'Message sent', 'The tenant has been notified.');
     }
   } catch (err: any) {
-    showToast('error', 'Message not sent', err?.message || 'Please try again.');
+    showToast('error', failureTitle(err, 'Message not sent'), err?.message || 'Please try again.');
   } finally {
     sendingAdminMessage.value = false;
   }
@@ -417,7 +417,7 @@ async function handleSaveEditTicket(): Promise<boolean> {
     // showing "Resolved" and a named technician for a ticket that is still Open
     // is worse than a slow one.
     await Promise.allSettled([fetchMaintenanceTickets(), fetchRooms()]);
-    showToast('error', 'Not saved', err?.message || 'The repair could not be updated.');
+    showToast('error', failureTitle(err, 'Not saved'), err?.message || 'The repair could not be updated.');
     return false;
   } finally {
     isSubmitting.value = false;
@@ -498,7 +498,7 @@ function handleDeleteTicketPrompt() {
       } catch (err: unknown) {
         showToast(
           'error',
-          'Repair not deleted',
+          failureTitle(err, 'Repair not deleted'),
           err instanceof Error ? err.message : 'The repair request could not be removed. It is still on the board.'
         );
       } finally {

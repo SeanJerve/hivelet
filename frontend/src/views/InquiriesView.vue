@@ -4,7 +4,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
-import { api } from '@/lib/api';
+import { api, failureTitle } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { Inbox, Phone, Mail, Send, Loader2, UserPlus, Search, XCircle } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
@@ -100,7 +100,7 @@ function handleCloseLead() {
         await fetchInquiriesState();
         showToast('success', 'Inquiry closed', `${inq.name} is no longer waiting for an answer.`);
       } catch (err: any) {
-        showToast('error', 'Not closed', err?.message || 'The inquiry was not updated.');
+        showToast('error', failureTitle(err, 'Not closed'), err?.message || 'The inquiry was not updated.');
       } finally {
         isSubmitting.value = false;
       }
@@ -301,7 +301,7 @@ async function handleSendReply() {
     // been stored.
     showToast(
       'error',
-      'Reply not sent',
+      failureTitle(err, 'Reply not sent'),
       err instanceof Error ? err.message : 'Your reply could not be saved. Please try again.'
     );
   } finally {

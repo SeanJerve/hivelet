@@ -5,7 +5,7 @@ import { ref, watch, computed } from 'vue';
 import { isAdminEditUnitModalOpen, activeAdminEditUnit, fetchRooms, fetchTenants, tenants, showToast, formatUnitOccupantsSummary, type RoomItem } from '@/lib/systemState';
 import type { UnitStatus } from '@/lib/canonicalUnits';
 import { peso, CANONICAL_UNITS } from '@/lib/canonicalUnits';
-import { api } from '@/lib/api';
+import { api, failureTitle } from '@/lib/api';
 import { Check, Loader2, Upload, ImageOff } from 'lucide-vue-next';
 import StatusPill from '@/components/overview/StatusPill.vue';
 
@@ -337,7 +337,7 @@ async function handleSave() {
 
     closeModal();
   } catch (err: any) {
-    showToast('error', 'Could not save', err?.message || 'The changes were not saved.');
+    showToast('error', failureTitle(err, 'Could not save'), err?.message || 'The changes were not saved.');
   } finally {
     isSaving.value = false;
   }

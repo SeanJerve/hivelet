@@ -61,6 +61,23 @@ export class ApiRequestError extends Error {
   }
 }
 
+/**
+ * A write that hit the deadline in `request` below (`TIMEOUT`) may already be
+ * saved. Its message says so, but the owner's screens put their own title above
+ * it - "Not saved", "Payment not recorded" - and the record-payment toast added
+ * "Nothing was written to the ledger". Told that, she records it again, and a
+ * second expense or note is a duplicate row. The tenant screens were fixed for
+ * this in 52e374b; these are the owner's, found reviewing it 2026-09-29.
+ */
+export function isUnconfirmed(err: unknown): boolean {
+  return err instanceof ApiRequestError && err.code === 'TIMEOUT';
+}
+
+/** The toast title for a failed write: the caller's own, unless it may have saved. */
+export function failureTitle(err: unknown, title: string): string {
+  return isUnconfirmed(err) ? 'Not confirmed' : title;
+}
+
 export function getStoredToken(): string | null {
   try {
     const sessionToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);

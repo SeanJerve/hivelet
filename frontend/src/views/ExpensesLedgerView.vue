@@ -6,7 +6,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { expenseRecords, expenseRecordsFetchFailed, fetchExpenseRecords, EXPENSE_CATEGORIES, PROPERTY_AREA_OPTIONS, showToast, type ExpenseRecord, type PropertyArea } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
-import { api } from '@/lib/api';
+import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
@@ -452,18 +452,30 @@ function submitAddExpense() {
 
         const count = results.length - failed.length;
 
+        // A timed-out entry may already be in the ledger (`isUnconfirmed`), so
+        // "Save again sends just these" would write it twice.
+        const unconfirmed = results.filter((r) => r.status === 'rejected' && isUnconfirmed(r.reason)).length;
+
         if (failed.length > 0) {
           showToast(
             'error',
-            count > 0 ? 'Some expenses were not saved' : 'Expenses not saved',
-            `${failed.length} of ${results.length} could not be recorded: ${failed.join(', ')}. ` +
-            (count > 0
-              ? 'Only those are left in the form. The others are saved, so Save again sends just these.'
-              : 'They are still in the form. Please try again.')
+            unconfirmed > 0 ? 'Not confirmed' : count > 0 ? 'Some expenses were not saved' : 'Expenses not saved',
+            unconfirmed > 0
+              ? `${failed.length} of ${results.length} could not be confirmed: ${failed.join(', ')}. ` +
+                'The server took too long to answer, so ' +
+                (failed.length === 1
+                  ? 'it may already be saved. It is still in the form: check the ledger before saving it again.'
+                  : 'they may already be saved. They are still in the form: check the ledger before saving them again.')
+              : `${failed.length} of ${results.length} could not be recorded: ${failed.join(', ')}. ` +
+                (count > 0
+                  ? 'Only those are left in the form. The others are saved, so Save again sends just these.'
+                  : 'They are still in the form. Please try again.')
           );
         }
 
         if (count === 0) {
+          // Fetched again so the ledger she is told to check shows anything that did land.
+          if (unconfirmed > 0) await fetchExpenseRecords();
           return;
         }
 
@@ -538,7 +550,7 @@ function submitAddExpense() {
 
         showToast('success', 'Expenses recorded', `${count} ${count === 1 ? 'entry' : 'entries'} saved to the ledger.`);
       } catch (err: any) {
-        showToast('error', 'Not saved', err.message || 'The expenses could not be saved. Please try again.');
+        showToast('error', failureTitle(err, 'Not saved'), err.message || 'The expenses could not be saved. Please try again.');
       } finally {
         isSubmitting.value = false;
       }
@@ -702,7 +714,7 @@ function handleDeleteExpense(id: string, description: string) {
         }
         showToast('success', 'Expense deleted', `"${description}" is no longer in the ledger.`);
       } catch (err: any) {
-        showToast('error', 'Not deleted', err.message || 'The expense is still in the ledger. Please try again.');
+        showToast('error', failureTitle(err, 'Not deleted'), err.message || 'The expense is still in the ledger. Please try again.');
       }
     }
   );
@@ -744,7 +756,7 @@ async function handleEditExpense() {
     editingExpense.value = null;
     showToast('success', 'Expense updated', `"${editDesc.value.trim()}" is saved.`);
   } catch (err: any) {
-    showToast('error', 'Not saved', err.message || 'The expense could not be updated. Please try again.');
+    showToast('error', failureTitle(err, 'Not saved'), err.message || 'The expense could not be updated. Please try again.');
   } finally {
     isSubmitting.value = false;
   }

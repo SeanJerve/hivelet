@@ -19,7 +19,7 @@ import {
   type IncomeRecord
 } from '@/lib/systemState';
 import { peso, CLUSTERS } from '@/lib/canonicalUnits';
-import { api } from '@/lib/api';
+import { api, failureTitle } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
 import { downloadReport } from '@/lib/downloadReport';
 import { pickedYear } from '@/lib/yearScope';
@@ -313,7 +313,7 @@ async function verifyPayment(paymentId: string, status: 'Verified' | 'Rejected')
     // panels behind their first-load skeletons for a single saved row.
     await Promise.allSettled([fetchPayments(), fetchIncomeRecords()]);
   } catch (err: any) {
-    showToast('error', 'Not saved', err.message || 'The payment was not changed. Please try again.');
+    showToast('error', failureTitle(err, 'Not saved'), err.message || 'The payment was not changed. Please try again.');
   } finally {
     verifying.value = null;
   }
@@ -787,7 +787,7 @@ function handleDeleteIncome(id: string, invoice: string, unit: string) {
         }
         showToast('success', 'Payment deleted', `Receipt ${invoice} is no longer in the ledger.`);
       } catch (err: any) {
-        showToast('error', 'Delete failed', err.message || 'Server error occurred');
+        showToast('error', failureTitle(err, 'Delete failed'), err.message || 'Server error occurred');
       }
     }
   );
@@ -921,7 +921,7 @@ async function handleEditIncome() {
     isEditOpen.value = false;
     editingIncome.value = null;
   } catch (err: any) {
-    showToast('error', 'Not saved', err?.message || 'The entry could not be updated.');
+    showToast('error', failureTitle(err, 'Not saved'), err?.message || 'The entry could not be updated.');
   } finally {
     isSubmitting.value = false;
   }

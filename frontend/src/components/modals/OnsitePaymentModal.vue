@@ -17,7 +17,7 @@ import {
 import WsModal from '@/components/ui/WsModal.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
 import { peso } from '@/lib/canonicalUnits';
-import { api } from '@/lib/api';
+import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle } from 'lucide-vue-next';
 
@@ -705,6 +705,13 @@ function triggerRecord() {
         showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()}, ${peso(totalAmountReceived.value, 2)}, is in the ledger.`);
         closeModal();
       } catch (err: unknown) {
+        // Timed out: it may be in the ledger, so never "Nothing was written".
+        // The ledger is fetched again so the list she is told to check is current.
+        if (isUnconfirmed(err)) {
+          showToast('error', failureTitle(err, 'Payment not recorded'), (err as Error).message);
+          void Promise.allSettled([fetchIncomeRecords(), fetchRooms(), fetchTenants()]);
+          return;
+        }
         showToast(
           'error',
           'Payment not recorded',

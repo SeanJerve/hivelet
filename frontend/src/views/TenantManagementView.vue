@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { tenants, fetchTenants as fetchTenantsState, fetchRooms, rooms, roomsFetchFailed, roomsLoaded, tenantsFetchFailed, showToast, asListedUnitCode, waterChargeFor, type TenantRecord } from '@/lib/systemState';
 import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
-import { api } from '@/lib/api';
+import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -57,7 +57,7 @@ async function confirmResetPassword() {
     resetModalTenant.value = null;
     onboardedCredentials.value = { name: t.name, password: result.temporaryPassword, reason: 'reset' };
   } catch (err: any) {
-    showToast('error', 'Password not reset', err?.message || 'Nothing was changed.');
+    showToast('error', failureTitle(err, 'Password not reset'), err?.message || 'Nothing was changed.');
   } finally {
     isSubmitting.value = false;
   }
@@ -600,7 +600,7 @@ async function saveEdit() {
     showToast('success', 'Saved', `${editModalTenant.value.name}'s details are updated.`);
     editModalTenant.value = null;
   } catch (err: any) {
-    showToast('error', 'Could not save', err?.message || 'The changes were not saved.');
+    showToast('error', failureTitle(err, 'Could not save'), err?.message || 'The changes were not saved.');
   } finally {
     isSubmitting.value = false;
   }
@@ -621,7 +621,7 @@ async function confirmVacate() {
     showToast('warning', 'Moved out', `${vacateModalTenant.value.unitCode} is free to let again.`);
     vacateModalTenant.value = null;
   } catch (err: any) {
-    showToast('error', 'Could not move them out', err?.message || 'Nothing was changed.');
+    showToast('error', failureTitle(err, 'Could not move them out'), err?.message || 'Nothing was changed.');
   } finally {
     isSubmitting.value = false;
   }
@@ -732,7 +732,18 @@ async function handleOnboard() {
       showToast('success', 'Moved in', 'Their account is made and the unit is assigned.');
     }
   } catch (err: any) {
-    showToast('error', 'Could not move them in', err?.message || 'Nothing was saved.');
+    // A move-in that timed out may have made the account, and then its one-time
+    // password was never shown. Reset password is how she gets one for them.
+    if (isUnconfirmed(err)) {
+      showToast(
+        'error',
+        'Not confirmed',
+        `${err.message} If they now appear in the list, open Edit and use Reset password to get ` +
+          'their one-time password.'
+      );
+      return;
+    }
+    showToast('error', failureTitle(err, 'Could not move them in'), err?.message || 'Nothing was saved.');
   } finally {
     isSubmitting.value = false;
   }
