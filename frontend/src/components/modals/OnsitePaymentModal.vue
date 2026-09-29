@@ -969,7 +969,7 @@ function triggerRecord() {
         </p>
         <ul class="flex flex-col gap-1 text-ink">
           <li v-for="rec in overlappingPayments" :key="rec.id">
-            {{ rec.rentFor }}: {{ peso(rec.rent, 2) }} rent<template v-if="rec.invoice">, OR#{{ rec.invoice }}</template>, paid {{ rec.datePaid }}
+            {{ rec.rentFor }}: {{ peso(rec.rent, 2) }} rent<template v-if="rec.invoice">, receipt {{ rec.invoice }}</template>, paid {{ rec.datePaid }}
           </li>
           <li v-for="p in waitingPayments" :key="p.id">
             GCash: {{ peso(p.amount, 2) }}, sent {{ sentOn(p.paid_at) }}, not verified yet
