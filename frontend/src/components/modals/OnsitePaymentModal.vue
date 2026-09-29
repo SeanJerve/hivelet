@@ -55,6 +55,9 @@ const orNum = ref('');
 // offered YESTERDAY as the default date on a payment form.
 import { propertyToday, periodEnd, formatDateOnly } from '@/lib/propertyDate';
 const date = ref(propertyToday());
+// Set once, when the app loads: a laptop left open overnight offered yesterday.
+// Refreshed on each open unless she typed one, which a run of receipts keeps.
+const dateReceivedTyped = ref(false);
 const isSubmitting = ref(false);
 
 // Payment method & reference
@@ -359,6 +362,7 @@ watch(isOnsitePaymentModalOpen, (isOpen) => {
   if (isOpen) {
     // A fresh receipt: the period follows the tenant again, not the last one typed.
     coverStartTyped.value = false;
+    if (!dateReceivedTyped.value) date.value = propertyToday();
     dateCoveredStart.value = nextCoverStart.value ?? propertyToday();
     loadRates();
     fetchTenants();
@@ -964,7 +968,7 @@ function triggerRecord() {
         <div class="grid items-end gap-4 sm:grid-cols-2">
           <label class="ws-field">
             Date received
-            <input v-model="date" type="date" class="ws-input w-full" required />
+            <input v-model="date" type="date" class="ws-input w-full" required @input="dateReceivedTyped = true" />
           </label>
           <div class="rounded-2xl bg-canvas px-4 py-3">
             <p class="text-xs text-ink-faint">Total handed over</p>
