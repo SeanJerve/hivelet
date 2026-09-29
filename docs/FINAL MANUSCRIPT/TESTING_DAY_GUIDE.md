@@ -164,7 +164,7 @@ not.
 | :--- | :--- |
 | Wrong password five times | The account locks for **15 minutes**, then unlocks by itself. Wait; do not keep trying. The lock message is expected (it is test case S-04) |
 | "Too many failed sign-in attempts from this connection" | Thirty failures from the same wifi in 15 minutes. Everyone on the house wifi shares this counter. Switch the phone to mobile data, or wait |
-| Lost slip, or forgot the new password | The technical lead runs `node scripts/reset-tenant-accounts.mjs --only 09XXXXXXXXX` on the admin laptop (phone or email). It prints a fresh slip file in `credentials/`. **The app has no "forgot password" button yet** (B-83); write it in the defect log as a finding, because it is one |
+| Lost slip, or forgot the new password | **The owner resets it herself**: Tenants > the tenant's Edit (pencil) > **Reset password** > confirm. A new one-time password is shown once; she hands it over, and the tenant chooses their own at sign-in (test case A-36). Backup if the button is not live yet: the technical lead runs `node scripts/reset-tenant-accounts.mjs --only 09XXXXXXXXX` and prints the slip it writes to `credentials/`. There is still no self-service "forgot password"; if a tenant asks for one, note it |
 | Tenant has no phone with them | They may use a team device **only in a private/incognito window**, and sign out and close it afterwards. Note it on the observation sheet |
 
 **For the tenants who do not test tomorrow**: their slips stay unprinted. When the owner starts
@@ -202,7 +202,7 @@ simultaneous session need things the admin session creates.
 | # | Session | Who | About | Test cases |
 | :-- | :--- | :--- | :--- | :--- |
 | 0 | Morning checks | Technical lead | 15 min | Backup, `/api/health`, live commit, check:all table |
-| 1 | Owner session | Owner + facilitator + observer + recorder | 60-90 min | A-01 to A-35 |
+| 1 | Owner session | Owner + facilitator + observer + recorder | 60-90 min | A-01 to A-36 |
 | 2 | Tenant sessions, one at a time | Each tenant + facilitator + observer | 20-30 min each | T-01 to T-18 |
 | 3 | Everyone at once | All tenants + owner, same room or same hour | 20 min | C-01 to C-08 |
 | 4 | Offline, weak signal, install | Two tenants (one Android, one iPhone) + team | 20 min | O-01 to O-12 |

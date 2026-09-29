@@ -34,7 +34,7 @@ signs in as a real tenant, which it should stop doing (`BLOCKED_FOR_SEAN.md` B-8
 | :--- | :--- |
 | Tenant accounts | 32, all active, all with a current unit; 1 administrator |
 | Before the reset | All 32 tenant accounts shared **one** demo password (set 21 September, B-49) that the team had used while developing. Handing it to a tester would have opened every neighbour's account |
-| Password reset in the app | **None.** No "forgot password", no administrator reset. Only onboarding a new tenant issues a password (B-83) |
+| Password reset in the app | **None**, at the time of the audit: no "forgot password", no administrator reset. Only onboarding a new tenant issued a password. Added the same night (F-2, B-83) |
 | The reset, 21:54, after `npm run backup` | 32 of 32 tenants received their own random starting password; all 32 must choose their own at first sign-in; every session opened before 21:54 was signed out; lockouts cleared; the administrator's password verified unchanged |
 | The gate, tested | The seeded tenant signs in with its new starting password and every tenant screen's data is refused (428) until the password is changed |
 
@@ -157,7 +157,7 @@ Signed-in screens were not scanned: that needs a sign-in, which is tomorrow's.
 | # | Finding | Status |
 | :--- | :--- | :--- |
 | F-1 | Every tenant account shared one password the team had used | **Fixed 29 Sep**: unique starting passwords, forced change (section 2) |
-| F-2 | No way to reset a forgotten password in the app | Stop-gap script; the button is queued for Sean (B-83) |
+| F-2 | No way to reset a forgotten password in the app | **Fixed** in `8cf0e80` (B-83): Tenants > Edit > Reset password. Verified 15/15 against the live database and 7/7 in the interface |
 | F-3 | Requests had no deadline on a stalled connection | **Fixed** in `e32ad01`; live after the next deploy |
 | F-4 | `check:api` signs in as a real tenant | Queued (B-82): give the suites their own test tenant |
 | F-5 | Content Security Policy is report-only | Recommendation, after the defense |

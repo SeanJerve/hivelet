@@ -118,11 +118,10 @@ Based on the summary and conclusions of the study, the following are recommended
    every function that writes data is tested by a machine on every change and not only once by a
    person.
 8. Consider sending notifications by SMS as well, since not every tenant opens the system daily.
-9. Let the owner reset a tenant's password from the tenant list. In this version a tenant who
-   forgets a password cannot get back in without the development team, who reissue a starting
-   password from a script (Chapter 4, §4.2.6).
-10. Switch the browser security policy the site already declares from reporting to enforcing,
-    once its reports show nothing legitimate would be blocked.
+9. Switch the browser security policy the site already declares from reporting to enforcing,
+   once its reports show nothing legitimate would be blocked.
+10. Add a self-service "forgot password" for tenants, sent by SMS or email. The owner can reset a
+    password from the tenant list (Chapter 4, §4.2.6), but a tenant must reach her first.
 
 **For future researchers**
 

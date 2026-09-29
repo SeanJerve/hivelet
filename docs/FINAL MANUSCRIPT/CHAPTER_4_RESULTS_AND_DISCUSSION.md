@@ -210,9 +210,10 @@ Other security measures in the system:
   other session of that account. Before the tenants first used the system, on 29 September 2026,
   every tenant account was given its own starting password, handed to the tenant in person, and
   set to require a new password at first sign-in; every earlier session was ended. Until then the
-  tenant accounts had shared one password used by the development team. The system does not yet
-  let the owner reset a forgotten password; the team reissues a starting password with a script
-  (Chapter 5, recommendation 9).
+  tenant accounts had shared one password used by the development team. The owner can also reset a
+  tenant's forgotten password from the tenant list: the tenant receives a new one-time password,
+  must choose their own at next sign-in, and every earlier session ends (added 29 September 2026,
+  Table 23).
 - Every administrator action is written to an audit trail. The database refuses to let the
   application edit or delete its entries. The only change ever made to it was deliberate and
   reviewed: when test accounts were deleted, the name on their entries was removed and every entry
@@ -803,6 +804,8 @@ pilot; the rows after them will come from the survey results.
 | Check review, 28 Sep 2026 | Two checks disagreed on how many ended tenancies had no end date (2 and 1): the tenant list never sent end dates, and one real record had none | The list now sends end dates; the record was given its date (migration 059); both checks now fail on any new case | Reliability |
 | Team review, 28 Sep 2026 | The public FAQ offered online GCash payment while the gateway is still Adyen's test account | The FAQ now says online payments charge no real money yet and asks tenants to pay in person | Functional Suitability |
 | Pre-testing audit, 29 Sep 2026 | Every tenant account shared one password that the development team had used, so a tenant given it could have signed in as a neighbour | Each tenant given their own starting password, handed over in person, with a new password required at first sign-in; every earlier session ended | Security |
+| Pre-testing audit, 29 Sep 2026 | A tenant who forgot their password had no way back in, and the owner no way to help | The owner can reset a tenant's password from the tenant list; the tenant gets a one-time password and chooses their own at next sign-in | Usability, Security |
+| Pre-testing audit, 29 Sep 2026 | The window that makes a tenant set their own password did not say which password it wanted, and had no way out | It asks for the starting password by name and offers Sign out | Usability |
 | Pre-testing audit, 29 Sep 2026 | On a weak signal a page or a save could wait for minutes with no message | Pages stop after 25 seconds and saves after 45, each with a message; a save that may have arrived asks the reader to check before sending it again | Reliability, Usability |
 | Survey results | [DATA PENDING] | | |
 

@@ -64,7 +64,13 @@ thing did not work" is not.
   must_change_password` returns 32 today and falls as tenants sign in and choose their own.
 - **Raised:** 2026-09-29 by Claude, on Loyd's machine, at Loyd's request
 
-### B-83 — no way to reset a tenant's password from the app (no "forgot password", no admin reset)
+### ~~B-83 — no way to reset a tenant's password from the app~~ — **DONE 2026-09-29 (`8cf0e80`), with Loyd's go-ahead for backend work**
+
+> `POST /admin/tenants/:profileId/reset-password` and Tenants > Edit > Reset password, built as
+> proposed below. No schema change. Verified 15/15 against the live database through the local
+> backend (refusals, success, session cut, audit row without the value) and 7/7 in the interface.
+> Self-service "forgot password" is still not built; it is Chapter 5, recommendation 10.
+
 
 - **Blocked on:** backend lane (a new admin route) and your call on the design
 - **What I found:** the only password-issuing paths are onboarding a new tenant (`POST

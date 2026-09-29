@@ -12,7 +12,7 @@ the evidence file name in **Evidence**. A fail always gets a line in the defect 
 
 | Part | Cases | Chapter 4 |
 | :--- | :--- | :--- |
-| A. Owner / administrator | A-01 to A-35 | §4.3.4, Table 10 (the walkthrough steps are A-05 to A-32) |
+| A. Owner / administrator | A-01 to A-36 | §4.3.4, Table 10 (the walkthrough steps are A-05 to A-32) |
 | T. Tenant tasks | T-01 to T-18 | §4.3.7, Table 11C |
 | P. Public site | P-01 to P-08 | §4.3.4, Table 10 steps 1 to 3 |
 | C. Simultaneous use | C-01 to C-08 | §4.3.7, Table 11D |
@@ -72,6 +72,7 @@ table is the sheet to fill.
 | A-33 | FS | FR-029, NFR-009 | Open **Activity** | Today's actions listed with who and when | | |
 | A-34 | FS | FR-016 | Monthly Income: the payment verification queue | Opens; shows pending items or says there are none | | |
 | A-35 | US | NFR-002 | Ask: "What would you use first tomorrow morning?" Write the answer | | | |
+| A-36 | SE, FS | FR-009 | **Before A-31**, on the REHEARSAL tenant only: Tenants > Edit > Reset password > confirm; sign in as that tenant with the new password (private window) | Confirmation says their phone is signed out; the password is shown once; signing in forces a new password; the old one is refused; Activity shows the reset without the password | | |
 
 *A-23 (real)*: if the owner records a **real** collection today, add it as its own line: receipt
 number, unit, amount, and whether the ledger and the tenant's own Payments screen both show it.

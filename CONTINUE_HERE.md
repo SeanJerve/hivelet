@@ -22,8 +22,8 @@
 >   users and 285 admin reads from 6, all without an error; no WCAG A/AA violation on the public
 >   pages. Chapter 4 gained §4.3.6 and §4.3.7; Chapter 3's method is `FIXES_TO_CHAPTERS_1_TO_3.md`
 >   section H.
-> - **New for Sean:** B-83, an admin "reset password" button (there is no way to recover a
->   forgotten password in the app).
+> - **B-83 done the same night:** the owner resets a tenant's password from Tenants > Edit >
+>   Reset password (backend route + button, verified live).
 
 > [!NOTE]
 > **2026-09-28, on `main`, all pushed. 20 of 20 suites green with the backend up.**
