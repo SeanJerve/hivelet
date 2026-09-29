@@ -24,7 +24,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, '..');
 
-const inputMdPath = path.join(root, 'docs', 'chapter 4 tenative', 'CHAPTER_4_TENTATIVE_RESULTS_AND_DISCUSSION.md');
+// The FINAL MANUSCRIPT copy is the authority (its README says the `chapter 4 tenative` drafts are
+// superseded). This read the tentative draft until 2026-09-29 - a condensed copy half the length
+// that called itself "synchronized" and lacked everything added after 28 September - so the Word
+// file in FINAL MANUSCRIPT was being built from the wrong text.
+const inputMdPath = path.join(root, 'docs', 'FINAL MANUSCRIPT', 'CHAPTER_4_RESULTS_AND_DISCUSSION.md');
 const outputDocxPath1 = path.join(root, 'docs', 'chapter 4 tenative', 'CHAPTER_4_DRAFT.docx');
 const outputDocxPath2 = path.join(root, 'docs', 'FINAL MANUSCRIPT', 'CHAPTER_4_RESULTS_AND_DISCUSSION.docx');
 

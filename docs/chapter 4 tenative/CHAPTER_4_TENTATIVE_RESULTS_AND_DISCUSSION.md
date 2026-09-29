@@ -1,5 +1,12 @@
 # 4 RESULTS AND DISCUSSION
 
+> [!CAUTION]
+> **Superseded (2026-09-29). Do not edit or paste from this file.** It says it is synchronized with
+> `docs/FINAL MANUSCRIPT/CHAPTER_4_RESULTS_AND_DISCUSSION.md`, but it is a condensed copy half that
+> length and lacks everything added after 28 September (§4.3.6, §4.3.7, Tables 11A to 11D, the
+> tenant-screen audit, the 29 September rows of Table 23). `npm run build:docx` now builds both
+> Word files from the FINAL MANUSCRIPT copy.
+
 > **CANONICAL MANUSCRIPT WORKING COPY (Synchronized with [`docs/FINAL MANUSCRIPT/CHAPTER_4_RESULTS_AND_DISCUSSION.md`](../FINAL%20MANUSCRIPT/CHAPTER_4_RESULTS_AND_DISCUSSION.md))**
 > Re-verified against the operational system as of 28 September 2026. Every figure here is derived from the live database or verification check runs. Formatting adheres to the academic capstone guidelines (Arial 12 pt, double-spaced, 0.5" first-line indent, Table numbering 5–25, Figure numbering 4–8).
 
