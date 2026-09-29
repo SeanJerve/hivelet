@@ -98,3 +98,6 @@ frontend/_harness-*.html
 
 # Binaries
 *.exe
+
+# Field-test screenshots (scripts/field-tests) - may show live pages; not for the repository
+scripts/field-tests/shots/

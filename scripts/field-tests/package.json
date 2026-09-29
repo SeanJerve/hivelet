@@ -1,0 +1,15 @@
+{
+  "name": "hivelet-field-tests",
+  "private": true,
+  "description": "Offline, weak-signal, simultaneous-user and accessibility measurements (Chapter 4, 4.3.6). See README.md.",
+  "type": "module",
+  "scripts": {
+    "offline": "node offline-and-weak-signal.mjs",
+    "load": "node simultaneous-readers.mjs",
+    "a11y": "node layout-and-accessibility.mjs"
+  },
+  "devDependencies": {
+    "axe-core": "^4.10.0",
+    "playwright-core": "^1.48.0"
+  }
+}

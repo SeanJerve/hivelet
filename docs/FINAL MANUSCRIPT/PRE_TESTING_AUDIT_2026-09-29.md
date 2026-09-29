@@ -54,8 +54,11 @@ tenant's, which is the stop-gap for a lost slip until the app has a reset button
 
 ## 4. Installable app and offline behaviour (Chapter 4, §4.2.7; FR-030)
 
-Tested on the live site with a phone profile (390 × 844, Android Chrome user agent). 20 probes, 20
-passed once one harness error was re-run by hand.
+Tested on the live site with a phone profile (390 × 844, Android Chrome user agent). 20 probes. The
+first run reported the "Back online" probe as failed; checked by hand it passed, and the cause was
+in the harness (an unused debugging session interfering with the offline switch). With that removed
+the script, now `scripts/field-tests/offline-and-weak-signal.mjs`, reads **20/20** on the build
+deployed later the same night.
 
 | Probe | Result |
 | :--- | :--- |
