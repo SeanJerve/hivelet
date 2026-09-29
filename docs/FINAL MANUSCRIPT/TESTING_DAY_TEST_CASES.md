@@ -61,7 +61,7 @@ table is the sheet to fill.
 | A-22 | SE | FR-002 | (17) Change a ticket id in the address bar to someone else's | Not found (404), never "forbidden" | | |
 | A-23 | FS | FR-014, FR-032, FR-034 | (18) Monthly Income: record a collection for `PH`, receipt `REHEARSAL-001`, type a wrong water figure first | Warns about water; saved; bill settled | | |
 | A-24 | RE | FR-017 | (19) Record the same receipt again | Refused: already recorded | | |
-| A-25 | RE, FS | FR-017, FR-029 | (19b) Void `REHEARSAL-001`, then void it again | First works; second refused | | |
+| A-25 | RE, FS | FR-017, FR-029 | (19b) Open Monthly Income in a second tab. In the first, **Edit** `REHEARSAL-001` > **Delete payment**; then do the same in the second tab without refreshing it (the screen calls a void "Delete payment", and the row leaves the first tab's list) | First works; second refused: "That income record was already voided on …" | | |
 | A-26 | FS | FR-005 | (20) Inquiries: reply to A-07's enquiry, close it | Message posted; Closed | | |
 | A-27 | FS | FR-025, FR-027 | (21) Repairs: In Progress, Resolved, delete | Each saves; tenant gets "repair is done" | | |
 | A-28 | FS | FR-018, FR-038, FR-039 | (22, 22b) Monthly Expenses: ₱100 REHEARSAL, edit, split 60/40, delete | Saves; total stays ₱100 when split | | |
