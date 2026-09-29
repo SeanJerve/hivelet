@@ -1,0 +1,1352 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testing day test cases (print)</title>
+<!-- Generated from TESTING_DAY_TEST_CASES.md by scripts/field-tests/print-docs.mjs. Edit the Markdown, then re-run. -->
+<style>
+@page { size: A4 landscape; margin: 12mm; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 9.5pt/1.4 "Segoe UI", system-ui, Arial, sans-serif; color: #111; background: #fff; }
+h1 { font-size: 16pt; color: #17603f; margin: 0 0 3mm; }
+h2 { font-size: 12.5pt; color: #17603f; margin: 5mm 0 2mm; border-bottom: 1.5px solid #17603f; padding-bottom: 1mm; }
+h3 { font-size: 10.5pt; margin: 4mm 0 1.5mm; }
+p, ul, ol { margin: 0 0 2mm; }
+blockquote { margin: 2mm 0; padding: 2mm 3mm; border-left: 3px solid #b45309; background: #fdf6ec; }
+code { font: 8.5pt Consolas, "Courier New", monospace; background: #f1f3f2; padding: 0 2px; border-radius: 2px; }
+pre { font: 8pt Consolas, monospace; background: #f1f3f2; padding: 2mm; white-space: pre-wrap; }
+table { border-collapse: collapse; width: 100%; margin: 2mm 0 3mm; page-break-inside: auto; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; break-inside: avoid; }
+th, td { border: 1px solid #999; padding: 1.2mm 1.8mm; vertical-align: top; text-align: left; }
+th { background: #e8f1ec; font-size: 8.5pt; }
+td:empty { height: 8mm; min-width: 12mm; }
+.sheet-break { break-before: page; page-break-before: always; }
+input[type=checkbox] { width: 3.5mm; height: 3.5mm; margin-right: 1.5mm; vertical-align: -0.5mm; }
+hr { border: 0; border-top: 1px dashed #999; margin: 4mm 0; }
+@media screen { body { background: #ddd; } main { max-width: 281mm; margin: 6mm auto; background: #fff; padding: 10mm; box-shadow: 0 1px 6px rgba(0,0,0,.2); } }
+</style></head>
+<body><main>
+<h1>Testing Day Test Cases, 30 September 2026</h1>
+<p><strong>Written 2026-09-29.</strong> The test cases for the first test of Hivelet by the owner and real tenants.
+How to run the day is in <code>TESTING_DAY_GUIDE.md</code>; read that first.</p>
+<p><strong>How to use this file.</strong> Print it. Each case has an ID, the quality it tests (ISO/IEC 25010), the
+requirement it traces to (<code>docs/03_REQUIREMENTS.md</code>), what to do, and what should happen. Fill
+<strong>Result</strong> with <strong>P</strong> (pass), <strong>PH</strong> (pass with help), <strong>F</strong> (fail) or <strong>NT</strong> (not tested), and put
+the evidence file name in <strong>Evidence</strong>. A fail always gets a line in the defect log.</p>
+<p><strong>Where each part goes in Chapter 4</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">Part</th>
+<th align="left">Cases</th>
+<th align="left">Chapter 4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">A. Owner / administrator</td>
+<td align="left">A-01 to A-36</td>
+<td align="left">§4.3.4, Table 10 (the walkthrough steps are A-05 to A-32)</td>
+</tr>
+<tr>
+<td align="left">T. Tenant tasks</td>
+<td align="left">T-01 to T-18</td>
+<td align="left">§4.3.7, Table 11C</td>
+</tr>
+<tr>
+<td align="left">P. Public site</td>
+<td align="left">P-01 to P-08</td>
+<td align="left">§4.3.4, Table 10 steps 1 to 3</td>
+</tr>
+<tr>
+<td align="left">C. Simultaneous use</td>
+<td align="left">C-01 to C-08</td>
+<td align="left">§4.3.7, Table 11D</td>
+</tr>
+<tr>
+<td align="left">O. Offline, weak signal, install</td>
+<td align="left">O-01 to O-12</td>
+<td align="left">§4.3.7, compared with §4.3.6, Table 11A (measured 29 Sep)</td>
+</tr>
+<tr>
+<td align="left">PF. Performance timings</td>
+<td align="left">PF-01 to PF-10</td>
+<td align="left">§4.3.5, Table 11</td>
+</tr>
+<tr>
+<td align="left">S. Security</td>
+<td align="left">S-01 to S-12</td>
+<td align="left">§4.4.8 supporting evidence</td>
+</tr>
+<tr>
+<td align="left">CO. Compatibility</td>
+<td align="left">CO-01 to CO-06</td>
+<td align="left">§4.4.5 supporting evidence</td>
+</tr>
+</tbody></table>
+<p><strong>ISO/IEC 25010 characteristics used below:</strong> FS Functional Suitability, PE Performance
+Efficiency, CO Compatibility, US Usability, RE Reliability, SE Security, MA Maintainability, PO
+Portability. Quality in use (ISO/IEC 25010&#39;s second model) is measured in part T by task success
+(effectiveness), time on task (efficiency) and the survey (satisfaction).</p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part A. Owner / administrator</h2>
+<p>Signed in as the owner on the admin laptop, <code>https://hivelet.vercel.app</code>. Steps A-05 to A-32 are
+the 26-step walkthrough in <code>TESTING_REHEARSAL.md</code> (its step number in brackets), in the same order, using the vacant unit <code>PH</code>
+and names beginning <strong>REHEARSAL</strong>. The rehearsal file has the detail and the undo for each; this
+table is the sheet to fill.</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">ISO</th>
+<th align="left">Req</th>
+<th align="left">Do</th>
+<th align="left">Should see</th>
+<th align="left">Result</th>
+<th align="left">Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">A-01</td>
+<td align="left">US</td>
+<td align="left">FR-001</td>
+<td align="left">Sign in with her own password</td>
+<td align="left">Lands on Overview</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-02</td>
+<td align="left">FS</td>
+<td align="left">FR-019</td>
+<td align="left">Read the Overview. Ask her: &quot;is this month&#39;s collection what you expect?&quot;</td>
+<td align="left">Money tiles show figures; occupancy 32 of 33</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-03</td>
+<td align="left">US</td>
+<td align="left">NFR-002</td>
+<td align="left">Ask her to find, without help, where she would record a payment</td>
+<td align="left">Finds <strong>Monthly Income</strong> within about a minute</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-04</td>
+<td align="left">FS</td>
+<td align="left">FR-027</td>
+<td align="left">Open the notification bell</td>
+<td align="left">Notifications list opens; unread count matches</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-05</td>
+<td align="left">FS</td>
+<td align="left">FR-003</td>
+<td align="left">(Walkthrough 1) Open the public site signed out, browse units</td>
+<td align="left">33 units, no resident names</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-06</td>
+<td align="left">SE</td>
+<td align="left">FR-003</td>
+<td align="left">(2) Open LB and LF details</td>
+<td align="left">Rate, floor, cluster; <strong>no resident name</strong></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-07</td>
+<td align="left">FS</td>
+<td align="left">FR-004</td>
+<td align="left">(3) Send one enquiry from a unit page</td>
+<td align="left">&quot;Thank you&quot; confirmation</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-08</td>
+<td align="left">US, SE</td>
+<td align="left">FR-001</td>
+<td align="left">(4) Change Password, wrong current password first</td>
+<td align="left">&quot;That is not your current password&quot;, still signed in</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-09</td>
+<td align="left">SE</td>
+<td align="left">FR-001</td>
+<td align="left">(5) Change it for real</td>
+<td align="left">&quot;Password changed&quot;, still signed in</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-10</td>
+<td align="left">SE</td>
+<td align="left">FR-001</td>
+<td align="left">(6) Sign out, sign in with the new password</td>
+<td align="left">Works</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-11</td>
+<td align="left">FS, SE</td>
+<td align="left">FR-007, FR-008</td>
+<td align="left">(7) Rooms and rates, edit <code>PH</code> to ₱30,500</td>
+<td align="left">Saved; history row written</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-12</td>
+<td align="left">FS</td>
+<td align="left">FR-009</td>
+<td align="left">(8) Tenants: onboard &quot;REHEARSAL Test&quot; into <code>PH</code></td>
+<td align="left">Created; <code>PH</code> Occupied; a one-time password is shown to hand over</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-13</td>
+<td align="left">FS</td>
+<td align="left">FR-009</td>
+<td align="left">(9) Onboard a second tenant with the same phone</td>
+<td align="left">Refused, names the reason</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-14</td>
+<td align="left">FS</td>
+<td align="left">FR-033</td>
+<td align="left">(10) Edit the rehearsal tenant: occupants to 2</td>
+<td align="left">Saved</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-15</td>
+<td align="left">FS</td>
+<td align="left">FR-001</td>
+<td align="left">(11) Sign in as the rehearsal tenant (private window)</td>
+<td align="left">Forced to choose a password, then Overview shows <code>PH</code>, rate, occupants</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-16</td>
+<td align="left">FS</td>
+<td align="left">FR-021, FR-022</td>
+<td align="left">(12) As that tenant: repair request with a phone photo</td>
+<td align="left">Sent; if the photo is too big, it says so plainly</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-17</td>
+<td align="left">FS</td>
+<td align="left">FR-026</td>
+<td align="left">(13) Post a message on it</td>
+<td align="left">Appears in the thread</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-18</td>
+<td align="left">FS</td>
+<td align="left">FR-010</td>
+<td align="left">(14) My details: change the emergency contact</td>
+<td align="left">Saved</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-19</td>
+<td align="left">FS</td>
+<td align="left">FR-015</td>
+<td align="left">(15) Start a GCash payment; <strong>do not pay</strong></td>
+<td align="left">Adyen box with a GCash button, inside the window</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-20</td>
+<td align="left">FS</td>
+<td align="left">FR-011</td>
+<td align="left">(15b) Pay this period when no bill exists</td>
+<td align="left">A bill is raised: rate + ₱200 per occupant</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-21</td>
+<td align="left">FS</td>
+<td align="left">FR-027</td>
+<td align="left">(16) Mark a notification read</td>
+<td align="left">Badge drops by one</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-22</td>
+<td align="left">SE</td>
+<td align="left">FR-002</td>
+<td align="left">(17) Change a ticket id in the address bar to someone else&#39;s</td>
+<td align="left">Not found (404), never &quot;forbidden&quot;</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-23</td>
+<td align="left">FS</td>
+<td align="left">FR-014, FR-032, FR-034</td>
+<td align="left">(18) Monthly Income: record a collection for <code>PH</code>, receipt <code>REHEARSAL-001</code>, type a wrong water figure first</td>
+<td align="left">Warns about water; saved; bill settled</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-24</td>
+<td align="left">RE</td>
+<td align="left">FR-017</td>
+<td align="left">(19) Record the same receipt again</td>
+<td align="left">Refused: already recorded</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-25</td>
+<td align="left">RE, FS</td>
+<td align="left">FR-017, FR-029</td>
+<td align="left">(19b) Open Monthly Income in a second tab. In the first, <strong>Edit</strong> <code>REHEARSAL-001</code> &gt; <strong>Delete payment</strong>; then do the same in the second tab without refreshing it (the screen calls a void &quot;Delete payment&quot;, and the row leaves the first tab&#39;s list)</td>
+<td align="left">First works; second refused: &quot;That income record was already voided on …&quot;</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-26</td>
+<td align="left">FS</td>
+<td align="left">FR-005</td>
+<td align="left">(20) Inquiries: reply to A-07&#39;s enquiry, close it</td>
+<td align="left">Message posted; Closed</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-27</td>
+<td align="left">FS</td>
+<td align="left">FR-025, FR-027</td>
+<td align="left">(21) Repairs: In Progress, Resolved, delete</td>
+<td align="left">Each saves; tenant gets &quot;repair is done&quot;</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-28</td>
+<td align="left">FS</td>
+<td align="left">FR-018, FR-038, FR-039</td>
+<td align="left">(22, 22b) Monthly Expenses: ₱100 REHEARSAL, edit, split 60/40, delete</td>
+<td align="left">Saves; total stays ₱100 when split</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-29</td>
+<td align="left">FS, CO</td>
+<td align="left">FR-044, FR-028</td>
+<td align="left">(23) Download the Monthly Income and Monthly Expenses workbooks, open in Excel. They save as &quot;Monthly Income September 2026 - MI092026.xlsx&quot; and &quot;Monthly Expenses September 2026 - ME092026.xlsx&quot;</td>
+<td align="left">Open correctly; her layout</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-30</td>
+<td align="left">RE</td>
+<td align="left">NFR-006</td>
+<td align="left">(23b) With Overview open, disconnect the laptop&#39;s internet, reload</td>
+<td align="left">Money tiles show &quot;—&quot;, never ₱0.00</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-31</td>
+<td align="left">FS</td>
+<td align="left">FR-009</td>
+<td align="left">(24) Vacate the rehearsal tenant</td>
+<td align="left"><code>PH</code> Available; account inactive</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-32</td>
+<td align="left">FS</td>
+<td align="left">FR-007</td>
+<td align="left">(26) Set <code>PH</code> back to ₱30,000</td>
+<td align="left">Saved</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-33</td>
+<td align="left">FS</td>
+<td align="left">FR-029, NFR-009</td>
+<td align="left">Open <strong>Activity</strong></td>
+<td align="left">Today&#39;s actions listed with who and when</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-34</td>
+<td align="left">FS</td>
+<td align="left">FR-016</td>
+<td align="left">Monthly Income: the payment verification queue</td>
+<td align="left">Opens; shows pending items or says there are none</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-35</td>
+<td align="left">US</td>
+<td align="left">NFR-002</td>
+<td align="left">Ask: &quot;What would you use first tomorrow morning?&quot; Write the answer</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">A-36</td>
+<td align="left">SE, FS</td>
+<td align="left">FR-009</td>
+<td align="left"><strong>Before A-31</strong>, on the REHEARSAL tenant only: Tenants &gt; Edit &gt; Reset password &gt; confirm; sign in as that tenant with the new password (private window)</td>
+<td align="left">Confirmation says their phone is signed out; the password is shown once; signing in forces a new password; the old one is refused; Activity shows the reset without the password</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p><em>A-23 (real)</em>: if the owner records a <strong>real</strong> collection today, add it as its own line: receipt
+number, unit, amount, and whether the ledger and the tenant&#39;s own Payments screen both show it.
+That single real entry is stronger evidence than the rehearsal.</p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part T. Tenant tasks (read aloud; English, then Filipino)</h2>
+<p>On the tenant&#39;s <strong>own phone</strong>. The observer writes: start and end time, <strong>success</strong> (P, PH with
+help, F), number of <strong>errors</strong> (wrong taps that led somewhere unintended), and what they said.
+These three numbers per task are the quality-in-use measures Chapter 4 reports.</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">ISO</th>
+<th align="left">Req</th>
+<th align="left">Task card (read aloud)</th>
+<th align="left">Should happen</th>
+<th align="left">Time</th>
+<th align="left">Result</th>
+<th align="left">Errors</th>
+<th align="left">Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">T-01</td>
+<td align="left">SE, US</td>
+<td align="left">FR-001</td>
+<td align="left">&quot;Sign in with the slip we gave you.&quot; <em>Mag-sign in po gamit ang slip na ibinigay namin.</em></td>
+<td align="left">Asked to choose a new password straight away</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-02</td>
+<td align="left">SE, US</td>
+<td align="left">FR-001</td>
+<td align="left">&quot;Choose your own password.&quot; <em>Gumawa po ng sariling password.</em></td>
+<td align="left">Rules shown (10+ characters, a letter, a number); a weak one is refused with a reason; a good one lands on Overview</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-03</td>
+<td align="left">FS</td>
+<td align="left">FR-003</td>
+<td align="left">&quot;Which unit is yours and how much is the rent?&quot; <em>Anong unit ninyo at magkano ang upa?</em></td>
+<td align="left">Their correct unit and rate</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-04</td>
+<td align="left">FS, US</td>
+<td align="left">FR-011, FR-013</td>
+<td align="left">&quot;Do you owe anything right now?&quot; <em>May utang po ba kayo ngayon?</em></td>
+<td align="left">The answer is clear on screen, and matches what they believe</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-05</td>
+<td align="left">FS</td>
+<td align="left">FR-014</td>
+<td align="left">&quot;Find your payments this year.&quot; <em>Hanapin po ang mga bayad ninyo ngayong taon.</em></td>
+<td align="left">Their receipts listed; <strong>ask them if the list is right</strong> and write the answer</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-06</td>
+<td align="left">US</td>
+<td align="left">FR-011</td>
+<td align="left">&quot;How is your bill made up?&quot; <em>Paano po nabuo ang bill ninyo?</em></td>
+<td align="left">Rent and water (₱200 per occupant) visible</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-07</td>
+<td align="left">US</td>
+<td align="left">NFR-002</td>
+<td align="left">&quot;Find where to report something broken.&quot; <em>Hanapin po kung saan magre-report ng sira.</em></td>
+<td align="left">Finds Repairs</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-08</td>
+<td align="left">FS</td>
+<td align="left">FR-021, FR-023</td>
+<td align="left">&quot;Report it, and say how urgent it is.&quot; <em>I-report po at sabihin kung gaano kaapurahan.</em> (real problem, or title starting TEST)</td>
+<td align="left">&quot;was sent to the landlady&quot;; appears in their list</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-09</td>
+<td align="left">FS</td>
+<td align="left">FR-022</td>
+<td align="left">&quot;Add a photo of it.&quot; <em>Maglagay po ng litrato.</em></td>
+<td align="left">Attached, even a normal multi-megabyte phone photo (it is made smaller before sending)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-10</td>
+<td align="left">FS</td>
+<td align="left">FR-026</td>
+<td align="left">&quot;Add a note to your request.&quot; <em>Magdagdag po ng mensahe sa request.</em></td>
+<td align="left">Note appears in the thread</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-11</td>
+<td align="left">FS</td>
+<td align="left">FR-024</td>
+<td align="left">&quot;What is its status now?&quot; <em>Ano po ang status nito?</em></td>
+<td align="left">Status visible: Submitted, In progress or Done in the list (the thread also shows Resolved or Closed)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-12</td>
+<td align="left">FS</td>
+<td align="left">FR-010</td>
+<td align="left">&quot;Check your contact details and fix anything wrong.&quot; <em>Tingnan po ang contact details ninyo.</em></td>
+<td align="left">Saved, or nothing to change</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-13</td>
+<td align="left">FS</td>
+<td align="left">FR-027</td>
+<td align="left">&quot;Do you have any notifications?&quot; <em>May notification po ba kayo?</em></td>
+<td align="left">Bell opens; marking one read lowers the count</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-14</td>
+<td align="left">FS</td>
+<td align="left">FR-015</td>
+<td align="left">&quot;Open the GCash payment, but <strong>do not pay</strong>. Close it.&quot; <em>Buksan po ang GCash pero huwag magbayad. Isara.</em></td>
+<td align="left">GCash option appears; closing it changes nothing</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-15</td>
+<td align="left">SE</td>
+<td align="left">FR-002</td>
+<td align="left">&quot;Type <code>/admin</code> at the end of the address.&quot; <em>I-type po ang /admin sa dulo ng address.</em></td>
+<td align="left">Not allowed in; sent back to their own pages</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-16</td>
+<td align="left">SE</td>
+<td align="left">FR-001</td>
+<td align="left">&quot;Sign out, then press Back.&quot; <em>Mag-sign out po, tapos pindutin ang Back.</em></td>
+<td align="left">No personal data shown after sign-out</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-17</td>
+<td align="left">SE</td>
+<td align="left">FR-001</td>
+<td align="left">&quot;Sign in again with your <strong>new</strong> password.&quot; <em>Mag-sign in po ulit gamit ang bagong password.</em></td>
+<td align="left">Works; the slip password no longer works</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-18</td>
+<td align="left">US</td>
+<td align="left">NFR-002</td>
+<td align="left">&quot;Was anything confusing?&quot; <em>May nakalito po ba?</em> Write their words exactly</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p><strong>After the tenant&#39;s last task</strong>, the survey (Section 3 of the form).</p>
+<p><strong>Quality in use, computed afterwards per task and overall</strong> (Claude does this from the sheets):
+task success rate = tasks passed without help ÷ tasks attempted; time on task = median seconds;
+errors per task = mean.</p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part P. Public site (no sign-in)</h2>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">ISO</th>
+<th align="left">Req</th>
+<th align="left">Do</th>
+<th align="left">Should see</th>
+<th align="left">Result</th>
+<th align="left">Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">P-01</td>
+<td align="left">FS</td>
+<td align="left">FR-003</td>
+<td align="left">Open <code>hivelet.vercel.app</code> on a phone</td>
+<td align="left">Landing page, building photo, &quot;Inquire now&quot;</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">P-02</td>
+<td align="left">FS</td>
+<td align="left">FR-003</td>
+<td align="left">Browse the categories and units</td>
+<td align="left">33 units in five clusters; only <code>PH</code> available</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">P-03</td>
+<td align="left">SE</td>
+<td align="left">FR-003</td>
+<td align="left">Open any occupied unit</td>
+<td align="left">No tenant name, phone or email anywhere</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">P-04</td>
+<td align="left">US</td>
+<td align="left">FR-004</td>
+<td align="left">Enquiry form: press Send with everything empty</td>
+<td align="left">Each missing field says what it needs</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">P-05</td>
+<td align="left">US</td>
+<td align="left">FR-004</td>
+<td align="left">Type a bad email and a short phone number</td>
+<td align="left">Plain messages under the fields; nothing sent</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">P-06</td>
+<td align="left">FS</td>
+<td align="left">FR-004</td>
+<td align="left">Send one real-looking enquiry (a team member&#39;s own details)</td>
+<td align="left">Confirmation; the owner sees it in Inquiries (A-26)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">P-07</td>
+<td align="left">US</td>
+<td align="left">none</td>
+<td align="left">Open <code>/privacy</code> and <code>/terms</code></td>
+<td align="left">Both readable on a phone</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">P-08</td>
+<td align="left">RE</td>
+<td align="left">none</td>
+<td align="left">Open a made-up address, <code>/this-does-not-exist</code></td>
+<td align="left">A friendly &quot;not found&quot; page with a way back</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p><strong>Do not send more than two enquiries from the same wifi in 15 minutes.</strong> The limit is ten per
+connection, shared by everyone on the house wifi, and a hit blocks the real visitors too.</p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part C. Simultaneous use (everyone at once)</h2>
+<p>Session 3 of the guide. Write down: start time, number of tenants, the owner, and the network
+(house wifi / mobile data).</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">ISO</th>
+<th align="left">Req</th>
+<th align="left">Do (at the same moment)</th>
+<th align="left">Should see</th>
+<th align="left">Result</th>
+<th align="left">Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">C-01</td>
+<td align="left">PE, RE</td>
+<td align="left">NFR-004</td>
+<td align="left">All tenants refresh Overview together</td>
+<td align="left">Every screen loads; note the slowest (seconds)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">C-02</td>
+<td align="left">SE</td>
+<td align="left">FR-002</td>
+<td align="left">Everyone checks the unit and name on screen</td>
+<td align="left">Each sees <strong>only their own</strong> unit. Any other name: STOP (guide §9)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">C-03</td>
+<td align="left">FS, RE</td>
+<td align="left">FR-026</td>
+<td align="left">Every tenant posts a note on their request within the same minute</td>
+<td align="left">Every note saved once, none lost, none doubled</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">C-04</td>
+<td align="left">FS</td>
+<td align="left">FR-025</td>
+<td align="left">Owner opens Repairs while C-03 happens, then refreshes</td>
+<td align="left">All new notes visible, each on the right request</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">C-05</td>
+<td align="left">FS</td>
+<td align="left">FR-027</td>
+<td align="left">Owner moves two requests to In Progress</td>
+<td align="left">Those two tenants get a notification; the others do not</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">C-06</td>
+<td align="left">RE</td>
+<td align="left">NFR-006</td>
+<td align="left">Two tenants double-tap Send on a note</td>
+<td align="left">Only one copy saved (the button disables while sending)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">C-07</td>
+<td align="left">PE</td>
+<td align="left">NFR-004</td>
+<td align="left">Owner opens Monthly Income for the whole year while tenants are active</td>
+<td align="left">Loads; note the time</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">C-08</td>
+<td align="left">CO</td>
+<td align="left">NFR-005</td>
+<td align="left">Owner uses the laptop, tenants use phones, at once</td>
+<td align="left">No one&#39;s session affects another&#39;s</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part O. Offline, weak signal and installing the app</h2>
+<p>At least one Android phone with Chrome and one iPhone with Safari. The system is designed so that
+<strong>the app itself opens offline, public unit information is shown from the phone&#39;s memory, and
+personal and financial data is never kept on the phone</strong> (Chapter 4, §4.2.7; the delimitation in
+§1.4). These cases check exactly that promise, no more.</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">ISO</th>
+<th align="left">Req</th>
+<th align="left">Do</th>
+<th align="left">Should see</th>
+<th align="left">Android</th>
+<th align="left">iPhone</th>
+<th align="left">Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">O-01</td>
+<td align="left">PO</td>
+<td align="left">FR-030</td>
+<td align="left">Android Chrome: menu ⋮ &gt; <strong>Install app</strong> (or Add to Home screen)</td>
+<td align="left">Hivelet icon on the home screen</td>
+<td align="left"></td>
+<td align="left">n/a</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-02</td>
+<td align="left">PO</td>
+<td align="left">FR-030</td>
+<td align="left">iPhone Safari: Share &gt; <strong>Add to Home Screen</strong></td>
+<td align="left">Hivelet icon on the home screen</td>
+<td align="left">n/a</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-03</td>
+<td align="left">PO</td>
+<td align="left">FR-030</td>
+<td align="left">Open it from the icon</td>
+<td align="left">Opens full screen, no address bar, green top bar</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-04</td>
+<td align="left">RE</td>
+<td align="left">FR-030</td>
+<td align="left">Sign in, open Overview, then switch on <strong>airplane mode</strong></td>
+<td align="left">Banner: &quot;No connection. You can read what is already loaded, but nothing can be saved or paid until it is back.&quot;</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-05</td>
+<td align="left">RE</td>
+<td align="left">FR-030</td>
+<td align="left">Still offline: move between the tenant pages</td>
+<td align="left">The app still opens each page, and says it cannot load data; <strong>never shows ₱0.00 or an empty list as if true</strong></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-06</td>
+<td align="left">RE</td>
+<td align="left">FR-021</td>
+<td align="left">Still offline: try to send a note on a request</td>
+<td align="left">A message that it could not reach the server; the typed text is <strong>kept</strong></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-07</td>
+<td align="left">RE</td>
+<td align="left">FR-030</td>
+<td align="left">Switch airplane mode off</td>
+<td align="left">&quot;Back online&quot; notice; send the note again: it works, once</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-08</td>
+<td align="left">RE, SE</td>
+<td align="left">FR-030</td>
+<td align="left">Close the app fully, airplane mode on, open it from the icon</td>
+<td align="left">App opens; the tenant is <strong>not</strong> signed out; banner shows</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-09</td>
+<td align="left">SE</td>
+<td align="left">FR-030</td>
+<td align="left">Sign out, airplane mode on, open the app</td>
+<td align="left">No personal data visible anywhere</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-10</td>
+<td align="left">RE</td>
+<td align="left">FR-003</td>
+<td align="left">Offline: open the public units page</td>
+<td align="left">Units shown from memory, or a notice that availability cannot be shown (never a made-up list)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-11</td>
+<td align="left">RE</td>
+<td align="left">NFR-006</td>
+<td align="left"><strong>Weak signal</strong>: on the laptop, DevTools &gt; Network &gt; <strong>Slow 3G</strong>; open Repairs and send a note</td>
+<td align="left">It gets there, slowly; the button shows &quot;Sending…&quot; and cannot be pressed twice</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">O-12</td>
+<td align="left">RE</td>
+<td align="left">NFR-006</td>
+<td align="left">Weak signal that stops answering (walk to a dead spot, or on the laptop DevTools &gt; Network &gt; throttling &gt; <strong>Add</strong> a custom profile with <strong>60000 ms</strong> latency, select it, then send)</td>
+<td align="left">Within 45 seconds a message says it cannot tell whether it was saved and to <strong>check before sending again</strong></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p>O-12 depends on the request deadline added on 29 September (<code>frontend/src/lib/api.ts</code>). If that
+change is not live yet, a save on a dead connection spins until the browser gives up; record what
+happens either way.</p>
+<p>DevTools <strong>Offline</strong> does not reproduce O-12: it fails the request at once or lets the reply through, so it shows O-06&#39;s &quot;could not reach the server&quot; or a normal save, never the 45-second message. Use the 60000 ms profile.</p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part PF. Performance timings (Table 11)</h2>
+<p>On the <strong>Table 2 laptop</strong> and the <strong>Table 3 phone</strong>. Write the model, browser, network and date on
+the timing sheet. <strong>Three runs each, report the middle one.</strong> First load = cache cleared (laptop:
+DevTools &gt; Network &gt; Disable cache; phone: a private tab). Laptop times from DevTools&#39; Network tab
+(<strong>DOMContentLoaded</strong> and <strong>Load</strong> at the bottom); &quot;usable&quot; = stopwatch until the figures you came
+for are on screen.</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">Screen</th>
+<th align="left">Table 11 row</th>
+<th align="left">How</th>
+<th align="left">Laptop (s)</th>
+<th align="left">Phone (s)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">PF-01</td>
+<td align="left">Public home, first load</td>
+<td align="left">Public home page, first load</td>
+<td align="left">Cache cleared</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-02</td>
+<td align="left">Public home, second load</td>
+<td align="left">(supporting)</td>
+<td align="left">Normal reload</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-03</td>
+<td align="left">Sign in to Overview</td>
+<td align="left">Sign-in to dashboard</td>
+<td align="left">Stopwatch from pressing Sign in to figures shown</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-04</td>
+<td align="left">Monthly Income, full year</td>
+<td align="left">Income ledger, one full year</td>
+<td align="left">Stopwatch to the last row visible</td>
+<td align="left"></td>
+<td align="left">n/a</td>
+</tr>
+<tr>
+<td align="left">PF-05</td>
+<td align="left">Monthly Income workbook export</td>
+<td align="left">Excel export of one year</td>
+<td align="left">Stopwatch from click to file saved</td>
+<td align="left"></td>
+<td align="left">n/a</td>
+</tr>
+<tr>
+<td align="left">PF-06</td>
+<td align="left">Tenant Overview, first load</td>
+<td align="left">Tenant portal, first load</td>
+<td align="left">Cache cleared</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-07</td>
+<td align="left">Tenant Payments</td>
+<td align="left">(supporting)</td>
+<td align="left">Stopwatch</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-08</td>
+<td align="left">Send a repair request</td>
+<td align="left">(supporting)</td>
+<td align="left">Stopwatch from Send to confirmation</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-09</td>
+<td align="left">PageSpeed Insights, mobile, <code>hivelet.vercel.app</code></td>
+<td align="left">(supporting)</td>
+<td align="left">pagespeed.web.dev, note the four scores and LCP</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-10</td>
+<td align="left">Lighthouse in DevTools on a signed-in page</td>
+<td align="left">(supporting)</td>
+<td align="left">DevTools &gt; Lighthouse &gt; Mobile &gt; Analyze</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part S. Security</h2>
+<p><strong>Passive only.</strong> Record grade, date and a screenshot of each. Never an active scan (guide §6).</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">ISO</th>
+<th align="left">Req</th>
+<th align="left">Do</th>
+<th align="left">Should see</th>
+<th align="left">Result</th>
+<th align="left">Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">S-01</td>
+<td align="left">SE</td>
+<td align="left">NFR-003</td>
+<td align="left">Mozilla HTTP Observatory, <code>hivelet.vercel.app</code></td>
+<td align="left">Grade (write it). Expect <strong>B, 75/100, 11 of 12</strong> (run 30 Sep 00:04); the one failure is the report-only Content Security Policy, which is deliberate</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-02</td>
+<td align="left">SE</td>
+<td align="left">NFR-003</td>
+<td align="left">securityheaders.com</td>
+<td align="left">Grade</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-03</td>
+<td align="left">SE</td>
+<td align="left">NFR-003</td>
+<td align="left">SSL Labs, <code>hivelet.vercel.app</code></td>
+<td align="left">Grade. Expect <strong>A+</strong> (run 30 Sep 00:10; one of two addresses A)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-04</td>
+<td align="left">SE</td>
+<td align="left">FR-001</td>
+<td align="left">Rehearsal tenant only: 5 wrong passwords</td>
+<td align="left">Locked for 15 minutes with a clear message. <strong>Never on a real account</strong></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-05</td>
+<td align="left">SE</td>
+<td align="left">FR-002</td>
+<td align="left">Tenant opens <code>/admin</code> (T-15)</td>
+<td align="left">Refused</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-06</td>
+<td align="left">SE</td>
+<td align="left">FR-002</td>
+<td align="left">Signed out, open <code>/tenant</code></td>
+<td align="left">Sent to sign-in</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-07</td>
+<td align="left">SE</td>
+<td align="left">FR-001</td>
+<td align="left">Tenant signs out; Back button (T-16)</td>
+<td align="left">No data</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-08</td>
+<td align="left">SE</td>
+<td align="left">FR-001</td>
+<td align="left">Slip password after the tenant changed it (T-17)</td>
+<td align="left">Refused</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-09</td>
+<td align="left">SE</td>
+<td align="left">FR-029</td>
+<td align="left">Activity shows today&#39;s password changes and admin actions, without any password in it</td>
+<td align="left">As described</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-10</td>
+<td align="left">SE</td>
+<td align="left">FR-003</td>
+<td align="left">Public pages and unit details: no tenant names (P-03)</td>
+<td align="left">As described</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-11</td>
+<td align="left">SE</td>
+<td align="left">FR-002</td>
+<td align="left">Foreign ticket id (A-22)</td>
+<td align="left">Not found</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">S-12</td>
+<td align="left">SE</td>
+<td align="left">NFR-003</td>
+<td align="left">Ask the owner: &quot;Who else knows your password?&quot;</td>
+<td align="left">Only she does (after A-09)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part CO. Compatibility matrix</h2>
+<p>Tick each browser and device the system was actually used on tomorrow, with the result.</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">Device and browser</th>
+<th align="left">Sign-in</th>
+<th align="left">Tenant pages</th>
+<th align="left">Admin pages</th>
+<th align="left">Install</th>
+<th align="left">Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">CO-01</td>
+<td align="left">Android, Chrome</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">n/a</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">CO-02</td>
+<td align="left">Android, Samsung Internet (if a tenant has it)</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">n/a</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">CO-03</td>
+<td align="left">iPhone, Safari</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">n/a</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">CO-04</td>
+<td align="left">Windows laptop, Chrome</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">CO-05</td>
+<td align="left">Windows laptop, Edge</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">CO-06</td>
+<td align="left">Any, Firefox</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">n/a</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Summary to fill at the end of the day</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Part</th>
+<th align="right">Cases run</th>
+<th align="right">Passed</th>
+<th align="right">Passed with help</th>
+<th align="right">Failed</th>
+<th align="right">Not tested</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">A</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="left">T (all tenants together)</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="left">P</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="left">C</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="left">O</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="left">S</td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+</tbody></table>
+<p>Tested on build <code>_______</code> (live commit), by <code>____________</code>, on 30 September 2026.</p>
+
+</main></body></html>

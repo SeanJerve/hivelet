@@ -9,6 +9,7 @@ and get a number rather than quote one.
 | `offline-and-weak-signal.mjs` | Installability, the app opening offline on ten addresses, the offline banner and "Back online", the public list served from cache and after a stalled API, and first/returning load on Fast 3G and Slow 3G. Live site, phone profile | No. Every non-GET request is aborted in the browser |
 | `simultaneous-readers.mjs` | A: 12 simultaneous visitors on the live public pages for 60 s. B: 6 simultaneous readers of the owner's ten main data requests for 45 s, through the **local** backend against the live database (signs in once as the administrator from `credentials/creds.txt`) | No. GET only |
 | `layout-and-accessibility.mjs` | Sideways overflow on seven public pages at 360, 390 and 1366 px; axe-core WCAG 2 A and AA rules at 390 and 1366 px | No. Every non-GET request is aborted |
+| `print-docs.mjs` | Renders the testing day's Markdown handouts (forms, test cases, guide) as print-ready A4 pages beside them in `docs/FINAL MANUSCRIPT/` | Only those three HTML files |
 | `owner-screens-layout.mjs` | The same two measures on the owner's eight screens at 360, 390, 768 and 1366 px, signed in on the **local** build (local backend, live database) with `credentials/creds.txt`. Needs `npm run dev:backend` and `npm run dev:frontend`, opened as `localhost` (the backend's CORS list) | No. Every non-GET but sign-in is aborted; prints measurements, never record text |
 
 **A contrast finding on one scan only is usually text caught mid-animation.** Twice on 29 September

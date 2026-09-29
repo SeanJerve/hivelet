@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testing day forms (print)</title>
+<!-- Generated from TESTING_DAY_FORMS.md by scripts/field-tests/print-docs.mjs. Edit the Markdown, then re-run. -->
+<style>
+@page { size: A4 portrait; margin: 12mm; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 9.5pt/1.4 "Segoe UI", system-ui, Arial, sans-serif; color: #111; background: #fff; }
+h1 { font-size: 16pt; color: #17603f; margin: 0 0 3mm; }
+h2 { font-size: 12.5pt; color: #17603f; margin: 5mm 0 2mm; border-bottom: 1.5px solid #17603f; padding-bottom: 1mm; }
+h3 { font-size: 10.5pt; margin: 4mm 0 1.5mm; }
+p, ul, ol { margin: 0 0 2mm; }
+blockquote { margin: 2mm 0; padding: 2mm 3mm; border-left: 3px solid #b45309; background: #fdf6ec; }
+code { font: 8.5pt Consolas, "Courier New", monospace; background: #f1f3f2; padding: 0 2px; border-radius: 2px; }
+pre { font: 8pt Consolas, monospace; background: #f1f3f2; padding: 2mm; white-space: pre-wrap; }
+table { border-collapse: collapse; width: 100%; margin: 2mm 0 3mm; page-break-inside: auto; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; break-inside: avoid; }
+th, td { border: 1px solid #999; padding: 1.2mm 1.8mm; vertical-align: top; text-align: left; }
+th { background: #e8f1ec; font-size: 8.5pt; }
+td:empty { height: 8mm; min-width: 12mm; }
+.sheet-break { break-before: page; page-break-before: always; }
+input[type=checkbox] { width: 3.5mm; height: 3.5mm; margin-right: 1.5mm; vertical-align: -0.5mm; }
+hr { border: 0; border-top: 1px dashed #999; margin: 4mm 0; }
+@media screen { body { background: #ddd; } main { max-width: 194mm; margin: 6mm auto; background: #fff; padding: 10mm; box-shadow: 0 1px 6px rgba(0,0,0,.2); } }
+</style></head>
+<body><main>
+<h1>Testing Day Forms</h1>
+<p><strong>Written 2026-09-29.</strong> Print these for 30 September (<code>TESTING_DAY_GUIDE.md</code> §3, step 11). Signed
+and filled copies are scanned into the evidence folder and become appendices. How many to print:
+consent, one per tester plus the owner; observation sheet, one per tester; the rest, two copies
+each.</p>
+<p>Fill in the blanks marked <code>______</code> before printing (the team members&#39; names, the adviser).</p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Form 1. Informed consent / Pahintulot na may Kaalaman</h2>
+<p><strong>Hivelet: A Web-Based Apartment Management System for Fe Galang Da Silva Boarding House</strong>
+Group 4, BS Information Technology, Bicol University College of Science
+Adviser: <code>____________________</code></p>
+<p><strong>What this is.</strong> We are testing the Hivelet system with its real users: the owner and the tenants
+of the Fe Galang Da Silva Boarding House. You will use the system on your own phone for about 20 to
+30 minutes while a member of our team watches and takes notes, and then answer a short anonymous
+survey.</p>
+<p><em>Sinusubukan namin ang sistemang Hivelet kasama ang mga tunay na gumagamit nito. Gagamitin ninyo
+ang sistema sa sarili ninyong cellphone nang mga 20 hanggang 30 minuto habang nagmamasid at
+nagsusulat ang isang miyembro ng aming grupo, at pagkatapos ay sasagot kayo ng maikling survey na
+walang pangalan.</em></p>
+<p><strong>What we record.</strong> Notes on what you do and how long it takes; with your permission, a recording
+of your phone&#39;s screen and photos of the session. Your survey answers are anonymous.</p>
+<p><strong>Your privacy (Data Privacy Act of 2012, RA 10173).</strong> You use your own account, which shows only
+your own unit, bills, payments and requests. Anything we use in our paper has names, numbers,
+emails and amounts hidden. Recordings and notes are kept by the research team only and deleted
+after the defense. Taking part is voluntary. You may stop at any time, and it has no effect at all
+on your tenancy.</p>
+<p><em>Kusang-loob po ang paglahok. Maaari kayong tumigil anumang oras, at wala itong epekto sa inyong
+pag-upa.</em></p>
+<p>Please tick / <em>Pakitsek</em>:</p>
+<ul>
+<li><input disabled="" type="checkbox"> I agree to take part in the test. / <em>Pumapayag akong lumahok.</em></li>
+<li><input disabled="" type="checkbox"> I agree to my phone screen being recorded. / <em>Pumapayag akong i-record ang screen ng aking cellphone.</em></li>
+<li><input disabled="" type="checkbox"> I agree to photos of the session being taken. / <em>Pumapayag akong kunan ng litrato ang session.</em></li>
+<li><input disabled="" type="checkbox"> My face may appear in the paper. / <em>Maaaring makita ang aking mukha sa papel.</em>
+(If not ticked, faces are blurred or cropped.)</li>
+</ul>
+<p>Name / <em>Pangalan</em>: <code>______________________________</code>  Unit: <code>______</code></p>
+<p>Signature / <em>Lagda</em>: <code>______________________________</code>  Date: <code>____ September 2026</code></p>
+<p>Research team member present: <code>______________________________</code></p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Form 2. Observation sheet (one per tester)</h2>
+<p>Tester code: <code>T__</code> / Owner    Unit: <code>______</code>    Device and browser: <code>____________________</code>
+Network: house wifi / mobile data    Observer: <code>____________</code>    Date: 30 Sep 2026</p>
+<p>Write what happened, not what should have happened. <strong>Success</strong>: P = done alone, PH = done with
+help, F = not done. <strong>Errors</strong>: wrong taps that led somewhere unintended.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Case</th>
+<th align="left">Start</th>
+<th align="left">End</th>
+<th align="left">Success</th>
+<th align="left">Errors</th>
+<th align="left">Help given (what, when)</th>
+<th align="left">What they said / did</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">T-01</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-02</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-03</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-04</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-05</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-06</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-07</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-08</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-09</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-10</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-11</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-12</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-13</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-14</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-15</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-16</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-17</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">T-18</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p>For the owner, use the same columns with A-01 to A-35.</p>
+<p>Overall impression, in the tester&#39;s own words:</p>
+<p><code>______________________________________________________________________________</code></p>
+<p><code>______________________________________________________________________________</code></p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Form 3. Defect log (shared, one line per problem)</h2>
+<p><strong>Severity</strong>: 1 = data wrong, lost or shown to the wrong person (stop, see guide §9); 2 = a task
+cannot be done; 3 = a task can be done but is confusing or slow; 4 = cosmetic.</p>
+<table>
+<thead>
+<tr>
+<th align="left">#</th>
+<th align="left">Time</th>
+<th align="left">Case</th>
+<th align="left">Tester</th>
+<th align="left">Device</th>
+<th align="left">What they did</th>
+<th align="left">Expected</th>
+<th align="left">What happened</th>
+<th align="left">Severity</th>
+<th align="left">Evidence file</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">1</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Form 4. Timing sheet (Table 11)</h2>
+<p>Laptop (Table 2): brand and model <code>____________________</code>, browser and version <code>__________</code>
+Phone (Table 3): brand and model <code>____________________</code>, browser and version <code>__________</code>
+Network: <code>____________________</code> (for example &quot;house wifi&quot;, &quot;Smart LTE, 3 bars&quot;)
+Date and time range: <code>____________________</code>    Measured by: <code>______________</code></p>
+<p>Three runs per screen; the middle one goes in the table.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Case</th>
+<th align="left">Screen</th>
+<th align="left">Laptop run 1</th>
+<th align="left">2</th>
+<th align="left">3</th>
+<th align="left">Phone run 1</th>
+<th align="left">2</th>
+<th align="left">3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">PF-01</td>
+<td align="left">Public home, first load</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-02</td>
+<td align="left">Public home, second load</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-03</td>
+<td align="left">Sign-in to Overview</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-04</td>
+<td align="left">Monthly Income, full year</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">n/a</td>
+<td align="left">n/a</td>
+<td align="left">n/a</td>
+</tr>
+<tr>
+<td align="left">PF-05</td>
+<td align="left">Monthly Income workbook export</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">n/a</td>
+<td align="left">n/a</td>
+<td align="left">n/a</td>
+</tr>
+<tr>
+<td align="left">PF-06</td>
+<td align="left">Tenant Overview, first load</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-07</td>
+<td align="left">Tenant Payments</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PF-08</td>
+<td align="left">Send a repair request</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p>PageSpeed Insights (PF-09), mobile: Performance <code>___</code> Accessibility <code>___</code> Best Practices <code>___</code>
+SEO <code>___</code> LCP <code>____ s</code></p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Form 5. Attendance</h2>
+<table>
+<thead>
+<tr>
+<th align="left">#</th>
+<th align="left">Code (T1, Owner…)</th>
+<th align="left">Unit</th>
+<th align="left">Session</th>
+<th align="left">Time in</th>
+<th align="left">Time out</th>
+<th align="left">Signature</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">1</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p>Research team present: <code>____________________________________________________________</code></p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Form 6. Certification of system testing and acceptance</h2>
+<p><em>To be signed by the owner at the end of the day, only if she agrees with it. If she does not, do
+not ask her to sign; write down what she would need to see first.</em></p>
+<blockquote>
+<p>This is to certify that <strong>Hivelet: A Web-Based Apartment Management System for Fe Galang Da
+Silva Boarding House</strong>, developed by Group 4, BS Information Technology, Bicol University College
+of Science, was tested at the Fe Galang Da Silva Boarding House on <strong>30 September 2026</strong> by the
+undersigned owner and by <code>____</code> tenants of the property, using the live system at
+<code>https://hivelet.vercel.app</code> with the property&#39;s own records.</p>
+<p>The system was used for the following during the test (tick):</p>
+<ul>
+<li><input disabled="" type="checkbox"> managing units, rates and tenants</li>
+<li><input disabled="" type="checkbox"> recording payments and reading the Monthly Income ledger</li>
+<li><input disabled="" type="checkbox"> recording expenses and reading the Monthly Expenses ledger</li>
+<li><input disabled="" type="checkbox"> handling repair requests and enquiries</li>
+<li><input disabled="" type="checkbox"> exporting the monthly reports to Excel</li>
+<li><input disabled="" type="checkbox"> tenants viewing their bills and payments and sending repair requests</li>
+</ul>
+<p>Remarks: <code>______________________________________________________________</code></p>
+<p><code>______________________________________________________________________</code></p>
+</blockquote>
+<p><code>______________________________</code>
+<strong>Mrs. Fe Galang Da Silva</strong>
+Owner, Fe Galang Da Silva Boarding House
+Date: <code>____________</code></p>
+<p>Witnessed by (research team): <code>______________________________</code></p>
+
+</main></body></html>
