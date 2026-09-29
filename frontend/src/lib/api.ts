@@ -122,14 +122,46 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
+  /**
+   * A deadline, because a weak signal does not fail - it stalls. With none, a
+   * tenant on one bar pressed Send and watched "Sending…" for as long as the
+   * browser cared to wait (minutes, in Chrome), with the button disabled and
+   * nothing to say whether to wait or walk away. Found 2026-09-29 auditing the
+   * semi-offline case before the tenant acceptance test.
+   *
+   * A read that times out changed nothing, so it is reported as the same
+   * `NETWORK_ERROR` every screen already words for a dropped connection. A
+   * WRITE that times out may still have reached the server and been saved - the
+   * abort stops the waiting, not the request already sent - so it gets its own
+   * `TIMEOUT` code and says so, rather than inviting a second, duplicate send.
+   * 25 s and 45 s sit well above what the API answers in (p95 under 1 s under
+   * six concurrent readers, measured the same day) and inside the hosting
+   * platform's own function limit.
+   */
+  const isRead = method === 'GET';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), isRead ? 25_000 : 45_000);
+
   let response: Response;
+  let text: string;
   try {
     response = await fetch(`${API_BASE}${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
     });
+    text = await response.text();
   } catch (cause) {
+    if (controller.signal.aborted && !isRead) {
+      console.warn(`[api] ${method} ${API_BASE}${path.split('?')[0]} timed out after 45 s`);
+      throw new ApiRequestError(0, {
+        code: 'TIMEOUT',
+        message:
+          'The server took too long to answer, so we cannot tell whether this was saved. ' +
+          'Check the list before trying again, so it is not sent twice.',
+      });
+    }
     /**
      * The message reaches residents verbatim wherever a screen shows
      * `error.message`, so it is written for them. It said "Check that the API
@@ -148,6 +180,8 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
       code: 'NETWORK_ERROR',
       message: 'We could not reach the server. Check your connection and try again.',
     });
+  } finally {
+    clearTimeout(timer);
   }
 
   /**
@@ -174,7 +208,8 @@ async function requestEnvelope<T, M = Record<string, unknown>>(
    * `ApiRequestError` carrying it. Only the envelope is unavailable, not the
    * fact that the request failed.
    */
-  const text = await response.text();
+  // `text` was read inside the timed block above: a stall can come after the
+  // status line, while the body is still arriving.
   let payload: Record<string, unknown>;
   try {
     payload = text ? (JSON.parse(text) as Record<string, unknown>) : {};

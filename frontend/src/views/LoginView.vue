@@ -102,6 +102,7 @@ function describeLoginFailure(err: unknown): string | null {
     case 'VALIDATION_FAILED':
       return 'Enter the email address or phone number on your account, and your password.';
     case 'NETWORK_ERROR':
+    case 'TIMEOUT':
       return 'You were not signed in because this page could not reach the server. Check your connection and try again.';
   }
   if (err.status >= 500 || err.code === 'MALFORMED_RESPONSE') {
