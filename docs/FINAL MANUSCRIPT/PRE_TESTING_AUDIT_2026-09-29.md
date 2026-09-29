@@ -178,6 +178,23 @@ screens on phone widths with real data, after the client called them "messy" on 
 | F-11 | A photo from a phone (2 to 5 MB) was refused by the repair form, whose request carries at most about 700 KB of image | **Fixed** in `caf0115`: the photo is made smaller in the browser first; a 7.5 MB worst case became 373 KB in 0.2 s |
 | F-9 | After F-3, three tenant screens would have headed a timed-out save "not sent" or "failed", inviting a duplicate | **Fixed** in `6b778d1`: "could not confirm", with the check-first message |
 
+## 9b. Tomorrow's cases, rehearsed by machine first
+
+On the local build with every server answer faked by the test (no real account, no backend), or,
+where marked, against the live database through the local backend. They say the screens behave as
+the cases expect; they do not replace a person doing them on a real phone.
+
+| Cases | What was run | Result |
+| :--- | :--- | :--- |
+| T-01, T-02 | First sign-in, forced password window: opens, rules, Escape and tap-outside do not close it, weak or unchanged password refused, Sign out, change, reload onto the Overview | 17/17 |
+| T-02 on weak wifi | Password change with the connection dropped: "could not reach the server, so nothing was changed", window stays, typed password kept | Pass |
+| T-08, T-09 | Repair request with a 7.5 MB photo: shrunk to 373 KB in 0.2 s, sent, confirmed | Pass |
+| O-06, O-12 | Repair request on a dropped connection (message at 1 s, text kept) and a stalled one ("cannot tell whether it was saved" at 45 s, text kept) | Pass |
+| T-15, T-16, O-08 | `/admin` and `/admin/income` as a tenant (sent back to `/tenant`); relaunch with the API unreachable (still signed in, no ₱0.00); sign out (token gone), then Back (no tenant data) | 8/8 |
+| A-36 | Owner resets a tenant's password: button, confirmation before any request, one request, one-time reveal, gone after Done | 7/7 |
+| A-36, live | The reset route against the live database: every refusal, success, old session ended, audit row without the password; the test tenant's slip restored after | 15/15 |
+| T-03 to T-13 screens, live | Tenant Overview, Payments, Repairs and My details read with the seeded tenant's session against the live records, writes blocked | Matched the database (§4.3.3) |
+
 ## 10. What this audit cannot say
 
 - Nothing here was done **signed in as a tenant** through the screens, or by a person. That is
