@@ -163,6 +163,8 @@ Signed-in screens were not scanned: that needs a sign-in, which is tomorrow's.
 | F-5 | Content Security Policy is report-only | Recommendation, after the defense |
 | F-6 | The house wifi shares one sign-in failure counter and one enquiry counter | Not a defect; written into the testing guide so testers are not surprised |
 | F-7 | The repository's root scripts (`backup`, `rotate-demo-passwords`, `reset-tenant-accounts`) import packages the root `package.json` does not declare | A fresh machine must install them first; noted for Sean |
+| F-8 | The forced "Set your password" window, which every tenant meets first, asked for a "Current password" without saying it is the slip's, called the reset accounts "created", and had no way out but closing the browser | **Fixed** in `91b874a`: it asks for the "Starting password (the one you just signed in with)" and has a Sign out button. Verified 17/17 on the local build with every server answer faked (no real account) |
+| F-9 | After F-3, three tenant screens would have headed a timed-out save "not sent" or "failed", inviting a duplicate | **Fixed** in `6b778d1`: "could not confirm", with the check-first message |
 
 ## 10. What this audit cannot say
 

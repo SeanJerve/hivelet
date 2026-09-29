@@ -1,6 +1,31 @@
 # CONTINUE HERE — handoff for the next machine
 
 > [!IMPORTANT]
+> **2026-09-29, Loyd's machine, the evening before the first test with the owner and real
+> tenants (30 September).** Read `docs/FINAL MANUSCRIPT/TESTING_DAY_GUIDE.md` if you are on the
+> team tomorrow, and **B-82 in `BLOCKED_FOR_SEAN.md` before your next `check:all`**.
+>
+> - **Every tenant account was reset, live, at Loyd's request** (after `npm run backup`): 32/32
+>   have their own random starting password and must choose their own at first sign-in; every
+>   older session is dead; the admin is untouched. Slips to print are in `credentials/` on Loyd's
+>   laptop only. `node scripts/reset-tenant-accounts.mjs --only <phone>` re-issues one. **The old
+>   shared tenant password in your `creds.txt` opens nothing now, and `check:api` would spend a
+>   real tenant's failed-login allowance with it** - delete that line first (B-82).
+> - **Expect `check:api`'s ten tenant-side checks to FAIL with 428** until the suites get their
+>   own test tenant. That is the forced-change gate working.
+> - **Fixed tonight, live only after `main` is pushed and deployed:** requests now give up on a
+>   stalled connection (25 s reads, 45 s saves, and a timed-out save says "check before sending
+>   again", never "not sent"); the forced password window says which password it wants and has a
+>   Sign out button.
+> - **Measured tonight** (`docs/FINAL MANUSCRIPT/PRE_TESTING_AUDIT_2026-09-29.md`): 20/20 suites
+>   before the reset; offline opening on ten addresses; 1,085 live requests from 12 simultaneous
+>   users and 285 admin reads from 6, all without an error; no WCAG A/AA violation on the public
+>   pages. Chapter 4 gained §4.3.6 and §4.3.7; Chapter 3's method is `FIXES_TO_CHAPTERS_1_TO_3.md`
+>   section H.
+> - **New for Sean:** B-83, an admin "reset password" button (there is no way to recover a
+>   forgotten password in the app).
+
+> [!NOTE]
 > **2026-09-28, on `main`, all pushed. 20 of 20 suites green with the backend up.**
 >
 > - **The design branch is merged** (PRs #3-#9), and B-74 to B-79 are done: the box below is history.
