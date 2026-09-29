@@ -35,7 +35,7 @@ interface ApiCat {
 }
 
 interface FormExpenseAllocation {
-  area: PropertyArea;
+  area: PropertyArea | '';
   amount: string;
 }
 
@@ -235,9 +235,31 @@ function removeFormEntry(index: number) {
   }
 }
 
+/**
+ * One amount per area per expense: `expense_property_allocations` is UNIQUE on
+ * (expense_entry_id, property_area) in the live database. "Split across another
+ * area" added its row on Boarding House, the same area as the first, so a split
+ * typed without changing the area failed on save - on create as "could not be
+ * recorded" with no reason, on edit as a server error naming the constraint.
+ * Found running test case A-28 in the harness, 2026-09-30.
+ *
+ * The new part now starts with no area, so she chooses one. Defaulting it to
+ * the next unused area was tried first and rejected: that is Main House
+ * (personal), and an amount she did not look at would be filed as personal
+ * spending, off the operating costs, with nothing failing.
+ */
+function areaProblem(allocs: { area: PropertyArea | '' }[]): string | null {
+  if (allocs.some((a) => !a.area)) return 'Choose which part of the property each amount is for.';
+  const areas = allocs.map((a) => a.area);
+  const repeated = areas.find((a, i) => areas.indexOf(a) !== i);
+  if (!repeated) return null;
+  const label = PROPERTY_AREA_OPTIONS.find((o) => o.value === repeated)?.label ?? repeated;
+  return `${label} is given twice. Each area takes one amount: add the two parts together, or choose another area.`;
+}
+
 function addAllocation(entryIndex: number) {
   formEntries.value[entryIndex].allocations.push({
-    area: 'Boarding House',
+    area: '',
     amount: ''
   });
 }
@@ -405,6 +427,13 @@ function submitAddExpense() {
     showToast('error', 'Missing details', 'Each expense needs what it was for and an amount above zero.');
     return;
   }
+  for (const entry of formEntries.value) {
+    const problem = areaProblem(entry.allocations);
+    if (problem) {
+      showToast('error', 'Check the areas', `"${entry.desc.trim()}": ${problem}`);
+      return;
+    }
+  }
 
   const n = formEntries.value.length;
   const confirmMsg = n === 1
@@ -510,7 +539,7 @@ function submitAddExpense() {
             description: entry.desc.trim(),
             category: entry.category,
             splits: entry.allocations.map(a => ({
-              area: a.area,
+              area: a.area as PropertyArea,
               amount: Number(a.amount) || 0
             })),
           };
@@ -643,13 +672,13 @@ const editDate = ref('');
 const editDesc = ref('');
 const editCategory = ref('');
 const editAllocations = ref<{
-  area: PropertyArea;
+  area: PropertyArea | '';
   amount: string;
 }[]>([]);
 
 function addEditAllocation() {
   editAllocations.value.push({
-    area: 'Boarding House',
+    area: '',
     amount: ''
   });
 }
@@ -725,6 +754,11 @@ async function handleEditExpense() {
   const invalid = editAllocations.value.some(a => !a.amount || Number(a.amount) <= 0);
   if (!editDesc.value.trim() || invalid) {
     showToast('error', 'Missing details', 'Enter what it was for and an amount above zero for each part.');
+    return;
+  }
+  const problem = areaProblem(editAllocations.value);
+  if (problem) {
+    showToast('error', 'Check the areas', problem);
     return;
   }
 
@@ -1242,7 +1276,7 @@ async function handleEditExpense() {
                     >
                       <label class="ws-field w-full sm:w-auto sm:flex-1">
                         Which part of the property
-                        <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Which part of the property" widthClass="w-full" />
+                        <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Which part of the property" placeholder="Choose an area" widthClass="w-full" />
                       </label>
 
                       <label class="ws-field flex-1 sm:flex-none sm:w-44">
@@ -1374,7 +1408,7 @@ async function handleEditExpense() {
                 >
                   <label class="ws-field w-full sm:w-auto sm:flex-1">
                     Which part of the property
-                    <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Which part of the property" widthClass="w-full" />
+                    <PillSelect v-model="alloc.area" :options="PROPERTY_AREA_OPTIONS" aria-label="Which part of the property" placeholder="Choose an area" widthClass="w-full" />
                   </label>
 
                   <label class="ws-field flex-1 sm:flex-none sm:w-44">
