@@ -112,7 +112,8 @@ recorded by mistake: **Edit** > **Delete payment**. It leaves the ledger and tot
 Activity page keeps the record that it existed and who removed it.
 
 **Online (GCash) payments** appear under **To verify** / **Payments to verify**. Check the money
-arrived, then verify it, or reject it. A payment is only counted once you verify it.
+arrived, then verify it, or reject it. A payment is only counted once you verify it. **Until online
+payment goes live it runs on Adyen's test account and no real money arrives, so reject these.**
 
 **Download {year} for Excel** gives the income workbook in your own layout (month blocks, cluster
 subtotals, Linda separate).
@@ -187,5 +188,5 @@ look at the list before recording it again, so it is not recorded twice.
 | A tenant cannot sign in | Five wrong tries lock it for 15 minutes. If they forgot it: Tenants > Edit > **Reset password** |
 | A figure shows "—" | It could not be loaded. Refresh when the connection is back |
 | "Too many attempts from this connection" | Everyone on the house wifi shares one counter; wait 15 minutes or use mobile data |
-| A GCash payment appeared | Check it arrived, then verify or reject it under **To verify** |
+| A GCash payment appeared | Until online payment goes live no real money arrives: reject it under **To verify** |
 | Something looks wrong | Take a screenshot and tell the team. Do not try to correct the numbers directly |
