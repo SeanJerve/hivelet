@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hivelet video capture harness</title>
+  <!-- The same fonts frontend/index.html loads. Without them every heading
+       falls back to the system font and the screens are not the real ones. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Headless Chrome draws a Windows scrollbar down the right edge of every
+       frame. A phone or a Mac shows none, so neither does the film. -->
+  <style>html { scrollbar-width: none; } html::-webkit-scrollbar { display: none; }</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+// The real app, mounted against invented sample data, so its screens can be
+// filmed without a sign-in and without touching the live API or database.
+// Every person named here is made up. Unit codes, clusters and room types are
+// the property's real structure; every amount is a sample figure.
+//
+// capture.mjs copies this file to frontend/_harness-video.html (gitignored)
+// for the length of a capture and deletes it afterwards.
+
+window.addEventListener('pagehide', () => {
+  try { localStorage.clear(); sessionStorage.clear(); } catch {}
+});
+
+const params = new URLSearchParams(location.search);
+const ROLE = params.get('role') || 'admin';
+const TARGET = params.get('route') || (ROLE === 'tenant' ? '/tenant' : ROLE === 'public' ? '/public' : '/admin/overview');
+
+const TODAY = new Date();
+const iso = (d) => d.toISOString();
+const daysAgo = (n, h = 9) => { const d = new Date(TODAY); d.setDate(d.getDate() - n); d.setHours(h, 12, 0, 0); return iso(d); };
+const pad = (n) => String(n).padStart(2, '0');
+const ymd = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+
+// ---- The property: the real 33 units, sample rates -------------------------
+const UNITS = [
+  ['1a', 'BH', 1, 'Studio', 4500, 2], ['1b', 'BH', 1, 'Studio', 4500, 2], ['1c', 'BH', 1, 'Studio', 4800, 2],
+  ['1d', 'BH', 1, 'Studio', 4800, 2], ['1e', 'BH', 1, 'Studio', 4500, 2], ['1f', 'BH', 1, 'Studio', 4500, 2],
+  ['1g', 'BH', 1, 'Studio', 4800, 2], ['1h', 'BH', 1, 'Studio', 4500, 2],
+  ['2a', 'BH', 2, 'One-bedroom', 6000, 3], ['2b', 'BH', 2, 'Studio', 4800, 2], ['2c', 'BH', 2, 'Studio', 4500, 2],
+  ['2d', 'BH', 2, 'Studio', 4800, 2], ['2e', 'BH', 2, 'Studio', 4500, 2], ['2f', 'BH', 2, 'Studio', 4800, 2],
+  ['2g', 'BH', 2, 'Studio', 4500, 2],
+  ['3a', 'BH', 3, 'One-bedroom', 6000, 3], ['3b', 'BH', 3, 'Studio', 4800, 2], ['3c', 'BH', 3, 'Studio', 4500, 2],
+  ['3d', 'BH', 3, 'Studio', 4800, 2], ['3e', 'BH', 3, 'Studio', 4500, 2], ['3f', 'BH', 3, 'Studio', 4800, 2],
+  ['3g', 'BH', 3, 'Studio', 4500, 2],
+  ['B1F', 'Back Apartment', 1, 'One-bedroom', 6500, 3], ['B2F', 'Back Apartment', 2, 'One-bedroom', 6500, 3],
+  ['B2B', 'Back Apartment', 2, 'One-bedroom', 6500, 3], ['B3F', 'Back Apartment', 3, 'Two-bedroom', 8500, 4],
+  ['B3B', 'Back Apartment', 3, 'Two-bedroom', 8500, 4],
+  ['PH', 'Penthouse', 4, 'Three-bedroom', 12000, 5],
+  ['F1', 'Front Apartment', 1, 'One-bedroom', 6500, 3], ['F2F', 'Front Apartment', 2, 'Two-bedroom', 9000, 4],
+  ['F2B', 'Front Apartment', 2, 'Two-bedroom', 9000, 4],
+  ['LF', 'Linda', 1, 'One-bedroom', 6000, 3], ['LB', 'Linda', 1, 'One-bedroom', 5500, 3],
+];
+const VACANT = 'B3B';
+
+// Invented tenants, one per occupied unit, with a sample headcount and move-in day.
+const PEOPLE = {
+  '1a': ['Andrea Villanueva', 1, 5], '1b': ['Paolo Dimayuga', 2, 12], '1c': ['Kristine Salcedo', 2, 3],
+  '1d': ['Mark Lorenzo', 1, 18], '1e': ['Bea Magbanua', 2, 8], '1f': ['Joshua Ramirez', 1, 22],
+  '1g': ['Ella Cordero', 2, 15], '1h': ['Carlo Buenaflor', 1, 1], '2a': ['Nicole Ong', 3, 10],
+  '2b': ['Renzo Abrenica', 1, 7], '2c': ['Trisha Delos Santos', 2, 20], '2d': ['Miguel Santiago', 1, 14],
+  '2e': ['Angela Pascual', 2, 2], '2f': ['Jerome Taduran', 1, 25], '2g': ['Hazel Obias', 2, 9],
+  '3a': ['Patrick Lomibao', 3, 16], '3b': ['Czarina Bañez', 1, 4], '3c': ['Ramon Estrella', 2, 11],
+  '3d': ['Faith Nuñez', 1, 27], '3e': ['Gian Rebusi', 2, 6], '3f': ['Liza Moreno', 1, 19],
+  '3g': ['Denver Arcilla', 2, 13], 'B1F': ['Rowena Sabio', 3, 21], 'B2F': ['Antonio Brizuela', 3, 5],
+  'B2B': ['Clarisse Gonzaga', 2, 17], 'B3F': ['Edgar Monte', 4, 23], 'PH': ['Victoria Lim', 4, 1],
+  'F1': ['Noel Bitancor', 2, 26], 'F2F': ['Sheila Oreta', 3, 8], 'F2B': ['Adrian Molato', 4, 12],
+  'LF': ['Josefina Nieva', 2, 3], 'LB': ['Ramil Balingbing', 1, 15],
+};
+
+const roomId = (code) => `room-${code.toLowerCase()}`;
+const tenantId = (code) => `tenant-${code.toLowerCase()}`;
+const WATER = 200;
+const GBG = 50;
+
+const rooms = UNITS.map(([code, cluster, floor, type, price, capacity]) => {
+  const person = PEOPLE[code];
+  const occupied = code !== VACANT;
+  return {
+    id: roomId(code), room_number: code, cluster_code: cluster, floor, room_type: type,
+    current_price: price, capacity, operational_status: occupied ? 'Occupied' : 'Available',
+    visibility_status: 'Published', is_linda_unit: cluster === 'Linda', available_from: null,
+    description: `${type === 'Studio' ? 'Studio' : type} unit, ${cluster === 'BH' ? 'Boarding House' : cluster}`,
+    room_photos: [],
+    room_assignments: occupied ? [{ id: `assign-${code.toLowerCase()}`, is_active: true, occupant_count: person[1], tenant_profile_id: tenantId(code), start_date: ymd(2025, ((person[2] % 9) + 1), person[2]), anniversary_date: ymd(2025, ((person[2] % 9) + 1), person[2]), profiles: { full_name: person[0] } }] : [],
+  };
+});
+
+const phone = (i) => `0917${String(5550100 + i * 37).padStart(7, '0')}`;
+const tenants = UNITS.filter(([code]) => code !== VACANT).map(([code, , , , price], i) => {
+  const [name, occ, day] = PEOPLE[code];
+  return {
+    id: tenantId(code), full_name: name, phone_number: phone(i), email: '', account_status: 'active', role: 'tenant',
+    emergency_contact_name: 'On file', emergency_contact_phone: phone(i + 40),
+    room_assignments: [{ id: `assign-${code.toLowerCase()}`, is_active: true, start_date: ymd(2025, (day % 9) + 1, day), end_date: null, anniversary_date: ymd(2025, (day % 9) + 1, day), deposit_amount: price, occupant_count: occ, rooms: { id: roomId(code), room_number: code } }],
+  };
+});
+
+// ---- Monthly Income: January to September 2026 ------------------------------
+const incomeRecords = [];
+let or = 4812;
+const UNPAID_SEPT = new Set(['1d', '2f', '3c', 'B2B', 'F1', '3f']);
+for (let month = 1; month <= 9; month++) {
+  for (const [code, cluster, , , price] of UNITS) {
+    if (code === VACANT) continue;
+    if (month === 9 && UNPAID_SEPT.has(code)) continue;
+    const [name, occ, day] = PEOPLE[code];
+    const paidDay = Math.min(28, Math.max(1, day - (code.charCodeAt(0) % 3)));
+    const water = WATER * occ;
+    const linda = cluster === 'Linda';
+    const gbg = linda ? 0 : GBG;
+    const gcash = month >= 7 && ['1a', '2b', '3e', 'F2B', 'PH', '2e'].includes(code);
+    const endMonth = month === 12 ? 1 : month + 1;
+    incomeRecords.push({
+      id: `inc-${code.toLowerCase()}-${month}`, room_id: roomId(code), rooms: { room_number: code, cluster_code: cluster },
+      date_paid: ymd(2026, month, paidDay), rent_period_start: ymd(2026, month, day), rent_period_end: ymd(2026, endMonth, Math.max(1, day - 1)),
+      year: 2026, month, contact_name: name, invoice_number: String(or++), rent_amount: price, occupants: occ,
+      water_payment: linda ? 0 : water, gbg_fee: gbg, payment_method: gcash ? 'GCash' : 'Cash',
+      transaction_reference: gcash ? `GCASH-${88000 + or}` : '', verification_status: 'Verified',
+      fifty_percent_share: price / 2, remitted_amount: price + (linda ? 0 : water) + gbg,
+      is_linda_billing: linda, linda_water_charge: linda ? water : 0, linda_electricity_charge: 0,
+    });
+  }
+}
+
+// One GCash payment waiting for her to confirm it.
+const pendingPayments = [
+  { id: 'pay-pending-1', amount: 5250, payment_method: 'GCash', verification_status: 'Pending Verification', transaction_reference: 'GCASH-99102', paid_at: daysAgo(0, 8), created_at: daysAgo(0, 8), profiles: { full_name: 'Adrian Molato', phone_number: phone(30) }, rooms: { room_number: 'F2B', cluster_code: 'Front Apartment' }, bills: { rent_amount: 9000, water_amount: 800, total_amount: 9800 } },
+];
+
+// ---- Monthly Expenses --------------------------------------------------------
+const CATEGORIES = [
+  { code: '1', name: 'Supplies', display_order: 1 },
+  { code: '2', name: 'Taxes and Licenses', display_order: 2 },
+  { code: '3', name: 'Janitorial and Messengerial Services', display_order: 3 },
+  { code: '5', name: 'Professional Fees', display_order: 5 },
+  { code: '6', name: 'Salaries', display_order: 6 },
+  { code: '7', name: 'Communication, Light and Water', display_order: 7 },
+  { code: '8', name: 'Repairs and Maintenance', display_order: 8 },
+  { code: '9', name: 'Fuel and Oil', display_order: 9 },
+  { code: '10', name: 'Others', display_order: 10 },
+];
+const catName = (code) => CATEGORIES.find((c) => c.code === code).name;
+const EXPENSE_PATTERN = [
+  ['7', 'Legazpi water utility', 6800, [['Boarding House', 5200], ['Back Apartment', 1600]], 10],
+  ['7', 'Electric cooperative', 4200, [['Boarding House', 4200]], 12],
+  ['6', 'Caretaker salary', 9000, [['Boarding House', 9000]], 15],
+  ['3', 'Garbage collection', 1500, [['Boarding House', 1000], ['Front Apartment', 500]], 18],
+  ['1', 'Cleaning supplies', 1350, [['Boarding House', 1350]], 20],
+  ['8', 'Hardware supply', 2600, [['Back Apartment', 2600]], 24],
+];
+const expenseEntries = [];
+for (let month = 1; month <= 9; month++) {
+  EXPENSE_PATTERN.forEach(([code, supplier, base, alloc, day], k) => {
+    if (code === '8' && month % 2 === 0) return;
+    const f = 1 + ((month * 7 + k * 3) % 9) / 100;
+    const total = Math.round(base * f);
+    const scale = total / base;
+    const allocations = alloc.map(([area, amount], j) => ({ id: `alloc-${month}-${k}-${j}`, property_area: area, amount: j === alloc.length - 1 ? total - alloc.slice(0, -1).reduce((s, [, a]) => s + Math.round(a * scale), 0) : Math.round(amount * scale) }));
+    expenseEntries.push({ id: `exp-${month}-${k}`, expense_date: ymd(2026, month, day), or_supplier: supplier, category_code: code, fixed_expense_categories: { name: catName(code) }, total_expenses: total, expense_property_allocations: allocations });
+  });
+}
+expenseEntries.push({ id: 'exp-tax', expense_date: ymd(2026, 3, 28), or_supplier: 'City treasurer', category_code: '2', fixed_expense_categories: { name: catName('2') }, total_expenses: 14500, expense_property_allocations: [{ id: 'alloc-tax', property_area: 'Boarding House', amount: 14500 }] });
+
+// ---- Repairs, inquiries, activity, notifications ----------------------------
+const tickets = [
+  { id: 'tk-1', room_id: roomId('1a'), rooms: { room_number: '1a' }, title: 'Kitchen faucet keeps dripping', category: 'Plumbing', priority: 'High', status: 'Submitted', created_at: daysAgo(0, 7), description: 'The kitchen faucet drips even when fully closed.', assigned_technician: 'Unassigned', ticket_attachments: [], profiles: { full_name: 'Andrea Villanueva' }, tenant_profile_id: tenantId('1a') },
+  { id: 'tk-2', room_id: roomId('3e'), rooms: { room_number: '3e' }, title: 'Bedroom light flickers', category: 'Electrical', priority: 'Medium', status: 'In Progress', created_at: daysAgo(2), description: 'The ceiling light flickers a few times each night.', assigned_technician: 'Electrician', ticket_attachments: [], profiles: { full_name: 'Gian Rebusi' }, tenant_profile_id: tenantId('3e') },
+  { id: 'tk-3', room_id: roomId('B2F'), rooms: { room_number: 'B2F' }, title: 'Closet door off its track', category: 'Structural / Furniture', priority: 'Low', status: 'In Progress', created_at: daysAgo(4), description: 'The sliding closet door came off its track.', assigned_technician: 'Carpenter', ticket_attachments: [], profiles: { full_name: 'Antonio Brizuela' }, tenant_profile_id: tenantId('B2F') },
+  { id: 'tk-4', room_id: roomId('2c'), rooms: { room_number: '2c' }, title: 'Window screen torn', category: 'Structural / Furniture', priority: 'Low', status: 'Resolved', created_at: daysAgo(9), description: 'Small tear in the window screen.', assigned_technician: 'Carpenter', ticket_attachments: [], profiles: { full_name: 'Trisha Delos Santos' }, tenant_profile_id: tenantId('2c') },
+  { id: 'tk-5', room_id: roomId('PH'), rooms: { room_number: 'PH' }, title: 'Aircon not cooling', category: 'Aircon / HVAC', priority: 'Medium', status: 'Closed', created_at: daysAgo(20), description: 'The aircon runs but blows warm air.', assigned_technician: 'Aircon technician', ticket_attachments: [], profiles: { full_name: 'Victoria Lim' }, tenant_profile_id: tenantId('PH') },
+];
+
+const inquiries = [
+  { id: 'iq-1', room_id: roomId('B3B'), rooms: { room_number: 'B3B' }, prospect_name: 'Kaye Ordoñez', prospect_phone: '09185550142', prospect_email: '', created_at: daysAgo(0, 10), message: 'Good day! Is the two-bedroom in the back apartment still available? Could we view it this Saturday?', status: 'Pending' },
+  { id: 'iq-2', room_id: roomId('B3B'), rooms: { room_number: 'B3B' }, prospect_name: 'Luis Barrameda', prospect_phone: '09275550188', prospect_email: '', created_at: daysAgo(3), message: 'Hello, I start at Bicol University next month. How much is the monthly rate?', status: 'Contacted' },
+  { id: 'iq-3', room_id: roomId('1g'), rooms: { room_number: '1g' }, prospect_name: 'Mica Tolentino', prospect_phone: '09165550117', prospect_email: '', created_at: daysAgo(8), message: 'Do you have a studio for one person?', status: 'Closed' },
+];
+
+const OWNER = { id: 'owner-1', full_name: 'Fe Galang Da Silva', role: 'admin' };
+const auditLogs = [
+  { id: 'al-1', actor_profile_id: OWNER.id, action: 'PAYMENT_RECORD', entity_type: 'monthly_income_records', entity_id: 'inc-2b-9', previous_values: null, new_values: { rent_amount: 4800, invoice_number: '5094' }, created_at: daysAgo(0, 9), profiles: OWNER },
+  { id: 'al-2', actor_profile_id: OWNER.id, action: 'TICKET_UPDATE', entity_type: 'maintenance_tickets', entity_id: 'tk-2', previous_values: { status: 'Submitted' }, new_values: { status: 'In Progress' }, created_at: daysAgo(1, 15), profiles: OWNER },
+  { id: 'al-3', actor_profile_id: OWNER.id, action: 'EXPENSE_ENTRY_CREATE', entity_type: 'expense_entries', entity_id: 'exp-9-1', previous_values: null, new_values: { total_expenses: 4368 }, created_at: daysAgo(2, 11), profiles: OWNER },
+  { id: 'al-4', actor_profile_id: OWNER.id, action: 'PAYMENT_VERIFY', entity_type: 'payments', entity_id: 'pay-old', previous_values: { verification_status: 'Pending Verification' }, new_values: { verification_status: 'Verified' }, created_at: daysAgo(3, 16), profiles: OWNER },
+  { id: 'al-5', actor_profile_id: OWNER.id, action: 'ROOM_UPDATE', entity_type: 'rooms', entity_id: roomId('B3B'), previous_values: { operational_status: 'Occupied' }, new_values: { operational_status: 'Available' }, created_at: daysAgo(5, 10), profiles: OWNER },
+  { id: 'al-6', actor_profile_id: OWNER.id, action: 'INQUIRY_UPDATE', entity_type: 'inquiries', entity_id: 'iq-2', previous_values: { status: 'Pending' }, new_values: { status: 'Contacted' }, created_at: daysAgo(3, 14), profiles: OWNER },
+];
+
+// Record ids in the live trail are UUIDs; short sample ids would read as fake.
+const uuidish = (i) => ['7c2e41a9-5b3d-4f08-9e61-2a4d8c0b7f15', 'b81f06d2-3c47-4a95-8e2b-6d19f4a07c33', '3e9a7d5c-12f8-4b6e-a0d4-95c21e8b4f67', 'd4b62c18-7e05-4f3a-b9c1-0a8e37d5f219', '5a0e93f7-c6b2-4d18-8f45-e17b2d9c6a04', '9f1c84e2-0d6a-47b5-a3e8-c52f0b7d1e96'][i];
+auditLogs.forEach((a, i) => { a.entity_id = uuidish(i); });
+
+const adminNotifications = [
+  { id: 'n-1', recipient_profile_id: OWNER.id, title: 'GCash payment to confirm', message: 'Adrian Molato paid ₱5,250.00 by GCash for F2B.', type: 'Payment', priority: 'High', is_read: false, related_entity_type: 'PAYMENT', related_entity_id: 'pay-pending-1', created_at: daysAgo(0, 8) },
+  { id: 'n-2', recipient_profile_id: OWNER.id, title: 'New repair request', message: 'Andrea Villanueva reported a dripping kitchen faucet in 1a.', type: 'Maintenance', priority: 'High', is_read: false, related_entity_type: 'TICKET', related_entity_id: 'tk-1', created_at: daysAgo(0, 7) },
+  { id: 'n-3', recipient_profile_id: OWNER.id, title: 'New inquiry', message: 'Kaye Ordoñez asked about B3B.', type: 'Inquiry', priority: 'Medium', is_read: false, related_entity_type: 'INQUIRY', related_entity_id: 'iq-1', created_at: daysAgo(0, 10) },
+];
+
+// ---- The tenant: Andrea Villanueva, unit 1a ---------------------------------
+const T_ROOM = rooms.find((r) => r.room_number === '1a');
+const T_OCC = PEOPLE['1a'][1];
+const T_RENT = T_ROOM.current_price;
+const T_WATER = WATER * T_OCC;
+const T_TOTAL = T_RENT + T_WATER;
+const nextDue = new Date(TODAY); nextDue.setDate(nextDue.getDate() + 6);
+const nd = ymd(nextDue.getFullYear(), nextDue.getMonth() + 1, nextDue.getDate());
+const ndEnd = new Date(nextDue); ndEnd.setMonth(ndEnd.getMonth() + 1); ndEnd.setDate(ndEnd.getDate() - 1);
+const paidThrough = new Date(nextDue); paidThrough.setDate(paidThrough.getDate() - 1);
+const tenantIncome = incomeRecords.filter((r) => r.room_id === T_ROOM.id).reverse().map((r) => ({
+  id: r.id, remitted_amount: r.remitted_amount, gbg_fee: r.gbg_fee, date_paid: r.date_paid, payment_method: r.payment_method,
+  rent_period_start: r.rent_period_start, rent_period_end: r.rent_period_end, verification_status: 'Verified', rent_amount: r.rent_amount, water_payment: r.water_payment, invoice_number: r.invoice_number,
+}));
+const tenant = {
+  me: { user: { profileId: tenantId('1a'), email: '', fullName: 'Andrea Villanueva', role: 'tenant', accountStatus: 'active', mustChangePassword: false }, profile: {}, permissions: [] },
+  rooms: [{ id: 'assign-1a', is_active: true, occupant_count: T_OCC, start_date: '2025-06-05', anniversary_date: '2025-06-05', rooms: { ...T_ROOM, room_assignments: undefined } }],
+  bills: [],
+  standing: {
+    paidThrough: ymd(paidThrough.getFullYear(), paidThrough.getMonth() + 1, paidThrough.getDate()),
+    nextPeriodStart: nd,
+    owedPeriods: [{ start: nd, end: ymd(ndEnd.getFullYear(), ndEnd.getMonth() + 1, ndEnd.getDate()), dueDate: nd }],
+    status: 'due', perPeriod: { rentAmount: T_RENT, waterAmount: T_WATER, totalAmount: T_TOTAL },
+    periodsDue: 1, totalDue: 0, totalPayable: T_TOTAL,
+  },
+  payments: [
+    { id: 'tp-1', amount: T_TOTAL + GBG, paid_at: daysAgo(24, 10), created_at: daysAgo(24, 10), payment_method: 'gcash', verification_status: 'Verified', verified_at: daysAgo(24, 13), transaction_reference: 'GCASH-88321' },
+  ],
+  tickets: [
+    { id: 'tk-1', title: 'Kitchen faucet keeps dripping', description: 'The kitchen faucet drips even when fully closed.', category: 'Plumbing', priority: 'High', status: 'Submitted', created_at: daysAgo(0, 7), resolved_at: null, rooms: { id: T_ROOM.id, room_number: '1a' }, ticket_attachments: [] },
+    { id: 'tk-t2', title: 'Door lock is stiff', description: 'The front door lock is hard to turn.', category: 'Structural / Furniture', priority: 'Low', status: 'Resolved', created_at: daysAgo(30), resolved_at: daysAgo(27), rooms: { id: T_ROOM.id, room_number: '1a' }, ticket_attachments: [] },
+  ],
+  profile: { full_name: 'Andrea Villanueva', email: '', phone_number: '09175550100', role: 'tenant', account_status: 'active', emergency_contact_name: 'Marites Villanueva', emergency_contact_phone: '09185550199' },
+  notifications: [
+    { id: 'tn-1', title: 'Rent due soon', message: `Your rent for ${nd} is due in 6 days.`, type: 'Billing', priority: 'Medium', is_read: false, created_at: daysAgo(0, 8) },
+    { id: 'tn-2', title: 'Repair request received', message: 'Your request about the kitchen faucet was received.', type: 'Maintenance', priority: 'Medium', is_read: false, created_at: daysAgo(0, 7) },
+  ],
+};
+
+// ---- The fake API --------------------------------------------------------------
+const publicRooms = rooms.map(({ room_assignments, ...r }) => r);
+const rates = { waterRatePerOccupant: WATER, lindaFixedWaterCharges: {} };
+const ok = (data, meta) => new Response(JSON.stringify(meta ? { data, meta } : { data }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+const unread = (list) => list.filter((n) => !n.is_read).length;
+
+const ROUTES = [
+  ['GET', /^\/public\/rates$/, () => ok(rates)],
+  ['GET', /^\/public\/rooms$/, () => ok(publicRooms)],
+  ['GET', /^\/admin\/rooms$/, () => ok(rooms)],
+  ['GET', /^\/admin\/tenants$/, () => ok(tenants)],
+  ['GET', /^\/admin\/income-records$/, () => ok(incomeRecords)],
+  ['GET', /^\/admin\/expense-entries$/, () => ok(expenseEntries)],
+  ['GET', /^\/admin\/expense-categories$/, () => ok(CATEGORIES)],
+  ['GET', /^\/admin\/tickets\/[^/]+\/messages$/, () => ok([])],
+  ['GET', /^\/admin\/tickets$/, () => ok(tickets)],
+  ['GET', /^\/admin\/inquiries\/[^/]+\/messages$/, () => ok([])],
+  ['GET', /^\/admin\/inquiries$/, () => ok(inquiries)],
+  ['GET', /^\/admin\/payments$/, () => ok(pendingPayments)],
+  ['GET', /^\/admin\/audit-logs/, () => ok(auditLogs, { authTotal: 214, exportTotal: 12, businessTotal: auditLogs.length, grandTotal: 214 + 12 + auditLogs.length })],
+  ['GET', /^\/admin\/notifications\/unread-count$/, () => ok({ unreadCount: unread(adminNotifications) })],
+  ['GET', /^\/admin\/notifications$/, () => ok(adminNotifications, { totalUnread: unread(adminNotifications) })],
+  ['GET', /^\/tenant\/my-rooms$/, () => ok(tenant.rooms)],
+  ['GET', /^\/tenant\/my-bills$/, () => ok(tenant.bills)],
+  ['GET', /^\/tenant\/my-payments$/, () => ok(tenant.payments)],
+  ['GET', /^\/tenant\/my-income-records$/, () => ok(tenantIncome)],
+  ['GET', /^\/tenant\/my-standing$/, () => ok(tenant.standing)],
+  ['GET', /^\/tenant\/my-profile$/, () => ok(tenant.profile)],
+  ['GET', /^\/tenant\/my-tickets$/, () => ok(tenant.tickets)],
+  ['GET', /^\/tenant\/tickets\/[^/]+\/messages$/, () => ok([])],
+  ['GET', /^\/tenant\/my-notifications\/unread-count$/, () => ok({ unreadCount: unread(tenant.notifications) })],
+  ['GET', /^\/tenant\/my-notifications$/, () => ok(tenant.notifications, { totalUnread: unread(tenant.notifications) })],
+];
+
+const realFetch = window.fetch.bind(window);
+window.fetch = async (input, init) => {
+  const url = typeof input === 'string' ? input : input.url;
+  if (!url.includes('/api/')) return realFetch(input, init);
+  const path = url.split('/api')[1].split('?')[0];
+  const method = ((init && init.method) || 'GET').toUpperCase();
+  if (path === '/auth/me') {
+    if (ROLE === 'admin') return ok({ user: { profileId: OWNER.id, email: '', fullName: OWNER.full_name, role: 'admin', accountStatus: 'active', mustChangePassword: false }, profile: { id: OWNER.id, full_name: OWNER.full_name }, permissions: ['*'] });
+    if (ROLE === 'tenant') return ok(tenant.me);
+    return new Response(JSON.stringify({ error: { code: 'UNAUTHENTICATED', message: 'Not signed in' } }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+  }
+  for (const [m, pattern, handler] of ROUTES) {
+    if (m === method && pattern.test(path)) return handler();
+  }
+  // Nothing is written anywhere. An unlisted call fails loudly instead of
+  // reaching a real server, and the capture script reports it.
+  console.warn('[harness] unmocked', method, path);
+  window.__unmocked = (window.__unmocked || []).concat(`${method} ${path}`);
+  return new Response(JSON.stringify({ error: { code: 'HARNESS_UNMOCKED', message: 'Not mocked: ' + path } }), { status: 501, headers: { 'Content-Type': 'application/json' } });
+};
+
+// The viewing invitation that greets a first visit would cover the page being filmed.
+try { localStorage.setItem('hivelet.viewingPromptDismissed', '1'); } catch {}
+
+history.replaceState(null, '', TARGET);
+const apiModule = await import('/src/lib/api.ts');
+if (ROLE !== 'public') apiModule.setStoredToken('sample-session');
+await import('/src/main.ts');
+const router = (await import('/src/router/index.ts')).default;
+await router.isReady();
+await router.push(TARGET);
+window.__harnessReady = true;
+</script>
+</body>
+</html>

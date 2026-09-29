@@ -63,6 +63,18 @@ VIDEO PRESENTATION DOCS/*
 !VIDEO PRESENTATION DOCS/filming-script.html
 !VIDEO PRESENTATION DOCS/SET UP LOYDS LAPTOP.md
 !VIDEO PRESENTATION DOCS/PASTE THIS INTO LOYDS CLAUDE.md
+!VIDEO PRESENTATION DOCS/MOTION VIDEO PROMPT.md
+
+# The product video (video/). Its source is committed; what the capture and
+# voice scripts regenerate is not - 15 MB of screenshots per run would pile up
+# in the history. See video/SCENES.md, "Rebuilding".
+video/node_modules/
+video/out/
+video/public/shots/
+video/public/voice/
+video/public/fe-galang-building.webp
+video/public/icon-512.png
+video/public/music.mp3
 
 # vite writes these beside the config during a build; they are not source
 vite.config.ts.timestamp-*
