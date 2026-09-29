@@ -3,21 +3,25 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {C, jakarta} from '../theme';
-import {easeIn, easeInOut, lerp, peso, pop, t01, typed} from '../anim';
+import {easeIn, easeInOut, lerp, peso, pop, t01} from '../anim';
 import {Bg, FloorShadow, Head} from '../fx';
 import {AppHeader, Cursor, Field, Input, Ripple} from '../ui/Kit';
 import {AttentionTile, BoardColumn, InquiryItem, RepairCard} from '../ui/Admin';
 import {AmountDue, DoneNote, Phone, RepairForm, STATUS, TenantHome} from '../ui/Tenant';
-import {InquiryForm, UnitPanel} from '../ui/Public';
-import {Sfx} from '../Sfx';
+import {AskDialog, PLAN, PlanImage, SHOW, UnitShowcase} from '../ui/Public';
+import {Cues} from '../Sfx';
+import {TYPING, typedOf} from '../typing.mjs';
 
 // Headlines to the right of the phone, one line each.
 const TopHead: React.FC<{text: string; accent: string[]; sub?: string; at: number; out?: number}> = (p) => (
   <Head size={90} subSize={32} left={720} top={110} width={1100} {...p} />
 );
 
-const REPAIR_TITLE = 'Kitchen faucet keeps dripping';
-const REPAIR_DETAILS = 'Under the kitchen sink. It started this morning and drips even when closed.';
+// The board card carries the same title the tenant typed.
+const REPAIR_TITLE = TYPING.title.text;
+
+// Tenant timings after the typing (see cues.mjs, which uses the same frames).
+export const T = {focusDetails: 308, closeOut: 356, send: 374, board: 376, fly: 380, s1: 416, s2: 436, note: 458};
 
 export const Tenant: React.FC = () => {
   const f = useCurrentFrame();
@@ -25,12 +29,13 @@ export const Tenant: React.FC = () => {
   const screen = (x: number, y: number) => ({x: PX + (12 + x) * PZ, y: PY + (12 + STATUS + y) * PZ});
   const enter = pop(f, 0, {damping: 20, stiffness: 70});
   const amount = Math.round(lerp(0, 4700, t01(f, 14, 62)));
-  const payTap = 100, sendTap = 330;
+  const payTap = 100, sendTap = T.send;
   const settled = t01(f, 198, 218);
   const toForm = t01(f, 226, 248, easeInOut);
-  const titleText = typed(REPAIR_TITLE, f, 250, 1.5);
-  const detailText = typed(REPAIR_DETAILS, f, 296, 0.42);
-  const note = pop(f, 404, {damping: 20, stiffness: 90});
+  const titleText = typedOf('title', f);
+  const detailText = typedOf('details', f);
+  const typingFocus = f < T.focusDetails ? 'title' : f < sendTap ? 'details' : null;
+  const note = pop(f, T.note, {damping: 20, stiffness: 90});
 
   const tileIn = pop(f, 116, {damping: 20, stiffness: 90});
   const tileOut = t01(f, 184, 202, easeIn);
@@ -42,15 +47,19 @@ export const Tenant: React.FC = () => {
   const pay = screen(125, 448);
   const chip = t01(f, 104, 128, easeInOut);
 
-  const boardIn = pop(f, 332, {damping: 20, stiffness: 90});
+  // Her board, and the card moving along it: into To dispatch, then In progress, then Done.
+  const boardIn = pop(f, T.board, {damping: 20, stiffness: 90});
   const BZ = 0.95, BX = 740, BY = 360;
   const colX = (i: number) => BX + i * (341 + 12) * BZ + 24 * BZ;
   const cardY = BY + 84 * BZ;
   const from = screen(195, 706);
-  const fly = t01(f, 336, 362, easeInOut);
-  const s1 = t01(f, 372, 388, easeInOut), s2 = t01(f, 392, 408, easeInOut);
+  const fly = t01(f, T.fly, T.fly + 26, easeInOut);
+  const s1 = t01(f, T.s1, T.s1 + 16, easeInOut), s2 = t01(f, T.s2, T.s2 + 16, easeInOut);
   const cardX = lerp(lerp(lerp(from.x - 139, colX(0), fly), colX(1), s1), colX(2), s2);
   const cardTop = lerp(from.y - 90, cardY, fly) - Math.sin(fly * Math.PI) * 140;
+  // A slight lift while the card slides between columns.
+  const slideLift = Math.sin(s1 * Math.PI) + Math.sin(s2 * Math.PI);
+  const col = f < T.s1 + 8 ? 0 : f < T.s2 + 8 ? 1 : 2;
 
   return (
     <AbsoluteFill>
@@ -63,10 +72,10 @@ export const Tenant: React.FC = () => {
               <TenantHome amount={peso(amount, 2)} settled={settled} press={f >= payTap - 3 && f < payTap + 7 ? 1 : 0} pill={pop(f, 62)} />
             </div>
             <div style={{position: 'absolute', inset: 0, transform: `translateX(${(1 - toForm) * 390}px)`, background: C.canvas}}>
-              <RepairForm title={titleText} details={detailText} focus={f < 294 ? 'title' : f < 326 ? 'details' : null} press={f >= sendTap - 3 && f < sendTap + 7 ? 1 : 0} unread={f >= 406 ? 3 : 2} />
+              <RepairForm title={titleText} details={detailText} focus={typingFocus} press={f >= sendTap - 3 && f < sendTap + 7 ? 1 : 0} unread={f >= T.note + 2 ? 3 : 2} />
             </div>
-            {f >= 404 ? <div style={{position: 'absolute', left: 16, right: 16, top: 0, background: C.canvas}}><AppHeader phone initials="AV" unread={3} ring={t01(f, 404, 436)} /></div> : null}
-            {f >= 404 ? <div style={{position: 'absolute', left: 0, right: 0, top: 74, transform: `translateY(${(1 - note) * -140}px)`, opacity: Math.min(1, note * 1.6)}}><DoneNote /></div> : null}
+            {f >= T.note ? <div style={{position: 'absolute', left: 16, right: 16, top: 0, background: C.canvas}}><AppHeader phone initials="AV" unread={3} ring={t01(f, T.note, T.note + 32)} /></div> : null}
+            {f >= T.note ? <div style={{position: 'absolute', left: 0, right: 0, top: 74, transform: `translateY(${(1 - note) * -140}px)`, opacity: Math.min(1, note * 1.6)}}><DoneNote /></div> : null}
           </Phone>
         </div>
       </div>
@@ -75,8 +84,8 @@ export const Tenant: React.FC = () => {
 
       <TopHead text="Their bill, on their phone." accent={['phone.']} at={12} out={108} />
       <TopHead text="Pay by GCash." accent={['GCash.']} sub="She confirms it." at={120} out={220} />
-      <TopHead text="Report a repair." accent={['repair.']} at={232} out={332} />
-      <TopHead text="Follow it to the end." accent={['end.']} at={344} />
+      <TopHead text="Report a repair." accent={['repair.']} at={232} out={sendTap} />
+      <TopHead text="Follow it to the end." accent={['end.']} at={sendTap + 18} />
 
       {/* A close-up of what the tenant sees, while the phone is on screen alone. */}
       {f >= 14 && f < 106 ? (
@@ -101,102 +110,130 @@ export const Tenant: React.FC = () => {
       {f >= 148 && f < 200 ? <><Ripple x={cur.x} y={cur.y} p={t01(f, reviewAt, reviewAt + 18)} /><Cursor x={cur.x} y={cur.y} press={cPress} size={40} opacity={t01(f, 148, 156) * (1 - t01(f, 184, 196))} /></> : null}
 
       {/* A close-up of the form as the tenant types. */}
-      {f >= 240 && f < 336 ? (
-        <div style={{position: 'absolute', left: 820 / 1.9, top: 380 / 1.9, zoom: 1.9, transform: `translateY(${t01(f, 322, 336, easeIn) * 30}px) scale(${lerp(0.94, 1, pop(f, 240))})`,
-          opacity: Math.min(1, pop(f, 240) * 1.6) * (1 - t01(f, 322, 336))}}>
+      {f >= 240 && f < T.closeOut + 14 ? (
+        <div style={{position: 'absolute', left: 820 / 1.9, top: 380 / 1.9, zoom: 1.9, transform: `translateY(${t01(f, T.closeOut, T.closeOut + 14, easeIn) * 30}px) scale(${lerp(0.94, 1, pop(f, 240))})`,
+          opacity: Math.min(1, pop(f, 240) * 1.6) * (1 - t01(f, T.closeOut, T.closeOut + 12))}}>
           <div style={{width: 470, borderRadius: 26, background: C.tile, padding: 22, boxShadow: '0 30px 70px rgba(15,27,21,0.14)', display: 'flex', flexDirection: 'column', gap: 14}}>
-            <Field label="What needs fixing"><Input value={titleText} placeholder="e.g. Bathroom sink pipe leak" focus={f < 294} caret={f < 294} /></Field>
-            <Field label="Details"><Input area value={detailText} placeholder="Where it is in the unit, when it started, and how bad it is." focus={f >= 294} caret={f >= 294 && f < 326} /></Field>
+            <Field label="What needs fixing"><Input value={titleText} placeholder="e.g. Bathroom sink pipe leak" focus={typingFocus === 'title'} caret={typingFocus === 'title'} /></Field>
+            <Field label="Details"><Input area value={detailText} placeholder="Where it is in the unit, when it started, and how bad it is." focus={typingFocus === 'details'} caret={typingFocus === 'details'} /></Field>
           </div>
         </div>
       ) : null}
 
       {/* Her repairs board, and the card travelling across it. */}
-      {f >= 332 ? (
+      {f >= T.board ? (
         <div style={{position: 'absolute', left: BX / BZ, top: BY / BZ, zoom: BZ, display: 'flex', gap: 12, transform: `translateY(${(1 - boardIn) * 80}px)`, opacity: Math.min(1, boardIn * 1.6)}}>
-          <BoardColumn title="To dispatch" sub="No technician assigned yet" n={f >= 362 && f < 380 ? 1 : 0} h={430} />
-          <BoardColumn title="In progress" sub="A technician is on it" n={f >= 380 && f < 400 ? 1 : 0} h={430} />
-          <BoardColumn title="Done" sub="Resolved or closed" n={f >= 400 ? 1 : 0} h={430} />
+          <BoardColumn title="To dispatch" sub="No technician assigned yet" n={f >= T.fly + 26 && col === 0 ? 1 : 0} h={430} />
+          <BoardColumn title="In progress" sub="A technician is on it" n={col === 1 ? 1 : 0} h={430} />
+          <BoardColumn title="Done" sub="Resolved or closed" n={col === 2 ? 1 : 0} h={430} />
         </div>
       ) : null}
-      {f >= 336 ? (
-        <div style={{position: 'absolute', left: cardX / BZ, top: cardTop / BZ, zoom: BZ, transform: `rotate(${Math.sin(fly * Math.PI) * -6}deg) scale(${lerp(0.75, 1, fly)})`, transformOrigin: '0 0',
-          boxShadow: `0 ${24 * Math.sin(fly * Math.PI) + 8}px 50px rgba(15,27,21,0.16)`, borderRadius: 20}}>
-          <RepairCard title={REPAIR_TITLE} meta="Unit 1A, Plumbing" reported="Sep 29, 2026" tech={f < 372 ? 'Unassigned' : 'Plumber'} prio="Medium" />
+      {f >= T.fly ? (
+        <div style={{position: 'absolute', left: cardX / BZ, top: (cardTop - slideLift * 10) / BZ, zoom: BZ, transform: `rotate(${Math.sin(fly * Math.PI) * -6 + slideLift * 1.5}deg) scale(${lerp(0.75, 1, fly)})`, transformOrigin: '0 0',
+          boxShadow: `0 ${24 * Math.sin(fly * Math.PI) + 8 + slideLift * 14}px ${50 + slideLift * 20}px rgba(15,27,21,0.16)`, borderRadius: 20}}>
+          <RepairCard title={REPAIR_TITLE} meta="Unit 1A, Plumbing" reported="Sep 29, 2026" tech={f < T.s1 ? 'Unassigned' : 'Plumber'} prio="Medium" />
         </div>
       ) : null}
 
-      <Sfx at={0} name="air-long" vol={0.35} />
-      <Sfx at={62} name="blip" vol={0.24} />
-      <Sfx at={payTap - 1} name="tap" vol={0.28} />
-      <Sfx at={104} name="air-short" vol={0.35} />
-      <Sfx at={120} name="blip" vol={0.28} />
-      <Sfx at={reviewAt - 1} name="soft-click" vol={0.5} />
-      <Sfx at={200} name="bell" vol={0.36} />
-      <Sfx at={226} name="air-short" vol={0.3} />
-      {[250, 262, 274, 286, 300, 312].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[i % 3]} vol={0.07} />)}
-      <Sfx at={sendTap - 1} name="tap" vol={0.28} />
-      <Sfx at={336} name="air-short" vol={0.35} />
-      <Sfx at={362} name="blip" vol={0.24} />
-      <Sfx at={372} name="air-short" vol={0.24} />
-      <Sfx at={392} name="air-short" vol={0.24} />
-      <Sfx at={406} name="bell" vol={0.4} />
+      <Cues scene="tenant" />
     </AbsoluteFill>
   );
 };
 
 // ---- For guests ------------------------------------------------------------------
-const QUESTION = 'Good day! Is the two-bedroom in the back apartment still available? Could we view it this Saturday?';
+// A vacant unit on its category page, its floor plan drawn with the unit marked,
+// the plan lifted for a closer look, then "Ask about unit B3B" and the question
+// arriving in her Inquiries.
+export const G = {plan: 26, chip: 76, lift: 104, drop: 176, click: 206, dialog: 212, fill: 232, focus: 250, send: 338, list: 350, item: 368};
+
 export const Guests: React.FC = () => {
   const f = useCurrentFrame();
-  const panelIn = pop(f, 6, {damping: 20, stiffness: 80});
-  const panelOut = t01(f, 92, 106, easeIn);
-  const formIn = pop(f, 100, {damping: 20, stiffness: 90});
-  const formOut = t01(f, 188, 202, easeIn);
-  const bubble = t01(f, 186, 214, easeInOut);
-  const listIn = pop(f, 200, {damping: 20, stiffness: 90});
-  const newItem = pop(f, 214, {damping: 20, stiffness: 110});
-  const FZ = 1.2;
+  // The showcase card, at zoom SZ in the visual zone.
+  const SZ = 0.92, SX = 900, SY = 264;
+  const cardIn = pop(f, 6, {damping: 20, stiffness: 80});
+  const plan = t01(f, G.plan, G.plan + 46, easeInOut);
+  const chip = pop(f, G.chip, {damping: 16, stiffness: 140});
+  const ring1 = t01(f, G.chip + 4, G.chip + 34);
+
+  // The plan lifting out of the card and back: from its place in the card to a
+  // close-up in the middle of the zone, along the same path both ways.
+  const lift = t01(f, G.lift, G.lift + 30, easeInOut) * (1 - t01(f, G.drop, G.drop + 26, easeInOut));
+  const imgH = (w: number) => (w * PLAN.h) / PLAN.w;
+  const inCard = {x: SX + ((SHOW.planW - SHOW.imgW) / 2) * SZ, y: SY + ((SHOW.h - imgH(SHOW.imgW)) / 2) * SZ, w: SHOW.imgW * SZ};
+  const CLOSE = {w: 740, x: 1340 - 370, y: (1080 - imgH(740)) / 2};
+  const lx = lerp(inCard.x, CLOSE.x, lift), ly = lerp(inCard.y, CLOSE.y, lift), lw = lerp(inCard.w, CLOSE.w, lift);
+  const ring2 = t01(f, G.lift + 40, G.lift + 72);
+  const lifted = f >= G.lift && f < G.drop + 26;
+
+  // "Ask about unit B3B", then the dialog.
+  const btn = {x: 1590, y: 752};
+  const curA = {x: lerp(1760, btn.x, t01(f, 184, 202, easeInOut)), y: lerp(1010, btn.y, t01(f, 184, 202, easeInOut))};
+  const pressA = t01(f, G.click - 3, G.click) * (1 - t01(f, G.click, G.click + 7));
+  const dialogIn = pop(f, G.dialog, {damping: 22, stiffness: 120});
+  const dialogOut = t01(f, G.send + 4, G.send + 18, easeIn);
+  // The dialog, 598px tall at zoom DZ, centred in the zone.
+  const DZ = 1.1, DX = 1340 - 320 * DZ, DY = (1080 - 598 * DZ) / 2;
+  const sendBtn = {x: DX + (52 + 75) * DZ, y: DY + (598 - 48 - 22) * DZ};
+  const curB = {x: lerp(1560, sendBtn.x, t01(f, 314, 332, easeInOut)), y: lerp(980, sendBtn.y, t01(f, 314, 332, easeInOut))};
+  const pressB = t01(f, G.send - 3, G.send) * (1 - t01(f, G.send, G.send + 7));
+  const cardDim = t01(f, G.dialog - 2, G.dialog + 14);
+  const cardOut = t01(f, G.send + 4, G.send + 18, easeIn);
+  const question = typedOf('question', f);
+  const filled = (at: number, v: string) => (f >= at ? v : '');
+
+  // Her Inquiries, with the question arriving at the top.
+  const bubble = t01(f, G.send + 4, G.send + 32, easeInOut);
+  const listIn = pop(f, G.list, {damping: 20, stiffness: 90});
+  const newItem = pop(f, G.item, {damping: 20, stiffness: 110});
+
   return (
     <AbsoluteFill>
       <Bg mood="light" hex glowX={68} />
-      <div style={{position: 'absolute', left: 1020, top: 150, opacity: Math.min(1, panelIn * 1.6) * (1 - panelOut), transform: `translateX(${(1 - panelIn) * 200 - panelOut * 120}px)`}}>
-        <UnitPanel />
-      </div>
-      <Head size={100} text={'Find a\nvacant room.'} accent={['vacant']} at={10} out={96} />
-      {f >= 100 && f < 206 ? (
-        <div style={{position: 'absolute', left: 980 / FZ, top: 170 / FZ, zoom: FZ, transform: `translateX(${(1 - formIn) * 200 - formOut * 120}px)`, opacity: Math.min(1, formIn * 1.6) * (1 - formOut)}}>
-          <InquiryForm name={typed('Kaye Ordoñez', f, 114, 2)} phone={typed('0918 555 0142', f, 142, 1.4)} question={typed(QUESTION, f, 162, 0.2)}
-            focus={f < 140 ? 'name' : f < 160 ? 'phone' : f < 180 ? 'question' : null} press={f >= 181 && f < 190 ? 1 : 0} />
+      {f < G.send + 20 ? (
+        <div style={{position: 'absolute', left: SX / SZ, top: SY / SZ, zoom: SZ, transform: `translateX(${(1 - cardIn) * 220}px)`,
+          opacity: Math.min(1, cardIn * 1.6) * (1 - 0.8 * lift) * (1 - 0.75 * cardDim) * (1 - cardOut)}}>
+          <UnitShowcase plan={plan} chip={chip} ring={ring1} hidePlan={lifted} press={f >= G.click - 3 && f < G.click + 7 ? 1 : 0} />
         </div>
       ) : null}
-      <Head size={100} text={'Just ask.\nNo sign-up.'} accent={['ask.']} at={108} out={190} />
-      {f >= 186 && f < 216 ? (
-        <div style={{position: 'absolute', left: lerp(1060, 1180, bubble), top: lerp(820, 330, bubble) - Math.sin(bubble * Math.PI) * 120, width: 440, transform: `scale(${lerp(1, 0.75, bubble)})`,
-          background: C.brand, color: '#fff', borderRadius: '24px 24px 24px 6px', padding: '18px 22px', fontFamily: jakarta, fontSize: 19, lineHeight: 1.45, boxShadow: '0 20px 50px rgba(15,27,21,0.26)',
-          opacity: 1 - t01(f, 208, 216)}}>
-          {QUESTION.slice(0, 64)}…
+      {lifted ? (
+        <div style={{position: 'absolute', left: lx - 28 * lift, top: ly - 28 * lift, padding: 28 * lift, borderRadius: 26, background: C.tile,
+          boxShadow: `0 ${40 * lift}px ${90 * lift}px rgba(15,27,21,${0.2 * lift})`}}>
+          <PlanImage width={lw} ring={ring2} />
         </div>
       ) : null}
-      {f >= 200 ? (
+      <Head size={100} text={'Find a\nvacant room.'} accent={['vacant']} at={10} out={98} />
+      <Head size={100} text={'See the\nfloor plan.'} accent={['plan.']} sub="Each unit, marked on its floor." subSize={32} at={108} out={G.drop + 10} />
+
+      {f >= G.dialog && f < G.send + 20 ? (
+        <div style={{position: 'absolute', left: DX / DZ, top: DY / DZ, zoom: DZ, transformOrigin: '50% 50%', transform: `scale(${lerp(0.96, 1, dialogIn) - dialogOut * 0.03})`,
+          opacity: Math.min(1, dialogIn * 1.6) * (1 - dialogOut)}}>
+          <AskDialog name={filled(G.fill, 'Kaye Ordoñez')} phone={filled(G.fill + 4, '0918-555-0142')} email={filled(G.fill + 8, 'kaye.ordonez@email.com')}
+            question={question} focus={f >= G.focus && f < G.send ? 'question' : null} press={f >= G.send - 3 && f < G.send + 7 ? 1 : 0} />
+        </div>
+      ) : null}
+      {f >= 184 && f < G.dialog + 12 ? <><Ripple x={curA.x} y={curA.y} p={t01(f, G.click, G.click + 18)} /><Cursor x={curA.x} y={curA.y} press={pressA} size={40} opacity={t01(f, 184, 192) * (1 - t01(f, G.dialog, G.dialog + 10))} /></> : null}
+      {f >= 314 && f < G.send + 16 ? <><Ripple x={curB.x} y={curB.y} p={t01(f, G.send, G.send + 18)} /><Cursor x={curB.x} y={curB.y} press={pressB} size={40} opacity={t01(f, 314, 322) * (1 - t01(f, G.send + 6, G.send + 16))} /></> : null}
+      <Head size={100} text={'Just ask.\nNo sign-up.'} accent={['ask.']} at={G.click - 2} out={G.send + 4} />
+
+      {f >= G.send + 4 && f < G.send + 34 ? (
+        <div style={{position: 'absolute', left: lerp(DX + 52 * DZ, 1060, bubble), top: lerp(DY + 376 * DZ, 300, bubble) - Math.sin(bubble * Math.PI) * 120, transform: `scale(${lerp(1, 0.8, bubble)})`,
+          transformOrigin: '0 0', background: C.brand, color: '#fff', borderRadius: '24px 24px 24px 6px', padding: '16px 22px', fontFamily: jakarta, fontSize: 19, lineHeight: 1.45,
+          boxShadow: '0 20px 50px rgba(15,27,21,0.26)', opacity: 1 - t01(f, G.send + 26, G.send + 34)}}>
+          {TYPING.question.text}
+        </div>
+      ) : null}
+      {f >= G.list ? (
         <div style={{position: 'absolute', left: 1020 / 1.25, top: 230 / 1.25, zoom: 1.25, borderRadius: 24, overflow: 'hidden', background: C.tile, boxShadow: '0 40px 90px rgba(15,27,21,0.12)',
           transform: `translateY(${(1 - listIn) * 60}px)`, opacity: Math.min(1, listIn * 1.6)}}>
-          <div style={{height: newItem * 152, overflow: 'hidden'}}>
-            <InquiryItem name="Kaye Ordoñez" when="Sep 29, 2026" unit="B3B" status="Waiting for an answer" tone="verify" active msg="Good day! Is the two-bedroom in the back apartment still available? Could we view it this…" />
+          <div style={{height: newItem * 130, overflow: 'hidden'}}>
+            <InquiryItem name="Kaye Ordoñez" when="Sep 29, 2026" unit="B3B" status="Waiting for an answer" tone="verify" active msg={TYPING.question.text} />
           </div>
           <InquiryItem name="Luis Barrameda" when="Sep 26, 2026" unit="B3B" status="Answered" tone="neutral" msg="Hello, I start at Bicol University next month. How much is the monthly rate?" />
           <InquiryItem name="Mica Tolentino" when="Sep 21, 2026" unit="1G" status="Nothing came of it" tone="neutral" msg="Do you have a studio for one person?" />
         </div>
       ) : null}
-      <Head size={100} text={'Straight to\nher Inquiries.'} accent={['Inquiries.']} at={204} />
-      <Sfx at={6} name="air" vol={0.3} />
-      <Sfx at={100} name="air" vol={0.3} />
-      {[114, 120, 126, 142, 150, 166, 172].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3'] as const)[i % 3]} vol={0.07} />)}
-      <Sfx at={180} name="soft-click" vol={0.5} />
-      <Sfx at={188} name="air-short" vol={0.35} />
-      <Sfx at={214} name="blip" vol={0.28} />
-      <Sfx at={218} name="bell" vol={0.35} />
+      <Head size={100} text={'Straight to\nher Inquiries.'} accent={['Inquiries.']} at={G.send + 20} />
+      <Cues scene="guests" />
     </AbsoluteFill>
   );
 };
-

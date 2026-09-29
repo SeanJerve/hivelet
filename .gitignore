@@ -76,6 +76,7 @@ video/public/sfx/
 video/public/score.wav
 video/public/fe-galang-building.webp
 video/public/icon-512.png
+video/public/floorplans/
 video/public/music.mp3
 
 # vite writes these beside the config during a build; they are not source
