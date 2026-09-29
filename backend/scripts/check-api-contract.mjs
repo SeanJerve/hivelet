@@ -27,7 +27,13 @@ if (!fs.existsSync(credsPath)) {
 const creds = fs.readFileSync(credsPath, 'utf8');
 const adminEmail = creds.match(/Email:\s*(\S+)/)?.[1];
 const adminPass = creds.match(/Password:\s*(\S+)/)?.[1];
-const tenantPass = [...creds.matchAll(/Password:\s*(\S+)/g)].at(-1)?.[1];
+// The shared tenant password was the SECOND `Password:` line. Since B-82 took it
+// out (every tenant now has their own), `.at(-1)` quietly fell back to the FIRST
+// line - the administrator's - and, wherever `.env` is absent to check it against
+// the stored hash first, would have been tried against real tenants. Only a
+// second line is a tenant password; with none, no tenant sign-in is attempted.
+const allPasswords = [...creds.matchAll(/Password:\s*(\S+)/g)].map((m) => m[1]);
+const tenantPass = allPasswords.length > 1 ? allPasswords.at(-1) : null;
 
 let pass = 0, fail = 0;
 const failures = [];
@@ -161,6 +167,11 @@ async function fixtureVerdict(email, password) {
 
 for (const entry of seeded) {
   const pw = entry.password ?? tenantPass;
+  if (!pw) {
+    tenantBlocked = 'no tenant password on this machine (the shared one was removed in B-82, and the ' +
+      'fixture carries none). Sign-in NOT attempted, so no real tenant\'s failed-login allowance is touched.';
+    break;
+  }
   const verdict = await fixtureVerdict(entry.email, pw);
   if (verdict.verified && !verdict.ok) {
     tenantBlocked = `${entry.email}: ${verdict.why}. Sign-in NOT attempted, so this real ` +
@@ -174,7 +185,9 @@ for (const entry of seeded) {
     body: JSON.stringify({ email: entry.email, password: pw })
   });
   const j = await r.json().catch(() => null);
-  if (!r.ok) { tenantBlocked = `${entry.email}: sign-in answered ${r.status}`; continue; }
+  // Stop at the first refusal. Moving on would try the same password against the
+  // next real tenant, and the next: one failed sign-in each, across the building.
+  if (!r.ok) { tenantBlocked = `${entry.email}: sign-in answered ${r.status}; no further tenant tried`; break; }
   if (j?.data?.user?.mustChangePassword) {
     tenantBlocked = `${entry.email}: signed in, but must set a new password first, so every ` +
       'tenant route answers 428 PASSWORD_CHANGE_REQUIRED (the forced-change gate, working). ' +
