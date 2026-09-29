@@ -29,6 +29,13 @@
 >   warning printed **"OR#OR#4988"** (every live receipt number carries its own prefix). All 20
 >   screens have no sideways scroll at 320 px (public pages checked in production, signed-in ones
 >   in the harness).
+> - **Record payment's Covering from** now starts the day after the tenant's last verified period
+>   (today for a tenant with none), not on today for every receipt, so the receipts since 8 August
+>   land in the right months. Per tenant, not per unit (`PH` holds a former occupant's 2024 rows).
+> - A tenant link to a repair that is not theirs now says **"Not found"** instead of doing nothing
+>   (A-22, step 17). Test cases fixed where a pass would have been marked a fail: O-12 (use a
+>   60000 ms throttling profile, not Offline), A-25 / 19b (void twice from a second tab), T-11
+>   (the statuses are Submitted, In progress, Done). All live and checked in production.
 > - **No more pushes from this machine after 06:00 Manila on 30 September** (the guide's rule 5).
 
 > [!IMPORTANT]
