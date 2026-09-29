@@ -1318,6 +1318,16 @@ async function exportExcel() {
         <p class="ws-reveal text-sm leading-6 text-ink-soft">
           Paid online with GCash. Verifying one marks the bill as paid and adds it to the ledger.
         </p>
+        <!--
+          B-80, Sean's decision of 2026-09-28: do not verify an online payment as
+          real money until the account is live. The tenant's pay dialog says the
+          same; this is the side where verifying would mark a bill paid with
+          nothing collected. Remove with the change that wires the live account.
+        -->
+        <p class="ws-reveal rounded-2xl bg-verify-soft px-4 py-3 text-sm leading-6 text-ink">
+          Online GCash payments still run on Adyen's test account, so no real money reaches you yet.
+          Reject these until online payment goes live.
+        </p>
         <ul class="grid gap-4 md:grid-cols-2">
           <li
             v-for="(p, i) in pendingPayments"
