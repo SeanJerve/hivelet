@@ -6,7 +6,7 @@
 import React from 'react';
 import {Calendar, Check, ChevronDown, CreditCard, FileText, Inbox, Pencil, Plus, TriangleAlert, Wrench, X} from 'lucide-react';
 import {C, jakarta} from '../theme';
-import {count, lerp, peso, pop, t01, typed} from '../anim';
+import {count, lerp, peso, pop, t01} from '../anim';
 import {Btn, Field, IconBtn, Input, Pill, Tile} from './Kit';
 
 const soft = (dark: boolean) => (dark ? C.onNightSoft : C.inkSoft);
@@ -17,8 +17,8 @@ export const OverviewHead: React.FC<{f: number; at?: number; press?: number}> = 
   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: jakarta, width: 1054}}>
     <div>
       <div style={{fontSize: 14, color: C.inkSoft, opacity: t01(f, at, at + 10)}}>Tuesday, September 29, 2026</div>
-      <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4, color: C.ink}}>
-        {typed('Good afternoon, Fe', f, at + 4, 1.3)}
+      <div style={{fontSize: 34, fontWeight: 500, letterSpacing: '-0.025em', marginTop: 4, color: C.ink, opacity: t01(f, at + 4, at + 18), transform: `translateY(${(1 - t01(f, at + 4, at + 22)) * 10}px)`}}>
+        Good afternoon, Fe
       </div>
     </div>
     <div style={{display: 'flex', gap: 10}}>

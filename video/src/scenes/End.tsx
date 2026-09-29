@@ -5,7 +5,7 @@ import {C, jakarta, sora} from '../theme';
 import {count, lerp, pop, t01} from '../anim';
 import {Bg, Kin} from '../fx';
 import {Mark} from '../ui/Kit';
-import {Sfx} from '../Sfx';
+import {Cues} from '../Sfx';
 
 export const Proof: React.FC = () => {
   const f = useCurrentFrame();
@@ -33,8 +33,7 @@ export const Proof: React.FC = () => {
           );
         })}
       </div>
-      {stats.map(([, , , at]) => <Sfx key={at} at={at} name="blip" vol={0.28} />)}
-      <Sfx at={118} name="shimmer" vol={0.3} />
+      <Cues scene="proof" />
     </AbsoluteFill>
   );
 };
@@ -70,7 +69,7 @@ export const End: React.FC = () => {
           </div>
         </div>
       </AbsoluteFill>
-      <Sfx at={44} name="shimmer" vol={0.35} />
+      <Cues scene="end" />
     </AbsoluteFill>
   );
 };

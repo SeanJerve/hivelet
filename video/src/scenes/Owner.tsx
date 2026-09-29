@@ -5,11 +5,12 @@ import React from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
 import {Download, Plus} from 'lucide-react';
 import {C, jakarta} from '../theme';
-import {camera, cameraAt, Cam, count, easeInOut, flyIn, lerp, peso, pop, t01, typed} from '../anim';
+import {camera, cameraAt, Cam, count, easeInOut, flyIn, lerp, peso, pop, t01} from '../anim';
 import {Bg, GRID, Head, Stage} from '../fx';
 import {Btn, Cursor, Ripple, Tile} from '../ui/Kit';
 import {AttentionTile, ChartTile, ClustersTile, CollectedTile, ConfirmDialog, LedgerHead, LedgerRow, LedgerRowData, OccupancyTile, OverviewHead, RecordModal, UnitCard} from '../ui/Admin';
-import {Sfx} from '../Sfx';
+import {Cues} from '../Sfx';
+import {typedOf} from '../typing.mjs';
 
 const CX = GRID.visCX;
 const ZONE_MASK = 'linear-gradient(90deg, transparent 0, transparent 800px, #000 900px)';
@@ -48,21 +49,16 @@ export const Overview: React.FC = () => {
       <Zone>
         <Stage cam={cam} w={1054} h={876}>
           <Piece f={f} at={2} x={0} y={0} shadow={false}><OverviewHead f={f} at={6} /></Piece>
-          <Piece f={f} at={8} x={0} y={100}><AttentionTile f={f} at={104} /></Piece>
+          <Piece f={f} at={8} x={0} y={100}><AttentionTile f={f} at={140} /></Piece>
           <Piece f={f} at={16} x={446} y={100}><CollectedTile f={f} at={160} /></Piece>
           <Piece f={f} at={24} x={802} y={100}><OccupancyTile f={f} at={60} /></Piece>
-          <Piece f={f} at={32} x={0} y={456}><ChartTile f={f} at={210} /></Piece>
+          <Piece f={f} at={32} x={0} y={456}><ChartTile f={f} at={226} /></Piece>
           <Piece f={f} at={40} x={713} y={456}><ClustersTile f={f} at={70} /></Piece>
         </Stage>
       </Zone>
       <Head size={100} text={'What needs her,\nfirst.'} accent={['first.']} at={16} out={138} />
       <Head size={100} text={'Every peso,\ncounted.'} accent={['peso,']} at={150} />
-      <Sfx at={0} name="air-long" vol={0.35} />
-      {[8, 24, 40].map((a) => <Sfx key={a} at={a} name="blip" vol={0.24} />)}
-      <Sfx at={96} name="air" vol={0.3} />
-      <Sfx at={112} name="bell" vol={0.3} />
-      <Sfx at={150} name="air" vol={0.28} />
-      <Sfx at={206} name="air" vol={0.28} />
+      <Cues scene="overview" />
     </AbsoluteFill>
   );
 };
@@ -88,7 +84,7 @@ export const Rooms: React.FC = () => {
     {at: 16, x: 1150, y: 321, s: 0.57, rx: 46, rz: -20, dur: 80},
     {at: 98, x: 121, y: 110, s: 1.55, rx: 0, rz: 0, dur: 58},
   ], 2, CX);
-  const lift = pop(f, 110, {damping: 20, stiffness: 80});
+  const lift = pop(f, 140, {damping: 20, stiffness: 80});
   return (
     <AbsoluteFill>
       <Bg mood="light" hex glowX={70} />
@@ -96,9 +92,9 @@ export const Rooms: React.FC = () => {
         <Stage cam={cam} w={cols * 257} h={3 * 214}>
           {UNITS.map(([code, type, who, rent], i) => {
             const col = i % cols, row = Math.floor(i / cols);
-            const p = pop(f, 2 + (col + row) * 3, {damping: 20, stiffness: 90});
+            const p = pop(f, 20 + (col + row) * 3, {damping: 20, stiffness: 90});
             const isLift = i === 0;
-            const dim = isLift ? 0 : t01(f, 104, 130) * 0.5;
+            const dim = isLift ? 0 : t01(f, 134, 160) * 0.5;
             return (
               <div key={code} style={{position: 'absolute', left: col * 257, top: row * 214, transformStyle: 'preserve-3d', opacity: Math.min(1, p * 1.6) * (1 - dim),
                 transform: `translateZ(${isLift ? lift * 160 : 0}px) rotateX(${(1 - p) * -90}deg) scale(${isLift ? 1 + lift * 0.12 : 1})`, transformOrigin: 'center bottom'}}>
@@ -111,9 +107,7 @@ export const Rooms: React.FC = () => {
       </Zone>
       <Head size={100} text={'Every unit,\none place.'} accent={['one']} at={12} out={94} />
       <Head size={100} text={'Every tenant.\nEvery rate.'} accent={['rate.']} at={106} />
-      <Sfx at={4} name="air-long" vol={0.35} />
-      <Sfx at={98} name="air" vol={0.3} />
-      <Sfx at={112} name="blip" vol={0.3} />
+      <Cues scene="rooms" />
     </AbsoluteFill>
   );
 };
@@ -140,7 +134,7 @@ export const Income: React.FC = () => {
   const modalP = pop(f, 128, {damping: 20, stiffness: 110});
   const unitOpen = t01(f, 170, 182) * (1 - t01(f, 208, 216));
   const chosen = f >= 210;
-  const orText = typed('5120', f, 240, 6);
+  const orText = typedOf('or', f);
   const confirmP = pop(f, 294, {damping: 20, stiffness: 110});
   const dim = t01(f, 128, 146) * 0.2;
 
@@ -227,12 +221,7 @@ export const Income: React.FC = () => {
           <Cursor x={cx} y={cy} press={press} size={40} opacity={t01(f, 100, 110) * (1 - t01(f, 298, 308))} />
         </>
       ) : null}
-      <Sfx at={2} name="air-long" vol={0.3} />
-      {clicks.map((c) => <Sfx key={c} at={c - 1} name="soft-click" vol={0.5} />)}
-      <Sfx at={128} name="air-short" vol={0.35} />
-      {[240, 246, 252, 258].map((a, i) => <Sfx key={a} at={a} name={(['key1', 'key2', 'key3', 'key1'] as const)[i]} vol={0.1} />)}
-      <Sfx at={294} name="blip" vol={0.3} />
-      <Sfx at={304} name="soft-warn" vol={0.45} />
+      <Cues scene="income" />
     </AbsoluteFill>
   );
 };
