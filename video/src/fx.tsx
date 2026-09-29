@@ -16,6 +16,9 @@ export const Kin: React.FC<{
   align?: 'left' | 'center' | 'right'; lh?: number; ls?: string; stagger?: number; style?: React.CSSProperties; accent?: string[];
 }> = ({text, at, out, size, color = C.ink, accentColor = C.brandBright, font = sora, weight = 700, align = 'left', lh = 1.06, ls = '-0.045em', stagger = 3, style, accent = []}) => {
   const f = useCurrentFrame();
+  // Accent words are matched without their punctuation, on both sides.
+  const bare = (w: string) => w.replace(/[.,!?]/g, '');
+  const accented = accent.map(bare);
   let k = 0;
   return (
     <div style={{fontFamily: font, fontSize: size, fontWeight: weight, color, lineHeight: lh, letterSpacing: ls, textAlign: align, ...style}}>
@@ -29,7 +32,7 @@ export const Kin: React.FC<{
               <React.Fragment key={i}>
                 <span style={{display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', padding: '0.06em 0.03em 0.16em', margin: '-0.06em -0.03em -0.16em'}}>
                   <span style={{display: 'inline-block', whiteSpace: 'nowrap', transform: `translateY(${(1 - p) * 110 - e * 110}%)`, opacity: Math.min(1, p * 1.5) * (1 - e),
-                    color: accent.includes(w.replace(/[.,!?]/g, '')) ? accentColor : undefined}}>{w}</span>
+                    color: accented.includes(bare(w)) ? accentColor : undefined}}>{w}</span>
                 </span>
                 {i < arr.length - 1 ? ' ' : null}
               </React.Fragment>
