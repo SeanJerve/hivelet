@@ -252,7 +252,7 @@ function waterBaselineFor(_unitCode: string, occupants: number): number {
  * dependency list has to name everything the body reads, not everything the
  * author was thinking about.**
  */
-watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([newUnit]) => {
+function fillFiguresForUnit(newUnit: string) {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === newUnit.toLowerCase());
   const summary = formatUnitOccupantsSummary(newUnit);
   const occCount = occupantsFor(summary, room);
@@ -312,7 +312,13 @@ watch([selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary], ([n
    * will create; the total handed over is computed from both below.
    */
   rentAmount.value = !roomsFetchFailed.value && room && room.price ? room.price : 0;
-}, { immediate: true });
+}
+
+watch(
+  [selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary],
+  ([newUnit]) => fillFiguresForUnit(newUnit),
+  { immediate: true }
+);
 
 
 /**
@@ -744,6 +750,22 @@ function triggerRecord() {
         await Promise.allSettled([fetchIncomeRecords(), fetchRooms(), fetchTenants()]);
 
         showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()}, ${peso(totalAmountReceived.value, 2)}, is in the ledger.`);
+        /**
+         * One receipt, one set of figures. This dialog lives for the whole
+         * session (App.vue), so the next receipt opened on this one's OR number,
+         * reference, garbage fee and months - a fee carried onto a receipt that
+         * had none, or one OR number on two units, which the per-unit duplicate
+         * guard does not catch. Seen in the admin harness 2026-09-30, before she
+         * enters every receipt since 8 August in one sitting. The unit and the
+         * date received stay, for a run of receipts from one day; rent and water
+         * go back to the unit's own figures, so a part-payment typed here is not
+         * the next receipt's rent.
+         */
+        orNum.value = '';
+        transactionReference.value = '';
+        gbgFee.value = 0;
+        monthsCovered.value = 1;
+        fillFiguresForUnit(selectedUnit.value);
         closeModal();
       } catch (err: unknown) {
         // Timed out: it may be in the ledger, so never "Nothing was written".
