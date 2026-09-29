@@ -20,6 +20,15 @@
 >   by their new file names. `check:all` with the backend up: **19/20**, the one FAIL the expected
 >   B-82 tenant block (sign-in not attempted, 0 failed logins on any tenant before and after).
 >   Everything above was confirmed in production (headers, robots, sitemap, the new chunks).
+> - **Reviewing Loyd's six code commits from tonight** (reset password, timeouts, the password
+>   window, photo shrinking) found no defect in them, but found their tenant-side timeout fix had
+>   no owner-side twin: a save that timed out on Record payment said "Nothing was written to the
+>   ledger. Please try again." Every owner write-failure toast now reads **"Not confirmed"** on a
+>   timeout (`failureTitle` in `lib/api.ts`), Record payment and Record expense fetch the ledger
+>   again, and a timed-out Move them in points to Reset password. Also fixed: the same-period
+>   warning printed **"OR#OR#4988"** (every live receipt number carries its own prefix). All 20
+>   screens have no sideways scroll at 320 px (public pages checked in production, signed-in ones
+>   in the harness).
 > - **No more pushes from this machine after 06:00 Manila on 30 September** (the guide's rule 5).
 
 > [!IMPORTANT]
