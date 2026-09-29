@@ -199,9 +199,21 @@ const hidesGlobalHeader = computed(() =>
           a different component; a param change inside the same page stays
           instant, which is correct for a filter, not a navigation.
         -->
+        <!--
+          The placeholder holds the page open to the full screen height until
+          the first route's code has arrived. Without it `<main>` was EMPTY for
+          the length of that download (0.75 s at a 4x-throttled CPU), the footer
+          sat in view at the top of an empty page, and the page then arriving
+          shoved it 466 px down: Lighthouse measured that one jump as a layout
+          shift of 0.50 on every desktop run of the landing page (0.1 is the
+          "good" line), 2026-09-30. With the space held, the footer starts below
+          the fold and nothing visible moves. It exists only before the first
+          page renders; later navigations always have a component.
+        -->
         <RouterView v-slot="{ Component }">
           <Transition name="page-move">
-            <component :is="Component" />
+            <component :is="Component" v-if="Component" />
+            <div v-else class="min-h-screen supports-[min-height:100dvh]:min-h-dvh" aria-hidden="true" />
           </Transition>
         </RouterView>
       </main>
