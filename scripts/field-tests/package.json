@@ -6,7 +6,8 @@
   "scripts": {
     "offline": "node offline-and-weak-signal.mjs",
     "load": "node simultaneous-readers.mjs",
-    "a11y": "node layout-and-accessibility.mjs"
+    "a11y": "node layout-and-accessibility.mjs",
+    "owner": "node owner-screens-layout.mjs"
   },
   "devDependencies": {
     "axe-core": "^4.10.0",

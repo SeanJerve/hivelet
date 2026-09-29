@@ -498,7 +498,12 @@ form its message at 46 seconds with the typed text kept; without the change, the
 showed nothing after 41 seconds (Table 23).
 
 An accessibility scan of the seven public pages (axe-core 4, WCAG 2 levels A and AA) at phone and
-computer widths found no violations, and no page was wider than a 360-pixel phone screen.
+computer widths found no violations, and no page was wider than a 360-pixel phone screen. The same
+two measurements were taken on the owner's eight screens, signed in on a local copy of the
+application connected to the live records, at 360, 390, 768 and 1366 pixels: no screen was wider
+than the window and none had a violation. These were the screens the owner had found hard to use on
+her phone on 23 September (Section 4.3.2); the fixes of that day are here measured on the real
+screens with real records for the first time.
 
 ### 4.3.7 User Acceptance Testing with the Owner and Tenants [DATA PENDING]
 

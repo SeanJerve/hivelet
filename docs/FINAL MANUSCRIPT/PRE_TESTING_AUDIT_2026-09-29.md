@@ -141,7 +141,14 @@ Seven public pages (`/public`, `/inquire`, `/login`, `/privacy`, `/terms`, `/cat
   reported 18 contrast issues on `/category/studio` at 390 px; re-scanned after the page finished
   its entrance animation it reported 0, so the first scan caught text mid-fade.
 
-Signed-in screens were not scanned: that needs a sign-in, which is tomorrow's.
+**The owner's eight screens** (Overview, Rooms and rates, Tenants, Monthly Income, Monthly Expenses,
+Repairs, Inquiries, Activity) were measured later the same night, signed in as the administrator on
+the local build against the live records, writes blocked (`scripts/field-tests/owner-screens-layout.mjs`):
+**no screen wider than the window at 360, 390, 768 or 1366 px, and no WCAG A/AA violation at 390 or
+1366 px.** One scan flagged 3 contrast issues on Monthly Expenses at 1366 px; re-scanned after 4 and
+8 seconds it showed 0 (the same mid-animation effect). This is the first measurement of the owner's
+screens on phone widths with real data, after the client called them "messy" on a phone on
+23 September; the fixes of that day had been checked on replicas only.
 
 ## 8. Writing twice, and writing at the same time (read from the code)
 
