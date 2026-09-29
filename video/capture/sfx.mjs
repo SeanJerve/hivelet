@@ -268,9 +268,155 @@ air('air-long', 3.4, 180, 900);
   tone(b, 0, 783.99, 0.16, 0.9, 0.01); tone(b, 0.16, 659.25, 0.22, 0.9, 0.01);
   write('soft-warn', room(b, 0.25), undefined, 0.6);
 }
+// ---- The object sounds, for the fourth cut -------------------------------------
+// One sound per kind of motion, each short and soft, so what is heard is the
+// thing on screen moving: a card landing, paper, a pen, a row, a bubble, a cell.
+
+// A soft felt thud for a card or tile settling into place, in four weights.
+function settle(name, f0, dec, peak) {
+  const b = buf(0.35);
+  glide(b, 0, f0 * 1.25, f0, 0.03, dec, 1);
+  tone(b, 0, f0 * 2, dec * 0.35, 0.25);
+  const n = buf(0.05); burst(n, 0, 0.004, 0.15, 0);
+  const nl = lowpass(n, 800); for (let i = 0; i < nl.length; i++) b[i] += nl[i];
+  write(name, lowpass(b, 3000), undefined, peak);
+}
+settle('settle-a', 190, 0.07, 0.45);
+settle('settle-b', 165, 0.075, 0.45);
+settle('settle-c', 220, 0.065, 0.45);
+settle('settle-deep', 95, 0.13, 0.55);
+
+// Flick: the tiny sound of something small leaving a surface. Short, not a whoosh.
+{
+  const n = buf(0.12);
+  for (let i = 0; i < n.length; i++) n[i] = noise() * Math.min(1, (i / SR) / 0.008) * Math.exp(-(i / SR) / 0.035);
+  write('flick', bandpass(n, () => 4500, 1.2), undefined, 0.3);
+}
+// Paper: a quick rustle of grains, and a longer soft slide of one sheet over another.
+{
+  const b = buf(0.38);
+  for (let g = 0; g < 26; g++) {
+    const at = 0.012 * g + rnd() * 0.02, amp = Math.sin(Math.PI * Math.min(1, at / 0.36)) * (0.4 + rnd() * 0.6);
+    burst(b, at, 0.003 + rnd() * 0.004, amp, 0);
+  }
+  write('paper', bandpass(b, () => 3000, 0.9), undefined, 0.32);
+  const s = buf(0.5);
+  for (let i = 0; i < s.length; i++) { const p = i / s.length; s[i] = noise() * Math.pow(Math.sin(Math.PI * p), 1.2) * (0.8 + 0.2 * Math.sin(i / 90)); }
+  write('paper-slide', bandpass(s, (t) => 1600 + 900 * (t / 0.5), 0.8), undefined, 0.26);
+}
+// Pen: a felt-tip circling a number - a scratch that speeds and slows.
+{
+  const d = 0.55, s = buf(d);
+  for (let i = 0; i < s.length; i++) { const t = i / SR; s[i] = noise() * Math.pow(Math.sin(Math.PI * t / d), 0.6) * (0.55 + 0.45 * Math.abs(Math.sin(2 * Math.PI * 7 * t))); }
+  write('pen', bandpass(s, (t) => 2200 + 700 * Math.sin(2 * Math.PI * 7 * t), 2.2), undefined, 0.28);
+}
+// Ticks: small wooden taps, in six rising pitches, for rows and cascades.
+[700, 780, 870, 980, 1100, 1240].forEach((f, k) => {
+  const b = buf(0.08);
+  tone(b, 0, f, 0.018, 1, 0.0008); tone(b, 0, f * 2.01, 0.008, 0.3, 0.0008); burst(b, 0, 0.0006, 0.2, 2000);
+  write(`tick-${'abcdef'[k]}`, b, undefined, 0.4);
+});
+// Card flips, three variants, for the wall of units turning over.
+[1300, 1500, 1700].forEach((f, k) => {
+  const b = buf(0.06);
+  burst(b, 0, 0.015, 0.5, 3000); tone(b, 0, f, 0.01, 0.5, 0.0008);
+  write(`flip-${'abc'[k]}`, b, undefined, 0.3);
+});
+// Messages: a two-note pop for a message arriving, and the reverse for one sent.
+[['msg-in', 880, 1318.5], ['msg-out', 1318.5, 987.77]].forEach(([name, a, c]) => {
+  const b = buf(0.35);
+  tone(b, 0, a, 0.06, 0.8, 0.004); tone(b, 0.045, c, 0.08, 1, 0.004);
+  write(name, room(b, 0.15), undefined, 0.42);
+});
+// Glass: problems turning into cells. Lock: each cell clicking into the hive.
+{
+  const b = buf(1.4);
+  [1760, 2637, 3520].forEach((f, i) => tone(b, i * 0.02, f, 0.5, 0.6, 0.01));
+  write('glass', room(b, 0.3), undefined, 0.3);
+}
+[2400, 2900].forEach((f, k) => {
+  const b = buf(0.08);
+  tone(b, 0, f, 0.025, 1, 0.0008); tone(b, 0, 5000, 0.008, 0.3, 0.0008);
+  write(`lock-${'ab'[k]}`, b, undefined, 0.28);
+});
+// Open: a dialog opening. Nav: the phone moving to another screen.
+{
+  const b = buf(0.3); glide(b, 0, 420, 620, 0.06, 0.1, 1); tone(b, 0.01, 1240, 0.05, 0.2);
+  write('open', lowpass(b, 5000), undefined, 0.38);
+  const n2 = buf(0.12); tone(n2, 0, 600, 0.02, 1, 0.0008); burst(n2, 0, 0.001, 0.2, 1500);
+  write('nav', n2, undefined, 0.32);
+}
+// Fill: a gentle rising tone as a ring fills.
+{
+  const d = 0.95, b = buf(d);
+  let ph = 0;
+  for (let i = 0; i < b.length; i++) { const t = i / SR; ph += 2 * Math.PI * (520 + 360 * (t / d)) / SR; b[i] = Math.sin(ph) * Math.pow(Math.sin(Math.PI * t / d), 1.5) * (1 + 0.25 * Math.sin(2 * ph)); }
+  write('fill', room(b, 0.2), undefined, 0.24);
+}
+// Plucks: the A major pentatonic, one note per bar as a chart grows.
+[440, 493.88, 554.37, 659.25, 739.99, 880, 987.77, 1108.73, 1318.51].forEach((f, k) => {
+  const b = buf(0.8);
+  tone(b, 0, f, 0.3, 1, 0.003); tone(b, 0, f * 2, 0.12, 0.2, 0.003);
+  write(`pluck-${k + 1}`, room(b, 0.25), undefined, 0.34);
+});
+// Beep: a drive's light coming on.
+{
+  const b = buf(0.12); tone(b, 0, 1850, 0.045, 1, 0.003);
+  write('beep', b, undefined, 0.2);
+}
+
 // Shimmer: a bright cluster that blooms and fades, for a reveal.
 {
   const b = buf(3.2);
   [1760, 2217.46, 2637, 3520].forEach((f, i) => tone(b, i * 0.07, f, 1.1, 0.5, 0.25));
   write('shimmer', room(room(b, 0.35), 0.3), undefined, 0.5);
+}
+
+// ---- The fifth cut ------------------------------------------------------------
+// Card slide: a repair card moving across her board to the next column. Soft
+// friction, low and short, rising a little as it travels - not a whoosh.
+{
+  const d = 0.42, s = buf(d);
+  for (let i = 0; i < s.length; i++) {
+    const t = i / SR, env = Math.min(1, t / 0.05) * Math.pow(Math.max(0, 1 - t / d), 1.6);
+    s[i] = noise() * env * (0.85 + 0.15 * Math.sin(i / 70));
+  }
+  const body = lowpass(s.map((v) => v * 0.5), 400);
+  const top = bandpass(s, (t) => 900 + 500 * (t / d), 0.9);
+  for (let i = 0; i < top.length; i++) top[i] += body[i];
+  write('card-slide', lowpass(top, 4000), undefined, 0.22);
+}
+// Status: the card settling into a column, a soft thud with a wooden note that
+// climbs the A major triad - C#, E, then A for Done.
+[554.37, 659.25, 880].forEach((f, k) => {
+  const b = buf(0.6);
+  glide(b, 0, 210, 170, 0.03, 0.06, 0.6);
+  tone(b, 0.004, f, 0.22, 1, 0.002); tone(b, 0.004, f * 2, 0.08, 0.25, 0.002); tone(b, 0.004, f * 3, 0.04, 0.08, 0.002);
+  write(`status-${k + 1}`, room(lowpass(b, 6000), 0.18), undefined, 0.4);
+});
+// Text message: two short identical blips, the way a phone announces an SMS.
+{
+  const b = buf(0.3);
+  tone(b, 0, 1567.98, 0.035, 1, 0.003); tone(b, 0.1, 1567.98, 0.045, 1, 0.003);
+  write('sms', room(b, 0.12), undefined, 0.3);
+}
+// Note: a paper note pressed down on a surface - a dry tap and a small body.
+{
+  const b = buf(0.18);
+  burst(b, 0, 0.012, 0.8, 0);
+  const tap = bandpass(b, () => 1800, 0.8);
+  glide(tap, 0, 170, 130, 0.02, 0.04, 0.35);
+  write('note', lowpass(tap, 5000), undefined, 0.3);
+}
+// Sketch: a floor plan being drawn, a few quick pencil strokes of uneven length.
+{
+  const d = 1.5, s = buf(d);
+  let at = 0.02;
+  while (at < d - 0.2) {
+    const len = 0.07 + rnd() * 0.12, amp = 0.5 + rnd() * 0.5, from = Math.floor(at * SR), n = Math.floor(len * SR);
+    for (let i = 0; i < n && from + i < s.length; i++) s[from + i] += noise() * amp * Math.pow(Math.sin((Math.PI * i) / n), 0.8);
+    at += len + 0.03 + rnd() * 0.09;
+  }
+  for (let i = 0; i < s.length; i++) { const t = i / SR; s[i] *= Math.min(1, t / 0.1) * Math.min(1, (d - t) / 0.25); }
+  write('sketch', bandpass(s, (t) => 3400 + 500 * Math.sin(2 * Math.PI * 1.3 * t), 1.4), undefined, 0.2);
 }

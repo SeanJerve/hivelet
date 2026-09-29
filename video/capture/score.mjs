@@ -21,7 +21,7 @@ for (const s of tl.scenes) { start[s.id] = frames / tl.fps; frames += s.frames; 
 const TOTAL = frames / tl.fps;
 const sec = (f) => f / tl.fps;
 const BEATS = tl.act1.beats.map(sec);
-const SNAP = sec(tl.act1.connected + 92);
+const SNAP = sec(tl.act1.connected + 104); // the links break (Act1.tsx)
 const HIVE = sec(tl.act1.hive);
 const BRAAM = sec(tl.act1.braam);
 
@@ -120,10 +120,8 @@ boom(0.62, 0.34);
 BEATS.forEach((b) => boom(b + 0.45, 0.3));
 boom(SNAP, 0.34);
 
-// The riser into the hive.
-noiseVoice({t0: HIVE, dur: CUT - HIVE, centre: (t) => 200 * Math.pow(26, clamp01(t / (CUT - HIVE))), q: 1.4, gain: 0.42, send: 0.3,
-  env: (t) => Math.pow(clamp01(t / (CUT - HIVE)), 2.2)});
-sineVoice({freq: (t) => 110 * Math.pow(8, clamp01(t / (CUT - HIVE))), t0: HIVE, dur: CUT - HIVE, gain: 0.06, send: 0.4,
+// The build into the hive: a rising tone only (no noise swell).
+sineVoice({freq: (t) => 110 * Math.pow(8, clamp01(t / (CUT - HIVE))), t0: HIVE, dur: CUT - HIVE, gain: 0.07, send: 0.4,
   env: (t) => Math.pow(clamp01(t / (CUT - HIVE)), 1.6) * (0.6 + 0.4 * Math.sin(2 * Math.PI * lerp(4, 16, t / (CUT - HIVE)) * t))});
 
 // ---- The brass hit ---------------------------------------------------------------
@@ -220,15 +218,12 @@ for (let t = G0 + BEAT / 2; t < grooveEnd - 0.01; t += BEAT) {
   noiseVoice({t0: t, dur: 0.1, centre: () => 7500, q: 1, gain: 0.035, pan: 0.25, env: decay(0.03)});
   if (t >= start.proof) noiseVoice({t0: t, dur: 0.3, centre: () => 9000, q: 0.8, gain: 0.04, pan: -0.2, env: decay(0.1)});
 }
-// A short riser into the end card.
-noiseVoice({t0: start.end - 1.6, dur: 1.55, centre: (t) => 400 * Math.pow(12, t / 1.55), q: 1.2, gain: 0.2, send: 0.4, env: (t) => Math.pow(t / 1.55, 2)});
 // The last chord, held under the end card.
 padChord(CHORDS[0], start.end, TOTAL - start.end + 1.5, 0.034, 0.6);
 
-// Chapter cards: a soft swell into each, and a small shimmer on the card.
+// Chapter cards: a small shimmer as the words rise (no swell).
 for (const id of ['ch-landlady', 'ch-tenants', 'ch-guests']) {
   const at = start[id];
-  noiseVoice({t0: at - 1.0, dur: 1.2, centre: (t) => 1500 * Math.pow(4, t / 1.2), q: 0.9, gain: 0.1, send: 0.5, env: (t) => Math.pow(clamp01(t / 1.1), 2) * clamp01((1.2 - t) / 0.1)});
   for (const f0 of [880, 1108.73, 1318.51]) sineVoice({freq: () => f0, t0: at + 0.1, dur: 2.5, gain: 0.018, send: 0.7, env: decay(1.1, 0.02), pan: (f0 - 1100) / 600});
 }
 
