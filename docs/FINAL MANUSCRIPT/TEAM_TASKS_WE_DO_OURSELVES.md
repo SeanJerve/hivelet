@@ -4,6 +4,12 @@
 system. The gaps left in them are things only people can produce. This is that list, in the order
 worth doing it.
 
+> [!IMPORTANT]
+> **2026-09-29: tasks 1, 2, 3, 4 and 5 are now one day, 30 September**, run from
+> `TESTING_DAY_GUIDE.md`. That guide supersedes the order below where they differ: the owner
+> session carries the walkthrough, the tenant sessions and the survey follow, and the scans and
+> timings fit around them.
+
 ## Part 1. The team's own tasks
 
 ### 1. Usability testing with real tenants and the landlady (feeds Chapter 4, §4.4)

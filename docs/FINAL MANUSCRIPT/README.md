@@ -11,6 +11,10 @@ now the source we write in**; the finished text is carried into the `.docx` at t
 | `CHAPTER_4_RESULTS_AND_DISCUSSION.md` | Replaces the Lorem Ipsum Chapter 4 | Drafted and brought up to date with the system on 2026-09-28; walkthrough, performance and survey data pending |
 | `CHAPTER_5_SUMMARY_CONCLUSIONS_RECOMMENDATIONS.md` | Replaces the auto shop Chapter 5 left over from another project | Drafted; parts that depend on the survey pending |
 | `TEAM_TASKS_WE_DO_OURSELVES.md` | What the team must do in person (usability testing, security scans, walkthrough) and what Claude does with the results | Checklist |
+| `TESTING_DAY_GUIDE.md` | **For 30 September.** How to run the test with the owner and tenants: seats, the night-before checklist, accounts, consent, the sessions, evidence, clean-up | Written 2026-09-29 |
+| `TESTING_DAY_TEST_CASES.md` | Every test case for the day, each traced to an ISO/IEC 25010 characteristic, a requirement and a Chapter 4 table | Print it |
+| `TESTING_DAY_FORMS.md` | Consent (English and Filipino), observation sheet, defect log, timing sheet, attendance, the owner's acceptance certificate | Print it |
+| `PRE_TESTING_AUDIT_2026-09-29.md` | What was measured the evening before: suites, account reset, offline, weak signal, simultaneous users, accessibility | Evidence for §4.3.1 and §4.3.6 |
 
 ## Three things the old PDF gets wrong that matter most
 

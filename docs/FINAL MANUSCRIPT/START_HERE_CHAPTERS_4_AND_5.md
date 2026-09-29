@@ -4,6 +4,16 @@
 Chapters 4 and 5?"** Written 2026-09-28 by Sean's session, after reviewing both chapters against
 the system as it stands that evening.
 
+> [!IMPORTANT]
+> **2026-09-29: the testing day with the owner and tenants is 30 September.** Run it from
+> `TESTING_DAY_GUIDE.md` (with `TESTING_DAY_TEST_CASES.md` and `TESTING_DAY_FORMS.md`). It produces
+> the data for Tables 10, 11, 11C, 11D and 12 to 22 in one day. Chapter 4 gained §4.3.6 (measured
+> offline, installation, weak-signal and simultaneous-use results, from
+> `PRE_TESTING_AUDIT_2026-09-29.md`) and §4.3.7 (the acceptance test, pending). Chapter 3's method
+> for all of it is `FIXES_TO_CHAPTERS_1_TO_3.md` section H. **Every tenant account was reset on
+> 29 September**: each tenant has their own starting password on a printed slip and must choose a
+> new one at first sign-in (guide §4).
+
 ## Where the chapters stand
 
 - **Both chapters are drafted and current with the system.** Every number in them was read from
@@ -35,6 +45,7 @@ the system as it stands that evening.
 | §4.1.1 Table 5, the "CONFIRM WITH THE OWNER" cell | How enquiries arrived before the system | Ask Mrs. Da Silva | Q6 |
 | §4.3.4 Table 10, functional walkthrough | Notes from the 26 steps in `TESTING_REHEARSAL.md` (did, expected, happened, pass/fail) | A team member, signed in. Claude cannot sign in | Q12 |
 | §4.3.5 Table 11, responsiveness | Load times per screen, with device, browser, network and date | A team member on a real laptop and phone | Q13 |
+| §4.3.7 Tables 11C and 11D, acceptance test | Observation sheets and defect log from the testing day (`TESTING_DAY_TEST_CASES.md` parts T and C) | The team, with the owner and tenants | none |
 | §4.4.1 respondents; §4.4.3 to 4.4.10, Tables 12 to 22 | The Google Form responses exported to Sheets | Team runs the ISO/IEC 25010 survey | Q7 to Q11 |
 | §4.4.2 how the overall score is computed | The team's choice: A (average of the group averages, recommended) or B | The team | Q11 |
 | §4.4.8 Security, supporting evidence | Grades and screenshots from the four passive scanners in `TEAM_TASKS_WE_DO_OURSELVES.md` §2 | A team member. **Passive scanners only** | none |
