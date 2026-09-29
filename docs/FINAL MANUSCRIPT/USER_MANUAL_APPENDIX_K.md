@@ -124,7 +124,8 @@ subtotals, Linda separate).
 1. **Monthly Expenses** > **Record expense**.
 2. The date, OR or supplier, amount, category, and the property **area** it was for.
 3. One expense for several areas: **Split across another area**. The parts must add up to the
-   expense; the total is worked out for you.
+   expense; the total is worked out for you. **Choose the area** for each new part; each area can
+   be given once, so two amounts for the same area go in as one.
 4. **Add another expense** records the next one without closing the form.
 
 Editing and **Delete expense** work as for payments. **Download {year} for Excel** gives the

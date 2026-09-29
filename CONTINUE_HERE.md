@@ -35,7 +35,9 @@
 >   The dialog also no longer carries the last receipt's OR number, fee, months or typed rent into
 >   the next one, opens on today's Date received even on a laptop left open overnight, and its
 >   To verify queue says GCash payments are on the test account, so reject them (B-80).
->   Audit findings F-12 to F-17 record all of this. A fresh backup was taken at 16:13 UTC
+>   **Record expense:** a split part now starts with no area, and one area given twice is refused
+>   by the form and the server (the database takes one amount per area; a default 60/40 split used
+>   to fail). Audit findings F-12 to F-18 record all of this. A fresh backup was taken at 16:13 UTC
 >   (`backups/2026-09-29T16-13-15`, 21,903 rows).
 > - A tenant link to a repair that is not theirs now says **"Not found"** instead of doing nothing
 >   (A-22, step 17). Test cases fixed where a pass would have been marked a fail: O-12 (use a

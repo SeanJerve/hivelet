@@ -209,6 +209,7 @@ test. They are Chapter 5, recommendation 11. The mobile runs vary by a few point
 | F-15 | The same-period warning printed "OR#OR#4988": every live receipt number carries its own prefix | **Fixed** in `305210c`: "receipt OR#4988" |
 | F-16 | The owner's To verify queue did not say GCash payments are on the test account, where verifying marks a bill paid with nothing collected (B-80) | **Fixed** in `6db47b1`: the pay dialog's sentence, and "reject these" |
 | F-17 | A tenant link to a repair that is not theirs opened nothing and said nothing (A-22 had nothing to observe) | **Fixed** in `0adf9a0`: "Not found", which names nothing about anyone else's |
+| F-18 | Found running A-28: "Split across another area" added its part on the same area as the first, and the database takes one amount per area per expense, so an ordinary 60/40 split failed on save ("could not be recorded" with no reason, or a server error naming the constraint) | **Fixed** in `0a34e48` and `a097f76`: the new part starts with no area, the form and the server both refuse one area twice, in words. Harness: refused, then saved 60/40 with the area chosen |
 
 ## 9b. Tomorrow's cases, rehearsed by machine first
 
