@@ -1,5 +1,21 @@
 # CONTINUE HERE — handoff for the next machine
 
+> [!NOTE]
+> **2026-09-29 evening, Sean's machine, all pushed and deploying before testing day.** What
+> changed on the site tonight from this side, each checked in the running app:
+>
+> - The wordmark is the word "Hivelet" alone; the new hexagon mark is the tab and home-screen icon
+>   and the link preview (`og-image.jpg`). The landing name lines up with "Boarding House" on a phone.
+> - The bell is its icon alone; it and the account menu open on the same line.
+> - Record payment / Record expense, notification links and the tenant's Pay button open their
+>   dialog after the page has arrived (`lib/afterArrival.ts`), not on its first frame.
+> - Downloads are named "Monthly Income September 2026 - MI092026" (ME, AL likewise).
+> - Privacy (cookies section), Terms (Refunds and deposits), a 404 page, per-page descriptions,
+>   robots.txt and sitemap.xml; the Pay with GCash dialog now says it is on Adyen's test account.
+> - **B-82 done here:** the dead shared tenant password is out of this machine's `creds.txt`.
+>   **B-84** lists what still needs a person, including **migration 060** (not applied).
+> - **No more pushes from this machine until testing is over** (the guide's rule 5).
+
 > [!IMPORTANT]
 > **2026-09-29, Loyd's machine, the evening before the first test with the owner and real
 > tenants (30 September).** Read `docs/FINAL MANUSCRIPT/TESTING_DAY_GUIDE.md` if you are on the
