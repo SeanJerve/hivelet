@@ -1,0 +1,2 @@
+tester,device,case,start,end,success,errors,help_given,said
+T1,Android Chrome,T-01,10:02:10,10:03:05,P,0,,"example row - delete it"

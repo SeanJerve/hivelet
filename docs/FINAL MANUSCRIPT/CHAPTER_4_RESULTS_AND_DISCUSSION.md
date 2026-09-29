@@ -518,17 +518,17 @@ installation tests of Table 11A on their own phones.
 
 **Table 11C.** Tenant Task Results [DATA PENDING]
 
-| Task | Tenants attempting | Completed without help | Completed with help | Not completed | Median time (s) | Mean wrong turns |
-| :--- | --: | --: | --: | --: | --: | --: |
-| First sign-in and choosing a password (T-01, T-02) | | | | | | |
-| Finding their unit, rent and balance (T-03, T-04) | | | | | | |
-| Finding their payments (T-05, T-06) | | | | | | |
-| Sending a repair request with a photo (T-07 to T-09) | | | | | | |
-| Following up a request (T-10, T-11) | | | | | | |
-| Checking their details and notifications (T-12, T-13) | | | | | | |
-| Opening the GCash payment (T-14) | | | | | | |
-| Staying out of the owner's pages; signing out (T-15, T-16) | | | | | | |
-| **All tasks** | | | | | | |
+| Task | Tenants attempting | Completed without help | Completed with help | Not completed | Median time (s) | Mean wrong turns | Completion without help |
+| :--- | --: | --: | --: | --: | --: | --: | --: |
+| First sign-in and choosing a password (T-01, T-02) | | | | | | | |
+| Finding their unit, rent and balance (T-03, T-04) | | | | | | | |
+| Finding their payments (T-05, T-06) | | | | | | | |
+| Sending a repair request with a photo (T-07 to T-09) | | | | | | | |
+| Following up a request (T-10, T-11) | | | | | | | |
+| Checking their details and notifications (T-12, T-13) | | | | | | | |
+| Opening the GCash payment (T-14) | | | | | | | |
+| Staying out of the owner's pages; signing out (T-15, T-16) | | | | | | | |
+| **All tasks** | | | | | | | |
 
 **Table 11D.** Simultaneous Use by the Owner and Tenants [DATA PENDING]
 

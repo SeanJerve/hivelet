@@ -20,6 +20,11 @@ the system as it stands that evening.
 > interpretations per Table 13) and every open comment grouped by question. It reads the items from
 > `build_survey_form.gs`, so it scores exactly what the form asked; it warns if a column is
 > missing. `--method=B` gives the other composite if the team chooses it (Q11).
+>
+> **Tenant task results (Table 11C) the same way:** type the observation sheets into a copy of
+> `scripts/survey/uat-observations-template.csv`, then `node scripts/survey/compute-uat.mjs
+> observations.csv`. It prints Table 11C, a per-case breakdown, the devices, and every note about
+> help given and what testers said.
 
 ## Where the chapters stand
 
