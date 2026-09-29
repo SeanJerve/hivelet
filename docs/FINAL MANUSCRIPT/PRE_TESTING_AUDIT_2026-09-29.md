@@ -227,6 +227,11 @@ the cases expect; they do not replace a person doing them on a real phone.
 | A-36 | Owner resets a tenant's password: button, confirmation before any request, one request, one-time reveal, gone after Done | 7/7 |
 | A-36, live | The reset route against the live database: every refusal, success, old session ended, audit row without the password; the test tenant's slip restored after | 15/15 |
 | T-03 to T-13 screens, live | Tenant Overview, Payments, Repairs and My details read with the seeded tenant's session against the live records, writes blocked | Matched the database (§4.3.3) |
+| A-12, A-31 | Move someone in (one request; the one-time password shown once, naming the tenant); Move them out (button disabled until the unit code is typed, in any case; one request; "free to let again") | Pass |
+| A-23 | Record payment: OR number, part-payment rent and fee posted as typed; the next receipt opens empty; Covering from starts after the tenant's last verified period; a stalled save says "Not confirmed" at 45 s and keeps the form | Pass, after F-12 to F-14 |
+| A-26 | Inquiries: Save reply disabled until something is typed, one request, box cleared; Close inquiry asks first, then marks it Closed | Pass |
+| A-27 | Repairs: In progress saves; Mark resolved saves Resolved; Delete repair asks first, one request, "no longer on the board" | Pass |
+| A-28 | P100 expense, split 60/40, edit, repeat an area: the split with the area left unchosen, and one area twice, are refused in words with nothing sent; with the area chosen it saves P60 / P40, total P100 | Pass, after F-18 (failed before) |
 
 ## 10. What this audit cannot say
 
