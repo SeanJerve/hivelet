@@ -183,6 +183,13 @@ async function submit() {
       }
     } else if (err instanceof ApiRequestError && err.isAuthFailure) {
       formError.value = 'Your session has ended. Sign in again, then change your password.';
+    } else if (err instanceof ApiRequestError && err.code === 'NETWORK_ERROR') {
+      // The request never reached the server, so nothing changed. Not "on our
+      // side": the tenant setting a first password on the house wifi needs to
+      // know it is their connection, and that the starting password still works.
+      formError.value =
+        'This could not reach the server, so nothing was changed. Check your connection and ' +
+        'press the button again.';
     } else if (err instanceof ApiRequestError && err.status >= 400 && err.status < 500) {
       // 429 and the like: the server's text is written for people and says
       // how long to wait.
