@@ -15,6 +15,7 @@ import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
+import { shrinkPhoto } from '@/lib/shrinkPhoto';
 import {
   Send,
   CheckCircle2,
@@ -464,22 +465,25 @@ async function fetchTickets() {
  */
 const MAX_PHOTO_BYTES = 700 * 1024;
 
-/**
- * The same figure, for the control that leads them to the file picker.
- *
- * The upload panel advertised **"PNG, JPG or WEBP up to 10MB"** while the
- * handler refused anything over 700 KB - and most phone photographs fall
- * between the two, so the label named a size the form could not accept and the
- * rejection arrived only after they had chosen the file. Derived from the
- * constant rather than retyped, because the last two copies of this number
- * disagreed.
- */
-const MAX_PHOTO_LABEL = `${Math.round(MAX_PHOTO_BYTES / 1024)}KB`;
 
-const handlePhotoSelect = (event: Event) => {
+const handlePhotoSelect = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (!file) return;
+
+  /**
+   * Shrunk in the browser first (`lib/shrinkPhoto.ts`), so a normal 3 MB phone
+   * photo goes through instead of being refused. The size check below is now
+   * only the fallback for a file this browser cannot decode.
+   */
+  const shrunk = await shrinkPhoto(file);
+  if (shrunk) {
+    ticketError.value = '';
+    ticketPhotoName.value = file.name;
+    ticketPhotoType.value = shrunk.type;
+    ticketPhotoUrl.value = shrunk.dataUrl;
+    return;
+  }
 
   if (file.size > MAX_PHOTO_BYTES) {
     ticketPhotoUrl.value = null;
@@ -756,7 +760,7 @@ function formatDateTime(iso: string) {
                   >
                     <ImageIcon class="size-6 text-brand" aria-hidden="true" />
                     <span class="text-xs font-semibold text-ink">Add a photo</span>
-                    <span class="text-xs text-ink-soft">PNG, JPG or WEBP up to {{ MAX_PHOTO_LABEL }}</span>
+                    <span class="text-xs text-ink-soft">A photo from your phone. Large photos are made smaller to send.</span>
                   </label>
                 </div>
 

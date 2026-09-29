@@ -96,7 +96,7 @@ These three numbers per task are the quality-in-use measures Chapter 4 reports.
 | T-06 | US | FR-011 | "How is your bill made up?" *Paano po nabuo ang bill ninyo?* | Rent and water (₱200 per occupant) visible | | | | |
 | T-07 | US | NFR-002 | "Find where to report something broken." *Hanapin po kung saan magre-report ng sira.* | Finds Repairs | | | | |
 | T-08 | FS | FR-021, FR-023 | "Report it, and say how urgent it is." *I-report po at sabihin kung gaano kaapurahan.* (real problem, or title starting TEST) | "was sent to the landlady"; appears in their list | | | | |
-| T-09 | FS | FR-022 | "Add a photo of it." *Maglagay po ng litrato.* | Attached, or a plain message that it is too big | | | | |
+| T-09 | FS | FR-022 | "Add a photo of it." *Maglagay po ng litrato.* | Attached, even a normal multi-megabyte phone photo (it is made smaller before sending) | | | | |
 | T-10 | FS | FR-026 | "Add a note to your request." *Magdagdag po ng mensahe sa request.* | Note appears in the thread | | | | |
 | T-11 | FS | FR-024 | "What is its status now?" *Ano po ang status nito?* | Status visible (Open / In Progress / Resolved) | | | | |
 | T-12 | FS | FR-010 | "Check your contact details and fix anything wrong." *Tingnan po ang contact details ninyo.* | Saved, or nothing to change | | | | |
