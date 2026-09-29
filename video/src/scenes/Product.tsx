@@ -178,8 +178,9 @@ export const Guests: React.FC = () => (
 // 11. The activity trail, then the app on a phone's home screen.
 export const Activity: React.FC = () => {
   const f = useCurrentFrame();
-  const out = interpolate(f, [92, 104], [1, 0], clamp);
-  const icon = interpolate(f - 100, [0, 26], [0, 1], {...clamp, easing: easeOut});
+  // The page is fully gone before the icon starts, so the two never overlap.
+  const out = interpolate(f, [84, 96], [1, 0], clamp);
+  const icon = interpolate(f - 98, [0, 26], [0, 1], {...clamp, easing: easeOut});
   return (
     <Scene>
       <div style={{opacity: out}}>
