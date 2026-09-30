@@ -71,6 +71,9 @@
 >   two ways in the same unit is shown once with "Also written as"; nothing in her records changes
 >   (`lib/tenantHistory.ts` has the rule; Jade and Jana Marmol stay two people). Names typed at
 >   move-in now have their spaces tidied, on the form and the server.
+>   **Download … for Excel** on that view: GET /admin/reports/tenants.xlsx, audited, named "Tenant
+>   History June 2025 - TH062025". The name rule exists twice (frontend lib, backend utils);
+>   `check:reports` fails if the copies differ and checks every month of the workbook against the ledger.
 
 > [!IMPORTANT]
 > **2026-09-29, Loyd's machine, the evening before the first test with the owner and real
