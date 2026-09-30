@@ -45,6 +45,22 @@ remembers. Do not fill a time that was not measured.
 - **T2:** "Nakulangan pa ako. And I want more." (It felt lacking to me. I want more.)
 - **T3:** "Wala naman po." (Nothing, po.)
 
+## Checked against the live records (Claude, 1 Oct 2026, read-only) - to resolve before Chapter 4
+
+The system's Activity log records every sign-in, sign-out, repair and note with its time and unit.
+It confirms some rows and contradicts others. **Nothing below has been changed in the table**; the
+person with the paper sheets decides, and a row the records contradict is corrected or marked NT.
+
+| Tenant (unit) | What the records show on 30 Sep | Rows the records **contradict** |
+| :-- | :-- | :-- |
+| T1 (F2F) | Signed in 7:31 PM, own password 7:32, repair sent **7:34**, payments 7:35 to 7:36, signed out 7:36, signed in again 7:37. **Nothing after 7:37.** | T-08 repair at 7:41 (it was 7:34, and F2F sent only one); T-10 note at 7:44 (**F2F posted no note at all**); T-04 to T-06 and T-11 to T-16 between 7:37 and 7:50 (no activity recorded then; T-16 needs a second sign-out, there is none) |
+| T2 (F1) | Signed in 8:10, own password 8:11, signed in 8:12, payments 8:14, repair **8:17**, My details saved 8:18, note 8:18 | T-16 and T-17 (sign out): **F1 never signed out** that day. T-08 at 8:14 to 8:16 is close (saved 8:17) |
+| T3 (1b) | **First sign-in 8:12 PM**, own password 8:12, repair **8:15**, My details saved 8:20 | **The whole 5:20 to 5:53 session**: 1b did nothing before 8:12 PM. T-10 note (1b posted none); T-16, T-17 (1b never signed out) |
+
+Only **one tenant note** was posted all day (F1, 8:18 PM), so T-10 can be P for T2 only. Earlier in
+the day the read-out had T3 answer only T-18; that is still the best-supported record for T3 apart
+from the repair (T-08) and My details (T-14), which the log shows at 8:15 and 8:20.
+
 ## Points checked against the paper sheets
 
 1. **Resolved from paper sheet:** T2's (marked 'G' on sheet) T-01 time was written at the top margin: **8:08 – 8:10**, Result **PH**, Errors **1** (correcting the earlier transcription that duplicated T1's 7:28–7:31).

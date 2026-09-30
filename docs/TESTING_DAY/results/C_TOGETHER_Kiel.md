@@ -12,6 +12,15 @@
 
 ---
 
+> **Checked against the live records (Claude, 1 Oct 2026, read-only) - to resolve before Chapter 4.**
+> Start time, number of tenants and network above are still blank. The Activity log shows the
+> tenants were **not all on at once**: F2F (T1) from 7:31 to 7:37 PM, then F1 (T2) and 1b (T3) from
+> 8:10 to 8:20 PM, so at most two tenants overlapped. Only **one tenant note** was posted all day
+> (F1, 8:18 PM), which contradicts C-03 (every tenant posts a note in the same minute), C-04 (all new
+> notes) and C-06 (two tenants double-tap Send). C-05 fits the records (F2F's and 1b's requests are
+> In Progress). Kiel: say what was actually done, when, and with how many tenants; rows that did not
+> happen as written are NT. Nothing in the table has been changed.
+
 Session 3 of the guide. Write down: start time, number of tenants, the owner, and the network
 (house wifi / mobile data).
 
