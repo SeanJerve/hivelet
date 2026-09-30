@@ -80,6 +80,7 @@ Open `SURVEY_FORM_REVIEW.md` and make its fixes in the form:
 | Forms print file: Form 6 acceptance certificate | One |
 | Test cases print file | One per facilitator, one per observer, one for the team's own checks |
 | Tenant quick guide (two per sheet, cut on the dashed line) | One per testing tenant |
+| QR card (`docs/TESTING_DAY/qr-card/QR_CARD.pdf`, 4 x 6 in; the code opens hivelet.vercel.app) | A few, for the table and the gate |
 | Tenant sign-in slips: `credentials/tenant-starting-passwords.html` (**Lloyd's laptop only**) | Only the slips of the tenants who test |
 
 - [ ] Put each slip in a folded paper or envelope with the tenant's name on the outside. Record who
