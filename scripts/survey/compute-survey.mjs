@@ -76,9 +76,14 @@ function parseCsv(text) {
 }
 const [header, ...records] = parseCsv(fs.readFileSync(csvPath, 'utf8').replace(/^﻿/, ''));
 const norm = (s) => String(s).replace(/\s+/g, ' ').trim();
-const columnsFor = (title) => header.map((h, i) => [norm(h), i]).filter(([h]) => h === norm(title)).map(([, i]) => i);
-const q1Col = header.findIndex((h) => norm(h).startsWith('Q1.'));
-if (q1Col < 0) { console.error('No "Q1." column: is this the export of the Hivelet survey?'); process.exit(1); }
+// Two export shapes are read. The scripted form has one 1-to-5 scale per item, so a header is the
+// item's own words. The team's hand-built form (30 Sep) has one multiple-choice grid per
+// characteristic, so a header reads "Usability [13. I can tell what each screen is for ...]": the
+// row text, numbered. Both reduce to the item's words, so both match the same item.
+const itemKey = (h) => { const m = norm(h).match(/\[(.*)\]$/); return norm(m ? m[1] : h).replace(/^\d+\.\s*/, '').toLowerCase(); };
+const columnsFor = (title) => header.map((h, i) => [itemKey(h), i]).filter(([h]) => h === itemKey(title)).map(([, i]) => i);
+const q1Col = header.findIndex((h) => norm(h).startsWith('Q1.') || /which best describes you/i.test(h));
+if (q1Col < 0) { console.error('No "Q1." or "Which best describes you" column: is this the export of the Hivelet survey?'); process.exit(1); }
 
 // ---- scoring ---------------------------------------------------------------
 const interpret = (m) => m == null ? '' : m >= 4.21 ? 'Very High Quality' : m >= 3.41 ? 'High Quality' : m >= 2.61 ? 'Moderate Quality' : m >= 1.81 ? 'Low Quality' : 'Very Low Quality';
@@ -86,8 +91,13 @@ const mean = (a) => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null;
 const sd = (a) => { if (a.length < 2) return null; const m = mean(a); return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1)); };
 const f2 = (v) => v == null ? 'no responses' : v.toFixed(2);
 
-const byGroup = Object.fromEntries(GROUPS.map((g) => [g.key, records.filter((r) => norm(r[q1Col]) === norm(g.answer))]));
-const unmatched = records.filter((r) => !GROUPS.some((g) => norm(r[q1Col]) === norm(g.answer)));
+// The exact answer first; then its role word, because the hand-built form words the tenant choice
+// "Resident of the boarding house" where the script says "Tenant of the boarding house".
+const ROLE_WORDS = { owner: /owner|administrator|may-ari/i, tenant: /resident|tenant|nangungupahan/i, tech: /technical evaluator/i, prospect: /looking for a room|naghahanap/i };
+const groupOf = (answer) => GROUPS.find((g) => norm(answer) === norm(g.answer))?.key
+  ?? (answer ? GROUPS.find((g) => ROLE_WORDS[g.key].test(answer))?.key : undefined);
+const byGroup = Object.fromEntries(GROUPS.map((g) => [g.key, records.filter((r) => groupOf(r[q1Col]) === g.key)]));
+const unmatched = records.filter((r) => !groupOf(r[q1Col]));
 const missingItems = [];
 
 function scores(group, item) {
@@ -96,7 +106,7 @@ function scores(group, item) {
   const vals = [];
   for (const r of byGroup[group.key]) {
     const v = cols.map((i) => r[i]).find((x) => x != null && String(x).trim() !== '');
-    const n = Number(v);
+    const n = Number(String(v ?? '').trim().match(/^[1-5](?!\d)/)?.[0]); // "4", or a grid's "4 — Agree"
     if (Number.isFinite(n) && n >= 1 && n <= 5) vals.push(n);
   }
   return vals;
@@ -148,7 +158,10 @@ out.push('', '## Open comments (for the interpretation paragraphs; not a manuscr
 for (const g of GROUPS) {
   for (const q of g.open) {
     const cols = columnsFor(q);
-    const answers = byGroup[g.key].map((r) => cols.map((i) => r[i]).find((x) => x && x.trim())).filter(Boolean);
+    // The hand-built form titles each open question "Open comments"; each respondent fills only the
+    // one in their own section, so any such column is theirs.
+    const use = cols.length ? cols : q !== g.open[0] ? [] : header.map((h, i) => [h, i]).filter(([h]) => /^open comments/i.test(norm(h))).map(([, i]) => i);
+    const answers = byGroup[g.key].map((r) => use.map((i) => r[i]).find((x) => x && x.trim())).filter(Boolean);
     out.push('', `**${g.label}: ${q}** (${answers.length})`);
     for (const a of answers) out.push(`- ${a.replace(/\s+/g, ' ').trim()}`);
   }
