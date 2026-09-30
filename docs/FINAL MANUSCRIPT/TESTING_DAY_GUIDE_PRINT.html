@@ -268,7 +268,7 @@ Walk all three branches in preview. Print the short link it logs as a QR code.</
 <li><input disabled="" type="checkbox"> <ol start="13">
 <li>Make the evidence folder on the team&#39;s shared drive (<strong>not in the repository</strong>; it will
 hold tenants&#39; faces and personal screens):<pre><code>Hivelet Testing 2026-09-30/
-  00_admin_laptop/        backups taken, check:all output, live commit
+  00_admin_laptop/        backups taken, check outputs, live commit
   01_owner/               screen recording, photos, observation sheet scan
   02_tenant_T1/ ... 06_tenant_T5/
   07_simultaneous/        the all-at-once session
@@ -381,7 +381,7 @@ simultaneous session need things the admin session creates.</p>
 <td align="left">Morning checks</td>
 <td align="left">Technical lead</td>
 <td align="left">15 min</td>
-<td align="left">Backup, <code>/api/health</code>, live commit, check:all table</td>
+<td align="left">Backup, <code>/api/health</code>, live commit, ledger check and watch snapshot</td>
 </tr>
 <tr>
 <td align="left">1</td>
@@ -444,7 +444,10 @@ simultaneous session need things the admin session creates.</p>
 <ol>
 <li><code>npm run backup</code> and write the folder name in §3 step 5.</li>
 <li><code>curl https://hivelet.vercel.app/api/health</code>: online and connected.</li>
-<li>Screenshot the <code>check:all</code> summary table into <code>00_admin_laptop/</code>.</li>
+<li>Screenshot <code>npm run check:ledger</code> (it ends &quot;ALL CHECKS PASSED&quot;) and one run of
+<code>node scripts/testing-day-watch.mjs</code> into <code>00_admin_laptop/</code>. <strong>Not <code>check:all</code> today</strong>: its
+<code>check:api</code> and <code>check:relations</code> sign in as the landlady and fill her Activity page with test
+entries in the middle of the evidence (changed 2026-09-30).</li>
 <li>Confirm nobody is deploying. Message the group: &quot;Testing started, no pushes to main until I say.&quot;</li>
 </ol>
 <h3>Session 1. The owner</h3>
@@ -569,9 +572,11 @@ nowhere and a later PH tenant&#39;s payments never touch it (bills are settled p
 is a test record in her books: hand it to Sean to remove with a reviewed migration after the
 day, as migration 055 removed the earlier test payments.</li>
 <li><input disabled="" type="checkbox"> Enquiries sent as tests: reply and close.</li>
-<li><input disabled="" type="checkbox"> <code>npm run check:ledger</code>. The income row count should be 937 <strong>plus any real receipts the
-owner recorded today</strong>, and nothing else. Write down which receipts were real.</li>
-<li><input disabled="" type="checkbox"> <code>npm run check:all</code> and screenshot the table into <code>00_admin_laptop/</code>.</li>
+<li><input disabled="" type="checkbox"> <code>npm run check:ledger</code>. The income row count should be <strong>952</strong> (937 before migration 062
+added August on 30 Sep) <strong>plus any real receipts the owner recorded today</strong>, and nothing else.
+Write down which receipts were real.</li>
+<li><input disabled="" type="checkbox"> Screenshot that output into <code>00_admin_laptop/</code>. Leave <code>check:all</code> until Sean says so (see
+Session 0). The full after-testing list is <code>docs/TESTING_DAY/AFTER_TESTING.md</code>.</li>
 <li><input disabled="" type="checkbox"> Message the group: &quot;Testing finished, pushes allowed.&quot;</li>
 </ul>
 <p><strong>Hand-over to Claude (the next session)</strong>. Put these in the chat, or in a folder and point to it:</p>

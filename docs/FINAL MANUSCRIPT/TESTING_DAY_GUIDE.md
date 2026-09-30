@@ -148,7 +148,7 @@ is evidence.
       hold tenants' faces and personal screens):
       ```
       Hivelet Testing 2026-09-30/
-        00_admin_laptop/        backups taken, check:all output, live commit
+        00_admin_laptop/        backups taken, check outputs, live commit
         01_owner/               screen recording, photos, observation sheet scan
         02_tenant_T1/ ... 06_tenant_T5/
         07_simultaneous/        the all-at-once session
@@ -231,7 +231,7 @@ simultaneous session need things the admin session creates.
 
 | # | Session | Who | About | Test cases |
 | :-- | :--- | :--- | :--- | :--- |
-| 0 | Morning checks | Technical lead | 15 min | Backup, `/api/health`, live commit, check:all table |
+| 0 | Morning checks | Technical lead | 15 min | Backup, `/api/health`, live commit, ledger check and watch snapshot |
 | 1 | Owner session | Owner + facilitator + observer + recorder | 60-90 min | A-01 to A-36 |
 | 2 | Tenant sessions, one at a time | Each tenant + facilitator + observer | 20-30 min each | T-01 to T-18 |
 | 3 | Everyone at once | All tenants + owner, same room or same hour | 20 min | C-01 to C-08 |
@@ -245,7 +245,10 @@ simultaneous session need things the admin session creates.
 
 1. `npm run backup` and write the folder name in §3 step 5.
 2. `curl https://hivelet.vercel.app/api/health`: online and connected.
-3. Screenshot the `check:all` summary table into `00_admin_laptop/`.
+3. Screenshot `npm run check:ledger` (it ends "ALL CHECKS PASSED") and one run of
+   `node scripts/testing-day-watch.mjs` into `00_admin_laptop/`. **Not `check:all` today**: its
+   `check:api` and `check:relations` sign in as the landlady and fill her Activity page with test
+   entries in the middle of the evidence (changed 2026-09-30).
 4. Confirm nobody is deploying. Message the group: "Testing started, no pushes to main until I say."
 
 ### Session 1. The owner
@@ -368,9 +371,11 @@ numbers, emails and money amounts before any image leaves the team's drive.
       is a test record in her books: hand it to Sean to remove with a reviewed migration after the
       day, as migration 055 removed the earlier test payments.
 - [ ] Enquiries sent as tests: reply and close.
-- [ ] `npm run check:ledger`. The income row count should be 937 **plus any real receipts the
-      owner recorded today**, and nothing else. Write down which receipts were real.
-- [ ] `npm run check:all` and screenshot the table into `00_admin_laptop/`.
+- [ ] `npm run check:ledger`. The income row count should be **952** (937 before migration 062
+      added August on 30 Sep) **plus any real receipts the owner recorded today**, and nothing else.
+      Write down which receipts were real.
+- [ ] Screenshot that output into `00_admin_laptop/`. Leave `check:all` until Sean says so (see
+      Session 0). The full after-testing list is `docs/TESTING_DAY/AFTER_TESTING.md`.
 - [ ] Message the group: "Testing finished, pushes allowed."
 
 **Hand-over to Claude (the next session)**. Put these in the chat, or in a folder and point to it:
