@@ -899,6 +899,7 @@ const statusTone = computed(() => {
                 unitPhotoLoaded ? 'opacity-100' : 'opacity-0',
               ]"
               @load="unitPhotoLoaded = true"
+              @error="unitPhotoLoaded = true"
             />
             <div v-else class="flex size-full items-end justify-between bg-brand-soft p-4">
               <span class="text-5xl font-semibold tracking-tight text-brand">

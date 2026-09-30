@@ -240,18 +240,57 @@ const activeUnit = computed(
 );
 
 /**
- * Whether the unit currently on view - its photo, or its floor plan when there
- * is no photo - has actually painted. Reset whenever the unit being looked at
- * changes, so the picture fades in rather than popping in over whatever the
- * previous unit left behind.
+ * The picture on view - the unit's photo, or its floor plan when it has none -
+ * and whether THAT picture has painted, so it fades in rather than popping in
+ * over whatever the previous unit left behind.
+ *
+ * Keyed to the picture, not to the unit (Sean, 2026-09-30: "when the person
+ * changes quick it doesn't load sometimes, we need to refresh"). This was a
+ * flag reset whenever the unit changed and set again by the image's `load`.
+ * Every unit on a floor shares that floor's plan, so moving between two of
+ * them left the address unchanged: the browser had nothing new to load, never
+ * fired `load`, and the plan stayed invisible until a refresh. A load that
+ * failed on a weak signal left it invisible the same way. Now a picture counts
+ * as shown once THAT address has loaded, and a failed load is tried twice
+ * more before the picture (or its alt text) is shown as it is.
  */
-const unitVisualLoaded = ref(false);
-watch(
-  () => activeUnit.value?.id,
-  () => {
-    unitVisualLoaded.value = false;
-  }
+const unitVisualBase = computed(() => {
+  const unit = activeUnit.value;
+  if (!unit) return null;
+  const photo = photoOf(unit);
+  if (photo) return photo;
+  const plan = planFor(unit.room_number);
+  return plan ? `/floorplans/${plan.plan}.png` : null;
+});
+const visualAttempt = ref(0);
+watch(unitVisualBase, () => {
+  visualAttempt.value = 0;
+});
+const unitVisualSrc = computed(() => {
+  const base = unitVisualBase.value;
+  if (!base || !visualAttempt.value) return base;
+  return `${base}${base.includes('?') ? '&' : '?'}retry=${visualAttempt.value}`;
+});
+/** The absolute address of the last picture that finished loading. */
+const loadedVisualSrc = ref<string | null>(null);
+const unitVisualLoaded = computed(
+  () => !!unitVisualSrc.value && loadedVisualSrc.value === new URL(unitVisualSrc.value, window.location.href).href
 );
+function onVisualLoad(event: Event) {
+  loadedVisualSrc.value = (event.target as HTMLImageElement).src;
+}
+function onVisualError(event: Event) {
+  const failed = (event.target as HTMLImageElement).src;
+  if (failed !== new URL(unitVisualSrc.value ?? '', window.location.href).href) return; // an address already replaced
+  if (visualAttempt.value < 2) {
+    const next = visualAttempt.value + 1;
+    setTimeout(() => {
+      if (unitVisualSrc.value && new URL(unitVisualSrc.value, window.location.href).href === failed) visualAttempt.value = next;
+    }, 700 * next);
+  } else {
+    loadedVisualSrc.value = failed;
+  }
+}
 
 /** `room_photos` carries the pictures; `is_primary` picks the one to lead with. */
 function photoOf(room: DbRoom): string | null {
@@ -797,14 +836,15 @@ async function submitInquiry() {
           >
             <img
               v-if="photoOf(activeUnit)"
-              :src="photoOf(activeUnit)!"
+              :src="unitVisualSrc ?? photoOf(activeUnit)!"
               :alt="`Inside unit ${activeUnit.room_number}`"
               :class="[
                 'absolute inset-0 size-full object-cover transition-opacity duration-300 ease-[var(--ease-out)]',
                 unitVisualLoaded ? 'opacity-100' : 'opacity-0',
               ]"
               loading="eager"
-              @load="unitVisualLoaded = true"
+              @load="onVisualLoad"
+              @error="onVisualError"
             />
             <!--
               Only one of the thirty-three units has a photograph on file, so
@@ -859,7 +899,7 @@ async function submitInquiry() {
               -->
               <div v-if="planFor(activeUnit.room_number)" class="relative mx-auto w-full max-w-md">
                 <img
-                  :src="`/floorplans/${planFor(activeUnit.room_number)!.plan}.png`"
+                  :src="unitVisualSrc ?? `/floorplans/${planFor(activeUnit.room_number)!.plan}.png`"
                   :alt="planAlt(activeUnit)"
                   :width="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.w"
                   :height="PLAN_SIZE[planFor(activeUnit.room_number)!.plan]?.h"
@@ -867,9 +907,10 @@ async function submitInquiry() {
                     'block w-full transition-opacity duration-300 ease-[var(--ease-out)]',
                     unitVisualLoaded ? 'opacity-100' : 'opacity-0',
                   ]"
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
-                  @load="unitVisualLoaded = true"
+                  @load="onVisualLoad"
+                  @error="onVisualError"
                 />
                 <span
                   v-if="planFor(activeUnit.room_number)!.x !== null"

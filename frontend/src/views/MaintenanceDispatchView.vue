@@ -292,7 +292,14 @@ const sendingAdminMessage = ref(false);
  * the same one, since the element remounts either way) fades in again rather
  * than staying at whatever opacity the last photo left it.
  */
-const photoLoaded = ref(false);
+/**
+ * The address of the tenant's photo that has finished loading. Keyed to the
+ * address, not reset on every open (2026-09-30): opening the same repair again
+ * left the address unchanged, the browser fired no new `load`, and a flag
+ * reset to false kept the photo invisible. A failed load shows it (its alt
+ * text) rather than an empty box.
+ */
+const photoLoadedSrc = ref<string | null>(null);
 
 async function loadTicketMessages(ticketId: string) {
   loadingMessages.value = true;
@@ -352,7 +359,6 @@ function openEditModal(t: MaintenanceTicket) {
   editTech.value = t.technician || 'Unassigned';
   editDesc.value = t.description;
   newAdminMessage.value = '';
-  photoLoaded.value = false;
   isEditModalOpen.value = true;
   loadTicketMessages(t.id);
 }
@@ -832,9 +838,10 @@ function handleDeleteTicketPrompt() {
                   alt="Photo the tenant attached"
                   :class="[
                     'max-h-52 w-auto object-contain rounded-lg transition-[opacity,transform] duration-300 ease-[var(--ease-out)] motion-safe:group-hover:scale-[1.02]',
-                    photoLoaded ? 'opacity-100' : 'opacity-0',
+                    photoLoadedSrc === editingTicket.photo ? 'opacity-100' : 'opacity-0',
                   ]"
-                  @load="photoLoaded = true"
+                  @load="photoLoadedSrc = editingTicket.photo"
+                  @error="photoLoadedSrc = editingTicket.photo"
                 />
                 <span class="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-0.5 rounded font-medium">Open full size</span>
               </a>
