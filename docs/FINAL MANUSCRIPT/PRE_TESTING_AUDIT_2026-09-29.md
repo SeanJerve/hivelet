@@ -48,7 +48,7 @@ tenant's, which is the stop-gap for a lost slip until the app has a reset button
 | :--- | :--- |
 | `/api/health` | online; database connected; row-level security lockdown enforced |
 | Security headers | HSTS (2 years, subdomains), X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy (camera, microphone, geolocation off) |
-| Content Security Policy | Present but **report-only**: it reports violations, it does not block them. Worth enforcing after the defense once its reports are clean (design lane, `vercel.json`) |
+| Content Security Policy | Was **report-only**; **enforcing since 30 Sep** morning, after a GCash checkout on the live site produced no report from it (`vercel.json`) |
 | Unknown address | Served a proper "not found" page |
 | Response times, single request | Pages 0.17 to 0.20 s; `/api/public/rooms` 0.34 s; `/api/health` 0.64 s |
 
@@ -195,7 +195,7 @@ test. They are Chapter 5, recommendation 11. The mobile runs vary by a few point
 | F-2 | No way to reset a forgotten password in the app | **Fixed** in `8cf0e80` (B-83): Tenants > Edit > Reset password. Verified 15/15 against the live database and 7/7 in the interface |
 | F-3 | Requests had no deadline on a stalled connection | **Fixed** in `e32ad01`; live after the next deploy |
 | F-4 | `check:api` signs in as a real tenant | Queued (B-82): give the suites their own test tenant |
-| F-5 | Content Security Policy is report-only. Passive scans, 30 Sep 00:04-00:10: **Mozilla HTTP Observatory B (75/100, 11/12)**, its only failure this; **SSL Labs A+** (TLS 1.2/1.3; the second address A, HSTS not seen there). Enforcing the policy as written would also block the Google Maps embed (`frame-src` allows only Adyen) | Recommendation, after the pilot (Chapter 5 rec. 9; B-84) |
+| F-5 | Content Security Policy is report-only. Passive scans, 30 Sep 00:04-00:10: **Mozilla HTTP Observatory B (75/100, 11/12)**, its only failure this; **SSL Labs A+** (TLS 1.2/1.3; the second address A, HSTS not seen there). The Google Maps embed it would have blocked was removed on 21 Sep (4b62945) | **Enforced 30 Sep**, after the A-19 check (no report while Adyen loaded) and a scan of the built code (no eval, inline script or worker); B-84 |
 | F-6 | The house wifi shares one sign-in failure counter and one enquiry counter | Not a defect; written into the testing guide so testers are not surprised |
 | F-7 | The repository's root scripts (`backup`, `rotate-demo-passwords`, `reset-tenant-accounts`) import packages the root `package.json` does not declare | **Fixed** the same night on Sean's machine: the three packages are declared in the root `package.json` (backend's versions), and `npm run install:all` installs the root too. They had resolved on Sean's PC only from a stray `node_modules` in his user folder; `npm run backup` then ran from the project's own (21,837 rows, 937 income records) |
 | F-8 | The forced "Set your password" window, which every tenant meets first, asked for a "Current password" without saying it is the slip's, called the reset accounts "created", and had no way out but closing the browser | **Fixed** in `91b874a`: it asks for the "Starting password (the one you just signed in with)" and has a Sign out button. Verified 17/17 on the local build with every server answer faked (no real account) |

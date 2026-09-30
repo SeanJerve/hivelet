@@ -175,9 +175,10 @@ thing did not work" is not.
 > **CSP checked at A-19, 30 Sep 08:47 Manila:** the rehearsal tenant opened Pay with GCash on the
 > live site; Adyen loaded from `checkoutshopper-test.adyen.com`, `checkoutshopper-test.cdn.adyen.com`
 > and `checkoutanalytics-test.adyen.com`, fonts from Google, and the console showed **no
-> Content-Security-Policy report**. Closed without paying. **Still open:** switch
-> `Content-Security-Policy-Report-Only` to `Content-Security-Policy` in vercel.json after the
-> sessions (a deploy), then open the pay dialog once more.
+> Content-Security-Policy report**. Closed without paying. **Switched to enforcing the same
+> morning** (Sean: "do the one thing left"), after a scan of the built code found no eval, no
+> `new Function`, no inline script and no worker, and no outside host but Adyen's. If a page
+> ever breaks with "Refused to ..." in the console, revert that one line of vercel.json.
 
 - **Apply migration `060`** (`database/migrations/060_record_income_for_months_is_the_servers_alone.sql`).
   Supabase advisor WARN: `record_income_for_months` has no fixed search_path and anon may EXECUTE it.
@@ -187,7 +188,7 @@ thing did not work" is not.
   Management) and check Adyen has no paid add-ons. Dashboards, not code.
 - **Rate limits are in memory** (`middleware/rateLimit.ts`), so on Vercel serverless they reset per
   instance. Per-account lockout is in the database and holds. A durable limiter needs a table (a migration).
-- **CSP is still report-only** (vercel.json), on purpose until a TEST GCash payment runs clean under it.
+- ~~**CSP is still report-only**~~ **enforcing since 30 Sep** (vercel.json), after the A-19 checkout ran clean under it.
 - ~~**Pay dialog**~~ **done 2026-09-29**: the Pay with GCash dialog now says the same test-account
   sentence as the FAQ and Terms, above the Drop-in. Remove it with the change that wires the live account.
 - **Photos**: confirm who took `fe-galang-building.webp` and `fe-galang-gate.webp` (yours or the

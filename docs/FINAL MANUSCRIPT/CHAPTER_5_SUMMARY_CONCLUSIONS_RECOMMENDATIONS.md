@@ -118,9 +118,10 @@ Based on the summary and conclusions of the study, the following are recommended
    every function that writes data is tested by a machine on every change and not only once by a
    person.
 8. Consider sending notifications by SMS as well, since not every tenant opens the system daily.
-9. Switch the browser security policy the site already declares from reporting to enforcing,
-   once its reports show nothing legitimate would be blocked, including during a GCash payment
-   (Chapter 4, §4.4.8).
+9. Keep the browser security policy enforced, and re-run the header scan against it. It was
+   switched from reporting to enforcing on 30 September 2026, after a GCash checkout on the live
+   site showed nothing it would block (Chapter 4, §4.4.8); any new outside service must be added
+   to it first.
 10. Keep the in-person password reset. The sign-in page answers "Forgot your password?" by sending
     a tenant to the owner, who issues a new one-time password from the tenant list (Chapter 4,
     §4.2.6); her own is reset by the team. A reset by email or SMS was left out on purpose: many
