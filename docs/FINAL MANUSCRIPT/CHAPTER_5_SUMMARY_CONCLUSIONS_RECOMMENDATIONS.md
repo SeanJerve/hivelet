@@ -119,10 +119,16 @@ Based on the summary and conclusions of the study, the following are recommended
    person.
 8. Consider sending notifications by SMS as well, since not every tenant opens the system daily.
 9. Switch the browser security policy the site already declares from reporting to enforcing,
-   once its reports show nothing legitimate would be blocked. As written it would also block the
-   map on the public page, which must be allowed first (Chapter 4, §4.4.8).
-10. Add a self-service "forgot password" for tenants, sent by SMS or email. The owner can reset a
-    password from the tenant list (Chapter 4, §4.2.6), but a tenant must reach her first.
+   once its reports show nothing legitimate would be blocked, including during a GCash payment
+   (Chapter 4, §4.4.8).
+10. Keep the in-person password reset. The sign-in page answers "Forgot your password?" by sending
+    a tenant to the owner, who issues a new one-time password from the tenant list (Chapter 4,
+    §4.2.6); her own is reset by the team. A reset by email or SMS was left out on purpose: many
+    tenants have no email, SMS needs a paid provider, and everyone concerned sees the owner in
+    person. If tenants find asking her a burden, SMS is the channel to add. The lock on an account
+    after five wrong passwords is kept in the database and survives a server restart; the count of
+    attempts from one connection is kept in memory and does not, which could be moved to the
+    database if the site grows.
 11. Make the public page appear faster on phones. On a simulated slow mobile connection its main
     text appears after about five seconds, because the page is drawn in the browser after its code
     arrives (Chapter 4, §4.3.6). Pre-rendering the page, loading the font stylesheet without

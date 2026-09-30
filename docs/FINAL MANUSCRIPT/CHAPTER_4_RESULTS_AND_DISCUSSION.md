@@ -748,9 +748,9 @@ Two passive external scans, which read the public site the way a browser does, w
 and 1.3 only, HSTS present; one of the host's two addresses graded A because HSTS was not seen on
 it during the scan). **Mozilla HTTP Observatory graded the security headers B, 75 of 100, with 11
 of 12 tests passed.** The one failure is deliberate: the Content Security Policy is declared in
-report-only mode, which records what it would block without blocking it. Enforcing it as written
-would also block the map on the public page and has not yet been tried against a payment, so it
-was left for after the pilot (Chapter 5, recommendation 9). [DATA PENDING: securityheaders.com
+report-only mode, which records what it would block without blocking it. Enforcing it has not
+yet been tried against a payment, so it was left for after the pilot (Chapter 5, recommendation
+9). [DATA PENDING: securityheaders.com
 grade and PageSpeed Insights scores from the team's runs, with dates.]
 
 ### 4.4.9 Maintainability

@@ -150,8 +150,17 @@ thing did not work" is not.
 > fine with them. **DTI or permit number: not added** (Sean: unnecessary). **Refunds: nothing to
 > change** - the Terms section states only rules already settled (OD-03 no proration, BR-039 the
 > deposit remainder returned, CLIENT_MEETING_QUESTIONS 3d online refunds through Adyen).
-> **Still open:** CSP enforcement (checked during A-19) and whether to keep the in-memory
-> connection limiter.
+> **In-memory connection limiter: leave it** (Sean, same morning). The per-account lockout is in
+> the database and holds across restarts; the per-connection count is recorded as Chapter 5,
+> recommendation 10, not built. **Forgot password (raised by Sean the same morning): no email or
+> SMS, by decision** - the sign-in page now has a "Forgot your password?" link that sends a tenant
+> to the owner (B-83's Reset password), and `scripts/reset-owner-password.mjs` resets hers
+> (read-only without `--confirm`; Sean runs it). Both held locally until testing ends.
+> **Still open:** CSP enforcement, checked during A-19. The public page has no third-party frame
+> any more (the Google Maps embed went in 4b62945 on 21 Sep, with an "Open in Google Maps" link in
+> its place), so only the payment dialog needs checking. **Ask Sean whether removing the map
+> embed was intended**: the commit message does not mention it, and the section's comments still
+> describe a live map.
 
 - **Apply migration `060`** (`database/migrations/060_record_income_for_months_is_the_servers_alone.sql`).
   Supabase advisor WARN: `record_income_for_months` has no fixed search_path and anon may EXECUTE it.
