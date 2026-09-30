@@ -7,6 +7,8 @@
 > follow from a result in Chapter 4; if Chapter 4 changes, check this chapter again.
 > **Checked again 2026-09-28** against the updated Chapter 4 (six screen-audit defects, all fixed;
 > the decision to keep historical receipts as written; the owner's open questions).
+> **Updated 2026-10-01** from the testing day: summary item 3 and conclusion 3 filled from Chapter
+> 4's Tables 10, 11 and 11C; recommendation 15 widened. Items 4 and conclusion 4 wait on the survey.
 
 This chapter summarizes the study, states the conclusions drawn from its results, and gives
 recommendations for the owner, for the continued development of the system, and for future
@@ -47,8 +49,12 @@ accomplished:
    application opened without a connection and said plainly what it could not do, could be
    installed on a phone, and answered 1,085 requests from twelve simultaneous visitors and 285 from
    six simultaneous readers of the owner's records without a single error.
-   [DATA PENDING: one sentence on the 26-step walkthrough, one on the tenants' task results, and
-   one on the measured load times.]
+   On 30 September 2026 the owner performed the walkthrough herself: 24 of its 30 rows passed the
+   first time, one failed (with the connection cut, the Overview showed ₱0 instead of "—"), and
+   five were not performed as written. Three tenants completed every task they attempted, 31 of 34
+   attempts without help (91 per cent), help being needed mainly at their first sign-in. Every
+   screen measured was usable within about three seconds on a phone and a little over two on a
+   laptop.
 
 4. **The system was evaluated using ISO/IEC 25010** by the owner, the tenants and technical
    evaluators. [DATA PENDING: the overall mean and its interpretation, then one line per
@@ -75,8 +81,12 @@ Based on the results of the study, the following conclusions were drawn:
    the system was checked against its own data and rules, and the checks now prevent them from
    returning. **Automated checks are necessary but not sufficient**: comparing each screen with
    the records it claims to show found six further defects, including a tenant payment history
-   that showed nothing although every check had passed. [DATA PENDING: add the walkthrough result
-   here, and state whether it confirmed the automated results.]
+   that showed nothing although every check had passed. The owner's own walkthrough confirmed the
+   automated results for every function she exercised, and the tenants completed every task they
+   attempted. Its one failure, a ₱0 shown on a laptop without a connection, could not be reproduced
+   afterwards on the same version, and an Android phone showed a message later than the design
+   intends; both appeared only on a real device in the hands of its user, which is the same lesson
+   from the other side.
 
 4. [DATA PENDING: conclusion on the ISO/IEC 25010 evaluation. State which characteristics scored
    highest and lowest, what the open comments said about the lowest, and what was changed as a
@@ -153,6 +163,8 @@ Based on the summary and conclusions of the study, the following are recommended
     testing.
 14. Study offline recording, so that a payment taken where there is no signal can be saved on the
     device and sent once the connection returns.
-15. Extend the evaluation over a longer period of real use, and measure whether the owner's time
-    spent on record-keeping actually falls after adoption.
+15. Extend the evaluation over a longer period of real use, with every tenant and several tenants
+    saving at the same moment (Chapter 4, §4.3.7, tested only reading at scale), ask tenants what
+    they find missing, since one said the system still felt lacking, and measure whether the owner's
+    time spent on record-keeping actually falls after adoption.
 16. Study support for more than one property, for owners who manage several small buildings.

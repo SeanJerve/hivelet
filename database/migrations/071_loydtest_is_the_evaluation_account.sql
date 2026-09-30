@@ -1,5 +1,5 @@
 -- =============================================================================
--- 070 - loydtest is the evaluation account: turn it back on
+-- 071 - loydtest is the evaluation account: turn it back on
 -- =============================================================================
 -- Sean, 2026-09-30 evening: "loydtest" was made on purpose. It is the tenant
 -- account a technical expert will use to evaluate the site.
@@ -20,7 +20,10 @@
 -- KNOWN SIDE EFFECT, ACCEPTED FOR THE EVALUATION: the admin's active tenant
 -- count reads one more than the tenancies (33 against 32), because loydtest
 -- has no unit. Giving it a unit (PH is the one vacant unit) is Sean's call,
--- in BLOCKED_FOR_SEAN.md B-90.
+-- in BLOCKED_FOR_SEAN.md B-92.
+-- APPLIED 2026-09-30 through the Supabase connection as "070_loydtest_is_the_
+-- evaluation_account"; renumbered 071 on 2026-10-01 because Lloyd's machine
+-- had already used 070 (void the walkthrough expenses).
 --
 -- SAFETY: stops, changing nothing, if the profile is not the test one. A
 -- second run changes nothing.
@@ -31,10 +34,10 @@ DECLARE
   p_test uuid := '4d8876e6-def8-4e15-9456-ebd91bee2580';
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM profiles WHERE id = p_test AND full_name = 'loydtest' AND role::text = 'tenant') THEN
-    RAISE EXCEPTION '070: the evaluation profile is not there. Nothing changed.';
+    RAISE EXCEPTION '071: the evaluation profile is not there. Nothing changed.';
   END IF;
   IF EXISTS (SELECT 1 FROM profiles WHERE id = p_test AND account_status::text = 'active') THEN
-    RAISE NOTICE '070: loydtest is already active. Nothing to do.';
+    RAISE NOTICE '071: loydtest is already active. Nothing to do.';
     RETURN;
   END IF;
 

@@ -12,10 +12,10 @@ Read `CLAUDE.md` first. Its five rules apply to everything here.
 
 ## 0. Start here
 
-1. `git pull`. If `database/migrations/070_loydtest_is_the_evaluation_account.sql` is not in the tree,
+1. `git pull`. If `database/migrations/071_loydtest_is_the_evaluation_account.sql` is not in the tree,
    Sean's last commit did not get pushed. Ask Sean to push it. The migration is **already applied** to the
    live database. Only the file is missing.
-2. The next migration number is **071**. Check `database/migrations/` anyway.
+2. The next migration number is **072** (Lloyd's 070 voids the walkthrough expenses and is **not applied yet**, B-91). Check `database/migrations/` anyway.
 3. Lanes: `docs/` and `frontend/src/` are this machine's. `backend/src/` and `database/migrations/` are
    Sean's. If something below needs a backend change, keep it small, pull first, and commit it on its own.
 4. Do **not** run `check:all`, `check:api` or `check:relations`. They sign in as the owner and write to
@@ -46,8 +46,8 @@ day, the inquiry reply-back module (065: a private link plus a reference code, n
 that always load, badges that clear once seen and a dot on the bell, the PWA update fix, the trailer video.
 
 **The evaluation account.** `loydtest` is the tenant account the evaluators will use. 069 wrongly switched
-it off. 070 switched it back on and changed nothing else. It has no email on file, so at first sign-in it
-is asked for an email and a new password. That is the feature, not a fault. It has **no unit** yet. **Sean decided (B-90): the evaluators use loydtest,
+it off. 071 switched it back on and changed nothing else. It has no email on file, so at first sign-in it
+is asked for an email and a new password. That is the feature, not a fault. It has **no unit** yet. **Sean decided (B-92): the evaluators use loydtest,
 and it goes into PH.** A person does the move-in from Tenants (Claude cannot sign in). The admin account
 is ready as it is.
 
@@ -58,7 +58,7 @@ is ready as it is.
 - The admin is **Michelle** (Lloyd's mother). The business keeps its name, but never present Mrs. Fe
   Galang Da Silva as the person to contact.
 - 33 units, 32 of them occupied. With `loydtest` active, the admin's tenant count reads 33 against 32
-  tenancies. That is expected for the evaluation (B-90).
+  tenancies. That is expected for the evaluation (B-92).
 - The **50% Share** wording is locked (CLAUDE.md rule 4). Copy it, do not rephrase it.
 - Words on screens: **Tenant**, not Resident. **All**, not Every. One name per page. No decorative badges.
   Icons borderless and revealed on hover.
@@ -71,6 +71,9 @@ is ready as it is.
 ## 3. Left to do, in this order
 
 ### 3.1 A-30: Overview money tiles show ₱0 offline (testing-day FAIL)
+
+**Update 1 Oct (Lloyd's Claude): not reproduced locally** (B-90). Re-test on the owner's laptop and note which
+tile showed ₱0. If it recurs, the notes below still apply.
 
 Test A-30 in `docs/TESTING_DAY/results/A_ADMIN_Lloyd.md`: with the Overview open, disconnect, reload.
 Expected: money tiles show "—", never ₱0. Seen: ₱0, plus the "Some figures could not be loaded. Try again"
@@ -104,6 +107,9 @@ Overview and Payments (`TenantOverviewView.vue`, `TenantPaymentsView.vue`).
 - Check at 375 px and at desktop width, with nothing overflowing.
 
 ### 3.3 O-12: the 45-second "cannot tell if it saved" message is late on Android (testing-day FAIL)
+
+**Update 1 Oct (Lloyd's Claude): mitigated** in `lib/api.ts` (deadline re-checked on `visibilitychange`),
+B-90. What is left is a re-test on the Infinix GT20.
 
 `docs/TESTING_DAY/results/O_OFFLINE_Sean.md`, row O-12: on Android Chrome the message came after 60 to 80
 seconds, not within 45. iPhone was on time. Find the save deadline (search `frontend/src/lib/api.ts` for
@@ -146,7 +152,7 @@ should hear the notification sound. Write the result into `docs/TESTING_DAY/resu
   placeholders, so the slip should say that the tenant sets their own email at first sign-in and sign in
   with the phone number, if phone sign-in is supported. Check `authService` before claiming it is.
 - Regenerate `docs/SCREEN_CONTRACT.md` (`npm run contract`) after any screen change.
-- Update `CONTINUE_HERE.md` section 0.0 with 066-070, live updates, invoices, and the evaluation account.
+- Update `CONTINUE_HERE.md` section 0.0 with 066-071, live updates, invoices, and the evaluation account.
   Add the evaluation account and what testers will see to `HANDOFF_TO_QA.md`.
 
 ### 3.7b A missing payment always means "not entered yet" (Sean, 2026-10-01)
@@ -166,7 +172,7 @@ Pass or Fail. Either the people who ran them fill them in, or they are run again
 
 ## 4. Decisions only Sean or the owner can make (in `BLOCKED_FOR_SEAN.md`)
 
-- **B-90, decided**: loydtest goes into PH for the evaluation. A person does the move-in from Tenants.
+- **B-92, decided**: loydtest goes into PH for the evaluation. A person does the move-in from Tenants.
 - **B-89, decided**: F2F August is not entered yet. Missing always means not entered (3.7b).
 - **064**, the expense-date correction: written and tested, not applied. Apply or not.
 - `CLIENT_MEETING_QUESTIONS.md` for everything the owner decides.

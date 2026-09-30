@@ -32,6 +32,13 @@ personal and financial data is never kept on the phone** (Chapter 4, §4.2.7; th
 | O-11 | RE | NFR-006 | **Weak signal**: on the laptop, DevTools > Network > **Slow 3G**; open Repairs and send a note | It gets there, slowly; the button shows "Sending…" and cannot be pressed twice | Pass (laptop) | n/a | Laptop test, run on the laptop with a weak signal (DevTools, Slow 3G). |
 | O-12 | RE | NFR-006 | Weak signal that stops answering (walk to a dead spot, or on the laptop DevTools > Network > throttling > **Add** a custom profile with **60000 ms** latency, select it, then send) | Within 45 seconds a message says it cannot tell whether it was saved and to **check before sending again** | Fail | Pass | **Android: the message came after about 60 to 80 seconds, not within 45.** iPhone: within 45 seconds. Defect log: the 45-second save deadline did not fire on time on Android Chrome (for Sean). |
 
+**Checked against the Activity log (Claude, 1 Oct 2026, read-only).** Offline attempts never reach
+the server, so O-04 to O-06, O-09, O-10 and O-12 leave nothing to check. **O-07 ("send the note
+again: it works, once")**: the log has one note from the test tenant's account that evening (PH,
+18:48) and none from another tenant account except F1's at 8:18 PM, so the resend is confirmed on
+**one** phone; which one is not recorded. **O-11**: the owner's note on the PH repair at 18:47 fits
+a laptop send. Chapter 4 reports O-07 as confirmed once. Nothing in the table was changed.
+
 O-12 depends on the request deadline added on 29 September (`frontend/src/lib/api.ts`). If that
 change is not live yet, a save on a dead connection spins until the browser gives up; record what
 happens either way.
