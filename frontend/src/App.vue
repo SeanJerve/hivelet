@@ -145,7 +145,8 @@ const hidesGlobalHeader = computed(() =>
       order. See `.ws-skip`: a keyboard reader had to walk the whole navigation
       before reaching anything on every page.
     -->
-    <a href="#main" class="ws-skip pill-btn-brand">Skip to content</a>
+    <!-- A plain text link, not a button (Sean, 2026-09-30); it still appears only on Tab. -->
+    <a href="#main" class="ws-skip bg-canvas px-2 py-1 text-sm text-ink underline underline-offset-4 decoration-1">Skip to content</a>
 
     <AppHeader v-if="!hidesGlobalHeader" />
     

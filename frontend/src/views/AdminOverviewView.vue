@@ -42,6 +42,7 @@ import MonthCapsules from '@/components/overview/MonthCapsules.vue';
 import OccupancyArc from '@/components/overview/OccupancyArc.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
 import PillSelect from '@/components/ui/PillSelect.vue';
+import { greetingName, usePartOfDay } from '@/lib/greeting';
 import type { ArcUnit, CapsuleMonth } from '@/components/overview/types';
 import {
   Plus,
@@ -91,15 +92,10 @@ const MONTH_LONG = [
  * Greeting
  * ========================================================================== */
 
-const firstName = computed(() => {
-  const full = (currentUser.value?.fullName ?? '').replace(/^(mrs|mr|ms|miss|dr)\.?\s+/i, '').trim();
-  return full.split(/\s+/)[0] ?? '';
-});
-
-const partOfDay = (() => {
-  const h = new Date().getHours();
-  return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
-})();
+// Morning, noon, afternoon or evening by the property's clock, kept current
+// while the page stays open (lib/greeting.ts).
+const firstName = computed(() => greetingName(currentUser.value?.fullName));
+const partOfDay = usePartOfDay();
 
 const todayLabel = new Date().toLocaleDateString('en-PH', {
   weekday: 'long',

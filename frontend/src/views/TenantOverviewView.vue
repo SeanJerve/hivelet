@@ -19,6 +19,7 @@ import OverviewTile from '@/components/overview/OverviewTile.vue';
 import StatusPill from '@/components/overview/StatusPill.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 import SegmentBar from '@/components/overview/SegmentBar.vue';
+import { greetingName, usePartOfDay } from '@/lib/greeting';
 import { CreditCard, Wrench, X, CheckCircle2, Home } from 'lucide-vue-next';
 
 const { showToast } = useToast();
@@ -183,15 +184,10 @@ function methodLabel(method: string | null | undefined): string {
   return method === 'Adyen Online' ? 'GCash (online)' : method;
 }
 
-const firstName = computed(() => {
-  const full = tenantData.value.name || currentUser.value?.fullName || '';
-  return full.split(/\s+/)[0] ?? '';
-});
-
-const partOfDay = (() => {
-  const h = new Date().getHours();
-  return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
-})();
+// Morning, noon, afternoon or evening by the property's clock, kept current
+// while the page stays open (lib/greeting.ts).
+const firstName = computed(() => greetingName(tenantData.value.name || currentUser.value?.fullName));
+const partOfDay = usePartOfDay();
 
 // Anchored to the property (Asia/Manila), not the viewer's own device - the
 // same reasoning `lib/propertyDate.ts` gives for `propertyToday()`. Without
