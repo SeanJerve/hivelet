@@ -33,6 +33,29 @@ thing did not work" is not.
 
 ## Open
 
+### B-90 — testing-day leftovers from 30 September: two bills to correct, two defects found · **OPEN**
+
+Found by the team's walkthrough and tenant sessions (results in `docs/TESTING_DAY/results/`),
+checked read-only against the live database by Claude at 22:55 Manila. Nothing was changed.
+
+- **PH bill ₱30,200 (A-20).** Raised for the rehearsal tenant (profile `4d8876e6…`, now inactive),
+  period 30 Sep, status Due. Test record: remove with a reviewed migration, as 055/061 did.
+- **F2F's September bill says ₱8,200, but the tenancy now has 4 occupants.** Raised at 19:35 while
+  F2F had 1 occupant; Lloyd then set 4 and Michelle recorded the real cash receipt of **₱8,800**
+  (₱8,000 + ₱800 water, created 19:53, edited 19:56). The bill is Paid, so nothing is owed, but its
+  printed total is ₱600 short of the receipt. Correct the bill's water and total to ₱800 / ₱8,800 in
+  a migration, or leave it and say so. The receipt is correct and stays. The rate stays ₱8,000
+  (water is added on top; ₱8,800 as the rate would bill ₱9,600).
+- **Defect A-23: no warning for a wrong water figure.** When recording a payment with a water
+  amount that differs from occupants × ₱200, no warning appeared (Part A says one should). Check
+  whether the warning compares against the occupant count typed in the form or the tenancy's own.
+- **Defect A-30: offline Overview shows ₱0.** With the laptop disconnected and Overview reloaded,
+  the money tiles showed **₱0** and "Try again" instead of "—" (the rule the check:liveness suite
+  guards). A real regression or a cached response: reproduce with DevTools Offline.
+- **Defect O-12 (Android): the 45-second save deadline fired after 60 to 80 s** on an Infinix GT20
+  in Chrome (iPhone 15 Safari: within 45 s). `frontend/src/lib/api.ts`.
+- Also still open from before: the PH rehearsal repair (18:46) is Resolved but not deleted.
+
 ### B-89 — after the testing day: garbage fee out, invoices not OR, tenants own contact details, live pages · **DONE 2026-09-30: 066, 067, 068 applied and verified**
 
 Sean's list, evening of 30 September. Code in 7fe465f; migrations applied through the Supabase
