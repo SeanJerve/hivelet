@@ -22,7 +22,7 @@ import PillSelect from '@/components/ui/PillSelect.vue';
 interface ApiExpense {
   id: string;
   expense_date: string;
-  or_supplier: string;
+  invoice_supplier: string;
   category_code: string;
   total_expenses: number;
   expense_property_allocations?: { property_area: string; amount: number }[];
@@ -465,7 +465,7 @@ function submitAddExpense() {
           submitted.map((entry) =>
             api.post('/admin/expense-entries', {
               expenseDate: date.value,
-              orSupplier: entry.desc.trim(),
+              invoiceSupplier: entry.desc.trim(),
               categoryCode: getDbCategoryCode(entry.category),
               allocations: entry.allocations.map(a => ({
                 propertyArea: a.area,
@@ -770,7 +770,7 @@ async function handleEditExpense() {
 
     const payload = {
       expenseDate: editDate.value,
-      orSupplier: editDesc.value.trim(),
+      invoiceSupplier: editDesc.value.trim(),
       categoryCode: getDbCategoryCode(editCategory.value),
       allocations: editAllocations.value.map(a => ({
         propertyArea: a.area,
@@ -1096,7 +1096,7 @@ async function handleEditExpense() {
                   break-words: this is the phone card layout below lg, where
                   the desktop `<th>` above has ws-table-wrap's own contained
                   horizontal scroll to fall back on and this card does not.
-                  The description is typed freely (a receipt or supplier
+                  The description is typed freely (an invoice or supplier
                   name), so an unbroken run - a run-together vendor name, a
                   reference number - would otherwise run past the card.
                 -->
@@ -1226,7 +1226,7 @@ async function handleEditExpense() {
                     What it was for
                     <input
                       v-model="entry.desc"
-                      placeholder="OR #88240, supplies"
+                      placeholder="INV#88240, supplies"
                       class="ws-input w-full"
                       required
                     />
@@ -1377,7 +1377,7 @@ async function handleEditExpense() {
                 What it was for
                 <input
                   v-model="editDesc"
-                  placeholder="OR #88240, supplies"
+                  placeholder="INV#88240, supplies"
                   class="ws-input w-full" 
                   required 
                 />

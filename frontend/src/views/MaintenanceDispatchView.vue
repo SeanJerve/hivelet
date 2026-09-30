@@ -2,6 +2,7 @@
 import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted } from 'vue';
+import { useLiveRefresh } from '@/lib/live';
 import { 
   maintenanceTickets, 
   fetchMaintenanceTickets, 
@@ -300,6 +301,22 @@ const sendingAdminMessage = ref(false);
  * text) rather than an empty box.
  */
 const photoLoadedSrc = ref<string | null>(null);
+
+/**
+ * The open repair's messages stay current (lib/live.ts refreshes the list): a
+ * tenant's new note appears while she is looking at it. Quiet - no spinner, and
+ * the list is replaced only when the answer arrives.
+ */
+useLiveRefresh(async () => {
+  const t = editingTicket.value;
+  if (!isEditModalOpen.value || !t) return;
+  try {
+    const res = await api.get<any[]>(`/admin/tickets/${t.id}/messages`);
+    if (Array.isArray(res)) ticketMessages.value = res;
+  } catch {
+    /* the next check tries again */
+  }
+});
 
 async function loadTicketMessages(ticketId: string) {
   loadingMessages.value = true;

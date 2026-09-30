@@ -93,14 +93,13 @@ interface LedgerRow {
   room_number: string;
   date_paid: string;
   contact_name: string;
-  invoice_number: string;
+  invoice_number: string | null;
   rent_period_start: string;
   rent_period_end: string;
   rent_amount: number;
   fifty_percent_share: number | null;
   occupants: number;
   water_payment: number;
-  gbg_fee: number;
   remitted_amount: number | null;
   linda_electricity_charge: number | null;
   /**
@@ -150,16 +149,14 @@ interface Totals {
   share: number;
   occupants: number;
   water: number;
-  gbg: number;
   remitted: number;
 }
-const zero = (): Totals => ({ rent: 0, share: 0, occupants: 0, water: 0, gbg: 0, remitted: 0 });
+const zero = (): Totals => ({ rent: 0, share: 0, occupants: 0, water: 0, remitted: 0 });
 const add = (t: Totals, r: LedgerRow): void => {
   t.rent += n(r.rent_amount);
   t.share += n(r.fifty_percent_share);
   t.occupants += n(r.occupants);
   t.water += n(r.water_payment);
-  t.gbg += n(r.gbg_fee);
   t.remitted += n(r.remitted_amount);
 };
 const merge = (into: Totals, from: Totals): void => {
@@ -167,7 +164,6 @@ const merge = (into: Totals, from: Totals): void => {
   into.share += from.share;
   into.occupants += from.occupants;
   into.water += from.water;
-  into.gbg += from.gbg;
   into.remitted += from.remitted;
 };
 
@@ -199,7 +195,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
       .from('monthly_income_records')
       .select(
         'month, date_paid, contact_name, invoice_number, rent_period_start, rent_period_end, ' +
-          'rent_amount, fifty_percent_share, occupants, water_payment, gbg_fee, remitted_amount, ' +
+          'rent_amount, fifty_percent_share, occupants, water_payment, remitted_amount, ' +
           'linda_electricity_charge, linda_water_charge, room_id, tenant_profile_id, ' +
           'rooms:room_id (room_number)'
       )
@@ -278,7 +274,6 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
       fifty_percent_share: raw.fifty_percent_share === null ? null : n(raw.fifty_percent_share),
       occupants: n(raw.occupants),
       water_payment: n(raw.water_payment),
-      gbg_fee: n(raw.gbg_fee),
       remitted_amount: raw.remitted_amount === null ? null : n(raw.remitted_amount),
       linda_electricity_charge:
         raw.linda_electricity_charge === null ? null : n(raw.linda_electricity_charge),
@@ -315,19 +310,18 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
     { width: 12 }, // 6  50% Share
     { width: 10 }, // 7  Occupants
     { width: 13 }, // 8  Water Payment
-    { width: 9 },  // 9  GBG
-    { width: 14 }, // 10 Remitted
-    { width: 12 }, // 11 Anniv Date
-    { width: 12 }, // 12 Deposit
+    { width: 14 }, // 9  Remitted
+    { width: 12 }, // 10 Anniv Date
+    { width: 12 }, // 11 Deposit
   ];
 
   const title = ws.addRow([`HIVELET — MONTHLY INCOME REPORT — ${year}`]);
   title.font = { bold: true, size: 13, color: { argb: INK } };
-  ws.mergeCells(title.number, 1, title.number, 12);
+  ws.mergeCells(title.number, 1, title.number, 11);
 
   const headerRow = ws.addRow([
     'Rm #', 'Date Paid', 'Contact + Invoice #', 'Rent For', 'Rent Amount', '50% Share',
-    'Occupants', 'Water Payment', 'GBG', 'Remitted Amount', 'Anniv Date', 'Deposit',
+    'Occupants', 'Water Payment', 'Remitted Amount', 'Anniv Date', 'Deposit',
   ]);
   headerRow.font = { bold: true, size: 10, color: { argb: INK } };
   headerRow.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
@@ -356,7 +350,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   const monthsPresent = [...byMonth.keys()].sort((a, b) => a - b);
 
   const moneyCells = (r: ExcelJS.Row) => {
-    for (const i of [5, 6, 8, 9, 10, 12]) r.getCell(i).numFmt = MONEY_FMT;
+    for (const i of [5, 6, 8, 9, 11]) r.getCell(i).numFmt = MONEY_FMT;
   };
 
   const emitUnitRow = (r: LedgerRow) => {
@@ -369,7 +363,6 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
       r.fifty_percent_share ?? r.rent_amount / 2,
       r.occupants || null,
       r.water_payment || null,
-      r.gbg_fee || null,
       r.remitted_amount ?? r.rent_amount + r.water_payment,
       annivFmt(r.anniversary_date),
       r.deposit_amount,
@@ -379,7 +372,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
     row.getCell(3).value = {
       richText: [
         { text: `${r.contact_name}  ` },
-        { text: r.invoice_number, font: { color: { argb: RED }, bold: true } },
+        { text: r.invoice_number ?? '', font: { color: { argb: RED }, bold: true } },
       ],
     };
     row.font = { size: 10 };
@@ -388,7 +381,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   };
 
   const emitTotalRow = (label: string, t: Totals, opts: { strong?: boolean } = {}) => {
-    const row = ws.addRow([label, null, null, null, t.rent, t.share, t.occupants, t.water, t.gbg, t.remitted, null, null]);
+    const row = ws.addRow([label, null, null, null, t.rent, t.share, t.occupants, t.water, t.remitted, null, null]);
     row.font = { bold: true, size: 10, color: { argb: INK } };
     moneyCells(row);
     row.eachCell({ includeEmpty: true }, (c) => {
@@ -404,7 +397,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
 
     const monthRow = ws.addRow([`${MONTHS[month - 1]} ${year}`]);
     monthRow.font = { bold: true, size: 11, color: { argb: INK } };
-    ws.mergeCells(monthRow.number, 1, monthRow.number, 12);
+    ws.mergeCells(monthRow.number, 1, monthRow.number, 11);
 
     const grand = zero();
 
@@ -448,7 +441,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
           'docs/09_MONTHLY_INCOME_REPORT.md §2 does not say where they belong.',
       ]);
       warn.font = { bold: true, size: 9, italic: true, color: { argb: RED } };
-      ws.mergeCells(warn.number, 1, warn.number, 12);
+      ws.mergeCells(warn.number, 1, warn.number, 11);
 
       const unplacedTotal = zero();
       for (const r of unplacedRows) {
@@ -470,7 +463,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
     if (lindaRows.length > 0) {
       const lindaHeader = ws.addRow(['LINDA — fixed charges, remitted directly to Linda']);
       lindaHeader.font = { bold: true, size: 10, italic: true, color: { argb: INK } };
-      ws.mergeCells(lindaHeader.number, 1, lindaHeader.number, 12);
+      ws.mergeCells(lindaHeader.number, 1, lindaHeader.number, 11);
 
       const lindaTotal = zero();
       let lindaElectricity = 0;
@@ -502,10 +495,10 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
       if (lindaWater > 0) {
         const w = ws.addRow([
           'Linda fixed water charge (BR-040, remitted directly to Linda)',
-          null, null, null, null, null, null, null, null, lindaWater, null, null,
+          null, null, null, null, null, null, null, lindaWater, null, null,
         ]);
         w.font = { size: 9, italic: true, color: { argb: INK } };
-        w.getCell(10).numFmt = MONEY_FMT;
+        w.getCell(9).numFmt = MONEY_FMT;
       }
 
       if (lindaElectricity > 0) {
@@ -513,10 +506,10 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
         // real money already collected and are shown rather than dropped.
         const e = ws.addRow([
           'Linda electricity (historical, retired 2026-09-13)',
-          null, null, null, null, null, null, null, null, lindaElectricity, null, null,
+          null, null, null, null, null, null, null, lindaElectricity, null, null,
         ]);
         e.font = { size: 9, italic: true, color: { argb: INK } };
-        e.getCell(10).numFmt = MONEY_FMT;
+        e.getCell(9).numFmt = MONEY_FMT;
       }
     }
 
@@ -550,7 +543,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   if (monthsPresent.length === 0) {
     const empty = ws.addRow([`No income was recorded for ${year}.`]);
     empty.font = { size: 10, italic: true };
-    ws.mergeCells(empty.number, 1, empty.number, 12);
+    ws.mergeCells(empty.number, 1, empty.number, 11);
     return wb;
   }
 
@@ -571,19 +564,19 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
   if (lindaYearWater > 0) {
     const w = ws.addRow([
       `Linda fixed water charge, year to date ${year} (BR-040, remitted directly to Linda)`,
-      null, null, null, null, null, null, null, null, lindaYearWater, null, null,
+      null, null, null, null, null, null, null, lindaYearWater, null, null,
     ]);
     w.font = { size: 9, italic: true, color: { argb: INK } };
-    w.getCell(10).numFmt = MONEY_FMT;
+    w.getCell(9).numFmt = MONEY_FMT;
   }
 
   if (lindaYearElectricity > 0) {
     const e = ws.addRow([
       `Linda electricity, year to date ${year} (historical, retired 2026-09-13)`,
-      null, null, null, null, null, null, null, null, lindaYearElectricity, null, null,
+      null, null, null, null, null, null, null, lindaYearElectricity, null, null,
     ]);
     e.font = { size: 9, italic: true, color: { argb: INK } };
-    e.getCell(10).numFmt = MONEY_FMT;
+    e.getCell(9).numFmt = MONEY_FMT;
   }
 
   const note = ws.addRow([
@@ -592,7 +585,7 @@ export async function buildIncomeReportWorkbook(year: number): Promise<ExcelJS.W
       'still open with the owner — so neither is presented as the total.',
   ]);
   note.font = { size: 9, italic: true, color: { argb: INK } };
-  ws.mergeCells(note.number, 1, note.number, 12);
+  ws.mergeCells(note.number, 1, note.number, 11);
   note.alignment = { wrapText: true, vertical: 'top' };
 
   return wb;

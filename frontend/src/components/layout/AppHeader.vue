@@ -47,6 +47,7 @@ import {
 import NotificationPopover from './NotificationPopover.vue';
 import { Menu, LogOut, LogIn, User, Bell, ChevronDown, Lock, Globe, LayoutDashboard } from 'lucide-vue-next';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
+import { realEmail } from '@/lib/contactDetails';
 
 const route = useRoute();
 const router = useRouter();
@@ -519,7 +520,10 @@ onUnmounted(() => {
                     <p class="truncate text-sm font-semibold text-ink">
                       {{ currentUser.fullName || 'Administrator' }}
                     </p>
-                    <p class="truncate text-xs text-ink-soft">{{ currentUser.email }}</p>
+                    <!-- A placeholder email (migration 067) is not shown: it is not an address. -->
+                    <p v-if="realEmail(currentUser.email)" class="truncate text-xs text-ink-soft">
+                      {{ realEmail(currentUser.email) }}
+                    </p>
                     <p class="mt-1 text-xs font-semibold text-brand">
                       {{ isTenant ? 'Tenant' : 'Owner' }}
                     </p>

@@ -156,8 +156,8 @@ onUnmounted(() => {
         <!--
           The subtotal, on a phone.
           `tfoot` lives inside the `hidden lg:block` table above, so below `lg`
-          the whole per-cluster breakdown - rent, the 50% column, water, garbage
-          and the headcount - simply was not rendered. The only figure that
+          the whole per-cluster breakdown - rent, the 50% column, water and the
+          headcount - simply was not rendered. The only figure that
           survived was the one the cluster header carries on its own.
           It takes the same surface as the cards it closes, with a border
           standing in for the 2px rule `.ws-table tfoot` draws above itself, so

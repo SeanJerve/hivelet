@@ -40,7 +40,7 @@ const bySheetRow = new Map(rows.map((r) => [r._sheetRow, r]));
 const db = new PGlite();
 await db.exec(`
   CREATE TYPE property_area_type AS ENUM ('Boarding House','Main House','Front Apartment','Back Apartment','Other Expenses / Personal','Penthouse');
-  CREATE TABLE monthly_expense_entries (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), expense_date date NOT NULL, or_supplier text NOT NULL,
+  CREATE TABLE monthly_expense_entries (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), expense_date date NOT NULL, invoice_supplier text NOT NULL,
     category_code varchar(20) NOT NULL, total_expenses numeric(10,2) NOT NULL, updated_at timestamptz, voided_at timestamptz);
   CREATE TABLE expense_property_allocations (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     expense_entry_id uuid REFERENCES monthly_expense_entries(id) ON DELETE CASCADE, property_area property_area_type NOT NULL, amount numeric(10,2) NOT NULL);
@@ -50,26 +50,26 @@ await db.exec(`
 let sql = '';
 for (const f of fix) {
   const r = bySheetRow.get(f.r);
-  sql += `WITH e AS (INSERT INTO monthly_expense_entries (expense_date, or_supplier, category_code, total_expenses) VALUES (${q(f.o)}, ${q(r.or_supplier)}, ${q(r.category_code)}, ${f.t}) RETURNING id)
+  sql += `WITH e AS (INSERT INTO monthly_expense_entries (expense_date, invoice_supplier, category_code, total_expenses) VALUES (${q(f.o)}, ${q(r.or_supplier)}, ${q(r.category_code)}, ${f.t}) RETURNING id)
   INSERT INTO expense_property_allocations (expense_entry_id, property_area, amount) SELECT e.id, v.a::property_area_type, v.m FROM e, (VALUES ${r.allocations.map((a) => `(${q(a.area)}, ${Number(a.amount).toFixed(2)})`).join(', ')}) v(a, m);\n`;
 }
 // The June electric bill as imported: Main House only, a day early (she wrote 4 June).
-sql += `WITH e AS (INSERT INTO monthly_expense_entries (expense_date, or_supplier, category_code, total_expenses) VALUES ('2026-06-03', 'Electricbill (May26)', '7', 5688.67) RETURNING id)
+sql += `WITH e AS (INSERT INTO monthly_expense_entries (expense_date, invoice_supplier, category_code, total_expenses) VALUES ('2026-06-03', 'Electricbill (May26)', '7', 5688.67) RETURNING id)
   INSERT INTO expense_property_allocations (expense_entry_id, property_area, amount) SELECT id, 'Main House', 5688.67 FROM e;\n`;
 // Must be left alone: one she typed into the system herself, and one line she edited since the import.
-sql += `WITH e AS (INSERT INTO monthly_expense_entries (expense_date, or_supplier, category_code, total_expenses) VALUES ('2026-03-01', 'Entered in the system by her', '9', 123.45) RETURNING id)
+sql += `WITH e AS (INSERT INTO monthly_expense_entries (expense_date, invoice_supplier, category_code, total_expenses) VALUES ('2026-03-01', 'Entered in the system by her', '9', 123.45) RETURNING id)
   INSERT INTO expense_property_allocations (expense_entry_id, property_area, amount) SELECT id, 'Main House', 123.45 FROM e;\n`;
 await db.exec(sql);
 const edited = fix.find((f) => f.o !== f.n);
 // A second, identical entry for one workbook line (as if she also typed it into the system): the
 // database now holds more than the workbook for that key, so the whole group must be left alone.
 const dup = fix.filter((f) => f.o !== f.n && f.r !== edited.r)[5];
-await db.exec(`WITH e AS (INSERT INTO monthly_expense_entries (expense_date, or_supplier, category_code, total_expenses)
-    SELECT expense_date, or_supplier, category_code, total_expenses FROM monthly_expense_entries
-    WHERE expense_date = '${dup.o}' AND or_supplier = ${q(dup.s)} AND total_expenses = ${dup.t} LIMIT 1 RETURNING id)
+await db.exec(`WITH e AS (INSERT INTO monthly_expense_entries (expense_date, invoice_supplier, category_code, total_expenses)
+    SELECT expense_date, invoice_supplier, category_code, total_expenses FROM monthly_expense_entries
+    WHERE expense_date = '${dup.o}' AND invoice_supplier = ${q(dup.s)} AND total_expenses = ${dup.t} LIMIT 1 RETURNING id)
   INSERT INTO expense_property_allocations (expense_entry_id, property_area, amount)
   SELECT e.id, split_part(x, ':', 1)::property_area_type, split_part(x, ':', 2)::numeric FROM e, unnest(string_to_array(${q(dup.a)}, '|')) x`);
-await db.exec(`UPDATE monthly_expense_entries SET total_expenses = total_expenses + 1 WHERE id = (SELECT id FROM monthly_expense_entries WHERE expense_date = '${edited.o}' AND or_supplier = ${q(bySheetRow.get(edited.r).or_supplier)} LIMIT 1)`);
+await db.exec(`UPDATE monthly_expense_entries SET total_expenses = total_expenses + 1 WHERE id = (SELECT id FROM monthly_expense_entries WHERE expense_date = '${edited.o}' AND invoice_supplier = ${q(bySheetRow.get(edited.r).or_supplier)} LIMIT 1)`);
 
 const one = async (s) => (await db.query(s)).rows[0];
 const count = async () => (await one('SELECT count(*)::int n FROM monthly_expense_entries')).n;
@@ -85,17 +85,17 @@ check('preview: changes nothing', await count(), before);
 const in2026Before = (await one(`SELECT count(*)::int n FROM monthly_expense_entries WHERE expense_date >= '2026-01-01'`)).n;
 await runLikeTheEditor(db, m064);
 const wrong = await one(`SELECT count(*)::int n FROM jsonb_to_recordset(${q(JSON.stringify(fix))}::jsonb) AS f(r int, o date, n date, s text, c text, t numeric, a text)
-  WHERE f.r NOT IN (${edited.r}, ${dup.r}) AND NOT EXISTS (SELECT 1 FROM monthly_expense_entries e WHERE e.expense_date = f.n AND e.or_supplier = f.s AND e.total_expenses = f.t)`);
+  WHERE f.r NOT IN (${edited.r}, ${dup.r}) AND NOT EXISTS (SELECT 1 FROM monthly_expense_entries e WHERE e.expense_date = f.n AND e.invoice_supplier = f.s AND e.total_expenses = f.t)`);
 check('064: every paired entry now carries the date she wrote', wrong.n, 0);
 check('064: as many entries moved from 2025 into 2026 as her workbook says',
   (await one(`SELECT count(*)::int n FROM monthly_expense_entries WHERE expense_date >= '2026-01-01'`)).n - in2026Before,
   fix.filter((f) => f.o < '2026-01-01' && f.n >= '2026-01-01' && f.r !== dup.r).length);
 check('064: a line the database holds twice is left alone, both copies',
-  (await one(`SELECT count(*)::int n FROM monthly_expense_entries WHERE expense_date = '${dup.o}' AND or_supplier = ${q(dup.s)} AND total_expenses = ${dup.t}`)).n, 2);
-check('064: the entry she typed herself is untouched', (await one(`SELECT expense_date::text d FROM monthly_expense_entries WHERE or_supplier = 'Entered in the system by her'`)).d, '2026-03-01');
-check('064: the line edited since the import is untouched', (await one(`SELECT count(*)::int n FROM monthly_expense_entries WHERE expense_date = '${edited.o}' AND or_supplier = ${q(bySheetRow.get(edited.r).or_supplier)}`)).n >= 1, true);
+  (await one(`SELECT count(*)::int n FROM monthly_expense_entries WHERE expense_date = '${dup.o}' AND invoice_supplier = ${q(dup.s)} AND total_expenses = ${dup.t}`)).n, 2);
+check('064: the entry she typed herself is untouched', (await one(`SELECT expense_date::text d FROM monthly_expense_entries WHERE invoice_supplier = 'Entered in the system by her'`)).d, '2026-03-01');
+check('064: the line edited since the import is untouched', (await one(`SELECT count(*)::int n FROM monthly_expense_entries WHERE expense_date = '${edited.o}' AND invoice_supplier = ${q(bySheetRow.get(edited.r).or_supplier)}`)).n >= 1, true);
 check('064: the electric bill is her figure, dated as she wrote it',
-  await one(`SELECT expense_date::text d, total_expenses::text t, (SELECT string_agg(property_area::text || ' ' || amount, ' + ' ORDER BY property_area) FROM expense_property_allocations x WHERE x.expense_entry_id = e.id) a FROM monthly_expense_entries e WHERE or_supplier = 'Electricbill (May26)'`),
+  await one(`SELECT expense_date::text d, total_expenses::text t, (SELECT string_agg(property_area::text || ' ' || amount, ' + ' ORDER BY property_area) FROM expense_property_allocations x WHERE x.expense_entry_id = e.id) a FROM monthly_expense_entries e WHERE invoice_supplier = 'Electricbill (May26)'`),
   { d: '2026-06-04', t: '20652.80', a: 'Boarding House 14964.13 + Main House 5688.67' });
 check('064: nothing added or removed', await count(), before);
 const rec = (await one(`SELECT new_values v FROM audit_logs WHERE action = 'AUDIT_CORRECTION'`)).v;

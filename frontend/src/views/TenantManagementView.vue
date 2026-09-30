@@ -9,6 +9,7 @@ import { peso, CLUSTERS, type Cluster } from '@/lib/canonicalUnits';
 import { propertyToday } from '@/lib/propertyDate';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { copyText } from '@/lib/copyText';
+import { EMAIL_NOT_SET } from '@/lib/contactDetails';
 import { Search, UserPlus, Pencil, LogOut, Loader2, Check, Copy, ChevronDown, LayoutGrid, Table as TableIcon, KeyRound } from 'lucide-vue-next';
 import SkeletonTable from '@/components/ui/SkeletonTable.vue';
 import UnavailableNote from '@/components/overview/UnavailableNote.vue';
@@ -1303,9 +1304,10 @@ async function handleOnboard() {
             <div class="col-span-2 min-w-0 sm:col-span-1">
               <dt class="text-xs text-ink-faint">Email</dt>
               <!-- `onFile`, not `||`: a missing email arrives as an em dash, which is
-                   truthy, so the dialog printed "—" instead of saying so. -->
+                   truthy, so the dialog printed "—" instead of saying so. A placeholder
+                   (migration 067) arrives as the same dash (systemState, `realEmail`). -->
               <dd class="mt-0.5 truncate text-ink" :title="onFile(editModalTenant.email) ?? undefined">
-                {{ onFile(editModalTenant.email) ?? 'No email on file' }}
+                {{ onFile(editModalTenant.email) ?? EMAIL_NOT_SET }}
               </dd>
             </div>
             <div>
@@ -1329,6 +1331,15 @@ async function handleOnboard() {
               </dd>
             </div>
           </dl>
+          <!--
+            Sean, 2026-09-30: the tenant owns their email and phone (and password)
+            and changes them from My details; the landlady owns their name. So
+            neither is editable below, and PATCH /admin/tenants/:id refuses a change
+            to either. Reset password is still hers.
+          -->
+          <p v-if="editModalTenant.role === 'tenant'" class="ws-hint mt-4">
+            The tenant keeps their email and phone number up to date from their own My details page.
+          </p>
         </div>
 
         <form @submit.prevent="saveEdit" class="mt-6 space-y-5">
@@ -1533,6 +1544,7 @@ async function handleOnboard() {
               placeholder="you@email.com"
               class="ws-input w-full"
             />
+            <p class="ws-hint">If left blank, they add their own when they first sign in.</p>
           </div>
           <div class="ws-field">
             <label for="new-phone">Phone</label>

@@ -1,7 +1,13 @@
 <!--
-  What a resident can change about themselves: phone number and emergency
-  contact. The name and the account status belong to the tenancy record and
-  are shown, not edited (System Bible Section 19, FR-010).
+  What a tenant can change about themselves: email, phone number, password
+  and emergency contact. The name and the account status belong to the
+  tenancy record and are shown, not edited (System Bible Section 19, FR-010).
+
+  Email and phone joined on 2026-09-30 (Sean): the tenant owns their sign-in
+  and contact details, the landlady owns their name. The admin tenant dialog
+  shows email and phone read-only for the same reason. A placeholder email
+  (migration 067) is never shown as an address: the field starts empty and
+  says it is not set yet. Rules in lib/contactDetails.ts.
 
   Occupation and Facebook page were editable here too; the owner asked for
   them removed as unnecessary (2026-09-26). The columns and the backend's
@@ -11,9 +17,17 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Save, CheckCircle2, AlertTriangle, X, RotateCcw } from 'lucide-vue-next';
-import { currentUser } from '@/lib/authStore';
-import { api } from '@/lib/api';
+import { Save, CheckCircle2, AlertTriangle, X, RotateCcw, KeyRound } from 'lucide-vue-next';
+import { currentUser, restoreSession } from '@/lib/authStore';
+import { api, ApiRequestError } from '@/lib/api';
+import {
+  EMAIL_NOT_SET,
+  emailProblem,
+  phoneDigits,
+  phoneProblem,
+  realEmail,
+} from '@/lib/contactDetails';
+import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
 import { showToast } from '@/lib/systemState';
 import { RouterLink } from 'vue-router';
 import SkeletonCard from '@/components/ui/SkeletonCard.vue';
@@ -23,6 +37,7 @@ import UnavailableNote from '@/components/overview/UnavailableNote.vue';
 /** Tenant-editable profile fields */
 interface EditableProfile {
   full_name: string;
+  email: string;
   phone_number: string;
   emergency_contact_name: string;
   emergency_contact_phone: string;
@@ -30,13 +45,13 @@ interface EditableProfile {
 
 /** Administrator-owned identity fields — displayed for confirmation. */
 const identity = ref({
-  email: '',
   role: '',
   account_status: '',
 });
 
 const form = ref<EditableProfile>({
   full_name: currentUser.value?.fullName || '',
+  email: '',
   phone_number: '',
   emergency_contact_name: '',
   emergency_contact_phone: '',
@@ -50,13 +65,21 @@ const saving = ref(false);
 /**
  * Set when the profile could not be read.
  *
- * Saving is refused while it is true. `handleSave` sends all five editable
- * columns unconditionally, so a Save on top of a failed read writes empty
- * strings over whatever was really on file.
+ * Saving is refused while it is true. `handleSave` sends the emergency
+ * contact unconditionally (email and phone only when changed), so a Save on
+ * top of a failed read writes empty strings over whatever was really on file.
  */
 const loadFailed = ref(false);
 const successNotice = ref('');
 const errorNotice = ref('');
+/** Said under the field it is about, from the page's own check or the server's. */
+const emailError = ref('');
+const phoneError = ref('');
+const isPasswordOpen = ref(false);
+
+const phoneChanged = computed(
+  () => phoneDigits(form.value.phone_number) !== phoneDigits(savedSnapshot.value.phone_number)
+);
 
 /** First and last name, as the header's avatar does: "Ana Marie Bonto" is AB there, not AM. */
 const initials = computed(() => {
@@ -98,12 +121,6 @@ async function fetchProfile() {
     const data = await api.get<any>('/tenant/my-profile');
     
     identity.value = {
-      // No invented address. This used to fall back to 'tenant@hivelet.com', which
-      // was shown to the resident beside a mail icon as though it were theirs. It
-      // now actually fires: OD-09 allows a tenant with no email, and since phone
-      // sign-in landed such a tenant can reach this page. Empty means "none on
-      // file", and the template says so rather than filling the gap.
-      email: currentUser.value?.email || data?.email || '',
       role: currentUser.value?.role || data?.role || 'tenant',
       account_status: data?.account_status || 'active',
     };
@@ -118,6 +135,10 @@ async function fetchProfile() {
     // input placeholder, which is never submitted.
     form.value = {
       full_name: data?.full_name || currentUser.value?.fullName || '',
+      // No invented address, and no placeholder shown as one (migration 067):
+      // empty means "not set yet", and the template says so. This once fell back
+      // to 'tenant@hivelet.com', shown to the tenant as though it were theirs.
+      email: realEmail(data?.email),
       phone_number: data?.phone_number || '',
       emergency_contact_name: data?.emergency_contact_name || '',
       emergency_contact_phone: data?.emergency_contact_phone || '',
@@ -153,11 +174,16 @@ async function handleSave() {
   }
 
   errorNotice.value = '';
+  emailError.value = '';
+  phoneError.value = '';
 
-  if (!form.value.full_name.trim()) {
-    errorNotice.value = 'Please enter your name.';
-    return;
-  }
+  // Only what changed is checked and sent. An email that was never set can stay
+  // unset here (the sign-in step asks for it); one on file cannot be cleared.
+  const emailChanged = form.value.email.trim() !== savedSnapshot.value.email.trim();
+  const sendPhone = phoneChanged.value;
+  if (emailChanged) emailError.value = emailProblem(form.value.email);
+  if (sendPhone) phoneError.value = phoneProblem(form.value.phone_number);
+  if (emailError.value || phoneError.value) return;
 
   saving.value = true;
   try {
@@ -173,11 +199,12 @@ async function handleSave() {
      * Worse for the name: the line below used to copy it into `currentUser.fullName`, so the
      * header changed too and the edit looked real until the next reload put it back.
      */
-    const payload = {
-      phone_number: form.value.phone_number.trim(),
+    const payload: Record<string, string> = {
       emergency_contact_name: form.value.emergency_contact_name.trim(),
       emergency_contact_phone: form.value.emergency_contact_phone.trim(),
     };
+    if (emailChanged) payload.email = form.value.email.trim();
+    if (sendPhone) payload.phone_number = form.value.phone_number.trim();
 
     // Surfaced rather than swallowed: a profile edit that silently fails leaves
     // the tenant believing their emergency contact is on file when it is not.
@@ -187,9 +214,23 @@ async function handleSave() {
     // into the session made an edit the server refused look like it had been accepted.
 
     savedSnapshot.value = { ...form.value };
-    successNotice.value = 'Your details are saved.';
-    showToast('success', 'Details saved', 'Your details are saved.');
+    successNotice.value = sendPhone
+      ? `Your details are saved. You sign in with ${form.value.phone_number.trim()} from now on.`
+      : 'Your details are saved.';
+    showToast('success', 'Details saved', successNotice.value);
+    // The header and the sign-in step read the session, so it hears about a new email too.
+    if (emailChanged) void restoreSession();
   } catch (err: any) {
+    // Someone else already has it (409), or the server's own check refused it
+    // (422): said under the field, the way the page's own check says it.
+    if (err instanceof ApiRequestError && (err.status === 409 || err.status === 422) && err.details) {
+      emailError.value = err.details.email?.[0] ?? '';
+      phoneError.value = err.details.phone_number?.[0] ?? '';
+      if (emailError.value || phoneError.value) {
+        errorNotice.value = 'Nothing was saved. Check the field marked below.';
+        return;
+      }
+    }
     // A TIMEOUT may have saved (`lib/api.ts`, the deadline). Saving the same
     // details again is harmless here, but "Not saved" would still be a claim.
     if (err?.code === 'TIMEOUT') {
@@ -208,6 +249,8 @@ function handleReset() {
   form.value = { ...savedSnapshot.value };
   successNotice.value = '';
   errorNotice.value = '';
+  emailError.value = '';
+  phoneError.value = '';
 }
 </script>
 
@@ -302,11 +345,12 @@ function handleReset() {
           </div>
 
           <p class="mt-2 text-sm leading-6 text-ink-soft break-words">
-            <template v-if="form.phone_number">
-              You sign in with <span class="whitespace-nowrap">{{ form.phone_number }}</span>.
+            <!-- What is saved, not what is being typed: the new number signs in only once saved. -->
+            <template v-if="savedSnapshot.phone_number">
+              You sign in with <span class="whitespace-nowrap">{{ savedSnapshot.phone_number }}</span>.
             </template>
-            <template v-else-if="identity.email">
-              No phone number on file, so you sign in with {{ identity.email }}.
+            <template v-else-if="savedSnapshot.email">
+              No phone number on file, so you sign in with {{ savedSnapshot.email }}.
             </template>
             <template v-else>No phone number on file.</template>
           </p>
@@ -334,20 +378,62 @@ function handleReset() {
                 required
               />
               <p class="ws-hint">
-                This is on your tenancy record. Ask the landlady if it needs changing.
+                The landlady keeps your name on your tenancy record. Ask her if it needs changing.
               </p>
             </div>
 
             <div class="ws-field">
-              <label for="phone">Your phone number</label>
+              <label for="email">Your email</label>
+              <input
+                id="email"
+                v-model="form.email"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="you@email.com"
+                :class="['ws-input', emailError && 'border-overdue']"
+                :aria-invalid="emailError ? 'true' : undefined"
+                :aria-describedby="emailError ? 'email-error' : 'email-hint'"
+                @input="emailError = ''"
+              />
+              <p v-if="emailError" id="email-error" class="ws-reveal text-sm text-overdue">{{ emailError }}</p>
+              <p v-else id="email-hint" class="ws-hint">
+                {{ savedSnapshot.email ? 'Only you can change it.' : `${EMAIL_NOT_SET}. Add one you check.` }}
+              </p>
+            </div>
+
+            <div class="ws-field">
+              <label for="phone">Your mobile number</label>
               <input
                 id="phone"
                 v-model="form.phone_number"
                 type="tel"
-                placeholder="0917-123-4567"
-                class="ws-input"
-                required
+                autocomplete="tel"
+                inputmode="tel"
+                placeholder="0917 123 4567"
+                :class="['ws-input tabular', phoneError && 'border-overdue']"
+                :aria-invalid="phoneError ? 'true' : undefined"
+                :aria-describedby="phoneError ? 'phone-error' : 'phone-hint'"
+                @input="phoneError = ''"
               />
+              <p v-if="phoneError" id="phone-error" class="ws-reveal text-sm text-overdue">{{ phoneError }}</p>
+              <p v-else-if="phoneChanged && form.phone_number.trim()" id="phone-hint" class="ws-reveal text-sm font-medium text-verify">
+                Once saved, you sign in with this new number, not {{ savedSnapshot.phone_number }}.
+              </p>
+              <p v-else id="phone-hint" class="ws-hint">You sign in with this number.</p>
+            </div>
+
+            <div class="ws-field">
+              <span id="password-label">Your password</span>
+              <button
+                type="button"
+                class="pill-btn self-start"
+                aria-describedby="password-label"
+                @click="isPasswordOpen = true"
+              >
+                <KeyRound class="size-4" aria-hidden="true" />
+                <span>Change password</span>
+              </button>
             </div>
 
           </div>
@@ -401,5 +487,7 @@ function handleReset() {
         </div>
       </form>
     </div>
+
+    <ChangePasswordModal :open="isPasswordOpen" @close="isPasswordOpen = false" />
   </div>
 </template>

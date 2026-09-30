@@ -14,7 +14,8 @@
  *   enquiry fields           backend/src/routes/public.ts `inquirySchema`: four fields
  *   enquiry audit row        same route, `auditFromRequest` INQUIRY_CREATE: name + IP address
  *   resident record          backend/src/routes/admin.ts `tenantOnboardSchema`
- *   what a resident edits    TenantProfileView.vue (phone, emergency contact, occupation, Facebook)
+ *   what a resident edits    TenantProfileView.vue (email, phone, password, emergency contact);
+ *                            the name is the landlady's (services/contactDetails.ts, 2026-09-30)
  *   tickets                  backend/src/routes/tenant.ts `ticketSchema` (photo as attachment)
  *   activity record          backend/src/services/auditService.ts; UPDATE and DELETE revoked
  *                            by migration 002, and no route edits or deletes an entry
@@ -76,7 +77,7 @@ const sections = Object.values(S);
 </script>
 
 <template>
-  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-29" :sections="sections">
+  <LegalPage title="Privacy policy" effective="2026-09-24" updated="2026-09-30" :sections="sections">
     <template #lead>
       <p>
         This policy explains what Hivelet, the system {{ LANDLADY.name }} uses to run the
@@ -126,11 +127,13 @@ const sections = Object.values(S);
 
       <h3>If you live here</h3>
       <p>
-        {{ LANDLADY.name }} creates your account when you move in. It holds your name, the email
-        address or phone number you sign in with, your unit, your move-in date, the amount paid
-        on moving in, and how many people live in the unit, because water is charged per person.
-        On the My details screen you can add or change your phone number, an emergency contact's
-        name and number, your occupation and your Facebook page.
+        {{ LANDLADY.name }} creates your account when you move in. It holds your name, the phone
+        number you sign in with, your unit, your move-in date, the amount paid on moving in, and
+        how many people live in the unit, because water is charged per person.
+        Your email address, phone number and password are yours to keep up to date: you are asked
+        for an email the first time you sign in, and can change all three on the My details
+        screen, along with an emergency contact's name and number. Your name is kept by
+        {{ LANDLADY.name }}; ask her if it is wrong.
       </p>
       <p>
         An emergency contact is someone else's name and number. Please let them know you have
@@ -379,7 +382,7 @@ const sections = Object.values(S);
         To use any of them, contact {{ LANDLADY.name }} by phone on
         <a :href="`tel:${LANDLADY.phone}`">{{ LANDLADY.phone }}</a> or in person at the address
         above. Tenants can already see their bills, payments and tickets in the portal, and
-        correct their own phone number, emergency contact, occupation and Facebook page on the My
+        correct their own email address, phone number, password and emergency contact on the My
         details screen. For anything else, including your name, ask her.
       </p>
       <p>

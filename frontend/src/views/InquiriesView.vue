@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useLiveRefresh } from '@/lib/live';
 import { useRouter } from 'vue-router';
 import { inquiries, fetchInquiries as fetchInquiriesState, inquiriesFetchFailed, rooms, roomsFetchFailed, showToast, type Inquiry } from '@/lib/systemState';
 import { peso } from '@/lib/canonicalUnits';
@@ -209,6 +210,9 @@ const activeMessages = computed<MessageBubble[]>(() => {
  * what she had already answered, which is the one thing an inbox is for.
  */
 const threadError = ref<string | null>(null);
+
+// The open conversation stays current: a visitor's reply appears while she reads (lib/live.ts).
+useLiveRefresh(() => (activeInquiryId.value ? loadThread(activeInquiryId.value) : undefined));
 
 async function loadThread(inquiryId: string) {
   threadError.value = null;

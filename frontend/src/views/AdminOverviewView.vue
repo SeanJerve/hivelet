@@ -10,6 +10,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { useLiveRefresh } from '@/lib/live';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '@/lib/api';
 import { currentUser } from '@/lib/authStore';
@@ -196,6 +197,9 @@ function onDocumentPointerDown(e: PointerEvent) {
 /* ========================================================================== *
  * Loading
  * ========================================================================== */
+
+// The payments waiting for her stay current; the rest is refreshed by lib/live.ts.
+useLiveRefresh(() => loadPayments());
 
 async function loadPayments() {
   try {
@@ -1363,7 +1367,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                     <th scope="col" class="px-4 py-3 text-right font-medium">Payments</th>
                     <th scope="col" class="px-4 py-3 text-left font-medium">Months paid</th>
                     <th scope="col" class="px-4 py-3 text-right font-medium">Total</th>
-                    <th scope="col" class="px-4 py-3 text-left font-medium">Receipt no., first found</th>
+                    <th scope="col" class="px-4 py-3 text-left font-medium">Invoice no., first found</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1505,7 +1509,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                       <th scope="col" class="px-4 py-3 text-right font-medium">50% Share</th>
                       <th scope="col" class="px-4 py-3 text-right font-medium">Water</th>
                       <th scope="col" class="px-4 py-3 text-right font-medium">Total remitted</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Receipt no.</th>
+                      <th scope="col" class="px-4 py-3 text-left font-medium">Invoice no.</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1537,7 +1541,7 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
                   <thead>
                     <tr class="text-xs text-ink-faint border-b border-line">
                       <th scope="col" class="px-4 py-3 text-left font-medium">Date</th>
-                      <th scope="col" class="px-4 py-3 text-left font-medium">Receipt or supplier</th>
+                      <th scope="col" class="px-4 py-3 text-left font-medium">Invoice or supplier</th>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Category</th>
                       <th scope="col" class="px-4 py-3 text-left font-medium">Split across areas</th>
                       <th scope="col" class="px-4 py-3 text-right font-medium">Total</th>

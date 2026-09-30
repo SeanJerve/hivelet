@@ -3,7 +3,8 @@ import WsModal from '@/components/ui/WsModal.vue';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import { periodEnd, propertyToday, formatDateOnly, PROPERTY_TIMEZONE } from '@/lib/propertyDate';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useLiveRefresh } from '@/lib/live';
 import { useRoute, useRouter } from 'vue-router';
 import { 
   incomeRecords, 
@@ -53,7 +54,6 @@ interface ApiIncome {
   occupants: number;
   fifty_percent_share: number;
   water_payment: number;
-  gbg_fee: number;
   remitted_amount: number;
   payment_method: string;
   rooms?: { room_number: string; cluster_code: string };
@@ -182,6 +182,9 @@ const pendingPayments = ref<ApiPendingPayment[]>([]);
  * Empty and unknown are different things, and the screen has to say which.
  */
 const pendingPaymentsError = ref<string | null>(null);
+
+// The "to verify" queue stays current too; the ledger itself is refreshed by lib/live.ts.
+useLiveRefresh(() => fetchPayments());
 
 async function fetchPayments() {
   try {
@@ -368,7 +371,55 @@ function perOccupantWaterText(): string {
     : 'Per registered occupant, each month';
 }
 
+/**
+ * Arriving from "See it in Monthly Income" on the payment form (Sean,
+ * 2026-09-30): ?year=2026&month=9&highlight=<record id>. The page opens on that
+ * month, opens the cluster the payment sits in, scrolls to it and tints it for a
+ * few seconds, so she sees exactly what was just recorded.
+ */
+const highlightId = ref<string | null>(null);
+let highlightTimer: ReturnType<typeof setTimeout> | undefined;
+function applyArrivalQuery() {
+  const y = typeof route.query.year === 'string' ? route.query.year : null;
+  const m = Number(route.query.month);
+  if (y) {
+    pickedYear.value = y;
+    if (yearsList.value.includes(y)) filterYear.value = y;
+  }
+  if (m >= 1 && m <= 12) filterMonth.value = MONTH_SHORT[m - 1];
+  if (typeof route.query.highlight === 'string') {
+    activeTab.value = 'ledger';
+    highlightId.value = route.query.highlight;
+    showHighlighted();
+  }
+}
+async function showHighlighted() {
+  const id = highlightId.value;
+  if (!id) return;
+  if (y_isLoading()) return; // tried again when the ledger arrives
+  const row = rows.value.find((r) => r.id === id);
+  if (!row) return;
+  const group = clusterGroups.value.find((g) => g.records.some((r) => r.id === id));
+  if (group) openClusters.value = { ...openClusters.value, [group.key]: true };
+  await nextTick();
+  document.querySelector(`[data-row-id="${id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  clearTimeout(highlightTimer);
+  highlightTimer = setTimeout(() => (highlightId.value = null), 6000);
+}
+function y_isLoading() {
+  return isLoading.value;
+}
+watch(() => [route.query.year, route.query.month, route.query.highlight], applyArrivalQuery);
+watch(isLoading, (loading) => {
+  if (!loading) {
+    const y = typeof route.query.year === 'string' ? route.query.year : null;
+    if (y && yearsList.value.includes(y)) filterYear.value = y;
+    showHighlighted();
+  }
+});
+
 onMounted(() => {
+  applyArrivalQuery();
   if (route.query.tab === 'verify') {
     activeTab.value = 'verify';
   }
@@ -404,7 +455,7 @@ function matchesExceptCluster(r: IncomeRecord): boolean {
     query &&
     !r.unit.toLowerCase().includes(query) &&
     !r.contact.toLowerCase().includes(query) &&
-    !r.invoice.toLowerCase().includes(query)
+    !(r.invoice ?? '').toLowerCase().includes(query)
   ) {
     return false;
   }
@@ -459,7 +510,6 @@ const totalRent = computed(() => rows.value.reduce((s, r) => s + r.rent, 0));
  */
 const totalShare = computed(() => rows.value.reduce((s, r) => s + (r.cluster === 'BH' ? (r.rent / 2) : 0), 0));
 const totalWater = computed(() => rows.value.reduce((s, r) => s + r.water, 0));
-const totalGarbage = computed(() => rows.value.reduce((s, r) => s + r.garbage, 0));
 /**
  * BR-038, matching the generated column exactly: Rent Amount + Water Payment.
  *
@@ -467,20 +517,20 @@ const totalGarbage = computed(() => rows.value.reduce((s, r) => s + r.garbage, 0
  * a second, "her spreadsheet's own bottom line", counting BH rows at HALF
  * their rent, and the BH rows and header showed that one. Her workbook says
  * otherwise (B-76, read 2026-09-26): Remitted is `=SUM(E5,H5:I5)`, full rent
- * plus water plus garbage, and the BH total `=SUM(J3:J24)` adds those rows at
+ * plus water, and the BH total `=SUM(J3:J24)` adds those rows at
  * full rent. Half rent appears only in her 50% column (`=SUM(E3*0.5)`), which
  * is shown on its own. So the screen now agrees with the database and the
- * Excel export. (Garbage has its own column here, as BR-038 defines it.)
+ * Excel export.
  */
 const totalRemitted = computed(() => rows.value.reduce((s, r) => s + r.rent + r.water, 0));
 
 /**
  * Unit, Paid, Who (takes the rest), Rent, the one extra slot, Water (with its
- * heads), Garbage, Remitted, edit. Sized so a seven-figure total
+ * heads), Remitted, edit. Sized so a seven-figure total
  * ("P1,485,000.00", 89px at 14px) fits on one line; percentages broke
  * "P4,500.00" in two.
  */
-const CLUSTER_TABLE_COLS = ['3.5rem', '6.5rem', '', '7rem', '6.25rem', '6.25rem', '5.25rem', '7rem', '4rem'];
+const CLUSTER_TABLE_COLS = ['3.5rem', '6.5rem', '', '7rem', '6.25rem', '6.25rem', '7rem', '4rem'];
 
 /**
  * Collections by month, for the same capsule chart the overview uses.
@@ -520,16 +570,17 @@ const collectionsByMonth = computed<CapsuleMonth[]>(() => {
 const showMonthChart = computed(() => filterMonth.value === 'All' && rows.value.length > 0);
 
 /**
- * What the money on screen is made of. A true part-to-whole: rent, water and
- * the garbage fee add up to what was collected, so a bar is honest here.
+ * What the money on screen is made of. A true part-to-whole: rent and water add
+ * up to what was collected (the Remitted column), so a bar is honest here.
  */
 const collectionParts = computed(() => [
   { label: 'Rent', value: totalRent.value, tone: 'brand' as const },
   { label: 'Water', value: totalWater.value, tone: 'bright' as const },
-  { label: 'Garbage', value: totalGarbage.value, tone: 'soft' as const },
 ]);
 
-const collectedAltogether = computed(() => totalRent.value + totalWater.value + totalGarbage.value);
+// Rent plus water: the same figure as the Remitted column's total, so the page
+// shows one "collected" number, not two that differ (Sean, 2026-09-30).
+const collectedAltogether = computed(() => totalRent.value + totalWater.value);
 
 // Grouped rows matching Excel's 5 physical sub-sections
 const clusterGroups = computed(() => {
@@ -594,7 +645,6 @@ const clusterGroups = computed(() => {
     const gShare = def.hasShareColumn ? gRent / 2 : 0;
     const gOccupants = groupRecords.reduce((sum, r) => sum + r.occupants, 0);
     const gWater = groupRecords.reduce((sum, r) => sum + r.water, 0);
-    const gGarbage = groupRecords.reduce((sum, r) => sum + r.garbage, 0);
     const gRemitted = groupRecords.reduce((sum, r) => sum + r.rent + r.water, 0);
 
     return {
@@ -604,7 +654,6 @@ const clusterGroups = computed(() => {
       totalShare: gShare,
       totalOccupants: gOccupants,
       totalWater: gWater,
-      totalGarbage: gGarbage,
       totalRemitted: gRemitted
     };
   }).filter(g => g.records.length > 0);
@@ -640,7 +689,6 @@ const editUnit = ref('1a');
 // not as a rent someone might not notice is wrong.
 const editRent = ref(0);
 const editWater = ref(400);
-const editGarbage = ref(0);
 const editInvoice = ref('');
 const editDate = ref('');
 /**
@@ -702,7 +750,7 @@ const editDateCoveredEnd = computed(() => {
 });
 
 const editTotal = computed(() => {
-  return (Number(editRent.value) || 0) + (Number(editWater.value) || 0) + (Number(editGarbage.value) || 0);
+  return (Number(editRent.value) || 0) + (Number(editWater.value) || 0);
 });
 
 function startEditIncome(r: IncomeRecord) {
@@ -713,8 +761,7 @@ function startEditIncome(r: IncomeRecord) {
   editUnit.value = asListedUnitCode(r.unit);
   editRent.value = r.rent;
   editWater.value = r.water;
-  editGarbage.value = r.garbage;
-  editInvoice.value = r.invoice;
+  editInvoice.value = r.invoice ?? '';
   
   /**
    * `r.rawDate`, not a re-parse of `r.datePaid`.
@@ -774,10 +821,10 @@ function startEditIncome(r: IncomeRecord) {
   isEditOpen.value = true;
 }
 
-function handleDeleteIncome(id: string, invoice: string, unit: string) {
+function handleDeleteIncome(id: string, invoice: string | null, unit: string) {
   showConfirm(
     'Delete this payment?',
-    `Unit ${unit.toUpperCase()}, receipt ${invoice}. It is removed from the ledger and cannot be brought back.`,
+    `Unit ${unit.toUpperCase()}${invoice ? `, invoice ${invoice}` : ''}. It is removed from the ledger and cannot be brought back.`,
     async () => {
       try {
         await api.delete(`/admin/income-records/${id}`);
@@ -785,7 +832,7 @@ function handleDeleteIncome(id: string, invoice: string, unit: string) {
         if (idx !== -1) {
           incomeRecords.splice(idx, 1);
         }
-        showToast('success', 'Payment deleted', `Receipt ${invoice} is no longer in the ledger.`);
+        showToast('success', 'Payment deleted', invoice ? `Invoice ${invoice} is no longer in the ledger.` : 'The payment is no longer in the ledger.');
       } catch (err: any) {
         showToast('error', failureTitle(err, 'Delete failed'), err.message || 'Server error occurred');
       }
@@ -804,7 +851,7 @@ function handleDeleteFromModal() {
 
 async function handleEditIncome() {
   if (!editingIncome.value) return;
-  const invalid = Number(editRent.value) < 0 || Number(editWater.value) < 0 || Number(editGarbage.value) < 0;
+  const invalid = Number(editRent.value) < 0 || Number(editWater.value) < 0;
   if (invalid) {
     showToast('error', 'Validation Error', 'Amounts cannot be negative.');
     return;
@@ -854,16 +901,6 @@ async function handleEditIncome() {
       roomNumber: editUnit.value.toUpperCase(),
       datePaid: editDate.value,
       /**
-       * BR-037. This dialog has always SHOWN a required GBG Fee, pre-filled it
-       * from the row and counted it in the total on screen - and never sent it.
-       * The correction was accepted, the toast said "Record Updated", and the
-       * refetch put the old figure straight back.
-       *
-       * The backend schema is `.strict()`, so adding it here alone would have
-       * been a 422; `gbgFee` was added there in the same change.
-       */
-      gbgFee: Number(editGarbage.value) || 0,
-      /**
        * `contactName` is deliberately NOT sent.
        *
        * It used to be, recomputed from the unit's CURRENT occupancy:
@@ -885,7 +922,8 @@ async function handleEditIncome() {
        * the payer ever needs correcting, that wants a field of its own and an
        * audit entry, not a silent recomputation.
        */
-      invoiceNumber: editInvoice.value,
+      // Blank clears it: not every payment has an invoice (Sean, 2026-09-30).
+      invoiceNumber: editInvoice.value.trim(),
       rentAmount: Number(editRent.value) || 0,
       occupants: occupants,
       paymentMethod: editMethod.value,
@@ -1035,7 +1073,7 @@ async function exportExcel() {
                figure is still the ledger's Remitted column. -->
           <p class="tabular text-4xl font-semibold leading-none tracking-tight">{{ peso(collectedAltogether) }}</p>
           <p class="mt-2 text-sm leading-6 text-on-night-soft">
-            Rent, water and garbage, from {{ rows.length }}
+            Rent and water, from {{ rows.length }}
             {{ rows.length === 1 ? 'payment' : 'payments' }}
           </p>
         </template>
@@ -1096,7 +1134,7 @@ async function exportExcel() {
         (`showMonthChart` requires `rows.length > 0`), so a failed load never
         draws an empty capsule strip. This tile had no such guard and drew the
         whole breakdown at zero: a part-to-whole bar with no parts, "Rent ₱0,
-        Water ₱0, Garbage ₱0", and the spreadsheet's own line at ₱0 under it.
+        Water ₱0", and the spreadsheet's own line at ₱0 under it.
       -->
       <OverviewTile title="What it was made of" :class="showMonthChart ? 'xl:col-span-2' : 'xl:col-span-5'">
         <UnavailableNote
@@ -1107,7 +1145,7 @@ async function exportExcel() {
         <template v-else>
         <SegmentBar
           :segments="collectionParts"
-          label="Rent, water and the garbage fee as parts of what was collected"
+          label="Rent and water as parts of what was collected"
         />
         <dl class="mt-4 space-y-2 text-sm">
           <div
@@ -1518,14 +1556,13 @@ async function exportExcel() {
                      ("Water, 2 heads"); a column of its own made the ledger
                      scroll sideways at 1280. -->
                 <th scope="col" class="num">Water</th>
-                <th scope="col" class="num">Garbage</th>
                 <th scope="col" class="num">Remitted</th>
                 <th scope="col"><span class="sr-only">Actions</span></th>
               </tr>
             </template>
 
             <template #row="{ row: r }">
-              <tr class="group">
+              <tr class="group transition-colors duration-700" :class="r.id === highlightId && 'bg-brand-soft'" :data-row-id="r.id">
                 <th scope="row" class="font-semibold uppercase text-ink">{{ r.unit }}</th>
                 <td>
                   <span class="block whitespace-nowrap">{{ r.datePaid }}</span>
@@ -1549,7 +1586,6 @@ async function exportExcel() {
                   <span class="block font-semibold text-ink">{{ peso(r.water, 2) }}</span>
                   <span class="block text-xs text-ink-faint">{{ headsLabel(r.occupants) }}</span>
                 </td>
-                <td class="num">{{ peso(r.garbage, 2) }}</td>
                 <td class="num font-semibold text-brand">
                   {{ peso(r.rent + r.water, 2) }}
                 </td>
@@ -1582,7 +1618,6 @@ async function exportExcel() {
                   <span class="block">{{ peso(group.totalWater, 2) }}</span>
                   <span class="block text-xs font-normal text-ink-faint">{{ headsLabel(group.totalOccupants) }}</span>
                 </td>
-                <td class="num">{{ peso(group.totalGarbage, 2) }}</td>
                 <td class="num text-brand">{{ peso(group.totalRemitted, 2) }}</td>
                 <td></td>
               </tr>
@@ -1637,10 +1672,6 @@ async function exportExcel() {
                   <dt class="text-xs text-ink-faint">Water, {{ headsLabel(group.totalOccupants) }}</dt>
                   <dd class="tabular font-semibold text-ink">{{ peso(group.totalWater, 2) }}</dd>
                 </div>
-                <div>
-                  <dt class="text-xs text-ink-faint">Garbage</dt>
-                  <dd class="tabular text-ink">{{ peso(group.totalGarbage, 2) }}</dd>
-                </div>
               </dl>
             </template>
 
@@ -1678,10 +1709,6 @@ async function exportExcel() {
                   <dt class="text-xs text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
                   <dd class="tabular font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
                 </div>
-                <div>
-                  <dt class="text-xs text-ink-faint">Garbage</dt>
-                  <dd class="tabular text-ink">{{ peso(r.garbage, 2) }}</dd>
-                </div>
               </dl>
               <div class="mt-3 flex justify-end">
               <button
@@ -1705,7 +1732,7 @@ async function exportExcel() {
       v-else
       class="ws-reveal"
       :rows="rows"
-      caption="Every collection on screen, with unit, date, who paid, rent, water, garbage and what was remitted"
+      caption="Every collection on screen, with unit, date, who paid, rent, water and what was remitted"
       noun="entry"
       :page-size="12"
       table-from="xl"
@@ -1720,14 +1747,13 @@ async function exportExcel() {
           <th scope="col" class="num">Rent</th>
           <th scope="col" class="num">Heads</th>
           <th scope="col" class="num">Water</th>
-          <th scope="col" class="num">Garbage</th>
           <th scope="col" class="num">Remitted</th>
           <th scope="col"><span class="sr-only">Actions</span></th>
         </tr>
       </template>
 
       <template #row="{ row: r }">
-        <tr class="group">
+        <tr class="group transition-colors duration-700" :class="r.id === highlightId && 'bg-brand-soft'" :data-row-id="r.id">
           <th scope="row">
             <span class="block font-semibold uppercase text-ink">{{ r.unit }}</span>
             <span class="block text-xs font-normal text-ink-faint">{{ r.cluster }}</span>
@@ -1750,7 +1776,6 @@ async function exportExcel() {
           </td>
           <td class="num">{{ r.occupants }}</td>
           <td class="num font-semibold text-ink">{{ peso(r.water, 2) }}</td>
-          <td class="num">{{ peso(r.garbage, 2) }}</td>
           <td class="num font-semibold text-brand">
             {{ peso(r.rent + r.water, 2) }}
           </td>
@@ -1777,7 +1802,6 @@ async function exportExcel() {
           </td>
           <td class="num">{{ rows.reduce((sum, r) => sum + r.occupants, 0) }}</td>
           <td class="num">{{ peso(totalWater, 2) }}</td>
-          <td class="num">{{ peso(totalGarbage, 2) }}</td>
           <!-- The column's own sum: every row is rent + water (BR-038). -->
           <td class="num text-brand">{{ peso(totalRemitted, 2) }}</td>
           <td></td>
@@ -1824,10 +1848,6 @@ async function exportExcel() {
             </dt>
             <dd class="tabular font-semibold text-ink">{{ peso(totalWater, 2) }}</dd>
           </div>
-          <div>
-            <dt class="text-xs text-ink-faint">Garbage</dt>
-            <dd class="tabular text-ink">{{ peso(totalGarbage, 2) }}</dd>
-          </div>
         </dl>
       </template>
 
@@ -1864,10 +1884,6 @@ async function exportExcel() {
             <dt class="text-xs text-ink-faint">Water, {{ headsLabel(r.occupants) }}</dt>
             <dd class="tabular font-semibold text-ink">{{ peso(r.water, 2) }}</dd>
           </div>
-          <div>
-            <dt class="text-xs text-ink-faint">Garbage</dt>
-            <dd class="tabular text-ink">{{ peso(r.garbage, 2) }}</dd>
-          </div>
         </dl>
         <div class="mt-3 flex justify-end">
         <button
@@ -1889,7 +1905,7 @@ async function exportExcel() {
     <WsModal
       v-if="isEditOpen"
       title="Edit this payment"
-      :subtitle="editingIncome ? `Unit ${editingIncome.unit.toUpperCase()}${editingIncome.invoice ? `, receipt ${editingIncome.invoice}` : ''}` : undefined"
+      :subtitle="editingIncome ? `Unit ${editingIncome.unit.toUpperCase()}${editingIncome.invoice ? `, invoice ${editingIncome.invoice}` : ''}` : undefined"
       size="lg"
       :dismissible="false"
       @close="isEditOpen = false"
@@ -1920,7 +1936,7 @@ async function exportExcel() {
               class="mb-1.5 text-xs leading-snug text-verify"
             >
               The unit list could not be refreshed, so the number of people has <strong>not</strong>
-              been filled in. Enter it yourself. It sets the water on this receipt.
+              been filled in. Enter it yourself. It sets the water on this payment.
             </p>
             <!-- The warning above belongs to this field, so the label wraps the
                  select rather than sitting beside it unassociated. -->
@@ -1954,21 +1970,15 @@ async function exportExcel() {
             </label>
           </div>
 
-          <!-- GBG Fee & OR Receipt Number Row -->
-          <div class="grid grid-cols-2 gap-3 sm:gap-4">
-            <label class="ws-field">
-              Garbage fee
-              <input v-model.number="editGarbage" type="number" min="0" step="any" class="ws-input w-full" required />
-            </label>
-            <label class="ws-field">
-              Receipt (OR) number
-              <input v-model="editInvoice" type="text" placeholder="OR-2026-1055" class="ws-input w-full font-mono" required />
-            </label>
-          </div>
+          <!-- Invoice number: optional, because not every payment has one. -->
+          <label class="ws-field">
+            Invoice number (if any)
+            <input v-model="editInvoice" type="text" placeholder="INV#4627" class="ws-input w-full font-mono" />
+          </label>
 
           <!-- Payment Method & Online Reference Number Row -->
           <!-- Full width on a phone on purpose, unlike the money pairs above:
-               a reference is a long string typed off a receipt. -->
+               a reference is a long string typed off an invoice. -->
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="ws-field">
               How they paid

@@ -30,8 +30,17 @@ import { propertyToday, propertyParts, isoDateParts } from '../utils/propertyClo
 import { attachmentHeader } from '../utils/reportFileName.js';
 import { assertWritten, warnIfWriteFailed, uniqueViolationOn } from '../utils/checkedWrite.js';
 import { generateTemporaryPassword } from '../utils/generateTemporaryPassword.js';
+import { randomUUID } from 'node:crypto';
+import {
+  assertContactAvailable,
+  isPhMobile,
+  isPlaceholderEmail,
+  phoneDigits,
+  placeholderEmailFor,
+} from '../services/contactDetails.js';
 import { auditFromRequest, withoutCredentials } from '../services/auditService.js';
 import { notificationService } from '../services/notificationService.js';
+import { normalizeInvoiceNumber } from '../utils/invoiceNumber.js';
 import { computeWaterFee, isOverdue, allocateReceipt, computeRentPeriod, monthlySpansFrom, toCentavos, MONEY_DUST } from '../services/billingService.js';
 import { buildIncomeReportWorkbook } from '../services/incomeReportExport.js';
 import { buildExpenseReportWorkbook } from '../services/expenseReportExport.js';
@@ -616,6 +625,25 @@ router.post(
     // An empty string from a cleared form field means "no email", not "".
     const normalizedEmail = email && email.trim() ? email.toLowerCase().trim() : null;
 
+    // A made-up address such as name@example.com would be kept as if it were
+    // theirs. Blank is the honest answer: the tenant adds their own at first
+    // sign-in (services/contactDetails.ts).
+    // Said in the message itself: the move-in form shows the message, not details.
+    if (normalizedEmail && isPlaceholderEmail(normalizedEmail)) {
+      throw ApiError.badRequest(
+        'That is not an email address anyone can receive mail at. Leave it blank if they have ' +
+          'none: they add their own when they first sign in.'
+      );
+    }
+    // The phone is their first sign-in, so it is checked as a mobile number the
+    // same way the tenant's own changes are.
+    if (phone && phone.trim() && !isPhMobile(phone)) {
+      throw ApiError.badRequest(
+        'The phone number should be a Philippine mobile number, for example 0917 123 4567. ' +
+          'It is what they sign in with.'
+      );
+    }
+
     /**
      * WHO ALREADY HOLDS THIS ADDRESS - AND WHAT THEY ARE.
      *
@@ -815,8 +843,16 @@ router.post(
      * whole insert, which would have broken onboarding entirely rather than
      * just this feature.
      */
+    /**
+     * A move-in with no email gets a placeholder that can never receive mail,
+     * as migration 067 gave every tenant on file (services/contactDetails.ts),
+     * so the tenant is asked for their own at first sign-in. The id is chosen
+     * here so the placeholder can be made from it. A promotion always has a
+     * real email (it is matched on one), so this never applies there.
+     */
+    const newProfileId = randomUUID();
     const profileValues = {
-      email: normalizedEmail,
+      email: normalizedEmail ?? placeholderEmailFor(newProfileId),
       must_change_password: passwordHash !== null,
       password_hash: passwordHash,
       full_name: fullName,
@@ -851,7 +887,7 @@ router.post(
           .maybeSingle()
       : await db
           .from('profiles')
-          .insert(profileValues)
+          .insert({ id: newProfileId, ...profileValues })
           .select('*')
           .single();
 
@@ -1067,7 +1103,15 @@ const tenantUpdateSchema = z.object({
     .transform((s) => s.replace(/\s+/g, ' ').trim())
     .pipe(z.string().min(2).max(255))
     .optional(),
+  /**
+   * Accepted only to be REFUSED when it differs from what is on file (Sean,
+   * 2026-09-30): the tenant owns their email and phone and keeps them up to
+   * date from My details. Read in the handler below. The one exception is a
+   * tenant with no phone at all, who is given their first one here exactly as
+   * at move-in, since it is what they sign in with.
+   */
   phone: z.string().max(50).optional(),
+  email: z.string().max(255).optional(),
   emergencyContactName: z.string().max(255).optional(),
   emergencyContactPhone: z.string().max(50).optional(),
   occupation: z.string().max(100).optional(),
@@ -1093,7 +1137,7 @@ router.patch(
     }
 
     const {
-      fullName, phone, emergencyContactName, emergencyContactPhone,
+      fullName, phone, email, emergencyContactName, emergencyContactPhone,
       occupation, facebookUrl, roomNumber, accountStatus,
       occupantCount, roommateQty
     } = parsed.data;
@@ -1113,6 +1157,44 @@ router.patch(
     // administrator, so the interface cannot reach this; the API could.
     if (before.role === 'admin') {
       throw ApiError.forbidden('That profile is an administrator, not a tenancy, so it cannot be edited here.');
+    }
+
+    /**
+     * THE TENANT'S EMAIL AND PHONE ARE THEIRS (Sean, 2026-09-30).
+     *
+     * Refused, before any write, when they differ from what is on file. The
+     * same value sent back unchanged is not a change and passes, so an older
+     * copy of the edit form that still sends them keeps working. A phone is
+     * compared by its digits: "0917-555-2231" and "09175552231" are one number.
+     *
+     * The exception: a tenant with NO phone on file may be given one, which is
+     * the move-in step done late - the phone is their first sign-in, and the
+     * Reset password refusal below tells her to add one. Checked like any other
+     * sign-in phone.
+     */
+    const CONTACT_IS_THE_TENANTS =
+      'The tenant keeps their own email and phone number up to date from My details, so they ' +
+      'cannot be changed here.';
+    if (
+      email !== undefined &&
+      email.trim().toLowerCase() !== String(before.email ?? '').trim().toLowerCase() &&
+      !(isPlaceholderEmail(email) && isPlaceholderEmail(before.email))
+    ) {
+      throw ApiError.forbidden(CONTACT_IS_THE_TENANTS);
+    }
+    let firstPhone: string | undefined;
+    if (phone !== undefined && phoneDigits(phone) !== phoneDigits(before.phone_number)) {
+      if (String(before.phone_number ?? '').trim()) {
+        throw ApiError.forbidden(CONTACT_IS_THE_TENANTS);
+      }
+      if (!isPhMobile(phone)) {
+        throw ApiError.badRequest(
+          'The phone number should be a Philippine mobile number, for example 0917 123 4567. ' +
+            'It is what they sign in with.'
+        );
+      }
+      firstPhone = phone.trim();
+      await assertContactAvailable(before.id, { phone_number: firstPhone });
     }
 
     const explicitOccupants = occupantCount ?? (roommateQty !== undefined ? 1 + roommateQty : undefined);
@@ -1194,7 +1276,7 @@ router.patch(
 
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (fullName !== undefined) patch.full_name = fullName;
-    if (phone !== undefined) patch.phone_number = phone;
+    if (firstPhone !== undefined) patch.phone_number = firstPhone;
     if (emergencyContactName !== undefined) patch.emergency_contact_name = emergencyContactName;
     if (emergencyContactPhone !== undefined) patch.emergency_contact_phone = emergencyContactPhone;
     if (occupation !== undefined) patch.occupation = occupation;
@@ -1396,7 +1478,8 @@ router.post(
           'Set the account back to active first if they are living here again.'
       );
     }
-    if (!profile.email && !profile.phone_number) {
+    // A placeholder email (migration 067) is not something to sign in with.
+    if (isPlaceholderEmail(profile.email) && !profile.phone_number) {
       throw ApiError.badRequest(
         `${profile.full_name} has no email or phone number on file, so there is nothing to sign in with. ` +
           'Add a phone number to their record first.'
@@ -2527,34 +2610,21 @@ async function tenancyForPeriod(
 }
 
 function receiptAlreadyRecorded(err: { code?: string; message?: string } | null): boolean {
-  return err?.code === '23505' && String(err?.message ?? '').includes('idx_one_receipt_per_unit_per_month');
+  // Renamed by migration 066; the old name is kept for a request that lands mid-deploy.
+  const m = String(err?.message ?? '');
+  return err?.code === '23505' && (m.includes('idx_one_invoice_per_unit_per_month') || m.includes('idx_one_receipt_per_unit_per_month'));
 }
 
 const incomeRecordSchema = z.object({
   roomNumber: unitCode(20),
   datePaid: isoDate,
   contactName: shortText(255),
-  invoiceNumber: shortText(100),
-  rentAmount: money,
   /**
-   * BR-037. The garbage fee, as typed at the counter.
-   *
-   * There was no field here at all, and the column defaults to 0.00 - so the
-   * receipt form's GBG input was collected, added to the total the administrator
-   * asked the resident for, PRINTED ON THE RECEIPT, and then dropped. Twice
-   * over: it was never in the request body either.
-   *
-   * Dormant only because the fee has been zero since June 2025. It would have
-   * gone live the moment the owner resumed charging it - ₱20 a unit a month,
-   * about ₱640 a month across the occupied units, collected in cash and
-   * recorded as nothing. That question is open as **OD-02**, which is why this
-   * is wired now rather than after she answers.
-   *
-   * Optional and defaulted, so an older client that omits it still posts.
-   * Unlike water it is NOT derived - there is no rule to derive it from; BR-037
-   * says it is charged per unit and the figure is hers.
+   * Optional (Sean, 2026-09-30): not every payment has an invoice. Blank is
+   * stored as NULL, and a number is written INV#<n> (utils/invoiceNumber.ts).
    */
-  gbgFee: money.optional().default(0),
+  invoiceNumber: z.string().trim().max(100).optional(),
+  rentAmount: money,
   occupants: occupantCount.refine((n) => n >= 1, 'must be at least one occupant'),
   /**
    * `payment_method_type` is (Cash | GCash | Bank Transfer | Adyen Online). Three of those
@@ -2591,10 +2661,11 @@ router.post(
     }
 
     const {
-      roomNumber, datePaid, contactName, invoiceNumber, rentAmount,
-      gbgFee, occupants, paymentMethod, transactionReference, monthsCovered,
+      roomNumber, datePaid, contactName, rentAmount,
+      occupants, paymentMethod, transactionReference, monthsCovered,
       dateCoveredStart, dateCoveredEnd
     } = parsed.data;
+    const invoiceNumber = normalizeInvoiceNumber(parsed.data.invoiceNumber);
 
     // 'Online' was the old form's word for GCash; everything else is already an enum value.
     const normalizedMethod =
@@ -2836,19 +2907,19 @@ router.post(
       const otherRoom = (sameNumber ?? []).find((r: any) => r.room_id !== room.id);
       if (otherRoom) {
         throw ApiError.conflict(
-          `Receipt ${invoiceNumber} is already recorded against unit ` +
+          `Invoice ${invoiceNumber} is already recorded against unit ` +
             `${(otherRoom as any).rooms?.room_number ?? 'another unit'} (record ${otherRoom.id}). ` +
-            'One receipt covers one unit. If this is a separate payment, give it its own receipt number.'
+            'One invoice covers one unit. If this is a separate payment, give it its own invoice number.'
         );
       }
 
       const otherDate = (sameNumber ?? []).find((r: any) => r.date_paid !== datePaid);
       if (otherDate) {
         throw ApiError.conflict(
-          `Receipt ${invoiceNumber} is already recorded as paid on ${(otherDate as any).date_paid} ` +
-            `(record ${otherDate.id}), and this one says ${datePaid}. One receipt is written on one ` +
-            'day. A receipt may cover several months, but they are all paid at once - if this is a ' +
-            'later payment, give it its own receipt number.'
+          `Invoice ${invoiceNumber} is already recorded as paid on ${(otherDate as any).date_paid} ` +
+            `(record ${otherDate.id}), and this one says ${datePaid}. One invoice is written on one ` +
+            'day. An invoice may cover several months, but they are all paid at once - if this is a ' +
+            'later payment, give it its own invoice number.'
         );
       }
     }
@@ -2858,11 +2929,14 @@ router.post(
      * spanning three months collides if ANY of the three is already recorded.
      */
     for (const span of spans) {
-      const { data: duplicates, error: duplicateError } = await db
+      let duplicateQuery = db
         .from('monthly_income_records')
         .select('id')
-        .eq('room_id', room.id)
-        .eq('invoice_number', invoiceNumber)
+        .eq('room_id', room.id);
+      duplicateQuery = invoiceNumber
+        ? duplicateQuery.eq('invoice_number', invoiceNumber)
+        : duplicateQuery.is('invoice_number', null);
+      const { data: duplicates, error: duplicateError } = await duplicateQuery
         .eq('date_paid', datePaid)
         .eq('rent_amount', rentAmount)
         .eq('year', span.year)
@@ -2875,10 +2949,10 @@ router.post(
       const duplicate = duplicates?.[0];
       if (duplicate) {
         throw ApiError.conflict(
-          `Receipt ${invoiceNumber} is already recorded for unit ${roomNumber} on ` +
-            `${datePaid}, covering ${span.year}-${String(span.month).padStart(2, '0')} ` +
-            `(record ${duplicate.id}). If this is a second payment, give it its own ` +
-            `receipt number.`
+          `${invoiceNumber ? `Invoice ${invoiceNumber}` : 'A payment with no invoice'} of the same amount is ` +
+            `already recorded for unit ${roomNumber} on ${datePaid}, covering ` +
+            `${span.year}-${String(span.month).padStart(2, '0')} (record ${duplicate.id}). ` +
+            `If this is a second payment, give it its own invoice number.`
         );
       }
     }
@@ -2907,14 +2981,11 @@ router.post(
           month: spans[0].month,
           date_paid: datePaid,
           contact_name: contactName,
-          // Required by the schema above, so there is nothing to substitute.
+          // NULL when there is no invoice; never an invented number.
           invoice_number: invoiceNumber,
           rent_amount: rentAmount,
           occupants,
           water_payment: calcWater,
-          // Taken from the request, not derived: BR-037 gives no rule to derive it
-          // from. Omitting it let the column default to 0.00 silently.
-          gbg_fee: gbgFee,
           payment_method: normalizedMethod,
           transaction_reference: transactionReference || null,
           rent_period_start: spans[0].start,
@@ -2926,8 +2997,8 @@ router.post(
 
       if (receiptAlreadyRecorded(insertError)) {
         throw ApiError.conflict(
-          `Receipt ${invoiceNumber} is already recorded for unit ${roomNumber} covering that ` +
-            'month. If this is a second payment, give it its own receipt number.'
+          `Invoice ${invoiceNumber} is already recorded for unit ${roomNumber} covering that ` +
+            'month. If this is a second payment, give it its own invoice number.'
         );
       }
       if (insertError) throw ApiError.internal(insertError.message);
@@ -2943,9 +3014,6 @@ router.post(
         // Per month. The form sends one month's rent; the months are the spans.
         p_rent_amount: rentAmount,
         p_water_payment: calcWater,
-        // BR-037 - once per RECEIPT, not once per month covered. The function
-        // puts it on the first month only.
-        p_gbg_fee: gbgFee,
         p_occupants: occupants,
         p_payment_method: normalizedMethod,
         p_transaction_reference: transactionReference || null,
@@ -2969,8 +3037,8 @@ router.post(
         }
         if (receiptAlreadyRecorded(rpcError)) {
           throw ApiError.conflict(
-            `Receipt ${invoiceNumber} is already recorded for unit ${roomNumber} covering one ` +
-              'of those months. If this is a second payment, give it its own receipt number.'
+            `Invoice ${invoiceNumber} is already recorded for unit ${roomNumber} covering one ` +
+              'of those months. If this is a second payment, give it its own invoice number.'
           );
         }
         throw ApiError.internal(rpcError.message);
@@ -2984,7 +3052,7 @@ router.post(
         );
       }
       // The first month's row stands for the receipt in the audit entry and the
-      // response; all of them carry the same receipt number.
+      // response; all of them carry the same invoice number.
       newRecord = rows[0];
     }
 
@@ -3083,8 +3151,6 @@ router.post(
          * only one month's worth would have been applied to what they owe -
          * leaving bills open that the money in the drawer had already paid.
          *
-         * The garbage fee stays out, as it always has: BR-037 charges it per
-         * unit and no bill is raised for it, so it settles nothing.
          */
         (Number(rentAmount || 0) + Number(calcWater || 0)) * spans.length,
         (openBills ?? []).map((b) => ({
@@ -3099,7 +3165,7 @@ router.post(
       // `CASH-REC-<6 random digits>` - a reference matching no document anyone
       // holds. Several bills settled from one receipt now carry that receipt's
       // number, which is what makes them traceable back to it.
-      const reference = transactionReference || invoiceNumber;
+      const reference = transactionReference || invoiceNumber || null;
 
       // Bills earlier payments already covered, whose stored status never caught up.
       for (const billId of plan.corrections) {
@@ -3188,7 +3254,51 @@ router.post(
       }).catch(() => {});
     }
 
-    res.status(201).json({ success: true, data: newRecord });
+    /**
+     * What she records is what the tenancy now says (Sean, 2026-09-30).
+     *
+     * The tenancy kept its own occupant count, and a payment recorded for a
+     * different number changed nothing else: she recorded water for four people,
+     * the tenant's page and the next month's form still said three, and she could
+     * not tell what had happened. Now the newest payment wins - if this one is the
+     * tenant's latest period and names a different number, the tenancy's count
+     * follows it, so the water, the unit list and the tenant's own page agree
+     * with what she recorded. A back-dated payment for an earlier month changes
+     * nothing, because it describes the past. Audited as a tenancy change.
+     */
+    let occupantsUpdated: { from: number; to: number } | null = null;
+    if (assign && payer && payer.id === assign.id && occupantsDiverge) {
+      const lastStart = spans[spans.length - 1].start;
+      const { data: later, error: laterError } = await db
+        .from('monthly_income_records')
+        .select('id')
+        .eq('room_id', room.id)
+        .eq('tenant_profile_id', payer.tenant_profile_id)
+        .is('voided_at', null)
+        .gt('rent_period_start', lastStart)
+        .limit(1);
+      if (!laterError && (later ?? []).length === 0) {
+        const { error: occError } = await db
+          .from('room_assignments')
+          .update({ occupant_count: occupants, updated_at: new Date().toISOString() })
+          .eq('id', assign.id);
+        if (!occError) {
+          occupantsUpdated = { from: Number(carriedOccupants), to: occupants };
+          await auditFromRequest(req, {
+            action: 'TENANT_UPDATE',
+            entityType: 'ROOM_ASSIGNMENT',
+            entityId: String(assign.id),
+            previousValues: { occupant_count: carriedOccupants },
+            newValues: {
+              occupant_count: occupants,
+              note: `Occupants follow the payment recorded for ${roomNumber} (record ${newRecord.id}).`,
+            },
+          }).catch(() => {});
+        }
+      }
+    }
+
+    res.status(201).json({ success: true, data: { ...newRecord, occupantsUpdated } });
   })
 );
 
@@ -3209,7 +3319,8 @@ const incomeRecordPatchSchema = z.object({
   roomNumber: unitCode(20).optional(),
   datePaid: isoDate.optional(),
   contactName: shortText(255).optional(),
-  invoiceNumber: shortText(100).optional(),
+  /** Optional; '' clears it (no invoice). Written INV#<n> (utils/invoiceNumber.ts). */
+  invoiceNumber: z.string().trim().max(100).optional(),
   rentAmount: money.optional(),
   /**
    * `.refine(n => n >= 1)` to match the create path, which has always had it.
@@ -3220,21 +3331,6 @@ const incomeRecordPatchSchema = z.object({
    * of the same row disagreed, and the create path already refused exactly that.
    */
   occupants: occupantCount.refine((n) => n >= 1, 'must be at least one occupant').optional(),
-  /**
-   * BR-037. The create path takes this from the request because there is no
-   * rule to derive it from; the correction path could not take it at all.
-   *
-   * The ledger's edit dialog shows a REQUIRED "GBG Fee" input, pre-fills it from
-   * the row, counts it in the total it displays, and validates it - then never
-   * sent it, and this schema is `.strict()`, so it could not have been added
-   * from the form alone. She typed a corrected fee, was told the record was
-   * updated, and the refetch quietly put the old figure back.
-   *
-   * That is the same shape as the create-path defect recorded above: collected,
-   * shown in the total she asked the resident for, and dropped. It was fixed
-   * there and not here.
-   */
-  gbgFee: money.optional(),
   paymentMethod: z.enum(['Cash', 'GCash', 'Bank Transfer', 'Adyen Online']).optional(),
   transactionReference: shortText(120).optional(),
   monthsCovered: z.number().int().min(1).max(60).optional(),
@@ -3265,7 +3361,7 @@ router.patch(
     }
     const {
       roomNumber, datePaid, contactName, invoiceNumber, rentAmount,
-      occupants, gbgFee, paymentMethod, transactionReference, monthsCovered,
+      occupants, paymentMethod, transactionReference, monthsCovered,
       dateCoveredStart, dateCoveredEnd
     } = parsedBody.data;
 
@@ -3388,7 +3484,7 @@ router.patch(
     }
     if (datePaid) updatePatch.date_paid = datePaid;
     if (contactName) updatePatch.contact_name = contactName;
-    if (invoiceNumber) updatePatch.invoice_number = invoiceNumber;
+    if (invoiceNumber !== undefined) updatePatch.invoice_number = normalizeInvoiceNumber(invoiceNumber);
     if (rentAmount !== undefined) updatePatch.rent_amount = rent;
     if (occupants !== undefined) updatePatch.occupants = occ;
     /**
@@ -3425,7 +3521,6 @@ router.patch(
       // moment the body was given a real schema.
       updatePatch.payment_method = paymentMethod;
     }
-    if (gbgFee !== undefined) updatePatch.gbg_fee = gbgFee;
     if (transactionReference !== undefined) updatePatch.transaction_reference = transactionReference;
     if (dateCoveredEnd) updatePatch.rent_period_end = dateCoveredEnd;
 
@@ -3474,7 +3569,7 @@ router.patch(
       // room UUID on screen is worse than not naming it. The receipt number and
       // the month are what she needs to find the other row.
       throw ApiError.conflict(
-        `A receipt numbered ${updatePatch.invoice_number ?? before.invoice_number} is already ` +
+        `An invoice numbered ${updatePatch.invoice_number ?? before.invoice_number} is already ` +
         `recorded against that unit for ${String(before.month).padStart(2, '0')}/${before.year}. ` +
         'Nothing was changed. Check the ledger for the receipt that already carries this number.'
       );
@@ -3687,7 +3782,7 @@ const expenseEntrySchema = z.object({
   // cannot be right (`check:ledger` pins them, one is the Excel epoch), and a
   // route that accepts ambiguous spellings is how a third arrives.
   expenseDate: isoDate,
-  orSupplier: z.string().min(1),
+  invoiceSupplier: z.string().min(1),
   categoryCode: z.string().min(1).max(20),
   /**
    * At least one, and a bounded number.
@@ -3745,7 +3840,7 @@ router.post(
       throw ApiError.validation('Invalid expense payload.', parsed.error.flatten().fieldErrors);
     }
 
-    const { expenseDate, orSupplier, categoryCode, allocations } = parsed.data;
+    const { expenseDate, invoiceSupplier, categoryCode, allocations } = parsed.data;
     oneAmountPerArea(allocations.map((a) => a.propertyArea));
 
     /**
@@ -3770,7 +3865,7 @@ router.post(
       'create_expense_entry_with_allocations',
       {
         p_expense_date: expenseDate,
-        p_or_supplier: orSupplier,
+        p_invoice_supplier: invoiceSupplier,
         p_category_code: categoryCode,
         p_allocations: allocations.map((a) => ({
           property_area: a.propertyArea,
@@ -3818,7 +3913,7 @@ router.patch(
 
     const parsedEntry = z.object({
       expenseDate: isoDate.optional(),
-      orSupplier: shortText(500).optional(),
+      invoiceSupplier: shortText(500).optional(),
       categoryCode: shortText(20).optional(),
       // Allocation shape is checked here; each property_area is then normalised
       // to a canonical value below before anything is written.
@@ -3835,7 +3930,7 @@ router.patch(
         parsedEntry.error.flatten().fieldErrors
       );
     }
-    const { expenseDate, orSupplier, categoryCode, allocations } = parsedEntry.data;
+    const { expenseDate, invoiceSupplier, categoryCode, allocations } = parsedEntry.data;
 
     // Normalise and validate EVERY allocation before touching a single row. The replacement below
     // is atomic, but rejecting a bad payload up front gives the caller a 400 that names the problem
@@ -3887,7 +3982,7 @@ router.patch(
       updated_at: new Date().toISOString()
     };
     if (expenseDate) updatePatch.expense_date = expenseDate;
-    if (orSupplier) updatePatch.or_supplier = orSupplier;
+    if (invoiceSupplier) updatePatch.invoice_supplier = invoiceSupplier;
     if (categoryCode) updatePatch.category_code = categoryCode;
 
     const { data: after, error: updateError } = await db

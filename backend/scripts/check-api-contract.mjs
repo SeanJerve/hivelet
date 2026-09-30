@@ -620,7 +620,7 @@ if (adminToken) {
  */
 {
   const ledgerInserts = [
-    ['backend/src/routes/admin.ts', 'monthly_income_records', ['rent_amount', 'water_payment', 'gbg_fee', 'occupants']],
+    ['backend/src/routes/admin.ts', 'monthly_income_records', ['rent_amount', 'water_payment', 'occupants']],
   ];
 
   for (const [rel, table, required] of ledgerInserts) {
@@ -717,11 +717,11 @@ if (adminToken) {
                                          floor: 1, capacity: 1,
                                          current_price: 1e999 },                 'room create, current_price'],
     ['POST',  '/admin/income-records', { roomNumber: '1a', datePaid: '2026-09-14',
-                                         contactName: 'Probe', invoiceNumber: 'OR#PROBE',
+                                         contactName: 'Probe', invoiceNumber: 'INV#PROBE',
                                          rentAmount: 1e999, occupants: 1, monthsCovered: 1,
                                          dateCoveredStart: '2026-09-14',
                                          dateCoveredEnd: '2026-10-13' },         'income create, rentAmount'],
-    ['POST',  '/admin/expense-entries',{ expenseDate: '2026-09-14', orSupplier: 'Probe',
+    ['POST',  '/admin/expense-entries',{ expenseDate: '2026-09-14', invoiceSupplier: 'Probe',
                                          categoryCode: '1',
                                          allocations: [{ propertyArea: 'Boarding House',
                                                          amount: 1e999 }] },     'expense create, allocation amount'],

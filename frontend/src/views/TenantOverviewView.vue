@@ -7,6 +7,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useLiveRefresh } from '@/lib/live';
 import { useRouter } from 'vue-router';
 import { currentUser } from '@/lib/authStore';
 import { api } from '@/lib/api';
@@ -39,8 +40,8 @@ const payingOnline = ref(false);
  * inventing room 1A, cluster BH and a first floor when a field was missing. A
  * missing fact now shows as not on file.
  *
- * The template also printed a list of amenities, a garbage fee "Included (₱0)" and
- * an electricity rate for every unit. The system holds none of those facts; two
+ * The template also printed a list of amenities and an electricity rate for
+ * every unit. The system holds none of those facts; two
  * are open questions for the owner (CLIENT_MEETING_QUESTIONS.md 2a and 3b). They
  * are gone until there is something true to print.
  */
@@ -284,9 +285,14 @@ onMounted(async () => {
   await fetchTenantData();
 });
 
-async function fetchTenantData() {
-  loading.value = true;
-  unitPhotoLoaded.value = false;
+// Kept current while the page is open, without a skeleton (lib/live.ts).
+useLiveRefresh(() => fetchTenantData({ quiet: true }));
+
+async function fetchTenantData(opts: { quiet?: boolean } = {}) {
+  if (!opts.quiet) {
+    loading.value = true;
+    unitPhotoLoaded.value = false;
+  }
   try {
     const data = await api.get<any[]>('/tenant/my-rooms');
     if (data && data.length > 0) {
@@ -346,12 +352,8 @@ async function fetchTenantData() {
     recordedReceipts.value = (incomeData ?? []).map((inc: any) => ({
       id: String(inc.id),
       at: String(inc.date_paid || ''),
-      // `remitted_amount` is GENERATED as `rent_amount + water_payment`. Garbage
-      // (BR-037) is its own column and is not inside it, so this read short of
-      // the paper receipt by exactly the garbage fee. `tenant.ts` now selects
-      // `gbg_fee`, so the figure can be the whole sum rather than apologising
-      // for not being it.
-      amount: (Number(inc.remitted_amount) || 0) + (Number(inc.gbg_fee) || 0),
+      // Rent plus water: the whole payment (`remitted_amount`).
+      amount: Number(inc.remitted_amount) || 0,
       date: shortDate(inc.date_paid, true),
       method: methodLabel(inc.payment_method),
       period:
@@ -859,14 +861,8 @@ const statusTone = computed(() => {
                 </span>
               </li>
             </ul>
-            <!-- The figure is rent, water and garbage - the whole receipt. It
-                 used to be `remitted_amount` alone, which is GENERATED as
-                 `rent_amount + water_payment` and leaves garbage (BR-037) out,
-                 so the portal read short of the paper in the resident's hand and
-                 a note here had to apologise for it. `tenant.ts` selects
-                 `gbg_fee` now and the sum is taken above. -->
             <p class="pt-1 text-xs leading-5 text-ink-faint">
-              Amounts include rent, water and the garbage fee.
+              Amounts include rent and water.
             </p>
           </section>
         </div>

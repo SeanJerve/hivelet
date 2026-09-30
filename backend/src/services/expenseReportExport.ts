@@ -78,7 +78,7 @@ function dateFmt(iso: string): string {
 interface Entry {
   month: number;
   expense_date: string;
-  or_supplier: string;
+  invoice_supplier: string;
   category_code: string;
   total_expenses: number;
   byArea: Map<string, number>;
@@ -129,7 +129,7 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
     const { data: page, error: entryError } = await db
       .from('monthly_expense_entries')
       .select(
-        'id, expense_date, or_supplier, category_code, total_expenses, ' +
+        'id, expense_date, invoice_supplier, category_code, total_expenses, ' +
           'expense_property_allocations (property_area, amount)'
       )
       .gte('expense_date', `${year}-01-01`)
@@ -159,7 +159,7 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
     list.push({
       month,
       expense_date: raw.expense_date,
-      or_supplier: raw.or_supplier,
+      invoice_supplier: raw.invoice_supplier,
       category_code: String(raw.category_code),
       total_expenses: n(raw.total_expenses),
       byArea,
@@ -183,7 +183,7 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
 
   ws.columns = [
     { width: 12 },                                  // Date
-    { width: 34 },                                  // OR / Supplier
+    { width: 34 },                                  // Invoice / Supplier
     ...areas.map(() => ({ width: 16 })),            // one per Property Area
     { width: 10 },                                  // Category
     { width: 15 },                                  // Total Expenses
@@ -198,7 +198,7 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
   ws.mergeCells(title.number, 1, title.number, sumCumCol);
 
   const header = ws.addRow([
-    'Date', 'OR / Supplier', ...areas.map((a) => a.name), 'Category', 'Total Expenses',
+    'Date', 'Invoice / Supplier', ...areas.map((a) => a.name), 'Category', 'Total Expenses',
     '', 'Category summary', 'This month', 'Cumulative',
   ]);
   header.font = { bold: true, size: 10, color: { argb: INK } };
@@ -231,7 +231,7 @@ export async function buildExpenseReportWorkbook(year: number): Promise<ExcelJS.
     let monthTotal = 0;
 
     for (const e of entries) {
-      const cells: (string | number | null)[] = [dateFmt(e.expense_date), e.or_supplier];
+      const cells: (string | number | null)[] = [dateFmt(e.expense_date), e.invoice_supplier];
       for (const a of areas) {
         const v = e.byArea.get(a.code) ?? 0;
         cells.push(v ? c2(v) : null);

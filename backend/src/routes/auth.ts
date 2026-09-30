@@ -20,6 +20,13 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { permissionsForRole } from '../config/rbac.js';
 import { auditFromRequest, clientIp } from '../services/auditService.js';
+import {
+  contactEmail,
+  contactPhone,
+  ownProfileUpdateSchema,
+  pickChanged,
+  refuseOwnNameChange,
+} from '../services/contactDetails.js';
 
 const router = Router();
 
@@ -231,9 +238,12 @@ router.get(
 
 /**
  * PATCH /api/auth/me
- * System Bible Section 19 — a tenant may update phone number, emergency
- * contact, occupation and contact links. `role` and `account_status` are
- * stripped in the service, so this cannot be used to self-promote.
+ * System Bible Section 19 — a tenant may update their email, phone number,
+ * emergency contact, occupation and contact links (email and phone added
+ * 2026-09-30: the tenant owns them, the landlady owns the name). `role`,
+ * `account_status` and the name are never taken from here, so this cannot be
+ * used to self-promote or self-rename. The checks are the same as
+ * `PUT /tenant/my-profile`'s, because both go through `updateOwnProfile`.
  *
  * GATED behind `requirePasswordCurrent` (B-63/B-64), and that is a decision,
  * not an oversight: B-63's own wording names three exemptions to the 428
@@ -244,25 +254,18 @@ router.get(
  * proving it holds a password of its own choosing - none of which is needed to
  * get unstuck, unlike the three named routes. Gated, so B-63's stated reach
  * ("428 on everything but those three") is literally true rather than true
- * modulo one same-path exception nobody wrote down.
+ * modulo one same-path exception nobody wrote down. The first sign-in sets
+ * email and phone through change-password instead, in the same write as the
+ * new password.
  */
 router.patch(
   '/auth/me',
   requireAuth,
   requirePasswordCurrent,
   asyncHandler(async (req, res) => {
-    const before = await getOwnProfile(req.user!.profileId);
-    // `updateOwnProfile` already strips anything outside TENANT_EDITABLE_FIELDS,
-    // so role escalation was never possible. What was missing was TYPE checking:
-    // an object or array reached PostgreSQL and came back as a 500 rather than a
-    // 422 naming the offending field. Lengths match the column widths.
-    const parsedProfile = z.object({
-      phone_number: z.string().trim().max(50).nullable().optional(),
-      emergency_contact_name: z.string().trim().max(255).nullable().optional(),
-      emergency_contact_phone: z.string().trim().max(50).nullable().optional(),
-      occupation: z.string().trim().max(100).nullable().optional(),
-      facebook_url: z.string().trim().max(2048).nullable().optional()
-    }).strict().safeParse(req.body ?? {});
+    refuseOwnNameChange(req.body);
+    // `.strict()`: an unknown key is a 422 naming it rather than a silent drop.
+    const parsedProfile = ownProfileUpdateSchema.strict().safeParse(req.body ?? {});
 
     if (!parsedProfile.success) {
       throw ApiError.validation(
@@ -270,18 +273,23 @@ router.patch(
         parsedProfile.error.flatten().fieldErrors
       );
     }
+    // Only a tenant's email is theirs to change here. The administrator's is
+    // her sign-in address and is not changed through the self-service route.
+    if (parsedProfile.data.email !== undefined && req.user!.role !== 'tenant') {
+      throw ApiError.forbidden('Only a tenant changes their own email here.');
+    }
 
-    const updated = await updateOwnProfile(req.user!.profileId, parsedProfile.data);
+    const { before, after } = await updateOwnProfile(req.user!.profileId, parsedProfile.data);
 
     await auditFromRequest(req, {
       action: 'PROFILE_UPDATE',
       entityType: 'PROFILE',
       entityId: req.user!.profileId,
-      previousValues: before as unknown as Record<string, unknown>,
-      newValues: updated,
+      previousValues: pickChanged(before, parsedProfile.data),
+      newValues: parsedProfile.data,
     });
 
-    res.status(200).json({ success: true, data: updated });
+    res.status(200).json({ success: true, data: after });
   })
 );
 
@@ -292,6 +300,14 @@ const passwordSchema = z.object({
     .min(10, 'New password must be at least 10 characters.')
     .regex(/[A-Za-z]/, 'New password must contain a letter.')
     .regex(/[0-9]/, 'New password must contain a number.'),
+  /**
+   * A tenant's first sign-in sets these in the same request as the password
+   * (Sean, 2026-09-30), so the step lands whole or not at all. Optional for
+   * everyone else: the voluntary Change password dialog never sends them.
+   * Same rules as My details (`services/contactDetails.ts`).
+   */
+  email: contactEmail.optional(),
+  phoneNumber: contactPhone.optional(),
 });
 
 /**
@@ -319,14 +335,26 @@ router.post(
       throw ApiError.validation('Invalid password payload.', parsed.error.flatten().fieldErrors);
     }
 
+    const { email, phoneNumber } = parsed.data;
+    const contact = {
+      ...(email !== undefined ? { email } : {}),
+      ...(phoneNumber !== undefined ? { phone_number: phoneNumber } : {}),
+    };
+    if (Object.keys(contact).length > 0 && req.user!.role !== 'tenant') {
+      throw ApiError.forbidden('Only a tenant sets their email and phone here.');
+    }
+
     let token: string;
+    let previousContact: { email: string | null; phone_number: string | null };
     try {
       const result = await changeOwnPassword(
         req.user!.profileId,
         parsed.data.currentPassword,
-        parsed.data.newPassword
+        parsed.data.newPassword,
+        contact
       );
       token = result.token;
+      previousContact = result.previousContact;
     } catch (err) {
       if (err instanceof ApiError && err.code === 'INVALID_CREDENTIALS') passwordChangeFailures.record(req);
       throw err;
@@ -337,6 +365,18 @@ router.post(
       entityType: 'PROFILE',
       entityId: req.user!.profileId,
     });
+
+    // The contact half of a first sign-in, as its own entry, so the Activity
+    // page shows the email and phone changing the same way My details does.
+    if (Object.keys(contact).length > 0) {
+      await auditFromRequest(req, {
+        action: 'PROFILE_UPDATE',
+        entityType: 'PROFILE',
+        entityId: req.user!.profileId,
+        previousValues: pickChanged(previousContact, contact),
+        newValues: { ...contact, note: 'Set by the tenant with their new password.' },
+      });
+    }
 
     // B-64 decision 3: `changeOwnPassword` just set `password_changed_at`, and
     // `resolveAuthUser` refuses any token issued before it - including the one

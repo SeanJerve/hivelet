@@ -50,7 +50,7 @@ const people = computed<HistoryPerson[]>(() =>
       contact: r.contact,
       datePaid: r.datePaid,
       rentFor: r.rentFor,
-      invoice: r.invoice,
+      invoice: r.invoice ?? "",
     })),
     tenants.map((t) => ({ name: t.name, unitCode: t.unitCode, status: t.status })),
     { year: props.year, month: props.month }
@@ -98,7 +98,7 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <p class="max-w-3xl text-sm leading-6 text-ink-soft">
         Who paid for each unit in {{ periodLabel }}, from the receipts in Monthly Income. Names are as
-        written on the receipts; when one person was written two ways in the same unit, they are shown
+        written on the payments; when one person was written two ways in the same unit, they are shown
         once, with the other spelling under their name.
       </p>
       <button
@@ -116,17 +116,17 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
 
     <UnavailableNote
       v-else-if="incomeRecordsFetchFailed && incomeRecords.length === 0"
-      message="The receipts could not be loaded, so the history cannot be shown."
+      message="The payments could not be loaded, so the history cannot be shown."
       @retry="fetchIncomeRecords"
     />
 
     <RecordTable
       v-else
       :rows="shown"
-      :caption="`Tenants by unit in ${periodLabel}, from the receipts`"
+      :caption="`Tenants by unit in ${periodLabel}, from the payments`"
       noun="tenant"
       :cols="cols"
-      :empty-title="`No receipts for ${periodLabel}`"
+      :empty-title="`No payments for ${periodLabel}`"
       :empty-note="query ? 'Try another name or unit.' : 'Nothing is recorded for this period yet.'"
     >
       <template #head>
@@ -136,11 +136,11 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
           <template v-if="month">
             <th scope="col">Covers</th>
             <th scope="col">Paid on</th>
-            <th scope="col">Receipt</th>
+            <th scope="col">Invoice</th>
           </template>
           <template v-else>
             <th scope="col">Months paid in {{ year }}</th>
-            <th scope="col" class="num">Receipts</th>
+            <th scope="col" class="num">Payments</th>
           </template>
         </tr>
       </template>
@@ -188,7 +188,7 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
           </div>
           <template v-if="month">
             <div>
-              <dt class="text-xs text-ink-faint">Receipt</dt>
+              <dt class="text-xs text-ink-faint">Invoice</dt>
               <dd class="tabular text-ink">{{ p.receiptNumbers.join(', ') }}</dd>
             </div>
             <div>
@@ -202,7 +202,7 @@ const cols = computed(() => (props.month ? ['12%', '34%', '24%', '16%', '14%'] :
           </template>
           <template v-else>
             <div>
-              <dt class="text-xs text-ink-faint">Receipts</dt>
+              <dt class="text-xs text-ink-faint">Payments</dt>
               <dd class="tabular text-ink">{{ p.receipts }}</dd>
             </div>
             <div class="col-span-2">

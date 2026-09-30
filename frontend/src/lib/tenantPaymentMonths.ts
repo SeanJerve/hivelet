@@ -32,7 +32,6 @@ export interface ReceiptInput {
   rent_period_end: string | null;
   date_paid: string | null;
   remitted_amount: number | string | null;
-  gbg_fee: number | string | null;
   verification_status: string | null;
 }
 
@@ -49,7 +48,7 @@ export interface MonthReceipt {
   periodStart: string | null;
   periodEnd: string | null;
   datePaid: string | null;
-  /** The whole receipt, garbage fee included (BR-037). */
+  /** The whole payment: rent plus water. */
   amount: number;
   /** How many months it covers; the month's share is `amount / monthsCovered`. */
   monthsCovered: number;
@@ -111,7 +110,7 @@ export function buildPaymentMonths(
 
   for (const r of receipts) {
     if (!isVerified(r.verification_status)) continue;
-    const amount = (Number(r.remitted_amount) || 0) + (Number(r.gbg_fee) || 0);
+    const amount = Number(r.remitted_amount) || 0;
     const anchor = isIsoDate(r.rent_period_start) ? r.rent_period_start : isIsoDate(r.date_paid) ? r.date_paid : null;
     if (!anchor) continue;
     const n =

@@ -43,9 +43,10 @@ export interface InquiryInput {
  * Copied from backend/node_modules/zod/v3/types.js (`emailRegex`, the active
  * one), and checked against `z.string().email()` on 23 addresses on
  * 2026-09-24 with no disagreement. If the backend's zod major version moves,
- * re-run that comparison.
+ * re-run that comparison. Also read by `lib/contactDetails.ts`, for the email
+ * a tenant gives themselves: one copy of the pattern, not two.
  */
-const EMAIL_PATTERN = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9-]*\.)+[A-Z]{2,}$/i;
+export const EMAIL_PATTERN = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9-]*\.)+[A-Z]{2,}$/i;
 
 export const MESSAGE_MAX = 2000;
 

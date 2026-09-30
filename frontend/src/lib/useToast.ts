@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { playSound } from './sounds';
 
 export interface ToastItem {
   id: string;
@@ -15,6 +16,9 @@ export function useToast() {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const item: ToastItem = { id, type, title, message, duration };
     toasts.value.push(item);
+    // A saved action sounds "done", a failed one sounds different (lib/sounds.ts).
+    if (type === 'success') playSound('success');
+    else if (type === 'error') playSound('problem');
 
     if (duration > 0) {
       setTimeout(() => {

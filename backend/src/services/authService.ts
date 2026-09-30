@@ -16,6 +16,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { warnIfWriteFailed } from '../utils/checkedWrite.js';
 import { recordAudit } from './auditService.js';
 import { likeLiteral } from '../utils/likeLiteral.js';
+import { assertContactAvailable, contactClash, mustCompleteContact } from './contactDetails.js';
 import type { AuthUser, JwtPayload } from '../types/auth.js';
 import type { StoredRole } from '../config/rbac.js';
 
@@ -162,7 +163,9 @@ export async function login(
     // the type saying `boolean`, and `undefined` is not `false` to the gate
     // in App.vue. Cheap, and it fails closed rather than open.
     mustChangePassword: data.must_change_password ?? false,
+    mustCompleteContact: false,
   };
+  user.mustCompleteContact = mustCompleteContact(user);
 
   void recordLoginAudit(user, ipAddress);
 
@@ -289,7 +292,7 @@ export async function resolveAuthUser(
     }
   }
 
-  return {
+  const user: AuthUser = {
     profileId: data.id,
     email: data.email,
     fullName: data.full_name,
@@ -305,7 +308,10 @@ export async function resolveAuthUser(
     // `?? false` because a row written before the column existed reads
     // undefined rather than false through PostgREST.
     mustChangePassword: data.must_change_password ?? false,
+    mustCompleteContact: false,
   };
+  user.mustCompleteContact = mustCompleteContact(user);
+  return user;
 }
 
 export async function getOwnProfile(profileId: string) {
@@ -320,8 +326,14 @@ export async function getOwnProfile(profileId: string) {
   return data;
 }
 
-/** Fields a tenant may edit about themselves (System Bible Section 19). */
+/**
+ * Fields a tenant may edit about themselves (System Bible Section 19, and
+ * Sean's 2026-09-30 split: the tenant owns their email and phone, the landlady
+ * owns their name). `full_name`, `role` and `account_status` are not here and
+ * never will be.
+ */
 const TENANT_EDITABLE_FIELDS = [
+  'email',
   'phone_number',
   'emergency_contact_name',
   'emergency_contact_phone',
@@ -332,17 +344,24 @@ const TENANT_EDITABLE_FIELDS = [
 export type TenantEditableField = (typeof TENANT_EDITABLE_FIELDS)[number];
 
 /**
- * Updates the caller's own profile.
+ * Updates the caller's own profile. Both self-service routes come here -
+ * `PUT /tenant/my-profile` (the My details page) and `PATCH /auth/me` - so the
+ * email and phone checks cannot differ between them.
  *
- * System Bible Section 19 permits a tenant to update phone number, emergency
- * contact, occupation and contact links — and nothing else. `role`,
- * `account_status` and `email` are stripped here rather than trusted from the
- * request body, so a tenant cannot escalate themselves to admin.
+ * Only the fields above are copied from the patch; anything else, the name
+ * included, is dropped rather than trusted, so a tenant cannot rename or
+ * promote themselves. The routes validate the FORMAT of email and phone
+ * (`contactEmail`, `contactPhone`); this checks neither belongs to someone
+ * else, before the write, and translates losing a race for one into the same
+ * message.
+ *
+ * Returns the row after, and the email and phone as they were before, for the
+ * route's audit entry.
  */
 export async function updateOwnProfile(
   profileId: string,
   patch: Record<string, unknown>
-): Promise<Record<string, unknown>> {
+): Promise<{ after: Record<string, unknown>; before: Record<string, unknown> }> {
   const safePatch: Record<string, unknown> = {};
 
   for (const field of TENANT_EDITABLE_FIELDS) {
@@ -358,6 +377,19 @@ export async function updateOwnProfile(
     );
   }
 
+  const { data: before, error: beforeError } = await db
+    .from('profiles')
+    .select(SAFE_PROFILE_COLUMNS)
+    .eq('id', profileId)
+    .maybeSingle();
+  if (beforeError) throw ApiError.internal(beforeError.message);
+  if (!before) throw ApiError.notFound('Profile not found.');
+
+  await assertContactAvailable(profileId, {
+    email: typeof safePatch.email === 'string' ? safePatch.email : undefined,
+    phone_number: typeof safePatch.phone_number === 'string' ? safePatch.phone_number : undefined,
+  });
+
   safePatch.updated_at = new Date().toISOString();
 
   const { data, error } = await db
@@ -367,27 +399,63 @@ export async function updateOwnProfile(
     .select(SAFE_PROFILE_COLUMNS)
     .maybeSingle();
 
+  const clash = contactClash(error);
+  if (clash) throw clash;
   if (error) throw ApiError.internal(error.message);
   if (!data) throw ApiError.notFound('Profile not found.');
-  return data as unknown as Record<string, unknown>;
+  return {
+    after: data as unknown as Record<string, unknown>,
+    before: before as unknown as Record<string, unknown>,
+  };
 }
 
+/** Email and phone a tenant may set in the same step as their password. */
+export interface ContactPatch {
+  email?: string;
+  phone_number?: string;
+}
+
+/**
+ * Changes the caller's own password and, for a tenant's first sign-in, their
+ * email and phone in the SAME write (Sean, 2026-09-30: "forced to change both
+ * email and password").
+ *
+ * One update, so the step cannot half-land: the password is not replaced while
+ * the email is refused, or the other way round. The order inside is the one
+ * that matters - the current password is checked BEFORE anything is said about
+ * whether an email or phone is taken, so a wrong password learns nothing, and
+ * a wrong password is still what the route's failure limiter counts.
+ */
 export async function changeOwnPassword(
   profileId: string,
   currentPassword: string,
-  newPassword: string
-): Promise<{ token: string }> {
+  newPassword: string,
+  contact: ContactPatch = {}
+): Promise<{ token: string; previousContact: { email: string | null; phone_number: string | null } }> {
   const { data, error } = await db
     .from('profiles')
-    .select('id, password_hash, email, role')
+    .select('id, password_hash, email, phone_number, role')
     .eq('id', profileId)
-    .maybeSingle<{ id: string; password_hash: string | null; email: string | null; role: StoredRole }>();
+    .maybeSingle<{
+      id: string;
+      password_hash: string | null;
+      email: string | null;
+      phone_number: string | null;
+      role: StoredRole;
+    }>();
 
   if (error) throw ApiError.internal(error.message);
   if (!data?.password_hash) throw ApiError.invalidCredentials();
 
   const matches = await bcrypt.compare(currentPassword, data.password_hash);
   if (!matches) throw ApiError.invalidCredentials();
+
+  const contactPatch: ContactPatch = {};
+  if (contact.email !== undefined) contactPatch.email = contact.email;
+  if (contact.phone_number !== undefined) contactPatch.phone_number = contact.phone_number;
+  if (Object.keys(contactPatch).length > 0) {
+    await assertContactAvailable(profileId, contactPatch);
+  }
 
   const hash = await bcrypt.hash(newPassword, config.auth.bcryptRounds);
 
@@ -404,6 +472,7 @@ export async function changeOwnPassword(
   const { error: updateError } = await db
     .from('profiles')
     .update({
+      ...contactPatch,
       password_hash: hash,
       password_changed_at: new Date().toISOString(),
       failed_login_count: 0,
@@ -412,6 +481,10 @@ export async function changeOwnPassword(
     })
     .eq('id', profileId);
 
+  // Two tenants saving the same address at once: the index decides, and the
+  // loser is told in the same words the check above would have used.
+  const clash = contactClash(updateError);
+  if (clash) throw clash;
   if (updateError) throw ApiError.internal(updateError.message);
 
   /**
@@ -424,7 +497,12 @@ export async function changeOwnPassword(
    * `data.token` and stores it when present - see the contract note there.
    */
   return {
-    token: issueToken({ profileId: data.id, email: data.email, role: data.role }),
+    token: issueToken({
+      profileId: data.id,
+      email: contactPatch.email ?? data.email,
+      role: data.role,
+    }),
+    previousContact: { email: data.email, phone_number: data.phone_number },
   };
 }
 
@@ -528,7 +606,9 @@ export async function register(data: RegisterData, ipAddress?: string): Promise<
     // Self-registration sets the password the caller chose, straight away -
     // there is no issued starting password here to be forced off of.
     mustChangePassword: false,
+    mustCompleteContact: false,
   };
+  user.mustCompleteContact = mustCompleteContact(user);
 
   /**
    * The account's creation, recorded as its own event.

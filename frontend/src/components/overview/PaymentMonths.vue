@@ -117,7 +117,7 @@ function monthDetail(m: PaymentMonth): string {
   const r = m.receipts[0];
   if (!r) return '';
   const period = periodText(r.periodStart, r.periodEnd);
-  if (r.monthsCovered > 1) return `One receipt of ${peso(r.amount, 2)} for ${period}, ${r.monthsCovered} months`;
+  if (r.monthsCovered > 1) return `One payment of ${peso(r.amount, 2)} for ${period}, ${r.monthsCovered} months`;
   if (period) return `Rent, ${period}`;
   return r.datePaid ? `Paid ${formatDateOnly(r.datePaid, shortDate)}` : '';
 }
@@ -148,7 +148,7 @@ const rows = computed(() => [...months.value].reverse());
   <div v-else-if="months.length === 0" class="flex flex-col gap-1">
     <p class="text-lg font-semibold tracking-tight">Nothing recorded yet</p>
     <p class="text-sm leading-6 text-ink-soft">
-      Each month appears here once the landlady records a receipt for it, or once rent falls due.
+      Each month appears here once the landlady records a payment for it, or once rent falls due.
     </p>
   </div>
 
@@ -173,7 +173,7 @@ const rows = computed(() => [...months.value].reverse());
       <div>
         <dt class="text-xs text-ink-faint">Paid in these months</dt>
         <dd class="text-lg font-semibold tabular">{{ peso(paidTotal, 2) }}</dd>
-        <dd class="text-xs text-ink-soft">From receipts the landlady verified</dd>
+        <dd class="text-xs text-ink-soft">From payments the landlady verified</dd>
       </div>
       <div>
         <dt class="text-xs text-ink-faint">Due now</dt>

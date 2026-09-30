@@ -20,6 +20,15 @@ export interface AuthUser {
    * `changeOwnPassword` runs - no re-login required.
    */
   mustChangePassword: boolean;
+  /**
+   * True for a tenant who must give a real email and confirm their phone
+   * before using the portal: while on a starting password, or while their
+   * email is a placeholder (migration 067). Computed by `mustCompleteContact`
+   * in `services/contactDetails.ts`, never stored. The pages hold the forced
+   * step open on it; the server does not refuse other calls over it, since it
+   * guards the quality of the tenant's own details, not access to anyone's.
+   */
+  mustCompleteContact: boolean;
 }
 
 /**

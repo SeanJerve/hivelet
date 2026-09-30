@@ -153,7 +153,7 @@ for (const f of walk(FE, ['.ts', '.vue'])) {
   // cannot come back through the JSON helper - so the literal begins with the
   // interpolation, not with the path. Anchoring also truncated
   // `/admin/tenants/${id}/vacate` at the `$`.
-  const re = /(\/(?:admin|tenant|public|auth|health)[A-Za-z0-9_\-./]*(?:\$\{[^}]*\}[A-Za-z0-9_\-./?=&]*)*)/g;
+  const re = /(\/(?:admin|tenant|public|auth|health|live)[A-Za-z0-9_\-./]*(?:\$\{[^}]*\}[A-Za-z0-9_\-./?=&]*)*)/g;
   let m;
   while ((m = re.exec(code))) callPaths.add(m[1].replace(/\$\{[^}]*\}/g, ''));
 }

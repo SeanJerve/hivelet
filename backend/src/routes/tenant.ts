@@ -32,6 +32,8 @@ import { readStanding } from '../services/standingService.js';
 import { adyenService, CHECKOUT_HOLD_MS } from '../services/adyenService.js';
 import { notificationService } from '../services/notificationService.js';
 import { config } from '../config/env.js';
+import { updateOwnProfile } from '../services/authService.js';
+import { ownProfileUpdateSchema, pickChanged, refuseOwnNameChange } from '../services/contactDetails.js';
 
 const router = Router();
 
@@ -414,20 +416,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const { data, error } = await db
       .from('monthly_income_records')
-      /**
-       * `gbg_fee` is selected because the screen is showing the resident what
-       * they handed over, and `remitted_amount` is not that number.
-       *
-       * It is `GENERATED ALWAYS AS (rent_amount + water_payment)` - garbage is a
-       * SEPARATE column (BR-037, PHP 20 per unit per month), so a receipt that
-       * carried one read on the portal as less than the paper in their hand, by
-       * exactly the garbage fee, with nothing on the page to explain the gap.
-       *
-       * The income export keeps extra charges on their own lines for the same
-       * reason and says so twice. The column is right; reading it as the total
-       * was the mistake.
-       */
-      .select('id, rent_period_start, rent_period_end, date_paid, remitted_amount, gbg_fee, ' +
+      .select('id, rent_period_start, rent_period_end, date_paid, remitted_amount, ' +
               'payment_method, verification_status')
       .eq('tenant_profile_id', req.user!.profileId)
       // A voided receipt keeps `verification_status = 'Verified'`, so without
@@ -1210,58 +1199,38 @@ router.get(
 );
 
 /**
- * Validation schema for tenant-editable fields.
- * System Bible Section 19: phone, emergency contact, occupation, Facebook.
- * Full name, email, role, and account status are NOT tenant-editable.
- */
-const profileUpdateSchema = z.object({
-  phone_number: z.string().max(50).optional().nullable(),
-  emergency_contact_name: z.string().max(150).optional().nullable(),
-  emergency_contact_phone: z.string().max(50).optional().nullable(),
-  occupation: z.string().max(100).optional().nullable(),
-  facebook_url: z.string().max(255).optional().nullable(),
-});
-
-/**
  * PUT /api/tenant/my-profile
  * FR-010 — tenant self-service profile update for permitted fields only.
- * Server-side enforcement: only the 5 allowed columns are written, regardless
- * of what the client sends. The profile ID comes from the JWT, not the body.
+ *
+ * Since 2026-09-30 (Sean) the tenant owns their email and phone number and
+ * changes them here, any time; the landlady owns their name, which this
+ * refuses outright rather than dropping silently. The schema, the "is it
+ * taken" checks and the write are shared with `PATCH /auth/me`
+ * (`ownProfileUpdateSchema`, `updateOwnProfile`), so the two cannot disagree.
+ * The profile ID comes from the JWT, not the body.
  */
 router.put(
   '/tenant/my-profile',
   requirePermission(PERMISSIONS.PROFILE_UPDATE_OWN),
   asyncHandler(async (req, res) => {
-    const parsed = profileUpdateSchema.safeParse(req.body);
+    refuseOwnNameChange(req.body);
+    const parsed = ownProfileUpdateSchema.safeParse(req.body);
     if (!parsed.success) {
       throw ApiError.validation('Invalid profile payload.', parsed.error.flatten().fieldErrors);
     }
 
     const updates = parsed.data;
-
-    const { data, error } = await db
-      .from('profiles')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', req.user!.profileId)
-      .select(
-        'id, email, full_name, phone_number, emergency_contact_name, ' +
-          'emergency_contact_phone, occupation, facebook_url, role, account_status'
-      )
-      .single();
-
-    if (error) throw ApiError.internal(error.message);
+    const { before, after } = await updateOwnProfile(req.user!.profileId, updates);
 
     await auditFromRequest(req, {
       action: 'PROFILE_UPDATE',
       entityType: 'PROFILE',
       entityId: req.user!.profileId,
+      previousValues: pickChanged(before, updates),
       newValues: updates,
     });
 
-    res.status(200).json({ success: true, data });
+    res.status(200).json({ success: true, data: after });
   })
 );
 

@@ -918,7 +918,7 @@ router.get(
               </button>
             </div>
 
-            <!-- Mobile Step 5: Official Receipt -->
+            <!-- Mobile Step 5: payment confirmation -->
             <div id="mstep-5" class="mobile-step" style="text-align: center;">
               <div class="receipt-checkmark">✓</div>
               <div style="font-size: 18px; font-weight: 800; color: #16a34a; margin-bottom: 4px;">Payment Successful!</div>

@@ -7,6 +7,7 @@
 import { ref, computed, watch } from 'vue';
 import { api } from './api';
 import { currentUser, isAuthenticated, isAdmin } from './authStore';
+import { playSound } from './sounds';
 
 export interface NotificationItem {
   id: string;
@@ -71,6 +72,7 @@ watch(
     notifications.value = [];
     unreadCount.value = 0;
     lastKnownUnreadCount = 0;
+    loadedOnce = false;
     notificationsFetchFailed.value = false;
     isPopoverOpen.value = false;
   }
@@ -124,41 +126,16 @@ export const urgentUnreadCount = computed(
 export const hasEmergencyUnread = computed(() => urgentUnreadCount.value > 0);
 
 /**
- * Plays a subtle, non-intrusive notification chime via Web Audio API.
+ * The notification chime, now shared with every other sound (lib/sounds.ts), so
+ * it can play when a notification arrives on its own - one audio context,
+ * unlocked on the first tap, instead of a new one each time.
  */
 function playNotificationChime() {
-  try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    
-    // First tone (E5: 659.25 Hz)
-    const osc1 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
-    gain1.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-    osc1.connect(gain1);
-    gain1.connect(ctx.destination);
-    osc1.start();
-    osc1.stop(ctx.currentTime + 0.25);
-
-    // Second tone (A5: 880 Hz)
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
-    gain2.gain.setValueAtTime(0.08, ctx.currentTime + 0.08);
-    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-    osc2.connect(gain2);
-    gain2.connect(ctx.destination);
-    osc2.start(ctx.currentTime + 0.08);
-    osc2.stop(ctx.currentTime + 0.35);
-  } catch {
-    // Audio context may be restricted before user interaction
-  }
+  playSound('notify');
 }
+
+/** False until the first load, so the notifications already there do not chime. */
+let loadedOnce = false;
 
 /**
  * Fetches all notifications for the active authenticated profile.
@@ -193,9 +170,12 @@ export async function fetchNotifications() {
       unreadCount.value = meta?.totalUnread ?? data.filter((n) => !n.is_read).length;
 
       // Play audio chime if new unread items arrived while active
-      if (unreadCount.value > lastKnownUnreadCount && lastKnownUnreadCount > 0) {
+      // Any rise after the first load - including from none to one, which the
+      // old `lastKnownUnreadCount > 0` condition kept silent.
+      if (loadedOnce && unreadCount.value > lastKnownUnreadCount) {
         playNotificationChime();
       }
+      loadedOnce = true;
       lastKnownUnreadCount = unreadCount.value;
       notificationsFetchFailed.value = false;
     } else {

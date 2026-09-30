@@ -13,7 +13,7 @@ WITH
       FROM jsonb_to_recordset('__DATA__'::jsonb) AS f(r int, o date, n date, s text, c text, t numeric, a text)
     ),
     stored AS (
-      SELECT e.id, e.expense_date AS o, trim(e.or_supplier) AS s,
+      SELECT e.id, e.expense_date AS o, trim(e.invoice_supplier) AS s,
              lower(e.category_code) AS c, e.total_expenses AS t,
              coalesce((SELECT string_agg(x.property_area::text || ':' || to_char(x.amount, 'FM9999999990.00'), '|'
                                          ORDER BY x.property_area::text || ':' || to_char(x.amount, 'FM9999999990.00') COLLATE "C")
@@ -40,7 +40,7 @@ SELECT * FROM (
   UNION ALL SELECT 6, 'workbook lines with no stored match (left alone)', (SELECT count(*) FROM sheet_left)::text, ''
   UNION ALL SELECT 7, 'stored entries with no workbook match (left alone)', (SELECT count(*) FROM db_left)::text, ''
   UNION ALL SELECT 8, 'June electric bill as stored', coalesce((SELECT string_agg(e.expense_date || ' P' || e.total_expenses, ', ')
-                FROM monthly_expense_entries e WHERE e.or_supplier = 'Electricbill (May26)'), 'not found'), 'her workbook: 2026-06-04 P20652.80 (BH 14964.13 + MH 5688.67)'
+                FROM monthly_expense_entries e WHERE e.invoice_supplier = 'Electricbill (May26)'), 'not found'), 'her workbook: 2026-06-04 P20652.80 (BH 14964.13 + MH 5688.67)'
   UNION ALL SELECT 9, 'year ' || y, cnt_before::text || ' entries now', 'after 064: ' || cnt_after
   FROM (SELECT y, sum(b) AS cnt_before, sum(a_) AS cnt_after FROM (
           SELECT date_part('year', s.o)::int AS y, 1 AS b, 0 AS a_ FROM stored s

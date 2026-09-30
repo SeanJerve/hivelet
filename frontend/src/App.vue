@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, RouterView } from 'vue-router';
 import { WifiOff } from 'lucide-vue-next';
 import { useToast } from '@/lib/useToast';
-import { isAuthenticated, mustChangePassword, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
+import { isAuthenticated, mustChangePassword, mustCompleteContact, PASSWORD_CHANGED_FLAG } from '@/lib/authStore';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
@@ -12,6 +12,10 @@ import AdminEditUnitModal from '@/components/modals/AdminEditUnitModal.vue';
 import RoomDetailModal from '@/components/modals/RoomDetailModal.vue';
 import OnsitePaymentModal from '@/components/modals/OnsitePaymentModal.vue';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue';
+import { startLiveUpdates, stopLiveUpdates } from '@/lib/live';
+
+// Every open page stays current while someone is signed in (lib/live.ts).
+watch(isAuthenticated, (signedIn) => (signedIn ? startLiveUpdates() : stopLiveUpdates()), { immediate: true });
 
 const route = useRoute();
 const { showToast } = useToast();
@@ -48,10 +52,19 @@ onMounted(() => {
 
   // The confirmation for a forced password change, carried across the reload
   // that follows it (see ChangePasswordModal.vue).
+  // The flag says which parts the forced step saved: '1' the password alone
+  // (as before), 'contact' the email and phone alone, 'both' all three.
   try {
-    if (sessionStorage.getItem(PASSWORD_CHANGED_FLAG)) {
+    const saved = sessionStorage.getItem(PASSWORD_CHANGED_FLAG);
+    if (saved) {
       sessionStorage.removeItem(PASSWORD_CHANGED_FLAG);
-      showToast('success', 'Password changed', 'Your new password is active.');
+      if (saved === 'both') {
+        showToast('success', 'All set', 'Your new password, email and phone number are saved.');
+      } else if (saved === 'contact') {
+        showToast('success', 'Details saved', 'Your email and phone number are saved.');
+      } else {
+        showToast('success', 'Password changed', 'Your new password is active.');
+      }
     }
   } catch {
     // Storage blocked: nothing to show.
@@ -237,8 +250,14 @@ const hidesGlobalHeader = computed(() =>
       has to hold regardless of which page a freshly-signed-in account lands
       on, not just the ones that happen to render a header.
     -->
+    <!--
+      Since 2026-09-30 the same step also asks a tenant for a real email and to
+      confirm their phone (`mustCompleteContact`): always alongside a starting
+      password, and on its own while their email is a placeholder (migration
+      067). The dialog decides which fields to show from the same two flags.
+    -->
     <ChangePasswordModal
-      :open="isAuthenticated && mustChangePassword"
+      :open="isAuthenticated && (mustChangePassword || mustCompleteContact)"
       mandatory
       @close="() => {}"
     />

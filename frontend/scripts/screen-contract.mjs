@@ -46,6 +46,7 @@ const PURPOSE = new Map([
   ['GET /public/clusters', 'the five property clusters'],
   ['GET /public/rates', 'the water rate and the two Linda fixed charges'],
   ['POST /public/inquiries', 'a prospect sends an enquiry'],
+  ['GET /live/version', 'every page, every 5 s while visible: has anything its person can see changed? (reads only)'],
   ['POST /public/inquiries/thread', 'the sender of an inquiry opens its conversation, by its link or reference code and phone (reads only)'],
   ['POST /public/inquiries/thread/messages', 'the sender of an inquiry writes back to Michelle'],
   ['POST /auth/login', 'sign in'],

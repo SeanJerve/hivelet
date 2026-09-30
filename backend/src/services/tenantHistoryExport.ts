@@ -97,7 +97,7 @@ export async function buildTenantHistoryWorkbook(
   workbook.created = new Date();
   const period = month ? `${MONTH_NAMES[month - 1]} ${year}` : String(year);
   workbook.title = `Tenant history, ${period}`;
-  workbook.subject = 'Who paid for each unit, from the receipts in Monthly Income';
+  workbook.subject = 'Who paid for each unit, from the payments in Monthly Income';
 
   const sheet = workbook.addWorksheet(`Tenants ${period}`.slice(0, 31));
   sheet.columns = [
@@ -110,11 +110,11 @@ export async function buildTenantHistoryWorkbook(
       ? [
           { header: 'Covers', key: 'covers', width: 22 },
           { header: 'Paid on', key: 'paidOn', width: 16 },
-          { header: 'Receipt', key: 'receipt', width: 18 },
+          { header: 'Invoice', key: 'receipt', width: 18 },
         ]
       : [
           { header: `Months paid in ${year}`, key: 'months', width: 26 },
-          { header: 'Receipts', key: 'receipts', width: 10 },
+          { header: 'Payments', key: 'receipts', width: 10 },
         ]),
   ];
 

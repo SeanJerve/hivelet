@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import WsModal from '@/components/ui/WsModal.vue';
 import { ref, computed, onMounted, nextTick } from 'vue';
+import { useLiveRefresh } from '@/lib/live';
 import { TICKET_CATEGORIES } from '@/lib/systemState';
 import { api } from '@/lib/api';
 import { useOpenFromQuery } from '@/lib/openFromQuery';
@@ -440,8 +441,33 @@ async function fetchActiveRoom() {
   }
 }
 
-async function fetchTickets() {
-  loadingTickets.value = true;
+/**
+ * Kept current while the page is open (lib/live.ts): the list, and the replies
+ * in a request she has open - quietly, so a note being typed is not disturbed.
+ */
+useLiveRefresh(async () => {
+  await fetchTickets({ quiet: true });
+  const open = activeTimelineTicket.value;
+  if (!isTimelineOpen.value || !open) return;
+  const fresh = tickets.value.find((t) => t.id === open.id);
+  if (fresh) activeTimelineTicket.value = fresh;
+  try {
+    const msgs = await api.get<any[]>(`/tenant/tickets/${open.id}/messages`);
+    if (Array.isArray(msgs) && msgs.length > 0) {
+      timelineNotes.value = msgs.map((m) => ({
+        id: m.id,
+        author: m.profiles?.role === 'admin' ? 'Landlady' : 'You',
+        text: m.message_body,
+        timestamp: m.created_at,
+      }));
+    }
+  } catch {
+    /* the next check tries again */
+  }
+});
+
+async function fetchTickets(opts: { quiet?: boolean } = {}) {
+  if (!opts.quiet) loadingTickets.value = true;
   ticketsLoadFailed.value = false;
   try {
     tickets.value = (await api.get<TicketRow[]>('/tenant/my-tickets')) ?? [];

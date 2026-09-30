@@ -19,6 +19,7 @@ import { api } from './api';
 import { isAdmin, isAuthenticated } from './authStore';
 import { useToast } from './useToast';
 import { formatDateOnly } from './propertyDate';
+import { realEmail } from './contactDetails';
 
 const { showToast: triggerToast } = useToast();
 
@@ -101,12 +102,12 @@ export interface IncomeRecord {
   year?: number;
   month?: number;
   contact: string;
-  invoice: string;
+  /** Null when the payment has no invoice (not every payment has one). */
+  invoice: string | null;
   rentFor: string;
   rent: number;
   occupants: number;
   water: number;
-  garbage: number;
   anniversary: string;
   deposit: number;
   linda?: { electricity: number; water: number };
@@ -238,7 +239,7 @@ export interface ExpenseRecord {
   description: string;
   category: string;
   categoryCode?: string;
-  /** Sum of every allocation on this entry, personal included. The face value of the receipt. */
+  /** Sum of every allocation on this entry, personal included. The face value of the invoice. */
   totalAmount?: number;
   /** Operating cost of the rental business only. This is the figure to subtract from income. */
   rentalAmount?: number;
@@ -864,7 +865,8 @@ export async function fetchTenants(): Promise<TenantRecord[]> {
           unitCode,
           roomId: assignedRoom?.id,
           phone: t.phone_number || '—',
-          email: t.email || '—',
+          // A placeholder (migration 067) is not an address: shown as none yet.
+          email: realEmail(t.email) || '—',
           moveInDate,
           anniversary,
           depositAmount: Number(activeAssignment?.deposit_amount || 0),
@@ -1050,12 +1052,11 @@ export async function fetchIncomeRecords(): Promise<IncomeRecord[]> {
            * `invoice_number` is NOT NULL and 0 of 937 rows are empty, so this
            * branch has never run. It stays unbuilt anyway.
            */
-          invoice: inc.invoice_number || '',
+          invoice: inc.invoice_number || null,
           rentFor,
           rent: Number(inc.rent_amount || 0),
           occupants: Number(inc.occupants || 1),
           water: Number(inc.water_payment || 0),
-          garbage: Number(inc.gbg_fee || 0),
           anniversary: rentStart || '1st',
           deposit: 0,
           paymentMethod: inc.payment_method || 'Cash',
@@ -1172,7 +1173,7 @@ export async function fetchExpenseRecords(): Promise<ExpenseRecord[]> {
           month: /^\d{4}-\d{2}-\d{2}/.test(exp.expense_date || '')
             ? Number(exp.expense_date.slice(5, 7))
             : undefined,
-          description: exp.or_supplier || 'Expense',
+          description: exp.invoice_supplier || 'Expense',
           category: categoryName,
           categoryCode: exp.category_code,
           totalAmount: Number(exp.total_expenses || 0),

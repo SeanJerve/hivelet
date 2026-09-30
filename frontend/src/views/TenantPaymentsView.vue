@@ -7,6 +7,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue';
+import { useLiveRefresh } from '@/lib/live';
 import { api } from '@/lib/api';
 import { afterArrival } from '@/lib/afterArrival';
 import { peso } from '@/lib/canonicalUnits';
@@ -603,8 +604,11 @@ async function fetchOutstandingBills(opts: { quiet?: boolean } = {}) {
  * Both reads or neither: a history missing one half is a wrong history, and
  * "could not be loaded" is the only safe thing to say about it.
  */
-async function fetchPaymentHistory() {
-  loadingHistory.value = true;
+// Kept current while the page is open, without a skeleton (lib/live.ts).
+useLiveRefresh(() => Promise.all([fetchOutstandingBills({ quiet: true }), fetchPaymentHistory({ quiet: true })]));
+
+async function fetchPaymentHistory(opts: { quiet?: boolean } = {}) {
+  if (!opts.quiet) loadingHistory.value = true;
   historyLoadFailed.value = false;
   try {
     const [payments, receipts] = await Promise.all([
@@ -624,9 +628,8 @@ async function fetchPaymentHistory() {
         datePaid: formatDateOnly(r.date_paid, { year: 'numeric', month: 'short', day: 'numeric' }),
         datePaidRaw: r.date_paid,
         year: Number(String(r.date_paid ?? '').slice(0, 4)),
-        // `remitted_amount` is rent plus water only; garbage is its own column
-        // (BR-037). The sum is what the paper receipt says.
-        amountPaid: (Number(r.remitted_amount) || 0) + (Number(r.gbg_fee) || 0),
+        // Rent plus water: the whole payment.
+        amountPaid: Number(r.remitted_amount) || 0,
         paymentMethod: methodLabel(r.payment_method),
         status: (r.verification_status || 'PENDING VERIFICATION').toUpperCase(),
       };
@@ -801,7 +804,7 @@ function refreshAll() {
       </button>
       <p class="text-xs leading-5 text-on-brand-soft">
         {{ peso(standing.perPeriod.totalAmount, 2) }} a month. Paid in person? It shows here once the
-        landlady records the receipt.
+        landlady records the payment.
       </p>
     </OverviewTile>
 

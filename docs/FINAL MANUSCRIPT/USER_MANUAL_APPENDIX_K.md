@@ -119,17 +119,21 @@ only, so another phone or computer shows its own count.
 ### 3. Recording a payment (Monthly Income)
 
 1. **Monthly Income** > **Record payment**.
-2. Choose the **Unit**, type the **Receipt (OR) number** from your receipt book, the **Date
-   received**, **How they paid**, and the period it covers (**Covering from**, **Covering to**, or
-   **Months covered** for more than one month at once).
-   **Covering from** starts on the day after that tenant's last recorded period, so receipts
-   entered oldest first need no change. Change it if this receipt is for a different period.
-3. **Rent** and **Water** fill in from the unit's rate and its occupants (₱200 each). If you type a
-   different water figure, the form warns you before saving. Add a **Garbage fee** if one was paid.
-4. Save. The payment appears in the month it pays for, and on the tenant's own screen.
+2. Choose the **Unit**, the **Date received**, **How they paid**, and the period it covers
+   (**Covering from**, **Covering to**, or **Months covered** for more than one month at once).
+   **Covering from** starts on the day after that tenant's last recorded period, so payments
+   entered oldest first need no change. Change it if this payment is for a different period.
+3. **Occupants** starts at the number on record. Change it if more or fewer people live there now:
+   **Water** is worked out from it (₱200 a person) and cannot be typed. **Rent** fills in from the
+   unit's rate.
+4. **Invoice number (if any)**: type the number on the invoice you issued, or leave it blank if
+   there was none. "4726" or "INV 4726" is saved as INV#4726.
+5. Save, and check the summary that appears: the months, rent, water, total, and, if you changed
+   the occupants, that the tenant's record now shows the new number (their water from then on).
+   **See it in Monthly Income** opens that month with the payment marked.
 
-The system never makes up a receipt number: it records yours. The same receipt number cannot be
-recorded twice for the same unit.
+The system never makes up an invoice number: it records yours, or none. The same invoice number
+cannot be recorded twice for the same unit and month.
 
 **To correct a payment:** open it with **Edit** > change > **Save changes**. **To remove one**
 recorded by mistake: **Edit** > **Delete payment**. It leaves the ledger and totals at once; the
@@ -145,7 +149,7 @@ subtotals, Linda separate).
 ### 4. Recording an expense (Monthly Expenses)
 
 1. **Monthly Expenses** > **Record expense**.
-2. The date, OR or supplier, amount, category, and the property **area** it was for.
+2. The date, the invoice or supplier, amount, category, and the property **area** it was for.
 3. One expense for several areas: **Split across another area**. The parts must add up to the
    expense; the total is worked out for you. **Choose the area** for each new part; each area can
    be given once, so two amounts for the same area go in as one.

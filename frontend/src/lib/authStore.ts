@@ -20,6 +20,14 @@ export interface SessionUser {
    * change succeeds without needing a fresh sign-in.
    */
   mustChangePassword: boolean;
+  /**
+   * True for a tenant who must give a real email and confirm their phone
+   * before using the portal: while on a starting password, or while their
+   * email is a placeholder (migration 067). Sent by the server on sign-in and
+   * on `/auth/me`; App.vue holds the forced step open on it. Optional because
+   * a session cached before this existed has no such field.
+   */
+  mustCompleteContact?: boolean;
 }
 
 interface LoginResponse {
@@ -54,6 +62,7 @@ export const currentRole = computed<Role>(() => state.user?.role ?? 'guest');
 export const isAdmin = computed(() => state.user?.role === 'admin');
 export const isTenant = computed(() => state.user?.role === 'tenant');
 export const mustChangePassword = computed(() => state.user?.mustChangePassword ?? false);
+export const mustCompleteContact = computed(() => state.user?.mustCompleteContact ?? false);
 
 /**
  * Called the moment ChangePasswordModal's mandatory mode succeeds.
@@ -80,6 +89,11 @@ export const MOVED_OUT_FLAG = 'hivelet_moved_out';
 
 export function clearMustChangePassword(): void {
   if (state.user) state.user.mustChangePassword = false;
+}
+
+/** The same, for the contact half of the forced step (ChangePasswordModal). */
+export function clearMustCompleteContact(): void {
+  if (state.user) state.user.mustCompleteContact = false;
 }
 
 export function can(permission: string): boolean {

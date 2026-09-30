@@ -19,7 +19,11 @@ import PillSelect from '@/components/ui/PillSelect.vue';
 import { peso } from '@/lib/canonicalUnits';
 import { api, failureTitle, isUnconfirmed } from '@/lib/api';
 import { PROPERTY_TIMEZONE } from '@/lib/propertyDate';
-import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle } from 'lucide-vue-next';
+import { X, Check, Banknote, Loader2, ReceiptText, Users, AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+import { normalizeInvoiceNumber } from '@/lib/invoiceNumber';
+
+const router = useRouter();
 
 const unitOptions = computed(() =>
   rooms.map((r) => ({
@@ -48,9 +52,19 @@ const rentAmount = ref(0);
 // below overwrites it unconditionally with `immediate: true`, so this never
 // renders - but a "400" sitting beside `rentAmount`'s own zero-not-plausible
 // fix reads like a leftover of BR-040, which is exactly what it was.
-const waterAmount = ref(0);
-const gbgFee = ref(0);
-const orNum = ref('');
+/**
+ * The people living in the unit, as she records them on this payment
+ * (Sean, 2026-09-30). Prefilled from the tenancy and editable. Water is worked
+ * out from it and nothing else, so what she sees is what the books keep, and
+ * when this is the tenant's newest payment the tenancy follows it (the server
+ * updates the count and says so; see `recorded` below).
+ */
+const occupantsInput = ref(0);
+/** Set when she types a count, so a data refresh does not overwrite it. */
+const occupantsTyped = ref(false);
+/** Optional: not every payment has an invoice. Saved as INV#<n> (lib/invoiceNumber.ts). */
+const invoiceNum = ref('');
+const invoicePreview = computed(() => normalizeInvoiceNumber(invoiceNum.value));
 // The property's today, not UTC's. Before 08:00 Manila the old expression
 // offered YESTERDAY as the default date on a payment form.
 import { propertyToday, periodEnd, formatDateOnly } from '@/lib/propertyDate';
@@ -181,6 +195,11 @@ const currentOccupantsCount = computed(() => {
  */
 const waterRatePerOccupant = ref<number | null>(null);
 
+/** One month of water: occupants x the configured rate. Never typed. */
+const waterAmount = computed(() => Math.max(0, Number(occupantsInput.value) || 0) * (waterRatePerOccupant.value ?? 200));
+/** The tenancy's own count, for the "was 3" note beside the field. */
+const registeredOccupants = computed(() => currentOccupantsCount.value);
+
 async function loadRates() {
   try {
     const r = await api.get<{ waterRatePerOccupant: number }>('/public/rates', false);
@@ -249,8 +268,8 @@ function waterBaselineFor(_unitCode: string, occupants: number): number {
  * both. Touching the unit dropdown re-fired the watch and corrected it to 600,
  * which is why it survived: anyone who changed the unit never saw it.
  *
- * This is the garbage fee again - collected at the counter, printed on the
- * receipt, recorded as ₱0.00 - and it is the third time on this project that a
+ * It is
+ * the third time on this project that a
  * money field has been computed from data that had not loaded yet. **A watch's
  * dependency list has to name everything the body reads, not everything the
  * author was thinking about.**
@@ -275,14 +294,14 @@ function fillFiguresForUnit(newUnit: string) {
    * Her own book agrees with the server, in every row: all 837 non-Linda
    * income rows record water as exactly `occupants x rate`, none as a multiple
    * of it - checked against the live ledger rather than reasoned about. Arrears
-   * are carried as one row per month (OR#4895 across four), which is how a
+   * are carried as one row per month (INV#4895 across four), which is how a
    * multi-month collection has always been recorded.
    *
    * `waterBaselineFor` also decides the Linda case itself, from the unit code.
    * The ternary that used to be here (`isLinda ? newUnit : newUnit`) had two
    * identical arms.
    */
-  waterAmount.value = waterBaselineFor(newUnit, occCount);
+  if (!occupantsTyped.value) occupantsInput.value = occCount;
 
   /**
    * Cleared when the unit has no price, rather than left holding the PREVIOUS
@@ -309,7 +328,7 @@ function fillFiguresForUnit(newUnit: string) {
    * ONE month's rent, whatever the receipt covers.
    *
    * This read `room.price * mCovered`. The ledger keeps a multi-month receipt as
-   * one row PER MONTH - `OR#4895` across four - each carrying one month of rent
+   * one row PER MONTH - `INV#4895` across four - each carrying one month of rent
    * and one month of water, and there is no row in the 937 holding several
    * months. So this field is a month's rent and the months are the entries it
    * will create; the total handed over is computed from both below.
@@ -319,7 +338,11 @@ function fillFiguresForUnit(newUnit: string) {
 
 watch(
   [selectedUnit, monthsCovered, roomsFetchFailed, unitOccupantsSummary],
-  ([newUnit]) => fillFiguresForUnit(newUnit),
+  ([newUnit], old) => {
+    // A different unit starts from its own registered count again.
+    if (old && newUnit !== old[0]) occupantsTyped.value = false;
+    fillFiguresForUnit(newUnit);
+  },
   { immediate: true }
 );
 
@@ -362,6 +385,8 @@ watch(isOnsitePaymentModalOpen, (isOpen) => {
   if (isOpen) {
     // A fresh receipt: the period follows the tenant again, not the last one typed.
     coverStartTyped.value = false;
+    occupantsTyped.value = false;
+    recorded.value = null;
     if (!dateReceivedTyped.value) date.value = propertyToday();
     dateCoveredStart.value = nextCoverStart.value ?? propertyToday();
     loadRates();
@@ -383,20 +408,51 @@ watch(isOnsitePaymentModalOpen, (isOpen) => {
 });
 
 /**
- * What she is actually handed, which is a month's rent and water MULTIPLIED by
- * the months the receipt covers - plus the garbage fee once.
- *
- * The rent and water fields are per month now, because the ledger keeps one row
- * per month. The garbage fee is not multiplied: BR-037 charges it once per unit,
- * so a three-month receipt collects it once, and the ledger puts it on the first
- * month's row.
+ * What she is actually handed: a month's rent and water MULTIPLIED by the
+ * months the payment covers. The rent and water are per month, because the
+ * ledger keeps one row per month.
  */
 const monthsOnThisReceipt = computed(() => Math.max(1, Number(monthsCovered.value) || 1));
 
 const totalAmountReceived = computed(() => {
   const perMonth = (Number(rentAmount.value) || 0) + (Number(waterAmount.value) || 0);
-  return perMonth * monthsOnThisReceipt.value + (Number(gbgFee.value) || 0);
+  return perMonth * monthsOnThisReceipt.value;
 });
+
+/**
+ * What was just recorded, shown in place of the form (Sean, 2026-09-30: after
+ * "success" nothing told her what had happened). Unit, invoice, the months,
+ * rent, water from the people recorded, the total, and - when it changed - the
+ * tenancy's occupant count, with a way to see the entry in Monthly Income.
+ */
+const recorded = ref<null | {
+  id: string;
+  unit: string;
+  invoice: string | null;
+  months: number;
+  period: string;
+  rent: number;
+  water: number;
+  occupants: number;
+  total: number;
+  year: number | null;
+  month: number | null;
+  occupantsUpdated: { from: number; to: number } | null;
+}>(null);
+
+function seeInLedger() {
+  const r = recorded.value;
+  if (!r) return;
+  closeModal();
+  router.push({
+    path: '/admin/income',
+    query: { ...(r.year ? { year: String(r.year) } : {}), ...(r.month ? { month: String(r.month) } : {}), highlight: r.id },
+  });
+}
+
+function recordAnother() {
+  recorded.value = null;
+}
 
 /**
  * The check before the ledger is written.
@@ -589,6 +645,7 @@ function handleConfirmAccept() {
 
 function closeModal() {
   isOnsitePaymentModalOpen.value = false;
+  recorded.value = null;
   overlappingPayments.value = [];
   waitingPayments.value = [];
   overlapCheckFailed.value = false;
@@ -598,51 +655,15 @@ function triggerRecord() {
   const room = rooms.find((r) => r.unitCode.toLowerCase() === selectedUnit.value.toLowerCase());
   const unitUpper = selectedUnit.value.toUpperCase();
   const summary = formatUnitOccupantsSummary(selectedUnit.value);
-  const occCount = occupantsFor(summary, room);
+  const occCount = Math.round(Number(occupantsInput.value) || 0);
   const mCovered = Math.max(1, Number(monthsCovered.value) || 1);
 
-  const monthlyWaterBaseline = waterBaselineFor(unitUpper, occCount);
-  const perOccupantRate = waterRatePerOccupant.value ?? 200;
-
-  const waterVal = Number(waterAmount.value) || 0;
-
-  /**
-   * BR-036, and the reason this compares against ONE month.
-   *
-   * The rule is *"Water Payment must equal Occupants × ₱200 … If the
-   * administrator enters a mismatched value, the system must warn before saving
-   * rather than silently accepting the discrepancy."*
-   *
-   * Silently accepting is exactly what happened, in the one direction nobody
-   * checks. The floor was `monthlyWaterBaseline * mCovered`, so anything at or
-   * above it passed - and **this figure is never sent.** The payload below has
-   * no water field, `incomeRecordSchema` has no water field, and the server
-   * derives `water_payment` from occupants alone. So a typed ₱1,200 sailed
-   * through the check, went into "Total handed over", was asked for at the
-   * counter, and the ledger recorded ₱400.
-   *
-   * Warning on any divergence rather than only on a low one, and saying which
-   * figure the books will keep, is what the rule asks for. It does not block:
-   * BR-036 says warn, and the recorded value is correct either way.
-   */
-  if (waterVal !== monthlyWaterBaseline) {
-    // Addressed to her: this said "in her book" to the owner reading it.
-    showToast(
-      'warning',
-      'Water will be recorded as ' + peso(monthlyWaterBaseline, 2),
-      `The ledger counts water from the people registered in the unit, so it will record ` +
-        `${peso(monthlyWaterBaseline, 2)} for ${unitUpper}, not ${peso(waterVal, 2)}. ` +
-        (mCovered > 1
-          ? `Each of the ${mCovered} months is its own entry, with one month of water. `
-          : '') +
-        `If the number of people is wrong, correct it on the tenant's record.`
-    );
-  }
-
-  if (waterVal !== 0 && waterVal % perOccupantRate !== 0) {
-    showToast('error', 'Check the water', `It must be a multiple of ₱${perOccupantRate}, the charge for one person.`);
+  if (occCount < 1) {
+    showToast('error', 'How many people live there?', 'Enter at least one occupant. Water is worked out from this number.');
     return;
   }
+
+  // Water is never typed: it is occupants x rate, the figure the books keep (BR-036).
 
   // Same UTC-safe parsing as `formatDateForDisplay` above - this pair never
   // went through it, so it kept the timezone-dependent shift on the text
@@ -650,13 +671,7 @@ function triggerRecord() {
   const formattedStart = formatDateOnly(dateCoveredStart.value, { month: 'short', day: '2-digit' });
   const formattedEnd = formatDateOnly(dateCoveredEnd.value, { month: 'short', day: '2-digit', year: 'numeric' });
 
-  // Every one of the 937 ledger rows carries an OR number from the landlady's
-  // receipt book, and the column is NOT NULL. The API no longer invents one, so
-  // ask here rather than failing after she has confirmed the amount.
-  if (!orNum.value.trim()) {
-    showToast('error', 'Receipt number needed', 'Enter the number from the receipt you issued.');
-    return;
-  }
+  // No invoice number is fine: not every payment has one (Sean, 2026-09-30).
 
   // See the docblock on `overlappingPayments` above. This does not gate the
   // confirm dialog that follows - it only decides whether that dialog shows
@@ -699,15 +714,9 @@ function triggerRecord() {
           roomNumber: selectedUnit.value.toUpperCase(),
           datePaid: date.value,
           contactName: summary.residents.length > 0 ? summary.residents.join(', ') : (room?.tenant || ''),
-          // An OR number identifies a physical receipt. Generating one from
-          // `Math.random()` puts a number on the ledger that matches no receipt
-          // in the landlady's book, and two entries could collide.
-          invoiceNumber: orNum.value.trim(),
+          // Her invoice number, or blank for none. Never invented.
+          invoiceNumber: invoiceNum.value.trim(),
           rentAmount: Number(rentAmount.value) || 0,
-          // This field is `required` on the form, is added to the total the
-          // resident is asked for, and is printed on the receipt - and it was
-          // not in this payload, so the ledger recorded 0.00 for it every time.
-          gbgFee: Number(gbgFee.value) || 0,
           occupants: occCount,
           paymentMethod: paymentMethod.value,
           transactionReference: methodHasReference.value ? transactionReference.value : undefined,
@@ -724,7 +733,7 @@ function triggerRecord() {
           return;
         }
 
-        const inv = orNum.value.trim();
+        const inv = invoicePreview.value;
 
         incomeRecords.unshift({
           id: serverRecordId,
@@ -737,7 +746,6 @@ function triggerRecord() {
           rent: Number(rentAmount.value) || 0,
           occupants: occCount,
           water: Number(waterAmount.value) || 0,
-          garbage: Number(gbgFee.value) || 0,
           anniversary: formatDateOnly(date.value, { day: 'numeric', month: 'short' }),
           // The move-in month (OD-04), not a computed guess. The ledger row the
           // API just returned is the record; this local copy only mirrors the
@@ -753,25 +761,29 @@ function triggerRecord() {
 
         await Promise.allSettled([fetchIncomeRecords(), fetchRooms(), fetchTenants()]);
 
+        const serverRow = response?.data ?? response ?? {};
+        recorded.value = {
+          id: String(serverRecordId),
+          unit: selectedUnit.value.toUpperCase(),
+          invoice: inv,
+          months: mCovered,
+          period: `${formatDateForDisplay(dateCoveredStart.value)} to ${formatDateForDisplay(dateCoveredEnd.value)}`,
+          rent: Number(rentAmount.value) || 0,
+          water: Number(serverRow.water_payment ?? waterAmount.value) || 0,
+          occupants: occCount,
+          total: totalAmountReceived.value,
+          year: Number(serverRow.year) || null,
+          month: Number(serverRow.month) || null,
+          occupantsUpdated: serverRow.occupantsUpdated ?? null,
+        };
         showToast('success', 'Payment recorded', `Unit ${selectedUnit.value.toUpperCase()}, ${peso(totalAmountReceived.value, 2)}, is in the ledger.`);
-        /**
-         * One receipt, one set of figures. This dialog lives for the whole
-         * session (App.vue), so the next receipt opened on this one's OR number,
-         * reference, garbage fee and months. A fee or a typed rent carried onto
-         * the next receipt is saved as if she had entered it; a carried OR number
-         * is refused by the server (it checks every unit and date for the same
-         * number), which is only a confusing stop. Seen in the admin harness 2026-09-30, before she
-         * enters every receipt since 8 August in one sitting. The unit and the
-         * date received stay, for a run of receipts from one day; rent and water
-         * go back to the unit's own figures, so a part-payment typed here is not
-         * the next receipt's rent.
-         */
-        orNum.value = '';
+        // One payment, one set of figures: the next one starts clean. The unit and
+        // the date received stay, for a run of payments from one day.
+        invoiceNum.value = '';
         transactionReference.value = '';
-        gbgFee.value = 0;
         monthsCovered.value = 1;
+        occupantsTyped.value = false;
         fillFiguresForUnit(selectedUnit.value);
-        closeModal();
       } catch (err: unknown) {
         // Timed out: it may be in the ledger, so never "Nothing was written".
         // The ledger is fetched again so the list she is told to check is current.
@@ -798,8 +810,8 @@ function triggerRecord() {
 <template>
   <WsModal
     v-if="isOnsitePaymentModalOpen"
-    title="Record payment"
-    subtitle="Money handed over in person, or an online payment you are entering yourself."
+    :title="recorded ? 'Payment recorded' : 'Record payment'"
+    :subtitle="recorded ? undefined : 'Money handed over in person, or an online payment you are entering yourself.'"
     size="lg"
     :dismissible="false"
     @close="closeModal"
@@ -835,7 +847,55 @@ function triggerRecord() {
       keyboard reader's ring would be sliced down the sides of every field in
       this form. The negative margin cancels the padding so nothing moves.
     -->
+    <!-- What was just recorded, in place of the form. -->
+    <div v-if="recorded" class="ws-reveal flex flex-col gap-4" role="status">
+      <p class="flex items-start gap-2 text-sm leading-6 text-ink">
+        <CheckCircle2 class="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
+        <span>
+          Unit <strong>{{ recorded.unit }}</strong> is in the ledger<template v-if="recorded.invoice">, invoice
+          <strong class="font-mono">{{ recorded.invoice }}</strong></template><template v-else>, with no invoice</template>.
+        </span>
+      </p>
+      <dl class="flex flex-col gap-2 rounded-2xl bg-canvas p-4 text-sm">
+        <div class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Covers</dt>
+          <dd class="text-right">{{ recorded.months }} {{ recorded.months === 1 ? 'month' : 'months' }}, {{ recorded.period }}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Rent<template v-if="recorded.months > 1"> a month</template></dt>
+          <dd class="tabular font-semibold">{{ peso(recorded.rent, 2) }}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Water<template v-if="recorded.months > 1"> a month</template></dt>
+          <dd class="tabular font-semibold">
+            {{ peso(recorded.water, 2) }}
+            <span class="block text-right text-xs font-normal text-ink-faint">
+              {{ recorded.occupants }} {{ recorded.occupants === 1 ? 'person' : 'people' }} × {{ peso(waterRatePerOccupant ?? 200) }}
+            </span>
+          </dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
+          <dt class="font-semibold">Total handed over</dt>
+          <dd class="tabular text-lg font-semibold text-brand">{{ peso(recorded.total, 2) }}</dd>
+        </div>
+      </dl>
+      <p
+        v-if="recorded.occupantsUpdated"
+        class="flex items-start gap-2 rounded-2xl bg-brand-soft px-4 py-3 text-sm leading-6 text-ink"
+      >
+        <Users class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+        <span>
+          {{ recorded.unit }} now has <strong>{{ recorded.occupantsUpdated.to }}</strong>
+          {{ recorded.occupantsUpdated.to === 1 ? 'occupant' : 'occupants' }} on record (it was
+          {{ recorded.occupantsUpdated.from }}). Water from now on is
+          {{ peso(recorded.occupantsUpdated.to * (waterRatePerOccupant ?? 200)) }} a month, and the
+          tenant sees the new count on their page.
+        </span>
+      </p>
+    </div>
+
     <form
+      v-else
       id="onsite-payment-form"
       @submit.prevent="triggerRecord"
       class="flex flex-col gap-5 max-h-[60dvh] overflow-y-auto px-1.5 -mx-1.5 sm:mx-0 sm:max-h-none sm:overflow-visible sm:px-0"
@@ -853,6 +913,43 @@ function triggerRecord() {
           measured at 375 the pair is 140px against 202px stacked, with the
           columns at 146px each and no overflow in either.
         -->
+        <!--
+          Occupants, then the water they make (Sean, 2026-09-30). Water is not
+          typed: it is occupants x rate, the figure the books keep, so the two
+          can never disagree. The count starts at the tenancy's and can be
+          changed; when this is the tenant's newest payment, the tenancy follows it.
+        -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+          <label class="ws-field">
+            Occupants
+            <input
+              v-model.number="occupantsInput"
+              type="number"
+              min="1"
+              step="1"
+              class="ws-input w-full"
+              required
+              @input="occupantsTyped = true"
+            />
+            <span
+              v-if="registeredOccupants > 0 && Number(occupantsInput) !== registeredOccupants"
+              class="ws-reveal ws-hint text-verify"
+            >
+              On record: {{ registeredOccupants }}. Saving this updates the tenant's record.
+            </span>
+            <span v-else-if="registeredOccupants === 0" class="ws-hint">
+              Nobody is on record here. Enter how many live there.
+            </span>
+          </label>
+          <div class="ws-field">
+            Water
+            <p class="ws-input w-full tabular bg-canvas text-ink" aria-live="polite">{{ peso(waterAmount, 2) }}</p>
+            <span class="ws-hint">
+              {{ Number(occupantsInput) || 0 }} × {{ peso(waterRatePerOccupant ?? 200) }} a month
+            </span>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-3 sm:gap-4">
           <label class="ws-field">
             Rent
@@ -867,54 +964,19 @@ function triggerRecord() {
             </span>
           </label>
 
-          <!--
-            Just "Water", like "Rent" beside it. The rate and headcount sat in the
-            label and wrapped it to two lines at 375, so this field's box started
-            24px lower than Rent's. They are in the hint underneath now.
-          -->
           <label class="ws-field">
-            Water
-            <!--
-              `:step` follows the configured rate. It was the literal "200", and
-              the browser's own step validation refuses any figure that is not a
-              multiple of it before submit runs - so the day the rate changed,
-              the correct amount would be blocked with a native tooltip rather
-              than accepted.
-            -->
-            <input v-model.number="waterAmount" type="number" min="0" :step="waterRatePerOccupant ?? 200" class="ws-input w-full" required />
-            <span class="ws-hint">
-              <!--
-                The rate and the headcount are the ones `waterBaselineFor` and the
-                submit path use, not a literal. It once read `=== 'lf' ? 400 : 200`
-                and quoted an old Linda charge while the field refused anything
-                under the new one. The names are on the Unit field above.
-              -->
-              <template v-if="currentOccupantsCount > 0">
-                ₱{{ waterRatePerOccupant ?? 200 }} × {{ currentOccupantsCount }}
-                {{ currentOccupantsCount === 1 ? 'person' : 'people' }}
-              </template>
-              <template v-else>
-                Nobody is registered here. Type the water from the receipt, if any.
-              </template>
+            Invoice number (if any)
+            <input v-model="invoiceNum" type="text" placeholder="INV#4627" class="ws-input w-full font-mono" autocomplete="off" />
+            <span v-if="invoicePreview && invoicePreview !== invoiceNum.trim()" class="ws-reveal ws-hint">
+              Saved as {{ invoicePreview }}
             </span>
-          </label>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 sm:gap-4">
-          <label class="ws-field">
-            Garbage fee
-            <input v-model.number="gbgFee" type="number" min="0" step="any" class="ws-input w-full" required />
-          </label>
-          <label class="ws-field">
-            Receipt (OR) number
-            <input v-model="orNum" type="text" placeholder="OR#4627" class="ws-input w-full font-mono" required />
           </label>
         </div>
 
         <!--
           This pair stays full width on a phone, deliberately, where the two
           above did not. A reference number is a long string somebody TYPES off
-          a GCash receipt, and a 146px box shows about nine characters of it.
+          a GCash confirmation, and a 146px box shows about nine characters of it.
           The rule is the width the content needs, not two columns everywhere.
         -->
         <div class="grid gap-4 sm:grid-cols-2">
@@ -946,13 +1008,13 @@ function triggerRecord() {
             Months covered
             <input v-model.number="monthsCovered" type="number" min="1" max="24" class="ws-input w-full" required />
             <!--
-              Says what it will actually do. A receipt covering several months is
+              Says what it will actually do. A payment covering several months is
               kept as one ledger row per month, which is how her book already
-              holds them - OR#4895 runs across four rows.
+              holds them - INV#4895 runs across four rows.
             -->
             <span v-if="monthsOnThisReceipt > 1" class="ws-reveal ws-hint">
-              Saved as {{ monthsOnThisReceipt }} ledger entries, one per month, under
-              {{ orNum.trim() || 'this receipt' }}.
+              Saved as {{ monthsOnThisReceipt }} ledger entries, one per month<template v-if="invoicePreview">, under
+              {{ invoicePreview }}</template>.
             </span>
           </label>
           <label class="ws-field">
@@ -977,13 +1039,21 @@ function triggerRecord() {
             </p>
             <p v-if="monthsOnThisReceipt > 1" class="mt-1 text-xs text-ink-faint">
               {{ peso((Number(rentAmount) || 0) + (Number(waterAmount) || 0), 2) }} a month
-              × {{ monthsOnThisReceipt }}<template v-if="Number(gbgFee) > 0">, plus the garbage fee once</template>
+              × {{ monthsOnThisReceipt }}
             </p>
           </div>
         </div>
     </form>
 
-    <template #actions>
+    <template v-if="recorded" #actions>
+      <button type="button" class="pill-btn" @click="recordAnother">Record another</button>
+      <button type="button" class="pill-btn" @click="closeModal">Done</button>
+      <button type="button" class="pill-btn-brand" @click="seeInLedger">
+        See it in Monthly Income
+        <ArrowUpRight class="size-4" aria-hidden="true" />
+      </button>
+    </template>
+    <template v-else #actions>
       <button type="button" class="pill-btn" @click="closeModal">Cancel</button>
       <button type="submit" form="onsite-payment-form" :disabled="isSubmitting" class="pill-btn-brand">
         <Loader2 v-if="isSubmitting" class="size-4 animate-spin" aria-hidden="true" />
@@ -1022,7 +1092,7 @@ function triggerRecord() {
         This unit already has a non-voided ledger row for a month this receipt
         is about to cover. That is sometimes exactly right (a remaining balance,
         an arrears top-up) and sometimes the same visit typed in twice under a
-        different OR number - the banner names what was found and lets the
+        different invoice number - the banner names what was found and lets the
         administrator decide, same as she already can for a water mismatch on
         the form itself.
       -->
@@ -1037,7 +1107,7 @@ function triggerRecord() {
         </p>
         <ul class="flex flex-col gap-1 text-ink">
           <li v-for="rec in overlappingPayments" :key="rec.id">
-            {{ rec.rentFor }}: {{ peso(rec.rent, 2) }} rent<template v-if="rec.invoice">, receipt {{ rec.invoice }}</template>, paid {{ rec.datePaid }}
+            {{ rec.rentFor }}: {{ peso(rec.rent, 2) }} rent<template v-if="rec.invoice">, invoice {{ rec.invoice }}</template>, paid {{ rec.datePaid }}
           </li>
           <li v-for="p in waitingPayments" :key="p.id">
             GCash: {{ peso(p.amount, 2) }}, sent {{ sentOn(p.paid_at) }}, not verified yet
@@ -1048,8 +1118,8 @@ function triggerRecord() {
           again in cash, check that payment first.
         </p>
         <p v-if="overlappingPayments.length > 0" class="text-ink">
-          Fine if this settles a remaining balance. If it's the same receipt entered twice, check
-          the OR number first.
+          Fine if this settles a remaining balance. If it's the same payment entered twice, check
+          the invoice number first.
         </p>
       </div>
 
@@ -1069,15 +1139,20 @@ function triggerRecord() {
         </div>
         <div class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Water<template v-if="monthsOnThisReceipt > 1"> a month</template></dt>
-          <dd class="tabular font-semibold">{{ peso(waterAmount, 2) }}</dd>
+          <dd class="tabular font-semibold">
+            {{ peso(waterAmount, 2) }}
+            <span class="block text-right text-xs font-normal text-ink-faint">
+              {{ occupantsInput }} {{ Number(occupantsInput) === 1 ? 'person' : 'people' }} × {{ peso(waterRatePerOccupant ?? 200) }}
+            </span>
+          </dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-3">
+          <dt class="text-ink-soft">Invoice</dt>
+          <dd class="font-mono">{{ invoicePreview ?? 'None' }}</dd>
         </div>
         <div v-if="monthsOnThisReceipt > 1" class="flex items-baseline justify-between gap-3">
           <dt class="text-ink-soft">Ledger entries</dt>
           <dd class="font-semibold">{{ monthsOnThisReceipt }}, one per month</dd>
-        </div>
-        <div class="flex items-baseline justify-between gap-3">
-          <dt class="text-ink-soft">Garbage fee</dt>
-          <dd class="tabular font-semibold">{{ peso(gbgFee, 2) }}</dd>
         </div>
         <div class="flex items-baseline justify-between gap-3 border-t border-line pt-2">
           <dt class="font-semibold">Total handed over</dt>

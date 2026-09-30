@@ -192,11 +192,13 @@ before the redesign started.
 
 ### `components/modals/ChangePasswordModal.vue`
 
-1 call(s), **1 of them write**.
+3 call(s), **2 of them write**.
 
 | | Endpoint | What it is for |
 | :--- | :--- | :--- |
+| reads | `GET /auth/me` | who am I |
 | **writes** | `POST /auth/change-password` | change my own password |
+| **writes** | `PUT /tenant/my-profile` | edit my details |
 
 ### `components/modals/OnsitePaymentModal.vue`
 
@@ -231,6 +233,14 @@ before the redesign started.
 | reads | `GET /admin/reports/income.xlsx` | the owner's income workbook, in her own layout |
 | reads | `GET /admin/reports/tenants.xlsx` | who paid for each unit in a year or month, from the receipts, as a workbook |
 
+### `lib/live.ts`
+
+1 call(s), **0 of them write**.
+
+| | Endpoint | What it is for |
+| :--- | :--- | :--- |
+| reads | `GET /live/version` | every page, every 5 s while visible: has anything its person can see changed? (reads only) |
+
 ### `lib/systemState.ts`
 
 6 call(s), **0 of them write**.
@@ -246,4 +256,4 @@ before the redesign started.
 
 ---
 
-**21 files make 74 distinct calls, 34 of which write.** Generated 2026-09-30.
+**22 files make 77 distinct calls, 35 of which write.** Generated 2026-09-30.

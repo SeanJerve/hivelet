@@ -365,7 +365,7 @@ for (const year of years) {
       fail++;
     } else {
       const rows = await sql(
-        `monthly_income_records?select=rent_amount,water_payment,gbg_fee,occupants,` +
+        `monthly_income_records?select=rent_amount,water_payment,occupants,` +
         `fifty_percent_share,remitted_amount,month,is_linda_billing` +
         `&voided_at=is.null&year=eq.${year}`
       );
@@ -473,7 +473,6 @@ for (const year of years) {
        */
       const OTHER_COLUMNS = [
         ['Water Payment', 'water_payment'],
-        ['GBG', 'gbg_fee'],
         ['Remitted Amount', 'remitted_amount'],
         ['Occupants', 'occupants'],
         ['50% Share', 'fifty_percent_share'],

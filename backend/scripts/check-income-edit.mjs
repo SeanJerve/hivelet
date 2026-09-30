@@ -40,7 +40,7 @@ const before = {
   id: ROW, room_id: ROOM_2A, tenant_profile_id: TENANT_X, assignment_id: null,
   year: 2026, month: 9, date_paid: '2026-09-01', rent_period_start: '2026-09-01',
   rent_period_end: '2026-09-30', rent_amount: 6700, occupants: 1, water_payment: 200,
-  invoice_number: 'OR#9001', contact_name: 'Y', voided_at: null,
+  invoice_number: 'INV#9001', contact_name: 'Y', voided_at: null,
 };
 const tenanciesOf2B = [
   { id: 'a-y', tenant_profile_id: TENANT_Y, start_date: '2026-03-01', end_date: null, is_active: true },
@@ -150,8 +150,8 @@ check('and still saves', sameUnit.status, 200);
 // F10. Z left 2B at the end of February owing January; Y has lived there since
 // March and has an open September bill. Z pays January in cash.
 const arrears = await post({
-  roomNumber: '2B', datePaid: '2026-09-26', contactName: 'Z', invoiceNumber: 'OR#9100',
-  rentAmount: 6700, gbgFee: 0, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
+  roomNumber: '2B', datePaid: '2026-09-26', contactName: 'Z', invoiceNumber: 'INV#9100',
+  rentAmount: 6700, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
   dateCoveredStart: '2026-01-01', dateCoveredEnd: '2026-01-31',
 });
 check('the arrears receipt is recorded', arrears.status, 201);
@@ -162,8 +162,8 @@ check('Y\'s open September bill is left alone', billUpdates.includes(Y_OPEN_BILL
 
 // And an ordinary receipt for the current period still goes to Y and pays Y's bill.
 const current = await post({
-  roomNumber: '2B', datePaid: '2026-09-26', contactName: 'Y', invoiceNumber: 'OR#9101',
-  rentAmount: 6700, gbgFee: 0, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
+  roomNumber: '2B', datePaid: '2026-09-26', contactName: 'Y', invoiceNumber: 'INV#9101',
+  rentAmount: 6700, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
   dateCoveredStart: '2026-09-01', dateCoveredEnd: '2026-09-30',
 });
 check('a current receipt is recorded', current.status, 201);
@@ -179,8 +179,8 @@ const savedTenancies = tenanciesOf2B.splice(0, tenanciesOf2B.length,
   { id: 'a-real', tenant_profile_id: TENANT_Y, start_date: '2026-07-01', end_date: null, is_active: true },
   { id: 'a-demo', tenant_profile_id: TENANT_Z, start_date: '2025-06-05', end_date: '2026-08-25', is_active: false });
 const overlapping = await post({
-  roomNumber: '2B', datePaid: '2026-02-02', contactName: 'Y', invoiceNumber: 'OR#9102',
-  rentAmount: 6700, gbgFee: 0, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
+  roomNumber: '2B', datePaid: '2026-02-02', contactName: 'Y', invoiceNumber: 'INV#9102',
+  rentAmount: 6700, occupants: 1, paymentMethod: 'Cash', monthsCovered: 1,
   dateCoveredStart: '2026-01-07', dateCoveredEnd: '2026-02-06',
 });
 check('overlapping tenancies: the receipt is recorded', overlapping.status, 201);

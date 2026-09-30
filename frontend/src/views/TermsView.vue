@@ -69,7 +69,7 @@ const sections = Object.values(S);
 </script>
 
 <template>
-  <LegalPage title="Terms of use" effective="2026-09-24" updated="2026-09-29" :sections="sections">
+  <LegalPage title="Terms of use" effective="2026-09-24" updated="2026-09-30" :sections="sections">
     <template #lead>
       <p>
         These terms cover this website and its tenant portal, both run on Hivelet, the system
@@ -113,8 +113,12 @@ const sections = Object.values(S);
       </p>
       <ul>
         <li>
-          Your account starts with a one-time password. You will be asked to replace it with your
-          own the first time you sign in.
+          Your account starts with a one-time password. The first time you sign in you will be
+          asked to replace it with your own, give an email address, and check your phone number.
+        </li>
+        <li>
+          Your email, phone number and password are yours to keep up to date, on the My details
+          screen. Your name is kept by {{ LANDLADY.name }}; ask her if it needs changing.
         </li>
         <li>
           Keep your password to yourself, and do not let anyone else use your account. Everything

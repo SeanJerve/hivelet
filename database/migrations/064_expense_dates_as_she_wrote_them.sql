@@ -41,12 +41,12 @@ DECLARE
 BEGIN
   -- 3. The June electric bill, first: its workbook line carries the corrected total.
   SELECT count(*) INTO cnt FROM monthly_expense_entries
-  WHERE or_supplier = 'Electricbill (May26)' AND total_expenses = 20652.80;
+  WHERE invoice_supplier = 'Electricbill (May26)' AND total_expenses = 20652.80;
   IF cnt > 0 THEN
     electric := 'already P20,652.80, left as is';
   ELSE
     SELECT count(*), min(e.id::text)::uuid INTO cnt, eid FROM monthly_expense_entries e
-    WHERE e.or_supplier = 'Electricbill (May26)' AND e.total_expenses = 5688.67
+    WHERE e.invoice_supplier = 'Electricbill (May26)' AND e.total_expenses = 5688.67
       AND e.expense_date IN (DATE '2026-06-03', DATE '2026-06-04')
       AND (SELECT count(*) FROM expense_property_allocations x WHERE x.expense_entry_id = e.id) = 1
       AND EXISTS (SELECT 1 FROM expense_property_allocations x WHERE x.expense_entry_id = e.id
@@ -1329,7 +1329,7 @@ BEGIN
 {"r":1365,"o":"2025-07-01","n":"2026-07-31","s":"Janitorial","c":"3","t":"6500.00","a":"Boarding House:6500.00"}]'::jsonb) AS f(r int, o date, n date, s text, c text, t numeric, a text)
     ),
     stored AS (
-      SELECT e.id, e.expense_date AS o, trim(e.or_supplier) AS s,
+      SELECT e.id, e.expense_date AS o, trim(e.invoice_supplier) AS s,
              lower(e.category_code) AS c, e.total_expenses AS t,
              coalesce((SELECT string_agg(x.property_area::text || ':' || to_char(x.amount, 'FM9999999990.00'), '|'
                                          ORDER BY x.property_area::text || ':' || to_char(x.amount, 'FM9999999990.00') COLLATE "C")
@@ -2615,7 +2615,7 @@ BEGIN
 {"r":1365,"o":"2025-07-01","n":"2026-07-31","s":"Janitorial","c":"3","t":"6500.00","a":"Boarding House:6500.00"}]'::jsonb) AS f(r int, o date, n date, s text, c text, t numeric, a text)
     ),
     stored AS (
-      SELECT e.id, e.expense_date AS o, trim(e.or_supplier) AS s,
+      SELECT e.id, e.expense_date AS o, trim(e.invoice_supplier) AS s,
              lower(e.category_code) AS c, e.total_expenses AS t,
              coalesce((SELECT string_agg(x.property_area::text || ':' || to_char(x.amount, 'FM9999999990.00'), '|'
                                          ORDER BY x.property_area::text || ':' || to_char(x.amount, 'FM9999999990.00') COLLATE "C")
