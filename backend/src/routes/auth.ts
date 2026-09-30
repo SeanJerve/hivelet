@@ -101,7 +101,11 @@ router.post(
 const registerSchema = z.object({
   email: z.string().email('A valid email address is required.').max(255),
   password: z.string().min(10, 'Password must be at least 10 characters.'),
-  fullName: z.string().min(2, 'Full name is required.').max(255),
+  // Spaces tidied, as on the admin's move-in form (admin.ts, tenantOnboardSchema).
+  fullName: z
+    .string()
+    .transform((s) => s.replace(/\s+/g, ' ').trim())
+    .pipe(z.string().min(2, 'Full name is required.').max(255)),
   phoneNumber: z.string().max(50).optional(),
   emergencyContactName: z.string().max(255).optional(),
   emergencyContactPhone: z.string().max(50).optional(),

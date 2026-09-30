@@ -552,7 +552,13 @@ const tenantOnboardSchema = z.object({
    * An empty string is treated as absent, because that is what a cleared form field sends.
    */
   email: z.string().email('Enter a valid email address, or leave it blank.').max(255).optional().or(z.literal('')),
-  fullName: z.string().min(2, 'Full name is required.').max(255),
+  // Spaces tidied before anything is stored: "Princess Nicole   Nimay" and the
+  // same name with one space were two spellings of one tenant in her ledger
+  // (2026-09-30). Letter case is left as typed; "dela Cruz" is a spelling.
+  fullName: z
+    .string()
+    .transform((s) => s.replace(/\s+/g, ' ').trim())
+    .pipe(z.string().min(2, 'Full name is required.').max(255)),
   phone: z.string().max(50).optional(),
   emergencyContactName: z.string().max(255).optional(),
   emergencyContactPhone: z.string().max(50).optional(),
@@ -1055,7 +1061,11 @@ router.post(
 );
 
 const tenantUpdateSchema = z.object({
-  fullName: z.string().min(2).max(255).optional(),
+  fullName: z
+    .string()
+    .transform((s) => s.replace(/\s+/g, ' ').trim())
+    .pipe(z.string().min(2).max(255))
+    .optional(),
   phone: z.string().max(50).optional(),
   emergencyContactName: z.string().max(255).optional(),
   emergencyContactPhone: z.string().max(50).optional(),
