@@ -88,8 +88,10 @@ Open each in Chrome, then Print (A4). All are in `docs/FINAL MANUSCRIPT/` unless
 - **Every tenant signs in with a starting password on a slip** and must choose a new one straight away
   (at least 10 characters, a letter and a number). The landlady can reset a forgotten one: Tenants >
   Edit > Reset password.
-- **The booking module is being built** on Sean's side. Prospects are shown the public website and the
-  inquiry form only; do not test booking.
+- **Inquiries are now a conversation** (migration 065, live 30 Sep): the visitor gets a private link and
+  a reference code, Michelle answers from Inquiries (**Save reply**), and the visitor reads it and writes
+  back without an account. There is no online reservation or deposit. Prospects test PR-01 to PR-08b;
+  the team runs P-06 and P-06b.
 - **Measured the evening before and the morning of** (the audit report,
   `../FINAL MANUSCRIPT/AUDIT_REPORT_2026-09-30.md`): 0 errors with 12 users at once; offline 20/20;
   Mozilla Observatory A+, SSL Labs A+; no accessibility violations on 15 screens; desktop speed 95.

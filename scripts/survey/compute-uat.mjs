@@ -71,7 +71,7 @@ const PR_GROUPS = [
   ['Finding unit types, rates and availability (PR-02 to PR-04)', ['PR-02', 'PR-03', 'PR-04']],
   ['Reading one unit\'s details (PR-05)', ['PR-05']],
   ['Finding the water charge, location and contact (PR-06, PR-07)', ['PR-06', 'PR-07']],
-  ['Sending an inquiry (PR-08)', ['PR-08']],
+  ['Sending an inquiry and reading the reply (PR-08, PR-08b)', ['PR-08', 'PR-08B']],
 ];
 
 function line(label, set) {
@@ -96,7 +96,7 @@ if (obs.some((o) => /^PR-/.test(o.c))) {
   out.push('| Task | Prospects attempting | Completed without help | Completed with help | Not completed | Median time (s) | Mean wrong turns | Completion without help |');
   out.push('| :--- | --: | --: | --: | --: | --: | --: | --: |');
   for (const [label, cases] of PR_GROUPS) out.push(line(label, obs.filter((o) => cases.includes(o.c))));
-  out.push(line('**All tasks**', obs.filter((o) => /^PR-0[1-8]$/.test(o.c))));
+  out.push(line('**All tasks**', obs.filter((o) => /^PR-0([1-7]|8B?)$/.test(o.c))));
   out.push('', '> PR-09 (the open question) is not a task and is not counted. Chapter 4 has no Table 11E yet: the team decides whether to add it or report these lines in the §4.3 text.');
 }
 out.push('', '### Per case (supporting)', '', '| Case | Attempts | P | PH | F | Median time (s) | Mean wrong turns |', '| :-- | --: | --: | --: | --: | --: | --: |');

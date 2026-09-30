@@ -179,8 +179,8 @@ Stage 6 is what Claude does with it. It is listed so the team can check the work
 
 1. **Every tester watched the same Hivelet trailer before using the system.** Say so, with its
    length, in the procedure; say it was the only introduction given.
-2. **Prospective tenants were a fourth group** (public website and inquiry form only; the booking
-   module was not tested). The respondents section, Table 12 and the survey description must
+2. **Prospective tenants were a fourth group** (public website and the inquiry conversation, no
+   account). The respondents section, Table 12 and the survey description must
    include them. Claude adds this to `FIXES_TO_CHAPTERS_1_TO_3.md`.
 
 ---

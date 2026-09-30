@@ -90,8 +90,9 @@ do not read it out.
 ### Prospective tenants (PR): the public website only
 
 People who do **not** live at the boarding house (a friend, a student looking for a room). No account,
-no sign-in. **The booking module is not part of this test**; the inquiry form is. On their own phone,
-at `hivelet.vercel.app`.
+no sign-in. They browse, send an inquiry, and (since 30 Sep, migration 065) can read the landlady's
+reply and write back through the link they are given. There is no online reservation or deposit to
+test. On their own phone, at `hivelet.vercel.app`.
 
 | ID | Task card (read aloud) | Should happen | ISO/IEC 25010 |
 | :-- | :--- | :--- | :--- |
@@ -103,6 +104,7 @@ at `hivelet.vercel.app`.
 | PR-06 | "How is water charged?" *"Paano sinisingil ang tubig?"* | Finds Policies & guidelines: ₱200 per occupant a month | Usability |
 | PR-07 | "Find where the boarding house is and how to contact them." *"Hanapin kung saan ang boarding house at paano sila kokontakin."* | Finds Location / Contact (the phone number) | Usability |
 | PR-08 | "Ask the landlady about a unit you like. Use your own name and number, and write 'TEST' in the message." *"Magtanong sa landlady tungkol sa unit na gusto ninyo. Gamitin ang sariling pangalan at numero, at isulat ang 'TEST' sa mensahe."* | "Ask about unit" or Inquire now; the confirmation appears; empty or wrong fields say what to fix | Functional, Usability |
+| PR-08b | Only if the landlady replies during the session: "Open your inquiry and read the landlady's answer, then answer her." *"Buksan ang inyong inquiry, basahin ang sagot ng landlady, at sumagot."* | "Open your conversation" (or `/inquiry` with the reference code and their phone number); her reply shows; their answer appears in the conversation | Functional, Usability |
 | PR-09 | "Was anything slow, confusing or missing?" *"May mabagal, nakakalito, o kulang po ba?"* | Write their words exactly; result code **NT** (it is a question, not a task) | (survey context) |
 
 At most **two inquiries from the same wifi in 15 minutes**, then use mobile data. The site allows ten
