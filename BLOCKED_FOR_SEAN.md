@@ -33,6 +33,23 @@ thing did not work" is not.
 
 ## Open
 
+### B-90 — loydtest is the evaluation tenant account · **070 applied 2026-09-30: active again. DECIDED 2026-10-01: yes, move it into PH**
+
+**What happened.** 069 switched loydtest off as test residue. It was not: Sean confirmed it is the tenant
+account a technical expert will use to evaluate the site, and it had been turned back on on purpose at
+15:22 UTC. 070 put `account_status` back to active (verified: active, not locked, Remitted unchanged at
+₱8,222,900.00). The password and sign-in details were not touched. The bill, payments and repair 069
+removed were test residue and stay removed.
+
+**What the evaluator will see at first sign-in.** The account has no email on file, so the new rule
+(tenants own their contact details) asks for an email and a new password before anything else. That is
+the feature working, not a fault. Whoever hands over the account should know the evaluator sets both.
+
+**Decided (Sean, 2026-10-01): loydtest is the evaluators' tenant account; the admin account is ready as it is.** A person moves it into PH from Tenants (the real move-in, so it is audited). Until then: loydtest has no unit, so the tenant pages show no tenancy, and the admin's
+active tenant count reads 33 against 32 tenancies. For the evaluator to see a unit, bills and payments,
+move loydtest into PH (the one vacant unit) from Tenants. That makes PH read as occupied on the owner's
+screens until loydtest is moved out again after the evaluation.
+
 ### B-89 — after the testing day: garbage fee out, invoices not OR, tenants own contact details, live pages · **DONE 2026-09-30: 066, 067, 068 applied and verified**
 
 Sean's list, evening of 30 September. Code in 7fe465f; migrations applied through the Supabase
@@ -50,6 +67,7 @@ connection straight after that deployed, each after `npm run backup` (backups/20
 **Found, for Sean and Loyd:** `check:ledger` now reports **F2F has no payment for August 2026**
 (Brian Sesbreno on both sides). It appeared with the August load (062): either her workbook has no
 F2F August line, or the load missed it. Check her book.
+**Settled (Sean, 2026-10-01): a missing payment always means not entered yet.** The system shows a payment as soon as it is entered, so no screen, check or document may call a month without one missing, unpaid or owed. It reads "Not entered".
 
 **Left for a person:** one end-to-end test on two devices - record a payment as Michelle with a
 different occupant count, and watch the tenant's page update by itself within about 5 seconds.
