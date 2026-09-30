@@ -299,6 +299,16 @@ transaction therefore pointed to how the account was set up, not to the system. 
 (Case 08657379) confirmed this. The GCash acquirer account, which actually processes the payment,
 was misconfigured, and Adyen set up a new one.
 
+Asked afterwards what had gone wrong, Adyen Technical Support explained that GCash needs a
+specific acquirer account configuration in the test environment, and that some of its fields had
+probably been changed during Adyen's automatic setup flow, which broke the default configuration
+the payment method depends on (Adyen Technical Support, personal communication, September 27,
+2026). The test environment runs on predefined configurations and does not carry out every step
+end to end, so a fault that live onboarding would catch appeared here as an immediate refusal. In
+the live environment the setup is more controlled: some steps are handled by Adyen Support, and
+the merchant may be asked for further details. Going live is therefore treated as a separate step
+(Chapter 5, Recommendation 5).
+
 On 26 September 2026 a test payment passed end to end:
 - Adyen authorised it;
 - its signed notification reached the system;
