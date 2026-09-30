@@ -18,6 +18,13 @@
 > measured offline, installation, weak-connection and simultaneous-use results (Tables 11A, 11B);
 > §4.3.7 added for the owner and tenant acceptance test (Tables 11C, 11D, pending); two rows added
 > to Table 23; the tenant account reset in §4.2.6 and Table 25.
+>
+> **Updated 2026-10-01** from the testing day's results (`docs/TESTING_DAY/results/`): Table 10
+> (§4.3.4), Table 11 (§4.3.5), Tables 11C and 11D (§4.3.7) and §4.4.8's supporting evidence filled;
+> testing-day rows added to Table 23. Parts A, T and C were checked against the system's activity
+> record first and corrected where it disagreed; each results file says what changed. **Still
+> pending:** the survey (Tables 12 and 14 to 22, the technical evaluators on Saturday 3 October),
+> Table 5's owner question, Table 25 stages 4 and 5, and the figures.
 
 This chapter presents the results of the study and discusses what they mean. It is organized by
 the four specific objectives in Section 1.2: the analysis of existing practices (4.1), the
