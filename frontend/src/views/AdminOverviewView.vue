@@ -52,6 +52,7 @@ import {
   FileSpreadsheet,
   ArrowLeft,
   Search,
+  DoorOpen,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -772,6 +773,16 @@ const historicalRoomUtilization = computed<HistoricalRoomUtilization[]>(() =>
           <router-link to="/admin/expenses?openExpense=1" class="pill-btn">
             <ReceiptText class="size-4 text-ink-soft" aria-hidden="true" />
             Record expense
+          </router-link>
+          <!--
+            Moving someone in or out is as much her regular work as a receipt
+            (Sean, 2026-09-30). One button, to the Tenants page, because both
+            start there: "Move someone in" is at its top, and moving out needs
+            the list to choose who (Edit > Move them out).
+          -->
+          <router-link to="/admin/tenants" class="pill-btn">
+            <DoorOpen class="size-4 text-ink-soft" aria-hidden="true" />
+            Move someone in/out
           </router-link>
         </template>
         <template v-else>

@@ -249,31 +249,10 @@ onMounted(async () => {
 
 
 /**
- * Keyless Google Maps embed, pinned to the PLACE rather than to a coordinate.
- *
- * WHY THIS IS A `pb=` URL AND NOT A TIDY `q=lat,lng`
- * ---------------------------------------------------
- * It used to be `output=embed` with `q=13.1416835,123.7302874`, a coordinate
- * taken from the OpenStreetMap geometry of Sapaguita Street. That coordinate
- * round-tripped correctly through Nominatim and was checked by loading it, and
- * it was still wrong in the way that matters: it marks a point ON THE STREET,
- * about twenty metres south of the compound gate. Google's own map drew its
- * place marker for "Galang's Compound" up the road, and our red pin sat below
- * it on the carriageway - two markers, disagreeing, on the page whose job is to
- * tell someone where to turn up.
- *
- * Sean spotted it on screen on 2026-09-19 and supplied this embed from Google
- * Maps directly. The part that matters inside the opaque `pb` string is
- * `1s0x33a103648fe297e5:0x54153ecf77cd6a`, which is Google's own identifier for
- * the place named Galang's Compound. Because the embed resolves the PLACE, the
- * marker is positioned by Google from its own record instead of by a number we
- * maintain, and it carries the name as a label. There is no second pin to
- * disagree with it.
- *
- * `2d`/`3d` in that string are the longitude and latitude Google centres on,
- * 123.73023905008277 and 13.141856739297554, and `1d` is the zoom span. The
- * trailing `4v...` is the timestamp Google stamps on a generated embed; it is
- * inert.
+ * There is no embedded map, on purpose. The Google Maps frame that stood here
+ * went in 4b62945 (2026-09-21); Sean confirmed on 2026-09-30 that its removal
+ * was intended. The address in words, the link below and the gate photograph
+ * say where to turn up, and the page loads no third-party frame.
  */
 /**
  * The compound location, for the reader who wants it in their own maps app.
@@ -575,15 +554,10 @@ const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIC
     </section>
 
     <!--
-      A live map, replacing `property-map.png` and the SVG drawn over it. That
-      overlay traced a red route to Bicol University and labelled a transit
-      waypoint; both are gone at the owner's request and the map now shows the
-      compound alone.
-
-      It is a third-party frame, so: lazy-loaded, referrer trimmed, and titled
-      for anyone who reaches it by keyboard or screen reader. It will not render
-      with no network - the PWA caches an offline shell - which is why the
-      address stays in text beside it rather than living only on the map.
+      Where the compound is: the address in words, a link that opens it in the
+      reader's own maps app, and the gate. The embedded map that stood here was
+      removed on purpose (4b62945, confirmed by Sean 2026-09-30), so this section
+      needs no network beyond the page itself and works in the offline shell.
     -->
     <section id="location" class="w-full bg-canvas border-t border-line font-editorial scroll-mt-20">
       <div class="ws-page ws-content ws-band">
