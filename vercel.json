@@ -35,7 +35,7 @@
               "value": "camera=(), microphone=(), geolocation=()"
             },
             {
-              "key": "Content-Security-Policy-Report-Only",
+              "key": "Content-Security-Policy",
               "value": "default-src 'self'; connect-src 'self' https:; script-src 'self' https://*.adyen.com; frame-src https://*.adyen.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'"
             }
           ]
