@@ -1,6 +1,10 @@
 -- =============================================================================
--- 062 - the admin account carries the name of the person who uses it: Michelle
+-- 063 - the admin account carries the name of the person who uses it: Michelle
 -- =============================================================================
+-- APPLIED by Sean 2026-09-30 02:38 UTC, as 062. Loyd's August load took 062
+-- the same minute (062_august_2026_receipts_and_expenses_from_her_workbook.sql,
+-- applied first), so this file was renumbered 063 afterwards. Its own messages
+-- and its AUDIT_CORRECTION row say "062" because that is the number it ran as.
 -- NOT APPLIED by the author. Run the PREVIEW at the foot first and read it;
 -- then `npm run backup`; then run this whole file in the Supabase SQL editor.
 --

@@ -33,7 +33,7 @@ thing did not work" is not.
 
 ## Open
 
-### B-86 — the admin account is still named "Mrs. Fe Galang Da Silva"; run 062 to name it Michelle · **RUN 062**
+### B-87 (filed as a second "B-86" by mistake; renumbered the same day) — the admin account is still named "Mrs. Fe Galang Da Silva"; run 062 to name it Michelle · **DONE 2026-09-30: applied by Sean and verified (name Michelle, one AUDIT_CORRECTION row); file renumbered 063, Loyd's August load is 062**
 
 Sean, 2026-09-30: Mrs. Fe Galang Da Silva owns the business and the boarding house keeps her name,
 but the person who signs in and runs it is Michelle (Loyd's mother). Every page that asked people
@@ -46,7 +46,7 @@ information controller, with Michelle as the contact, instead of saying she owns
 the repair-reply notice a tenant receives ("... commented on your request") all print it.
 
 1. Supabase > SQL editor: run the PREVIEW at the foot of
-   `database/migrations/062_the_admin_account_is_michelle.sql`. Expect one row: admin,
+   `database/migrations/063_the_admin_account_is_michelle.sql`. Expect one row: admin,
    "Mrs. Fe Galang Da Silva", active.
 2. `npm run backup`.
 3. Run the whole file. "Success. No rows returned" means it ran. It changes only `full_name`;
