@@ -325,7 +325,7 @@ onUnmounted(() => {
         <router-link :to="brandRoute" class="press flex min-h-11 items-center gap-2 group">
           <span
             class="font-display font-semibold text-xl tracking-tight transition-colors"
-            :class="isLandingPage ? 'text-white drop-shadow-sm group-hover:text-white/80' : 'text-ink group-hover:text-brand'"
+            :class="isLandingPage ? 'text-white [text-shadow:0_1px_3px_rgb(0_0_0/0.6)] group-hover:text-white/80' : 'text-ink group-hover:text-brand'"
           >
             Hivelet
           </span>
@@ -351,7 +351,8 @@ onUnmounted(() => {
       >
         <!-- Landing page: Editorial underlined links matching reference photo -->
         <template v-if="isLandingPage">
-          <div v-if="!isAuthenticated" class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light drop-shadow-sm text-white">
+          <!-- A text shadow, not a scrim: the small white links sit on bright sky and leaves at desktop widths (visual audit, 30 Sep). -->
+          <div v-if="!isAuthenticated" class="flex flex-wrap items-baseline justify-end text-[0.8rem] font-light text-white [text-shadow:0_1px_3px_rgb(0_0_0/0.6)]">
             <RouterLink
               to="/inquire"
               class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
@@ -361,7 +362,7 @@ onUnmounted(() => {
             <span aria-hidden="true" class="pr-2 text-white">,</span>
             <RouterLink
               to="/login"
-              class="press inline-flex min-h-11 items-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
+              class="press inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-4 decoration-1 decoration-white/45 hover:decoration-white transition-colors text-white"
             >
               Sign in
             </RouterLink>

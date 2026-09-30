@@ -18,6 +18,8 @@ const home = computed(() => (isAuthenticated.value ? homeRouteForRole(currentRol
 </script>
 
 <template>
+  <!-- On the canvas like /login and /inquire; without it the page below the header was a whiter block. -->
+  <div class="flex-1 w-full bg-canvas">
   <section class="ws-page ws-band min-h-[60vh] flex flex-col justify-center">
     <p class="text-[0.7rem] tracking-[0.18em] uppercase text-ink-soft">Page not found</p>
     <h1 class="mt-4 max-w-2xl font-medium text-ink tracking-[-0.03em] leading-[1.05] text-[clamp(2rem,5vw,3.25rem)]">
@@ -32,4 +34,5 @@ const home = computed(() => (isAuthenticated.value ? homeRouteForRole(currentRol
       <RouterLink v-if="home" :to="home" class="pill-btn px-5">Back to your account</RouterLink>
     </div>
   </section>
+  </div>
 </template>
