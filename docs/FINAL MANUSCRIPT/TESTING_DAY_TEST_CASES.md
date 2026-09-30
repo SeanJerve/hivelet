@@ -1,7 +1,7 @@
 # Testing Day Test Cases, 30 September 2026
 
 **Written 2026-09-29.** The test cases for the first test of Hivelet by the owner and real tenants.
-How to run the day is in `TESTING_DAY_GUIDE.md`; read that first.
+How to run the day is in `docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md`, the one set of instructions; read that first.
 
 **How to use this file.** Print it. Each case has an ID, the quality it tests (ISO/IEC 25010), the
 requirement it traces to (`docs/03_REQUIREMENTS.md`), what to do, and what should happen. Fill
@@ -14,6 +14,7 @@ the evidence file name in **Evidence**. A fail always gets a line in the defect 
 | :--- | :--- | :--- |
 | A. Owner / administrator | A-01 to A-36 | §4.3.4, Table 10 (the walkthrough steps are A-05 to A-32) |
 | T. Tenant tasks | T-01 to T-18 | §4.3.7, Table 11C |
+| PR. Prospective tenants | PR-01 to PR-09 | §4.3.7, proposed Table 11E |
 | P. Public site | P-01 to P-08 | §4.3.4, Table 10 steps 1 to 3 |
 | C. Simultaneous use | C-01 to C-08 | §4.3.7, Table 11D |
 | O. Offline, weak signal, install | O-01 to O-12 | §4.3.7, compared with §4.3.6, Table 11A (measured 29 Sep) |
@@ -113,6 +114,33 @@ These three numbers per task are the quality-in-use measures Chapter 4 reports.
 **Quality in use, computed afterwards per task and overall** (Claude does this from the sheets):
 task success rate = tasks passed without help ÷ tasks attempted; time on task = median seconds;
 errors per task = mean.
+
+---
+
+## Part PR. Prospective tenants (public website only; read aloud, English then Filipino)
+
+People who do **not** live at the boarding house (a friend, a student looking for a room). No
+account, no sign-in, on their own phone at `hivelet.vercel.app`. They browse, send an inquiry, and
+(since 30 September, migration 065) can read the landlady's reply and write back through the link
+they are given. There is no online reservation or deposit to test. **Run them before A-12 or after
+A-31**: in between, the rehearsal tenant occupies PH and the pop-up says no unit is vacant.
+
+| ID | ISO | Task card (read aloud) | Should happen | Result | Evidence |
+| :-- | :-- | :--- | :--- | :-- | :--- |
+| PR-01 | US | "You are looking for a room near Bicol University. Open this website and tell me what the place is." *"Naghahanap po kayo ng kwarto malapit sa Bicol University. Buksan ang website at sabihin kung ano ang lugar na ito."* | Understands it is a boarding house with 33 units | | |
+| PR-02 | FS | "What kinds of units do they have?" *"Anong mga uri ng unit ang mayroon sila?"* | Finds the four kinds (Studio, One-bedroom, Two-bedroom, Three-bedroom) | | |
+| PR-03 | FS | "Find how much a studio unit costs per month." *"Hanapin kung magkano ang upa sa isang studio kada buwan."* | Opens Studio; reads a rate (₱6,000 to ₱8,500) | | |
+| PR-04 | FS, RE | "Is any unit available right now?" *"May bakante po bang unit ngayon?"* | The pop-up or the unit status (Occupied / Vacant) | | |
+| PR-05 | FS | "Pick one unit and find which floor it is on and how many people can stay." *"Pumili ng isang unit at hanapin kung anong palapag ito at ilang tao ang puwede."* | Opens a unit's details; the floor plan shows | | |
+| PR-06 | US | "How is water charged?" *"Paano sinisingil ang tubig?"* | Finds ₱200 per occupant a month | | |
+| PR-07 | US | "Find where the boarding house is and how to contact them." *"Hanapin kung saan ang boarding house at paano sila kokontakin."* | Finds the location and the contact number | | |
+| PR-08 | FS, US | "Ask the landlady about a unit you like. Use your own name and number, and write 'TEST' in the message." *"Magtanong sa landlady tungkol sa unit na gusto ninyo. Gamitin ang sariling pangalan at numero, at isulat ang 'TEST' sa mensahe."* | "Your inquiry is sent", **Open your conversation**, **Copy the link** and a reference code; an empty or wrong field says what to fix | | |
+| PR-08b | FS, US | Only if the landlady replies during the session: "Open your inquiry and read the landlady's answer, then answer her." *"Buksan ang inyong inquiry, basahin ang sagot ng landlady, at sumagot."* | Her reply shows (through **Open your conversation**, or `/inquiry` with the reference code and their phone number); their answer appears in the conversation | | |
+| PR-09 | none | "Was anything slow, confusing or missing?" *"May mabagal, nakakalito, o kulang po ba?"* | Write their words exactly; result code **NT** (it is a question, not a task) | NT | |
+
+At most **two inquiries from the same wifi in 15 minutes**, then use mobile data. The site allows ten
+per connection per 15 minutes, shared by everyone on the house wifi; the team keeps well under it so
+a real visitor is never blocked.
 
 ---
 

@@ -27,7 +27,7 @@ hr { border: 0; border-top: 1px dashed #999; margin: 4mm 0; }
 <body><main>
 <h1>Testing Day Test Cases, 30 September 2026</h1>
 <p><strong>Written 2026-09-29.</strong> The test cases for the first test of Hivelet by the owner and real tenants.
-How to run the day is in <code>TESTING_DAY_GUIDE.md</code>; read that first.</p>
+How to run the day is in <code>docs/TESTING_DAY/INSTRUCTIONS FOR TESTING.md</code>, the one set of instructions; read that first.</p>
 <p><strong>How to use this file.</strong> Print it. Each case has an ID, the quality it tests (ISO/IEC 25010), the
 requirement it traces to (<code>docs/03_REQUIREMENTS.md</code>), what to do, and what should happen. Fill
 <strong>Result</strong> with <strong>P</strong> (pass), <strong>PH</strong> (pass with help), <strong>F</strong> (fail) or <strong>NT</strong> (not tested), and put
@@ -50,6 +50,11 @@ the evidence file name in <strong>Evidence</strong>. A fail always gets a line i
 <td align="left">T. Tenant tasks</td>
 <td align="left">T-01 to T-18</td>
 <td align="left">§4.3.7, Table 11C</td>
+</tr>
+<tr>
+<td align="left">PR. Prospective tenants</td>
+<td align="left">PR-01 to PR-09</td>
+<td align="left">§4.3.7, proposed Table 11E</td>
 </tr>
 <tr>
 <td align="left">P. Public site</td>
@@ -663,6 +668,110 @@ These three numbers per task are the quality-in-use measures Chapter 4 reports.<
 <p><strong>Quality in use, computed afterwards per task and overall</strong> (Claude does this from the sheets):
 task success rate = tasks passed without help ÷ tasks attempted; time on task = median seconds;
 errors per task = mean.</p>
+<hr>
+<div class="sheet-break"></div>
+
+<h2>Part PR. Prospective tenants (public website only; read aloud, English then Filipino)</h2>
+<p>People who do <strong>not</strong> live at the boarding house (a friend, a student looking for a room). No
+account, no sign-in, on their own phone at <code>hivelet.vercel.app</code>. They browse, send an inquiry, and
+(since 30 September, migration 065) can read the landlady&#39;s reply and write back through the link
+they are given. There is no online reservation or deposit to test. <strong>Run them before A-12 or after
+A-31</strong>: in between, the rehearsal tenant occupies PH and the pop-up says no unit is vacant.</p>
+<table>
+<thead>
+<tr>
+<th align="left">ID</th>
+<th align="left">ISO</th>
+<th align="left">Task card (read aloud)</th>
+<th align="left">Should happen</th>
+<th align="left">Result</th>
+<th align="left">Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">PR-01</td>
+<td align="left">US</td>
+<td align="left">&quot;You are looking for a room near Bicol University. Open this website and tell me what the place is.&quot; <em>&quot;Naghahanap po kayo ng kwarto malapit sa Bicol University. Buksan ang website at sabihin kung ano ang lugar na ito.&quot;</em></td>
+<td align="left">Understands it is a boarding house with 33 units</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-02</td>
+<td align="left">FS</td>
+<td align="left">&quot;What kinds of units do they have?&quot; <em>&quot;Anong mga uri ng unit ang mayroon sila?&quot;</em></td>
+<td align="left">Finds the four kinds (Studio, One-bedroom, Two-bedroom, Three-bedroom)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-03</td>
+<td align="left">FS</td>
+<td align="left">&quot;Find how much a studio unit costs per month.&quot; <em>&quot;Hanapin kung magkano ang upa sa isang studio kada buwan.&quot;</em></td>
+<td align="left">Opens Studio; reads a rate (₱6,000 to ₱8,500)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-04</td>
+<td align="left">FS, RE</td>
+<td align="left">&quot;Is any unit available right now?&quot; <em>&quot;May bakante po bang unit ngayon?&quot;</em></td>
+<td align="left">The pop-up or the unit status (Occupied / Vacant)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-05</td>
+<td align="left">FS</td>
+<td align="left">&quot;Pick one unit and find which floor it is on and how many people can stay.&quot; <em>&quot;Pumili ng isang unit at hanapin kung anong palapag ito at ilang tao ang puwede.&quot;</em></td>
+<td align="left">Opens a unit&#39;s details; the floor plan shows</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-06</td>
+<td align="left">US</td>
+<td align="left">&quot;How is water charged?&quot; <em>&quot;Paano sinisingil ang tubig?&quot;</em></td>
+<td align="left">Finds ₱200 per occupant a month</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-07</td>
+<td align="left">US</td>
+<td align="left">&quot;Find where the boarding house is and how to contact them.&quot; <em>&quot;Hanapin kung saan ang boarding house at paano sila kokontakin.&quot;</em></td>
+<td align="left">Finds the location and the contact number</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-08</td>
+<td align="left">FS, US</td>
+<td align="left">&quot;Ask the landlady about a unit you like. Use your own name and number, and write &#39;TEST&#39; in the message.&quot; <em>&quot;Magtanong sa landlady tungkol sa unit na gusto ninyo. Gamitin ang sariling pangalan at numero, at isulat ang &#39;TEST&#39; sa mensahe.&quot;</em></td>
+<td align="left">&quot;Your inquiry is sent&quot;, <strong>Open your conversation</strong>, <strong>Copy the link</strong> and a reference code; an empty or wrong field says what to fix</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-08b</td>
+<td align="left">FS, US</td>
+<td align="left">Only if the landlady replies during the session: &quot;Open your inquiry and read the landlady&#39;s answer, then answer her.&quot; <em>&quot;Buksan ang inyong inquiry, basahin ang sagot ng landlady, at sumagot.&quot;</em></td>
+<td align="left">Her reply shows (through <strong>Open your conversation</strong>, or <code>/inquiry</code> with the reference code and their phone number); their answer appears in the conversation</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PR-09</td>
+<td align="left">none</td>
+<td align="left">&quot;Was anything slow, confusing or missing?&quot; <em>&quot;May mabagal, nakakalito, o kulang po ba?&quot;</em></td>
+<td align="left">Write their words exactly; result code <strong>NT</strong> (it is a question, not a task)</td>
+<td align="left">NT</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<p>At most <strong>two inquiries from the same wifi in 15 minutes</strong>, then use mobile data. The site allows ten
+per connection per 15 minutes, shared by everyone on the house wifi; the team keeps well under it so
+a real visitor is never blocked.</p>
 <hr>
 <div class="sheet-break"></div>
 
